@@ -68,7 +68,7 @@ Português or Español with the **PT · EN · ES** bar on the login screen, by a
 
 On the login screen choose **Create account**, pick a username, email, and password.
 The server stores it (passwords are hashed with `scrypt` and a per-user salt) in
-`server/dados/contas.json`, which is created automatically and is **not** committed
+`server/data/contas.json`, which is created automatically and is **not** committed
 to git.
 
 > Keep the recovery code the server returns on sign-up — it is how you reset the
@@ -84,7 +84,7 @@ grant GM to your own account once. Two options:
 others from the admin panel (**Players → Role → GM**).
 
 **Option B — bootstrap the first GM manually.** With the server **stopped**, edit
-`server/dados/contas.json` and add `"gm": true` to your account object, then start
+`server/data/contas.json` and add `"gm": true` to your account object, then start
 the server again:
 
 ```json
@@ -130,6 +130,6 @@ host, append `?servidor=ws://host:5190` to the URL.
 
 ## What NOT to commit
 
-`server/dados/` holds live accounts, saves, admin logs, and backups. It is gitignored
+`server/data/` holds live accounts, saves, admin logs, and backups. It is gitignored
 on purpose. Never add it to version control or share it — it contains password hashes
 and email addresses.

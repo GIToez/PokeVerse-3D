@@ -76,7 +76,7 @@ is the default.** Players can switch languages from the PT · EN · ES bar on th
 screen, with `?idioma=en|es|pt` in the URL, or from their account settings.
 
 The translation engine lives in [`i18n.mjs`](i18n.mjs). It looks up each Portuguese
-source string in a per-language dictionary under `public/data/idioma/` and returns the
+source string in a per-language dictionary under `public/data/locale/` and returns the
 translation, falling back to the original Portuguese when a key is missing. The
 dictionaries are:
 
@@ -98,7 +98,7 @@ index.html            Game client entry point
 admin/                In-browser GM admin panel (map/scenery/data editors)
 public/               Static assets served by Vite
   data/               Game data as JSON (species, moves, map, missions, items, …)
-  data/idioma/        Translation dictionaries (PT/EN/ES)
+  data/locale/        Translation dictionaries (PT/EN/ES)
   scenery/            Map and model .glb files served to the client
 scenery/              Source map .glb files (e.g. kanto.glb)
 sound/                Audio (music, skill sounds, UI)
@@ -110,7 +110,7 @@ docs/                 English documentation (startup, admin, glossary)
 ```
 
 > **Note:** live player data (accounts, saves, admin logs, backups) is stored under
-> `server/dados/` and is **gitignored** — it is never committed. The server recreates
+> `server/data/` and is **gitignored** — it is never committed. The server recreates
 > that directory automatically on first run.
 
 ## Security notes
@@ -118,4 +118,4 @@ docs/                 English documentation (startup, admin, glossary)
 This project is intended to run **locally**. If you ever expose the server publicly,
 review [`docs/SECURITY.md`](docs/SECURITY.md) first: the server sends permissive CORS
 headers, keeps a legacy unsalted-password fallback for old accounts, and relies on you
-not committing the live `server/dados/` directory.
+not committing the live `server/data/` directory.

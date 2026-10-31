@@ -9,7 +9,7 @@
  * Os pontos de saída (rótulos da maquete, Chat.sistema, flutuar, telaEscura, Popup.texto/botao, avisos das telas) chamam
  * o t() — assim as ~140 chamadas com texto montado por concatenação não precisaram mudar.
  *
- * Dicionários: data/idioma/ui_<l>.json (escritos à mão) + data/idioma/nomes_<l>.json (gerados de LanguageConfig_<l> pelo
+ * Dicionários: data/locale/ui_<l>.json (escritos à mão) + data/locale/nomes_<l>.json (gerados de LanguageConfig_<l> pelo
  * tools/idioma_nomes.mjs). Escolha: ?idioma=en|es|pt na URL, a barra PT·EN·ES da tela de login (screens.mjs), o localStorage
  * `idioma` e a conta (POST /conta/idioma; volta no login). Padrão: o idioma do navegador, caindo em pt.
  * Nomes dos Pokémon ficam em inglês em todos os idiomas (decisão do Jaime, 11/09). */
@@ -51,7 +51,7 @@ function montar(dics){
 }
 async function baixar(l, bust = ''){
   if (cache.has(l)) return cache.get(l);
-  const pega = async n => { try { const r = await fetch('./data/idioma/' + n + '_' + l + '.json'); return r.ok ? await r.json() : {}; } catch { return {}; } };
+  const pega = async n => { try { const r = await fetch('./data/locale/' + n + '_' + l + '.json'); return r.ok ? await r.json() : {}; } catch { return {}; } };
   /* PAINEL (Fase 3 → Traduções): data/traducoes.json = [{ pt, en, es }] editado pelo GM — vence tudo (é a correção mais recente). */
   const painel = async () => { try { const r = await fetch('./data/traducoes.json' + bust, { cache: 'no-cache' }); const lista = r.ok ? await r.json() : []; return Object.fromEntries((Array.isArray(lista) ? lista : []).filter(x => x?.pt && typeof x[l] === 'string' && x[l].trim()).map(x => [String(x.pt).trim(), x[l]])); } catch { return {}; } };
   const [ui, conteudo, nomes, doPainel] = await Promise.all([pega('ui'), pega('conteudo'), pega('nomes'), painel()]);
@@ -66,12 +66,12 @@ export async function recarregar(){
   exatas = d.exatas; padroes = d.padroes;
   return atual;
 }
-/* DESCRIÇÕES DA POKÉDEX (etapa 3): data/idioma/dex_<l>.json, por número da dex, geradas do jogo original pelo
+/* DESCRIÇÕES DA POKÉDEX (etapa 3): data/locale/dex_<l>.json, por número da dex, geradas do jogo original pelo
    tools/idioma_dex.mjs — inclusive em pt (o `d` do dex_extra.json veio da WikiDex em espanhol). Carrega junto com o idioma. */
 let dex = {}; const dexCache = new Map();
 async function baixarDex(l){
   if (dexCache.has(l)) return dexCache.get(l);
-  let d = {}; try { const r = await fetch('./data/idioma/dex_' + l + '.json'); if (r.ok) d = await r.json(); } catch {}
+  let d = {}; try { const r = await fetch('./data/locale/dex_' + l + '.json'); if (r.ok) d = await r.json(); } catch {}
   dexCache.set(l, d); return d;
 }
 /** Descrição da espécie `n` (número da dex) no idioma atual, ou null se ainda não carregou / não houver. */

@@ -78,7 +78,7 @@ export const ESQUEMAS_F3 = {
   },
   traducoes: {
     titulo: 'Traduções (EN/ES)', arquivo: 'traducoes', forma: 'lista', id: 'pt', recarga: 'vivo',
-    descricao: 'O jogo é escrito em português e traduz na hora pro inglês/espanhol do jogador. Cada linha: o texto em português exatamente como aparece e a tradução. {x} casa com qualquer trecho (ex.: "Você chegou em {x}." → "You arrived in {x}."). Estas vencem os dicionários de data/idioma/. O jogo aberto aplica na hora.',
+    descricao: 'O jogo é escrito em português e traduz na hora pro inglês/espanhol do jogador. Cada linha: o texto em português exatamente como aparece e a tradução. {x} casa com qualquer trecho (ex.: "Você chegou em {x}." → "You arrived in {x}."). Estas vencem os dicionários de data/locale/. O jogo aberto aplica na hora.',
     validar: traducaoCasa,
     campos: [
       { k: 'pt', rotulo: 'Português (como aparece no jogo)', tipo: 'texto', max: 400, col: true, obrigatorio: true, area: true },

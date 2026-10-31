@@ -11,5 +11,3 @@ fairy_map.obj
 # Live server data (accounts, saves, admin logs, backups) — never commit.
 # The server recreates this directory on first run.
 server/data/
-server/dados/
-servidor/dados/

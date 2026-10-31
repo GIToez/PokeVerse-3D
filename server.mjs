@@ -4,7 +4,7 @@
  *
  * Uso: node server.mjs
  *
- * Persistência em servidor/dados/contas.json (criado automaticamente).
+ * Persistência em server/data/contas.json (criado automaticamente).
  * Suporta login, cadastro, save/load, multiplayer básico (posições, chat,
  * captura de Pokémon, cura no Centro Pokémon).
  */
@@ -22,7 +22,7 @@ import { criarRecursos } from './server_resources.mjs';             // Fase 3: l
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
-const DADOS = nodePath.join(__dir, 'server/dados');
+const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
 
 const VERSAO_REDE = 15;   // deve bater com network.mjs
@@ -342,7 +342,7 @@ function usuarioDe(req) {
 
 // ── Painel admin (/admin, servido pelo Vite) ─────────────────────────────────
 /* Só conta GM. Edita os arquivos de dados que o JOGO lê (public/data/*.json, servidos pelo Vite), com cópia de segurança em
-   servidor/dados/backups/ antes de cada gravação (fica com as 30 últimas de cada arquivo). Tudo que chega é LIMPO aqui. */
+   server/data/backups/ antes de cada gravação (fica com as 30 últimas de cada arquivo). Tudo que chega é LIMPO aqui. */
 const DADOS_PUB = nodePath.join(__dir, 'public/data');
 const MODELOS_DIR = nodePath.join(__dir, 'public/scenery/mon');
 const BACKUPS = nodePath.join(DADOS, 'backups');
@@ -459,7 +459,7 @@ function limparTime(c, d) {
   return { time: t.lista, caixa: cx.lista };
 }
 function lerJson(arq, padrao) { try { return JSON.parse(fs.readFileSync(arq, 'utf8')); } catch { return padrao; } }
-/* Cópia do arquivo atual em servidor/dados/backups/ antes de sobrescrever. Nomes: <base>-<data>.json e <base>-glb-<data>.glb.
+/* Cópia do arquivo atual em server/data/backups/ antes de sobrescrever. Nomes: <base>-<data>.json e <base>-glb-<data>.glb.
    Mantém os 30 últimos de cada JSON e os 8 últimos de cada GLB (é grande). A limpeza do JSON ignora os "-glb-" do mesmo nome
    (antes, salvar o JSON do pallet_rota1 podia apagar os backups do GLB dele). */
 const RE_BACKUP = /^(\w+?)-(glb-)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)\.(json|glb)$/;

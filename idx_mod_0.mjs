@@ -81,7 +81,7 @@ import * as Arrastar from './drag_team.mjs';   // 20/09: arrastar pra reordenar 
 /* DIAGNÓSTICO DO BOOT (12/09): o celular entrava na porta do laboratório no site e ficava "só a cena e os menus antigos",
    sem console pra olhar — e o servidor só via a página recarregar em série sem conectar. Cada ETAPA do boot (só em tela de
    toque, ou `?diag=1`) e qualquer ERRO / promessa rejeitada sem tratamento (de qualquer aparelho, no máximo 12 por carga)
-   vão em `POST /conta/boot`; o servidor escreve no console e em servidor/dados/boot.log. Assim dá pra ver de longe ONDE o
+   vão em `POST /conta/boot`; o servidor escreve no console e em server/data/boot.log. Assim dá pra ver de longe ONDE o
    boot parou e COM QUE ERRO. `?rede=0` / `?conta=0` desligam. Fica no topo, antes de tudo, pra pegar até erro cedo. */
 const __boot = (() => {
   const p = new URLSearchParams(location.search), t0 = performance.now();

@@ -156,7 +156,7 @@ admin schemas.
 | `public/scenery/`         | `public/cenario/`| Maps and models served to the client |
 | `sound/`                  | `som/`           | Audio (music, skill sounds, UI) |
 | `particles/`              | `particulas/`    | Particle meshes and textures    |
-| `server/`                 | `servidor/`      | Server-side folder (live data under `server/dados/`) |
+| `server/`                 | `servidor/`      | Server-side folder (live data under `server/data/`) |
 | `ui/`                     | —                | UI art, icons, minimap          |
 | `vendor/three/`           | —                | Bundled Three.js                |
 
