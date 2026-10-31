@@ -83,9 +83,18 @@ grant GM to your own account once. Two options:
 **Option A — promote via another GM.** If an account is already a GM, it can promote
 others from the admin panel (**Players → Role → GM**).
 
-**Option B — bootstrap the first GM manually.** With the server **stopped**, edit
-`server/data/contas.json` and add `"gm": true` to your account object, then start
-the server again:
+**Option B — bootstrap the first GM.** Stop the server (Ctrl+C), then run:
+
+```bash
+node tools/make_gm.mjs your_username
+```
+
+Start the server again and log in. Run it with `--remove` to take the flag away. The
+server must be stopped first: it keeps accounts in memory and rewrites the file when it
+exits, which would undo the change.
+
+To do it by hand instead, with the server **stopped**, edit `server/data/contas.json`
+and add `"gm": true` to your account object:
 
 ```json
 {
