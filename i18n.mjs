@@ -29,7 +29,7 @@ export function doNavegador(){
 export function detectar(url = null){
   if (url && IDIOMAS[url]) return url;
   try { const v = localStorage.getItem(LS); if (IDIOMAS[v]) return v; } catch {}
-  return doNavegador();
+  return 'en';   // English is the primary language; PT/ES stay selectable (login bar, ?idioma=, saved choice).
 }
 function compilar(chave, valor){
   const partes = chave.split(/(\{\w+\})/); let re = '^'; const vars = [];
@@ -81,7 +81,7 @@ export const dexPronto = () => dexCache.has(atual);
 export async function carregarDex(){ dex = await baixarDex(atual); return dex; }
 /** Carrega o idioma e passa a usá-lo. Devolve o idioma que ficou (cai em pt se o dicionário não vier). */
 export async function carregar(l){
-  if (!IDIOMAS[l]) l = 'pt';
+  if (!IDIOMAS[l]) l = 'en';
   dex = dexCache.get(l) || {};
   if (l === 'pt'){ atual = 'pt'; exatas = new Map(); padroes = []; document.documentElement.lang = 'pt-BR'; return atual; }
   const d = await baixar(l);
