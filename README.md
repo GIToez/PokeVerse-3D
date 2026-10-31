@@ -44,7 +44,9 @@ On Windows you can double-click **`Ligar jogo.bat`**, which installs dependencie
 needed, starts both the server and the client, and opens the browser for you.
 
 For a detailed walkthrough (creating an account, becoming a GM, opening the admin
-panel, and troubleshooting), see **[`docs/STARTUP.md`](docs/STARTUP.md)**.
+panel, and troubleshooting), see **[`docs/STARTUP.md`](docs/STARTUP.md)**. To host it on
+a VPS (nginx, HTTPS, systemd, next to other game servers), see
+**[`docs/HOSTING.md`](docs/HOSTING.md)**.
 
 ## Scripts
 

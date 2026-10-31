@@ -305,6 +305,14 @@ try {
 } catch (e) { console.warn('pokedex.json não carregado (validação de espécie desligada):', e.message); }
 function especieValida(dex) { return !ESPECIES_OK || ESPECIES_OK.has(+dex); }   // sem o arquivo, não bloqueia (fail-open no dev)
 // Rate-limit simples por IP (em memória; zera ao reiniciar).
+/* Behind a reverse proxy on the same machine (nginx → 127.0.0.1:5190) every request comes from loopback, so the real client
+   IP is taken from X-Forwarded-For — but only when the connection itself is local, so remote clients can't spoof it. */
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+function ipDe(req) {
+  const a = req.socket.remoteAddress;
+  const f = LOOPBACK.has(a) && req.headers['x-forwarded-for'];
+  return f ? String(f).split(',')[0].trim() : a;
+}
 const _tentativas = new Map();
 function limitado(ip, chave, max, janelaMs) {
   const k = chave + '|' + (ip || '?'), agora = Date.now();
@@ -574,8 +582,8 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Diagnóstico de boot + erros do cliente ────────────────────────────
     if (req.method === 'POST' && (rota === '/conta/boot' || rota === '/conta/log')) {
-      if (limitado(req.socket.remoteAddress, 'log', 60, 60000)) return json(429, { ok: false });   // nº17: freia flood de log por IP
-      const linha = JSON.stringify({ ...d, _t: new Date().toISOString(), _ip: req.socket.remoteAddress }) + '\n';
+      if (limitado(ipDe(req), 'log', 60, 60000)) return json(429, { ok: false });   // nº17: freia flood de log por IP
+      const linha = JSON.stringify({ ...d, _t: new Date().toISOString(), _ip: ipDe(req) }) + '\n';
       try { fs.appendFileSync(nodePath.join(DADOS, 'client.log'), linha); } catch {}
       if (d.tipo === 'erro' || d.tipo === 'rejeicao')
         console.warn('[client]', d.usuario || '?', d.tipo, d.msg?.slice(0, 120));
@@ -599,7 +607,7 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Cadastro ──────────────────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/criar') {
-      if (limitado(req.socket.remoteAddress, 'criar', 5, 60000)) return json(429, { erro: 'Muitas contas criadas desse IP. Espere um minuto.' });
+      if (limitado(ipDe(req), 'criar', 5, 60000)) return json(429, { erro: 'Muitas contas criadas desse IP. Espere um minuto.' });
       const u = String(d.usuario || '').toLowerCase().trim();
       if (!u || u.length < 3) return json(400, { erro: 'Nome de usuário muito curto (mínimo 3 letras).' });
       if (!/^[a-z0-9_]{3,20}$/.test(u)) return json(400, { erro: 'Use apenas letras, números e _ (3–20 caracteres).' });
@@ -614,7 +622,7 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Login ─────────────────────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/entrar') {
-      if (limitado(req.socket.remoteAddress, 'entrar', 10, 60000)) return json(429, { erro: 'Muitas tentativas. Espere um minuto.' });
+      if (limitado(ipDe(req), 'entrar', 10, 60000)) return json(429, { erro: 'Muitas tentativas. Espere um minuto.' });
       const u = String(d.usuario || '').toLowerCase().trim();
       const c = contas[u];
       if (!c || !conferirSenha(d.senha || '', c.senha)) return json(401, { erro: 'Usuário ou senha incorretos.' });
@@ -631,7 +639,7 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Recuperação de senha ───────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/recuperar') {
-      if (limitado(req.socket.remoteAddress, 'recuperar', 5, 60000)) return json(429, { erro: 'Muitas tentativas. Espere um minuto.' });
+      if (limitado(ipDe(req), 'recuperar', 5, 60000)) return json(429, { erro: 'Muitas tentativas. Espere um minuto.' });
       const u = String(d.usuario || '').toLowerCase().trim();
       const c = contas[u];
       if (!c) return json(400, { erro: 'Usuário não encontrado.' });
@@ -1330,7 +1338,7 @@ wss.on('connection', ws => {
   ws.on('error', () => {});
 });
 
-httpServer.listen(5190, () => {
+httpServer.listen(5190, process.env.HOST || undefined, () => {   // HOST=127.0.0.1 behind a reverse proxy; unset = all interfaces (LAN dev)
   console.log('');
   console.log('╔═══════════════════════════════════════╗');
   console.log('║  Pokemon 3D Base — Servidor Dev     ║');
