@@ -28,19 +28,19 @@ const semBr = s => String(s || '').replace(/<br\s*\/?>/gi, ' ');        // descr
 const CAT_CURTA = { 'Itens transportados': 'Transportado', 'Máquina Técnica': 'MT', 'Chamando a Pedra': 'Pedra', 'Edifícios do Habitat': 'Habitat', 'Materiais do Habitat': 'Habitat', 'Comida do Habitat': 'Habitat', 'Sementes do Habitat': 'Habitat' };
 const catCurta = s => CAT_CURTA[s] || s;                                  // o selo de categoria do detalhe do item (v2) é [max:12]
 export const JANELAS = {
-  pokemon:   { titulo: 'Pokémon', icone: 'pokebola', tecla: 'KeyP', sub: 'time e caixa' },
-  mochila:   { titulo: 'Mochila', icone: 'mochila', tecla: 'KeyI', sub: 'itens e bolas' },
-  missoes:   { titulo: 'Missões', icone: 'missoes', tecla: 'KeyJ', sub: 'a jornada por Kanto' },
-  mapa:      { titulo: 'Mapa', icone: 'mapa', tecla: 'KeyK', sub: 'Kanto' },
-  pokedex:   { titulo: 'Pokédex', icone: 'pokedex', tecla: 'KeyX', sub: 'vistos e capturados' },
-  treinador: { titulo: 'Treinador', icone: 'personagem', tecla: 'KeyU', sub: 'insígnias, dinheiro' },
-  loja:      { titulo: 'Loja', icone: 'loja', sub: 'em breve', breve: true },   // PREMIUM (GDD §7.5: doação → Medalhão trocável, cosméticos) — só "em breve" até o servidor; o Pokémart é outra janela
-  mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'itens em Moedas', oculto: true },  // só pelo vendedor da loja da cidade (NPC papel 'loja'): não fica no menu
-  social:    { titulo: 'Social', icone: 'amigos', sub: 'chat, amigos, correio', breve: true },
-  batalha:   { titulo: 'Batalha', icone: 'batalha', sub: 'PvP, ranking', breve: true },
-  config:    { titulo: 'Configurações', icone: 'ajuda', tecla: 'KeyO', sub: 'som, gráficos, HUD' },
-  atalho:    { titulo: 'Atalho', icone: 'mochila', sub: 'poções, bolas, montarias', oculto: true },   // seletor dos atalhos 5–8 (não aparece na grade)
-  raid:      { titulo: 'Raid', icone: 'batalha', sub: 'raid ao vivo', oculto: true },   // rodada 26: banner da raid ao vivo — só abre pelo btn-raid do HUD (raid_ui.mjs)
+  pokemon:   { titulo: 'Pokémon', icone: 'pokebola', tecla: 'KeyP', sub: 'party and box' },
+  mochila:   { titulo: 'Bag', icone: 'mochila', tecla: 'KeyI', sub: 'items and balls' },
+  missoes:   { titulo: 'Missions', icone: 'missoes', tecla: 'KeyJ', sub: 'the journey through Kanto' },
+  mapa:      { titulo: 'Map', icone: 'mapa', tecla: 'KeyK', sub: 'Kanto' },
+  pokedex:   { titulo: 'Pokédex', icone: 'pokedex', tecla: 'KeyX', sub: 'seen and caught' },
+  treinador: { titulo: 'Trainer', icone: 'personagem', tecla: 'KeyU', sub: 'badges, money' },
+  loja:      { titulo: 'Shop', icone: 'loja', sub: 'coming soon', breve: true },   // PREMIUM (GDD §7.5: doação → Medalhão trocável, cosméticos) — só "em breve" até o servidor; o Pokémart é outra janela
+  mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },  // só pelo vendedor da loja da cidade (NPC papel 'loja'): não fica no menu
+  social:    { titulo: 'Social', icone: 'amigos', sub: 'chat, friends, mail', breve: true },
+  batalha:   { titulo: 'Battle', icone: 'batalha', sub: 'PvP, ranking', breve: true },
+  config:    { titulo: 'Settings', icone: 'ajuda', tecla: 'KeyO', sub: 'sound, graphics, HUD' },
+  atalho:    { titulo: 'Shortcut', icone: 'mochila', sub: 'potions, balls, mounts', oculto: true },   // seletor dos atalhos 5–8 (não aparece na grade)
+  raid:      { titulo: 'Raid', icone: 'batalha', sub: 'live raid', oculto: true },   // rodada 26: banner da raid ao vivo — só abre pelo btn-raid do HUD (raid_ui.mjs)
 };
 const ORDEM = Object.keys(JANELAS);
 
@@ -212,7 +212,7 @@ function timeAtual(){
 function fichaHtml(e){
   const S = ctx.porDex.get(e.dex); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>sem dados na pokédex</small></div>`;
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
-  const nomes = ['HP', 'Ataque', 'Defesa', 'At. Esp.', 'Def. Esp.', 'Velocidade'];
+  const nomes = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
   const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));   // IV + natureza do indivíduo
   const nat = ctx.Ind?.natureza(e.natureza), seta = i => !nat || nat[1] === nat[2] ? '' : i === nat[1] ? ' <span class="mais">▲</span>' : i === nat[2] ? ' <span class="menos">▼</span>' : '';
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);   // golpes do indivíduo (PP) ou, sem registro, os da espécie
@@ -479,7 +479,7 @@ function encherPokemon(pop){
     if (!p) continue;
     const tipo = S?.types?.[0] || null;
     Popup.texto(pop, 'item-nome', (p.shiny ? '✨ ' : '') + p.nome, it);   // shiny (14/09)
-    Popup.texto(pop, 'item-status', p.seguindo ? 'Seguindo' : p.hp === 0 ? 'Desmaiado' : '', it);
+    Popup.texto(pop, 'item-status', p.seguindo ? 'Following' : p.hp === 0 ? 'Fainted' : '', it);
     Popup.texto(pop, 'item-nivel', 'Lv ' + p.lv + ' · Nº ' + String(p.dex).padStart(3, '0'), it);
     Popup.badge(pop, 'item-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), it);   // 14/09 (l.neto): os dois tipos no mesmo selo (ícone/cor do primeiro)
     alinharTiposDoTime(pop, it, (S?.types || []).length);                // 18/09: 1 tipo na ponta direita, 2 tipos lado a lado, em toda linha
@@ -507,7 +507,7 @@ function encherFichaPokemon(pop, e, lista){
     Popup.badge(pop, 'ficha-tipo', null, null, f);
     Popup.imagem(pop, 'pokemon', null, f);
     for (let i = 0; i < 4; i++){ Popup.golpeVazio(pop, i, true); const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (no){ no.style.pointerEvents = ''; no.style.cursor = ''; } }
-    Popup.botao(pop, 'evoluir', false, '✦ Evoluir'); Popup.botao(pop, 'soltar', false, 'Soltar');
+    Popup.botao(pop, 'evoluir', false, '✦ Evolve'); Popup.botao(pop, 'soltar', false, 'Release');
     atualizarReaprender(pop, null);
     return;
   }
@@ -516,7 +516,7 @@ function encherFichaPokemon(pop, e, lista){
   const prox = ctx.expPara?.(e.dex, lv + 1);
   const tipo = S.types?.[0] || null;
   Popup.texto(pop, 'ficha-nome', (e.shiny ? '✨ ' : '') + e.nome, f);   // shiny (14/09)
-  Popup.texto(pop, 'ficha-status', e.seguindo ? 'Seguindo' : e.hp === 0 ? 'Desmaiado' : lv > tetoObed() ? 'No teto' : '', f);
+  Popup.texto(pop, 'ficha-status', e.seguindo ? 'Following' : e.hp === 0 ? 'Fainted' : lv > tetoObed() ? 'At level cap' : '', f);
   Popup.texto(pop, 'ficha-numero', 'Nº ' + String(e.dex).padStart(3, '0') + ' · Lv ' + lv
     + (e.exp != null && prox ? ' · XP ' + e.exp + '/' + prox : '') + (e.amizade != null ? ' · amizade ' + e.amizade : ''), f);
   Popup.badge(pop, 'ficha-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), f);   // 14/09 (l.neto): os dois tipos
@@ -571,9 +571,9 @@ function encherFichaPokemon(pop, e, lista){
         ? '→ ' + ops[0].nome + ': ' + ops[0].regra.texto + (pronta ? '' : ' - ' + (ops[0].falta || 'ainda não'))
         : emBreve ? '→ ' + emBreve.nome + ': ' + emBreve.regra.texto + ' (em breve)' : 'não evolui', f);
   if (evoEl){ evoEl.style.pointerEvents = novo ? 'auto' : ''; evoEl.style.cursor = novo ? 'pointer' : ''; }
-  Popup.botao(pop, 'evoluir', !!pronta && !!e.seguindo, prontas.length > 1 ? '✦ Evoluir (' + prontas.length + ' formas)' : pronta ? '✦ Evoluir → ' + pronta.nome : '✦ Evoluir');
+  Popup.botao(pop, 'evoluir', !!pronta && !!e.seguindo, prontas.length > 1 ? '✦ Evolve (' + prontas.length + ' forms)' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve');
   const podeSoltar = !e.seguindo && lista.length > 1;
-  Popup.botao(pop, 'soltar', podeSoltar, confirmarSoltar === chaveDe(e) ? '✔ Soltar de vez' : 'Soltar');
+  Popup.botao(pop, 'soltar', podeSoltar, confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release');
   atualizarReaprender(pop, e);                                           // 18/09: botão/lista do Reaprender pro Pokémon selecionado
 }
 
@@ -588,7 +588,7 @@ function rMochila(corpo){
   const tiposPresentes = new Set(Object.keys(q).map(id => D.itens[id]?.t).filter(Boolean));
   const ordem = [7, 9, 3, 4, 1, 2, 5, 6, 8, 10, 11, 12, 13, 14, 15];
   const lista = ordem.filter(t => tiposPresentes.has(t)).map(t => ({ id: String(t), nome: D.tipos[t] || ('tipo ' + t) }));
-  const aba = abas(lista.length ? lista : [{ id: '7', nome: 'Pokébola' }]);
+  const aba = abas(lista.length ? lista : [{ id: '7', nome: 'Poké Ball' }]);
   const itens = Object.entries(q).filter(([id]) => String(D.itens[id]?.t) === aba && q[id] > 0);
   const av = avisoMo && Date.now() < avisoMo.ate ? avisoMo : null;         // 17/09: o motivo/resultado do "Usar no parceiro" aparece aqui, não atrás da janela
   const cab = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('pt-BR')} ${esc(D.moedas?.[1] || 'Moeda')}</div>`
@@ -762,7 +762,7 @@ function encherMochila(pop){
     Popup.imagem(pop, 'item', alvo && alvo.it.i ? './ui/itens/' + alvo.it.i + '.png' : null, det);
   } else linhaAvisoMo(pop, av || (alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Toque duas vezes no item pra usar', dica: true } : null));
   const bola = alvo && alvo.it.t === 7;
-  Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), bola ? 'Escolher' : 'Usar');
+  Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), bola ? 'Choose' : 'Use');
   Popup.botao(pop, 'descartar', !!alvo && podeDescartarMo(alvo));
   const lix = pop.querySelector('[data-tagval="descartar"]');
   if (lix) lix.title = alvo && confirmarDescarte === alvo.id ? 'clique de novo pra descartar de vez' : 'descartar o item escolhido';
@@ -774,7 +774,7 @@ function encherMochila(pop){
    com os mesmos ids (defPopup escolhe). */
 let popTr = null, popMa = null, popSo = null, popDx = null;
 const pad3 = n => String(n).padStart(3, '0');
-const NOMES_NIVEL = ['desconhecido', 'Avistado', 'Registrado', 'Estudado', 'Especialista', 'Mestre'];
+const NOMES_NIVEL = ['unknown', 'Seen', 'Registered', 'Studied', 'Specialist', 'Master'];
 /** Pinta as N bolinhas (`ret bolinha`) de um grupo: verde até `n`, cinza depois. */
 function bolinhas(grupo, n, cheia = '#2FAE47', vazia = '#39424E'){
   if (!grupo) return;
@@ -1019,7 +1019,7 @@ async function encherMapa(pop){
   Popup.texto(pop, 'area-nome', nome);
   const proprios = mapaHabitats.areas?.[String(a)] || [];
   const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats.generico || [] : []);
-  Popup.texto(pop, 'area-dica', lista.length ? (proprios.length ? 'Pokémon desta área — de perto eles entram na Pokédex.' : 'Pokémon comuns da região — de perto eles entram na Pokédex.') : 'Sem Pokémon selvagens aqui.');
+  Popup.texto(pop, 'area-dica', lista.length ? (proprios.length ? 'Pokémon of this area — up close they get added to the Pokédex.' : 'Common Pokémon of the region — up close they get added to the Pokédex.') : 'No wild Pokémon here.');
   const d = dexEstado();
   const cels = Popup.celulas(pop, 'lista-pokemons', Math.max(lista.length, 1), 'pokemon');
   cels.forEach((c, i) => {
@@ -1047,7 +1047,7 @@ async function encherMapa(pop){
 let abaSo = 'amigos', soDados = null, soBusca = '', soConversa = null, soMsgs = [], soAmigoMenu = null, soCarregando = false;
 const soLigado = () => ctx.conta?.estado?.().modo === 'conta';
 const soChamar = (metodo, caminho, corpo) => soLigado() ? ctx.conta.chamar(metodo, caminho, corpo) : Promise.resolve({ ok: false, erro: 'Entre com uma conta pra ter amigos e mensagens.' });
-const tempoAtras = ms => { const s = Math.max(0, (Date.now() - ms) / 1000); return s < 90 ? 'agora' : s < 3600 ? Math.round(s / 60) + 'min' : s < 86400 ? Math.round(s / 3600) + 'h' : Math.round(s / 86400) + 'd'; };
+const tempoAtras = ms => { const s = Math.max(0, (Date.now() - ms) / 1000); return s < 90 ? 'now' : s < 3600 ? Math.round(s / 60) + 'min' : s < 86400 ? Math.round(s / 3600) + 'h' : Math.round(s / 86400) + 'd'; };
 const retrato = dex => dex ? './ui/mon/pm' + String(dex).padStart(4, '0') + '.png' : null;
 async function soCarregar(){
   if (!soLigado() || soCarregando) return; soCarregando = true;
@@ -1382,13 +1382,13 @@ async function encherPokedex(pop){
   Popup.texto(pop, 'onde', nv >= 1 ? ((onde.length ? onde.join(', ') : 'não aparece no mato (só troca/evento)') + (noMapa ? ' · ' + noMapa + ' neste mapa agora' : '')) : '?');
   const avS = Popup.grupo(pop, 'aviso-stats'), avG = Popup.grupo(pop, 'aviso-golpes');
   const cadeadoDe = g => { const c = g?.querySelector('[data-var="cadeado"]'); arteExemplo(c); if (c) c.style.display = 'block'; };
-  if (avS){ avS.style.display = nv < 2 ? 'block' : 'none'; cadeadoDe(avS); Popup.texto(pop, 'aviso', 'stats, evolução e fraquezas abrem no nível 2 (capture um)', avS); }
+  if (avS){ avS.style.display = nv < 2 ? 'block' : 'none'; cadeadoDe(avS); Popup.texto(pop, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', avS); }
   if (avG){ const golpes = (X.g || []).length, vistosG = (K?.registro(selDex)?.gl || []).length; avG.style.display = nv < 4 && golpes ? 'block' : 'none'; cadeadoDe(avG); Popup.texto(pop, 'aviso', 'golpes abrem vendo a espécie batalhar (' + vistosG + '/' + golpes + ' do learnset vistos; tudo no nível 4)', avG); }
 }
 
 /* ------------------------------------------------------------------ Missões */
 function rMissoes(corpo){
-  abas([{ id: 'principal', nome: 'Principal' }]);
+  abas([{ id: 'principal', nome: 'Main' }]);
   const M = ctx.missoes;
   if (!M?.pronto?.()){ corpo.innerHTML = '<div class="vazio">As missões ainda estão carregando…</div>'; return; }
   const caps = M.capitulos(), ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
@@ -1465,8 +1465,8 @@ function encherMissoes(pop){
   const ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
   const fa = Popup.grupo(pop, 'missao-ativa');
   Popup.texto(pop, 'capitulo-local', ativa ? 'Capítulo ' + ativa.capitulo + ' · ' + ativa.capNome : '', fa);
-  Popup.texto(pop, 'missao-titulo', ativa ? ativa.nome : 'Você concluiu tudo o que existe por enquanto.', fa);
-  Popup.texto(pop, 'missao-descricao', ativa ? (ativa.des || '') : 'Mais capítulos chegam nas próximas versões.', fa);
+  Popup.texto(pop, 'missao-titulo', ativa ? ativa.nome : "You've completed everything available for now.", fa);
+  Popup.texto(pop, 'missao-descricao', ativa ? (ativa.des || '') : 'More chapters arrive in future versions.', fa);
   const passos = ativa?.passos || [];
   for (let i = 0; i < 4; i++){
     const g = Popup.grupo(pop, 'objetivo-' + (i + 1)); if (!g) continue;
@@ -1580,7 +1580,7 @@ function rMapa(corpo){
     const d = dexEstado();
     const linha = e => { const st = d[e.dex]; const visto = st === 'visto' || st === 'pego';
       return `<div class="m-poke ${visto ? '' : 'sombra'}"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" loading="lazy"><b>${visto ? esc(e.nome) : '???'}</b>${e.agua ? '<small>💧</small>' : ''}${st === 'pego' ? '<small class="pego">✔ pego</small>' : ''}</div>`; };
-    alvo.innerHTML = `<div class="ficha"><h3>${esc(nome)}</h3>${lista.length ? `<div style="color:var(--muted);font-size:11px;margin:4px 0 8px">${proprios.length ? 'Pokémon desta área' : 'Pokémon comuns da região'} — de perto eles entram na Pokédex</div><div class="m-grade">${lista.map(linha).join('')}</div>` : '<div class="vazio" style="padding:14px 6px">Sem Pokémon selvagens aqui.</div>'}</div>`;
+    alvo.innerHTML = `<div class="ficha"><h3>${esc(nome)}</h3>${lista.length ? `<div style="color:var(--muted);font-size:11px;margin:4px 0 8px">${proprios.length ? 'Pokémon of this area' : 'Common Pokémon of the region'} — up close they get added to the Pokédex</div><div class="m-grade">${lista.map(linha).join('')}</div>` : '<div class="vazio" style="padding:14px 6px">No wild Pokémon here.</div>'}</div>`;
   };
   cv.onclick = ev => {
     const r = cv.getBoundingClientRect();
@@ -1800,7 +1800,7 @@ async function mostrarDex(){
     <div class="dex-nivel"><span class="pts" title="${rv ? rv.pontos + ' pontos de conhecimento' : ''}">${'●'.repeat(nv)}${'○'.repeat(5 - nv)}</span> <b>${nomesNivel[nv]}</b>${rv && rv.proximo != null ? ` <small>${rv.pontos}/${rv.proximo} pra ${nomesNivel[nv + 1]}</small>` : nv >= 5 ? ' <small>✨ você sabe tudo sobre a espécie</small>' : ''}${faltaLista.length ? `<div class="dex-falta">pra subir: ${faltaLista.map(esc).join(' · ')}</div>` : ''}</div>
     <div class="dex-visor"></div>
     <div class="dex-rotulos"><span>Normal</span><span id="dex-rotulo-shiny">✨ Shiny</span></div>
-    <div style="color:var(--muted);font-size:11px;text-align:center">${glb ? 'arraste pra girar os dois' : 'sem modelo 3D exportado ainda'}</div>
+    <div style="color:var(--muted);font-size:11px;text-align:center">${glb ? 'drag to rotate both' : 'no 3D model exported yet'}</div>
     ${nv >= 1 ? `
     <div>${(S?.types || []).map(tipoHtml).join('')}</div>
     ${(I18n.descricaoDex(selDex) || X.d) && nv >= 2 ? `<p class="dex-des">${esc(I18n.descricaoDex(selDex) || X.d)}</p>` : ''}
@@ -1828,7 +1828,7 @@ window.__dex = { get view(){ return dexView; }, mostrar: mostrarDex };
 
 /* ------------------------------------------------------------------ Treinador */
 function rTreinador(corpo){
-  abas([{ id: 'ficha', nome: 'Ficha' }]);
+  abas([{ id: 'ficha', nome: 'Profile' }]);
   const t = ctx.lerLS('tempo', 0), h = Math.floor(t / 3600), mi = Math.floor((t % 3600) / 60);
   const d = dexEstado(); const pegos = Object.values(d).filter(v => v === 'pego').length, vistos = Object.keys(d).length;
   const ins = (D.insignias || []).filter(b => b.gen === 1); const tem = new Set(ctx.lerLS('insignias', []));
@@ -1866,7 +1866,7 @@ function rPremium(corpo){
 
 /* ------------------------------------------------------------------ Social / Batalha */
 function rSocial(corpo){
-  const aba = abas([{ id: 'chat', nome: 'Chat' }, { id: 'amigos', nome: 'Amigos' }, { id: 'correio', nome: 'Correio' }]);
+  const aba = abas([{ id: 'chat', nome: 'Chat' }, { id: 'amigos', nome: 'Friends' }, { id: 'correio', nome: 'Mail' }]);
   if (aba === 'chat'){
     corpo.innerHTML = '<div class="chat-janela"></div><div style="color:var(--muted);font-size:11px;margin-top:6px">o mesmo chat da HUD, em tela cheia: Local mostra tudo com etiqueta [G] [T] [H] [S]; /g /t /h /l mudam o canal</div>';
     Chat.montar(corpo.querySelector('.chat-janela'), { compacto: false });
@@ -2073,7 +2073,7 @@ function cfAcao(nome, el){
 const cfDiagTexto = () => { const d = ctx.diagnostico?.(); return d ? Object.entries(d).map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v)).join('\n') : 'indisponível'; };
 async function cfCopiarDiag(){
   const tx = cfDiagTexto();
-  try { await navigator.clipboard.writeText(tx); Popup.botao(popCf, 'copiar-diagnostico', true, 'Copiado!'); setTimeout(() => Popup.botao(popCf, 'copiar-diagnostico', true, 'Copiar'), 2000); }
+  try { await navigator.clipboard.writeText(tx); Popup.botao(popCf, 'copiar-diagnostico', true, 'Copied!'); setTimeout(() => Popup.botao(popCf, 'copiar-diagnostico', true, 'Copy'), 2000); }
   catch { Chat.sistema('Não deu pra copiar sozinho — o texto está aí na caixa, dá pra selecionar.'); }
 }
 /** Apagar progresso: com conta, é o personagem que some (a conta fica); sem conta, é o `apagarTudo` de sempre. */
@@ -2188,7 +2188,7 @@ export function estouPreso(){
   const av = el('div', { minHeight: '16px', color: '#f58e8e', textAlign: 'center', lineHeight: '1.3' }); av.className = 'cf-preso-av';
   const bts = el('div', { display: 'flex', gap: '10px' });
   const ok = document.createElement('button'), nao = document.createElement('button');
-  ok.type = nao.type = 'button'; ok.className = 'ok'; nao.className = 'nao'; ok.textContent = tr('Enviar'); nao.textContent = tr('Cancelar');
+  ok.type = nao.type = 'button'; ok.className = 'ok'; nao.className = 'nao'; ok.textContent = tr('Send'); nao.textContent = tr('Cancel');
   for (const b of [ok, nao]) Object.assign(b.style, { flex: '1', background: '#13254A', border: '1px solid #F8C237', borderRadius: '10px', padding: baixa ? '7px' : '9px', color: '#F8C237', font: 'inherit', cursor: 'pointer' });
   bts.append(ok, nao);
   document.body.appendChild(d); DIALOGOS.add(d);
@@ -2463,7 +2463,7 @@ async function abrirPreviaMochila(){
         if (alvo && podeUsarMo(alvo)) Popup.rotulo(pop, 'item-dica', det); else Popup.texto(pop, 'item-dica', '', det);
         Popup.imagem(pop, 'item', alvo && alvo.it.i ? './ui/itens/' + alvo.it.i + '.png' : null, det);
       } else linhaAvisoMo(pop, alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Toque duas vezes no item pra usar', dica: true } : null);
-      Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), alvo && alvo.it.t === 7 ? 'Escolher' : 'Usar');
+      Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), alvo && alvo.it.t === 7 ? 'Choose' : 'Use');
       Popup.botao(pop, 'descartar', !!alvo && podeDescartarMo(alvo));
     };
     pop = popsPrevia['mochila-cheia'] = Popup.montar(def, {
@@ -2620,8 +2620,8 @@ function encherCfConta(pop){
   Popup.texto(pop, 'jogador-nome', ctx.nome || '—');
   Popup.texto(pop, 'email', comConta ? (cfEmail || 'sem e-mail no cadastro') : '— (jogando sem conta)');
   if (comConta && cfEmail === null) cfBuscarEmail();
-  Popup.botao(pop, 'logout', comConta, 'Sair da conta');
-  Popup.botao(pop, 'trocar-senha', comConta, 'Trocar senha');
+  Popup.botao(pop, 'logout', comConta, 'Log out');
+  Popup.botao(pop, 'trocar-senha', comConta, 'Change password');
   Popup.botao(pop, 'diagnostico-chat', true, 'Mandar pra equipe');        // RELATOS (11/09): era "Mandar pro chat" (só escrevia no chat local)
   cfBotaoPreso(pop);                                                       // ESTOU PRESO (15/09): logo abaixo de Copiar / Mandar pra equipe
   Popup.desligarGrupo(pop, 'btn-sair', comConta, 'você está jogando sem conta');
@@ -2695,7 +2695,7 @@ function encherCfControles(pop){
     Popup.texto(pop, 'tecla', tecla, g);
     if (CF_DICA_TECLA[id]) g.title = tr(CF_DICA_TECLA[id]);
   }
-  Popup.seletor(pop, 'seletor-lado-joystick', 'Esquerda');
+  Popup.seletor(pop, 'seletor-lado-joystick', 'Left');
   Popup.ajuste(pop, 'ajuste-tamanho-joystick', 0.5, 'Normal');
   Popup.ajuste(pop, 'ajuste-tamanho-botoes', 0.5, 'Normal');              // rodada 25: coluna Celular (ainda não ajustável)
   Popup.toggle(pop, 'toggle-vibracao', false);                             // o jogo não vibra (navigator.vibrate não é usado)
@@ -2704,12 +2704,12 @@ function encherCfControles(pop){
 function encherCfSocial(pop){
   Popup.toggle(pop, 'toggle-filtro-chat', false);
   Popup.toggle(pop, 'toggle-status-online', true);
-  Popup.seletor(pop, 'seletor-quem-mensagem', 'Todos');
-  Popup.seletor(pop, 'seletor-quem-convida', 'Todos');
+  Popup.seletor(pop, 'seletor-quem-mensagem', 'All');
+  Popup.seletor(pop, 'seletor-quem-convida', 'All');
   Popup.seletor(pop, 'seletor-fonte-chat', 'Normal');
 }
 function rConfig(corpo){
-  abas([{ id: 'geral', nome: 'Geral' }]);
+  abas([{ id: 'geral', nome: 'General' }]);
   const p = new URLSearchParams(location.search);
   const vol = ctx.lerLS('volume', 100);
   corpo.innerHTML = `<div class="config">
@@ -2789,7 +2789,7 @@ function rConfig(corpo){
      (`atalhos`), que esta cópia não tem — 27/10: sem o fetch (só dava 404), os botões ficam escondidos como já ficavam sem a lista. */
   for (const sel of ['#c-hud', '#c-galeria', '#c-bancada']){ const b = corpo.querySelector(sel); if (b) b.style.display = 'none'; }
   const ap = corpo.querySelector('#c-apagar');
-  ap.onclick = () => { if (!confirmarApagar){ confirmarApagar = true; ap.textContent = 'Tem certeza? Clique de novo'; setTimeout(() => { confirmarApagar = false; ap.textContent = 'Apagar progresso'; }, 4000); return; } apagarTudo(); };   // Jaime (31/08): reinicia TUDO (missões, Centro, abertura, personagem…) pra testar do zero; só preferências do aparelho ficam
+  ap.onclick = () => { if (!confirmarApagar){ confirmarApagar = true; ap.textContent = 'Are you sure? Click again'; setTimeout(() => { confirmarApagar = false; ap.textContent = 'Delete progress'; }, 4000); return; } apagarTudo(); };   // Jaime (31/08): reinicia TUDO (missões, Centro, abertura, personagem…) pra testar do zero; só preferências do aparelho ficam
 }
 /** Apagar progresso = conta nova: limpa localStorage/sessionStorage inteiros, menos o layout da HUD e preferências de
     aparelho (hud.*, volume, tamanhos), e recarrega numa URL limpa (sem mapa/chegada/intro): criação de personagem →
