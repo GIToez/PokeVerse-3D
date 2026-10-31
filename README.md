@@ -1,10 +1,15 @@
 # PokeVerse-3D
 
 A 3D Pokémon game that runs in the browser, built with [Three.js](https://threejs.org/).
-It recreates the **Kanto** region as a continuous 3D world with a turn-based battle
-system, wild encounters and catching, flying mounts, gyms and badges, live GM-run
-raids and events, guilds, trading, and a full in-browser **GM admin panel** for editing
+It recreates the **Kanto** region as a continuous 3D world with real-time wild battles
+and catching, turn-based trainer and gym battles, mounts, badges, story missions, live
+GM-run raids and events, trading, and a full in-browser **GM admin panel** for editing
 the map and game data.
+
+> **What's actually in here:** see **[`docs/AUDIT.md`](docs/AUDIT.md)** for the complete
+> inventory (248 Pokémon with 3D models, every location, every system and its status) and
+> the known gaps. Most importantly, trainer/gym battles don't work for logged-in players
+> on the bundled server.
 
 The game has a small **Node.js server** (HTTP + WebSocket) that handles accounts,
 saves, multiplayer, and the admin editors, and a **Vite** dev client that serves the
@@ -75,10 +80,13 @@ The game ships with Portuguese (the source language), English, and Spanish. **En
 is the default.** Players can switch languages from the PT · EN · ES bar on the login
 screen, with `?idioma=en|es|pt` in the URL, or from their account settings.
 
-The translation engine lives in [`i18n.mjs`](i18n.mjs). It looks up each Portuguese
-source string in a per-language dictionary under `public/data/locale/` and returns the
-translation, falling back to the original Portuguese when a key is missing. The
-dictionaries are:
+The translation engine lives in [`i18n.mjs`](i18n.mjs). English is the source language:
+text that has been rewritten in English is shown as-is in English and translated to
+Portuguese by the `*_pt.json` dictionaries. Text not yet rewritten is still Portuguese in
+the code and is translated to English by the `*_en.json` dictionaries. After editing any
+`*_en.json`, run `node tools/locale_invert.mjs` to regenerate the `*_pt.json` files. To
+move a JSON file's display text to English, run
+`node tools/locale_english_source.mjs <file.json>`. The dictionaries are:
 
 - `ui_<lang>.json` — UI, menus, HUD, and system messages
 - `conteudo_<lang>.json` — missions, gyms, and other content text
@@ -93,7 +101,8 @@ Portuguese codebase.
 ```
 server.mjs            Game server entry point (HTTP + WebSocket, port 5190)
 server_*.mjs          Server modules: moderation, events, raids, resources
-index.html            Game client entry point
+index.html            Game client entry point, including the main game code (inline module)
+idx_mod_0.mjs         Older unused copy of index.html's inline module — don't edit
 *.mjs                 Client game modules (battle, world, HUD, menus, networking, …)
 admin/                In-browser GM admin panel (map/scenery/data editors)
 public/               Static assets served by Vite
@@ -106,7 +115,7 @@ particles/            Particle meshes and textures
 ui/                   UI art, icons, minimap
 vendor/three/         Bundled Three.js build and examples
 tools/                Helper scripts
-docs/                 English documentation (startup, admin, glossary)
+docs/                 English documentation (startup, admin, glossary, audit)
 ```
 
 > **Note:** live player data (accounts, saves, admin logs, backups) is stored under
