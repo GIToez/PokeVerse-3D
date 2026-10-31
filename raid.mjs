@@ -9,7 +9,7 @@
  *   Raid.instalar(ctx)          — ctx: { mapa, enviar, Chat, Som, emArena(), navegando(), ativarArena(id), desativarArena(),
  *                                         irParaCena({ mapa, chegada, texto, raid }), sairDaArena(texto), nomeItem(id) }   (o index.html monta)
  *   Raid.montarUI({ Hud, Menus, I18n }) — 1× depois do HUD/menus montados: instala o raid_ui.mjs e repassa o último estado
- *   Raid.receber(m)             — rede.mjs roteia `raid`, `raid_ir`, `raid_voltar`, `raid_fim`
+ *   Raid.receber(m)             — network.mjs roteia `raid`, `raid_ir`, `raid_voltar`, `raid_fim`
  *   Raid.chefe(info|null)       — barra de vida do chefe (o index chama no `selvagem`/`shp`/`sumiu` do Mundo)
  *   Raid.carimbo()/carimbar(id)/apagarCarimbo() · Raid.arenaNoBoot(mapa) — o carimbo `sessionStorage['raid.ativa']`
  *
@@ -178,7 +178,7 @@ function aoVoltar(m){
   ctx.irParaCena?.({ mapa: m.mapa || null, texto: 'Voltando pra onde você estava…' });
 }
 
-/* Resultado: a bolsa, as vidas e o save já foram aplicados pelo rede.mjs (como em toda mensagem do servidor); aqui é o aviso. */
+/* Resultado: a bolsa, as vidas e o save já foram aplicados pelo network.mjs (como em toda mensagem do servidor); aqui é o aviso. */
 function aoFim(m){
   const p = m.premio || null;
   let texto;

@@ -18,10 +18,10 @@ import { fileURLToPath } from 'url';
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MODELOS = ['Boy_012', 'Boy_013', 'Boy_014', 'Boy_015', 'Boy_016', 'Boy_017', 'Boy_018', 'Boy_020', 'Boy_021', 'Boy_022',
   'Girl_010', 'Girl_012', 'Girl_013', 'Girl_014', 'Girl_015', 'Girl_016', 'Girl_017', 'Girl_018', 'Girl_019', 'Girl_020', 'Girl_021'];
-/** modelo → canal do CORPO → [chave da parte, rótulo]. A chave casa com as paletas do personagem.mjs (cabelo, roupa, roupa2).
+/** modelo → canal do CORPO → [chave da parte, rótulo]. A chave casa com as paletas do character.mjs (cabelo, roupa, roupa2).
     Conferido em 27/10 pintando cada canal de uma cor de sonda (vermelho/azul/verde) ao lado do original. Vários canais pintam
     mais de uma peça (a máscara do jogo original junta, ex.: cabelo e jaqueta) — o rótulo diz tudo o que muda.
-    Rótulo de até ~15 letras: a linha de cor da tela de criação (telas_personagem.mjs) corta o resto. */
+    Rótulo de até ~15 letras: a linha de cor da tela de criação (screens_character.mjs) corta o resto. */
 const NOMES = {
   Boy_012: { G: ['cabelo', 'cabelo e blusa'], B: ['roupa', 'estampa'] },
   Boy_013: { R: ['cabelo', 'cabelo e jaqueta'], G: ['roupa', 'boina'], B: ['roupa2', 'calça'] },

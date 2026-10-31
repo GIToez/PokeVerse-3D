@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- os módulos do jogo que o painel reaproveita (personagem.mjs, tinta.mjs) buscam './cenario/…' e './data/…' relativos à página:
+<!-- os módulos do jogo que o painel reaproveita (character.mjs, paint.mjs) buscam './cenario/…' e './data/…' relativos à página:
      com a base na raiz isso vale tanto em /admin quanto em /admin/index.html -->
 <base href="/">
 <title>Admin — Pokemon 3D Base</title>
@@ -147,7 +147,7 @@ table.dados tr.atual td { background: #23304a; }
 .j-mons td button { padding: 3px 7px; margin-left: 2px; }
 .j-codigo { margin-top: 10px; padding: 8px; border: 1px dashed var(--acento); border-radius: 8px; }
 .j-codigo code { font-size: 15px; color: var(--acento); }
-/* prévia 3D da skin (admin/previa_skin.mjs — o palco é o mesmo da tela de criação do jogo) */
+/* prévia 3D da skin (admin/preview_skin.mjs — o palco é o mesmo da tela de criação do jogo) */
 .previa-skin { position: relative; }
 .previa-skin .palco { position: relative; height: 260px; border-radius: 10px; cursor: grab; touch-action: pan-y; background: radial-gradient(ellipse at 50% 90%, #4a3d1a 0, #1b2238 62%); }
 .previa-skin .palco:not(.pronto)::after { content: '…'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--fraco); font-size: 26px; }
@@ -157,7 +157,7 @@ table.dados tr.atual td { background: #23304a; }
 .previa-cores { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 8px; }
 .previa-cores .cor { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--texto); }
 .previa-cores input[type=color] { width: 30px; height: 24px; border: 0; padding: 0; background: none; cursor: pointer; }
-/* camadas do mapa (admin/camadas.mjs) */
+/* camadas do mapa (admin/layers.mjs) */
 #c-painel h4 { margin: 4px 0 8px; font-size: 14px; }
 .c-legenda { font-size: 11px; color: var(--fraco); margin-top: 8px; line-height: 1.6; }
 .aviso-c { color: #ffb35c; font-size: 12px; }
@@ -332,7 +332,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
       </div>
     </section>
 
-    <!-- DADOS DO JOGO: editor genérico guiado por esquema (admin/esquemas.mjs) -->
+    <!-- DADOS DO JOGO: editor genérico guiado por esquema (admin/schemas.mjs) -->
     <section id="v-dados" class="vista" hidden>
       <div class="col-esq" id="d-lista"></div>
       <div class="col-dir" id="d-edit"><div class="caixa fraco">Escolha um arquivo à esquerda.</div></div>
@@ -341,7 +341,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
     <!-- HISTÓRICO: backups gravados a cada salvamento; restaurar um volta o arquivo àquela versão -->
     <section id="v-historico" class="vista" hidden></section>
 
-    <!-- JOGADORES (admin/jogadores.mjs): contas, quem está online, bolsa, time, cargo e moderação -->
+    <!-- JOGADORES (admin/players.mjs): contas, quem está online, bolsa, time, cargo e moderação -->
     <section id="v-jogadores" class="vista" hidden>
       <div class="col-esq">
         <div class="topo-edit"><input type="search" id="j-busca" placeholder="buscar usuário, nome ou e-mail…" style="flex:1"><button id="j-recarregar" title="Atualizar">↻</button></div>
@@ -353,7 +353,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
       <datalist id="dl-itens"></datalist>
     </section>
 
-    <!-- EVENTOS AO VIVO (admin/eventos.mjs, Fase 3): EXP/shiny/densidade, aviso global, manutenção -->
+    <!-- EVENTOS AO VIVO (admin/events.mjs, Fase 3): EXP/shiny/densidade, aviso global, manutenção -->
     <section id="v-eventos" class="vista" hidden></section>
 
     <!-- CONTEÚDO (admin/conteudo*.mjs, Fase 2): telas próprias, montadas no 1º clique -->

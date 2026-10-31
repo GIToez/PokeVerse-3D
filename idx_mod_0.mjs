@@ -2,36 +2,36 @@
 // (banner removido)
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import './glb_sem_blob.mjs';                     // texturas dos .glb sem URL blob: (sem as centenas de "blob:" quebrados no F12)
+import './glb_no_blob.mjs';                     // texturas dos .glb sem URL blob: (sem as centenas de "blob:" quebrados no F12)
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import * as Part from './particulas.mjs';       // partículas dos golpes, reconstruídas do jogo
-import * as Diretor from './diretor.mjs';       // modo diretor (?diretor=1): monta a cena e grava com o OBS
-import * as Captura from './captura.mjs';       // modo captura (?captura=1): cena de TikTok jogando de verdade, selvagens escolhidos
-import * as Conhecimento from './conhecimento.mjs';   // Pokédex de conhecimento: nível por espécie, colecionador, títulos (LS `conhecimento`)
-import * as Som from './som.mjs';               // sons do jogo (Web Audio)
-import * as Gravador from './gravador.mjs';
-// import * as Nav from './navegacao.mjs';   // desligado (27/10): ver Nav.instalar() lá embaixo
-import * as Rede from './rede.mjs';                // fase 1 da rede: presença (outros jogadores na cena) e chat de verdade (servidor/servidor.mjs)
-import * as Conta from './conta.mjs';              // fase 2 da rede: conta (usuário + senha) e save no servidor (servidor/contas.mjs)
-import * as Troca from './troca.mjs';              // fase 4 da rede: mesa de troca de Pokémon (o servidor move; servidor/trade.mjs)
-import * as Mundo from './mundo.mjs';              // fase 3a da rede: selvagens compartilhados — o servidor decide quem nasce/shiny/captura (servidor/mundo.mjs)
+import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
+import * as Diretor from './director.mjs';       // modo diretor (?diretor=1): monta a cena e grava com o OBS
+import * as Captura from './capture.mjs';       // modo captura (?captura=1): cena de TikTok jogando de verdade, selvagens escolhidos
+import * as Conhecimento from './knowledge.mjs';   // Pokédex de conhecimento: nível por espécie, colecionador, títulos (LS `conhecimento`)
+import * as Som from './sound.mjs';               // sons do jogo (Web Audio)
+import * as Gravador from './recorder.mjs';
+// import * as Nav from './navigation.mjs';   // desligado (27/10): ver Nav.instalar() lá embaixo
+import * as Rede from './network.mjs';                // fase 1 da rede: presença (outros jogadores na cena) e chat de verdade (servidor/server.mjs)
+import * as Conta from './account.mjs';              // fase 2 da rede: conta (usuário + senha) e save no servidor (servidor/contas.mjs)
+import * as Troca from './trade.mjs';              // fase 4 da rede: mesa de troca de Pokémon (o servidor move; servidor/trade.mjs)
+import * as Mundo from './world.mjs';              // fase 3a da rede: selvagens compartilhados — o servidor decide quem nasce/shiny/captura (servidor/world.mjs)
 import * as Raid from './raid.mjs';                // RAID AO VIVO (14/09): estado da fila/luta no cliente, ida e volta da arena; a interface é o raid_ui.mjs (import dinâmico)
-import * as Fogo from './fogo.mjs';             // chamas dos modelos (PokemonFireOut)
-import * as Lodo from './lodo.mjs';
-import * as Tinta from './tinta.mjs';
+import * as Fogo from './fire.mjs';             // chamas dos modelos (PokemonFireOut)
+import * as Lodo from './sludge.mjs';
+import * as Tinta from './paint.mjs';
 import * as Hud from './hud.mjs';               // layout da HUD montado no editor de HUD
 import * as Menus from './menus.mjs';           // menu ☰/Esc e as janelas (Pokémon, mochila, missões, mapa…)
 import * as Chat from './chat.mjs';             // chat com abas Local/Global/Trade/Help (peça #chat da HUD)
-import * as Missoes from './missoes.mjs';        // missões principais de Kanto (caps 1–20): passos verificados por eventos do jogo
-import * as Ind from './individuo.mjs';         // IV + natureza por indivíduo (fórmulas completas da série)
-import * as Personagem from './personagem.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
-import * as Evolucao from './evolucao.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolucoes.json, data/exp.json)
-import * as Evento from './evento.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
-import * as Dialogos from './dialogos.mjs';     // Fase 3 do painel: falas fixas (portão, Oak, abertura) vêm do data/dialogos.json
-import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atrasoDoGolpe, corrigirEfeito } from './golpes.mjs';
-import * as R from './regras.mjs';              // fórmulas da série: stats, dano, tipos
+import * as Missoes from './missions.mjs';        // missões principais de Kanto (caps 1–20): passos verificados por eventos do jogo
+import * as Ind from './individual.mjs';         // IV + natureza por indivíduo (fórmulas completas da série)
+import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
+import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolucoes.json, data/exp.json)
+import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
+import * as Dialogos from './dialogues.mjs';     // Fase 3 do painel: falas fixas (portão, Oak, abertura) vêm do data/dialogos.json
+import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atrasoDoGolpe, corrigirEfeito } from './moves.mjs';
+import * as R from './rules.mjs';              // fórmulas da série: stats, dano, tipos
 import * as I18n from './i18n.mjs';             // IDIOMA do jogador (11/09): pt (fonte), en, es
-import * as Arrastar from './arrastar_time.mjs';   // 20/09: arrastar pra reordenar o time (e mover entre time e caixa); o servidor já aceitava (intenção `arranjo`)
+import * as Arrastar from './drag_team.mjs';   // 20/09: arrastar pra reordenar o time (e mover entre time e caixa); o servidor já aceitava (intenção `arranjo`)
 
 /* O `?mapa=` É PORTA DOS FUNDOS (fechada em 10/09). O jogo atravessa porta recarregando a página com `?mapa=&chegada=`, e
    era isso que deixava qualquer jogador digitar `?mapa=4120017` e cair dentro de um ginásio. A diferença entre a porta e a
@@ -44,7 +44,7 @@ import * as Arrastar from './arrastar_time.mjs';   // 20/09: arrastar pra reorde
     /* 18/09 (relato da comunidade: "trocar a URL e dar auto refresh teleporta o personagem"): o carimbo é consumido em TODA carga,
        com ou sem `?mapa=`. Antes, a recarga sem mapa na URL (Configurações → qualidade/idioma/visual novo e o botão "Tentar de novo"
        do boot: o `cfRecarregar` carimba e recarrega o endereço pelado) saía daqui ANTES de apagar o carimbo — ele ficava guardado na
-       aba e valia pra qualquer `?mapa=&chegada=` digitado depois. O servidor também confere agora (servidor.mjs, `entradaVetada`). */
+       aba e valia pra qualquer `?mapa=&chegada=` digitado depois. O servidor também confere agora (server.mjs, `entradaVetada`). */
     const porPorta = sessionStorage.getItem('porta.ok') === '1';
     sessionStorage.removeItem('porta.ok');                                // vale uma vez só — e só nesta carga
     if (!u.searchParams.has('mapa') && !u.searchParams.has('chegada')) return;
@@ -88,7 +88,7 @@ const __boot = (() => {
   const desligado = p.get('rede') === '0' || p.get('conta') === '0';
   let etapas = p.get('diag') === '1'; try { etapas = etapas || matchMedia('(pointer: coarse)').matches; } catch {}
   const base = (() => { const sv = p.get('servidor'); if (sv){ try { const u = new URL(sv); return (u.protocol === 'wss:' ? 'https://' : 'http://') + u.host; } catch {} }
-    return location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190'; })();   // o mesmo que conta.mjs baseHttp
+    return location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190'; })();   // o mesmo que account.mjs baseHttp
   let n = 0, etapa = 'inicio', cenaNome = null; const vistos = new Set();
   const mandar = (tipo, extra) => {
     if (desligado || n >= 24) return; n++;
@@ -122,9 +122,9 @@ const $ = id => document.getElementById(id);
 // de depuração, chefão, gravador e menus de páginas locais.
 const DEMO_FIXO = false;
 const DEMO = DEMO_FIXO || new URLSearchParams(location.search).get('demo') === '1';
-// ?fairy=1: os primeiros minutos do Fairy com a UI original (inicio.mjs + fairy_ui.mjs)
+// ?fairy=1: os primeiros minutos do Fairy com a UI original (start.mjs + fairy_ui.mjs)
 const FAIRY = !DEMO && new URLSearchParams(location.search).get('fairy') === '1';
-const Fairy = FAIRY ? await import('./inicio.mjs') : null;
+const Fairy = FAIRY ? await import('./start.mjs') : null;
 const CARDS_PARCEIRO = [
   { glb: 'pm0025_00', nome: 'Pikachu',   tipo: 'Elétrico',         golpes: 'Thunder Shock · Thunderbolt' },
   { glb: 'pm0001_00', nome: 'Bulbasaur', tipo: 'Planta · Veneno',  golpes: 'Tackle · Vine Whip' },
@@ -224,7 +224,7 @@ function escolherCards(){
   });
 }
 const escolhaDemo = DEMO ? escolherCards() : null;   // os cards aparecem já, enquanto o mapa carrega
-/* Tela de criação de personagem (personagem.mjs): na primeira vez (sem `personagem` salvo) ou com ?personagem=1. Abre já,
+/* Tela de criação de personagem (character.mjs): na primeira vez (sem `personagem` salvo) ou com ?personagem=1. Abre já,
    por cima do boot, enquanto o mapa carrega (quando dá pra saber que vai jogar: ?jogar=1 ou mapa=kanto); o nascimento
    (bloco JOGAR) espera a escolha — e abre lá, se ainda não abriu (?mapa=casa). Não existe na demo nem no Fairy. */
 const FORCAR_CRIACAO = new URLSearchParams(location.search).get('personagem') === '1';
@@ -417,7 +417,7 @@ const contaP = Conta.garantir({ params: params0Cedo, layoutHudP: layoutHudCedoP,
 contaP.catch(() => {});
 contaP.then(() => { bootLoginNaFrente = false; }, () => {});          // login fechou: o progresso volta a aparecer (antes o #boot ficava escondido até o fim da carga)
 /* PASSE DE PROGRESSO (fase 2, 19/09): no site, `cenario/` passa por um porteiro na borda que só entrega a cena (e o modelo) que a
-   CONTA já alcançou — inclusive Kanto: nenhuma cena é livre, então quem baixa é quem tem conta. O passe vai num cookie (conta.mjs).
+   CONTA já alcançou — inclusive Kanto: nenhuma cena é livre, então quem baixa é quem tem conta. O passe vai num cookie (account.mjs).
    Por isso a cena só é pedida DEPOIS de haver passe:
    - com sessão salva no aparelho: `GET /conta/passe` primeiro (até ~4 s; falhou, segue com o cookie que tiver). Se o cookie já
      cobre esta cena e não vence em 24 h, não espera: renova em paralelo;
@@ -448,7 +448,7 @@ const ondeBoot = (() => {
 })();
 let passeFrescoP = Promise.resolve();
 const passeBootP = (async () => {
-  Conta.limparPasseSemSessao();                                          // quem acabou de sair da conta: o cookie da conta anterior sai aqui (conta.mjs sair)
+  Conta.limparPasseSemSessao();                                          // quem acabou de sair da conta: o cookie da conta anterior sai aqui (account.mjs sair)
   if (DEMO || SEM_CONTA_CEDO) return;
   try {
     if (Conta.temSessaoSalva()){
@@ -2544,9 +2544,9 @@ function semCorte(e){
 function montarCorpo(g, corpo, alturaAlvo, giroBase = 0, arq = ''){
   corpo.traverse(o => { if (o.isMesh){ o.castShadow = true; o.frustumCulled = false; } });
   unificarEsqueleto(corpo);
-  Fogo.aplicarFogo(corpo, arq);                   // chamas do Moltres, Charmander & cia. (fogo.mjs; receita por modelo)
-  Lodo.aplicarLodo(corpo, arq);                   // lodo translúcido do Grimer/Muk (lodo.mjs): sem ele a pele opaca esconde os olhos
-  Personagem.apagarMalhasOcultas?.(g, corpo);     // 17/09 (coe, "batendo asa com asa fechada"): some a malha que todo clipe apaga — a asa dobrada do Pidgeotto (personagem.mjs)
+  Fogo.aplicarFogo(corpo, arq);                   // chamas do Moltres, Charmander & cia. (fire.mjs; receita por modelo)
+  Lodo.aplicarLodo(corpo, arq);                   // lodo translúcido do Grimer/Muk (sludge.mjs): sem ele a pele opaca esconde os olhos
+  Personagem.apagarMalhasOcultas?.(g, corpo);     // 17/09 (coe, "batendo asa com asa fechada"): some a malha que todo clipe apaga — a asa dobrada do Pidgeotto (character.mjs)
   const mix = new THREE.AnimationMixer(corpo);
   const acoes = new Map(g.animations.map(c => [c.name, mix.clipAction(c)]));
   // Mede a caixa do ESQUELETO POSADO (precise=true aplica o skinning). A caixa
@@ -2918,12 +2918,12 @@ addEventListener('keydown', ev => { if (ev.code === 'F8' && !ev.repeat && GM){ c
    antigo por uns segundos até o layout chegar. Até aplicar, as peças ficam invisíveis (`body.hud-esperando`). */
 document.body.classList.add('hud-esperando');
 const layoutHudP = layoutHudCedoP;                                       // já pedido lá em cima, junto com o login
-/* Quem cria o treinador: as telas do Figma (rodada 23) quando a maquete as tem, senão o criador antigo do personagem.mjs
+/* Quem cria o treinador: as telas do Figma (rodada 23) quando a maquete as tem, senão o criador antigo do character.mjs
    (demo pública com pacote velho). `function` de propósito: é chamada no bloco JOGAR e no ctx dos menus. */
 async function abrirCriador(opc = {}){
   try {
     const L = await layoutHudP;
-    const T = await import('./telas.mjs');
+    const T = await import('./screens.mjs');
     const fluxo = T.criarTreinador(L, { conta: Conta, som: opc.som || Som, cancelavel: !!opc.cancelavel });
     if (fluxo) return await fluxo;
   } catch (e){ console.warn('telas do treinador:', e); }
@@ -2942,8 +2942,8 @@ const ADM = params0.has('adm') && params0.get('adm') !== '0';
 const INTRO = params0.get('intro') === '1';
 const RAID = params0.get('raid') === '1';                                 // clipe promocional: RAID Lugia (rodarRaid); ?raid=1
 const TORNEIO = params0.get('torneio') === '1';                           // clipe vertical (TikTok): torneio com 3 duelos (rodarTorneio); ?torneio=1
-const DIRETOR = params0.get('diretor') === '1';                           // modo diretor: cena montada pelo Jaime, gravada no OBS (diretor.mjs)
-const CAPTURA = params0.get('captura') === '1';                           // modo captura: joga de verdade, mas povoa os selvagens que quiser (captura.mjs)
+const DIRETOR = params0.get('diretor') === '1';                           // modo diretor: cena montada pelo Jaime, gravada no OBS (director.mjs)
+const CAPTURA = params0.get('captura') === '1';                           // modo captura: joga de verdade, mas povoa os selvagens que quiser (capture.mjs)
 const MMFOTO = params0.get('mmfoto') === '1';                             // modo dev: fotografa o mundo de cima (tools/minimapa_foto.py)                              // abertura "sonho da Liga" (rodarIntro); ?intro=1 reassiste
 const INTRO_CENA = { mapa: 4120013, chegada: 7170501 };                   // Quarto do Campeão da Liga Índigo
 if (params0.has('raf')) window.requestAnimationFrame = cb => setTimeout(() => cb(performance.now()), 16);   // ?raf=1: teste em aba escondida (rAF vira timer)
@@ -2971,10 +2971,10 @@ const RAIO_BOLA = 9;
 /* ?figmateste=1 (HUD do Figma em situação): tudo que o jogo gravaria vai pra um sandbox em memória — o modo de teste enche o time
    com Pokémon de mentira e dá itens, e isso chegava ao save de verdade (o Jaime ganhou 3 Poções sem querer em 03/09). */
 const LS_TESTE = /[?&]figmateste=1(&|$)/.test(location.search) ? new Map() : null;
-const lerLS = (k, padrao) => { try { if (LS_TESTE?.has(k)) return JSON.parse(LS_TESTE.get(k)); const v = Conta.lerBruto(k); return v ? JSON.parse(v) : padrao; } catch { return padrao; } };   // com conta, o que é save vem do cofre (conta.mjs), não do aparelho
+const lerLS = (k, padrao) => { try { if (LS_TESTE?.has(k)) return JSON.parse(LS_TESTE.get(k)); const v = Conta.lerBruto(k); return v ? JSON.parse(v) : padrao; } catch { return padrao; } };   // com conta, o que é save vem do cofre (account.mjs), não do aparelho
 const gravarLS = (k, v) => { try { if (LS_TESTE){ LS_TESTE.set(k, JSON.stringify(v)); return; } Conta.gravarBruto(k, JSON.stringify(v)); } catch {} };   // com conta, o que é save fica no cofre e sobe 2,5 s depois
 /* CONTA (fase 2 da rede, 05/09): com o servidor no ar o jogo só começa depois do login (telas do Figma) e o save vem da conta —
-   o localStorage vira espelho (conta.mjs). Sem servidor, ?rede=0 ou ?conta=0, tudo segue no localStorage. Fica ANTES de
+   o localStorage vira espelho (account.mjs). Sem servidor, ?rede=0 ou ?conta=0, tudo segue no localStorage. Fica ANTES de
    qualquer lerLS de save (introVista, seguidor, time…): é um await no topo do módulo, como o dos dados. */
 if (params0.has('idioma')){ try { const u = new URL(location.href); u.searchParams.delete('idioma'); history.replaceState(null, '', u); } catch {} }   // consumido: grudado na URL, desfazia a escolha seguinte (etapa 3)
 const CONTA = await contaP; __boot.marcar('login');                                                // o login começou lá em cima, antes do mapa (12/09)
@@ -3104,7 +3104,7 @@ function removerCorpo(e){
 }
 /* Iniciais (mesa do laboratório do Oak, NPC 1180102 "prefabs/npc/empty"): só as gerações com os 3 modelos exportados. */
 /* Os iniciais que o laboratório oferece: data/iniciais.json ([{ gen, dex, nome, glb, tipos }], painel admin → Iniciais) — o MESMO
-   arquivo pelo qual o SERVIDOR confere a escolha (servidor.mjs inicialOk), então o que aparece aqui é o que ele aceita.
+   arquivo pelo qual o SERVIDOR confere a escolha (server.mjs inicialOk), então o que aparece aqui é o que ele aceita.
    Aqui vira { gen: [inicial, …] }; sem o arquivo valem os de sempre (INICIAIS_PADRAO). */
 const INICIAIS_PADRAO = {
   1: [{ dex: 1, nome: 'Bulbasaur', glb: 'pm0001_00', tipos: ['Grass', 'Poison'] }, { dex: 4, nome: 'Charmander', glb: 'pm0004_00', tipos: ['Fire'] }, { dex: 7, nome: 'Squirtle', glb: 'pm0007_00', tipos: ['Water'] }],
@@ -3150,7 +3150,7 @@ function chaveTamanho(glb){
 }
 function fatorTamanho(glb){ if (jogo.tamanhos !== 'jogo') return 1; const k = chaveTamanho(glb); return (k && TAMANHOS[k]) || 1; }
 /** Aplica o modo atual a um Pokémon já montado (guarda a altura nativa na 1ª vez). */
-function aplicarTamanho(e, papel = null){                             // papel: 'seguidor' força a régua do parceiro (o parceiro dos OUTROS jogadores, rede.mjs)
+function aplicarTamanho(e, papel = null){                             // papel: 'seguidor' força a régua do parceiro (o parceiro dos OUTROS jogadores, network.mjs)
   if (!e?.pivo || e.chefe) return;                                   // o chefão fica nativo de propósito
   if (e.alturaBase == null) e.alturaBase = e.altura;
   if (e.comprimentoBase == null) e.comprimentoBase = e.comprimento || 0;   // maior lado da caixa posada (14/09): cobra/peixe são compridos, não altos
@@ -3287,7 +3287,7 @@ if (JOGAR){
       return novo;
     };
     /* Troca do modelo do jogador (Configurações → ✎ Personagem): o GLB da skin escolhida nasce no mesmo lugar, já com as
-       cores dos heróis tintáveis (personagem.mjs), o antigo sai da cena e o nome em cima da cabeça é refeito. Não troca
+       cores dos heróis tintáveis (character.mjs), o antigo sai da cena e o nome em cima da cabeça é refeito. Não troca
        montado (o Ash está preso na sela). */
     jogo.trocarJogador = async p => {
       const velho = jogo.ash; if (!velho || jogo.montaria || jogo.trocandoJogador) return velho;
@@ -3416,7 +3416,7 @@ if (JOGAR){
       const pronto = () => new Promise(r => { const f = () => (window.__dbg ? r() : setTimeout(f, 30)); f(); });
       pronto().then(() => rodarTorneio({ configurarSeguidor })).catch(e => { console.warn('torneio:', e); jogo.raidErro = String(e?.stack || e); });
     }
-    if (DIRETOR && !INTRO && !RAID && !TORNEIO){                      // modo diretor: entrega as funções do jogo pro diretor.mjs
+    if (DIRETOR && !INTRO && !RAID && !TORNEIO){                      // modo diretor: entrega as funções do jogo pro director.mjs
       const pronto = () => new Promise(r => { const f = () => (window.__dbg ? r() : setTimeout(f, 30)); f(); });
       pronto().then(() => Diretor.abrir({
         jogo, cena, THREE, GOLPES, porDex, dexDoGlb, montarPersonagem, Personagem, rotuloSprite, tocarUma, tocarAnim, lancarGolpe, golpeTurno, efeito, bolaLancada, chaoEm, esperarSeg, configurarSeguidor, teclas, tela, lerLS, gravarLS,
@@ -3424,7 +3424,7 @@ if (JOGAR){
         cam: { get zoom(){ return zoom; }, set zoom(v){ zoom = v; }, get giro(){ return giro; }, set giro(v){ giro = v; } },
       })).catch(e => { console.warn('diretor:', e); jogo.raidErro = String(e?.stack || e); });
     }
-    if (CAPTURA && !INTRO && !RAID && !TORNEIO && !DIRETOR){          // modo captura: entrega as funções do jogo pro captura.mjs (o jogo segue normal)
+    if (CAPTURA && !INTRO && !RAID && !TORNEIO && !DIRETOR){          // modo captura: entrega as funções do jogo pro capture.mjs (o jogo segue normal)
       const pronto = () => new Promise(r => { const f = () => (window.__dbg ? r() : setTimeout(f, 30)); f(); });
       pronto().then(() => Captura.abrir({
         jogo, cena, THREE, porDex, Personagem, aplicarShinyCampo, guardarSelvagem, chaoEm, livre, centroArea, nomeArea, lerLS, gravarLS, tela, mapaNome: NOME,
@@ -4541,18 +4541,18 @@ if (habitats){
 if (jogo.montarTrabalhador) await jogo.montarTrabalhador();
 
 /* ============================================================ combate */
-// Golpes com nome: dano pela fórmula da série (regras.mjs), efeito de partícula
+// Golpes com nome: dano pela fórmula da série (rules.mjs), efeito de partícula
 // do próprio jogo (particulas/00084 = Thunder Shock, 00098 = Quick Attack) e
 // som do acervo. O Pikachu só ataca por ordem (tecla 1 / botão); o selvagem
 // agressivo ataca sozinho quando o Pikachu chega perto.
-// A tabela de golpes (GOLPES, GOLPES_PIKA, GOLPES_ESPECIE…) mora em golpes.mjs — a bancada de golpes usa a mesma.
+// A tabela de golpes (GOLPES, GOLPES_PIKA, GOLPES_ESPECIE…) mora em moves.mjs — a bancada de golpes usa a mesma.
 const magias = [];
 const pendentes = [];                            // { t, fn }: acontece daqui a t segundos de jogo
 async function efeito(nome, seguir, alto = 0.5, { escala: escalaFixa = null, vidaMax = 0, olhar = null, inclinar = false } = {}){
   let desc;
   try { desc = await Part.carregar(nome); } catch { return; }
   if (!desc || !(desc.sistemas.length || (desc.malhas || []).length)) return;
-  corrigirEfeito(desc);                          // mistura das malhas de fogo/fluxo (golpes.mjs)
+  corrigirEfeito(desc);                          // mistura das malhas de fogo/fluxo (moves.mjs)
   // legibilidade, não fidelidade: a câmera está a ~19 m com FOV 31°, um Rattata
   // de 0,3 m ocupa 2% da tela — o efeito nunca fica menor que 1,1 m
   // feixe que liga atacante e alvo (Hit com sistema a z≈4,9): escala pela distância real entre os dois
@@ -4634,7 +4634,7 @@ function golpear(atacante, defensor, golpe){
 /* SOM POR DISTÂNCIA (15/09, ideia do coeoliveiratv: "às vezes o treinador está batalhando em outra cidade e estou ouvindo").
    Kanto inteira é UMA sala no servidor, e o `aplicarGolpe` é o caminho de todo dano do mundo — inclusive o do parceiro dos
    OUTROS jogadores. Resultado: todo golpe da região tocava no ouvido de todo mundo, no volume cheio. Pior, o limitador do
-   som.mjs (TETO = 3 sons por 140 ms) era gasto por batalha longe e engolia o som do golpe do próprio jogador.
+   sound.mjs (TETO = 3 sons por 140 ms) era gasto por batalha longe e engolia o som do golpe do próprio jogador.
    Agora: volume cheio até PERTO, caindo linear até LONGE, e além disso nem toca (não gasta a cota). */
 const SOM_PERTO = 14, SOM_LONGE = 48;
 function volumeDaDistancia(e, base = 1){
@@ -5096,12 +5096,12 @@ async function jogarBola(){
   /* 14/09 (Syvel, Guts: "capturou mas não entrou no time"): com a conexão caída os selvagens da rede viram locais e a bola sorteava
      AQUI — "Capturou!" sem o servidor saber. Com conta, selvagem que não é de rede não recebe bola (a bola fica na bolsa). */
   if (Conta.estado().modo === 'conta' && !s.rede){ flutuar(ash, 'sem conexão com o servidor', '#f58e8e'); Chat.sistema('⚠ Sem conexão com o servidor: a bola não foi jogada. Espera reconectar e tenta de novo.'); return; }
-  if (s.emVoo || (s.rede && Mundo.capturaPendente(s.id))){ flutuar(ash, 'espera as bolas caírem', '#ffd23a'); return; }   // 18/09: UMA bola por vez no mesmo selvagem — a 2ª antes de a 1ª terminar sobrescrevia a espera por id (mundo.mjs) e a 1ª acabava em "o servidor não respondeu"
+  if (s.emVoo || (s.rede && Mundo.capturaPendente(s.id))){ flutuar(ash, 'espera as bolas caírem', '#ffd23a'); return; }   // 18/09: UMA bola por vez no mesmo selvagem — a 2ª antes de a 1ª terminar sobrescrevia a espera por id (world.mjs) e a 1ª acabava em "o servidor não respondeu"
   try {
     jogo.bolas[id]--; gravarLS('bolas', jogo.bolas);
     const g = await modeloBola(id);
     ash.giro = Math.atan2(s.x - ash.x, s.z - ash.z); ash.alvoX = null;
-    s.estado = 'capturando'; s.alvoX = null; s.investida = null; s.emVoo = true;   // emVoo (18/09): a MINHA bola está neste corpo até o finally — o mundo.mjs não o "desmaia" de novo no meio do voo e o F não joga outra
+    s.estado = 'capturando'; s.alvoX = null; s.investida = null; s.emVoo = true;   // emVoo (18/09): a MINHA bola está neste corpo até o finally — o world.mjs não o "desmaia" de novo no meio do voo e o F não joga outra
     const promCapt = s.rede ? Mundo.capturar(s, id) : null;              // mundo compartilhado: pede JÁ (o servidor tranca o selvagem e sorteia); o resultado entra depois do voo
     jogo.alvo = desmaiadoMaisPerto(s) || (jogo.alvo === s ? null : jogo.alvo);   // mira já vai pro próximo caído
     if (s.rotulo) s.rotulo.style.display = 'none';
@@ -5320,7 +5320,7 @@ function pintarTime(forcar = false){
     const k = Math.max(0, Math.min(1, hp / (maxHp || 1))), cor = corVida(k);
     const frio = cd > 0 && !on, alt = frio ? Math.round(20 * cd / TROCA_CD) * 5 : 0;
     vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt };
-    if (on && (forcar || !jogo.evoPronta || (jogo.quadroEvo = (jogo.quadroEvo || 0) + 1) % 30 === 0)) jogo.evoPronta = { v: evolucaoDe(p) };   // regras dos jogos (evolucao.mjs), reavaliadas a cada 30 quadros
+    if (on && (forcar || !jogo.evoPronta || (jogo.quadroEvo = (jogo.quadroEvo || 0) + 1) % 30 === 0)) jogo.evoPronta = { v: evolucaoDe(p) };   // regras dos jogos (evolution.mjs), reavaliadas a cada 30 quadros
     const evo = on && !jogo.evoluindo && !jogo.trocandoSeguidor ? jogo.evoPronta?.v : null;   // botão ✧ no canto do slot em campo: só quando alguma regra já vale
     partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${escHtml(t.nome)} Lv${t.lv}${t.lv > tetoNivel() ? ' · 🔒 não obedece (teto Lv ' + tetoNivel() + ')' : t.lv >= tetoNivel() ? ' · no teto Lv ' + tetoNivel() + ' (XP guardada' + (t.expReserva > 0 ? ': ' + t.expReserva : '') + ')' : ''}${ko ? ' · desmaiado: clique usa um Reanimador da mochila' : on ? ' · em campo' : ' · clique pra trocar'} · arraste (ou segure, no toque) pra mudar a ordem · Alt+↑/↓" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img src="${iconeMon(t.glb)}" alt="" draggable="false"><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="evoluir → ${escHtml(evo.nome)}${evo.itemNome ? ' (usa ' + escHtml(evo.itemNome) + ')' : ''}">✧</button>` : ''}</div>`);
   }
@@ -5356,7 +5356,7 @@ function pintarTime(forcar = false){
 /* ===== ARRASTAR O TIME (20/09, pedido do Jaime: "re-ordenar; hoje o usuário precisa jogar todos pra dentro da caixa
    e retirar na ordem que quer"). O servidor já aceitava a ordem nova (intenção `arranjo` → servidor/posse.mjs
    aplicarArranjo, que recebe o TIME e a CAIXA inteiros); faltava a mão na tela. Quem grava aqui é o de sempre
-   (gravarLS('time'/'caixa')), e o conta.mjs manda a intenção. Se o servidor devolver um save diferente, o
+   (gravarLS('time'/'caixa')), e o account.mjs manda a intenção. Se o servidor devolver um save diferente, o
    Conta.aoSave → recarregarDoSave repõe a ordem dele. Tudo `function` içada: o bloco de nascimento roda antes. */
 /** Por que o arrasto NÃO pode começar agora (ou null). É consultado no toque e de novo na hora de gravar. */
 function motivoArrastarTime(){
@@ -5476,7 +5476,7 @@ async function soltarDaBola(glb, { recolher = true } = {}){
    revela a cor em 1,5 s tocando `Buff`. O registro do time é atualizado (nível fica, HP proporcional). Ash e as
    trocas ficam travados enquanto dura (~7 s). */
 const ELENCO_JOGO = await fetch('./data/elenco.json').then(r => r.json()).catch(() => []);
-/* Regras de evolução DOS JOGOS ORIGINAIS (evolucao.mjs ← data/evolucoes.json, do PokéAPI): nível, amizade alta, horário,
+/* Regras de evolução DOS JOGOS ORIGINAIS (evolution.mjs ← data/evolucoes.json, do PokéAPI): nível, amizade alta, horário,
    golpe conhecido, companheiro no time, pedra/Cabo de Ligação/item segurado (consumidos da mochila). `opcoesEvolucao(e)`
    avalia todas as regras da espécie (com o modelo exportado, quando há); `evolucaoDe(e)` é a primeira que já dá pra fazer. */
 function contextoEvolucao(){
@@ -5569,7 +5569,7 @@ async function evoluirParceiro(opcao = null){
      Pede ANTES de consumir a pedra: recusa não gasta item. */
   /* PEDRA CONFERIDA ANTES de pedir ao servidor (18/09 — zlevy26, chaospider e thesyvel no #bugs: "usei a Pedra do Trovão dentro do Mart,
      disse que não dava pra evoluir; ao sair da loja o Pikachu já era Raichu, sem animação"): a resposta do `posse_evoluir` traz a bolsa
-     JÁ SEM a pedra e o `rede.mjs` grava essa bolsa no cofre ANTES de resolver o pedido — a conferência "tem a pedra?", que vinha DEPOIS,
+     JÁ SEM a pedra e o `network.mjs` grava essa bolsa no cofre ANTES de resolver o pedido — a conferência "tem a pedra?", que vinha DEPOIS,
      achava 0 quando o jogador tinha só UMA (a recém-comprada), avisava "sem Pedra do Trovão" e desistia com o servidor já evoluído; a
      forma nova só chegava no próximo save (a saída da loja). Com 2+ pedras passava, por isso parecia coisa da loja. Agora confere antes;
      depois do "sim" do servidor a evolução é fato e a animação segue. */
@@ -5720,7 +5720,7 @@ async function interagir(){
    atravessa: mesma cena (escada da casa) teleporta pro ponto de chegada; outra cena recarrega
    com ?mapa=<cena>&chegada=<ponto>. Voltando pro overworld, cai no mapa de onde veio
    (sessionStorage.mundo: kanto ou pallet_rota1). Cena sem dados de NPC (casa do Gary): a saída
-   fica atrás do ponto de nascimento. O Fairy tem a sua própria versão disso (inicio.mjs). */
+   fica atrás do ponto de nascimento. O Fairy tem a sua própria versão disso (start.mjs). */
 function nomeJogador(){ return lerLS('nome', '') || 'Ash'; }   // function: usada no nascimento, antes do fim do módulo
 /** Nome do jogador em cima da cabeça (como os NPCs); refeito quando o nome muda. */
 function rotularJogador(){
@@ -6494,7 +6494,7 @@ function vigiarPortaoPallet(dt){
     Chat.sistema(Dialogos.texto('portaoChat'));
   }
 }
-/* ===== Golpes por indivíduo (individuo.mjs): `movs` = [{ id, pp, ppMax }]; o learnset diz o que entra em cada nível.
+/* ===== Golpes por indivíduo (individual.mjs): `movs` = [{ id, pp, ppMax }]; o learnset diz o que entra em cada nível.
    Sem PP em tudo, sobra o Struggle. Fallback por tipo (quatroGolpes) garante pelo menos 2 golpes a qualquer espécie. */
 const STRUGGLE = { ...GOLPES.tackle, id: 'struggle', nome: 'Struggle', poder: 50, tipo: 'Normal' };
 function fallbackGolpes(dex){ return jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle']); }
@@ -7357,7 +7357,7 @@ if (jogo.ash){
   }
   Mundo.instalar({ jogo, enviar: Rede.enviar, uidParceiro, esconder: guardarSelvagem, guardar: guardarSelvagem, desmaiar: s => desmaiar(s, false) /* KO visto pela rede (sestado): só toma a mira se eu não mirava ninguém — ver desmaiar (18/09) */, morrer, tocarUma, espectar: (s, m) => { verBolaDoOutro(s, m); },   // fase 3a: selvagens da sala; a bola do outro voa aqui também
     golpeNoParceiro: (s, m) => {                                         // fase 3c: o selvagem bateu no MEU parceiro; o dano veio do servidor (o HP continua meu: só desconto)
-      /* O `rede.mjs` aplica o `vida` de TODA mensagem (aplicarVidas) ANTES de despachar o `pdano`: o HP do parceiro já chegava
+      /* O `network.mjs` aplica o `vida` de TODA mensagem (aplicarVidas) ANTES de despachar o `pdano`: o HP do parceiro já chegava
          aqui zerado e a guarda `p.hp <= 0` devolvia sem o golpe — sem "Dead", sem aposDesmaio, sem respawn, e o Pokémon com
          0 de HP seguia andando atrás do jogador (Jaime, Rota 1, 12/09). A guarda agora é "já está desmaiado" (`desmaiado`). */
       const p = jogo.pika; if (!p || jogo.semParceiro || (p.hp <= 0 && p.desmaiado > 0)) return;
@@ -7508,7 +7508,7 @@ if (jogo.ash){
   const cv = layoutHud?._figma?.faixas?.cores?.vida;                     // cores da barra de vida vindas do Figma (card-vida [estado:…])
   if (cv) FAIXAS_VIDA = [[0.5, cv['100'] || FAIXAS_VIDA[0][1]], [0.2, cv['40'] || FAIXAS_VIDA[1][1]], [0, cv['10'] || FAIXAS_VIDA[2][1]]];
   jogo.hudLayout = layoutHud;                                            // menus.mjs usa pro registro 'jan-<id>' das janelas
-  if (params0.get('tela') && layoutHud?.telas) import('./telas.mjs').then(T => T.mostrar(params0.get('tela'), layoutHud, { Chat })).catch(e => console.warn('telas:', e));   // ?tela=login|cadastro: prévia das telas de fora do jogo (rodada 19 do Figma)
+  if (params0.get('tela') && layoutHud?.telas) import('./screens.mjs').then(T => T.mostrar(params0.get('tela'), layoutHud, { Chat })).catch(e => console.warn('telas:', e));   // ?tela=login|cadastro: prévia das telas de fora do jogo (rodada 19 do Figma)
   const aplicarHud = () => {
     document.body.classList.toggle('tela-estreita', innerWidth <= 480); document.body.classList.toggle('tela-baixa', innerHeight <= 480);   // no lugar das @media (o editor usa as mesmas classes)
     if (MOBILE && innerHeight > innerWidth){                              // celular em pé: a tela "vire o celular" cobre o jogo e a HUD deitada fica como está (remontar em pé quebrava tudo)
@@ -8423,7 +8423,7 @@ async function rodadaDoServidor(T, acao){
     if (jogo.pika && String(uidParceiro()) === String(v.uid)) flutuar(jogo.pika, 'Lv ' + v.lv + '!', '#ffe07a');
     Som.tocar('ui/sound_successful', { volume: .55, prio: true });
     if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: v.lv });
-  }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o rede.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
+  }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o network.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
   if (T.inimigo && r.ele) T.inimigo.hp = r.ele.hp;
   if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))) jogo.pika.hp = r.eu.hp;   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
   if (T.caiu && !r.fim){                                                  // caiu o do inimigo e vem outro: o servidor já disse qual
@@ -8959,7 +8959,7 @@ if (PERF){
     }).observe({ type: 'long-animation-frame', buffered: true });
   } catch {}
 }   // ?perf=1 → relatório no console a cada 300 quadros
-// ☰ Páginas (navegacao.mjs): desligado em 27/10 — o botão só aparece com docs/paginas.json, que esta cópia não tem; o fetch só dava 404
+// ☰ Páginas (navigation.mjs): desligado em 27/10 — o botão só aparece com docs/paginas.json, que esta cópia não tem; o fetch só dava 404
 // if (!DEMO && !FAIRY) Nav.instalar();
 // 🎥 R: gravar um trecho da tela (arrasta a área, Gravar, Parar → Downloads)
 if (!DEMO && !FAIRY) Gravador.instalar({ tela, prefixo: 'kanto', audio: Som.captura, forcarCanvas: new URLSearchParams(location.search).get('gravador') === 'canvas' });

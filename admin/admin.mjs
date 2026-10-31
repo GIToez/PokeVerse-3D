@@ -2,11 +2,11 @@
  * Editor de Mapa (zonas de spawn com raio) + Habitats por área. Fala com o servidor dev (porta 5190) nas rotas /admin/*,
  * que só respondem pra conta GM. Reaproveita o token do jogo (localStorage 'conta.token', mesma origem). */
 
-import { instalarDados } from '/admin/dados.mjs';
-import { instalarJogadores } from '/admin/jogadores.mjs';
-import { instalarEventos } from '/admin/eventos.mjs';   // Fase 3: eventos ao vivo, aviso global, manutenção
-import { instalarConteudo } from '/admin/conteudo.mjs'; // Fase 2: telas Missões, Espécies, Evoluções, Learnset
-import { criarCamadas } from '/admin/camadas.mjs';
+import { instalarDados } from '/admin/data.mjs';
+import { instalarJogadores } from '/admin/players.mjs';
+import { instalarEventos } from '/admin/events.mjs';   // Fase 3: eventos ao vivo, aviso global, manutenção
+import { instalarConteudo } from '/admin/content.mjs'; // Fase 2: telas Missões, Espécies, Evoluções, Learnset
+import { criarCamadas } from '/admin/layers.mjs';
 const DICAS = {   // o rodapé do Editor de Mapa muda com a ferramenta
   zonas: 'roda: zoom · arrastar: mover · clique numa área pra editar (arraste o miolo/as bordas) · arraste o centro/borda da zona',
   pontos: 'roda: zoom · arrastar o vazio: mover · clique num ponto pra editar, arraste pra mudar de lugar',
@@ -133,7 +133,7 @@ async function carregarTudo() {
 // ╔═══════════════════════════════ EDITOR DE MAPA ═══════════════════════════════╗
 const tela = $('m-tela'), cv = $('m-canvas'), ctx = cv.getContext('2d');
 const camadas = { minimapa: true, caixas: true, grama: true, agua: true, piso: true, zonas: true, npcs: false, treinadores: false };
-let Camadas = null;   // admin/camadas.mjs (pontos e pincel) — criado no ligarUI, depois do login
+let Camadas = null;   // admin/layers.mjs (pontos e pincel) — criado no ligarUI, depois do login
 
 async function carregarCenas() {
   nomesCena = {}; idsUsados = new Set();
@@ -158,7 +158,7 @@ async function trocarMapa(nome, semPerguntar = false) {
 async function carregarFoto(nome) {
   if (!dadosMapa) return;
   $('m-foto').textContent = 'fundo: gerando a foto de cima…';
-  const { fotoDoMapa } = await import('/admin/foto_mapa.mjs');   // o Three só carrega quando precisa
+  const { fotoDoMapa } = await import('/admin/map_photo.mjs');   // o Three só carrega quando precisa
   const f = await fotoDoMapa(nome, dadosMapa);
   if (nome !== mapaAtual) return;                                   // trocou de mapa no meio
   foto = f ? { ...f, mapa: nome } : null;

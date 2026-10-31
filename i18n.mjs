@@ -10,7 +10,7 @@
  * o t() — assim as ~140 chamadas com texto montado por concatenação não precisaram mudar.
  *
  * Dicionários: data/idioma/ui_<l>.json (escritos à mão) + data/idioma/nomes_<l>.json (gerados de LanguageConfig_<l> pelo
- * tools/idioma_nomes.mjs). Escolha: ?idioma=en|es|pt na URL, a barra PT·EN·ES da tela de login (telas.mjs), o localStorage
+ * tools/idioma_nomes.mjs). Escolha: ?idioma=en|es|pt na URL, a barra PT·EN·ES da tela de login (screens.mjs), o localStorage
  * `idioma` e a conta (POST /conta/idioma; volta no login). Padrão: o idioma do navegador, caindo em pt.
  * Nomes dos Pokémon ficam em inglês em todos os idiomas (decisão do Jaime, 11/09). */
 export const IDIOMAS = { pt: 'Português', en: 'English', es: 'Español' };
@@ -89,7 +89,7 @@ export async function carregar(l){
   document.documentElement.lang = l;
   return atual;
 }
-/** Escolha do jogador: guarda no aparelho e carrega. Quem avisa a conta é o conta.mjs. */
+/** Escolha do jogador: guarda no aparelho e carrega. Quem avisa a conta é o account.mjs. */
 export async function definir(l){
   if (!IDIOMAS[l]) return atual;
   try { localStorage.setItem(LS, l); } catch {}

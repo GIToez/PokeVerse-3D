@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "servidor": "node servidor.mjs",
+    "server": "node server.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

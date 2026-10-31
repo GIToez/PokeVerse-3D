@@ -1,5 +1,5 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
-import * as Conta from './conta.mjs';                                     // cargos (09/09): [STAFF]/[MOD] e a cor de cada um
+import * as Conta from './account.mjs';                                     // cargos (09/09): [STAFF]/[MOD] e a cor de cada um
 /* Chat do jogo, no modelo do PRO: uma caixa no canto com abas.
  *   Local  — fala com quem está na sua área; mostra TAMBÉM os outros canais, com etiqueta [G] [T] [H] [S]
  *   Global — todo mundo · Trade — comércio · Help — ajuda (cada aba só com o seu canal)
@@ -7,7 +7,7 @@ import * as Conta from './conta.mjs';                                     // car
  * Comandos na caixa: /g texto (global), /t (trade), /h (help), /l (local), /w nome texto (mensagem direta a um amigo), /ranking,
  * /trocar nome (convite de troca de Pokémon), /preso (relato obrigatório e volta pro último Centro). GM: /online, /aviso texto, /mudo nome min, /kick nome, /banir nome horas,
  * /perdoar nome, /ver nome. Staff: /chaves, /alfa, /relatos, /raid (raid ao vivo). Enter foca a caixa.
- * Com o servidor (servidor/servidor.mjs) as mensagens vão pros outros (rede.mjs); sem ele só você vê. Histórico (200 msgs) em localStorage 'chat'. Mesmo módulo alimenta a
+ * Com o servidor (servidor/server.mjs) as mensagens vão pros outros (network.mjs); sem ele só você vê. Histórico (200 msgs) em localStorage 'chat'. Mesmo módulo alimenta a
  * peça #chat da HUD e a aba Chat da janela Social (Chat.montar num contêiner qualquer).
  */
 export const CANAIS = {
@@ -55,13 +55,13 @@ export function enviar(aba, texto){
   if (st){ const op = /^k/i.test(st[1]) ? 'chaves' : /^al/i.test(st[1]) ? 'alfa' : st[1].toLowerCase(); ctx?.staff?.(op, st[2].trim()); return 'sistema'; }
   const mod = t.match(/^\/(online|aviso|mudo|kick|banir|perdoar|ver|tp|ir|puxar)\b\s*(.*)$/i);   // /tp nome cidade (13/09): leva uma conta presa pra frente do Centro da cidade; /ir nome e /puxar nome (14/09)
   if (mod){ ctx?.moderar?.(mod[1].toLowerCase(), mod[2].trim()); return 'sistema'; }
-  const tr = t.match(/^\/trocar\s+(.+)$/i);                              // /trocar nome → convite de troca pra quem está por perto (troca.mjs)
+  const tr = t.match(/^\/trocar\s+(.+)$/i);                              // /trocar nome → convite de troca pra quem está por perto (trade.mjs)
   if (tr){ ctx?.trocar?.(tr[1].trim()); return 'sistema'; }
   const m = t.match(/^\/(g|t|h|l)\s+(.*)$/i);
   if (m){ canal = { g: 'global', t: 'trade', h: 'help', l: 'local' }[m[1].toLowerCase()]; t = m[2].trim(); }
   if (!t) return null;
   publicar(canal, t);
-  ctx?.rede?.(canal, t);                                                 // com servidor no ar, os outros recebem (rede.mjs)
+  ctx?.rede?.(canal, t);                                                 // com servidor no ar, os outros recebem (network.mjs)
   return canal;
 }
 export const mensagens = () => msgs;

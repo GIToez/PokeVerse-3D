@@ -15,12 +15,12 @@ import * as I18n from './i18n.mjs';                                     // etapa
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import * as Fogo from './fogo.mjs';
-import * as Lodo from './lodo.mjs';
+import * as Fogo from './fire.mjs';
+import * as Lodo from './sludge.mjs';
 import * as Chat from './chat.mjs';
 import * as Popup from './popup.mjs';                                   // pop-ups desenhados a partir do Figma (rodada 5)
-import * as Som from './som.mjs';                                       // a aba Som de Configurações mexe nos três canais (rodada 24)
-import * as Arr from './arrastar_time.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
+import * as Som from './sound.mjs';                                       // a aba Som de Configurações mexe nos três canais (rodada 24)
+import * as Arr from './drag_team.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -219,7 +219,7 @@ function fichaHtml(e){
   const golpes = movs.map(g => `<div class="linha" style="cursor:default"><span class="nome"><b>${esc(g.nome)}</b><small>poder ${g.poder ?? '—'} · recarga ${g.recarga ?? '—'}s${g.ppMax != null ? ' · PP ' + g.pp + '/' + g.ppMax : ''}</small></span>${tipoHtml(g.tipo)}</div>`).join('');
   const novo = e.aprender?.[0] ? (ctx.golpe?.(e.aprender[0]) || null) : null;
   const aprender = novo ? `<div class="evo-linha" style="margin-top:6px"><b>✧ quer aprender ${esc(novo.nome)}</b> <small>${esc(novo.tipo || '')} · poder ${novo.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(novo.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">esquecer: ${movs.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">não aprender</button></div></div>` : '';
-  // regras dos jogos originais (evolucao.mjs): cada evolução com o que falta / ✔ pronto
+  // regras dos jogos originais (evolution.mjs): cada evolução com o que falta / ✔ pronto
   const ops = ctx.opcoesEvolucao?.(e) || [];
   const evo = ops.length ? ops.map(o => `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(o.regra.texto)}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('em breve')) + '</span>' : o.pode ? '<span class="ok">✔ pronto' + (o.itemNome ? ' (usa ' + esc(o.itemNome) + ')' : '') + '</span>' : '<span class="falta">' + esc(o.falta) + '</span>'}</div>`).join('') : 'não evolui';
   const prox = ctx.expPara?.(e.dex, lv + 1), xp = (e.exp != null && prox ? `XP ${e.exp}/${prox}` : '') + (e.expReserva > 0 ? ' · ' + e.expReserva + ' XP guardada' : '');
@@ -1119,7 +1119,7 @@ async function soAcao(nome, el){
     else Chat.sistema('Mensagem: ' + r.erro);
   }
 }
-/** Evento vindo da rede (rede.mjs): mensagem direta ou convite. */
+/** Evento vindo da rede (network.mjs): mensagem direta ou convite. */
 export function socialEvento(m){
   if (!m) return;
   if (m.t === 'dm'){
@@ -1705,7 +1705,7 @@ async function mostrarModeloDex(glb, conhecido){
     const obj = SkeletonUtils.clone(g.scene);
     obj.traverse(o => { if (o.isMesh){ o.frustumCulled = false; o.material = Array.isArray(o.material) ? o.material.map(m => m.clone()) : o.material.clone(); } });
     let temShiny = Promise.resolve(0);
-    ctx.Personagem?.apagarMalhasOcultas?.(g, obj);   // 17/09: a asa dobrada do Pidgeotto some aqui também (todo clipe a apaga; personagem.mjs)
+    ctx.Personagem?.apagarMalhasOcultas?.(g, obj);   // 17/09: a asa dobrada do Pidgeotto some aqui também (todo clipe a apaga; character.mjs)
     if (conhecido){ Fogo.aplicarFogo(obj, glb); Lodo.aplicarLodo(obj, glb); if (shiny) temShiny = aplicarShiny(obj); }
     else obj.traverse(o => { if (o.isMesh){ const m = new THREE.MeshBasicMaterial({ color: 0x0b0f1a }); m.__silhueta = true; o.material = m; } });
     const mixer = new THREE.AnimationMixer(obj);
@@ -1733,7 +1733,7 @@ async function mostrarModeloDex(glb, conhecido){
   temShiny.then(n => { const r = $('dex-rotulo-shiny'); if (r && selDexGlb === glb) r.innerHTML = n ? '✨ Shiny' : '✨ Shiny <small style="color:var(--muted)">(sem textura shiny exportada — igual ao normal)</small>'; });
   return true;
 }
-/** Fraquezas/resistências pela tabela de tipos do jogo (regras.mjs). */
+/** Fraquezas/resistências pela tabela de tipos do jogo (rules.mjs). */
 function fraquezas(tipos){
   const chart = ctx.chart, lista = ctx.tipos || [];
   if (!chart || !tipos?.length) return { fraco: [], resiste: [], imune: [] };
@@ -2784,7 +2784,7 @@ function rConfig(corpo){
     return r;
   });
   corpo.querySelector('#c-dbg')?.addEventListener('change', ev => ctx.depuracao?.(ev.target.checked));   // só GM (o jogador não tem a linha)
-  corpo.querySelector('#c-perso').onclick = () => { fechar(); ctx.criarPersonagem?.(); };   // tela de criação por cima do jogo (personagem.mjs)
+  corpo.querySelector('#c-perso').onclick = () => { fechar(); ctx.criarPersonagem?.(); };   // tela de criação por cima do jogo (character.mjs)
   /* Botões de GM que abrem as bancadas (editor de HUD, galeria da UI, bancada de golpes): os endereços moravam em docs/paginas.json
      (`atalhos`), que esta cópia não tem — 27/10: sem o fetch (só dava 404), os botões ficam escondidos como já ficavam sem a lista. */
   for (const sel of ['#c-hud', '#c-galeria', '#c-bancada']){ const b = corpo.querySelector(sel); if (b) b.style.display = 'none'; }
