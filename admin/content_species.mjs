@@ -123,7 +123,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     const livres = (glbsDe[n] || []).filter(gl => !D.elenco.some(e => e.glb === gl));
     const km = cartao(`Modelos 3D (${els.length})`, livres.length ? [['＋ Modelo', () => {
       const gl = prompt('Qual modelo? Disponíveis desta espécie:\n' + livres.join(', '), livres[0]); if (!gl) return;
-      if (!livres.includes(gl.trim())) { toast('Esse modelo não existe em cenario/mon (ou já está no elenco).', true); return; }
+      if (!livres.includes(gl.trim())) { toast('Esse modelo não existe em scenery/mon (ou já está no elenco).', true); return; }
       const i = D.elenco.findLastIndex(e => e.n <= n);
       D.elenco.splice(i + 1, 0, { n, nome: nomeSp(n), glb: gl.trim(), altura: 0 }); atualizarLinha(); renderEditor(); }]] : []);
     if (!els.length) { const v = document.createElement('div'); v.className = 'mini'; v.textContent = 'Sem modelo no elenco: a espécie não aparece no jogo (nem como evolução).'; km.append(v); }

@@ -316,7 +316,7 @@ export function criarRaid(h) {
       if (raid) { erro('Já tem uma raid (' + raid.fase + '). Use /raid cancelar antes.'); return; }
       const r = anunciar(g); if (r.erro) { erro(r.erro); return; }
       ok('Raid #' + raid.id + ' anunciada: ' + raid.cfg.chefeNome + ' Lv ' + raid.cfg.chefeNivel + ', ' + raid.cfg.vagas + ' vagas. /raid comecar abre a contagem.', { cfg: raid.cfg });
-      if (!fs.existsSync(nodePath.join(raiz, 'public/cenario/mon', raid.cfg.chefeGlb + '.glb'))) erro('O modelo ' + raid.cfg.chefeGlb + '.glb não existe em public/cenario/mon: o chefe vai aparecer só como barra de vida.');
+      if (!fs.existsSync(nodePath.join(raiz, 'public/scenery/mon', raid.cfg.chefeGlb + '.glb'))) erro('O modelo ' + raid.cfg.chefeGlb + '.glb não existe em public/scenery/mon: o chefe vai aparecer só como barra de vida.');
       return;
     }
     if (op === 'status') { sistema(ws, '🐉 ' + status()); return; }

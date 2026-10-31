@@ -1,9 +1,13 @@
 # Portuguese → English glossary
 
-The codebase was written in Portuguese. This glossary translates the folders, modules,
-and data files so English-speaking maintainers can navigate the project. The file names
-themselves are kept in Portuguese to avoid breaking the many cross-references inside the
-code; use this table as the map.
+The codebase was written in Portuguese. The folders and module/file names have been
+**renamed to English** (imports and asset paths were updated to match). The code *inside*
+each file — variable names, function names, and comments — is still largely Portuguese,
+so this glossary doubles as a vocabulary guide. In the module tables below, the "File"
+column shows the **original Portuguese name**; see the paragraph under each table or the
+mapping in the rename commit for the new English name. Data-file (`public/data/*.json`)
+names were left unchanged because many are referenced by key across the code and the
+admin schemas.
 
 ## Common words
 
@@ -83,11 +87,11 @@ code; use this table as the map.
 
 | File                     | Meaning                              |
 | ------------------------ | ------------------------------------ |
-| `servidor.mjs`           | Server entry point (HTTP + WebSocket)|
-| `servidor_moderacao.mjs` | Moderation (GM chat commands)        |
-| `servidor_eventos.mjs`   | Live events                          |
-| `servidor_raid.mjs`      | Live raids                           |
-| `servidor_recursos.mjs`  | Resources (lists for admin previews) |
+| `server.mjs` (was `servidor.mjs`)            | Server entry point (HTTP + WebSocket)|
+| `server_moderation.mjs` (was `servidor_moderacao.mjs`) | Moderation (GM chat commands) |
+| `server_events.mjs` (was `servidor_eventos.mjs`)       | Live events                  |
+| `server_raid.mjs` (was `servidor_raid.mjs`)            | Live raids                   |
+| `server_resources.mjs` (was `servidor_recursos.mjs`)   | Resources (lists for admin previews) |
 
 ## Admin panel modules (`admin/*.mjs`)
 
@@ -146,11 +150,16 @@ code; use this table as the map.
 
 ## Asset folders
 
-| Folder        | Meaning                                  |
-| ------------- | ---------------------------------------- |
-| `cenario/`    | Source map `.glb` files (e.g. `kanto.glb`)|
-| `public/cenario/` | Maps and models served to the client |
-| `som/`        | Audio (music, skill sounds, UI)          |
-| `particulas/` | Particle meshes and textures             |
-| `ui/`         | UI art, icons, minimap                    |
-| `vendor/three/` | Bundled Three.js                        |
+| Folder (English, renamed) | Was (Portuguese) | Meaning                         |
+| ------------------------- | ---------------- | ------------------------------- |
+| `scenery/`                | `cenario/`       | Source map `.glb` files (e.g. `kanto.glb`) |
+| `public/scenery/`         | `public/cenario/`| Maps and models served to the client |
+| `sound/`                  | `som/`           | Audio (music, skill sounds, UI) |
+| `particles/`              | `particulas/`    | Particle meshes and textures    |
+| `server/`                 | `servidor/`      | Server-side folder (live data under `server/dados/`) |
+| `ui/`                     | —                | UI art, icons, minimap          |
+| `vendor/three/`           | —                | Bundled Three.js                |
+
+The source code was renamed to English in these commits, so the file names in the
+tables above are the current (English) names. The staging folder `_novos/` ("new") was
+left untouched because it is not loaded by the game.

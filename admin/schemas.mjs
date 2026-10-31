@@ -42,7 +42,7 @@ const coresDasPartes = v => {
 const canaisDaMascara = v => {
   if (!ehObjeto(v) || !Object.keys(v).length) return 'precisa ser { "material": { "R": …, "G": …, "B": …, "K": …, "mask": "arquivo.png" } }';
   for (const [mat, c] of Object.entries(v)) {
-    if (!ehObjeto(c) || typeof c.mask !== 'string' || !/^[\w .-]{1,80}\.png$/i.test(c.mask)) return `${mat}: falta "mask" (arquivo .png em cenario/npc/mask)`;
+    if (!ehObjeto(c) || typeof c.mask !== 'string' || !/^[\w .-]{1,80}\.png$/i.test(c.mask)) return `${mat}: falta "mask" (arquivo .png em scenery/npc/mask)`;
     for (const k of ['R', 'G', 'B', 'K']) {
       const x = c[k];
       if (x === undefined || x === null || (typeof x === 'string' && CHAVE_PARTE.test(x))) continue;
@@ -127,7 +127,7 @@ export const ESQUEMAS = {
     previa: '/admin/preview_trainer.mjs',
     campos: [
       { k: 'nome', rotulo: 'Nome', tipo: 'texto', max: 60, col: true, obrigatorio: true },
-      { k: 'glb', rotulo: 'Modelo (NPC)', tipo: 'texto', max: 40, col: true, validar: s => /^[\w-]{1,40}$/.test(s) ? null : 'nome do arquivo, sem .glb', ajuda: 'Arquivo cenario/npc/<modelo>.glb (ex.: NPC1008, fc1041_00).' },
+      { k: 'glb', rotulo: 'Modelo (NPC)', tipo: 'texto', max: 40, col: true, validar: s => /^[\w-]{1,40}$/.test(s) ? null : 'nome do arquivo, sem .glb', ajuda: 'Arquivo scenery/npc/<modelo>.glb (ex.: NPC1008, fc1041_00).' },
       { k: 'time', rotulo: 'Time', tipo: 'json', col: true, obrigatorio: true, validar: timeNpc, resumo: v => (v || []).map(p => '#' + p.dex + ' Nv' + p.lv).join(', '),
         ajuda: 'Lista de { "dex", "lv", "glb" } (até 6). A prévia mostra os nomes.' },
       { k: 'dinheiro', rotulo: 'Prêmio em dinheiro', tipo: 'num', min: 0, max: 10000000, int: true, col: true },
@@ -143,7 +143,7 @@ export const ESQUEMAS = {
     campos: [
       { k: 'nome', rotulo: 'Nome', tipo: 'texto', max: 60, col: true },
       { k: 'glb', rotulo: 'Modelo', tipo: 'texto', max: 60, col: true, validar: s => /^(npc|mon|pc)\/[\w-]{1,40}$/.test(s) ? null : 'pasta/arquivo sem .glb (ex.: npc/fc1004_00, mon/pm0122)',
-        ajuda: 'cenario/<modelo>.glb — npc/… (pessoas) ou mon/… (Pokémon). Placa não tem modelo.' },
+        ajuda: 'scenery/<modelo>.glb — npc/… (pessoas) ou mon/… (Pokémon). Placa não tem modelo.' },
       { k: 'falas', rotulo: 'Falas (uma por linha)', tipo: 'linhas', validar: listaDeTextos },
       { k: 'papel', rotulo: 'Papel', tipo: 'opcao', col: true, opcoes: [{ v: 'cura', rotulo: 'Cura (Centro Pokémon)' }, { v: 'loja', rotulo: 'Loja' }, { v: 'caixa', rotulo: 'Caixa (PC)' }] },
       { k: 'placa', rotulo: 'Placa (ponto invisível com texto)', tipo: 'bool', col: true },
@@ -188,7 +188,7 @@ export const ESQUEMAS = {
       { k: 'cfgLider', rotulo: 'NPC do líder (cfg)', tipo: 'num', min: 1, max: 999999999, int: true, obrigatorio: true, ajuda: 'O NPC que vira o líder ⚔ (o jogo acha o ginásio por este número).' },
       { k: 'cfgGuia', rotulo: 'NPC do guia (cfg)', tipo: 'num', min: 1, max: 999999999, int: true },
       { k: 'cena', rotulo: 'Cena do interior', tipo: 'num', min: 1, max: 99999999, int: true },
-      { k: 'glb', rotulo: 'Modelo do líder', tipo: 'texto', max: 60, validar: s => /^[\w/-]{1,60}$/.test(s) ? null : 'caminho do modelo, ex.: npc/NPC1004', ajuda: 'Em cenario/, sem .glb (ex.: npc/NPC1004 ou pc/Girl_012).' },
+      { k: 'glb', rotulo: 'Modelo do líder', tipo: 'texto', max: 60, validar: s => /^[\w/-]{1,60}$/.test(s) ? null : 'caminho do modelo, ex.: npc/NPC1004', ajuda: 'Em scenery/, sem .glb (ex.: npc/NPC1004 ou pc/Girl_012).' },
       { k: 'fala', rotulo: 'Fala antes da batalha', tipo: 'linhas', validar: listaDeTextos },
       { k: 'vitoria', rotulo: 'Fala na vitória do jogador', tipo: 'linhas', validar: listaDeTextos },
       { k: 'derrota', rotulo: 'Fala na derrota do jogador', tipo: 'linhas', validar: listaDeTextos },
@@ -203,7 +203,7 @@ export const ESQUEMAS = {
     campos: [
       { k: 'id', rotulo: 'ID', tipo: 'num', min: 1, max: 99999999, int: true, col: true, obrigatorio: true },
       { k: 'nome', rotulo: 'Nome', tipo: 'texto', max: 60, col: true },
-      { k: 'glb', rotulo: 'Modelo (glb)', tipo: 'texto', max: 60, col: true, validar: s => /^[\w-]{1,60}$/.test(s) ? null : 'nome do prefab, ex.: Bag001', ajuda: 'Prefab em cenario/pc/<modelo>.glb (ex.: Bag001).' },
+      { k: 'glb', rotulo: 'Modelo (glb)', tipo: 'texto', max: 60, col: true, validar: s => /^[\w-]{1,60}$/.test(s) ? null : 'nome do prefab, ex.: Bag001', ajuda: 'Prefab em scenery/pc/<modelo>.glb (ex.: Bag001).' },
       { k: 'qualidade', rotulo: 'Qualidade', tipo: 'num', min: 0, max: 10, int: true, col: true },
       { k: 'sexo', rotulo: 'Quem pode usar', tipo: 'opcao', opcoes: [{ v: 0, rotulo: 'Todos' }, { v: 1, rotulo: 'Menino' }, { v: 2, rotulo: 'Menina' }] },
       { k: 'icone', rotulo: 'Ícone', tipo: 'texto', max: 60 },
@@ -218,7 +218,7 @@ export const ESQUEMAS = {
       { k: 'id', rotulo: 'ID', tipo: 'num', min: 1, max: 99999999, int: true, col: true, obrigatorio: true },
       { k: 'nome', rotulo: 'Nome', tipo: 'texto', max: 60, col: true },
       { k: 'sexo', rotulo: 'Sexo', tipo: 'opcao', opcoes: [{ v: 'menino', rotulo: 'Menino' }, { v: 'menina', rotulo: 'Menina' }], col: true },
-      { k: 'prefab', rotulo: 'Prefab', tipo: 'texto', max: 60, col: true, ajuda: 'Modelo em public/cenario/pc/<prefab>.glb.' },
+      { k: 'prefab', rotulo: 'Prefab', tipo: 'texto', max: 60, col: true, ajuda: 'Modelo em public/scenery/pc/<prefab>.glb.' },
       // as receitas (canais da máscara → partes) vivem no character.mjs (CANAIS/ROTULOS); o jogo lê este campo por prefab
       { k: 'tinta', rotulo: 'Cores editáveis', tipo: 'opcao', col: true, opcoes: [
         { v: 'fixo', rotulo: 'Não (visual fixo)' },
@@ -245,7 +245,7 @@ export const ESQUEMAS = {
         ajuda: '{ "chave": "nome" } — a ordem aqui é a ordem na tela de criação, e lá cabem uns 15 caracteres por nome. As chaves cabelo, pele, olhos, roupa e roupa2 ganham a paleta pronta do jogo.' },
       { k: 'padrao', rotulo: 'Cor padrão de cada parte', tipo: 'json', obrigatorio: true, validar: coresDasPartes, ajuda: '{ "chave": "#rrggbb" } — a cor com que a roupa nasce (a de fábrica do jogo original).' },
       { k: 'texturas', rotulo: 'Canais da máscara (avançado)', tipo: 'json', obrigatorio: true, validar: canaisDaMascara,
-        ajuda: 'Por material do modelo: R/G/B/K = a chave da parte que o canal pinta, [r, g, b] (0–1) pra cor fixa, ou null (fica como a textura). mask = arquivo em cenario/npc/mask.' },
+        ajuda: 'Por material do modelo: R/G/B/K = a chave da parte que o canal pinta, [r, g, b] (0–1) pra cor fixa, ou null (fica como a textura). mask = arquivo em scenery/npc/mask.' },
     ],
   },
   ...ESQUEMAS_F2,

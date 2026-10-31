@@ -27,7 +27,7 @@ browser game.
 npm install
 
 # 2. Start the game server (HTTP + WebSocket on port 5190)
-npm run servidor      # = node servidor.mjs
+npm run server        # = node server.mjs
 
 # 3. In a second terminal, start the game client (Vite on port 5300)
 npm run dev
@@ -46,7 +46,7 @@ panel, and troubleshooting), see **[`docs/STARTUP.md`](docs/STARTUP.md)**.
 | Command           | What it does                                             |
 | ----------------- | ------------------------------------------------------- |
 | `npm run dev`     | Start the Vite client with hot reload on port **5300**. |
-| `npm run servidor`| Start the game server (HTTP + WebSocket) on port **5190**. |
+| `npm run server`  | Start the game server (HTTP + WebSocket) on port **5190**. |
 | `npm run build`   | Build the client for production into `dist/`.            |
 | `npm run preview` | Serve the production build locally.                      |
 
@@ -91,18 +91,18 @@ Portuguese codebase.
 ## Project layout
 
 ```
-servidor.mjs          Game server entry point (HTTP + WebSocket, port 5190)
-servidor_*.mjs        Server modules: moderation, events, raids, resources
+server.mjs            Game server entry point (HTTP + WebSocket, port 5190)
+server_*.mjs          Server modules: moderation, events, raids, resources
 index.html            Game client entry point
 *.mjs                 Client game modules (battle, world, HUD, menus, networking, …)
 admin/                In-browser GM admin panel (map/scenery/data editors)
 public/               Static assets served by Vite
   data/               Game data as JSON (species, moves, map, missions, items, …)
   data/idioma/        Translation dictionaries (PT/EN/ES)
-  cenario/            Map and model .glb files served to the client
-cenario/              Source map .glb files (e.g. kanto.glb)
-som/                  Audio (music, skill sounds, UI)
-particulas/           Particle meshes and textures
+  scenery/            Map and model .glb files served to the client
+scenery/              Source map .glb files (e.g. kanto.glb)
+sound/                Audio (music, skill sounds, UI)
+particles/            Particle meshes and textures
 ui/                   UI art, icons, minimap
 vendor/three/         Bundled Three.js build and examples
 tools/                Helper scripts
@@ -110,7 +110,7 @@ docs/                 English documentation (startup, admin, glossary)
 ```
 
 > **Note:** live player data (accounts, saves, admin logs, backups) is stored under
-> `servidor/dados/` and is **gitignored** — it is never committed. The server recreates
+> `server/dados/` and is **gitignored** — it is never committed. The server recreates
 > that directory automatically on first run.
 
 ## Security notes
@@ -118,4 +118,4 @@ docs/                 English documentation (startup, admin, glossary)
 This project is intended to run **locally**. If you ever expose the server publicly,
 review [`docs/SECURITY.md`](docs/SECURITY.md) first: the server sends permissive CORS
 headers, keeps a legacy unsalted-password fallback for old accounts, and relies on you
-not committing the live `servidor/dados/` directory.
+not committing the live `server/dados/` directory.

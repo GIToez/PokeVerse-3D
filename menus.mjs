@@ -1610,7 +1610,7 @@ function dexEstado(){
   ctx.gravarLS('dex', d); return d;
 }
 /** Visor 3D duplo: um renderizador (canvas 1200×600) com duas viewports — Normal à esquerda e
-    ✨ Shiny à direita —, os dois em Idle girando juntos; arrastar gira. Modelos de cenario/mon com o
+    ✨ Shiny à direita —, os dois em Idle girando juntos; arrastar gira. Modelos de scenery/mon com o
     fogo/lodo do jogo; desconhecido = um "?" nos dois lados (19/09: o modelo nem é baixado). */
 function visorDex(){
   if (dexView) return dexView;
@@ -1662,7 +1662,7 @@ function texturaShiny(base){
     const img = new Image();
     img.onload = () => { const t = new THREE.Texture(img); t.name = nome + '_1'; t.flipY = base.flipY; t.colorSpace = base.colorSpace; t.wrapS = base.wrapS; t.wrapT = base.wrapT; t.repeat.copy(base.repeat); t.offset.copy(base.offset); t.minFilter = base.minFilter; t.magFilter = base.magFilter; t.anisotropy = base.anisotropy; t.channel = base.channel; t.needsUpdate = true; res(t); };
     img.onerror = () => { texShiny.delete(nome); res(null); };   // passe de progresso (19/09): 403 da borda não fica guardado — a próxima ficha tenta de novo
-    img.src = `./cenario/mon/shiny/${encodeURIComponent(nome)}_1.png`;
+    img.src = `./scenery/mon/shiny/${encodeURIComponent(nome)}_1.png`;
   }));
   return texShiny.get(nome);
 }
@@ -1699,7 +1699,7 @@ async function mostrarModeloDex(glb, conhecido){
   if (!glb) return false;
   if (!conhecido){ mostrarDesconhecidoDex(v); return true; }
   let g = cacheGlb.get(glb);
-  if (!g){ g = await new GLTFLoader().loadAsync('./cenario/mon/' + glb + '.glb'); cacheGlb.set(glb, g); if (cacheGlb.size > 8) cacheGlb.delete(cacheGlb.keys().next().value); }
+  if (!g){ g = await new GLTFLoader().loadAsync('./scenery/mon/' + glb + '.glb'); cacheGlb.set(glb, g); if (cacheGlb.size > 8) cacheGlb.delete(cacheGlb.keys().next().value); }
   if (selDexGlb !== glb) return false;
   const montar = shiny => {
     const obj = SkeletonUtils.clone(g.scene);

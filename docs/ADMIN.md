@@ -8,7 +8,7 @@ client running and logged in as a GM (see [`STARTUP.md`](STARTUP.md) step 6), op
 
 All edits are validated server-side against a whitelist of editable collections, written
 with an atomic swap, and backed up first (the last 30 versions of each file are kept
-under `servidor/dados/backups/`). Most changes reach any open game tab immediately; a few
+under `server/dados/backups/`). Most changes reach any open game tab immediately; a few
 ask for a page refresh (F5).
 
 ## Map editor

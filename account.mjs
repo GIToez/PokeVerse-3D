@@ -117,7 +117,7 @@ function guardarSessao(t, u, r){ token = t; usuario = u; rev = r || 0; gravar(LS
 function limparSessao(cookie = true){ token = null; usuario = null; rev = 0; for (const k of Object.values(LS)) apagar(k); apagarPasse(cookie); }
 
 /* ------------------------------------------------------------------ PASSE DE PROGRESSO (fase 2, 19/09)
-   "Só baixa quem progride": na borda (Worker da Cloudflare), `cenario/` só entrega a cena e o modelo de Pokémon que a CONTA já
+   "Só baixa quem progride": na borda (Worker da Cloudflare), `scenery/` só entrega a cena e o modelo de Pokémon que a CONTA já
    alcançou. A prova é o passe assinado pelo servidor (pass_rules.mjs), que viaja no cookie `pf_passe` (Path=/cenario).
    Quem grava o cookie é o CLIENTE, com o `{passe, exp}` que o servidor manda no JSON (login, cadastro, GET /save, GET /conta/passe)
    e no WebSocket (`{t:'passe'}`, network.mjs). O cookie tem Path=/cenario, então a página (em /) NÃO consegue lê-lo de volta pelo

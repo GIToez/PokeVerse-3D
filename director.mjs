@@ -70,14 +70,14 @@ function sinc(){ ctx.jogo.cinem = [...[1, 2].flatMap(n => [vivos[n].tr, vivos[n]
 
 /* ---------------------------------------------------------------- montagem */
 async function montarTreinador(perso, nick, cor, lugar){
-  const e = await ctx.montarPersonagem('./cenario/pc/' + ctx.Personagem.glbDe(perso) + '.glb', null, 0);
+  const e = await ctx.montarPersonagem('./scenery/pc/' + ctx.Personagem.glbDe(perso) + '.glb', null, 0);
   await ctx.Personagem.aplicar(e.pivo, perso); e.nome = nick; e.npc = true;
   const r = ctx.rotuloSprite(nick, cor, 2.0); r.position.set(0, (e.altura || 1.6) + 0.35, 0); e.pivo.add(r);
   ctx.cena.add(e.pivo); por(e, lugar.x, lugar.z, lugar.giro); return e;
 }
 async function montarMon(dex, lv, lugar, tam){
   const glb = 'pm' + String(dex).padStart(4, '0') + '_00';
-  const e = await ctx.montarPersonagem('./cenario/mon/' + glb + '.glb', null, 0);
+  const e = await ctx.montarPersonagem('./scenery/mon/' + glb + '.glb', null, 0);
   ctx.configurarSeguidor(e, glb); e.lv = lv || 50; e.maxHp = 99999; e.hp = 99999; e.chefe = true; e.npc = true;
   if (tam && e.altura){ e.pivo.scale.multiplyScalar(tam / e.altura); e.altura = tam; }
   ctx.cena.add(e.pivo); por(e, lugar.x, lugar.z, lugar.giro); return e;

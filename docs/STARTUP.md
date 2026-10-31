@@ -8,7 +8,7 @@ The game has two parts that must both be running:
 
 | Process        | Port   | Started by          | What it does                                   |
 | -------------- | ------ | ------------------- | ---------------------------------------------- |
-| **Game server**| `5190` | `node servidor.mjs` | Accounts, saves, multiplayer, the admin API.   |
+| **Game server**| `5190` | `node server.mjs`   | Accounts, saves, multiplayer, the admin API.   |
 | **Game client**| `5300` | `vite`              | Serves the browser game and the admin panel UI.|
 
 ## 1. Install Node.js
@@ -39,7 +39,7 @@ Open **two terminals** in the project folder.
 **Terminal 1 — game server:**
 
 ```bash
-npm run servidor
+npm run server
 ```
 
 You should see a banner and `HTTP + WebSocket na porta 5190`.
@@ -68,7 +68,7 @@ Português or Español with the **PT · EN · ES** bar on the login screen, by a
 
 On the login screen choose **Create account**, pick a username, email, and password.
 The server stores it (passwords are hashed with `scrypt` and a per-user salt) in
-`servidor/dados/contas.json`, which is created automatically and is **not** committed
+`server/dados/contas.json`, which is created automatically and is **not** committed
 to git.
 
 > Keep the recovery code the server returns on sign-up — it is how you reset the
@@ -84,7 +84,7 @@ grant GM to your own account once. Two options:
 others from the admin panel (**Players → Role → GM**).
 
 **Option B — bootstrap the first GM manually.** With the server **stopped**, edit
-`servidor/dados/contas.json` and add `"gm": true` to your account object, then start
+`server/dados/contas.json` and add `"gm": true` to your account object, then start
 the server again:
 
 ```json
@@ -122,14 +122,14 @@ host, append `?servidor=ws://host:5190` to the URL.
 | Symptom                                           | Fix                                                                                 |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `npm install` errors about optional/native deps   | Delete `node_modules/` and `package-lock.json` resolution issues, then reinstall.   |
-| Game loads but “no connection to server”          | Make sure `node servidor.mjs` is running and port **5190** is free.                 |
-| Port already in use                               | Stop the other process, or change the port (client: `vite.config.js`; server: the `listen(5190…)` call in `servidor.mjs`). |
+| Game loads but “no connection to server”          | Make sure `node server.mjs` is running and port **5190** is free.                   |
+| Port already in use                               | Stop the other process, or change the port (client: `vite.config.js`; server: the `listen(5190…)` call in `server.mjs`). |
 | UI still shows Portuguese after choosing English  | Expected for text that is not yet translated — the engine falls back to the source. See [Languages](../README.md#languages). |
 | Admin panel says “GM only”                        | Your account is not a GM yet — see step 6.                                           |
 | `npm audit` reports Vite advisories               | Dev-server only; run `npm audit fix` or bump Vite if you plan to expose it.          |
 
 ## What NOT to commit
 
-`servidor/dados/` holds live accounts, saves, admin logs, and backups. It is gitignored
+`server/dados/` holds live accounts, saves, admin logs, and backups. It is gitignored
 on purpose. Never add it to version control or share it — it contains password hashes
 and email addresses.

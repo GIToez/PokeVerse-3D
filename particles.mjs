@@ -26,7 +26,7 @@
  */
 import * as THREE from 'three';
 
-const BASE = './particulas';
+const BASE = './particles';
 /* O `?v=` da página chega até aqui pela URL do próprio módulo, e é repassado a
    todo fetch. Sem isso o navegador servia o JSON antigo do cache — o efeito
    vinha SEM o campo `malhas` e eu passei meia hora consertando um shader que

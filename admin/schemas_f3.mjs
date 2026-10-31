@@ -10,7 +10,7 @@ const ehObjeto = v => v && typeof v === 'object' && !Array.isArray(v);
 const corRGBA = v => (Array.isArray(v) && (v.length === 3 || v.length === 4) && v.every(n => typeof n === 'number' && n >= 0 && n <= 2))
   ? null : 'use [r, g, b, a] com números de 0 a 2 (1 = a textura como está) — ou escolha a cor na prévia acima';
 export const corHex = v => Array.isArray(v) ? '#' + v.slice(0, 3).map(n => Math.round(Math.max(0, Math.min(1, n)) * 255).toString(16).padStart(2, '0')).join('') : '';
-const nomePng = s => /^[\w .()-]{1,80}\.png$/i.test(s) ? null : 'nome de arquivo .png (em cenario/npc/mask)';
+const nomePng = s => /^[\w .()-]{1,80}\.png$/i.test(s) ? null : 'nome de arquivo .png (em scenery/npc/mask)';
 const canaisNeutros = v => (Array.isArray(v) && v.length <= 3 && v.every(c => ['R', 'G', 'B'].includes(c))) ? null : 'lista com "R", "G" e/ou "B" — ex.: ["G"]';
 
 // ── Textos ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -50,7 +50,7 @@ export const ESQUEMAS_F3 = {
       { k: 'ColorG', rotulo: 'Canal verde da máscara (G)', tipo: 'json', col: true, validar: corRGBA, resumo: corHex },
       { k: 'ColorB', rotulo: 'Canal azul da máscara (B)', tipo: 'json', col: true, validar: corRGBA, resumo: corHex },
       { k: 'ColorBlack', rotulo: 'Preto da máscara (o resto)', tipo: 'json', col: true, validar: corRGBA, resumo: corHex },
-      { k: 'mask', rotulo: 'Máscara', tipo: 'texto', max: 84, col: true, validar: s => s ? nomePng(s) : null, ajuda: 'PNG em cenario/npc/mask. Vazio = sem máscara (só o canal R pinta, como tom base).' },
+      { k: 'mask', rotulo: 'Máscara', tipo: 'texto', max: 84, col: true, validar: s => s ? nomePng(s) : null, ajuda: 'PNG em scenery/npc/mask. Vazio = sem máscara (só o canal R pinta, como tom base).' },
       { k: 'isMask', rotulo: 'Tinta', tipo: 'opcao', opcoes: [{ v: 0, rotulo: 'Pinta (normal)' }, { v: 1, rotulo: 'Não pinta (a textura já vem colorida)' }] },
       { k: 'neutralizar', rotulo: 'Recolorir textura já pintada (avançado)', tipo: 'json', validar: canaisNeutros,
         ajuda: 'Canais da máscara cuja cor original é trocada pelo cinza antes de pintar — pra recolorir um cabelo que já veio pintado. Ex.: ["G"].' },
@@ -109,7 +109,7 @@ export const ESQUEMAS_F3 = {
       { k: 'vagas', rotulo: 'Vagas na fila', tipo: 'num', min: 1, max: 50, int: true, ajuda: 'Original: 10.' },
       { k: 'chefeNome', rotulo: 'Nome do chefe', tipo: 'texto', max: 30, ajuda: 'Original: Mew.' },
       { k: 'chefeDex', rotulo: 'Espécie do chefe (nº)', tipo: 'num', min: 1, max: 2000, int: true, ajuda: 'Original: 151.' },
-      { k: 'chefeGlb', rotulo: 'Modelo do chefe', tipo: 'texto', max: 30, validar: s => /^pm\d{4}(_\d{2})?$/.test(s) ? null : 'ex.: pm0151_00', ajuda: 'cenario/mon/<modelo>.glb. Original: pm0151_00.' },
+      { k: 'chefeGlb', rotulo: 'Modelo do chefe', tipo: 'texto', max: 30, validar: s => /^pm\d{4}(_\d{2})?$/.test(s) ? null : 'ex.: pm0151_00', ajuda: 'scenery/mon/<modelo>.glb. Original: pm0151_00.' },
       { k: 'chefeNivel', rotulo: 'Nível do chefe', tipo: 'num', min: 1, max: 100, int: true, ajuda: 'Original: 70.' },
       { k: 'chefeHp', rotulo: 'Vida do chefe', tipo: 'num', min: 0, max: 10000000, int: true, ajuda: '0 = automática (pelo nº de jogadores). /raid hp N muda só naquela raid.' },
       { k: 'chefeDano', rotulo: 'Dano do chefe (×)', tipo: 'num', min: 0, max: 10, ajuda: '1 = normal. /raid dano F muda só naquela raid.' },

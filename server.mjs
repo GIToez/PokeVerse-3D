@@ -22,7 +22,7 @@ import { criarRecursos } from './server_resources.mjs';             // Fase 3: l
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
-const DADOS = nodePath.join(__dir, 'servidor/dados');
+const DADOS = nodePath.join(__dir, 'server/dados');
 fs.mkdirSync(DADOS, { recursive: true });
 
 const VERSAO_REDE = 15;   // deve bater com network.mjs
@@ -344,12 +344,12 @@ function usuarioDe(req) {
 /* Só conta GM. Edita os arquivos de dados que o JOGO lê (public/data/*.json, servidos pelo Vite), com cópia de segurança em
    servidor/dados/backups/ antes de cada gravação (fica com as 30 últimas de cada arquivo). Tudo que chega é LIMPO aqui. */
 const DADOS_PUB = nodePath.join(__dir, 'public/data');
-const MODELOS_DIR = nodePath.join(__dir, 'public/cenario/mon');
+const MODELOS_DIR = nodePath.join(__dir, 'public/scenery/mon');
 const BACKUPS = nodePath.join(DADOS, 'backups');
-// Os GLB de mapa ficam em DOIS lugares (a Vite serve os dois em /cenario/): public/cenario/ (ex.: pallet_rota1) e cenario/ na raiz
+// Os GLB de mapa ficam em DOIS lugares (a Vite serve os dois em /scenery/): public/scenery/ (ex.: pallet_rota1) e scenery/ na raiz
 // (os outros 72, incl. kanto). O editor lê/grava no MESMO lugar de onde o jogo carrega — public tem precedência no Vite.
-const CENARIO_PUB = nodePath.join(__dir, 'public/cenario');
-const CENARIO_RAIZ = nodePath.join(__dir, 'cenario');
+const CENARIO_PUB = nodePath.join(__dir, 'public/scenery');
+const CENARIO_RAIZ = nodePath.join(__dir, 'scenery');
 function caminhoGlb(m) {
   const pub = nodePath.join(CENARIO_PUB, m + '.glb'), raiz = nodePath.join(CENARIO_RAIZ, m + '.glb');
   if (fs.existsSync(pub)) return pub;
@@ -548,7 +548,7 @@ const httpServer = http.createServer((req, res) => {
       if (grande) return;
       const buf = Buffer.concat(chunks);
       if (buf.length < 12 || buf.readUInt32LE(0) !== 0x46546C67) return json(400, { erro: 'o corpo não é um GLB válido (header glTF).' });   // "glTF" = 0x46546C67
-      const arq = caminhoGlb(m);   // grava onde o jogo lê (public/cenario/ ou cenario/ raiz)
+      const arq = caminhoGlb(m);   // grava onde o jogo lê (public/scenery/ ou scenery/ raiz)
       try {
         fazerBackup(arq, true);
         const tmp = arq + '.tmp'; fs.writeFileSync(tmp, buf); fs.renameSync(tmp, arq);
@@ -768,7 +768,7 @@ const httpServer = http.createServer((req, res) => {
         return json(200, { ok: true, areas: Object.keys(areas).length });
       }
       // ── Editor de Cenário 3D: objetos (prefabs colocados) do mapa ──
-      if (rota === '/admin/mapas-glb' && req.method === 'GET') {           // mapas com .glb (public/cenario/ + cenario/ raiz) que têm <mapa>.json
+      if (rota === '/admin/mapas-glb' && req.method === 'GET') {           // mapas com .glb (public/scenery/ + scenery/ raiz) que têm <mapa>.json
         return json(200, { ok: true, mapas: mapasComGlb() });
       }
       if (rota === '/admin/mapa-objetos' && req.method === 'GET') {

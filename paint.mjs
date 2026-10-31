@@ -10,14 +10,14 @@
  * Em vez de um ShaderMaterial, a tinta é ASSADA na textura num canvas quando o modelo carrega —
  * o MeshStandardMaterial do GLB continua o mesmo (luz, sombra, skinning), só troca o `map`.
  * Os parâmetros por material estão em data/npc_tintas.json (gerado dos .mat do dump) e as
- * máscaras em cenario/npc/mask/.
+ * máscaras em scenery/npc/mask/.
  */
 import * as THREE from 'three';
 
 let TINTAS = null;
 const mascaras = new Map();
 const carregarImagem = url => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('máscara ' + url)); im.src = url; });
-const mascara = nome => { if (!mascaras.has(nome)) mascaras.set(nome, carregarImagem('./cenario/npc/mask/' + nome)); return mascaras.get(nome); };
+const mascara = nome => { if (!mascaras.has(nome)) mascaras.set(nome, carregarImagem('./scenery/npc/mask/' + nome)); return mascaras.get(nome); };
 
 async function tabela(){
   if (!TINTAS) TINTAS = await fetch('./data/npc_tintas.json').then(r => r.json()).catch(() => ({}));

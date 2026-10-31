@@ -14,7 +14,7 @@
  *   Blend SrcAlpha OneMinusSrcAlpha · ZWrite Off · Queue Transparent · Cull Back
  * Sem cubemap aqui: o reflexo vira um fresnel cinza.
  *
- * Texturas em cenario/lodo/ — só existem na PASTA DA ESPÉCIE do dump (PmEud/pm0088, pm0089);
+ * Texturas em scenery/lodo/ — só existem na PASTA DA ESPÉCIE do dump (PmEud/pm0088, pm0089);
  * glTF v = 1 − v do Unity, por isso o escorrer aqui é −0,1·t.
  *
  *   Lodo.aplicarLodo(corpo, 'pm0088_00');   // depois de clonar o GLB (como Fogo.aplicarFogo)
@@ -22,7 +22,7 @@
  */
 import * as THREE from 'three';
 
-const BASE = new URL('./cenario/lodo/', import.meta.url);
+const BASE = new URL('./scenery/lodo/', import.meta.url);
 /* _Color0 e texturas de cada material *_BetoMask.tga.mat do dump. */
 const RECEITAS = {
   pm0088: { beto: 'pm0089_00_Beto1.tga', mask: 'pm0088_00_BetoMask.tga', cor: [0.18490271, 0.06581523, 0.2735849, 0.43137255] },   // Grimer

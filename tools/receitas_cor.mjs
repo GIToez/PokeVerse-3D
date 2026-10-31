@@ -1,7 +1,7 @@
 /* Gera public/data/receitas_cor.json: as receitas de cor das roupas do jogo original que têm máscara RGB (Boy_012…022,
  * Girl_010…021). Uso: node tools/receitas_cor.mjs
  *
- * De onde sai cada receita: os materiais do GLB (public/cenario/pc/<Modelo>.glb) × data/npc_tintas.json (gerado dos .mat do
+ * De onde sai cada receita: os materiais do GLB (public/scenery/pc/<Modelo>.glb) × data/npc_tintas.json (gerado dos .mat do
  * dump: máscara + cor de fábrica de cada canal R/G/B/preto). No .mat, o 4º número da cor (alfa) = 1 marca o canal que o jogo
  * original deixava o jogador TINGIR — são esses que viram partes editáveis. Fora eles:
  *   • canal com o tom de pele de fábrica → parte "pele" (a mesma do Herói/Heroína);
@@ -10,7 +10,7 @@
  * Os NOMES das partes (cabelo, jaqueta…) vêm da tabela NOMES abaixo, conferidos pintando cada modelo com cores de sonda na
  * prévia do painel; canal sem nome vira "cor 1/2/3". Depois de gerado, o painel (Arquivos de dados → Receitas de cor) edita
  * nomes e cores padrão — rodar de novo SOBRESCREVE essas edições.
- * Modelo cuja máscara do corpo não existe em cenario/npc/mask fica de fora (a tinta sem máscara pinta a textura inteira). */
+ * Modelo cuja máscara do corpo não existe em scenery/npc/mask fica de fora (a tinta sem máscara pinta a textura inteira). */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -55,13 +55,13 @@ const jsonDoGlb = arq => { const b = fs.readFileSync(arq), n = b.readUInt32LE(12
 
 const saida = {}, fora = [];
 for (const modelo of MODELOS) {
-  const g = jsonDoGlb(path.join(RAIZ, 'public/cenario/pc', modelo + '.glb')), id = modelo.toLowerCase();
+  const g = jsonDoGlb(path.join(RAIZ, 'public/scenery/pc', modelo + '.glb')), id = modelo.toLowerCase();
   const r = { modelo, texturas: {}, rotulos: {}, padrao: {} };
   let n = 0, semMascara = null;
   for (const m of g.materials || []) {
     const t = T[modelo + ':' + m.name] || T[m.name];
     if (!t?.mask || t.isMask) continue;
-    if (!fs.existsSync(path.join(RAIZ, 'cenario/npc/mask', t.mask))) { semMascara = t.mask; continue; }
+    if (!fs.existsSync(path.join(RAIZ, 'scenery/npc/mask', t.mask))) { semMascara = t.mask; continue; }
     const rosto = /face/i.test(m.name), canais = { mask: t.mask };
     for (const [k, nomeCor] of [['R', 'ColorR'], ['G', 'ColorG'], ['B', 'ColorB'], ['K', 'ColorBlack']]) {
       const c = t[nomeCor] || [1, 1, 1, 0];

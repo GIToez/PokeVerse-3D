@@ -354,7 +354,7 @@ function escolherCards(){
         c.cena.add(new THREE.HemisphereLight(0xffffff, 0x556677, 1.2));
         const luz = new THREE.DirectionalLight(0xffffff, 1.6); luz.position.set(2, 4, 3); c.cena.add(luz);
         cards.push(c);
-        new GLTFLoader().loadAsync('./cenario/mon/' + d.glb + '.glb').then(g => {
+        new GLTFLoader().loadAsync('./scenery/mon/' + d.glb + '.glb').then(g => {
           const corpo = g.scene; corpo.traverse(o => { if (o.isMesh) o.frustumCulled = false; });
           const mix = new THREE.AnimationMixer(corpo);
           const idle = g.animations.find(a => a.name === 'Idle') || g.animations[0];
@@ -588,7 +588,7 @@ async function baixarJson(url, opcional = false){
 const contaP = Conta.garantir({ params: params0Cedo, layoutHudP: layoutHudCedoP, aoTela: () => { bootLoginNaFrente = true; if (!bootErroNaTela) $('boot').hidden = true; } });   // aoTela: some o "carregando" quando o login entra na frente — mas NUNCA por cima da tela de erro (rede ruim + sessão vencida inverte a ordem e o botão "Tentar de novo" sumia)
 contaP.catch(() => {});
 contaP.then(() => { bootLoginNaFrente = false; }, () => {});          // login fechou: o progresso volta a aparecer (antes o #boot ficava escondido até o fim da carga)
-/* PASSE DE PROGRESSO (fase 2, 19/09): no site, `cenario/` passa por um porteiro na borda que só entrega a cena (e o modelo) que a
+/* PASSE DE PROGRESSO (fase 2, 19/09): no site, `scenery/` passa por um porteiro na borda que só entrega a cena (e o modelo) que a
    CONTA já alcançou — inclusive Kanto: nenhuma cena é livre, então quem baixa é quem tem conta. O passe vai num cookie (account.mjs).
    Por isso a cena só é pedida DEPOIS de haver passe:
    - com sessão salva no aparelho: `GET /conta/passe` primeiro (até ~4 s; falhou, segue com o cookie que tiver). Se o cookie já
@@ -642,9 +642,9 @@ for (;;){                                                                // laç
 try {
   bootProgresso(0, I18n.t('baixando o mapa…'));
   [gltf, chao, dados, indice] = await Promise.all([
-    baixarBin('./cenario/' + NOME + '.glb', (f, n) => bootProgresso(f, I18n.t('baixando o mapa…'), n))
-      .then(buf => new GLTFLoader().parseAsync(buf, './cenario/')),      // os nossos .glb são fechados (não puxam .bin nem textura solta)
-    baixarJson('./cenario/' + NOME + '_chao.json'),
+    baixarBin('./scenery/' + NOME + '.glb', (f, n) => bootProgresso(f, I18n.t('baixando o mapa…'), n))
+      .then(buf => new GLTFLoader().parseAsync(buf, './scenery/')),      // os nossos .glb são fechados (não puxam .bin nem textura solta)
+    baixarJson('./scenery/' + NOME + '_chao.json'),
     baixarJson('./data/' + NOME + '.json'),
     baixarJson('./data/cenas.json', true),                               // índice das cenas, se existir
   ]);
@@ -2177,7 +2177,7 @@ async function prepararAgua(malhas){
   if (!alvo.length) return;
   const carregar = new THREE.TextureLoader();
   let tNormal, tFlow, tCaust;
-  try { [tNormal, tFlow, tCaust] = await Promise.all([carregar.loadAsync('./cenario/agua/normal.png'), carregar.loadAsync('./cenario/agua/flow.png'), carregar.loadAsync('./cenario/agua/caustics.png')]); }
+  try { [tNormal, tFlow, tCaust] = await Promise.all([carregar.loadAsync('./scenery/agua/normal.png'), carregar.loadAsync('./scenery/agua/flow.png'), carregar.loadAsync('./scenery/agua/caustics.png')]); }
   catch (e){ console.warn('água: sem texturas', e); return; }
   for (const t of [tNormal, tFlow, tCaust]){ t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.NoColorSpace; t.anisotropy = 4; }
   for (const m of alvo){
@@ -2931,7 +2931,7 @@ async function montar(glb, { trocar = false } = {}){
     if (meio !== 'terra') m.mergulho += Math.max(0, new THREE.Box3().setFromObject(m.pivo, true).min.y);   // corpo que PAIRA na pose (Qwilfish flutua 0,8 m acima da origem) afunda o mesmo tanto a mais, senao fica no ar em cima d'agua
     m.vel = +params0.get('montariaVel') || ash.vel * (def[6] || 25000) / 10000;   // ?montariaVel=8 → m/s fixo
     m.alturaVoo = m.voa ? 3.2 + m.altura * 0.35 : 0; m.fase = 0; m.rolagem = 0; m.quieto = 1; m.altAdm = 0;
-    /* Montaria SHINY: mesma malha, textura `_1.png` de cenario/mon/shiny — a mesma regra dos selvagens
+    /* Montaria SHINY: mesma malha, textura `_1.png` de scenery/mon/shiny — a mesma regra dos selvagens
        e da bancada. Aplicado AQUI, antes de o treinador ser sentado na sela: o Ash entra como filho do
        ESQUELETO do corpo, entao depois de montado a varredura pegaria ele junto, clonando os materiais
        dele e pedindo uma textura shiny que nao existe. `aplicarShinyCampo` clona os materiais da
@@ -2952,7 +2952,7 @@ async function montar(glb, { trocar = false } = {}){
     pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null;
     for (const s of jogo.selvagens || []) if (s.estado === 'atacando' && !s.chefe){ s.estado = 'vagando'; s.pausa = 1; s.investida = null; }
     jogo.montaria = m; semCorte(m);                                      // a montaria carrega o jogador: nunca cortada
-    /* Montaria SHINY: mesma malha, textura `_1.png` de cenario/mon/shiny — a mesma regra dos
+    /* Montaria SHINY: mesma malha, textura `_1.png` de scenery/mon/shiny — a mesma regra dos
        selvagens e da bancada. `aplicarShinyCampo` clona os materiais antes de trocar, entao a
        montaria nao contamina outros clones da especie. Hoje liga por `?montariaShiny=1`; quando
        a montaria virar Pokemon do time, e so ler o `shiny` do registro dele. */
@@ -3419,10 +3419,10 @@ if (JOGAR){
     }
     const perso = (FAIRY || DEMO) ? null : Personagem.ler();      // skin escolhida; Fairy e demo ficam com o Ash
     const [ash, pika] = await Promise.all([
-      montarPersonagemBoot('./cenario/pc/' + Personagem.glbDe(perso) + '.glb', +params0.get('ash') || null, (+(params0.get('ashgiro') || 0)) * Math.PI / 180)
-        .catch(e => { console.warn('skin do treinador:', e); return montarPersonagemBoot('./cenario/pc/Male_XiaoZhi.glb', +params0.get('ash') || null, 0); }),   // GLB da skin faltando: cai no Ash (17/09: queda de rede não chega aqui, fica na caixa "Tentar de novo" do montarPersonagemBoot)
-      montarPersonagemBoot('./cenario/mon/' + (params0.get('seguidor') || 'pm0025_00').replace(/\.glb$/, '') + '.glb', +params0.get('pika') || null, (+(params0.get('pikagiro') || 0)) * Math.PI / 180)
-        .catch(e => { if (e?.status === 403 && params0.get('seguidor')){ console.warn('seguidor pedido na URL negado pela borda: entra o Pikachu', e); params0.delete('seguidor'); return montarPersonagemBoot('./cenario/mon/pm0025_00.glb', +params0.get('pika') || null, 0); } throw e; }),   // passe de progresso: o Pikachu do boot está no passe de toda conta
+      montarPersonagemBoot('./scenery/pc/' + Personagem.glbDe(perso) + '.glb', +params0.get('ash') || null, (+(params0.get('ashgiro') || 0)) * Math.PI / 180)
+        .catch(e => { console.warn('skin do treinador:', e); return montarPersonagemBoot('./scenery/pc/Male_XiaoZhi.glb', +params0.get('ash') || null, 0); }),   // GLB da skin faltando: cai no Ash (17/09: queda de rede não chega aqui, fica na caixa "Tentar de novo" do montarPersonagemBoot)
+      montarPersonagemBoot('./scenery/mon/' + (params0.get('seguidor') || 'pm0025_00').replace(/\.glb$/, '') + '.glb', +params0.get('pika') || null, (+(params0.get('pikagiro') || 0)) * Math.PI / 180)
+        .catch(e => { if (e?.status === 403 && params0.get('seguidor')){ console.warn('seguidor pedido na URL negado pela borda: entra o Pikachu', e); params0.delete('seguidor'); return montarPersonagemBoot('./scenery/mon/pm0025_00.glb', +params0.get('pika') || null, 0); } throw e; }),   // passe de progresso: o Pikachu do boot está no passe de toda conta
     ]);
     if (perso) await Personagem.aplicar(ash.pivo, perso);          // cores dos heróis tintáveis (nas skins fixas não faz nada)
     ash.vel = 3.6; pika.vel = 4.2;                 // um pouco mais devagar: o clipe de corrida toca a 1× e escorrega menos
@@ -3467,7 +3467,7 @@ if (JOGAR){
       // os iniciais do Fairy vêm grandes no GLB (Bulbasaur 1,49 m): mira ~0,8 m antes do fator do jogo
       const ALT = { pm0001: 0.9, pm0004: 0.8, pm0007: 0.65, pm0152: 0.9, pm0155: 0.7, pm0158: 0.7 };
       const alt = ALT[glbNome.slice(0, 6)] || 0.8;
-      const novo = await (doBoot ? montarPersonagemBoot : montarPersonagem)('./cenario/mon/' + glbNome.replace(/\.glb$/, '') + '.glb', FAIRY ? alt : null, 0);
+      const novo = await (doBoot ? montarPersonagemBoot : montarPersonagem)('./scenery/mon/' + glbNome.replace(/\.glb$/, '') + '.glb', FAIRY ? alt : null, 0);
       novo.vel = 4.2; configurarSeguidor(novo, glbNome);
       if (FAIRY){ novo.pivo.scale.setScalar(1); novo.fatorTam = 1; novo.altura = novo.alturaBase = alt; }   // no Fairy o inicial fica em escala de série
       else { jogo.pika = novo; aplicarTamanho(novo); gravarLS('seguidor', glbNome.replace(/\.glb$/, '')); Rede.parceiroAgora?.(); }   // no mundo: mesma régua do mato; lembra pra próxima cena; a sala sabe da troca no próximo quadro (13/09)
@@ -3484,7 +3484,7 @@ if (JOGAR){
       const velho = jogo.ash; if (!velho || jogo.montaria || jogo.trocandoJogador) return velho;
       jogo.trocandoJogador = true;
       try {
-        const novo = await montarPersonagem('./cenario/pc/' + Personagem.glbDe(p) + '.glb', +params0.get('ash') || null, 0);
+        const novo = await montarPersonagem('./scenery/pc/' + Personagem.glbDe(p) + '.glb', +params0.get('ash') || null, 0);
         await Personagem.aplicar(novo.pivo, p);
         novo.vel = velho.vel; novo.x = velho.x; novo.z = velho.z; novo.y = velho.y; novo.vx = velho.vx; novo.vz = velho.vz; novo.vy = velho.vy; novo.giro = velho.giro;
         novo.pivo.position.set(novo.vx, novo.vy, novo.vz); novo.pivo.rotation.y = velho.pivo.rotation.y; tocarAnim(novo, 'Idle');
@@ -3656,7 +3656,7 @@ if (JOGAR){
   const rota1 = dados.caixas.find(c => c.a === 1201);
   if (rota1){
     try {
-      const g = await new GLTFLoader().loadAsync('./cenario/mon/pm0017_00.glb');
+      const g = await new GLTFLoader().loadAsync('./scenery/mon/pm0017_00.glb');
       const alturaArvore = principal.alturaDe?.get('tree') ?? 3;
       const N = +(params0.get('pidgeotto') || 5);
       for (let i = 0; i < N; i++){
@@ -3737,7 +3737,7 @@ const TAXA_SHINY = Math.max(2, +params0.get('shinyTaxa') || cfgInt('taxaShiny', 
 const texShinyCampo = new Map();
 const esperandoShiny = new Map();                                       // 14/09: raízes que pediram a textura antes de ela carregar (seguidor, montaria, parceiro do outro) — reaplica no onload
 const shinyFalhou = new Set();                                          // passe de progresso (19/09): textura shiny que não veio (403/404) — o passe-novo tenta de novo
-/** Shiny de campo: troca a textura pela `X_1.png` de cenario/mon/shiny (mesma regra da bancada).
+/** Shiny de campo: troca a textura pela `X_1.png` de scenery/mon/shiny (mesma regra da bancada).
     Materiais são COMPARTILHADOS entre clones da espécie — quem vira shiny clona os seus antes. */
 /* A textura NORMAL de cada material fica AQUI, não em `userData`: `Material.clone()` serializa o userData em JSON e a
    textura virava um objeto morto (repeat como array → NaN, wrapS sumia → a dobra de meio-atlas quebrava). Era o
@@ -3764,7 +3764,7 @@ function aplicarShinyCampo(raiz, liga){
         const img = new Image();
         img.onload = () => { const t2 = new THREE.Texture(img); t2.name = nome + '_1'; t2.flipY = base.flipY; t2.colorSpace = base.colorSpace; t2.wrapS = base.wrapS; t2.wrapT = base.wrapT; t2.repeat.copy(base.repeat); t2.offset.copy(base.offset); t2.minFilter = base.minFilter; t2.magFilter = base.magFilter; t2.channel = base.channel; t2.needsUpdate = true; texShinyCampo.set(nome, t2); for (const r of (esperandoShiny.get(nome) || [])) aplicarShinyCampo(r, true); esperandoShiny.delete(nome); for (const s of jogo.selvagens) if (s.shiny) aplicarShinyCampo(s.pivo, true); if (jogo.montaria?.shiny) aplicarShinyCampo(jogo.montaria.corpo, true); };   // a montaria pode ter sido montada antes de a textura chegar
         img.onerror = () => { shinyFalhou.add(nome); };                 // fica null (não pede de novo a cada selvagem); o passe-novo apaga e tenta outra vez
-        img.src = './cenario/mon/shiny/' + encodeURIComponent(nome) + '_1.png';
+        img.src = './scenery/mon/shiny/' + encodeURIComponent(nome) + '_1.png';
       }
       const t2 = texShinyCampo.get(nome);
       if (!t2){ if (!esperandoShiny.has(nome)) esperandoShiny.set(nome, new Set()); esperandoShiny.get(nome).add(raiz); }   // ainda carregando: volta aqui no onload
@@ -3963,7 +3963,7 @@ async function carregarGlbMon(url){
 const glbNegados = new Set();
 const modeloMon = glb => {
   if (glbNegados.has(glb)){ const e = new Error('negado: ' + glb); e.status = 403; e.negado = true; return Promise.reject(e); }
-  if (!modelosMon.has(glb)) modelosMon.set(glb, carregarGlbMon('./cenario/mon/' + glb).catch(e => {
+  if (!modelosMon.has(glb)) modelosMon.set(glb, carregarGlbMon('./scenery/mon/' + glb).catch(e => {
     modelosMon.delete(glb);
     if (e?.status === 403 || e?.status === 404) glbNegados.add(glb);
     throw e;
@@ -5172,7 +5172,7 @@ const modelosBola = new Map();
    é o mesmo (Origin › loc_attach › Waist › LowerParts/UpperParts), então os clipes encaixam. */
 const modeloBola = id => {
   if (!modelosBola.has(id)) modelosBola.set(id, (async () => {
-    const g = await new GLTFLoader().loadAsync('./cenario/pc/' + id + '.glb');
+    const g = await new GLTFLoader().loadAsync('./scenery/pc/' + id + '.glb');
     if (String(id) !== '1001'){ const base = await modeloBola('1001'); g.animations = base.animations; }
     return g;
   })());
@@ -5781,7 +5781,7 @@ async function evoluirParceiro(opcao = null){
   jogo.evoluindo = true; jogo.trocandoSeguidor = true; interagindo = true; const nomeAntes = p.nome;
   const flash = flashTela();
   try {
-    const carregando = new GLTFLoader().loadAsync('./cenario/mon/' + alvo.glb + '.glb').catch(() => null);   // aquece o cache
+    const carregando = new GLTFLoader().loadAsync('./scenery/mon/' + alvo.glb + '.glb').catch(() => null);   // aquece o cache
     p.alvoX = null; p.travaAnim = 0; tocarAnim(p, 'Idle'); flutuar(p, 'está evoluindo…', '#ffe07a');
     Som.tocar('ui/sound_evolution', { volume: .8, prio: true });
     let raio = 8.7; try { raio = Part.raioNatural(await Part.carregar('FX_Evolution2')) || raio; } catch {}
@@ -6322,13 +6322,13 @@ async function rodarIntro({ configurarSeguidor }){
   const chao = (x, z) => chaoEm(x, z) ?? ash.y;
   const por = (e, x, z, olharZ) => { e.x = x; e.z = z; e.y = chao(x, z); e.vx = x; e.vz = z; e.vy = e.y; e.giro = Math.atan2(0, olharZ - z); e.pivo.position.set(x, e.y, z); e.pivo.rotation.y = e.giro; tocarAnim(e, 'Idle'); };
   const treinador = async (perso, x, z, olharZ, nome, cor) => {
-    const e = await montarPersonagem('./cenario/pc/Boy_002.glb', null, 0);
+    const e = await montarPersonagem('./scenery/pc/Boy_002.glb', null, 0);
     await Personagem.aplicar(e.pivo, perso); e.nome = nome; e.npc = true;
     const r = rotuloSprite(nome, cor, 2.0); r.position.set(0, (e.altura || 1.6) + 0.35, 0); e.pivo.add(r);
     cena.add(e.pivo); por(e, x, z, olharZ); return e;
   };
   const mon = async (glb, lv, x, z, olharZ) => {
-    const e = await montarPersonagem('./cenario/mon/' + glb + '.glb', null, 0);
+    const e = await montarPersonagem('./scenery/mon/' + glb + '.glb', null, 0);
     configurarSeguidor(e, glb); e.lv = lv; e.maxHp = 99999; e.hp = 99999; e.chefe = true; e.npc = true;   // chefe: não desmaia no sonho
     cena.add(e.pivo); por(e, x, z, olharZ); return e;
   };
@@ -6417,13 +6417,13 @@ async function rodarRaid({ configurarSeguidor }){
   };
   const por = (e, x, z, olharX, olharZ) => { e.x = x; e.z = z; e.y = chao(x, z); e.vx = x; e.vz = z; e.vy = e.y; e.giro = Math.atan2(olharX - x, olharZ - z); e.pivo.position.set(x, e.y, z); e.pivo.rotation.y = e.giro; tocarAnim(e, 'Idle'); };
   const treinador = async (perso, nick, cor, x, z, olharX, olharZ) => {
-    const e = await montarPersonagem('./cenario/pc/' + Personagem.glbDe(perso) + '.glb', null, 0);
+    const e = await montarPersonagem('./scenery/pc/' + Personagem.glbDe(perso) + '.glb', null, 0);
     await Personagem.aplicar(e.pivo, perso); e.nome = nick; e.npc = true;
     const r = rotuloSprite(nick, cor, 1.9); r.position.set(0, (e.altura || 1.6) + 0.35, 0); e.pivo.add(r);
     cena.add(e.pivo); por(e, x, z, olharX ?? cx, olharZ ?? zN); return e;
   };
   const mon = async (glb, lv, x, z, olharX, olharZ) => {
-    const e = await montarPersonagem('./cenario/mon/' + glb + '.glb', null, 0);
+    const e = await montarPersonagem('./scenery/mon/' + glb + '.glb', null, 0);
     configurarSeguidor(e, glb); e.lv = lv; e.maxHp = 99999; e.hp = 99999; e.chefe = true; e.npc = true;
     cena.add(e.pivo); por(e, x, z, olharX, olharZ); return e;
   };
@@ -6552,14 +6552,14 @@ async function rodarTorneio({ configurarSeguidor }){
   const chao = (x, z) => chaoEm(x, z) ?? ash.y;
   const por = (e, x, z, olharX, olharZ) => { e.x = x; e.z = z; e.y = chao(x, z); e.vx = x; e.vz = z; e.vy = e.y; e.giro = Math.atan2(olharX - x, olharZ - z); e.pivo.position.set(x, e.y, z); e.pivo.rotation.y = e.giro; tocarAnim(e, 'Idle'); };
   const treinador = async (perso, nick, cor, x, z, olharX, olharZ) => {
-    const e = await montarPersonagem('./cenario/pc/' + Personagem.glbDe(perso) + '.glb', null, 0);
+    const e = await montarPersonagem('./scenery/pc/' + Personagem.glbDe(perso) + '.glb', null, 0);
     await Personagem.aplicar(e.pivo, perso); e.nome = nick; e.npc = true;
     const r = rotuloSprite(nick, cor, 2.0); r.position.set(0, (e.altura || 1.6) + 0.35, 0); e.pivo.add(r);
     cena.add(e.pivo); por(e, x, z, olharX, olharZ); return e;
   };
   const TAMS = { pm0006_00: 2.0, pm0009_00: 1.9, pm0149_00: 2.1, pm0059_00: 1.9 };
   const mon = async (glb, lv, x, z, olharX, olharZ) => {
-    const e = await montarPersonagem('./cenario/mon/' + glb + '.glb', null, 0);
+    const e = await montarPersonagem('./scenery/mon/' + glb + '.glb', null, 0);
     configurarSeguidor(e, glb); e.lv = lv; e.maxHp = 99999; e.hp = 99999; e.chefe = true; e.npc = true;
     const alvo = TAMS[glb]; if (alvo && e.altura){ e.pivo.scale.multiplyScalar(alvo / e.altura); e.altura = alvo; }
     cena.add(e.pivo); por(e, x, z, olharX, olharZ); return e;
@@ -6876,13 +6876,13 @@ async function montarNpcs(){
   }
   // if (jogo.npcs.length) console.log('npcs na cena:', jogo.npcs.map(e => e.nome).join(', '));   // debug silenciado (floodava o console)
 }
-/* MODELO DE NPC NEGADO PELA BORDA (20/09, revisão do passe fechado): desde que `cenario/npc/` deixou de ser livre, o modelo de um
+/* MODELO DE NPC NEGADO PELA BORDA (20/09, revisão do passe fechado): desde que `scenery/npc/` deixou de ser livre, o modelo de um
    NPC pode voltar 403. O `montarNpcs` roda UMA VEZ por cena, então um 403 solto deixaria o NPC faltando até a cena recarregar —
    e o `montarLiderGinasio` trocaria o líder pelo treinador genérico. A janela em que isso acontece é a do cookie que sumiu com o
    jogo aberto (o Safari corta cookie gravado por script; há quem limpe os cookies com a aba aberta): o passe continua no espelho
    do localStorage, então repor o cookie e tentar UMA vez resolve. O `montarPersonagem` já tira a promessa falhada do cache. */
 async function montarNpcGlb(glb){
-  const arq = './cenario/' + glb + '.glb';
+  const arq = './scenery/' + glb + '.glb';
   try { return await montarPersonagem(arq, null, 0); }
   catch (e){
     if (e?.status !== 403 || Conta.estado().modo !== 'conta' || !Conta.reporCookie()) throw e;
@@ -6892,7 +6892,7 @@ async function montarNpcGlb(glb){
 }
 /** Líder de ginásio no interior: um treinador ⚔ com o time do ginásio; o modelo do dump se exportado, senão um treinador genérico. */
 async function montarLiderGinasio(g, n){
-  let e; try { e = await montarNpcGlb(g.glb); } catch { e = await montarPersonagem('./cenario/npc/fc1004_00.glb', null, 0); }
+  let e; try { e = await montarNpcGlb(g.glb); } catch { e = await montarPersonagem('./scenery/npc/fc1004_00.glb', null, 0); }
   const tem = (lerLS('insignias', []) || []).includes(g.insignia.id);
   e.npc = true; e.papel = 'treinador'; e.cfg = n.cfg; e.ginasio = g; e.spotKey = 'ginasio:' + g.numero; e.nome = g.lider;
   e.treino = { nome: g.lider, time: g.time, dinheiro: g.dinheiro, fala: g.fala, vitoria: g.vitoria, derrota: g.derrota };
@@ -6905,7 +6905,7 @@ async function montarLiderGinasio(g, n){
 }
 /** Membro da ELITE FOUR no quarto dele: um treinador ⚔ como o líder de ginásio, com o time montado pelo SERVIDOR. */
 async function montarMembroElite(M, n){
-  let e; try { e = await montarPersonagem('./cenario/' + M.glb + '.glb', null, 0); } catch { e = await montarPersonagem('./cenario/npc/NPC1007.glb', null, 0); }
+  let e; try { e = await montarPersonagem('./scenery/' + M.glb + '.glb', null, 0); } catch { e = await montarPersonagem('./scenery/npc/NPC1007.glb', null, 0); }
   e.npc = true; e.papel = 'treinador'; e.cfg = n.cfg; e.elite = M; e.spotKey = 'elite:' + M.ordem; e.nome = M.nome;
   e.treino = { nome: M.nome, time: M.time, dinheiro: 0, fala: M.falaAntes || [], vitoria: M.falaDerrota || [], derrota: M.falaVitoria || [] };   // `vitoria`/`derrota` do motor são vistas DO JOGADOR: quando eu venço, ele diz a falaDerrota dele
   e.falas = e.treino.fala;
@@ -7049,7 +7049,7 @@ async function montarMesaInicial(n){
     if (hs.length) y = hs[0].point.y;
   } catch {}
   cena.traverse(o => { if (o.isMesh && /pokeball/i.test(o.name || '') && Math.hypot(o.position.x - x, o.position.z - z) < 3) o.visible = false; });   // adereço original, se veio no GLB
-  const g = await new GLTFLoader().loadAsync('./cenario/pc/1001.glb');
+  const g = await new GLTFLoader().loadAsync('./scenery/pc/1001.glb');
   const altura = new THREE.Box3().setFromObject(g.scene).getSize(new THREE.Vector3()).y || 1;
   const grupo = new THREE.Group(); grupo.position.set(x, y, z); cena.add(grupo);
   const bolas = [];
@@ -7109,7 +7109,7 @@ function darExp(p, n){
    igual pra grade de 3 cartas (PC) e pra lista empilhada (celular). Modelos com o fogo/lodo do
    jogo, em Idle; o selecionado gira (e dá pra arrastar), os outros só balançam de leve. */
 let palcoIni = null; const modelosPalco = new Map();
-const modeloPalco = glb => { if (!modelosPalco.has(glb)) modelosPalco.set(glb, new GLTFLoader().loadAsync('./cenario/mon/' + glb + '.glb').catch(e => { modelosPalco.delete(glb); throw e; })); return modelosPalco.get(glb); };   // falhou (403 da borda, rede): a próxima montagem tenta de novo
+const modeloPalco = glb => { if (!modelosPalco.has(glb)) modelosPalco.set(glb, new GLTFLoader().loadAsync('./scenery/mon/' + glb + '.glb').catch(e => { modelosPalco.delete(glb); throw e; })); return modelosPalco.get(glb); };   // falhou (403 da borda, rede): a próxima montagem tenta de novo
 function palcoIniciais(){
   if (palcoIni) return palcoIni;
   const canvas = document.createElement('canvas'); canvas.className = 'palco-3d';
@@ -8402,7 +8402,7 @@ async function povoarTreinadores(){
       cfgsMontados.add(spot.cfg);
       spot.montado = true; novos++;
       try {
-        const e = await montarPersonagem('./cenario/npc/' + info.glb + '.glb', null, 0);
+        const e = await montarPersonagem('./scenery/npc/' + info.glb + '.glb', null, 0);
         const spotKey = spot.cfg + '@' + Math.round(spot.x) + ',' + Math.round(spot.z);
         const venceu = treinadorVencido(spot.cfg, vencidos);                // 17/09: pelo cfg, não pela vaga (ver treinadorVencido)
         e.npc = true; e.papel = 'treinador'; e.cfg = spot.cfg; e.treino = renivelarTreinador(info, spot.a); e.spotKey = spotKey; e.spot = spot;

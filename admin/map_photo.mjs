@@ -29,7 +29,7 @@ async function carregar(nome, dados) {
 }
 
 async function fotografar(nome, dados) {
-  const g = await new GLTFLoader().loadAsync('/cenario/' + nome + '.glb');
+  const g = await new GLTFLoader().loadAsync('/scenery/' + nome + '.glb');
   g.scene.updateMatrixWorld(true);
   const raiz = g.scene.getObjectByName('Mapa') || g.scene;
   const amostra = raiz.children.slice(0, 10).map(n => n.name || '');

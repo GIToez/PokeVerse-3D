@@ -77,7 +77,7 @@ function aoClicar(ev) {
   if (b.classList.contains('tocar')) {
     const f = b.dataset.f;
     if (tocando === f) { audio.pause(); tocando = null; }
-    else { audio.src = '/som/' + f + '.ogg'; audio.play().then(() => { tocando = f; marcarTocando(); }).catch(() => { tocando = null; marcarTocando(); b.textContent = '⚠'; }); }
+    else { audio.src = '/sound/' + f + '.ogg'; audio.play().then(() => { tocando = f; marcarTocando(); }).catch(() => { tocando = null; marcarTocando(); b.textContent = '⚠'; }); }
     marcarTocando();
   }
 }

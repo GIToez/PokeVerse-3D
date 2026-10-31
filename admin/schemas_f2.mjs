@@ -193,7 +193,7 @@ export const ESQUEMAS_F2 = {
       { k: 'gen', rotulo: 'Geração', tipo: 'num', int: true, min: 1, max: 9, col: true, obrigatorio: true, ajuda: 'Uma aba por geração na escolha do inicial; a 1 é a da mesa do Oak.' },
       { k: 'dex', rotulo: 'Nº (dex)', tipo: 'num', int: true, min: 1, max: 2000, col: true, obrigatorio: true },
       { k: 'nome', rotulo: 'Nome', tipo: 'texto', max: 40, col: true, obrigatorio: true },
-      { k: 'glb', rotulo: 'Modelo', tipo: 'texto', max: 20, col: true, obrigatorio: true, validar: s => RE_GLB_MON.test(s) ? null : 'modelo do Pokémon, ex.: pm0001_00', ajuda: 'Arquivo cenario/mon/<modelo>.glb.' },
+      { k: 'glb', rotulo: 'Modelo', tipo: 'texto', max: 20, col: true, obrigatorio: true, validar: s => RE_GLB_MON.test(s) ? null : 'modelo do Pokémon, ex.: pm0001_00', ajuda: 'Arquivo scenery/mon/<modelo>.glb.' },
       { k: 'tipos', rotulo: 'Tipos', tipo: 'linhas', obrigatorio: true, resumo: v => (v || []).map(t => TIPOS[t] || t).join(' / '),
         validar: v => v.length >= 1 && v.length <= 2 && v.every(t => TIPOS[t]) ? null : 'um ou dois, um por linha, em inglês: ' + Object.keys(TIPOS).join(', ') },
     ],

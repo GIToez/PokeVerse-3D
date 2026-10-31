@@ -1,6 +1,6 @@
 /* Prévia do treinador NPC (esquema `treinadores`): o modelo 3D do NPC no MESMO palco da tela de criação (character.mjs
  * criarPalco: Idle, gira sozinho, arrastar gira) e o time com nome e ícone de cada Pokémon (ui/mon/pmNNNN.png).
- * O palco busca em cenario/pc/; o NPC fica em cenario/npc/, então o glb vai como '../npc/<modelo>' (a URL se resolve sozinha).
+ * O palco busca em scenery/pc/; o NPC fica em scenery/npc/, então o glb vai como '../npc/<modelo>' (a URL se resolve sozinha).
  * A tinta de fábrica de alguns NPCs é por modelo (`<glb>:<material>` no npc_tintas.json): reaplica com o nome do GLB. */
 import { criarPalco } from '/character.mjs';
 import * as Tinta from '/paint.mjs';
@@ -45,7 +45,7 @@ export async function atualizar(r) {
   let it;
   const caminho = glb.includes('/') ? glb : 'npc/' + glb;              // NPCs (npcs_glb) já vêm com a pasta: npc/… ou mon/…
   try { it = await montar({ id: glb, glb: '../' + caminho, nome: glb }); }
-  catch { if (atual === glb) { P.descartar(glb); info.classList.add('aviso'); info.innerHTML = `⚠ Modelo não encontrado: <code>cenario/${esc(caminho)}.glb</code>. No jogo ele não aparece.`; } return; }
+  catch { if (atual === glb) { P.descartar(glb); info.classList.add('aviso'); info.innerHTML = `⚠ Modelo não encontrado: <code>scenery/${esc(caminho)}.glb</code>. No jogo ele não aparece.`; } return; }
   if (atual !== glb || !it?.pronto) return;
   await Tinta.aplicarTinta(it.obj, glb);
   P.selecionar(glb); palco.classList.add('pronto');

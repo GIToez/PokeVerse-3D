@@ -68,7 +68,7 @@ export async function atualizar(r) {
   info('carregando ' + esc(glb) + '…');
   let it;
   try { it = await montar({ id, glb, tinta: t, nome: glb }); }
-  catch { if (atual.id === id) { P.descartar(id); info(`⚠ Modelo não encontrado: <code>public/cenario/pc/${esc(glb)}.glb</code>. No jogo esta skin não carrega.`, true); } return; }
+  catch { if (atual.id === id) { P.descartar(id); info(`⚠ Modelo não encontrado: <code>public/scenery/pc/${esc(glb)}.glb</code>. No jogo esta skin não carrega.`, true); } return; }
   if (atual.id !== id || !it?.pronto) return;
   P.selecionar(id); palco.classList.add('pronto');
   const nomes = await texturasDo(it.obj);

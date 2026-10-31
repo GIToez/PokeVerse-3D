@@ -1,4 +1,4 @@
-/* Prévia da Raid (esquema raid, Fase 3): o chefe em 3D (cenario/mon/<modelo>.glb, no palco da tela de criação — arrastar gira)
+/* Prévia da Raid (esquema raid, Fase 3): o chefe em 3D (scenery/mon/<modelo>.glb, no palco da tela de criação — arrastar gira)
  * com nome e nível, e a arena pelo nome que o jogador vê (data/cenas.json). Campo vazio = o valor original (Mew, 4120009). */
 import { criarPalco } from '/character.mjs';
 import { nomesDeLugares, recurso } from '/admin/resources.mjs';
@@ -33,7 +33,7 @@ export async function atualizar(r) {
   const glb = String(v('chefeGlb'));
   const el = raiz.querySelector('.previa-info');
   const avisos = [!nomeArena ? `⚠ A cena <b>${esc(arena)}</b> não existe no cenas.json — a fila leva pra lugar nenhum.` : '',
-    !modelos.includes(glb) ? `⚠ O modelo <code>cenario/mon/${esc(glb)}.glb</code> não existe nesta cópia.` : ''].filter(Boolean);
+    !modelos.includes(glb) ? `⚠ O modelo <code>scenery/mon/${esc(glb)}.glb</code> não existe nesta cópia.` : ''].filter(Boolean);
   el.innerHTML = `<b>${esc(v('chefeNome'))}</b> Nv ${esc(v('chefeNivel'))} · arena <b>${esc(nomeArena || arena)}</b> (${esc(arena)}) · ${esc(v('vagas'))} vagas` + (avisos.length ? '<br>' + avisos.join('<br>') : '');
   el.classList.toggle('aviso', avisos.length > 0);
   if (glb === atual) return;
@@ -41,7 +41,7 @@ export async function atualizar(r) {
   atual = glb; it = null;
   const palco = raiz.querySelector('.palco'); palco.dataset.id = glb; palco.classList.remove('pronto');
   if (!modelos.includes(glb)) return;
-  try { it = await P.montar({ id: glb, glb: '../mon/' + glb, nome: glb }); } catch { return; }   // o palco busca em cenario/pc/
+  try { it = await P.montar({ id: glb, glb: '../mon/' + glb, nome: glb }); } catch { return; }   // o palco busca em scenery/pc/
   if (atual !== glb || !it?.pronto) return;
   P.selecionar(glb); palco.classList.add('pronto');
 }

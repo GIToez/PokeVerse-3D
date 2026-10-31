@@ -3,7 +3,7 @@
  * De onde vem cada coisa:
  *   <mapa>.json   npcs[] {cfg, modelo, face, x, y, z, a} · treinadores[] {cfg, tipo, x, y, z, a}
  *                 grama[] {cfg, tipo 41, x, y, z, a} · agua[] {tipo, x, y, z, a} · spawn[] {x, z, y, a} (piso de caverna)
- *   npcs_glb.json[cfg]     QUEM o NPC é: nome, glb (cenario/<glb>.glb), falas, papel, placa — sem cadastro, o jogo não monta o NPC
+ *   npcs_glb.json[cfg]     QUEM o NPC é: nome, glb (scenery/<glb>.glb), falas, papel, placa — sem cadastro, o jogo não monta o NPC
  *   portas.json[cfg]       ponto de NPC com cfg aqui é PORTA (t 6, leva à chegada n) ou CHEGADA (t 7, onde se nasce ao entrar)
  *   treinadores.json[cfg]  o time de quem nasce na vaga (vaga cujo cfg não está lá não nasce ninguém)
  * O x do arquivo é espelhado (mundo = FLIPX·x), como as caixas. Os tiles são a grade de 1 m (centro em ,5) e a área de um

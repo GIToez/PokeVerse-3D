@@ -90,7 +90,7 @@ async function carregarMapa(nome) {
   for (const g of instGrupos) { raizInst.remove(g); g.dispose?.(); }
   instGrupos = []; pecas = []; partes = new Map(); nomeDoPrefab = new Map(); sceneGLB = null; mapaNode = null;
   let g;
-  try { g = await loader.loadAsync('/cenario/' + nome + '.glb'); }
+  try { g = await loader.loadAsync('/scenery/' + nome + '.glb'); }
   catch (e) { $('carregando').textContent = 'não consegui carregar o GLB de ' + nome; return; }
   sceneGLB = g.scene; sceneGLB.updateMatrixWorld(true);
   mapaNode = g.scene.getObjectByName('Mapa') || g.scene;

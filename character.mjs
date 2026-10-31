@@ -10,7 +10,7 @@
  *
  * No index.html:
  *   const criacao = Personagem.precisaCriar() ? Personagem.abrir({ som: Som }) : null;   // abre já; o mapa carrega atrás
- *   await criacao; const p = Personagem.ler(); montarPersonagem('./cenario/pc/' + Personagem.glbDe(p) + '.glb', …)
+ *   await criacao; const p = Personagem.ler(); montarPersonagem('./scenery/pc/' + Personagem.glbDe(p) + '.glb', …)
  *   await Personagem.aplicar(ash.pivo, p);                                  // cores (só nos tintáveis)
  *   Personagem.abrir({ som, cancelavel: true, sobreJogo: true }) → jogo.trocarJogador(p)   // Configurações → ✎ Personagem
  *
@@ -180,10 +180,10 @@ export function tirarMochila(corpo){
 export async function vestirMochila(corpo, glb){
   tirarMochila(corpo);
   if (!corpo || !glb) return null;
-  /* A promessa que FALHOU não fica no cache (20/09, revisão do passe fechado): desde que `cenario/pc/` passou a exigir passe, um
+  /* A promessa que FALHOU não fica no cache (20/09, revisão do passe fechado): desde que `scenery/pc/` passou a exigir passe, um
      403 solto (cookie que sumiu com o jogo aberto) guardava a rejeição e aquela mochila ficava quebrada até recarregar a página —
      inclusive a dos OUTROS jogadores. Tirando do cache, a próxima montagem tenta de novo, como o resto do jogo já fazia. */
-  if (!_cacheBolsa.has(glb)) _cacheBolsa.set(glb, new GLTFLoader().loadAsync('./cenario/pc/' + glb + '.glb').catch(e => { _cacheBolsa.delete(glb); throw e; }));
+  if (!_cacheBolsa.has(glb)) _cacheBolsa.set(glb, new GLTFLoader().loadAsync('./scenery/pc/' + glb + '.glb').catch(e => { _cacheBolsa.delete(glb); throw e; }));
   const g = await _cacheBolsa.get(glb);
   const cena = SkeletonUtils.clone(g.scene);
   const bolsa = cena.getObjectByProperty('isSkinnedMesh', true); if (!bolsa){ console.warn('mochila sem malha skinned:', glb); return null; }
@@ -251,7 +251,7 @@ function resolver4(A, B){                                    // eliminação de 
     `CusAnimVis_<malha>`: a posição x dele é a chave (0,01 = aparece, 0 = some). O Pidgeotto tem a ASA DOBRADA assim
     (`pm0017_00_00_LWingSkin`/`RWingSkin`, presas no Spine2) e os 8 clipes dele a apagam; o three.js não conhece a convenção,
     então a asa dobrada ficava colada no corpo enquanto a de verdade batia (seguidor, selvagem, os que sobrevoam a Rota 1,
-    Pokédex). A lista sai uma vez por GLB (`g`); `obj` é o clone a esconder. Censo de cenario/mon em 17/09: só o Pidgeotto
+    Pokédex). A lista sai uma vez por GLB (`g`); `obj` é o clone a esconder. Censo de scenery/mon em 17/09: só o Pidgeotto
     se encaixa (Torchic e Sandslash têm os nós mas a malha é uma só; o Koffing não anima a fumaça e ela fica como está). */
 export function apagarMalhasOcultas(g, obj){
   if (!g?.scene || !obj) return 0;
@@ -334,7 +334,7 @@ function injetarCss(){ if (cssPronto) return; const st = document.createElement(
 const cacheGlb = new Map();
 /* Mesma coisa da mochila: a promessa que falhou sai do cache pra a próxima tentativa valer (o criador de personagem fica em pé
    quando o modelo volta 403 numa janela sem cookie). */
-const carregarGlb = glb => { if (!cacheGlb.has(glb)) cacheGlb.set(glb, new GLTFLoader().loadAsync('./cenario/pc/' + glb + '.glb').catch(e => { cacheGlb.delete(glb); throw e; })); return cacheGlb.get(glb); };
+const carregarGlb = glb => { if (!cacheGlb.has(glb)) cacheGlb.set(glb, new GLTFLoader().loadAsync('./scenery/pc/' + glb + '.glb').catch(e => { cacheGlb.delete(glb); throw e; })); return cacheGlb.get(glb); };
 
 /** Mede o modelo na pose ANIMADA (Idle em 4 instantes; apoia pelo ponto mais baixo) — a caixa de bind pose do rig do
     treinador é bem maior que a malha, e medir errado deixa o boneco flutuando ou cortado. */

@@ -17,7 +17,7 @@ your own machine.
 
 ## Things to review before exposing the server publicly
 
-1. **Never commit live data.** `servidor/dados/` (accounts, saves, admin logs, backups)
+1. **Never commit live data.** `server/dados/` (accounts, saves, admin logs, backups)
    contains password hashes and email addresses. It is gitignored; keep it that way.
 2. **No seeded accounts.** Do not ship a pre-made GM account (e.g. `admin`/`admin`).
    Create your own account and grant it GM locally (see [`STARTUP.md`](STARTUP.md)).

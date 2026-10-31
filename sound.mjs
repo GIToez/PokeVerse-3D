@@ -10,7 +10,7 @@
  * qualquer lugar o destrava — `pronto()` diz se já dá para ouvir.
  */
 
-const BASE = './som';
+const BASE = './sound';
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
 const mestre = ctx.createGain();

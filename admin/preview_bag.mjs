@@ -1,6 +1,6 @@
 /* Prévia das Mochilas (esquema mochilas, Fase 3): veste a mochila num treinador no MESMO palco da tela de criação
  * (character.mjs criarPalco + vestirMochila, a mesma função do jogo: religa a malha aos ossos do treinador e pinta pelo
- * npc_tintas.json) e diz se o modelo da mochila existe nesta cópia (cenario/pc/<glb>.glb). Arrastar gira. */
+ * npc_tintas.json) e diz se o modelo da mochila existe nesta cópia (scenery/pc/<glb>.glb). Arrastar gira. */
 import { criarPalco, vestirMochila, tirarMochila } from '/character.mjs';
 import { recurso } from '/admin/resources.mjs';
 
@@ -51,7 +51,7 @@ export async function atualizar(r, forcar = false) {
     treinador = prefab; it = null; vestida = null; palco.dataset.id = prefab; palco.classList.remove('pronto');
     info('carregando ' + esc(prefab) + '…');
     try { montando = P.montar({ id: prefab, glb: prefab, nome: prefab }); it = await montando; }
-    catch { if (treinador === prefab) info(`⚠ Não deu pra abrir o treinador <code>cenario/pc/${esc(prefab)}.glb</code>.`, true); return; }
+    catch { if (treinador === prefab) info(`⚠ Não deu pra abrir o treinador <code>scenery/pc/${esc(prefab)}.glb</code>.`, true); return; }
     if (treinador !== prefab || !it?.pronto) return;
     P.selecionar(prefab); palco.classList.add('pronto');
   }
@@ -61,7 +61,7 @@ export async function atualizar(r, forcar = false) {
   vestida = glb;
   const { modelos = [] } = await recurso('modelos?pasta=pc');
   if (!glb) { tirarMochila(it.obj); info('Sem modelo — preencha "Modelo (glb)".', true); return; }
-  if (!modelos.includes(glb)) { tirarMochila(it.obj); info(`⚠ O modelo <code>cenario/pc/${esc(glb)}.glb</code> não existe nesta cópia — no jogo esta mochila não aparece (o treinador fica com a da roupa).`, true); return; }
+  if (!modelos.includes(glb)) { tirarMochila(it.obj); info(`⚠ O modelo <code>scenery/pc/${esc(glb)}.glb</code> não existe nesta cópia — no jogo esta mochila não aparece (o treinador fica com a da roupa).`, true); return; }
   info('vestindo ' + esc(glb) + '…');
   const m = await vestirMochila(it.obj, glb).catch(() => null);
   if (vestida !== glb) return;

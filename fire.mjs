@@ -29,7 +29,7 @@
  */
 import * as THREE from 'three';
 
-const BASE = new URL('./cenario/fogo/', import.meta.url);
+const BASE = new URL('./scenery/fogo/', import.meta.url);
 
 // tipo: 'core' = PokemonFire, 'out' = PokemonFireOut (cull back), 'out146' = PokemonFireOut146 (cull off)
 // vel = _XYMainZWNoise do .mat (xy rola o _Main, zw rola o _Noise; convenção de UV do Unity)

@@ -69,10 +69,10 @@ async function trocarModelo(id) {
   alvo.modelo = lista[0];
   palco.hidden = false; palco.dataset.id = alvo.modelo;
   info('carregando ' + esc(alvo.modelo) + '…');
-  const glb = alvo.modelo.startsWith('pc/') ? alvo.modelo.slice(3) : '../' + alvo.modelo;   // o palco busca em cenario/pc/
+  const glb = alvo.modelo.startsWith('pc/') ? alvo.modelo.slice(3) : '../' + alvo.modelo;   // o palco busca em scenery/pc/
   let it;
   try { it = await P.montar({ id: alvo.modelo, glb, nome: alvo.modelo }); }
-  catch { if (alvo.id === id) { palco.hidden = true; info(`⚠ Não deu pra abrir <code>cenario/${esc(alvo.modelo)}.glb</code>.`, true); } return; }
+  catch { if (alvo.id === id) { palco.hidden = true; info(`⚠ Não deu pra abrir <code>scenery/${esc(alvo.modelo)}.glb</code>.`, true); } return; }
   if (alvo.id !== id || !it?.pronto) return;
   alvo.it = it;
   await Tinta.aplicarTinta(it.obj, alvo.modelo.split('/')[1]);           // as outras partes com a cor de fábrica (inclusive as "<modelo>:<material>")
@@ -96,9 +96,9 @@ async function desenharMapa(r) {
   if (r?.isMask) { txt.textContent = 'Não pinta: a textura do modelo já vem colorida.'; return; }
   if (!r?.mask) { c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); txt.textContent = 'Sem máscara: a peça inteira fica no tom do canal R.'; return; }
   const { mascaras = [] } = await recurso('mascaras');
-  const img = mascaras.includes(r.mask) ? await imagem('/cenario/npc/mask/' + encodeURIComponent(r.mask)) : null;
+  const img = mascaras.includes(r.mask) ? await imagem('/scenery/npc/mask/' + encodeURIComponent(r.mask)) : null;
   if (reg !== r) return;
-  if (!img) { txt.innerHTML = `⚠ A máscara <code>${esc(r.mask)}</code> não existe nesta cópia (cenario/npc/mask) — no jogo a peça fica só no tom do canal R.`; c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); return; }
+  if (!img) { txt.innerHTML = `⚠ A máscara <code>${esc(r.mask)}</code> não existe nesta cópia (scenery/npc/mask) — no jogo a peça fica só no tom do canal R.`; c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); return; }
   c.drawImage(img, 0, 0, cv.width, cv.height);
   const px = c.getImageData(0, 0, cv.width, cv.height), d = px.data;
   for (let i = 0; i < d.length; i += 4) {

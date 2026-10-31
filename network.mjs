@@ -265,7 +265,7 @@ function adicionar(j){
 async function montar(o, personagem){
   const P = ctx.Personagem;
   const p = personagem || P?.PADRAO || null;
-  const arq = './cenario/pc/' + (P?.glbDe?.(p) || 'Ash') + '.glb';
+  const arq = './scenery/pc/' + (P?.glbDe?.(p) || 'Ash') + '.glb';
   const ent = await ctx.montarPersonagem(arq, null, 0);
   if (o.removido){ ctx.cena.remove(ent.pivo); return; }
   try { if (p && P?.aplicar) await P.aplicar(ent.pivo, p); } catch (e){ console.warn('rede: roupa de ' + o.nome, e); }
