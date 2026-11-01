@@ -147,7 +147,7 @@ body.mobile .janela .dex-dois{grid-template-columns:1fr}
 .btn.perigo:hover{background:#9a3333}
 .premium-cab{margin-bottom:10px}.premium-cab>b{display:block;font-size:15px;color:#ffe07a}.premium-cab small{display:block;margin-top:3px;color:var(--muted);line-height:1.35}.premium-cab small b{color:#ffe07a}
 .janela .stats td.iv{color:var(--muted);font-size:11px;text-align:right;padding-left:10px}.janela .stats .mais{color:#8ef58e}.janela .stats .menos{color:#f58e8e}
-.janela .m-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}.janela .m-poke{text-align:center;font-size:11px;color:var(--muted)}.janela .m-poke img{width:52px;height:52px;image-rendering:pixelated}.janela .m-poke.sombra img{filter:brightness(0)}.janela .m-poke b{display:block;color:#dfe6f0;font-size:11px;font-weight:600}.janela .m-poke .pego{color:#8ef58e;display:block}
+.janela .m-grade,.mapa-dir .m-grade,.pf-mapa .m-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}.janela .m-poke,.mapa-dir .m-poke,.pf-mapa .m-poke{text-align:center;font-size:11px;color:var(--muted)}.janela .m-poke img,.mapa-dir .m-poke img,.pf-mapa .m-poke img{width:52px;height:52px;image-rendering:pixelated}.janela .m-poke.sombra img,.mapa-dir .m-poke.sombra img,.pf-mapa .m-poke.sombra img{filter:brightness(0)}.janela .m-poke b,.mapa-dir .m-poke b,.pf-mapa .m-poke b{display:block;color:#dfe6f0;font-size:11px;font-weight:600}.janela .m-poke .pego,.mapa-dir .m-poke .pego,.pf-mapa .m-poke .pego{color:#8ef58e;display:block}
 /* Near-fullscreen map popup (same family as other .pf windows, not a true fullscreen takeover). */
 .pf-mapa-fundo{position:fixed;inset:0;z-index:59;background:#0008}
 .pf.pf-mapa{
