@@ -20,6 +20,7 @@ import * as Fogo from './fire.mjs';             // chamas dos modelos (PokemonFi
 import * as Lodo from './sludge.mjs';
 import * as Tinta from './paint.mjs';
 import * as Hud from './hud.mjs';               // layout da HUD montado no editor de HUD
+import * as PartyHud from './hud_party3d.mjs';  // party slots: 3D models instead of flat heads
 import * as Menus from './menus.mjs';           // menu ☰/Esc e as janelas (Pokémon, mochila, missões, mapa…)
 import * as Chat from './chat.mjs';             // chat com abas Local/Global/Trade/Help (peça #chat da HUD)
 import * as Missoes from './missions.mjs';        // missões principais de Kanto (caps 1–20): passos verificados por eventos do jogo
@@ -4779,6 +4780,14 @@ for (const [id, b] of Object.entries(CFG_JOGO.bolas || {})){
   if (typeof nome === 'string' && nome.trim() && taxa > 0) BOLAS[id] = [nome, taxa];
 }
 jogo.bolas = lerLS('bolas', { 1001: 10, 1002: 5, 1003: 2, 1004: 1 });
+Hud.fonteIlha(() => ({
+  ids: Object.keys(BOLAS).filter(id => (jogo.bolas[id] || 0) > 0),
+  sel: jogo.bolaSel,
+  icone: id => './ui/itens/ic_' + id + '.png',
+  nome: id => BOLAS[id]?.[0] || id,
+  qtd: id => jogo.bolas[id] || 0,
+  escolher: id => { jogo.bolaSel = id; gravarLS('bolaSel', jogo.bolaSel); if (jogo.ash) flutuar(jogo.ash, (BOLAS[id]?.[0] || id) + ' ×' + jogo.bolas[id], '#ffd23a'); try { pintarBarra(); } catch {} },
+}));
 /* ===== Atalhos 5–9 (peça #atalhos da HUD): o jogador prende poções/bolas da mochila e montarias; tecla ou clique usa,
    clique no vazio / botão direito / toque longo abre o seletor (menus.mjs `abrirAtalho`). localStorage `atalhos`:
    [{ tipo: 'item', id, nome, icone, bola } | { tipo: 'montaria', glb, nome, icone } | null]. */
@@ -5369,7 +5378,7 @@ function pintarTime(forcar = false){
     vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt };
     if (on && (forcar || !jogo.evoPronta || (jogo.quadroEvo = (jogo.quadroEvo || 0) + 1) % 30 === 0)) jogo.evoPronta = { v: evolucaoDe(p) };   // regras dos jogos (evolution.mjs), reavaliadas a cada 30 quadros
     const evo = on && !jogo.evoluindo && !jogo.trocandoSeguidor ? jogo.evoPronta?.v : null;   // botão ✧ no canto do slot em campo: só quando alguma regra já vale
-    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${escHtml(t.nome)} Lv${t.lv}${t.lv > tetoNivel() ? ' · 🔒 não obedece (teto Lv ' + tetoNivel() + ')' : t.lv >= tetoNivel() ? ' · no teto Lv ' + tetoNivel() + ' (XP guardada' + (t.expReserva > 0 ? ': ' + t.expReserva : '') + ')' : ''}${ko ? ' · desmaiado: clique usa um Reanimador da mochila' : on ? ' · em campo' : ' · clique pra trocar'} · arraste (ou segure, no toque) pra mudar a ordem · Alt+↑/↓" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img src="${iconeMon(t.glb)}" alt="" draggable="false"><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="evoluir → ${escHtml(evo.nome)}${evo.itemNome ? ' (usa ' + escHtml(evo.itemNome) + ')' : ''}">✧</button>` : ''}</div>`);
+    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${escHtml(t.nome)} Lv${t.lv}${t.lv > tetoNivel() ? ' · 🔒 não obedece (teto Lv ' + tetoNivel() + ')' : t.lv >= tetoNivel() ? ' · no teto Lv ' + tetoNivel() + ' (XP guardada' + (t.expReserva > 0 ? ': ' + t.expReserva : '') + ')' : ''}${ko ? ' · desmaiado: clique usa um Reanimador da mochila' : on ? ' · em campo' : ' · clique pra trocar'} · arraste (ou segure, no toque) pra mudar a ordem · Alt+↑/↓" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="evoluir → ${escHtml(evo.nome)}${evo.itemNome ? ' (usa ' + escHtml(evo.itemNome) + ')' : ''}">✧</button>` : ''}</div>`);
   }
   const html = partes.join('');
   /* Assinatura SEM o que muda a cada quadro (HP, cor, recarga da troca): em batalha o HP muda todo quadro e refazer o innerHTML
@@ -5387,6 +5396,7 @@ function pintarTime(forcar = false){
     return;
   }
   assinaturaTime = chave; el.innerHTML = html; Hud.remontar(el);   // Figma: reaplica os slots do time no miolo novo
+  try { PartyHud.ligar(el); } catch (e){ console.warn('party 3d:', e); }
   if (el.__fig) for (let i = 0; i < el.children.length; i++){            // no Figma: barra em px + os estados da maquete (recarga da troca, desmaio)
     const cel = el.children[i], t = jogo.time[i];
     const b = cel.querySelector('.tc-fill');
@@ -7341,7 +7351,7 @@ if (jogo.ash){
   $('f-pika-lv').textContent = 'Lv' + jogo.pika.lv;
   [0, 1, 2, 3].forEach(i => $('sk' + (i + 1)).addEventListener('click', () => { Som.destravar(); const id = jogo.pika.golpesIds[i]; if (id) usarGolpe(id); }));
   $('bola-btn').addEventListener('click', () => { Som.destravar(); jogarBola(); });
-  $('bola-tipo').addEventListener('click', e => { e.stopPropagation(); Som.destravar(); proximaBola(); });
+  $('bola-tipo').addEventListener('click', e => { e.stopPropagation(); Som.destravar(); if (!Hud.alternarLequeBola()) proximaBola(); });
   {                                                                   // atalhos: clique usa; vazio, botão direito ou toque longo (550 ms) abre o seletor
     const el = $('atalhos'); let pressa = null, longo = false;
     el.addEventListener('pointerdown', ev => { const b = ev.target.closest('.atalho'); if (!b) return; longo = false; clearTimeout(pressa); pressa = setTimeout(() => { longo = true; abrirSeletorAtalho(+b.dataset.i); }, 550); });

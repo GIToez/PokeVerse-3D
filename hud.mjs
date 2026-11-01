@@ -590,7 +590,10 @@ function recolherMenu(e, on){
   e.dataset.menuRecolhido = on ? '1' : '0';
 }
 /** Remonta a árvore do Figma numa peça já posicionada (o jogo chama quando recria o miolo de um botão). */
-export function remontar(e){ if (e && e.__figmaP) montarFigma(e, e.__figmaP, !!e.__figmaAbs); }
+export function remontar(e){
+  if (e && e.__figmaP) montarFigma(e, e.__figmaP, !!e.__figmaAbs);
+  if (e && !e.__figmaAbs && document.body.classList.contains('hud-ilha') && (e.id === 'skills' || e.id === 'atalhos' || e.id === 'bola-btn' || e.id === 'menu-icones')) aplicarIlha();
+}
 function montarFigma(e, F, abs){
   const lig = LIGACOES[e.id] || {};
   e.classList.add('fig'); e.__fig = true; e.__figmaP = F; e.__figmaAbs = abs;
@@ -981,7 +984,136 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     if (movivel){ el.__regBase = reg; ligarArrasto(el, id, preset); }
   }
   aplicarImagens(L, raiz);
+  if (raiz === document) aplicarIlha();
   return true;
+}
+
+/* Command island: moves + ball at bottom center, hotkeys on the right, menu as a slide dock. */
+let ilhaFonte = null;
+export function fonteIlha(fn){ ilhaFonte = typeof fn === 'function' ? fn : null; }
+export function alternarDock(forcar){
+  const menu = document.getElementById('menu-icones'); if (!menu) return false;
+  const on = forcar == null ? !menu.classList.contains('aberto') : !!forcar;
+  menu.classList.toggle('aberto', on);
+  document.body.classList.toggle('menu-dock-aberto', on);
+  const aba = document.getElementById('menu-dock-aba');
+  if (aba){ aba.setAttribute('aria-expanded', on ? 'true' : 'false'); aba.title = on ? tr('Hide menu') : tr('Menu'); }
+  return on;
+}
+export function fecharLequeBola(){
+  const leque = document.getElementById('bola-leque');
+  if (leque){ leque.hidden = true; leque.classList.remove('aberto'); }
+  document.getElementById('bola-btn')?.classList.remove('leque-aberto');
+}
+export function pintarLequeBola(){
+  const bola = document.getElementById('bola-btn'); if (!bola || !ilhaFonte) return;
+  const d = ilhaFonte() || {};
+  const ids = (d.ids || []).map(String);
+  let leque = document.getElementById('bola-leque');
+  if (!leque){
+    leque = document.createElement('div');
+    leque.id = 'bola-leque';
+    leque.hidden = true;
+    document.body.appendChild(leque);
+  }
+  const html = ids.map(id => {
+    const on = String(d.sel) === id ? ' on' : '';
+    const nome = d.nome?.(id) || id;
+    const qtd = d.qtd?.(id) ?? 0;
+    const icone = d.icone?.(id) || '';
+    return `<button type="button" class="bola-op${on}" data-bola="${id}" title="${nome} ×${qtd}"><i style="background-image:url('${icone}')"></i><em>${nome}</em><small>×${qtd}</small></button>`;
+  }).join('');
+  if (leque.__html !== html){ leque.innerHTML = html; leque.__html = html; }
+  const r = bola.getBoundingClientRect();
+  leque.style.left = Math.round(r.left + r.width / 2) + 'px';
+  leque.style.top = Math.round(r.top + r.height / 2) + 'px';
+}
+export function alternarLequeBola(){
+  const d = ilhaFonte?.();
+  if (!d || !(d.ids || []).length) return false;
+  if ((d.ids || []).length < 2){ d.escolher?.(d.ids[0]); return false; }
+  let leque = document.getElementById('bola-leque');
+  const abrir = !leque || leque.hidden;
+  if (abrir){ pintarLequeBola(); leque = document.getElementById('bola-leque'); if (!leque) return false; leque.hidden = false; leque.classList.add('aberto'); document.getElementById('bola-btn')?.classList.add('leque-aberto'); }
+  else fecharLequeBola();
+  return abrir;
+}
+function soltarFilhos(peca, seletor){
+  if (!peca) return [];
+  const nos = [...peca.querySelectorAll(seletor)];
+  for (const el of nos) Object.assign(el.style, { position: 'relative', left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', margin: '0', transform: 'none', pointerEvents: 'auto' });
+  return nos;
+}
+function noFluxo(el){
+  if (!el) return;
+  Object.assign(el.style, { position: 'relative', left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', transform: 'none', margin: '0' });
+}
+function ligarIlhaUmaVez(){
+  if (ligarIlhaUmaVez.ok) return; ligarIlhaUmaVez.ok = true;
+  document.addEventListener('click', ev => {
+    const op = ev.target.closest?.('#bola-leque [data-bola]');
+    if (op){ ev.preventDefault(); ev.stopPropagation(); ilhaFonte?.().escolher?.(op.dataset.bola); fecharLequeBola(); return; }
+    if (ev.target.closest?.('#bola-tipo') || ev.target.closest?.('#bola-leque') || ev.target.closest?.('#bola-btn')) return;
+    fecharLequeBola();
+  }, true);
+  document.addEventListener('keydown', ev => { if (ev.code === 'Escape'){ fecharLequeBola(); if (document.getElementById('menu-icones')?.classList.contains('aberto')) alternarDock(false); } });
+}
+export function aplicarIlha(){
+  if (typeof document === 'undefined') return;
+  const mobile = document.body.classList.contains('mobile');
+  document.body.classList.add('hud-ilha');
+  document.body.classList.toggle('hud-ilha-mobile', mobile);
+  ligarIlhaUmaVez();
+  const skills = document.getElementById('skills');
+  const bola = document.getElementById('bola-btn');
+  const atalhos = document.getElementById('atalhos');
+  const menu = document.getElementById('menu-icones');
+  if (skills){
+    skills.classList.add('ilha-centro');
+    skills.style.backgroundImage = 'none';
+    Object.assign(skills.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: mobile ? '14px' : '18px', transform: 'translateX(-50%)', zIndex: '26' });
+    const slots = soltarFilhos(skills, ':scope > .fig-grupo, :scope > button.sk');
+    if (bola){
+      noFluxo(bola);
+      bola.classList.add('ilha-bola');
+      bola.style.flex = 'none';
+      bola.style.zIndex = '2';
+      const meio = slots[1] || slots[0];
+      if (meio && bola.previousElementSibling !== meio) meio.after(bola);
+      else if (!slots.length) skills.appendChild(bola);
+    }
+  } else if (bola){
+    Object.assign(bola.style, { position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: '16px', transform: 'translateX(-50%)' });
+  }
+  if (atalhos){
+    atalhos.classList.add('ilha-direita');
+    atalhos.style.backgroundImage = 'none';
+    Object.assign(atalhos.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'column', position: 'fixed', left: 'auto', right: mobile ? '10px' : '16px', top: 'auto', bottom: mobile ? '14px' : '18px', transform: 'none', zIndex: '26', pointerEvents: 'none' });
+    soltarFilhos(atalhos, ':scope > .fig-grupo, :scope > .atalho');
+    for (const a of atalhos.querySelectorAll('.atalho')) a.style.pointerEvents = 'auto';
+  }
+  if (menu){
+    menu.classList.add('dock-slide');
+    menu.style.backgroundImage = 'none';
+    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'column', position: 'fixed', left: 'auto', top: mobile ? '210px' : '268px', bottom: 'auto', right: '0px', transform: 'none', zIndex: '28' });
+    soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
+    let aba = document.getElementById('menu-dock-aba');
+    if (!aba){
+      aba = document.createElement('button');
+      aba.id = 'menu-dock-aba';
+      aba.type = 'button';
+      aba.textContent = '☰';
+      aba.title = tr('Menu');
+      aba.setAttribute('aria-expanded', 'false');
+      aba.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); alternarDock(); });
+    }
+    if (aba.parentElement !== menu) menu.insertBefore(aba, menu.firstChild);
+    if (!menu.__fechaAoEscolherDock){
+      menu.__fechaAoEscolherDock = true;
+      menu.addEventListener('click', ev => { if (ev.target.closest('button[data-j]') && menu.classList.contains('aberto')) alternarDock(false); });
+    }
+  }
+  if (document.getElementById('bola-leque') && !document.getElementById('bola-leque').hidden) pintarLequeBola();
 }
 /** O layout que o último `aplicar` usou (rodada 26: o raid_ui.mjs lê dele os registros `popups.<ori>.raid.hud`). */
 export const layoutAtual = () => aplicar.__ultimo?.[0] || null;
