@@ -9,6 +9,7 @@
  * O x do arquivo é espelhado (mundo = FLIPX·x), como as caixas. Os tiles são a grade de 1 m (centro em ,5) e a área de um
  * tile novo é a da caixa de área embaixo dele. Salvar: /admin/mapa-camadas (o mapa) + /admin/dados (npcs, portas). */
 import { ESQUEMAS, validarCampo } from '/admin/schemas.mjs';
+import { traduzNome } from '/admin/map_names.mjs';
 
 const CFG_NPC_NOVO = 9100001;   // NPC criado no painel: faixa 91xxxxx (nenhum cfg de 7 dígitos do jogo começa com 9)
 const COR = { npc: '#4ff0e0', placa: '#c9c9ff', porta: '#ffd23a', chegada: '#ff9d4d', treinador: '#ff5fd0' };
@@ -26,7 +27,7 @@ export function criarCamadas(dep) {
     if (ref) return ref;
     const ler = f => fetch('/data/' + f + '.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const [npcs, portas, treinadores, cenas] = await Promise.all(['npcs_glb', 'portas', 'treinadores', 'cenas'].map(ler));
-    ref = { npcs, portas, treinadores, cenas: Object.fromEntries((cenas.cenas || []).map(c => [c.id, c.nome])) };
+    ref = { npcs, portas, treinadores, cenas: Object.fromEntries((cenas.cenas || []).map(c => [c.id, traduzNome(c.nome)])) };
     const dl = (id, html) => { let d = document.getElementById(id); if (!d) { d = document.createElement('datalist'); d.id = id; document.body.append(d); } d.innerHTML = html; };
     dl('dl-c-npcs', Object.entries(npcs).map(([cfg, n]) => `<option value="${cfg}" label="${esc(n.nome || (n.placa ? 'Sign' : 'NPC'))}">`).join(''));
     dl('dl-c-treinadores', Object.entries(treinadores).map(([cfg, t]) => `<option value="${cfg}" label="${esc(t.nome)}">`).join(''));

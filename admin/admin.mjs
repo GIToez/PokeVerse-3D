@@ -8,6 +8,7 @@ import { instalarEventos } from '/admin/events.mjs';   // Fase 3: eventos ao viv
 import { instalarConteudo } from '/admin/content.mjs'; // Fase 2: telas Missões, Espécies, Evoluções, Learnset
 import { criarCamadas } from '/admin/layers.mjs';
 import { carregar as carregarIdioma } from '/i18n.mjs';
+import { carregar as carregarNomesMapa, nomeMapaComId, traduzNome } from '/admin/map_names.mjs';
 const DICAS = {   // o rodapé do Editor de Mapa muda com a ferramenta
   zonas: 'wheel: zoom · drag: pan · click an area to edit it (drag its middle/edges) · drag a zone center/edge',
   pontos: 'wheel: zoom · drag empty space: pan · click a point to edit it, drag it to move it',
@@ -85,9 +86,7 @@ let nomesCena = {};       // id → nome no cenas.json
 let idsUsados = new Set();// todo id de área de todas as cenas (id novo não pode herdar habitat de área de outro mapa)
 let desenhandoArea = false, rascunho = null;
 let foto = null;          // fundo "minimapa" do mapa atual ({ img, x0, z0, esc, w, h, fonte, mapa })
-let nomesEn = {};         // Portuguese place name → English (data/locale/nomes_en.json)
-try { nomesEn = await fetch('/data/locale/nomes_en.json').then(r => r.ok ? r.json() : {}); } catch { nomesEn = {}; }
-const traduzNome = s => (s && nomesEn[s]) || s;
+await carregarNomesMapa();
 const nomeArea = a => traduzNome(nomesCena[a] || dadosMapa?.nomes?.[a] || ('Area ' + a));
 
 const CORES = ['#ff5d5d', '#4da3ff', '#3ecf8e', '#ffcf3a', '#c678dd', '#ff9d4d', '#56d4dd', '#f06292'];
@@ -129,7 +128,7 @@ async function carregarTudo() {
   mapas = lm.mapas || ['kanto'];
   zonas = (lz.zonas || []).map((z, i) => ({ ...z, __i: i }));
   habitats = { areas: lh.areas || {}, generico: lh.generico || [] };
-  $('m-mapa').innerHTML = mapas.map(m => `<option${m === mapaAtual ? ' selected' : ''}>${esc(m)}</option>`).join('');
+  $('m-mapa').innerHTML = mapas.map(m => `<option value="${esc(m)}" title="${esc(m)}"${m === mapaAtual ? ' selected' : ''}>${esc(nomeMapaComId(m))}</option>`).join('');
   if (!mapas.includes(mapaAtual)) mapaAtual = mapas[0];
   await trocarMapa(mapaAtual);
   renderHabitats();

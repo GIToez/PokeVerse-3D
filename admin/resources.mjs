@@ -1,6 +1,8 @@
 /* Listas do servidor pras prévias do painel (Fase 3): faixas de música, máscaras, modelos e o índice material → modelo
  * (server_resources.mjs, rotas /admin/recursos/*, só GM). As prévias não recebem o `api` do admin.mjs: o token é o mesmo
  * do jogo (localStorage 'conta.token'). Cada lista é buscada uma vez por carga da página. */
+import { carregar as carregarNomesMapa, traduzNome } from '/admin/map_names.mjs';
+
 const BASE = location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190';
 const cache = new Map();
 export function recurso(nome) {
@@ -13,11 +15,14 @@ export function recurso(nome) {
 }
 /** Os cenas.json do jogo: { cenas: { id → nome }, areas: { id → nome } } (nomes que o jogador vê). */
 let nomes = null;
-export const nomesDeLugares = () => (nomes ||= fetch('/data/cenas.json').then(r => r.json()).then(ce => {
+export const nomesDeLugares = () => (nomes ||= carregarNomesMapa().then(() => fetch('/data/cenas.json').then(r => r.json()).then(ce => {
   const cenas = {}, areas = {};
-  for (const c of ce?.cenas || []) { cenas[c.id] = c.nome; for (const a of c.areas || []) if (!(a.id in areas)) areas[a.id] = a.nome; }
+  for (const c of ce?.cenas || []) {
+    cenas[c.id] = traduzNome(c.nome);
+    for (const a of c.areas || []) if (!(a.id in areas)) areas[a.id] = traduzNome(a.nome);
+  }
   return { cenas, areas };
-}).catch(() => ({ cenas: {}, areas: {} })));
+})).catch(() => ({ cenas: {}, areas: {} })));
 /** Escreve no campo `k` do formulário do editor genérico (data.mjs marca o label com data-k) como se o GM tivesse digitado:
     o próprio formulário valida, guarda no registro, marca "não salvo" e chama a prévia de volta. */
 export function escreverCampo(caixa, k, valor) {
