@@ -6838,7 +6838,7 @@ async function mostrarFala(quem, linhas, dono = null, { semTempo = false } = {})
       bT.style.whiteSpace = 'pre-line';                                // o `<br>` do dump vira quebra de linha de verdade (placas: "Cidade Pewter" / descrição)
       for (const pedaco of paginarFala(bT, limparTextoRico(I18n.t(linhas[i])))){
         bT.textContent = pedaco.txt; Hud.encolher(bT);
-        bD.textContent = I18n.t((i === linhas.length - 1 && pedaco.fim) ? 'Z / toque: fechar' : 'Z / toque: continuar');
+        bD.textContent = I18n.t((i === linhas.length - 1 && pedaco.fim) ? 'Z / tap: close' : 'Z / tap: continue');
         await new Promise(res => { pularFala = res; if (!semTempo) setTimeout(res, Math.max(2500, 70 * pedaco.txt.length)); });
       }
     }
@@ -9054,7 +9054,7 @@ window.__figmaTeste = () => {
   const s = perto12[0] || jogo.pika || null;                            // longe some da tela: pra medir, o parceiro (sempre visível) serve de alvo
   if (s) jogo.alvo = s;                                                  // status do inimigo (peça que segue)
   const n = (jogo.npcs || [])[0] || jogo.pika || jogo.ash;
-  if (n && !falando) mostrarFala(n.nome || 'Mãe', ['Deveria descansar um pouco. Amanhã cedo o professor Oak te espera no laboratório.'], n, { semTempo: true });
+  if (n && !falando) mostrarFala(n.nome || 'Mom', ['You should get some rest. Professor Oak is expecting you at the lab first thing tomorrow.'], n, { semTempo: true });
   return { fala: !!n, alvo: !!s, selvagens: (jogo.selvagens || []).length };
 };
 if (params0.get('figmateste') === '1'){                                  // UMA vez: reabrir sem parar parecia que o Z estava preso na placa
