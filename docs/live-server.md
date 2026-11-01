@@ -62,17 +62,17 @@ sudo chmod 600 "$PV_HOME/.ssh/authorized_keys"
 exit
 ```
 
-On the PC, if you do not already have a key:
+On the PC (Command Prompt, not PowerShell):
 
-```powershell
-ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\pokeverse_ovh -N '""'
-Get-Content $env:USERPROFILE\.ssh\pokeverse_ovh.pub
+```bat
+if not exist %USERPROFILE%\.ssh\pokeverse_ovh.pub ssh-keygen -t ed25519 -f %USERPROFILE%\.ssh\pokeverse_ovh -N ""
+type %USERPROFILE%\.ssh\pokeverse_ovh.pub
 ```
 
 Copy that `.pub` line into `authorized_keys` above. Then:
 
-```powershell
-ssh -i $env:USERPROFILE\.ssh\pokeverse_ovh pokeverse@40.160.145.24
+```bat
+ssh -i %USERPROFILE%\.ssh\pokeverse_ovh pokeverse@40.160.145.24
 ```
 
 The **private** file (`pokeverse_ovh`, no `.pub`) is what goes in GitHub secret `OVH_SSH_KEY`. Do not put the `.pub` file there. Do not paste the private key into chat.
