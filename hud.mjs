@@ -1005,6 +1005,7 @@ export function alternarDock(forcar){
   document.body.classList.toggle('menu-dock-aberto', on);
   const aba = document.getElementById('menu-dock-aba');
   if (aba){ aba.setAttribute('aria-expanded', on ? 'true' : 'false'); aba.title = on ? tr('Hide menu') : tr('Menu'); }
+  aplicarIlha();
   return on;
 }
 export function fecharLequeBola(){
@@ -1107,13 +1108,19 @@ export function aplicarIlha(){
   if (menu){
     if (menu.parentElement === barra) document.body.appendChild(menu);
     menu.classList.add('dock-slide');
+    const aberto = menu.classList.contains('aberto');
+    const k = menu.__escala || 1;
+    const w = parseFloat(menu.style.width) || 275;
+    const h = parseFloat(menu.style.height) || 117;
     const top = mm ? Math.round(mm.getBoundingClientRect().bottom + 10) : (mobile ? 210 : 268);
     Object.assign(menu.style, {
       position: 'fixed', left: 'auto', right: '0px', top: top + 'px', bottom: 'auto',
-      transform: 'none', zIndex: '28', width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none',
-      overflow: 'visible', display: 'flex'
+      width: w + 'px', height: h + 'px', maxWidth: 'none', maxHeight: 'none',
+      overflow: 'visible', display: '',
+      transform: (aberto ? '' : 'translateX(100%) ') + 'scale(' + k + ')',
+      transformOrigin: 'right top',
+      zIndex: '28'
     });
-    soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
     let aba = document.getElementById('menu-dock-aba');
     if (!aba){
       aba = document.createElement('button');
@@ -1121,10 +1128,16 @@ export function aplicarIlha(){
       aba.type = 'button';
       aba.textContent = '☰';
       aba.title = tr('Menu');
-      aba.setAttribute('aria-expanded', menu.classList.contains('aberto') ? 'true' : 'false');
       aba.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); alternarDock(); });
     }
-    if (aba.parentElement !== menu) menu.insertBefore(aba, menu.firstChild);
+    if (aba.parentElement !== document.body) document.body.appendChild(aba);
+    aba.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    aba.title = aberto ? tr('Hide menu') : tr('Menu');
+    Object.assign(aba.style, {
+      position: 'fixed', top: Math.round(top + (h * k) / 2 - 32) + 'px',
+      right: aberto ? Math.round(w * k) + 'px' : '0px',
+      left: 'auto', bottom: 'auto', zIndex: '29'
+    });
     if (!menu.__fechaAoEscolherDock){
       menu.__fechaAoEscolherDock = true;
       menu.addEventListener('click', ev => { if (ev.target.closest('button[data-j]') && menu.classList.contains('aberto')) alternarDock(false); });
