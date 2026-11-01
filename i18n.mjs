@@ -4,21 +4,33 @@
  * saved choice). Pokémon species names stay English in every language. */
 export const IDIOMAS = { pt: 'Português', en: 'English', es: 'Español' };
 const LS = 'idioma';
+const LS_ESCOLHA = 'idioma.escolha';   // only set when the player (or ?idioma=) picks a language
 let atual = 'en', exatas = new Map(), padroes = [], carregado = { en: true };
 const cache = new Map();                                                  // idioma → { exatas, padroes }
 
 export const idioma = () => atual;
 export const ehPt = () => atual === 'pt';
+function escolhaGuardada(){
+  try {
+    if (localStorage.getItem(LS_ESCOLHA) !== '1') return null;
+    const v = localStorage.getItem(LS);
+    return IDIOMAS[v] ? v : null;
+  } catch { return null; }
+}
+function marcarEscolha(l){
+  try { localStorage.setItem(LS, l); localStorage.setItem(LS_ESCOLHA, '1'); } catch {}
+}
 /** O que o navegador sugere, sem consultar nada guardado. */
 export function doNavegador(){
   const n = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase();
   return n.startsWith('es') ? 'es' : n.startsWith('pt') ? 'pt' : 'en';
 }
-/** O idioma a usar nesta carga: URL > guardado no aparelho > navegador. */
+/** Language for this load: URL > an explicit saved pick > English.
+ *  A leftover `idioma=pt` from the old Portuguese-first default is ignored so the HUD
+ *  does not come back in PT (and so Chrome does not auto-translate it into garbled names). */
 export function detectar(url = null){
   if (url && IDIOMAS[url]) return url;
-  try { const v = localStorage.getItem(LS); if (IDIOMAS[v]) return v; } catch {}
-  return 'en';   // English is the primary language; PT/ES stay selectable (login bar, ?idioma=, saved choice).
+  return escolhaGuardada() || 'en';
 }
 function compilar(chave, valor){
   const partes = chave.split(/(\{\w+\})/); let re = '^'; const vars = [];
@@ -84,13 +96,13 @@ export async function carregar(l){
 /** Escolha do jogador: guarda no aparelho e carrega. Quem avisa a conta é o account.mjs. */
 export async function definir(l){
   if (!IDIOMAS[l]) return atual;
-  try { localStorage.setItem(LS, l); } catch {}
+  marcarEscolha(l);
   return carregar(l);
 }
 /** Início: decide e carrega antes de qualquer tela. `daUrl` = ?idioma= (também fica guardado). */
 export async function iniciar(daUrl = null){
   const l = detectar(daUrl);
-  if (daUrl && IDIOMAS[daUrl]) { try { localStorage.setItem(LS, daUrl); } catch {} }
+  if (daUrl && IDIOMAS[daUrl]) marcarEscolha(daUrl);
   return carregar(l);
 }
 /* 15/09 (xspartanz: o Abra aparecia como "Open"): o "Traduzir página" do Chrome/Edge lia o nome como a palavra portuguesa "abra". O jogo tem
