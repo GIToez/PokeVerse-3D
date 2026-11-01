@@ -1,7 +1,7 @@
 # Gameplay systems audit
 
 Every player-facing system in the live client (the root `*.mjs` files loaded by `index.html`), with how complete it is
-and where it lives. Code that exists only in `_novos/` is listed separately in [`../AUDIT.md`](../AUDIT.md#unreleased-code-in-_novos).
+and where it lives. Code that exists only in `upcoming/` is listed separately in [`../AUDIT.md`](../AUDIT.md#unreleased-code-in-upcoming).
 
 **Where the main game code lives:** the live main loop is the inline `<script type="module">` in `index.html` (from line 173).
 `idx_mod_0.mjs` is an older copy of that same script that nothing loads (about 40 lines behind). Line references below

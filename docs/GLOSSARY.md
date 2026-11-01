@@ -157,9 +157,11 @@ admin schemas.
 | `sound/`                  | `som/`           | Audio (music, skill sounds, UI) |
 | `particles/`              | `particulas/`    | Particle meshes and textures    |
 | `server/`                 | `servidor/`      | Server-side folder (live data under `server/data/`) |
+| `upcoming/`               | `_novos/`        | Unreleased modules from a newer build (not loaded yet) |
 | `ui/`                     | —                | UI art, icons, minimap          |
 | `vendor/three/`           | —                | Bundled Three.js                |
 
 The source code was renamed to English in these commits, so the file names in the
-tables above are the current (English) names. The staging folder `_novos/` ("new") was
-left untouched because it is not loaded by the game.
+tables above are the current (English) names. The staging folder `_novos/` ("new") is now
+`upcoming/`; its files were renamed with the same vocabulary (for example `pesca_jogo.mjs` is
+`fishing_game.mjs`, `balsa_ui.mjs` is `ferry_ui.mjs`, `guilda.mjs` is `guild.mjs`).

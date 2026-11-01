@@ -82,42 +82,46 @@ older copy of it that nothing loads; editing it has no effect.
 **Content gaps:** 751 Pokédex species have no model, so they can't appear in the world. The Giratina and Arceus mounts point
 to model files that don't exist. Level, Net, Nest and Repeat Balls behave like a normal Poké Ball.
 
-## Unreleased code in `_novos/`
+## Unreleased code in `upcoming/`
 
-`_novos/` ("new") holds 139 minified JavaScript files from a newer build of the game. **Nothing in the live game loads them.**
-They're minified, so this list comes from file names and the visible export names, not from running them:
+`upcoming/` (originally `_novos/`, "new") holds 139 minified JavaScript files from a newer build of the game. **Nothing in the
+live game loads them yet.** The files and their imports and asset paths have been renamed to English; the code inside is
+still minified Portuguese. This list comes from file names and the visible export names, not from running them:
 
 | Area | Files |
 |---|---|
-| Guilds | `guilda.mjs`, `guilda_ui.mjs`, `guilda_telas.mjs`, `guilda_emblema.mjs` |
-| Player market | `mercado.mjs` |
-| Mail | `correio_ui.mjs` |
-| Daycare, garden, egg incubator | `creche_ui.mjs`, `creche_vista.mjs`, `horta_ui.mjs`, `horta_vista.mjs`, `incubadora_ui.mjs`, `incubadora_vista.mjs` |
-| Fishing | `pesca_jogo.mjs`, `agua_pesca.mjs` |
-| Safari Zone mode | `safari.mjs`, `safari_jogo.mjs` |
-| Ferry to the Sevii Islands | `balsa_regras.mjs`, `balsa_ui.mjs`, `balsa_vista.mjs`, `regioes_nav.mjs` |
-| New raids | `raid_r01_jogo.mjs` (Seafoam Blizzard), `raid_r03_jogo.mjs` (Power Plant Overload), `raid_r05_jogo.mjs` (Psychic Echoes) |
+| Guilds | `guild.mjs`, `guild_ui.mjs`, `guild_screens.mjs`, `guild_emblem.mjs` |
+| Player market | `market.mjs` |
+| Mail | `mail_ui.mjs` |
+| Daycare, garden, egg incubator | `daycare_ui.mjs`, `daycare_view.mjs`, `garden_ui.mjs`, `garden_view.mjs`, `incubator_ui.mjs`, `incubator_view.mjs` |
+| Fishing | `fishing_game.mjs`, `water_fishing.mjs` |
+| Safari Zone mode | `safari.mjs`, `safari_game.mjs` |
+| Ferry to the Sevii Islands | `ferry_rules.mjs`, `ferry_ui.mjs`, `ferry_view.mjs`, `regions_nav.mjs` |
+| New raids | `raid_r01_game.mjs` (Seafoam Blizzard), `raid_r03_game.mjs` (Power Plant Overload), `raid_r05_game.mjs` (Psychic Echoes) |
 | Held items, TMs, EVs, status | `held.mjs`, `held_ui.mjs`, `tm_ui.mjs`, `ev.mjs`, `status.mjs` |
-| Battle pass, payments, founder pack | `passe_regras.mjs`, `passe_tela.mjs`, `pagamento_regras.mjs`, `pagamento_ui.mjs`, `pacote_fundador.mjs`, `fundador_regras.mjs`, `pacote_evento.mjs` |
-| Cosmetics, wardrobe | `catalogo_cosmeticos.mjs`, `efeitos_cosmeticos.mjs`, `guarda_roupa.mjs`, `guarda_roupa_ui.mjs`, `skin_mon.mjs` |
-| Achievements, rankings, side quests, guide | `conquistas_ui.mjs`, `ranking_ui.mjs`, `secundarias_ui.mjs`, `guia.mjs`, `progressao_ui.mjs` |
-| Furniture/placement, terrain | `arrumar_*.mjs`, `colocacao*.mjs`, `terreno_*.mjs`, `objetos_terreno.mjs` |
-| Controls, quality, world map | `controles_ui.mjs`, `teclas.mjs`, `qualidade.mjs`, `mapa_ui.mjs`, `mapa_lugares.mjs`, `viagem_ui.mjs` |
-| Newer versions of live modules | `menus.mjs`, `hud.mjs`, `telas.mjs`, `conta.mjs`, `rede.mjs`, `mundo.mjs` and others |
+| Battle pass, payments, founder pack | `pass_rules.mjs`, `pass_screen.mjs`, `payment_rules.mjs`, `payment_ui.mjs`, `founder_pack.mjs`, `founder_rules.mjs`, `event_pack.mjs` |
+| Cosmetics, wardrobe | `cosmetics_catalog.mjs`, `cosmetic_effects.mjs`, `wardrobe.mjs`, `wardrobe_ui.mjs`, `skin_mon.mjs` |
+| Achievements, rankings, side quests, guide | `achievements_ui.mjs`, `ranking_ui.mjs`, `side_quests_ui.mjs`, `guide.mjs`, `progression_ui.mjs` |
+| Furniture/placement, plots | `decorate_*.mjs`, `placement*.mjs`, `plot_*.mjs`, `plot_objects.mjs` |
+| Controls, quality, world map | `controls_ui.mjs`, `keys.mjs`, `quality.mjs`, `map_ui.mjs`, `map_places.mjs`, `travel_ui.mjs` |
+| Newer versions of live modules | `menus.mjs`, `hud.mjs`, `screens.mjs`, `account.mjs`, `network.mjs`, `world.mjs` and others |
+
+Some modules import files that were never included: `raid_ui.mjs`, the raid scene and data files (`raid_r01_scene.mjs`,
+`raid_r03.mjs`, `raid_r03_scene.mjs`, `raid_r05.mjs`, `raid_r05_scene.mjs`) and the shop's `showcase_3d.mjs`,
+`fitting_room_ui.mjs` and `fitting_room_3d.mjs`. Those features need the missing files or replacements before they can run.
 
 The HUD layout (`ui/hud_layout.json`) already has screens for guilds, the market, achievements and the raid calendar, which
 is why those labels appear in the layout editor.
 
-**Every file in `_novos/` carries this notice:** "© 2026 TELIS E PRADO SERVIÇOS DIGITAIS LTDA. All rights reserved. Copying,
-redistributing, hosting a copy or reverse engineering is prohibited (Terms of Use)" (pokefableonline.com). The readable source
-in the project root has no such notice. Before using, publishing or building on `_novos/`, confirm you have the rights to it.
+Each file still starts with the original Poke Fable Online copyright banner. The project owner has confirmed they hold the
+rights to this code.
 
 ## Things to decide
 
-1. **Repository visibility.** This GitHub repository is public, so the `_novos/` code and all game assets on the pull request
-   branch are visible to anyone. Consider making it private.
-2. **Rights.** Pokémon names, models and music are Nintendo / Game Freak / The Pokémon Company property, and `_novos/` has the
-   copyright notice above. Running this publicly carries legal risk independent of any code work.
+1. **Repository visibility.** This GitHub repository is public, so the `upcoming/` code and all game assets are visible to
+   anyone. Consider making it private.
+2. **Pokémon IP.** Pokémon names, models and music are Nintendo / Game Freak / The Pokémon Company property. Running this
+   publicly carries legal risk independent of any code work.
 3. **Battle server.** For trainer, gym and Elite Four battles to work with accounts, the server needs a turn-based battle
    handler for the `bat_*` messages. Alternatively, the client could be changed to use its local engine even when logged in.
    The client's local engine already exists in `idx_mod_0.mjs`.

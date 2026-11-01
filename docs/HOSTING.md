@@ -81,7 +81,7 @@ server {
     index index.html;
 
     # Never serve live data, server code, tools, or repo internals.
-    location ~ ^/(server|tools|docs|_novos|node_modules|\.git)(/|$) { return 404; }
+    location ~ ^/(server|tools|docs|upcoming|node_modules|\.git)(/|$) { return 404; }
     location ~ ^/(server[^/]*\.mjs|package(-lock)?\.json|vite\.config\.js|.*\.(md|bat))$ { return 404; }
 
     # Game server (HTTP API + WebSocket), reached by the client at /servidor.
@@ -159,9 +159,9 @@ The admin panel is then at `https://pokeverse.example.com/admin`.
 - **Back up `server/data/`** (accounts and saves). It's gitignored, so `git pull` won't touch it, but nothing else backs it up off the machine.
 - Work through `docs/SECURITY.md`: restrict CORS, retire the legacy password format, and consider a player cap (the server has none).
 - Battles: logged-in players can't fight trainers, gyms or the Elite Four on this server (see `docs/AUDIT.md`).
-- **Rights.** The game uses Pokémon names, models and music owned by Nintendo / Game Freak / The Pokémon Company, and
-  `_novos/` carries a third-party copyright notice. Hosting providers, OVH included, act on copyright complaints, and that
-  can affect everything else on the same server, including the OT server. Keep that in mind before making it public.
+- **Pokémon IP.** The game uses Pokémon names, models and music owned by Nintendo / Game Freak / The Pokémon Company.
+  Hosting providers, OVH included, act on copyright complaints, and that can affect everything else on the same server,
+  including the OT server. Keep that in mind before making it public.
 
 ## Updating
 
