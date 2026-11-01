@@ -1,0 +1,41 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name play.pokeverse.quest;
+    root /opt/pokeverse-3d;
+    index index.html;
+
+    location ~ ^/(server|tools|docs|upcoming|node_modules|\.git)(/|$) { return 404; }
+    location ~ ^/(server[^/]*\.mjs|package(-lock)?\.json|vite\.config\.js|.*\.(md|bat))$ { return 404; }
+
+    location ^~ /servidor {
+        rewrite ^/servidor/?(.*)$ /$1 break;
+        proxy_pass http://127.0.0.1:5190;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_read_timeout 1h;
+        client_max_body_size 150m;
+    }
+
+    location = /admin          { try_files /admin/index.html =404; }
+    location = /admin/         { try_files /admin/index.html =404; }
+    location = /admin/scenery  { try_files /admin/scenery.html =404; }
+    location = /admin/cenario  { try_files /admin/scenery.html =404; }
+
+    location = / { try_files /index.html =404; }
+
+    location ~ \.(glb|png|webp|jpg|ogg|mp3|wav|ktx2)$ {
+        try_files /public$uri $uri =404;
+        expires 7d;
+    }
+    location ~ \.mjs$ {
+        default_type application/javascript;
+        try_files /public$uri $uri =404;
+    }
+    location / {
+        try_files /public$uri $uri =404;
+    }
+}

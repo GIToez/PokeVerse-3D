@@ -80,7 +80,7 @@ curl http://127.0.0.1:5190/health    # → {"ok":true,"game":"Pokemon 3D Base"}
 ```nginx
 server {
     listen 80;
-    server_name pokeverse.example.com;
+    server_name play.pokeverse.quest;
     root /opt/pokeverse-3d;
     index index.html;
 
@@ -126,7 +126,7 @@ server {
 
 ```bash
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d pokeverse.example.com     # adds HTTPS and the 443 block
+sudo certbot --nginx -d play.pokeverse.quest     # adds HTTPS and the 443 block
 ```
 
 HTTPS is required, not optional: the client only uses the `/servidor` path when the page is served over HTTPS. Over

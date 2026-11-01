@@ -24,7 +24,19 @@ ssh ubuntu@40.160.145.24 'bash bootstrap-ovh.sh'
 
 That creates `pokeverse` if needed, clones this repo, installs npm packages, installs `pokeverse-3d.service`, and lets `pokeverse` restart that unit with sudo. It does not touch the OT process.
 
-Then nginx + HTTPS: see [HOSTING.md](HOSTING.md). Point a subdomain at `40.160.145.24` and proxy `/servidor` to `127.0.0.1:5190`.
+Public URL: `https://play.pokeverse.quest`. In Spaceship DNS add:
+
+| Host | Type | Value | TTL |
+|---|---|---|---|
+| `play` | A | `40.160.145.24` | 1 minute |
+
+Same IP as `account.pokeverse.quest`. Then as **ubuntu**:
+
+```bash
+bash /opt/pokeverse-3d/scripts/live/setup-play.sh
+```
+
+That installs nginx for this hostname only, proxies `/servidor` to `127.0.0.1:5190`, and runs certbot. It does not touch OT. See [HOSTING.md](HOSTING.md).
 
 ## Later deploys
 
