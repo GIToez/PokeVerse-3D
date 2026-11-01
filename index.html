@@ -92,23 +92,23 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 <div id="hud">
   <h1 id="titulo">Kanto</h1>
   <table>
-    <tr><td class="k">props no GLB</td><td id="h-inst">–</td></tr>
-    <tr><td class="k">malhas instanciadas</td><td id="h-malhas">–</td></tr>
-    <tr><td class="k">triângulos</td><td id="h-tris">–</td></tr>
-    <tr><td class="k">eixo X do GLB</td><td id="h-flip">–</td></tr>
-    <tr><td class="k">cursor (mundo)</td><td id="h-pos">–</td></tr>
+    <tr><td class="k">props in GLB</td><td id="h-inst">–</td></tr>
+    <tr><td class="k">instanced meshes</td><td id="h-malhas">–</td></tr>
+    <tr><td class="k">triangles</td><td id="h-tris">–</td></tr>
+    <tr><td class="k">GLB X axis</td><td id="h-flip">–</td></tr>
+    <tr><td class="k">cursor (world)</td><td id="h-pos">–</td></tr>
     <tr><td class="k">fps</td><td id="h-fps">–</td></tr>
     <tr><td class="k">gpu</td><td id="h-gpu" style="font-size:10px">–</td></tr>
   </table>
   <div class="teclas" id="teclas">
-    <div><b>W A S D</b> mover · <b>roda</b> / <b>+ −</b> zoom · <b>arrastar</b> pan · <b>Q E</b> girar · <b>R</b> gravar vídeo</div>
+    <div><b>W A S D</b> move · <b>wheel</b> / <b>+ −</b> zoom · <b>drag</b> pan · <b>Q E</b> rotate · <b>R</b> record video</div>
     <div style="margin-top:4px">
-      <span id="t-g"><b>G</b> grama <i></i></span> ·
-      <span id="t-a"><b>H</b> água <i></i></span> ·
+      <span id="t-g"><b>G</b> grass <i></i></span> ·
+      <span id="t-a"><b>H</b> water <i></i></span> ·
       <span id="t-n"><b>N</b> npcs <i></i></span> ·
-      <span id="t-t"><b>T</b> batalha <i></i></span> ·
-      <span id="t-p"><b>P</b> portas <i></i></span> ·
-      <span id="t-c"><b>C</b> áreas <i></i></span>
+      <span id="t-t"><b>T</b> battle <i></i></span> ·
+      <span id="t-p"><b>P</b> doors <i></i></span> ·
+      <span id="t-c"><b>C</b> areas <i></i></span>
     </div>
   </div>
 </div>
@@ -132,7 +132,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 <button id="menu-btn" type="button" hidden>☰</button>
 <button id="chat-btn" type="button" hidden>💬</button>   <!-- só a maquete do celular o posiciona ([abre:chat]); sem maquete fica escondido -->
 <div id="time-hud" hidden></div>
-<div id="menu-icones"><button type="button" data-j="pokemon" title="Pokémon"><i class="ic ic-pokebola"></i><b>Pokémon</b></button><button type="button" data-j="mochila" title="Mochila"><i class="ic ic-mochila"></i><b>Mochila</b></button><button type="button" data-j="missoes" title="Missões"><i class="ic ic-missoes"></i><b>Missões</b></button><button type="button" data-j="mapa" title="Mapa"><i class="ic ic-mapa"></i><b>Mapa</b></button><button type="button" data-j="pokedex" title="Pokédex"><i class="ic ic-pokedex"></i><b>Pokédex</b></button><button type="button" data-j="treinador" title="Treinador"><i class="ic ic-personagem"></i><b>Treinador</b></button><button type="button" data-j="loja" title="Loja"><i class="ic ic-loja"></i><b>Loja</b></button><button type="button" data-j="social" title="Social"><i class="ic ic-amigos"></i><b>Social</b></button><button type="button" data-j="batalha" title="Batalha"><i class="ic ic-batalha"></i><b>Batalha</b></button><button type="button" data-j="config" title="Config"><i class="ic ic-ajuda"></i><b>Config</b></button></div>
+<div id="menu-icones"><button type="button" data-j="pokemon" title="Pokémon"><i class="ic ic-pokebola"></i><b>Pokémon</b></button><button type="button" data-j="mochila" title="Bag"><i class="ic ic-mochila"></i><b>Bag</b></button><button type="button" data-j="missoes" title="Missions"><i class="ic ic-missoes"></i><b>Missions</b></button><button type="button" data-j="mapa" title="Map"><i class="ic ic-mapa"></i><b>Map</b></button><button type="button" data-j="pokedex" title="Pokédex"><i class="ic ic-pokedex"></i><b>Pokédex</b></button><button type="button" data-j="treinador" title="Trainer"><i class="ic ic-personagem"></i><b>Trainer</b></button><button type="button" data-j="loja" title="Shop"><i class="ic ic-loja"></i><b>Shop</b></button><button type="button" data-j="social" title="Social"><i class="ic ic-amigos"></i><b>Social</b></button><button type="button" data-j="batalha" title="Battle"><i class="ic ic-batalha"></i><b>Battle</b></button><button type="button" data-j="config" title="Config"><i class="ic ic-ajuda"></i><b>Config</b></button></div>
 <div id="boot"><div class="girando"></div></div>
 <div id="gire" hidden><div class="gire-icone">📱</div><b>Vire o celular</b><span>O jogo é na horizontal.</span><button type="button" id="gire-cheia" hidden>Tela cheia</button></div>   <!-- celular em pé: cobre o jogo até deitar (a HUD só existe deitada) -->
 
@@ -434,6 +434,7 @@ const layoutHudCedoP = (params0Cedo.get('hud') === 'v2' || (hudV2Salvo && !['pad
   ajustar(); addEventListener('resize', ajustar);
 })();
 await I18n.iniciar(params0Cedo.get('idioma'));
+for (const raiz of [$('hud'), $('menu-icones')]) { const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT); for (let n; (n = w.nextNode());) { const k = n.nodeValue.trim(); if (k) n.nodeValue = n.nodeValue.replace(k, I18n.t(k)); } for (const b of raiz.querySelectorAll('[title]')) b.title = I18n.t(b.title); }
 try { const g = $('gire'); if (g){ g.querySelector('b').textContent = I18n.t('Vire o celular'); g.querySelector('span').textContent = I18n.t('O jogo é na horizontal.'); const b = $('gire-cheia'); if (b) b.textContent = I18n.t('Tela cheia'); } } catch {}   // "vire o celular" no idioma do jogador (12/09)                             // as telas já saem no idioma certo
 if (!DEMO && !/[?&]fairy=1/.test(location.search) && params0Cedo.get('rede') !== '0' && params0Cedo.get('conta') !== '0') Som.musica('bg/sound_login', { fade: 2 });
 /* ======================================================== CARGA DO BOOT (16/09) — a "tela preta"
@@ -715,12 +716,12 @@ function remapearInteriorCompartilhado(){
   }
 }
 document.title = 'Pokemon 3D Base';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
-$('titulo').textContent = cenaAtual ? cenaAtual.nome + ' · ' + NOME
+$('titulo').textContent = cenaAtual ? I18n.t(cenaAtual.nome) + ' · ' + NOME
   : 'Kanto — ' + (dados.areas.length > 4
-    ? dados.areas.length + ' áreas (' + Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha/.test(n)).length + ' cidades)'
-    : dados.areas.map(a => dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a)).join(' + '));
+    ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha/.test(n)).length })
+    : dados.areas.map(a => I18n.t(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a))).join(' + '));
 if (DEMO){
-  $('titulo').textContent = 'Pallet & Rota 1 · demo';
+  $('titulo').textContent = I18n.t('Pallet & Route 1 · demo');
   $('hud').querySelector('table').hidden = true;
   const tl = $('teclas').children;
   tl[0].innerHTML = '<b>W A S D</b> anda · <b>clique</b> no chão vai até lá · <b>roda</b> zoom · <b>Q E</b> giram a câmera';
@@ -899,7 +900,7 @@ function contextoPreso(a){
     nadando: !!tenta(() => jogo.montaria?.surfando || (a && naAgua(a.x, a.z))), emTurno: !!tenta(() => jogo.turno), raidArena: !!tenta(() => jogo.raidArena),
     ultimoCentro: (c?.mapa && c.chegada) ? { mapa: String(c.mapa), chegada: +c.chegada } : null, destino: tenta(() => destinoPreso()) };
 }
-$('h-gpu').textContent = (SOFTWARE ? 'SOFTWARE · ' : '') + GPU.replace(/^ANGLE \((.*)\)$/, '$1').split(',').slice(0, 2).join(',').slice(0, 60) + ' · ' + QUALIDADE;
+$('h-gpu').textContent = (SOFTWARE ? 'SOFTWARE · ' : '') + GPU.replace(/^ANGLE \((.*)\)$/, '$1').split(',').slice(0, 2).join(',').slice(0, 60) + ' · ' + I18n.t(QUALIDADE === 'baixa' ? 'low' : 'high');
 $('h-gpu').style.color = SOFTWARE ? '#ff8a5f' : '';
 
 const CEU = new THREE.Color('#a7c3ad');
@@ -1113,7 +1114,7 @@ if (!chao.biblioteca && chao.amostraNome){
     flipX = Math.sign(p.x * chao.amostraX) || -1;
   }
 }
-$('h-flip').textContent = flipX < 0 ? 'espelhado (x → −x)' : 'igual ao Unity';
+$('h-flip').textContent = flipX < 0 ? I18n.t('mirrored (x → −x)') : I18n.t('same as Unity');
 const mundo = (x, y, z) => new THREE.Vector3(flipX * x, y, z);
 
 /* ========================================================== instâncias */
@@ -2311,9 +2312,9 @@ function soltarGlbDaCena(){
 }
 { soltarImagensDaCena(principal.raiz, texturasPiso); }
 soltarGlbDaCena();
-$('h-inst').textContent = principal.nInst.toLocaleString('pt-BR') + (principal.prefabs ? ' (' + principal.prefabs + ' prefabs)' : '');
-$('h-malhas').textContent = principal.nMalhas + (nPisos ? ' (+' + nPisos + ' pisos com splat)' : '');
-$('h-tris').textContent = Math.round(principal.nTris).toLocaleString('pt-BR');
+$('h-inst').textContent = principal.nInst.toLocaleString(I18n.idioma() === 'pt' ? 'pt-BR' : 'en-US') + (principal.prefabs ? ' (' + principal.prefabs + ' prefabs)' : '');
+$('h-malhas').textContent = principal.nMalhas + (nPisos ? ' ' + I18n.t('(+{n} splat floors)', { n: nPisos }) : '');
+$('h-tris').textContent = Math.round(principal.nTris).toLocaleString(I18n.idioma() === 'pt' ? 'pt-BR' : 'en-US');
 
 // sem área (interior pequeno): centro do que foi colocado
 const centroBbox = dados.bbox ? { x: (dados.bbox.x0 + dados.bbox.x1) / 2, z: (dados.bbox.z0 + dados.bbox.z1) / 2 } : { x: 0, z: 0 };
@@ -2959,7 +2960,7 @@ async function montar(glb, { trocar = false } = {}){
     efeito('MountIn', m.peito, m.altura, { vidaMax: 1.6 });
     Som.tocar('skill/Wind1');
     flutuar(ash, (m.shiny ? '✨ ' : '') + (meio === 'agua' ? 'surfando no ' : 'montou no ') + m.nome, m.shiny ? '#8be9fd' : '#ffd23a');
-    if (ADM && m.voa) $('t-v').textContent = 'voo livre (adm): Espaço sobe · X desce · Shift turbo · sem barreira';
+    if (ADM && m.voa) $('t-v').textContent = I18n.t('free flight (admin): Space up · X down · Shift turbo · no walls');
   } catch (e){ console.warn('montaria:', e); }
   jogo.montando = false;
 }
@@ -3623,7 +3624,7 @@ if (JOGAR){
         cam: { get zoom(){ return zoom; }, set zoom(v){ zoom = v; }, get giro(){ return giro; }, set giro(v){ giro = v; } },
       })).catch(e => { console.warn('captura:', e); jogo.raidErro = String(e?.stack || e); });
     }
-    $('teclas').insertAdjacentHTML('beforeend', '<div style="margin-top:6px"><b>V</b> <span id="t-v">jogando: WASD anda, clique no chão vai até lá, botão direito arrasta</span></div>' + (DEMO ? '<div style="margin-top:4px"><b>M</b> monta / desmonta · <b>1 2</b> golpes · <b>Tab</b> alvo · <b>Esc</b> solta o alvo</div>' : '<div style="margin-top:4px"><b>M</b> monta / desmonta (o painel 🐉 escolhe a montaria) · <b>B</b> chama o chefão</div>') + '<div style="margin-top:6px" id="tam-box">tamanhos: <select id="tam-modo"><option value="proporcional">proporcionais (altura real comprimida)</option><option value="jogo">do Fairy (Pikachu 2,9×, Lugia 0,5×…)</option><option value="nativo">nativos (fofinhos)</option></select></div>');
+    $('teclas').insertAdjacentHTML('beforeend', I18n.tHtml('<div style="margin-top:6px"><b>V</b> <span id="t-v">playing: WASD walks, click the ground to go there, right button drags</span></div>' + (DEMO ? '<div style="margin-top:4px"><b>M</b> mount / dismount · <b>1 2</b> moves · <b>Tab</b> target · <b>Esc</b> clear target</div>' : '<div style="margin-top:4px"><b>M</b> mount / dismount (the 🐉 panel picks the mount) · <b>B</b> summon the boss</div>') + '<div style="margin-top:6px" id="tam-box">sizes: <select id="tam-modo"><option value="proporcional">proportional (real height, compressed)</option><option value="jogo">Fairy\'s (Pikachu 2.9×, Lugia 0.5×…)</option><option value="nativo">native (cute)</option></select></div>'));
     $('tam-modo').value = jogo.tamanhos;
     $('tam-modo').addEventListener('change', e => { definirTamanhos(e.target.value); e.target.blur(); });
   } catch (e){ console.warn('sem personagens:', e); try { __boot.falha('sem personagens: ' + String(e?.stack || e).slice(0, 300)); } catch {} }   // 12/09: o jogador não nasceu — vai pro diagnóstico (antes só o console via, e o celular não tem console)
@@ -7815,7 +7816,7 @@ Object.assign(window, { jogo, chaoEm, livre, bloqueio, pisos, aguas, deslocar, r
 function alternarJogo(){
   if (!jogo.ash) return;
   jogo.ativo = !jogo.ativo;
-  $('t-v').textContent = jogo.ativo ? 'jogando: WASD anda, clique no chão vai até lá, botão direito arrasta' : 'câmera livre (V volta ao Ash)';
+  $('t-v').textContent = jogo.ativo ? I18n.t('playing: WASD walks, click the ground to go there, right button drags') : I18n.t('free camera (V returns to Ash)');
 }
 function atualizarJogo(dt, entrada){
   const { ash, pika } = jogo;
@@ -7990,7 +7991,7 @@ camadaInstanciada('t', dados.treinadores, new THREE.ConeGeometry(0.32, 1.0, 12).
 camadaInstanciada('p', dados.portas, new THREE.BoxGeometry(0.8, 0.25, 0.8).translate(0, 0.12, 0), '#ffd23a');
 
 // caixas das áreas: retângulo no chão + rótulo em DOM
-const nomeArea = a => dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a);
+const nomeArea = a => I18n.t(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a));
 const caixasG = new THREE.Group();
 const rotulos = [];
 for (const c of dados.caixas){
@@ -8046,12 +8047,12 @@ if (indice?.cenas?.length && !DEMO){
   for (const c of indice.cenas){
     if (c.id === 1000001) continue;
     const op = document.createElement('option');
-    op.value = c.id; op.textContent = c.id + ' · ' + c.nome + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
+    op.value = c.id; op.textContent = c.id + ' · ' + I18n.t(c.nome) + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
     if (String(c.id) === NOME) op.selected = true;
     sel.appendChild(op);
   }
   sel.addEventListener('change', () => { location.search = '?mapa=' + sel.value; });
-  $('teclas').insertAdjacentHTML('beforeend', '<div style="margin-top:6px" id="cena-box">cena: </div>');
+  $('teclas').insertAdjacentHTML('beforeend', '<div style="margin-top:6px" id="cena-box">' + I18n.t('scene:') + ' </div>');
   $('cena-box').appendChild(sel);
 }
 
@@ -8070,7 +8071,7 @@ if (dados.caixas.length > 2 && !DEMO){
     if (c) alvo.copy(mundo(c.x, 0, c.z));
     sel.blur();
   });
-  $('teclas').insertAdjacentHTML('beforeend', '<div style="margin-top:6px" id="ir-box">ir para: </div>');
+  $('teclas').insertAdjacentHTML('beforeend', '<div style="margin-top:6px" id="ir-box">' + I18n.t('go to:') + ' </div>');
   $('ir-box').appendChild(sel);
 }
 const OFF = new THREE.Vector3(0, 18.8, 23.5);          // MainCamera.prefab (TransformConfig.Pos)

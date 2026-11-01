@@ -11,6 +11,7 @@
  *   Gravador.instalar({ tela, prefixo: 'kanto', audio: () => stream });
  *   … no laço, logo depois do render:  Gravador.quadro();
  */
+import { t } from './i18n.mjs';
 const CSS = `
 #grav-botao{position:fixed;right:12px;top:12px;z-index:30;padding:7px 12px;border:1px solid #b47622;border-radius:6px;background:linear-gradient(#342317,#10131b);color:#ffe6b0;font:12px/1.4 "Segoe UI",Arial,sans-serif;cursor:pointer;box-shadow:0 8px 18px #000a}
 #grav-botao b{display:inline-block;padding:0 5px;margin-left:6px;border:1px solid #b47622;border-radius:3px;font-family:ui-monospace,Consolas,monospace}
@@ -80,7 +81,7 @@ export function instalar({ pai = null, ...opcoes } = {}){
   if (pai) ui.botao.style.position = 'static';           // dentro de uma barra da página, não fixo no canto
   ui.caixa = criar('div', 'grav-caixa');
   ui.menu = criar('div', 'grav-menu');
-  ui.menu.innerHTML = '<button class="rec" data-acao="gravar">● Gravar</button><button data-acao="refazer">↺ Refazer</button><button data-acao="cancelar">✕</button>';
+  ui.menu.innerHTML = '<button class="rec" data-acao="gravar">● ' + t('Record') + '</button><button data-acao="refazer">↺ ' + t('Redo') + '</button><button data-acao="cancelar">✕</button>';
   ui.aviso = criar('div', 'grav-aviso');
   ui.botao.addEventListener('click', () => { ui.botao.blur(); alternar(); });
   ui.menu.addEventListener('click', e => {
@@ -111,7 +112,7 @@ function escolher(){
   estado = 'escolhendo'; ret = null;
   ui.sel = criar('div', 'grav-sel');
   ui.dica = criar('div', 'grav-dica');
-  ui.dica.innerHTML = 'Arraste para marcar a área do vídeo · <b>Enter</b> tela inteira · <b>Esc</b> cancelar';
+  ui.dica.innerHTML = t('Drag to mark the video area') + ' · <b>Enter</b> ' + t('full screen') + ' · <b>Esc</b> ' + t('cancel');
   ui.caixa.className = '';
   let inicio = null;
   const norm = e => {
@@ -128,7 +129,7 @@ function escolher(){
   ui.sel.addEventListener('pointerup', e => {
     if (!inicio) return;
     ret = norm(e); inicio = null;
-    if (ret.w < 40 || ret.h < 40){ ret = null; ui.caixa.className = ''; ui.sel.classList.remove('marcado'); avisar('área muito pequena — arraste de novo'); return; }
+    if (ret.w < 40 || ret.h < 40){ ret = null; ui.caixa.className = ''; ui.sel.classList.remove('marcado'); avisar(t('area too small — drag again')); return; }
     pronto();
   });
   pintarBotao();
@@ -142,7 +143,7 @@ function pronto(){
   const abaixo = ret.y + ret.h + 46 < innerHeight;
   ui.menu.style.left = Math.min(ret.x, innerWidth - 230) + 'px';
   ui.menu.style.top = (abaixo ? ret.y + ret.h + 8 : Math.max(8, ret.y - 46)) + 'px';
-  if (ui.dica) ui.dica.innerHTML = `Área ${ret.w}×${ret.h} · <b>● Gravar</b> começa${cfg.forcarCanvas ? '' : ' (o Chrome pergunta uma vez se pode capturar a aba)'} · <b>Esc</b> cancelar`;
+  if (ui.dica) ui.dica.innerHTML = t('Area {x}', { x: ret.w + '×' + ret.h }) + ' · <b>● ' + t('Record') + '</b> ' + t('starts') + (cfg.forcarCanvas ? '' : ' ' + t('(Chrome asks once whether it may capture the tab)')) + ' · <b>Esc</b> ' + t('cancel');
   pintarBotao();
 }
 
@@ -157,7 +158,7 @@ async function gravar(){
   if (estado !== 'pronto' || !ret) return;
   ui.menu.style.display = 'none';
   try { stream = await capturar(); }
-  catch (e){ avisar('não deu para capturar: ' + (e.message || e)); ui.menu.style.display = 'flex'; return; }
+  catch (e){ avisar(t('could not capture: {x}', { x: e.message || e })); ui.menu.style.display = 'flex'; return; }
   tipo = escolherTipo();
   bps = bitrate(stream.getVideoTracks()[0], tipo);
   rec = new MediaRecorder(stream, { ...(tipo && { mimeType: tipo }), videoBitsPerSecond: bps });
@@ -191,8 +192,8 @@ async function capturar(){
     const inteira = ret.x === 0 && ret.y === 0 && ret.w >= innerWidth && ret.h >= innerHeight;
     if (!inteira && typeof CropTarget !== 'undefined' && v.cropTo){
       try { await v.cropTo(await CropTarget.fromElement(ui.caixa)); }
-      catch (e){ avisar('sem recorte (gravando a aba inteira): ' + e.message); }
-    } else if (!inteira) avisar('este navegador não recorta a captura — gravando a aba inteira');
+      catch (e){ avisar(t('no crop (recording the whole tab): {x}', { x: e.message })); }
+    } else if (!inteira) avisar(t('this browser cannot crop the capture — recording the whole tab'));
     modo = 'aba';
     return s;
   }
@@ -225,7 +226,7 @@ function salvar(){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 30000);
   const st = stream.getVideoTracks()[0]?.getSettings?.() || {};
-  avisar(`salvo em Downloads: ${nome} (${(blob.size / 1048576).toFixed(1)} MB · ${st.width || '?'}×${st.height || '?'} · ${(tipo || 'webm').replace(/^video\//, '').split(';')[0]} ${tipo.includes('640028') ? 'High' : tipo.includes('42E01E') || /avc1$|mp4$/.test(tipo) ? 'Baseline' : ''} · ${Math.round(bps / 1e6)} Mbps${modo === 'canvas' ? ' · sem os rótulos' : ''})`, 12000);
+  avisar(t('saved to Downloads:') + ` ${nome} (${(blob.size / 1048576).toFixed(1)} MB · ${st.width || '?'}×${st.height || '?'} · ${(tipo || 'webm').replace(/^video\//, '').split(';')[0]} ${tipo.includes('640028') ? 'High' : tipo.includes('42E01E') || /avc1$|mp4$/.test(tipo) ? 'Baseline' : ''} · ${Math.round(bps / 1e6)} Mbps${modo === 'canvas' ? ' · ' + t('without labels') : ''})`, 12000);
   estado = 'parado'; ret = null; copiar = null; rec = null; stream = null;
   ui.caixa.className = '';
   pintarBotao();
@@ -240,10 +241,10 @@ function pintarBotao(){
   b.classList.toggle('gravando', estado === 'gravando');
   if (estado === 'gravando'){
     const s = Math.floor((performance.now() - t0) / 1000);
-    b.innerHTML = `Parar ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}<b>R</b>`;
-  } else if (estado === 'parado') b.innerHTML = '🎥 Gravar vídeo<b>R</b>';
-  else if (estado === 'parando') b.innerHTML = 'salvando…';
-  else b.innerHTML = '✕ Cancelar<b>Esc</b>';
+    b.innerHTML = t('Stop') + ` ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}<b>R</b>`;
+  } else if (estado === 'parado') b.innerHTML = '🎥 ' + t('Record video') + '<b>R</b>';
+  else if (estado === 'parando') b.innerHTML = t('saving…');
+  else b.innerHTML = '✕ ' + t('Cancel') + '<b>Esc</b>';
 }
 function avisar(msg, ms = 4000){
   ui.aviso.textContent = msg; ui.aviso.style.opacity = 1;
