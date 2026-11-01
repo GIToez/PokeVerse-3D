@@ -188,6 +188,40 @@ body.mapa-aberto #minimapa{visibility:hidden!important}
 .mapa-pill.quest{border-color:#f4aa3588;color:#ffe07a}
 .mapa-pill.sel{border-color:#7ea8ff88}
 .mapa-esq .mapa-card{pointer-events:auto;max-height:42vh;overflow:auto}
+.mapa-dir{
+  position:absolute;right:16px;top:64px;width:min(320px,32vw);max-height:calc(100vh - 96px);
+  z-index:3;overflow:auto;padding:14px 16px;border-radius:18px;
+  background:#121a2cf2;border:1px solid #c9a24a66;box-shadow:0 10px 28px #0006;
+}
+.mapa-dir .mapa-card{background:none;border:0;padding:0}
+.mapa-dir .m-grade{grid-template-columns:repeat(auto-fill,minmax(72px,1fr))}
+.mapa-lugares{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.mapa-lugar{
+  text-align:left;padding:7px 10px;border-radius:10px;cursor:pointer;
+  border:1px solid #c9a24a55;background:#0b1020;color:#e8eefc;font:inherit;font-size:12px;
+}
+.mapa-lugar:hover{border-color:#ffd23a}
+.mapa-topo-dir{position:absolute;right:58px;top:12px;display:flex;align-items:center;gap:8px;z-index:4}
+.mapa-lugar-atual{
+  padding:6px 14px;border-radius:999px;background:#121a2cf0;border:1px solid #c9a24a66;
+  color:#ffe6b0;font-size:13px;font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.mapa-lugar-atual:empty{display:none}
+.mapa-menu{position:relative}
+.mapa-menu-btn{
+  padding:6px 14px;border-radius:999px;border:1px solid #c9a24a66;
+  background:#121a2cf0;color:#e8eefc;font:inherit;font-size:13px;cursor:pointer;
+}
+.mapa-menu-lista{
+  position:absolute;right:0;top:calc(100% + 6px);min-width:220px;padding:8px;
+  border-radius:12px;background:#121a2cf8;border:1px solid #c9a24a66;
+  display:flex;flex-direction:column;gap:4px;box-shadow:0 10px 24px #0008;
+}
+.mapa-menu-lista label{display:flex;align-items:center;gap:8px;padding:5px 6px;color:#e8eefc;font-size:13px;cursor:pointer}
+.mapa-menu-lista button{
+  text-align:left;padding:6px 10px;border:0;border-radius:8px;background:none;color:#e8eefc;font:inherit;cursor:pointer;
+}
+.mapa-menu-lista button.on{background:#1c2744;color:#ffe6b0}
 .mapa-zoom-btns{position:absolute;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:3}
 .mapa-z{
   width:40px;height:40px;border-radius:12px;border:1px solid #c9a24a66;
@@ -201,14 +235,27 @@ body.mapa-aberto #minimapa{visibility:hidden!important}
 .mapa-pin-voce{background:#ff5f5f}
 .mapa-pin-quest{background:#f4aa35;box-shadow:0 0 0 4px #f4aa3544,0 2px 8px #000a}
 .mapa-pin-centro{background:#7ea8ff}
-.mapa-sel{position:absolute;width:72px;height:48px;margin:-24px 0 0 -36px;border:2px solid #f4aa35;border-radius:10px;box-shadow:0 0 0 3px #f4aa3533;pointer-events:none}
+.mapa-pin-loja{background:#5ad67a}
+.mapa-pin-ginasio{background:#ff7a4a}
+.mapa-pin-civico{background:#c9a24a}
+.mapa-pin-entrada{background:#b08cff}
+.mapa-sel{position:absolute;inset:0;pointer-events:none}
+.mapa-sel-caixa{
+  position:absolute;box-sizing:border-box;
+  border:2px solid #ffcf3a;background:rgba(255,207,58,.10);
+  box-shadow:0 0 0 1px #ffcf3a55,inset 0 0 0 1px #ffcf3a88;
+}
 .mapa-lado{border:1px solid #c9a24a44;border-radius:16px;background:#10182a;padding:12px;overflow:auto;max-height:70vh}
 .mapa-card h3{margin:0 0 6px;color:#ffe07a}
 .mapa-dica,.mapa-live{color:var(--muted);font-size:11px;margin:0 0 8px}
 .mapa-live{color:#8ecdf5}
 .mapa-pin.mapa-pin-quest{animation:mapa-pulsa 1.6s ease-in-out infinite}
 @keyframes mapa-pulsa{0%,100%{box-shadow:0 0 0 4px #f4aa3544}50%{box-shadow:0 0 0 8px #f4aa3522}}
-@media (max-width:860px){.mapa-mundo{grid-template-columns:1fr}}
+@media (max-width:860px){
+  .mapa-mundo{grid-template-columns:1fr}
+  .mapa-dir{left:12px;right:12px;top:auto;bottom:12px;width:auto;max-height:38vh}
+  .mapa-topo-dir{right:50px;left:12px;justify-content:flex-end;flex-wrap:wrap}
+}
 /* ===== Pele da Amanda — o LIVRO (ABA_POKEMONS): fundo com as abas na lombada; página esquerda = time,
    página direita = ficha. Só no PC (no celular o livro precisa de outra diagramação). */
 body.pele-amanda:not(.mobile) .janela[data-janela=pokemon]{width:min(920px,96vw,126vh);aspect-ratio:1800/1308;max-height:none;border:0;border-radius:0;background:url(./ui/amanda/livro.png) center/100% 100% no-repeat;box-shadow:none;color:#4a3320;overflow:visible}

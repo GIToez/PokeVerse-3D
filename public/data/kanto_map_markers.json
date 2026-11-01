@@ -1,0 +1,348 @@
+{
+ "v": 1,
+ "marcadores": [
+  {
+   "tipo": "civico",
+   "nome": "Professor Oak's Lab",
+   "area": 1101,
+   "x": -4,
+   "z": 64.7
+  },
+  {
+   "tipo": "centro",
+   "nome": "Viridian Pokémon Center",
+   "area": 1102,
+   "x": -2.5,
+   "z": -30.2
+  },
+  {
+   "tipo": "loja",
+   "nome": "Viridian Mart",
+   "area": 1102,
+   "x": -11.4,
+   "z": -37.3
+  },
+  {
+   "tipo": "civico",
+   "nome": "Trainer School",
+   "area": 1102,
+   "x": -6.5,
+   "z": -37.5
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Viridian Gym",
+   "area": 1102,
+   "x": -11.5,
+   "z": -50.5
+  },
+  {
+   "tipo": "centro",
+   "nome": "Pewter Pokémon Center",
+   "area": 1103,
+   "x": 6.5,
+   "z": -159.7
+  },
+  {
+   "tipo": "loja",
+   "nome": "Pewter Mart",
+   "area": 1103,
+   "x": -5.5,
+   "z": -166.5
+  },
+  {
+   "tipo": "civico",
+   "nome": "Pewter Museum of Science",
+   "area": 1103,
+   "x": 2.5,
+   "z": -181.4
+  },
+  {
+   "tipo": "civico",
+   "nome": "Pewter Museum of Science",
+   "area": 1103,
+   "x": 8.4,
+   "z": -180.2
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Pewter Gym",
+   "area": 1103,
+   "x": 9.5,
+   "z": -168.8
+  },
+  {
+   "tipo": "centro",
+   "nome": "Cerulean Pokémon Center",
+   "area": 1104,
+   "x": -240.5,
+   "z": -196.7
+  },
+  {
+   "tipo": "loja",
+   "nome": "Cerulean Mart",
+   "area": 1104,
+   "x": -247.4,
+   "z": -185.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Cerulean Gym",
+   "area": 1104,
+   "x": -248.5,
+   "z": -193.4
+  },
+  {
+   "tipo": "centro",
+   "nome": "Vermilion Pokémon Center",
+   "area": 1105,
+   "x": -232.5,
+   "z": -24.5
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Vermilion Gym",
+   "area": 1105,
+   "x": -230.5,
+   "z": 3.1
+  },
+  {
+   "tipo": "loja",
+   "nome": "Vermilion Mart",
+   "area": 1105,
+   "x": -246.5,
+   "z": -11.3
+  },
+  {
+   "tipo": "centro",
+   "nome": "Lavender Pokémon Center",
+   "area": 1106,
+   "x": -358.5,
+   "z": -96.3
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Pokémon Tower",
+   "area": 1106,
+   "x": -380.5,
+   "z": -93.3
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Pokémon Tower",
+   "area": 1106,
+   "x": -379.5,
+   "z": -93.3
+  },
+  {
+   "tipo": "loja",
+   "nome": "Lavender Mart",
+   "area": 1106,
+   "x": -378.5,
+   "z": -85.4
+  },
+  {
+   "tipo": "centro",
+   "nome": "Celadon Pokémon Center",
+   "area": 1107,
+   "x": -182.5,
+   "z": -104.7
+  },
+  {
+   "tipo": "loja",
+   "nome": "Department Store",
+   "area": 1107,
+   "x": -149.4,
+   "z": -98.4
+  },
+  {
+   "tipo": "loja",
+   "nome": "Department Store",
+   "area": 1107,
+   "x": -144.4,
+   "z": -98.4
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Celadon Gym",
+   "area": 1107,
+   "x": -145,
+   "z": -77.7
+  },
+  {
+   "tipo": "centro",
+   "nome": "Saffron Pokémon Center",
+   "area": 1108,
+   "x": -229.5,
+   "z": -81.7
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Saffron Gym",
+   "area": 1108,
+   "x": -255.5,
+   "z": -111.3
+  },
+  {
+   "tipo": "loja",
+   "nome": "Saffron Mart",
+   "area": 1108,
+   "x": -247.4,
+   "z": -100.3
+  },
+  {
+   "tipo": "centro",
+   "nome": "Fuchsia Pokémon Center",
+   "area": 1109,
+   "x": -172.5,
+   "z": 117.4
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Fuchsia Gym",
+   "area": 1109,
+   "x": -155.5,
+   "z": 117
+  },
+  {
+   "tipo": "loja",
+   "nome": "Fuchsia Mart",
+   "area": 1109,
+   "x": -157.5,
+   "z": 95.5
+  },
+  {
+   "tipo": "centro",
+   "nome": "Cinnabar Pokémon Center",
+   "area": 1110,
+   "x": -1,
+   "z": 210.3
+  },
+  {
+   "tipo": "loja",
+   "nome": "Cinnabar Mart",
+   "area": 1110,
+   "x": -5.4,
+   "z": 210.6
+  },
+  {
+   "tipo": "civico",
+   "nome": "Cinnabar Lab",
+   "area": 1110,
+   "x": 7,
+   "z": 208
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Cinnabar Gym",
+   "area": 1110,
+   "x": -10.7,
+   "z": 200.1
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Diglett's Cave",
+   "area": 1202,
+   "x": -6,
+   "z": -132.2
+  },
+  {
+   "tipo": "centro",
+   "nome": "Route 4 Pokémon Center",
+   "area": 1204,
+   "x": -104.4,
+   "z": -204.7
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Mt. Moon",
+   "area": 1204,
+   "x": -113.9,
+   "z": -204.3
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Mt. Moon",
+   "area": 1204,
+   "x": -134,
+   "z": -204.4
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Cerulean Cave",
+   "area": 1204,
+   "x": -210,
+   "z": -208.4
+  },
+  {
+   "tipo": "centro",
+   "nome": "Route 10 Pokémon Center",
+   "area": 1210,
+   "x": -368.5,
+   "z": -176.7
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Rock Tunnel",
+   "area": 1210,
+   "x": -358,
+   "z": -176.4
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Abandoned Power Plant",
+   "area": 1210,
+   "x": -360,
+   "z": -148.4
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Rock Tunnel",
+   "area": 1210,
+   "x": -366,
+   "z": -124.4
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Diglett's Cave",
+   "area": 1211,
+   "x": -278,
+   "z": -12.2
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Seafoam Islands",
+   "area": 1299,
+   "x": -110,
+   "z": 227.8
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Seafoam Islands",
+   "area": 1299,
+   "x": -98,
+   "z": 207.8
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Victory Road",
+   "area": 1223,
+   "x": 74,
+   "z": -204.1
+  },
+  {
+   "tipo": "entrada",
+   "nome": "Victory Road",
+   "area": 1223,
+   "x": 57.9,
+   "z": -204.2
+  },
+  {
+   "tipo": "centro",
+   "nome": "Indigo League Pokémon Center",
+   "area": 1223,
+   "x": 66.9,
+   "z": -260.8
+  }
+ ]
+}
