@@ -161,12 +161,19 @@ async function trocarMapa(nome, semPerguntar = false) {
 }
 async function carregarFoto(nome) {
   if (!dadosMapa) return;
-  $('m-foto').textContent = 'background: generating the top-down photo…';
-  const { fotoDoMapa } = await import('/admin/map_photo.mjs');   // o Three só carrega quando precisa
-  const f = await fotoDoMapa(nome, dadosMapa);
-  if (nome !== mapaAtual) return;                                   // trocou de mapa no meio
-  foto = f ? { ...f, mapa: nome } : null;
-  $('m-foto').textContent = f ? 'background: ' + f.fonte : 'background: no scenery to photograph';
+  $('m-foto').textContent = 'background: loading the top-down photo…';
+  try {
+    const { fotoDoMapa } = await import('/admin/map_photo.mjs');   // Three só entra no fallback GLB
+    const f = await fotoDoMapa(nome, dadosMapa);
+    if (nome !== mapaAtual) return;                                   // trocou de mapa no meio
+    foto = f ? { ...f, mapa: nome } : null;
+    $('m-foto').textContent = f ? 'background: ' + f.fonte : 'background: no scenery to photograph';
+  } catch (e) {
+    if (nome !== mapaAtual) return;
+    foto = null;
+    $('m-foto').textContent = 'background: failed to load photo';
+    console.warn('[mapa] photo', e);
+  }
   desenhar();
 }
 function zonasDoMapa() { return zonas.filter(z => z.mapa === mapaAtual); }
