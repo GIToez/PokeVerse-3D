@@ -331,6 +331,7 @@ function escalar(pop){
 }
 
 addEventListener('wheel', ev => {                                        // rolar dentro do pop-up não pode virar zoom da câmera
+  if (ev.target?.closest?.('.mapa-overlay, .mapa-palco, #janela.mapa-cheia')) return;   // K map owns the wheel (zoom); do not kill it here
   if (ev.target?.closest?.('.pf, #janela, #chat')) ev.stopImmediatePropagation();   // 13/09 (l.neto): rolar o Pokémart (janela antiga) e o chat também dava zoom na câmera
 }, { capture: true, passive: true });
 /** Dica que aparece ao passar o mouse/segurar o dedo numa célula ([passa:x]). `dados` = { titulo, descricao }. */
