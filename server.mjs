@@ -110,6 +110,14 @@ function casarPasso(p, ev) {
   }
   return 'none';
 }
+function missaoConcluida(est, id) {
+  if ((est.feitas || []).map(String).includes(String(id))) return true;
+  return (est.laterais?.feitas || []).map(String).includes(String(id));
+}
+function requisitosLateralOk(est, m) {
+  const e = Array.isArray(m?.exige) ? m.exige : (m?.exige != null ? [m.exige] : []);
+  return e.every(id => missaoConcluida(est, id));
+}
 function aceitarLateral(u, id) {
   const mid = Number(id);
   const m = LATERAIS[mid] || LATERAIS[id];
@@ -118,6 +126,7 @@ function aceitarLateral(u, id) {
   const L = est.laterais;
   if ((L.feitas || []).map(String).includes(String(m.id))) return { ok: false, erro: 'Already completed.' };
   if (L.ativas[m.id] || L.ativas[String(m.id)]) return { ok: true, estado: est };
+  if (!requisitosLateralOk(est, m)) return { ok: false, erro: 'This side quest is still locked.' };
   if (Object.keys(L.ativas).length >= 10) return { ok: false, erro: 'Too many active side quests.' };
   L.ativas[m.id] = { passo: 0, prog: {} };
   salvarMissao(u, est);

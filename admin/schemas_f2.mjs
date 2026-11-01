@@ -116,6 +116,14 @@ function validarGrupos(d, ids, rotulo) {
       if (typeof m.nome !== 'string' || !m.nome.trim() || m.nome.length > 100) return falha(om + ' missing name (up to 100 characters)');
       if (m.des != null && (typeof m.des !== 'string' || m.des.length > 400)) return falha(om + ' description of up to 400 characters');
       if (m.npc != null && !inteiro(m.npc, 1, 999999999)) return falha(om + ' "npc": the quest giver cfg');
+      let exige = null;
+      if (m.exige != null) {
+        const arr = Array.isArray(m.exige) ? m.exige : [m.exige];
+        if (arr.length > 20) return falha(om + ' "exige": up to 20 mission ids');
+        for (const id of arr) if (!inteiro(id, 1, 999999999)) return falha(om + ' "exige": mission ids that must be finished first');
+        if (arr.map(Number).includes(m.id)) return falha(om + ' "exige" cannot include its own id');
+        exige = arr.map(Number);
+      }
       if (!Array.isArray(m.passos) || !m.passos.length || m.passos.length > 40) return falha(om + ' needs 1 to 40 steps');
       const passos = [];
       for (const [pi, p] of m.passos.entries()) {
@@ -124,7 +132,7 @@ function validarGrupos(d, ids, rotulo) {
         passos.push(JSON.parse(JSON.stringify(p)));
       }
       if (m.recompensa != null) { const e = validarRecompensa(m.recompensa); if (e) return falha(om + ' ' + e); }
-      missoes.push({ ...extras(m, ['id', 'nome', 'des', 'npc', 'passos', 'recompensa']), id: m.id, nome: m.nome, ...(m.des != null ? { des: m.des } : {}), ...(m.npc != null ? { npc: m.npc } : {}), passos,
+      missoes.push({ ...extras(m, ['id', 'nome', 'des', 'npc', 'exige', 'passos', 'recompensa']), id: m.id, nome: m.nome, ...(m.des != null ? { des: m.des } : {}), ...(m.npc != null ? { npc: m.npc } : {}), ...(exige ? { exige } : {}), passos,
         ...(m.recompensa != null ? { recompensa: JSON.parse(JSON.stringify(m.recompensa)) } : {}) });
     }
     out.push({ ...extras(c, ['id', 'nome', 'missoes']), id: c.id, nome: c.nome, missoes });

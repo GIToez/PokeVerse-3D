@@ -123,9 +123,26 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
         c.missoes.splice(sel.m, 1); gs[ci].missoes.push(m); sel = { c: ci, m: gs[ci].missoes.length - 1 }; mudou(); renderEditor(); } }),
       campo({ rotulo: 'Name', valor: m.nome, max_len: 100, classe: 'larga', aoMudar: v => { if (!v) return 'required'; m.nome = v; mudou(); } }),
       campo({ rotulo: 'Description (shown in Missions)', tipo: 'area', valor: m.des, max_len: 400, classe: 'larga', aoMudar: v => { poe(m, 'des', v?.trim() ? v : null); mudou(); } }));
-    if (tab === 'side') g.append(campo({ rotulo: 'Quest giver (NPC cfg)', tipo: 'num', valor: m.npc, step: 1, lista: 'dl-f2-npcs', classe: 'larga',
-      ajuda: 'Talking to this NPC offers the side quest (Accept / Not now). Empty = listed in Missions only.',
-      dica: v => v == null ? '' : nomeNpc(v), aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'NPC cfg'; poe(m, 'npc', v); mudou(); } }));
+    if (tab === 'side'){
+      const todas = [...caps, ...sides].flatMap(x => x.missoes);
+      g.append(campo({ rotulo: 'Quest giver (NPC cfg)', tipo: 'num', valor: m.npc, step: 1, lista: 'dl-f2-npcs', classe: 'larga',
+        ajuda: 'Talking to this NPC offers the side quest (Accept / Not now). Empty = listed in Missions only.',
+        dica: v => v == null ? '' : nomeNpc(v), aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'NPC cfg'; poe(m, 'npc', v); mudou(); } }),
+      campo({ rotulo: 'Start after (mission IDs)', valor: Array.isArray(m.exige) ? m.exige.join(', ') : (m.exige ?? ''), max_len: 80, classe: 'larga',
+        ajuda: 'Story or side quest IDs that must be finished first. Comma-separated. Empty = available immediately.',
+        dica: v => {
+          const ids = String(v || '').split(/[,\s]+/).map(Number).filter(n => n > 0);
+          if (!ids.length) return 'Available immediately';
+          return ids.map(id => { const hit = todas.find(y => y.id === id); return hit ? hit.nome : '⚠ unknown ' + id; }).join(' · ');
+        },
+        aoMudar: v => {
+          const ids = String(v || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean).map(Number);
+          if (ids.some(n => !Number.isInteger(n) || n < 1)) return 'mission ids, comma-separated';
+          if (ids.includes(m.id)) return 'cannot require itself';
+          if (ids.length) m.exige = ids; else delete m.exige;
+          mudou();
+        } }));
+    }
     km.append(g);
     editor.append(km, cartaoRecompensa(m));
     // ── passos
