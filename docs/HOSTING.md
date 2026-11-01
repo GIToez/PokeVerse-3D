@@ -156,7 +156,7 @@ sudo -u pokeverse node /opt/pokeverse-3d/tools/make_gm.mjs your_username
 sudo systemctl start pokeverse
 ```
 
-The admin panel is then at `https://pokeverse.example.com/admin`.
+The admin panel is then at `https://play.pokeverse.quest/admin`.
 
 ## Before opening it to the public
 
