@@ -592,7 +592,6 @@ function recolherMenu(e, on){
 /** Remonta a árvore do Figma numa peça já posicionada (o jogo chama quando recria o miolo de um botão). */
 export function remontar(e){
   if (e && e.__figmaP) montarFigma(e, e.__figmaP, !!e.__figmaAbs);
-  if (e && !e.__figmaAbs && document.body.classList.contains('hud-ilha') && (e.id === 'skills' || e.id === 'atalhos' || e.id === 'bola-btn' || e.id === 'menu-icones' || e.id === 'barra')) aplicarIlha();
 }
 function montarFigma(e, F, abs){
   const lig = LIGACOES[e.id] || {};
@@ -984,7 +983,7 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     if (movivel){ el.__regBase = reg; ligarArrasto(el, id, preset); }
   }
   aplicarImagens(L, raiz);
-  if (raiz === document) aplicarIlha();
+  if (raiz === document) limparSobreposicaoHud();
   return true;
 }
 
@@ -1039,16 +1038,6 @@ export function alternarLequeBola(){
   else fecharLequeBola();
   return abrir;
 }
-function soltarFilhos(peca, seletor){
-  if (!peca) return [];
-  const nos = [...peca.querySelectorAll(seletor)];
-  for (const el of nos) Object.assign(el.style, { position: 'relative', left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', margin: '0', transform: 'none', pointerEvents: 'auto' });
-  return nos;
-}
-function noFluxo(el){
-  if (!el) return;
-  Object.assign(el.style, { position: 'relative', left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', transform: 'none', margin: '0' });
-}
 function ligarIlhaUmaVez(){
   if (ligarIlhaUmaVez.ok) return; ligarIlhaUmaVez.ok = true;
   document.addEventListener('click', ev => {
@@ -1059,129 +1048,26 @@ function ligarIlhaUmaVez(){
   }, true);
   document.addEventListener('keydown', ev => { if (ev.code === 'Escape'){ fecharLequeBola(); if (document.getElementById('menu-icones')?.classList.contains('aberto')) alternarDock(false); } });
 }
-export function aplicarIlha(){
+/** Drop leftover overlay classes so only `aplicar()` places pieces. */
+export function limparSobreposicaoHud(){
   if (typeof document === 'undefined') return;
-  const mobile = document.body.classList.contains('mobile');
-  /* Desktop: keep the Figma layout. The flex "reference HUD" pulled pieces out of
-     their frames (hiding .fig-img, unsitting #barra.solto) so nothing lined up. */
-  if (!mobile){
-    document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile');
-    const barra = document.getElementById('barra');
-    if (barra){
-      barra.classList.remove('ilha-dock');
-      barra.classList.add('solto');
-    }
-    return;
-  }
-  document.body.classList.add('hud-ilha');
-  document.body.classList.remove('hud-ref');
-  document.body.classList.toggle('hud-ilha-mobile', mobile);
-  ligarIlhaUmaVez();
+  document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile');
   const barra = document.getElementById('barra');
-  const skills = document.getElementById('skills');
-  const bola = document.getElementById('bola-btn');
-  const atalhos = document.getElementById('atalhos');
-  const menu = document.getElementById('menu-icones');
   if (barra){
-    barra.classList.add('ilha-dock');
-    barra.classList.remove('solto');
-    Object.assign(barra.style, { position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: mobile ? '10px' : '12px', transform: 'translateX(-50%)', display: 'flex', width: 'max-content', height: 'auto', maxWidth: 'min(1180px, calc(100vw - 24px))', maxHeight: 'none', zIndex: '26', overflow: 'visible' });
+    barra.classList.remove('ilha-dock');
+    barra.classList.add('solto');
   }
-  for (const id of ['f-parceiro', 'f-alvo']){
-    const el = document.getElementById(id);
-    if (!el) continue;
-    el.classList.add('ilha-ficha');
-    el.hidden = true;
+  for (const id of ['skills', 'atalhos', 'bola-btn', 'menu-icones', 'time-hud']){
+    document.getElementById(id)?.classList.remove('ilha-centro', 'ilha-atalhos', 'ilha-direita', 'ilha-bola', 'menu-pill', 'dock-slide');
   }
-  if (skills){
-    skills.classList.add('ilha-centro');
-    skills.style.backgroundImage = 'none';
-    Object.assign(skills.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none', zIndex: '1' });
-    const slots = soltarFilhos(skills, ':scope > .fig-grupo, :scope > button.sk');
-    if (bola){
-      noFluxo(bola);
-      bola.classList.add('ilha-bola');
-      bola.style.flex = 'none';
-      bola.style.zIndex = '2';
-      const meio = slots[1] || slots[0];
-      if (meio && bola.previousElementSibling !== meio) meio.after(bola);
-      else if (!slots.length) skills.appendChild(bola);
-    }
-  } else if (bola){
-    Object.assign(bola.style, { position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none' });
-  }
-  if (atalhos){
-    atalhos.classList.remove('ilha-direita');
-    atalhos.classList.add('ilha-atalhos');
-    atalhos.style.backgroundImage = 'none';
-    if (barra && atalhos.parentElement !== barra) barra.appendChild(atalhos);
-    Object.assign(atalhos.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'row', position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none', zIndex: '1', pointerEvents: 'auto' });
-    soltarFilhos(atalhos, ':scope > .fig-grupo, :scope > .atalho');
-    for (const a of atalhos.querySelectorAll('.atalho')) a.style.pointerEvents = 'auto';
-  }
-  if (menu){
-    menu.classList.toggle('dock-slide', mobile);
-    menu.classList.toggle('menu-pill', !mobile);
-    menu.style.backgroundImage = 'none';
-    if (!mobile && barra && menu.parentElement !== barra) barra.appendChild(menu);
-    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: mobile ? 'column' : 'row', position: mobile ? 'fixed' : 'relative', left: 'auto', top: 'auto', bottom: mobile ? '118px' : 'auto', right: mobile ? '0px' : 'auto', transform: 'none', zIndex: '28' });
-    soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
-    let aba = document.getElementById('menu-dock-aba');
-    if (mobile){
-      if (!aba){
-        aba = document.createElement('button');
-        aba.id = 'menu-dock-aba';
-        aba.type = 'button';
-        aba.textContent = '☰';
-        aba.title = tr('Menu');
-        aba.setAttribute('aria-expanded', 'false');
-        aba.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); alternarDock(); });
-      }
-      if (aba.parentElement !== menu) menu.insertBefore(aba, menu.firstChild);
-      if (!menu.__fechaAoEscolherDock){
-        menu.__fechaAoEscolherDock = true;
-        menu.addEventListener('click', ev => { if (ev.target.closest('button[data-j]') && menu.classList.contains('aberto')) alternarDock(false); });
-      }
-    } else if (aba) aba.remove();
-  }
-  achatarParty(document.getElementById('time-hud'));
-  ancorarChat();
+  document.getElementById('menu-dock-aba')?.remove();
+  ligarIlhaUmaVez();
   if (document.getElementById('bola-leque') && !document.getElementById('bola-leque').hidden) pintarLequeBola();
 }
-/** Pin the chat to the left edge and fill the gap up to the skill dock. */
-export function ancorarChat(){
-  if (typeof document === 'undefined' || document.body.classList.contains('mobile')) return;
-  const chat = document.getElementById('chat');
-  if (!chat) return;
-  chat.style.position = 'fixed';
-  chat.style.left = '12px';
-  chat.style.bottom = '12px';
-  chat.style.right = 'auto';
-  chat.style.top = 'auto';
-  chat.style.transform = 'none';
-  chat.style.removeProperty('inset');
-  const barra = document.getElementById('barra');
-  let teto = Math.round(innerWidth * 0.42);
-  if (barra){
-    const r = barra.getBoundingClientRect();
-    if (r.left > 80) teto = Math.round(r.left - 24);
-  }
-  teto = Math.max(220, Math.min(teto, innerWidth - 24));
-  if (chat.dataset.chatUserTam !== '1') chat.style.setProperty('--chat-w', teto + 'px');
-  if (!ancorarChat.__liga){
-    ancorarChat.__liga = true;
-    addEventListener('resize', () => { clearTimeout(ancorarChat._t); ancorarChat._t = setTimeout(ancorarChat, 80); });
-    addEventListener('hud-ancorar-chat', () => ancorarChat());
-    if (barra && typeof ResizeObserver === 'function') new ResizeObserver(() => ancorarChat()).observe(barra);
-  }
-}
-export function achatarParty(el){
-  if (!el || !document.body.classList.contains('hud-ref')) return;
-  Object.assign(el.style, { position: 'fixed', left: '10px', top: '50%', right: 'auto', bottom: 'auto', transform: 'translateY(-50%)', width: 'auto', height: 'auto', display: 'flex', flexDirection: 'column', overflow: 'visible' });
-  for (const n of el.querySelectorAll('.tcel, .tslot, .tcard, .fig-grupo, .tk, .tpic, .tpalco, small, i, em, u, .tevo')){
-    Object.assign(n.style, { position: n.classList.contains('tevo') ? 'absolute' : 'relative', left: 'auto', top: 'auto', right: n.classList.contains('tevo') ? '-8px' : 'auto', bottom: 'auto', transform: 'none' });
-  }
-}
+/** @deprecated Overlay restyle removed — Figma layout is the only HUD path. */
+export function aplicarIlha(){ limparSobreposicaoHud(); }
+export function ancorarChat(){}
+export function achatarParty(){}
 /** O layout que o último `aplicar` usou (rodada 26: o raid_ui.mjs lê dele os registros `popups.<ori>.raid.hud`). */
 export const layoutAtual = () => aplicar.__ultimo?.[0] || null;
 /** Registro de peça a partir de um retângulo no palco (w×h): prende ao canto mais perto. */
