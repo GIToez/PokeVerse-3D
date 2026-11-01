@@ -40,7 +40,7 @@ Secrets on this repo: `OVH_HOST` (`40.160.145.24`), `OVH_SSH_KEY` (key that logs
 
 ## Permission denied as pokeverse
 
-`pokeverse` is key-only. There is no password that works. If Windows asks for `pokeverse@40.160.145.24's password:` and then says `Permission denied (publickey,password)`, stop — log in as **ubuntu** first.
+`pokeverse` is key-only. There is no password that works. Home is `/opt/pokeverse` (not `/home/pokeverse`). If Windows asks for `pokeverse@40.160.145.24's password:` and then says `Permission denied (publickey,password)`, the key file on the VPS is missing or garbled — log in as **ubuntu** and rewrite `authorized_keys`. Do not run a bare `sudo tee` and then paste more commands: that writes the commands into the key file.
 
 In PowerShell:
 
