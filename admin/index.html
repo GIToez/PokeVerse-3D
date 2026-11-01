@@ -93,6 +93,7 @@ table.esp { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.esp th { text-align: left; color: var(--fraco); font-weight: 500; font-size: 12px; padding: 4px; border-bottom: 1px solid var(--borda); }
 table.esp td { padding: 4px; border-bottom: 1px solid #222838; vertical-align: middle; }
 table.esp input[type=number] { width: 66px; }
+table.esp input.skit { width: 58px; }
 table.esp .pct { color: var(--fraco); width: 48px; text-align: right; }
 table.esp .sem-modelo { color: var(--erro); font-size: 11px; }
 .add-esp { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-top: 8px; }
@@ -274,6 +275,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
               <div class="inteira fraco" id="e-pos"></div>
             </div>
             <h3 style="margin-top:14px">Species</h3>
+            <div class="fraco" style="margin-bottom:8px">Skittish ≤% HP: empty uses Game settings; 0 = never flee from low HP.</div>
             <div id="e-especies"></div>
             <div class="acoes" style="margin-top:12px">
               <button id="e-centro">Center</button>
@@ -328,7 +330,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
       <div class="col-edit">
         <div class="caixa">
           <h3 id="h-titulo">Choose an area</h3>
-          <div class="fraco" id="h-desc" style="margin-bottom:10px">Species that spawn in the area grass/water. The <b>weight</b> is the relative chance (100 = common, 16 = very rare).</div>
+          <div class="fraco" id="h-desc" style="margin-bottom:10px">Species that spawn in the area grass/water. The <b>weight</b> is the relative chance (100 = common, 16 = very rare). <b>Skittish ≤%</b> makes an aggressive one flee when HP falls to that percent (empty = Game settings, 0 = never).</div>
           <div class="h-nivel" id="h-nivel" hidden>
             <span>Wild Pokémon level:</span>
             <input type="number" id="h-lvmin" min="1" max="100" placeholder="min"> to <input type="number" id="h-lvmax" min="1" max="100" placeholder="max">

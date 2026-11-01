@@ -567,9 +567,10 @@ function tabelaEspecies(lista, comAgua) {
     <td>${esc(e.nome || nomeDe(e.dex))} <span class="fraco">${String(e.dex).padStart(4, '0')}</span>${GLB_DEX[e.dex] ? '' : ' <span class="sem-modelo">no model</span>'}</td>
     <td><input type="number" class="peso" min="1" max="1000" value="${e.peso || 100}"></td>
     <td class="pct">${pct(lista, i)}</td>
+    <td><input type="number" class="skit" min="0" max="100" step="1" value="${e.skittishHp ?? ''}" placeholder="—" title="Turn skittish at or below this HP %. Empty = use Game settings. 0 = never."></td>
     ${comAgua ? `<td><label class="chk"><input type="checkbox" class="agua" ${e.agua ? 'checked' : ''}></label></td>` : ''}
     <td><button class="rem perigo" title="Remove">✕</button></td></tr>`).join('');
-  return `<table class="esp"><thead><tr><th>Species</th><th>Weight</th><th>%</th>${comAgua ? '<th>Water</th>' : ''}<th></th></tr></thead><tbody>${linhas}</tbody></table>
+  return `<table class="esp"><thead><tr><th>Species</th><th>Weight</th><th>%</th><th title="Turn skittish at or below this HP %">Skittish ≤%</th>${comAgua ? '<th>Water</th>' : ''}<th></th></tr></thead><tbody>${linhas}</tbody></table>
     <div class="add-esp"><input type="text" list="dl-especies" class="add-input" placeholder="add species (name or no.)…"><button class="add-btn">Add</button></div>`;
 }
 function pct(lista, i) { const soma = lista.reduce((a, e) => a + (e.peso || 100), 0) || 1; return Math.round((lista[i].peso || 100) / soma * 100) + '%'; }
@@ -578,6 +579,12 @@ function ligarTabelaEspecies(cont, lista, aoMudar) {
   cont.querySelectorAll('tr[data-i]').forEach(tr => {
     const i = +tr.dataset.i;
     tr.querySelector('.peso')?.addEventListener('input', e => { lista[i].peso = Math.min(1000, Math.max(1, +e.target.value || 100)); tr.parentElement.parentElement.querySelectorAll('.pct').forEach((c, j) => c.textContent = pct(lista, j)); aoMudar?.(); });
+    tr.querySelector('.skit')?.addEventListener('input', e => {
+      const raw = String(e.target.value ?? '').trim();
+      if (raw === '') delete lista[i].skittishHp;
+      else lista[i].skittishHp = Math.min(100, Math.max(0, Math.round(+raw || 0)));
+      aoMudar?.();
+    });
     tr.querySelector('.agua')?.addEventListener('change', e => { if (e.target.checked) lista[i].agua = 1; else delete lista[i].agua; aoMudar?.(); });
     tr.querySelector('.rem')?.addEventListener('click', () => { lista.splice(i, 1); refazer(); });
   });

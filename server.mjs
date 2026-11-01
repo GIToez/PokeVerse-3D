@@ -498,6 +498,8 @@ function limparEspecie(e, exigirModelo) {
   if (!especieValida(dex) || !/^pm\d{4}(_\d{2})?\.glb$/.test(glb) || (exigirModelo && !modelosMon().has(glb))) return null;
   const o = { dex, glb, nome: String(e.nome ?? '').slice(0, 40) || 'Nº ' + dex, peso: Math.round(numEntre(e.peso, 1, 1000, 100)) };
   if (e.agua) o.agua = 1;
+  if (e.skittishHp === 0 || e.skittishHp === '0') o.skittishHp = 0;
+  else { const hp = Math.round(Number(e.skittishHp)); if (Number.isInteger(hp) && hp >= 1 && hp <= 100) o.skittishHp = hp; }
   if (typeof e.fonte === 'string' && e.fonte) o.fonte = e.fonte.slice(0, 20);
   return o;
 }
