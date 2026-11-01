@@ -18,6 +18,7 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Fogo from './fire.mjs';
 import * as Lodo from './sludge.mjs';
 import * as Chat from './chat.mjs';
+import * as Rede from './network.mjs';
 import * as Popup from './popup.mjs';                                   // pop-ups desenhados a partir do Figma (rodada 5)
 import * as Som from './sound.mjs';                                       // a aba Som de Configurações mexe nos três canais (rodada 24)
 import * as Arr from './drag_team.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
@@ -1644,7 +1645,13 @@ function encherSecundarias(pop, G){
 }
 
 /* ------------------------------------------------------------------ Mapa */
-let mapaRuas = null, mapaHabitats = null, mapaSel = null;
+let mapaRuas = null, mapaHabitats = null, mapaSel = null, kantoMundoP = null, mapaRegua = null;
+async function mundoKanto(){
+  const dd = ctx.dados;
+  if ((dd?.caixas || []).filter(c => c.sx > 0 && c.sz > 0).length > 15) return dd;
+  kantoMundoP ??= fetch('./data/kanto.json').then(r => r.ok ? r.json() : dd).catch(() => dd || { caixas: [], nomes: {} });
+  return kantoMundoP;
+}
 function marcadoresMissao(){
   const M = ctx.missoes;
   if (!M?.pronto?.()) return [];
@@ -1714,7 +1721,8 @@ function rMapaMundo(corpo){
   corpo.innerHTML = `<div class="mapa-overlay notranslate" translate="no">
     <div class="mapa-palco">
       <div class="mapa-zoom">
-        <img class="mapa-foto" src="./ui/figma/backgrounds/mapa-kanto.png" alt="Kanto">
+        <img class="mapa-foto" src="./ui/minimapa_kanto.jpg" alt="Kanto">
+        <canvas class="mapa-vivos"></canvas>
         <div class="mapa-rotulos"></div>
         <div class="mapa-pins"></div>
         <div class="mapa-sel" hidden></div>
@@ -1729,16 +1737,29 @@ function rMapaMundo(corpo){
   const palco = corpo.querySelector('.mapa-palco');
   const zoomEl = corpo.querySelector('.mapa-zoom');
   const foto = corpo.querySelector('.mapa-foto');
+  const vivos = corpo.querySelector('.mapa-vivos');
+  const g2 = vivos.getContext('2d');
   const rotulosEl = corpo.querySelector('.mapa-rotulos');
   const pinsEl = corpo.querySelector('.mapa-pins');
   const selEl = corpo.querySelector('.mapa-sel');
   const cards = corpo.querySelector('#m-cards');
-  let z = 1, px = 0, py = 0, arrasto = null;
+  let z = 1, px = 0, py = 0, arrasto = null, mundo = ctx.dados || { caixas: [], nomes: {} }, regua = mapaRegua;
+  const fx = ctx.flipX?.() ?? 1;
   const vista = () => { zoomEl.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')'; };
-  const limitarZ = v => Math.max(1, Math.min(3.2, v));
+  const limitarZ = v => Math.max(1, Math.min(6, v));
+  const metros = () => {
+    if (!regua) return { mw: 768, mh: 576 };
+    return { mw: regua.w / regua.esc, mh: regua.h / regua.esc };
+  };
+  const xzFrac = (x, zz) => {
+    const { mw, mh } = metros();
+    if (!regua || !mw || !mh) return null;
+    return { x: (x - regua.x0) / mw, y: (zz - regua.z0) / mh };
+  };
+  const caixaDe = a => (mundo.caixas || []).find(c => c.a === a && c.sx > 0 && c.sz > 0);
   const caber = () => {
     const r = palco.getBoundingClientRect();
-    const iw = foto.naturalWidth || 1586, ih = foto.naturalHeight || 992;
+    const iw = foto.naturalWidth || regua?.w || 3072, ih = foto.naturalHeight || regua?.h || 2304;
     if (!r.width || !r.height || !iw || !ih) return;
     const k = Math.min(r.width / iw, r.height / ih);
     const w = Math.round(iw * k), h = Math.round(ih * k);
@@ -1746,74 +1767,106 @@ function rMapaMundo(corpo){
     zoomEl.style.height = h + 'px';
     zoomEl.style.marginLeft = Math.round(-w / 2) + 'px';
     zoomEl.style.marginTop = Math.round(-h / 2) + 'px';
+    if (vivos.width !== w || vivos.height !== h){ vivos.width = w; vivos.height = h; }
     vista();
   };
   const abrirArea = async a => {
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
-    pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, nomes: {}, raio: 0.045 }));
     if (aberta !== 'mapa') return;
     mapaSel = a;
-    const nome = nomeAreaMapa(a, pontosMapa.nomes);
+    const nome = nomeAreaMapa(a, mundo.nomes);
     const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
-    const aqui = voce ? nomeAreaMapa(voce, pontosMapa.nomes) : '';
+    const aqui = areaDoJogador();
+    const aquiNome = aqui ? nomeAreaMapa(aqui, mundo.nomes) : '';
     const q = quests[0];
     const qNome = q ? (q.texto || 'Quest') : '';
     cards.innerHTML =
-      (aqui ? `<div class="mapa-pill">${tr('You are in')} <b>${esc(aqui)}</b></div>` : '') +
+      (aquiNome ? `<div class="mapa-pill">${tr('You are in')} <b>${esc(aquiNome)}</b></div>` : '') +
       (qNome ? `<div class="mapa-pill quest">${esc(qNome)}</div>` : '') +
       (nome ? `<div class="mapa-pill sel">${esc(nome)}${live ? ' · ' + live + ' wild' : ''}</div>` : '');
-    const pt = pontosMapa.areas?.[String(a)];
-    if (pt){ selEl.hidden = false; selEl.style.left = (pt[0] * 100) + '%'; selEl.style.top = (pt[1] * 100) + '%'; }
+    const b = caixaDe(a), fr = b ? xzFrac(fx * b.x, b.z) : null;
+    if (fr){ selEl.hidden = false; selEl.style.left = (fr.x * 100) + '%'; selEl.style.top = (fr.y * 100) + '%'; }
     else selEl.hidden = true;
     rotulosEl.querySelectorAll('.mapa-rotulo').forEach(el => el.classList.toggle('on', el.dataset.a === String(a)));
   };
   const pintarRotulos = () => {
     rotulosEl.innerHTML = '';
-    const nomes = pontosMapa?.nomes || {};
-    for (const [id, pt] of Object.entries(pontosMapa?.areas || {})){
-      const n = +id, nome = nomeAreaMapa(n, nomes);
-      if (!nome) continue;
+    for (const b of mundo.caixas || []){
+      if (!(b.sx > 0 && b.sz > 0)) continue;
+      const n = +b.a, nome = nomeAreaMapa(n, mundo.nomes);
+      if (!nome || /^area /i.test(nome)) continue;
       const cidade = n >= 1101 && n <= 1110;
       const extra = n >= 1191 && n <= 1199;
-      if (!cidade && !extra) continue;
+      if (!cidade && !extra && !(n >= 1201 && n <= 1225)) continue;
+      const fr = xzFrac(fx * b.x, b.z); if (!fr) continue;
       const el = document.createElement('b');
-      el.className = 'mapa-rotulo' + (cidade ? ' cidade' : ' extra');
-      el.dataset.a = id;
+      el.className = 'mapa-rotulo' + (cidade ? ' cidade' : extra ? ' extra' : ' rota');
+      el.dataset.a = String(n);
       el.textContent = cidade ? rotuloCurtoMapa(nome) : nome;
-      el.style.left = (pt[0] * 100) + '%';
-      el.style.top = (pt[1] * 100) + '%';
+      el.style.left = (fr.x * 100) + '%';
+      el.style.top = (fr.y * 100) + '%';
       rotulosEl.appendChild(el);
     }
   };
   const pintarPins = () => {
     pinsEl.innerHTML = '';
     const pins = marcadoresMissao();
-    if (voce) pins.unshift({ area: voce, texto: 'You are here', tipo: 'voce' });
+    const aqui = areaDoJogador();
+    if (aqui) pins.unshift({ area: aqui, texto: 'You are here', tipo: 'voce' });
     for (const pin of pins){
-      const pt = pontosMapa?.areas?.[String(pin.area)]; if (!pt) continue;
+      const b = caixaDe(pin.area); if (!b) continue;
+      const fr = xzFrac(fx * b.x, b.z); if (!fr) continue;
       const el = document.createElement('i');
       el.className = 'mapa-pin mapa-pin-' + pin.tipo;
       el.title = pin.texto;
-      el.style.left = (pt[0] * 100) + '%';
-      el.style.top = (pt[1] * 100) + '%';
+      el.style.left = (fr.x * 100) + '%';
+      el.style.top = (fr.y * 100) + '%';
       pinsEl.appendChild(el);
     }
   };
+  const ponto = (x, zz, cor, r) => {
+    const fr = xzFrac(x, zz); if (!fr) return;
+    const px2 = fr.x * vivos.width, pz2 = fr.y * vivos.height;
+    if (px2 < -8 || pz2 < -8 || px2 > vivos.width + 8 || pz2 > vivos.height + 8) return;
+    g2.beginPath(); g2.arc(px2, pz2, r, 0, Math.PI * 2); g2.fillStyle = cor; g2.fill();
+    g2.lineWidth = 1.4; g2.strokeStyle = '#0009'; g2.stroke();
+  };
+  const desenharVivos = () => {
+    if (!vivos.width || !regua) return;
+    g2.clearRect(0, 0, vivos.width, vivos.height);
+    const j = ctx.jogo;
+    for (const s of j?.selvagens || []) if (s.estado !== 'morto' && s.estado !== 'guardado') ponto(s.vx ?? s.x, s.vz ?? s.z, s.shiny ? '#ffe36b' : '#f4f4f4', 3);
+    for (const n of j?.npcs || []) ponto(n.vx ?? n.x, n.vz ?? n.z, '#4ff0e0', 3.2);
+    for (const n of j?.treinadores || []) ponto(n.vx ?? n.x, n.vz ?? n.z, '#ff8ad8', 3.2);
+    try {
+      for (const o of Rede.listaOutros?.() || []) if (o.x != null && o.z != null) ponto(o.x, o.z, '#7ea8ff', 4);
+    } catch {}
+    const pk = j?.pika;
+    if (pk && !j?.semParceiro) ponto(pk.vx ?? pk.x, pk.vz ?? pk.z, '#f4aa35', 3.6);
+    const ash = j?.ash;
+    if (ash) ponto(ash.vx ?? ash.x, ash.vz ?? ash.z, '#ff5f5f', 5.5);
+  };
+  const quadro = () => {
+    if (aberta !== 'mapa' || !corpo.isConnected) return;
+    desenharVivos();
+    requestAnimationFrame(quadro);
+  };
   const pontoDoEvento = ev => {
     const r = foto.getBoundingClientRect();
-    if (!r.width || !r.height) return null;
-    return { fx: (ev.clientX - r.left) / r.width, fy: (ev.clientY - r.top) / r.height };
+    if (!r.width || !r.height || !regua) return null;
+    const { mw, mh } = metros();
+    return {
+      wx: regua.x0 + ((ev.clientX - r.left) / r.width) * mw,
+      wz: regua.z0 + ((ev.clientY - r.top) / r.height) * mh,
+    };
   };
   palco.addEventListener('wheel', ev => {
     ev.preventDefault();
-    const before = pontoDoEvento(ev);
     const nz = limitarZ(z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12));
-    if (before){
-      const r = palco.getBoundingClientRect();
-      const mx = ev.clientX - r.left - r.width / 2, my = ev.clientY - r.top - r.height / 2;
-      px = mx - (mx - px) * (nz / z);
-      py = my - (my - py) * (nz / z);
-    }
+    const r = palco.getBoundingClientRect();
+    const mx = ev.clientX - r.left - r.width / 2, my = ev.clientY - r.top - r.height / 2;
+    px = mx - (mx - px) * (nz / z);
+    py = my - (my - py) * (nz / z);
     z = nz; vista();
   }, { passive: false });
   palco.addEventListener('pointerdown', ev => {
@@ -1830,13 +1883,10 @@ function rMapaMundo(corpo){
   const solta = ev => {
     if (!arrasto || ev.pointerId !== arrasto.id) return;
     const moveu = arrasto.moveu; arrasto = null;
-    if (moveu || !pontosMapa) return;
+    if (moveu) return;
     const p = pontoDoEvento(ev); if (!p) return;
-    let melhor = null, dm = Infinity;
-    const testar = (id, [x, y]) => { const d = Math.hypot(x - p.fx, y - p.fy); if (d < dm){ dm = d; melhor = +id; } };
-    for (const [id, pt] of Object.entries(pontosMapa.areas || {})) testar(id, pt);
-    for (const [id, lista] of Object.entries(pontosMapa.extras || {})) for (const pt of lista) testar(id, pt);
-    if (melhor != null && dm < (pontosMapa.raio || 0.045) * 1.6) abrirArea(melhor);
+    const b = (mundo.caixas || []).find(c => c.sx > 0 && c.sz > 0 && Math.abs(p.wx - fx * c.x) <= c.sx / 2 && Math.abs(p.wz - c.z) <= c.sz / 2);
+    if (b) abrirArea(b.a);
   };
   palco.addEventListener('pointerup', solta);
   palco.addEventListener('pointercancel', () => { arrasto = null; });
@@ -1851,13 +1901,20 @@ function rMapaMundo(corpo){
   foto.addEventListener('load', caber);
   if (foto.complete) caber();
   (async () => {
-    pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, nomes: {}, raio: 0.045 }));
-    mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
+    const [reg, dd, hab] = await Promise.all([
+      mapaRegua ? Promise.resolve(mapaRegua) : fetch('./ui/minimapa_kanto.json').then(r => r.ok ? r.json() : null).catch(() => null),
+      mundoKanto(),
+      fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] })),
+    ]);
     if (aberta !== 'mapa') return;
+    if (reg) mapaRegua = regua = reg;
+    if (dd) mundo = dd;
+    mapaHabitats ??= hab;
     pintarRotulos(); pintarPins();
     const start = voce || quests[0]?.area || 1101;
     abrirArea(start);
     caber();
+    requestAnimationFrame(quadro);
   })();
 }
 function rMapaVivo(corpo, dd, caixas){
