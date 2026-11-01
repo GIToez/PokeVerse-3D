@@ -22,12 +22,29 @@ import * as Rede from './network.mjs';
 import * as Popup from './popup.mjs';                                   // pop-ups desenhados a partir do Figma (rodada 5)
 import * as Som from './sound.mjs';                                       // a aba Som de Configurações mexe nos três canais (rodada 24)
 import * as Arr from './drag_team.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
+import * as Evolucao from './evolution.mjs';
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const semBr = s => String(s || '').replace(/<br\s*\/?>/gi, ' ');        // descrição do dump traz <br> escrito: no Figma o texto é puro (v2, rodada 28)
 const CAT_CURTA = { 'Itens transportados': 'Transportado', 'Máquina Técnica': 'MT', 'Chamando a Pedra': 'Pedra', 'Edifícios do Habitat': 'Habitat', 'Materiais do Habitat': 'Habitat', 'Comida do Habitat': 'Habitat', 'Sementes do Habitat': 'Habitat' };
 const catCurta = s => CAT_CURTA[s] || s;                                  // o selo de categoria do detalhe do item (v2) é [max:12]
+const textoEvo = r => Evolucao.textoRegra(r, s => tr(s));
+const infoGolpe = g => {
+  if (!g) return '';
+  return tr('power') + ' ' + (g.poder ?? '—') + ' · ' + tr('cooldown') + ' ' + (g.recarga ?? '—') + 's' + (g.ppMax != null ? ' · PP ' + g.pp + '/' + g.ppMax : '');
+};
+const ROTULOS_FICHA = {
+  'stat-hp': 'HP', 'stat-ataque': 'Attack', 'stat-defesa': 'Defense',
+  'stat-at-esp': 'Sp. Atk', 'stat-def-esp': 'Sp. Def', 'stat-velocidade': 'Speed',
+  'stat-total': 'Base total', 'stat-natureza': 'Nature', 'rotulo-golpes': 'Moves',
+};
+function pintarRotulosFicha(pop){
+  for (const [nome, en] of Object.entries(ROTULOS_FICHA)){
+    const el = pop.querySelector('[data-fig="' + nome + '"]');
+    if (el) el.textContent = tr(en);
+  }
+}
 export const JANELAS = {
   pokemon:   { titulo: 'Pokémon', icone: 'pokebola', tecla: 'KeyP', sub: 'party and box' },
   mochila:   { titulo: 'Bag', icone: 'mochila', tecla: 'KeyI', sub: 'items and balls' },
@@ -219,24 +236,24 @@ function timeAtual(){
   return lista;
 }
 function fichaHtml(e){
-  const S = ctx.porDex.get(e.dex); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>sem dados na pokédex</small></div>`;
+  const S = ctx.porDex.get(e.dex); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>${esc(tr('no Pokédex data'))}</small></div>`;
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
   const nomes = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
   const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));   // IV + natureza do indivíduo
   const nat = ctx.Ind?.natureza(e.natureza), seta = i => !nat || nat[1] === nat[2] ? '' : i === nat[1] ? ' <span class="mais">▲</span>' : i === nat[2] ? ' <span class="menos">▼</span>' : '';
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);   // golpes do indivíduo (PP) ou, sem registro, os da espécie
-  const golpes = movs.map(g => `<div class="linha" style="cursor:default"><span class="nome"><b>${esc(g.nome)}</b><small>poder ${g.poder ?? '—'} · recarga ${g.recarga ?? '—'}s${g.ppMax != null ? ' · PP ' + g.pp + '/' + g.ppMax : ''}</small></span>${tipoHtml(g.tipo)}</div>`).join('');
+  const golpes = movs.map(g => `<div class="linha" style="cursor:default"><span class="nome"><b>${esc(g.nome)}</b><small>${esc(infoGolpe(g))}</small></span>${tipoHtml(g.tipo)}</div>`).join('');
   const novo = e.aprender?.[0] ? (ctx.golpe?.(e.aprender[0]) || null) : null;
-  const aprender = novo ? `<div class="evo-linha" style="margin-top:6px"><b>✧ quer aprender ${esc(novo.nome)}</b> <small>${esc(novo.tipo || '')} · poder ${novo.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(novo.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">esquecer: ${movs.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">não aprender</button></div></div>` : '';
+  const aprender = novo ? `<div class="evo-linha" style="margin-top:6px"><b>✧ wants to learn ${esc(novo.nome)}</b> <small>${esc(novo.tipo || '')} · ${esc(tr('power'))} ${novo.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(novo.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">${esc(tr('forget'))}: ${movs.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">${esc(tr('do not learn'))}</button></div></div>` : '';
   // regras dos jogos originais (evolution.mjs): cada evolução com o que falta / ✔ pronto
   const ops = ctx.opcoesEvolucao?.(e) || [];
-  const evo = ops.length ? ops.map(o => `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(o.regra.texto)}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('coming soon')) + '</span>' : o.pode ? '<span class="ok">✔ ' + esc(tr('ready')) + (o.itemNome ? ' (' + esc(tr('uses {item}', { item: o.itemNome })) + ')' : '') + '</span>' : '<span class="falta">' + esc(o.falta) + '</span>'}</div>`).join('') : tr('does not evolve');
-  const prox = ctx.expPara?.(e.dex, lv + 1), xp = (e.exp != null && prox ? `XP ${e.exp}/${prox}` : '') + (e.expReserva > 0 ? ' · ' + e.expReserva + ' XP guardada' : '');
-  return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${lv}${lv > tetoObed() ? ' <span class="falta" title="acima do teto de nível: não obedece até a próxima insígnia">🔒 teto ' + tetoObed() + '</span>' : lv >= tetoObed() ? ' <span class="falta" title="no teto de nível: a XP fica guardada até a próxima insígnia">🔒 no teto</span>' : ''}${xp ? ' · ' + xp : ''}${e.amizade != null ? ' · amizade ' + e.amizade : ''}${e.seguindo ? ' · seguindo' : ''}</small></h3>
+  const evo = ops.length ? ops.map(o => `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(textoEvo(o.regra))}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('coming soon')) + '</span>' : o.pode ? '<span class="ok">✔ ' + esc(tr('ready')) + (o.itemNome ? ' (' + esc(tr('uses {item}', { item: tr(o.itemNome) })) + ')' : '') + '</span>' : '<span class="falta">' + esc(tr(o.falta)) + '</span>'}</div>`).join('') : tr('does not evolve');
+  const prox = ctx.expPara?.(e.dex, lv + 1), xp = (e.exp != null && prox ? `XP ${e.exp}/${prox}` : '') + (e.expReserva > 0 ? ' · ' + e.expReserva + ' ' + tr('banked XP') : '');
+  return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${lv}${lv > tetoObed() ? ' <span class="falta" title="' + esc(tr('above the level cap: will not obey until the next Badge')) + '">🔒 ' + esc(tr('cap')) + ' ' + tetoObed() + '</span>' : lv >= tetoObed() ? ' <span class="falta" title="' + esc(tr('at the level cap: XP is banked until the next Badge')) + '">🔒 ' + esc(tr('at cap')) + '</span>' : ''}${xp ? ' · ' + xp : ''}${e.amizade != null ? ' · ' + esc(tr('friendship')) + ' ' + e.amizade : ''}${e.seguindo ? ' · ' + esc(tr('following')) : ''}</small></h3>
     <div>${(S.types || []).map(tipoHtml).join('')} <small style="color:var(--muted)">${S.kg ? S.kg + ' kg' : ''}</small></div>
     <div class="hp"><b style="width:${Math.round(100 * (e.hp ?? stats[0]) / (e.maxHp || stats[0]))}%"></b></div>
-    <table class="stats">${stats.map((v, i) => `<tr><td>${nomes[i]}${seta(i)}</td><td>${v}</td><td class="iv">${e.ivs ? 'IV ' + e.ivs[i] : ''}</td></tr>`).join('')}<tr><td>total base</td><td>${S.bst || bs.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''}</td></tr>${e.natureza ? `<tr><td>natureza</td><td colspan="2"><b>${esc(e.natureza)}</b> <small style="color:var(--muted)">${esc(ctx.Ind.descNatureza(e.natureza))}</small></td></tr>` : ''}</table>
-    <div class="k" style="margin-top:8px;color:var(--muted);font-size:11px">golpes</div><div class="lista">${golpes || '<small>—</small>'}</div>${aprender}${reaprenderHtml(e)}
+    <table class="stats">${stats.map((v, i) => `<tr><td>${nomes[i]}${seta(i)}</td><td>${v}</td><td class="iv">${e.ivs ? 'IV ' + e.ivs[i] : ''}</td></tr>`).join('')}<tr><td>${esc(tr('Base total'))}</td><td>${S.bst || bs.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''}</td></tr>${e.natureza ? `<tr><td>${esc(tr('Nature'))}</td><td colspan="2"><b>${esc(e.natureza)}</b> <small style="color:var(--muted)">${esc(tr(ctx.Ind.descNatureza(e.natureza)))}</small></td></tr>` : ''}</table>
+    <div class="k" style="margin-top:8px;color:var(--muted);font-size:11px">${esc(tr('Moves'))}</div><div class="lista">${golpes || '<small>—</small>'}</div>${aprender}${reaprenderHtml(e)}
     <div style="margin-top:8px;font-size:12px">${evo}</div></div>`;
 }
 /* ------------------------------------------------------------------ Caixa: arrastar entre o time e a caixa (20/09)
@@ -402,7 +419,7 @@ const iconeMonU = dex => './ui/mon/pm' + String(dex).padStart(4, '0') + '.png';
 let reaprenderAberto = false;
 function reaprenderHtml(e){                                              // janela antiga
   const lista = ctx.golpesReaprender?.(e) || []; if (!lista.length) return '';
-  return `<details class="reaprender" style="margin-top:6px"><summary data-reaprender="1" style="cursor:pointer;font-size:12px">↻ ${esc(tr('Reaprender golpe'))} (${lista.length})</summary><div style="margin-top:4px;font-size:12px">${lista.map(g => `<button type="button" class="btn" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')} · poder ${g.poder ?? '—'}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join(' ')}</div></details>`;
+  return `<details class="reaprender" style="margin-top:6px"><summary data-reaprender="1" style="cursor:pointer;font-size:12px">↻ ${esc(tr('Relearn move'))} (${lista.length})</summary><div style="margin-top:4px;font-size:12px">${lista.map(g => `<button type="button" class="btn" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')} · ${esc(tr('power'))} ${g.poder ?? '—'}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join(' ')}</div></details>`;
 }
 function montarReaprender(pop){
   const f = Popup.grupo(pop, 'ficha'); if (!f || f.querySelector('.gp-reaprender-btn')) return;
@@ -433,13 +450,13 @@ function atualizarReaprender(pop, e){
   const lista = e ? (ctx.golpesReaprender?.(e) || []) : [];
   if (!lista.length) reaprenderAberto = false;
   b.style.display = lista.length ? 'block' : 'none';
-  b.textContent = '↻ ' + tr('Reaprender') + ((parseFloat(b.style.width) || 0) < 120 ? '' : ' (' + lista.length + ')');
-  b.title = tr('Golpes que ele aprende até o nível atual e ainda não tem');
+  b.textContent = '↻ ' + tr('Relearn') + ((parseFloat(b.style.width) || 0) < 120 ? '' : ' (' + lista.length + ')');
+  b.title = tr('Moves it learns by the current level that it does not have yet');
   l.style.display = reaprenderAberto ? 'block' : 'none';
   if (!reaprenderAberto) return;
   const btn = 'display:inline-block;margin:3px 4px 3px 0;padding:3px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font:inherit;cursor:pointer';
-  l.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b>↻ ' + esc(tr('Reaprender')) + '</b><small style="opacity:.8;margin:0 6px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(tr('clique no golpe que quer de volta')) + '</small><button type="button" data-reaprender-fechar="1" style="' + btn + ';margin:0;padding:1px 7px">✕</button></div>'
-    + lista.map(g => '<button type="button" data-reaprender-id="' + esc(g.id) + '" style="' + btn + '" title="Lv ' + g.lv + ' · ' + esc(g.tipo || '') + ' · poder ' + (g.poder ?? '—') + '">' + esc(g.nome) + ' <small style="opacity:.75">Lv ' + g.lv + '</small></button>').join('');
+  l.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b>↻ ' + esc(tr('Relearn')) + '</b><small style="opacity:.8;margin:0 6px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(tr('click the move you want back')) + '</small><button type="button" data-reaprender-fechar="1" style="' + btn + ';margin:0;padding:1px 7px">✕</button></div>'
+    + lista.map(g => '<button type="button" data-reaprender-id="' + esc(g.id) + '" style="' + btn + '" title="Lv ' + g.lv + ' · ' + esc(g.tipo || '') + ' · ' + esc(tr('power')) + ' ' + (g.poder ?? '—') + '">' + esc(g.nome) + ' <small style="opacity:.75">Lv ' + g.lv + '</small></button>').join('');
 }
 function acaoPokemon(nome){
   const lista = timeAtual(), e = lista[selPokemon]; if (!e) return;
@@ -477,7 +494,8 @@ function acaoPokemon(nome){
 function encherPokemon(pop){
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
-  Popup.rotulo(pop, 'titulo');                                          // título como a maquete escreve (PC: "Pokémon - Meu time"; celular: "Pokémon")
+  Popup.texto(pop, 'titulo', 'Pokémon - My team');
+  pintarRotulosFicha(pop);
   Popup.texto(pop, 'contagem-time', lista.length + '/6 ' + tr('in party'));
   const pref = pop.__prefItem || 'item-time';                            // PC: item-time-N (cartão completo); celular: slot-poke-N (cabeça + tecla)
   for (let i = 0; i < 6; i++){
@@ -527,7 +545,7 @@ function encherFichaPokemon(pop, e, lista){
   Popup.texto(pop, 'ficha-nome', (e.shiny ? '✨ ' : '') + e.nome, f);   // shiny (14/09)
   Popup.texto(pop, 'ficha-status', e.seguindo ? 'Following' : e.hp === 0 ? 'Fainted' : lv > tetoObed() ? 'At level cap' : '', f);
   Popup.texto(pop, 'ficha-numero', 'Nº ' + String(e.dex).padStart(3, '0') + ' · Lv ' + lv
-    + (e.exp != null && prox ? ' · XP ' + e.exp + '/' + prox : '') + (e.amizade != null ? ' · amizade ' + e.amizade : ''), f);
+    + (e.exp != null && prox ? ' · XP ' + e.exp + '/' + prox : '') + (e.amizade != null ? ' · ' + tr('friendship') + ' ' + e.amizade : ''), f);
   Popup.badge(pop, 'ficha-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), f);   // 14/09 (l.neto): os dois tipos
   iconesTipo(pop, f, S.types || []);                                     // v2 (17/09): bolinha(s) do tipo na ficha (18/09: só a bolinha, a rodada 31 tirou o texto)
   Popup.texto(pop, 'ficha-peso', S.kg ? S.kg + ' kg' : '', f);
@@ -554,7 +572,7 @@ function encherFichaPokemon(pop, e, lista){
     iconesTipo(pop, no, g?.tipo ? [g.tipo] : []);                         // v2 (17/09): ícone do tipo do golpe (card vazio: esconde o encaixe)
     if (!g || !no) continue;
     Popup.texto(pop, 'golpe-nome', g.nome, no);
-    Popup.texto(pop, 'golpe-info', 'poder ' + (g.poder ?? '—') + ' · recarga ' + (g.recarga ?? '—') + 's' + (g.ppMax != null ? ' · PP ' + g.pp + '/' + g.ppMax : ''), no);
+    Popup.texto(pop, 'golpe-info', infoGolpe(g), no);
     Popup.badge(pop, 'golpe-tipo', g.tipo && TIPO_FIG[g.tipo], g.tipo || null, no);
   }
   const novoId = e.aprender?.[0] || null, novo = novoId ? (ctx.golpe?.(novoId) || { nome: String(novoId) }) : null;
@@ -562,7 +580,7 @@ function encherFichaPokemon(pop, e, lista){
     const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (!no) continue;
     const clicavel = !!novo && !!movs[i];
     no.style.pointerEvents = clicavel ? 'auto' : ''; no.style.cursor = clicavel ? 'pointer' : '';
-    if (clicavel && confirmarAprender === i) Popup.texto(pop, 'golpe-info', '✔ clique de novo: esquece ' + movs[i].nome + ' e aprende ' + novo.nome, no);
+    if (clicavel && confirmarAprender === i) Popup.texto(pop, 'golpe-info', '✔ click again: forget ' + movs[i].nome + ' and learn ' + novo.nome, no);
   }
   const todasEvo = ctx.opcoesEvolucao?.(e) || [], ops = todasEvo.filter(o => o.glb);
   const pronta = ops.find(o => o.pode);
@@ -573,12 +591,12 @@ function encherFichaPokemon(pop, e, lista){
   const emBreve = ops.length ? null : todasEvo.find(o => !o.glb);
   const prontas = ops.filter(o => o.pode);                               // 20/09: TODAS as que já dão, não só a primeira (Eevee)
   const evoEl = Popup.texto(pop, 'evolucao', novo
-    ? '✧ quer aprender ' + novo.nome + ' — clique no golpe que vai esquecer, ou aqui pra não aprender'
+    ? '✧ wants to learn ' + novo.nome + ' — click the move to forget, or here to skip'
     : prontas.length > 1
-      ? '→ pode evoluir para ' + prontas.map(o => o.nome).join(', ') + ' — clique em Evoluir e escolha'
+      ? '→ can evolve into ' + prontas.map(o => o.nome).join(', ') + ' — click Evolve and choose'
       : ops.length
-        ? '→ ' + ops[0].nome + ': ' + ops[0].regra.texto + (pronta ? '' : ' - ' + (ops[0].falta || 'ainda não'))
-        : emBreve ? '→ ' + emBreve.nome + ': ' + emBreve.regra.texto + ' (' + tr('coming soon') + ')' : tr('does not evolve'), f);
+        ? '→ ' + ops[0].nome + ': ' + textoEvo(ops[0].regra) + (pronta ? '' : ' — ' + (tr(ops[0].falta) || tr('not yet')))
+        : emBreve ? '→ ' + emBreve.nome + ': ' + textoEvo(emBreve.regra) + ' (' + tr('coming soon') + ')' : tr('does not evolve'), f);
   if (evoEl){ evoEl.style.pointerEvents = novo ? 'auto' : ''; evoEl.style.cursor = novo ? 'pointer' : ''; }
   Popup.botao(pop, 'evoluir', !!pronta && !!e.seguindo, prontas.length > 1 ? '✦ Evolve (' + prontas.length + ' forms)' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve');
   const podeSoltar = !e.seguindo && lista.length > 1;

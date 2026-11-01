@@ -42,6 +42,7 @@ export function definirEscalaPopup(f){ try { localStorage.setItem('popup.escala'
    posicionado em absoluto pelas coordenadas do Figma; só os botões e os itens da lista recebem clique. */
 const CSS = `
 .pf{transform-origin:50% 50%;color:#fff;font:12px/1.05 "Nunito Sans",system-ui,sans-serif;user-select:none}
+#pf-popup-pokemon [data-fig="stat-hp"],#pf-popup-pokemon [data-fig="stat-ataque"],#pf-popup-pokemon [data-fig="stat-defesa"],#pf-popup-pokemon [data-fig="stat-at-esp"],#pf-popup-pokemon [data-fig="stat-def-esp"],#pf-popup-pokemon [data-fig="stat-velocidade"],#pf-popup-pokemon [data-fig="stat-total"],#pf-popup-pokemon [data-fig="stat-natureza"],#pf-popup-pokemon [data-fig="rotulo-golpes"]{background:#12192c}
 .pf *{box-sizing:border-box}
 .pf .pf-grupo,.pf .pf-img,.pf .pf-var,.pf .pf-ret,.pf .pf-fill,.pf .pf-txt,.pf .pf-rotulo{position:absolute;pointer-events:none}
 .pf [data-tag],.pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"]{pointer-events:auto}
