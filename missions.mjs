@@ -65,17 +65,38 @@ function normalizarLaterais(){
 const gruposLaterais = () => (dados?.laterais || []);
 const todasLaterais = () => gruposLaterais().flatMap(g => (g.missoes || []).map(m => ({ ...m, grupo: g.id, grupoNome: g.nome })));
 const lateralPorId = id => todasLaterais().find(m => String(m.id) === String(id)) || null;
+const idsExige = m => {
+  const e = m?.exige ?? m?.depoisDe;
+  if (Array.isArray(e)) return e.map(Number).filter(n => n > 0);
+  if (e != null && Number(e) > 0) return [Number(e)];
+  return [];
+};
+function nomeDeMissao(id){
+  return porId(id)?.nome || lateralPorId(id)?.nome || ('mission ' + id);
+}
+function missaoJaFeita(id){
+  if ((estado?.feitas || []).map(String).includes(String(id))) return true;
+  return normalizarLaterais().feitas.map(String).includes(String(id));
+}
+function requisitosOk(m){ return idsExige(m).every(missaoJaFeita); }
+export function textoExige(m){
+  const ids = idsExige(m);
+  if (!ids.length) return '';
+  return 'Requires: ' + ids.map(nomeDeMissao).join(', ');
+}
 function estadoLateral(id){
   const S = normalizarLaterais();
   if (S.feitas.map(String).includes(String(id))) return 'feita';
   if (S.ativas[id] || S.ativas[String(id)]) return 'ativa';
+  const m = lateralPorId(id);
+  if (m && !requisitosOk(m)) return 'travada';
   return 'disponivel';
 }
 export function lateraisGrupos(){
   const S = normalizarLaterais();
   return gruposLaterais().map(g => ({ ...g, missoes: (g.missoes || []).map(m => {
     const slot = S.ativas[m.id] || S.ativas[String(m.id)];
-    return { ...m, estado: estadoLateral(m.id), grupo: g.id, grupoNome: g.nome, passo: slot ? slot.passo || 0 : null, feitos: slot ? (slot.prog?.[m.id + ':' + (slot.passo || 0)] || 0) : 0 };
+    return { ...m, estado: estadoLateral(m.id), grupo: g.id, grupoNome: g.nome, passo: slot ? slot.passo || 0 : null, feitos: slot ? (slot.prog?.[m.id + ':' + (slot.passo || 0)] || 0) : 0, exigeTxt: textoExige(m) };
   }) }));
 }
 export function laterais(){ return lateraisGrupos().flatMap(g => g.missoes); }
@@ -83,7 +104,10 @@ export function lateraisDoNpc(cfg){
   return laterais().filter(m => m.estado === 'disponivel' && m.npc != null && Number(m.npc) === Number(cfg));
 }
 export function aceitarLateral(id){
-  const m = lateralPorId(id); if (!m || estadoLateral(id) !== 'disponivel') return false;
+  const m = lateralPorId(id);
+  if (!m) return false;
+  if (estadoLateral(id) === 'travada'){ ctx.aviso?.('This side quest is still locked. ' + textoExige(m)); return false; }
+  if (estadoLateral(id) !== 'disponivel') return false;
   const S = normalizarLaterais();
   if (Object.keys(S.ativas).length >= 10){ ctx.aviso?.('You already have too many side quests active.'); return false; }
   S.ativas[m.id] = { passo: 0, prog: {} };
