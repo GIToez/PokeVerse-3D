@@ -1667,12 +1667,23 @@ function marcadoresMissao(){
   for (const s of (M.laterais?.() || []).filter(x => x.estado === 'ativa'))
     passos.push(...(s.passos || []).slice(s.passo || 0));
   for (const p of passos){
-    if (p.area){ pins.push({ area: +p.area, texto: p.texto || m?.nome, tipo: 'quest' }); break; }
+    if (p.area) pins.push({ area: +p.area, texto: p.texto || m?.nome, tipo: 'quest' });
   }
-  const c = ctx.lerLS?.('ultimoCentro', null);
-  if (c?.chegada && ctx.PORTAS?.[c.chegada]?.a) pins.push({ area: +ctx.PORTAS[c.chegada].a, texto: 'Pokémon Center', tipo: 'centro' });
   return pins;
 }
+let mapaMarcadores = null;
+const FILTROS_MAPA = {
+  centro: true, loja: true, ginasio: true, quest: true, civico: true, entrada: true, rotas: true,
+};
+const FILTRO_ROTULO = {
+  centro: 'Pokémon Center',
+  loja: 'Shop',
+  ginasio: 'Gym',
+  quest: 'Quests',
+  civico: 'Lab, school, museum, daycare',
+  entrada: 'Entrances and caves',
+  rotas: 'Route names',
+};
 function nomeAreaMapa(a, nomes){
   return I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes?.[a] || ctx.dados?.nomes?.[a] || ('Area ' + a));
 }
@@ -1681,7 +1692,7 @@ function listaHabitat(a){
   const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats?.generico || [] : []);
   return { proprios, lista };
 }
-function htmlCartaoMapa(a, nome, { live = 0 } = {}){
+function htmlCartaoMapa(a, nome, { live = 0, lugares = [] } = {}){
   const { proprios, lista } = listaHabitat(a);
   const d = dexEstado();
   const linha = e => {
@@ -1689,9 +1700,12 @@ function htmlCartaoMapa(a, nome, { live = 0 } = {}){
     return `<div class="m-poke ${visto ? '' : 'sombra'}"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" loading="lazy" alt=""><b>${visto ? esc(e.nome) : '???'}</b>${e.agua ? '<small>Water</small>' : ''}${st === 'pego' ? '<small class="pego">caught</small>' : ''}</div>`;
   };
   const dica = lista.length
-    ? (proprios.length ? 'Pokémon of this area' : 'Common Pokémon of the region') + ' — get close to add them to the Pokédex.'
+    ? (proprios.length ? 'Pokémon of this area' : 'Common Pokémon of the region') + ' — get close and they enter the Pokédex.'
     : 'No wild Pokémon here.';
-  return `<div class="ficha mapa-card"><h3>${esc(nome)}</h3>${live ? `<div class="mapa-live">${live} wild on this map now</div>` : ''}<div class="mapa-dica">${dica}</div>${lista.length ? `<div class="m-grade">${lista.map(linha).join('')}</div>` : ''}</div>`;
+  const lugaresHtml = lugares.length
+    ? `<div class="mapa-lugares">${lugares.map((p, i) => `<button type="button" class="mapa-lugar" data-lugar="${i}">${esc(p.nome)}</button>`).join('')}</div>`
+    : '';
+  return `<div class="ficha mapa-card"><h3>${esc(nome)}</h3>${live ? `<div class="mapa-live">${live} wild on this map now</div>` : ''}<div class="mapa-dica">${dica}</div>${lista.length ? `<div class="m-grade">${lista.map(linha).join('')}</div>` : ''}${lugaresHtml}</div>`;
 }
 function pintarPinsMapa(pop){
   const mapa = Popup.grupo(pop, 'mapa'); if (!mapa) return;
@@ -1718,23 +1732,40 @@ function rotuloCurtoMapa(nome){
 }
 function rMapa(corpo){
   abaAtual = 'kanto';
-  abas([{ id: 'kanto', nome: 'Kanto' }]);
+  abas([]);
   rMapaMundo(corpo);
 }
 function rMapaMundo(corpo){
   const voce = areaDoJogador();
   const quests = marcadoresMissao().filter(p => p.tipo === 'quest');
+  const filtrosHtml = Object.entries(FILTRO_ROTULO).map(([k, nome]) =>
+    `<label><input type="checkbox" data-filtro="${k}"${FILTROS_MAPA[k] ? ' checked' : ''}> ${esc(nome)}</label>`).join('');
   corpo.innerHTML = `<div class="mapa-overlay notranslate" translate="no">
     <div class="mapa-palco">
       <div class="mapa-zoom">
         <img class="mapa-foto" src="./ui/minimapa_kanto.jpg" alt="Kanto">
         <canvas class="mapa-vivos"></canvas>
+        <div class="mapa-sel" hidden></div>
         <div class="mapa-rotulos"></div>
         <div class="mapa-pins"></div>
-        <div class="mapa-sel" hidden></div>
       </div>
     </div>
     <div class="mapa-esq" id="m-cards"></div>
+    <aside class="mapa-dir" id="m-card" hidden></aside>
+    <div class="mapa-topo-dir">
+      <div class="mapa-lugar-atual" id="m-lugar"></div>
+      <div class="mapa-menu">
+        <button type="button" class="mapa-menu-btn" data-menu="marcadores">Markers</button>
+        <div class="mapa-menu-lista" data-lista="marcadores" hidden>${filtrosHtml}</div>
+      </div>
+      <div class="mapa-menu">
+        <button type="button" class="mapa-menu-btn" data-menu="regiao">Kanto</button>
+        <div class="mapa-menu-lista" data-lista="regiao" hidden>
+          <button type="button" class="on" data-regiao="kanto">Kanto</button>
+          <button type="button" data-regiao="sevii">Sevii Islands</button>
+        </div>
+      </div>
+    </div>
     <div class="mapa-zoom-btns">
       <button type="button" class="mapa-z" data-z="in" title="Zoom in">+</button>
       <button type="button" class="mapa-z" data-z="out" title="Zoom out">−</button>
@@ -1749,10 +1780,13 @@ function rMapaMundo(corpo){
   const pinsEl = corpo.querySelector('.mapa-pins');
   const selEl = corpo.querySelector('.mapa-sel');
   const cards = corpo.querySelector('#m-cards');
+  const card = corpo.querySelector('#m-card');
+  const lugarEl = corpo.querySelector('#m-lugar');
   let z = 1, px = 0, py = 0, arrasto = null, mundo = ctx.dados || { caixas: [], nomes: {} }, regua = mapaRegua;
+  let regio = 'kanto', lugaresSel = [];
   const fx = ctx.flipX?.() ?? 1;
   const vista = () => { zoomEl.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')'; };
-  const limitarZ = v => Math.max(1, Math.min(6, v));
+  const limitarZ = v => Math.max(0.55, Math.min(8, v));
   const metros = () => {
     if (!regua) return { mw: 768, mh: 576 };
     return { mw: regua.w / regua.esc, mh: regua.h / regua.esc };
@@ -1762,7 +1796,9 @@ function rMapaMundo(corpo){
     if (!regua || !mw || !mh) return null;
     return { x: (x - regua.x0) / mw, y: (zz - regua.z0) / mh };
   };
-  const caixaDe = a => (mundo.caixas || []).find(c => c.a === a && c.sx > 0 && c.sz > 0);
+  const caixasDa = a => (mundo.caixas || []).filter(c => c.a === a && c.sx > 0 && c.sz > 0);
+  const caixaDe = a => caixasDa(a)[0] || null;
+  const pois = () => (mapaMarcadores?.marcadores || []);
   const caber = () => {
     const r = palco.getBoundingClientRect();
     const iw = foto.naturalWidth || regua?.w || 3072, ih = foto.naturalHeight || regua?.h || 2304;
@@ -1776,24 +1812,44 @@ function rMapaMundo(corpo){
     if (vivos.width !== w || vivos.height !== h){ vivos.width = w; vivos.height = h; }
     vista();
   };
-  const abrirArea = async a => {
-    mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
-    if (aberta !== 'mapa') return;
-    mapaSel = a;
-    const nome = nomeAreaMapa(a, mundo.nomes);
-    const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
-    const aqui = areaDoJogador();
-    const aquiNome = aqui ? nomeAreaMapa(aqui, mundo.nomes) : '';
-    const q = quests[0];
-    const qNome = q ? (q.texto || 'Quest') : '';
-    cards.innerHTML =
-      (aquiNome ? `<div class="mapa-pill">${tr('You are in')} <b>${esc(aquiNome)}</b></div>` : '') +
-      (qNome ? `<div class="mapa-pill quest">${esc(qNome)}</div>` : '') +
-      (nome ? `<div class="mapa-pill sel">${esc(nome)}${live ? ' · ' + live + ' wild' : ''}</div>` : '');
-    const b = caixaDe(a), fr = b ? xzFrac(fx * b.x, b.z) : null;
-    if (fr){ selEl.hidden = false; selEl.style.left = (fr.x * 100) + '%'; selEl.style.top = (fr.y * 100) + '%'; }
-    else selEl.hidden = true;
-    rotulosEl.querySelectorAll('.mapa-rotulo').forEach(el => el.classList.toggle('on', el.dataset.a === String(a)));
+  const aplicarZoom = (nz, cx, cy) => {
+    const r = palco.getBoundingClientRect();
+    const mx = cx - r.left - r.width / 2, my = cy - r.top - r.height / 2;
+    px = mx - (mx - px) * (nz / z);
+    py = my - (my - py) * (nz / z);
+    z = nz; vista();
+  };
+  const focarCaixas = lista => {
+    if (!lista?.length || !regua) return;
+    const { mw, mh } = metros();
+    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+    for (const b of lista){
+      x0 = Math.min(x0, fx * b.x - b.sx / 2); x1 = Math.max(x1, fx * b.x + b.sx / 2);
+      z0 = Math.min(z0, b.z - b.sz / 2); z1 = Math.max(z1, b.z + b.sz / 2);
+    }
+    const r = palco.getBoundingClientRect();
+    const zw = zoomEl.offsetWidth || 1, zh = zoomEl.offsetHeight || 1;
+    const pad = 1.4;
+    const nz = limitarZ(Math.min(r.width / Math.max(24, zw * (x1 - x0) / mw * pad), r.height / Math.max(24, zh * (z1 - z0) / mh * pad)));
+    const ox = (((x0 + x1) / 2 - regua.x0) / mw - 0.5) * zw;
+    const oy = (((z0 + z1) / 2 - regua.z0) / mh - 0.5) * zh;
+    z = nz; px = -ox * z - 70; py = -oy * z; vista();
+  };
+  const pintarSel = a => {
+    selEl.innerHTML = '';
+    const caixas = caixasDa(a);
+    selEl.hidden = !caixas.length;
+    if (!regua) return;
+    const { mw, mh } = metros();
+    for (const b of caixas){
+      const el = document.createElement('i');
+      el.className = 'mapa-sel-caixa';
+      el.style.left = ((fx * b.x - b.sx / 2 - regua.x0) / mw * 100) + '%';
+      el.style.top = ((b.z - b.sz / 2 - regua.z0) / mh * 100) + '%';
+      el.style.width = (b.sx / mw * 100) + '%';
+      el.style.height = (b.sz / mh * 100) + '%';
+      selEl.appendChild(el);
+    }
   };
   const pintarRotulos = () => {
     rotulosEl.innerHTML = '';
@@ -1803,7 +1859,9 @@ function rMapaMundo(corpo){
       if (!nome || /^area /i.test(nome)) continue;
       const cidade = n >= 1101 && n <= 1110;
       const extra = n >= 1191 && n <= 1199;
-      if (!cidade && !extra && !(n >= 1201 && n <= 1225)) continue;
+      const rota = n >= 1201 && n <= 1225;
+      if (!cidade && !extra && !rota) continue;
+      if (rota && !FILTROS_MAPA.rotas) continue;
       const fr = xzFrac(fx * b.x, b.z); if (!fr) continue;
       const el = document.createElement('b');
       el.className = 'mapa-rotulo' + (cidade ? ' cidade' : extra ? ' extra' : ' rota');
@@ -1816,18 +1874,53 @@ function rMapaMundo(corpo){
   };
   const pintarPins = () => {
     pinsEl.innerHTML = '';
-    const pins = marcadoresMissao();
-    const aqui = areaDoJogador();
-    if (aqui) pins.unshift({ area: aqui, texto: 'You are here', tipo: 'voce' });
-    for (const pin of pins){
-      const b = caixaDe(pin.area); if (!b) continue;
-      const fr = xzFrac(fx * b.x, b.z); if (!fr) continue;
+    const add = (tipo, titulo, x, zz, extra = {}) => {
+      if (tipo !== 'voce' && !FILTROS_MAPA[tipo]) return;
+      const fr = xzFrac(x, zz); if (!fr) return;
       const el = document.createElement('i');
-      el.className = 'mapa-pin mapa-pin-' + pin.tipo;
-      el.title = pin.texto;
+      el.className = 'mapa-pin mapa-pin-' + tipo;
+      el.title = titulo;
       el.style.left = (fr.x * 100) + '%';
       el.style.top = (fr.y * 100) + '%';
+      if (extra.area) el.dataset.a = String(extra.area);
+      if (extra.i != null) el.dataset.i = String(extra.i);
       pinsEl.appendChild(el);
+    };
+    const aqui = areaDoJogador();
+    const ash = ctx.jogo?.ash;
+    if (ash) add('voce', 'You are here', ash.vx ?? ash.x, ash.vz ?? ash.z);
+    else if (aqui){ const b = caixaDe(aqui); if (b) add('voce', 'You are here', fx * b.x, b.z); }
+    if (FILTROS_MAPA.quest) for (const pin of marcadoresMissao().filter(p => p.tipo === 'quest')){
+      const b = caixaDe(pin.area); if (b) add('quest', pin.texto, fx * b.x, b.z, { area: pin.area });
+    }
+    pois().forEach((p, i) => add(p.tipo, p.nome, fx * p.x, p.z, { area: p.area, i }));
+  };
+  const abrirArea = async (a, { focar = false, lugar = null } = {}) => {
+    mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
+    if (aberta !== 'mapa') return;
+    mapaSel = a;
+    const nome = nomeAreaMapa(a, mundo.nomes);
+    const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
+    const aqui = areaDoJogador();
+    const aquiNome = aqui ? nomeAreaMapa(aqui, mundo.nomes) : '';
+    const qs = marcadoresMissao().filter(p => p.tipo === 'quest');
+    cards.innerHTML =
+      (aquiNome ? `<div class="mapa-pill">${tr('You are in')} <b>${esc(aquiNome)}</b></div>` : '') +
+      qs.map(q => `<div class="mapa-pill quest">${esc(q.texto || 'Quest')}</div>`).join('');
+    lugarEl.textContent = lugar?.nome || nome || '';
+    lugaresSel = pois().filter(p => p.area === a);
+    card.hidden = regio !== 'kanto';
+    card.innerHTML = htmlCartaoMapa(a, lugar?.nome || nome, { live, lugares: lugaresSel });
+    card.querySelectorAll('[data-lugar]').forEach(b => b.onclick = ev => {
+      ev.stopPropagation();
+      const p = lugaresSel[+b.dataset.lugar];
+      if (p) abrirArea(p.area, { focar: true, lugar: p });
+    });
+    pintarSel(a);
+    rotulosEl.querySelectorAll('.mapa-rotulo').forEach(el => el.classList.toggle('on', el.dataset.a === String(a)));
+    if (focar){
+      if (lugar) focarCaixas([{ x: lugar.x, z: lugar.z, sx: 28, sz: 28, a }]);
+      else focarCaixas(caixasDa(a));
     }
   };
   const ponto = (x, zz, cor, r) => {
@@ -1868,12 +1961,8 @@ function rMapaMundo(corpo){
   };
   palco.addEventListener('wheel', ev => {
     ev.preventDefault();
-    const nz = limitarZ(z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12));
-    const r = palco.getBoundingClientRect();
-    const mx = ev.clientX - r.left - r.width / 2, my = ev.clientY - r.top - r.height / 2;
-    px = mx - (mx - px) * (nz / z);
-    py = my - (my - py) * (nz / z);
-    z = nz; vista();
+    ev.stopPropagation();
+    aplicarZoom(limitarZ(z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12)), ev.clientX, ev.clientY);
   }, { passive: false });
   palco.addEventListener('pointerdown', ev => {
     if (ev.button !== 0) return;
@@ -1891,15 +1980,61 @@ function rMapaMundo(corpo){
     const moveu = arrasto.moveu; arrasto = null;
     if (moveu) return;
     const p = pontoDoEvento(ev); if (!p) return;
-    const b = (mundo.caixas || []).find(c => c.sx > 0 && c.sz > 0 && Math.abs(p.wx - fx * c.x) <= c.sx / 2 && Math.abs(p.wz - c.z) <= c.sz / 2);
-    if (b) abrirArea(b.a);
+    const frFoto = foto.getBoundingClientRect();
+    const pinR = frFoto.width ? (16 / frFoto.width) * metros().mw : 14;
+    let pinPerto = null, pinD = pinR;
+    for (const m of pois()){
+      if (m.tipo !== 'voce' && !FILTROS_MAPA[m.tipo]) continue;
+      const d = Math.hypot(p.wx - fx * m.x, p.wz - m.z);
+      if (d < pinD){ pinD = d; pinPerto = m; }
+    }
+    if (pinPerto){ abrirArea(pinPerto.area, { focar: true, lugar: pinPerto }); return; }
+    let melhor = null;
+    for (const c of mundo.caixas || []){
+      if (!(c.sx > 0 && c.sz > 0)) continue;
+      if (Math.abs(p.wx - fx * c.x) > c.sx / 2 || Math.abs(p.wz - c.z) > c.sz / 2) continue;
+      if (!melhor || c.sx * c.sz < melhor.sx * melhor.sz) melhor = c;
+    }
+    if (melhor) abrirArea(melhor.a, { focar: true });
   };
   palco.addEventListener('pointerup', solta);
   palco.addEventListener('pointercancel', () => { arrasto = null; });
   corpo.querySelectorAll('.mapa-z').forEach(b => b.onclick = ev => {
     ev.stopPropagation();
-    z = limitarZ(z * (b.dataset.z === 'in' ? 1.25 : 0.8));
-    vista();
+    const r = palco.getBoundingClientRect();
+    aplicarZoom(limitarZ(z * (b.dataset.z === 'in' ? 1.25 : 0.8)), r.left + r.width / 2, r.top + r.height / 2);
+  });
+  corpo.querySelectorAll('.mapa-menu-btn').forEach(b => b.onclick = ev => {
+    ev.stopPropagation();
+    const lista = corpo.querySelector('[data-lista="' + b.dataset.menu + '"]');
+    const aberto = !lista.hidden;
+    corpo.querySelectorAll('.mapa-menu-lista').forEach(el => { el.hidden = true; });
+    lista.hidden = aberto;
+  });
+  corpo.querySelectorAll('[data-filtro]').forEach(inp => inp.onchange = () => {
+    FILTROS_MAPA[inp.dataset.filtro] = inp.checked;
+    pintarRotulos(); pintarPins();
+    if (mapaSel) rotulosEl.querySelectorAll('.mapa-rotulo').forEach(el => el.classList.toggle('on', el.dataset.a === String(mapaSel)));
+  });
+  corpo.querySelectorAll('[data-regiao]').forEach(b => b.onclick = ev => {
+    ev.stopPropagation();
+    regio = b.dataset.regiao;
+    corpo.querySelectorAll('[data-regiao]').forEach(x => x.classList.toggle('on', x === b));
+    corpo.querySelector('[data-menu="regiao"]').textContent = b.textContent;
+    corpo.querySelector('[data-lista="regiao"]').hidden = true;
+    if (regio === 'sevii'){
+      mapaSel = null; selEl.hidden = true; selEl.innerHTML = '';
+      lugarEl.textContent = 'Sevii Islands';
+      card.hidden = false;
+      card.innerHTML = '<div class="ficha mapa-card"><h3>Sevii Islands</h3><div class="mapa-dica">These islands are not on the Kanto aerial yet. Open a Sevii map in the world to inspect it up close.</div></div>';
+      return;
+    }
+    const start = voce || quests[0]?.area || 1101;
+    abrirArea(start);
+  });
+  addEventListener('pointerdown', ev => {
+    if (!corpo.contains(ev.target)) return;
+    if (!ev.target.closest('.mapa-menu')) corpo.querySelectorAll('.mapa-menu-lista').forEach(el => { el.hidden = true; });
   });
   if (mapaResize) removeEventListener('resize', mapaResize);
   mapaResize = () => { if (aberta !== 'mapa' || !corpo.isConnected) return; caber(); };
@@ -1907,15 +2042,17 @@ function rMapaMundo(corpo){
   foto.addEventListener('load', caber);
   if (foto.complete) caber();
   (async () => {
-    const [reg, dd, hab] = await Promise.all([
+    const [reg, dd, hab, marks] = await Promise.all([
       mapaRegua ? Promise.resolve(mapaRegua) : fetch('./ui/minimapa_kanto.json').then(r => r.ok ? r.json() : null).catch(() => null),
       mundoKanto(),
       fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] })),
+      mapaMarcadores ? Promise.resolve(mapaMarcadores) : fetch('./data/kanto_map_markers.json').then(r => r.ok ? r.json() : { marcadores: [] }).catch(() => ({ marcadores: [] })),
     ]);
     if (aberta !== 'mapa') return;
     if (reg) mapaRegua = regua = reg;
     if (dd) mundo = dd;
     mapaHabitats ??= hab;
+    mapaMarcadores = marks;
     pintarRotulos(); pintarPins();
     const start = voce || quests[0]?.area || 1101;
     abrirArea(start);
