@@ -88,7 +88,8 @@ export async function carregar(l){
   dex = dexCache.get(l) || {};
   const d = await baixar(l);
   atual = l; exatas = d.exatas; padroes = d.padroes; carregado[l] = true;
-  document.documentElement.lang = ({ pt: 'pt-BR', en: 'en-US', es: 'es-ES' })[l] || l;
+  document.documentElement.lang = ({ pt: 'pt-BR', en: 'en', es: 'es' })[l] || l;
+  travaTradutor();
   return atual;
 }
 /** Escolha do jogador: guarda no aparelho e carrega. Quem avisa a conta é o account.mjs. */
@@ -105,7 +106,15 @@ export async function iniciar(daUrl = null){
 }
 /* 15/09 (xspartanz: o Abra aparecia como "Open"): o "Traduzir página" do Chrome/Edge lia o nome como a palavra portuguesa "abra". O jogo tem
    tradução própria (PT/EN/ES) e nome de Pokémon nunca se traduz: a página inteira pede pro navegador não traduzir. */
-try { document.documentElement.setAttribute('translate', 'no'); document.documentElement.classList.add('notranslate'); } catch {}
+function travaTradutor(){
+  const el = document.documentElement;
+  try {
+    el.setAttribute('translate', 'no');
+    el.classList.add('notranslate');
+    if (document.body){ document.body.setAttribute('translate', 'no'); document.body.classList.add('notranslate'); }
+  } catch {}
+}
+try { travaTradutor(); } catch {}
 const TEM_LETRA = /[A-Za-zÀ-ú]/;
 /** Traduz. `vars` preenche {x} no resultado (e no original, quando não há tradução). Nunca lança; texto que não é string volta igual. */
 export function t(s, vars = null){

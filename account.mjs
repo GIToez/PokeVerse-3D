@@ -49,8 +49,12 @@ function aplicarConta(d){
   meuCargo = d.cargo || null;
   if ('alfa' in d) meuAlfa = !!d.alfa;                                    // só mexe se o campo veio (servidor velho não manda; não zera à toa)
   if ('pos' in d) posUltima = d.pos || null;
-  /* IDIOMA (11/09): a escolha feita NESTE aparelho vence (a barra da tela de login); sem escolha aqui, vale a da conta. */
-  if (d.idioma && I18n.IDIOMAS[d.idioma]){ let local = null; try { local = localStorage.getItem('idioma'); } catch {} if (!local && d.idioma !== I18n.idioma()) I18n.definir(d.idioma); }
+  /* Language: this device wins (login bar). An old account left on `pt` from the Portuguese-first default
+     must not pull the UI back to PT — English is first; PT/ES stay an explicit choice. */
+  if (d.idioma && I18n.IDIOMAS[d.idioma]){
+    let local = null; try { local = localStorage.getItem('idioma'); } catch {}
+    if (!local && d.idioma !== 'pt' && d.idioma !== I18n.idioma()) I18n.definir(d.idioma);
+  }
 }
 /** Avisa a conta do idioma escolhido (barra da tela de login, ou quem chamar). */
 export async function idioma(l){ if (modo === 'conta' && token && I18n.IDIOMAS[l]) return api('POST', '/conta/idioma', { idioma: l }); return null; }

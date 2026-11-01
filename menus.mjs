@@ -2062,7 +2062,7 @@ function cfAcao(nome, el){
   if (nome === 'resetar-painel-missao'){ Hud.zerarMover(); return; }
   if (nome === 'resetar-paineis'){ Hud.zerarMover(); Chat.sistema('Painéis de volta ao lugar padrão.'); return; }
   /* ---- aba Conta */
-  if (nome === 'logout'){ Popup.botao(popCf, 'logout', false, 'Saindo…'); ctx.conta?.sair?.(); return; }
+  if (nome === 'logout'){ Popup.botao(popCf, 'logout', false, 'Signing out…'); ctx.conta?.sair?.(); return; }
   if (nome === 'trocar-senha'){ cfDialogoSenha(); return; }
   if (nome === 'copiar-diagnostico'){ cfCopiarDiag(); return; }
   if (nome === 'diagnostico-chat'){ cfDialogoRelato(); return; }         // RELATOS (11/09): manda pro servidor (e pro #relatos do Discord)
@@ -2337,7 +2337,7 @@ export function abrirInicial({ lista, palco = null, aoEscolher = null, semEscolh
   const P = palco;
   const pintar = () => {
     ops.forEach((op, i) => { for (const m of op.querySelectorAll(':scope > [data-sobre="selecionado"]')) m.style.display = i === sel ? 'block' : 'none'; });
-    Popup.botao(popIn, 'escolher-inicial', true, sel >= 0 ? 'Escolher ' + lista[sel].nome : 'Escolher');   // idioma: "Escolher {x}" no ui_<l>.json
+    Popup.botao(popIn, 'escolher-inicial', true, sel >= 0 ? 'Choose ' + lista[sel].nome : 'Choose');
   };
   popIn = Popup.montar(def, {
     escolhe: (x, el) => { const i = ops.indexOf(el); if (i < 0 || i === sel || !lista[i]) return; sel = i; P?.selecionar?.(sel); ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); pintar(); },
@@ -2351,6 +2351,9 @@ export function abrirInicial({ lista, palco = null, aoEscolher = null, semEscolh
     if (marca && !op.querySelector(':scope > [data-sobre="selecionado"]')) op.appendChild(marca.cloneNode(true));
     Popup.texto(popIn, 'pokemon-nome', o.nome, op);
     iconesTipo(popIn, op, o.tipos || []);
+    const tiposEl = [...op.querySelectorAll('[data-fig^="tipo-"] .pf-rotulo, [data-fig="txt-badge"]')];
+    (o.tipos || []).forEach((tp, i) => { if (tiposEl[i]) tiposEl[i].textContent = tr(tp); });
+    tiposEl.forEach((el, i) => { if (!(o.tipos || [])[i]) el.textContent = ''; });
     op.style.touchAction = 'pan-y';
     P?.arrastavel?.(op, i);                                                // arrastar na opção escolhida gira o modelo
   });
@@ -2622,7 +2625,7 @@ function encherCfConta(pop){
   if (comConta && cfEmail === null) cfBuscarEmail();
   Popup.botao(pop, 'logout', comConta, 'Log out');
   Popup.botao(pop, 'trocar-senha', comConta, 'Change password');
-  Popup.botao(pop, 'diagnostico-chat', true, 'Mandar pra equipe');        // RELATOS (11/09): era "Mandar pro chat" (só escrevia no chat local)
+  Popup.botao(pop, 'diagnostico-chat', true, 'Send to the team');
   cfBotaoPreso(pop);                                                       // ESTOU PRESO (15/09): logo abaixo de Copiar / Mandar pra equipe
   Popup.desligarGrupo(pop, 'btn-sair', comConta, 'você está jogando sem conta');
   Popup.desligarGrupo(pop, 'btn-trocar-senha', comConta, 'você está jogando sem conta');

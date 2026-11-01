@@ -1,9 +1,9 @@
 <!doctype html>
 <!-- Pokemon 3D Base -->
-<html lang="pt-BR" translate="no">
+<html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
-<meta name="google" content="notranslate">   <!-- 15/09: o jogo já traduz sozinho (i18n); barra o Chrome de traduzir a página e virar "Abra" → "Open" (xspartanz) -->
+<meta name="google" content="notranslate">   <!-- the game translates itself (i18n); Chrome "Translate this page" garbles names (GIToez→Ghtoez, Charmander→Charmanderder) -->
 <meta name="robots" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="./ui/favicon/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="./ui/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="./ui/favicon/favicon-16.png"><link rel="apple-touch-icon" href="./ui/favicon/apple-touch-icon.png"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#13254A">
@@ -86,7 +86,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 
 </style>
 </head>
-<body class="hud-esperando">   <!-- HUD invisível até o layout do Figma ser aplicado (o módulo do jogo só roda depois do three.js carregar; sem isto a HUD antiga pisca a cada troca de área) -->
+<body class="hud-esperando notranslate" translate="no">   <!-- HUD invisível até o layout do Figma ser aplicado (o módulo do jogo só roda depois do three.js carregar; sem isto a HUD antiga pisca a cada troca de área) -->
 <canvas id="tela"></canvas>
 <div id="sobre"></div>
 <div id="hud">
@@ -285,7 +285,7 @@ try { const m = sessionStorage.getItem('recargaModulo'); if (m){ sessionStorage.
 const NOME = new URLSearchParams(location.search).get('mapa')
   || (() => { try { const v = localStorage.getItem('ultimaCena'); return v && /^[\w-]{1,40}$/.test(v) ? v : null; } catch { return null; } })()
   || 'kanto';   // padrão: Kanto inteira (30/08, pedido do Jaime); ?mapa=pallet_rota1 é o recorte leve
-const NOMES_AREA = { 1101: 'Cidade Pallet', 1201: 'Rota 1', 1102: 'Cidade Viridian', 1202: 'Rota 2', 1221: 'Rota 21', 1222: 'Rota 22' };
+const NOMES_AREA = { 1101: 'Pallet Town', 1201: 'Route 1', 1102: 'Viridian City', 1202: 'Route 2', 1221: 'Route 21', 1222: 'Route 22' };
 const $ = id => document.getElementById(id);
 /* ======================================================== demo pública */
 // DEMO (?demo=1, ou DEMO_FIXO na versão publicada por tools/demo_build.mjs):
@@ -5928,12 +5928,12 @@ function rotularJogador(){
      TÍTULO (12/09): numa SEGUNDA linha, embaixo do nome (Alpha Tester, ou o do colecionador quando conquistado). */
   const eu = Conta.comCargo(nomeJogador(), Conta.meuCargoAtual?.());
   const titulo = Conhecimento.tituloAtual?.() || '';
-  a.rotuloNome = rotuloSprite(eu.texto, eu.cor, 2.0, titulo);
+  a.rotuloNome = rotuloSprite(eu.texto, eu.cor, 2.0, titulo, undefined, true);
   a.rotuloNome.position.set(0, (a.altura || 1.5) + 0.35 + (titulo ? 0.16 : 0), 0); a.pivo.add(a.rotuloNome);   // (06/09: um comentário tinha engolido estas duas chamadas — o próprio nome nunca entrava na cena); título sobe um pouco a plaquinha
 }
-function rotuloSprite(txt, cor = '#ffe07a', larg = 2.2, sub = '', subCor = '#bcd3ff'){
-  txt = I18n.t(txt);                                                      // idioma (etapa 2): NPC, líder, treinador e título; nome de jogador passa direto
-  sub = sub ? '<' + I18n.t(sub) + '>' : '';                              // título sob o nome (12/09): linha menor, entre < > (Alpha Tester ou o do colecionador)
+function rotuloSprite(txt, cor = '#ffe07a', larg = 2.2, sub = '', subCor = '#bcd3ff', nomeProprio = false){
+  txt = nomeProprio ? String(txt ?? '') : I18n.t(txt);                   // player nicks stay as typed (Chrome + i18n must not rewrite GIToez)
+  sub = sub ? '<' + I18n.t(sub) + '>' : '';                              // title under the name (12/09)
   const med = document.createElement('canvas').getContext('2d');
   med.font = 'bold 44px Segoe UI, Arial'; const wNome = med.measureText(txt).width;
   med.font = 'bold 32px Segoe UI, Arial'; const wSub = sub ? med.measureText(sub).width : 0;
@@ -6792,6 +6792,8 @@ function aprenderGolpe(e, id, slot){
 }
 function verificarPortas(dt){
   if (mesaInicial?.marcador.visible){ mesaInicial.fase += dt * 3; mesaInicial.marcador.position.y = 0.85 + Math.sin(mesaInicial.fase) * 0.06; }
+  const tMarca = performance.now() / 1000;
+  for (const n of jogo.npcs || []) if (n.marcaMissao?.visible) n.marcaMissao.position.y = (n.altura || 1.6) + 0.92 + Math.sin(tMarca * 3) * 0.06;
   const VV = verificarPortas.vivas;                                       // folhas vivas — animam mesmo durante a travessia
   if (VV) for (const v of VV){
     if (v.tipo === 'fixa') continue;
@@ -6872,7 +6874,7 @@ async function montarNpcs(){
       const yN = noChaoRef(e.y); if (yN !== e.y){ e.y = e.vy = yN; e.pivo.position.y = yN; }
       e.giro = -(n.face || 0) * Math.PI / 180; e.pivo.rotation.y = e.giro;
       const r = rotuloSprite(e.nome, '#d6e2ff', 1.8); r.position.set(0, e.altura + 0.35, 0); e.pivo.add(r);
-      tocarAnim(e, 'Idle'); jogo.npcs.push(e);
+      tocarAnim(e, 'Idle'); jogo.npcs.push(e); aplicarMarcaMissao(e);
     } catch (err){ console.warn('npc', info.glb, err); }
   }
   // if (jogo.npcs.length) console.log('npcs na cena:', jogo.npcs.map(e => e.nome).join(', '));   // debug silenciado (floodava o console)
@@ -6902,7 +6904,7 @@ async function montarLiderGinasio(g, n){
   teleportar(e, flipX * n.x, n.z); if (INTERIOR && e.y < chaoRef - 0.3){ e.y = e.vy = chaoRef; e.pivo.position.y = chaoRef; }
   e.giro = -(n.face || 0) * Math.PI / 180; e.pivo.rotation.y = e.giro;
   e.rotSprite = rotuloSprite((tem ? '🏅 ' : '⚔ ') + g.lider + ' · ' + g.nome, tem ? '#ffd23a' : '#ffb1b1', 2.6); e.rotSprite.position.set(0, e.altura + 0.35, 0); e.pivo.add(e.rotSprite);
-  tocarAnim(e, 'Idle'); jogo.npcs.push(e);
+  tocarAnim(e, 'Idle'); jogo.npcs.push(e); aplicarMarcaMissao(e);
 }
 /** Membro da ELITE FOUR no quarto dele: um treinador ⚔ como o líder de ginásio, com o time montado pelo SERVIDOR. */
 async function montarMembroElite(M, n){
@@ -6915,7 +6917,7 @@ async function montarMembroElite(M, n){
   e.giro = -(n.face || 0) * Math.PI / 180; e.pivo.rotation.y = e.giro;
   e.rotSprite = rotuloSprite('⚔ ' + M.nome + ' · ' + (M.titulo || 'Elite Four'), M.campeao ? '#ffd23a' : '#ffb1b1', 2.8);
   e.rotSprite.position.set(0, e.altura + 0.35, 0); e.pivo.add(e.rotSprite);
-  tocarAnim(e, 'Idle'); jogo.npcs.push(e);
+  tocarAnim(e, 'Idle'); jogo.npcs.push(e); aplicarMarcaMissao(e);
 }
 /* ALCANCE DA CONVERSA (20/09, chaospider no #bugs: "ao chegar na parte em que pede para falar com a Enfermeira Joy lá na Liga,
    não tem hitbox para fazer isso! Eu clicava em todos os pixels possíveis ao redor dela e nenhum respondia").
@@ -7085,13 +7087,43 @@ function mesaSobCursor(ev){
   }
   return false;
 }
+function spriteMarca(sim, cor){
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const c = cv.getContext('2d');
+  c.font = 'bold 110px Segoe UI, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.lineWidth = 14; c.strokeStyle = 'rgba(0,0,0,0.85)'; c.strokeText(sim, 64, 70); c.fillStyle = cor; c.fillText(sim, 64, 70);
+  const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, depthTest: false }));
+  sp.scale.set(0.48, 0.48, 1); sp.renderOrder = 22; sp.userData.marca = sim + cor;
+  return sp;
+}
+function aplicarMarcaMissao(e){
+  if (!e?.pivo || e.placa) return;
+  const m = (!Fairy && !INTRO && jogo.missoesOk) ? Missoes.marcaPara?.(e.cfg, { papel: e.papel, treinador: !!e.treino }) : null;
+  const chave = m ? m.sim + m.cor : '';
+  if (e.marcaMissao && e.marcaMissao.userData.marca === chave){ e.marcaMissao.visible = !!m; return; }
+  if (e.marcaMissao){ e.pivo.remove(e.marcaMissao); e.marcaMissao.material?.map?.dispose(); e.marcaMissao.material?.dispose(); e.marcaMissao = null; }
+  if (!m) return;
+  const sp = spriteMarca(m.sim, m.cor);
+  sp.position.set(0, (e.altura || 1.6) + 0.92, 0);
+  e.pivo.add(sp); e.marcaMissao = sp;
+}
+function atualizarMarcasMissao(){
+  for (const n of jogo.npcs || []) aplicarMarcaMissao(n);
+  if (mesaInicial?.marcador){
+    const p = Missoes.passoAtual?.();
+    mesaInicial.marcador.visible = !lerLS('inicial', null) && (!jogo.missoesOk || !p || p.tipo === 'inicial');
+  }
+}
 function atualizarMissao(){
   const m = $('missao'); if (!m) return;
+  m.setAttribute('translate', 'no'); m.classList.add('notranslate');
   const txt = (!Fairy && !INTRO && jogo.missoesOk) ? Missoes.textoTracker() : null;
-  if (!txt){ m.hidden = true; return; }
+  if (!txt){ m.hidden = true; atualizarMarcasMissao(); return; }
   m.hidden = false;
   const miolo = $('missao-txt') || m;                                    // o botão de recolher mora FORA do miolo que o tracker reescreve
   if (miolo.innerHTML !== txt){ miolo.innerHTML = txt; Hud.remontar(m); }   // Figma: título/passo/recompensa nos lugares da maquete
+  atualizarMarcasMissao();
 }
 /** XP "bruta" (recompensa de missão): mesma escada de nível do ganharExp. */
 function darExp(p, n){
@@ -7221,7 +7253,7 @@ function escolherInicial(){
     caixa.innerHTML = `<div class="caixa"><button type="button" class="x" aria-label="fechar"></button><h2>${Dialogos.textoHtml('escolhaTitulo')}</h2><div class="sub">${Dialogos.textoHtml('escolhaSub')}</div>
       <div class="gens">${gens.map(g => `<button type="button" data-gen="${g}" class="${g === gen ? 'on' : ''}">GEN ${g}</button>`).join('')}</div>
       <div class="cartas">${INICIAIS[gen].map((o, i) => `<div class="carta ${i === sel ? 'on' : ''}" data-i="${i}"><div class="palco ${P.gen === gen && P.itens.some(it => it.i === i) ? 'pronto' : ''}" data-i="${i}"><div class="bola"></div></div><b>${o.nome}</b><small>Nº ${String(o.dex).padStart(3, '0')}</small><span>${o.tipos.map(tp => `<i style="background:${R.COR_TIPO?.[tp] || '#556'}">${tp}</i>`).join('')}</span></div>`).join('')}</div>
-      <div class="acoes"><button type="button" class="ok">${sel >= 0 ? 'Escolher ' + INICIAIS[gen][sel].nome : 'Escolher'}</button></div></div>`;
+      <div class="acoes"><button type="button" class="ok">${sel >= 0 ? I18n.t('Choose {x}', { x: INICIAIS[gen][sel].nome }) : I18n.t('Choose')}</button></div></div>`;
     caixa.querySelector('.caixa').appendChild(P.canvas);                                   // o canvas 3D por cima da caixa (o innerHTML acima o tinha tirado)
     caixa.querySelectorAll('[data-gen]').forEach(b => b.onclick = () => { gen = b.dataset.gen; sel = -1; P.montar(gen); pintar(); });
     caixa.querySelectorAll('.carta').forEach(c => { c.onclick = () => { if (sel === +c.dataset.i) return; sel = +c.dataset.i; P.selecionar(sel); Som.tocar('ui/sound_click', { volume: 0.5 }); pintar(); }; P.arrastavel(c, +c.dataset.i); });
@@ -7235,7 +7267,7 @@ async function receberInicial(o, i){
   let doServidor = null;
   if (comConta()){
     const r = await Rede.pedirPosse('inicial', { mon: { dex: o.dex, glb: o.glb, nome: o.nome } });
-    if (!r?.mon){ Chat.sistema('⚠ Could not register your starter on the server: ' + (r?.erro || 'no reply') + '. Fale com o Professor Oak de novo.'); return false; }
+    if (!r?.mon){ Chat.sistema('⚠ Couldn\'t register your starter on the server: ' + (r?.erro || 'no reply') + '. Talk to Professor Oak again.'); return false; }
     doServidor = r.mon;
   }
   gravarLS('inicial', { ...o, i });
@@ -7663,7 +7695,7 @@ if (jogo.ash){
     }
   }
   conferirParceiroDesmaiado();                                          // recarregou com o parceiro desmaiado: continua desmaiado (troca sozinho / apagão); roda de novo quando o seguidor salvo termina de carregar
-  Chat.sistema('You arrived in ' + nomeAreaAtual() + '.');
+  Chat.sistema(I18n.t('You arrived in {x}.', { x: I18n.t(nomeAreaAtual()) }));
   atualizarMusica(); Som.preparar(['ui/sound_click', 'ui/sound_itemget', 'ui/sound_successful']);   // música do lugar + sons de interface usados o tempo todo
   if (!Fairy && !INTRO && Conta.estado().modo === 'conta') Missoes.assumirServidor?.();   // 12/09: com conta o servidor confere os passos desde o boot (o motor local avançava e pagava por conta própria até a 1ª mensagem `missao`)
   if (!Fairy && !INTRO) Missoes.instalar({
@@ -7689,7 +7721,7 @@ if (jogo.ash){
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)
-  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = I18n.t(nomeAreaAtual()); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema('You arrived in ' + nomeAreaAtual() + '.'); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
+  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = I18n.t(nomeAreaAtual()); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema(I18n.t('You arrived in {x}.', { x: I18n.t(nomeAreaAtual()) })); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
     const aS = a + '@' + Rede.estadoRede().id;                              // com conta quem marca o passo 'ir' é o servidor: o `pos` só leva o NOME da área, a missão usa o número.
     if (a != null && comConta() && aS !== areaNoServidor){ areaNoServidor = aS; Rede.enviar({ t: 'missao_area', area: a }); }   // fora do "mudou de área": no load a conexão ainda não estava pronta e o aviso se perdia
   }, 700);
@@ -8414,7 +8446,7 @@ async function povoarTreinadores(){
         e.rotSprite = rotuloSprite((venceu ? '✔ ' : '⚔ ') + info.nome, venceu ? '#9fb2d0' : '#ffb1b1', 2.4);
         e.rotSprite.position.set(0, e.altura + 0.35, 0); e.pivo.add(e.rotSprite);
         tocarAnim(e, 'Idle');
-        jogo.npcs.push(e); jogo.treinadores.push(e);
+        jogo.npcs.push(e); jogo.treinadores.push(e); aplicarMarcaMissao(e);
       } catch (err){ console.warn('treinador', info.glb, err); spot.montado = false; }
     }
   } finally { povoandoT = false; }

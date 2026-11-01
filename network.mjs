@@ -283,7 +283,7 @@ function etiquetar(o){
   const ent = o.ent; if (!ent) return;
   if (ent.rotulo){ ent.pivo.remove(ent.rotulo); ent.rotulo.material?.map?.dispose(); ent.rotulo.material?.dispose(); }
   const eti = Conta.comCargo(o.nome, o.cargo, '#8ec5ff');                 // cargos (09/09): [STAFF]/[MOD] também na cabeça dos outros
-  const rotulo = ctx.rotuloSprite(eti.texto, eti.cor, 2.0, o.titulo || '');
+  const rotulo = ctx.rotuloSprite(eti.texto, eti.cor, 2.0, o.titulo || '', undefined, true);
   rotulo.position.y = ent.altura + 0.35 + (o.titulo ? 0.16 : 0); ent.pivo.add(rotulo); ent.rotulo = rotulo;
 }
 /** O parceiro que anda atrás do outro jogador (monta, ou troca quando ele muda de seguidor). */
