@@ -1,6 +1,7 @@
 /* Painel admin — Jogadores (Fase 1): buscar conta, ver quem está online e onde, mexer em bolsa e time, cargo, moderação e
  * código de recuperação. Tudo passa pelas rotas /admin/jogador* do servidor, que validam, gravam, registram no admin_log e
  * avisam o jogador online na hora (bolsa e time chegam sem ele reentrar). Senha e token nunca chegam aqui. */
+import { t } from '/i18n.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const dataHora = ms => new Date(ms).toLocaleString('en-US', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -21,11 +22,11 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
     const d = await fetch('/data/menus_dados.json').then(r => r.json()).catch(() => ({}));
     const itens = d.itens || {};
     ref = { itens, tipos: d.tipos || {}, insignias: d.insignias || [],
-      bolas: Object.entries(itens).filter(([, i]) => i.t === 7).map(([id, i]) => ({ id, nome: i.n })).sort((a, b) => a.id - b.id) };
-    $('dl-itens').innerHTML = Object.entries(itens).filter(([, i]) => i.t !== 7).map(([id, i]) => `<option value="${id} ${esc(i.n)}">`).join('');
+      bolas: Object.entries(itens).filter(([, i]) => i.t === 7).map(([id, i]) => ({ id, nome: t(i.n) })).sort((a, b) => a.id - b.id) };
+    $('dl-itens').innerHTML = Object.entries(itens).filter(([, i]) => i.t !== 7).map(([id, i]) => `<option value="${id} ${esc(t(i.n))}">`).join('');
     return ref;
   }
-  const nomeItem = id => ref?.itens[id]?.n || ('item ' + id);
+  const nomeItem = id => t(ref?.itens[id]?.n || ('item ' + id));
 
   // ── Lista ────────────────────────────────────────────────────────────────────
   async function renderLista() {
@@ -102,14 +103,14 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
           <div class="form">
             <label>Money <input type="number" id="j-dinheiro" min="0" step="1" value="${s.dinheiro ?? ''}" placeholder="game default"></label>
           </div>
-          <h4>Pokébolas</h4>
+          <h4>Poké Balls</h4>
           <div class="j-bolas">${ref.bolas.map(b => `<label>${esc(b.nome)} <input type="number" min="0" max="999999" data-bola="${b.id}" value="${s.bolas?.[b.id] || 0}"></label>`).join('')}</div>
           <h4>Items</h4>
           <table class="esp"><thead><tr><th>Item</th><th>Qty</th><th></th></tr></thead><tbody id="j-itens">
             ${Object.entries(s.itens || {}).map(([id, q]) => linhaItem(id, q)).join('') || ''}</tbody></table>
           <div class="add-esp"><input type="text" list="dl-itens" id="j-item-add" placeholder="add item (name or no.)…"><button id="j-item-ok">Add</button></div>
           <h4>Badges</h4>
-          <div class="j-insignias">${ref.insignias.map(i => `<label class="chk" title="generation ${i.gen}"><input type="checkbox" data-ins="${i.id}" ${(s.insignias || []).includes(i.id) ? 'checked' : ''}> ${esc(i.n)}</label>`).join('')}</div>
+          <div class="j-insignias">${ref.insignias.map(i => `<label class="chk" title="generation ${i.gen}"><input type="checkbox" data-ins="${i.id}" ${(s.insignias || []).includes(i.id) ? 'checked' : ''}> ${esc(t(i.n))}</label>`).join('')}</div>
           <div class="acoes" style="margin-top:12px"><button class="prim" id="j-bolsa-ok">Save bag</button></div>
         </div>
         <div class="caixa j-larga"><h3>Team and box <span class="sujo" id="j-sujo-time" hidden>● unsaved</span></h3>
@@ -209,7 +210,9 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
     };
     ligarItens();
     const addItem = () => {
-      const v = $('j-item-add').value.trim(), id = (v.match(/^(\d+)/) || [])[1] || Object.keys(ref.itens).find(k => ref.itens[k].n.toLowerCase() === v.toLowerCase());
+      const v = $('j-item-add').value.trim(), low = v.toLowerCase(), id = (v.match(/^(\d+)/) || [])[1] || Object.keys(ref.itens).find(k => {
+        const n = ref.itens[k].n; return n.toLowerCase() === low || t(n).toLowerCase() === low;
+      });
       if (!id || !ref.itens[id]) { toast('Item not found.', true); return; }
       if (ref.itens[id].t === 7) { toast('Poké Balls go in the Poké Balls list above.', true); return; }
       const tr = $('j-itens').querySelector(`tr[data-item="${id}"]`);

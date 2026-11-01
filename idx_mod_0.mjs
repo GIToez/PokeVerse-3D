@@ -4356,7 +4356,7 @@ function atualizarSelvagens(dt){
     if (s.estado === 'desmaiado'){
       s.mix.update(dt); s.desmaio -= dt;
       const seg = Math.max(0, Math.ceil(s.desmaio));
-      if (s.rotulo && !s.raid && s.rotDesm !== seg){ s.rotDesm = seg; s.rotulo.innerHTML = `<span>${s.nome} desmaiado · <b>F</b> captura ${seg}s</span><i><b></b></i>`; s.rotHp = undefined; }
+      if (s.rotulo && !s.raid && s.rotDesm !== seg){ s.rotDesm = seg; s.rotulo.innerHTML = `<span>${s.nome} ${I18n.t('fainted')} · <b>F</b> ${I18n.t('catch')} ${seg}s</span><i><b></b></i>`; s.rotHp = undefined; }
       if (s.desmaio <= 0 && !s.rede){ s.rotDesm = undefined; if (s.rotulo) s.rotulo.innerHTML = `<span>${s.nome} Lv${s.lv}</span><i><b></b></i>`; morrer(s); }   // na rede, quem some é o servidor (`sumiu`)
       continue;
     }
@@ -7568,7 +7568,7 @@ function pintarBarra(){
   const hpEl = $('f-pika-hp'), hpK = p.hp / p.maxHp;
   if (hpEl.__k !== hpK){ hpEl.__k = hpK; hpEl.style.width = (hpK * 100) + '%'; hpEl.style.background = hpK > 0.5 ? '#86ef5f' : hpK > 0.2 ? '#f4aa35' : '#e45670'; }
   setTexto($('f-pika-nome'), p.nome);
-  setTexto($('f-pika-lv'), 'Lv' + p.lv + ' · ' + (jogo.montaria ? 'na Pokébola' : p.desmaiado > 0 ? 'desmaiado' : p.emBatalha ? 'em batalha' : 'seguindo'));
+  setTexto($('f-pika-lv'), 'Lv' + p.lv + ' · ' + I18n.t(jogo.montaria ? 'in Poké Ball' : p.desmaiado > 0 ? 'fainted' : p.emBatalha ? 'in battle' : 'following'));
   for (let i = 0; i < 4; i++){
     const id = p.golpesIds[i], g = id && GOLPES[id], el = $('sk' + (i + 1));
     if (!g){ if (!el.classList.contains('vazio')){ el.classList.add('vazio'); for (const f of [...el.children]) if (!f.dataset.fig) f.remove(); el.__pronto = false; el.__id = null; el.__ic = null; el.__txt = null; el.__pct = null; el.title = 'sem golpe'; } continue; } else if (el.classList.contains('vazio')) el.classList.remove('vazio');
@@ -7595,12 +7595,12 @@ function pintarBarra(){
      o TEXTO muda (a largura da barra saiu do template e vai por Hud.fill), senão a árvore montada seria destruída a
      cada ponto de dano. */
   const elAlvo = $('f-alvo');
-  const htmlAlvo = a ? `<b class="alvo-nome">${a.nome}</b> <span class="alvo-lv">Lv ${a.lv}</span> <span class="alvo-estado">${a.estado === 'desmaiado' ? `· desmaiado ${Math.max(0, Math.ceil(a.desmaio))}s · <b>F</b> captura` : [a.perfil, a.estado].filter(Boolean).map(x => '· ' + x).join(' ')}</span><i class="alvo-trilho"><b class="alvo-fill"></b></i>`
-                     : 'sem alvo — clique num selvagem ou <b>Tab</b>';
+  const htmlAlvo = a ? `<b class="alvo-nome">${a.nome}</b> <span class="alvo-lv">Lv ${a.lv}</span> <span class="alvo-estado">${a.estado === 'desmaiado' ? I18n.t('· fainted {n}s · F catch', { n: Math.max(0, Math.ceil(a.desmaio)) }) : [a.perfil, a.estado].filter(Boolean).map(x => '· ' + I18n.t(x)).join(' ')}</span><i class="alvo-trilho"><b class="alvo-fill"></b></i>`
+                     : I18n.t('no target — click a wild Pokémon or ') + '<b>Tab</b>';
   if (elAlvo.__html !== htmlAlvo){ setHTML(elAlvo, htmlAlvo); Hud.remontar(elAlvo); }
   if (a) Hud.fill(elAlvo.querySelector('.alvo-fill'), a.hp / a.maxHp, corVida(a.hp / a.maxHp));
   const sel = jogo.bolaSel, nb = jogo.bolas?.[sel] || 0;
-  setTexto($('bola-nome'), BOLAS[sel]?.[0] || sel); setTexto($('bola-n'), '×' + nb);
+  setTexto($('bola-nome'), I18n.t(BOLAS[sel]?.[0] || sel)); setTexto($('bola-n'), '×' + nb);
   const bi = $('bola-icone'); if (bi && bi.__sel !== sel){ bi.__sel = sel; bi.classList.add('real'); bi.style.backgroundImage = "url('./ui/itens/ic_" + sel + ".png')"; }   // ícone real da bola (pacote Item)
   const bb = $('bola-btn'), semBola = nb <= 0; if (bb.__frio !== semBola){ bb.classList.toggle('frio', semBola); bb.__frio = semBola; }
   pintarAtalhos();
