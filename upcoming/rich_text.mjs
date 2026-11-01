@@ -1,1 +1,16 @@
-const QUEBRA=/<\s*\/?\s*br\s*\/?\s*>/gi;const COR=/<\/?(?:color|size|b|i|u)(?:=[^>]*)?>|\[\/?(?:color|size|b|i|u)(?:=[^\]]*)?\]/gi;const LINK=/<a\b[^>]*>|<\/a>/gi;export function textoLimpo(s){return String(s??"").replace(QUEBRA,"\n").replace(COR,"").replace(LINK,"").replace(/\r/g,"").replace(/\t/g," ").replace(/ *\n[ \n]*/g,"\n").replace(/ {2,}/g," ").trim()}const TEM=new RegExp([QUEBRA,COR,LINK].map(r=>r.source).join("|"),"i");export const temMarcacao=s=>TEM.test(String(s??""));
+const QUEBRA = /<\s*\/?\s*br\s*\/?\s*>/gi;
+const COR = /<\/?(?:color|size|b|i|u)(?:=[^>]*)?>|\[\/?(?:color|size|b|i|u)(?:=[^\]]*)?\]/gi;
+const LINK = /<a\b[^>]*>|<\/a>/gi;
+export function textoLimpo(s) {
+  return String(s ?? '')
+    .replace(QUEBRA, '\n')
+    .replace(COR, '')
+    .replace(LINK, '')
+    .replace(/\r/g, '')
+    .replace(/\t/g, ' ')
+    .replace(/ *\n[ \n]*/g, '\n')
+    .replace(/ {2,}/g, ' ')
+    .trim();
+}
+const TEM = new RegExp([QUEBRA, COR, LINK].map((r) => r.source).join('|'), 'i');
+export const temMarcacao = (s) => TEM.test(String(s ?? ''));

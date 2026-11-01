@@ -1,4 +1,493 @@
-import*as I18n from"./i18n.mjs";import{t as tr,tHtml}from"./i18n.mjs";import*as Popup from"./popup.mjs";import*as TelasP from"./screens_character.mjs";import*as Hud from"./hud.mjs";const DISCORD="https://discord.gg/P2NeDwbcwj";const LOGO_DISCORD="<svg viewBox=\"0 0 127 96\" width=\"18\" height=\"14\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"M107 8A105 105 0 0 0 80.9 0a73 73 0 0 0-3.4 7 97 97 0 0 0-29 0A73 73 0 0 0 45 0a105 105 0 0 0-26 8C2.4 33 -1.5 57 .5 80.6A106 106 0 0 0 32.7 96a78 78 0 0 0 6.9-11.2 69 69 0 0 1-10.9-5.2l2.7-2.1a75 75 0 0 0 64.2 0l2.7 2.1a69 69 0 0 1-10.9 5.2A78 78 0 0 0 94.3 96a106 106 0 0 0 32.2-15.4c2.4-27.4-3.9-51.2-19.5-72.6ZM42.4 66.2c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5.1 12.9-11.5 12.9Zm42.5 0c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5 12.9-11.5 12.9Z\"/></svg>";const LOGO_DISCORD_CAIXA=LOGO_DISCORD.replace("width=\"18\" height=\"14\"","width=\"100%\" height=\"100%\"");const VERSAO="v0.2.0 · beta";const FUNDOS={login:"./ui/figma/backgrounds/fundo-login-escuro.png",cadastro:"./ui/figma/backgrounds/fundo-login-escuro.png",personagem:"./ui/figma/backgrounds/fundo-personagem.png",personalizar:"./ui/figma/backgrounds/fundo-personagem.png"};const CANTOS=["seletor-idioma","btn-discord","txt/versao"];const MONO="\"Roboto Mono\", ui-monospace, Menlo, Consolas, \"DejaVu Sans Mono\", monospace";const ESPACO_LETRA=[["[data-fig=\"placa-beta\"] > [data-fig=\"txt-beta\"]",".14em"],["[data-fig=\"selo-beta\"] > [data-fig=\"txt-beta\"]",".04em"],["[data-txt=\"codigo\"]","1.5px"]];const ONDE_CAIXA={pc:{"dialogo-alpha-key":{cadastro:[1050,189.92]},"dialogo-boas-vindas":{cadastro:[1050,218]},"dialogo-codigo":{cadastro:[1050,218],login:[1050,286]}},deitado:{"dialogo-alpha-key":{cadastro:[244,28.8]},"dialogo-boas-vindas":{cadastro:[244,52.6]},"dialogo-codigo":{cadastro:[244,52.6],login:[244,52.6]}}};export const TERMOS_VERSAO="t2-p2";const RESERVA_TERMOS={"Li e aceito os {termos} e a {privacidade}":{en:"I have read and accept the {termos} and the {privacidade}",es:"He leído y acepto los {termos} y la {privacidade}"},"Termos de Uso":{en:"Terms of Use",es:"Términos de Uso"},"Política de Privacidade":{en:"Privacy Policy",es:"Política de Privacidad"},"Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.":{en:"To create the account, tick the box saying you have read and accept the Terms of Use and the Privacy Policy.",es:"Para crear la cuenta, marca que leíste y aceptas los Términos de Uso y la Política de Privacidad."},"Os Termos de Uso ou a Política de Privacidade mudaram. Recarregue a página e aceite a versão nova.":{en:"The Terms of Use or the Privacy Policy have changed. Reload the page and accept the new version.",es:"Los Términos de Uso o la Política de Privacidad cambiaron. Recarga la página y acepta la versión nueva."},"Termos de Uso e Política de Privacidade":{en:"Terms of Use and Privacy Policy",es:"Términos de Uso y Política de Privacidad"},"Para continuar jogando, leia e aceite a versão atual dos Termos de Uso e da Política de Privacidade.":{en:"To keep playing, read and accept the current version of the Terms of Use and the Privacy Policy.",es:"Para seguir jugando, lee y acepta la versión actual de los Términos de Uso y de la Política de Privacidad."},"Aceitar e continuar":{en:"Accept and continue",es:"Aceptar y continuar"},"Sair da conta":{en:"Log out",es:"Cerrar sesión"},"Enviando…":{en:"Sending…",es:"Enviando…"},"Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.":{en:"To create the account, read and accept the Terms of Use and the Privacy Policy.",es:"Para crear la cuenta, lee y acepta los Términos de Uso y la Política de Privacidad."},"Informe o seu e-mail: ele é obrigatório.":{en:"Enter your e-mail: it is required.",es:"Escribe tu correo: es obligatorio."},"Use o seu e-mail sem apelido (sem o \"+\").":{en:"Use your e-mail without an alias (no \"+\").",es:"Usa tu correo sin alias (sin el \"+\")."},"Use um e-mail de verdade: e-mail temporário (descartável) não vale.":{en:"Use a real e-mail: temporary (disposable) e-mail addresses are not accepted.",es:"Usa un correo de verdad: los correos temporales (desechables) no valen."},"Use o seu e-mail de verdade: e-mail de apelido (que encaminha pra outro) não vale.":{en:"Use your real e-mail: alias e-mail addresses (that forward to another inbox) are not accepted.",es:"Usa tu correo de verdad: los correos de alias (que reenvían a otro) no valen."}};const reservaTermos=a=>typeof a==="string"&&Object.hasOwn(RESERVA_TERMOS,a)?RESERVA_TERMOS[a]:null;const trT=a=>{const l=I18n.idioma();return l!=="pt"&&reservaTermos(a)?.[l]||tr(a)};let atual=null,ctx=null,layout=null,fundoEl=null;const toque=()=>{try{return matchMedia("(pointer: coarse)").matches||innerWidth<900}catch{return innerWidth<900}};const ori=()=>(document.body.classList.contains("mobile")||toque())&&innerWidth>innerHeight?"deitado":"pc";function painel(a){a=tHtml(a);estiloTela();const b=document.createElement("div");b.className="tela-extra";b.innerHTML="<div class=\"tela-caixa\" role=\"dialog\" aria-modal=\"true\">"+a+"</div>";document.body.appendChild(b);return b}export function mostrarCodigo(a,b,c={}){const d=c.pop||atual;if(d?.__def?.v2&&Popup.extra(d,"dialogo-codigo"))return codigoV2(d,a,b);const f=painel("<b class=\"tela-tit\">Anote o seu código de recuperação</b>"+"<p class=\"tela-txt\">É a ÚNICA forma de voltar pra sua conta se você esquecer a senha. Ele não fica guardado neste aparelho e não dá pra vê-lo de novo.</p>"+"<div id=\"codigo-recuperacao\" class=\"tela-codigo\">"+a+"</div>"+"<div class=\"tela-linha\" style=\"align-items:center;margin-top:14px\"><button type=\"button\" class=\"btn\" id=\"cod-copiar\">Copiar</button>"+"<label class=\"tela-marca\"><input type=\"checkbox\" id=\"cod-anotei\"> anotei em lugar seguro</label>"+"<button type=\"button\" class=\"btn ouro\" id=\"cod-ok\" disabled>Continuar</button></div>");const e=f.querySelector("#cod-ok");f.querySelector("#cod-anotei").onchange=a=>{e.disabled=!a.target.checked};f.querySelector("#cod-copiar").onclick=()=>{try{navigator.clipboard?.writeText(a);f.querySelector("#cod-copiar").textContent=tr("copiado ✓")}catch{}};e.onclick=()=>{f.remove();b?.()}}function formRecuperar(a){const f=painel("<b class=\"tela-tit\">Esqueci a senha</b>"+"<p class=\"tela-txt\">Use o código de recuperação que apareceu quando você criou a conta. Se perdeu os dois, chame no Discord do jogo.</p>"+"<label class=\"tela-campo\">usuário<input id=\"rec-usuario\" autocomplete=\"username\" autocapitalize=\"none\" spellcheck=\"false\"></label>"+"<label class=\"tela-campo\">código de recuperação<input id=\"rec-codigo\" placeholder=\"XXXX-XXXX-XXXX-XXXX\" autocomplete=\"off\" spellcheck=\"false\" style=\"text-transform:uppercase\"></label>"+"<label class=\"tela-campo\" style=\"margin-bottom:12px\">senha nova<input id=\"rec-senha\" type=\"password\" autocomplete=\"new-password\"></label>"+"<div class=\"tela-linha\"><button type=\"button\" class=\"btn\" id=\"rec-nao\">Voltar</button><button type=\"button\" class=\"btn ouro\" id=\"rec-sim\" style=\"flex:1\">Trocar a senha</button></div>"+"<div id=\"rec-aviso\" class=\"tela-msg\"></div>");for(const d of f.querySelectorAll("input"))d.addEventListener("keydown",a=>{a.stopPropagation();if(a.key==="Enter"){a.preventDefault();f.querySelector("#rec-sim").click()}if(a.key==="Escape")f.remove()});setTimeout(()=>f.querySelector("#rec-usuario")?.focus(),50);const b=t=>{f.querySelector("#rec-aviso").textContent=tr(t)};f.querySelector("#rec-nao").onclick=()=>f.remove();f.querySelector("#rec-sim").onclick=async()=>{const u=f.querySelector("#rec-usuario").value.trim(),c=f.querySelector("#rec-codigo").value.trim(),d=f.querySelector("#rec-senha").value.trim();if(!u||!c)return b("Preencha o usuário e o código.");if(d.length<6)return b("Senha nova: pelo menos 6 caracteres.");b("Trocando…");const r=await ctx.conta.recuperar(u,c,d);if(!r.ok)return b(r.erro||"Não deu.");f.remove();ctx.conta.codigoNovo?.();if(r.codigo)mostrarCodigo(r.codigo,()=>avisar(a,"Senha trocada. Entre com ela.",false),{pop:a});else avisar(a,"Senha trocada. Entre com ela.",false)}}export function mostrar(b,L,c={}){layout=L||layout;ctx=c||ctx;const d=layout?.telas?.[ori()]?.[b]||layout?.telas?.pc?.[b];if(!d){console.warn("telas: não há maquete de "+b);return null}fechar();const e=Popup.montar({...d,semMargem:true},{acao:(a,c)=>acao(b,a,c,e),abre:a=>{const m=/^tela-(\w+)$/.exec(a||"");if(m){if(m[1]==="cadastro"&&ctx?.conta?.irParaEntrada?.())return true;mostrar(m[1],layout,ctx);return true}return false},fechar:()=>{if(atual!==e)return;atual=null;tirarFundo();e.remove()}});e.style.zIndex=ctx?.conta?"600":"200";e.classList.add("pf-tela");e.__tela=b;e.__acoes=new Map;const f=!!d.v2;if(f){e.classList.add("pf-tela-v2");fundoDaTela(e,FUNDOS[b])}estiloTela();if(!f)for(const g of e.querySelectorAll("[data-fig^=\"painel-\"]")){const j=g.style.backgroundImage;if(!j||j==="none"||g.querySelector(":scope > .tela-moldura"))continue;const m=document.createElement("div");m.className="tela-moldura";Object.assign(m.style,{position:"absolute",inset:"0",backgroundImage:j,backgroundSize:"100% 100%",backgroundRepeat:"no-repeat",pointerEvents:"none",zIndex:"15"});g.style.backgroundImage="none";g.appendChild(m)}if(b==="login"&&ctx?.conta?.recuperar&&!e.querySelector("[data-tagval=\"recuperar-senha\"]")){const k=e.querySelector("[data-fig=\"btn-entrar\"]");const l=document.createElement("button");l.type="button";l.id="tela-esqueci";l.textContent="esqueci minha senha";const x=parseFloat(k?.style.left)||0,y=(parseFloat(k?.style.top)||0)+(parseFloat(k?.style.height)||0)+16,w=parseFloat(k?.style.width)||200;l.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;width:"+w+"px;z-index:30;background:none;border:0;color:#cfd8ee;text-decoration:underline;cursor:pointer;font:inherit;font-size:13px";e.appendChild(l);l.onclick=()=>formRecuperar(e)}const H=b==="personagem"||b==="personalizar"?TelasP.montar(b,e,d,ctx):null;if(H){e.__cb.aba=a=>H.aba(a);e.__cb.acao=(a,b)=>H.acao(a,b);const n=e.__cb.abre;e.__cb.abre=(a,b)=>H.abre(a,b)||n(a,b);for(const x of e.querySelectorAll("[data-tag=\"fecha\"][data-tagval=\"seletor-cor\"]"))x.addEventListener("click",()=>H.fechou?.())}else{Popup.imagem(e,"fundo",FUNDOS.login);Popup.imagem(e,"logo","./ui/figma/backgrounds/logo-pokefable.png");Popup.texto(e,"versao",ctx?.conta?VERSAO:"v0.1.0 · prévia")}for(const o of H?[]:[...e.querySelectorAll("input")].filter(i=>!i.closest(".pf-extra"))){const p=o.closest("[data-fig]")?.dataset.fig||"";if(o.type==="search")o.type="text";o.autocomplete=/senha/.test(p)?b==="cadastro"?"new-password":"current-password":/email/.test(p)?"email":"username";o.autocapitalize="none";o.spellcheck=false;o.name=p.replace(/^campo-/,"");if(f)o.style.color="#EAF6FB";o.addEventListener("keydown",a=>{if(a.key==="Enter"){a.preventDefault();acao(b,b==="login"?"login":"cadastrar",o,e)}});o.addEventListener("input",()=>{if(o.closest(".pf-tela")?.querySelector(".tela-aviso.erro"))avisar(e,"")});if(ctx?.conta)o.addEventListener("keydown",a=>{if(a.key==="Escape")a.stopImmediatePropagation()},true)}if(b==="cadastro")aceiteNoCadastro(e);const h=f&&(b==="login"||b==="cadastro");if(h)prepararEntrada(e);Popup.abrir(e);atual=e;if(h){vigiarCaixas();sincronizarEnfeites()}if(!(H&&toque()))setTimeout(()=>{const a=document.activeElement;if(!a||a===document.body||!e.contains(a))e.querySelector("input")?.focus()},50);if(b==="cadastro"&&ctx?.conta?.alfa)caixaAlphaKey(e);else if(b!=="cadastro")chaveAlfa=null;if(b==="login"||b==="cadastro"){if(f&&e.querySelector("[data-fig=\"seletor-idioma\"]"))idiomaDaMaquete(e);else barraIdioma(e,b);if(f)discordDaMaquete(e);if(!(f&&e.querySelector("[data-fig=\"btn-discord\"]")))botaoDiscord(e)}if(f){ancorarCantos(e);caberTextos(e);document.fonts?.ready?.then(()=>{if(e.isConnected)caberTextos(e)})}return e}function caberTextos(a){for(const b of a.querySelectorAll("[data-txt], .pf-rotulo")){if(!b.getClientRects().length)continue;if(b.dataset.regra==="encolher"){Hud.encolher(b);continue}const c=+b.dataset.fsMaquete||parseFloat(getComputedStyle(b).fontSize)||0;if(!c)continue;b.dataset.fsMaquete=c;b.style.fontSize=c+"px";for(let d=c;d>c*0.75&&b.scrollWidth>b.clientWidth+0.5;){d=Math.max(c*0.75,d-0.5);b.style.fontSize=d+"px"}}}function fundoDaTela(a,b){if(!fundoEl){fundoEl=document.createElement("div");fundoEl.className="pf-tela-fundo";document.body.appendChild(fundoEl)}Object.assign(fundoEl.style,{position:"fixed",inset:"0",pointerEvents:"auto",zIndex:String((+a.style.zIndex||200)-1),background:"#070b16"+(b?" url("+b+") center / cover no-repeat":"")});const v=a.querySelector("[data-var=\"fundo\"]");if(v)v.style.display="none"}function areasSeguras(){const d=document.createElement("div");d.style.cssText="position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)";document.body.appendChild(d);const a=getComputedStyle(d),c=k=>parseFloat(a[k])||0,r={t:c("paddingTop"),r:c("paddingRight"),b:c("paddingBottom"),l:c("paddingLeft")};d.remove();return r}function ancorarCantos(c){const d=c?.__def;if(!d?.v2||!c.isConnected)return;const s=c.__escala||1,e=Math.max(0,(innerWidth/s-d.w)/2),f=Math.max(0,(innerHeight/s-d.h)/2),a=areasSeguras();for(const g of CANTOS){const i=c.querySelector("[data-fig=\""+g+"\"]");if(!i)continue;const j=i.parentElement,m=(n,k)=>parseFloat(n?.style?.[k])||0;const x=m(j,"left")+m(i,"left")+m(i,"width")/2,y=m(j,"top")+m(i,"top")+m(i,"height")/2;const o=x>d.w/2,p=y>d.h/2;const q=o?e-a.r/s:-e+a.l/s,u=p?f-a.b/s:-f+a.t/s;i.style.translate=q.toFixed(1)+"px "+u.toFixed(1)+"px"}}addEventListener("resize",()=>{if(atual)requestAnimationFrame(()=>{if(!atual)return;ancorarCantos(atual);colocarVeu(atual);const a=atual.querySelector(".tela-aviso");if(a&&atual.__def?.v2&&a.style.display!=="none")colocarAvisoV2(atual,a)})});function idiomaDaMaquete(a){for(const[l,b]of Object.entries(I18n.IDIOMAS)){const g=a.querySelector("[data-fig=\"idioma-"+l+"\"]");if(!g)continue;const c=I18n.idioma()===l;Popup.textoCru(a,"idioma",l.toUpperCase(),g);for(const m of g.querySelectorAll(":scope > [data-fig=\"marca-ativa\"]"))m.style.display=c?"block":"none";for(const t of g.querySelectorAll("[data-cor-aba]"))t.style.color=c?"#1D2B45":"#EAF6FB";g.title=b;g.setAttribute("role","button");g.setAttribute("aria-pressed",String(c));g.dataset.ativo=c?"1":"0"}}async function trocarIdioma(l,a){if(!I18n.IDIOMAS[l]||I18n.idioma()===l)return;await I18n.definir(l);ctx?.conta?.idioma?.(l);mostrar(a,layout,ctx)}function discordDaMaquete(b){for(const g of b.querySelectorAll("[data-fig=\"btn-discord\"], [data-fig=\"link-discord-alpha\"]")){if(g.querySelector(":scope > .tela-discord-link"))continue;const c=g.querySelector("[data-var=\"icone-discord\"]"),d=g.querySelector(".pf-rotulo"),e=g.dataset.fig==="btn-discord";if(c){c.innerHTML=LOGO_DISCORD_CAIXA;Object.assign(c.style,{color:d?.style.color||"#EAF6FB",display:"block"})}const a=document.createElement("a");a.className="tela-discord-link";a.href=DISCORD;a.target="_blank";a.rel="noopener noreferrer";a.title=tr("Comunidade, novidades e sorteios de chave");a.setAttribute("aria-label",e?"Discord":d?.textContent||"Discord");Object.assign(a.style,{position:"absolute",inset:"0",zIndex:"60",pointerEvents:"auto",borderRadius:e?"12px":"6px"});a.addEventListener("click",a=>a.stopPropagation());g.appendChild(a)}}function botaoDiscord(b){if(b.querySelector(".tela-discord"))return;const a=document.createElement("a");a.className="tela-discord";a.href=DISCORD;a.target="_blank";a.rel="noopener noreferrer";a.title=tr("Comunidade, novidades e sorteios de chave");a.innerHTML=LOGO_DISCORD+"<span>"+tr("Discord")+"</span>";b.appendChild(a)}function barraIdioma(a,c){if(a.querySelector(".tela-idioma"))return;const b=document.createElement("div");b.className="tela-idioma";for(const[l,d]of Object.entries(I18n.IDIOMAS)){const e=document.createElement("button");e.type="button";e.textContent=l.toUpperCase();e.title=d;e.classList.toggle("on",I18n.idioma()===l);e.onclick=async()=>{if(I18n.idioma()===l)return;await I18n.definir(l);ctx?.conta?.idioma?.(l);mostrar(c,layout,ctx)};b.appendChild(e)}a.appendChild(b)}function estiloTela(){if(document.getElementById("tela-css"))return;const a=document.createElement("style");a.id="tela-css";a.textContent=`
+import * as I18n from './i18n.mjs';
+import { t as tr, tHtml } from './i18n.mjs';
+import * as Popup from './popup.mjs';
+import * as TelasP from './screens_character.mjs';
+import * as Hud from './hud.mjs';
+const DISCORD = 'https://discord.gg/P2NeDwbcwj';
+const LOGO_DISCORD =
+  '<svg viewBox="0 0 127 96" width="18" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M107 8A105 105 0 0 0 80.9 0a73 73 0 0 0-3.4 7 97 97 0 0 0-29 0A73 73 0 0 0 45 0a105 105 0 0 0-26 8C2.4 33 -1.5 57 .5 80.6A106 106 0 0 0 32.7 96a78 78 0 0 0 6.9-11.2 69 69 0 0 1-10.9-5.2l2.7-2.1a75 75 0 0 0 64.2 0l2.7 2.1a69 69 0 0 1-10.9 5.2A78 78 0 0 0 94.3 96a106 106 0 0 0 32.2-15.4c2.4-27.4-3.9-51.2-19.5-72.6ZM42.4 66.2c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5.1 12.9-11.5 12.9Zm42.5 0c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5 12.9-11.5 12.9Z"/></svg>';
+const LOGO_DISCORD_CAIXA = LOGO_DISCORD.replace('width="18" height="14"', 'width="100%" height="100%"');
+const VERSAO = 'v0.2.0 · beta';
+const FUNDOS = {
+  login: './ui/figma/backgrounds/fundo-login-escuro.png',
+  cadastro: './ui/figma/backgrounds/fundo-login-escuro.png',
+  personagem: './ui/figma/backgrounds/fundo-personagem.png',
+  personalizar: './ui/figma/backgrounds/fundo-personagem.png',
+};
+const CANTOS = ['seletor-idioma', 'btn-discord', 'txt/versao'];
+const MONO = '"Roboto Mono", ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const ESPACO_LETRA = [
+  ['[data-fig="placa-beta"] > [data-fig="txt-beta"]', '.14em'],
+  ['[data-fig="selo-beta"] > [data-fig="txt-beta"]', '.04em'],
+  ['[data-txt="codigo"]', '1.5px'],
+];
+const ONDE_CAIXA = {
+  pc: {
+    'dialogo-alpha-key': { cadastro: [1050, 189.92] },
+    'dialogo-boas-vindas': { cadastro: [1050, 218] },
+    'dialogo-codigo': { cadastro: [1050, 218], login: [1050, 286] },
+  },
+  deitado: {
+    'dialogo-alpha-key': { cadastro: [244, 28.8] },
+    'dialogo-boas-vindas': { cadastro: [244, 52.6] },
+    'dialogo-codigo': { cadastro: [244, 52.6], login: [244, 52.6] },
+  },
+};
+export const TERMOS_VERSAO = 't2-p2';
+const RESERVA_TERMOS = {
+  'Li e aceito os {termos} e a {privacidade}': {
+    en: 'I have read and accept the {termos} and the {privacidade}',
+    es: 'He leído y acepto los {termos} y la {privacidade}',
+  },
+  'Termos de Uso': { en: 'Terms of Use', es: 'Términos de Uso' },
+  'Política de Privacidade': { en: 'Privacy Policy', es: 'Política de Privacidad' },
+  'Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.': {
+    en: 'To create the account, tick the box saying you have read and accept the Terms of Use and the Privacy Policy.',
+    es: 'Para crear la cuenta, marca que leíste y aceptas los Términos de Uso y la Política de Privacidad.',
+  },
+  'Os Termos de Uso ou a Política de Privacidade mudaram. Recarregue a página e aceite a versão nova.': {
+    en: 'The Terms of Use or the Privacy Policy have changed. Reload the page and accept the new version.',
+    es: 'Los Términos de Uso o la Política de Privacidad cambiaron. Recarga la página y acepta la versión nueva.',
+  },
+  'Termos de Uso e Política de Privacidade': {
+    en: 'Terms of Use and Privacy Policy',
+    es: 'Términos de Uso y Política de Privacidad',
+  },
+  'Para continuar jogando, leia e aceite a versão atual dos Termos de Uso e da Política de Privacidade.': {
+    en: 'To keep playing, read and accept the current version of the Terms of Use and the Privacy Policy.',
+    es: 'Para seguir jugando, lee y acepta la versión actual de los Términos de Uso y de la Política de Privacidad.',
+  },
+  'Aceitar e continuar': { en: 'Accept and continue', es: 'Aceptar y continuar' },
+  'Sair da conta': { en: 'Log out', es: 'Cerrar sesión' },
+  'Enviando…': { en: 'Sending…', es: 'Enviando…' },
+  'Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.': {
+    en: 'To create the account, read and accept the Terms of Use and the Privacy Policy.',
+    es: 'Para crear la cuenta, lee y acepta los Términos de Uso y la Política de Privacidad.',
+  },
+  'Informe o seu e-mail: ele é obrigatório.': {
+    en: 'Enter your e-mail: it is required.',
+    es: 'Escribe tu correo: es obligatorio.',
+  },
+  'Use o seu e-mail sem apelido (sem o "+").': {
+    en: 'Use your e-mail without an alias (no "+").',
+    es: 'Usa tu correo sin alias (sin el "+").',
+  },
+  'Use um e-mail de verdade: e-mail temporário (descartável) não vale.': {
+    en: 'Use a real e-mail: temporary (disposable) e-mail addresses are not accepted.',
+    es: 'Usa un correo de verdad: los correos temporales (desechables) no valen.',
+  },
+  'Use o seu e-mail de verdade: e-mail de apelido (que encaminha pra outro) não vale.': {
+    en: 'Use your real e-mail: alias e-mail addresses (that forward to another inbox) are not accepted.',
+    es: 'Usa tu correo de verdad: los correos de alias (que reenvían a otro) no valen.',
+  },
+};
+const reservaTermos = (a) => (typeof a === 'string' && Object.hasOwn(RESERVA_TERMOS, a) ? RESERVA_TERMOS[a] : null);
+const trT = (a) => {
+  const l = I18n.idioma();
+  return (l !== 'pt' && reservaTermos(a)?.[l]) || tr(a);
+};
+let atual = null,
+  ctx = null,
+  layout = null,
+  fundoEl = null;
+const toque = () => {
+  try {
+    return matchMedia('(pointer: coarse)').matches || innerWidth < 900;
+  } catch {
+    return innerWidth < 900;
+  }
+};
+const ori = () =>
+  (document.body.classList.contains('mobile') || toque()) && innerWidth > innerHeight ? 'deitado' : 'pc';
+function painel(a) {
+  a = tHtml(a);
+  estiloTela();
+  const b = document.createElement('div');
+  b.className = 'tela-extra';
+  b.innerHTML = '<div class="tela-caixa" role="dialog" aria-modal="true">' + a + '</div>';
+  document.body.appendChild(b);
+  return b;
+}
+export function mostrarCodigo(a, b, c = {}) {
+  const d = c.pop || atual;
+  if (d?.__def?.v2 && Popup.extra(d, 'dialogo-codigo')) return codigoV2(d, a, b);
+  const f = painel(
+    '<b class="tela-tit">Anote o seu código de recuperação</b>' +
+      '<p class="tela-txt">É a ÚNICA forma de voltar pra sua conta se você esquecer a senha. Ele não fica guardado neste aparelho e não dá pra vê-lo de novo.</p>' +
+      '<div id="codigo-recuperacao" class="tela-codigo">' +
+      a +
+      '</div>' +
+      '<div class="tela-linha" style="align-items:center;margin-top:14px"><button type="button" class="btn" id="cod-copiar">Copiar</button>' +
+      '<label class="tela-marca"><input type="checkbox" id="cod-anotei"> anotei em lugar seguro</label>' +
+      '<button type="button" class="btn ouro" id="cod-ok" disabled>Continuar</button></div>',
+  );
+  const e = f.querySelector('#cod-ok');
+  f.querySelector('#cod-anotei').onchange = (a) => {
+    e.disabled = !a.target.checked;
+  };
+  f.querySelector('#cod-copiar').onclick = () => {
+    try {
+      navigator.clipboard?.writeText(a);
+      f.querySelector('#cod-copiar').textContent = tr('copiado ✓');
+    } catch {}
+  };
+  e.onclick = () => {
+    f.remove();
+    b?.();
+  };
+}
+function formRecuperar(a) {
+  const f = painel(
+    '<b class="tela-tit">Esqueci a senha</b>' +
+      '<p class="tela-txt">Use o código de recuperação que apareceu quando você criou a conta. Se perdeu os dois, chame no Discord do jogo.</p>' +
+      '<label class="tela-campo">usuário<input id="rec-usuario" autocomplete="username" autocapitalize="none" spellcheck="false"></label>' +
+      '<label class="tela-campo">código de recuperação<input id="rec-codigo" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" style="text-transform:uppercase"></label>' +
+      '<label class="tela-campo" style="margin-bottom:12px">senha nova<input id="rec-senha" type="password" autocomplete="new-password"></label>' +
+      '<div class="tela-linha"><button type="button" class="btn" id="rec-nao">Voltar</button><button type="button" class="btn ouro" id="rec-sim" style="flex:1">Trocar a senha</button></div>' +
+      '<div id="rec-aviso" class="tela-msg"></div>',
+  );
+  for (const d of f.querySelectorAll('input'))
+    d.addEventListener('keydown', (a) => {
+      a.stopPropagation();
+      if (a.key === 'Enter') {
+        a.preventDefault();
+        f.querySelector('#rec-sim').click();
+      }
+      if (a.key === 'Escape') f.remove();
+    });
+  setTimeout(() => f.querySelector('#rec-usuario')?.focus(), 50);
+  const b = (t) => {
+    f.querySelector('#rec-aviso').textContent = tr(t);
+  };
+  f.querySelector('#rec-nao').onclick = () => f.remove();
+  f.querySelector('#rec-sim').onclick = async () => {
+    const u = f.querySelector('#rec-usuario').value.trim(),
+      c = f.querySelector('#rec-codigo').value.trim(),
+      d = f.querySelector('#rec-senha').value.trim();
+    if (!u || !c) return b('Preencha o usuário e o código.');
+    if (d.length < 6) return b('Senha nova: pelo menos 6 caracteres.');
+    b('Trocando…');
+    const r = await ctx.conta.recuperar(u, c, d);
+    if (!r.ok) return b(r.erro || 'Não deu.');
+    f.remove();
+    ctx.conta.codigoNovo?.();
+    if (r.codigo) mostrarCodigo(r.codigo, () => avisar(a, 'Senha trocada. Entre com ela.', false), { pop: a });
+    else avisar(a, 'Senha trocada. Entre com ela.', false);
+  };
+}
+export function mostrar(b, L, c = {}) {
+  layout = L || layout;
+  ctx = c || ctx;
+  const d = layout?.telas?.[ori()]?.[b] || layout?.telas?.pc?.[b];
+  if (!d) {
+    console.warn('telas: não há maquete de ' + b);
+    return null;
+  }
+  fechar();
+  const e = Popup.montar(
+    { ...d, semMargem: true },
+    {
+      acao: (a, c) => acao(b, a, c, e),
+      abre: (a) => {
+        const m = /^tela-(\w+)$/.exec(a || '');
+        if (m) {
+          if (m[1] === 'cadastro' && ctx?.conta?.irParaEntrada?.()) return true;
+          mostrar(m[1], layout, ctx);
+          return true;
+        }
+        return false;
+      },
+      fechar: () => {
+        if (atual !== e) return;
+        atual = null;
+        tirarFundo();
+        e.remove();
+      },
+    },
+  );
+  e.style.zIndex = ctx?.conta ? '600' : '200';
+  e.classList.add('pf-tela');
+  e.__tela = b;
+  e.__acoes = new Map();
+  const f = !!d.v2;
+  if (f) {
+    e.classList.add('pf-tela-v2');
+    fundoDaTela(e, FUNDOS[b]);
+  }
+  estiloTela();
+  if (!f)
+    for (const g of e.querySelectorAll('[data-fig^="painel-"]')) {
+      const j = g.style.backgroundImage;
+      if (!j || j === 'none' || g.querySelector(':scope > .tela-moldura')) continue;
+      const m = document.createElement('div');
+      m.className = 'tela-moldura';
+      Object.assign(m.style, {
+        position: 'absolute',
+        inset: '0',
+        backgroundImage: j,
+        backgroundSize: '100% 100%',
+        backgroundRepeat: 'no-repeat',
+        pointerEvents: 'none',
+        zIndex: '15',
+      });
+      g.style.backgroundImage = 'none';
+      g.appendChild(m);
+    }
+  if (b === 'login' && ctx?.conta?.recuperar && !e.querySelector('[data-tagval="recuperar-senha"]')) {
+    const k = e.querySelector('[data-fig="btn-entrar"]');
+    const l = document.createElement('button');
+    l.type = 'button';
+    l.id = 'tela-esqueci';
+    l.textContent = 'esqueci minha senha';
+    const x = parseFloat(k?.style.left) || 0,
+      y = (parseFloat(k?.style.top) || 0) + (parseFloat(k?.style.height) || 0) + 16,
+      w = parseFloat(k?.style.width) || 200;
+    l.style.cssText =
+      'position:absolute;left:' +
+      x +
+      'px;top:' +
+      y +
+      'px;width:' +
+      w +
+      'px;z-index:30;background:none;border:0;color:#cfd8ee;text-decoration:underline;cursor:pointer;font:inherit;font-size:13px';
+    e.appendChild(l);
+    l.onclick = () => formRecuperar(e);
+  }
+  const H = b === 'personagem' || b === 'personalizar' ? TelasP.montar(b, e, d, ctx) : null;
+  if (H) {
+    e.__cb.aba = (a) => H.aba(a);
+    e.__cb.acao = (a, b) => H.acao(a, b);
+    const n = e.__cb.abre;
+    e.__cb.abre = (a, b) => H.abre(a, b) || n(a, b);
+    for (const x of e.querySelectorAll('[data-tag="fecha"][data-tagval="seletor-cor"]'))
+      x.addEventListener('click', () => H.fechou?.());
+  } else {
+    Popup.imagem(e, 'fundo', FUNDOS.login);
+    Popup.imagem(e, 'logo', './ui/figma/backgrounds/logo-pokefable.png');
+    Popup.texto(e, 'versao', ctx?.conta ? VERSAO : 'v0.1.0 · prévia');
+  }
+  for (const o of H ? [] : [...e.querySelectorAll('input')].filter((i) => !i.closest('.pf-extra'))) {
+    const p = o.closest('[data-fig]')?.dataset.fig || '';
+    if (o.type === 'search') o.type = 'text';
+    o.autocomplete = /senha/.test(p)
+      ? b === 'cadastro'
+        ? 'new-password'
+        : 'current-password'
+      : /email/.test(p)
+        ? 'email'
+        : 'username';
+    o.autocapitalize = 'none';
+    o.spellcheck = false;
+    o.name = p.replace(/^campo-/, '');
+    if (f) o.style.color = '#EAF6FB';
+    o.addEventListener('keydown', (a) => {
+      if (a.key === 'Enter') {
+        a.preventDefault();
+        acao(b, b === 'login' ? 'login' : 'cadastrar', o, e);
+      }
+    });
+    o.addEventListener('input', () => {
+      if (o.closest('.pf-tela')?.querySelector('.tela-aviso.erro')) avisar(e, '');
+    });
+    if (ctx?.conta)
+      o.addEventListener(
+        'keydown',
+        (a) => {
+          if (a.key === 'Escape') a.stopImmediatePropagation();
+        },
+        true,
+      );
+  }
+  if (b === 'cadastro') aceiteNoCadastro(e);
+  const h = f && (b === 'login' || b === 'cadastro');
+  if (h) prepararEntrada(e);
+  Popup.abrir(e);
+  atual = e;
+  if (h) {
+    vigiarCaixas();
+    sincronizarEnfeites();
+  }
+  if (!(H && toque()))
+    setTimeout(() => {
+      const a = document.activeElement;
+      if (!a || a === document.body || !e.contains(a)) e.querySelector('input')?.focus();
+    }, 50);
+  if (b === 'cadastro' && ctx?.conta?.alfa) caixaAlphaKey(e);
+  else if (b !== 'cadastro') chaveAlfa = null;
+  if (b === 'login' || b === 'cadastro') {
+    if (f && e.querySelector('[data-fig="seletor-idioma"]')) idiomaDaMaquete(e);
+    else barraIdioma(e, b);
+    if (f) discordDaMaquete(e);
+    if (!(f && e.querySelector('[data-fig="btn-discord"]'))) botaoDiscord(e);
+  }
+  if (f) {
+    ancorarCantos(e);
+    caberTextos(e);
+    document.fonts?.ready?.then(() => {
+      if (e.isConnected) caberTextos(e);
+    });
+  }
+  return e;
+}
+function caberTextos(a) {
+  for (const b of a.querySelectorAll('[data-txt], .pf-rotulo')) {
+    if (!b.getClientRects().length) continue;
+    if (b.dataset.regra === 'encolher') {
+      Hud.encolher(b);
+      continue;
+    }
+    const c = +b.dataset.fsMaquete || parseFloat(getComputedStyle(b).fontSize) || 0;
+    if (!c) continue;
+    b.dataset.fsMaquete = c;
+    b.style.fontSize = c + 'px';
+    for (let d = c; d > c * 0.75 && b.scrollWidth > b.clientWidth + 0.5;) {
+      d = Math.max(c * 0.75, d - 0.5);
+      b.style.fontSize = d + 'px';
+    }
+  }
+}
+function fundoDaTela(a, b) {
+  if (!fundoEl) {
+    fundoEl = document.createElement('div');
+    fundoEl.className = 'pf-tela-fundo';
+    document.body.appendChild(fundoEl);
+  }
+  Object.assign(fundoEl.style, {
+    position: 'fixed',
+    inset: '0',
+    pointerEvents: 'auto',
+    zIndex: String((+a.style.zIndex || 200) - 1),
+    background: '#070b16' + (b ? ' url(' + b + ') center / cover no-repeat' : ''),
+  });
+  const v = a.querySelector('[data-var="fundo"]');
+  if (v) v.style.display = 'none';
+}
+function areasSeguras() {
+  const d = document.createElement('div');
+  d.style.cssText =
+    'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+  document.body.appendChild(d);
+  const a = getComputedStyle(d),
+    c = (k) => parseFloat(a[k]) || 0,
+    r = { t: c('paddingTop'), r: c('paddingRight'), b: c('paddingBottom'), l: c('paddingLeft') };
+  d.remove();
+  return r;
+}
+function ancorarCantos(c) {
+  const d = c?.__def;
+  if (!d?.v2 || !c.isConnected) return;
+  const s = c.__escala || 1,
+    e = Math.max(0, (innerWidth / s - d.w) / 2),
+    f = Math.max(0, (innerHeight / s - d.h) / 2),
+    a = areasSeguras();
+  for (const g of CANTOS) {
+    const i = c.querySelector('[data-fig="' + g + '"]');
+    if (!i) continue;
+    const j = i.parentElement,
+      m = (n, k) => parseFloat(n?.style?.[k]) || 0;
+    const x = m(j, 'left') + m(i, 'left') + m(i, 'width') / 2,
+      y = m(j, 'top') + m(i, 'top') + m(i, 'height') / 2;
+    const o = x > d.w / 2,
+      p = y > d.h / 2;
+    const q = o ? e - a.r / s : -e + a.l / s,
+      u = p ? f - a.b / s : -f + a.t / s;
+    i.style.translate = q.toFixed(1) + 'px ' + u.toFixed(1) + 'px';
+  }
+}
+addEventListener('resize', () => {
+  if (atual)
+    requestAnimationFrame(() => {
+      if (!atual) return;
+      ancorarCantos(atual);
+      colocarVeu(atual);
+      const a = atual.querySelector('.tela-aviso');
+      if (a && atual.__def?.v2 && a.style.display !== 'none') colocarAvisoV2(atual, a);
+    });
+});
+function idiomaDaMaquete(a) {
+  for (const [l, b] of Object.entries(I18n.IDIOMAS)) {
+    const g = a.querySelector('[data-fig="idioma-' + l + '"]');
+    if (!g) continue;
+    const c = I18n.idioma() === l;
+    Popup.textoCru(a, 'idioma', l.toUpperCase(), g);
+    for (const m of g.querySelectorAll(':scope > [data-fig="marca-ativa"]')) m.style.display = c ? 'block' : 'none';
+    for (const t of g.querySelectorAll('[data-cor-aba]')) t.style.color = c ? '#1D2B45' : '#EAF6FB';
+    g.title = b;
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-pressed', String(c));
+    g.dataset.ativo = c ? '1' : '0';
+  }
+}
+async function trocarIdioma(l, a) {
+  if (!I18n.IDIOMAS[l] || I18n.idioma() === l) return;
+  await I18n.definir(l);
+  ctx?.conta?.idioma?.(l);
+  mostrar(a, layout, ctx);
+}
+function discordDaMaquete(b) {
+  for (const g of b.querySelectorAll('[data-fig="btn-discord"], [data-fig="link-discord-alpha"]')) {
+    if (g.querySelector(':scope > .tela-discord-link')) continue;
+    const c = g.querySelector('[data-var="icone-discord"]'),
+      d = g.querySelector('.pf-rotulo'),
+      e = g.dataset.fig === 'btn-discord';
+    if (c) {
+      c.innerHTML = LOGO_DISCORD_CAIXA;
+      Object.assign(c.style, { color: d?.style.color || '#EAF6FB', display: 'block' });
+    }
+    const a = document.createElement('a');
+    a.className = 'tela-discord-link';
+    a.href = DISCORD;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.title = tr('Comunidade, novidades e sorteios de chave');
+    a.setAttribute('aria-label', e ? 'Discord' : d?.textContent || 'Discord');
+    Object.assign(a.style, {
+      position: 'absolute',
+      inset: '0',
+      zIndex: '60',
+      pointerEvents: 'auto',
+      borderRadius: e ? '12px' : '6px',
+    });
+    a.addEventListener('click', (a) => a.stopPropagation());
+    g.appendChild(a);
+  }
+}
+function botaoDiscord(b) {
+  if (b.querySelector('.tela-discord')) return;
+  const a = document.createElement('a');
+  a.className = 'tela-discord';
+  a.href = DISCORD;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.title = tr('Comunidade, novidades e sorteios de chave');
+  a.innerHTML = LOGO_DISCORD + '<span>' + tr('Discord') + '</span>';
+  b.appendChild(a);
+}
+function barraIdioma(a, c) {
+  if (a.querySelector('.tela-idioma')) return;
+  const b = document.createElement('div');
+  b.className = 'tela-idioma';
+  for (const [l, d] of Object.entries(I18n.IDIOMAS)) {
+    const e = document.createElement('button');
+    e.type = 'button';
+    e.textContent = l.toUpperCase();
+    e.title = d;
+    e.classList.toggle('on', I18n.idioma() === l);
+    e.onclick = async () => {
+      if (I18n.idioma() === l) return;
+      await I18n.definir(l);
+      ctx?.conta?.idioma?.(l);
+      mostrar(c, layout, ctx);
+    };
+    b.appendChild(e);
+  }
+  a.appendChild(b);
+}
+function estiloTela() {
+  if (document.getElementById('tela-css')) return;
+  const a = document.createElement('style');
+  a.id = 'tela-css';
+  a.textContent = `
 .pf-tela input:-webkit-autofill, .pf-tela input:-webkit-autofill:hover, .pf-tela input:-webkit-autofill:focus, .pf-tela input:autofill{
   -webkit-box-shadow: 0 0 0 1000px #151e30 inset; box-shadow: 0 0 0 1000px #151e30 inset; -webkit-text-fill-color: #b8c2d9; caret-color: #b8c2d9;
   border-radius: 6px; transition: background-color 99999s ease-out 0s; }
@@ -88,4 +577,1022 @@ import*as I18n from"./i18n.mjs";import{t as tr,tHtml}from"./i18n.mjs";import*as 
 .pf-tela-v2 .tela-selo-brilho{ position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 70; overflow: hidden; pointer-events: none;
   clip-path: polygon(29.3% 0, 70.7% 0, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0 70.7%, 0 29.3%); }
 .pf-tela-v2 .tela-selo-brilho > i{ position: absolute; top: -15%; bottom: -15%; left: -45%; width: 36%; background: linear-gradient(90deg, #fff0, #ffffffa8 50%, #fff0); transform: skewX(-18deg); }
-@media (pointer: coarse){ .tela-caixa .tela-campo input, .tela-caixa #alpha-chave{ font-size: 16px; } }`;document.head.appendChild(a)}export function fechar(){const p=atual;atual=null;if(p){Popup.fechar(p);p.remove()}tirarFundo()}function tirarFundo(){if(fundoEl){fundoEl.remove();fundoEl=null}}export function atualizando(){if(document.getElementById("tela-atualizando"))return;const f=painel("<b class=\"tela-tit\">O jogo foi atualizado</b>"+"<p class=\"tela-txt\" style=\"margin-bottom:0\">Voltando em um instante…</p>");f.id="tela-atualizando";f.style.zIndex="1200"}export function derrubado(a="Você entrou de outro lugar.",b=null,c={}){a=c.cru?String(a??""):tr(a);if(document.getElementById("tela-derrubado"))return;estiloTela();const d=b==="fechado"||b==="banido"?(b==="banido"?"<p class=\"tela-txt\" style=\"margin:10px 0 0\">Punido por engano? Peça revisão no Discord.</p>":"")+"<p style=\"margin:12px 0 16px\"><a class=\"tela-alpha-discord\" href=\""+DISCORD+"\" target=\"_blank\" rel=\"noopener noreferrer\">"+LOGO_DISCORD+tr("Entre no nosso Discord")+"</a></p>":b==="apagada"||b==="sessao"?"<div style=\"height:16px\"></div>":"<p class=\"tela-txt\" style=\"margin:10px 0 16px\">A sua conta só joga de um lugar por vez.</p>";const f=painel("<b class=\"tela-tit\"></b>"+d+"<button type=\"button\" class=\"btn ouro\" id=\"der-voltar\" style=\"width:100%\">Ir pro login</button>");f.querySelector(".tela-tit").textContent=a;f.id="tela-derrubado";f.style.zIndex="1200";f.querySelector("#der-voltar").onclick=()=>{if(typeof c.voltar==="function"){try{c.voltar();return}catch{}}try{for(const k of["conta.token","conta.usuario","conta.rev","conta.dono","conta.sujo","conta.gm"])localStorage.removeItem(k)}catch{}location.replace(new URL("?jogar=1",location.href).toString())}}export const temTelaTreinador=(L=layout)=>!!(L?.telas?.pc?.personagem&&L?.telas?.pc?.personalizar);export function criarTreinador(L,c={}){layout=L||layout;if(!temTelaTreinador(layout))return null;TelasP.iniciar(c);return new Promise(a=>{let b=false;const d=p=>{if(b)return;b=true;TelasP.encerrar();fechar();removeEventListener("keydown",e,true);a(p)};const e=a=>{if(a.key!=="Escape")return;if(TelasP.fecharTopo()){a.stopImmediatePropagation();a.preventDefault();return}if(c.cancelavel){a.stopImmediatePropagation();d(null)}};addEventListener("keydown",e,true);mostrar("personagem",layout,{...c,aoPronto:d})})}export const aberta=()=>!!atual;function avisar(a,b,c=false,d=false){if(!d)b=tr(b);if(a?.__def?.v2)return avisarV2(a,b,c);const e=a.querySelector("[data-fig=\"btn-entrar\"],[data-fig=\"btn-cadastrar\"]");const f=e?.parentElement||a;let g=f.querySelector(":scope > .tela-aviso");if(!g){g=document.createElement("div");g.className="tela-aviso";const x=parseFloat(e?.style.left)||0,y=(parseFloat(e?.style.top)||0)+(parseFloat(e?.style.height)||0)+52,w=parseFloat(e?.style.width)||300;Object.assign(g.style,{position:"absolute",left:x-60+"px",top:y+"px",width:w+120+"px",textAlign:"center",font:"700 15px/1.3 \"Nunito Sans\", system-ui, sans-serif",pointerEvents:"none",textShadow:"0 1px 2px #000",zIndex:"5",padding:"6px 10px",borderRadius:"8px",background:"#06080dcc",display:"none"});f.appendChild(g)}g.textContent=b;g.style.color=c?"#ffb3b3":"#cfe3ff";g.style.display=b?"block":"none";return g}function avisarV2(a,b,c){const d=a.querySelector("[data-fig=\"txt/aviso\"]");if(d){Popup.textoCru(a,"aviso",b,d.parentElement);d.style.display=b?d.dataset.display||"flex":"none";d.style.color=c?"#FFB3B3":"";return d}const e=a.querySelector("[data-fig^=\"painel-\"]"),f=e?.parentElement||a;let g=f.querySelector(":scope > .tela-aviso");if(!g){g=document.createElement("div");g.className="tela-aviso";g.setAttribute("role","status");g.setAttribute("aria-live","polite");g.style.display="none";f.appendChild(g)}g.textContent=b;g.classList.toggle("erro",!!c);g.style.display=b?"block":"none";if(b)colocarAvisoV2(a,g);return g}function tintaDe(a){try{const r=document.createRange();r.selectNodeContents(a);const b=r.getBoundingClientRect();if(b.width)return b}catch{}return a.getBoundingClientRect()}function colocarAvisoV2(a,d){const e=a.querySelector("[data-fig^=\"painel-\"]"),f=d.parentElement;if(!e||!f)return;const g=k=>parseFloat(e.style[k])||0,j=(a.__def?.w||1920)<1200,m=j?6:12;const s=a.__escala||1,o=f.getBoundingClientRect();const p=r=>({l:(r.left-o.left)/s,r:(r.right-o.left)/s,t:(r.top-o.top)/s,b:(r.bottom-o.top)/s});const q=CANTOS.map(n=>a.querySelector("[data-fig=\""+n+"\"]")).filter(c=>c&&c.getClientRects().length).map(c=>p(tintaDe(c)));const u=g("top")+g("height")+(j?5:10),v=(innerHeight-o.top)/s-4,x=areasSeguras();let y=g("left")+m,z=g("left")+g("width")-m,_=j?10.5:16,$=false;const aa=j?8.5:13;d.style.padding=j?"4px 8px":"7px 12px";for(let i=0;i<20;i++){Object.assign(d.style,{left:y+"px",top:u+"px",width:Math.max(120,z-y)+"px",fontSize:_+"px"});const h=d.offsetHeight,c=q.find(k=>k.b>u-3&&k.t<u+h+3&&k.r>y-6&&k.l<z+6);if(c&&z-y>160){if((c.l+c.r)/2>(y+z)/2)z=c.l-6;else y=c.r+6;continue}if(u+h>v&&!$){$=true;y=Math.min(y,(x.l+8-o.left)/s);z=Math.max(z,(innerWidth-x.r-8-o.left)/s);continue}if(u+h>v&&_>aa){_=Math.max(aa,_-0.5);continue}if(u+h>v)d.style.top=Math.max(0,v-h)+"px";break}}const valor=(a,b)=>(a.querySelector("[data-fig=\""+b+"\"] input")?.value||"").trim();let ocupado=false;let chaveAlfa=null;async function caixaAlphaKey(b,c=""){if(!c){const a=await ctx.conta.alfa();if(!a.chaveObrigatoria){chaveAlfa=null;return}if(chaveAlfa||atual!==b)return}const d=b?.__def?.v2?Popup.extra(b,"dialogo-alpha-key"):null;if(d)return alphaV2(b,d,c);if(document.getElementById("tela-alpha"))return;const f=painel("<b class=\"tela-tit\">Alpha Key</b>"+"<p class=\"tela-txt\">O alfa é fechado: pra criar conta você precisa da chave que recebeu. Cole ela aqui:</p>"+"<input id=\"alpha-chave\" placeholder=\"ALPHA-XXXX-XXXX\" autocapitalize=\"characters\" autocomplete=\"off\" spellcheck=\"false\">"+"<div id=\"alpha-aviso\" class=\"tela-msg\"></div>"+"<div class=\"tela-linha\"><button type=\"button\" class=\"btn\" id=\"alpha-nao\">Voltar</button><button type=\"button\" class=\"btn ouro\" id=\"alpha-sim\" style=\"flex:1\">Continuar</button></div>"+"<p class=\"tela-pe\">"+tr("Não tem uma chave?")+" "+"<a class=\"tela-alpha-discord\" href=\""+DISCORD+"\" target=\"_blank\" rel=\"noopener noreferrer\">"+LOGO_DISCORD+tr("Peça no nosso Discord")+"</a></p>");f.id="tela-alpha";const e=f.querySelector("#alpha-chave"),g=f.querySelector("#alpha-sim"),h=t=>{f.querySelector("#alpha-aviso").textContent=tr(t)};if(c)h(c);f.querySelector("#alpha-nao").onclick=()=>{f.remove();chaveAlfa=null;mostrar("login",layout,ctx)};const i=async()=>{const v=e.value.trim();if(!v)return h("Cole a sua Alpha Key.");g.disabled=true;const r=await ctx.conta.validarChave(v);g.disabled=false;if(!r.ok)return h(r.erro||"Chave inválida.");chaveAlfa=r.chave;f.remove();avisar(b,"Alpha Key aceita ✓ — agora crie a sua conta.");b.querySelector("input")?.focus()};g.onclick=i;e.addEventListener("keydown",a=>{if(a.key==="Enter"){a.preventDefault();i()}if(a.key==="Escape")a.stopImmediatePropagation()},true);setTimeout(()=>e.focus(),50)}const semMovimento=()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch{return false}};const ehCelular=a=>(a?.__def?.w||1920)<1200;const comIds=(a,b)=>{for(const[c,d]of a)if(c){if(b)c.id=d;else if(c.id===d)c.removeAttribute("id")}};const ocupar=(a,b)=>{if(!a)return;if(b){a.dataset.ocupado=a.dataset.desligado="1";a.setAttribute("aria-busy","true")}else{delete a.dataset.ocupado;delete a.dataset.desligado;a.removeAttribute("aria-busy")}};function prepararEntrada(a){for(const[b,c]of ESPACO_LETRA)for(const d of a.querySelectorAll(b)){d.style.letterSpacing=c;d.style.paddingLeft=c}for(const e of a.querySelectorAll("[data-txt], [data-txt-oculto], .pf-rotulo, input"))if(/Roboto Mono/.test(e.style.fontFamily))e.style.fontFamily=MONO;for(const f of a.querySelectorAll(".pf-extra [data-escondido=\"1\"]"))f.style.display="none"}function prepararCaixa(d){if(!d||d.dataset.pronta)return d;d.dataset.pronta="1";d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");const a=d.querySelector(":scope > [data-fig^=\"titulo-\"]");if(a){a.id=a.id||"tit-"+d.dataset.fig;d.setAttribute("aria-labelledby",a.id)}d.querySelector("[data-txt=\"aviso-chave\"]")?.setAttribute("role","alert");for(const b of["keydown","keyup"])d.addEventListener(b,a=>a.stopPropagation());return d}function botaoDaCaixa(a,b){if(!a)return null;if(!a.dataset.botao){a.dataset.botao="1";a.setAttribute("role","button");a.tabIndex=0;a.addEventListener("keydown",b=>{if(b.key==="Enter"||b.key===" "){b.preventDefault();b.stopPropagation();a.click()}})}if(b)a.setAttribute("aria-label",b);return a}function colocarVeu(a,v=a?.querySelector(":scope > .tela-veu")){if(!v||!a?.__def)return;const s=a.__escala||1,W=innerWidth/s,H=innerHeight/s,d=a.__def;Object.assign(v.style,{left:(d.w-W)/2-2+"px",top:(d.h-H)/2-2+"px",width:W+4+"px",height:H+4+"px"})}function veu(a,b,c=false){let v=a.querySelector(":scope > .tela-veu");if(!b){if(v)v.style.display="none";return}if(!v){v=document.createElement("div");v.className="tela-veu";v.setAttribute("aria-hidden","true");a.appendChild(v)}colocarVeu(a,v);const d=v.style.display==="block";v.style.display="block";if(c&&!d)v.animate([{opacity:0},{opacity:1}],{duration:180,easing:"ease-out"})}function sincronizarEnfeites(){const a=atual;if(!a?.__def?.v2||!(a.__tela==="login"||a.__tela==="cadastro"))return;const b=!!a.querySelector(":scope > .pf-extra.tela-caixa-v2")||!!document.querySelector("body > .tela-extra");for(const c of a.querySelectorAll(":scope > [data-fig^=\"tela-\"] > [data-fig=\"placa-beta\"], :scope > [data-fig^=\"tela-\"] > [data-fig=\"selo-beta\"]"))c.style.visibility=b?"hidden":"";for(const d of a.children)if(!d.classList.contains("pf-extra")&&!d.classList.contains("tela-veu"))d.inert=b}let vigiaCaixas=null;function vigiarCaixas(){if(vigiaCaixas||typeof MutationObserver!=="function")return;vigiaCaixas=new MutationObserver(()=>sincronizarEnfeites());vigiaCaixas.observe(document.body,{childList:true})}function abrirCaixa(a,b,{animar:c=true}={}){const d=prepararCaixa(Popup.extra(a,b));if(!d)return null;const e=ehCelular(a),T=ONDE_CAIXA[e?"deitado":"pc"][b]||{},w=parseFloat(d.style.width)||0;const[x,y]=T[a.__tela]||T.cadastro||[((a.__def?.w||w)-w)/2,24];const f=d.classList.contains("tela-caixa-v2"),g=c&&!f&&!semMovimento();veu(a,true,g);Popup.mostrarExtra(a,b,true,{x,y:y-(e?a.__subiu||0:0)});d.classList.add("tela-caixa-v2");sincronizarEnfeites();caberTextos(d);centrarLinhas(d);if(!d.__fonte&&document.fonts?.status!=="loaded"){d.__fonte=true;document.fonts?.ready?.then(()=>{if(d.classList.contains("tela-caixa-v2")){caberTextos(d);centrarLinhas(d)}})}if(g)d.animate([{transform:"scale(.9)",opacity:0},{transform:"scale(1)",opacity:1}],{duration:180,easing:"cubic-bezier(.2,.8,.3,1)"});return d}function centrarLinhas(a){for(const b of a?.querySelectorAll("[data-linhas]")||[]){if(b.style.display!=="-webkit-box"||b.style.webkitBoxPack!=="center"||b.dataset.faixa||!b.getClientRects().length)continue;b.style.paddingTop="0px";const c=parseFloat(b.style.lineHeight)||0;if(!c||!b.textContent)continue;const d=b.getBoundingClientRect(),k=d.height/(b.offsetHeight||1)||1,r=document.createRange();r.selectNodeContents(b);const n=Math.max(1,Math.min(+b.dataset.linhas||1,Math.round(r.getBoundingClientRect().height/k/c)));const e=b.clientHeight-n*c,q=[...r.getClientRects()].find(x=>x.height);const f=q?(q.top-d.top)/k-(c-q.height/k)/2:0;if(e>1&&f<e/4)b.style.paddingTop=e/2+"px"}}function fecharCaixa(a,b){const d=Popup.extra(a,b);if(!d)return;Popup.mostrarExtra(a,b,false);d.classList.remove("tela-caixa-v2");if(!a.querySelector(":scope > .pf-extra.tela-caixa-v2"))veu(a,false);sincronizarEnfeites()}function alphaV2(a,d,b=""){if(atual!==a)return;const c=d.querySelector("[data-fig=\"campo-chave\"] input"),f=d.querySelector("[data-fig=\"btn-alpha-voltar\"]"),g=d.querySelector("[data-fig=\"btn-alpha-continuar\"]");const h=[[d,"tela-alpha"],[c,"alpha-chave"],[f,"alpha-nao"],[g,"alpha-sim"],[d.querySelector("[data-txt=\"aviso-chave\"]"),"alpha-aviso"]];const i=t=>{const b=Popup.textoCru(a,"aviso-chave",t?tr(t):"",d);if(b){b.style.display=t?b.dataset.display||"flex":"none";if(t)centrarLinhas(d)}};if(!d.classList.contains("tela-caixa-v2")){prepararCaixa(d);Popup.rotulo(a,"texto-alpha",d);botaoDaCaixa(f,tr("Voltar"));botaoDaCaixa(g,tr("Continuar"));if(c&&!c.dataset.chave){c.dataset.chave="1";c.type="text";c.autocomplete="off";c.autocapitalize="characters";c.spellcheck=false;c.name="alpha-key";c.setAttribute("aria-label","Alpha Key");Object.assign(c.style,{color:"#EAF6FB",textAlign:"center"});c.addEventListener("keydown",b=>{if(b.key==="Enter"){b.preventDefault();a.__acoes?.get("alpha-continuar")?.()}if(b.key==="Escape")b.stopImmediatePropagation()},true)}if(c)c.value="";const j=()=>{i("");comIds(h,false);for(const k of["alpha-voltar","alpha-continuar"])a.__acoes.delete(k);fecharCaixa(a,"dialogo-alpha-key")};a.__acoes.set("alpha-voltar",()=>{j();chaveAlfa=null;mostrar("login",layout,ctx)});a.__acoes.set("alpha-continuar",async()=>{const v=(c?.value||"").trim();if(!v)return i("Cole a sua Alpha Key.");if(g?.dataset.ocupado)return;ocupar(g,true);let r;try{r=await ctx.conta.validarChave(v)}catch(e){r={ok:false,erro:String(e?.message||e)}}ocupar(g,false);if(atual!==a||!d.classList.contains("tela-caixa-v2"))return;if(!r?.ok)return i(r?.erro||"Chave inválida.");chaveAlfa=r.chave;j();avisar(a,"Alpha Key aceita ✓ — agora crie a sua conta.");a.querySelector(":scope > [data-fig^=\"tela-\"] input")?.focus()});comIds(h,true);abrirCaixa(a,"dialogo-alpha-key");setTimeout(()=>{if(d.classList.contains("tela-caixa-v2"))c?.focus()},50)}i(b)}function continuarLigado(a,b,c){if(!b)return;if(b.dataset.arteLigada==null)b.dataset.arteLigada=b.style.backgroundImage||"";if(c){delete b.dataset.desligado;b.style.backgroundImage=b.dataset.arteLigada;b.dataset.estado="ligado"}else{Popup.estadoRef(a,b,"btn-continuar","desligado");b.dataset.desligado="1"}for(const d of b.querySelectorAll(":scope > [data-fig=\"fx/apagado\"]"))d.style.display=c?"none":"";b.setAttribute("aria-disabled",String(!c))}const selecionarTexto=a=>{try{const r=document.createRange();r.selectNodeContents(a);const s=getSelection();s.removeAllRanges();s.addRange(r)}catch{}};function codigoV2(a,b,c,{animar:e=true}={}){const d=prepararCaixa(Popup.extra(a,"dialogo-codigo"));if(!d)return null;Popup.rotulo(a,"texto-codigo",d);Popup.rotulo(a,"rotulo-anotei",d);Popup.texto(a,"copiar","Copiar",d);const f=Popup.textoCru(a,"codigo",b,d);const g=botaoDaCaixa(d.querySelector("[data-fig=\"btn-copiar\"]"),tr("Copiar")),h=botaoDaCaixa(d.querySelector("[data-fig=\"btn-continuar\"]"),tr("Continuar"));const i=d.querySelector("[data-fig=\"btn-anotei\"]"),j=i?.querySelector("[data-txt=\"rotulo-anotei\"]"),l=i?.querySelector(":scope > [data-fig=\"marca-visto\"]");i?.querySelector(":scope > .tela-anotei-cx")?.remove();const m=document.createElement("input");m.type="checkbox";m.className="tela-anotei-cx";i?.appendChild(m);const n=()=>{if(l)l.style.display=m.checked?"":"none";continuarLigado(a,h,m.checked)};m.addEventListener("change",n);const o=[[d,"tela-codigo"],[f,"codigo-recuperacao"],[g,"cod-copiar"],[m,"cod-anotei"],[j,"cod-anotei-txt"],[h,"cod-ok"]];comIds(o,true);if(j)m.setAttribute("aria-labelledby","cod-anotei-txt");else m.setAttribute("aria-label",tr("anotei em lugar seguro"));n();let q=d.querySelector(":scope > .tela-sr");if(!q){q=document.createElement("span");q.className="tela-sr";q.setAttribute("role","status");q.setAttribute("aria-live","polite");d.appendChild(q)}q.textContent="";a.__acoes.set("copiar-codigo",()=>{const c=()=>{if(!d.classList.contains("tela-caixa-v2"))return;Popup.texto(a,"copiar","copiado ✓",d);g?.setAttribute("aria-label",tr("copiado ✓"));q.textContent=tr("copiado ✓")};try{const p=navigator.clipboard?.writeText(b);if(p?.then)p.then(c,()=>selecionarTexto(f));else selecionarTexto(f)}catch{selecionarTexto(f)}});a.__acoes.set("anotei",n);a.__acoes.set("continuar",()=>{if(!m.checked)return;comIds(o,false);m.remove();for(const k of["copiar-codigo","anotei","continuar"])a.__acoes.delete(k);fecharCaixa(a,"dialogo-codigo");c?.()});abrirCaixa(a,"dialogo-codigo",{animar:e});if(!toque())setTimeout(()=>{if(d.classList.contains("tela-caixa-v2"))g?.focus()},50);return d}function boasVindas(a,e,f){const d=a?.__def?.v2?prepararCaixa(Popup.extra(a,"dialogo-boas-vindas")):null;if(!d||!Popup.extra(a,"dialogo-codigo"))return mostrarCodigo(e,f,{pop:a});avisar(a,"");Popup.texto(a,"boas-vindas","Sua conta de treinador está pronta.",d);const b=botaoDaCaixa(d.querySelector("[data-fig=\"btn-boas-vindas\"]"),tr("Continuar"));const g=[[d,"tela-boas-vindas"],[b,"bv-continuar"]];comIds(g,true);a.__acoes.set("boas-vindas",async()=>{a.__acoes.delete("boas-vindas");const P="perspective(1100px) rotateY(";let b=null;if(!semMovimento()){b=d.animate([{transform:P+"0deg)"},{transform:P+"90deg)"}],{duration:180,easing:"ease-in",fill:"forwards"});await b.finished.catch(()=>{})}if(atual!==a)return;const c=codigoV2(a,e,f,{animar:false});comIds(g,false);fecharCaixa(a,"dialogo-boas-vindas");b?.cancel();if(c&&!semMovimento())c.animate([{transform:P+"90deg)"},{transform:P+"0deg)"}],{duration:180,easing:"ease-out"})});abrirCaixa(a,"dialogo-boas-vindas");const h=d.querySelector(":scope > [data-fig=\"selo-beta\"]");if(h&&!semMovimento())h.animate([{transform:"scale(1.4)",opacity:0},{transform:"scale(1)",opacity:1}],{duration:220,delay:300,easing:"cubic-bezier(.3,1.45,.55,1)",fill:"backwards"}).finished.then(()=>brilharSelo(h),()=>{});if(!toque())setTimeout(()=>{if(d.classList.contains("tela-caixa-v2"))b?.focus()},50);return d}function brilharSelo(a){if(!a?.isConnected||semMovimento())return;const b=document.createElement("div");b.className="tela-selo-brilho";b.setAttribute("aria-hidden","true");b.appendChild(document.createElement("i"));a.appendChild(b);b.firstChild.animate([{left:"-45%"},{left:"110%"}],{duration:600,easing:"ease-in-out"}).finished.then(()=>b.remove(),()=>b.remove())}function linhaAceite(b){const l=I18n.idioma();const c=document.createElement("label");c.className="tela-aceite";const d=document.createElement("input");d.type="checkbox";d.id=b;const e=document.createElement("span");e.className="tela-aceite-marca";e.setAttribute("aria-hidden","true");const f=document.createElement("span");f.className="tela-aceite-txt";for(const p of trT("Li e aceito os {termos} e a {privacidade}").split(/(\{termos\}|\{privacidade\})/).filter(Boolean)){const g=p==="{termos}"?"termos":p==="{privacidade}"?"privacidade":null;if(!g){f.appendChild(document.createTextNode(p));continue}const a=document.createElement("a");a.href="/portal/"+g+".html?idioma="+l;a.target="_blank";a.rel="noopener";a.textContent=trT(g==="termos"?"Termos de Uso":"Política de Privacidade");a.addEventListener("click",a=>a.stopPropagation());f.appendChild(a)}c.append(d,e,f);d.addEventListener("change",()=>{if(d.checked)c.classList.remove("pede")});for(const h of["keydown","keyup"])c.addEventListener(h,a=>a.stopPropagation());return{el:c,cx:d}}function aceiteNoCadastro(a){if(a.querySelector(".tela-aceite"))return true;return aceiteNaMaquete(a)}function aceiteNaMaquete(d){const e=d.querySelector("[data-fig=\"btn-cadastrar\"]"),f=e?.parentElement;if(!f)return false;const g=(a,k)=>parseFloat(a?.style?.[k])||0;const i=[...f.querySelectorAll(":scope > [data-fig^=\"campo-\"]")].filter(c=>g(c,"top")<g(e,"top"));if(!i.length)return false;const j=i.reduce((a,b)=>g(b,"top")>g(a,"top")?b:a);const l=(d.__def?.w||1920)<1200;const M=l?{antes:6,h:30,depois:8,letra:9.5,min:8}:{antes:10,h:40,depois:12,letra:15,min:11};const m=g(j,"top")+g(j,"height")+M.antes,n=g(e,"top");const o=Math.max(0,m+M.h+M.depois-n);if(o){for(const r of f.children){const y=g(r,"top"),h=g(r,"height");if(y>=n-0.5)r.style.top=y+o+"px";else if(h&&y+h>=n)r.style.height=h+o+"px"}f.style.height=g(f,"height")+o+"px";if(l){f.style.top=g(f,"top")-o/2+"px";const s=f.parentElement?.querySelector(":scope > [data-fig=\"selo-beta\"]");if(s)s.style.top=g(s,"top")-o/2+"px";d.__subiu=o/2}}const{el:p}=linhaAceite("tela-termos");Object.assign(p.style,{left:g(e,"left")+"px",top:m+"px",width:g(e,"width")+"px",height:M.h+"px",fontSize:M.letra+"px"});f.appendChild(p);const q=()=>{if(!p.isConnected||!p.getClientRects().length)return;let a=M.letra;p.style.fontSize=a+"px";while(p.scrollHeight>p.clientHeight+1&&a>M.min){a=Math.max(M.min,a-0.5);p.style.fontSize=a+"px"}};requestAnimationFrame(q);document.fonts?.ready?.then(q);return true}export function pedirAceiteTermos({versao:c=TERMOS_VERSAO,aceitar:a,sair:b}={}){return caixaDoAceite({id:"tela-termos-novos",texto:"Para continuar jogando, leia e aceite a versão atual dos Termos de Uso e da Política de Privacidade.",nao:"Sair da conta",sim:"Aceitar e continuar",aceitar:()=>a?.(c),aoNao:async()=>{if(typeof b==="function"){try{await b();return}catch{}}try{for(const k of["conta.token","conta.usuario","conta.rev","conta.dono","conta.sujo","conta.gm","passe.atual"])localStorage.removeItem(k)}catch{}location.replace(new URL("?jogar=1",location.href).toString())}})}function caixaDoAceite({id:a,texto:b,nao:c,sim:d,aceitar:g=null,aoNao:h=null}){estiloTela();return new Promise(i=>{document.getElementById(a)?.remove();const f=painel("");f.id=a;f.style.zIndex="1200";const j=f.querySelector(".tela-caixa");j.setAttribute("aria-labelledby",a+"-tit");const k=document.createElement("b");k.className="tela-tit";k.id=a+"-tit";k.textContent=trT("Termos de Uso e Política de Privacidade");const p=document.createElement("p");p.className="tela-txt";p.textContent=trT(b);const{el:l,cx:m}=linhaAceite(a+"-aceito");const n=document.createElement("div");n.className="tela-msg";n.setAttribute("role","alert");const o=document.createElement("div");o.className="tela-linha";const q=document.createElement("button");q.type="button";q.className="btn";q.textContent=trT(c);const s=document.createElement("button");s.type="button";s.className="btn ouro";s.style.flex="1";s.disabled=true;s.textContent=trT(d);o.append(q,s);j.append(k,p,l,n,o);m.addEventListener("change",()=>{s.disabled=!m.checked;if(m.checked)n.textContent=""});s.onclick=async()=>{if(!m.checked)return;if(g){s.disabled=true;n.textContent=trT("Enviando…");let r;try{r=await g()}catch(e){r={ok:false,erro:String(e?.message||e)}}s.disabled=false;if(!r?.ok){n.textContent=r?.erro?trT(r.erro):tr("Não deu. Tente de novo.");return}}f.remove();i(true)};q.onclick=async()=>{q.disabled=s.disabled=true;if(h&&(await h())!==true)return;f.remove();i(false)};f.addEventListener("keydown",a=>{a.stopPropagation();if(a.key==="Escape")a.preventDefault()});setTimeout(()=>m.focus(),50)})}function acao(b,a,c,d){const f=/^idioma-(\w+)$/.exec(a||"");if(f){trocarIdioma(f[1],b);return}if(a==="discord")return;const g=d?.__acoes?.get(a);if(g){g(c);return}if(!ctx?.conta){const i=t=>{ctx?.Chat?.sistema?.(t);console.log("telas:",t)};if(a==="login")i("Prévia: o login de verdade abre quando o jogo está com o servidor no ar (conta por usuário + senha).");else if(a==="cadastrar")i("Prévia: o cadastro de verdade abre quando o jogo está com o servidor no ar.");else if(a==="recuperar-senha")i("Prévia: recuperação de senha.");fechar();return}if(ocupado)return;const h=r=>{ocupado=false;if(!r?.ok&&r?.precisaChave){chaveAlfa=null;avisar(d,"");caixaAlphaKey(d,r.erro||"Precisa de uma Alpha Key.");return}if(!r?.ok&&r?.precisaCaptcha&&ctx.conta.irParaEntrada?.())return;if(!r?.ok)return reservaTermos(r?.erro)?avisar(d,trT(r.erro),true,true):avisar(d,r?.erro||"Não deu. Tente de novo.",true,!!r?.cru);if(typeof r.termosPendentes==="string"&&r.termosPendentes&&ctx.conta.aceitarTermos){avisar(d,"");return pedirAceiteTermos({versao:r.termosPendentes,aceitar:ctx.conta.aceitarTermos,sair:ctx.conta.sair}).then(()=>h({...r,termosPendentes:null}))}const a=ctx.conta.codigoNovo?.();if(a)return boasVindas(d,a,()=>{avisar(d,"Entrando…");fechar();ctx.aoEntrar?.(r)});avisar(d,"Entrando…");fechar();ctx.aoEntrar?.(r)};if(a==="login"){const u=valor(d,"campo-usuario"),s=valor(d,"campo-senha");if(!u||!s)return avisar(d,"Preencha usuário e senha.",true);ocupado=true;avisar(d,"Entrando…");ctx.conta.entrar(u,s).then(h,e=>h({ok:false,erro:String(e?.message||e)}))}else if(a==="cadastrar"){const u=valor(d,"campo-usuario").toLowerCase(),e=valor(d,"campo-email").replace(/\.+$/,""),s=valor(d,"campo-senha"),j=valor(d,"campo-confirmar-senha");if(!/^[a-z0-9_.]{3,16}$/.test(u))return avisar(d,"Nome de usuário: 3 a 16 letras minúsculas, números, ponto ou _.",true);if(!e)return avisar(d,trT("Informe o seu e-mail: ele é obrigatório."),true,true);if(!/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(e))return avisar(d,"E-mail inválido.",true);if(e.split("@")[0].includes("+"))return avisar(d,trT("Use o seu e-mail sem apelido (sem o \"+\")."),true,true);if(s.length<6)return avisar(d,"Senha: pelo menos 6 caracteres.",true);if(s!==j)return avisar(d,"As duas senhas não batem.",true);const k=()=>{ocupado=true;avisar(d,"Criando a conta…");ctx.conta.criar(u,e,s,chaveAlfa,{termos:TERMOS_VERSAO}).then(h,a=>h({ok:false,erro:String(a?.message||a)}))};if(!aceiteNoCadastro(d)){ocupado=true;avisar(d,"");return caixaDoAceite({id:"tela-termos-cadastro",texto:"Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.",nao:"Voltar",sim:"Criar conta"}).then(a=>{ocupado=false;if(a)k();else avisar(d,trT("Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade."),true,true)})}const l=d.querySelector(".tela-aceite"),m=l?.querySelector("input[type=checkbox]");if(!m?.checked){l?.classList.add("pede");m?.focus();return avisar(d,trT("Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade."),true,true)}k()}else if(a==="recuperar-senha"){formRecuperar(d)}}
+@media (pointer: coarse){ .tela-caixa .tela-campo input, .tela-caixa #alpha-chave{ font-size: 16px; } }`;
+  document.head.appendChild(a);
+}
+export function fechar() {
+  const p = atual;
+  atual = null;
+  if (p) {
+    Popup.fechar(p);
+    p.remove();
+  }
+  tirarFundo();
+}
+function tirarFundo() {
+  if (fundoEl) {
+    fundoEl.remove();
+    fundoEl = null;
+  }
+}
+export function atualizando() {
+  if (document.getElementById('tela-atualizando')) return;
+  const f = painel(
+    '<b class="tela-tit">O jogo foi atualizado</b>' +
+      '<p class="tela-txt" style="margin-bottom:0">Voltando em um instante…</p>',
+  );
+  f.id = 'tela-atualizando';
+  f.style.zIndex = '1200';
+}
+export function derrubado(a = 'Você entrou de outro lugar.', b = null, c = {}) {
+  a = c.cru ? String(a ?? '') : tr(a);
+  if (document.getElementById('tela-derrubado')) return;
+  estiloTela();
+  const d =
+    b === 'fechado' || b === 'banido'
+      ? (b === 'banido'
+          ? '<p class="tela-txt" style="margin:10px 0 0">Punido por engano? Peça revisão no Discord.</p>'
+          : '') +
+        '<p style="margin:12px 0 16px"><a class="tela-alpha-discord" href="' +
+        DISCORD +
+        '" target="_blank" rel="noopener noreferrer">' +
+        LOGO_DISCORD +
+        tr('Entre no nosso Discord') +
+        '</a></p>'
+      : b === 'apagada' || b === 'sessao'
+        ? '<div style="height:16px"></div>'
+        : '<p class="tela-txt" style="margin:10px 0 16px">A sua conta só joga de um lugar por vez.</p>';
+  const f = painel(
+    '<b class="tela-tit"></b>' +
+      d +
+      '<button type="button" class="btn ouro" id="der-voltar" style="width:100%">Ir pro login</button>',
+  );
+  f.querySelector('.tela-tit').textContent = a;
+  f.id = 'tela-derrubado';
+  f.style.zIndex = '1200';
+  f.querySelector('#der-voltar').onclick = () => {
+    if (typeof c.voltar === 'function') {
+      try {
+        c.voltar();
+        return;
+      } catch {}
+    }
+    try {
+      for (const k of ['conta.token', 'conta.usuario', 'conta.rev', 'conta.dono', 'conta.sujo', 'conta.gm'])
+        localStorage.removeItem(k);
+    } catch {}
+    location.replace(new URL('?jogar=1', location.href).toString());
+  };
+}
+export const temTelaTreinador = (L = layout) => !!(L?.telas?.pc?.personagem && L?.telas?.pc?.personalizar);
+export function criarTreinador(L, c = {}) {
+  layout = L || layout;
+  if (!temTelaTreinador(layout)) return null;
+  TelasP.iniciar(c);
+  return new Promise((a) => {
+    let b = false;
+    const d = (p) => {
+      if (b) return;
+      b = true;
+      TelasP.encerrar();
+      fechar();
+      removeEventListener('keydown', e, true);
+      a(p);
+    };
+    const e = (a) => {
+      if (a.key !== 'Escape') return;
+      if (TelasP.fecharTopo()) {
+        a.stopImmediatePropagation();
+        a.preventDefault();
+        return;
+      }
+      if (c.cancelavel) {
+        a.stopImmediatePropagation();
+        d(null);
+      }
+    };
+    addEventListener('keydown', e, true);
+    mostrar('personagem', layout, { ...c, aoPronto: d });
+  });
+}
+export const aberta = () => !!atual;
+function avisar(a, b, c = false, d = false) {
+  if (!d) b = tr(b);
+  if (a?.__def?.v2) return avisarV2(a, b, c);
+  const e = a.querySelector('[data-fig="btn-entrar"],[data-fig="btn-cadastrar"]');
+  const f = e?.parentElement || a;
+  let g = f.querySelector(':scope > .tela-aviso');
+  if (!g) {
+    g = document.createElement('div');
+    g.className = 'tela-aviso';
+    const x = parseFloat(e?.style.left) || 0,
+      y = (parseFloat(e?.style.top) || 0) + (parseFloat(e?.style.height) || 0) + 52,
+      w = parseFloat(e?.style.width) || 300;
+    Object.assign(g.style, {
+      position: 'absolute',
+      left: x - 60 + 'px',
+      top: y + 'px',
+      width: w + 120 + 'px',
+      textAlign: 'center',
+      font: '700 15px/1.3 "Nunito Sans", system-ui, sans-serif',
+      pointerEvents: 'none',
+      textShadow: '0 1px 2px #000',
+      zIndex: '5',
+      padding: '6px 10px',
+      borderRadius: '8px',
+      background: '#06080dcc',
+      display: 'none',
+    });
+    f.appendChild(g);
+  }
+  g.textContent = b;
+  g.style.color = c ? '#ffb3b3' : '#cfe3ff';
+  g.style.display = b ? 'block' : 'none';
+  return g;
+}
+function avisarV2(a, b, c) {
+  const d = a.querySelector('[data-fig="txt/aviso"]');
+  if (d) {
+    Popup.textoCru(a, 'aviso', b, d.parentElement);
+    d.style.display = b ? d.dataset.display || 'flex' : 'none';
+    d.style.color = c ? '#FFB3B3' : '';
+    return d;
+  }
+  const e = a.querySelector('[data-fig^="painel-"]'),
+    f = e?.parentElement || a;
+  let g = f.querySelector(':scope > .tela-aviso');
+  if (!g) {
+    g = document.createElement('div');
+    g.className = 'tela-aviso';
+    g.setAttribute('role', 'status');
+    g.setAttribute('aria-live', 'polite');
+    g.style.display = 'none';
+    f.appendChild(g);
+  }
+  g.textContent = b;
+  g.classList.toggle('erro', !!c);
+  g.style.display = b ? 'block' : 'none';
+  if (b) colocarAvisoV2(a, g);
+  return g;
+}
+function tintaDe(a) {
+  try {
+    const r = document.createRange();
+    r.selectNodeContents(a);
+    const b = r.getBoundingClientRect();
+    if (b.width) return b;
+  } catch {}
+  return a.getBoundingClientRect();
+}
+function colocarAvisoV2(a, d) {
+  const e = a.querySelector('[data-fig^="painel-"]'),
+    f = d.parentElement;
+  if (!e || !f) return;
+  const g = (k) => parseFloat(e.style[k]) || 0,
+    j = (a.__def?.w || 1920) < 1200,
+    m = j ? 6 : 12;
+  const s = a.__escala || 1,
+    o = f.getBoundingClientRect();
+  const p = (r) => ({
+    l: (r.left - o.left) / s,
+    r: (r.right - o.left) / s,
+    t: (r.top - o.top) / s,
+    b: (r.bottom - o.top) / s,
+  });
+  const q = CANTOS.map((n) => a.querySelector('[data-fig="' + n + '"]'))
+    .filter((c) => c && c.getClientRects().length)
+    .map((c) => p(tintaDe(c)));
+  const u = g('top') + g('height') + (j ? 5 : 10),
+    v = (innerHeight - o.top) / s - 4,
+    x = areasSeguras();
+  let y = g('left') + m,
+    z = g('left') + g('width') - m,
+    _ = j ? 10.5 : 16,
+    $ = false;
+  const aa = j ? 8.5 : 13;
+  d.style.padding = j ? '4px 8px' : '7px 12px';
+  for (let i = 0; i < 20; i++) {
+    Object.assign(d.style, { left: y + 'px', top: u + 'px', width: Math.max(120, z - y) + 'px', fontSize: _ + 'px' });
+    const h = d.offsetHeight,
+      c = q.find((k) => k.b > u - 3 && k.t < u + h + 3 && k.r > y - 6 && k.l < z + 6);
+    if (c && z - y > 160) {
+      if ((c.l + c.r) / 2 > (y + z) / 2) z = c.l - 6;
+      else y = c.r + 6;
+      continue;
+    }
+    if (u + h > v && !$) {
+      $ = true;
+      y = Math.min(y, (x.l + 8 - o.left) / s);
+      z = Math.max(z, (innerWidth - x.r - 8 - o.left) / s);
+      continue;
+    }
+    if (u + h > v && _ > aa) {
+      _ = Math.max(aa, _ - 0.5);
+      continue;
+    }
+    if (u + h > v) d.style.top = Math.max(0, v - h) + 'px';
+    break;
+  }
+}
+const valor = (a, b) => (a.querySelector('[data-fig="' + b + '"] input')?.value || '').trim();
+let ocupado = false;
+let chaveAlfa = null;
+async function caixaAlphaKey(b, c = '') {
+  if (!c) {
+    const a = await ctx.conta.alfa();
+    if (!a.chaveObrigatoria) {
+      chaveAlfa = null;
+      return;
+    }
+    if (chaveAlfa || atual !== b) return;
+  }
+  const d = b?.__def?.v2 ? Popup.extra(b, 'dialogo-alpha-key') : null;
+  if (d) return alphaV2(b, d, c);
+  if (document.getElementById('tela-alpha')) return;
+  const f = painel(
+    '<b class="tela-tit">Alpha Key</b>' +
+      '<p class="tela-txt">O alfa é fechado: pra criar conta você precisa da chave que recebeu. Cole ela aqui:</p>' +
+      '<input id="alpha-chave" placeholder="ALPHA-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">' +
+      '<div id="alpha-aviso" class="tela-msg"></div>' +
+      '<div class="tela-linha"><button type="button" class="btn" id="alpha-nao">Voltar</button><button type="button" class="btn ouro" id="alpha-sim" style="flex:1">Continuar</button></div>' +
+      '<p class="tela-pe">' +
+      tr('Não tem uma chave?') +
+      ' ' +
+      '<a class="tela-alpha-discord" href="' +
+      DISCORD +
+      '" target="_blank" rel="noopener noreferrer">' +
+      LOGO_DISCORD +
+      tr('Peça no nosso Discord') +
+      '</a></p>',
+  );
+  f.id = 'tela-alpha';
+  const e = f.querySelector('#alpha-chave'),
+    g = f.querySelector('#alpha-sim'),
+    h = (t) => {
+      f.querySelector('#alpha-aviso').textContent = tr(t);
+    };
+  if (c) h(c);
+  f.querySelector('#alpha-nao').onclick = () => {
+    f.remove();
+    chaveAlfa = null;
+    mostrar('login', layout, ctx);
+  };
+  const i = async () => {
+    const v = e.value.trim();
+    if (!v) return h('Cole a sua Alpha Key.');
+    g.disabled = true;
+    const r = await ctx.conta.validarChave(v);
+    g.disabled = false;
+    if (!r.ok) return h(r.erro || 'Chave inválida.');
+    chaveAlfa = r.chave;
+    f.remove();
+    avisar(b, 'Alpha Key aceita ✓ — agora crie a sua conta.');
+    b.querySelector('input')?.focus();
+  };
+  g.onclick = i;
+  e.addEventListener(
+    'keydown',
+    (a) => {
+      if (a.key === 'Enter') {
+        a.preventDefault();
+        i();
+      }
+      if (a.key === 'Escape') a.stopImmediatePropagation();
+    },
+    true,
+  );
+  setTimeout(() => e.focus(), 50);
+}
+const semMovimento = () => {
+  try {
+    return matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+};
+const ehCelular = (a) => (a?.__def?.w || 1920) < 1200;
+const comIds = (a, b) => {
+  for (const [c, d] of a)
+    if (c) {
+      if (b) c.id = d;
+      else if (c.id === d) c.removeAttribute('id');
+    }
+};
+const ocupar = (a, b) => {
+  if (!a) return;
+  if (b) {
+    a.dataset.ocupado = a.dataset.desligado = '1';
+    a.setAttribute('aria-busy', 'true');
+  } else {
+    delete a.dataset.ocupado;
+    delete a.dataset.desligado;
+    a.removeAttribute('aria-busy');
+  }
+};
+function prepararEntrada(a) {
+  for (const [b, c] of ESPACO_LETRA)
+    for (const d of a.querySelectorAll(b)) {
+      d.style.letterSpacing = c;
+      d.style.paddingLeft = c;
+    }
+  for (const e of a.querySelectorAll('[data-txt], [data-txt-oculto], .pf-rotulo, input'))
+    if (/Roboto Mono/.test(e.style.fontFamily)) e.style.fontFamily = MONO;
+  for (const f of a.querySelectorAll('.pf-extra [data-escondido="1"]')) f.style.display = 'none';
+}
+function prepararCaixa(d) {
+  if (!d || d.dataset.pronta) return d;
+  d.dataset.pronta = '1';
+  d.setAttribute('role', 'dialog');
+  d.setAttribute('aria-modal', 'true');
+  const a = d.querySelector(':scope > [data-fig^="titulo-"]');
+  if (a) {
+    a.id = a.id || 'tit-' + d.dataset.fig;
+    d.setAttribute('aria-labelledby', a.id);
+  }
+  d.querySelector('[data-txt="aviso-chave"]')?.setAttribute('role', 'alert');
+  for (const b of ['keydown', 'keyup']) d.addEventListener(b, (a) => a.stopPropagation());
+  return d;
+}
+function botaoDaCaixa(a, b) {
+  if (!a) return null;
+  if (!a.dataset.botao) {
+    a.dataset.botao = '1';
+    a.setAttribute('role', 'button');
+    a.tabIndex = 0;
+    a.addEventListener('keydown', (b) => {
+      if (b.key === 'Enter' || b.key === ' ') {
+        b.preventDefault();
+        b.stopPropagation();
+        a.click();
+      }
+    });
+  }
+  if (b) a.setAttribute('aria-label', b);
+  return a;
+}
+function colocarVeu(a, v = a?.querySelector(':scope > .tela-veu')) {
+  if (!v || !a?.__def) return;
+  const s = a.__escala || 1,
+    W = innerWidth / s,
+    H = innerHeight / s,
+    d = a.__def;
+  Object.assign(v.style, {
+    left: (d.w - W) / 2 - 2 + 'px',
+    top: (d.h - H) / 2 - 2 + 'px',
+    width: W + 4 + 'px',
+    height: H + 4 + 'px',
+  });
+}
+function veu(a, b, c = false) {
+  let v = a.querySelector(':scope > .tela-veu');
+  if (!b) {
+    if (v) v.style.display = 'none';
+    return;
+  }
+  if (!v) {
+    v = document.createElement('div');
+    v.className = 'tela-veu';
+    v.setAttribute('aria-hidden', 'true');
+    a.appendChild(v);
+  }
+  colocarVeu(a, v);
+  const d = v.style.display === 'block';
+  v.style.display = 'block';
+  if (c && !d) v.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+}
+function sincronizarEnfeites() {
+  const a = atual;
+  if (!a?.__def?.v2 || !(a.__tela === 'login' || a.__tela === 'cadastro')) return;
+  const b = !!a.querySelector(':scope > .pf-extra.tela-caixa-v2') || !!document.querySelector('body > .tela-extra');
+  for (const c of a.querySelectorAll(
+    ':scope > [data-fig^="tela-"] > [data-fig="placa-beta"], :scope > [data-fig^="tela-"] > [data-fig="selo-beta"]',
+  ))
+    c.style.visibility = b ? 'hidden' : '';
+  for (const d of a.children) if (!d.classList.contains('pf-extra') && !d.classList.contains('tela-veu')) d.inert = b;
+}
+let vigiaCaixas = null;
+function vigiarCaixas() {
+  if (vigiaCaixas || typeof MutationObserver !== 'function') return;
+  vigiaCaixas = new MutationObserver(() => sincronizarEnfeites());
+  vigiaCaixas.observe(document.body, { childList: true });
+}
+function abrirCaixa(a, b, { animar: c = true } = {}) {
+  const d = prepararCaixa(Popup.extra(a, b));
+  if (!d) return null;
+  const e = ehCelular(a),
+    T = ONDE_CAIXA[e ? 'deitado' : 'pc'][b] || {},
+    w = parseFloat(d.style.width) || 0;
+  const [x, y] = T[a.__tela] || T.cadastro || [((a.__def?.w || w) - w) / 2, 24];
+  const f = d.classList.contains('tela-caixa-v2'),
+    g = c && !f && !semMovimento();
+  veu(a, true, g);
+  Popup.mostrarExtra(a, b, true, { x, y: y - (e ? a.__subiu || 0 : 0) });
+  d.classList.add('tela-caixa-v2');
+  sincronizarEnfeites();
+  caberTextos(d);
+  centrarLinhas(d);
+  if (!d.__fonte && document.fonts?.status !== 'loaded') {
+    d.__fonte = true;
+    document.fonts?.ready?.then(() => {
+      if (d.classList.contains('tela-caixa-v2')) {
+        caberTextos(d);
+        centrarLinhas(d);
+      }
+    });
+  }
+  if (g)
+    d.animate(
+      [
+        { transform: 'scale(.9)', opacity: 0 },
+        { transform: 'scale(1)', opacity: 1 },
+      ],
+      { duration: 180, easing: 'cubic-bezier(.2,.8,.3,1)' },
+    );
+  return d;
+}
+function centrarLinhas(a) {
+  for (const b of a?.querySelectorAll('[data-linhas]') || []) {
+    if (
+      b.style.display !== '-webkit-box' ||
+      b.style.webkitBoxPack !== 'center' ||
+      b.dataset.faixa ||
+      !b.getClientRects().length
+    )
+      continue;
+    b.style.paddingTop = '0px';
+    const c = parseFloat(b.style.lineHeight) || 0;
+    if (!c || !b.textContent) continue;
+    const d = b.getBoundingClientRect(),
+      k = d.height / (b.offsetHeight || 1) || 1,
+      r = document.createRange();
+    r.selectNodeContents(b);
+    const n = Math.max(1, Math.min(+b.dataset.linhas || 1, Math.round(r.getBoundingClientRect().height / k / c)));
+    const e = b.clientHeight - n * c,
+      q = [...r.getClientRects()].find((x) => x.height);
+    const f = q ? (q.top - d.top) / k - (c - q.height / k) / 2 : 0;
+    if (e > 1 && f < e / 4) b.style.paddingTop = e / 2 + 'px';
+  }
+}
+function fecharCaixa(a, b) {
+  const d = Popup.extra(a, b);
+  if (!d) return;
+  Popup.mostrarExtra(a, b, false);
+  d.classList.remove('tela-caixa-v2');
+  if (!a.querySelector(':scope > .pf-extra.tela-caixa-v2')) veu(a, false);
+  sincronizarEnfeites();
+}
+function alphaV2(a, d, b = '') {
+  if (atual !== a) return;
+  const c = d.querySelector('[data-fig="campo-chave"] input'),
+    f = d.querySelector('[data-fig="btn-alpha-voltar"]'),
+    g = d.querySelector('[data-fig="btn-alpha-continuar"]');
+  const h = [
+    [d, 'tela-alpha'],
+    [c, 'alpha-chave'],
+    [f, 'alpha-nao'],
+    [g, 'alpha-sim'],
+    [d.querySelector('[data-txt="aviso-chave"]'), 'alpha-aviso'],
+  ];
+  const i = (t) => {
+    const b = Popup.textoCru(a, 'aviso-chave', t ? tr(t) : '', d);
+    if (b) {
+      b.style.display = t ? b.dataset.display || 'flex' : 'none';
+      if (t) centrarLinhas(d);
+    }
+  };
+  if (!d.classList.contains('tela-caixa-v2')) {
+    prepararCaixa(d);
+    Popup.rotulo(a, 'texto-alpha', d);
+    botaoDaCaixa(f, tr('Voltar'));
+    botaoDaCaixa(g, tr('Continuar'));
+    if (c && !c.dataset.chave) {
+      c.dataset.chave = '1';
+      c.type = 'text';
+      c.autocomplete = 'off';
+      c.autocapitalize = 'characters';
+      c.spellcheck = false;
+      c.name = 'alpha-key';
+      c.setAttribute('aria-label', 'Alpha Key');
+      Object.assign(c.style, { color: '#EAF6FB', textAlign: 'center' });
+      c.addEventListener(
+        'keydown',
+        (b) => {
+          if (b.key === 'Enter') {
+            b.preventDefault();
+            a.__acoes?.get('alpha-continuar')?.();
+          }
+          if (b.key === 'Escape') b.stopImmediatePropagation();
+        },
+        true,
+      );
+    }
+    if (c) c.value = '';
+    const j = () => {
+      i('');
+      comIds(h, false);
+      for (const k of ['alpha-voltar', 'alpha-continuar']) a.__acoes.delete(k);
+      fecharCaixa(a, 'dialogo-alpha-key');
+    };
+    a.__acoes.set('alpha-voltar', () => {
+      j();
+      chaveAlfa = null;
+      mostrar('login', layout, ctx);
+    });
+    a.__acoes.set('alpha-continuar', async () => {
+      const v = (c?.value || '').trim();
+      if (!v) return i('Cole a sua Alpha Key.');
+      if (g?.dataset.ocupado) return;
+      ocupar(g, true);
+      let r;
+      try {
+        r = await ctx.conta.validarChave(v);
+      } catch (e) {
+        r = { ok: false, erro: String(e?.message || e) };
+      }
+      ocupar(g, false);
+      if (atual !== a || !d.classList.contains('tela-caixa-v2')) return;
+      if (!r?.ok) return i(r?.erro || 'Chave inválida.');
+      chaveAlfa = r.chave;
+      j();
+      avisar(a, 'Alpha Key aceita ✓ — agora crie a sua conta.');
+      a.querySelector(':scope > [data-fig^="tela-"] input')?.focus();
+    });
+    comIds(h, true);
+    abrirCaixa(a, 'dialogo-alpha-key');
+    setTimeout(() => {
+      if (d.classList.contains('tela-caixa-v2')) c?.focus();
+    }, 50);
+  }
+  i(b);
+}
+function continuarLigado(a, b, c) {
+  if (!b) return;
+  if (b.dataset.arteLigada == null) b.dataset.arteLigada = b.style.backgroundImage || '';
+  if (c) {
+    delete b.dataset.desligado;
+    b.style.backgroundImage = b.dataset.arteLigada;
+    b.dataset.estado = 'ligado';
+  } else {
+    Popup.estadoRef(a, b, 'btn-continuar', 'desligado');
+    b.dataset.desligado = '1';
+  }
+  for (const d of b.querySelectorAll(':scope > [data-fig="fx/apagado"]')) d.style.display = c ? 'none' : '';
+  b.setAttribute('aria-disabled', String(!c));
+}
+const selecionarTexto = (a) => {
+  try {
+    const r = document.createRange();
+    r.selectNodeContents(a);
+    const s = getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+  } catch {}
+};
+function codigoV2(a, b, c, { animar: e = true } = {}) {
+  const d = prepararCaixa(Popup.extra(a, 'dialogo-codigo'));
+  if (!d) return null;
+  Popup.rotulo(a, 'texto-codigo', d);
+  Popup.rotulo(a, 'rotulo-anotei', d);
+  Popup.texto(a, 'copiar', 'Copiar', d);
+  const f = Popup.textoCru(a, 'codigo', b, d);
+  const g = botaoDaCaixa(d.querySelector('[data-fig="btn-copiar"]'), tr('Copiar')),
+    h = botaoDaCaixa(d.querySelector('[data-fig="btn-continuar"]'), tr('Continuar'));
+  const i = d.querySelector('[data-fig="btn-anotei"]'),
+    j = i?.querySelector('[data-txt="rotulo-anotei"]'),
+    l = i?.querySelector(':scope > [data-fig="marca-visto"]');
+  i?.querySelector(':scope > .tela-anotei-cx')?.remove();
+  const m = document.createElement('input');
+  m.type = 'checkbox';
+  m.className = 'tela-anotei-cx';
+  i?.appendChild(m);
+  const n = () => {
+    if (l) l.style.display = m.checked ? '' : 'none';
+    continuarLigado(a, h, m.checked);
+  };
+  m.addEventListener('change', n);
+  const o = [
+    [d, 'tela-codigo'],
+    [f, 'codigo-recuperacao'],
+    [g, 'cod-copiar'],
+    [m, 'cod-anotei'],
+    [j, 'cod-anotei-txt'],
+    [h, 'cod-ok'],
+  ];
+  comIds(o, true);
+  if (j) m.setAttribute('aria-labelledby', 'cod-anotei-txt');
+  else m.setAttribute('aria-label', tr('anotei em lugar seguro'));
+  n();
+  let q = d.querySelector(':scope > .tela-sr');
+  if (!q) {
+    q = document.createElement('span');
+    q.className = 'tela-sr';
+    q.setAttribute('role', 'status');
+    q.setAttribute('aria-live', 'polite');
+    d.appendChild(q);
+  }
+  q.textContent = '';
+  a.__acoes.set('copiar-codigo', () => {
+    const c = () => {
+      if (!d.classList.contains('tela-caixa-v2')) return;
+      Popup.texto(a, 'copiar', 'copiado ✓', d);
+      g?.setAttribute('aria-label', tr('copiado ✓'));
+      q.textContent = tr('copiado ✓');
+    };
+    try {
+      const p = navigator.clipboard?.writeText(b);
+      if (p?.then) p.then(c, () => selecionarTexto(f));
+      else selecionarTexto(f);
+    } catch {
+      selecionarTexto(f);
+    }
+  });
+  a.__acoes.set('anotei', n);
+  a.__acoes.set('continuar', () => {
+    if (!m.checked) return;
+    comIds(o, false);
+    m.remove();
+    for (const k of ['copiar-codigo', 'anotei', 'continuar']) a.__acoes.delete(k);
+    fecharCaixa(a, 'dialogo-codigo');
+    c?.();
+  });
+  abrirCaixa(a, 'dialogo-codigo', { animar: e });
+  if (!toque())
+    setTimeout(() => {
+      if (d.classList.contains('tela-caixa-v2')) g?.focus();
+    }, 50);
+  return d;
+}
+function boasVindas(a, e, f) {
+  const d = a?.__def?.v2 ? prepararCaixa(Popup.extra(a, 'dialogo-boas-vindas')) : null;
+  if (!d || !Popup.extra(a, 'dialogo-codigo')) return mostrarCodigo(e, f, { pop: a });
+  avisar(a, '');
+  Popup.texto(a, 'boas-vindas', 'Sua conta de treinador está pronta.', d);
+  const b = botaoDaCaixa(d.querySelector('[data-fig="btn-boas-vindas"]'), tr('Continuar'));
+  const g = [
+    [d, 'tela-boas-vindas'],
+    [b, 'bv-continuar'],
+  ];
+  comIds(g, true);
+  a.__acoes.set('boas-vindas', async () => {
+    a.__acoes.delete('boas-vindas');
+    const P = 'perspective(1100px) rotateY(';
+    let b = null;
+    if (!semMovimento()) {
+      b = d.animate([{ transform: P + '0deg)' }, { transform: P + '90deg)' }], {
+        duration: 180,
+        easing: 'ease-in',
+        fill: 'forwards',
+      });
+      await b.finished.catch(() => {});
+    }
+    if (atual !== a) return;
+    const c = codigoV2(a, e, f, { animar: false });
+    comIds(g, false);
+    fecharCaixa(a, 'dialogo-boas-vindas');
+    b?.cancel();
+    if (c && !semMovimento())
+      c.animate([{ transform: P + '90deg)' }, { transform: P + '0deg)' }], { duration: 180, easing: 'ease-out' });
+  });
+  abrirCaixa(a, 'dialogo-boas-vindas');
+  const h = d.querySelector(':scope > [data-fig="selo-beta"]');
+  if (h && !semMovimento())
+    h.animate(
+      [
+        { transform: 'scale(1.4)', opacity: 0 },
+        { transform: 'scale(1)', opacity: 1 },
+      ],
+      { duration: 220, delay: 300, easing: 'cubic-bezier(.3,1.45,.55,1)', fill: 'backwards' },
+    ).finished.then(
+      () => brilharSelo(h),
+      () => {},
+    );
+  if (!toque())
+    setTimeout(() => {
+      if (d.classList.contains('tela-caixa-v2')) b?.focus();
+    }, 50);
+  return d;
+}
+function brilharSelo(a) {
+  if (!a?.isConnected || semMovimento()) return;
+  const b = document.createElement('div');
+  b.className = 'tela-selo-brilho';
+  b.setAttribute('aria-hidden', 'true');
+  b.appendChild(document.createElement('i'));
+  a.appendChild(b);
+  b.firstChild.animate([{ left: '-45%' }, { left: '110%' }], { duration: 600, easing: 'ease-in-out' }).finished.then(
+    () => b.remove(),
+    () => b.remove(),
+  );
+}
+function linhaAceite(b) {
+  const l = I18n.idioma();
+  const c = document.createElement('label');
+  c.className = 'tela-aceite';
+  const d = document.createElement('input');
+  d.type = 'checkbox';
+  d.id = b;
+  const e = document.createElement('span');
+  e.className = 'tela-aceite-marca';
+  e.setAttribute('aria-hidden', 'true');
+  const f = document.createElement('span');
+  f.className = 'tela-aceite-txt';
+  for (const p of trT('Li e aceito os {termos} e a {privacidade}')
+    .split(/(\{termos\}|\{privacidade\})/)
+    .filter(Boolean)) {
+    const g = p === '{termos}' ? 'termos' : p === '{privacidade}' ? 'privacidade' : null;
+    if (!g) {
+      f.appendChild(document.createTextNode(p));
+      continue;
+    }
+    const a = document.createElement('a');
+    a.href = '/portal/' + g + '.html?idioma=' + l;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = trT(g === 'termos' ? 'Termos de Uso' : 'Política de Privacidade');
+    a.addEventListener('click', (a) => a.stopPropagation());
+    f.appendChild(a);
+  }
+  c.append(d, e, f);
+  d.addEventListener('change', () => {
+    if (d.checked) c.classList.remove('pede');
+  });
+  for (const h of ['keydown', 'keyup']) c.addEventListener(h, (a) => a.stopPropagation());
+  return { el: c, cx: d };
+}
+function aceiteNoCadastro(a) {
+  if (a.querySelector('.tela-aceite')) return true;
+  return aceiteNaMaquete(a);
+}
+function aceiteNaMaquete(d) {
+  const e = d.querySelector('[data-fig="btn-cadastrar"]'),
+    f = e?.parentElement;
+  if (!f) return false;
+  const g = (a, k) => parseFloat(a?.style?.[k]) || 0;
+  const i = [...f.querySelectorAll(':scope > [data-fig^="campo-"]')].filter((c) => g(c, 'top') < g(e, 'top'));
+  if (!i.length) return false;
+  const j = i.reduce((a, b) => (g(b, 'top') > g(a, 'top') ? b : a));
+  const l = (d.__def?.w || 1920) < 1200;
+  const M = l
+    ? { antes: 6, h: 30, depois: 8, letra: 9.5, min: 8 }
+    : { antes: 10, h: 40, depois: 12, letra: 15, min: 11 };
+  const m = g(j, 'top') + g(j, 'height') + M.antes,
+    n = g(e, 'top');
+  const o = Math.max(0, m + M.h + M.depois - n);
+  if (o) {
+    for (const r of f.children) {
+      const y = g(r, 'top'),
+        h = g(r, 'height');
+      if (y >= n - 0.5) r.style.top = y + o + 'px';
+      else if (h && y + h >= n) r.style.height = h + o + 'px';
+    }
+    f.style.height = g(f, 'height') + o + 'px';
+    if (l) {
+      f.style.top = g(f, 'top') - o / 2 + 'px';
+      const s = f.parentElement?.querySelector(':scope > [data-fig="selo-beta"]');
+      if (s) s.style.top = g(s, 'top') - o / 2 + 'px';
+      d.__subiu = o / 2;
+    }
+  }
+  const { el: p } = linhaAceite('tela-termos');
+  Object.assign(p.style, {
+    left: g(e, 'left') + 'px',
+    top: m + 'px',
+    width: g(e, 'width') + 'px',
+    height: M.h + 'px',
+    fontSize: M.letra + 'px',
+  });
+  f.appendChild(p);
+  const q = () => {
+    if (!p.isConnected || !p.getClientRects().length) return;
+    let a = M.letra;
+    p.style.fontSize = a + 'px';
+    while (p.scrollHeight > p.clientHeight + 1 && a > M.min) {
+      a = Math.max(M.min, a - 0.5);
+      p.style.fontSize = a + 'px';
+    }
+  };
+  requestAnimationFrame(q);
+  document.fonts?.ready?.then(q);
+  return true;
+}
+export function pedirAceiteTermos({ versao: c = TERMOS_VERSAO, aceitar: a, sair: b } = {}) {
+  return caixaDoAceite({
+    id: 'tela-termos-novos',
+    texto: 'Para continuar jogando, leia e aceite a versão atual dos Termos de Uso e da Política de Privacidade.',
+    nao: 'Sair da conta',
+    sim: 'Aceitar e continuar',
+    aceitar: () => a?.(c),
+    aoNao: async () => {
+      if (typeof b === 'function') {
+        try {
+          await b();
+          return;
+        } catch {}
+      }
+      try {
+        for (const k of [
+          'conta.token',
+          'conta.usuario',
+          'conta.rev',
+          'conta.dono',
+          'conta.sujo',
+          'conta.gm',
+          'passe.atual',
+        ])
+          localStorage.removeItem(k);
+      } catch {}
+      location.replace(new URL('?jogar=1', location.href).toString());
+    },
+  });
+}
+function caixaDoAceite({ id: a, texto: b, nao: c, sim: d, aceitar: g = null, aoNao: h = null }) {
+  estiloTela();
+  return new Promise((i) => {
+    document.getElementById(a)?.remove();
+    const f = painel('');
+    f.id = a;
+    f.style.zIndex = '1200';
+    const j = f.querySelector('.tela-caixa');
+    j.setAttribute('aria-labelledby', a + '-tit');
+    const k = document.createElement('b');
+    k.className = 'tela-tit';
+    k.id = a + '-tit';
+    k.textContent = trT('Termos de Uso e Política de Privacidade');
+    const p = document.createElement('p');
+    p.className = 'tela-txt';
+    p.textContent = trT(b);
+    const { el: l, cx: m } = linhaAceite(a + '-aceito');
+    const n = document.createElement('div');
+    n.className = 'tela-msg';
+    n.setAttribute('role', 'alert');
+    const o = document.createElement('div');
+    o.className = 'tela-linha';
+    const q = document.createElement('button');
+    q.type = 'button';
+    q.className = 'btn';
+    q.textContent = trT(c);
+    const s = document.createElement('button');
+    s.type = 'button';
+    s.className = 'btn ouro';
+    s.style.flex = '1';
+    s.disabled = true;
+    s.textContent = trT(d);
+    o.append(q, s);
+    j.append(k, p, l, n, o);
+    m.addEventListener('change', () => {
+      s.disabled = !m.checked;
+      if (m.checked) n.textContent = '';
+    });
+    s.onclick = async () => {
+      if (!m.checked) return;
+      if (g) {
+        s.disabled = true;
+        n.textContent = trT('Enviando…');
+        let r;
+        try {
+          r = await g();
+        } catch (e) {
+          r = { ok: false, erro: String(e?.message || e) };
+        }
+        s.disabled = false;
+        if (!r?.ok) {
+          n.textContent = r?.erro ? trT(r.erro) : tr('Não deu. Tente de novo.');
+          return;
+        }
+      }
+      f.remove();
+      i(true);
+    };
+    q.onclick = async () => {
+      q.disabled = s.disabled = true;
+      if (h && (await h()) !== true) return;
+      f.remove();
+      i(false);
+    };
+    f.addEventListener('keydown', (a) => {
+      a.stopPropagation();
+      if (a.key === 'Escape') a.preventDefault();
+    });
+    setTimeout(() => m.focus(), 50);
+  });
+}
+function acao(b, a, c, d) {
+  const f = /^idioma-(\w+)$/.exec(a || '');
+  if (f) {
+    trocarIdioma(f[1], b);
+    return;
+  }
+  if (a === 'discord') return;
+  const g = d?.__acoes?.get(a);
+  if (g) {
+    g(c);
+    return;
+  }
+  if (!ctx?.conta) {
+    const i = (t) => {
+      ctx?.Chat?.sistema?.(t);
+      console.log('telas:', t);
+    };
+    if (a === 'login')
+      i('Prévia: o login de verdade abre quando o jogo está com o servidor no ar (conta por usuário + senha).');
+    else if (a === 'cadastrar') i('Prévia: o cadastro de verdade abre quando o jogo está com o servidor no ar.');
+    else if (a === 'recuperar-senha') i('Prévia: recuperação de senha.');
+    fechar();
+    return;
+  }
+  if (ocupado) return;
+  const h = (r) => {
+    ocupado = false;
+    if (!r?.ok && r?.precisaChave) {
+      chaveAlfa = null;
+      avisar(d, '');
+      caixaAlphaKey(d, r.erro || 'Precisa de uma Alpha Key.');
+      return;
+    }
+    if (!r?.ok && r?.precisaCaptcha && ctx.conta.irParaEntrada?.()) return;
+    if (!r?.ok)
+      return reservaTermos(r?.erro)
+        ? avisar(d, trT(r.erro), true, true)
+        : avisar(d, r?.erro || 'Não deu. Tente de novo.', true, !!r?.cru);
+    if (typeof r.termosPendentes === 'string' && r.termosPendentes && ctx.conta.aceitarTermos) {
+      avisar(d, '');
+      return pedirAceiteTermos({
+        versao: r.termosPendentes,
+        aceitar: ctx.conta.aceitarTermos,
+        sair: ctx.conta.sair,
+      }).then(() => h({ ...r, termosPendentes: null }));
+    }
+    const a = ctx.conta.codigoNovo?.();
+    if (a)
+      return boasVindas(d, a, () => {
+        avisar(d, 'Entrando…');
+        fechar();
+        ctx.aoEntrar?.(r);
+      });
+    avisar(d, 'Entrando…');
+    fechar();
+    ctx.aoEntrar?.(r);
+  };
+  if (a === 'login') {
+    const u = valor(d, 'campo-usuario'),
+      s = valor(d, 'campo-senha');
+    if (!u || !s) return avisar(d, 'Preencha usuário e senha.', true);
+    ocupado = true;
+    avisar(d, 'Entrando…');
+    ctx.conta.entrar(u, s).then(h, (e) => h({ ok: false, erro: String(e?.message || e) }));
+  } else if (a === 'cadastrar') {
+    const u = valor(d, 'campo-usuario').toLowerCase(),
+      e = valor(d, 'campo-email').replace(/\.+$/, ''),
+      s = valor(d, 'campo-senha'),
+      j = valor(d, 'campo-confirmar-senha');
+    if (!/^[a-z0-9_.]{3,16}$/.test(u))
+      return avisar(d, 'Nome de usuário: 3 a 16 letras minúsculas, números, ponto ou _.', true);
+    if (!e) return avisar(d, trT('Informe o seu e-mail: ele é obrigatório.'), true, true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(e)) return avisar(d, 'E-mail inválido.', true);
+    if (e.split('@')[0].includes('+')) return avisar(d, trT('Use o seu e-mail sem apelido (sem o "+").'), true, true);
+    if (s.length < 6) return avisar(d, 'Senha: pelo menos 6 caracteres.', true);
+    if (s !== j) return avisar(d, 'As duas senhas não batem.', true);
+    const k = () => {
+      ocupado = true;
+      avisar(d, 'Criando a conta…');
+      ctx.conta
+        .criar(u, e, s, chaveAlfa, { termos: TERMOS_VERSAO })
+        .then(h, (a) => h({ ok: false, erro: String(a?.message || a) }));
+    };
+    if (!aceiteNoCadastro(d)) {
+      ocupado = true;
+      avisar(d, '');
+      return caixaDoAceite({
+        id: 'tela-termos-cadastro',
+        texto: 'Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.',
+        nao: 'Voltar',
+        sim: 'Criar conta',
+      }).then((a) => {
+        ocupado = false;
+        if (a) k();
+        else
+          avisar(
+            d,
+            trT('Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.'),
+            true,
+            true,
+          );
+      });
+    }
+    const l = d.querySelector('.tela-aceite'),
+      m = l?.querySelector('input[type=checkbox]');
+    if (!m?.checked) {
+      l?.classList.add('pede');
+      m?.focus();
+      return avisar(
+        d,
+        trT('Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.'),
+        true,
+        true,
+      );
+    }
+    k();
+  } else if (a === 'recuperar-senha') {
+    formRecuperar(d);
+  }
+}

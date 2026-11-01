@@ -1,1 +1,15 @@
-const DOMINIOS="com|net|org|gg|io|ly|gl|xyz|tv|app|dev|link|site|online|store|shop|club|info|biz|ru|cn|tk|br|cc|sh|vip|live|fun|icu|win|bet|click";const PADROES=[/\bhttps?:\/\//i,/\bwww\s*\.\s*\S/i,/\bdiscord\s*\.\s*(gg|com\s*\/\s*invite|me)\b/i,/\bdiscordapp\s*\.\s*com\s*\/\s*invite\b/i,new RegExp(`[a-z0-9-]\\.(${DOMINIOS})(\\.[a-z]{2})?(?=$|[\\s/:?#),!;'".])`,"i")];export function temLink(a){const t=String(a||"");return PADROES.some(p=>p.test(t))}export const podeLink=a=>a==="staff"||a==="mod"||a==="tutor";export const AVISO_LINK="🔗 Links não são permitidos no chat do jogo.";
+const DOMINIOS =
+  'com|net|org|gg|io|ly|gl|xyz|tv|app|dev|link|site|online|store|shop|club|info|biz|ru|cn|tk|br|cc|sh|vip|live|fun|icu|win|bet|click';
+const PADROES = [
+  /\bhttps?:\/\//i,
+  /\bwww\s*\.\s*\S/i,
+  /\bdiscord\s*\.\s*(gg|com\s*\/\s*invite|me)\b/i,
+  /\bdiscordapp\s*\.\s*com\s*\/\s*invite\b/i,
+  new RegExp(`[a-z0-9-]\\.(${DOMINIOS})(\\.[a-z]{2})?(?=$|[\\s/:?#),!;'".])`, 'i'),
+];
+export function temLink(a) {
+  const t = String(a || '');
+  return PADROES.some((p) => p.test(t));
+}
+export const podeLink = (a) => a === 'staff' || a === 'mod' || a === 'tutor';
+export const AVISO_LINK = '🔗 Links não são permitidos no chat do jogo.';
