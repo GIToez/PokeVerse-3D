@@ -420,7 +420,7 @@ body.sem-parceiro #skills, body.sem-parceiro #bola-btn, body.sem-parceiro #f-par
 #bola-leque .bola-op small{ color:#ffd23a; font-weight:700 }
 #bola-leque .bola-op b{ font-size:9px; color:#ffe07a; font-weight:700 }
 #bola-leque .bola-op.on{ box-shadow:0 0 0 2px #ffe07a88 }
-#chat{ width:var(--chat-w, 280px); height:var(--chat-h, 220px) }
+#chat{ width:var(--chat-w, 380px) !important; height:var(--chat-h, 230px) !important }
 #chat.fechado{ height:auto !important }
 #chat .chat-grip{
   position:absolute; right:0; bottom:0; width:22px; height:22px; padding:0; border:0; background:transparent;
@@ -431,3 +431,37 @@ body.sem-parceiro #skills, body.sem-parceiro #bola-btn, body.sem-parceiro #f-par
 #time-hud .tpalco{ position:absolute; left:2px; top:2px; width:48px; height:48px; pointer-events:none; z-index:1; background:none }
 #time-hud .tslot.t3d img.tpic{ opacity:0 }
 body.mobile #time-hud .tpalco{ width:42px; height:42px }
+
+/* Command island: move the default Figma pieces, do not redraw them. */
+body.hud-ilha #menu-icones.dock-slide{
+  display:flex !important; flex-direction:column !important; align-items:stretch !important;
+  gap:4px; padding:0; background:transparent !important; border:0 !important;
+  box-shadow:none !important; pointer-events:auto;
+}
+body.hud-ilha #menu-icones.dock-slide.aberto{
+  padding:10px 8px 10px 6px; background:rgba(10,16,28,.88) !important;
+  border:1px solid var(--line) !important; border-right:0 !important;
+  border-radius:12px 0 0 12px;
+}
+body.hud-ilha #menu-icones.dock-slide > button[data-j],
+body.hud-ilha #menu-icones.dock-slide > .fig-grupo{
+  position:relative !important; left:auto !important; top:auto !important; width:auto !important;
+}
+body.hud-ilha #menu-icones.dock-slide > button[data-j]{
+  flex-direction:row; justify-content:flex-start; gap:8px; width:148px; padding:2px 8px 2px 4px;
+}
+body.hud-ilha #menu-icones.dock-slide:not(.aberto) > button[data-j],
+body.hud-ilha #menu-icones.dock-slide:not(.aberto) > .fig-grupo{ display:none !important }
+body.hud-ilha #menu-icones.dock-slide > .fig-img{ display:none !important }
+body.hud-ilha #menu-dock-aba{
+  width:36px; height:64px; padding:0; border:1px solid #F8C237; border-right:0;
+  border-radius:10px 0 0 10px; background:rgba(10,16,28,.92); color:#F8C237;
+  font:700 18px/1 inherit; cursor:pointer; touch-action:manipulation; align-self:flex-end;
+}
+body.hud-ilha #menu-icones.dock-slide.aberto #menu-dock-aba{
+  position:absolute; left:0; top:50%; transform:translate(-100%, -50%);
+}
+body.hud-ilha-mobile #menu-icones.dock-slide > button[data-j]{ width:52px; padding:2px }
+body.hud-ilha-mobile #menu-icones.dock-slide > button[data-j] b{ display:none }
+body.hud-ilha #fala, body.hud-ilha #turno{ bottom:132px }
+body.hud-ilha-mobile #fala, body.hud-ilha-mobile #turno{ bottom:118px }
