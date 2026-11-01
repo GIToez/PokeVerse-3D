@@ -11341,7 +11341,7 @@ async function cfDialogoEmail() {
   else if (cfEmailOk) n();
   else l('Tap Send code: the 6 digits will arrive in your email.', true);
 }
-const DISCORD_CONVITE = 'https://discord.gg/P2NeDwbcwj';
+const DISCORD_CONVITE = 'https://discord.gg/P88WNBB56E';
 let cfDiscord = null;
 async function cfBuscarDiscord() {
   const r = await ctx.conta?.chamar?.('GET', '/discord/eu');
