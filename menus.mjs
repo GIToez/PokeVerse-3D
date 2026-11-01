@@ -1732,6 +1732,19 @@ const FILTRO_ROTULO = {
   entrada: 'Entrances and caves',
   rotas: 'Route names',
 };
+const FILTRO_ICONE = {
+  centro: './ui/icones/pokebola.png',
+  loja: './ui/icones/loja.png',
+  ginasio: './ui/figma/icone/batalha.png',
+  quest: './ui/icones/missoes.png',
+  civico: './ui/figma/icone/treinador.png',
+  entrada: './ui/figma/icone/chave.png',
+  rotas: './ui/icones/mapa.png',
+  voce: './ui/icones/personagem.png',
+  kanto: './ui/icones/mapa.png',
+  sevii: './ui/figma/icone/mapa.png',
+};
+const iconeFiltro = tipo => FILTRO_ICONE[tipo] || './ui/icones/mapa.png';
 function nomeAreaMapa(a, nomes){
   return I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes?.[a] || ctx.dados?.nomes?.[a] || ('Area ' + a));
 }
@@ -1751,7 +1764,7 @@ function htmlCartaoMapa(a, nome, { live = 0, lugares = [] } = {}){
     ? (proprios.length ? 'Pokémon of this area' : 'Common Pokémon of the region') + ' — get close and they enter the Pokédex.'
     : 'No wild Pokémon here.';
   const lugaresHtml = lugares.length
-    ? `<div class="mapa-lugares">${lugares.map((p, i) => `<button type="button" class="mapa-lugar" data-lugar="${i}">${esc(p.nome)}</button>`).join('')}</div>`
+    ? `<div class="mapa-lugares">${lugares.map((p, i) => `<button type="button" class="mapa-lugar" data-lugar="${i}"><i class="mapa-ico" style="background-image:url('${iconeFiltro(p.tipo)}')"></i>${esc(p.nome)}</button>`).join('')}</div>`
     : '';
   return `<div class="ficha mapa-card"><h3>${esc(nome)}</h3>${live ? `<div class="mapa-live">${live} wild on this map now</div>` : ''}<div class="mapa-dica">${dica}</div>${lista.length ? `<div class="m-grade">${lista.map(linha).join('')}</div>` : ''}${lugaresHtml}</div>`;
 }
@@ -1787,7 +1800,7 @@ function rMapaMundo(corpo){
   const voce = areaDoJogador();
   const quests = marcadoresMissao().filter(p => p.tipo === 'quest');
   const filtrosHtml = Object.entries(FILTRO_ROTULO).map(([k, nome]) =>
-    `<label><input type="checkbox" data-filtro="${k}"${FILTROS_MAPA[k] ? ' checked' : ''}> ${esc(nome)}</label>`).join('');
+    `<label><input type="checkbox" data-filtro="${k}"${FILTROS_MAPA[k] ? ' checked' : ''}><i class="mapa-ico" style="background-image:url('${iconeFiltro(k)}')"></i> ${esc(nome)}</label>`).join('');
   corpo.innerHTML = `<div class="mapa-overlay notranslate" translate="no">
     <div class="mapa-palco">
       <div class="mapa-zoom">
@@ -1803,14 +1816,14 @@ function rMapaMundo(corpo){
     <div class="mapa-topo-dir">
       <div class="mapa-lugar-atual" id="m-lugar"></div>
       <div class="mapa-menu">
-        <button type="button" class="mapa-menu-btn" data-menu="marcadores">Markers</button>
+        <button type="button" class="mapa-menu-btn" data-menu="marcadores" aria-expanded="false"><i class="mapa-ico" style="background-image:url('./ui/icones/mapa.png')"></i> Markers <span class="mapa-seta">▾</span></button>
         <div class="mapa-menu-lista" data-lista="marcadores" hidden>${filtrosHtml}</div>
       </div>
       <div class="mapa-menu">
-        <button type="button" class="mapa-menu-btn" data-menu="regiao">Kanto</button>
+        <button type="button" class="mapa-menu-btn" data-menu="regiao" aria-expanded="false"><i class="mapa-ico" style="background-image:url('${iconeFiltro('kanto')}')"></i> <span class="mapa-regiao-nome">Kanto</span> <span class="mapa-seta">▾</span></button>
         <div class="mapa-menu-lista" data-lista="regiao" hidden>
-          <button type="button" class="on" data-regiao="kanto">Kanto</button>
-          <button type="button" data-regiao="sevii">Sevii Islands</button>
+          <button type="button" class="on" data-regiao="kanto"><i class="mapa-ico" style="background-image:url('${iconeFiltro('kanto')}')"></i> Kanto</button>
+          <button type="button" data-regiao="sevii"><i class="mapa-ico" style="background-image:url('${iconeFiltro('sevii')}')"></i> Sevii Islands</button>
         </div>
       </div>
     </div>
@@ -1867,22 +1880,6 @@ function rMapaMundo(corpo){
     py = my - (my - py) * (nz / z);
     z = nz; vista();
   };
-  const focarCaixas = lista => {
-    if (!lista?.length || !regua) return;
-    const { mw, mh } = metros();
-    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
-    for (const b of lista){
-      x0 = Math.min(x0, fx * b.x - b.sx / 2); x1 = Math.max(x1, fx * b.x + b.sx / 2);
-      z0 = Math.min(z0, b.z - b.sz / 2); z1 = Math.max(z1, b.z + b.sz / 2);
-    }
-    const r = palco.getBoundingClientRect();
-    const zw = zoomEl.offsetWidth || 1, zh = zoomEl.offsetHeight || 1;
-    const pad = 1.4;
-    const nz = limitarZ(Math.min(r.width / Math.max(24, zw * (x1 - x0) / mw * pad), r.height / Math.max(24, zh * (z1 - z0) / mh * pad)));
-    const ox = (((x0 + x1) / 2 - regua.x0) / mw - 0.5) * zw;
-    const oy = (((z0 + z1) / 2 - regua.z0) / mh - 0.5) * zh;
-    z = nz; px = -ox * z - 70; py = -oy * z; vista();
-  };
   const pintarSel = a => {
     selEl.innerHTML = '';
     const caixas = caixasDa(a);
@@ -1927,6 +1924,7 @@ function rMapaMundo(corpo){
       const fr = xzFrac(x, zz); if (!fr) return;
       const el = document.createElement('i');
       el.className = 'mapa-pin mapa-pin-' + tipo;
+      el.style.backgroundImage = 'url(' + iconeFiltro(tipo) + ')';
       el.title = titulo;
       el.style.left = (fr.x * 100) + '%';
       el.style.top = (fr.y * 100) + '%';
@@ -1943,7 +1941,7 @@ function rMapaMundo(corpo){
     }
     pois().forEach((p, i) => add(p.tipo, p.nome, fx * p.x, p.z, { area: p.area, i }));
   };
-  const abrirArea = async (a, { focar = false, lugar = null } = {}) => {
+  const abrirArea = async (a, { lugar = null } = {}) => {
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
     if (aberta !== 'mapa') return;
     mapaSel = a;
@@ -1953,8 +1951,8 @@ function rMapaMundo(corpo){
     const aquiNome = aqui ? nomeAreaMapa(aqui, mundo.nomes) : '';
     const qs = marcadoresMissao().filter(p => p.tipo === 'quest');
     cards.innerHTML =
-      (aquiNome ? `<div class="mapa-pill">${tr('You are in')} <b>${esc(aquiNome)}</b></div>` : '') +
-      qs.map(q => `<div class="mapa-pill quest">${esc(q.texto || 'Quest')}</div>`).join('');
+      (aquiNome ? `<div class="mapa-pill"><i class="mapa-ico" style="background-image:url('${iconeFiltro('voce')}')"></i>${tr('You are in')} <b>${esc(aquiNome)}</b></div>` : '') +
+      qs.map(q => `<div class="mapa-pill quest"><i class="mapa-ico" style="background-image:url('${iconeFiltro('quest')}')"></i>${esc(q.texto || 'Quest')}</div>`).join('');
     lugarEl.textContent = lugar?.nome || nome || '';
     lugaresSel = pois().filter(p => p.area === a);
     card.hidden = regio !== 'kanto';
@@ -1962,14 +1960,10 @@ function rMapaMundo(corpo){
     card.querySelectorAll('[data-lugar]').forEach(b => b.onclick = ev => {
       ev.stopPropagation();
       const p = lugaresSel[+b.dataset.lugar];
-      if (p) abrirArea(p.area, { focar: true, lugar: p });
+      if (p) abrirArea(p.area, { lugar: p });
     });
     pintarSel(a);
     rotulosEl.querySelectorAll('.mapa-rotulo').forEach(el => el.classList.toggle('on', el.dataset.a === String(a)));
-    if (focar){
-      if (lugar) focarCaixas([{ x: lugar.x, z: lugar.z, sx: 28, sz: 28, a }]);
-      else focarCaixas(caixasDa(a));
-    }
   };
   const ponto = (x, zz, cor, r) => {
     const fr = xzFrac(x, zz); if (!fr) return;
@@ -2007,11 +2001,14 @@ function rMapaMundo(corpo){
       wz: regua.z0 + ((ev.clientY - r.top) / r.height) * mh,
     };
   };
-  palco.addEventListener('wheel', ev => {
+  const noRoda = ev => {
+    if (ev.target.closest('.mapa-menu, .mapa-dir, .mapa-esq, .mapa-zoom-btns')) return;
     ev.preventDefault();
     ev.stopPropagation();
     aplicarZoom(limitarZ(z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12)), ev.clientX, ev.clientY);
-  }, { passive: false });
+  };
+  palco.addEventListener('wheel', noRoda, { passive: false });
+  corpo.querySelector('.mapa-overlay').addEventListener('wheel', noRoda, { passive: false });
   palco.addEventListener('pointerdown', ev => {
     if (ev.button !== 0) return;
     arrasto = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, px, py, moveu: false };
@@ -2036,14 +2033,14 @@ function rMapaMundo(corpo){
       const d = Math.hypot(p.wx - fx * m.x, p.wz - m.z);
       if (d < pinD){ pinD = d; pinPerto = m; }
     }
-    if (pinPerto){ abrirArea(pinPerto.area, { focar: true, lugar: pinPerto }); return; }
+    if (pinPerto){ abrirArea(pinPerto.area, { lugar: pinPerto }); return; }
     let melhor = null;
     for (const c of mundo.caixas || []){
       if (!(c.sx > 0 && c.sz > 0)) continue;
       if (Math.abs(p.wx - fx * c.x) > c.sx / 2 || Math.abs(p.wz - c.z) > c.sz / 2) continue;
       if (!melhor || c.sx * c.sz < melhor.sx * melhor.sz) melhor = c;
     }
-    if (melhor) abrirArea(melhor.a, { focar: true });
+    if (melhor) abrirArea(melhor.a);
   };
   palco.addEventListener('pointerup', solta);
   palco.addEventListener('pointercancel', () => { arrasto = null; });
@@ -2052,12 +2049,17 @@ function rMapaMundo(corpo){
     const r = palco.getBoundingClientRect();
     aplicarZoom(limitarZ(z * (b.dataset.z === 'in' ? 1.25 : 0.8)), r.left + r.width / 2, r.top + r.height / 2);
   });
+  const fecharMenus = () => {
+    corpo.querySelectorAll('.mapa-menu-lista').forEach(el => { el.hidden = true; });
+    corpo.querySelectorAll('.mapa-menu-btn').forEach(el => { el.setAttribute('aria-expanded', 'false'); });
+  };
   corpo.querySelectorAll('.mapa-menu-btn').forEach(b => b.onclick = ev => {
     ev.stopPropagation();
     const lista = corpo.querySelector('[data-lista="' + b.dataset.menu + '"]');
-    const aberto = !lista.hidden;
-    corpo.querySelectorAll('.mapa-menu-lista').forEach(el => { el.hidden = true; });
-    lista.hidden = aberto;
+    const abrir = lista.hidden;
+    fecharMenus();
+    lista.hidden = !abrir;
+    b.setAttribute('aria-expanded', abrir ? 'true' : 'false');
   });
   corpo.querySelectorAll('[data-filtro]').forEach(inp => inp.onchange = () => {
     FILTROS_MAPA[inp.dataset.filtro] = inp.checked;
@@ -2068,8 +2070,9 @@ function rMapaMundo(corpo){
     ev.stopPropagation();
     regio = b.dataset.regiao;
     corpo.querySelectorAll('[data-regiao]').forEach(x => x.classList.toggle('on', x === b));
-    corpo.querySelector('[data-menu="regiao"]').textContent = b.textContent;
-    corpo.querySelector('[data-lista="regiao"]').hidden = true;
+    const nome = corpo.querySelector('.mapa-regiao-nome');
+    if (nome) nome.textContent = b.textContent.trim();
+    fecharMenus();
     if (regio === 'sevii'){
       mapaSel = null; selEl.hidden = true; selEl.innerHTML = '';
       lugarEl.textContent = 'Sevii Islands';
@@ -2082,7 +2085,7 @@ function rMapaMundo(corpo){
   });
   addEventListener('pointerdown', ev => {
     if (!corpo.contains(ev.target)) return;
-    if (!ev.target.closest('.mapa-menu')) corpo.querySelectorAll('.mapa-menu-lista').forEach(el => { el.hidden = true; });
+    if (!ev.target.closest('.mapa-menu')) fecharMenus();
   });
   if (mapaResize) removeEventListener('resize', mapaResize);
   mapaResize = () => { if (aberta !== 'mapa' || !corpo.isConnected) return; caber(); };
