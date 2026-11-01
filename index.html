@@ -7803,7 +7803,7 @@ if (jogo.ash){
       else if (r.dinheiro) gravarLS('dinheiro', lerLS('dinheiro', 50000) + r.dinheiro);
       if (r.itens && !comConta()){ const it = lerLS('itens', {}); for (const [id, n] of Object.entries(r.itens)){ if (+id >= 1001 && +id <= 1009){ jogo.bolas[id] = (jogo.bolas[id] || 0) + n; gravarLS('bolas', jogo.bolas); } else it[id] = (it[id] || 0) + n; } gravarLS('itens', it); try { pintarAtalhos(true); } catch (e){ console.warn('pintarAtalhos:', e); } }
       if (r.exp && jogo.pika && !comConta()) darExp(jogo.pika, r.exp);   // 13/09: com conta a XP da missão entra na FICHA pelo servidor (mensagem `xp`); somando aqui também, o nível do cliente corria na frente, ensinava golpes de níveis que não tinha e "perdia" tudo na sincronização (l.neto: Fire Fang/Flamethrower no Lv 17)
-      const partes = [r.dinheiro ? r.dinheiro + ' Moedas' : null, ...Object.entries(r.itens || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n), r.exp ? r.exp + ' XP' : null].filter(Boolean);
+      const partes = [r.dinheiro ? r.dinheiro + ' ' + I18n.t('Coins') : null, ...Object.entries(r.itens || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n), r.exp ? r.exp + ' XP' : null].filter(Boolean);
       if (partes.length) Chat.sistema('🎁 Reward: ' + partes.join(', ') + '.');
       Som.tocar('ui/sound_pkmnhealing', { volume: .5 });
     },
@@ -8582,9 +8582,9 @@ function pintarConvite(n){
   if (E){
     const insignias = (lerLS('insignias', []) || []).length, faltam = Math.max(0, 8 - insignias);
     const naCorrida = !!eliteEstado.corrida;
-    el.innerHTML = `<div class="tcab">⚔ <b>${escHtml(E.nome)}</b> · ${escHtml(E.titulo || 'Elite Four')} <span class="tmini">${escHtml(E.tipo || '')} · ${(E.time || []).length} Pokémon · ${E.ordem}ª de 5</span></div>
-      <div class="tmini" style="margin:4px 0">${faltam ? 'A Liga só abre com as 8 insígnias de Kanto (faltam <b>' + faltam + '</b>).' : naCorrida ? 'Você está no meio da corrida: <b>nada de cura</b> até o Campeão cair.' : 'As cinco lutas são uma corrida só: <b>não dá pra curar entre elas</b>, e perder recomeça do primeiro quarto.'}</div>
-      <div class="tlinha"><button type="button" class="tbt luta" id="t-sim">⚔ Desafiar</button><button type="button" class="tbt" id="t-nao">Agora não</button></div>`;
+    el.innerHTML = `<div class="tcab">⚔ <b>${escHtml(E.nome)}</b> · ${escHtml(E.titulo || 'Elite Four')} <span class="tmini">${escHtml(E.tipo || '')} · ${(E.time || []).length} Pokémon · ${I18n.t('{n} of 5', { n: E.ordem })}</span></div>
+      <div class="tmini" style="margin:4px 0">${faltam ? I18n.t('The League opens with all 8 Kanto badges (you still need {n}).', { n: faltam }) : naCorrida ? I18n.t('You are mid-run: <b>no healing</b> until the Champion falls.') : I18n.t('The five fights are one run: <b>you cannot heal between them</b>, and a loss restarts at the first room.')}</div>
+      <div class="tlinha"><button type="button" class="tbt luta" id="t-sim">⚔ ${I18n.t('Challenge')}</button><button type="button" class="tbt" id="t-nao">${I18n.t('Not now')}</button></div>`;
     el.hidden = false;
     $('t-sim').onclick = () => { Som.destravar(); iniciarTurno(n); };
     $('t-nao').onclick = () => { el.hidden = true; };
@@ -8592,17 +8592,17 @@ function pintarConvite(n){
   }
   if (g){                                                            // ginásio: cabeçalho próprio, cooldown e "tentar agora" pago
     const tem = (lerLS('insignias', []) || []).includes(g.insignia.id), esp = ginasioEspera(g), min = Math.ceil(esp / 60);
-    el.innerHTML = `<div class="tcab">🏟 <b>${g.nome}</b> · Líder ${g.lider} <span class="tmini">${g.tipo} · ${g.time.length} Pokémon · Lv ${g.time[0].lv}–${g.time[g.time.length - 1].lv}${tem ? ' · você já tem a ' + g.insignia.nome : ' · vale a ' + g.insignia.nome}</span></div>
-      ${esp ? `<div class="tmini" style="margin:4px 0">Você perdeu há pouco: o líder volta em <b>${min} min</b>. Tentar agora custa <b>${g.resetMoedas} Moedas</b>.</div>` : ''}
-      <div class="tlinha">${esp ? `<button type="button" class="tbt luta" id="t-pagar">💰 Tentar agora (${g.resetMoedas})</button>` : '<button type="button" class="tbt luta" id="t-sim">⚔ Desafiar</button>'}<button type="button" class="tbt" id="t-nao">Agora não</button></div>`;
+    el.innerHTML = `<div class="tcab">🏟 <b>${g.nome}</b> · ${I18n.t('Leader')} ${g.lider} <span class="tmini">${g.tipo} · ${g.time.length} Pokémon · Lv ${g.time[0].lv}–${g.time[g.time.length - 1].lv}${tem ? I18n.t(' · you already have the {badge}', { badge: g.insignia.nome }) : I18n.t(' · awards the {badge}', { badge: g.insignia.nome })}</span></div>
+      ${esp ? `<div class="tmini" style="margin:4px 0">${I18n.t('You lost recently: the leader is back in <b>{n} min</b>. Challenging now costs <b>{coins} Coins</b>.', { n: min, coins: g.resetMoedas })}</div>` : ''}
+      <div class="tlinha">${esp ? `<button type="button" class="tbt luta" id="t-pagar">💰 ${I18n.t('Challenge now')} (${g.resetMoedas})</button>` : '<button type="button" class="tbt luta" id="t-sim">⚔ ' + I18n.t('Challenge') + '</button>'}<button type="button" class="tbt" id="t-nao">${I18n.t('Not now')}</button></div>`;
     el.hidden = false;
     $('t-sim')?.addEventListener('click', () => { Som.destravar(); iniciarTurno(n); });
     $('t-pagar')?.addEventListener('click', () => { const d = lerLS('dinheiro', 50000); if (d < g.resetMoedas){ flutuar(jogo.ash, 'not enough Coins', '#f58e8e'); return; } if (comConta()) bolsaOp('ginasioreset', { ginasio: g.insignia.id }); else gravarLS('dinheiro', d - g.resetMoedas); const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd); Chat.sistema('You paid ' + g.resetMoedas + ' Coins to challenge ' + g.lider + ' again.'); Som.destravar(); iniciarTurno(n); });
     $('t-nao').onclick = () => { el.hidden = true; };
     return;
   }
-  el.innerHTML = `<div class="tcab">⚔ <b>${n.treino.nome}</b> quer batalhar! <span class="tmini">${n.treino.time.length} Pokémon · turnos</span></div>
-    <div class="tlinha"><button type="button" class="tbt luta" id="t-sim">⚔ Batalhar</button><button type="button" class="tbt" id="t-nao">Agora não</button></div>`;
+  el.innerHTML = `<div class="tcab">⚔ <b>${escHtml(n.treino.nome)}</b> ${I18n.t('wants to battle!')} <span class="tmini">${n.treino.time.length} Pokémon · ${I18n.t('turn-based')}</span></div>
+    <div class="tlinha"><button type="button" class="tbt luta" id="t-sim">⚔ ${I18n.t('Battle')}</button><button type="button" class="tbt" id="t-nao">${I18n.t('Not now')}</button></div>`;
   el.hidden = false;
   $('t-sim').onclick = () => { Som.destravar(); iniciarTurno(n); };
   $('t-nao').onclick = () => { el.hidden = true; };
@@ -8922,16 +8922,16 @@ function fimTurno(vitoria, op = {}){
     eliteEstado.corrida = r && r.elite ? r.elite.corrida : (vitoria ? eliteEstado.corrida : null);
     if (vitoria && r && r.campeao){
       eliteEstado.vencida = true;
-      Chat.sistema('🏆 You beat ' + E.nome + ' and are the Champion of Kanto! Your Pokémon obey up to Lv 100' + (r.soltou ? ' e a XP guardada pelo teto saiu (' + r.soltou + ' Pokémon)' : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' Moedas' : ''));
+      Chat.sistema('🏆 You beat ' + E.nome + ' and are the Champion of Kanto! Your Pokémon obey up to Lv 100' + (r.soltou ? I18n.t(' and banked XP was released ({n} Pokémon)', { n: r.soltou }) : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' ' + I18n.t('Coins') : ''));
       flutuar(jogo.ash, '🏆 Champion of Kanto!', '#ffd23a');
       liberarReserva();
-      if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏆 ' + E.nome + ' · ex-Campeão', '#ffd23a', 2.8); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
+      if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏆 ' + E.nome + ' · ' + I18n.t('former Champion'), '#ffd23a', 2.8); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
     } else if (vitoria){
       /* o `dinheiro` do membro (data/elite.json) é pago pelo servidor na PRIMEIRA vez que aquele membro cai: sem dizer aqui,
          a bolsa engordava em silêncio e o jogador só via a diferença ao abrir a Mochila */
       const moedas = r && r.premio && r.premio.dinheiro ? r.premio.dinheiro : 0;
-      Chat.sistema('⚔ ' + E.nome + ' caiu (' + E.ordem + '/5)' + (moedas ? ' — +' + moedas + ' Moedas' : '') + '. ' + (r && r.proximo ? r.proximo.nome + ' espera no quarto seguinte — e o seu time continua como está.' : 'Siga em frente sem parar pra curar.'));
-      flutuar(jogo.ash, moedas ? '+' + moedas + ' Moedas' : E.ordem + '/5 da Elite', '#ffd23a');
+      Chat.sistema('⚔ ' + E.nome + I18n.t(' fell ({n}/5)', { n: E.ordem }) + (moedas ? ' — +' + moedas + ' ' + I18n.t('Coins') : '') + '. ' + (r && r.proximo ? r.proximo.nome + ' ' + I18n.t('waits in the next room — your party stays as it is.') : I18n.t('Keep going without healing.')));
+      flutuar(jogo.ash, moedas ? '+' + moedas + ' ' + I18n.t('Coins') : E.ordem + '/5 ' + I18n.t('Elite Four'), '#ffd23a');
     } else if (op.desistiu){
       Chat.sistema('You left the League corridor: the Elite Four run reset and starts again from the first room.');
       eliteEstado.corrida = null;
@@ -8952,8 +8952,8 @@ function fimTurno(vitoria, op = {}){
     const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
     n.falas = [g.vitoria[0]];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏅 ' + g.lider + ' · ' + g.nome, '#ffd23a', 2.6); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
-    if (primeira){ Chat.sistema('🏅 You beat ' + g.lider + ' and earned the ' + g.insignia.nome + '! (' + ins.length + '/8 of Kanto · Pokémon obey to a higher level) +' + ganho + ' Moedas'); flutuar(jogo.ash, '🏅 ' + g.insignia.nome + '!', '#ffd23a'); if (jogo.missoesOk) Missoes.evento({ tipo: 'insignia', id: g.insignia.id, numero: g.numero }); }
-    else { Chat.sistema('🏆 Revanche vencida contra ' + g.lider + ': +' + ganho + ' Moedas.'); flutuar(jogo.ash, '+' + ganho + ' Moedas', '#ffd23a'); }
+    if (primeira){ Chat.sistema('🏅 You beat ' + g.lider + ' and earned the ' + g.insignia.nome + '! (' + ins.length + '/8 of Kanto · Pokémon obey to a higher level) +' + ganho + ' ' + I18n.t('Coins')); flutuar(jogo.ash, '🏅 ' + g.insignia.nome + '!', '#ffd23a'); if (jogo.missoesOk) Missoes.evento({ tipo: 'insignia', id: g.insignia.id, numero: g.numero }); }
+    else { Chat.sistema('🏆 ' + I18n.t('Rematch won against {name}: +{n} Coins.', { name: g.lider, n: ganho })); flutuar(jogo.ash, '+' + ganho + ' ' + I18n.t('Coins'), '#ffd23a'); }
     mostrarFala(g.lider, g.vitoria, n);
     return;
   }
@@ -8964,7 +8964,7 @@ function fimTurno(vitoria, op = {}){
     if (doServidor){}                                                     // o servidor já cobrou a derrota
     else if (comConta()) bolsaOp('ginasio', { ginasio: g.insignia.id, venceu: false });
     else if (perda > 0) gravarLS('dinheiro', lerLS('dinheiro', 50000) - perda);
-    Chat.sistema('You lost to ' + g.lider + (perda ? ' and ' + perda + ' Coins' : '') + '. O líder aceita outro desafio em ' + g.cooldownMin[k] + ' min (ou pague ' + g.resetMoedas + ' Moedas pra tentar agora).');
+    Chat.sistema('You lost to ' + g.lider + (perda ? ' and ' + perda + ' ' + I18n.t('Coins') : '') + '. ' + I18n.t('The leader takes another challenge in {n} min (or pay {coins} Coins to try now).', { n: g.cooldownMin[k], coins: g.resetMoedas }));
     mostrarFala(g.lider, g.derrota, n);
     return;
   }
@@ -8979,7 +8979,7 @@ function fimTurno(vitoria, op = {}){
     n.falas = [t.vitoria[0] || Dialogos.texto('jaVenceu')];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('✔ ' + t.nome, '#9fb2d0', 2.4); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
     Chat.sistema('🏆 You beat ' + t.nome + ' and won ' + g + ' Coins!');
-    flutuar(jogo.ash, '+' + g + ' Moedas', '#ffd23a');
+    flutuar(jogo.ash, '+' + g + ' ' + I18n.t('Coins'), '#ffd23a');
     mostrarFala(t.nome, t.vitoria, n);
   } else if (op.desistiu){
     Chat.sistema('You ran from the battle against ' + t.nome + '.');
@@ -8998,11 +8998,11 @@ function pintarTurno(){
   const agora = Date.now(), ativo = membroAtivo();
   const iTroca = jogo.time.findIndex((c, j) => j !== ativo && !(c.hp === 0 && (c.koAte || 0) > agora) && !(c.hp === 0));
   const golpes = (p?.movs || []).map((m, i) => ({ g: GOLPES[m.id], m, i })).filter(x => x.g);
-  el.innerHTML = `<div class="tcab">⚔ <b>${T.info.nome}</b> · Pokémon ${Math.min(T.idx + 1, T.info.time.length)}/${T.info.time.length} · rodada ${T.rodada}${livreE ? '' : ' <span class="tmini">…executando</span>'}</div>
+  el.innerHTML = `<div class="tcab">⚔ <b>${escHtml(T.info.nome)}</b> · Pokémon ${Math.min(T.idx + 1, T.info.time.length)}/${T.info.time.length} · ${I18n.t('round')} ${T.rodada}${livreE ? '' : ' <span class="tmini">' + I18n.t('…resolving') + '</span>'}</div>
     <div class="tlinha">${golpes.map(({ g, m, i }) => `<button type="button" class="tbt golpe" data-tg="${i}" ${livreE && m.pp > 0 ? '' : 'disabled'}><b>${i + 1}</b>${g.nome || g.id}<small>${g.tipo || ''} · ${g.poder || '—'} · PP ${m.pp}/${m.ppMax}</small></button>`).join('')}${p && Ind.semPP(p) ? `<button type="button" class="tbt golpe" data-tg="s" ${livreE ? '' : 'disabled'}><b>!</b>Struggle<small>Normal · 50 · ${I18n.t('no PP')}</small></button>` : ''}</div>
-    <div class="tlinha"><button type="button" class="tbt" id="t-mochila" ${livreE ? '' : 'disabled'}>🎒 Mochila</button>
-      <button type="button" class="tbt" id="t-troca" ${livreE && iTroca >= 0 ? '' : 'disabled'}>🔄 Trocar</button>
-      <button type="button" class="tbt fugir" id="t-fugir" ${livreE ? '' : 'disabled'}>🏳 Desistir</button></div>`;
+    <div class="tlinha"><button type="button" class="tbt" id="t-mochila" ${livreE ? '' : 'disabled'}>🎒 ${I18n.t('Bag')}</button>
+      <button type="button" class="tbt" id="t-troca" ${livreE && iTroca >= 0 ? '' : 'disabled'}>🔄 ${I18n.t('Switch')}</button>
+      <button type="button" class="tbt fugir" id="t-fugir" ${livreE ? '' : 'disabled'}>🏳 ${I18n.t('Forfeit')}</button></div>`;
   el.hidden = false;
   el.querySelectorAll('[data-tg]').forEach(b => b.onclick = () => { Som.destravar(); const g = b.dataset.tg === 's' ? STRUGGLE : GOLPES[jogo.pika.golpesIds[+b.dataset.tg]]; if (g) rodadaTurno({ tipo: 'golpe', g }); });
   $('t-mochila').onclick = () => Menus.abrir('mochila');
