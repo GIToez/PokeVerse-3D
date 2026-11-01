@@ -248,39 +248,39 @@
  },
  "bolas": {
   "1001": {
-   "nome": "Pokébola",
+   "nome": "Poké Ball",
    "taxa": 1
   },
   "1002": {
-   "nome": "Grande Bola",
+   "nome": "Great Ball",
    "taxa": 1.5
   },
   "1003": {
-   "nome": "Ultra Bola",
+   "nome": "Ultra Ball",
    "taxa": 2
   },
   "1004": {
-   "nome": "Bola Mestra",
+   "nome": "Master Ball",
    "taxa": 255
   },
   "1005": {
-   "nome": "Bola Safári",
+   "nome": "Safari Ball",
    "taxa": 1.5
   },
   "1006": {
-   "nome": "Bola Nível",
+   "nome": "Level Ball",
    "taxa": 1
   },
   "1007": {
-   "nome": "Bola Rede",
+   "nome": "Net Ball",
    "taxa": 1
   },
   "1008": {
-   "nome": "Bola Ninho",
+   "nome": "Nest Ball",
    "taxa": 1
   },
   "1009": {
-   "nome": "Bola Repetição",
+   "nome": "Repeat Ball",
    "taxa": 1
   }
  }

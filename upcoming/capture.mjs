@@ -151,7 +151,7 @@ function darBolas(a, n) {
   ctx.gravarLS('bolas', b);
   ctx.pintarHud();
   status(
-    `+${n} ${{ 1001: 'Pokébola', 1002: 'Grande Bola', 1003: 'Ultra Bola', 1004: 'Bola Mestra' }[a]} (have ${b[a]})`,
+    `+${n} ${{ 1001: 'Poké Ball', 1002: 'Great Ball', 1003: 'Ultra Ball', 1004: 'Master Ball' }[a]} (have ${b[a]})`,
   );
 }
 function pintarBanner() {
