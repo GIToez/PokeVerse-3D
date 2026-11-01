@@ -59,8 +59,15 @@ function aplicarConta(d){
 /** Avisa a conta do idioma escolhido (barra da tela de login, ou quem chamar). */
 export async function idioma(l){ if (modo === 'conta' && token && I18n.IDIOMAS[l]) return api('POST', '/conta/idioma', { idioma: l }); return null; }
 /* ONDE A CONTA PAROU (08/09): vem do servidor no GET /save e o index usa pra nascer no lugar certo depois de recarregar. */
-let posUltima = null;
+let posUltima = null, posPend = null;
 export const posSalva = () => posUltima;
+/** Last walk on this page (x,z,giro,mapa). Sent on hide so F5 / relog is not the last door. Server still validates jumps. */
+export function lembrarPos(p){
+  if (!p || !Number.isFinite(+p.x) || !Number.isFinite(+p.z)) return;
+  const mapa = String(p.mapa || '');
+  if (!/^[\w.-]{1,40}$/.test(mapa)) return;
+  posPend = { mapa, x: +(+p.x).toFixed(2), y: Number.isFinite(+p.y) ? +(+p.y).toFixed(2) : 0, z: +(+p.z).toFixed(2), giro: Number.isFinite(+p.giro) ? +(+p.giro).toFixed(3) : 0, ...(p.chegada ? { chegada: +p.chegada } : {}) };
+}
 /** Leitura crua de uma chave (texto JSON ou null). Com conta e chave de save, vem do cofre. */
 export function lerBruto(k){ return (comConta() && CHAVES.has(k)) ? (cofre.get(k) ?? null) : ler(k); }
 /** Gravação crua. Com conta e chave de save, fica no cofre e marca pra subir; o aparelho não vê. */
@@ -301,12 +308,13 @@ const temPendente = () => pendente.arranjo || pendente.prefs.size || pendente.co
     fechando ou ao sair — o WebSocket pode não despejar o que ficou na fila. O que não foi continua pendente. */
 function despachar(viaHttp = false){
   clearTimeout(timer);
-  if (modo !== 'conta' || travado || !temPendente()) return null;
+  if (modo !== 'conta' || travado || (!temPendente() && !posPend)) return null;
   if (viaHttp){
     const corpo = {};
     if (pendente.arranjo) corpo.arranjo = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] };
     if (pendente.prefs.size){ corpo.prefs = {}; for (const k of pendente.prefs) corpo.prefs[k] = lerCofre(k); }
     if (pendente.conhecimento) corpo.conhecimento = { dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') };
+    if (posPend) corpo.pos = posPend;
     pendente.arranjo = false; pendente.prefs.clear(); pendente.conhecimento = false; sujo = false; apagar(LS.sujo);
     return api('POST', '/conta/estado', corpo, true).then(r => { if (r.status === 409 && r.dados?.outroAparelho) pararSync(); return r.ok; });
   }

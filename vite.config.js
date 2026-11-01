@@ -6,7 +6,10 @@ import { defineConfig } from 'vite'
 const adminRoute = {
   name: 'admin-route',
   configureServer(server) {
-    server.middlewares.use((req, _res, next) => {
+    server.middlewares.use((req, res, next) => {
+      const path = (req.url || '').split('?')[0];
+      if (/\.(glb|png|webp|jpe?g|gif|ogg|mp3|wav|ktx2|woff2?)$/i.test(path)) res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+      else if (/\.(html|mjs|js|css)$/i.test(path) || path === '/' || path.endsWith('/')) res.setHeader('Cache-Control', 'no-cache');
       const mc = req.url && req.url.match(/^\/+admin\/(?:scenery|cenario)\/?(\?.*)?$/);
       if (mc) { req.url = '/admin/scenery.html' + (mc[1] || ''); return next(); }
       const m = req.url && req.url.match(/^\/+admin\/?(\?.*)?$/);

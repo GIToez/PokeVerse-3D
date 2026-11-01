@@ -112,7 +112,8 @@ server {
     # Static files: public/ first (like the dev server), then the project root (scenery/, sound/, ui/, *.mjs…).
     location ~ \.(glb|png|webp|jpg|ogg|mp3|wav|ktx2)$ {
         try_files /public$uri $uri =404;
-        expires 7d;
+        etag on;
+        add_header Cache-Control "public, max-age=0, must-revalidate";
     }
     location ~ \.mjs$ {
         default_type application/javascript;

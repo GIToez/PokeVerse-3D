@@ -27,6 +27,12 @@ play.pokeverse.quest {
 	@mjs path *.mjs
 	header @mjs Content-Type application/javascript
 
+	# Maps / images / audio: keep a copy, but revalidate every load (304 if unchanged).
+	@assets path *.glb *.png *.webp *.jpg *.jpeg *.gif *.ogg *.mp3 *.wav *.ktx2 *.woff *.woff2
+	header @assets Cache-Control "public, max-age=0, must-revalidate"
+	@code path *.html *.mjs *.js *.css
+	header @code Cache-Control "no-cache"
+
 	redir /concepts /concepts/ 308
 	handle /concepts/* {
 		try_files /public{path} /public{path}/index.html {path} {path}/index.html
