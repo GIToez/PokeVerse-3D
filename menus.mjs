@@ -1375,22 +1375,29 @@ function rMissoes(corpo){
   const nomeItem = id => tr(D.itens[id]?.n || ('item ' + id));
   const rec = r => [r?.dinheiro ? r.dinheiro + ' coins' : null, ...Object.entries(r?.itens || {}).map(([id, n]) => esc(nomeItem(id)) + ' ×' + n), r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
   if (aba === 'laterais'){
-    const grupos = M.lateraisGrupos?.() || [];
-    const ativas = (M.laterais?.() || []).filter(m => m.estado === 'ativa');
+    const lista = M.laterais?.() || [];
+    const grupos = [
+      { id: 'ativa', nome: 'Active', missoes: lista.filter(m => m.estado === 'ativa') },
+      { id: 'disponivel', nome: 'Available now', missoes: lista.filter(m => m.estado === 'disponivel') },
+      { id: 'feita', nome: 'Done', missoes: lista.filter(m => m.estado === 'feita') },
+    ];
+    const sel = lista.find(m => String(m.id) === String(secSel)) || grupos.find(g => g.missoes.length)?.missoes[0] || null;
+    secSel = sel ? String(sel.id) : null;
     const passoTxt = (m, p, i) => {
       const n = p.n || 0, prog = m.feitos || 0;
       const c = i === (m.passo || 0) && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : '';
       return esc(tr(p.texto)) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : '');
     };
-    const atual = ativas.length
-      ? ativas.map(m => `<div class="missao-atual"><small style="color:var(--muted)">SIDE QUEST · ${esc(tr(m.grupoNome || ''))}</small><br><b>${esc(tr(m.nome))}</b><br><span style="font-size:12px">${esc(tr(m.des || ''))}</span>
-        <div style="margin-top:8px;font-size:13px;line-height:1.5">${(m.passos || []).map((p, i) => `<div>${i < (m.passo || 0) ? '✔' : i === (m.passo || 0) ? '▶' : '○'} ${passoTxt(m, p, i)}</div>`).join('')}</div>
-        <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(m.recompensa)}</div></div>`).join('')
-      : '<div class="missao-atual"><b>No side quest accepted yet.</b><br><span style="font-size:12px">Talk to an NPC with a gold ! to take one. They never replace the main story.</span></div>';
-    corpo.innerHTML = atual + (grupos.length ? grupos.map(c => {
-      const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa');
-      return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length && c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length && c.missoes.length ? '✅' : aberta ? '▶️' : '○'} ${esc(tr(c.nome))} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '○'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des || ''))} · Reward: ${rec(m.recompensa)}</small></span></div>`).join('') || '<div class="fraco">No quests in this group yet.</div>'}</div></details>`;
-    }).join('') : '<div class="vazio">No side quests published yet. Add them in Admin → Missions → Side quests.</div>');
+    const atual = sel
+      ? `<div class="missao-atual"><small style="color:var(--muted)">SIDE · ${esc(ESTADO_SEC[sel.estado] || sel.estado)}${sel.onde || sel.grupoNome ? ' · ' + esc(tr(sel.onde || sel.grupoNome)) : ''}</small><br><b>${esc(tr(sel.nome))}</b><br><span style="font-size:12px">${esc(tr(sel.des || ''))}</span>
+        <div style="margin-top:8px;font-size:13px;line-height:1.5">${(sel.passos || []).map((p, i) => `<div>${sel.estado === 'feita' || i < (sel.passo || 0) ? '✔' : sel.estado === 'ativa' && i === (sel.passo || 0) ? '▶' : '○'} ${passoTxt(sel, p, i)}</div>`).join('')}</div>
+        <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(sel.recompensa)}</div></div>`
+      : '<div class="missao-atual"><b>No side quests for now.</b><br><span style="font-size:12px">Talk to an NPC with a gold ! to take one. They never replace the main story.</span></div>';
+    corpo.innerHTML = atual + grupos.map(c => {
+      const aberto = (sel && sel.estado === c.id) || (c.id === 'disponivel' && !sel);
+      return `<details ${aberto ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:#ffe07a">${esc(c.nome)} <small style="color:var(--muted)">${c.id === 'ativa' ? c.missoes.length + '/10' : c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" data-sec-id="${m.id}" style="${String(m.id) === secSel ? 'border-color:#ffd23a' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '○'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des || ''))} · Reward: ${rec(m.recompensa)}</small></span></div>`).join('') || '<div class="fraco">None.</div>'}</div></details>`;
+    }).join('');
+    corpo.querySelectorAll('[data-sec-id]').forEach(el => el.onclick = () => { secSel = el.dataset.secId; render(); });
     return;
   }
   const caps = M.capitulos(), ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
@@ -1406,7 +1413,8 @@ function rMissoes(corpo){
    Em cima a missão ativa com até 4 objetivos; embaixo os 20 capítulos, que abrem e fecham. A altura de cada linha
    varia (capítulo fechado 28 px, aberto 26 + missões×46 − 4 + 10), então a pilha é montada na mão. Os ícones de
    estado saem das referências `[estado:…]` da própria página, não de nomes de arquivo escritos aqui. */
-let popMi = null, capAberto = null, capAtivoVisto = null;
+let popMi = null, capAberto = null, capAtivoVisto = null, secSel = null, secGrupoAberto = 'disponivel';
+const ESTADO_SEC = { ativa: 'Active', disponivel: 'Available now', feita: 'Done' };
 function popupMi(){
   if (popMi) return popMi;
   const def = defPopup('missoes');
@@ -1417,6 +1425,13 @@ function popupMi(){
     fechar: () => { if (aberta === 'missoes') aberta = null; },
   });
   popMi.addEventListener('click', ev => {                                // clique no capítulo abre/fecha
+    if (Popup.abaAtual(popMi) === 'secundarias'){
+      const row = ev.target?.closest?.('[data-sec-id]');
+      if (row && row.style.display !== 'none'){ secSel = row.dataset.secId; render(); return; }
+      const g = ev.target?.closest?.('[data-sec-grupo]');
+      if (g){ secGrupoAberto = secGrupoAberto === g.dataset.secGrupo ? null : g.dataset.secGrupo; render(); }
+      return;
+    }
     const c = ev.target?.closest?.('[data-fig^="capitulo-"]'); if (!c || /-missoes$/.test(c.dataset.fig)) return;
     const n = +c.dataset.fig.split('-')[1]; if (!n) return;
     const item = popMi.__capsLista?.[n - 1];
@@ -1464,6 +1479,8 @@ function encherMissoes(pop){
   Popup.rotulo(pop, 'titulo');                                          // "Missões" e os nomes das abas: rótulos da maquete (v2 trouxe como txt/, não na arte)
   for (const aba of pop.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(pop, 'aba', aba);
   if (!M?.pronto?.()) return;
+  if (Popup.abaAtual(pop) === 'secundarias'){ encherSecundarias(pop, G); return; }
+  for (const el of pop.querySelectorAll('[data-sec-id],[data-sec-grupo]')){ delete el.dataset.secId; delete el.dataset.secGrupo; }
   const ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
   const fa = Popup.grupo(pop, 'missao-ativa');
   Popup.texto(pop, 'capitulo-local', ativa ? 'Capítulo ' + ativa.capitulo + ' · ' + ativa.capNome : '', fa);
@@ -1490,8 +1507,7 @@ function encherMissoes(pop){
   Popup.texto(pop, 'recompensa', ativa ? 'Reward: ' + textoRecompensaMi(ativa.recompensa) : '');
   // ---- lista de capítulos (altura variável)
   const caps = M.capitulos();
-  const sides = (M.lateraisGrupos?.() || []).map(g => ({ ...g, side: true, id: 10000 + g.id }));
-  const listaCaps = [...caps, ...sides];
+  const listaCaps = caps;
   pop.__capsLista = listaCaps;
   if (ativa && ativa.capitulo !== capAtivoVisto){ capAtivoVisto = ativa.capitulo; capAberto = ativa.capitulo; }
   const linhas = Popup.clonarSerie(pop, 'lista-capitulos', 'capitulo-1', listaCaps.length, 'capitulo');
@@ -1530,6 +1546,94 @@ function encherMissoes(pop){
       Popup.texto(pop, 'missao-resumo', (m.des || '') + ' · recompensa: ' + textoRecompensaMi(m.recompensa), el);
     });
     y += Math.max(0, (c.missoes.length - 1) * G.passoMis + G.hMis) + G.depois;
+  });
+  Popup.alturaRolagem(pop, 'lista-capitulos', y);
+}
+function janelaObjetivos(n, atual){ return Math.max(0, Math.min(Math.max(0, atual - 1), Math.max(0, n - 4))); }
+function encherSecundarias(pop, G){
+  const M = ctx.missoes;
+  const lista = M.laterais?.() || [];
+  const grupos = [
+    ['ativa', 'Active'],
+    ['disponivel', 'Available now'],
+    ['feita', 'Done'],
+  ].map(([id, nome]) => ({ id, nome, missoes: lista.filter(x => x.estado === id) }));
+  const sel = lista.find(x => String(x.id) === String(secSel) && x.estado !== 'travada')
+    || grupos.find(g => g.missoes.length)?.missoes[0]
+    || null;
+  secSel = sel ? String(sel.id) : null;
+  const fa = Popup.grupo(pop, 'missao-ativa');
+  const onde = sel?.onde || sel?.grupoNome || '';
+  Popup.texto(pop, 'capitulo-local', sel ? 'Side · ' + (ESTADO_SEC[sel.estado] || sel.estado) + (onde ? ' · ' + onde : '') : '', fa);
+  Popup.texto(pop, 'missao-titulo', sel ? sel.nome : 'No side quests for now.', fa);
+  Popup.texto(pop, 'missao-descricao', sel
+    ? (sel.des || '') + (sel.estado === 'disponivel' && sel.npc != null ? ' Talk to the quest giver (gold !) to accept it.' : '')
+    : 'Talk to an NPC with a gold ! to take a side quest. They never replace the main story.', fa);
+  const passos = sel?.passos || [];
+  const idx = sel?.estado === 'ativa' ? (sel.passo || 0) : sel?.estado === 'feita' ? passos.length : -1;
+  const win = janelaObjetivos(passos.length, idx);
+  for (let i = 0; i < 4; i++){
+    const g = Popup.grupo(pop, 'objetivo-' + (i + 1)); if (!g) continue;
+    const k = win + i, p2 = passos[k];
+    g.style.display = p2 ? 'block' : 'none';
+    if (!p2) continue;
+    const estado = idx < 0 ? 'pendente' : k < idx ? 'feito' : k === idx ? 'atual' : 'pendente';
+    const ic = Popup.no(pop, 'objetivo-estado', g);
+    if (ic){
+      const url = iconeEstado(pop, 'objetivo', estado, 'objetivo-estado', ic);
+      ic.style.backgroundImage = url ? 'url(' + url + ')' : 'none';
+      ic.style.border = url ? '0' : '1.5px solid #B8C2D9';
+      ic.style.borderRadius = url ? '0' : '50%';
+    }
+    const cont = (k === idx && p2.n > 1) ? ' ' + Math.min(sel.feitos || 0, p2.n) + '/' + p2.n : '';
+    Popup.texto(pop, 'objetivo', (p2.texto || '') + cont, g);
+    Popup.texto(pop, 'objetivo-local', p2.onde ? '(' + p2.onde + ')' : '', g);
+  }
+  Popup.texto(pop, 'recompensa', sel ? 'Reward: ' + textoRecompensaMi(sel.recompensa) : '');
+  if (sel && secGrupoAberto != null && secGrupoAberto !== sel.estado && !grupos.find(g => g.id === secGrupoAberto)?.missoes.length)
+    secGrupoAberto = sel.estado;
+  if (secGrupoAberto == null) secGrupoAberto = grupos.find(g => g.missoes.length)?.id || 'disponivel';
+  const linhas = Popup.clonarSerie(pop, 'lista-capitulos', 'capitulo-1', grupos.length, 'capitulo');
+  const aberto = grupos.find(g => g.id === secGrupoAberto) || null;
+  const grupoMolde = Popup.grupo(pop, 'capitulo-1-missoes');
+  if (grupoMolde) grupoMolde.style.display = 'none';
+  const linhasMi = Popup.clonarSerie(pop, 'lista-capitulos', 'missao-1', Math.max(aberto?.missoes.length || 0, 1), 'missao');
+  for (const el of linhasMi){ el.style.display = 'none'; delete el.dataset.secId; }
+  let y = 0;
+  grupos.forEach((g, i) => {
+    const linha = linhas[i]; if (!linha) return;
+    const open = aberto === g;
+    linha.dataset.secGrupo = g.id;
+    delete linha.dataset.secId;
+    linha.style.top = y + 'px';
+    const seta = linha.querySelector('[data-fig="icone-seta"]');
+    if (seta) seta.textContent = open ? '▼' : '▶';
+    if (G.arteAberto && G.arteFechado && G.arteAberto !== G.arteFechado) linha.style.backgroundImage = 'url(' + (open ? G.arteAberto : G.arteFechado) + ')';
+    const est = g.id === 'feita' ? 'concluida' : g.id === 'ativa' ? 'ativa' : 'bloqueada';
+    const ic = Popup.no(pop, 'capitulo-estado', linha);
+    if (ic){ const url = iconeEstado(pop, 'missao', est, 'objetivo-estado', ic); ic.style.backgroundImage = url ? 'url(' + url + ')' : 'none'; }
+    Popup.texto(pop, 'capitulo-nome', g.nome, linha);
+    Popup.texto(pop, 'capitulo-progresso', g.id === 'ativa' ? g.missoes.length + '/10' : String(g.missoes.length), linha);
+    if (!open){ y += G.passoCap; return; }
+    y += G.yGrupo;
+    g.missoes.forEach((m, k) => {
+      const el = linhasMi[k]; if (!el) return;
+      el.style.display = 'block'; el.style.top = (y + k * G.passoMis) + 'px'; el.style.left = G.xGrupo + 'px';
+      el.dataset.secId = String(m.id);
+      el.style.cursor = 'pointer'; el.style.pointerEvents = 'auto';
+      const on = String(m.id) === secSel;
+      for (const mk of el.querySelectorAll(':scope > [data-fig="marca-ativa"]')) mk.style.display = on ? 'block' : 'none';
+      const estM = m.estado === 'feita' ? 'concluida' : m.estado === 'ativa' ? 'ativa' : 'bloqueada';
+      const ic2 = Popup.no(pop, 'objetivo-estado', el);
+      if (ic2){ const url = iconeEstado(pop, 'missao', estM, 'objetivo-estado', ic2); ic2.style.backgroundImage = url ? 'url(' + url + ')' : 'none'; }
+      const nomeEl = Popup.texto(pop, 'missao-nome', m.nome, el);
+      if (nomeEl) nomeEl.style.color = '#FFFFFF';
+      const resumo = m.estado === 'ativa'
+        ? ((m.passos || [])[m.passo || 0]?.texto || m.des || '')
+        : ((m.onde || m.grupoNome || '') + (m.recompensa ? ' · Reward: ' + textoRecompensaMi(m.recompensa) : ''));
+      Popup.texto(pop, 'missao-resumo', resumo, el);
+    });
+    y += Math.max(0, (g.missoes.length - 1) * G.passoMis + G.hMis) + G.depois;
   });
   Popup.alturaRolagem(pop, 'lista-capitulos', y);
 }
