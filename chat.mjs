@@ -67,6 +67,21 @@ export function enviar(aba, texto){
 export const mensagens = () => msgs;
 export function limpar(){ msgs = []; guardar(); for (const m of montagens) m.atualizar(); }
 /** Monta o chat dentro de `el`. compacto = peça da HUD (botão de recolher). */
+function ligarGrip(grip, el){
+  let d0 = null;
+  const aplicar = (w, h) => {
+    el.style.setProperty('--chat-w', w + 'px');
+    el.style.setProperty('--chat-h', h + 'px');
+  };
+  grip.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); d0 = { x: ev.clientX, y: ev.clientY, w: el.offsetWidth, h: el.offsetHeight }; try { grip.setPointerCapture(ev.pointerId); } catch {} });
+  grip.addEventListener('pointermove', ev => {
+    if (!d0) return;
+    aplicar(Math.max(220, Math.min(innerWidth - 24, d0.w + (ev.clientX - d0.x))), Math.max(110, Math.min(innerHeight - 24, d0.h - (ev.clientY - d0.y))));
+  });
+  const soltou = () => { if (!d0) return; d0 = null; ctx?.gravarLS?.('chat.tam', { w: el.offsetWidth, h: el.offsetHeight }); };
+  grip.addEventListener('pointerup', soltou); grip.addEventListener('pointercancel', soltou);
+  grip.addEventListener('dblclick', ev => { ev.preventDefault(); el.style.removeProperty('--chat-w'); el.style.removeProperty('--chat-h'); try { localStorage.removeItem('chat.tam'); ctx?.gravarLS?.('chat.tam', null); } catch {} });
+}
 export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {}){
   if (el.__chat){ montagens.add(el.__chat); el.__chat.atualizar(); return el.__chat; }
   let aba = abaInicial; const naoLidas = { local: 0, global: 0, trade: 0, help: 0 };
@@ -89,23 +104,20 @@ export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {})
     el.classList.toggle('fechado'); if (!el.classList.contains('fechado')) render();
     if (el.id === 'chat' && el.dataset.dock === '1'){ try { localStorage.setItem('chat.dock', JSON.stringify(el.classList.contains('fechado') ? 'recolhido' : 'visivel')); } catch {} }   // chat ancorado do celular: lembra o recolhido entre as trocas de área
   });
-  if (el.id === 'chat' && compacto){                                     // redimensionar (Jaime, 31/08): grip ◢ ao lado do –; tamanho por jogador em LS chat.tam; duplo clique = padrão
+  if (el.id === 'chat'){                                                 // resize: tab grip + corner; size in LS chat.tam; double-click resets
     const tam = ctx?.lerLS?.('chat.tam', null);
-    if (tam?.w) el.style.setProperty('--chat-w', tam.w + 'px');       // var CSS: o Hud.aplicar limpa width/height inline, mas não mexe em custom properties
+    if (tam?.w) el.style.setProperty('--chat-w', tam.w + 'px');
     if (tam?.h) el.style.setProperty('--chat-h', tam.h + 'px');
-    const grip = document.createElement('button'); grip.type = 'button'; grip.className = 'dim'; grip.title = 'arraste: tamanho do chat · duplo clique: padrão'; grip.textContent = '◢';
-    el.querySelector('.abas').appendChild(grip);
-    let d0 = null;
-    grip.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); d0 = { x: ev.clientX, y: ev.clientY, w: el.offsetWidth, h: el.offsetHeight }; grip.setPointerCapture(ev.pointerId); });
-    grip.addEventListener('pointermove', ev => {
-      if (!d0) return;
-      const w = Math.max(240, Math.min(760, d0.w + (ev.clientX - d0.x)));
-      const h = Math.max(120, Math.min(520, d0.h - (ev.clientY - d0.y)));
-      el.style.setProperty('--chat-w', w + 'px'); el.style.setProperty('--chat-h', h + 'px');
-    });
-    const soltou = () => { if (!d0) return; d0 = null; ctx?.gravarLS?.('chat.tam', { w: el.offsetWidth, h: el.offsetHeight }); };
-    grip.addEventListener('pointerup', soltou); grip.addEventListener('pointercancel', soltou);
-    grip.addEventListener('dblclick', () => { el.style.removeProperty('--chat-w'); el.style.removeProperty('--chat-h'); try { localStorage.removeItem('chat.tam'); } catch {} });
+    if (compacto && !el.querySelector('.dim')){
+      const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'dim'; tab.title = tr('drag: resize chat · double-click: default'); tab.textContent = '◢';
+      el.querySelector('.abas')?.appendChild(tab);
+      ligarGrip(tab, el);
+    }
+    if (!el.querySelector('.chat-grip')){
+      const canto = document.createElement('button'); canto.type = 'button'; canto.className = 'chat-grip'; canto.title = tr('drag: resize chat · double-click: default'); canto.textContent = '◢';
+      el.appendChild(canto);
+      ligarGrip(canto, el);
+    }
   }
   form.onsubmit = ev => { ev.preventDefault(); const c = enviar(aba, input.value); if (c){ input.value = ''; } };
   input.addEventListener('keydown', ev => { if (ev.code === 'Escape'){ input.blur(); ev.preventDefault(); } ev.stopPropagation(); });

@@ -120,12 +120,21 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
 
     // ── modelos (elenco + tamanhos do modo "jogo")
     const els = D.elenco.filter(e => e.n === n);
-    const livres = (glbsDe[n] || []).filter(gl => !D.elenco.some(e => e.glb === gl));
+    const noDisco = glbsDe[n] || [];
+    const livres = noDisco.filter(gl => !D.elenco.some(e => e.glb === gl));
     const km = cartao(`3D models (${els.length})`, livres.length ? [['＋ Model', () => {
-      const gl = prompt('Which model? Available for this species:\n' + livres.join(', '), livres[0]); if (!gl) return;
+      const gl = livres.length === 1 ? livres[0] : prompt('Which leftover file for this species?\n' + livres.join(', '), livres[0]);
+      if (!gl) return;
       if (!livres.includes(gl.trim())) { toast('This model does not exist in scenery/mon (or is already in the cast).', true); return; }
       const i = D.elenco.findLastIndex(e => e.n <= n);
       D.elenco.splice(i + 1, 0, { n, nome: nomeSp(n), glb: gl.trim(), altura: 0 }); atualizarLinha(); renderEditor(); }]] : []);
+    const ajuda = document.createElement('div'); ajuda.className = 'mini';
+    if (!noDisco.length) ajuda.textContent = 'No .glb on disk for dex ' + pad(n) + '. Add public/scenery/mon/pm' + pad(n) + '_00.glb (and optional _11, _12…) then reload. ＋ Model only appears for leftover files that are not in the cast yet.';
+    else if (!livres.length) ajuda.textContent = 'Every file on disk for this number is already in the cast. Extra forms: drop another pm' + pad(n) + '_FF.glb in public/scenery/mon/ and reload.';
+    else ajuda.textContent = 'Leftover on disk (not in the cast): ' + livres.join(', ') + '. ＋ Model adds one of those — it does not upload a new file.';
+    km.append(ajuda);
+    const previa = document.createElement('div'); previa.className = 'caixa-previa'; km.append(previa);
+    import('/admin/preview_species.mjs').then(P => P.mostrar(previa, noDisco, { nome: nomeSp(n) })).catch(e => console.warn('species preview:', e));
     if (!els.length) { const v = document.createElement('div'); v.className = 'mini'; v.textContent = 'No model in the cast: this species does not appear in the game (not even as an evolution).'; km.append(v); }
     else {
       const t = document.createElement('table'); t.className = 'esp';
