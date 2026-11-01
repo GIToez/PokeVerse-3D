@@ -20,6 +20,7 @@ import { criarModeracao } from './server_moderation.mjs';           // Fase 3: c
 import { criarEventos } from './server_events.mjs';               // Fase 3: eventos ao vivo (EXP/shiny/densidade, aviso global, manutenção)
 import { criarRecursos } from './server_resources.mjs';             // Fase 3: listas de faixas/máscaras/modelos pras prévias do painel
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
+import { applyRole, ROLES } from './tools/roles.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
@@ -579,6 +580,26 @@ const httpServer = http.createServer((req, res) => {
     if (corpoGrande) return;
     let d = {};
     try { d = body ? JSON.parse(body) : {}; } catch {}
+
+    // Local CLI only: no X-Forwarded-For (Caddy always sets that). Used by tools/set_role.mjs.
+    if (req.method === 'POST' && rota === '/local/role') {
+      const local = LOOPBACK.has(req.socket.remoteAddress) && !req.headers['x-forwarded-for'];
+      if (!local) return json(403, { erro: 'Local only.' });
+      const u = String(d.usuario || '').toLowerCase().trim();
+      const role = String(d.role || '').toLowerCase().trim();
+      if (!ROLES[role]) return json(400, { erro: 'role must be admin, staff, mod, or player' });
+      if (!u || !contas[u]) return json(404, { erro: 'Account not found.' });
+      const depois = applyRole(contas[u], role);
+      contas[u].rev = (contas[u].rev || 0) + 1;
+      salvarContasJa();
+      logAdmin('local', u, 'cargo', { depois });
+      for (const w of socketsDe(u)) {
+        enviar(w, { t: 'save', save: contas[u].save || null, rev: contas[u].rev, gm: !!contas[u].gm, cargo: contas[u].cargo || null });
+        enviar(w, { t: 'sistema', texto: 'Your role is now ' + role + '.' });
+      }
+      console.log('[role] ' + u + ' → ' + role);
+      return json(200, { ok: true, usuario: u, ...depois });
+    }
 
     // ── Diagnóstico de boot + erros do cliente ────────────────────────────
     if (req.method === 'POST' && (rota === '/conta/boot' || rota === '/conta/log')) {

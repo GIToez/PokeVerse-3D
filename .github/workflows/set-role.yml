@@ -1,0 +1,47 @@
+name: Set account role
+
+# Manual only. SSHs as pokeverse and sets gm / staff / mod / player on a live account.
+# Required secret: OVH_SSH_KEY. Optional: OVH_HOST (40.160.145.24), OVH_USER (pokeverse).
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: Game account username (not the SSH user)
+        required: true
+        type: string
+      role:
+        description: admin opens /admin; staff and mod are chat badges
+        required: true
+        type: choice
+        options:
+          - admin
+          - staff
+          - mod
+          - player
+
+permissions:
+  contents: read
+
+concurrency:
+  group: set-account-role
+  cancel-in-progress: false
+
+jobs:
+  set-role:
+    name: Set ${{ inputs.role }} on ${{ inputs.username }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Apply role over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.OVH_HOST || '40.160.145.24' }}
+          username: ${{ secrets.OVH_USER || 'pokeverse' }}
+          key: ${{ secrets.OVH_SSH_KEY }}
+          port: ${{ secrets.OVH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 2m
+          script: |
+            set -euo pipefail
+            cd /opt/pokeverse-3d
+            U=$(printf '%s' '${{ inputs.username }}' | tr -cd 'a-zA-Z0-9_' | head -c 20)
+            node tools/set_role.mjs "$U" '${{ inputs.role }}'

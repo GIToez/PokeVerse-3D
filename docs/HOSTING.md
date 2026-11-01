@@ -146,17 +146,20 @@ sudo ufw enable
 
 Keep 5190 (game server) and 3306 (MySQL) closed.
 
-## 5. First admin
+## 5. Roles (admin / staff / mod)
 
-Create an account in the game, then:
+Create an account in the game first. Then either:
+
+**GitHub Actions** → **Set account role** → username + `admin` / `staff` / `mod` / `player`. That SSHs as `pokeverse` and runs `tools/set_role.mjs` against the live server. `admin` (same as `gm`) can open `/admin`. `staff` and `mod` are chat badges; staff can run raids. `player` clears both.
+
+On the VPS:
 
 ```bash
-sudo systemctl stop pokeverse
-sudo -u pokeverse node /opt/pokeverse-3d/tools/make_gm.mjs your_username
-sudo systemctl start pokeverse
+ssh pokeverse@40.160.145.24
+node /opt/pokeverse-3d/tools/set_role.mjs your_username admin
 ```
 
-The admin panel is then at `https://play.pokeverse.quest/admin`.
+Once one admin exists, **https://play.pokeverse.quest/admin** → Players also has GM + chat role. Do not use `make_gm.mjs` on a running server (it writes the file while memory still holds the old flags).
 
 ## Before opening it to the public
 
