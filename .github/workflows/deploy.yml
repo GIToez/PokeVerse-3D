@@ -1,8 +1,8 @@
 name: Deploy to OVH
 
-# After a push to main (or a manual run), SSH into the VPS and update the live
-# checkout. Required repository secrets: OVH_HOST, OVH_USER, OVH_SSH_KEY.
-# Optional: OVH_PORT (default 22), OVH_APP_DIR (default /srv/pokeverse/app).
+# SSH as pokeverse@40.160.145.24 (same box as Open Tibia) and run scripts/live/deploy.sh.
+# Required secret: OVH_SSH_KEY (private key that logs in as pokeverse).
+# Optional: OVH_HOST (default 40.160.145.24), OVH_USER (default pokeverse), OVH_PORT (22).
 on:
   push:
     branches: [main]
@@ -17,21 +17,20 @@ concurrency:
 
 jobs:
   deploy:
-    name: Pull and restart on the VPS
+    name: Pull and restart pokeverse-3d
     runs-on: ubuntu-24.04
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.OVH_HOST }}
-          username: ${{ secrets.OVH_USER }}
+          host: ${{ secrets.OVH_HOST || '40.160.145.24' }}
+          username: ${{ secrets.OVH_USER || 'pokeverse' }}
           key: ${{ secrets.OVH_SSH_KEY }}
           port: ${{ secrets.OVH_PORT || 22 }}
           script_stop: true
           command_timeout: 20m
           script: |
             set -euo pipefail
-            APP_DIR="${{ secrets.OVH_APP_DIR }}"
-            APP_DIR="${APP_DIR:-/srv/pokeverse/app}"
-            cd "$APP_DIR"
-            bash tools/deploy.sh
+            export PV_SSH_USER="${{ secrets.OVH_USER || 'pokeverse' }}"
+            export PV_APP_DIR="/home/${PV_SSH_USER}/PokeVerse-3D"
+            bash "$PV_APP_DIR/scripts/live/deploy.sh"
