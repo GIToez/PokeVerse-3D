@@ -16,7 +16,7 @@ const TITULOS = [
   /* Alpha Tester (12/09): não é de coleção — é a marca de quem jogou no alpha, que vem da CONTA (io.alfa). Fica em PRIMEIRO
      na lista de propósito: `tituloAtual` mostra o ÚLTIMO que a pessoa tem, então qualquer título de coleção ganho depois
      aparece no lugar dele (o Alpha Tester é a marca base, enquanto ainda não se conquistou nada). */
-  { id: 'alphaTester',  nome: 'Alpha Tester',      cond: r => !!r.alfa,         desc: 'jogou no alpha de Pokemon 3D Base' },
+  { id: 'alphaTester',  nome: 'Alpha Tester',      cond: r => !!r.alfa,         desc: 'played the Pokémon 3D Base alpha' },
   { id: 'observador',   nome: 'Observer',          cond: r => r.vistos >= 25,   desc: '25 species seen' },
   { id: 'colecionador', nome: 'Collector',         cond: r => r.pegos >= 25,    desc: '25 species caught', premio: [1003, 5] },
   { id: 'shiny',        nome: 'Shiny Hunter',      cond: r => r.shinies >= 1,   desc: 'caught a shiny' },
