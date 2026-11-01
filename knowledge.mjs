@@ -10,19 +10,19 @@
  *   Conhecimento.resumo(kantoAte = 151) → { vistos, pegos, shinies, mestres, titulos, … }
  * NUNCA mexe em chance de shiny (promessa pública: 1/4.096 igual pra todos). */
 let io = null, dados = null;
-const NIVEIS = ['desconhecido', 'Avistado', 'Registrado', 'Estudado', 'Especialista', 'Mestre'];
+const NIVEIS = ['unknown', 'Seen', 'Registered', 'Studied', 'Specialist', 'Master'];
 const LIMIAR = [0, 1, 4, 10, 18, 28];                                      // pontos mínimos de cada nível (máx. teórico 36)
 const TITULOS = [
   /* Alpha Tester (12/09): não é de coleção — é a marca de quem jogou no alpha, que vem da CONTA (io.alfa). Fica em PRIMEIRO
      na lista de propósito: `tituloAtual` mostra o ÚLTIMO que a pessoa tem, então qualquer título de coleção ganho depois
      aparece no lugar dele (o Alpha Tester é a marca base, enquanto ainda não se conquistou nada). */
   { id: 'alphaTester',  nome: 'Alpha Tester',      cond: r => !!r.alfa,         desc: 'jogou no alpha de Pokemon 3D Base' },
-  { id: 'observador',   nome: 'Observador',        cond: r => r.vistos >= 25,   desc: '25 espécies vistas' },
-  { id: 'colecionador', nome: 'Colecionador',      cond: r => r.pegos >= 25,    desc: '25 espécies capturadas', premio: [1003, 5] },
-  { id: 'shiny',        nome: 'Caçador de Shiny',  cond: r => r.shinies >= 1,   desc: 'capturou um shiny' },
-  { id: 'estudioso',    nome: 'Estudioso',         cond: r => r.estudadas >= 10, desc: '10 espécies em nível Estudado ou mais' },
-  { id: 'mestreKanto',  nome: 'Mestre de Kanto',   cond: r => r.pegosKanto >= 151, desc: 'as 151 de Kanto capturadas', premio: [1004, 1] },
-  { id: 'professor',    nome: 'Professor',         cond: r => r.mestres >= 25,  desc: '25 espécies em nível Mestre' },
+  { id: 'observador',   nome: 'Observer',          cond: r => r.vistos >= 25,   desc: '25 species seen' },
+  { id: 'colecionador', nome: 'Collector',         cond: r => r.pegos >= 25,    desc: '25 species caught', premio: [1003, 5] },
+  { id: 'shiny',        nome: 'Shiny Hunter',      cond: r => r.shinies >= 1,   desc: 'caught a shiny' },
+  { id: 'estudioso',    nome: 'Scholar',           cond: r => r.estudadas >= 10, desc: '10 species at Studied or higher' },
+  { id: 'mestreKanto',  nome: 'Kanto Master',      cond: r => r.pegosKanto >= 151, desc: 'all 151 Kanto species caught', premio: [1004, 1] },
+  { id: 'professor',    nome: 'Professor',         cond: r => r.mestres >= 25,  desc: '25 species at Master' },
 ];
 const SEXO_NENHUM = '-';
 
@@ -59,13 +59,13 @@ export function revela(dex){
 /** Lista curta do que ainda falta pra subir (pra mostrar na ficha). */
 export function falta(dex){
   const r = carregar().esp[dex] || { v: 0, p: 0, ar: [], sx: '', gl: [], ev: 0, lu: 0, sh: 0 }, f = [];
-  if (!r.p) f.push('capturar um');
-  if (r.p && r.ar.length < 3) f.push('capturar em outra rota (' + r.ar.length + '/3)');
-  if (temGenero(dex)){ if (!r.sx.includes('m')) f.push('capturar um ♂'); if (!r.sx.includes('f')) f.push('capturar uma ♀'); }
-  if (r.gl.length < 8) f.push('ver mais golpes da espécie (' + r.gl.length + '/8)');
-  if (!r.ev) f.push('ver a espécie evoluir');
-  if (r.lu < 15) f.push('enfrentar mais vezes (' + r.lu + '/15)');
-  if (!r.sh) f.push('encontrar um shiny ✨');
+  if (!r.p) f.push('catch one');
+  if (r.p && r.ar.length < 3) f.push('catch on another route (' + r.ar.length + '/3)');
+  if (temGenero(dex)){ if (!r.sx.includes('m')) f.push('catch a ♂'); if (!r.sx.includes('f')) f.push('catch a ♀'); }
+  if (r.gl.length < 8) f.push('see more of the species\' moves (' + r.gl.length + '/8)');
+  if (!r.ev) f.push('see the species evolve');
+  if (r.lu < 15) f.push('battle it more times (' + r.lu + '/15)');
+  if (!r.sh) f.push('find a shiny ✨');
   return f;
 }
 
@@ -89,7 +89,7 @@ export function evento(tipo, e = {}){
   const depois = nivel(dex);
   if (depois > antes){
     const S = io.porDex?.get(dex);
-    io.avisar?.(`📖 ${S?.name || 'Nº ' + dex}: conhecimento nível ${depois} (${NIVEIS[depois]})${depois < 5 ? ' — ' + (['', 'a ficha mostra os tipos e onde vive', 'revela stats, altura e peso', 'revela taxa de captura e habilidades', 'revela gênero, learnset completo e habilidade oculta'][depois] || '') : ' — você sabe TUDO sobre a espécie!'}`);
+    io.avisar?.(`📖 ${S?.name || '#' + dex}: knowledge level ${depois} (${NIVEIS[depois]})${depois < 5 ? ' — ' + (['', 'the entry shows types and habitat', 'reveals stats, height and weight', 'reveals catch rate and abilities', 'reveals gender, full learnset and hidden ability'][depois] || '') : ' — you know EVERYTHING about the species!'}`);
   }
   conferirTitulos();
   return depois > antes ? depois : null;
@@ -115,7 +115,7 @@ function conferirTitulos(){
   for (const t of TITULOS){
     if (d.titulos.includes(t.id) || !t.cond(r)) continue;
     d.titulos.push(t.id); novo = true;
-    io.avisar?.(`🏅 Título conquistado: ${t.nome} (${t.desc})${t.premio ? ' — ganhou ' + t.premio[1] + '× ' + (io.nomeItem?.(t.premio[0]) || 'item') : ''}`);
+    io.avisar?.(`🏅 Title earned: ${t.nome} (${t.desc})${t.premio ? ' — got ' + t.premio[1] + '× ' + (io.nomeItem?.(t.premio[0]) || 'item') : ''}`);
     if (t.premio) io.premiar?.(t.premio[0], t.premio[1], t.id);   // o id do título vai junto: com conta é o SERVIDOR que paga (uma vez cada)
   }
   /* Auto-correção (12/09): tira título que não é mais merecido — as condições são de coleção e não regridem, então o único caso é

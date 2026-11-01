@@ -543,10 +543,10 @@ function remapearInteriorCompartilhado(){
   }
 }
 document.title = 'Pokemon 3D Base';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
-$('titulo').textContent = cenaAtual ? cenaAtual.nome + ' · ' + NOME
+$('titulo').textContent = cenaAtual ? I18n.t(cenaAtual.nome) + ' · ' + NOME
   : 'Kanto — ' + (dados.areas.length > 4
-    ? dados.areas.length + ' áreas (' + Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha/.test(n)).length + ' cidades)'
-    : dados.areas.map(a => dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a)).join(' + '));
+    ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha/.test(n)).length })
+    : dados.areas.map(a => I18n.t(dados.nomes?.[a] || NOMES_AREA[a] || ('area ' + a))).join(' + '));
 if (DEMO){
   $('titulo').textContent = 'Pallet & Rota 1 · demo';
   $('hud').querySelector('table').hidden = true;
@@ -3635,7 +3635,7 @@ function pontoLivre(a){
 /* Pokédex de conhecimento: razão ♂/♀ por espécie (data/sexos.json, gerado do dex_extra) e o módulo instalado aqui — antes
    do primeiro selvagem nascer. `BOLAS`/`pintarBarra` só são usados dentro dos callbacks (depois do boot: sem TDZ). */
 const SEXOS = await fetch('./data/sexos.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
-Conhecimento.instalar({ lerLS, gravarLS, porDex, sexos: SEXOS, avisar: txt => Chat.sistema(txt), nomeItem: id => BOLAS[id]?.[0],
+Conhecimento.instalar({ lerLS, gravarLS, porDex, sexos: SEXOS, avisar: txt => Chat.sistema(txt), nomeItem: id => I18n.t(BOLAS[id]?.[0] || ('item ' + id)),
   alfa: () => Conta.souAlfa?.(),                                          // Alpha Tester (12/09): a marca vem da conta (servidor)
   premiar: (id, n, titulo) => { if (comConta()){ bolsaOp('premio', { titulo }); return; }   // o prêmio do título vem do servidor (uma vez cada)
     if (id >= 1001 && id <= 1009){ jogo.bolas[id] = (jogo.bolas[id] || 0) + n; gravarLS('bolas', jogo.bolas); pintarBarra(); } },
@@ -3666,7 +3666,7 @@ try {
       else if (arq === 'habitats'){
         if (habitats) fetch('./data/habitats.json?t=' + Date.now()).then(r => r.json()).then(h => {
           habitats.areas = h?.areas || {}; habitats.generico = h?.generico || [];            // troca no lugar: o spawn lê habitats.* a cada rodada
-          Chat.sistema('Habitats reloaded (' + Object.keys(habitats.areas).length + ' áreas).');
+          Chat.sistema('Habitats reloaded (' + Object.keys(habitats.areas).length + ' areas).');
         }).catch(() => {});
       }
       // Fase 3: músicas, diálogos, traduções e falas dos NPCs valem na hora (o resto do que entra no boot pede F5)
@@ -4904,7 +4904,7 @@ function usarItem(id, nome = '', aviso = null){
   if (eliteEstado.corrida) return recusa('na Elite Four não tem cura: as cinco lutas são uma corrida só', null, '#ffd23a');
   if (ehReanimador(nome || REANIMADORES[id])){                                                       // Reanimador: no parceiro em campo se ele caiu, senão no primeiro KO do time
     const agora = Date.now(); let i = jogo.pika && jogo.pika.hp <= 0 ? membroAtivo() : jogo.time.findIndex(t => koRegistro(t));
-    if (i < 0) return recusa('ninguém desmaiado');
+    if (i < 0) return recusa('nobody is fainted');
     const ok = reanimar(i, +id, nome || REANIMADORES[id]);
     if (ok){ passarTurno(); aviso?.((nome || REANIMADORES[id]) + ' usado em ' + (jogo.time[i]?.nome || ''), true); }
     return ok;
@@ -4933,7 +4933,7 @@ function usarItem(id, nome = '', aviso = null){
     pintarTime?.(); passarTurno();
     return true;
   }
-  if (p.hp <= 0 || p.desmaiado > 0) return recusa(aviso ? p.nome + ' está desmaiado: use um Reanimador ou vá ao Centro Pokémon' : p.nome + ' está desmaiado', p, '#f58e8e');
+  if (p.hp <= 0 || p.desmaiado > 0) return recusa(aviso ? p.nome + ' is fainted: use a Revive or go to a Pokémon Center' : p.nome + ' is fainted', p, '#f58e8e');
   if (p.hp >= p.maxHp) return recusa(aviso ? p.nome + ' já está com o HP cheio. Pra curar outro, chame ele pela barra do time' : 'HP já está cheio', p);   // a poção vai no Pokémon EM CAMPO
   const cura = /Total|total/.test(nome) ? 1e9 : /Super/.test(nome) ? 60 : /Hiper|Máx/.test(nome) ? 200 : 20;
   const hpAntes = p.hp || 0;
@@ -5166,7 +5166,7 @@ async function jogarBola(){
       efeito('Capture_OK', luz, 0.6);
       Som.tocar('ui/sound_pkmnget', { volume: .8, prio: true });
       Ind.garantir(s);
-      flutuar(ash, 'caught ' + s.nome + '!', '#8ef58e'); Chat.sistema('Caught ' + s.nome + ' Lv' + s.lv + ' with ' + (BOLAS[id]?.[0] || 'ball') + '! Nature ' + s.natureza + ' (' + Ind.descNatureza(s.natureza) + '), IV ' + Ind.somaIV(s) + '/' + Ind.IV_TOTAL + '.');
+      flutuar(ash, 'caught ' + s.nome + '!', '#8ef58e'); Chat.sistema('Caught ' + s.nome + ' Lv' + s.lv + ' with ' + I18n.t(BOLAS[id]?.[0] || 'ball') + '! Nature ' + s.natureza + ' (' + Ind.descNatureza(s.natureza) + '), IV ' + Ind.somaIV(s) + '/' + Ind.IV_TOTAL + '.');
       let registro = { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv, sexo: s.sexo || undefined, shiny: s.shiny || undefined, exp: Evolucao.expPara(s.dex, s.lv), amizade: Evolucao.amizadeBase(s.dex), ivs: s.ivs, natureza: s.natureza, movs: Ind.idsDe(s).map(Ind.novoGolpe), quando: Date.now() };
       /* POSSE (06/09): com conta, quem cria o Pokémon é o SERVIDOR — ele manda o registro com `uid` junto do `scapt`, e é esse
          que entra no time (o `PUT /save` recusa Pokémon sem uid dele). Sem conta (jogo local) segue como sempre. */
@@ -5204,7 +5204,7 @@ async function jogarBola(){
         s.estado = 'desmaiado'; s.desmaio = Math.max(s.desmaio || 0, 4); s.rotDesm = undefined;   // escapou: segue caído, dá tempo de outra bola
         if (s.rotulo) s.rotulo.style.display = '';
         if (s.rede && rsErro === 'sumiu'){ Mundo.esquecer(s.id); s.rede = false; s.remoto = false; morrer(s); }   // o servidor diz que ele já não está mais ali. 16/09 (rukintk): SÓ nesse caso — com 'outro'/'acordado' ele continua da rede. 18/09 (katanarie): morre aqui em vez de ficar caído "local" — a bola seguinte nele caía em "sem conexão com o servidor" (o "erro de rede" do relato)
-        else { flutuar(s, 'broke free! (' + chac + ' shake' + (chac === 1 ? '' : 's') + ')', '#f58e8e'); Chat.sistema(s.nome + ' broke free of the ' + (BOLAS[id]?.[0] || 'ball') + ' (' + chac + ' shake' + (chac === 1 ? '' : 's') + ').'); }
+        else { flutuar(s, 'broke free! (' + chac + ' shake' + (chac === 1 ? '' : 's') + ')', '#f58e8e'); Chat.sistema(s.nome + ' broke free of the ' + I18n.t(BOLAS[id]?.[0] || 'ball') + ' (' + chac + ' shake' + (chac === 1 ? '' : 's') + ').'); }
       }
       await dorme(400);
     }
@@ -5383,7 +5383,7 @@ function aplicarOrdemTime(time, caixa){
      item por conta própria — avisa e mantém quem estava. */
   const primeiro = jogo.time[0];
   if (primeiro && !jogo.semParceiro && !jogo.trocandoSeguidor && membroAtivo() !== 0){
-    if (estaKO(primeiro, 0)) avisarArrasto(primeiro.nome + ' está desmaiado: quem te acompanha não mudou');
+    if (estaKO(primeiro, 0)) avisarArrasto(primeiro.nome + ' is fainted: your follower did not change');
     else Promise.resolve(trocarPara(0)).catch(e => console.warn('arrasto: troca de parceiro', e));
   }
 }
@@ -7216,8 +7216,8 @@ function usarGolpe(id){
        capturado". Duas respostas opostas pro mesmo botão, no meio do evento ao vivo. */
     const semBola = caido.raid || caido.chefe;
     flutuar(caido, caido.estado === 'capturando' ? caido.nome + ' is already in the ball'
-                 : semBola ? caido.nome + ' já caiu'
-                 : caido.nome + ' está desmaiado — F pra capturar', '#ffd23a');
+                 : semBola ? caido.nome + ' already fainted'
+                 : caido.nome + ' fainted — F to catch', '#ffd23a');
     return;
   }
   jogo.ordem = { golpe: g, alvo: jogo.alvo };
@@ -7236,7 +7236,7 @@ if (jogo.ash){
     Object.assign(sel.style, { padding: '3px 4px', border: '1px solid var(--line)', borderRadius: '3px', background: '#0b1020', color: 'var(--text)', font: 'inherit' });
     for (const [glb, nome] of LENDARIOS){ const o = document.createElement('option'); o.value = glb; o.textContent = nome; sel.appendChild(o); }
     sel.value = (params0.get('chefe') || 'pm0249_00').replace(/\.glb$/, ''); if (!sel.value) sel.value = 'pm0249_00';
-    const btn = document.createElement('button'); btn.id = 'chefe-btn'; btn.type = 'button'; btn.innerHTML = '☄ Chamar chefe <b>B</b>';
+    const btn = document.createElement('button'); btn.id = 'chefe-btn'; btn.type = 'button'; btn.innerHTML = '☄ ' + I18n.t('Summon boss') + ' <b>B</b>';
     Object.assign(btn.style, { padding: '5px 10px', border: '1px solid #ff5f5f', borderRadius: '6px', background: 'linear-gradient(#4a1414,#10131b)', color: '#ffd9d9', font: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' });
     btn.querySelector('b').style.cssText = 'display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #ff5f5f;border-radius:3px;font-family:ui-monospace,Consolas,monospace';
     btn.addEventListener('click', () => { Som.destravar(); btn.blur(); chegarChefe(sel.value); });
@@ -7263,7 +7263,7 @@ if (jogo.ash){
     Object.assign(painel.style, { position: 'fixed', right: '320px', top: '88px', zIndex: 30, display: 'flex', gap: '6px', alignItems: 'center', padding: '5px 8px', border: '1px solid #8ef58e', borderRadius: '8px', background: 'rgba(10,20,14,.85)', backdropFilter: 'blur(4px)', color: 'var(--text)', font: 'inherit', fontSize: '12px' });
     const sel = document.createElement('select'); sel.id = 'segue-esp';
     Object.assign(sel.style, { padding: '3px 4px', border: '1px solid var(--line)', borderRadius: '3px', background: '#0b1020', color: 'var(--text)', font: 'inherit', maxWidth: '190px' });
-    const btn = document.createElement('button'); btn.id = 'segue-btn'; btn.type = 'button'; btn.innerHTML = '🐾 Seguir';
+    const btn = document.createElement('button'); btn.id = 'segue-btn'; btn.type = 'button'; btn.innerHTML = '🐾 ' + I18n.t('Follow');
     Object.assign(btn.style, { padding: '5px 10px', border: '1px solid #8ef58e', borderRadius: '6px', background: 'linear-gradient(#14401f,#10131b)', color: '#d9ffe0', font: 'inherit', cursor: 'pointer' });
     const encher = async () => {
       let lista = [];
@@ -7563,8 +7563,8 @@ function setTexto(el, s){ if (el.__txt !== s){ el.textContent = s; el.__txt = s;
 /* `TIPO_PT` (nomes dos ícones de tipo) mora junto do `jogo`, lá em cima: `pintarBarra` pode rodar por mensagem da rede antes desta linha (auditoria 12/09). */
 function pintarBarra(){
   const p = jogo.pika; if (!p) return;
-  const bc = $('chefe-btn'); if (bc){ const ocupado = !!jogo.chefe; if (bc.disabled !== ocupado){ bc.disabled = ocupado; bc.style.opacity = ocupado ? 0.45 : 1; bc.innerHTML = ocupado ? '☄ chefe em campo' : '☄ Chamar chefe <b style="display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #ff5f5f;border-radius:3px;font-family:ui-monospace,Consolas,monospace">B</b>'; } }
-  const bm = $('monta-btn'); if (bm){ const rot = jogo.montaria ? '⬇ Desmontar' : '🐉 Montar'; if (bm.dataset.rot !== rot){ bm.dataset.rot = rot; bm.innerHTML = rot + ' <b style="display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #79a7ff;border-radius:3px;font-family:ui-monospace,Consolas,monospace">M</b>'; } }
+  const bc = $('chefe-btn'); if (bc){ const ocupado = !!jogo.chefe; if (bc.disabled !== ocupado){ bc.disabled = ocupado; bc.style.opacity = ocupado ? 0.45 : 1; bc.innerHTML = ocupado ? '☄ ' + I18n.t('boss in the field') : '☄ ' + I18n.t('Summon boss') + ' <b style="display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #ff5f5f;border-radius:3px;font-family:ui-monospace,Consolas,monospace">B</b>'; } }
+  const bm = $('monta-btn'); if (bm){ const rot = jogo.montaria ? '⬇ ' + I18n.t('Dismount') : '🐉 ' + I18n.t('Mount'); if (bm.dataset.rot !== rot){ bm.dataset.rot = rot; bm.innerHTML = rot + ' <b style="display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #79a7ff;border-radius:3px;font-family:ui-monospace,Consolas,monospace">M</b>'; } }
   const hpEl = $('f-pika-hp'), hpK = p.hp / p.maxHp;
   if (hpEl.__k !== hpK){ hpEl.__k = hpK; hpEl.style.width = (hpK * 100) + '%'; hpEl.style.background = hpK > 0.5 ? '#86ef5f' : hpK > 0.2 ? '#f4aa35' : '#e45670'; }
   setTexto($('f-pika-nome'), p.nome);
