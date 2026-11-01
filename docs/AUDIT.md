@@ -84,9 +84,14 @@ to model files that don't exist. Level, Net, Nest and Repeat Balls behave like a
 
 ## Unreleased code in `upcoming/`
 
-`upcoming/` (originally `_novos/`, "new") holds 139 minified JavaScript files from a newer build of the game. **Nothing in the
-live game loads them yet.** The files and their imports and asset paths have been renamed to English; the code inside is
-still minified Portuguese. This list comes from file names and the visible export names, not from running them:
+`upcoming/` (originally `_novos/`, "new") holds 139 JavaScript files from a newer build of the game. **Nothing in the
+live game loads them yet.** They arrived minified; they have since been formatted (Prettier, 120 columns), renamed to
+English, and their player-facing text rewritten in English, with the Portuguese kept in `public/data/locale/ui_pt.json`
+like the live game. Variable and function names are still Portuguese and still short where the minifier shortened them
+(see `GLOSSARY.md`). Portuguese strings that are lookup keys (state names such as `'agora'`, values compared against data
+or server messages, the `nomePt` field of each move) were left as they are and get English through `ui_en.json`.
+`upcoming/i18n.mjs` is English-first, the same as the live `i18n.mjs`. This list comes from file names and the visible
+export names, not from running them:
 
 | Area | Files |
 |---|---|
@@ -113,8 +118,10 @@ Some modules import files that were never included: `raid_ui.mjs`, the raid scen
 The HUD layout (`ui/hud_layout.json`) already has screens for guilds, the market, achievements and the raid calendar, which
 is why those labels appear in the layout editor.
 
-Each file still starts with the original Poke Fable Online copyright banner. The project owner has confirmed they hold the
-rights to this code.
+The project owner has confirmed they hold the rights to this code. The original copyright banners, the Poke Fable Online
+branding text, and a beacon in `account.mjs` that reported any non-official host to `pokefableonline.com` have been
+removed; a new notice will be added later. The login-screen logo (`ui/figma/backgrounds/logo-pokefable.png`, shared with
+the live game) is still the old one.
 
 ## Things to decide
 
