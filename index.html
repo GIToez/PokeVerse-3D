@@ -98,7 +98,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 
 </style>
 </head>
-<body class="hud-esperando hud-dock notranslate" translate="no">   <!-- hud-dock: CSS regions place the overworld HUD; Figma still draws pop-ups -->
+<body class="hud-esperando notranslate" translate="no">   <!-- default Figma HUD; pieces keep their own art and positions -->
 <canvas id="tela"></canvas>
 <div id="sobre" class="notranslate" translate="no"></div>
 <div id="hud">
@@ -7884,7 +7884,6 @@ if (jogo.ash){
   if (!Fairy && !INTRO && !RAID && !TORNEIO && !DIRETOR && !MMFOTO) Raid.montarUI({ Hud, Menus, I18n });   // RAID AO VIVO (14/09): botão/banner/fila/barra do chefe (raid_ui.mjs, import dinâmico e protegido)
 }
 document.body.classList.remove('hud-esperando');                         // agora sim: a HUD aparece já no lugar do layout (em qualquer modo: sem jogador também)
-try { Hud.ancorarChat(); } catch {}
 Object.assign(window, { usarGolpe, proximoAlvo, emPe, dePeMaisPerto, desmaiar, aplicarOrdemTime, trocarPara, GOLPES, magias, golpear, RITMO_REGA, chegarChefe, montar, desmontar, MONTARIAS, definirTamanhos, TAMANHOS, atravessar, portasCena, descarregarCena, inventarioCena, ren, aposDesmaio, conferirParceiroDesmaiado, pendentes });   // depuração (12/09: porta, descarga, inventário e desmaio pros testes headless)
 function setHTML(el, html){ if (el.__html !== html){ el.innerHTML = html; el.__html = html; } }   // `function` (içada): pintarBarra pode ser chamada por mensagem da rede antes desta linha (auditoria 12/09)
 function setTexto(el, s){ if (el.__txt !== s){ el.textContent = s; el.__txt = s; } }

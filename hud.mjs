@@ -18,10 +18,6 @@ import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz te
  * em 'hud.layout.antigo' (Configurações traz de volta): senão quem usou o editor nunca mais via a arte nova.
  */
 export const PECAS = ['f-parceiro', 'skills', 'bola-btn', 'atalhos', 'f-alvo', 'missao', 'fala', 'joy', 'cam-btns', 'menu-btn', 'chat-btn', 'menu-icones', 'time-hud', 'chat', 'minimapa', 'painel-fundo', 'atalhos-v2', 'alerta-raid'];
-/** Overworld pieces CSS places. `aplicar()` must not give them Figma x/y or they fight the dock. */
-export const PECAS_REGIAO = ['time-hud', 'skills', 'bola-btn', 'atalhos', 'menu-icones', 'chat', 'missao', 'minimapa', 'f-parceiro', 'f-alvo', 'menu-btn', 'atalhos-v2'];
-const REGIAO = new Set(PECAS_REGIAO);
-export const ehRegiao = () => typeof document !== 'undefined' && document.body.classList.contains('hud-dock');
 export const PECAS_V2 = ['atalhos-v2', 'alerta-raid'];                   // rodada 29: só existem na maquete v2 — o `aplicar` cria o <div> quando o layout traz a peça
 export const NOMES = { 'f-parceiro': 'partner (name, level, HP)', skills: 'moves 1–4', 'bola-btn': 'ball (F)', atalhos: 'hotkeys 5–9 (potions, balls, mounts)', 'f-alvo': 'target (follows the enemy)', missao: 'mission', fala: 'speech box (follows the NPC)', joy: 'joystick (phone)', 'cam-btns': 'camera ↺ ↻ (phone)', 'menu-btn': 'menu ☰ (full grid)', 'chat-btn': 'chat button (phone)', 'menu-icones': 'menu buttons (icons)', chat: 'chat (Local/Global/Trade/Help)', 'time-hud': 'party (6 Pokémon, quick switch)', minimapa: 'minimap (top-down camera)', 'painel-fundo': 'background panel (decor)', 'atalhos-v2': 'Events/Shop hotkeys (v2)', 'alerta-raid': 'live raid card (v2)' };
 export const JANELAS = ['pokemon', 'mochila', 'missoes', 'mapa', 'pokedex', 'treinador', 'loja', 'social', 'batalha', 'config'];
@@ -596,7 +592,6 @@ function recolherMenu(e, on){
 /** Remonta a árvore do Figma numa peça já posicionada (o jogo chama quando recria o miolo de um botão). */
 export function remontar(e){
   if (!e || !e.__figmaP) return;
-  if (ehRegiao() && REGIAO.has(e.id)){ limpar(e); return; }
   montarFigma(e, e.__figmaP, !!e.__figmaAbs);
 }
 function montarFigma(e, F, abs){
@@ -961,8 +956,8 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
   const FB = layout?._figma
     ? { ...FALLBACK,
         'f-parceiro': { ax: 'left', x: 0, ay: 'top', y: 0, s: 1, oculto: true },          // o slot 1 do time já mostra o parceiro; o rótulo antigo ficava solto atrás do chat / embaixo do joystick
-        ...(preset === 'pc' ? { chat: { ax: 'left', x: 12, ay: 'bottom', y: 12, s: 1, w: 286 },
-                                'menu-btn': { ax: 'right', x: 12, ay: 'top', y: 12, s: 1, oculto: true, forcarOculto: true } } : {}),   // ☰ não existe na maquete do PC: os ícones e o Esc abrem tudo (pedido do Jaime, 04/09)
+        ...(preset === 'pc' ? { chat: { ax: 'left', x: 12, ay: 'bottom', y: 12, s: 1, w: 280, h: 220 },
+                                'menu-btn': { ax: 'right', x: 12, ay: 'top', y: 12, s: 1, oculto: true, forcarOculto: true } } : {}),   // chat sits left of the gold skill block (x 303)
         ...(preset === 'celular_deitado' ? { 'cam-btns': { ax: 'left', x: 367, ay: 'bottom', y: 8, s: 1 } } : {}) }   // ↺↻ não estão na maquete: rodapé central, longe da Pokébola
     : FALLBACK;
   if (!L){ barra?.classList.remove('solto'); for (const id of PECAS) limpar(raiz.getElementById(id)); aplicarImagens(null, raiz); return false; }
@@ -976,23 +971,14 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     const e = raiz.getElementById(id); if (!e || e.hidden) continue;
     const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0) aplicar.__congeladas[id] = registroDe(r, innerWidth, innerHeight, { congelada: true });
   }
-  if (raiz === document) document.body.classList.add('hud-dock');
-  const dock = raiz === document && document.body.classList.contains('hud-dock');
-  if (dock){
-    barra?.classList.remove('solto');
-    barra?.classList.add('dock-regiao');
-    ancorarMenuNoDock();
-    ancorarChat();
-  } else {
-    barra?.classList.add('solto');
-    barra?.classList.remove('dock-regiao');
-  }
+  barra?.classList.add('solto');
+  barra?.classList.remove('dock-regiao');
+  document.body?.classList.remove('hud-dock');
   const SB = SOBRE[preset] || {};
   const T = (layout?._figma && raiz === document) ? PRESETS[preset] : null;   // maquete do Figma na tela de verdade: vale a âncora "centro"
   const M = lerMover()[preset] || {};                                    // peças que o jogador arrastou (px da maquete)
   for (const id of PECAS){
     const el = raiz.getElementById(id);
-    if (dock && REGIAO.has(id)){ limpar(el); continue; }
     if (SB[id]){ posicionar(el, { ...(L[id] || {}), ...SB[id] }, false); continue; }   // decisão do jogo (chat do celular): âncora como está
     const reg = comAncoraCentro(L[id] || FB[id] || aplicar.__congeladas[id], el, T);
     const movivel = !!(el && reg && raiz === document && MOVIVEIS.includes(id));
@@ -1069,19 +1055,14 @@ function ancorarMenuNoDock(){
   const barra = document.getElementById('barra'), menu = document.getElementById('menu-icones');
   if (barra && menu && menu.parentElement !== barra) barra.appendChild(menu);
 }
-/** Drop leftover overlay classes. `hud-dock` stays — CSS regions own those pieces. */
+/** Drop leftover overlay / dock classes. Default Figma layout owns placement. */
 export function limparSobreposicaoHud(){
   if (typeof document === 'undefined') return;
-  document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile');
+  document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile', 'hud-dock');
   const barra = document.getElementById('barra');
   if (barra){
-    barra.classList.remove('ilha-dock');
-    if (document.body.classList.contains('hud-dock')){
-      barra.classList.remove('solto');
-      barra.classList.add('dock-regiao');
-    } else {
-      barra.classList.add('solto');
-    }
+    barra.classList.remove('ilha-dock', 'dock-regiao');
+    barra.classList.add('solto');
   }
   for (const id of ['skills', 'atalhos', 'bola-btn', 'menu-icones', 'time-hud']){
     document.getElementById(id)?.classList.remove('ilha-centro', 'ilha-atalhos', 'ilha-direita', 'ilha-bola', 'menu-pill', 'dock-slide');
@@ -1092,16 +1073,7 @@ export function limparSobreposicaoHud(){
 }
 /** @deprecated Overlay restyle removed — Figma layout is the only HUD path. */
 export function aplicarIlha(){ limparSobreposicaoHud(); }
-/** Publish chat box size onto body so the action bar can sit flush to its right. */
-export function ancorarChat(){
-  const el = document.getElementById('chat');
-  if (!el || !document.body.classList.contains('hud-dock')) return;
-  const fechado = el.classList.contains('fechado');
-  const w = Math.max(220, Math.round(el.offsetWidth || parseFloat(getComputedStyle(el).getPropertyValue('--chat-w')) || 360));
-  const h = fechado ? Math.max(36, Math.round(el.offsetHeight || 44)) : Math.max(110, Math.round(el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue('--chat-h')) || 248));
-  document.body.style.setProperty('--chat-w', w + 'px');
-  document.body.style.setProperty('--chat-h', h + 'px');
-}
+export function ancorarChat(){}
 export function achatarParty(){}
 /** O layout que o último `aplicar` usou (rodada 26: o raid_ui.mjs lê dele os registros `popups.<ori>.raid.hud`). */
 export const layoutAtual = () => aplicar.__ultimo?.[0] || null;
