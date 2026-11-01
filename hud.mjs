@@ -1072,15 +1072,14 @@ export function aplicarIlha(){
   const menu = document.getElementById('menu-icones');
   if (barra){
     barra.classList.add('ilha-dock');
-    Object.assign(barra.style, { position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: mobile ? '10px' : '14px', transform: 'translateX(-50%)', display: 'flex', width: 'auto', height: 'auto', maxWidth: 'min(1120px, calc(100vw - 20px))', maxHeight: 'none', zIndex: '26', overflow: 'visible' });
+    barra.classList.remove('solto');
+    Object.assign(barra.style, { position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: mobile ? '10px' : '12px', transform: 'translateX(-50%)', display: 'flex', width: 'max-content', height: 'auto', maxWidth: 'min(1180px, calc(100vw - 24px))', maxHeight: 'none', zIndex: '26', overflow: 'visible' });
   }
   for (const id of ['f-parceiro', 'f-alvo']){
     const el = document.getElementById(id);
     if (!el) continue;
     el.classList.add('ilha-ficha');
-    Object.assign(el.style, { position: 'fixed', transform: 'none', margin: '0' });
-    if (id === 'f-parceiro') Object.assign(el.style, { left: mobile ? '8px' : '84px', right: 'auto', top: mobile ? '12px' : '18%', bottom: 'auto' });
-    else Object.assign(el.style, { left: 'auto', right: mobile ? '8px' : '16px', top: mobile ? '12px' : '248px', bottom: 'auto' });
+    el.hidden = true;
   }
   if (skills){
     skills.classList.add('ilha-centro');
@@ -1112,7 +1111,8 @@ export function aplicarIlha(){
     menu.classList.toggle('dock-slide', mobile);
     menu.classList.toggle('menu-pill', !mobile);
     menu.style.backgroundImage = 'none';
-    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: mobile ? 'column' : 'row', position: 'fixed', left: 'auto', top: 'auto', bottom: mobile ? '118px' : '16px', right: mobile ? '0px' : '14px', transform: 'none', zIndex: '28' });
+    if (!mobile && barra && menu.parentElement !== barra) barra.appendChild(menu);
+    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: mobile ? 'column' : 'row', position: mobile ? 'fixed' : 'relative', left: 'auto', top: 'auto', bottom: mobile ? '118px' : 'auto', right: mobile ? '0px' : 'auto', transform: 'none', zIndex: '28' });
     soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
     let aba = document.getElementById('menu-dock-aba');
     if (mobile){
@@ -1132,7 +1132,15 @@ export function aplicarIlha(){
       }
     } else if (aba) aba.remove();
   }
+  achatarParty(document.getElementById('time-hud'));
   if (document.getElementById('bola-leque') && !document.getElementById('bola-leque').hidden) pintarLequeBola();
+}
+export function achatarParty(el){
+  if (!el || !document.body.classList.contains('hud-ref')) return;
+  Object.assign(el.style, { position: 'fixed', left: '10px', top: '50%', right: 'auto', bottom: 'auto', transform: 'translateY(-50%)', width: 'auto', height: 'auto', display: 'flex', flexDirection: 'column', overflow: 'visible' });
+  for (const n of el.querySelectorAll('.tcel, .tslot, .tcard, .fig-grupo, .tk, .tpic, .tpalco, small, i, em, u, .tevo')){
+    Object.assign(n.style, { position: n.classList.contains('tevo') ? 'absolute' : 'relative', left: 'auto', top: 'auto', right: n.classList.contains('tevo') ? '-8px' : 'auto', bottom: 'auto', transform: 'none' });
+  }
 }
 /** O layout que o último `aplicar` usou (rodada 26: o raid_ui.mjs lê dele os registros `popups.<ori>.raid.hud`). */
 export const layoutAtual = () => aplicar.__ultimo?.[0] || null;

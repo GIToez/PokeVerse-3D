@@ -514,7 +514,7 @@ body.hud-ilha-mobile #fala{ bottom:118px }
 #time-hud .tslot.t3d img.tpic{ opacity:0 }
 body.mobile #time-hud .tpalco{ width:42px; height:42px }
 
-/* ===== Reference dock (party rail · quest pill · one bottom bar · gold/navy) ===== */
+/* ===== Reference HUD (the layout you sent): wide party pills, quest capsule, one bottom dock ===== */
 body.hud-ref{
   --ref-navy:#121a2cf2;
   --ref-navy2:#0c1220ee;
@@ -522,17 +522,31 @@ body.hud-ref{
   --ref-gold2:#f4aa35;
   --ref-line:#c9a24a88;
 }
-body.hud-ref #barra.ilha-dock{
-  gap:10px; align-items:center; justify-content:center;
-  padding:8px 16px 8px 12px;
-  border:1px solid var(--ref-line);
-  border-radius:40px;
-  background:linear-gradient(180deg,#1a2746f4,#0d1424f6);
-  box-shadow:0 10px 28px #000a, inset 0 1px 0 #ffffff14;
+body.hud-ref #barra .fig-img,
+body.hud-ref #skills .fig-img,
+body.hud-ref #atalhos .fig-img,
+body.hud-ref #menu-icones .fig-img,
+body.hud-ref #time-hud .fig-img,
+body.hud-ref #missao .fig-img{display:none !important}
+body.hud-ref #f-parceiro,
+body.hud-ref #f-alvo{display:none !important}
+body.hud-ref #barra.ilha-dock,
+body.hud-ref #barra.ilha-dock.solto,
+body.pele-amanda.hud-ref #barra.ilha-dock{
+  position:fixed !important; left:50% !important; right:auto !important; top:auto !important;
+  bottom:12px !important; transform:translateX(-50%) !important;
+  display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important;
+  align-items:center !important; justify-content:center !important;
+  gap:8px !important; width:max-content !important; height:auto !important;
+  max-width:min(1200px, calc(100vw - 20px)) !important;
+  padding:8px 14px !important;
+  border:1px solid var(--ref-line) !important; border-radius:40px !important;
+  background:linear-gradient(180deg,#1a2746f6,#0d1424f8) !important;
+  box-shadow:0 10px 28px #000a, inset 0 1px 0 #ffffff14 !important;
 }
 body.hud-ref #skills.ilha-centro{
   display:flex !important; flex-direction:row !important; align-items:center !important;
-  gap:8px !important; padding:0 !important; background:none !important;
+  gap:6px !important; padding:0 !important; background:none !important; width:auto !important; height:auto !important;
   pointer-events:none;
 }
 body.hud-ref #skills.ilha-centro > .fig-grupo,
@@ -540,24 +554,29 @@ body.hud-ref #skills.ilha-centro > button.sk{
   position:relative !important; left:auto !important; top:auto !important; right:auto !important; bottom:auto !important;
   transform:none !important; pointer-events:auto; flex:none;
 }
-body.hud-ref #barra button.sk,
+body.hud-ref #barra button.sk:not(.bola){
+  width:124px !important; height:52px !important; border-radius:14px !important;
+  border:1px solid #c9a24a66 !important;
+  background:linear-gradient(180deg,#243352,#12192a) !important;
+  box-shadow:inset 0 1px 0 #ffffff18 !important;
+  flex-direction:column !important; justify-content:flex-end !important;
+}
 body.hud-ref #atalhos .atalho{
-  width:62px; height:62px; border-radius:16px;
-  border:1px solid #c9a24a66;
-  background:linear-gradient(180deg,#243352,#12192a);
-  box-shadow:inset 0 1px 0 #ffffff18;
+  width:52px !important; height:52px !important; border-radius:14px !important;
+  border:1px solid #c9a24a66 !important;
+  background:linear-gradient(180deg,#243352,#12192a) !important;
 }
 body.hud-ref #barra button.sk.vazio,
 body.hud-ref #atalhos .atalho.vazio{
-  border-style:solid; border-color:#c9a24a44; color:#6e7a94;
-  background:linear-gradient(180deg,#1a2438,#101624);
+  border-color:#c9a24a44 !important; color:#6e7a94;
+  background:linear-gradient(180deg,#1a2438,#101624) !important;
 }
 body.hud-ref #bola-btn.ilha-bola{
-  width:72px !important; height:72px !important; margin:0 4px;
+  width:64px !important; height:64px !important; margin:0 6px !important;
   border-radius:50% !important;
   border:2px solid var(--ref-gold) !important;
   background:radial-gradient(circle at 40% 32%,#3a2a14,#1a120c 62%,#0c1018) !important;
-  box-shadow:0 0 0 4px #0c122088, 0 8px 16px #0008;
+  box-shadow:0 0 0 4px #0c122088, 0 8px 16px #0008 !important;
 }
 body.hud-ref #bola-btn.ilha-bola b,
 body.hud-ref #bola-btn.ilha-bola #bola-n{
@@ -565,81 +584,116 @@ body.hud-ref #bola-btn.ilha-bola #bola-n{
 }
 body.hud-ref #atalhos.ilha-atalhos{
   display:flex !important; flex-direction:row !important; align-items:center !important;
-  gap:8px !important; padding:0 !important; background:none !important;
+  gap:6px !important; padding:0 !important; background:none !important; width:auto !important; height:auto !important;
 }
 body.hud-ref #atalhos.ilha-atalhos > .fig-grupo,
 body.hud-ref #atalhos.ilha-atalhos > .atalho{
   position:relative !important; left:auto !important; top:auto !important; transform:none !important; flex:none;
 }
-body.hud-ref #f-parceiro.ilha-ficha,
-body.hud-ref #f-alvo.ilha-ficha{
-  min-width:168px; padding:8px 12px;
-  border:1px solid var(--ref-line); border-radius:20px;
-  background:var(--ref-navy); color:#ffe6b0;
-  box-shadow:0 8px 18px #0008;
-  z-index:24;
+body.hud-ref #time-hud,
+body.hud-ref #time-hud.fig,
+body.hud-ref #time-hud.solto{
+  position:fixed !important; left:10px !important; top:50% !important; right:auto !important; bottom:auto !important;
+  transform:translateY(-50%) !important;
+  display:flex !important; flex-direction:column !important;
+  width:auto !important; height:auto !important;
+  padding:8px !important; gap:6px !important;
+  border:1px solid var(--ref-line) !important; border-radius:28px !important;
+  background:linear-gradient(180deg,#1a2746f4,#0c1220f6) !important;
+  box-shadow:0 10px 24px #000a !important; overflow:visible !important;
 }
-body.hud-ref #time-hud{
-  left:10px; top:50%; transform:translateY(-42%);
-  padding:10px 8px; gap:8px;
-  border:1px solid var(--ref-line); border-radius:28px;
-  background:linear-gradient(180deg,#1a2746f2,#0c1220f4);
-  box-shadow:0 10px 24px #000a;
+body.hud-ref #time-hud .tcel,
+body.hud-ref #time-hud .tcel.fig-grupo{
+  position:relative !important; left:auto !important; top:auto !important; right:auto !important; bottom:auto !important;
+  transform:none !important;
+  display:flex !important; flex-direction:row !important; align-items:center !important;
+  width:232px !important; height:48px !important;
+  padding:3px 10px 3px 3px !important; gap:8px !important;
+  border:1px solid #c9a24a66 !important; border-radius:24px !important;
+  background:#10182aee !important; box-sizing:border-box !important;
 }
 body.hud-ref #time-hud .tslot{
-  width:54px; height:54px; border-radius:50%;
-  border:2px solid #c9a24a77; background:#101624ee; box-shadow:none;
+  position:relative !important; left:auto !important; top:auto !important;
+  width:40px !important; height:40px !important; flex:none !important;
+  border-radius:50% !important; border:2px solid #c9a24a77 !important;
+  background:#0c1220 !important; box-shadow:none !important; overflow:hidden !important;
 }
-body.hud-ref #time-hud .tslot.on{ border-color:var(--ref-gold2); box-shadow:0 0 0 3px #f4aa3544 }
-body.hud-ref #time-hud .tslot i{ left:8px; right:8px; bottom:6px; height:5px; border-radius:3px }
-body.hud-ref #missao{
-  top:10px; padding:7px 22px; max-width:min(560px,56vw);
-  border:1px solid var(--ref-line); border-radius:999px;
-  background:linear-gradient(180deg,#1a2746f4,#0d1424f4);
-  box-shadow:0 8px 18px #0008;
+body.hud-ref #time-hud .tslot.on{border-color:var(--ref-gold2) !important; box-shadow:0 0 0 2px #f4aa3544 !important}
+body.hud-ref #time-hud .tcel:has(.tslot.on){border-color:var(--ref-gold2) !important}
+body.hud-ref #time-hud .tslot img,
+body.hud-ref #time-hud .tpic{position:absolute !important; left:2px !important; top:2px !important; width:34px !important; height:34px !important}
+body.hud-ref #time-hud .tpalco{display:none !important}
+body.hud-ref #time-hud .tk{left:2px !important; top:1px !important; font-size:9px !important}
+body.hud-ref #time-hud .tslot > small{display:none !important}
+body.hud-ref #time-hud .tslot > i,
+body.hud-ref #time-hud .tslot > u{display:none !important}
+body.hud-ref #time-hud:not(.fig) .tcard,
+body.hud-ref #time-hud.fig .tcard{
+  display:flex !important; position:relative !important; left:auto !important; top:auto !important;
+  flex:1 !important; min-width:0 !important; height:auto !important;
+  flex-direction:column !important; align-items:flex-start !important; justify-content:center !important;
+  gap:2px !important; pointer-events:none !important; background:none !important; border:0 !important;
 }
-body.hud-ref #minimapa{ right:14px; top:12px }
+body.hud-ref #time-hud .tc-nome{display:block !important; font:700 12px/1.1 inherit !important; color:#fff !important; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+body.hud-ref #time-hud .tc-lv{display:block !important; font:600 10px/1 inherit !important; color:#ffe07a !important}
+body.hud-ref #time-hud .tc-lvn{display:none !important}
+body.hud-ref #time-hud .tc-trilho,
+body.hud-ref #time-hud .tcard i{
+  display:block !important; position:relative !important; left:auto !important; top:auto !important;
+  width:100% !important; height:6px !important; border-radius:3px !important; background:#0009 !important;
+}
+body.hud-ref #time-hud .tc-hp{display:none !important}
+body.hud-ref #time-hud .tslot.vazio{width:40px !important; border-style:dashed !important}
+body.hud-ref #time-hud .tcel:has(.tslot.vazio){opacity:.45}
+body.hud-ref #missao,
+body.hud-ref #missao.fig,
+body.hud-ref #missao.solto{
+  left:50% !important; top:10px !important; transform:translateX(-50%) !important;
+  padding:8px 22px !important; max-width:min(560px,52vw) !important; width:auto !important; height:auto !important;
+  border:1px solid var(--ref-line) !important; border-radius:999px !important;
+  background:linear-gradient(180deg,#1a2746f4,#0d1424f4) !important;
+  box-shadow:0 8px 18px #0008 !important;
+}
+body.hud-ref #minimapa{right:14px !important; top:12px !important}
 body.hud-ref #mm-janela{
   width:168px; height:168px;
   border:3px solid var(--ref-gold); outline:1px solid #0c1220;
-  border-radius:18px; box-shadow:0 8px 20px #000a;
+  border-radius:16px; box-shadow:0 8px 20px #000a;
 }
 body.hud-ref #mm-area{
   margin-top:6px; border-radius:999px;
   border:1px solid var(--ref-line); background:#121a2cee; color:#ffe6b0;
 }
-body.hud-ref #chat{
-  left:12px; bottom:96px; width:min(320px,28vw) !important; height:168px !important;
-  border:1px solid var(--ref-line); border-radius:18px;
-  background:#121a2ce8; box-shadow:0 8px 18px #0008;
+body.hud-ref #chat,
+body.hud-ref #chat.solto{
+  left:12px !important; bottom:88px !important; right:auto !important; top:auto !important;
+  width:min(300px,26vw) !important; height:150px !important;
+  border:1px solid var(--ref-line) !important; border-radius:16px !important;
+  background:#121a2ce8 !important; box-shadow:0 8px 18px #0008 !important;
 }
-body.hud-ref #chat.fechado{ height:auto !important }
-body.hud-ref #chat .abas button{ border-radius:10px 10px 0 0 }
-body.hud-ref #menu-icones.menu-pill{
+body.hud-ref #chat.fechado{height:auto !important}
+body.hud-ref #menu-icones.menu-pill,
+body.hud-ref #barra #menu-icones{
   display:flex !important; flex-direction:row !important; align-items:center !important;
-  gap:2px; padding:6px 10px;
-  border:1px solid var(--ref-line); border-radius:999px;
-  background:linear-gradient(180deg,#1a2746f4,#0d1424f4);
-  box-shadow:0 8px 18px #0008;
+  position:relative !important; left:auto !important; top:auto !important; right:auto !important; bottom:auto !important;
+  gap:0 !important; padding:4px 6px !important; margin-left:8px !important;
+  width:auto !important; height:auto !important;
+  border:1px solid #c9a24a55 !important; border-radius:999px !important;
+  background:#0c1220cc !important; box-shadow:none !important;
 }
 body.hud-ref #menu-icones.menu-pill > button[data-j],
 body.hud-ref #menu-icones.menu-pill > .fig-grupo{
   position:relative !important; left:auto !important; top:auto !important; width:auto !important;
 }
-body.hud-ref #menu-icones.menu-pill > button[data-j]{
-  width:52px; padding:2px 4px; gap:2px;
-}
-body.hud-ref #menu-icones.menu-pill > button[data-j] b{
-  display:block !important; font:600 9px/1 inherit; color:#ffe6b0; letter-spacing:.15px;
-}
-body.hud-ref #menu-icones.menu-pill .ic{ width:36px; height:36px }
-body.hud-ref #fala{ bottom:108px; border-radius:16px; border-color:var(--ref-line) }
-body.hud-ref #turno{ bottom:108px; border-radius:20px; border-color:var(--ref-line) }
-body.hud-ref:not(.mobile) #f-alvo.ilha-ficha{ top:196px }
+body.hud-ref #menu-icones.menu-pill > button[data-j]{width:40px; padding:2px; gap:0}
+body.hud-ref #menu-icones.menu-pill > button[data-j] b{display:none !important}
+body.hud-ref #menu-icones.menu-pill .ic{width:32px; height:32px}
+body.hud-ref #fala{bottom:88px; border-radius:16px; border-color:var(--ref-line)}
+body.hud-ref #turno{bottom:88px; border-radius:20px; border-color:var(--ref-line)}
 @media (max-width:1100px){
-  body.hud-ref #menu-icones.menu-pill > button[data-j] b{ display:none !important }
-  body.hud-ref #menu-icones.menu-pill > button[data-j]{ width:42px }
+  body.hud-ref #barra button.sk:not(.bola){width:96px !important}
+  body.hud-ref #time-hud .tcel{width:200px !important}
 }
-body.hud-ref.hud-ilha-mobile #barra.ilha-dock{ border-radius:22px; padding:6px 8px; gap:6px }
-body.hud-ref.hud-ilha-mobile #time-hud{ transform:none; top:64px; padding:8px 6px; border-radius:22px }
-body.hud-ref.hud-ilha-mobile #chat{ bottom:118px; width:min(280px,52vw) !important }
+body.hud-ref.hud-ilha-mobile #barra.ilha-dock{border-radius:22px; padding:6px 8px; gap:6px}
+body.hud-ref.hud-ilha-mobile #time-hud{transform:none !important; top:64px !important}
+body.hud-ref.hud-ilha-mobile #chat{bottom:118px; width:min(280px,52vw) !important}
