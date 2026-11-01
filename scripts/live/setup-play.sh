@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Put play.pokeverse.quest in front of pokeverse-3d. Run as ubuntu (needs sudo).
-# Uses Apache if port 80 is already Apache (account.pokeverse.quest). nginx only if 80 is free.
+# Uses Caddy if port 80 is already Caddy (this VPS). Apache if Apache. nginx only if 80 is free.
 # Does not restart Open Tibia. DNS must already point play.pokeverse.quest at 40.160.145.24.
 # This file must exist on origin/main before anyone is told to run it.
 set -euo pipefail
@@ -9,13 +9,14 @@ DOMAIN="${PV_PLAY_DOMAIN:-play.pokeverse.quest}"
 APP_DIR="${PV_APP_DIR:-/opt/pokeverse-3d}"
 NGINX_SRC="${APP_DIR}/scripts/live/play.pokeverse.quest.nginx"
 APACHE_SRC="${APP_DIR}/scripts/live/play.pokeverse.quest.apache.conf"
+CADDY_SRC="${APP_DIR}/scripts/live/play.pokeverse.quest.caddy"
 
 if [[ "$(id -un)" == "pokeverse" ]]; then
   echo "Run this as ubuntu (needs apt + sudo), not as pokeverse." >&2
   exit 1
 fi
 
-if [[ ! -f "$NGINX_SRC" || ! -f "$APACHE_SRC" ]]; then
+if [[ ! -f "$NGINX_SRC" || ! -f "$APACHE_SRC" || ! -f "$CADDY_SRC" ]]; then
   echo "Missing site files under $APP_DIR/scripts/live — reset this checkout to origin/main first." >&2
   exit 1
 fi
@@ -26,12 +27,14 @@ if ! curl -fsS http://127.0.0.1:5190/saude >/dev/null && ! curl -fsS http://127.
 fi
 
 WHO80="$(sudo ss -lptn 'sport = :80' 2>/dev/null | awk 'NR>1{print; exit}')" || true
-if systemctl is-active --quiet apache2 || systemctl is-active --quiet httpd || echo "$WHO80" | grep -qiE 'apache|httpd'; then
+if systemctl is-active --quiet caddy || echo "$WHO80" | grep -qi caddy; then
+  FRONT=caddy
+elif systemctl is-active --quiet apache2 || systemctl is-active --quiet httpd || echo "$WHO80" | grep -qiE 'apache|httpd'; then
   FRONT=apache
 elif systemctl is-active --quiet nginx || echo "$WHO80" | grep -qi nginx; then
   FRONT=nginx
 elif [[ -n "$WHO80" ]]; then
-  echo "Port 80 is already in use (not Apache or nginx):" >&2
+  echo "Port 80 is already in use (not Caddy, Apache, or nginx):" >&2
   echo "$WHO80" >&2
   exit 1
 else
@@ -41,7 +44,6 @@ fi
 echo "Front door: $FRONT  (port 80: ${WHO80:-free})"
 
 export DEBIAN_FRONTEND=noninteractive
-sudo apt-get update -y
 
 wait_dns() {
   echo "Waiting for DNS $DOMAIN → this box…"
@@ -69,7 +71,27 @@ certbot_run() {
   sudo certbot "${opts[@]}"
 }
 
-if [[ "$FRONT" == apache ]]; then
+if [[ "$FRONT" == caddy ]]; then
+  sudo systemctl disable --now nginx >/dev/null 2>&1 || true
+  CADDYFILE=""
+  for f in /etc/caddy/Caddyfile /opt/pokeverse/Caddyfile /opt/caddy/Caddyfile; do
+    if [[ -f "$f" ]]; then CADDYFILE="$f"; break; fi
+  done
+  if [[ -z "$CADDYFILE" ]]; then
+    echo "Caddy is on port 80 but no Caddyfile was found in /etc/caddy or /opt/pokeverse." >&2
+    systemctl cat caddy --no-pager 2>/dev/null | head -40 || true
+    exit 1
+  fi
+  SNIPPET=/etc/caddy/play.pokeverse.quest.caddy
+  sudo cp "$CADDY_SRC" "$SNIPPET"
+  if ! grep -q 'play.pokeverse.quest' "$CADDYFILE"; then
+    printf '\nimport %s\n' "$SNIPPET" | sudo tee -a "$CADDYFILE" >/dev/null
+  fi
+  sudo caddy validate --config "$CADDYFILE"
+  wait_dns
+  sudo systemctl reload caddy
+elif [[ "$FRONT" == apache ]]; then
+  sudo apt-get update -y
   sudo apt-get install -y apache2 certbot python3-certbot-apache
   sudo systemctl disable --now nginx >/dev/null 2>&1 || true
   sudo a2enmod proxy proxy_http proxy_wstunnel rewrite headers
@@ -80,6 +102,7 @@ if [[ "$FRONT" == apache ]]; then
   wait_dns
   certbot_run --apache
 else
+  sudo apt-get update -y
   sudo apt-get install -y nginx certbot python3-certbot-nginx
   sudo cp "$NGINX_SRC" /etc/nginx/sites-available/play.pokeverse.quest
   sudo ln -sfn /etc/nginx/sites-available/play.pokeverse.quest /etc/nginx/sites-enabled/play.pokeverse.quest

@@ -1,0 +1,34 @@
+play.pokeverse.quest {
+	root * /opt/pokeverse-3d
+	encode zstd gzip
+
+	@internal path /server /server/* /tools /tools/* /docs /docs/* /upcoming /upcoming/* /node_modules /node_modules/* /.git /.git/*
+	respond @internal 404
+
+	handle /servidor* {
+		uri strip_prefix /servidor
+		reverse_proxy 127.0.0.1:5190
+	}
+
+	redir /admin /admin/ 308
+	handle /admin/scenery {
+		rewrite * /admin/scenery.html
+		file_server
+	}
+	handle /admin/cenario {
+		rewrite * /admin/scenery.html
+		file_server
+	}
+	handle /admin/ {
+		rewrite * /admin/index.html
+		file_server
+	}
+
+	@mjs path *.mjs
+	header @mjs Content-Type application/javascript
+
+	handle {
+		try_files /public{path} {path} /index.html
+		file_server
+	}
+}
