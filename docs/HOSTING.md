@@ -165,10 +165,39 @@ The admin panel is then at `https://pokeverse.example.com/admin`.
 
 ## Updating
 
+### Automatic (GitHub Actions)
+
+Pushes to `main` run `.github/workflows/deploy.yml`: SSH into the VPS, `git reset --hard origin/main`,
+`npm install --omit=dev`, and `systemctl restart pokeverse`. Manual run: Actions → **Deploy to OVH** → Run workflow.
+
+Add these repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | What it is |
+|---|---|
+| `OVH_HOST` | VPS public IP or hostname |
+| `OVH_USER` | SSH user that can `cd /srv/pokeverse/app` and `sudo -n systemctl restart pokeverse` |
+| `OVH_SSH_KEY` | Private key for that user (the matching public key in `~/.ssh/authorized_keys` on the VPS) |
+| `OVH_PORT` | Optional. SSH port if it is not 22 |
+| `OVH_APP_DIR` | Optional. Defaults to `/srv/pokeverse/app` |
+
+On the VPS, allow that user to restart the service without a password:
+
+```bash
+echo 'YOUR_SSH_USER ALL=(root) NOPASSWD: /bin/systemctl restart pokeverse, /bin/systemctl status pokeverse' | sudo tee /etc/sudoers.d/pokeverse-deploy
+sudo chmod 440 /etc/sudoers.d/pokeverse-deploy
+```
+
+The first clone and `pokeverse.service` are still the one-time steps above. The workflow only updates a checkout that already exists.
+
+### Manual
+
 ```bash
 cd /srv/pokeverse/app && sudo -u pokeverse git pull && sudo -u pokeverse npm install --omit=dev
 sudo systemctl restart pokeverse
 ```
 
+Or, as the deploy user: `APP_DIR=/srv/pokeverse/app bash /srv/pokeverse/app/tools/deploy.sh`.
+
 Admin-panel edits are written into `public/data/` and `public/scenery/` in this checkout. Commit or back them up before
-pulling, or a pull that touches the same files will conflict.
+pulling, or a pull that touches the same files will conflict. `deploy.sh` resets to `origin/main`, so uncommitted
+admin edits on the VPS are overwritten. `server/data/` (accounts) is gitignored and is left alone.

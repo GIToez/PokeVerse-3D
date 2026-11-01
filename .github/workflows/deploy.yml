@@ -1,0 +1,37 @@
+name: Deploy to OVH
+
+# After a push to main (or a manual run), SSH into the VPS and update the live
+# checkout. Required repository secrets: OVH_HOST, OVH_USER, OVH_SSH_KEY.
+# Optional: OVH_PORT (default 22), OVH_APP_DIR (default /srv/pokeverse/app).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-ovh
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Pull and restart on the VPS
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USER }}
+          key: ${{ secrets.OVH_SSH_KEY }}
+          port: ${{ secrets.OVH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 20m
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.OVH_APP_DIR }}"
+            APP_DIR="${APP_DIR:-/srv/pokeverse/app}"
+            cd "$APP_DIR"
+            bash tools/deploy.sh
