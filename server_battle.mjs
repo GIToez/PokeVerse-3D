@@ -76,7 +76,7 @@ export function criarBatalha(ctx) {
     if (!c.save.ginasioCd || typeof c.save.ginasioCd !== 'object') c.save.ginasioCd = {};
     if (!c.save.elite || typeof c.save.elite !== 'object') c.save.elite = { corrida: null, vencida: false, pagos: [] };
     if (!Array.isArray(c.save.elite.pagos)) c.save.elite.pagos = [];
-    if (c.save.dinheiro == null) c.save.dinheiro = 50000;
+    if (c.save.dinheiro == null) c.save.dinheiro = 0;
     if (!c.save.itens || typeof c.save.itens !== 'object') c.save.itens = {};
     return c.save;
   }
