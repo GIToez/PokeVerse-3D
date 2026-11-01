@@ -2048,7 +2048,8 @@ function rMapaMundo(corpo){
   };
   const noRoda = ev => {
     if (aberta !== 'mapa' || !corpo.isConnected) return;
-    if (ev.target.closest('.mapa-menu, .mapa-dir, .mapa-esq, .mapa-zoom-btns, #chat, .pf, input, textarea, select')) return;
+    if (ev.target.closest('.mapa-menu, .mapa-dir, .mapa-esq, .mapa-zoom-btns, #chat, input, textarea, select')) return;
+    if (ev.target.closest('.pf') && !ev.target.closest('.pf-mapa')) return;
     if (!document.body.classList.contains('mapa-aberto') && !ev.target.closest('.mapa-overlay, .mapa-palco, .pf-mapa, #janela.mapa-cheia')) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();

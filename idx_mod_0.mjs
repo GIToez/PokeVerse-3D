@@ -7996,7 +7996,10 @@ addEventListener('keydown', e => {
    portão (reproduzido no teclado de verdade: 4 saltos em 6 s, todos pra chegada 7110810). Na fase de CAPTURA a janela recebe o
    keyup antes do campo. */
 addEventListener('keyup', e => teclas.delete(e.code), true);
-addEventListener('wheel', e => { zoom = THREE.MathUtils.clamp(zoom * Math.exp(e.deltaY * 0.0012), 0.35, ZOOM_TETO); }, { passive: true });
+addEventListener('wheel', e => {
+  if (document.body.classList.contains('mapa-aberto')) return;
+  zoom = THREE.MathUtils.clamp(zoom * Math.exp(e.deltaY * 0.0012), 0.35, ZOOM_TETO);
+}, { passive: true });
 
 const ponteiro = new THREE.Vector2();
 const plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
