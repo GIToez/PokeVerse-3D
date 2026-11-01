@@ -72,7 +72,14 @@ function dialogoAberto(){ for (const d of DIALOGOS){ if (d.isConnected) return t
 export const aberto = () => !!aberta || !$('menu-grade')?.hidden || dialogoAberto() || !!(popEb && Popup.aberto(popEb)) || !!(popIn && Popup.aberto(popIn));   // 18/09: a escolha do inicial (v2) também segura o jogo
 export function alternarGrade(){ if (aberta) fechar(); else { const g = $('menu-grade'); g.hidden = !g.hidden; ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); } }
 function fecharGrade(){ $('menu-grade').hidden = true; }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; j.classList.remove('mapa-cheia'); for (const q of [popPk, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); }
+function marcarMapaCheio(on){
+  const j = $('janela');
+  j.classList.toggle('mapa-cheia', on);
+  j.classList.toggle('notranslate', on);
+  document.body.classList.toggle('mapa-aberto', on);
+  if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
+}
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if ((nome === 'loja' || nome === 'batalha') && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
@@ -88,10 +95,8 @@ export async function abrir(nome, aba = null){
     await dados(); render();
     return;
   }
-  const j = $('janela'); j.hidden = false; j.dataset.janela = nome; j.classList.toggle('larga', nome === 'pokedex' || nome === 'mapa');
-  j.classList.toggle('mapa-cheia', nome === 'mapa');
-  j.classList.toggle('notranslate', nome === 'mapa');
-  if (nome === 'mapa') j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
+  const j = $('janela'); j.hidden = false; j.dataset.janela = nome; j.classList.toggle('larga', nome === 'pokedex');
+  marcarMapaCheio(nome === 'mapa');
   abasDoLivro(j, nome);                                                  // pele da Amanda: as abas desenhadas na lombada do livro viram botões
   const reg = ctx.jogo?.hudLayout?.[Hud.presetAtual()]?.['jan-' + nome];   // janela com lugar/tamanho do editor de HUD
   if (reg && nome !== 'mapa') Hud.posicionar(j, { ...reg, oculto: false }, false); else Hud.limpar(j);
@@ -972,7 +977,7 @@ function encherTreinador(pop){
 }
 
 /* ---------------------------------------------------------------- Mapa */
-let pontosMapa = null, areaMapa = null;
+let pontosMapa = null, areaMapa = null, mapaResize = null;
 function popupMa(){
   return null;                                                           // world map is the window (quest pins, live tab, click a zone)
 }
@@ -1626,7 +1631,19 @@ function rMapaMundo(corpo){
   const cards = corpo.querySelector('#m-cards');
   let z = 1, px = 0, py = 0, arrasto = null;
   const vista = () => { zoomEl.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')'; };
-  const limitarZ = v => Math.max(0.85, Math.min(3.2, v));
+  const limitarZ = v => Math.max(1, Math.min(3.2, v));
+  const caber = () => {
+    const r = palco.getBoundingClientRect();
+    const iw = foto.naturalWidth || 1586, ih = foto.naturalHeight || 992;
+    if (!r.width || !r.height || !iw || !ih) return;
+    const k = Math.min(r.width / iw, r.height / ih);
+    const w = Math.round(iw * k), h = Math.round(ih * k);
+    zoomEl.style.width = w + 'px';
+    zoomEl.style.height = h + 'px';
+    zoomEl.style.marginLeft = Math.round(-w / 2) + 'px';
+    zoomEl.style.marginTop = Math.round(-h / 2) + 'px';
+    vista();
+  };
   const abrirArea = async a => {
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
     pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, nomes: {}, raio: 0.045 }));
@@ -1640,7 +1657,7 @@ function rMapaMundo(corpo){
     cards.innerHTML =
       (aqui ? `<div class="mapa-pill">${tr('You are in')} <b>${esc(aqui)}</b></div>` : '') +
       (qNome ? `<div class="mapa-pill quest">${esc(qNome)}</div>` : '') +
-      htmlCartaoMapa(a, nome, { live });
+      (nome ? `<div class="mapa-pill sel">${esc(nome)}${live ? ' · ' + live + ' wild' : ''}</div>` : '');
     const pt = pontosMapa.areas?.[String(a)];
     if (pt){ selEl.hidden = false; selEl.style.left = (pt[0] * 100) + '%'; selEl.style.top = (pt[1] * 100) + '%'; }
     else selEl.hidden = true;
@@ -1654,9 +1671,9 @@ function rMapaMundo(corpo){
       if (!nome) continue;
       const cidade = n >= 1101 && n <= 1110;
       const extra = n >= 1191 && n <= 1199;
-      if (!cidade && !extra && !(n >= 1201 && n <= 1225)) continue;
+      if (!cidade && !extra) continue;
       const el = document.createElement('b');
-      el.className = 'mapa-rotulo' + (cidade ? ' cidade' : extra ? ' extra' : ' rota');
+      el.className = 'mapa-rotulo' + (cidade ? ' cidade' : ' extra');
       el.dataset.a = id;
       el.textContent = cidade ? rotuloCurtoMapa(nome) : nome;
       el.style.left = (pt[0] * 100) + '%';
@@ -1724,6 +1741,11 @@ function rMapaMundo(corpo){
     z = limitarZ(z * (b.dataset.z === 'in' ? 1.25 : 0.8));
     vista();
   });
+  if (mapaResize) removeEventListener('resize', mapaResize);
+  mapaResize = () => { if (aberta !== 'mapa' || !corpo.isConnected) return; caber(); };
+  addEventListener('resize', mapaResize);
+  foto.addEventListener('load', caber);
+  if (foto.complete) caber();
   (async () => {
     pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, nomes: {}, raio: 0.045 }));
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
@@ -1731,7 +1753,7 @@ function rMapaMundo(corpo){
     pintarRotulos(); pintarPins();
     const start = voce || quests[0]?.area || 1101;
     abrirArea(start);
-    vista();
+    caber();
   })();
 }
 function rMapaVivo(corpo, dd, caixas){
