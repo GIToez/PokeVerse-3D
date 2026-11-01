@@ -1754,15 +1754,7 @@ async function mundoKanto(){
 function marcadoresMissao(){
   const M = ctx.missoes;
   if (!M?.pronto?.()) return [];
-  const m = M.ativa(), idx = M.indicePasso?.() ?? 0;
-  const pins = [];
-  const passos = [...(m?.passos || []).slice(idx)];
-  for (const s of (M.laterais?.() || []).filter(x => x.estado === 'ativa'))
-    passos.push(...(s.passos || []).slice(s.passo || 0));
-  for (const p of passos){
-    if (p.area) pins.push({ area: +p.area, texto: p.texto || m?.nome, tipo: 'quest' });
-  }
-  return pins;
+  return (M.pinsMapaSync?.() || []).filter(p => p.tipo === 'quest');
 }
 let mapaMarcadores = null;
 const FILTROS_MAPA = {
@@ -1981,8 +1973,9 @@ function rMapaMundo(corpo){
     const ash = ctx.jogo?.ash;
     if (ash) add('voce', 'You are here', ash.vx ?? ash.x, ash.vz ?? ash.z);
     else if (aqui){ const b = caixaDe(aqui); if (b) add('voce', 'You are here', fx * b.x, b.z); }
-    if (FILTROS_MAPA.quest) for (const pin of marcadoresMissao().filter(p => p.tipo === 'quest')){
-      const b = caixaDe(pin.area); if (b) add('quest', pin.texto, fx * b.x, b.z, { area: pin.area });
+    if (FILTROS_MAPA.quest) for (const pin of marcadoresMissao()){
+      if (pin.x != null && pin.z != null) add('quest', pin.texto, fx * pin.x, pin.z, { area: pin.area });
+      else { const b = caixaDe(pin.area); if (b) add('quest', pin.texto, fx * b.x, b.z, { area: pin.area }); }
     }
     pois().forEach((p, i) => add(p.tipo, p.nome, fx * p.x, p.z, { area: p.area, i }));
   };
@@ -2020,16 +2013,7 @@ function rMapaMundo(corpo){
   const desenharVivos = () => {
     if (!vivos.width || !regua) return;
     g2.clearRect(0, 0, vivos.width, vivos.height);
-    const j = ctx.jogo;
-    for (const s of j?.selvagens || []) if (s.estado !== 'morto' && s.estado !== 'guardado') ponto(s.vx ?? s.x, s.vz ?? s.z, s.shiny ? '#ffe36b' : '#f4f4f4', 3);
-    for (const n of j?.npcs || []) ponto(n.vx ?? n.x, n.vz ?? n.z, '#4ff0e0', 3.2);
-    for (const n of j?.treinadores || []) ponto(n.vx ?? n.x, n.vz ?? n.z, '#ff8ad8', 3.2);
-    try {
-      for (const o of Rede.listaOutros?.() || []) if (o.x != null && o.z != null) ponto(o.x, o.z, '#7ea8ff', 4);
-    } catch {}
-    const pk = j?.pika;
-    if (pk && !j?.semParceiro) ponto(pk.vx ?? pk.x, pk.vz ?? pk.z, '#f4aa35', 3.6);
-    const ash = j?.ash;
+    const ash = ctx.jogo?.ash;
     if (ash) ponto(ash.vx ?? ash.x, ash.vz ?? ash.z, '#ff5f5f', 5.5);
   };
   const quadro = () => {
@@ -2077,8 +2061,10 @@ function rMapaMundo(corpo){
     const frFoto = foto.getBoundingClientRect();
     const pinR = frFoto.width ? (16 / frFoto.width) * metros().mw : 14;
     let pinPerto = null, pinD = pinR;
-    for (const m of pois()){
-      if (m.tipo !== 'voce' && !FILTROS_MAPA[m.tipo]) continue;
+    for (const m of [...pois(), ...marcadoresMissao()]){
+      if (m.tipo !== 'voce' && m.tipo !== 'quest' && !FILTROS_MAPA[m.tipo]) continue;
+      if (m.tipo === 'quest' && !FILTROS_MAPA.quest) continue;
+      if (m.x == null || m.z == null) continue;
       const d = Math.hypot(p.wx - fx * m.x, p.wz - m.z);
       if (d < pinD){ pinD = d; pinPerto = m; }
     }
@@ -2153,6 +2139,7 @@ function rMapaMundo(corpo){
     if (dd) mundo = dd;
     mapaHabitats ??= hab;
     mapaMarcadores = marks;
+    await ctx.missoes?.atualizarPinsMapa?.();
     pintarRotulos(); pintarPins();
     const start = voce || quests[0]?.area || 1101;
     abrirArea(start);
