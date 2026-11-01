@@ -1104,7 +1104,8 @@ async function soAcao(nome, el){
   } else if (nome === 'convidar'){                                        // fase 4: convite de TROCA (o PvP ainda vem depois)
     Popup.mostrarExtra(pop, 'tooltip-amigo', false);
     if (!soAmigoMenu) return;
-    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('Pra trocar, vocês precisam estar na mesma área, um do lado do outro. (O desafio de batalha chega com o PvP.)');
+    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /batalhar ' + soAmigoMenu.nick);
+    else Chat.sistema('Trade invite sent. To battle instead: /batalhar ' + soAmigoMenu.nick);
   } else if (nome === 'desfazer-amizade'){
     Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (!soAmigoMenu) return;
     const r = await soChamar('POST', '/social/remover', { usuario: soAmigoMenu.usuario });

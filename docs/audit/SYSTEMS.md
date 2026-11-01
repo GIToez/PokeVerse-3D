@@ -18,8 +18,9 @@ Status meanings: **Working** means playable end to end on the bundled local serv
 | Open-world exploration | Working | One continuous Kanto map plus 71 interior/dungeon scenes |
 | Real-time wild combat | Working | Partner fights in real time; moves on keys 1–4 |
 | Capture | Working | Knock out, then throw a ball (F) within 9 m during the 8 s faint window |
-| Trainer and gym battles (turn-based) | **Partial** | Work offline (no account). With an account, the bundled server rejects every battle request (see below) |
-| Elite Four | **Not playable locally** | Requires an account, and the bundled server has no battle engine |
+| Trainer and gym battles (turn-based) | Working | Server-run when logged in (`server_battle.mjs`). Offline still uses the client engine. |
+| Elite Four | Working | Account-only; server tracks the no-heal run (`data/elite.json`) |
+| Player vs player | Partial | `/batalhar <name>` on the same map within 14 m; both must be logged in |
 | Team, box, follower | Working | Party of 6, box overflow, drag to reorder |
 | IVs, natures, PP, learnsets | Working | EVs are always 0 |
 | Status conditions (burn, sleep…) | Not implemented | Combat is HP, damage and PP only |
@@ -37,7 +38,7 @@ Status meanings: **Working** means playable end to end on the bundled local serv
 | Raids | Working | Staff-run Mew raid (Lv 70) for up to 10 players |
 | Live events | Working | EXP, shiny and spawn-density multipliers, maintenance mode |
 | Multiplayer presence | Working | Positions, outfits, partners and mounts sync at about 10 Hz |
-| PvP | Stub | "Coming soon" |
+| PvP | Partial | `/batalhar <name>` (same map, 14 m). The Battle menu banner is still "coming soon" |
 | Mounts and surfing | Partial | 20 mounts in data; only Arcanine and Lapras are free for normal accounts |
 | Fishing | Not implemented | Water spawns stand in for it |
 | Safari Zone game mode | Not implemented | The map exists; the Safari ball/step mode does not |
@@ -50,19 +51,10 @@ Status meanings: **Working** means playable end to end on the bundled local serv
 
 ## Battles on the bundled server
 
-`idx_mod_0.mjs` (`iniciarTurno`, around line 8266) sends trainer, gym and Elite Four challenges to the server whenever the
-player is logged in. The bundled `server.mjs` answers every `bat_*` message with
-`bat_erro: "Batalha PvP não disponível no servidor local."` ("PvP battle not available on the local server"). So:
-
-- **Offline (no account):** trainer and gym battles run on the client's own turn-based engine.
-- **Logged in:** every trainer, gym and Elite Four challenge fails with that message.
-- **Elite Four:** only exists with an account, so it can't be played locally at all.
-
-This is one sign of a larger gap: the client was built against a newer production server than the one in this project.
-The client protocol version is 18 (`network.mjs:17`), while the server is 15 (`server.mjs:28`, whose comment says it must
-match). The client also handles message types the local server never sends: battle rounds, the progress pass, door checks,
-Elite Four runs, direct messages and the shared wild-Pokémon stream. Wild Pokémon are spawned by each client
-(`soloWilds: true`) instead of by a world server.
+`index.html` (`iniciarTurno`) sends trainer, gym and Elite Four challenges to the server whenever the
+player is logged in. `server_battle.mjs` runs the turn engine (damage, PP, XP, badges, payouts, E4 run).
+`/batalhar <name>` challenges another logged-in player on the same map (14 m). Protocol version is 19
+on both sides. Wild Pokémon are still spawned per client (`soloWilds: true`).
 
 ## Combat and stats
 

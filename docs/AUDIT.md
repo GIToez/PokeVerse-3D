@@ -15,8 +15,8 @@ Detailed reports:
 A 3D, browser-based Pokémon MMO set in Kanto. There is one continuous outdoor map (about 722 × 537 m, 39 towns and routes)
 plus 71 interior and dungeon scenes. 248 species have 3D models, and 123 of them spawn in the wild. Combat with wild Pokémon
 is real time, and capture uses the Gen III formula. There are 8 gyms, 56 story missions, trading, chat, staff-run raids, live
-events and a large GM admin panel. The main limitation: **the bundled server is a development stand-in, not the production
-server the client was built for.** Most notably, turn-based trainer, gym and Elite Four battles don't work for logged-in players.
+events and a large GM admin panel. Logged-in trainer, gym, Elite Four and player battles are handled on the bundled server
+(`server_battle.mjs`). Wild Pokémon are still spawned per client (no shared world server).
 
 ## Headline numbers
 
@@ -63,8 +63,7 @@ server the client was built for.** Most notably, turn-based trainer, gym and Eli
 
 | Gap | Effect |
 |---|---|
-| No turn-based battle engine on the server | Logged-in players can't battle trainers, gyms or the Elite Four. Offline play (no account) uses the client's own engine for trainers and gyms |
-| Elite Four | Unplayable locally (account-only, needs the missing battle engine) |
+| Shared world / wilds | Each client still spawns its own wild Pokémon; captures stay client-trusted |
 | No world server | Each client spawns its own wild Pokémon, so players don't see the same wilds and captures are trusted from the client |
 | Protocol mismatch | Client protocol version 18, server 15. No visible error, but the client expects messages the server never sends (progress pass, door checks, direct messages, Elite Four runs) |
 
@@ -129,10 +128,8 @@ the live game) is still the old one.
    anyone. Consider making it private.
 2. **Pokémon IP.** Pokémon names, models and music are Nintendo / Game Freak / The Pokémon Company property. Running this
    publicly carries legal risk independent of any code work.
-3. **Battle server.** For trainer, gym and Elite Four battles to work with accounts, the server needs a turn-based battle
-   handler for the `bat_*` messages. Alternatively, the client could be changed to use its local engine even when logged in.
-   The client's local engine already exists in `idx_mod_0.mjs`.
-4. **Security before going public:** see `docs/SECURITY.md` (retire legacy password hashes, restrict CORS, add a connection cap).
+3. **Security before going public:** see `docs/SECURITY.md`. CORS, WebSocket origin, a connection cap, and
+   scrypt migration of leftover SHA-256 hashes are in place; still keep `server/data/` off git.
 
 ## Language migration status
 
