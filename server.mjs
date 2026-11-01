@@ -1483,7 +1483,7 @@ wss.on('connection', ws => {
           } else {
             const extra = c && batalha.bolsa(ws, op, m);
             if (extra) enviar(ws, { t: 'bolsa', op, ...extra });
-            else enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 9999, bolas: c.save.bolas, itens: c.save.itens, insignias: c.save.insignias } : null });
+            else enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 0, bolas: c.save.bolas, itens: c.save.itens, insignias: c.save.insignias } : null });
           }
         }
 

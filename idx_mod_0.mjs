@@ -7552,7 +7552,7 @@ if (jogo.ash){
     aviso: (txt, o) => { Chat.sistema(txt); if (jogo.ash) flutuar(jogo.ash, txt.replace(/^[✔📜🏁] ?/, ''), o?.destaque ? '#ffe07a' : '#ffd23a'); },
     recompensa: (r, m) => {
       if (comConta()){ bolsaOp('missao', { missao: m?.id }); }          // o servidor paga pela tabela (uma vez por missão) e devolve a bolsa
-      else if (r.dinheiro) gravarLS('dinheiro', lerLS('dinheiro', 50000) + r.dinheiro);
+      else if (r.dinheiro) gravarLS('dinheiro', lerLS('dinheiro', 0) + r.dinheiro);
       if (r.itens && !comConta()){ const it = lerLS('itens', {}); for (const [id, n] of Object.entries(r.itens)){ if (+id >= 1001 && +id <= 1009){ jogo.bolas[id] = (jogo.bolas[id] || 0) + n; gravarLS('bolas', jogo.bolas); } else it[id] = (it[id] || 0) + n; } gravarLS('itens', it); try { pintarAtalhos(true); } catch (e){ console.warn('pintarAtalhos:', e); } }
       if (r.exp && jogo.pika && !comConta()) darExp(jogo.pika, r.exp);   // 13/09: com conta a XP da missão entra na FICHA pelo servidor (mensagem `xp`); somando aqui também, o nível do cliente corria na frente, ensinava golpes de níveis que não tinha e "perdia" tudo na sincronização (l.neto: Fire Fang/Flamethrower no Lv 17)
       const partes = [r.dinheiro ? r.dinheiro + ' Moedas' : null, ...Object.entries(r.itens || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n), r.exp ? r.exp + ' XP' : null].filter(Boolean);
@@ -8340,7 +8340,7 @@ function pintarConvite(n){
       <div class="tlinha">${esp ? `<button type="button" class="tbt luta" id="t-pagar">💰 Tentar agora (${g.resetMoedas})</button>` : '<button type="button" class="tbt luta" id="t-sim">⚔ Desafiar</button>'}<button type="button" class="tbt" id="t-nao">Agora não</button></div>`;
     el.hidden = false;
     $('t-sim')?.addEventListener('click', () => { Som.destravar(); iniciarTurno(n); });
-    $('t-pagar')?.addEventListener('click', () => { const d = lerLS('dinheiro', 50000); if (d < g.resetMoedas){ flutuar(jogo.ash, 'not enough Coins', '#f58e8e'); return; } if (comConta()) bolsaOp('ginasioreset', { ginasio: g.insignia.id }); else gravarLS('dinheiro', d - g.resetMoedas); const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd); Chat.sistema('You paid ' + g.resetMoedas + ' Coins to challenge ' + g.lider + ' again.'); Som.destravar(); iniciarTurno(n); });
+    $('t-pagar')?.addEventListener('click', () => { const d = lerLS('dinheiro', 0); if (d < g.resetMoedas){ flutuar(jogo.ash, 'not enough Coins', '#f58e8e'); return; } if (comConta()) bolsaOp('ginasioreset', { ginasio: g.insignia.id }); else gravarLS('dinheiro', d - g.resetMoedas); const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd); Chat.sistema('You paid ' + g.resetMoedas + ' Coins to challenge ' + g.lider + ' again.'); Som.destravar(); iniciarTurno(n); });
     $('t-nao').onclick = () => { el.hidden = true; };
     return;
   }
@@ -8669,7 +8669,7 @@ function fimTurno(vitoria, op = {}){
     else if (comConta()) bolsaOp('ginasio', { ginasio: g.insignia.id, venceu: true }).then(r => { if (r && !r.erro && r.primeira) liberarReserva(); });   // insígnia e prêmio vêm do servidor
     else if (primeira){ ins.push(g.insignia.id); gravarLS('insignias', ins); liberarReserva(); }
     const ganho = primeira ? g.dinheiro : Math.round(g.dinheiro / 2);
-    if (!comConta() && !doServidor) gravarLS('dinheiro', lerLS('dinheiro', 50000) + ganho);
+    if (!comConta() && !doServidor) gravarLS('dinheiro', lerLS('dinheiro', 0) + ganho);
     const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
     n.falas = [g.vitoria[0]];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏅 ' + g.lider + ' · ' + g.nome, '#ffd23a', 2.6); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
@@ -8681,10 +8681,10 @@ function fimTurno(vitoria, op = {}){
   if (!vitoria && !op.desistiu && n.ginasio){                          // GINÁSIO: cooldown crescente (15/30/60 min; zera à meia-noite)
     const g = n.ginasio, cd = ginasioCd(), antes = cd[g.numero], k = Math.min(g.cooldownMin.length - 1, (antes && new Date(antes.ate).toDateString() === new Date().toDateString()) ? (antes.n || 0) : 0);
     cd[g.numero] = { ate: Date.now() + g.cooldownMin[k] * 60000, n: k + 1 }; gravarLS('ginasioCd', cd);
-    const perda = Math.min(lerLS('dinheiro', 50000), Math.round(g.dinheiro / 4));
+    const perda = Math.min(lerLS('dinheiro', 0), Math.round(g.dinheiro / 4));
     if (doServidor){}                                                     // o servidor já cobrou a derrota
     else if (comConta()) bolsaOp('ginasio', { ginasio: g.insignia.id, venceu: false });
-    else if (perda > 0) gravarLS('dinheiro', lerLS('dinheiro', 50000) - perda);
+    else if (perda > 0) gravarLS('dinheiro', lerLS('dinheiro', 0) - perda);
     Chat.sistema('You lost to ' + g.lider + (perda ? ' and ' + perda + ' Coins' : '') + '. O líder aceita outro desafio em ' + g.cooldownMin[k] + ' min (ou pague ' + g.resetMoedas + ' Moedas pra tentar agora).');
     mostrarFala(g.lider, g.derrota, n);
     return;
@@ -8696,7 +8696,7 @@ function fimTurno(vitoria, op = {}){
     const g = t.dinheiro || 200;
     if (doServidor){}                                                     // o servidor já pagou o treinador
     else if (comConta()) bolsaOp('treinador', { treinador: n.spotKey, dinheiro: g, venceu: true });
-    else gravarLS('dinheiro', lerLS('dinheiro', 50000) + g);
+    else gravarLS('dinheiro', lerLS('dinheiro', 0) + g);
     n.falas = [t.vitoria[0] || Dialogos.texto('jaVenceu')];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('✔ ' + t.nome, '#9fb2d0', 2.4); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
     Chat.sistema('🏆 You beat ' + t.nome + ' and won ' + g + ' Coins!');
@@ -8705,10 +8705,10 @@ function fimTurno(vitoria, op = {}){
   } else if (op.desistiu){
     Chat.sistema('You ran from the battle against ' + t.nome + '.');
   } else {
-    const perda = Math.min(lerLS('dinheiro', 50000), Math.round((t.dinheiro || 200) / 2));
+    const perda = Math.min(lerLS('dinheiro', 0), Math.round((t.dinheiro || 200) / 2));
     if (doServidor){ if (doServidor.perda) Chat.sistema('You lost the battle and ' + doServidor.perda + ' Coins.'); }   // o servidor já cobrou
     else if (comConta()){ bolsaOp('treinador', { treinador: n.spotKey, dinheiro: t.dinheiro || 200, venceu: false }); if (perda > 0) Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
-    else if (perda > 0){ gravarLS('dinheiro', lerLS('dinheiro', 50000) - perda); Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
+    else if (perda > 0){ gravarLS('dinheiro', lerLS('dinheiro', 0) - perda); Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
     mostrarFala(t.nome, t.derrota, n);
   }
 }

@@ -182,7 +182,7 @@ function tecla(e){
 }
 const tipoHtml = t => `<span class="tipo" style="background:${ctx.R.COR_TIPO?.[t] || '#556'}">${t}</span>`;
 const iconeItem = it => it?.i ? `background-image:url('./ui/itens/${it.i}.png')` : '';   // ícone recortado do pacote FairyGUI Item (tools/icones_itens.mjs)
-const dinheiro = () => ctx.lerLS('dinheiro', 50000);
+const dinheiro = () => ctx.lerLS('dinheiro', 0);
 const setDinheiro = v => ctx.gravarLS('dinheiro', v);
 const itensLS = () => ctx.lerLS('itens', {});
 
