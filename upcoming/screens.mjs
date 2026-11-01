@@ -3,7 +3,7 @@ import { t as tr, tHtml } from './i18n.mjs';
 import * as Popup from './popup.mjs';
 import * as TelasP from './screens_character.mjs';
 import * as Hud from './hud.mjs';
-const DISCORD = 'https://discord.gg/P2NeDwbcwj';
+const DISCORD = 'https://discord.gg/P88WNBB56E';
 const LOGO_DISCORD =
   '<svg viewBox="0 0 127 96" width="18" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M107 8A105 105 0 0 0 80.9 0a73 73 0 0 0-3.4 7 97 97 0 0 0-29 0A73 73 0 0 0 45 0a105 105 0 0 0-26 8C2.4 33 -1.5 57 .5 80.6A106 106 0 0 0 32.7 96a78 78 0 0 0 6.9-11.2 69 69 0 0 1-10.9-5.2l2.7-2.1a75 75 0 0 0 64.2 0l2.7 2.1a69 69 0 0 1-10.9 5.2A78 78 0 0 0 94.3 96a106 106 0 0 0 32.2-15.4c2.4-27.4-3.9-51.2-19.5-72.6ZM42.4 66.2c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5.1 12.9-11.5 12.9Zm42.5 0c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5 12.9-11.5 12.9Z"/></svg>';
 const LOGO_DISCORD_CAIXA = LOGO_DISCORD.replace('width="18" height="14"', 'width="100%" height="100%"');

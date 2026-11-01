@@ -19,7 +19,7 @@ import * as TelasP from './screens_character.mjs';   // rodada 23: as telas de e
    login, então ela é a página principal — e quem chega sem chave não tinha para onde ir: a caixa da Alpha Key dizia "a chave
    que recebeu" sem nunca dizer onde se recebe uma (as chaves saem nos sorteios do Discord). Convite permanente do próprio
    Jaime (kronyxonline), o que aponta pro #alpha-testers. Trocar aqui muda os dois lugares que o mostram. */
-const DISCORD = 'https://discord.gg/P2NeDwbcwj';
+const DISCORD = 'https://discord.gg/P88WNBB56E';
 /* O logo, em caminho SVG — é ele que faz o botão ser reconhecido sem precisar ler. */
 const LOGO_DISCORD = '<svg viewBox="0 0 127 96" width="18" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M107 8A105 105 0 0 0 80.9 0a73 73 0 0 0-3.4 7 97 97 0 0 0-29 0A73 73 0 0 0 45 0a105 105 0 0 0-26 8C2.4 33 -1.5 57 .5 80.6A106 106 0 0 0 32.7 96a78 78 0 0 0 6.9-11.2 69 69 0 0 1-10.9-5.2l2.7-2.1a75 75 0 0 0 64.2 0l2.7 2.1a69 69 0 0 1-10.9 5.2A78 78 0 0 0 94.3 96a106 106 0 0 0 32.2-15.4c2.4-27.4-3.9-51.2-19.5-72.6ZM42.4 66.2c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5.1 12.9-11.5 12.9Zm42.5 0c-6.3 0-11.5-5.8-11.5-12.9s5-13 11.5-13 11.6 5.9 11.5 13c0 7.1-5 12.9-11.5 12.9Z"/></svg>';
 
