@@ -349,6 +349,18 @@ function marcarPego(c, dex) {                                                   
   if (!c.save.dex || typeof c.save.dex !== 'object') c.save.dex = {};
   c.save.dex[+dex] = 'pego';
 }
+/** Anything you own (party + box) is registered — gifts, trades, and evolutions, not only wild catches. */
+function marcarPegoDoTime(c) {
+  if (!c?.save) return false;
+  let n = 0;
+  for (const p of [...(c.save.time || []), ...(c.save.caixa || [])]) {
+    if (p?.dex == null) continue;
+    const k = +p.dex;
+    if (!c.save.dex || typeof c.save.dex !== 'object') c.save.dex = {};
+    if (c.save.dex[k] !== 'pego') { c.save.dex[k] = 'pego'; n++; }
+  }
+  return n > 0;
+}
 function mesclarConhecimento(atual, novo) {
   const base = (atual && typeof atual === 'object') ? atual : { esp: {}, titulos: [], v: 1 };
   base.esp = (base.esp && typeof base.esp === 'object') ? base.esp : {};
@@ -802,6 +814,7 @@ const httpServer = http.createServer((req, res) => {
       const u = usuarioDe(req);
       if (!u) return json(401, { erro: 'Invalid session.' });
       const c = contas[u];
+      if (c?.save && marcarPegoDoTime(c)) salvarContas();
       return json(200, { ok: true, save: c.save || null, rev: c.rev || 0, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}) });
     }
 
@@ -826,6 +839,7 @@ const httpServer = http.createServer((req, res) => {
         aplicarPrefs(c, d.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
         if (d.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, d.conhecimento);   // nº15: só soma, não sobrescreve
         if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
+        marcarPegoDoTime(c);
         if (d.pos) gravarPosConta(u, d.pos, { porta: false });              // F5 / tab close: last walk, same jump rules (not a door)
         c.rev = (c.rev || 0) + 1;
         salvarContas();
@@ -1079,6 +1093,7 @@ const httpServer = http.createServer((req, res) => {
           if (r.erro) return json(400, { erro: r.erro });
           const antes = { time: (c.save.time || []).map(resumoMon), caixa: (c.save.caixa || []).map(resumoMon) };
           c.save.time = r.time; c.save.caixa = r.caixa;
+          marcarPegoDoTime(c);
           logAdmin(g, u, 'time', { antes, depois: { time: r.time.map(resumoMon), caixa: r.caixa.map(resumoMon) } });
           const res = pronto();
           for (const w of socketsDe(u)) { enviar(w, { t: 'save', save: c.save, rev: c.rev }); enviar(w, { t: 'sistema', texto: '🔁 Um GM mexeu no seu time.' }); }
@@ -1317,6 +1332,7 @@ wss.on('connection', ws => {
           aplicarPrefs(c, m.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
           if (m.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, m.conhecimento);   // nº15: só soma
           if (m.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'
+          marcarPegoDoTime(c);
           c.rev = (c.rev || 0) + 1;
           salvarContas();
         }
@@ -1406,6 +1422,7 @@ wss.on('connection', ws => {
               c.save.time.unshift(pk);
               c.save.inicial = { dex: m.mon.dex, glb: m.mon.glb, nome: m.mon.nome, i: m.i ?? 0 };
               marcarPego(c, pk.dex);                    // nº15: inicial marca 'pego' na Pokédex (servidor)
+              marcarPegoDoTime(c);
               c.rev = (c.rev || 0) + 1;
               salvarContas();
               enviar(ws, { t: 'posse', op, mon: pk, vidas: c.save.time });

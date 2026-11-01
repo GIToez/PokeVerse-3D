@@ -130,4 +130,19 @@ export function sortearSexo(dex){ const m = io?.sexos?.[dex]; if (m == null) ret
 export const simboloSexo = s => s === 'm' ? '♂' : s === 'f' ? '♀' : '';
 /** Compatibilidade com a Pokédex antiga (LS `dex`: 'visto' | 'pego'). */
 export function estadoAntigo(){ const d = carregar(), out = {}; for (const [k, r] of Object.entries(d.esp)){ if (r.p) out[k] = 'pego'; else if (r.v) out[k] = 'visto'; } return out; }
+/** Own a Pokémon (starter, trade, gift, evolution). First time only — does not farm catch points. */
+export function possuir(e = {}){
+  if (!io) return null;
+  const dex = +(e.dex ?? 0); if (!dex) return null;
+  const r = reg(dex);
+  if (e.shiny){ r.sh = 1; r.shp = 1; }
+  if (e.sexo === 'm' || e.sexo === 'f'){ if (!r.sx.includes(e.sexo)) r.sx += e.sexo; }
+  else if (!temGenero(dex) && !r.sx) r.sx = SEXO_NENHUM;
+  if (r.p > 0){ salvar(); return null; }
+  return evento('pego', e);
+}
+export function possuirLista(lista){
+  if (!io || !lista) return;
+  for (const p of lista) if (p?.dex) possuir(p);
+}
 export function tudo(){ return carregar(); }

@@ -5028,6 +5028,7 @@ jogo.time = lerLS('time', []);
   const migrar = lista => { let mudou = false; for (const t of lista){ if (!t.ivs || !t.natureza){ Ind.garantir(t); mudou = true; } if (!t.movs?.length){ Ind.garantirMovs(t, fallbackGolpes(t.dex)); mudou = true; } const S = porDex.get(t.dex); if (S?.bs){ const nm = Ind.hpDe(S, t); if (t.maxHp !== nm){ t.maxHp = nm; if (t.hp > nm) t.hp = nm; mudou = true; } } } return mudou; };
   if (migrar(jogo.time)) gravarLS('time', jogo.time);
   const cx = lerLS('caixa', []); if (migrar(cx)) gravarLS('caixa', cx);
+  Conhecimento.possuirLista?.([...jogo.time, ...cx]);
 }
 const bolasVivas = [];
 const caixaBola = new THREE.Box3();   // medida da pose animada: o pivô da bola fica no CENTRO no clipe Capture (raio 0,18) e no PÉ nos Shake/Open
@@ -5661,13 +5662,14 @@ async function evoluirParceiro(opcao = null){
     if (t){ t.lv = lv; t.maxHp = novo.maxHp; t.hp = novo.hp; t.exp = novo.exp; t.amizade = novo.amizade; t.movs = novo.movs; t.aprender = novo.aprender; gravarLS('time', jogo.time); }   // 18/09: golpes/fila da espécie nova também no registro (o arranjo leva pro servidor)
     const muda = comConta() ? null : Evolucao.regras(dexAntes).find(r => r.gatilho === 'muda');   // com conta o servidor ainda não registra o SEGUNDO Pokémon (Shedinja): fica pro jogo local   // Nincada → Ninjask + Shedinja na Pokébola vazia (vaga no time e uma Pokébola)
     if (muda){ const sp = porDex.get(muda.para), gm = sp && (ELENCO_JOGO.find(x => x.n === sp.n && /_00$/.test(x.glb)) || ELENCO_JOGO.find(x => x.n === sp.n));
-      if (gm && jogo.time.length < 6 && (jogo.bolas[1001] || 0) > 0){ jogo.bolas[1001]--; gravarLS('bolas', jogo.bolas); jogo.time.push({ dex: sp.n, glb: gm.glb, nome: sp.name, lv, exp: Evolucao.expPara(sp.n, lv), amizade: Evolucao.amizadeBase(sp.n), hp: 1, maxHp: 1, ivs: Ind.sortearIVs(), natureza: Ind.sortearNatureza(), quando: Date.now() }); gravarLS('time', jogo.time); Chat.sistema('A ' + sp.name + ' appeared in the empty Poké Ball!'); } }
+      if (gm && jogo.time.length < 6 && (jogo.bolas[1001] || 0) > 0){ jogo.bolas[1001]--; gravarLS('bolas', jogo.bolas); const rec = { dex: sp.n, glb: gm.glb, nome: sp.name, lv, exp: Evolucao.expPara(sp.n, lv), amizade: Evolucao.amizadeBase(sp.n), hp: 1, maxHp: 1, ivs: Ind.sortearIVs(), natureza: Ind.sortearNatureza(), quando: Date.now() }; jogo.time.push(rec); gravarLS('time', jogo.time); Conhecimento.possuir?.(rec); Chat.sistema('A ' + sp.name + ' appeared in the empty Poké Ball!'); } }
     const mats2 = clonarEmissivos(novo.pivo), guarda = mats2.map(m => [m.emissive.clone(), m.emissiveIntensity]);
     for (const m of mats2){ m.emissive.set('#ffffff'); m.emissiveIntensity = 1.2; }
     flash.style.transition = 'opacity .7s'; flash.style.opacity = '0';
     novo.travaAnim = 0; tocarUma(novo, novo.acoes.has('Buff') ? 'Buff' : 'Appear');
     flutuar(novo, alvo.nome + '!', '#8ef58e'); Chat.sistema(nomeAntes + ' evolved into ' + alvo.nome + '!');
     Conhecimento.evento('evoluiu', { de: p.dex, para: novo.dex ?? alvo.dex });                          // Pokédex de conhecimento
+    Conhecimento.possuir?.({ dex: novo.dex ?? alvo.dex, shiny: !!(t?.shiny || p.shiny), sexo: t?.sexo || p.sexo });
     pintarTime(true); document.getElementById('segue-ctl')?.__encher?.();
     await animar(1500, k => mats2.forEach((m, j) => { m.emissiveIntensity = guarda[j][1] + (1.2 - guarda[j][1]) * (1 - k); }));
     mats2.forEach((m, j) => { m.emissive.copy(guarda[j][0]); m.emissiveIntensity = guarda[j][1]; });
@@ -7136,6 +7138,7 @@ async function receberInicial(o, i){
   if (jogo.missoesOk) Missoes.evento({ tipo: 'inicial' });
   guardarEstadoAtivo();
   jogo.time = [{ ...{ dex: o.dex, glb: o.glb, nome: o.nome, lv: 5, exp: Evolucao.expPara(o.dex, 5), amizade: Evolucao.amizadeBase(o.dex), ivs: Ind.sortearIVs(), natureza: Ind.sortearNatureza(), movs: Ind.golpesPara(o.dex, 5, fallbackGolpes(o.dex)), quando: Date.now() }, ...(doServidor || {}) }, ...(jogo.time || [])].slice(0, 6); gravarLS('time', jogo.time); indiceTime = 0;   // com conta, o que o servidor decidiu (uid, IVs, natureza, shiny) manda
+  Conhecimento.possuir?.(jogo.time[0]);
   if (mesaInicial){ if (mesaInicial.bolas[i]) mesaInicial.bolas[i].visible = false; mesaInicial.marcador.visible = false; }
   Som.tocar('ui/sound_pkmnget');
   try {
@@ -7444,6 +7447,7 @@ if (jogo.ash){
     else { if (i >= 0) definirParceiro(i); pintarTime(true); }
     try { Menus.repintar?.(); } catch {}                                 // 20/09: a janela Pokémon aberta volta pro que o servidor disse (o arrasto mostra a ordem nova na hora, mas quem manda é ele)
     try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: o save reescrito pelo servidor (troca, prêmio) também passa pela recuperação
+    Conhecimento.possuirLista?.([...(jogo.time || []), ...(lerLS('caixa', []) || [])]);
   }
   Mundo.instalar({ jogo, enviar: Rede.enviar, uidParceiro, esconder: guardarSelvagem, guardar: guardarSelvagem, desmaiar: s => desmaiar(s, false) /* KO visto pela rede (sestado): só toma a mira se eu não mirava ninguém — ver desmaiar (18/09) */, morrer, tocarUma, espectar: (s, m) => { verBolaDoOutro(s, m); },   // fase 3a: selvagens da sala; a bola do outro voa aqui também
     golpeNoParceiro: (s, m) => {                                         // fase 3c: o selvagem bateu no MEU parceiro; o dano veio do servidor (o HP continua meu: só desconto)
@@ -7485,6 +7489,7 @@ if (jogo.ash){
     raidSumiu: () => Raid.chefe(null) });
   Troca.instalar({ jogo, enviar: Rede.enviar, Chat, Conta, lerLS, gravarLS, iconeMon, Som,   // fase 4: mesa de troca
     outros: () => Rede.listaOutros(),
+    possuirLista: lista => Conhecimento.possuirLista?.(lista),
     aplicarSave: (save, rev) => { Conta.aplicarDoServidor(save, rev); recarregarDoSave(); } });
   Conta.ligarRede(Rede.enviar);                                          // passo 6: as intenções da conta (arranjo, pref, conhecimento) vão pelo WebSocket
   /* RAID AO VIVO (14/09): estado da raid no cliente (raid.mjs). Instalado antes da rede: o snapshot chega logo depois do bem-vindo. */
