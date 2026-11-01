@@ -161,6 +161,31 @@ export function evento(ev){
   return false;
 }
 /** Fala extra quando o passo atual aponta pra esse NPC (a linha da missão vem antes da ação). */
+function cfgAlvo(alvo, cfg){
+  if (alvo == null || cfg == null) return false;
+  return Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
+}
+/** Overhead mark for an NPC: yellow `!` = talk now / quest giver, yellow `?` = talk again,
+ *  orange `?` = turn in an item, cyan `?` = heal, red `!` = trainer to beat, green `?` = talk later in this quest. */
+export function marcaPara(cfg, { papel = '', treinador = false } = {}){
+  const p = passoAtual(); if (!p) return null;
+  if ((p.tipo === 'falar' || p.tipo === 'entregar') && cfgAlvo(p.cfgs || p.cfg, cfg)){
+    if (p.tipo === 'entregar') return { sim: '?', cor: '#ff9f43' };
+    const m = ativa();
+    const jaFalou = !!(m && (m.passos || []).slice(0, estado.passo).some(x => (x.tipo === 'falar' || x.tipo === 'entregar') && cfgAlvo(x.cfgs || x.cfg, cfg)));
+    return jaFalou ? { sim: '?', cor: '#ffd23a' } : { sim: '!', cor: '#ffd23a' };
+  }
+  if (p.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!p.cfg || cfgAlvo(p.cfg, cfg))) return { sim: '?', cor: '#6ee7ff' };
+  if (p.tipo === 'derrotar' && treinador && (!p.cfg || cfgAlvo(p.cfgs || p.cfg, cfg))) return { sim: '!', cor: '#ff5b5b' };
+  const m = ativa();
+  if (m) for (let i = (estado?.passo ?? 0) + 1; i < (m.passos || []).length; i++){
+    const n = m.passos[i];
+    if ((n.tipo === 'falar' || n.tipo === 'entregar') && cfgAlvo(n.cfgs || n.cfg, cfg)) return { sim: '?', cor: '#7dffb3' };
+    if (n.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!n.cfg || cfgAlvo(n.cfg, cfg))) return { sim: '?', cor: '#7dffb3' };
+    if (n.tipo === 'derrotar' && treinador && (!n.cfg || cfgAlvo(n.cfgs || n.cfg, cfg))) return { sim: '!', cor: '#ff8aa8' };
+  }
+  return null;
+}
 export function falaPara(cfg){
   const p = passoAtual(); if (!p || !p.fala) return null;
   const alvo = p.cfgs || p.cfg; if (alvo == null) return null;

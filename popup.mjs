@@ -290,7 +290,7 @@ export function montar(def, cb = {}, raizDOM = document.body){
   if (!def) return null;
   estilo();
   const pop = document.createElement('div');
-  pop.className = 'pf'; pop.id = 'pf-' + (def.nome || 'popup');
+  pop.className = 'pf notranslate'; pop.setAttribute('translate', 'no'); pop.id = 'pf-' + (def.nome || 'popup');
   pop.dataset.fig = def.nome;
   pop.__def = def; pop.__cb = cb; pop.__tipos = def.tipos || {}; pop.__refs = def.refs || {};
   Object.assign(pop.style, { position: 'fixed', left: '50%', top: '50%', width: def.w + 'px', height: def.h + 'px',

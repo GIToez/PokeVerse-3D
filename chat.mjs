@@ -15,8 +15,8 @@ export const CANAIS = {
   global:  { nome: 'Global',  cor: '#ffe07a', tag: 'G' },
   trade:   { nome: 'Trade',   cor: '#8ef58e', tag: 'T' },
   help:    { nome: 'Help',    cor: '#7fd7ff', tag: 'H' },
-  sistema: { nome: 'Sistema', cor: '#9aa5c0', tag: 'S' },
-  pm:      { nome: 'Sussurro', cor: '#f0a6ff', tag: 'W' },   // mensagem direta entre amigos (fase 2b): aparece no Local com [W]; /w nome texto
+  sistema: { nome: 'System', cor: '#9aa5c0', tag: 'S' },
+  pm:      { nome: 'Whisper', cor: '#f0a6ff', tag: 'W' },   // direct message (phase 2b): Local with [W]; /w name text
 };
 export const ABAS = ['local', 'global', 'trade', 'help'];
 let ctx = null, msgs = [];
@@ -30,7 +30,7 @@ export function instalar(c){
   if (!msgs.length) sistema('Chat: Local (your map + everything), Global, Trade, Help. Commands: /g /t /h /l. With the server online, other players can read it.');
 }
 function guardar(){ ctx?.gravarLS('chat', msgs.slice(-200)); }
-export function publicar(canal, txt, de = ctx?.nome || 'Você', cargo = undefined){
+export function publicar(canal, txt, de = ctx?.nome || 'You', cargo = undefined){
   if (!CANAIS[canal]) canal = 'local';
   /* CARGOS (09/09): [STAFF]/[MOD] na frente do nome, na cor do cargo. Quem fala aqui do lado de cá sou eu — o cargo vem do
      servidor (Conta); dos outros, vem junto da mensagem. */
@@ -40,7 +40,7 @@ export function publicar(canal, txt, de = ctx?.nome || 'Você', cargo = undefine
   guardar();
   for (const m of [...montagens]){ if (!m.el.isConnected){ montagens.delete(m); continue; } m.atualizar(canal); }
 }
-export const sistema = txt => publicar('sistema', tr(txt), 'Sistema', null);   // idioma (11/09): toda mensagem de sistema passa pelo dicionário
+export const sistema = txt => publicar('sistema', tr(txt), tr('System'), null);
 /** Envia o texto da caixa: a aba manda o canal, /g /t /h /l sobrepõem. Devolve o canal ou null. */
 export function enviar(aba, texto){
   let canal = ABAS.includes(aba) ? aba : 'local', t = String(texto || '').trim();
@@ -70,8 +70,9 @@ export function limpar(){ msgs = []; guardar(); for (const m of montagens) m.atu
 export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {}){
   if (el.__chat){ montagens.add(el.__chat); el.__chat.atualizar(); return el.__chat; }
   let aba = abaInicial; const naoLidas = { local: 0, global: 0, trade: 0, help: 0 };
-  el.classList.add('chat-caixa');
-  el.innerHTML = `<div class="abas">${ABAS.map(a => `<button type="button" data-aba="${a}" class="${a === aba ? 'on' : ''}">${tr(CANAIS[a].nome)}<i hidden></i></button>`).join('')}${compacto ? '<button type="button" class="min" title="recolher / abrir">–</button>' : ''}</div><div class="msgs"></div><form autocomplete="off"><span class="canal"></span><input maxlength="240" placeholder="${tr('Enter to talk… /g /t /h /l')}"><button type="submit">${tr('Enviar')}</button></form>`;
+  el.classList.add('chat-caixa', 'notranslate');
+  el.setAttribute('translate', 'no');
+  el.innerHTML = `<div class="abas">${ABAS.map(a => `<button type="button" data-aba="${a}" class="${a === aba ? 'on' : ''}">${tr(CANAIS[a].nome)}<i hidden></i></button>`).join('')}${compacto ? '<button type="button" class="min" title="collapse / open">–</button>' : ''}</div><div class="msgs"></div><form autocomplete="off"><span class="canal"></span><input maxlength="240" placeholder="${tr('Enter to talk… /g /t /h /l')}"><button type="submit">${tr('Send')}</button></form>`;
   const msgsEl = el.querySelector('.msgs'), form = el.querySelector('form'), input = el.querySelector('input'), canalEl = el.querySelector('.canal');
   const visiveis = () => msgs.filter(m => aba === 'local' ? (m.c !== 'local' || m.a == null || ctx?.area == null || m.a === ctx.area()) : m.c === aba);
   const hora = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
