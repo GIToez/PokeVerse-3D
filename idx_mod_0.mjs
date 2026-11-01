@@ -7557,7 +7557,7 @@ if (jogo.ash){
     criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p) return jogo.trocarJogador?.(p); }),   // Configurações → ✎ Personagem
     personagemNome: () => Personagem.nomeDe(Personagem.ler()),
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },
-    nomeArea: a => nomeAreaCena(a) || (dados.nomes?.[a]) || NOMES_AREA[a] || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
+    nomeArea: a => nomeAreaCena(a) || rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || '') || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
     get dados(){ return dados; }, flipX: () => flipX,
     golpesDe: dex => (jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
     atualizarSeguidorPainel: () => document.getElementById('segue-ctl')?.__encher?.(),
