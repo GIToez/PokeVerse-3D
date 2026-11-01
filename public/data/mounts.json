@@ -151,7 +151,7 @@
   "escala": 0.9,
   "vel": 25000,
   "meio": "terra",
-  "livre": true
+  "livre": false
  },
  {
   "glb": "pm0142_00",
@@ -206,7 +206,7 @@
   "escala": 0.9,
   "vel": 18750,
   "meio": "agua",
-  "livre": true
+  "livre": false
  },
  {
   "glb": "pm0211_00",

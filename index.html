@@ -2918,7 +2918,7 @@ function selaNaSuperficie(m, nomeOsso){
 /* MONTARIA SÓ PRA STAFF por enquanto (11/09): a tecla M montava o Lugia voador pra QUALQUER conta nova e o seletor de atalho
    oferecia as 8 montarias de graça (o Jaime viu). Até a loja de montarias existir, com conta só staff monta; jogo local
    (?rede=0, demo, bancadas) segue livre pra testar. `podeMontar` é o único portão: M, atalhos 5–9 e ?montaria= passam por ele. */
-const MONTARIAS_LIVRES = new Set(MONTARIAS_ARQ ? MONTARIAS_ARQ.filter(d => d.livre).map(d => d.glb) : ['pm0059_00', 'pm0131_00']);   // 14/09 (Jaime): o ARCANINE é de todo mundo; 15/09 (Jaime): a LAPRAS também (capítulo 11 em diante é pelo mar) — o resto segue só pra staff até a loja de montarias (Fase 2: "Liberada pra todos" no painel)
+const MONTARIAS_LIVRES = new Set(MONTARIAS_ARQ ? MONTARIAS_ARQ.filter(d => d.livre).map(d => d.glb) : []);   // nobody starts with a mount; "livre" in mounts.json is the only grant until the shop exists
 const podeMontar = (glb = null) => Conta.estado().modo !== 'conta' || GM_REAL || (glb != null && MONTARIAS_LIVRES.has(String(glb).replace(/\.glb$/, '')));   // pelo modo da conta, não pela rede: cair do WebSocket não pode liberar
 async function montar(glb, { trocar = false } = {}){
   if (!jogo.ash || jogo.montando) return;
@@ -5001,7 +5001,7 @@ for (const [id, b] of Object.entries(CFG_JOGO.bolas || {})){
   const nome = Array.isArray(b) ? b[0] : b?.nome, taxa = Array.isArray(b) ? b[1] : b?.taxa;
   if (typeof nome === 'string' && nome.trim() && taxa > 0) BOLAS[id] = [nome, taxa];
 }
-jogo.bolas = lerLS('bolas', { 1001: 10, 1002: 5, 1003: 2, 1004: 1 });
+jogo.bolas = lerLS('bolas', {});
 Hud.fonteIlha(() => ({
   ids: Object.keys(BOLAS).filter(id => (jogo.bolas[id] || 0) > 0),
   sel: jogo.bolaSel,
@@ -5015,18 +5015,6 @@ Hud.fonteIlha(() => ({
    [{ tipo: 'item', id, nome, icone, bola } | { tipo: 'montaria', glb, nome, icone } | null]. */
 const ATALHOS_N = 5, ATALHOS_TECLAS = ['5', '6', '7', '8', '9'];   // 5º slot: pedido do Jaime 31/08 (a barra da Amanda tem 5 casas)
 jogo.atalhos = (lerLS('atalhos', null) || []).slice(0, ATALHOS_N); while (jogo.atalhos.length < ATALHOS_N) jogo.atalhos.push(null);
-/* ARCANINE PRA TODO MUNDO (14/09): quem tem conta e nenhuma montaria nos atalhos ganha o Arcanine no primeiro slot vazio (no celular é
-   o jeito de montar; no PC o M também serve). Fica na preferência `atalhos`, que a conta guarda. */
-if (CONTA.modo === 'conta' && !jogo.atalhos.some(a => a && a.tipo === 'montaria')){
-  const vago = jogo.atalhos.findIndex(a => !a);
-  if (vago >= 0){ jogo.atalhos[vago] = { tipo: 'montaria', glb: 'pm0059_00', nome: 'Arcanine', icone: './ui/mon/pm0059.png' }; gravarLS('atalhos', jogo.atalhos); }
-}
-/* LAPRAS PRA TODO MUNDO (15/09, Jaime): as missões do capítulo 11 em diante (Rotas 19 e 20) são pelo mar. Quem tem conta e ainda não tem a
-   Lapras nos atalhos ganha ela no primeiro slot vazio (sem slot vazio, ela aparece no seletor do atalho). Aquática: entra pela beira. */
-if (CONTA.modo === 'conta' && !jogo.atalhos.some(a => a && a.tipo === 'montaria' && a.glb === 'pm0131_00')){
-  const vago = jogo.atalhos.findIndex(a => !a);
-  if (vago >= 0){ jogo.atalhos[vago] = { tipo: 'montaria', glb: 'pm0131_00', nome: 'Lapras', icone: './ui/mon/pm0131.png' }; gravarLS('atalhos', jogo.atalhos); }
-}
 function definirAtalho(i, b){ if (i < 0 || i >= ATALHOS_N) return; jogo.atalhos[i] = b || null; gravarLS('atalhos', jogo.atalhos); pintarAtalhos(true); if (b && jogo.ash) flutuar(jogo.ash, b.nome + ' on shortcut ' + ATALHOS_TECLAS[i], '#8ec5ff'); }
 function abrirSeletorAtalho(i){ Som.destravar(); Menus.abrirAtalho?.(i); }
 /* ===== Desmaio e Reanimador (como nos jogos): quem desmaia FICA desmaiado até um Reanimador (metade do HP; Máximo: tudo) — depois o
