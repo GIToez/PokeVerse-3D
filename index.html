@@ -1004,6 +1004,112 @@ function fotoDeCima(cx, cz, ext, px = 512, near = 1){
   c2.putImageData(img, 0, 0);
   return { cv, x0: cx - ext, z0: cz - ext, esc: px / (2 * ext) };
 }
+/* World-map aerial stays on the baked jpg. A full Kanto photo in one frame freezes the tab
+   (same reason the admin editor refuses to photograph kanto.glb). If the loaded scenery no
+   longer matches the last known layout we stitch 128 m tiles on idle frames only — one tile
+   when the game frame was cheap — then swap the world-map picture once. */
+const REGUA_KANTO_PADRAO = { x0: -335.6, z0: -294.3, esc: 4, w: 3072, h: 2304 };
+const MAPA_MUNDO_REV_LS = 'mapaMundo.rev';
+const MAPA_MUNDO_LADO_M = 128;
+const MAPA_MUNDO_PX = 256;
+let mapaMundoVivo = null;
+let mapaMundoOuvinte = null;
+let mapaMundoCostura = null;
+let mapaMundoRT = null;
+let mapaMundoCam = null;
+let mapaMundoPx = null;
+let mapaMundoArranque = 0;
+function naRuaKanto(){ return !INTERIOR && (NOME === 'kanto' || NOME === 'pallet_route1' || +NOME === 1000001); }
+function cenaKantoRev(){
+  const d = typeof dados !== 'undefined' ? dados : {};
+  return [principal?.nInst | 0, Math.round(principal?.nTris || 0), principal?.prefabs | 0,
+    (d.areaEnv || []).length, (d.ambiente || []).length, (d.objetos || []).length, (d.caixas || []).length].join('.');
+}
+function fotoMapaMundo(){ return mapaMundoVivo; }
+function aoFotoMapaMundo(fn){
+  mapaMundoOuvinte = typeof fn === 'function' ? fn : null;
+  if (mapaMundoVivo && mapaMundoOuvinte) mapaMundoOuvinte(mapaMundoVivo);
+}
+function avisarFotoMapaMundo(){
+  try { mapaMundoOuvinte?.(mapaMundoVivo); } catch (e){ console.warn('foto mapa mundo:', e); }
+}
+function soltarRtMapaMundo(){
+  mapaMundoRT?.dispose();
+  mapaMundoRT = null;
+  mapaMundoPx = null;
+}
+function iniciarCosturaMapaSeMudou(){
+  if (mapaMundoCostura || mapaMundoVivo || !naRuaKanto() || typeof principal === 'undefined') return;
+  const rev = cenaKantoRev();
+  let previa = null;
+  try { previa = localStorage.getItem(MAPA_MUNDO_REV_LS); } catch {}
+  if (previa == null){
+    try { localStorage.setItem(MAPA_MUNDO_REV_LS, rev); } catch {}
+    return;
+  }
+  if (previa === rev) return;
+  const r = REGUA_KANTO_PADRAO;
+  const mw = r.w / r.esc, mh = r.h / r.esc;
+  const lado = MAPA_MUNDO_LADO_M, px = MAPA_MUNDO_PX;
+  const cols = Math.ceil(mw / lado), rows = Math.ceil(mh / lado);
+  const cv = document.createElement('canvas');
+  cv.width = cols * px; cv.height = rows * px;
+  const fila = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) fila.push({ i, j });
+  mapaMundoCostura = { rev, cv, g: cv.getContext('2d'), x0: r.x0, z0: r.z0, mw, mh, lado, px, fila, n: 0 };
+}
+function costurarUmLadrilhoMapa(){
+  const c = mapaMundoCostura;
+  if (!c || !c.fila.length) return;
+  if (!mapaMundoCam){
+    mapaMundoCam = new THREE.OrthographicCamera(-MAPA_MUNDO_LADO_M / 2, MAPA_MUNDO_LADO_M / 2, MAPA_MUNDO_LADO_M / 2, -MAPA_MUNDO_LADO_M / 2, 1, 400);
+    mapaMundoCam.up.set(0, 0, -1);
+  }
+  if (!mapaMundoRT) mapaMundoRT = new THREE.WebGLRenderTarget(MAPA_MUNDO_PX, MAPA_MUNDO_PX);
+  const t = c.fila.pop();
+  const half = c.lado / 2;
+  const cx = c.x0 + t.i * c.lado + half, cz = c.z0 + t.j * c.lado + half;
+  mapaMundoCam.position.set(cx, 90, cz);
+  mapaMundoCam.lookAt(cx, 0, cz);
+  mapaMundoCam.updateProjectionMatrix();
+  const fog = cena.fog, bg = cena.background; cena.fog = null; cena.background = mm.ceu;
+  const escondidos = [];
+  const esc = o => { if (o?.pivo && o.pivo.visible){ o.pivo.visible = false; escondidos.push(o.pivo); } };
+  esc(jogo.ash); esc(jogo.pika); esc(jogo.montaria);
+  for (const n of jogo.npcs || []) esc(n); for (const s of jogo.selvagens || []) esc(s); for (const w of jogo.trabalhadores || []) esc(w);
+  const au = ren.shadowMap.autoUpdate, nu = ren.shadowMap.needsUpdate;
+  ren.shadowMap.autoUpdate = false; ren.shadowMap.needsUpdate = false;
+  ren.setRenderTarget(mapaMundoRT); ren.render(cena, mapaMundoCam);
+  if (!mapaMundoPx || mapaMundoPx.length !== c.px * c.px * 4) mapaMundoPx = new Uint8Array(c.px * c.px * 4);
+  ren.readRenderTargetPixels(mapaMundoRT, 0, 0, c.px, c.px, mapaMundoPx);
+  ren.setRenderTarget(null);
+  ren.shadowMap.autoUpdate = au; ren.shadowMap.needsUpdate = nu;
+  for (const o of escondidos) o.visible = true;
+  cena.fog = fog; cena.background = bg;
+  const img = c.g.createImageData(c.px, c.px), d = img.data, row = c.px * 4, bruto = mapaMundoPx;
+  for (let y = 0; y < c.px; y++){
+    const src = (c.px - 1 - y) * row, dst = y * row;
+    for (let x = 0; x < row; x += 4){ d[dst + x] = MM_LUT[bruto[src + x]]; d[dst + x + 1] = MM_LUT[bruto[src + x + 1]]; d[dst + x + 2] = MM_LUT[bruto[src + x + 2]]; d[dst + x + 3] = 255; }
+  }
+  c.g.putImageData(img, t.i * c.px, t.j * c.px);
+  c.n++;
+  if (c.fila.length) return;
+  mapaMundoVivo = { cv: c.cv, x0: c.x0, z0: c.z0, esc: c.px / c.lado, w: c.cv.width, h: c.cv.height };
+  try { localStorage.setItem(MAPA_MUNDO_REV_LS, c.rev); } catch {}
+  mapaMundoCostura = null;
+  soltarRtMapaMundo();
+  avisarFotoMapaMundo();
+}
+function passoFotoMapaMundo(custoQuadro, dt){
+  if (INTERIOR || !naRuaKanto() || document.hidden || jogo.descarregando) return;
+  if (jogo.turno || document.body.classList.contains('cinematica')) return;
+  if (!jogo.ativo) return;
+  if (!mapaMundoArranque) mapaMundoArranque = performance.now() + 4000;
+  if (!mapaMundoCostura && !mapaMundoVivo && performance.now() >= mapaMundoArranque) iniciarCosturaMapaSeMudou();
+  if (!mapaMundoCostura) return;
+  if (custoQuadro > 14 || dt > 0.028) return;
+  try { costurarUmLadrilhoMapa(); } catch (e){ console.warn('foto mapa mundo:', e); mapaMundoCostura = null; soltarRtMapaMundo(); }
+}
 /** Desenha no canvas do minimapa o recorte de `foto` ({cv|img, x0, z0, esc}) centrado no jogador, com `raio` m de cada lado,
  *  mais os pontinhos de NPCs e selvagens (o jogador é o marcador da moldura). */
 /* 18/09 (Jaime: "o ponto vermelho do minimapa não está onde deveria"): a janela do minimapa do HUD da maquete não é quadrada (v2 PC 237×158,
@@ -7850,6 +7956,7 @@ if (jogo.ash){
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },
     nomeArea: a => nomeAreaCena(a) || rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || '') || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
     get dados(){ return dados; }, flipX: () => flipX,
+    fotoMapaMundo, aoFotoMapaMundo,
     golpesDe: dex => (jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
     atualizarSeguidorPainel: () => document.getElementById('segue-ctl')?.__encher?.(),
     seguir: async e => {                                              // como o Shift+Z: troca o seguidor pelo do time, com o nível de quando foi pego
@@ -9290,7 +9397,9 @@ function quadro(dt){
       }
     }
   }
-  if (PERF){ const _tf = performance.now(); PERF.logica += _tr - _tq; PERF.render += _tf - _tr; const tot = _tf - _tq; if (tot > 25) PERF.picos.push({ ms: +tot.toFixed(0), logica: +(_tr - _tq).toFixed(0), evento: PERF.ultimo || '-' }); PERF.ultimo = null; }
+  const _tf = performance.now();
+  if (PERF){ PERF.logica += _tr - _tq; PERF.render += _tf - _tr; const tot = _tf - _tq; if (tot > 25) PERF.picos.push({ ms: +tot.toFixed(0), logica: +(_tr - _tq).toFixed(0), evento: PERF.ultimo || '-' }); PERF.ultimo = null; }
+  passoFotoMapaMundo(_tf - _tq, dt);
   Fairy?.quadro(dt);                               // UI do Fairy por cima + portas/NPCs
   Rede.quadro(dt);                                 // manda a posição (quando muda) e move os outros jogadores
   Mundo.quadro(dt);                                // selvagens da rede: corpo perto/longe e a posição dos que eu simulo

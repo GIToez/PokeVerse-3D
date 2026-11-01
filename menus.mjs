@@ -2192,6 +2192,13 @@ function rMapaMundo(corpo){
     if (dd) mundo = dd;
     mapaHabitats ??= hab;
     mapaMarcadores = marks;
+    const aplicarFotoViva = vivo => {
+      if (aberta !== 'mapa' || !corpo.isConnected || !vivo?.cv) return;
+      mapaRegua = regua = { x0: vivo.x0, z0: vivo.z0, esc: vivo.esc, w: vivo.w, h: vivo.h };
+      foto.src = vivo.cv.toDataURL('image/jpeg', 0.82);
+    };
+    aplicarFotoViva(ctx.fotoMapaMundo?.());
+    ctx.aoFotoMapaMundo?.(aplicarFotoViva);
     await ctx.missoes?.atualizarPinsMapa?.();
     pintarRotulos(); pintarPins();
     const start = voce || quests[0]?.area || 1101;
