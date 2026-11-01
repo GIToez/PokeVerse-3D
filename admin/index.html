@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- os módulos do jogo que o painel reaproveita (character.mjs, paint.mjs) buscam './scenery/…' e './data/…' relativos à página:
      com a base na raiz isso vale tanto em /admin quanto em /admin/index.html -->
@@ -184,126 +185,126 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
 <div id="login" hidden>
   <form id="f-login">
     <h1>Admin — Pokemon 3D Base</h1>
-    <div class="fraco">Entre com uma conta <b>GM</b>.</div>
-    <input type="text" id="l-usuario" placeholder="usuário" autocomplete="username" required>
-    <input type="password" id="l-senha" placeholder="senha" autocomplete="current-password" required>
-    <button class="prim" type="submit">Entrar</button>
+    <div class="fraco">Sign in with a <b>GM</b> account.</div>
+    <input type="text" id="l-usuario" placeholder="username" autocomplete="username" required>
+    <input type="password" id="l-senha" placeholder="password" autocomplete="current-password" required>
+    <button class="prim" type="submit">Sign in</button>
     <div class="msg" id="l-msg"></div>
   </form>
 </div>
 
 <div id="app" hidden>
   <header>
-    <span class="marca">Pokemon 3D Base</span><span class="fraco">Painel Admin</span>
-    <div class="eu"><a href="/" target="jogo">Abrir o jogo ↗</a><span class="tag">GM</span><b id="eu-nome"></b><button id="b-sair">Sair</button></div>
+    <span class="marca">Pokemon 3D Base</span><span class="fraco">Admin panel</span>
+    <div class="eu"><a href="/" target="jogo">Open the game ↗</a><span class="tag">GM</span><b id="eu-nome"></b><button id="b-sair">Log out</button></div>
   </header>
 
   <nav id="lado">
-    <div class="sec">Mundo</div>
-    <button data-vista="mapa" class="atual">🗺️ Editor de Mapa</button>
-    <button data-vista="habitats">🌿 Habitats por Área</button>
-    <div class="sec">Comunidade</div>
-    <button data-vista="jogadores">👥 Jogadores</button>
-    <button data-vista="eventos">🎉 Eventos ao vivo</button>
-    <div class="sec">Cenário</div>
-    <a class="nav-link" href="/admin/scenery">🏗️ Editor 3D</a>
-    <div class="sec">Conteúdo</div>
-    <button data-vista="missoes">📜 Missões</button>
-    <button data-vista="especies">🧬 Espécies</button>
-    <button data-vista="evolucoes">🔀 Evoluções</button>
+    <div class="sec">World</div>
+    <button data-vista="mapa" class="atual">🗺️ Map editor</button>
+    <button data-vista="habitats">🌿 Habitats by area</button>
+    <div class="sec">Community</div>
+    <button data-vista="jogadores">👥 Players</button>
+    <button data-vista="eventos">🎉 Live events</button>
+    <div class="sec">Scenery</div>
+    <a class="nav-link" href="/admin/scenery">🏗️ 3D editor</a>
+    <div class="sec">Content</div>
+    <button data-vista="missoes">📜 Missions</button>
+    <button data-vista="especies">🧬 Species</button>
+    <button data-vista="evolucoes">🔀 Evolutions</button>
     <button data-vista="learnset">💥 Learnset</button>
-    <div class="sec">Dados do jogo</div>
-    <button data-vista="dados">⚙️ Arquivos de dados</button>
-    <button data-vista="historico">🕘 Histórico / Desfazer</button>
+    <div class="sec">Game data</div>
+    <button data-vista="dados">⚙️ Data files</button>
+    <button data-vista="historico">🕘 History / Undo</button>
   </nav>
 
   <main>
     <!-- EDITOR DE MAPA: zonas de spawn -->
     <section id="v-mapa" class="vista">
       <div class="barra">
-        <label>Mapa <select id="m-mapa"></select></label>
+        <label>Map <select id="m-mapa"></select></label>
         <span class="sep"></span>
-        <button id="m-nova" title="Clique no mapa pra colocar o centro da zona">➕ Nova zona</button>
-        <button id="m-aqui" title="Cria uma zona onde o seu personagem está agora">📍 Zona onde estou</button>
-        <button id="m-eu" title="Centraliza o mapa no seu personagem">🎯 Onde estou</button>
+        <button id="m-nova" title="Click on the map to place the zone center">➕ New zone</button>
+        <button id="m-aqui" title="Creates a zone where your character is right now">📍 Zone where I am</button>
+        <button id="m-eu" title="Centers the map on your character">🎯 Where I am</button>
         <span class="sep"></span>
-        <button id="m-nova-area" title="Arraste um retângulo no mapa pra criar uma área com nome">▭ Nova área</button>
+        <button id="m-nova-area" title="Drag a rectangle on the map to create a named area">▭ New area</button>
         <span class="sep"></span>
-        <label title="O que o clique no mapa faz">Ferramenta <select id="m-ferramenta">
-          <option value="zonas">Zonas e áreas</option><option value="pontos">Pontos: NPCs, portas, treinadores</option><option value="pincel">Pincel: grama, água, piso</option></select></label>
+        <label title="What clicking on the map does">Tool <select id="m-ferramenta">
+          <option value="zonas">Zones and areas</option><option value="pontos">Points: NPCs, doors, trainers</option><option value="pincel">Brush: grass, water, floor</option></select></label>
         <span class="sep"></span>
         <div class="camadas" id="m-camadas"></div>
         <div class="direita">
-          <span class="sujo" id="m-sujo" hidden>● alterações não salvas</span>
-          <button id="m-recarregar">Descartar</button>
-          <button class="prim" id="m-salvar" title="Salva as zonas e as áreas alteradas">Salvar</button>
+          <span class="sujo" id="m-sujo" hidden>● unsaved changes</span>
+          <button id="m-recarregar">Discard</button>
+          <button class="prim" id="m-salvar" title="Saves the changed zones and areas">Save</button>
         </div>
       </div>
       <div class="corpo-mapa">
         <div class="tela" id="m-tela">
           <canvas id="m-canvas"></canvas>
           <div class="leitura"><span id="m-leitura">—</span> <span class="fraco" id="m-foto"></span></div>
-          <div class="dica" id="m-dica">roda: zoom · arrastar: mover · clique numa área pra editar (arraste o miolo/as bordas) · arraste o centro/borda da zona</div>
+          <div class="dica" id="m-dica">wheel: zoom · drag: pan · click an area to edit it (drag its middle/edges) · drag a zone center/edge</div>
         </div>
         <div class="lado-dir">
           <div class="caixa" id="c-painel" hidden></div>
           <div class="caixa">
-            <h3>Zonas neste mapa <span class="fraco" id="m-qtd"></span></h3>
+            <h3>Zones on this map <span class="fraco" id="m-qtd"></span></h3>
             <div class="lista-zonas" id="m-lista"></div>
           </div>
           <div class="caixa" id="m-edit" hidden>
-            <h3><span class="bola" id="e-cor"></span><span id="e-titulo">Zona</span></h3>
+            <h3><span class="bola" id="e-cor"></span><span id="e-titulo">Zone</span></h3>
             <div class="form">
-              <label class="inteira">Nome <input type="text" id="e-nome" maxlength="60"></label>
-              <label class="inteira">Raio (m)
+              <label class="inteira">Name <input type="text" id="e-nome" maxlength="60"></label>
+              <label class="inteira">Radius (m)
                 <div class="raio"><input type="range" id="e-raio-r" min="2" max="80" step="0.5"><input type="number" id="e-raio" min="1" max="200" step="0.5"></div>
               </label>
-              <label>Vivos ao mesmo tempo <input type="number" id="e-max" min="1" max="30"></label>
-              <label>Intervalo (s) <input type="number" id="e-intervalo" min="1" max="600"></label>
-              <label>Nível mínimo <input type="number" id="e-lvmin" min="1" max="100"></label>
-              <label>Nível máximo <input type="number" id="e-lvmax" min="1" max="100"></label>
-              <label>Chance de shiny (%) <input type="number" id="e-shiny" min="0" max="100" step="0.1"></label>
-              <label class="chk" style="align-self:end"><input type="checkbox" id="e-ativa"> Ativa</label>
+              <label>Alive at once <input type="number" id="e-max" min="1" max="30"></label>
+              <label>Interval (s) <input type="number" id="e-intervalo" min="1" max="600"></label>
+              <label>Min level <input type="number" id="e-lvmin" min="1" max="100"></label>
+              <label>Max level <input type="number" id="e-lvmax" min="1" max="100"></label>
+              <label>Shiny chance (%) <input type="number" id="e-shiny" min="0" max="100" step="0.1"></label>
+              <label class="chk" style="align-self:end"><input type="checkbox" id="e-ativa"> Active</label>
               <div class="inteira fraco" id="e-pos"></div>
             </div>
-            <h3 style="margin-top:14px">Espécies</h3>
+            <h3 style="margin-top:14px">Species</h3>
             <div id="e-especies"></div>
             <div class="acoes" style="margin-top:12px">
-              <button id="e-centro">Centralizar</button>
-              <button id="e-tp" title="Leva o seu personagem até a zona (o jogo precisa estar aberto em outra aba)">Ir até lá no jogo</button>
-              <button id="e-dup">Duplicar</button>
-              <button id="e-del" class="perigo">Excluir</button>
+              <button id="e-centro">Center</button>
+              <button id="e-tp" title="Takes your character to the zone (the game must be open in another tab)">Go there in game</button>
+              <button id="e-dup">Duplicate</button>
+              <button id="e-del" class="perigo">Delete</button>
             </div>
           </div>
           <div class="caixa">
-            <h3>Áreas neste mapa <span class="fraco" id="a-qtd"></span></h3>
-            <input type="search" id="a-filtro" placeholder="filtrar áreas…" style="width:100%;margin-bottom:6px">
+            <h3>Areas on this map <span class="fraco" id="a-qtd"></span></h3>
+            <input type="search" id="a-filtro" placeholder="filter areas…" style="width:100%;margin-bottom:6px">
             <div class="lista-zonas" id="a-lista"></div>
           </div>
           <div class="caixa" id="a-edit" hidden>
-            <h3><span class="bola" style="background:#ffcf3a"></span><span id="a-titulo">Área</span></h3>
+            <h3><span class="bola" style="background:#ffcf3a"></span><span id="a-titulo">Area</span></h3>
             <div class="form">
-              <label class="inteira">Nome (aparece no jogo) <input type="text" id="a-nome" maxlength="60"></label>
-              <label class="inteira">ID da área <input type="number" id="a-id" min="1" step="1"><span class="fraco" id="a-id-ajuda" style="font-size:11px"></span></label>
-              <label>Centro X <input type="number" id="a-x" step="0.5"></label>
-              <label>Centro Z <input type="number" id="a-z" step="0.5"></label>
-              <label>Largura (X, m) <input type="number" id="a-sx" min="1" step="0.5"></label>
-              <label>Altura (Z, m) <input type="number" id="a-sz" min="1" step="0.5"></label>
+              <label class="inteira">Name (shown in game) <input type="text" id="a-nome" maxlength="60"></label>
+              <label class="inteira">Area ID <input type="number" id="a-id" min="1" step="1"><span class="fraco" id="a-id-ajuda" style="font-size:11px"></span></label>
+              <label>Center X <input type="number" id="a-x" step="0.5"></label>
+              <label>Center Z <input type="number" id="a-z" step="0.5"></label>
+              <label>Width (X, m) <input type="number" id="a-sx" min="1" step="0.5"></label>
+              <label>Height (Z, m) <input type="number" id="a-sz" min="1" step="0.5"></label>
               <div class="inteira fraco" id="a-info" style="font-size:12px"></div>
             </div>
             <div class="acoes" style="margin-top:12px">
-              <button id="a-centro">Centralizar</button>
-              <button id="a-tp" title="Leva o seu personagem até o centro da área (o jogo precisa estar aberto em outra aba)">Ir até lá no jogo</button>
-              <button id="a-dup" title="Outra caixa na MESMA área — pra área que não é um retângulo só">＋ Caixa</button>
-              <button id="a-puxar" title="Os tiles de grama/água dentro da caixa passam a ser desta área (o spawn usa o habitat dela)">Puxar grama/água</button>
-              <button id="a-del" class="perigo">Excluir área</button>
+              <button id="a-centro">Center</button>
+              <button id="a-tp" title="Takes your character to the area center (the game must be open in another tab)">Go there in game</button>
+              <button id="a-dup" title="Another box in the SAME area — for areas that are not a single rectangle">＋ Box</button>
+              <button id="a-puxar" title="Grass/water tiles inside the box become part of this area (spawns use its habitat)">Pull grass/water</button>
+              <button id="a-del" class="perigo">Delete area</button>
             </div>
-            <div class="fraco" style="font-size:12px;margin-top:10px">A área dá o nome na tela, a música e o limite do mundo na água. Os Pokémon dela vêm de
-              <b>Habitats por Área</b> (pela grama/água da área) ou de uma <b>zona</b>.</div>
+            <div class="fraco" style="font-size:12px;margin-top:10px">The area sets the on-screen name, the music and the world boundary on water. Its Pokémon come from
+              <b>Habitats by area</b> (via the area grass/water) or from a <b>zone</b>.</div>
           </div>
           <div class="caixa fraco" id="m-ajuda">
-            Clique em <b>➕ Nova zona</b> e depois no mapa pra criar. Cada zona nasce os Pokémon escolhidos dentro do círculo,
-            somando aos do habitat da área. Depois de <b>Salvar</b>, o jogo aberto em outra aba recarrega as zonas sozinho.
+            Click <b>➕ New zone</b> and then on the map to create one. Each zone spawns the chosen Pokémon inside its circle,
+            on top of the area habitat. After you <b>Save</b>, the game open in another tab reloads the zones by itself.
           </div>
         </div>
       </div>
@@ -313,19 +314,19 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
     <section id="v-habitats" class="vista" hidden>
       <div class="col-areas">
         <div class="topo">
-          <input type="search" id="h-busca" placeholder="Filtrar áreas…">
-          <div class="acoes"><span class="sujo" id="h-sujo" hidden>● não salvo</span><button class="prim" id="h-salvar" style="margin-left:auto">Salvar habitats</button></div>
+          <input type="search" id="h-busca" placeholder="Filter areas…">
+          <div class="acoes"><span class="sujo" id="h-sujo" hidden>● unsaved</span><button class="prim" id="h-salvar" style="margin-left:auto">Save habitats</button></div>
         </div>
         <div class="areas" id="h-areas"></div>
       </div>
       <div class="col-edit">
         <div class="caixa">
-          <h3 id="h-titulo">Escolha uma área</h3>
-          <div class="fraco" id="h-desc" style="margin-bottom:10px">Espécies que nascem na grama/água da área. O <b>peso</b> é a chance relativa (100 = comum, 16 = raríssimo).</div>
+          <h3 id="h-titulo">Choose an area</h3>
+          <div class="fraco" id="h-desc" style="margin-bottom:10px">Species that spawn in the area grass/water. The <b>weight</b> is the relative chance (100 = common, 16 = very rare).</div>
           <div class="h-nivel" id="h-nivel" hidden>
-            <span>Nível dos selvagens:</span>
-            <input type="number" id="h-lvmin" min="1" max="100" placeholder="mín"> a <input type="number" id="h-lvmax" min="1" max="100" placeholder="máx">
-            <button id="h-nivel-ok">Salvar nível</button><span class="fraco" id="h-nivel-info"></span>
+            <span>Wild Pokémon level:</span>
+            <input type="number" id="h-lvmin" min="1" max="100" placeholder="min"> to <input type="number" id="h-lvmax" min="1" max="100" placeholder="max">
+            <button id="h-nivel-ok">Save level</button><span class="fraco" id="h-nivel-info"></span>
           </div>
           <div id="h-especies"></div>
         </div>
@@ -335,7 +336,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
     <!-- DADOS DO JOGO: editor genérico guiado por esquema (admin/schemas.mjs) -->
     <section id="v-dados" class="vista" hidden>
       <div class="col-esq" id="d-lista"></div>
-      <div class="col-dir" id="d-edit"><div class="caixa fraco">Escolha um arquivo à esquerda.</div></div>
+      <div class="col-dir" id="d-edit"><div class="caixa fraco">Choose a file on the left.</div></div>
     </section>
 
     <!-- HISTÓRICO: backups gravados a cada salvamento; restaurar um volta o arquivo àquela versão -->
@@ -344,12 +345,12 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
     <!-- JOGADORES (admin/players.mjs): contas, quem está online, bolsa, time, cargo e moderação -->
     <section id="v-jogadores" class="vista" hidden>
       <div class="col-esq">
-        <div class="topo-edit"><input type="search" id="j-busca" placeholder="buscar usuário, nome ou e-mail…" style="flex:1"><button id="j-recarregar" title="Atualizar">↻</button></div>
-        <label class="chk"><input type="checkbox" id="j-online"> só quem está online</label>
+        <div class="topo-edit"><input type="search" id="j-busca" placeholder="search username, name or email…" style="flex:1"><button id="j-recarregar" title="Refresh">↻</button></div>
+        <label class="chk"><input type="checkbox" id="j-online"> online only</label>
         <div class="fraco" id="j-qtd" style="font-size:12px"></div>
         <div class="lista-zonas" id="j-lista" style="max-height:none"></div>
       </div>
-      <div class="col-dir" id="j-ficha"><div class="caixa fraco">Escolha um jogador à esquerda.</div></div>
+      <div class="col-dir" id="j-ficha"><div class="caixa fraco">Choose a player on the left.</div></div>
       <datalist id="dl-itens"></datalist>
     </section>
 

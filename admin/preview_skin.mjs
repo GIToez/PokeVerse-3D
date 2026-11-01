@@ -64,11 +64,11 @@ export async function atualizar(r) {
   atual = { id, glb, tinta: t };
   const palco = raiz.querySelector('.palco'); palco.dataset.id = id; palco.classList.remove('pronto');
   raiz.querySelector('.previa-cores').innerHTML = '';
-  if (!glb) { info('Sem prefab — preencha o campo Prefab.', true); return; }
-  info('carregando ' + esc(glb) + '…');
+  if (!glb) { info('No prefab — fill in the Prefab field.', true); return; }
+  info('loading ' + esc(glb) + '…');
   let it;
   try { it = await montar({ id, glb, tinta: t, nome: glb }); }
-  catch { if (atual.id === id) { P.descartar(id); info(`⚠ Modelo não encontrado: <code>public/scenery/pc/${esc(glb)}.glb</code>. No jogo esta skin não carrega.`, true); } return; }
+  catch { if (atual.id === id) { P.descartar(id); info(`⚠ Model not found: <code>public/scenery/pc/${esc(glb)}.glb</code>. This skin will not load in the game.`, true); } return; }
   if (atual.id !== id || !it?.pronto) return;
   P.selecionar(id); palco.classList.add('pronto');
   const nomes = await texturasDo(it.obj);
@@ -80,13 +80,13 @@ export async function atualizar(r) {
     const todas = new Set(Object.keys(CANAIS[t]).flatMap(partesDe));
     const pegam = new Set(Object.keys(CANAIS[t]).filter(tx => nomes.has(tx)).flatMap(partesDe));
     const rot = ks => { const s = new Set(ks); return [...Object.keys(ROTULOS[t]).filter(k => s.has(k)), ...[...s].filter(k => !(k in ROTULOS[t]))].map(k => ROTULOS[t][k] || k).join(', '); };
-    if (!pegam.size) { info(`⚠ A receita <b>${esc(t)}</b> não pega neste modelo (as texturas dele não são as da máscara). No jogo, os seletores de cor não vão mudar nada.`, true); return; }
+    if (!pegam.size) { info(`⚠ The recipe <b>${esc(t)}</b> does not apply to this model (its textures are not the mask ones). In the game, the color pickers will not change anything.`, true); return; }
     const faltam = [...todas].filter(k => !pegam.has(k));
-    if (faltam.length) info(`⚠ A receita <b>${esc(t)}</b> só pega em parte deste modelo: mudam <b>${esc(rot(pegam))}</b>; não mudam <b>${esc(rot(faltam))}</b> (a máscara do corpo é de outro modelo).`, true);
-    else info(`<b>Cores editáveis no jogo:</b> ${esc(rot(todas))}. Teste abaixo (só na prévia — quem escolhe é o jogador na criação).`);
+    if (faltam.length) info(`⚠ The recipe <b>${esc(t)}</b> only partly applies to this model: <b>${esc(rot(pegam))}</b> change; <b>${esc(rot(faltam))}</b> do not (the body mask belongs to another model).`, true);
+    else info(`<b>Colors editable in game:</b> ${esc(rot(todas))}. Try them below (preview only — the player picks them at character creation).`);
     seletores(t, id, pegam);
   } else info(versao === '|sem-receita'
-    ? `⚠ "Receita própria", mas não existe receita <b>${esc(glb.toLowerCase())}</b> em Receitas de cor — no jogo fica com o visual fixo.`
+    ? `⚠ "Own recipe", but there is no recipe <b>${esc(glb.toLowerCase())}</b> in Color recipes — in the game it keeps the fixed look.`
     : await descreverMascara(nomes), versao === '|sem-receita');
 }
 /** Hash curto (FNV-1a) só pra saber se a receita editada mudou. */
@@ -103,7 +103,7 @@ async function texturasDo(obj) {
 function seletores(t, id, pegam) {
   const el = raiz.querySelector('.previa-cores'), c = coresDe(t);
   el.innerHTML = Object.entries(ROTULOS[t]).filter(([k]) => pegam.has(k)).map(([k, rot]) => `<label class="cor"><input type="color" data-k="${k}" value="${c[k]}"><span>${esc(rot)}</span></label>`).join('')
-    + '<button type="button" class="aleatorio">🎲</button><button type="button" class="padrao">padrão</button>';
+    + '<button type="button" class="aleatorio">🎲</button><button type="button" class="padrao">default</button>';
   const repintar = () => { for (const i of el.querySelectorAll('input[type=color]')) c[i.dataset.k] = i.value; P.repintar(id, t, c); };
   for (const i of el.querySelectorAll('input[type=color]')) i.oninput = repintar;
   el.querySelector('.aleatorio').onclick = () => { for (const i of el.querySelectorAll('input[type=color]')) { const l = PRESETS[i.dataset.k] || []; if (l.length) i.value = l[Math.floor(Math.random() * l.length)]; } repintar(); };
@@ -115,6 +115,6 @@ async function descreverMascara(nomes) {
   const T = await tintas();
   const comMascara = [...nomes].filter(n => T[n]?.mask && !T[n].isMask);
   return comMascara.length
-    ? `<b>Visual fixo.</b> O modelo tem máscara de cor do jogo original em ${comMascara.length} parte(s) (${esc(comMascara.join(', '))}) — dá pra virar editável criando uma receita pra ele no <code>character.mjs</code>.`
-    : '<b>Visual fixo.</b> Este modelo não tem máscara de cor.';
+    ? `<b>Fixed look.</b> The model has an original-game color mask on ${comMascara.length} part(s) (${esc(comMascara.join(', '))}) — it can become editable by creating a recipe for it in <code>character.mjs</code>.`
+    : '<b>Fixed look.</b> This model has no color mask.';
 }

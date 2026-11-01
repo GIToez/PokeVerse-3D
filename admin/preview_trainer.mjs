@@ -40,21 +40,21 @@ export async function atualizar(r) {
   atual = glb;
   const palco = raiz.querySelector('.palco'), info = raiz.querySelector('.previa-info');
   palco.dataset.id = glb; palco.classList.remove('pronto'); info.classList.remove('aviso');
-  if (!glb) { info.textContent = 'Sem modelo.'; return; }
-  info.textContent = 'carregando ' + glb + '…';
+  if (!glb) { info.textContent = 'No model.'; return; }
+  info.textContent = 'loading ' + glb + '…';
   let it;
   const caminho = glb.includes('/') ? glb : 'npc/' + glb;              // NPCs (npcs_glb) já vêm com a pasta: npc/… ou mon/…
   try { it = await montar({ id: glb, glb: '../' + caminho, nome: glb }); }
-  catch { if (atual === glb) { P.descartar(glb); info.classList.add('aviso'); info.innerHTML = `⚠ Modelo não encontrado: <code>scenery/${esc(caminho)}.glb</code>. No jogo ele não aparece.`; } return; }
+  catch { if (atual === glb) { P.descartar(glb); info.classList.add('aviso'); info.innerHTML = `⚠ Model not found: <code>scenery/${esc(caminho)}.glb</code>. It will not appear in the game.`; } return; }
   if (atual !== glb || !it?.pronto) return;
   await Tinta.aplicarTinta(it.obj, glb);
   P.selecionar(glb); palco.classList.add('pronto');
-  info.textContent = 'Modelo ' + glb + ' (arraste pra girar).';
+  info.textContent = 'Model ' + glb + ' (drag to rotate).';
 }
 async function renderTime(time) {
   const el = raiz.querySelector('.previa-time');
   if (time === undefined) { el.innerHTML = ''; return; }                // NPC comum (sem time): nada aqui
-  if (!Array.isArray(time) || !time.length) { el.innerHTML = '<span class="fraco">Sem time.</span>'; return; }
+  if (!Array.isArray(time) || !time.length) { el.innerHTML = '<span class="fraco">No team.</span>'; return; }
   const n = await nomesDex();
-  el.innerHTML = time.map(p => `<span class="pt-mon"><img src="/ui/mon/pm${String(p?.dex).padStart(4, '0')}.png" alt="" onerror="this.style.visibility='hidden'"><b>${esc(n[p?.dex] || '#' + p?.dex)}</b> <span class="fraco">Nv ${esc(p?.lv)}</span></span>`).join('');
+  el.innerHTML = time.map(p => `<span class="pt-mon"><img src="/ui/mon/pm${String(p?.dex).padStart(4, '0')}.png" alt="" onerror="this.style.visibility='hidden'"><b>${esc(n[p?.dex] || '#' + p?.dex)}</b> <span class="fraco">Lv ${esc(p?.lv)}</span></span>`).join('');
 }

@@ -10,7 +10,7 @@ import { recurso, escreverCampo } from '/admin/resources.mjs';
 import { corHex } from '/admin/schemas_f3.mjs';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const CANAIS = [['ColorR', 'R'], ['ColorG', 'G'], ['ColorB', 'B'], ['ColorBlack', 'Preto']];
+const CANAIS = [['ColorR', 'R'], ['ColorG', 'G'], ['ColorB', 'B'], ['ColorBlack', 'Black']];
 const hexRgb = h => [1, 3, 5].map(i => +(parseInt(h.slice(i, i + 2), 16) / 255).toFixed(4));
 const idSelecionado = () => document.querySelector('#d-corpo tbody tr.atual')?.dataset.id || '';
 let raiz = null, caixa = null, P = null, reg = null, alvo = null;   // alvo = { id, mat, modelo, it }
@@ -60,24 +60,24 @@ async function trocarModelo(id) {
   const velho = alvo; alvo = { id, mat: id.includes(':') ? id.slice(id.indexOf(':') + 1) : id, modelo: null, it: null };
   if (velho?.modelo && velho.modelo !== alvo.modelo) P.descartar(velho.modelo);
   const palco = raiz.querySelector('.palco'); palco.hidden = true; palco.classList.remove('pronto');
-  if (!id) { info('Selecione um material na tabela.'); return; }
+  if (!id) { info('Select a material in the table.'); return; }
   const prefixo = id.includes(':') ? id.slice(0, id.indexOf(':')) : null;
   const { materiais = {} } = await recurso('materiais');
   if (alvo.id !== id) return;
   const lista = (materiais[alvo.mat] || []).filter(m => !prefixo || m.endsWith('/' + prefixo));
-  if (!lista.length) { info(`Nenhum modelo desta cópia usa o material <b>${esc(alvo.mat)}</b> — confira as cores no mapa da máscara abaixo.`); return; }
+  if (!lista.length) { info(`No model in this copy uses the material <b>${esc(alvo.mat)}</b> — check the colors on the mask map below.`); return; }
   alvo.modelo = lista[0];
   palco.hidden = false; palco.dataset.id = alvo.modelo;
-  info('carregando ' + esc(alvo.modelo) + '…');
+  info('loading ' + esc(alvo.modelo) + '…');
   const glb = alvo.modelo.startsWith('pc/') ? alvo.modelo.slice(3) : '../' + alvo.modelo;   // o palco busca em scenery/pc/
   let it;
   try { it = await P.montar({ id: alvo.modelo, glb, nome: alvo.modelo }); }
-  catch { if (alvo.id === id) { palco.hidden = true; info(`⚠ Não deu pra abrir <code>scenery/${esc(alvo.modelo)}.glb</code>.`, true); } return; }
+  catch { if (alvo.id === id) { palco.hidden = true; info(`⚠ Could not open <code>scenery/${esc(alvo.modelo)}.glb</code>.`, true); } return; }
   if (alvo.id !== id || !it?.pronto) return;
   alvo.it = it;
   await Tinta.aplicarTinta(it.obj, alvo.modelo.split('/')[1]);           // as outras partes com a cor de fábrica (inclusive as "<modelo>:<material>")
   P.selecionar(alvo.modelo); palco.classList.add('pronto');
-  info(`Modelo <b>${esc(alvo.modelo)}</b>${lista.length > 1 ? ` (o material também aparece em ${lista.length - 1} outro${lista.length > 2 ? 's' : ''}: ${esc(lista.slice(1, 4).join(', '))}${lista.length > 4 ? '…' : ''})` : ''} — a parte deste material está com a cor em edição. Arraste pra girar.`);
+  info(`Model <b>${esc(alvo.modelo)}</b>${lista.length > 1 ? ` (the material also appears in ${lista.length - 1} other${lista.length > 2 ? 's' : ''}: ${esc(lista.slice(1, 4).join(', '))}${lista.length > 4 ? '…' : ''})` : ''} — the part using this material shows the color being edited. Drag to rotate.`);
   repintar();
 }
 function repintar() {
@@ -93,12 +93,12 @@ async function desenharMapa(r) {
   const cor = k => (Array.isArray(r?.[k]) ? r[k] : [0, 0, 0]).map(n => Math.max(0, n));
   const R = Array.isArray(r?.ColorR) ? r.ColorR : [1, 1, 1], G = cor('ColorG'), B = cor('ColorB'), K = cor('ColorBlack');
   c.clearRect(0, 0, cv.width, cv.height);
-  if (r?.isMask) { txt.textContent = 'Não pinta: a textura do modelo já vem colorida.'; return; }
-  if (!r?.mask) { c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); txt.textContent = 'Sem máscara: a peça inteira fica no tom do canal R.'; return; }
+  if (r?.isMask) { txt.textContent = 'Not painted: the model texture already comes colored.'; return; }
+  if (!r?.mask) { c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); txt.textContent = 'No mask: the whole piece takes the R channel color.'; return; }
   const { mascaras = [] } = await recurso('mascaras');
   const img = mascaras.includes(r.mask) ? await imagem('/scenery/npc/mask/' + encodeURIComponent(r.mask)) : null;
   if (reg !== r) return;
-  if (!img) { txt.innerHTML = `⚠ A máscara <code>${esc(r.mask)}</code> não existe nesta cópia (scenery/npc/mask) — no jogo a peça fica só no tom do canal R.`; c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); return; }
+  if (!img) { txt.innerHTML = `⚠ The mask <code>${esc(r.mask)}</code> does not exist in this copy (scenery/npc/mask) — in the game the piece only takes the R channel color.`; c.fillStyle = corHex(R); c.fillRect(0, 0, cv.width, cv.height); return; }
   c.drawImage(img, 0, 0, cv.width, cv.height);
   const px = c.getImageData(0, 0, cv.width, cv.height), d = px.data;
   for (let i = 0; i < d.length; i += 4) {
@@ -107,5 +107,5 @@ async function desenharMapa(r) {
     d[i + 3] = 255;
   }
   c.putImageData(px, 0, 0);
-  txt.innerHTML = `Mapa da máscara <code>${esc(r.mask)}</code> com as cores acima: onde a máscara é vermelha pinta R, verde G, azul B, e o resto (preto) a cor Preto.`;
+  txt.innerHTML = `Mask map <code>${esc(r.mask)}</code> with the colors above: where the mask is red it paints R, green G, blue B, and the rest (black) gets the Black color.`;
 }

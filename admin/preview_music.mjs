@@ -30,25 +30,25 @@ export async function atualizar(r) {
   if (reg !== r) return;
   const opcoes = sel => {
     const lista = sel && !faixas.includes(sel) ? [sel, ...faixas] : faixas;
-    return lista.map(f => `<option value="${esc(f)}"${f === sel ? ' selected' : ''}>${esc(f)}${faixas.includes(f) ? '' : ' (não existe)'}</option>`).join('');
+    return lista.map(f => `<option value="${esc(f)}"${f === sel ? ' selected' : ''}>${esc(f)}${faixas.includes(f) ? '' : ' (missing)'}</option>`).join('');
   };
   const linha = (grupo, id, nome, f) => `<tr data-g="${grupo}" data-id="${esc(id)}"><td style="width:42%">${esc(nome)} <span class="fraco">${esc(id)}</span></td>
-    <td><select>${opcoes(f)}</select></td><td style="white-space:nowrap"><button type="button" class="tocar" data-f="${esc(f)}">▶</button>${grupo === 'areas' || grupo === 'cenas' ? '<button type="button" class="tirar perigo" title="Tirar (usa a padrão)">✕</button>' : ''}</td></tr>`;
+    <td><select>${opcoes(f)}</select></td><td style="white-space:nowrap"><button type="button" class="tocar" data-f="${esc(f)}">▶</button>${grupo === 'areas' || grupo === 'cenas' ? '<button type="button" class="tirar perigo" title="Remove (use the default)">✕</button>' : ''}</td></tr>`;
   const faltando = [...Object.values(r?.areas || {}), ...Object.values(r?.cenas || {}), ...Object.values(r?.padrao || {}), ...Object.values(r?.batalha || {}), r?.login].filter(f => f && !faixas.includes(f));
   const semFaixa = (grupo, nomes) => Object.entries(nomes).filter(([id]) => /^\d+$/.test(id) && !(id in (r?.[grupo] || {})));
   raiz.innerHTML = `
-    ${faltando.length ? `<div class="previa-info aviso">⚠ ${new Set(faltando).size} faixa(s) citadas não existem em som/ (${esc([...new Set(faltando)].join(', '))}) — no jogo essas ficam em silêncio.</div>` : ''}
-    <h4>Padrão e batalhas</h4>
-    <table>${['area', 'interior'].map(k => linha('padrao', k, k === 'area' ? 'Área sem faixa própria' : 'Interior sem faixa própria', r?.padrao?.[k])).join('')}
-      ${['treinador', 'ginasio', 'elite'].map(k => linha('batalha', k, 'Batalha: ' + { treinador: 'treinador', ginasio: 'ginásio', elite: 'Elite Four' }[k], r?.batalha?.[k])).join('')}
-      ${linha('login', 'login', 'Tela de login', r?.login)}</table>
-    <h4>Áreas de Kanto (${Object.keys(r?.areas || {}).length})</h4>
-    <div class="rolar"><table>${Object.entries(r?.areas || {}).map(([id, f]) => linha('areas', id, lugares.areas[id] || 'Área ' + id, f)).join('')}</table></div>
-    <div class="add-esp"><select class="add" data-g="areas"><option value="">+ faixa pra outra área…</option>${semFaixa('areas', lugares.areas).map(([id, n]) => `<option value="${id}">${esc(n)} (${id})</option>`).join('')}</select></div>
-    <h4>Interiores (${Object.keys(r?.cenas || {}).length})</h4>
-    <div class="rolar"><table>${Object.entries(r?.cenas || {}).map(([id, f]) => linha('cenas', id, lugares.cenas[id] || 'Cena ' + id, f)).join('')}</table></div>
-    <div class="add-esp"><select class="add" data-g="cenas"><option value="">+ faixa pra outro interior…</option>${semFaixa('cenas', lugares.cenas).map(([id, n]) => `<option value="${id}">${esc(n)} (${id})</option>`).join('')}</select></div>
-    <div class="fraco" style="font-size:11px;margin-top:6px">${faixas.length} faixas em som/. Mudanças aqui vão pros campos abaixo — depois é só Salvar.</div>`;
+    ${faltando.length ? `<div class="previa-info aviso">⚠ ${new Set(faltando).size} referenced track(s) do not exist in som/ (${esc([...new Set(faltando)].join(', '))}) — these play silence in the game.</div>` : ''}
+    <h4>Defaults and battles</h4>
+    <table>${['area', 'interior'].map(k => linha('padrao', k, k === 'area' ? 'Area without its own track' : 'Interior without its own track', r?.padrao?.[k])).join('')}
+      ${['treinador', 'ginasio', 'elite'].map(k => linha('batalha', k, 'Battle: ' + { treinador: 'trainer', ginasio: 'gym', elite: 'Elite Four' }[k], r?.batalha?.[k])).join('')}
+      ${linha('login', 'login', 'Login screen', r?.login)}</table>
+    <h4>Kanto areas (${Object.keys(r?.areas || {}).length})</h4>
+    <div class="rolar"><table>${Object.entries(r?.areas || {}).map(([id, f]) => linha('areas', id, lugares.areas[id] || 'Area ' + id, f)).join('')}</table></div>
+    <div class="add-esp"><select class="add" data-g="areas"><option value="">+ track for another area…</option>${semFaixa('areas', lugares.areas).map(([id, n]) => `<option value="${id}">${esc(n)} (${id})</option>`).join('')}</select></div>
+    <h4>Interiors (${Object.keys(r?.cenas || {}).length})</h4>
+    <div class="rolar"><table>${Object.entries(r?.cenas || {}).map(([id, f]) => linha('cenas', id, lugares.cenas[id] || 'Scene ' + id, f)).join('')}</table></div>
+    <div class="add-esp"><select class="add" data-g="cenas"><option value="">+ track for another interior…</option>${semFaixa('cenas', lugares.cenas).map(([id, n]) => `<option value="${id}">${esc(n)} (${id})</option>`).join('')}</select></div>
+    <div class="fraco" style="font-size:11px;margin-top:6px">${faixas.length} tracks in som/. Changes here go into the fields below — then just Save.</div>`;
   marcarTocando();
 }
 

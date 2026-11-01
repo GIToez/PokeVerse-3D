@@ -32,9 +32,9 @@ export async function atualizar(r) {
   const arena = String(v('arena')), nomeArena = lugares.cenas[arena];
   const glb = String(v('chefeGlb'));
   const el = raiz.querySelector('.previa-info');
-  const avisos = [!nomeArena ? `⚠ A cena <b>${esc(arena)}</b> não existe no cenas.json — a fila leva pra lugar nenhum.` : '',
-    !modelos.includes(glb) ? `⚠ O modelo <code>scenery/mon/${esc(glb)}.glb</code> não existe nesta cópia.` : ''].filter(Boolean);
-  el.innerHTML = `<b>${esc(v('chefeNome'))}</b> Nv ${esc(v('chefeNivel'))} · arena <b>${esc(nomeArena || arena)}</b> (${esc(arena)}) · ${esc(v('vagas'))} vagas` + (avisos.length ? '<br>' + avisos.join('<br>') : '');
+  const avisos = [!nomeArena ? `⚠ Scene <b>${esc(arena)}</b> does not exist in cenas.json — the queue leads nowhere.` : '',
+    !modelos.includes(glb) ? `⚠ The model <code>scenery/mon/${esc(glb)}.glb</code> does not exist in this copy.` : ''].filter(Boolean);
+  el.innerHTML = `<b>${esc(v('chefeNome'))}</b> Lv ${esc(v('chefeNivel'))} · arena <b>${esc(nomeArena || arena)}</b> (${esc(arena)}) · ${esc(v('vagas'))} slots` + (avisos.length ? '<br>' + avisos.join('<br>') : '');
   el.classList.toggle('aviso', avisos.length > 0);
   if (glb === atual) return;
   if (atual) P.descartar(atual);

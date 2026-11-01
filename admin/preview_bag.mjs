@@ -12,7 +12,7 @@ const skinsDe = () => (skins ||= fetch('/data/skins_treinador.json').then(r => r
 function montarRaiz() {
   raiz = document.createElement('div'); raiz.className = 'previa-skin';
   raiz.innerHTML = `<div class="palco"></div><div class="previa-info"></div>
-    <div class="previa-cores"><label class="cor">Treinador <select class="pm-treinador"><option value="menino">Herói</option><option value="menina">Heroína</option></select></label></div>`;
+    <div class="previa-cores"><label class="cor">Trainer <select class="pm-treinador"><option value="menino">Hero</option><option value="menina">Heroine</option></select></label></div>`;
   P = criarPalco(raiz, () => ({}));
   raiz.appendChild(P.canvas);
   const palco = raiz.querySelector('.palco');
@@ -49,9 +49,9 @@ export async function atualizar(r, forcar = false) {
   if (treinador !== prefab) {                                             // troca o treinador (a mochila é vestida de novo abaixo)
     if (treinador) P.descartar(treinador);
     treinador = prefab; it = null; vestida = null; palco.dataset.id = prefab; palco.classList.remove('pronto');
-    info('carregando ' + esc(prefab) + '…');
+    info('loading ' + esc(prefab) + '…');
     try { montando = P.montar({ id: prefab, glb: prefab, nome: prefab }); it = await montando; }
-    catch { if (treinador === prefab) info(`⚠ Não deu pra abrir o treinador <code>scenery/pc/${esc(prefab)}.glb</code>.`, true); return; }
+    catch { if (treinador === prefab) info(`⚠ Could not open the trainer <code>scenery/pc/${esc(prefab)}.glb</code>.`, true); return; }
     if (treinador !== prefab || !it?.pronto) return;
     P.selecionar(prefab); palco.classList.add('pronto');
   }
@@ -60,11 +60,11 @@ export async function atualizar(r, forcar = false) {
   if (glb === vestida) return;
   vestida = glb;
   const { modelos = [] } = await recurso('modelos?pasta=pc');
-  if (!glb) { tirarMochila(it.obj); info('Sem modelo — preencha "Modelo (glb)".', true); return; }
-  if (!modelos.includes(glb)) { tirarMochila(it.obj); info(`⚠ O modelo <code>scenery/pc/${esc(glb)}.glb</code> não existe nesta cópia — no jogo esta mochila não aparece (o treinador fica com a da roupa).`, true); return; }
-  info('vestindo ' + esc(glb) + '…');
+  if (!glb) { tirarMochila(it.obj); info('No model — fill in "Model (glb)".', true); return; }
+  if (!modelos.includes(glb)) { tirarMochila(it.obj); info(`⚠ The model <code>scenery/pc/${esc(glb)}.glb</code> does not exist in this copy — this backpack will not appear in the game (the trainer keeps the outfit\'s own).`, true); return; }
+  info('equipping ' + esc(glb) + '…');
   const m = await vestirMochila(it.obj, glb).catch(() => null);
   if (vestida !== glb) return;
-  info(m ? `<b>${esc(reg?.nome || glb)}</b> vestida em ${esc(treinador)} (arraste pra girar). Cores de fábrica: tela Cores de NPC.`
-    : `⚠ <code>${esc(glb)}.glb</code> abriu, mas não encaixou no esqueleto do treinador (ver o console).`, !m);
+  info(m ? `<b>${esc(reg?.nome || glb)}</b> worn by ${esc(treinador)} (drag to rotate). Default colors: NPC Colors screen.`
+    : `⚠ <code>${esc(glb)}.glb</code> opened, but did not fit the trainer skeleton (see the console).`, !m);
 }

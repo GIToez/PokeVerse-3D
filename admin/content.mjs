@@ -50,7 +50,7 @@ export function datalist(id, pares) {
    campo({ rotulo, tipo, valor, aoMudar, ... }) → <label>. aoMudar(valor) devolve uma mensagem de erro (fica vermelho e não
    grava) ou nada. valor vazio chega como null. Tipos: texto · area · num · opcao (opcoes [[v, rótulo]]) · bool · nums (lista
    de inteiros "1, 2, 3") · linhas (lista de textos, uma por linha). */
-export function campo({ rotulo, tipo = 'texto', valor, aoMudar, opcoes = [], ajuda, lista, min, max, step, max_len, classe, dica, vazio = '(vazio)' }) {
+export function campo({ rotulo, tipo = 'texto', valor, aoMudar, opcoes = [], ajuda, lista, min, max, step, max_len, classe, dica, vazio = '(empty)' }) {
   const lab = document.createElement('label'); if (classe) lab.className = classe;
   let w;
   if (tipo === 'bool') { lab.classList.add('chk'); w = document.createElement('input'); w.type = 'checkbox'; w.checked = !!valor; lab.append(w, ' ' + rotulo); }
@@ -82,8 +82,8 @@ export function campo({ rotulo, tipo = 'texto', valor, aoMudar, opcoes = [], aju
   };
   w.addEventListener(tipo === 'bool' || tipo === 'opcao' ? 'change' : 'input', () => {
     const v = ler();
-    const m = Number.isNaN(v) || (Array.isArray(v) && v.some(Number.isNaN)) ? (tipo === 'nums' ? 'números inteiros separados por vírgula' : 'precisa ser um número')
-      : (tipo === 'num' && v != null && ((min != null && v < min) || (max != null && v > max))) ? (min != null && max != null ? `de ${min} a ${max}` : min != null ? `mínimo ${min}` : `máximo ${max}`) : aoMudar?.(v);
+    const m = Number.isNaN(v) || (Array.isArray(v) && v.some(Number.isNaN)) ? (tipo === 'nums' ? 'whole numbers separated by commas' : 'must be a number')
+      : (tipo === 'num' && v != null && ((min != null && v < min) || (max != null && v > max))) ? (min != null && max != null ? `from ${min} to ${max}` : min != null ? `minimum ${min}` : `maximum ${max}`) : aoMudar?.(v);
     err.textContent = m || ''; w.classList.toggle('invalido', !!m);
     if (lab.dica && typeof dica === 'function' && !m) lab.dica(dica(v));
   });
@@ -98,12 +98,12 @@ export async function gravar(api, toast, nome, dados) {
   const esq = ESQUEMAS[nome], v = validarColecao(esq, dados);
   if (!v.ok) { toast(`${esq.titulo}: ${v.erro}`, true); return false; }
   const r = await api('/admin/dados/' + nome, 'POST', { dados: v.v });
-  if (!r.ok) { toast(`${esq.titulo}: ${r.erro || 'falha ao salvar'}`, true); return false; }
+  if (!r.ok) { toast(`${esq.titulo}: ${r.erro || 'failed to save'}`, true); return false; }
   return true;
 }
 export async function ler(api, toast, nome) {
   const r = await api('/admin/dados/' + nome);
-  if (!r.ok) { toast(`${ESQUEMAS[nome]?.titulo || nome}: ${r.erro || 'falha ao carregar'}`, true); return null; }
+  if (!r.ok) { toast(`${ESQUEMAS[nome]?.titulo || nome}: ${r.erro || 'failed to load'}`, true); return null; }
   return r.dados;
 }
 
@@ -153,9 +153,9 @@ export function instalarConteudo(ctx) {
     let montada = false;
     for (const b of document.querySelectorAll(`#lado button[data-vista="${tela}"]`)) b.addEventListener('click', async () => {
       if (montada) return; montada = true;
-      sec.classList.add('f2'); sec.innerHTML = '<div class="caixa fraco" style="margin:16px">carregando…</div>';
+      sec.classList.add('f2'); sec.innerHTML = '<div class="caixa fraco" style="margin:16px">loading…</div>';
       try { (await carregar()).montar(sec, { ...ctxTela, tela }); }
-      catch (e) { console.error(e); montada = false; sec.innerHTML = `<div class="caixa" style="margin:16px">Falha ao abrir: ${esc(e.message)}</div>`; }
+      catch (e) { console.error(e); montada = false; sec.innerHTML = `<div class="caixa" style="margin:16px">Failed to open: ${esc(e.message)}</div>`; }
     });
   }
   addEventListener('beforeunload', e => { if (sujas.size) { e.preventDefault(); e.returnValue = ''; } });

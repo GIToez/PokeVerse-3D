@@ -15,22 +15,22 @@ const ARQS = ['especies', 'alturas', 'sexos', 'tamanhos', 'descricoes_pt', 'dex_
 const regua = (real, teto) => Math.min(teto, Math.max(0.55, 1.3 * Math.pow(real, 0.55)));
 /** A chave do tamanhos.json de um modelo (chaveTamanho do index.html): pm0017_00 → pm0017; forma com chave própria → pm0487_11. */
 const chaveTamanho = (glb, T) => { const m = String(glb).match(/^(pm\d{4})(?:_(\d\d))?/); if (!m) return null; return m[2] && m[2] !== '00' && T[m[1] + '_' + m[2]] != null ? m[1] + '_' + m[2] : m[1]; };
-const fmt = n => Number(n).toLocaleString('pt-BR');
+const fmt = n => Number(n).toLocaleString('en-US');
 
 export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) {
   const [especies, modelosR] = await Promise.all([ref.especies(), api('/admin/modelos')]);
-  const nomeSp = n => especies.get(+n)?.nome || `Nº ${n}`;
+  const nomeSp = n => especies.get(+n)?.nome || `No. ${n}`;
   const maxDex = Math.max(...especies.keys());
   const glbsDe = {}; for (const { glb, dex } of modelosR.modelos || []) (glbsDe[dex] ||= []).push(String(glb).replace(/\.glb$/, ''));
 
   const D = {}, O = {};                                                      // D = em edição, O = como está no disco (texto)
   let curvas = {}, sel = null, filtro = '';
   sec.innerHTML = `
-    <div class="col-esq"><div class="topo"><input type="search" class="busca" placeholder="buscar espécie (nome ou nº)…">
-      <label class="chk"><input type="checkbox" class="soMud"> só as alteradas</label></div><div class="lista"></div></div>
-    <div class="col-dir"><div class="barra-topo"><h2>Espécies</h2><span class="sujo" hidden>● não salvo</span><button data-a="descartar">Descartar</button><button class="prim" data-a="salvar">Salvar</button></div>
-      <div class="fraco">Altura, sexo, tamanho no campo, descrição da Pokédex, EXP e os modelos 3D de cada espécie. Cada valor fica no arquivo que o jogo já lê
-        (alturas, sexos, especies, idioma/dex_pt, exp, elenco, tamanhos) — salvar grava só os que mudaram, com backup no Histórico. O jogo lê no boot: F5 depois de salvar.</div>
+    <div class="col-esq"><div class="topo"><input type="search" class="busca" placeholder="search species (name or no.)…">
+      <label class="chk"><input type="checkbox" class="soMud"> changed only</label></div><div class="lista"></div></div>
+    <div class="col-dir"><div class="barra-topo"><h2>Species</h2><span class="sujo" hidden>● unsaved</span><button data-a="descartar">Discard</button><button class="prim" data-a="salvar">Save</button></div>
+      <div class="fraco">Height, gender, field size, Pokédex description, EXP and the 3D models of each species. Each value lives in the file the game already reads
+        (alturas, sexos, especies, idioma/dex_pt, exp, elenco, tamanhos) — saving writes only the ones that changed, with a backup in History. The game reads them at boot: F5 after saving.</div>
       <div class="editor"></div></div>`;
   const $ = s => sec.querySelector(s), lista = $('.lista'), editor = $('.editor');
   const sujos = () => ARQS.filter(a => JSON.stringify(D[a]) !== O[a]);
@@ -61,7 +61,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
       if (so && !mud) continue;
       out.push(`<button data-dex="${n}" class="${String(sel) === String(n) ? 'atual' : ''} ${mud ? 'mudou' : ''}"><span><span class="n">${pad(n)}</span> <b>${esc(nome)}</b></span><span class="n">${(especies.get(n)?.tipos || []).map(t => TIPOS[t] || t).join('/')}</span></button>`);
     }
-    lista.innerHTML = out.join('') || '<div class="fraco" style="padding:8px">Nada encontrado.</div>';
+    lista.innerHTML = out.join('') || '<div class="fraco" style="padding:8px">Nothing found.</div>';
     for (const b of lista.querySelectorAll('button')) b.onclick = () => { sel = +b.dataset.dex; renderLista(); renderEditor(); };
   }
   const atualizarLinha = () => { const b = lista.querySelector(`button[data-dex="${sel}"]`); if (b) b.classList.toggle('mudou', mudouDex(sel)); marcar(); };
@@ -77,77 +77,77 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
 
   function renderEditor() {
     editor.innerHTML = '';
-    if (sel == null) { editor.innerHTML = '<div class="caixa fraco">Escolha uma espécie à esquerda.</div>'; return; }
+    if (sel == null) { editor.innerHTML = '<div class="caixa fraco">Pick a species on the left.</div>'; return; }
     const n = sel, k = String(n), sp = especies.get(n);
     const X = D.dex_extra[k];                                               // ficha extra (pode faltar pra espécie nova)
     // ── espécie
     const ke = cartao(`${pad(n)} ${esc(nomeSp(n))} ${(sp?.tipos || []).map(t => `<span class="pilula">${esc(TIPOS[t] || t)}</span>`).join('')}`);
     const g = grade();
     const aj = () => D.especies[k]?.escala ?? 1;
-    const m2 = x => x.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-    const dicaAltura = real => real > 0 ? `no campo: ~${m2(regua(real, 3.2) * aj())} m selvagem · ${m2(regua(real, 1.8) * aj())} m seguindo o treinador` : '';
-    const wAlt = campo({ rotulo: 'Altura real (m)', tipo: 'num', valor: D.alturas[k], min: 0.01, max: 200, ajuda: 'A da Pokédex. O tamanho no campo sai dela (régua proporcional, o modo padrão).', dica: dicaAltura,
-      aoMudar: v => { if (v == null) return 'obrigatório (sem altura o jogo usa o tamanho do modelo)'; D.alturas[k] = v; if (X) X.a = v; atualizarLinha(); } });
-    const wAj = campo({ rotulo: 'Ajuste de tamanho no campo (×)', tipo: 'num', valor: D.especies[k]?.escala, min: 0.1, max: 5, ajuda: 'Multiplica o tamanho da régua. Vazio = 1 (sem ajuste). Ex.: Gastly 0,7 (a nuvem não entra na medida).',
+    const m2 = x => x.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    const dicaAltura = real => real > 0 ? `in the field: ~${m2(regua(real, 3.2) * aj())} m wild · ${m2(regua(real, 1.8) * aj())} m following the trainer` : '';
+    const wAlt = campo({ rotulo: 'Real height (m)', tipo: 'num', valor: D.alturas[k], min: 0.01, max: 200, ajuda: 'The Pokédex height. The field size is derived from it (proportional scale, the default mode).', dica: dicaAltura,
+      aoMudar: v => { if (v == null) return 'required (without a height the game uses the model size)'; D.alturas[k] = v; if (X) X.a = v; atualizarLinha(); } });
+    const wAj = campo({ rotulo: 'Field size adjustment (×)', tipo: 'num', valor: D.especies[k]?.escala, min: 0.1, max: 5, ajuda: 'Multiplies the scale size. Empty = 1 (no adjustment). E.g. Gastly 0.7 (the gas cloud is not measured).',
       aoMudar: v => {
         if (v == null || v === 1) { if (D.especies[k]) { delete D.especies[k].escala; if (!Object.keys(D.especies[k]).length) delete D.especies[k]; } }
         else (D.especies[k] ||= {}).escala = v;
         wAlt.dica(dicaAltura(D.alturas[k])); atualizarLinha(); } });
-    const sexoTxt = m => m == null ? '' : m < 0 ? 'sem gênero' : `♂ ${m}% · ♀ ${100 - m}%`;
+    const sexoTxt = m => m == null ? '' : m < 0 ? 'genderless' : `♂ ${m}% · ♀ ${100 - m}%`;
     g.append(wAlt, wAj,
-      campo({ rotulo: '% de machos', tipo: 'num', valor: D.sexos[k], min: -1, max: 100, ajuda: '-1 = sem gênero · 50 = metade · 87,5 = 7 em cada 8 (iniciais) · 0 = só fêmeas.', dica: sexoTxt,
-        aoMudar: v => { if (v == null) return 'obrigatório'; if (v < 0 && v !== -1) return 'use -1 pra sem gênero'; D.sexos[k] = v; if (X) { X.m = v; X.f = v < 0 ? -1 : 100 - v; } atualizarLinha(); } }),
-      campo({ rotulo: 'Descrição da Pokédex (português)', tipo: 'area', valor: D.descricoes_pt[k], classe: 'larga', max_len: 6000,
-        ajuda: 'O texto da ficha (jogo em português; o inglês fica em idioma/dex_en.json). Aparece a partir do nível 2 de conhecimento da espécie.',
+      campo({ rotulo: '% male', tipo: 'num', valor: D.sexos[k], min: -1, max: 100, ajuda: '-1 = genderless · 50 = half · 87.5 = 7 in 8 (starters) · 0 = female only.', dica: sexoTxt,
+        aoMudar: v => { if (v == null) return 'required'; if (v < 0 && v !== -1) return 'use -1 for genderless'; D.sexos[k] = v; if (X) { X.m = v; X.f = v < 0 ? -1 : 100 - v; } atualizarLinha(); } }),
+      campo({ rotulo: 'Pokédex description (Portuguese)', tipo: 'area', valor: D.descricoes_pt[k], classe: 'larga', max_len: 6000,
+        ajuda: 'The entry text (Portuguese game; English lives in idioma/dex_en.json). Shown from species knowledge level 2.',
         aoMudar: v => { if (v == null || !v.trim()) delete D.descricoes_pt[k]; else D.descricoes_pt[k] = v; atualizarLinha(); } }));
     ke.append(g);
     const nota = document.createElement('div'); nota.className = 'mini';
-    nota.textContent = 'O nome oficial vem do pokedex.json e é chave no jogo (dano, cadeia de evolução, captura) — não muda aqui. O nome de cada modelo está em Modelos.';
+    nota.textContent = 'The official name comes from pokedex.json and is a key in the game (damage, evolution chain, capture) — it cannot be changed here. Each model\'s name is under Models.';
     ke.append(nota);
     editor.append(ke);
 
     // ── EXP
-    const kx = cartao('EXP e amizade');
+    const kx = cartao('EXP and friendship');
     const E = D.exp_especies[k] || {}, Ee = () => (D.exp_especies[k] ||= Object.assign(E, { c: E.c || 'medium', b: E.b || 60, a: E.a ?? 70 }));   // espécie sem EXP ganha os padrões do jogo ao mexer
     const gx = grade();
     gx.append(
-      campo({ rotulo: 'Curva de EXP', tipo: 'opcao', valor: E.c, opcoes: Object.entries(CURVAS), vazio: '—', dica: c => curvas[c] ? `Lv 100 = ${fmt(curvas[c][100])} EXP` : '',
-        ajuda: 'As curvas ficam em Arquivos de dados → Curvas de EXP.', aoMudar: v => { if (!v) return 'obrigatório'; Ee().c = v; atualizarLinha(); } }),
-      campo({ rotulo: 'EXP base (ao ser derrotado)', tipo: 'num', valor: E.b, min: 1, max: 1000, step: 1, ajuda: 'Entra na fórmula da Gen 5+: quanto maior, mais EXP dá.', aoMudar: v => { if (!Number.isInteger(v)) return 'inteiro de 1 a 1000'; Ee().b = v; atualizarLinha(); } }),
-      campo({ rotulo: 'Amizade base', tipo: 'num', valor: E.a, min: 0, max: 255, step: 1, ajuda: 'Com quanto nasce (70 é o comum; evolui por amizade com 160).', aoMudar: v => { if (!Number.isInteger(v)) return 'inteiro de 0 a 255'; Ee().a = v; atualizarLinha(); } }));
+      campo({ rotulo: 'EXP curve', tipo: 'opcao', valor: E.c, opcoes: Object.entries(CURVAS), vazio: '—', dica: c => curvas[c] ? `Lv 100 = ${fmt(curvas[c][100])} EXP` : '',
+        ajuda: 'Curves are in Data files → EXP curves.', aoMudar: v => { if (!v) return 'required'; Ee().c = v; atualizarLinha(); } }),
+      campo({ rotulo: 'Base EXP (when defeated)', tipo: 'num', valor: E.b, min: 1, max: 1000, step: 1, ajuda: 'Used in the Gen 5+ formula: the higher it is, the more EXP it gives.', aoMudar: v => { if (!Number.isInteger(v)) return 'whole number from 1 to 1000'; Ee().b = v; atualizarLinha(); } }),
+      campo({ rotulo: 'Base friendship', tipo: 'num', valor: E.a, min: 0, max: 255, step: 1, ajuda: 'Starting value (70 is typical; friendship evolutions trigger at 160).', aoMudar: v => { if (!Number.isInteger(v)) return 'whole number from 0 to 255'; Ee().a = v; atualizarLinha(); } }));
     kx.append(gx);
     editor.append(kx);
 
     // ── modelos (elenco + tamanhos do modo "jogo")
     const els = D.elenco.filter(e => e.n === n);
     const livres = (glbsDe[n] || []).filter(gl => !D.elenco.some(e => e.glb === gl));
-    const km = cartao(`Modelos 3D (${els.length})`, livres.length ? [['＋ Modelo', () => {
-      const gl = prompt('Qual modelo? Disponíveis desta espécie:\n' + livres.join(', '), livres[0]); if (!gl) return;
-      if (!livres.includes(gl.trim())) { toast('Esse modelo não existe em scenery/mon (ou já está no elenco).', true); return; }
+    const km = cartao(`3D models (${els.length})`, livres.length ? [['＋ Model', () => {
+      const gl = prompt('Which model? Available for this species:\n' + livres.join(', '), livres[0]); if (!gl) return;
+      if (!livres.includes(gl.trim())) { toast('This model does not exist in scenery/mon (or is already in the cast).', true); return; }
       const i = D.elenco.findLastIndex(e => e.n <= n);
       D.elenco.splice(i + 1, 0, { n, nome: nomeSp(n), glb: gl.trim(), altura: 0 }); atualizarLinha(); renderEditor(); }]] : []);
-    if (!els.length) { const v = document.createElement('div'); v.className = 'mini'; v.textContent = 'Sem modelo no elenco: a espécie não aparece no jogo (nem como evolução).'; km.append(v); }
+    if (!els.length) { const v = document.createElement('div'); v.className = 'mini'; v.textContent = 'No model in the cast: this species does not appear in the game (not even as an evolution).'; km.append(v); }
     else {
       const t = document.createElement('table'); t.className = 'esp';
-      t.innerHTML = '<thead><tr><th>Modelo</th><th>Nome</th><th>Forma</th><th title="MapSize do jogo original — só no modo de tamanho &quot;jogo&quot;">Tamanho (modo jogo)</th><th></th></tr></thead><tbody></tbody>';
+      t.innerHTML = '<thead><tr><th>Model</th><th>Name</th><th>Form</th><th title="Original game MapSize — only in the &quot;jogo&quot; size mode">Size (game mode)</th><th></th></tr></thead><tbody></tbody>';
       const tb = t.querySelector('tbody');
       for (const e of els) {
         const tr = document.createElement('tr'), td = () => document.createElement('td');
         const [t1, t2, t3, t4, t5] = [td(), td(), td(), td(), td()];
-        t1.innerHTML = `<code>${esc(e.glb)}</code><div class="mini">altura do modelo ${e.altura ? e.altura + ' m' : '—'}</div>`;
-        t2.append(campo({ rotulo: '', valor: e.nome, max_len: 40, aoMudar: v => { if (!v) return 'obrigatório'; e.nome = v; atualizarLinha(); } }));
+        t1.innerHTML = `<code>${esc(e.glb)}</code><div class="mini">model height ${e.altura ? e.altura + ' m' : '—'}</div>`;
+        t2.append(campo({ rotulo: '', valor: e.nome, max_len: 40, aoMudar: v => { if (!v) return 'required'; e.nome = v; atualizarLinha(); } }));
         t3.append(campo({ rotulo: '', valor: e.nota, max_len: 40, aoMudar: v => { if (v) e.nota = v; else delete e.nota; atualizarLinha(); } }));
         const kt = chaveTamanho(e.glb, D.tamanhos);
-        t4.append(campo({ rotulo: '', tipo: 'num', valor: D.tamanhos[kt], min: 0.01, max: 50, dica: () => kt ? 'chave ' + kt + (kt.includes('_') ? '' : ' (vale pra todas as formas sem chave própria)') : '',
-          aoMudar: v => { if (!kt) return 'modelo sem chave'; if (v == null) delete D.tamanhos[kt]; else D.tamanhos[kt] = v; atualizarLinha(); } }));
-        const x = document.createElement('button'); x.textContent = '✕'; x.className = 'perigo'; x.title = 'Tirar do elenco';
-        x.onclick = () => { if (!confirm(`Tirar ${e.glb} do elenco? (o arquivo .glb continua; o jogo deixa de usar este modelo)`)) return; D.elenco.splice(D.elenco.indexOf(e), 1); atualizarLinha(); renderEditor(); };
+        t4.append(campo({ rotulo: '', tipo: 'num', valor: D.tamanhos[kt], min: 0.01, max: 50, dica: () => kt ? 'key ' + kt + (kt.includes('_') ? '' : ' (applies to all forms without their own key)') : '',
+          aoMudar: v => { if (!kt) return 'model has no key'; if (v == null) delete D.tamanhos[kt]; else D.tamanhos[kt] = v; atualizarLinha(); } }));
+        const x = document.createElement('button'); x.textContent = '✕'; x.className = 'perigo'; x.title = 'Remove from cast';
+        x.onclick = () => { if (!confirm(`Remove ${e.glb} from the cast? (the .glb file stays; the game stops using this model)`)) return; D.elenco.splice(D.elenco.indexOf(e), 1); atualizarLinha(); renderEditor(); };
         t5.append(x);
         tr.append(t1, t2, t3, t4, t5); tb.append(tr);
       }
       km.append(t);
       const v = document.createElement('div'); v.className = 'mini';
-      v.textContent = 'O nome e a forma aparecem nas listas de modelos (seguidor, evolução). O tamanho do modo "jogo" só vale com ?tamanhos=jogo — no modo padrão quem manda é a altura real e o ajuste.';
+      v.textContent = 'The name and form appear in model lists (follower, evolution). The "jogo" mode size only applies with ?tamanhos=jogo — in the default mode the real height and adjustment decide.';
       km.append(v);
     }
     editor.append(km);
@@ -156,19 +156,19 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
   // ── Ações ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
   $('.busca').oninput = e => { filtro = e.target.value.trim().toLowerCase(); renderLista(); };
   $('.soMud').onchange = renderLista;
-  sec.querySelector('[data-a="descartar"]').onclick = () => { if (!sujos().length || confirm('Descartar as alterações?')) carregar(); };
+  sec.querySelector('[data-a="descartar"]').onclick = () => { if (!sujos().length || confirm('Discard your changes?')) carregar(); };
   sec.querySelector('[data-a="salvar"]').onclick = async () => {
-    if (sec.querySelector('.editor .invalido')) { toast('Corrija os campos em vermelho antes de salvar.', true); return; }
-    const lista2 = sujos(); if (!lista2.length) { toast('Nada mudou.'); return; }
+    if (sec.querySelector('.editor .invalido')) { toast('Fix the fields in red before saving.', true); return; }
+    const lista2 = sujos(); if (!lista2.length) { toast('Nothing changed.'); return; }
     const feitos = [];
     for (const a of lista2) {
-      if (!await gravar(api, toast, a, D[a])) { if (feitos.length) toast('Gravados antes do erro: ' + feitos.join(', '), true); break; }
+      if (!await gravar(api, toast, a, D[a])) { if (feitos.length) toast('Saved before the error: ' + feitos.join(', '), true); break; }
       O[a] = JSON.stringify(D[a]); feitos.push(a);
       avisarJogo(a === 'descricoes_pt' ? 'dex_pt' : a === 'exp_especies' ? 'exp' : a === 'dex_extra' ? 'dex_extra' : a);
     }
     origP = Object.fromEntries(ARQS.map(a => [a, JSON.parse(O[a])]));
     marcar(); renderLista();
-    if (feitos.length === lista2.length) toast(`Espécies salvas (${feitos.join(', ')}). F5 no jogo pra valer.`);
+    if (feitos.length === lista2.length) toast(`Species saved (${feitos.join(', ')}). Press F5 in the game to apply.`);
   };
   await carregar();
 }

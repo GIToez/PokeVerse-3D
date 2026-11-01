@@ -14,10 +14,10 @@ export function mostrar(caixa, r) {
 export function atualizar(r) {
   if (!raiz) return;
   const desc = esc(r?.d || '').replace(/&lt;br\s*\/?&gt;/gi, '<br>').replace(/\n/g, '<br>');
-  const valor = (r?.v || []).map(([m, p]) => `${p} (moeda ${m})`).join(' ou ');
-  raiz.innerHTML = `<div class="pi-icone">${r?.i ? `<img src="/ui/itens/${esc(r.i)}.png" alt="">` : ''}<span class="pi-sem" ${r?.i ? 'hidden' : ''}>sem ícone</span></div>
-    <div class="pi-texto"><b>${esc(r?.n || '(sem nome)')}</b><div class="fraco">${esc(tipoDe(r?.t))}${r?.q != null ? ' · qualidade ' + r.q : ''}${valor ? ' · ' + esc(valor) : ''}</div>
-    <div class="pi-desc">${desc || '<span class="fraco">sem descrição</span>'}</div></div>`;
+  const valor = (r?.v || []).map(([m, p]) => `${p} (currency ${m})`).join(' or ');
+  raiz.innerHTML = `<div class="pi-icone">${r?.i ? `<img src="/ui/itens/${esc(r.i)}.png" alt="">` : ''}<span class="pi-sem" ${r?.i ? 'hidden' : ''}>no icon</span></div>
+    <div class="pi-texto"><b>${esc(r?.n || '(unnamed)')}</b><div class="fraco">${esc(tipoDe(r?.t))}${r?.q != null ? ' · quality ' + r.q : ''}${valor ? ' · ' + esc(valor) : ''}</div>
+    <div class="pi-desc">${desc || '<span class="fraco">no description</span>'}</div></div>`;
   const img = raiz.querySelector('img');
-  if (img) img.onerror = () => { img.remove(); const s = raiz.querySelector('.pi-sem'); s.hidden = false; s.textContent = 'ícone não encontrado: ui/itens/' + r.i + '.png'; };
+  if (img) img.onerror = () => { img.remove(); const s = raiz.querySelector('.pi-sem'); s.hidden = false; s.textContent = 'icon not found: ui/itens/' + r.i + '.png'; };
 }
