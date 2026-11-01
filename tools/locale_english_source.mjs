@@ -20,7 +20,7 @@ for (const n of ['nomes', 'conteudo', 'ui']) Object.assign(dic, JSON.parse(fs.re
 
 const alvo = path.resolve(arquivo);
 const bruto = fs.readFileSync(alvo, 'utf8');
-const recuo = (/\n( +)"/.exec(bruto) || [, '  '])[1].length;
+const recuo = /\n/.test(bruto.trimEnd()) ? (/\n( +)"/.exec(bruto) || [, '  '])[1].length : 0;   // 0 = the file is one line: keep it compact
 const final = bruto.endsWith('\n') ? '\n' : '';
 let trocados = 0;
 const faltam = new Map();
@@ -40,6 +40,7 @@ function andar(o) {
   if (!o || typeof o !== 'object') return;
   for (const [k, v] of Object.entries(o)) {
     if (typeof v === 'string' && CAMPOS.has(k) && !/\.(png|webp|jpe?g|svg|glb)$/i.test(v)) o[k] = trocar(v);
+    else if (Array.isArray(v) && CAMPOS.has(k) && v.every(s => typeof s === 'string')) o[k] = v.map(trocar);   // e.g. NPC "falas": ["line", …]
     else andar(v);
   }
 }

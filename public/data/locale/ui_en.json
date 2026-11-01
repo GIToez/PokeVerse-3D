@@ -771,5 +771,15 @@
   "Conectado ao servidor como {a}: {b} online, {c} neste mapa.": "Connected to the server as {a}: {b} online, {c} on this map.",
   "Conectado ao servidor: {b} online, {c} neste mapa.": "Connected to the server: {b} online, {c} on this map.",
   "🎁 Recompensa: {x}.": "🎁 Reward: {x}.",
-  "Recompensa: {x}": "Reward: {x}"
+  "Recompensa: {x}": "Reward: {x}",
+  "📖 {a}: conhecimento nível {b} ({c}) — {d}": "📖 {a}: knowledge level {b} ({c}) — {d}",
+  "📖 {a}: conhecimento nível {b} ({c}) — você sabe TUDO sobre a espécie!": "📖 {a}: knowledge level {b} ({c}) — you know EVERYTHING about this species!",
+  "a ficha mostra os tipos e onde vive": "the entry shows its types and where it lives",
+  "revela stats, altura e peso": "reveals stats, height and weight",
+  "revela taxa de captura e habilidades": "reveals catch rate and abilities",
+  "revela gênero, learnset completo e habilidade oculta": "reveals gender, full learnset and hidden ability",
+  "O jogo está em manutenção. Volte daqui a pouco!": "The game is under maintenance. Come back in a little while!",
+  "🎉 Evento: {x}": "🎉 Event: {x}",
+  "Manutenção em {n} minutos. Termine a batalha e guarde o progresso.": "Maintenance in {n} minutes. Finish your battle and save your progress.",
+  "Manutenção em {n} minuto. Termine a batalha e guarde o progresso.": "Maintenance in {n} minute. Finish your battle and save your progress."
 }

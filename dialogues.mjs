@@ -3,7 +3,7 @@
  * Quem fala passa o texto pelo i18n depois (mostrarFala/legenda), então a tradução continua casando pelo português.
  * O painel avisa a aba do jogo ao salvar (dados-mudaram) e o index chama recarregar(): vale na próxima fala, sem F5. */
 export const PADRAO = {
-  oakNome: 'Professor Samuel',
+  oakNome: 'Professor Oak',
   portao: ['Wait! Without a Pokémon, the tall grass on Route 1 is dangerous.', 'Talk to Professor Oak in the lab before leaving Pallet.'],
   portaoBalao: 'Talk to Professor Oak before you leave!',
   portaoChat: 'Professor\'s assistant: talk to Professor Oak before leaving Pallet.',

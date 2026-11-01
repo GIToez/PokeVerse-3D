@@ -12,13 +12,13 @@ import fs from 'node:fs';
 import nodePath from 'node:path';
 
 export const PADRAO = { nome: '', expMult: 1, shinyMult: 1, densidade: 1, inicio: null, fim: null, manutencao: { ativa: false, inicio: null, texto: '' } };
-const TEXTO_MANUTENCAO = 'O jogo está em manutenção. Volte daqui a pouco!';
+const TEXTO_MANUTENCAO = 'The game is under maintenance. Come back in a little while!';
 const LIMITES = { expMult: [0.1, 10], shinyMult: [1, 100], densidade: [0.25, 3] };
 const ms = iso => { const t = iso ? Date.parse(iso) : NaN; return Number.isFinite(t) ? t : null; };
 
 /** Valida o que veio do painel. Devolve { v } ou { erro }. Campo ausente = o padrão. */
 export function limparEvento(d) {
-  if (!d || typeof d !== 'object' || Array.isArray(d)) return { erro: 'Formato inválido.' };
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return { erro: 'Invalid format.' };
   const v = { nome: String(d.nome ?? '').trim().slice(0, 60) };
   for (const [k, [min, max]] of Object.entries(LIMITES)) {
     const n = d[k] === undefined || d[k] === '' || d[k] === null ? 1 : Number(d[k]);
@@ -30,10 +30,10 @@ export function limparEvento(d) {
     const t = ms(d[k]); if (t == null) return { erro: `${k}: data inválida.` };
     v[k] = new Date(t).toISOString();
   }
-  if (v.inicio && v.fim && ms(v.fim) <= ms(v.inicio)) return { erro: 'O fim precisa ser depois do início.' };
+  if (v.inicio && v.fim && ms(v.fim) <= ms(v.inicio)) return { erro: 'The end must be after the start.' };
   const mt = d.manutencao && typeof d.manutencao === 'object' ? d.manutencao : {};
   const inicioM = mt.inicio == null || mt.inicio === '' ? null : ms(mt.inicio);
-  if (mt.inicio && inicioM == null) return { erro: 'Manutenção: data inválida.' };
+  if (mt.inicio && inicioM == null) return { erro: 'Maintenance: invalid date.' };
   v.manutencao = { ativa: mt.ativa === true, inicio: inicioM ? new Date(inicioM).toISOString() : null, texto: String(mt.texto ?? '').trim().slice(0, 200) };
   return { v };
 }
@@ -94,7 +94,7 @@ export function criarEventos(h) {
       const falta = Math.ceil((ini - agora) / 60000), k = [1, 5, 10].find(k => falta <= k);
       if (k && !avisados.has(ini + ':' + k)) {                            // a menor faixa que já chegou; marca as maiores junto (agendou a 3 min: avisa 1× só, não 3)
         for (const j of [1, 5, 10]) if (j >= k) avisados.add(ini + ':' + j);
-        todos({ t: 'invasao', texto: `Manutenção em ${falta} minuto${falta > 1 ? 's' : ''}. Termine a batalha e guarde o progresso.` });
+        todos({ t: 'invasao', texto: `Maintenance in ${falta} minute${falta > 1 ? 's' : ''}. Finish your battle and save your progress.` });
       }
     }
     const agoraManut = manutencaoAgora(agora);
@@ -128,7 +128,7 @@ export function criarEventos(h) {
       logAdmin(g, '*', 'eventos', { antes, depois: r.v });
       const e = efetivo(); ultimo = JSON.stringify(msgEvento(e));
       const n = todos(msgEvento(e));                                       // aplica na hora em quem está online
-      if (e.nome && (e.expMult !== 1 || e.shinyMult !== 1 || e.densidade !== 1) && d.anunciar) todos({ t: 'invasao', texto: '🎉 Evento: ' + e.nome + textoMult(e) });
+      if (e.nome && (e.expMult !== 1 || e.shinyMult !== 1 || e.densidade !== 1) && d.anunciar) todos({ t: 'invasao', texto: '🎉 Event: ' + e.nome + textoMult(e) });
       let derrubou = 0;
       const agoraManut = manutencaoAgora();
       if (agoraManut && !manutAntes) derrubou = derrubarTodos();
@@ -143,7 +143,7 @@ export function criarEventos(h) {
     }
     return false;
   }
-  const textoMult = e => [e.expMult !== 1 ? `EXP ×${e.expMult}` : '', e.shinyMult !== 1 ? `shiny ×${e.shinyMult}` : '', e.densidade !== 1 ? `selvagens ×${e.densidade}` : ''].filter(Boolean).map(s => ' · ' + s).join('');
+  const textoMult = e => [e.expMult !== 1 ? `EXP ×${e.expMult}` : '', e.shinyMult !== 1 ? `shiny ×${e.shinyMult}` : '', e.densidade !== 1 ? `wild ×${e.densidade}` : ''].filter(Boolean).map(s => ' · ' + s).join('');
 
   return { efetivo, shinyMult: () => efetivo().shinyMult, avisar, aoEntrar, bloqueiaLogin, rota };
 }

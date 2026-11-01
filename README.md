@@ -111,8 +111,8 @@ git grep "some text" original-import              # search the original code
 git worktree add ../PokeVerse-3D-original original-import   # a full, separate folder of the original
 ```
 
-Many files were renamed during the migration (for example `menus.mjs` and the `scenery/` folder had Portuguese
-names), so use the original path with `git show`; `git log --follow -- <new path>` shows the old name.
+Many files were renamed during the migration (for example `missions.mjs` was `missoes.mjs` and `scenery/` was
+`cenario/`), so use the original path with `git show`; `git log --follow --name-status -- <new path>` shows the old name.
 The worktree folder shares this repository, and `git worktree remove ../PokeVerse-3D-original` deletes it.
 
 ## Project layout

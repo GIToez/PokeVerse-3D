@@ -1,7 +1,7 @@
 {
  "101": {
   "numero": 1,
-  "nome": "Ginásio Cinza Escuro",
+  "nome": "Dark Gray Gym",
   "lider": "Brock",
   "cidade": "Pewter",
   "tipo": "Pedra",
@@ -13,7 +13,7 @@
   "modeloDump": "npc1004",
   "insignia": {
    "id": 101,
-   "nome": "medalha Cinza",
+   "nome": "Boulder Badge",
    "icone": "dghz_1"
   },
   "time": [
@@ -30,14 +30,14 @@
   ],
   "dinheiro": 1300,
   "fala": [
-   "Sou Brock, líder do Ginásio de Pewter! Meus Pokémon de pedra são duros como rocha.",
-   "Vamos ver se você tem o que é preciso!"
+   "I'm Brock, Pewter Gym Leader! My rock Pokémon are rock-hard.",
+   "Let's see if you've got what it takes!"
   ],
   "vitoria": [
-   "Ótima batalha! Aceite a Medalha Cinza — ela prova a sua força."
+   "Great battle! Take the Boulder Badge — it proves your strength."
   ],
   "derrota": [
-   "Seus Pokémon precisam ficar mais fortes. Volte quando estiver pronto."
+   "Your Pokémon need to get stronger. Come back when you're ready."
   ],
   "cooldownMin": [
    15,
@@ -48,7 +48,7 @@
  },
  "102": {
   "numero": 2,
-  "nome": "Ginásio Azul Claro",
+  "nome": "Light Blue Gym",
   "lider": "Misty",
   "cidade": "Cerulean",
   "tipo": "Água",
@@ -60,7 +60,7 @@
   "modeloDump": "npc1017",
   "insignia": {
    "id": 102,
-   "nome": "medalha Azul",
+   "nome": "Cascade Badge",
    "icone": "dghz_2"
   },
   "time": [
@@ -77,14 +77,14 @@
   ],
   "dinheiro": 1800,
   "fala": [
-   "Sou Misty, a sereia de Cerulean! Meus Pokémon de água vão te levar na correnteza.",
-   "Mostre o que você sabe!"
+   "I'm Misty, the Cerulean mermaid! My Water Pokémon will sweep you away.",
+   "Show me what you've got!"
   ],
   "vitoria": [
-   "Uau, você me venceu! A Medalha Azul é sua."
+   "Wow, you beat me! The Cascade Badge is yours."
   ],
   "derrota": [
-   "Não foi dessa vez. Treine e volte pra revanche!"
+   "Not this time. Train and come back for a rematch!"
   ],
   "cooldownMin": [
    15,
@@ -95,7 +95,7 @@
  },
  "103": {
   "numero": 3,
-  "nome": "Ginásio Folha Secas",
+  "nome": "Dry Leaf Gym",
   "lider": "Lt. Surge",
   "cidade": "Vermilion",
   "tipo": "Elétrico",
@@ -107,7 +107,7 @@
   "modeloDump": "npc1001",
   "insignia": {
    "id": 103,
-   "nome": "medalha Laranja",
+   "nome": "Thunder Badge",
    "icone": "dghz_3"
   },
   "time": [
@@ -129,14 +129,14 @@
   ],
   "dinheiro": 2300,
   "fala": [
-   "Sou o Tenente Surge! Meus Pokémon elétricos me salvaram na guerra.",
-   "Prepare-se pra levar um choque, soldado!"
+   "I'm Lt. Surge! My Electric Pokémon saved me in the war.",
+   "Get ready for a shock, soldier!"
   ],
   "vitoria": [
-   "Caramba, você é forte! Leve a Medalha Laranja."
+   "Wow, you're strong! Take the Thunder Badge."
   ],
   "derrota": [
-   "Fraco demais, soldado. Volte mais forte!"
+   "Too weak, soldier. Come back stronger!"
   ],
   "cooldownMin": [
    15,
@@ -147,7 +147,7 @@
  },
  "104": {
   "numero": 4,
-  "nome": "Ginásio Arco-íris de Jade",
+  "nome": "Jade Rainbow Gym",
   "lider": "Erika",
   "cidade": "Celadon",
   "tipo": "Planta",
@@ -159,7 +159,7 @@
   "modeloDump": "npc1002",
   "insignia": {
    "id": 104,
-   "nome": "medalha Arco-Íris",
+   "nome": "Rainbow Badge",
    "icone": "dghz_6"
   },
   "time": [
@@ -181,14 +181,14 @@
   ],
   "dinheiro": 2800,
   "fala": [
-   "Sou Erika, líder do Ginásio de Celadon. Meus Pokémon de planta são graciosos e fortes.",
-   "Vamos batalhar com elegância."
+   "I'm Erika, Celadon Gym Leader. My Grass Pokémon are graceful and strong.",
+   "Let us battle with elegance."
   ],
   "vitoria": [
-   "Que batalha linda. Aceite a Medalha Arco-Íris."
+   "What a lovely battle. Please accept the Rainbow Badge."
   ],
   "derrota": [
-   "Você ainda não está pronto. Volte quando florescer."
+   "You're not ready yet. Come back once you've blossomed."
   ],
   "cooldownMin": [
    15,
@@ -199,7 +199,7 @@
  },
  "105": {
   "numero": 5,
-  "nome": "Ginásio Vermelho Claro",
+  "nome": "Light Red Gym",
   "lider": "Koga",
   "cidade": "Fuchsia",
   "tipo": "Venenoso",
@@ -211,7 +211,7 @@
   "modeloDump": "npc1003",
   "insignia": {
    "id": 105,
-   "nome": "medalha Rosa",
+   "nome": "Soul Badge",
    "icone": "dghz_7"
   },
   "time": [
@@ -238,14 +238,14 @@
   ],
   "dinheiro": 3300,
   "fala": [
-   "Sou Koga, mestre ninja de Fuchsia! O veneno é uma arte.",
-   "Você conseguirá enxergar através das minhas ilusões?"
+   "I am Koga, ninja master of Fuchsia! Poison is an art.",
+   "Can you see through my illusions?"
   ],
   "vitoria": [
-   "Impressionante. A Medalha Rosa é sua, por direito."
+   "Impressive. The Soul Badge is rightfully yours."
   ],
   "derrota": [
-   "O veneno venceu. Treine sua mente e volte."
+   "Poison prevails. Train your mind and return."
   ],
   "cooldownMin": [
    15,
@@ -256,7 +256,7 @@
  },
  "106": {
   "numero": 6,
-  "nome": "Ginásio Amarelo Dourado",
+  "nome": "Golden Yellow Gym",
   "lider": "Sabrina",
   "cidade": "Saffron",
   "tipo": "Psíquico",
@@ -268,7 +268,7 @@
   "modeloDump": "npc1000",
   "insignia": {
    "id": 106,
-   "nome": "medalha Dourada",
+   "nome": "Marsh Badge",
    "icone": "dghz_8"
   },
   "time": [
@@ -295,14 +295,14 @@
   ],
   "dinheiro": 3800,
   "fala": [
-   "Sou Sabrina. Eu já vi o resultado desta batalha antes mesmo de ela começar.",
-   "Mas venha, mostre se a visão estava certa."
+   "I'm Sabrina. I foresaw the outcome of this battle before it even began.",
+   "But come, show me whether my vision was right."
   ],
   "vitoria": [
-   "A visão estava errada… Leve a Medalha Dourada."
+   "My vision was wrong… Take the Marsh Badge."
   ],
   "derrota": [
-   "Como previsto. Volte quando mudar o seu destino."
+   "As foreseen. Come back when you've changed your fate."
   ],
   "cooldownMin": [
    15,
@@ -313,7 +313,7 @@
  },
  "107": {
   "numero": 7,
-  "nome": "Ginásio Lótus Vermelho",
+  "nome": "Red Lotus Gym",
   "lider": "Blaine",
   "cidade": "Cinnabar",
   "tipo": "Fogo",
@@ -325,7 +325,7 @@
   "modeloDump": "npc1006",
   "insignia": {
    "id": 107,
-   "nome": "medalha Vermelho Escuro",
+   "nome": "Volcano Badge",
    "icone": "dghz_4"
   },
   "time": [
@@ -352,14 +352,14 @@
   ],
   "dinheiro": 4300,
   "fala": [
-   "Sou Blaine, o velho do Ginásio de Cinnabar! Meus Pokémon queimam tudo!",
-   "Sinta o calor da batalha!"
+   "I'm Blaine, the old man of Cinnabar Gym! My Pokémon burn everything!",
+   "Feel the heat of battle!"
   ],
   "vitoria": [
-   "Você me derreteu! A Medalha Vermelho Escuro é sua."
+   "You melted me! The Volcano Badge is yours."
   ],
   "derrota": [
-   "Virou cinzas. Volte quando aguentar o fogo."
+   "Burned to ashes. Come back when you can take the heat."
   ],
   "cooldownMin": [
    15,
@@ -370,7 +370,7 @@
  },
  "108": {
   "numero": 8,
-  "nome": "Ginásio Viridian",
+  "nome": "Viridian Gym",
   "lider": "Giovanni",
   "cidade": "Viridian",
   "tipo": "Terra",
@@ -382,7 +382,7 @@
   "modeloDump": "npc1005",
   "insignia": {
    "id": 108,
-   "nome": "medalha Verde",
+   "nome": "Earth Badge",
    "icone": "dghz_5"
   },
   "time": [
@@ -414,14 +414,14 @@
   ],
   "dinheiro": 4800,
   "fala": [
-   "Então você chegou até aqui. Sou Giovanni, líder do Ginásio de Viridian.",
-   "Vou esmagar você com o poder da terra."
+   "So you made it this far. I am Giovanni, Viridian Gym Leader.",
+   "I'll crush you with the power of the earth."
   ],
   "vitoria": [
-   "Eu, derrotado…? Leve a Medalha Verde. Você é digno da Liga."
+   "I, defeated…? Take the Earth Badge. You're worthy of the League."
   ],
   "derrota": [
-   "Patético. Volte quando for um treinador de verdade."
+   "Pathetic. Come back when you're a real trainer."
   ],
   "cooldownMin": [
    15,
