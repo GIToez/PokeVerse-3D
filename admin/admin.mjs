@@ -84,7 +84,10 @@ let nomesCena = {};       // id → nome no cenas.json
 let idsUsados = new Set();// todo id de área de todas as cenas (id novo não pode herdar habitat de área de outro mapa)
 let desenhandoArea = false, rascunho = null;
 let foto = null;          // fundo "minimapa" do mapa atual ({ img, x0, z0, esc, w, h, fonte, mapa })
-const nomeArea = a => nomesCena[a] || dadosMapa?.nomes?.[a] || ('Area ' + a);
+let nomesEn = {};         // Portuguese place name → English (data/locale/nomes_en.json)
+try { nomesEn = await fetch('/data/locale/nomes_en.json').then(r => r.ok ? r.json() : {}); } catch { nomesEn = {}; }
+const traduzNome = s => (s && nomesEn[s]) || s;
+const nomeArea = a => traduzNome(nomesCena[a] || dadosMapa?.nomes?.[a] || ('Area ' + a));
 
 const CORES = ['#ff5d5d', '#4da3ff', '#3ecf8e', '#ffcf3a', '#c678dd', '#ff9d4d', '#56d4dd', '#f06292'];
 const corZona = z => CORES[(z.__i ?? 0) % CORES.length];

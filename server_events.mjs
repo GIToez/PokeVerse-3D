@@ -65,7 +65,7 @@ export function criarEventos(h) {
 
   function avisar(g, texto) {
     texto = String(texto || '').trim().slice(0, 200);
-    if (!texto) return { erro: 'Escreva o aviso.' };
+    if (!texto) return { erro: 'Write the announcement.' };
     const n = todos({ t: 'invasao', texto });
     logAdmin(g, '*', 'aviso global', { depois: { texto, jogadores: n } });
     return { n };
@@ -98,7 +98,7 @@ export function criarEventos(h) {
       }
     }
     const agoraManut = manutencaoAgora(agora);
-    if (agoraManut && !manutAntes) { const n = derrubarTodos(); console.log(`[eventos] manutenção ligada (${n} desconectado(s))`); }
+    if (agoraManut && !manutAntes) { const n = derrubarTodos(); console.log(`[events] maintenance on (${n} disconnected)`); }
     manutAntes = agoraManut;
   }
   setInterval(tique, 15000).unref?.();
@@ -133,7 +133,7 @@ export function criarEventos(h) {
       const agoraManut = manutencaoAgora();
       if (agoraManut && !manutAntes) derrubou = derrubarTodos();
       manutAntes = agoraManut;
-      console.log(`[admin] ${g} salvou eventos (EXP ×${e.expMult}, shiny ×${e.shinyMult}, densidade ×${e.densidade}${agoraManut ? ', MANUTENÇÃO' : ''})`);
+      console.log(`[admin] ${g} saved events (EXP ×${e.expMult}, shiny ×${e.shinyMult}, density ×${e.densidade}${agoraManut ? ', MAINTENANCE' : ''})`);
       json(200, { ok: true, dados: ler(), efetivo: e, manutencaoAgora: agoraManut, jogadores: n, derrubou }); return true;
     }
     if (rota === '/admin/eventos/aviso' && metodo === 'POST') {

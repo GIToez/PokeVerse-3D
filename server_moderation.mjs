@@ -42,7 +42,7 @@ export function criarModeracao(h) {
           const n = porCfg.get(cfg); if (!n) continue;
           pontos[nome] = { mapa: 'kanto', x: +(-n.x).toFixed(2), z: +(+n.z).toFixed(2), nome: kanto.nomes?.[n.a] || nome };   // arquivo → mundo: x espelhado (FLIPX = -1)
         }
-      } catch (e) { console.warn('moderação: kanto.json:', e.message); }
+      } catch (e) { console.warn('moderation: kanto.json:', e.message); }
     }
     return pontos[k] || null;
   }
@@ -64,7 +64,7 @@ export function criarModeracao(h) {
   // ── Ações (painel e chat) — não gravam: quem chama salva (o painel com pronto(), o chat com salvarContasJa) ──
   function banir(g, u, minutos, motivo) {
     const c = contas[u];
-    if (!(minutos === -1 || (minutos >= 1 && minutos <= MAX_MIN))) return { erro: 'Tempo de banimento inválido.' };
+    if (!(minutos === -1 || (minutos >= 1 && minutos <= MAX_MIN))) return { erro: 'Invalid ban duration.' };
     c.banidoAte = minutos === -1 ? -1 : Date.now() + minutos * 60000; c.banMotivo = motivo;
     if (c.token) { sessoes.delete(c.token); c.token = null; }                 // a sessão cai: o próximo login esbarra no banimento
     derrubar(u, 'Sua conta foi suspensa ' + quando(c.banidoAte) + '.' + (motivo ? ' Motivo: ' + motivo : ''));
@@ -79,7 +79,7 @@ export function criarModeracao(h) {
   }
   function silenciar(g, u, minutos, motivo) {
     const c = contas[u];
-    if (!(minutos >= 1 && minutos <= MAX_MIN)) return { erro: 'Tempo de silêncio inválido.' };
+    if (!(minutos >= 1 && minutos <= MAX_MIN)) return { erro: 'Invalid mute duration.' };
     c.mudoAte = Date.now() + minutos * 60000;
     for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🔇 Você foi silenciado até ' + hora(c.mudoAte) + '.' + (motivo ? ' Motivo: ' + motivo : '') });
     logAdmin(g, u, 'silenciar', { depois: { mudoAte: c.mudoAte, motivo } });
@@ -98,9 +98,9 @@ export function criarModeracao(h) {
   }
   function recado(g, u, texto) {
     texto = String(texto || '').trim().slice(0, 240);
-    if (!texto) return { erro: 'Escreva o recado.' };
+    if (!texto) return { erro: 'Write the message.' };
     const n = socketsDe(u).length;
-    if (!n) return { erro: 'O jogador não está online.' };
+    if (!n) return { erro: 'The player is not online.' };
     for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '📩 GM: ' + texto });
     logAdmin(g, u, 'recado', { depois: { texto } });
     return {};
@@ -108,7 +108,7 @@ export function criarModeracao(h) {
   /** Leva a conta pra `dest` = { mapa, x, z, nome }. Online: a cena recarrega agora; offline: nasce lá ao entrar. */
   function levar(g, u, dest, acao = 'levar') {
     const pos = { mapa: String(dest.mapa), x: +dest.x, z: +dest.z, giro: 0 };
-    if (!/^[\w-]{1,40}$/.test(pos.mapa) || !Number.isFinite(pos.x) || !Number.isFinite(pos.z) || Math.abs(pos.x) > 100000 || Math.abs(pos.z) > 100000) return { erro: 'Destino inválido.' };
+    if (!/^[\w-]{1,40}$/.test(pos.mapa) || !Number.isFinite(pos.x) || !Number.isFinite(pos.z) || Math.abs(pos.x) > 100000 || Math.abs(pos.z) > 100000) return { erro: 'Invalid destination.' };
     contas[u].posGm = pos;
     const ws = socketsDe(u);
     for (const w of ws) enviar(w, { t: 'volta', mapa: pos.mapa, texto: '🧭 Um GM levou você' + (dest.nome ? ' para ' + dest.nome : '') + '…' });
@@ -122,7 +122,7 @@ export function criarModeracao(h) {
       return p || { erro: `Cidade desconhecida: ${d.cidade} (use ${listaCidades()}).` };
     }
     const x = Number(d.x), z = Number(d.z);
-    if (!Number.isFinite(x) || !Number.isFinite(z)) return { erro: 'Faltou a cidade ou x e z.' };
+    if (!Number.isFinite(x) || !Number.isFinite(z)) return { erro: 'Missing the city or x and z.' };
     const mapa = String(d.mapa || ondeEsta(u)?.mapa || contas[u]?.posGm?.mapa || 'kanto');
     return { mapa, x, z, nome: null };
   }
@@ -137,13 +137,13 @@ export function criarModeracao(h) {
     if (acao === 'desconectar') return desconectar(g, u, motivo);
     if (acao === 'recado') return recado(g, u, d.texto);
     if (acao === 'levar') { const dest = destino(u, d); return dest.erro ? dest : levar(g, u, dest); }
-    return { erro: 'Ação desconhecida.' };
+    return { erro: 'Unknown action.' };
   }
 
   // ── Chat: {t:'mod_<op>'} (ou {t:'mod', op}) ─────────────────────────────────────────────────────────────────────────
   function comando(ws, m) {
     const g = sessoes.get(ws._info?.token) || null;
-    if (!contas[g]?.gm) { enviar(ws, { t: 'mod_erro', erro: 'Sem permissão' }); return; }
+    if (!contas[g]?.gm) { enviar(ws, { t: 'mod_erro', erro: 'No permission' }); return; }
     const op = m.t === 'mod' ? String(m.op || '') : String(m.t).slice(4);
     const ok = (o = {}) => enviar(ws, { t: 'mod', op, ...o });
     const erro = e => enviar(ws, { t: 'mod_erro', erro: String(e).replace(/\.$/, '') });   // o network.mjs põe o ponto

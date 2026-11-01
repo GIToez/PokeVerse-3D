@@ -3736,5 +3736,19 @@
   "saved to Downloads:": "salvo em Downloads:",
   "without labels": "sem os rótulos",
   "Stop": "Parar",
-  "Record video": "Gravar vídeo"
+  "Record video": "Gravar vídeo",
+  "came back to you": "voltou pra você",
+  "{x} only enters from the water's edge": "{x} só entra pela beira da água",
+  "{x} cannot walk on water": "{x} não anda na água",
+  "surfing on {x}": "surfando no {x}",
+  "mounted {x}": "montou no {x}",
+  "{x} is swimming beside you": "{x} nada do seu lado",
+  "{x} is coming!": "{x} está chegando!",
+  "{x} appeared!": "{x} apareceu!",
+  "immune": "imune",
+  "{x} fainted!": "{x} caiu!",
+  "too far ({x} m)": "longe demais ({x} m)",
+  "Missions loaded:": "Missões carregadas:",
+  "joined": "entrou em",
+  "left": "saiu"
 }

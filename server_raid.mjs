@@ -202,11 +202,11 @@ export function criarRaid(h) {
   // ── Fases ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
   function anunciar(g) {
     const cfg = lerCfg();
-    if (!especie(cfg.chefeDex)) return { erro: 'A espécie nº ' + cfg.chefeDex + ' do data/raid.json não existe no pokedex.json.' };
+    if (!especie(cfg.chefeDex)) return { erro: 'Species no. ' + cfg.chefeDex + ' from data/raid.json is not in pokedex.json.' };
     const geo = geometria(cfg.arena);
     raid = { id: ++seq, fase: 'anunciada', cfg, geo, sobre: { hp: null, dano: null, shiny: null, premio: null }, fila: new Map(), por: g,
       contagemAte: 0, indoAte: 0, lutaAte: 0, fimAte: 0, chefe: null, venceu: false, golpesChefe: golpesDoChefe(cfg.chefeDex) };
-    console.log(`[raid] #${raid.id} anunciada por ${g}: ${cfg.chefeNome} Lv${cfg.chefeNivel}, ${cfg.vagas} vagas, arena ${cfg.arena}`);
+    console.log(`[raid] #${raid.id} announced by ${g}: ${cfg.chefeNome} Lv${cfg.chefeNivel}, ${cfg.vagas} slots, arena ${cfg.arena}`);
     todos('📢 RAID: um ' + cfg.chefeNome + ' Lv ' + cfg.chefeNivel + ' apareceu! Entre na fila pelo botão RAID (' + cfg.vagas + ' vagas).');
     difundir();
     return {};
@@ -238,7 +238,7 @@ export function criarRaid(h) {
       const ws = socketsDe(p.u).filter(w => w._info).sort((a, b) => b._id - a._id)[0];   // duas abas da mesma conta: vale a que entrou por último
       if (ws) fazerIda(p, ws);                                               // offline agora (recarregando, porta): vai quando entrar (aoEntrar)
     }
-    console.log(`[raid] #${raid.id} indo pra arena: ${[...raid.fila.keys()].join(', ')}`);
+    console.log(`[raid] #${raid.id} heading to the arena: ${[...raid.fila.keys()].join(', ')}`);
     difundir();
   }
   function lutar() {
@@ -249,7 +249,7 @@ export function criarRaid(h) {
     raid.chefe = { id: 1e9 + raid.id, hp: maxHp, maxHp, x: ch.x, z: ch.z, giro: +Math.PI.toFixed(3), proxGolpe: Date.now() + 4000 };   // giro π: de frente pro sul, onde a fila fica
     raid.fase = 'luta'; raid.lutaAte = Date.now() + LUTA_MS;
     paraArena({ t: 'selvagem', s: registroChefe() });
-    console.log(`[raid] #${raid.id} luta: ${raid.cfg.chefeNome} com ${maxHp} de vida, ${chegaram.length} na arena`);
+    console.log(`[raid] #${raid.id} fight: ${raid.cfg.chefeNome} with ${maxHp} HP, ${chegaram.length} in the arena`);
     difundir();
   }
   /** KO do chefe: prêmio pra quem bateu (já gravado na conta, online ou não), e a volta em FIM_MS. */
@@ -265,7 +265,7 @@ export function criarRaid(h) {
       for (const w of socketsDe(p.u)) enviar(w, msg);
     }
     salvarContas();
-    console.log(`[raid] #${raid.id} vencida (dano: ${resumo.join(', ')})`);
+    console.log(`[raid] #${raid.id} won (damage: ${resumo.join(', ')})`);
     difundir();
   }
   /** O chefe escapou (tempo) ou a staff encerrou no meio da luta. */
@@ -274,7 +274,7 @@ export function criarRaid(h) {
     for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) enviar(w, { t: 'raid_fim', id: raid.id, venceu: false, premio: null });
     if (raid.chefe) paraArena({ t: 'sumiu', id: raid.chefe.id, motivo: 'fugiu' });
     if (texto) for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) sistema(w, texto);
-    console.log(`[raid] #${raid.id} perdida${texto ? ' (' + texto + ')' : ''}`);
+    console.log(`[raid] #${raid.id} lost${texto ? ' (' + texto + ')' : ''}`);
     difundir();
   }
   /** A volta de cada participante e o fim da raid. Quem está na arena recarrega pra onde estava; offline nasce lá no próximo login. */
@@ -299,7 +299,7 @@ export function criarRaid(h) {
       }
     }
     salvarContasJa();
-    console.log(`[raid] #${raid.id} encerrada`);
+    console.log(`[raid] #${raid.id} closed`);
     raid = null;
     difundir();
   }

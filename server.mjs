@@ -44,8 +44,8 @@ function carregarMissoes() {
     MISSAO_SEQ.length = 0;
     for (const cap of md.capitulos || [])
       for (const m of cap.missoes || []) { MISSOES[m.id] = m; MISSAO_SEQ.push(m.id); }
-    console.log('Missões carregadas:', MISSAO_SEQ.length);
-  } catch(e) { console.warn('Missões não carregadas:', e.message); }
+    console.log('Missions loaded:', MISSAO_SEQ.length);
+  } catch(e) { console.warn('Missions not loaded:', e.message); }
 }
 carregarMissoes();
 
@@ -175,7 +175,7 @@ try { contas = JSON.parse(fs.readFileSync(contasArq, 'utf8')); } catch {}
    e travando o event loop. Agora `salvarContas()` AGRUPA as gravações de jogo (debounce ~500ms) e `salvarContasJa()` grava na
    hora para o que não pode perder (criar conta, login, senha, apagar). Ao encerrar, descarrega o pendente pra não perder save. */
 let _salvarPend = null;
-function gravarContasDisco() { try { fs.writeFileSync(contasArq, JSON.stringify(contas, null, 2)); } catch (e) { console.error('Falha ao salvar contas:', e.message); } }
+function gravarContasDisco() { try { fs.writeFileSync(contasArq, JSON.stringify(contas, null, 2)); } catch (e) { console.error('Failed to save accounts:', e.message); } }
 function salvarContasJa() { if (_salvarPend) { clearTimeout(_salvarPend); _salvarPend = null; } gravarContasDisco(); }
 function salvarContas() { if (!_salvarPend) _salvarPend = setTimeout(() => { _salvarPend = null; gravarContasDisco(); }, 500); }
 process.on('SIGINT', () => { salvarContasJa(); process.exit(0); });
@@ -301,8 +301,8 @@ let ESPECIES_OK = null;
 try {
   const pdx = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/pokedex.json'), 'utf8'));
   ESPECIES_OK = new Set((pdx.species || []).map(s => +s.n).filter(n => n > 0));
-  console.log('Espécies válidas:', ESPECIES_OK.size);
-} catch (e) { console.warn('pokedex.json não carregado (validação de espécie desligada):', e.message); }
+  console.log('Valid species:', ESPECIES_OK.size);
+} catch (e) { console.warn('pokedex.json not loaded (species validation off):', e.message); }
 function especieValida(dex) { return !ESPECIES_OK || ESPECIES_OK.has(+dex); }   // sem o arquivo, não bloqueia (fail-open no dev)
 // Rate-limit simples por IP (em memória; zera ao reiniciar).
 /* Behind a reverse proxy on the same machine (nginx → 127.0.0.1:5190) every request comes from loopback, so the real client
@@ -416,7 +416,7 @@ function limparBolsa(d) {
     bolsa.dinheiro = n;
   }
   for (const k of ['itens', 'bolas']) if (d[k] !== undefined) {
-    if (!d[k] || typeof d[k] !== 'object' || Array.isArray(d[k])) return { erro: k + ': formato inválido.' };
+    if (!d[k] || typeof d[k] !== 'object' || Array.isArray(d[k])) return { erro: k + ': invalid format.' };
     const m = {};
     for (const [id, q] of Object.entries(d[k])) {
       if (!/^\d{1,9}$/.test(id) || !itemExiste(id)) return { erro: `${k}: o item ${id} não existe no jogo.` };
@@ -446,7 +446,7 @@ function limparTime(c, d) {
     const out = [];
     for (const e of lista) {
       const uid = String(e?.uid ?? ''), orig = porUid.get(uid);
-      if (!orig) return { erro: `Pokémon desconhecido (uid ${uid}) — pra criar, use "Dar Pokémon".` };
+      if (!orig) return { erro: `Unknown Pokémon (uid ${uid}) — to create one, use "Give Pokémon".` };
       if (vistos.has(uid)) return { erro: `Pokémon repetido (uid ${uid}).` };
       vistos.add(uid);
       const p = { ...orig };
@@ -560,7 +560,7 @@ const httpServer = http.createServer((req, res) => {
       try {
         fazerBackup(arq, true);
         const tmp = arq + '.tmp'; fs.writeFileSync(tmp, buf); fs.renameSync(tmp, arq);
-        console.log(`[admin] ${u} salvou o GLB de ${m} (${(buf.length / 1048576).toFixed(1)} MB)`);
+        console.log(`[admin] ${u} saved the GLB for ${m} (${(buf.length / 1048576).toFixed(1)} MB)`);
         return json(200, { ok: true, bytes: buf.length });
       } catch (e) { return json(500, { erro: e.message }); }
     });
@@ -759,7 +759,7 @@ const httpServer = http.createServer((req, res) => {
         const zonas = d.zonas.slice(0, 500).map(limparZona).filter(Boolean);
         const ids = new Set(); for (const z of zonas) { while (ids.has(z.id)) z.id += '_'; ids.add(z.id); }
         gravarComBackup(ZONAS_ARQ, { v: 1, zonas });
-        console.log(`[admin] ${g} salvou ${zonas.length} zona(s) de spawn`);
+        console.log(`[admin] ${g} saved ${zonas.length} spawn zone(s)`);
         return json(200, { ok: true, total: zonas.length, descartadas: d.zonas.length - zonas.length });
       }
       if (rota === '/admin/habitats' && req.method === 'GET') return json(200, { ok: true, ...lerJson(HABITATS_ARQ, { areas: {}, generico: [] }) });
@@ -772,7 +772,7 @@ const httpServer = http.createServer((req, res) => {
         }
         const generico = (Array.isArray(d.generico) ? d.generico : []).slice(0, 60).map(e => limparEspecie(e, false)).filter(Boolean);
         gravarComBackup(HABITATS_ARQ, { ...lerJson(HABITATS_ARQ, {}), areas, generico });   // mantém as outras chaves do arquivo (ex.: `mapa`)
-        console.log(`[admin] ${g} salvou habitats (${Object.keys(areas).length} áreas)`);
+        console.log(`[admin] ${g} saved habitats (${Object.keys(areas).length} areas)`);
         return json(200, { ok: true, areas: Object.keys(areas).length });
       }
       // ── Editor de Cenário 3D: objetos (prefabs colocados) do mapa ──
@@ -797,7 +797,7 @@ const httpServer = http.createServer((req, res) => {
         let n = 0;
         for (const k of ['objetos', 'ambiente', 'areaEnv']) if (Array.isArray(d[k])) { d2[k] = limpa(d[k]); n += d2[k].length; }   // só troca as listas que vieram; o resto do mapa fica
         gravarComBackup(arq, d2);
-        console.log(`[admin] ${g} salvou ${n} peças de cenário em ${m}`);
+        console.log(`[admin] ${g} saved ${n} scenery pieces on ${m}`);
         return json(200, { ok: true, total: n });
       }
       /* ── Editor de Mapa: ÁREAS (caixas + nomes) ──
@@ -819,7 +819,7 @@ const httpServer = http.createServer((req, res) => {
         for (const c of d.caixas) {
           const a = Number.isInteger(+c?.a) && +c.a >= 1 && +c.a <= 99999999 ? +c.a : null;
           const x = num(c?.x, -100000, 100000), z = num(c?.z, -100000, 100000), sx = num(c?.sx, 0.5, 10000), sz = num(c?.sz, 0.5, 10000);
-          if (a == null || x == null || z == null || sx == null || sz == null) return json(400, { erro: 'Caixa inválida: ' + JSON.stringify(c).slice(0, 80) });
+          if (a == null || x == null || z == null || sx == null || sz == null) return json(400, { erro: 'Invalid box: ' + JSON.stringify(c).slice(0, 80) });
           caixas.push({ a, x, y: num(c.y ?? 0, -10000, 10000) ?? 0, z, sx, sy: num(c.sy ?? 60, 0.5, 10000) ?? 60, sz });
         }
         const comCaixa = new Set(caixas.map(c => c.a)), tinhaCaixa = new Set((d2.caixas || []).map(c => +c.a));
@@ -853,7 +853,7 @@ const httpServer = http.createServer((req, res) => {
           }
           if (mudou) gravarComBackup(arqCenas, ce);
         }
-        console.log(`[admin] ${g} salvou áreas de ${m}: ${areas.length} áreas, ${caixas.length} caixas (+${novas.length} −${removidas.size})`);
+        console.log(`[admin] ${g} saved areas of ${m}: ${areas.length} areas, ${caixas.length} boxes (+${novas.length} −${removidas.size})`);
         return json(200, { ok: true, areas: areas.length, caixas: caixas.length, novas: novas.length, removidas: removidas.size });
       }
       /* ── Editor de Mapa: CAMADAS (Fase 1) — os pontos (npcs, treinadores) e os tiles (grama, agua, spawn = piso de caverna) do
@@ -888,7 +888,7 @@ const httpServer = http.createServer((req, res) => {
         if (!Object.keys(novas).length) return json(400, { erro: 'Nothing to save.' });
         Object.assign(d2, novas);
         gravarComBackup(arq, d2);
-        console.log(`[admin] ${g} salvou camadas de ${m}: ${Object.entries(contagem).map(([k, n]) => k + ' ' + n).join(', ')}`);
+        console.log(`[admin] ${g} saved layers of ${m}: ${Object.entries(contagem).map(([k, n]) => k + ' ' + n).join(', ')}`);
         return json(200, { ok: true, contagem });
       }
       /* ── Jogadores (Fase 1) ──
@@ -985,7 +985,7 @@ const httpServer = http.createServer((req, res) => {
           if (!r.ok) return json(400, { erro: r.erro });
           gravarComBackup(arq, esq.caminho ? { ...atual, [esq.caminho]: r.v } : r.v);   // com caminho, só troca a subchave
           const n = esq.forma === 'objeto' ? 1 : (Array.isArray(r.v) ? r.v.length : Object.keys(r.v).length);
-          console.log(`[admin] ${g} salvou ${esq.arquivo}${esq.caminho ? '.' + esq.caminho : ''} (${n} registro(s))`);
+          console.log(`[admin] ${g} saved ${esq.arquivo}${esq.caminho ? '.' + esq.caminho : ''} (${n} record(s))`);
           return json(200, { ok: true, total: n });
         }
       }
@@ -1015,7 +1015,7 @@ const httpServer = http.createServer((req, res) => {
         const conteudo = fs.readFileSync(origem);                                // lê ANTES do backup novo (a limpeza pode apagar o mais antigo)
         fazerBackup(destino, ehGlb);
         const tmp = destino + '.tmp'; fs.writeFileSync(tmp, conteudo); fs.renameSync(tmp, destino);
-        console.log(`[admin] ${g} restaurou ${nome}`);
+        console.log(`[admin] ${g} restored ${nome}`);
         return json(200, { ok: true, arquivo: m[1], tipo: m[4] });
       }
       return json(404, { erro: 'Admin route not found: ' + rota });
@@ -1101,7 +1101,7 @@ wss.on('connection', ws => {
           const estM = missaoEstadoDe(uM);
           if (estM.atual) enviar(ws, { t: 'missao', estado: estM });
         }
-        console.log(`[+] ${ws._usuario} entrou em ${ws._mapa} (${conexoes.size} online)`);
+        console.log(`[+] ${ws._usuario} joined ${ws._mapa} (${conexoes.size} online)`);
         break;
       }
 
@@ -1163,7 +1163,7 @@ wss.on('connection', ws => {
       case 'missao_falar': {
         const uF = sessoes.get(ws._info?.token) || null;
         const est1 = uF ? missaoEstadoDe(uF) : null;
-        console.log(`[missao_falar] usuario=${uF} cfg=${m.cfg} passo_atual=${JSON.stringify(est1 ? MISSOES[est1.atual]?.passos?.[est1.passo] : null)}`);
+        console.log(`[mission_talk] user=${uF} cfg=${m.cfg} current_step=${JSON.stringify(est1 ? MISSOES[est1.atual]?.passos?.[est1.passo] : null)}`);
         if (uF) enviarMissao(ws, aplicarEvento(uF, { tipo: 'falar', cfg: m.cfg }));
         break;
       }
@@ -1171,7 +1171,7 @@ wss.on('connection', ws => {
         const uA = sessoes.get(ws._info?.token) || null;
         ws._areaId = m.area ?? null;                                      // onde está agora (passo 'ir' que vira o atual com a pessoa já lá)
         const est2 = uA ? missaoEstadoDe(uA) : null;
-        console.log(`[missao_area] usuario=${uA} area=${m.area} passo_atual=${JSON.stringify(est2 ? MISSOES[est2.atual]?.passos?.[est2.passo] : null)}`);
+        console.log(`[mission_area] user=${uA} area=${m.area} current_step=${JSON.stringify(est2 ? MISSOES[est2.atual]?.passos?.[est2.passo] : null)}`);
         if (uA) enviarMissao(ws, aplicarEvento(uA, { tipo: 'area', area: m.area }));
         break;
       }
@@ -1331,7 +1331,7 @@ wss.on('connection', ws => {
 
   ws.on('close', () => {
     if (!conexoes.delete(ws._id)) return;                                 // já saiu da lista (sessão única) e o `saiu` já foi
-    console.log(`[-] ${ws._usuario || ws._id} saiu (${conexoes.size} online)`);
+    console.log(`[-] ${ws._usuario || ws._id} left (${conexoes.size} online)`);
     broadcast(ws, { t: 'saiu', id: ws._id });
   });
 
@@ -1341,8 +1341,8 @@ wss.on('connection', ws => {
 httpServer.listen(5190, process.env.HOST || undefined, () => {   // HOST=127.0.0.1 behind a reverse proxy; unset = all interfaces (LAN dev)
   console.log('');
   console.log('╔═══════════════════════════════════════╗');
-  console.log('║  Pokemon 3D Base — Servidor Dev     ║');
-  console.log('║  HTTP + WebSocket na porta 5190       ║');
+  console.log('║  Pokemon 3D Base — Dev Server      ║');
+  console.log('║  HTTP + WebSocket on port 5190        ║');
   console.log('╚═══════════════════════════════════════╝');
   console.log('');
 });

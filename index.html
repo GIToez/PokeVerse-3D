@@ -2908,16 +2908,16 @@ const MONTARIAS_LIVRES = new Set(MONTARIAS_ARQ ? MONTARIAS_ARQ.filter(d => d.liv
 const podeMontar = (glb = null) => Conta.estado().modo !== 'conta' || GM_REAL || (glb != null && MONTARIAS_LIVRES.has(String(glb).replace(/\.glb$/, '')));   // pelo modo da conta, não pela rede: cair do WebSocket não pode liberar
 async function montar(glb, { trocar = false } = {}){
   if (!jogo.ash || jogo.montando) return;
-  if (jogo.turno && !jogo.montaria){ flutuar(jogo.ash, 'não dá pra montar em batalha', '#f58e8e'); return; }   // 14/09 (l.neto, vídeo): o atalho 5–9 montava no meio da batalha por turno
+  if (jogo.turno && !jogo.montaria){ flutuar(jogo.ash, "can't mount in battle", '#f58e8e'); return; }   // 14/09 (l.neto, vídeo): o atalho 5–9 montava no meio da batalha por turno
   glb = String(glb || '').replace(/\.glb$/, '');
   if (jogo.montaria && (!trocar || jogo.montaria.glb === glb)) return desmontar();   // desmontar vem ANTES do portão (14/09): montado no Arcanine, o M com outro glb travava em cima dele
-  if (!podeMontar(glb)){ if (jogo.ash) flutuar(jogo.ash, 'montarias chegam em breve', '#ffd23a'); return; }
+  if (!podeMontar(glb)){ if (jogo.ash) flutuar(jogo.ash, 'mounts coming soon', '#ffd23a'); return; }
   const def = MONTARIAS.find(d => d[0] === glb) || [glb, glb, 'RideIdle1', 'Ride1', true, 0.6, 25000, 'anfibia'];
   const meio = def[7] || 'terra', { ash } = jogo;
   let px = ash.x, pz = ash.z;                                            // onde a montaria nasce
   const aguaAqui = naAgua(ash.x, ash.z);
-  if (meio === 'agua' && !aguaAqui){ const p = aguaPerto(ash.x, ash.z, 6); if (!p){ flutuar(ash, def[1] + ' só entra pela beira da água', '#ffd23a'); return; } px = p.x; pz = p.z; }
-  if (aguaAqui && meio === 'terra' && !def[4]){ flutuar(ash, def[1] + ' não anda na água', '#ffd23a'); return; }
+  if (meio === 'agua' && !aguaAqui){ const p = aguaPerto(ash.x, ash.z, 6); if (!p){ flutuar(ash, def[1] + ' only enters from the water\'s edge', '#ffd23a'); return; } px = p.x; pz = p.z; }
+  if (aguaAqui && meio === 'terra' && !def[4]){ flutuar(ash, def[1] + ' cannot walk on water', '#ffd23a'); return; }
   jogo.montando = true;
   try {
     const g = await modeloMon(glb + '.glb');
@@ -2959,7 +2959,7 @@ async function montar(glb, { trocar = false } = {}){
        a montaria virar Pokemon do time, e so ler o `shiny` do registro dele. */
     efeito('MountIn', m.peito, m.altura, { vidaMax: 1.6 });
     Som.tocar('skill/Wind1');
-    flutuar(ash, (m.shiny ? '✨ ' : '') + (meio === 'agua' ? 'surfando no ' : 'montou no ') + m.nome, m.shiny ? '#8be9fd' : '#ffd23a');
+    flutuar(ash, (m.shiny ? '✨ ' : '') + (meio === 'agua' ? 'surfing on ' : 'mounted ') + m.nome, m.shiny ? '#8be9fd' : '#ffd23a');
     if (ADM && m.voa) $('t-v').textContent = I18n.t('free flight (admin): Space up · X down · Shift turbo · no walls');
   } catch (e){ console.warn('montaria:', e); }
   jogo.montando = false;
@@ -2992,7 +2992,7 @@ function desmontar(){
   /* 19/09 (chaospider, "Atalho na Safari"): e só terra de onde a água é alcançável EM LINHA (linhaAte, sempre no sentido terra → água) — sem isso se descia do mar pra dentro do Safári por cima do muro */
   const emLinha = (px, pz) => linhaAte(px, pz, ash.x, ash.z);
   const t = doSurf ? (terraPerto(ash.x, ash.z, raio, (px, pz) => emLinha(px, pz) && aguaPerto(px, pz) !== null) || terraPerto(ash.x, ash.z, raio, (px, pz) => emLinha(px, pz) && desceSemPrender(px, pz))) : terraPerto(ash.x, ash.z, raio);
-  if (!t){ flutuar(ash, 'sem terra firme por perto pra descer', '#ffd23a'); return false; }
+  if (!t){ flutuar(ash, 'no dry land nearby to get off', '#ffd23a'); return false; }
   soltarMontaria();
   ash.x = t.x; ash.z = t.z; ash.y = chaoEm(t.x, t.z) ?? m.y; ash.vx = ash.x; ash.vz = ash.z; ash.vy = ash.y; ash.giro = m.giro; ash.alvoX = null;
   ash.pivo.position.set(ash.vx, ash.vy, ash.vz); ash.pivo.rotation.set(0, ash.giro, 0);
@@ -3017,7 +3017,7 @@ function alternarSurf(m, ligar){
     pika.pivo.position.set(pika.vx, pika.vy, pika.vz); pika.pivo.visible = true;
     pika.travaAnim = 0; tocarUma(pika, 'Appear'); soEsta(pika, 'Appear');
     pika.emBatalha = false; jogo.ordem = null;
-    flutuar(pika, pika.nome + ' nada do seu lado', '#8be9fd');
+    flutuar(pika, pika.nome + ' is swimming beside you', '#8be9fd');
   } else {
     pika.meio = undefined; pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.alvoX = null;
   }
@@ -3491,7 +3491,7 @@ if (JOGAR){
         novo.pivo.position.set(novo.vx, novo.vy, novo.vz); novo.pivo.rotation.y = velho.pivo.rotation.y; tocarAnim(novo, 'Idle');
         cena.remove(velho.pivo); velho.rotuloNome?.material.map?.dispose();
         jogo.ash = novo; rotularJogador(); semCorte(novo);
-        flutuar(novo, 'novo visual!', '#8ef58e');
+        flutuar(novo, 'new look!', '#8ef58e');
         return novo;
       } catch (e){ console.warn('trocar jogador:', e); return velho; }
       finally { jogo.trocandoJogador = false; }
@@ -3846,7 +3846,7 @@ const habitats = JOGAR && params0.get('selvagens') !== '0' && !dados.lote       
 if (habitats) try { ZONAS = await fetch('./data/zonas_spawn.json').then(r => r.ok ? r.json() : null).then(z => z?.zonas || []).catch(() => []); } catch {}
 try {
   const canalAdmin = new BroadcastChannel('p3d-admin');
-  const recarregarZonas = () => fetch('./data/zonas_spawn.json?t=' + Date.now()).then(r => r.json()).then(z => { ZONAS = z?.zonas || []; Chat.sistema('Zonas de spawn recarregadas (' + ZONAS.filter(x => x.mapa === NOME).length + ' neste mapa).'); }).catch(() => {});
+  const recarregarZonas = () => fetch('./data/zonas_spawn.json?t=' + Date.now()).then(r => r.json()).then(z => { ZONAS = z?.zonas || []; Chat.sistema('Spawn zones reloaded (' + ZONAS.filter(x => x.mapa === NOME).length + ' neste mapa).'); }).catch(() => {});
   canalAdmin.onmessage = ev => {
     const m = ev.data || {};
     if (m.t === 'onde'){ if (jogo.ash) canalAdmin.postMessage({ t: 'pos', x: +jogo.ash.x.toFixed(2), z: +jogo.ash.z.toFixed(2), mapa: NOME }); }
@@ -3858,21 +3858,21 @@ try {
       else if (arq === 'habitats'){
         if (habitats) fetch('./data/habitats.json?t=' + Date.now()).then(r => r.json()).then(h => {
           habitats.areas = h?.areas || {}; habitats.generico = h?.generico || [];            // troca no lugar: o spawn lê habitats.* a cada rodada
-          Chat.sistema('Habitats recarregados (' + Object.keys(habitats.areas).length + ' áreas).');
+          Chat.sistema('Habitats reloaded (' + Object.keys(habitats.areas).length + ' áreas).');
         }).catch(() => {});
       }
       // Fase 3: músicas, diálogos, traduções e falas dos NPCs valem na hora (o resto do que entra no boot pede F5)
-      else if (arq === 'musicas') fetch('./data/musicas.json?t=' + Date.now()).then(r => r.json()).then(j => { MUSICAS = j; atualizarMusica(); Chat.sistema('Músicas recarregadas.'); }).catch(() => {});
-      else if (arq === 'dialogos') Dialogos.recarregar().then(() => Chat.sistema('Diálogos recarregados.'));
-      else if (arq === 'traducoes') I18n.recarregar().then(() => Chat.sistema('Traduções recarregadas.'));
+      else if (arq === 'musicas') fetch('./data/musicas.json?t=' + Date.now()).then(r => r.json()).then(j => { MUSICAS = j; atualizarMusica(); Chat.sistema('Music reloaded.'); }).catch(() => {});
+      else if (arq === 'dialogos') Dialogos.recarregar().then(() => Chat.sistema('Dialogue reloaded.'));
+      else if (arq === 'traducoes') I18n.recarregar().then(() => Chat.sistema('Translations reloaded.'));
       else if (arq === 'npcs_glb') fetch('./data/npcs_glb.json?t=' + Date.now()).then(r => r.json()).then(j => {
         for (const k of Object.keys(NPCS_GLB)) if (!(k in j)) delete NPCS_GLB[k];
         Object.assign(NPCS_GLB, j); let n = 0;
         for (const e of jogo.npcs || []){ const i = NPCS_GLB[e.cfg]; if (i && !e.treino){ e.falas = i.falas || []; n++; } }   // treinador/líder fala o do arquivo dele
-        Chat.sistema('Falas dos NPCs recarregadas (' + n + ' neste mapa).');
+        Chat.sistema('NPC lines reloaded (' + n + ' neste mapa).');
       }).catch(() => {});
-      else if (m.cenario){ if (arq === NOME) Chat.sistema('O painel alterou este mapa (cenário/áreas) — recarregue o jogo (Ctrl+Shift+R) pra ver.'); }
-      else if (/^[\w-]{1,40}$/.test(arq)) Chat.sistema('O painel alterou "' + arq + '" — recarregue o jogo (Ctrl+Shift+R) pra aplicar.');
+      else if (m.cenario){ if (arq === NOME) Chat.sistema('The panel changed this map (scenery/areas) — reload the game (Ctrl+Shift+R) to see it.'); }
+      else if (/^[\w-]{1,40}$/.test(arq)) Chat.sistema('The panel changed "' + arq + '" — reload the game (Ctrl+Shift+R) to apply it.');
     }
   };
 } catch {}
@@ -4310,7 +4310,7 @@ async function chegarChefe(glb = 'pm0249_00'){
   } catch {}
   jogo.luzNormal = { sol: sol.intensity, fog: cena.fog.color.clone(), ceu: cena.background.clone() };
   sol.intensity = 1.1; cena.fog.color.set('#5f6f78'); cena.background.set('#5f6f78');
-  flutuar(ash, S.name + ' está chegando!', '#ffd23a');
+  flutuar(ash, S.name + ' is coming!', '#ffd23a');
 }
 function clarao(dur = 0.7){
   let el = document.getElementById('clarao');
@@ -4348,7 +4348,7 @@ function montarChefeRaid(s, reg){
     efeito('FX_Evolution2', s.peito, s.altura, { escala: 2.2 });           // clarão de chegada (o 'Fuhuo' do chefão local pede uma textura que não existe: 404 no console)
     efeito('00016_Hit', s.peito, 1, { escala: 2.2 });                      // rajada de vento
     Som.tocar('skill/Explosion', { volume: 0.8 }); setTimeout(() => Som.tocar('skill/Uproar', { volume: 0.8 }), 700);
-    flutuar(s, s.nome + ' apareceu!', '#ffd23a');
+    flutuar(s, s.nome + ' appeared!', '#ffd23a');
   };
   chegar();
 }
@@ -4394,7 +4394,7 @@ function atualizarChefe(dt){
     } else if (c.estado === 'rugindo' && c.t > 1.9){
       c.estado = 'atacando'; c.travaAnim = 0; c.anim = null; tocarAnim(c, 'Idle');
       jogo.selvagens.push(c); jogo.foco = null;
-      flutuar(ash, 'é com você!', '#ffd23a');
+      flutuar(ash, "you're up!", '#ffd23a');
     }
   } else {
     hudChefe(c);
@@ -4837,7 +4837,7 @@ function volumeDaDistancia(e, base = 1){
   return base * (1 - (d - SOM_PERTO) / (SOM_LONGE - SOM_PERTO));
 }
 function aplicarGolpe(atacante, defensor, golpe, dano, eff){
-  flutuar(defensor, eff === 0 ? 'imune' : '−' + dano, eff > 1 ? '#86ef5f' : eff < 1 ? '#8c9ab7' : '#ffffff');
+  flutuar(defensor, eff === 0 ? 'immune' : '−' + dano, eff > 1 ? '#86ef5f' : eff < 1 ? '#8c9ab7' : '#ffffff');
   efeito(golpe.efeito + '_Hit', defensor.peito, defensor.altura, atacante?.peito ? { olhar: atacante.peito } : {});   // rotação do alvo: de frente pro atacante
   /* A SUA batalha nunca abaixa: o que entra na régua é o golpe dos outros e o dos selvagens longe. */
   const meu = atacante === jogo.pika || defensor === jogo.pika || atacante === jogo.ash || defensor === jogo.ash;
@@ -4862,7 +4862,7 @@ function desmaiar(s, meu = true){                                      // meu (1
   if (s.raid){                                                            // RAID AO VIVO: o servidor derrubou o chefe — sem captura, sem missão; o prêmio vem no raid_fim
     tocarUma(s, 'Dead'); s.estado = 'desmaiado'; s.desmaio = 1e9; s.investida = null; s.alvoX = null; s.hp = 0;
     if (jogo.alvo === s) jogo.alvo = null;
-    flutuar(s, s.nome + ' caiu!', '#ffd23a');
+    flutuar(s, s.nome + ' fainted!', '#ffd23a');
     return;
   }
   tocarUma(s, 'Dead');
@@ -4881,11 +4881,11 @@ function desmaiar(s, meu = true){                                      // meu (1
      responde "longe demais (X m)" em vez de mentir "derruba ele primeiro". Medido: com um golpe de
      alcance 6 o parceiro derruba a 12 m do Ash, bem fora dos 9 m da bola. */
   if (jogo.alvo === s && jogo.ash && Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) <= RAIO_BOLA) jogo.alvo = dePeMaisPerto(s) || s;
-  flutuar(s, 'desmaiou! F joga a bola', '#ffd23a');
+  flutuar(s, 'fainted! F throws the ball', '#ffd23a');
 }
 function morrer(e){
   if (!(e.raid && e.estado === 'desmaiado')) tocarUma(e, 'Dead');         // chefe da raid já caído: não repete a queda
-  if (e === jogo.pika){ __boot.aviso('parceiro desmaiou', { hp: e.hp, time: (jogo.time || []).length, evoluindo: !!jogo.evoluindo, trocando: !!jogo.trocandoSeguidor }); e.desmaiado = 1e9; e.amizade = Math.max(0, (e.amizade ?? 70) - 1); flutuar(e, 'desmaiou', '#e45670'); jogo.ordem = null; pendentes.push({ t: 1.6, fn: aposDesmaio }); return; }   // fica desmaiado até um Reanimador (como nos jogos); −1 de amizade
+  if (e === jogo.pika){ __boot.aviso('parceiro desmaiou', { hp: e.hp, time: (jogo.time || []).length, evoluindo: !!jogo.evoluindo, trocando: !!jogo.trocandoSeguidor }); e.desmaiado = 1e9; e.amizade = Math.max(0, (e.amizade ?? 70) - 1); flutuar(e, 'fainted', '#e45670'); jogo.ordem = null; pendentes.push({ t: 1.6, fn: aposDesmaio }); return; }   // fica desmaiado até um Reanimador (como nos jogos); −1 de amizade
   if (e.area != null) areaRespawn.set(e.area, Date.now() + 12000 + Math.random() * 8000);   // a área respira antes de repor
   e.estado = 'morto';
   if (jogo.alvo === e) jogo.alvo = null;
@@ -4941,7 +4941,7 @@ if (CONTA.modo === 'conta' && !jogo.atalhos.some(a => a && a.tipo === 'montaria'
   const vago = jogo.atalhos.findIndex(a => !a);
   if (vago >= 0){ jogo.atalhos[vago] = { tipo: 'montaria', glb: 'pm0131_00', nome: 'Lapras', icone: './ui/mon/pm0131.png' }; gravarLS('atalhos', jogo.atalhos); }
 }
-function definirAtalho(i, b){ if (i < 0 || i >= ATALHOS_N) return; jogo.atalhos[i] = b || null; gravarLS('atalhos', jogo.atalhos); pintarAtalhos(true); if (b && jogo.ash) flutuar(jogo.ash, b.nome + ' no atalho ' + ATALHOS_TECLAS[i], '#8ec5ff'); }
+function definirAtalho(i, b){ if (i < 0 || i >= ATALHOS_N) return; jogo.atalhos[i] = b || null; gravarLS('atalhos', jogo.atalhos); pintarAtalhos(true); if (b && jogo.ash) flutuar(jogo.ash, b.nome + ' on shortcut ' + ATALHOS_TECLAS[i], '#8ec5ff'); }
 function abrirSeletorAtalho(i){ Som.destravar(); Menus.abrirAtalho?.(i); }
 /* ===== Desmaio e Reanimador (como nos jogos): quem desmaia FICA desmaiado até um Reanimador (metade do HP; Máximo: tudo) — depois o
    Centro Pokémon fará isso de graça. Parceiro em campo cai → passada a animação, o próximo do time em condições entra sozinho; se
@@ -4963,9 +4963,9 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
      já não tentava, mas a grade do time chama o Reanimador direto por aqui — e aqui o item sumia da mochila do aparelho e o
      Pokémon aparecia de pé na tela enquanto o servidor mantinha os dois como estavam. Dentro do corredor, o jogador ia lutar
      contando com um Pokémon que não existe. */
-  if (eliteEstado.corrida){ flutuar(jogo.ash, 'na Elite Four não tem cura: as cinco lutas são uma corrida só', '#ffd23a'); return false; }
+  if (eliteEstado.corrida){ flutuar(jogo.ash, 'no healing in the Elite Four: the five fights are one run', '#ffd23a'); return false; }
   const it = lerLS('itens', {}), t = jogo.time[i]; if (!t || !(it[id] > 0)) return false;
-  if (!estaKO(t, i)){ flutuar(jogo.ash, t.nome + ' não está desmaiado', '#ffd23a'); return false; }
+  if (!estaKO(t, i)){ flutuar(jogo.ash, t.nome + ' is not fainted', '#ffd23a'); return false; }
   const cheio = /m[aá]x/i.test(nome);
   bolsaOp('usar', { item: +id, uid: uidAlvo });                           // com conta, quem desconta e quem reanima de verdade é o SERVIDOR
   it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
@@ -4974,7 +4974,7 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
     if (p.recolhido){ p.recolhido = false; p.pivo.visible = true; const a = jogo.ash; teleportar(p, livre(a.x - 1.2, a.z + 0.8) ? a.x - 1.2 : a.x, livre(a.x - 1.2, a.z + 0.8) ? a.z + 0.8 : a.z); tocarUma(p, 'Appear'); efeito('Pokeball_Go', p.peito, 0.6); }
     guardarEstadoAtivo();
   } else { t.hp = cheio ? (t.maxHp || 1) : Math.ceil((t.maxHp || 1) / 2); t.koAte = 0; gravarLS('time', jogo.time); }
-  Som.tocar('ui/sound_pkmnhealing', { volume: .6 }); flutuar(jogo.ash, nome + ' → ' + t.nome, '#8ef58e'); Chat.sistema(nome + ' usado em ' + t.nome + (cheio ? ' (HP cheio).' : ' (metade do HP).'));
+  Som.tocar('ui/sound_pkmnhealing', { volume: .6 }); flutuar(jogo.ash, nome + ' → ' + t.nome, '#8ef58e'); Chat.sistema(nome + ' used on ' + t.nome + (cheio ? ' (HP full).' : ' (half HP).'));
   pintarTime(true); pintarAtalhos(true); return true;
 }
 /** A cura da Joy (papel 'cura'): o time inteiro e o parceiro em campo voltam a 100%, desmaios removidos. */
@@ -4991,7 +4991,7 @@ function curarTime(n){
     efeito('MountIn', p.peito, p.altura, { vidaMax: 1.2 });
   }
   Som.tocar('ui/sound_pkmnhealing', { volume: .8, prio: true });
-  flutuar(jogo.ash, 'time curado! ♥', '#8ef58e'); Chat.sistema((n?.nome || 'Joy') + ' curou o seu time!');
+  flutuar(jogo.ash, 'party healed! ♥', '#8ef58e'); Chat.sistema((n?.nome || 'Joy') + ' healed your party!');
   if (n?.papel === 'cura' && jogo.missoesOk) Missoes.evento({ tipo: 'cura', cfg: n.cfg, cena: NOME });   // 20/09: a cena vai junto — passo de missão que pede a Joy DE UM LUGAR só fecha naquele Centro
   guardarEstadoAtivo(); pintarTime(true);
 }
@@ -5052,24 +5052,24 @@ function aposDesmaio(){
      resposta. O cliente escolhia sozinho o próximo vivo DEPOIS do ativo, enquanto o servidor pega o primeiro vivo da ordem:
      com três Pokémon de pé os dois davam nomes diferentes e a tela passava a mostrar um enquanto o servidor jogava com outro. */
   if (prox >= 0 && jogo.turno?.serv){ console.log('[desmaio] batalha do servidor: o substituto vem no lance `troca`'); return; }
-  if (prox >= 0){ Chat.sistema(p.nome + ' desmaiou — ' + jogo.time[prox].nome + ' entra no lugar.'); trocarPara(prox, { forcado: true }); return; }
+  if (prox >= 0){ Chat.sistema(p.nome + ' fainted — ' + jogo.time[prox].nome + ' is coming out.'); trocarPara(prox, { forcado: true }); return; }
   if (jogo.raidArena){                                                    // RAID AO VIVO (14/09): ninguém é mandado pro Centro no meio da raid — o parceiro volta pra bola e o jogador assiste
     if (!p.recolhido){ p.recolhido = true; p.pivo.visible = false; }
-    jogo.ordem = null; flutuar(jogo.ash, 'apagou!', '#e45670');
-    Chat.sistema('Todos os seus Pokémon desmaiaram! Fique assistindo: quando a raid acabar você volta pra onde estava.');
+    jogo.ordem = null; flutuar(jogo.ash, 'wiped out!', '#e45670');
+    Chat.sistema('All your Pokémon fainted! Keep watching: when the raid ends you go back where you were.');
     __boot.aviso('aposDesmaio na raid', { mapa: NOME });
     return;
   }
   if (!p.recolhido){ p.recolhido = true; p.pivo.visible = false; }                                    // sozinho: volta pra bola até o apagão passar
-  flutuar(jogo.ash, 'apagou!', '#e45670');
+  flutuar(jogo.ash, 'wiped out!', '#e45670');
   const centro = lerLS('ultimoCentro', null);                                                          // gravado no atravessar ao entrar num Centro (áreas 1401–1411)
   const alvo = (centro?.mapa && centro.chegada) ? centro : RESPAWN_PADRAO;                             // sem Centro ainda: laboratório do Oak
   const noCentro = alvo === centro;
   if (alvo.mapa === NOME){                                                                             // apagou DENTRO do lugar de respawn: cura ali mesmo
-    Chat.sistema('Todos os seus Pokémon desmaiaram! ' + (noCentro ? 'A Joy' : 'O Professor Oak') + ' cuida do seu time.');
+    Chat.sistema('All your Pokémon fainted! ' + (noCentro ? 'Joy' : 'Professor Oak') + ' is looking after your party.');
     pendentes.push({ t: 1.5, fn: () => curarTime(noCentro ? null : { nome: 'Professor Oak' }) }); return;
   }
-  Chat.sistema('Todos os seus Pokémon desmaiaram! Você acorda ' + (noCentro ? 'no último Centro Pokémon…' : 'no laboratório do Professor Oak…'));
+  Chat.sistema('All your Pokémon fainted! You wake up ' + (noCentro ? 'at the last Pokémon Center…' : 'in Professor Oak\'s lab…'));
   for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; Ind.restaurarPP(t); } gravarLS('time', jogo.time);   // guardarEstadoAtivo já rodou no topo: XP do ativo preservado
   if (comConta()) Rede.pedirVida('curar').then(r => { if (r?.erro){ console.warn('curar no respawn recusado:', r.erro); __boot.aviso('curar no respawn recusado', { erro: r.erro }); } }).catch(e => console.warn('curar no respawn:', e));                                               // 12/09: o HP é do servidor — sem isto a página seguinte lia hp 0 dele e desmaiava de novo (ele aceita a cura com o time todo KO)
   p.hp = p.maxHp; p.desmaiado = 0;                                                                     // em memória também: qualquer gravação no unload sai curada
@@ -5102,7 +5102,7 @@ function usarItem(id, nome = '', aviso = null){
     return ok;
   }
   const p = jogo.pika, it = lerLS('itens', {});
-  if (!p || jogo.semParceiro) return recusa('você ainda não tem um Pokémon: fale com o Professor Oak');   // jogo novo: o Pikachu provisório (escondido) não é do jogador, a poção não pode ir nele
+  if (!p || jogo.semParceiro) return recusa('you do not have a Pokémon yet: talk to Professor Oak');   // jogo novo: o Pikachu provisório (escondido) não é do jogador, a poção não pode ir nele
   if (!(it[id] > 0)) return recusa('você não tem mais ' + (nome || 'esse item'), null, '#f58e8e', true);   // atalho: quem avisa "sem X" é o usarAtalho
   /* OS QUATRO RESTAURADORES DE PP (20/09, relato do chaospider). O "PV" do nome deles é o PP do golpe, não ponto de vida —
      e como a conta de cura logo abaixo é feita pelo NOME, nenhum casava com Poção/Super/Hiper e os quatro davam 20 de HP.
@@ -5132,7 +5132,7 @@ function usarItem(id, nome = '', aviso = null){
   p.hp = Math.min(p.maxHp || p.hp, (p.hp || 0) + cura);
   bolsaOp('usar', { item: +id, uid: uidParceiro() });                     // com conta, quem desconta e quem cura de verdade é o SERVIDOR
   it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
-  flutuar(p, 'curou ' + Math.min(cura, 999) + ' HP', '#8ef58e'); Som.tocar('ui/sound_pkmnhealing', { volume: .6 });
+  flutuar(p, 'restored ' + Math.min(cura, 999) + ' HP', '#8ef58e'); Som.tocar('ui/sound_pkmnhealing', { volume: .6 });
   aviso?.(p.nome + ' recuperou ' + Math.round(p.hp - hpAntes) + ' HP', true);
   guardarEstadoAtivo(); pintarAtalhos(true);
   passarTurno();                                                          // na batalha do servidor, o inimigo joga depois
@@ -5142,8 +5142,8 @@ function usarAtalho(i){
   const b = jogo.atalhos[i]; if (!jogo.ash) return;
   if (!b){ abrirSeletorAtalho(i); return; }
   if (b.tipo === 'montaria'){ montar(b.glb, { trocar: true }); return; }   // outra montaria assume no lugar (sem pisar no chão); a mesma = desmonta
-  if (b.bola){ if ((jogo.bolas[b.id] || 0) <= 0){ flutuar(jogo.ash, 'sem ' + b.nome, '#f58e8e'); return; } jogo.bolaSel = String(b.id); gravarLS('bolaSel', jogo.bolaSel); flutuar(jogo.ash, b.nome + ' no F', '#ffd23a'); pintarAtalhos(true); return; }
-  if (!usarItem(b.id, b.nome) && !(lerLS('itens', {})[b.id] > 0)) flutuar(jogo.ash, 'sem ' + b.nome, '#f58e8e');
+  if (b.bola){ if ((jogo.bolas[b.id] || 0) <= 0){ flutuar(jogo.ash, 'no ' + b.nome, '#f58e8e'); return; } jogo.bolaSel = String(b.id); gravarLS('bolaSel', jogo.bolaSel); flutuar(jogo.ash, b.nome + ' on F', '#ffd23a'); pintarAtalhos(true); return; }
+  if (!usarItem(b.id, b.nome) && !(lerLS('itens', {})[b.id] > 0)) flutuar(jogo.ash, 'no ' + b.nome, '#f58e8e');
 }
 function pintarAtalhos(forcar = false){
   const el = $('atalhos'); if (!el) return;
@@ -5254,7 +5254,7 @@ async function verBolaDoOutro(s, m){
     if (chac >= 4){
       const luz = anim.getObjectByName('ee105_03_succeeded_light') || anim;
       efeito('Capture_OK', luz, 0.6); Som.tocar('ui/sound_pkmnget', { volume: .5 });
-      flutuar(de || s, (m.por || 'alguém') + ' capturou ' + s.nome + '!', '#8ef58e');
+      flutuar(de || s, (m.por || 'someone') + ' caught ' + s.nome + '!', '#8ef58e');
       await dorme(2000);
       s.pivo.scale.setScalar(escBase);                                    // o corpo some pelo `sumiu capturado` do servidor
     } else {
@@ -5262,7 +5262,7 @@ async function verBolaDoOutro(s, m){
       await dorme(Math.max(0.17, tocar('Open')) * 1000);
       grupo.visible = false; await dorme(100);
       if (s.estado !== 'guardado'){ s.pivo.visible = true; await animar(120, k => s.pivo.scale.setScalar(escBase * (0.1 + 0.9 * k))); if (s.rotulo) s.rotulo.style.display = ''; }
-      flutuar(s, 'escapou da bola de ' + (m.por || 'alguém'), '#f58e8e');
+      flutuar(s, 'broke free of ' + (m.por || 'someone') + "'s ball", '#f58e8e');
       await dorme(400);
     }
   } catch (e){ console.warn('bola do outro:', e); }
@@ -5273,22 +5273,22 @@ async function verBolaDoOutro(s, m){
 async function jogarBola(){
   const { ash } = jogo, id = jogo.bolaSel;
   if (!ash) return;
-  if (jogo.turno){ flutuar(ash, 'não se captura Pokémon de treinador!', '#f58e8e'); return; }
+  if (jogo.turno){ flutuar(ash, "you can't catch a trainer's Pokémon!", '#f58e8e'); return; }
   let s = jogo.alvo;
   if (!s || s.estado !== 'desmaiado') s = desmaiadoMaisPerto() || s;   // F sem alvo caído: o caído mais perto
-  if (!s || s.estado === 'morto' || s.estado === 'capturando' || s.estado === 'guardado'){ flutuar(ash, 'escolha um alvo (Tab ou clique)', '#ffd23a'); return; }
-  if (s.raid){ flutuar(ash, 'o Mew da raid não pode ser capturado', '#ffd23a'); Chat.sistema('O Mew da raid não pode ser capturado: derrube ele junto com o grupo e o prêmio chega no fim.'); return; }   // RAID AO VIVO (14/09)
-  if (s.chefe){ flutuar(ash, 'chefão não cabe numa bola', '#f58e8e'); return; }
-  if (s.estado !== 'desmaiado'){ flutuar(ash, 'derruba ele primeiro: só captura desmaiado', '#ffd23a'); return; }
-  if ((jogo.bolas[id] || 0) <= 0){ flutuar(ash, 'sem ' + (BOLAS[id]?.[0] || 'bola'), '#f58e8e'); return; }
+  if (!s || s.estado === 'morto' || s.estado === 'capturando' || s.estado === 'guardado'){ flutuar(ash, 'pick a target (Tab or click)', '#ffd23a'); return; }
+  if (s.raid){ flutuar(ash, 'the raid Mew cannot be caught', '#ffd23a'); Chat.sistema('The raid Mew cannot be caught: take it down with the group and the prize comes at the end.'); return; }   // RAID AO VIVO (14/09)
+  if (s.chefe){ flutuar(ash, "the boss won't fit in a ball", '#f58e8e'); return; }
+  if (s.estado !== 'desmaiado'){ flutuar(ash, 'knock it out first: you only catch fainted Pokémon', '#ffd23a'); return; }
+  if ((jogo.bolas[id] || 0) <= 0){ flutuar(ash, 'no ' + (BOLAS[id]?.[0] || 'ball'), '#f58e8e'); return; }
   const dist = Math.hypot(s.x - ash.x, s.z - ash.z);
-  if (dist > RAIO_BOLA){ flutuar(ash, 'longe demais (' + dist.toFixed(0) + ' m)', '#ffd23a'); return; }
-  if (bolasVivas.length >= MAX_BOLAS_NO_AR){ flutuar(ash, 'espera as bolas caírem', '#ffd23a'); return; }
+  if (dist > RAIO_BOLA){ flutuar(ash, 'too far (' + dist.toFixed(0) + ' m)', '#ffd23a'); return; }
+  if (bolasVivas.length >= MAX_BOLAS_NO_AR){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }
   let bola = null;
   /* 14/09 (Syvel, Guts: "capturou mas não entrou no time"): com a conexão caída os selvagens da rede viram locais e a bola sorteava
      AQUI — "Capturou!" sem o servidor saber. Com conta, selvagem que não é de rede não recebe bola (a bola fica na bolsa). */
-  if (Conta.estado().modo === 'conta' && !s.rede && !Rede.selvagensDoAparelho()){ flutuar(ash, 'sem conexão com o servidor', '#f58e8e'); Chat.sistema('⚠ Sem conexão com o servidor: a bola não foi jogada. Espera reconectar e tenta de novo.'); return; }
-  if (s.emVoo || (s.rede && Mundo.capturaPendente(s.id))){ flutuar(ash, 'espera as bolas caírem', '#ffd23a'); return; }   // 18/09: UMA bola por vez no mesmo selvagem — a 2ª antes de a 1ª terminar sobrescrevia a espera por id (world.mjs) e a 1ª acabava em "o servidor não respondeu"
+  if (Conta.estado().modo === 'conta' && !s.rede && !Rede.selvagensDoAparelho()){ flutuar(ash, 'no connection to the server', '#f58e8e'); Chat.sistema('⚠ No connection to the server: the ball was not thrown. Wait to reconnect and try again.'); return; }
+  if (s.emVoo || (s.rede && Mundo.capturaPendente(s.id))){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }   // 18/09: UMA bola por vez no mesmo selvagem — a 2ª antes de a 1ª terminar sobrescrevia a espera por id (world.mjs) e a 1ª acabava em "o servidor não respondeu"
   try {
     jogo.bolas[id]--; gravarLS('bolas', jogo.bolas);
     const g = await modeloBola(id);
@@ -5343,17 +5343,17 @@ async function jogarBola(){
     if (promCapt){                                                       // mundo compartilhado: as chacoalhadas vêm do servidor (se ele não responder, sorteia aqui)
       const rs = await promCapt;
       chac = rs ? rs.chac : (comConta() ? 0 : sortearCaptura(s, bonus)); rsErro = rs?.erro || (!rs && comConta() ? 'sem resposta' : null); rsMon = rs?.mon || null;   // 14/09 (Guts, Ponyta): sem resposta do servidor a bola ESCAPA — antes sorteava aqui, mostrava 'capturou' e depois 'não entrou no time'
-      if (!rs && comConta()) Chat.sistema('⚠ O servidor não respondeu à captura: a bola escapou. Tenta de novo.');
-      if (rsErro === 'outro') Chat.sistema('Outro treinador já jogou a bola nesse ' + s.nome + '.');
-      if (rsErro === 'acordado') Chat.sistema('O ' + s.nome + ' acordou antes da bola chegar — derruba de novo e joga logo.');   // 14/09: antes era só "escapou (0 chacoalhadas)"
-      if (rsErro === 'sumiu') Chat.sistema('O ' + s.nome + ' já tinha sumido quando a bola chegou.');
+      if (!rs && comConta()) Chat.sistema('⚠ The server did not answer the catch: the ball broke free. Try again.');
+      if (rsErro === 'outro') Chat.sistema('Another trainer already threw a ball at that ' + s.nome + '.');
+      if (rsErro === 'acordado') Chat.sistema(s.nome + ' woke up before the ball arrived — knock it out again and throw quickly.');   // 14/09: antes era só "escapou (0 chacoalhadas)"
+      if (rsErro === 'sumiu') Chat.sistema(s.nome + ' was already gone when the ball arrived.');
       if (rs && rsErro && comConta()){ jogo.bolas[id] = (jogo.bolas[id] || 0) + 1; gravarLS('bolas', jogo.bolas); }   // 16/09: erro explícito = o servidor NÃO tirou a bola da bolsa; devolve a contagem local (antes só voltava no F5)
     } else chac = sortearCaptura(s, bonus);
     if (chac >= 4 && !s.rede && comConta()){                             // servidor dev local (soloWilds): o selvagem é do aparelho, mas quem cria o Pokémon (uid, IVs, natureza, shiny) é o servidor
       const rs = await Rede.pedirPosse('capturar', { pokemon: { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv } });
       rsMon = rs?.pokemon || null; rsErro = rs?.erro || null;
       if (rsMon){ s.ivs = rsMon.ivs; s.natureza = rsMon.natureza; }      // a mensagem de "Capturou" mostra o que ficou valendo
-      else { chac = 0; Chat.sistema('⚠ O servidor não registrou a captura (' + (rsErro || 'sem resposta') + '): a bola escapou. Tenta de novo.'); }
+      else { chac = 0; Chat.sistema('⚠ The server did not record the catch (' + (rsErro || 'no reply') + '): the ball broke free. Try again.'); }
     }
     for (let n = 1; n <= Math.max(1, chac); n++){
       efeito('Capture_Shake' + n, anim, 0.6);
@@ -5364,17 +5364,17 @@ async function jogarBola(){
       efeito('Capture_OK', luz, 0.6);
       Som.tocar('ui/sound_pkmnget', { volume: .8, prio: true });
       Ind.garantir(s);
-      flutuar(ash, 'capturou ' + s.nome + '!', '#8ef58e'); Chat.sistema('Capturou ' + s.nome + ' Lv' + s.lv + ' com ' + (BOLAS[id]?.[0] || 'bola') + '! Natureza ' + s.natureza + ' (' + Ind.descNatureza(s.natureza) + '), IV ' + Ind.somaIV(s) + '/' + Ind.IV_TOTAL + '.');
+      flutuar(ash, 'caught ' + s.nome + '!', '#8ef58e'); Chat.sistema('Caught ' + s.nome + ' Lv' + s.lv + ' with ' + (BOLAS[id]?.[0] || 'ball') + '! Nature ' + s.natureza + ' (' + Ind.descNatureza(s.natureza) + '), IV ' + Ind.somaIV(s) + '/' + Ind.IV_TOTAL + '.');
       let registro = { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv, sexo: s.sexo || undefined, shiny: s.shiny || undefined, exp: Evolucao.expPara(s.dex, s.lv), amizade: Evolucao.amizadeBase(s.dex), ivs: s.ivs, natureza: s.natureza, movs: Ind.idsDe(s).map(Ind.novoGolpe), quando: Date.now() };
       /* POSSE (06/09): com conta, quem cria o Pokémon é o SERVIDOR — ele manda o registro com `uid` junto do `scapt`, e é esse
          que entra no time (o `PUT /save` recusa Pokémon sem uid dele). Sem conta (jogo local) segue como sempre. */
       if (comConta()){
-        if (!rsMon){ Chat.sistema('⚠ A captura não foi registrada no servidor (' + (rsErro || 'sem resposta') + '): ' + s.nome + ' não entrou no time.'); guardarSelvagem(s); return; }
+        if (!rsMon){ Chat.sistema('⚠ The catch was not recorded on the server (' + (rsErro || 'no reply') + '): ' + s.nome + ' did not join the party.'); guardarSelvagem(s); return; }
         registro = { ...registro, ...rsMon };
       }
-      if (registro.lv > tetoNivel()) Chat.sistema('🔒 ' + registro.nome + ' Lv ' + registro.lv + ' passa do seu teto (Lv ' + tetoNivel() + '): só vai obedecer depois de ' + proximoTeto() + '.');
+      if (registro.lv > tetoNivel()) Chat.sistema('🔒 ' + registro.nome + ' Lv ' + registro.lv + ' is above your cap (Lv ' + tetoNivel() + '): it will only obey after ' + proximoTeto() + '.');
       if (jogo.time.length < 6){ jogo.time.push(registro); gravarLS('time', jogo.time); }
-      else { const cx = lerLS('caixa', []); cx.push(registro); gravarLS('caixa', cx); Chat.sistema(s.nome + ' foi pra caixa (time cheio).'); }
+      else { const cx = lerLS('caixa', []); cx.push(registro); gravarLS('caixa', cx); Chat.sistema(s.nome + ' went to the Box (party full).'); }
       if (jogo.missoesOk) Missoes.evento({ tipo: 'captura', dex: s.dex });
       Conhecimento.evento('pego', { dex: s.dex, area: s.area ?? null, shiny: !!s.shiny, sexo: s.sexo });   // Pokédex de conhecimento
       document.getElementById('segue-ctl')?.__encher?.(); pintarTime(true);
@@ -5402,7 +5402,7 @@ async function jogarBola(){
         s.estado = 'desmaiado'; s.desmaio = Math.max(s.desmaio || 0, 4); s.rotDesm = undefined;   // escapou: segue caído, dá tempo de outra bola
         if (s.rotulo) s.rotulo.style.display = '';
         if (s.rede && rsErro === 'sumiu'){ Mundo.esquecer(s.id); s.rede = false; s.remoto = false; morrer(s); }   // o servidor diz que ele já não está mais ali. 16/09 (rukintk): SÓ nesse caso — com 'outro'/'acordado' ele continua da rede. 18/09 (katanarie): morre aqui em vez de ficar caído "local" — a bola seguinte nele caía em "sem conexão com o servidor" (o "erro de rede" do relato)
-        else { flutuar(s, 'escapou! (' + chac + ' chacoalhada' + (chac === 1 ? '' : 's') + ')', '#f58e8e'); Chat.sistema(s.nome + ' escapou da ' + (BOLAS[id]?.[0] || 'bola') + ' (' + chac + ' chacoalhada' + (chac === 1 ? '' : 's') + ').'); }
+        else { flutuar(s, 'broke free! (' + chac + ' shake' + (chac === 1 ? '' : 's') + ')', '#f58e8e'); Chat.sistema(s.nome + ' broke free of the ' + (BOLAS[id]?.[0] || 'ball') + ' (' + chac + ' shake' + (chac === 1 ? '' : 's') + ').'); }
       }
       await dorme(400);
     }
@@ -5627,7 +5627,7 @@ async function soltarDaBola(glb, { recolher = true } = {}){
     try { [g, novo] = await Promise.all([modeloBola(jogo.bolaSel || 1001).catch(() => null), jogo.trocarSeguidor(glb)]); }
     catch (e){                                                               // 14/09 (l.neto, Pidgeotto com o GLB de nome errado → 404): o antigo ficava invisível e encolhido na bola, sem ninguém em campo
       if (velho?.pivo){ velho.pivo.visible = true; velho.pivo.scale.setScalar(esc0); }
-      if (jogo.ash) flutuar(jogo.ash, 'não consegui trocar: o modelo não carregou', '#f58e8e');
+      if (jogo.ash) flutuar(jogo.ash, 'could not switch: the model did not load', '#f58e8e');
       __boot.aviso('troca falhou', { glb, erro: String(e?.message || e).slice(0, 120) });
       throw e;
     }
@@ -5697,7 +5697,7 @@ function evolucaoDe(e){ return opcoesEvolucao(e).find(o => o.pode && o.glb) || n
 async function usarItemEvolucao(id){
   const p = jogo.pika; if (!p) return false;
   const o = opcoesEvolucao(p).find(x => x.pode && x.glb && String(x.consome) === String(id));
-  if (!o){ flutuar(p, Evolucao.nomeItem(+id) + ' não tem efeito em ' + p.nome, '#ffd23a'); return false; }
+  if (!o){ flutuar(p, Evolucao.nomeItem(+id) + ' has no effect on ' + p.nome, '#ffd23a'); return false; }
   return evoluirParceiro(o);
 }
 /* XP como nos jogos: fórmula da Gen 5+ com a base exp da espécie derrotada e as curvas oficiais (data/exp.json). O parceiro
@@ -5716,11 +5716,11 @@ function ganharExp(p, d, ganhoFixo = null){                               // gan
     p.amizade = Math.min(255, (p.amizade ?? Evolucao.amizadeBase(p.dex)) + 2);
   }
   if (subiu){
-    flutuar(p, 'Lv ' + p.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' subiu pro Lv ' + p.lv + '!');
+    flutuar(p, 'Lv ' + p.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' grew to Lv ' + p.lv + '!');
     if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: p.lv });
     const prontas = opcoesEvolucao(p).filter(o => o.pode && o.glb);      // 20/09: avisa TODAS as formas prontas (Eevee), não só a primeira da tabela
-    if (prontas.length === 1) Chat.sistema('✧ ' + p.nome + ' já pode evoluir para ' + prontas[0].nome + (prontas[0].itemNome ? ' (usa ' + prontas[0].itemNome + ')' : '') + '!');
-    else if (prontas.length > 1) Chat.sistema('✧ ' + p.nome + ' já pode evoluir para ' + prontas.map(o => o.nome).join(', ') + ' — escolha no ✧ da grade.');
+    if (prontas.length === 1) Chat.sistema('✧ ' + p.nome + ' can now evolve into ' + prontas[0].nome + (prontas[0].itemNome ? ' (use ' + prontas[0].itemNome + ')' : '') + '!');
+    else if (prontas.length > 1) Chat.sistema('✧ ' + p.nome + ' can now evolve into ' + prontas.map(o => o.nome).join(', ') + ' — pick on the ✧ in the grid.');
   }
   if (guardou) avisarReserva(p, guardou);
   guardarEstadoAtivo(); pintarTime(true);
@@ -5743,7 +5743,7 @@ async function evoluirParceiro(opcao = null){
   /* NÃO SE EVOLUI NO MEIO DA BATALHA POR TURNOS (revisão de 20/09). O ✧ da grade do time continuava valendo com a luta de pé:
      o Pokémon trocava de espécie enquanto o servidor ainda tinha a ficha antiga em campo, e a pergunta das formas cobria o
      painel do turno. Numa corrida da Elite isso custa as cinco lutas. Fora da batalha nada muda. */
-  if (jogo.turno){ flutuar(p, 'não dá pra evoluir no meio da batalha', '#ffd23a'); return false; }
+  if (jogo.turno){ flutuar(p, "can't evolve in the middle of a battle", '#ffd23a'); return false; }
   /* MAIS DE UMA EVOLUÇÃO PRONTA (20/09, chaospider no #bugs "Evolução Eevee"): o ✧ da grade do HUD também caía sempre na
      PRIMEIRA regra da espécie (Eevee com três pedras na mochila só virava Vaporeon). Sem opção escolhida, pergunta. */
   if (!opcao){
@@ -5756,13 +5756,13 @@ async function evoluirParceiro(opcao = null){
          virava Flareon e o Eevee continuava Eevee (medido). Se o parceiro mudou, ou a regra deixou de valer no meio (gastou a
          pedra em outro, caiu de nível), a evolução não sai. */
       if (jogo.pika !== p || !p.pivo || jogo.evoluindo || jogo.trocandoSeguidor || jogo.montaria || interagindo){
-        flutuar(jogo.pika || jogo.ash, 'a evolução era de ' + p.nome, '#ffd23a'); return false;
+        flutuar(jogo.pika || jogo.ash, 'that evolution was for ' + p.nome, '#ffd23a'); return false;
       }
-      if (!opcoesEvolucao(p).some(o => o.pode && o.glb && o.dex === opcao.dex)){ flutuar(p, 'não dá mais pra evoluir assim', '#ffd23a'); return false; }
+      if (!opcoesEvolucao(p).some(o => o.pode && o.glb && o.dex === opcao.dex)){ flutuar(p, "can't evolve that way anymore", '#ffd23a'); return false; }
     }
   }
   const i = membroAtivo(), t = jogo.time[i]; let alvo = opcao || evolucaoDe(p);
-  if (!alvo){ const o = opcoesEvolucao(p).find(x => x.glb); flutuar(p, o ? 'falta: ' + o.falta : 'não evolui', '#ffd23a'); return false; }
+  if (!alvo){ const o = opcoesEvolucao(p).find(x => x.glb); flutuar(p, o ? 'missing: ' + o.falta : 'does not evolve', '#ffd23a'); return false; }
   /* POSSE (06/09): com conta, quem autoriza a evolução é o SERVIDOR (confere a regra oficial com o nível/amizade do save).
      Pede ANTES de consumir a pedra: recusa não gasta item. */
   /* PEDRA CONFERIDA ANTES de pedir ao servidor (18/09 — zlevy26, chaospider e thesyvel no #bugs: "usei a Pedra do Trovão dentro do Mart,
@@ -5771,19 +5771,19 @@ async function evoluirParceiro(opcao = null){
      achava 0 quando o jogador tinha só UMA (a recém-comprada), avisava "sem Pedra do Trovão" e desistia com o servidor já evoluído; a
      forma nova só chegava no próximo save (a saída da loja). Com 2+ pedras passava, por isso parecia coisa da loja. Agora confere antes;
      depois do "sim" do servidor a evolução é fato e a animação segue. */
-  if (alvo.consome && !(lerLS('itens', {})[alvo.consome] > 0)){ flutuar(p, 'sem ' + Evolucao.nomeItem(alvo.consome), '#f58e8e'); return false; }
+  if (alvo.consome && !(lerLS('itens', {})[alvo.consome] > 0)){ flutuar(p, 'no ' + Evolucao.nomeItem(alvo.consome), '#f58e8e'); return false; }
   if (comConta()){
-    if (!t?.uid){ flutuar(p, 'este Pokémon ainda não está registrado no servidor', '#f58e8e'); return false; }
+    if (!t?.uid){ flutuar(p, 'this Pokémon is not registered on the server yet', '#f58e8e'); return false; }
     const r = await Rede.pedirPosse('evoluir', { uid: t.uid, item: alvo.consome ?? null, itens: lerLS('itens', {}) });
     if (r?.erro){ flutuar(p, r.erro, '#f58e8e'); return false; }
     if (r?.dex && r.dex !== alvo.dex) alvo = { ...alvo, dex: r.dex, glb: r.glb, nome: r.nome };   // o servidor escolheu outra ramificação
   }
-  if (alvo.consome){ if (!comConta()){ const it = lerLS('itens', {}); it[alvo.consome]--; if (it[alvo.consome] <= 0) delete it[alvo.consome]; gravarLS('itens', it); } Chat.sistema(Evolucao.nomeItem(alvo.consome) + ' usado em ' + p.nome + '.'); }   // pedra/cabo/item segurado: consome (com conta quem descontou foi o servidor, no posse_evoluir — a bolsa sem a pedra já chegou com a resposta)
+  if (alvo.consome){ if (!comConta()){ const it = lerLS('itens', {}); it[alvo.consome]--; if (it[alvo.consome] <= 0) delete it[alvo.consome]; gravarLS('itens', it); } Chat.sistema(Evolucao.nomeItem(alvo.consome) + ' used on ' + p.nome + '.'); }   // pedra/cabo/item segurado: consome (com conta quem descontou foi o servidor, no posse_evoluir — a bolsa sem a pedra já chegou com a resposta)
   jogo.evoluindo = true; jogo.trocandoSeguidor = true; interagindo = true; const nomeAntes = p.nome;
   const flash = flashTela();
   try {
     const carregando = new GLTFLoader().loadAsync('./scenery/mon/' + alvo.glb + '.glb').catch(() => null);   // aquece o cache
-    p.alvoX = null; p.travaAnim = 0; tocarAnim(p, 'Idle'); flutuar(p, 'está evoluindo…', '#ffe07a');
+    p.alvoX = null; p.travaAnim = 0; tocarAnim(p, 'Idle'); flutuar(p, 'is evolving…', '#ffe07a');
     Som.tocar('ui/sound_evolution', { volume: .8, prio: true });
     let raio = 8.7; try { raio = Part.raioNatural(await Part.carregar('FX_Evolution2')) || raio; } catch {}
     efeito('FX_Evolution2', p.peito, p.altura, { escala: Math.max(p.altura, 0.6) * 1.4 / raio });
@@ -5802,12 +5802,12 @@ async function evoluirParceiro(opcao = null){
     if (t){ t.lv = lv; t.maxHp = novo.maxHp; t.hp = novo.hp; t.exp = novo.exp; t.amizade = novo.amizade; t.movs = novo.movs; t.aprender = novo.aprender; gravarLS('time', jogo.time); }   // 18/09: golpes/fila da espécie nova também no registro (o arranjo leva pro servidor)
     const muda = comConta() ? null : Evolucao.regras(dexAntes).find(r => r.gatilho === 'muda');   // com conta o servidor ainda não registra o SEGUNDO Pokémon (Shedinja): fica pro jogo local   // Nincada → Ninjask + Shedinja na Pokébola vazia (vaga no time e uma Pokébola)
     if (muda){ const sp = porDex.get(muda.para), gm = sp && (ELENCO_JOGO.find(x => x.n === sp.n && /_00$/.test(x.glb)) || ELENCO_JOGO.find(x => x.n === sp.n));
-      if (gm && jogo.time.length < 6 && (jogo.bolas[1001] || 0) > 0){ jogo.bolas[1001]--; gravarLS('bolas', jogo.bolas); jogo.time.push({ dex: sp.n, glb: gm.glb, nome: sp.name, lv, exp: Evolucao.expPara(sp.n, lv), amizade: Evolucao.amizadeBase(sp.n), hp: 1, maxHp: 1, ivs: Ind.sortearIVs(), natureza: Ind.sortearNatureza(), quando: Date.now() }); gravarLS('time', jogo.time); Chat.sistema('Um ' + sp.name + ' apareceu na Pokébola vazia!'); } }
+      if (gm && jogo.time.length < 6 && (jogo.bolas[1001] || 0) > 0){ jogo.bolas[1001]--; gravarLS('bolas', jogo.bolas); jogo.time.push({ dex: sp.n, glb: gm.glb, nome: sp.name, lv, exp: Evolucao.expPara(sp.n, lv), amizade: Evolucao.amizadeBase(sp.n), hp: 1, maxHp: 1, ivs: Ind.sortearIVs(), natureza: Ind.sortearNatureza(), quando: Date.now() }); gravarLS('time', jogo.time); Chat.sistema('A ' + sp.name + ' appeared in the empty Poké Ball!'); } }
     const mats2 = clonarEmissivos(novo.pivo), guarda = mats2.map(m => [m.emissive.clone(), m.emissiveIntensity]);
     for (const m of mats2){ m.emissive.set('#ffffff'); m.emissiveIntensity = 1.2; }
     flash.style.transition = 'opacity .7s'; flash.style.opacity = '0';
     novo.travaAnim = 0; tocarUma(novo, novo.acoes.has('Buff') ? 'Buff' : 'Appear');
-    flutuar(novo, alvo.nome + '!', '#8ef58e'); Chat.sistema(nomeAntes + ' evoluiu para ' + alvo.nome + '!');
+    flutuar(novo, alvo.nome + '!', '#8ef58e'); Chat.sistema(nomeAntes + ' evolved into ' + alvo.nome + '!');
     Conhecimento.evento('evoluiu', { de: p.dex, para: novo.dex ?? alvo.dex });                          // Pokédex de conhecimento
     pintarTime(true); document.getElementById('segue-ctl')?.__encher?.();
     await animar(1500, k => mats2.forEach((m, j) => { m.emissiveIntensity = guarda[j][1] + (1.2 - guarda[j][1]) * (1 - k); }));
@@ -5827,17 +5827,17 @@ async function trocarPara(i, { forcado = false } = {}){
      Reanimador DIRETO, sem gastar o turno — a mesma brecha do "poção em rajada contra o Brock" (zlevy, 15/09) que foi fechada
      no `usarItem` e continuou aberta por aqui. Na batalha do servidor o buraco era maior: quem acorda fora do turno não entra
      na lista da sessão do mesmo jeito, então o jogador via um Pokémon de pé que a luta não aceitava. */
-  if (!forcado && jogo.turno && estaKO(t, i)){ flutuar(jogo.ash, t.nome + ' está desmaiado — na batalha o Reanimador sai pela Mochila', '#ffd23a'); return; }
-  if (!forcado && estaKO(t, i)){ const r = reanimadorNaMochila(); if (r) reanimar(i, r.id, r.nome); else flutuar(jogo.ash, t.nome + ' está desmaiado — precisa de Reanimador (Pokémart)', '#f58e8e'); return; }   // slot KO: clique usa o Reanimador da mochila
+  if (!forcado && jogo.turno && estaKO(t, i)){ flutuar(jogo.ash, t.nome + ' is fainted — in battle the Revive comes from the Bag', '#ffd23a'); return; }
+  if (!forcado && estaKO(t, i)){ const r = reanimadorNaMochila(); if (r) reanimar(i, r.id, r.nome); else flutuar(jogo.ash, t.nome + ' is fainted — needs a Revive (Poké Mart)', '#f58e8e'); return; }   // slot KO: clique usa o Reanimador da mochila
   if (!forcado && i === membroAtivo()){ Menus.abrir('pokemon'); return; }
   if (!forcado && jogo.turno){                                           // 13/09 (l.neto): trocar pela GRADE do time no meio da batalha por turnos trocava só na tela — o servidor seguia com o outro (que apanhava) e o cliente mandava golpes do que aparecia
     if (jogo.turno.fase === 'escolha') rodadaTurno({ tipo: 'troca', i });   // vira a jogada de troca da rodada (servidor ou motor local), como o botão Trocar do painel
-    else flutuar(jogo.ash, 'espere a sua vez pra trocar', '#ffd23a');
+    else flutuar(jogo.ash, 'wait for your turn to switch', '#ffd23a');
     return;
   }
-  if (!forcado && (jogo.trocaCd || 0) > 0){ flutuar(jogo.ash, 'troca em ' + Math.ceil(jogo.trocaCd) + ' s', '#ffd23a'); return; }
-  if (jogo.montaria){ flutuar(jogo.ash, 'desmonte primeiro (M)', '#ffd23a'); return; }
-  if (t.lv > tetoNivel()) flutuar(jogo.ash, t.nome + ' não vai obedecer: Lv ' + t.lv + ' passa do teto Lv ' + tetoNivel(), '#ffd23a');
+  if (!forcado && (jogo.trocaCd || 0) > 0){ flutuar(jogo.ash, 'switch in ' + Math.ceil(jogo.trocaCd) + ' s', '#ffd23a'); return; }
+  if (jogo.montaria){ flutuar(jogo.ash, 'dismount first (M)', '#ffd23a'); return; }
+  if (t.lv > tetoNivel()) flutuar(jogo.ash, t.nome + ' will not obey: Lv ' + t.lv + ' is above the Lv ' + tetoNivel() + ' cap', '#ffd23a');
   jogo.trocandoSeguidor = true;
   const iVelho = membroAtivo();                                           // 14/09: se a troca falhar, o índice de campo volta pra quem ficou
   try {
@@ -5849,7 +5849,7 @@ async function trocarPara(i, { forcado = false } = {}){
     Ind.garantir(t); novo.uid = t.uid ?? null; novo.ivs = t.ivs; novo.natureza = t.natureza; Ind.garantirMovs(t, fallbackGolpes(t.dex)); novo.movs = t.movs; novo.aprender = t.aprender; novo.golpesIds = Ind.idsDe(novo);
     if (S){ novo.maxHp = Ind.hpDe(S, novo); novo.hp = t.hp != null ? Math.max(0, Math.min(t.hp, novo.maxHp)) : novo.maxHp; }   // hp 0 do registro continua 0 (12/09): quem está KO não "ressuscita" ao entrar em campo
     jogo.trocaCd = TROCA_CD;
-    flutuar(novo, t.nome + ', vai!', '#8ef58e');
+    flutuar(novo, t.nome + ', go!', '#8ef58e');
     document.getElementById('segue-ctl')?.__encher?.();
   } catch (e){ console.warn('troca:', e); if (iVelho >= 0) definirParceiro(iVelho); }   // 14/09: a troca falhou (modelo não carregou): quem está em campo continua sendo o de antes
   jogo.trocandoSeguidor = false; pintarTime(true);
@@ -5857,12 +5857,12 @@ async function trocarPara(i, { forcado = false } = {}){
 /** Z: o seguidor vira o próximo Pokémon do time. */
 async function proximoDoTime(){
   if (!jogo.ash || !jogo.time.length || jogo.trocandoSeguidor) return;
-  if ((jogo.trocaCd || 0) > 0){ flutuar(jogo.ash, 'troca em ' + Math.ceil(jogo.trocaCd) + ' s', '#ffd23a'); return; }
+  if ((jogo.trocaCd || 0) > 0){ flutuar(jogo.ash, 'switch in ' + Math.ceil(jogo.trocaCd) + ' s', '#ffd23a'); return; }
   const atual = membroAtivo(); let prox = -1;
   for (let k = 1; k <= jogo.time.length; k++){ const j = (atual + k) % jogo.time.length; const c = jogo.time[j]; if (j !== atual && !koRegistro(c)){ prox = j; break; } }   // 14/09: pelo ÍNDICE, não pelo glb — com dois Pidgey o Shift+Z nunca chegava no segundo
   if (prox < 0) return;
   if (jogo.turno){                                                       // 13/09: Shift+Z na batalha por turnos vira a jogada de troca (o servidor precisa saber quem está em campo)
-    if (jogo.turno.fase === 'escolha') rodadaTurno({ tipo: 'troca', i: prox }); else flutuar(jogo.ash, 'espere a sua vez pra trocar', '#ffd23a');
+    if (jogo.turno.fase === 'escolha') rodadaTurno({ tipo: 'troca', i: prox }); else flutuar(jogo.ash, 'wait for your turn to switch', '#ffd23a');
     return;
   }
   definirParceiro(prox); const alvo = jogo.time[prox];
@@ -5877,7 +5877,7 @@ async function proximoDoTime(){
       if (S){ novo.maxHp = Ind.hpDe(S, novo); novo.hp = alvo.hp != null && alvo.hp > 0 ? Math.min(alvo.hp, novo.maxHp) : novo.maxHp; }
     }
     jogo.trocaCd = TROCA_CD;
-    flutuar(novo, alvo.nome + ', vai!', '#8ef58e');
+    flutuar(novo, alvo.nome + ', go!', '#8ef58e');
   } catch (e){ console.warn('time:', e); if (atual >= 0) definirParceiro(atual); }   // 14/09: a troca falhou (modelo não carregou): quem está em campo continua sendo o de antes
   jogo.trocandoSeguidor = false;
 }
@@ -5893,7 +5893,7 @@ async function interagir(){
     const n = npcPerto(); if (n){ falarCom(n); return; }
   }
   if (!ash || !pika || interagindo || jogo.montaria || pika.hp <= 0 || pika.desmaiado > 0) return;
-  if (Math.hypot(pika.x - ash.x, pika.z - ash.z) > Math.max(3.5, folgaParceiro(pika) + 0.8)){ flutuar(ash, pika.nome + ' está longe', '#ffd23a'); return; }   // 14/09: o Gyarados seguidor para a 3,6 m
+  if (Math.hypot(pika.x - ash.x, pika.z - ash.z) > Math.max(3.5, folgaParceiro(pika) + 0.8)){ flutuar(ash, pika.nome + ' is too far', '#ffd23a'); return; }   // 14/09: o Gyarados seguidor para a 3,6 m
   interagindo = true;
   try {
     ash.alvoX = null; pika.alvoX = null;
@@ -6246,7 +6246,7 @@ async function irParaCena({ mapa = null, chegada = null, texto = '', raid = null
   if (jogo.navegando || jogo.descarregando) return false;
   jogo.navegando = true; portaOcupado = true;
   try { Menus.fechar(); } catch {}
-  try { if (Troca.aberta()) Chat.sistema('A mesa de troca foi fechada: você foi levado pra outro lugar.'); } catch {}   // o servidor cancela a troca quando a conexão cai na recarga
+  try { if (Troca.aberta()) Chat.sistema('The trade table closed: you were taken somewhere else.'); } catch {}   // o servidor cancela a troca quando a conexão cai na recarga
   try { if (jogo.turno){ if (jogo.turno.serv) Rede.pedirBatalha('sair').catch(() => {}); fimTurno(false, { desistiu: true }); } } catch (e){ console.warn('irParaCena: turno', e); }
   try { if (NOME === 'kanto' || NOME === 'pallet_rota1') sessionStorage.setItem('mundo', NOME); } catch {}   // sair do interior depois volta pro mundo certo
   if (raid != null){ Raid.carimbar(raid); Raid.marcarIda(raid); try { if (mapa) sessionStorage.removeItem('chegada.' + mapa); } catch {} }   // arena: a reserva de uma porta antiga não pode vencer a posição que o servidor deu
@@ -6701,7 +6701,7 @@ function aprenderNoNivel(p){
   for (const id of Ind.aprendeEm(p.dex, p.lv)){
     if (!GOLPES[id] || p.movs.some(m => m.id === id) || (p.aprender || []).includes(id)) continue;
     if (p.movs.length < 4){ p.movs.push(Ind.novoGolpe(id)); Chat.sistema(p.nome + ' aprendeu ' + GOLPES[id].nome + '!'); flutuar(p, 'aprendeu ' + GOLPES[id].nome + '!', '#8ef58e'); }
-    else { p.aprender = [...(p.aprender || []), id]; Chat.sistema('✧ ' + p.nome + ' quer aprender ' + GOLPES[id].nome + ' — escolha na janela Pokémon qual golpe esquecer.'); flutuar(p, 'quer aprender ' + GOLPES[id].nome + '!', '#ffe07a'); }
+    else { p.aprender = [...(p.aprender || []), id]; Chat.sistema('✧ ' + p.nome + ' wants to learn ' + GOLPES[id].nome + ' — pick which move to forget in the Pokémon window.'); flutuar(p, 'quer aprender ' + GOLPES[id].nome + '!', '#ffe07a'); }
   }
   p.golpesIds = Ind.idsDe(p);
 }
@@ -6742,7 +6742,7 @@ function recuperarGolpes(p, { quieto = false, desdeOInicio = false } = {}){
     if (p.movs.length < 4){ p.movs.push(Ind.golpeLembrado(registroDoTime(p) || p, id)); if (!quieto) Chat.sistema(p.nome + ' aprendeu ' + GOLPES[id].nome + '!'); }
     else { p.aprender = [...(p.aprender || []), id]; naFila++; }
   }
-  if (naFila && !quieto) Chat.sistema('✧ ' + p.nome + ' quer aprender ' + GOLPES[p.aprender[0]].nome + ' — escolha na janela Pokémon qual golpe esquecer.');
+  if (naFila && !quieto) Chat.sistema('✧ ' + p.nome + ' wants to learn ' + GOLPES[p.aprender[0]].nome + ' — pick which move to forget in the Pokémon window.');
   p.golpesIds = Ind.idsDe(p);
   return ids.length;
 }
@@ -6785,7 +6785,7 @@ function aprenderGolpe(e, id, slot){
   Ind.garantirMovs(t, fallbackGolpes(t.dex));
   if (slot >= 0 && slot >= t.movs.length && t.movs.length < 4 && GOLPES[id]){ t.movs.push(Ind.golpeLembrado(reg, id)); Chat.sistema(t.nome + ' aprendeu ' + GOLPES[id].nome + '!'); }   // 18/09 (Reaprender com vaga livre): entra sem esquecer ninguém
   else if (slot >= 0 && slot < t.movs.length && GOLPES[id]){ const velho = t.movs[slot]; Ind.esquecerGolpe(reg, velho); t.movs[slot] = Ind.golpeLembrado(reg, id);   /* 19/09 (chaospider, PPs infinitos): o esquecido guarda o PP; o que volta, volta com ele */ Chat.sistema(t.nome + ' esqueceu ' + (GOLPES[velho?.id]?.nome || '?') + ' e aprendeu ' + GOLPES[id].nome + '!'); }
-  else { Chat.sistema(t.nome + ' não aprendeu ' + (GOLPES[id]?.nome || id) + '.'); if (GOLPES[id]) reg.recusados = [...new Set([...(reg.recusados || []), id])].slice(-30); }   // 18/09: recusa guardada — o boot não reoferece; o Reaprender continua listando
+  else { Chat.sistema(t.nome + ' did not learn ' + (GOLPES[id]?.nome || id) + '.'); if (GOLPES[id]) reg.recusados = [...new Set([...(reg.recusados || []), id])].slice(-30); }   // 18/09: recusa guardada — o boot não reoferece; o Reaprender continua listando
   if (slot >= 0 && Array.isArray(reg.recusados) && reg.recusados.includes(id)) reg.recusados = reg.recusados.filter(x => x !== id);   // aprendeu de vez (pelo Reaprender): sai das recusas
   if (ativo){ p.golpesIds = Ind.idsDe(p); guardarEstadoAtivo(); } else gravarLS('time', jogo.time);
   pintarTime(true); return true;
@@ -7099,7 +7099,7 @@ function darExp(p, n){
   p.exp = (p.exp ?? Evolucao.expPara(p.dex, p.lv)) + n; flutuar(p, '+' + n + ' XP', '#8ec5ff'); const guardou = guardarReserva(p, n);
   const S = porDex.get(p.dex); let subiu = 0;
   while (p.lv < 100 && p.exp >= Evolucao.expPara(p.dex, p.lv + 1)){ p.lv++; subiu++; aprenderNoNivel(p); const novoMax = S ? Ind.hpDe(S, p) : p.maxHp; p.hp = Math.min(novoMax, p.hp + Math.max(0, novoMax - p.maxHp)); p.maxHp = novoMax; }
-  if (subiu){ flutuar(p, 'Lv ' + p.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' subiu pro Lv ' + p.lv + '!'); Missoes.evento({ tipo: 'nivel', lv: p.lv }); }
+  if (subiu){ flutuar(p, 'Lv ' + p.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' grew to Lv ' + p.lv + '!'); Missoes.evento({ tipo: 'nivel', lv: p.lv }); }
   if (guardou) avisarReserva(p, guardou);
   guardarEstadoAtivo(); pintarTime(true);
 }
@@ -7211,7 +7211,7 @@ function escolherInicial(){
   if (Menus.temPopup?.('inicial')){                                     /* HUD v2 (decisão do Jaime, 18/09): a tela é a maquete da Amanda, sem abas de geração — só os 3 de Kanto; o palco 3D e o receberInicial continuam daqui */
     if (falando) return;
     jogo.ash.alvoX = null;
-    if (Menus.abrirInicial({ lista: INICIAIS[1], palco: palcoIniciais(), aoEscolher: (o, i) => receberInicial(o, i), semEscolha: () => flutuar(jogo.ash, 'escolha um Pokémon', '#ffd23a') })) return;
+    if (Menus.abrirInicial({ lista: INICIAIS[1], palco: palcoIniciais(), aoEscolher: (o, i) => receberInicial(o, i), semEscolha: () => flutuar(jogo.ash, 'pick a Pokémon', '#ffd23a') })) return;
   }
   const caixa = $('inicial'); if (!caixa.hidden || falando) return;
   const gens = Object.keys(INICIAIS); let gen = gens[0], sel = -1;
@@ -7226,7 +7226,7 @@ function escolherInicial(){
     caixa.querySelectorAll('[data-gen]').forEach(b => b.onclick = () => { gen = b.dataset.gen; sel = -1; P.montar(gen); pintar(); });
     caixa.querySelectorAll('.carta').forEach(c => { c.onclick = () => { if (sel === +c.dataset.i) return; sel = +c.dataset.i; P.selecionar(sel); Som.tocar('ui/sound_click', { volume: 0.5 }); pintar(); }; P.arrastavel(c, +c.dataset.i); });
     caixa.querySelector('.x').onclick = () => { caixa.hidden = true; P.fechar(); };
-    caixa.querySelector('.ok').onclick = () => { if (sel < 0){ flutuar(jogo.ash, 'escolha um Pokémon', '#ffd23a'); return; } const o = INICIAIS[gen][sel]; caixa.hidden = true; P.fechar(); receberInicial(o, sel); };
+    caixa.querySelector('.ok').onclick = () => { if (sel < 0){ flutuar(jogo.ash, 'pick a Pokémon', '#ffd23a'); return; } const o = INICIAIS[gen][sel]; caixa.hidden = true; P.fechar(); receberInicial(o, sel); };
   };
   pintar();
 }
@@ -7235,7 +7235,7 @@ async function receberInicial(o, i){
   let doServidor = null;
   if (comConta()){
     const r = await Rede.pedirPosse('inicial', { mon: { dex: o.dex, glb: o.glb, nome: o.nome } });
-    if (!r?.mon){ Chat.sistema('⚠ Não deu pra registrar seu inicial no servidor: ' + (r?.erro || 'sem resposta') + '. Fale com o Professor Oak de novo.'); return false; }
+    if (!r?.mon){ Chat.sistema('⚠ Could not register your starter on the server: ' + (r?.erro || 'no reply') + '. Fale com o Professor Oak de novo.'); return false; }
     doServidor = r.mon;
   }
   gravarLS('inicial', { ...o, i });
@@ -7316,7 +7316,7 @@ function desobedece(p){
 }
 let avisoTetoEm = 0;
 function avisarTeto(p, motivo){
-  flutuar(p, p.nome + ' não obedece! (teto Lv ' + tetoNivel() + ')', '#ffd23a');
+  flutuar(p, p.nome + ' will not obey! (cap Lv ' + tetoNivel() + ')', '#ffd23a');
   if (Date.now() - avisoTetoEm > 8000){ avisoTetoEm = Date.now(); Chat.sistema('🔒 ' + motivo + '.'); }
 }
 /** Teto duro: o que passar do último ponto de XP do nível-teto vai pra reserva. Devolve quanto guardou. */
@@ -7329,8 +7329,8 @@ function guardarReserva(p, ganho){
 }
 let avisoReservaEm = 0;
 function avisarReserva(p, n){
-  flutuar(p, '🔒 teto Lv ' + tetoNivel() + ' · ' + n + ' XP guardada', '#ffd23a');
-  if (Date.now() - avisoReservaEm > 60000){ avisoReservaEm = Date.now(); Chat.sistema('🔒 ' + p.nome + ' chegou ao teto Lv ' + tetoNivel() + ': a XP fica guardada (' + (p.expReserva || 0) + ') e sai ao ' + proximoTeto() + '.'); }
+  flutuar(p, '🔒 cap Lv ' + tetoNivel() + ' · ' + n + ' XP stored', '#ffd23a');
+  if (Date.now() - avisoReservaEm > 60000){ avisoReservaEm = Date.now(); Chat.sistema('🔒 ' + p.nome + ' hit the Lv ' + tetoNivel() + ' cap' + ': a XP fica guardada (' + (p.expReserva || 0) + ') e sai ao ' + proximoTeto() + '.'); }
 }
 /** Membro na bola (registro do time, sem modelo): sobe nível com a XP dada, respeitando o teto. */
 function subirRegistro(tr, n){
@@ -7355,7 +7355,7 @@ function liberarReserva(){
     p.expReserva = 0; n++;
     if (p === jogo.pika) darExp(p, r); else subirRegistro(tr, r);
   });
-  if (n) Chat.sistema('🔓 Teto de nível agora é Lv ' + teto + ': a XP guardada foi liberada!');
+  if (n) Chat.sistema('🔓 Level cap is now Lv ' + teto + ': stored XP was released!');
   guardarEstadoAtivo(); gravarLS('time', jogo.time); pintarTime(true);
 }
 function usarGolpe(id){
@@ -7365,13 +7365,13 @@ function usarGolpe(id){
     return;
   }
   const p = jogo.pika; if (!p) return;
-  if (jogo.semParceiro){ flutuar(jogo.ash, 'você ainda não tem um Pokémon: fale com o Professor Oak', '#ffd23a'); return; }
+  if (jogo.semParceiro){ flutuar(jogo.ash, 'you do not have a Pokémon yet: talk to Professor Oak', '#ffd23a'); return; }
   if (Ind.semPP(p)) id = 'struggle';                                     // sem PP em tudo: só resta o Struggle
   const g = id === 'struggle' ? STRUGGLE : GOLPES[id];
   if (!g || p.hp <= 0 || (p.recargas[id] || 0) > 0) return;
-  if (id !== 'struggle' && !Ind.temPP(p, id)){ flutuar(p, 'sem PP em ' + g.nome, '#f58e8e'); return; }
+  if (id !== 'struggle' && !Ind.temPP(p, id)){ flutuar(p, 'no PP on ' + g.nome, '#f58e8e'); return; }
   if ((!jogo.alvo || jogo.alvo.estado === 'morto') && jogo.raidArena){ const b = jogo.selvagens.find(x => x.raid && x.estado !== 'morto' && x.estado !== 'guardado'); if (b) jogo.alvo = b; }   // RAID AO VIVO: na arena o alvo é o chefe (celular sem Tab)
-  if (!jogo.alvo || jogo.alvo.estado === 'morto'){ flutuar(jogo.ash, 'sem alvo: clique num selvagem ou Tab', '#ffd23a'); return; }
+  if (!jogo.alvo || jogo.alvo.estado === 'morto'){ flutuar(jogo.ash, 'no target: click a wild Pokémon or Tab', '#ffd23a'); return; }
   /* 20/09 (billzerax): caído não apanha — o golpe só gastava PP, recarga e o turno do parceiro. Avisa e não sai.
      (O Tab e o KO já miram no próximo de pé; aqui sobra quem mirou no caído de propósito, pelo clique ou pela bola.) */
   if (jogo.alvo.estado === 'desmaiado' || jogo.alvo.estado === 'capturando'){
@@ -7381,7 +7381,7 @@ function usarGolpe(id){
        aviso saía convidando pra jogar a bola — enquanto o F responde "o Mew da raid não pode ser
        capturado". Duas respostas opostas pro mesmo botão, no meio do evento ao vivo. */
     const semBola = caido.raid || caido.chefe;
-    flutuar(caido, caido.estado === 'capturando' ? caido.nome + ' já está na bola'
+    flutuar(caido, caido.estado === 'capturando' ? caido.nome + ' is already in the ball'
                  : semBola ? caido.nome + ' já caiu'
                  : caido.nome + ' está desmaiado — F pra capturar', '#ffd23a');
     return;
@@ -7548,7 +7548,7 @@ if (jogo.ash){
       const v = resto.toLowerCase(); Rede.enviar({ t: 'alfa_exigir', ...((v === 'on' || v === 'off') ? { exigir: v === 'on' } : {}) });
     } });   // /w nome texto → Social; /ranking → colecionadores; /trocar nome → mesa de troca
   Chat.montar($('chat'), { compacto: true }); $('chat').hidden = false;
-  if (Hud.trocouMaquete()) Chat.sistema('A HUD foi atualizada com a maquete nova. O layout que você tinha salvo no editor ficou guardado — Configurações → "usar o meu de novo".');   // §7 item 14
+  if (Hud.trocouMaquete()) Chat.sistema('The HUD was updated with the new layout. The layout you had saved in the editor is still there — Settings → "use mine again".');   // §7 item 14
   Conta.aoAvisar(t => Chat.sistema(t));                                 // avisos da conta (conflito de save, sessão vencida, sem conexão)
   Conta.aoSave(() => recarregarDoSave());                               // o servidor reescreveu o save (adoção/recusa/devolução): relê o time daqui
   /* O save veio pronto do servidor (troca de Pokémon): relê o time/caixa e conserta o parceiro em campo. */
@@ -7579,7 +7579,7 @@ if (jogo.ash){
     golpeNoOutro: (s, m) => {                                            // o selvagem bateu no parceiro de OUTRO jogador: número, efeito e "Wound" em cima dele
       const par = Rede.outroPor(m.alvo)?.par; if (!par?.pivo) return;
       const g = GOLPES[m.golpe] || STRUGGLE;
-      flutuar(par, m.eff === 0 ? 'imune' : '−' + m.dano, m.eff > 1 ? '#86ef5f' : m.eff < 1 ? '#8c9ab7' : '#ffffff');
+      flutuar(par, m.eff === 0 ? 'immune' : '−' + m.dano, m.eff > 1 ? '#86ef5f' : m.eff < 1 ? '#8c9ab7' : '#ffffff');
       if (par.peito) efeito(g.efeito + '_Hit', par.peito, par.altura, s?.peito ? { olhar: s.peito } : {});
       if (m.hp > 0 && par.acoes) tocarUma(par, 'Wound');
     },
@@ -7615,8 +7615,8 @@ if (jogo.ash){
   Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
-      if (m.concluiu) Chat.sistema('📜 Missão concluída: ' + (m.nome || m.concluiu) + '.');
-      else if (m.passoFeito) Chat.sistema('✔ Etapa concluída.');
+      if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
+      else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvento(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
@@ -7663,7 +7663,7 @@ if (jogo.ash){
     }
   }
   conferirParceiroDesmaiado();                                          // recarregou com o parceiro desmaiado: continua desmaiado (troca sozinho / apagão); roda de novo quando o seguidor salvo termina de carregar
-  Chat.sistema('Você chegou em ' + nomeAreaAtual() + '.');
+  Chat.sistema('You arrived in ' + nomeAreaAtual() + '.');
   atualizarMusica(); Som.preparar(['ui/sound_click', 'ui/sound_itemget', 'ui/sound_successful']);   // música do lugar + sons de interface usados o tempo todo
   if (!Fairy && !INTRO && Conta.estado().modo === 'conta') Missoes.assumirServidor?.();   // 12/09: com conta o servidor confere os passos desde o boot (o motor local avançava e pagava por conta própria até a 1ª mensagem `missao`)
   if (!Fairy && !INTRO) Missoes.instalar({
@@ -7689,7 +7689,7 @@ if (jogo.ash){
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)
-  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = I18n.t(nomeAreaAtual()); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema('Você chegou em ' + nomeAreaAtual() + '.'); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
+  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = I18n.t(nomeAreaAtual()); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema('You arrived in ' + nomeAreaAtual() + '.'); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
     const aS = a + '@' + Rede.estadoRede().id;                              // com conta quem marca o passo 'ir' é o servidor: o `pos` só leva o NOME da área, a missão usa o número.
     if (a != null && comConta() && aS !== areaNoServidor){ areaNoServidor = aS; Rede.enviar({ t: 'missao_area', area: a }); }   // fora do "mudou de área": no load a conexão ainda não estava pronta e o aviso se perdia
   }, 700);
@@ -7894,12 +7894,12 @@ function atualizarParceiro(dt){
   pika.coleira = Math.max(0, (pika.coleira || 0) - dt);
   if (dA > 12 && !(pika.desmaiado > 0) && pika.coleira <= 0){
     pika.coleira = 1.5;                                  // uma vez por puxão, não a cada quadro
-    puxarParceiro('voltou pra você');
+    puxarParceiro('came back to you');
   }
   let tentou = false;                                    // tentou andar neste quadro? (13/09: parceiro preso num canto — ver o fim da função)
   if (pika.desmaiado > 0){
     pika.desmaiado -= dt;
-    if (pika.desmaiado <= 0){ pika.hp = pika.maxHp; pika.travaAnim = 0; pika.anim = null; tocarAnim(pika, 'Idle'); flutuar(pika, 'de volta!', '#86ef5f'); }
+    if (pika.desmaiado <= 0){ pika.hp = pika.maxHp; pika.travaAnim = 0; pika.anim = null; tocarAnim(pika, 'Idle'); flutuar(pika, 'back!', '#86ef5f'); }
   } else if (jogo.ordem){
     const { golpe, alvo } = jogo.ordem;
     const dx = alvo.x - pika.x, dz = alvo.z - pika.z, dT = Math.hypot(dx, dz);
@@ -8465,7 +8465,7 @@ function pintarConvite(n){
       <div class="tlinha">${esp ? `<button type="button" class="tbt luta" id="t-pagar">💰 Tentar agora (${g.resetMoedas})</button>` : '<button type="button" class="tbt luta" id="t-sim">⚔ Desafiar</button>'}<button type="button" class="tbt" id="t-nao">Agora não</button></div>`;
     el.hidden = false;
     $('t-sim')?.addEventListener('click', () => { Som.destravar(); iniciarTurno(n); });
-    $('t-pagar')?.addEventListener('click', () => { const d = lerLS('dinheiro', 50000); if (d < g.resetMoedas){ flutuar(jogo.ash, 'sem Moedas suficientes', '#f58e8e'); return; } if (comConta()) bolsaOp('ginasioreset', { ginasio: g.insignia.id }); else gravarLS('dinheiro', d - g.resetMoedas); const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd); Chat.sistema('Você pagou ' + g.resetMoedas + ' Moedas pra desafiar ' + g.lider + ' de novo.'); Som.destravar(); iniciarTurno(n); });
+    $('t-pagar')?.addEventListener('click', () => { const d = lerLS('dinheiro', 50000); if (d < g.resetMoedas){ flutuar(jogo.ash, 'not enough Coins', '#f58e8e'); return; } if (comConta()) bolsaOp('ginasioreset', { ginasio: g.insignia.id }); else gravarLS('dinheiro', d - g.resetMoedas); const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd); Chat.sistema('You paid ' + g.resetMoedas + ' Coins to challenge ' + g.lider + ' again.'); Som.destravar(); iniciarTurno(n); });
     $('t-nao').onclick = () => { el.hidden = true; };
     return;
   }
@@ -8477,9 +8477,9 @@ function pintarConvite(n){
 }
 async function iniciarTurno(n){
   const p = jogo.pika, a = jogo.ash;
-  if (!p || p.hp <= 0 || p.desmaiado > 0){ flutuar(a, 'seu parceiro está desmaiado', '#f58e8e'); $('turno').hidden = true; return; }
-  if (jogo.montaria){ flutuar(a, 'desça da montaria primeiro (M)', '#ffd23a'); $('turno').hidden = true; return; }
-  if (Math.hypot(a.x - n.x, a.z - n.z) > 14){ flutuar(a, 'chegue mais perto do treinador', '#ffd23a'); $('turno').hidden = true; return; }
+  if (!p || p.hp <= 0 || p.desmaiado > 0){ flutuar(a, 'your partner is fainted', '#f58e8e'); $('turno').hidden = true; return; }
+  if (jogo.montaria){ flutuar(a, 'get off the mount first (M)', '#ffd23a'); $('turno').hidden = true; return; }
+  if (Math.hypot(a.x - n.x, a.z - n.z) > 14){ flutuar(a, 'get closer to the trainer', '#ffd23a'); $('turno').hidden = true; return; }
   const brigando = jogo.ordem || jogo.selvagens.some(s => s.estado === 'atacando' && Math.hypot(s.x - p.x, s.z - p.z) < 12);
   if (brigando){ flutuar(a, 'termine a briga com o selvagem primeiro', '#ffd23a'); $('turno').hidden = true; return; }
   /* PASSO 4: com conta, quem conduz a batalha é o SERVIDOR — ele confere onde você está, monta o time do inimigo pelas
@@ -8487,12 +8487,12 @@ async function iniciarTurno(n){
   let serv = null;
   /* ELITE FOUR (20/09): a corrida SÓ existe no servidor — sem conta não há Elite (o jogo local não tem como guardar a regra do
      "não dá pra curar entre as lutas"). O aviso é o mesmo que o servidor daria. */
-  if (n.elite && !comConta()){ flutuar(a, 'a Elite Four é só com conta: entre pra encarar o corredor', '#ffd23a'); $('turno').hidden = true; return; }
+  if (n.elite && !comConta()){ flutuar(a, 'the Elite Four needs an account: log in to enter the corridor', '#ffd23a'); $('turno').hidden = true; return; }
   if (comConta()){
     const alvoId = n.elite ? n.elite.ordem : n.ginasio ? n.ginasio.insignia.id : n.spotKey;
     const r = await Rede.pedirBatalha('desafiar', { tipo: n.elite ? 'elite' : n.ginasio ? 'ginasio' : 'treinador', id: alvoId });
     if (r && r.erro && !n.ginasio && (r.codigo === 'vencido' || /já venceu/.test(r.erro))) marcarTreinadorVencido(n);   // 17/09: o servidor sabe que ele já foi vencido (o texto cobre servidor sem o `codigo`)
-    if (!r || r.erro){ flutuar(a, (r && r.erro) || 'o servidor não respondeu', '#f58e8e'); $('turno').hidden = true; return; }
+    if (!r || r.erro){ flutuar(a, (r && r.erro) || 'the server did not answer', '#f58e8e'); $('turno').hidden = true; return; }
     serv = r;
   }
   jogo.turno = { npc: n, info: n.treino, idx: -1, rodada: 0, fase: 'posiciona', caiu: false, inimigo: null, serv };
@@ -8518,7 +8518,7 @@ async function iniciarTurno(n){
   }
   if (!alvoJ) alvoJ = soLivre || T.ponto(Math.max(4.5, Math.min(7.5, d0)));
   n.pivo.rotation.y = Math.atan2(a.x - n.x, a.z - n.z); n.giro = n.pivo.rotation.y;
-  Chat.sistema('⚔ Batalha contra ' + n.treino.nome + ' (' + n.treino.time.length + ' Pokémon)!');
+  Chat.sistema('⚔ Battle against ' + n.treino.nome + ' (' + n.treino.time.length + ' Pokémon)!');
   a.alvoX = alvoJ.x; a.alvoZ = alvoJ.z;                                  // recua andando; o parceiro fica (emBatalha) até ser "mandado"
   const t0 = performance.now();
   while (jogo.turno && Math.hypot(a.x - alvoJ.x, a.z - alvoJ.z) > 0.5 && performance.now() - t0 < 4500) await esperarSeg(0.1);
@@ -8582,7 +8582,7 @@ async function rodadaDoServidor(T, acao){
   /* `queda` (revisão de 20/09) = o socket morreu com a jogada no ar: o servidor já fechou a batalha do lado dele, então o
      painel fecha aqui na hora em vez de ficar 12 s esperando uma resposta que não vem mais. */
   if (r && (r.codigo === 'queda' || /não está numa batalha/.test(r.erro || ''))){   // 13/09 (l.neto): a conexão caiu no meio (aba em segundo plano) e o servidor fechou a batalha ao reconectar — o painel ficava aberto repetindo o erro a cada clique
-    Chat.sistema('⚠ A batalha caiu junto com a conexão. Fale com o treinador de novo pra recomeçar.');
+    Chat.sistema('⚠ The battle dropped with the connection. Talk to the trainer again to restart.');
     fimTurno(false, { desistiu: true }); return;
   }
   /* clique repetido: a jogada anterior é que vale. Não é erro pra assustar ninguém no chat — só um aviso e o painel de volta.
@@ -8591,10 +8591,10 @@ async function rodadaDoServidor(T, acao){
      vier sem o turno (servidor antigo, deploy pela metade) é que ele fica sem número. */
   if (r && (r.codigo === 'ocupado' || r.codigo === 'vez')){
     if (r.codigo === 'vez' && T.serv) T.serv = { ...T.serv, vez: r.vez ?? null };
-    flutuar(jogo.ash, 'espere a sua vez', '#ffd23a');
+    flutuar(jogo.ash, 'wait for your turn', '#ffd23a');
     T.fase = 'escolha'; pintarTurno(); return;
   }
-  if (!r || r.erro){ Chat.sistema('⚠ ' + ((r && r.erro) || 'o servidor não respondeu') + '.'); T.fase = 'escolha'; pintarTurno(); return; }
+  if (!r || r.erro){ Chat.sistema('⚠ ' + ((r && r.erro) || 'the server did not answer') + '.'); T.fase = 'escolha'; pintarTurno(); return; }
   T.serv = r;
   /* QUEM SAI DA LUTA NÃO REPRODUZ NADA (20/09, chaospider "Bug de desistência"): a resposta de desistir/fugir/tempo esgotado
      não traz lance pra animar. Antes vinham os lances do turno ANTERIOR e o golpe do inimigo caía em quem tinha acabado de
@@ -8768,8 +8768,8 @@ function fimTurno(vitoria, op = {}){
     eliteEstado.corrida = r && r.elite ? r.elite.corrida : (vitoria ? eliteEstado.corrida : null);
     if (vitoria && r && r.campeao){
       eliteEstado.vencida = true;
-      Chat.sistema('🏆 Você venceu ' + E.nome + ' e é o Campeão de Kanto! Os seus Pokémon obedecem até o Lv 100' + (r.soltou ? ' e a XP guardada pelo teto saiu (' + r.soltou + ' Pokémon)' : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' Moedas' : ''));
-      flutuar(jogo.ash, '🏆 Campeão de Kanto!', '#ffd23a');
+      Chat.sistema('🏆 You beat ' + E.nome + ' and are the Champion of Kanto! Your Pokémon obey up to Lv 100' + (r.soltou ? ' e a XP guardada pelo teto saiu (' + r.soltou + ' Pokémon)' : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' Moedas' : ''));
+      flutuar(jogo.ash, '🏆 Champion of Kanto!', '#ffd23a');
       liberarReserva();
       if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏆 ' + E.nome + ' · ex-Campeão', '#ffd23a', 2.8); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
     } else if (vitoria){
@@ -8779,10 +8779,10 @@ function fimTurno(vitoria, op = {}){
       Chat.sistema('⚔ ' + E.nome + ' caiu (' + E.ordem + '/5)' + (moedas ? ' — +' + moedas + ' Moedas' : '') + '. ' + (r && r.proximo ? r.proximo.nome + ' espera no quarto seguinte — e o seu time continua como está.' : 'Siga em frente sem parar pra curar.'));
       flutuar(jogo.ash, moedas ? '+' + moedas + ' Moedas' : E.ordem + '/5 da Elite', '#ffd23a');
     } else if (op.desistiu){
-      Chat.sistema('Você deixou o corredor da Liga: a corrida da Elite zerou e recomeça no primeiro quarto.');
+      Chat.sistema('You left the League corridor: the Elite Four run reset and starts again from the first room.');
       eliteEstado.corrida = null;
     } else {
-      Chat.sistema('Você perdeu para ' + E.nome + ': a corrida da Elite zerou. Cure o time e volte pelo primeiro quarto.');
+      Chat.sistema('You lost to ' + E.nome + ': the Elite Four run reset. Heal the party and come back through the first room.');
       eliteEstado.corrida = null;
     }
     if (!op.desistiu) mostrarFala(E.nome, (vitoria ? (E.falaDerrota || []) : (E.falaVitoria || [])), n);
@@ -8798,7 +8798,7 @@ function fimTurno(vitoria, op = {}){
     const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
     n.falas = [g.vitoria[0]];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏅 ' + g.lider + ' · ' + g.nome, '#ffd23a', 2.6); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
-    if (primeira){ Chat.sistema('🏅 Você venceu ' + g.lider + ' e ganhou a ' + g.insignia.nome + '! (' + ins.length + '/8 de Kanto · Pokémon obedecem até um nível maior) +' + ganho + ' Moedas'); flutuar(jogo.ash, '🏅 ' + g.insignia.nome + '!', '#ffd23a'); if (jogo.missoesOk) Missoes.evento({ tipo: 'insignia', id: g.insignia.id, numero: g.numero }); }
+    if (primeira){ Chat.sistema('🏅 You beat ' + g.lider + ' and earned the ' + g.insignia.nome + '! (' + ins.length + '/8 of Kanto · Pokémon obey to a higher level) +' + ganho + ' Moedas'); flutuar(jogo.ash, '🏅 ' + g.insignia.nome + '!', '#ffd23a'); if (jogo.missoesOk) Missoes.evento({ tipo: 'insignia', id: g.insignia.id, numero: g.numero }); }
     else { Chat.sistema('🏆 Revanche vencida contra ' + g.lider + ': +' + ganho + ' Moedas.'); flutuar(jogo.ash, '+' + ganho + ' Moedas', '#ffd23a'); }
     mostrarFala(g.lider, g.vitoria, n);
     return;
@@ -8810,7 +8810,7 @@ function fimTurno(vitoria, op = {}){
     if (doServidor){}                                                     // o servidor já cobrou a derrota
     else if (comConta()) bolsaOp('ginasio', { ginasio: g.insignia.id, venceu: false });
     else if (perda > 0) gravarLS('dinheiro', lerLS('dinheiro', 50000) - perda);
-    Chat.sistema('Você perdeu para ' + g.lider + (perda ? ' e ' + perda + ' Moedas' : '') + '. O líder aceita outro desafio em ' + g.cooldownMin[k] + ' min (ou pague ' + g.resetMoedas + ' Moedas pra tentar agora).');
+    Chat.sistema('You lost to ' + g.lider + (perda ? ' and ' + perda + ' Coins' : '') + '. O líder aceita outro desafio em ' + g.cooldownMin[k] + ' min (ou pague ' + g.resetMoedas + ' Moedas pra tentar agora).');
     mostrarFala(g.lider, g.derrota, n);
     return;
   }
@@ -8824,16 +8824,16 @@ function fimTurno(vitoria, op = {}){
     else gravarLS('dinheiro', lerLS('dinheiro', 50000) + g);
     n.falas = [t.vitoria[0] || Dialogos.texto('jaVenceu')];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('✔ ' + t.nome, '#9fb2d0', 2.4); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
-    Chat.sistema('🏆 Você venceu ' + t.nome + ' e ganhou ' + g + ' Moedas!');
+    Chat.sistema('🏆 You beat ' + t.nome + ' and won ' + g + ' Coins!');
     flutuar(jogo.ash, '+' + g + ' Moedas', '#ffd23a');
     mostrarFala(t.nome, t.vitoria, n);
   } else if (op.desistiu){
-    Chat.sistema('Você desistiu da batalha contra ' + t.nome + '.');
+    Chat.sistema('You ran from the battle against ' + t.nome + '.');
   } else {
     const perda = Math.min(lerLS('dinheiro', 50000), Math.round((t.dinheiro || 200) / 2));
-    if (doServidor){ if (doServidor.perda) Chat.sistema('Você perdeu a batalha e ' + doServidor.perda + ' Moedas.'); }   // o servidor já cobrou
-    else if (comConta()){ bolsaOp('treinador', { treinador: n.spotKey, dinheiro: t.dinheiro || 200, venceu: false }); if (perda > 0) Chat.sistema('Você perdeu a batalha e ' + perda + ' Moedas.'); }
-    else if (perda > 0){ gravarLS('dinheiro', lerLS('dinheiro', 50000) - perda); Chat.sistema('Você perdeu a batalha e ' + perda + ' Moedas.'); }
+    if (doServidor){ if (doServidor.perda) Chat.sistema('You lost the battle and ' + doServidor.perda + ' Coins.'); }   // o servidor já cobrou
+    else if (comConta()){ bolsaOp('treinador', { treinador: n.spotKey, dinheiro: t.dinheiro || 200, venceu: false }); if (perda > 0) Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
+    else if (perda > 0){ gravarLS('dinheiro', lerLS('dinheiro', 50000) - perda); Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
     mostrarFala(t.nome, t.derrota, n);
   }
 }
