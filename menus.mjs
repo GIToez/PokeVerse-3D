@@ -170,11 +170,11 @@ let confirmarAprender = null;                                           // pop-u
 const chaveDe = e => (e?.uid != null ? 'u:' + e.uid : e.glb + '|' + e.lv + '|' + e.nome);
 const mesmoRegistro = (x, e) => (e?.uid != null ? String(x?.uid) === String(e.uid) : !!x && x.glb === e.glb && x.lv === e.lv && x.nome === e.nome);   /* 19/09: pelo uid primeiro — dois da mesma espécie e nível */   // `uid` da posse (servidor, 06/09): dois da mesma espécie e nível deixam de se confundir
 function botaoSoltar(chave, n, seguindo){
-  if (seguindo) return `<button type="button" class="btn" data-arr-nao="1" disabled title="troque de parceiro antes de soltar">Soltar</button>`;
-  if (n <= 1) return `<button type="button" class="btn" data-arr-nao="1" disabled title="é o seu único Pokémon">Soltar</button>`;
+  if (seguindo) return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('switch partners first'))}">${esc(tr('Release'))}</button>`;
+  if (n <= 1) return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('this is your only Pokémon'))}">${esc(tr('Release'))}</button>`;
   return confirmarSoltar === chave
-    ? `<button type="button" class="btn perigo" data-arr-nao="1" data-soltar="${esc(chave)}" title="não tem volta">✔ Soltar de vez</button><button type="button" class="btn" data-arr-nao="1" data-soltar-nao="1">✖ Cancelar</button>`
-    : `<button type="button" class="btn" data-arr-nao="1" data-soltar-pede="${esc(chave)}" title="libera o Pokémon (pede confirmação)">Soltar</button>`;
+    ? `<button type="button" class="btn perigo" data-arr-nao="1" data-soltar="${esc(chave)}" title="${esc(tr('this cannot be undone'))}">✔ ${esc(tr('Release for good'))}</button><button type="button" class="btn" data-arr-nao="1" data-soltar-nao="1">✖ ${esc(tr('Cancel'))}</button>`
+    : `<button type="button" class="btn" data-arr-nao="1" data-soltar-pede="${esc(chave)}" title="${esc(tr('release this Pokémon (asks first)'))}">${esc(tr('Release'))}</button>`;
 }
 /** Solta de vez: tira do time (ou da caixa), grava, repinta a HUD e avisa. Irreversível — por isso o 2º clique. */
 async function soltar(chave, origem){
@@ -281,15 +281,15 @@ function rCaixa(corpo){
 }
 
 function rPokemon(corpo){
-  const aba = abas([{ id: 'time', nome: 'Time' }, { id: 'caixa', nome: 'Caixa' }]);
+  const aba = abas([{ id: 'time', nome: tr('Party') }, { id: 'caixa', nome: tr('Box') }]);
   if (aba === 'caixa'){ rCaixa(corpo); return; }
   const lista = timeAtual();
-  if (!lista.length){ corpo.innerHTML = '<div class="vazio">Sem Pokémon ainda — escolha o inicial no laboratório do Oak.</div>'; return; }
+  if (!lista.length){ corpo.innerHTML = '<div class="vazio">' + esc(tr('No Pokémon yet — pick a starter in Oak\'s lab.')) + '</div>'; return; }
   if (selPokemon >= lista.length) selPokemon = 0;
   const e = lista[selPokemon];
-  corpo.innerHTML = `<div class="dois"><div class="lista">${lista.map((p, i) => `<div class="linha ${i === selPokemon ? 'on' : ''}" data-i="${i}"><span class="nome"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${p.sexo === 'm' ? ' <small class="sexo m">♂</small>' : p.sexo === 'f' ? ' <small class="sexo f">♀</small>' : ''}${p.seguindo ? ' <small>· seguindo</small>' : ''}${p.hp === 0 ? ' <small style="color:#f58e8e">· desmaiado</small>' : ''}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${p.maxHp ? Math.round(100 * p.hp / p.maxHp) : 100}%"></b></div></span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</div>`).join('')}${'<div class="linha vazia"></div>'.repeat(Math.max(0, 6 - lista.length))}
-    <div style="color:var(--muted);font-size:11px;margin-top:6px">${lista.length}/6 no time</div></div>
-    <div>${fichaHtml(e)}<div class="acoes">${e.seguindo ? (() => { const todas = ctx.opcoesEvolucao?.(e) || [], ops = todas.filter(o => o.glb), prontas = ops.filter(o => o.pode), breve = !ops.length && todas.find(o => !o.glb); return prontas.length ? prontas.map(o => `<button type="button" class="btn ouro" data-evo="${ops.indexOf(o)}" title="${esc(o.regra.texto)}">✧ Evoluir → ${esc(o.nome)}${o.itemNome ? ' (usa ' + esc(o.itemNome) + ')' : ''}</button>`).join('') : `<button type="button" class="btn ouro" disabled title="${esc(ops[0]?.falta || (breve ? breve.nome + ': ' + tr('em breve') : tr('não evolui')))}">✧ Evoluir${ops[0] ? ' — ' + esc(ops[0].falta) : breve ? ' — ' + esc(breve.nome) + ' (' + esc(tr('em breve')) + ')' : ''}</button>`; })() : `<button type="button" class="btn ouro" id="p-seguir">Seguir</button><button type="button" class="btn" id="p-caixa">Enviar para a caixa</button>`}${botaoSoltar(chaveDe(e), lista.length, !!e.seguindo)}${e.hp === 0 ? (() => { const r = ctx.reanimadorNaMochila?.(); return `<button type="button" class="btn ouro" id="p-reanimar" ${r ? '' : 'disabled'} title="${r ? 'usa ' + esc(r.nome) : 'compre um Reanimador no Pokémart'}">💊 ${r ? esc(r.nome) + ' (' + r.n + ')' : 'Reanimador — não tem na mochila'}</button>`; })() : ''}</div></div></div>`;
+  corpo.innerHTML = `<div class="dois"><div class="lista">${lista.map((p, i) => `<div class="linha ${i === selPokemon ? 'on' : ''}" data-i="${i}"><span class="nome"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${p.sexo === 'm' ? ' <small class="sexo m">♂</small>' : p.sexo === 'f' ? ' <small class="sexo f">♀</small>' : ''}${p.seguindo ? ' <small>· ' + esc(tr('following')) + '</small>' : ''}${p.hp === 0 ? ' <small style="color:#f58e8e">· ' + esc(tr('fainted')) + '</small>' : ''}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${p.maxHp ? Math.round(100 * p.hp / p.maxHp) : 100}%"></b></div></span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</div>`).join('')}${'<div class="linha vazia"></div>'.repeat(Math.max(0, 6 - lista.length))}
+    <div style="color:var(--muted);font-size:11px;margin-top:6px">${lista.length}/6 ${esc(tr('in party'))}</div></div>
+    <div>${fichaHtml(e)}<div class="acoes">${e.seguindo ? (() => { const todas = ctx.opcoesEvolucao?.(e) || [], ops = todas.filter(o => o.glb), prontas = ops.filter(o => o.pode), breve = !ops.length && todas.find(o => !o.glb); return prontas.length ? prontas.map(o => `<button type="button" class="btn ouro" data-evo="${ops.indexOf(o)}" title="${esc(o.regra.texto)}">✧ ${esc(tr('Evolve'))} → ${esc(o.nome)}${o.itemNome ? ' (' + esc(tr('uses')) + ' ' + esc(o.itemNome) + ')' : ''}</button>`).join('') : `<button type="button" class="btn ouro" disabled title="${esc(ops[0]?.falta || (breve ? breve.nome + ': ' + tr('coming soon') : tr('does not evolve')))}">✧ ${esc(tr('Evolve'))}${ops[0] ? ' — ' + esc(ops[0].falta) : breve ? ' — ' + esc(breve.nome) + ' (' + esc(tr('coming soon')) + ')' : ''}</button>`; })() : `<button type="button" class="btn ouro" id="p-seguir">${esc(tr('Follow'))}</button><button type="button" class="btn" id="p-caixa">${esc(tr('Send to box'))}</button>`}${botaoSoltar(chaveDe(e), lista.length, !!e.seguindo)}${e.hp === 0 ? (() => { const r = ctx.reanimadorNaMochila?.(); return `<button type="button" class="btn ouro" id="p-reanimar" ${r ? '' : 'disabled'} title="${r ? esc(tr('uses')) + ' ' + esc(r.nome) : esc(tr('buy a Revive at the Poké Mart'))}">💊 ${r ? esc(r.nome) + ' (' + r.n + ')' : esc(tr('Revive — none in the bag'))}</button>`; })() : ''}</div></div></div>`;
   corpo.querySelectorAll('[data-evo]').forEach(b => b.onclick = () => { const ops = (ctx.opcoesEvolucao?.(e) || []).filter(o => o.glb); fechar(); ctx.evoluir?.(ops[+b.dataset.evo]); });
   corpo.querySelector('#p-reanimar')?.addEventListener('click', () => { ctx.reanimarMembro?.(e); render(); });
   corpo.querySelectorAll('[data-i]').forEach(l => l.onclick = () => { selPokemon = +l.dataset.i; render(); });
@@ -469,7 +469,7 @@ function encherPokemon(pop){
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
   Popup.rotulo(pop, 'titulo');                                          // título como a maquete escreve (PC: "Pokémon - Meu time"; celular: "Pokémon")
-  Popup.texto(pop, 'contagem-time', lista.length + '/6 no time');
+  Popup.texto(pop, 'contagem-time', lista.length + '/6 ' + tr('in party'));
   const pref = pop.__prefItem || 'item-time';                            // PC: item-time-N (cartão completo); celular: slot-poke-N (cabeça + tecla)
   for (let i = 0; i < 6; i++){
     const it = Popup.item(pop, i, pref); if (!it) continue;

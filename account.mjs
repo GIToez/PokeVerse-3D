@@ -49,11 +49,11 @@ function aplicarConta(d){
   meuCargo = d.cargo || null;
   if ('alfa' in d) meuAlfa = !!d.alfa;                                    // só mexe se o campo veio (servidor velho não manda; não zera à toa)
   if ('pos' in d) posUltima = d.pos || null;
-  /* Language: this device wins (login bar). An old account left on `pt` from the Portuguese-first default
-     must not pull the UI back to PT — English is first; PT/ES stay an explicit choice. */
+  /* Language: an explicit pick on this device wins (login bar). An old account left on `pt`
+     from the Portuguese-first default must not pull the UI back to PT. */
   if (d.idioma && I18n.IDIOMAS[d.idioma]){
-    let local = null; try { local = localStorage.getItem('idioma'); } catch {}
-    if (!local && d.idioma !== 'pt' && d.idioma !== I18n.idioma()) I18n.definir(d.idioma);
+    let escolha = null; try { escolha = localStorage.getItem('idioma.escolha'); } catch {}
+    if (escolha !== '1' && d.idioma !== 'pt' && d.idioma !== I18n.idioma()) I18n.definir(d.idioma);
   }
 }
 /** Avisa a conta do idioma escolhido (barra da tela de login, ou quem chamar). */
