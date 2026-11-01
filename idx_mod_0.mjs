@@ -516,6 +516,7 @@ try {
 }
 __boot.marcar('dados');                                                  // diagnóstico do boot: mapa + pokédex baixados
 const porDex = new Map(); for (const s of DB.species) if (!porDex.has(s.n)) porDex.set(s.n, s);
+I18n.registrarCenas(indice?.cenas);
 const cenaAtual = indice?.cenas.find(c => String(c.id) === NOME);
 /* Interiores COMPARTILHADOS (Centro Pokémon 4110001, loja 4110007): a sala é uma só, mas cada cidade tem o seu elenco e as suas
    portas — os ids seguem [tipo][14|15][cidade][índice], e o JSON exportado traz os de UMA cidade (Pewter no Centro, Cinnabar na
@@ -543,10 +544,10 @@ function remapearInteriorCompartilhado(){
   }
 }
 document.title = 'Pokemon 3D Base';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
-$('titulo').textContent = cenaAtual ? I18n.t(cenaAtual.nome) + ' · ' + NOME
-  : 'Kanto — ' + (dados.areas.length > 4
-    ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha/.test(n)).length })
-    : dados.areas.map(a => I18n.t(dados.nomes?.[a] || NOMES_AREA[a] || ('area ' + a))).join(' + '));
+$('titulo').textContent = cenaAtual ? I18n.rotuloLugar(cenaAtual.nome) + ' · ' + I18n.rotuloLugar(NOME)
+  : I18n.rotuloLugar('kanto') + ' — ' + (dados.areas.length > 4
+    ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha|City|Town|Island/.test(n)).length })
+    : dados.areas.map(a => I18n.rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || ('area ' + a))).join(' + '));
 if (DEMO){
   $('titulo').textContent = 'Pallet & Rota 1 · demo';
   $('hud').querySelector('table').hidden = true;
@@ -3118,12 +3119,7 @@ const INICIAIS = await fetch('./data/iniciais.json').then(r => r.ok ? r.json() :
 const MAQUINA_INICIAL = 1180102;
 let mesaInicial = null;                                                   // { x, z, y, grupo, bolas, marcador }
 const cenaDaArea = a => indice?.cenas?.find(c => c.areas?.some(ar => ar.id === a))?.id;
-const MAPA_EN = { kanto: 'Kanto', pallet_rota1: 'Pallet Town & Route 1' };
-const rotuloLugar = s => {
-  if (s == null || s === '') return '';
-  const raw = String(s), m = raw.match(/^(.*?)([.…]+)$/), nucleo = (m ? m[1] : raw).trim(), suf = m ? m[2] : '';
-  return (MAPA_EN[nucleo] || I18n.t(nucleo) || nucleo) + suf;
-};
+const rotuloLugar = s => I18n.rotuloLugar(s);
 const nomeAreaCena = a => {
   for (const c of indice?.cenas || []){ const ar = c.areas?.find(x => x.id === a); if (ar) return rotuloLugar(ar.nome); }
   return rotuloLugar(dados.nomes?.[a] || '');
@@ -3622,7 +3618,7 @@ const DENS_JOGADOR = (() => {                                            // Fase
   return Math.max(0.2, Math.min(4, v || 1));
 })();
 const caixaArea = new Map((dados.caixas || []).map(c => [c.a, c]));
-const cidades = new Set(Object.entries(dados.nomes || {}).filter(([, n]) => /^Cidade/.test(n)).map(([a]) => +a));
+const cidades = new Set(Object.entries(dados.nomes || {}).filter(([, n]) => /^(Cidade|.*\b(City|Town|Island)\b)/.test(n)).map(([a]) => +a));
 const dentroDeCidade = (x, z) => {                     // x, z em coordenadas de mundo
   for (const a of cidades){ const c = caixaArea.get(a); if (!c) continue;
     if (Math.abs(x - flipX * c.x) <= c.sx / 2 && Math.abs(z - c.z) <= c.sz / 2) return true; }
@@ -7843,7 +7839,7 @@ camadaInstanciada('t', dados.treinadores, new THREE.ConeGeometry(0.32, 1.0, 12).
 camadaInstanciada('p', dados.portas, new THREE.BoxGeometry(0.8, 0.25, 0.8).translate(0, 0.12, 0), '#ffd23a');
 
 // caixas das áreas: retângulo no chão + rótulo em DOM
-const nomeArea = a => dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a);
+const nomeArea = a => I18n.rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a));
 const caixasG = new THREE.Group();
 const rotulos = [];
 for (const c of dados.caixas){
@@ -7893,13 +7889,13 @@ let zoom = THREE.MathUtils.clamp(+(params.get('zoom') || (jogo.ativo ? (INTERIOR
 if (indice?.cenas?.length && !DEMO){
   const sel = document.createElement('select');
   const opAtual = document.createElement('option');
-  opAtual.value = 'kanto'; opAtual.textContent = 'kanto · overworld';
+  opAtual.value = 'kanto'; opAtual.textContent = I18n.rotuloLugar('kanto') + ' · overworld';
   if (NOME === 'kanto') opAtual.selected = true;
   sel.appendChild(opAtual);
   for (const c of indice.cenas){
     if (c.id === 1000001) continue;
     const op = document.createElement('option');
-    op.value = c.id; op.textContent = c.id + ' · ' + c.nome + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
+    op.value = c.id; op.textContent = I18n.rotuloLugar(c.nome || c.id) + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
     if (String(c.id) === NOME) op.selected = true;
     sel.appendChild(op);
   }
