@@ -5396,7 +5396,6 @@ function pintarTime(forcar = false){
     return;
   }
   assinaturaTime = chave; el.innerHTML = html; Hud.remontar(el);   // Figma: reaplica os slots do time no miolo novo
-  try { Hud.achatarParty?.(el); } catch {}
   try { PartyHud.ligar(el); } catch (e){ console.warn('party 3d:', e); }
   if (el.__fig) for (let i = 0; i < el.children.length; i++){            // no Figma: barra em px + os estados da maquete (recarga da troca, desmaio)
     const cel = el.children[i], t = jogo.time[i];
