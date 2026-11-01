@@ -80,7 +80,13 @@ function ligarGrip(grip, el){
     if (!d0) return;
     aplicar(Math.max(220, Math.min(innerWidth - 24, d0.w + (ev.clientX - d0.x))), Math.max(110, Math.min(innerHeight - 24, d0.h - (ev.clientY - d0.y))));
   });
-  const soltou = () => { if (!d0) return; d0 = null; ctx?.gravarLS?.('chat.tam', { w: el.offsetWidth, h: el.offsetHeight }); };
+  const soltou = () => {
+    if (!d0) return;
+    d0 = null;
+    const tam = { w: el.offsetWidth, h: el.offsetHeight };
+    ctx?.gravarLS?.('chat.tam', tam);
+    try { localStorage.setItem('chat.tam', JSON.stringify(tam)); } catch {}
+  };
   grip.addEventListener('pointerup', soltou); grip.addEventListener('pointercancel', soltou);
   grip.addEventListener('dblclick', ev => { ev.preventDefault(); el.style.removeProperty('--chat-w'); el.style.removeProperty('--chat-h'); try { localStorage.removeItem('chat.tam'); ctx?.gravarLS?.('chat.tam', null); } catch {} });
 }
@@ -107,7 +113,8 @@ export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {})
     if (el.id === 'chat' && el.dataset.dock === '1'){ try { localStorage.setItem('chat.dock', JSON.stringify(el.classList.contains('fechado') ? 'recolhido' : 'visivel')); } catch {} }   // chat ancorado do celular: lembra o recolhido entre as trocas de área
   });
   if (el.id === 'chat'){                                                 // resize: tab grip + corner; size in LS chat.tam; double-click resets
-    const tam = ctx?.lerLS?.('chat.tam', null);
+    let tam = ctx?.lerLS?.('chat.tam', null);
+    if (!tam) try { tam = JSON.parse(localStorage.getItem('chat.tam') || 'null'); } catch { tam = null; }
     if (tam?.w) el.style.setProperty('--chat-w', tam.w + 'px');
     if (tam?.h) el.style.setProperty('--chat-h', tam.h + 'px');
     if (compacto && !el.querySelector('.dim')){
