@@ -132,7 +132,7 @@ function render(){
   if (aberta === 'mochila' && popMo && Popup.aberto(popMo)){ encherMochila(popMo); return; }
   if (aberta === 'missoes' && popMi && Popup.aberto(popMi) && abaAtual !== 'laterais'){ encherMissoes(popMi); return; }
   if (aberta === 'treinador' && popTr && Popup.aberto(popTr)){ encherTreinador(popTr); return; }
-  if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ encherMapa(popMa); return; }
+  if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ rMapaMundo(popMa.querySelector('.mapa-popup-corpo') || popMa); return; }
   if (aberta === 'social' && popSo && Popup.aberto(popSo)){ encherSocial(popSo); return; }
   if (aberta === 'pokedex' && popDx && Popup.aberto(popDx)){ encherPokedex(popDx); return; }
   if (aberta === 'config' && popCf && Popup.aberto(popCf)){ encherConfig(popCf); return; }   // rodada 24: o pop-up do Figma no lugar da tela antiga
@@ -980,7 +980,34 @@ function encherTreinador(pop){
 /* ---------------------------------------------------------------- Mapa */
 let pontosMapa = null, areaMapa = null, mapaResize = null, mapaRoda = null;
 function popupMa(){
-  return null;                                                           // world map is the window (quest pins, live tab, click a zone)
+  if (popMa) return popMa;
+  let fundo = document.getElementById('pf-mapa-fundo');
+  if (!fundo){
+    fundo = document.createElement('div');
+    fundo.id = 'pf-mapa-fundo';
+    fundo.className = 'pf-fundo pf-mapa-fundo';
+    fundo.hidden = true;
+    document.body.appendChild(fundo);
+  }
+  popMa = document.createElement('div');
+  popMa.id = 'pf-mapa';
+  popMa.className = 'pf pf-mapa notranslate';
+  popMa.setAttribute('translate', 'no');
+  popMa.__skipEscala = true;
+  popMa.__def = { nome: 'mapa', w: 1760, h: 960 };
+  popMa.__cb = {
+    abrir: () => { fundo.hidden = false; document.body.classList.add('mapa-aberto'); },
+    fechar: () => {
+      fundo.hidden = true;
+      document.body.classList.remove('mapa-aberto');
+      if (aberta === 'mapa') aberta = null;
+    },
+  };
+  Object.assign(popMa.style, { position: 'fixed', left: '50%', top: '50%', display: 'none', zIndex: '60' });
+  popMa.innerHTML = `<button type="button" class="mapa-fecha" aria-label="Close" title="Close">×</button><div class="mapa-popup-corpo"></div>`;
+  popMa.querySelector('.mapa-fecha').onclick = ev => { ev.stopPropagation(); fechar(); };
+  document.body.appendChild(popMa);
+  return popMa;
 }
 function areaDoJogador(){
   const a = ctx.jogo?.ash, caixas = (ctx.dados?.caixas || []).filter(c => c.sx > 0 && c.sz > 0), fx = ctx.flipX();
@@ -2004,7 +2031,7 @@ function rMapaMundo(corpo){
   const noRoda = ev => {
     if (aberta !== 'mapa' || !corpo.isConnected) return;
     if (ev.target.closest('.mapa-menu, .mapa-dir, .mapa-esq, .mapa-zoom-btns, #chat, .pf, input, textarea, select')) return;
-    if (!document.body.classList.contains('mapa-aberto') && !ev.target.closest('.mapa-overlay, .mapa-palco, #janela.mapa-cheia')) return;
+    if (!document.body.classList.contains('mapa-aberto') && !ev.target.closest('.mapa-overlay, .mapa-palco, .pf-mapa, #janela.mapa-cheia')) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
     aplicarZoom(limitarZ(z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12)), ev.clientX, ev.clientY);
