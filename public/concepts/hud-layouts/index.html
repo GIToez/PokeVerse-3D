@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PokeVerse HUD concepts</title>
+  <style>
+    :root {
+      --bg: #12140f;
+      --paper: #1b1e16;
+      --ink: #e8e4d4;
+      --mute: #9a937c;
+      --line: #2c3124;
+      --accent: #c9a227;
+      --ok: #7ea35a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.5 Georgia, "Times New Roman", serif;
+    }
+    header {
+      padding: 48px 56px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    header p { color: var(--mute); max-width: 68ch; }
+    h1, h2, h3 { font-family: "Palatino Linotype", Palatino, Georgia, serif; font-weight: 600; }
+    h1 { font-size: 34px; margin: 0 0 8px; letter-spacing: -0.02em; }
+    h2 { font-size: 22px; margin: 0 0 10px; }
+    main { padding: 32px 56px 80px; display: grid; gap: 40px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .note, .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 18px 20px;
+    }
+    .note h3 { margin: 0 0 8px; font-size: 16px; color: var(--accent); }
+    .note p, .card p, li { color: var(--mute); }
+    .card img { width: 100%; height: auto; display: block; border: 1px solid var(--line); margin: 0 0 14px; }
+    .tag {
+      display: inline-block;
+      font: 11px/1.2 ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .pick { border-color: var(--ok); }
+    svg.wire { width: 100%; height: auto; background: #0e100c; border: 1px solid var(--line); }
+    .wire text { fill: #cfc8b0; font: 11px ui-sans-serif, system-ui, sans-serif; }
+    .legend { font: 13px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--mute); }
+    @media (max-width: 980px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">Concepts only · not wired into the live HUD</div>
+    <h1>Give the world the middle of the screen</h1>
+    <p>
+      Today the overworld shares space with a debug column, a chat dock, a full-width top rail,
+      and a long skill bar. The mockup you sent is closer to an MMO: a party wall on the left
+      and a trainer/quest banner across the top. That reads as “game chrome,” not “I am in Pallet Town.”
+      These three concepts keep English labels and hide GM tools unless F8 is on.
+    </p>
+  </header>
+  <main>
+    <section class="row">
+      <div class="note">
+        <h3>What to drop</h3>
+        <p>The left debug/stats sheet and the always-open chat. They make every screenshot look like a tool, not a game.</p>
+      </div>
+      <div class="note">
+        <h3>What the mockup gets right</h3>
+        <p>Quest is visible. The active partner’s moves sit on a bottom dock. Shortcuts exist. Trainer status is glanceable.</p>
+      </div>
+      <div class="note">
+        <h3>What the mockup overdoes</h3>
+        <p>Six named party cards plus a full-width top bar plus a right tool column. The town becomes a postage stamp.</p>
+      </div>
+    </section>
+
+    <section class="card pick">
+      <div class="tag">A · recommended for overworld</div>
+      <h2>Quiet Overworld</h2>
+      <img src="hud-concept-quiet-overworld.jpg" alt="Quiet Overworld HUD concept">
+      <svg class="wire" viewBox="0 0 640 280" aria-label="Quiet Overworld wireframe">
+        <rect x="8" y="8" width="624" height="264" fill="#161910" stroke="#3a3f2e"/>
+        <rect x="230" y="16" width="180" height="22" rx="11" fill="#2a2e20" stroke="#c9a227"/>
+        <text x="320" y="31" text-anchor="middle">quest chip</text>
+        <rect x="560" y="16" width="60" height="14" rx="4" fill="#2a2e20"/>
+        <text x="590" y="27" text-anchor="middle">place</text>
+        <circle cx="24" cy="70" r="10" fill="#2a2e20" stroke="#7ea35a"/>
+        <circle cx="24" cy="96" r="10" fill="#2a2e20" stroke="#555"/>
+        <circle cx="24" cy="122" r="10" fill="#2a2e20" stroke="#555"/>
+        <circle cx="24" cy="148" r="10" fill="#2a2e20" stroke="#555"/>
+        <circle cx="24" cy="174" r="10" fill="#2a2e20" stroke="#555"/>
+        <circle cx="24" cy="200" r="10" fill="#2a2e20" stroke="#555"/>
+        <text x="44" y="126">party ticks</text>
+        <rect x="170" y="232" width="70" height="28" rx="6" fill="#2a2e20"/>
+        <rect x="246" y="232" width="70" height="28" rx="6" fill="#2a2e20"/>
+        <circle cx="360" cy="246" r="18" fill="#3a2a1a" stroke="#c9a227"/>
+        <rect x="386" y="232" width="70" height="28" rx="6" fill="#2a2e20"/>
+        <rect x="462" y="232" width="70" height="28" rx="6" fill="#2a2e20"/>
+        <text x="320" y="222" text-anchor="middle">moves + ball</text>
+        <circle cx="600" cy="246" r="22" fill="#2a2e20" stroke="#7ea35a"/>
+        <text x="600" y="250" text-anchor="middle">map</text>
+      </svg>
+      <p class="legend">
+        Party is six dots on the left, not cards. Quest is one chip, not a banner.
+        Moves and the ball share a short dock. Minimap sits on the bottom-right so it
+        stops fighting the sky. Chat only opens on Enter. This is the layout I would
+        ship first: the town stays the picture.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="tag">B · recommended when a fight starts</div>
+      <h2>Command Island</h2>
+      <img src="hud-concept-command-island.jpg" alt="Command Island HUD concept">
+      <svg class="wire" viewBox="0 0 640 280" aria-label="Command Island wireframe">
+        <rect x="8" y="8" width="624" height="264" fill="#161910" stroke="#3a3f2e"/>
+        <rect x="16" y="16" width="150" height="48" rx="6" fill="#2a2e20" stroke="#c9a227"/>
+        <text x="91" y="44" text-anchor="middle">quest card</text>
+        <rect x="500" y="16" width="70" height="70" rx="8" fill="#2a2e20"/>
+        <text x="535" y="55" text-anchor="middle">map</text>
+        <rect x="580" y="100" width="18" height="18" rx="3" fill="#2a2e20"/>
+        <rect x="580" y="124" width="18" height="18" rx="3" fill="#2a2e20"/>
+        <rect x="580" y="148" width="18" height="18" rx="3" fill="#2a2e20"/>
+        <text x="530" y="136">tools</text>
+        <rect x="200" y="198" width="36" height="36" rx="18" fill="#2a2e20"/>
+        <rect x="244" y="190" width="44" height="44" rx="22" fill="#2a2e20" stroke="#7ea35a"/>
+        <rect x="296" y="198" width="36" height="36" rx="18" fill="#2a2e20"/>
+        <text x="266" y="182" text-anchor="middle">rotate party</text>
+        <rect x="170" y="236" width="300" height="28" rx="14" fill="#22261a" stroke="#c9a227"/>
+        <text x="320" y="255" text-anchor="middle">partner + 4 moves + ball</text>
+      </svg>
+      <p class="legend">
+        One island at the bottom owns combat: active partner, four moves, ball.
+        The rest of the team is a three-portrait filmstrip you rotate (same idea as
+        Shift+Z today, just visible). Quest becomes a small card, not a strip.
+        Use this as the <em>battle / targeted</em> state of Quiet Overworld, not a second game.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="tag">C · if you want more RPG chrome</div>
+      <h2>Watch and World</h2>
+      <img src="hud-concept-watch-world.jpg" alt="Watch and World HUD concept">
+      <svg class="wire" viewBox="0 0 640 280" aria-label="Watch and World wireframe">
+        <rect x="8" y="8" width="624" height="264" fill="#161910" stroke="#3a3f2e"/>
+        <rect x="16" y="16" width="130" height="56" rx="8" fill="#2a2e20" stroke="#c9a227"/>
+        <text x="81" y="48" text-anchor="middle">trainer watch</text>
+        <rect x="540" y="16" width="80" height="64" rx="6" fill="#2a2e20"/>
+        <text x="580" y="52" text-anchor="middle">map</text>
+        <circle cx="612" cy="100" r="11" fill="#2a2e20" stroke="#7ea35a"/>
+        <circle cx="612" cy="126" r="11" fill="#2a2e20"/>
+        <circle cx="612" cy="152" r="11" fill="#2a2e20"/>
+        <circle cx="612" cy="178" r="11" fill="#2a2e20"/>
+        <circle cx="612" cy="204" r="11" fill="#2a2e20"/>
+        <circle cx="612" cy="230" r="11" fill="#2a2e20"/>
+        <text x="560" y="160">party rings</text>
+        <circle cx="320" cy="248" r="20" fill="#3a2a1a" stroke="#c9a227"/>
+        <path d="M290 230 A40 40 0 0 1 350 230" fill="none" stroke="#555"/>
+        <text x="320" y="214" text-anchor="middle">moves as a half-ring</text>
+      </svg>
+      <p class="legend">
+        Trainer status is a watch, not a banner. Party lives on the right as HP rings
+        so the left stay of the house stays clear. Moves only appear as a half-ring
+        around the ball when you have a target. Heavier than A, lighter than the mockup.
+        Good if you miss the trainer XP bar.
+      </p>
+    </section>
+
+    <section class="note">
+      <h3>How I would phase it</h3>
+      <p>
+        Ship Quiet Overworld as the default. When you lock a wild Pokémon or enter a trainer fight,
+        the dock grows into Command Island. F8 still opens the current GM sheet. Chat stays a
+        slide-over, not a permanent pane. Do not implement the mockup’s left party wall — it
+        will always win against the 3D scene.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
