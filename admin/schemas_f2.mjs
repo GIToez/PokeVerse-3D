@@ -96,25 +96,26 @@ function validarRecompensa(r) {
   }
   return null;
 }
-function validarCapitulos(d) {
-  if (!Array.isArray(d)) return falha('expected the list of chapters');
-  if (d.length > 200) return falha('too many chapters');
-  const caps = new Set(), mis = new Set(), out = [];
+function validarGrupos(d, ids, rotulo) {
+  if (!Array.isArray(d)) return falha(`expected the list of ${rotulo}s`);
+  if (d.length > 200) return falha(`too many ${rotulo}s`);
+  const grupos = new Set(), out = [];
   for (const [ci, c] of d.entries()) {
-    const onde = `[chapter ${ci + 1}]`;
+    const onde = `[${rotulo} ${ci + 1}]`;
     if (!ehObj(c)) return falha(onde + ' invalid');
-    if (!inteiro(c.id, 1, 99999) || caps.has(c.id)) return falha(onde + ' "id" empty or duplicated');
-    caps.add(c.id);
+    if (!inteiro(c.id, 1, 99999) || grupos.has(c.id)) return falha(onde + ' "id" empty or duplicated');
+    grupos.add(c.id);
     if (typeof c.nome !== 'string' || !c.nome.trim() || c.nome.length > 80) return falha(onde + ' missing name (up to 80 characters)');
     if (!Array.isArray(c.missoes) || c.missoes.length > 200) return falha(onde + ' "missoes" must be a list');
     const missoes = [];
     for (const [mi, m] of c.missoes.entries()) {
       const om = `${onde} [quest ${mi + 1}]`;
       if (!ehObj(m)) return falha(om + ' invalid');
-      if (!inteiro(m.id, 1, 999999999) || mis.has(m.id)) return falha(om + ' "id" empty or duplicated (the id is unique across the whole game: the save stores it)');
-      mis.add(m.id);
+      if (!inteiro(m.id, 1, 999999999) || ids.has(m.id)) return falha(om + ' "id" empty or duplicated (the id is unique across the whole game: the save stores it)');
+      ids.add(m.id);
       if (typeof m.nome !== 'string' || !m.nome.trim() || m.nome.length > 100) return falha(om + ' missing name (up to 100 characters)');
       if (m.des != null && (typeof m.des !== 'string' || m.des.length > 400)) return falha(om + ' description of up to 400 characters');
+      if (m.npc != null && !inteiro(m.npc, 1, 999999999)) return falha(om + ' "npc": the quest giver cfg');
       if (!Array.isArray(m.passos) || !m.passos.length || m.passos.length > 40) return falha(om + ' needs 1 to 40 steps');
       const passos = [];
       for (const [pi, p] of m.passos.entries()) {
@@ -123,11 +124,22 @@ function validarCapitulos(d) {
         passos.push(JSON.parse(JSON.stringify(p)));
       }
       if (m.recompensa != null) { const e = validarRecompensa(m.recompensa); if (e) return falha(om + ' ' + e); }
-      missoes.push({ ...extras(m, ['id', 'nome', 'des', 'passos', 'recompensa']), id: m.id, nome: m.nome, ...(m.des != null ? { des: m.des } : {}), passos,
+      missoes.push({ ...extras(m, ['id', 'nome', 'des', 'npc', 'passos', 'recompensa']), id: m.id, nome: m.nome, ...(m.des != null ? { des: m.des } : {}), ...(m.npc != null ? { npc: m.npc } : {}), passos,
         ...(m.recompensa != null ? { recompensa: JSON.parse(JSON.stringify(m.recompensa)) } : {}) });
     }
     out.push({ ...extras(c, ['id', 'nome', 'missoes']), id: c.id, nome: c.nome, missoes });
   }
+  return ok(out);
+}
+function validarArquivoMissoes(d) {
+  const raw = Array.isArray(d) ? { capitulos: d, laterais: [] } : d;
+  if (!ehObj(raw)) return falha('expected { capitulos, laterais }');
+  const ids = new Set();
+  const caps = validarGrupos(raw.capitulos || [], ids, 'chapter');
+  if (!caps.ok) return caps;
+  const sides = validarGrupos(raw.laterais || [], ids, 'side quest group');
+  if (!sides.ok) return sides;
+  const out = { ...extras(raw, ['capitulos', 'laterais']), capitulos: caps.v, laterais: sides.v };
   if (JSON.stringify(out).length > 3e6) return falha('quests too large');
   return ok(out);
 }
@@ -248,9 +260,9 @@ export const ESQUEMAS_F2 = {
     campos: [],
   },
   missoes: {
-    titulo: 'Quests', arquivo: 'missions', caminho: 'capitulos', forma: 'lista', tela: 'missoes', naLista: true,
-    descricao: 'Story chapters, quests, steps and rewards (own screen).',
-    colecao: validarCapitulos,
+    titulo: 'Quests', arquivo: 'missions', forma: 'objeto', tela: 'missoes', naLista: true,
+    descricao: 'Main story chapters and side quest groups: quests, steps and rewards (own screen).',
+    colecao: validarArquivoMissoes,
     campos: [],
   },
   evolucoes: {

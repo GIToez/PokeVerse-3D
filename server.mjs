@@ -30,7 +30,8 @@ fs.mkdirSync(DADOS, { recursive: true });
 const VERSAO_REDE = 19;   // deve bater com network.mjs (18+ understands bat_*; 19 adds PvP invites)
 
 // ── Missões ──────────────────────────────────────────────────────────────────
-const MISSOES = {};       // id → missao
+const MISSOES = {};       // id → missao (main story)
+const LATERAIS = {};      // id → side quest
 const MISSAO_SEQ = [];    // ids na ordem certa
 /* Fase 2: data/missions.json é a fonte das missões (o painel admin edita); relido quando o arquivo muda (mtime), então salvar no
    painel vale no próximo evento, sem reiniciar. Arquivo quebrado = fica com as missões que já estavam carregadas. */
@@ -43,10 +44,13 @@ function carregarMissoes() {
   try {
     const md = JSON.parse(fs.readFileSync(arq, 'utf8'));
     for (const k of Object.keys(MISSOES)) delete MISSOES[k];
+    for (const k of Object.keys(LATERAIS)) delete LATERAIS[k];
     MISSAO_SEQ.length = 0;
     for (const cap of md.capitulos || [])
       for (const m of cap.missoes || []) { MISSOES[m.id] = m; MISSAO_SEQ.push(m.id); }
-    console.log('Missions loaded:', MISSAO_SEQ.length);
+    for (const g of md.laterais || [])
+      for (const m of g.missoes || []) { LATERAIS[m.id] = m; }
+    console.log('Missions loaded:', MISSAO_SEQ.length, 'side quests:', Object.keys(LATERAIS).length);
   } catch(e) { console.warn('Missions not loaded:', e.message); }
 }
 carregarMissoes();
@@ -54,11 +58,14 @@ carregarMissoes();
 function missaoEstadoDe(u) {
   carregarMissoes();
   const s = contas[u]?.save;
-  if (!s?.missoes) return { atual: MISSAO_SEQ[0] || null, passo: 0, prog: {}, feitas: [] };
+  if (!s?.missoes) return { atual: MISSAO_SEQ[0] || null, passo: 0, prog: {}, feitas: [], laterais: { ativas: {}, feitas: [] } };
   /* o painel pode ter apagado a missão em que o jogador estava (ou passos dela): segue pra próxima não feita em vez de travar */
   const est = s.missoes;   // …e quem já tinha feito tudo pega a missão nova que o painel acrescentou
   if (est.atual == null || !MISSOES[est.atual]) { const prox = proximaMissao(Array.isArray(est.feitas) ? est.feitas : []); if (prox !== est.atual) { est.atual = prox; est.passo = 0; } }
   else if (est.atual != null && est.passo >= (MISSOES[est.atual].passos?.length || 0)) est.passo = Math.max(0, (MISSOES[est.atual].passos?.length || 1) - 1);
+  if (!est.laterais || typeof est.laterais !== 'object') est.laterais = { ativas: {}, feitas: [] };
+  if (!est.laterais.ativas || typeof est.laterais.ativas !== 'object') est.laterais.ativas = {};
+  if (!Array.isArray(est.laterais.feitas)) est.laterais.feitas = [];
   return est;
 }
 function salvarMissao(u, est) {
@@ -77,15 +84,77 @@ function proximaMissao(feitas) {
   for (const id of MISSAO_SEQ) if (!feitas.includes(id)) return id;
   return null;
 }
+function casarPasso(p, ev) {
+  if (!p || !ev) return 'none';
+  switch (p.tipo) {
+    case 'falar':
+    case 'entregar':
+      return ev.tipo === 'falar' && cfgOk(p.cfgs || p.cfg, ev.cfg) ? 'done' : 'none';
+    case 'ir':
+      return ev.tipo === 'area' && String(ev.area) === String(p.area) ? 'done' : 'none';
+    case 'capturar':
+      return ev.tipo === 'captura' && (!p.dex || p.dex.includes(ev.dex)) ? 'count' : 'none';
+    case 'derrotar':
+      if (p.selvagem && ev.tipo === 'selvagem' && (!p.dex || p.dex.includes(ev.dex)) && (!p.area || String(ev.area) === String(p.area))) return 'count';
+      if (!p.selvagem && ev.tipo === 'treinador' && cfgOk(p.cfg, ev.cfg)) return 'done';
+      return 'none';
+    case 'nivel':
+      return ev.tipo === 'nivel' && ev.lv >= p.lv ? 'done' : 'none';
+    case 'inicial':
+      return ev.tipo === 'inicial' ? 'done' : 'none';
+    case 'curar':
+      return ev.tipo === 'cura' && (!p.cfg || cfgOk(p.cfg, ev.cfg)) ? 'done' : 'none';
+    case 'insignia':
+      return ev.tipo === 'insignia' ? 'done' : 'none';
+  }
+  return 'none';
+}
+function aceitarLateral(u, id) {
+  const mid = Number(id);
+  const m = LATERAIS[mid] || LATERAIS[id];
+  if (!m) return { ok: false, erro: 'Unknown side quest.' };
+  const est = missaoEstadoDe(u);
+  const L = est.laterais;
+  if ((L.feitas || []).map(String).includes(String(m.id))) return { ok: false, erro: 'Already completed.' };
+  if (L.ativas[m.id] || L.ativas[String(m.id)]) return { ok: true, estado: est };
+  if (Object.keys(L.ativas).length >= 10) return { ok: false, erro: 'Too many active side quests.' };
+  L.ativas[m.id] = { passo: 0, prog: {} };
+  salvarMissao(u, est);
+  return { ok: true, estado: est };
+}
+function aplicarLaterais(u, est, ev) {
+  let passoFeito = false, concluida = null;
+  for (const key of Object.keys(est.laterais.ativas || {})) {
+    const slot = est.laterais.ativas[key];
+    const m = LATERAIS[+key] || LATERAIS[key];
+    if (!m || !slot) continue;
+    const p = m.passos?.[slot.passo || 0];
+    if (!p) continue;
+    const hit = passoJaFeito(u, p) ? 'done' : casarPasso(p, ev);
+    if (hit === 'none') continue;
+    const chave = m.id + ':' + (slot.passo || 0);
+    if (!slot.prog) slot.prog = {};
+    if (hit === 'count') {
+      slot.prog[chave] = (slot.prog[chave] || 0) + 1;
+      if (slot.prog[chave] < (p.n || 1)) { passoFeito = true; continue; }
+    }
+    slot.passo = (slot.passo || 0) + 1;
+    while (slot.passo < m.passos.length && passoJaFeito(u, m.passos[slot.passo])) slot.passo++;
+    passoFeito = true;
+    if (slot.passo >= m.passos.length) {
+      delete est.laterais.ativas[key];
+      if (!est.laterais.feitas.map(String).includes(String(m.id))) est.laterais.feitas.push(m.id);
+      concluida = m;
+    }
+  }
+  return passoFeito || concluida ? { passoFeito, concluida } : null;
+}
 /** Aplica um evento ao estado de missões do usuário; devolve { estado, passoFeito, concluida } ou null. */
 function aplicarEvento(u, ev) {
   if (!contas[u]) return null;
   const est = missaoEstadoDe(u);
-  if (!est.atual) return null;
-  const m = MISSOES[est.atual];
-  if (!m) return null;
-  const p = m.passos?.[est.passo];
-  if (!p) return null;
+  const m = est.atual ? MISSOES[est.atual] : null;
+  const p = m?.passos?.[est.passo];
   const chave = est.atual + ':' + est.passo;
 
   const concluirPasso = () => {
@@ -102,47 +171,54 @@ function aplicarEvento(u, ev) {
     salvarMissao(u, est);
     return { estado: est, passoFeito: true, concluida: null };
   };
-  if (passoJaFeito(u, p)) return concluirPasso();                         // conta que já travou num passo cumprido destrava no próximo evento
-
-  switch (p.tipo) {
-    case 'falar':
-    case 'entregar':
-      if (ev.tipo === 'falar' && cfgOk(p.cfgs || p.cfg, ev.cfg)) return concluirPasso();
-      break;
-    case 'ir':
-      if (ev.tipo === 'area' && String(ev.area) === String(p.area)) return concluirPasso();
-      break;
-    case 'capturar':
-      if (ev.tipo === 'captura' && (!p.dex || p.dex.includes(ev.dex))) {
-        est.prog[chave] = (est.prog[chave] || 0) + 1;
-        if (est.prog[chave] >= (p.n || 1)) return concluirPasso();
-        salvarMissao(u, est);
-        return { estado: est, passoFeito: false, concluida: null };
+  let resultado = null;
+  if (m && p) {
+    if (passoJaFeito(u, p)) resultado = concluirPasso();
+    else {
+      switch (p.tipo) {
+        case 'falar':
+        case 'entregar':
+          if (ev.tipo === 'falar' && cfgOk(p.cfgs || p.cfg, ev.cfg)) resultado = concluirPasso();
+          break;
+        case 'ir':
+          if (ev.tipo === 'area' && String(ev.area) === String(p.area)) resultado = concluirPasso();
+          break;
+        case 'capturar':
+          if (ev.tipo === 'captura' && (!p.dex || p.dex.includes(ev.dex))) {
+            est.prog[chave] = (est.prog[chave] || 0) + 1;
+            if (est.prog[chave] >= (p.n || 1)) resultado = concluirPasso();
+            else { salvarMissao(u, est); resultado = { estado: est, passoFeito: false, concluida: null }; }
+          }
+          break;
+        case 'derrotar':
+          if (p.selvagem && ev.tipo === 'selvagem' && (!p.dex || p.dex.includes(ev.dex)) && (!p.area || String(ev.area) === String(p.area))) {
+            est.prog[chave] = (est.prog[chave] || 0) + 1;
+            if (est.prog[chave] >= (p.n || 1)) resultado = concluirPasso();
+            else { salvarMissao(u, est); resultado = { estado: est, passoFeito: false, concluida: null }; }
+          }
+          if (!p.selvagem && ev.tipo === 'treinador' && cfgOk(p.cfg, ev.cfg)) resultado = concluirPasso();
+          break;
+        case 'nivel':
+          if (ev.tipo === 'nivel' && ev.lv >= p.lv) resultado = concluirPasso();
+          break;
+        case 'inicial':
+          if (ev.tipo === 'inicial') resultado = concluirPasso();
+          break;
+        case 'curar':
+          if (ev.tipo === 'cura' && (!p.cfg || cfgOk(p.cfg, ev.cfg))) resultado = concluirPasso();
+          break;
+        case 'insignia':
+          if (ev.tipo === 'insignia') resultado = concluirPasso();
+          break;
       }
-      break;
-    case 'derrotar':
-      if (p.selvagem && ev.tipo === 'selvagem' && (!p.dex || p.dex.includes(ev.dex)) && (!p.area || String(ev.area) === String(p.area))) {
-        est.prog[chave] = (est.prog[chave] || 0) + 1;
-        if (est.prog[chave] >= (p.n || 1)) return concluirPasso();
-        salvarMissao(u, est);
-        return { estado: est, passoFeito: false, concluida: null };
-      }
-      if (!p.selvagem && ev.tipo === 'treinador' && cfgOk(p.cfg, ev.cfg)) return concluirPasso();
-      break;
-    case 'nivel':
-      if (ev.tipo === 'nivel' && ev.lv >= p.lv) return concluirPasso();
-      break;
-    case 'inicial':
-      if (ev.tipo === 'inicial') return concluirPasso();
-      break;
-    case 'curar':
-      if (ev.tipo === 'cura' && (!p.cfg || cfgOk(p.cfg, ev.cfg))) return concluirPasso();
-      break;
-    case 'insignia':
-      if (ev.tipo === 'insignia') return concluirPasso();
-      break;
+    }
   }
-  return null;
+  const lado = aplicarLaterais(u, est, ev);
+  if (lado) {
+    salvarMissao(u, est);
+    return { estado: est, passoFeito: !!(resultado?.passoFeito || lado.passoFeito), concluida: resultado?.concluida || lado.concluida };
+  }
+  return resultado;
 }
 /* Passo cumprido antes de virar o atual. Ex. (27/10): a 1ª missão travava em "Vá ao laboratório" — o evento de área não
    chegava, a pessoa escolhia o inicial com o passo ainda em 'ir', e o 'inicial' não acontece de novo. */
@@ -1270,6 +1346,13 @@ wss.on('connection', ws => {
         if (uIg) enviarMissao(ws, aplicarEvento(uIg, { tipo: 'insignia', id: m.id, numero: m.numero }));
         break;
       }
+      case 'missao_aceitar': {
+        const uAc = sessoes.get(ws._info?.token) || null;
+        if (!uAc) break;
+        const rAc = aceitarLateral(uAc, m.id);
+        enviar(ws, { t: 'missao', estado: rAc.estado || missaoEstadoDe(uAc), aceitou: rAc.ok ? m.id : null, erro: rAc.erro || null, nome: (LATERAIS[m.id] || LATERAIS[+m.id])?.nome || null });
+        break;
+      }
 
       // ── Posse de Pokémon (captura, soltar, etc.) ─────────────────────────
       default: {
@@ -1335,10 +1418,13 @@ wss.on('connection', ws => {
           if (op === 'missao' && m.missao && c) {
             // ANTI-TRAPAÇA: só paga se a missão foi REALMENTE concluída (está em feitas) e ainda NÃO foi paga.
             const est = c.save?.missoes;
-            const feita = !!(est && Array.isArray(est.feitas) && est.feitas.includes(m.missao));
+            const feita = !!(est && (
+              (Array.isArray(est.feitas) && est.feitas.includes(m.missao))
+              || (Array.isArray(est.laterais?.feitas) && est.laterais.feitas.includes(m.missao))
+            ));
             if (c.save && !Array.isArray(c.save.recompensasPagas)) c.save.recompensasPagas = [];
             const jaPaga = !!c.save?.recompensasPagas?.includes(m.missao);
-            const miss = MISSOES[m.missao];
+            const miss = MISSOES[m.missao] || LATERAIS[m.missao];
             const rec = recompensaMissao(miss);
             if (feita && !jaPaga && rec && c.save) {
               c.save.recompensasPagas.push(m.missao);

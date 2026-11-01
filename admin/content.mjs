@@ -113,6 +113,9 @@ const CSS = `
 .f2 { display: grid; grid-template-columns: 300px 1fr; height: 100%; }
 .f2 .col-esq { background: var(--painel); border-right: 1px solid var(--borda); display: grid; grid-template-rows: auto 1fr; min-height: 0; }
 .f2 .col-esq .topo { padding: 10px; display: grid; gap: 8px; border-bottom: 1px solid var(--borda); }
+.f2 .abas-tipo { display: flex; gap: 6px; }
+.f2 .abas-tipo button { flex: 1; }
+.f2 .abas-tipo button.on { border-color: var(--azul); background: #23304a; }
 .f2 .lista { overflow: auto; padding: 6px; display: grid; gap: 2px; align-content: start; }
 .f2 .lista button { display: flex; gap: 8px; justify-content: space-between; align-items: center; text-align: left; background: none; border: 1px solid transparent; padding: 5px 8px; }
 .f2 .lista button:hover { background: var(--painel2); }

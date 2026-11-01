@@ -6889,6 +6889,7 @@ async function falarCom(n){
   try { await mostrarFala(n.nome, falaMissao || (n.falas.length ? n.falas : ['…']), n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
   if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });         // passo 5: quem marca o passo é o SERVIDOR (ele confere que você está do lado do NPC)
+  if (jogo.missoesOk) Missoes.oferecerSeNpc?.(n.cfg);
   if (n.papel === 'cura') curarTime(n);                                    // Joy: cura o time depois da fala
   else if (n.papel === 'caixa') Menus.abrir('pokemon', 'caixa');           // balcão do PC: abre a Caixa
   else if (n.papel === 'loja') Menus.abrir('mercado', String(n.cfg));         // vendedor: a loja da cidade (o cfg remapeado É o id da loja)
@@ -7566,6 +7567,7 @@ if (jogo.ash){
       Som.tocar('ui/sound_pkmnhealing', { volume: .5 });
     },
     pintar: () => atualizarMissao(),
+    enviar: m => { try { Rede.enviar(m); } catch {} },
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();

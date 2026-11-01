@@ -22,17 +22,18 @@ const LS = 'missoes';
 export async function instalar(c){
   ctx = c;
   if (pendente){ ctx.gravarLS(LS, pendente); pendente = null; }           // o servidor falou antes do instalar: o estado dele vale
-  dados = await fetch('./data/missions.json').then(r => r.json()).catch(e => { console.warn('missions.json:', e); return { capitulos: [] }; });
+  dados = await fetch('./data/missions.json').then(r => r.json()).catch(e => { console.warn('missions.json:', e); return { capitulos: [], laterais: [] }; });
   estado = ctx.lerLS(LS, null);
   if (estado){                                                            // estado antigo/malformado (sem feitas/prog): completa em vez de quebrar ("reading 'includes'")
     estado.feitas = Array.isArray(estado.feitas) ? estado.feitas : [];
     estado.prog = estado.prog && typeof estado.prog === 'object' ? estado.prog : {};
     estado.passo = Number.isInteger(estado.passo) ? estado.passo : 0;
+    normalizarLaterais();
     if (estado.atual !== null && !porId(estado.atual)){ estado.atual = primeiraMissao()?.id ?? null; estado.passo = 0; }
     gravar();
   }
   if (!estado){
-    estado = { atual: primeiraMissao()?.id || null, passo: 0, prog: {}, feitas: [] };
+    estado = { atual: primeiraMissao()?.id || null, passo: 0, prog: {}, feitas: [], laterais: { ativas: {}, feitas: [] } };
     // quem já jogava antes do motor: inicial escolhido = capítulo 1 já começou; não perde nada, só reconta os passos
     gravar();
   }
@@ -52,7 +53,97 @@ export function progresso(){ return estado.prog[estado.atual + ':' + estado.pass
 export function indicePasso(){ return estado?.passo ?? 0; }
 export function pronto(){ return !!dados; }
 export function capitulos(){ return (dados?.capitulos || []).map(c => ({ ...c, missoes: c.missoes.map(m => ({ ...m, estado: estadoDe(m.id) })) })); }
-export function reiniciar(){ estado = { atual: primeiraMissao()?.id || null, passo: 0, prog: {}, feitas: [] }; gravar(); ctx.pintar?.(); }
+export function reiniciar(){ estado = { atual: primeiraMissao()?.id || null, passo: 0, prog: {}, feitas: [], laterais: { ativas: {}, feitas: [] } }; gravar(); ctx.pintar?.(); }
+
+function normalizarLaterais(){
+  if (!estado) return { ativas: {}, feitas: [] };
+  if (!estado.laterais || typeof estado.laterais !== 'object') estado.laterais = { ativas: {}, feitas: [] };
+  if (!estado.laterais.ativas || typeof estado.laterais.ativas !== 'object') estado.laterais.ativas = {};
+  if (!Array.isArray(estado.laterais.feitas)) estado.laterais.feitas = [];
+  return estado.laterais;
+}
+const gruposLaterais = () => (dados?.laterais || []);
+const todasLaterais = () => gruposLaterais().flatMap(g => (g.missoes || []).map(m => ({ ...m, grupo: g.id, grupoNome: g.nome })));
+const lateralPorId = id => todasLaterais().find(m => String(m.id) === String(id)) || null;
+function estadoLateral(id){
+  const S = normalizarLaterais();
+  if (S.feitas.map(String).includes(String(id))) return 'feita';
+  if (S.ativas[id] || S.ativas[String(id)]) return 'ativa';
+  return 'disponivel';
+}
+export function lateraisGrupos(){
+  const S = normalizarLaterais();
+  return gruposLaterais().map(g => ({ ...g, missoes: (g.missoes || []).map(m => {
+    const slot = S.ativas[m.id] || S.ativas[String(m.id)];
+    return { ...m, estado: estadoLateral(m.id), grupo: g.id, grupoNome: g.nome, passo: slot ? slot.passo || 0 : null, feitos: slot ? (slot.prog?.[m.id + ':' + (slot.passo || 0)] || 0) : 0 };
+  }) }));
+}
+export function laterais(){ return lateraisGrupos().flatMap(g => g.missoes); }
+export function lateraisDoNpc(cfg){
+  return laterais().filter(m => m.estado === 'disponivel' && m.npc != null && Number(m.npc) === Number(cfg));
+}
+export function aceitarLateral(id){
+  const m = lateralPorId(id); if (!m || estadoLateral(id) !== 'disponivel') return false;
+  const S = normalizarLaterais();
+  if (Object.keys(S.ativas).length >= 10){ ctx.aviso?.('You already have too many side quests active.'); return false; }
+  S.ativas[m.id] = { passo: 0, prog: {} };
+  gravar();
+  ctx.aviso?.('📜 Side quest: ' + m.nome, { destaque: true });
+  ctx.enviar?.({ t: 'missao_aceitar', id: m.id });
+  ctx.pintar?.();
+  return true;
+}
+function trilhasLaterais(){
+  const S = normalizarLaterais(), out = [];
+  for (const [id, a] of Object.entries(S.ativas || {})){
+    const m = lateralPorId(id);
+    if (m && a) out.push({ m, passo: a.passo || 0, prog: a.prog || {}, id: m.id });
+  }
+  return out;
+}
+function concluirPassoLateral(T){
+  const S = normalizarLaterais();
+  const slot = S.ativas[T.id] || S.ativas[String(T.id)];
+  if (!slot) return;
+  slot.passo = (slot.passo || 0) + 1;
+  ctx.aviso?.('✔ ' + (T.m.passos[slot.passo - 1]?.texto || 'step complete'));
+  if (slot.passo >= T.m.passos.length){
+    delete S.ativas[T.id]; delete S.ativas[String(T.id)];
+    if (!S.feitas.map(String).includes(String(T.id))) S.feitas.push(T.id);
+    gravar();
+    ctx.recompensa?.(T.m.recompensa || {}, T.m);
+    ctx.aviso?.('🏁 Side quest complete: ' + T.m.nome, { destaque: true });
+  } else gravar();
+  ctx.pintar?.();
+}
+export function oferecerSeNpc(cfg){
+  const list = lateraisDoNpc(cfg);
+  if (!list.length || document.querySelector('.sec-oferta')) return false;
+  mostrarOferta(list[0]);
+  return true;
+}
+function mostrarOferta(m){
+  document.querySelector('.sec-oferta')?.remove();
+  const d = document.createElement('div');
+  d.className = 'sec-oferta';
+  d.innerHTML = `<div class="sec-oferta-caixa">
+    <small>SIDE QUEST</small>
+    <b>${esc(tr(m.nome))}</b>
+    <p>${esc(tr(m.des || ''))}</p>
+    <div class="sec-oferta-obj">${(m.passos || []).map(p => `<div>○ ${esc(tr(p.texto))}</div>`).join('')}</div>
+    <div class="sec-oferta-rec">${esc(textoRecompensa(m) || '')}</div>
+    <div class="sec-oferta-btns"><button type="button" data-a="nao">${esc(tr('Not now'))}</button><button type="button" class="ok" data-a="sim">${esc(tr('Accept'))}</button></div>
+  </div>`;
+  Object.assign(d.style, { position: 'fixed', inset: '0', zIndex: '640', display: 'grid', placeItems: 'center', background: '#0007' });
+  const k = d.firstElementChild;
+  Object.assign(k.style, { width: 'min(440px, calc(100% - 32px))', background: 'linear-gradient(180deg,#1a2746,#0d1424)', border: '2px solid #c9a24a', borderRadius: '16px', padding: '18px 20px', color: '#dbe4f5', display: 'grid', gap: '8px', font: '13px/1.45 system-ui,sans-serif' });
+  k.querySelector('small').style.cssText = 'color:#c9a24a;letter-spacing:.08em;font-weight:800';
+  k.querySelector('b').style.cssText = 'font:800 20px/1.2 system-ui;color:#fff';
+  d.querySelector('[data-a="nao"]').onclick = () => d.remove();
+  d.querySelector('[data-a="sim"]').onclick = () => { aceitarLateral(m.id); d.remove(); };
+  document.body.append(d);
+  ctx.segurar?.(d);
+}
 
 /* ---------------------------------------------------------------- avanço */
 function concluirPasso(){
@@ -97,7 +188,8 @@ let pendente = null;                                                      // 26/
 export function aplicarDoServidor(novo){
   if (!novo || typeof novo !== 'object') return false;
   doServidor = true;
-  estado = { atual: novo.atual ?? null, passo: novo.passo || 0, prog: novo.prog || {}, feitas: Array.isArray(novo.feitas) ? novo.feitas : [] };
+  estado = { atual: novo.atual ?? null, passo: novo.passo || 0, prog: novo.prog || {}, feitas: Array.isArray(novo.feitas) ? novo.feitas : [], laterais: novo.laterais || { ativas: {}, feitas: [] } };
+  normalizarLaterais();
   if (!ctx){ pendente = estado; return true; }
   gravar();
   ctx.pintar?.();                                                         // o rastreador da HUD mostra o passo novo
@@ -113,6 +205,11 @@ const AVISAR_SERVIDOR = new Set(['selvagem', 'treinador', 'cura', 'nivel', 'insi
 export function evento(ev){
   if (AVISAR_SERVIDOR.has(ev?.tipo)) ctx?.avisarServidor?.(ev);
   if (doServidor) return false;                                           // o servidor é quem marca; o cliente só avisa (index: missao_falar)
+  let mudou = aplicarEventoPrincipal(ev);
+  mudou = aplicarEventoLaterais(ev) || mudou;
+  return mudou;
+}
+function aplicarEventoPrincipal(ev){
   const p = passoAtual(); if (!p || !ev) return false;
   const chave = estado.atual + ':' + estado.passo;
   const conta = (n) => { estado.prog[chave] = (estado.prog[chave] || 0) + 1; gravar(); ctx.pintar?.(); if (estado.prog[chave] >= n){ concluirPasso(); return true; } return true; };
@@ -160,6 +257,27 @@ export function evento(ev){
   }
   return false;
 }
+function aplicarEventoLaterais(ev){
+  if (!ev) return false;
+  let mudou = false;
+  for (const T of trilhasLaterais()){
+    const p = T.m.passos[T.passo]; if (!p) continue;
+    const chave = T.id + ':' + T.passo;
+    const conta = (n) => { T.prog[chave] = (T.prog[chave] || 0) + 1; const slot = normalizarLaterais().ativas[T.id] || normalizarLaterais().ativas[String(T.id)]; if (slot) slot.prog = T.prog; gravar(); ctx.pintar?.(); if (T.prog[chave] >= n) concluirPassoLateral(T); return true; };
+    const cfgOk = (alvo, cfg) => alvo == null || cfg == null ? false : (Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg));
+    if (p.tipo === 'falar' && ev.tipo === 'falar' && cfgOk(p.cfgs || p.cfg, ev.cfg)){ concluirPassoLateral(T); mudou = true; }
+    else if (p.tipo === 'entregar' && ev.tipo === 'falar' && cfgOk(p.cfg, ev.cfg)){ concluirPassoLateral(T); mudou = true; }
+    else if (p.tipo === 'ir' && ev.tipo === 'area' && ev.area === p.area){ concluirPassoLateral(T); mudou = true; }
+    else if (p.tipo === 'capturar' && ev.tipo === 'captura' && (!p.dex || p.dex.includes(ev.dex))){ conta(p.n || 1); mudou = true; }
+    else if (p.tipo === 'derrotar' && p.selvagem && ev.tipo === 'selvagem' && (!p.dex || p.dex.includes(ev.dex)) && (!p.area || ev.area === p.area)){ conta(p.n || 1); mudou = true; }
+    else if (p.tipo === 'derrotar' && !p.selvagem && ev.tipo === 'treinador' && (!p.cfg || cfgOk(p.cfg, ev.cfg)) && (!p.area || ev.area === p.area)){ conta(p.n || 1); mudou = true; }
+    else if (p.tipo === 'nivel' && ev.tipo === 'nivel' && ev.lv >= p.lv){ concluirPassoLateral(T); mudou = true; }
+    else if (p.tipo === 'inicial' && ev.tipo === 'inicial'){ concluirPassoLateral(T); mudou = true; }
+    else if (p.tipo === 'curar' && ev.tipo === 'cura' && (!p.cfg || cfgOk(p.cfg, ev.cfg)) && (!p.cena || String(p.cena) === String(ev.cena))){ concluirPassoLateral(T); mudou = true; }
+    else if ((p.tipo === 'item' && ev.tipo === 'item') || (p.tipo === 'insignia' && ev.tipo === 'insignia')) mudou = true;
+  }
+  return mudou;
+}
 /** Fala extra quando o passo atual aponta pra esse NPC (a linha da missão vem antes da ação). */
 function cfgAlvo(alvo, cfg){
   if (alvo == null || cfg == null) return false;
@@ -168,15 +286,15 @@ function cfgAlvo(alvo, cfg){
 /** Overhead mark for an NPC: yellow `!` = talk now / quest giver, yellow `?` = talk again,
  *  orange `?` = turn in an item, cyan `?` = heal, red `!` = trainer to beat, green `?` = talk later in this quest. */
 export function marcaPara(cfg, { papel = '', treinador = false } = {}){
-  const p = passoAtual(); if (!p) return null;
-  if ((p.tipo === 'falar' || p.tipo === 'entregar') && cfgAlvo(p.cfgs || p.cfg, cfg)){
+  const p = passoAtual();
+  if (p && (p.tipo === 'falar' || p.tipo === 'entregar') && cfgAlvo(p.cfgs || p.cfg, cfg)){
     if (p.tipo === 'entregar') return { sim: '?', cor: '#ff9f43' };
     const m = ativa();
     const jaFalou = !!(m && (m.passos || []).slice(0, estado.passo).some(x => (x.tipo === 'falar' || x.tipo === 'entregar') && cfgAlvo(x.cfgs || x.cfg, cfg)));
     return jaFalou ? { sim: '?', cor: '#ffd23a' } : { sim: '!', cor: '#ffd23a' };
   }
-  if (p.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!p.cfg || cfgAlvo(p.cfg, cfg))) return { sim: '?', cor: '#6ee7ff' };
-  if (p.tipo === 'derrotar' && treinador && (!p.cfg || cfgAlvo(p.cfgs || p.cfg, cfg))) return { sim: '!', cor: '#ff5b5b' };
+  if (p && p.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!p.cfg || cfgAlvo(p.cfg, cfg))) return { sim: '?', cor: '#6ee7ff' };
+  if (p && p.tipo === 'derrotar' && treinador && (!p.cfg || cfgAlvo(p.cfgs || p.cfg, cfg))) return { sim: '!', cor: '#ff5b5b' };
   const m = ativa();
   if (m) for (let i = (estado?.passo ?? 0) + 1; i < (m.passos || []).length; i++){
     const n = m.passos[i];
@@ -184,28 +302,44 @@ export function marcaPara(cfg, { papel = '', treinador = false } = {}){
     if (n.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!n.cfg || cfgAlvo(n.cfg, cfg))) return { sim: '?', cor: '#7dffb3' };
     if (n.tipo === 'derrotar' && treinador && (!n.cfg || cfgAlvo(n.cfgs || n.cfg, cfg))) return { sim: '!', cor: '#ff8aa8' };
   }
+  for (const T of trilhasLaterais()){
+    const q = T.m.passos[T.passo];
+    if (q && (q.tipo === 'falar' || q.tipo === 'entregar') && cfgAlvo(q.cfgs || q.cfg, cfg)) return { sim: q.tipo === 'entregar' ? '?' : '!', cor: '#c9a24a' };
+  }
+  if (lateraisDoNpc(cfg).length) return { sim: '!', cor: '#c9a24a' };
   return null;
 }
 export function falaPara(cfg){
-  const p = passoAtual(); if (!p || !p.fala) return null;
-  const alvo = p.cfgs || p.cfg; if (alvo == null) return null;
-  const ok = Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
-  return ok ? (Array.isArray(p.fala) ? p.fala : [p.fala]) : null;
+  const p = passoAtual();
+  if (p?.fala){
+    const alvo = p.cfgs || p.cfg;
+    if (alvo != null){
+      const ok = Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
+      if (ok) return Array.isArray(p.fala) ? p.fala : [p.fala];
+    }
+  }
+  for (const T of trilhasLaterais()){
+    const q = T.m.passos[T.passo];
+    if (!q?.fala) continue;
+    const alvo = q.cfgs || q.cfg; if (alvo == null) continue;
+    const ok = Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
+    if (ok) return Array.isArray(q.fala) ? q.fala : [q.fala];
+  }
+  return null;
 }
 /** HTML curto pro tracker da HUD. */
 export function textoTracker(){
-  const m = ativa(); if (!m) return null;
-  const p = passoAtual(); if (!p) return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b></div>';
-  const n = p.n || 0, prog = progresso();
+  const principal = ativa();
+  const lado = !principal ? trilhasLaterais()[0] : null;
+  const m = principal || lado?.m; if (!m) return null;
+  const passo = principal ? estado.passo : (lado?.passo || 0);
+  const p = m.passos[passo]; if (!p) return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b></div>';
+  const n = p.n || 0;
+  const prog = principal ? progresso() : (lado?.prog?.[m.id + ':' + passo] || 0);
   const cont = n > 1 || (n === 1 && (p.tipo === 'capturar' || p.tipo === 'derrotar')) ? ' <span class="prog">' + Math.min(prog, n) + '/' + n + '</span>' : '';
   const onde = p.onde ? '<small class="onde"> · ' + esc(tr(p.onde)) + '</small>' : '';
-  /* Nós fixos (b / span.passo / small.onde / small.rec): a HUD do Figma liga cada um a uma área da maquete; no CSS antigo
-     o `.passo::before` põe o " · " de volta. A recompensa vem de `m.recompensa` quando a missão tem. */
   const rec = textoRecompensa(m);
-  /* Dois blocos pro Figma ter onde encostar (missao-header/missao-corpo da maquete). Sem Figma o hud.css os
-     deixa `display:contents` e o texto continua corrido como antes. */
-  /* small.etapa (17/09, auditoria dos placeholders): objetivo atual / total, pra área txt/progresso da faixa do v2 (a maquete mostrava "3/5"); fora do Figma o hud.css esconde */
-  return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b><small class="etapa">' + (estado.passo + 1) + '/' + m.passos.length + '</small></div><div class="missao-corpo"><span class="passo">' + esc(tr(p.texto)) + cont + '</span>' + onde + (rec ? '<small class="rec">' + esc(tr('Reward:')) + ' ' + esc(rec) + '</small>' : '') + '</div>';
+  return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b><small class="etapa">' + (passo + 1) + '/' + m.passos.length + '</small></div><div class="missao-corpo"><span class="passo">' + esc(tr(p.texto)) + cont + '</span>' + onde + (rec ? '<small class="rec">' + esc(tr('Reward:')) + ' ' + esc(rec) + '</small>' : '') + '</div>';
 }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 /** "500 moedas · Pokébola ×5 · 120 XP" a partir do que a missão dá (campos como vierem: moedas/dinheiro, exp, itens {id: n} ou [{nome, n}]). */

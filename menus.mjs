@@ -121,7 +121,7 @@ function render(){
   if (!D){ dados().then(repintar); return; }                             /* 19/09 (#relatos, Firefox): clique numa aba ou capítulo do pop-up enquanto o menu_data.json ainda baixava (a 1ª janela aberta na sessão) chegava aqui com D null e quebrava em D.itens; espera a tabela e pinta de novo */
   if (aberta === 'pokemon' && popPk && Popup.aberto(popPk)){ encherPokemon(popPk); return; }
   if (aberta === 'mochila' && popMo && Popup.aberto(popMo)){ encherMochila(popMo); return; }
-  if (aberta === 'missoes' && popMi && Popup.aberto(popMi)){ encherMissoes(popMi); return; }
+  if (aberta === 'missoes' && popMi && Popup.aberto(popMi) && abaAtual !== 'laterais'){ encherMissoes(popMi); return; }
   if (aberta === 'treinador' && popTr && Popup.aberto(popTr)){ encherTreinador(popTr); return; }
   if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ encherMapa(popMa); return; }
   if (aberta === 'social' && popSo && Popup.aberto(popSo)){ encherSocial(popSo); return; }
@@ -1389,18 +1389,37 @@ async function encherPokedex(pop){
 
 /* ------------------------------------------------------------------ Missões */
 function rMissoes(corpo){
-  abas([{ id: 'principal', nome: 'Main' }]);
+  const aba = abas([{ id: 'principal', nome: 'Main story' }, { id: 'laterais', nome: 'Side quests' }]);
   const M = ctx.missoes;
-  if (!M?.pronto?.()){ corpo.innerHTML = '<div class="vazio">As missões ainda estão carregando…</div>'; return; }
-  const caps = M.capitulos(), ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
+  if (!M?.pronto?.()){ corpo.innerHTML = '<div class="vazio">Missions are still loading…</div>'; return; }
   const nomeItem = id => tr(D.itens[id]?.n || ('item ' + id));
   const rec = r => [r?.dinheiro ? r.dinheiro + ' coins' : null, ...Object.entries(r?.itens || {}).map(([id, n]) => esc(nomeItem(id)) + ' ×' + n), r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
-  const passoTxt = (p, i) => { const n = p.n || 0; const c = i === idx && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : ''; return esc(p.texto) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(p.onde) + ')</small>' : ''); };
-  const atual = ativa ? `<div class="missao-atual"><small style="color:var(--muted)">Capítulo ${ativa.capitulo} · ${esc(ativa.capNome)}</small><br><b>${esc(ativa.nome)}</b><br><span style="font-size:12px">${esc(ativa.des)}</span>
+  if (aba === 'laterais'){
+    const grupos = M.lateraisGrupos?.() || [];
+    const ativas = (M.laterais?.() || []).filter(m => m.estado === 'ativa');
+    const passoTxt = (m, p, i) => {
+      const n = p.n || 0, prog = m.feitos || 0;
+      const c = i === (m.passo || 0) && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : '';
+      return esc(tr(p.texto)) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : '');
+    };
+    const atual = ativas.length
+      ? ativas.map(m => `<div class="missao-atual"><small style="color:var(--muted)">SIDE QUEST · ${esc(tr(m.grupoNome || ''))}</small><br><b>${esc(tr(m.nome))}</b><br><span style="font-size:12px">${esc(tr(m.des || ''))}</span>
+        <div style="margin-top:8px;font-size:13px;line-height:1.5">${(m.passos || []).map((p, i) => `<div>${i < (m.passo || 0) ? '✔' : i === (m.passo || 0) ? '▶' : '○'} ${passoTxt(m, p, i)}</div>`).join('')}</div>
+        <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(m.recompensa)}</div></div>`).join('')
+      : '<div class="missao-atual"><b>No side quest accepted yet.</b><br><span style="font-size:12px">Talk to an NPC with a gold ! to take one. They never replace the main story.</span></div>';
+    corpo.innerHTML = atual + (grupos.length ? grupos.map(c => {
+      const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa');
+      return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length && c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length && c.missoes.length ? '✅' : aberta ? '▶️' : '○'} ${esc(tr(c.nome))} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '○'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des || ''))} · Reward: ${rec(m.recompensa)}</small></span></div>`).join('') || '<div class="fraco">No quests in this group yet.</div>'}</div></details>`;
+    }).join('') : '<div class="vazio">No side quests published yet. Add them in Admin → Missions → Side quests.</div>');
+    return;
+  }
+  const caps = M.capitulos(), ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
+  const passoTxt = (p, i) => { const n = p.n || 0; const c = i === idx && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : ''; return esc(tr(p.texto)) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : ''); };
+  const atual = ativa ? `<div class="missao-atual"><small style="color:var(--muted)">Chapter ${ativa.capitulo} · ${esc(tr(ativa.capNome))}</small><br><b>${esc(tr(ativa.nome))}</b><br><span style="font-size:12px">${esc(tr(ativa.des))}</span>
       <div style="margin-top:8px;font-size:13px;line-height:1.5">${ativa.passos.map((p, i) => `<div>${i < idx ? '✔' : i === idx ? '▶' : '○'} ${passoTxt(p, i)}</div>`).join('')}</div>
-      <div style="margin-top:6px;font-size:12px;color:var(--muted)">recompensa: ${rec(ativa.recompensa)}</div></div>`
-    : '<div class="missao-atual"><b>Você concluiu tudo o que existe por enquanto.</b><br><span style="font-size:12px">Mais capítulos chegam nas próximas versões.</span></div>';
-  corpo.innerHTML = atual + caps.map(c => { const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa'); return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length ? '✅' : aberta ? '▶️' : '🔒'} Capítulo ${c.id} — ${esc(c.nome)} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(m.nome)}</b><small>${esc(m.des)} · recompensa: ${rec(m.recompensa)}</small></span></div>`).join('')}</div></details>`; }).join('');
+      <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(ativa.recompensa)}</div></div>`
+    : '<div class="missao-atual"><b>You finished everything in the story for now.</b><br><span style="font-size:12px">More chapters arrive in later versions. Side quests stay on the other tab.</span></div>';
+  corpo.innerHTML = atual + caps.map(c => { const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa'); return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length ? '✅' : aberta ? '▶️' : '🔒'} Chapter ${c.id} — ${esc(tr(c.nome))} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des))} · Reward: ${rec(m.recompensa)}</small></span></div>`).join('')}</div></details>`; }).join('');
 }
 
 /* ============================================================ pop-up Missões (maquete do Figma, rodada 10)
@@ -1420,7 +1439,9 @@ function popupMi(){
   popMi.addEventListener('click', ev => {                                // clique no capítulo abre/fecha
     const c = ev.target?.closest?.('[data-fig^="capitulo-"]'); if (!c || /-missoes$/.test(c.dataset.fig)) return;
     const n = +c.dataset.fig.split('-')[1]; if (!n) return;
-    capAberto = capAberto === n ? null : n; render();
+    const item = popMi.__capsLista?.[n - 1];
+    const id = item?.id || n;
+    capAberto = capAberto === id ? null : id; render();
   });
   return popMi;
 }
@@ -1489,15 +1510,18 @@ function encherMissoes(pop){
   Popup.texto(pop, 'recompensa', ativa ? 'Reward: ' + textoRecompensaMi(ativa.recompensa) : '');
   // ---- lista de capítulos (altura variável)
   const caps = M.capitulos();
-  if (ativa && ativa.capitulo !== capAtivoVisto){ capAtivoVisto = ativa.capitulo; capAberto = ativa.capitulo; }   // abre o ativo UMA vez (e quando muda); depois o jogador manda — antes, fechar o ativo reabria no mesmo render
-  const linhas = Popup.clonarSerie(pop, 'lista-capitulos', 'capitulo-1', caps.length, 'capitulo');
-  const nMissoes = caps.reduce((a, c) => a + (capAberto === c.id ? c.missoes.length : 0), 0);
+  const sides = (M.lateraisGrupos?.() || []).map(g => ({ ...g, side: true, id: 10000 + g.id }));
+  const listaCaps = [...caps, ...sides];
+  pop.__capsLista = listaCaps;
+  if (ativa && ativa.capitulo !== capAtivoVisto){ capAtivoVisto = ativa.capitulo; capAberto = ativa.capitulo; }
+  const linhas = Popup.clonarSerie(pop, 'lista-capitulos', 'capitulo-1', listaCaps.length, 'capitulo');
+  const nMissoes = listaCaps.reduce((a, c) => a + (capAberto === c.id ? c.missoes.length : 0), 0);
   const grupoMolde = Popup.grupo(pop, 'capitulo-1-missoes');
   if (grupoMolde) grupoMolde.style.display = 'none';                     // o grupo da maquete não é usado: só o molde da linha
   const linhasMi = Popup.clonarSerie(pop, 'lista-capitulos', 'missao-1', Math.max(nMissoes, 1), 'missao');
   for (const el of linhasMi) el.style.display = 'none';
   let nLinha = 0, y = 0;
-  caps.forEach((c, i) => {
+  listaCaps.forEach((c, i) => {
     const linha = linhas[i]; if (!linha) return;
     const aberto = capAberto === c.id;
     linha.style.top = y + 'px';
@@ -1508,7 +1532,7 @@ function encherMissoes(pop){
     const est = feitas === c.missoes.length ? 'concluida' : c.missoes.some(m => m.estado === 'ativa') ? 'ativa' : 'bloqueada';
     const ic = Popup.no(pop, 'capitulo-estado', linha);
     if (ic){ const url = iconeEstado(pop, 'missao', est, 'objetivo-estado', ic); ic.style.backgroundImage = url ? 'url(' + url + ')' : 'none'; }
-    Popup.texto(pop, 'capitulo-nome', 'Capítulo ' + c.id + ' · ' + c.nome, linha);
+    Popup.texto(pop, 'capitulo-nome', (c.side ? 'Side · ' : 'Chapter ' + c.id + ' · ') + c.nome, linha);
     Popup.texto(pop, 'capitulo-progresso', feitas + '/' + c.missoes.length, linha);
     if (!aberto){ y += G.passoCap; return; }
     y += G.yGrupo;
