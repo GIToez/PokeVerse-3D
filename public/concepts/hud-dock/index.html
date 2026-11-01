@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HUD concept · slide dock + center island</title>
+  <style>
+    :root {
+      --bg: #12140f;
+      --paper: #1b1e16;
+      --ink: #e8e4d4;
+      --mute: #9a937c;
+      --line: #2c3124;
+      --accent: #c9a227;
+      --ok: #7ea35a;
+      --gold: #f2c23d;
+      --navy: #101624;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.5 Georgia, "Times New Roman", serif;
+    }
+    header, footer { padding: 40px 56px 20px; }
+    header { border-bottom: 1px solid var(--line); }
+    header p, footer p, .legend, li { color: var(--mute); }
+    h1, h2, h3 { font-family: Palatino, Georgia, serif; font-weight: 600; }
+    h1 { font-size: 32px; margin: 0 0 8px; letter-spacing: -0.02em; }
+    h2 { font-size: 22px; margin: 0 0 10px; }
+    .tag {
+      display: inline-block;
+      font: 11px/1.2 ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    main { padding: 28px 56px 72px; display: grid; gap: 28px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .note, .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 16px 18px;
+    }
+    .note h3 { margin: 0 0 8px; font-size: 15px; color: var(--accent); }
+    a { color: var(--gold); }
+    .stage-wrap { background: var(--paper); border: 1px solid var(--line); padding: 14px; }
+    .tools {
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px;
+      font: 13px/1 ui-sans-serif, system-ui, sans-serif;
+    }
+    .tools button {
+      background: #161910; color: var(--ink); border: 1px solid var(--line);
+      padding: 8px 12px; cursor: pointer; font: inherit;
+    }
+    .tools button.on, .tools button:hover { border-color: var(--accent); color: var(--gold); }
+    .stage {
+      position: relative;
+      height: min(62vh, 560px);
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 18%, #8ec4e8 0%, #5aa0d0 38%, transparent 39%),
+        linear-gradient(#6aa8d4 0 34%, #6f9a4a 34% 48%, #4e7a36 48% 70%, #7a6238 70% 78%, #3d5a2c 78%);
+    }
+    .house { position: absolute; background: #d7c4a0; border: 2px solid #6a4e32; }
+    .roof { position: absolute; background: #b0433a; }
+    .tree { position: absolute; width: 36px; height: 48px; border-radius: 50% 50% 40% 40%; background: #2f6a32; }
+    .path { position: absolute; left: 38%; right: 28%; top: 46%; bottom: 0; background: #c4a56a; }
+    .hud { position: absolute; inset: 0; font: 11px/1.15 ui-sans-serif, system-ui, sans-serif; color: #efe6c8; }
+    .quest {
+      position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
+      background: rgba(16,22,36,.82); border: 1px solid var(--gold); border-radius: 999px;
+      padding: 6px 14px; white-space: nowrap;
+    }
+    .map {
+      position: absolute; right: 16px; top: 14px; width: 108px; height: 108px;
+      border: 4px solid #9fd1ef; border-radius: 8px; background: #24506a;
+    }
+    .party {
+      position: absolute; left: 12px; top: 28%; display: flex; flex-direction: column; gap: 8px;
+    }
+    .party i {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid #6a7590; background: #1a2440; display: block;
+    }
+    .party i.on { border-color: var(--gold); }
+    .island {
+      position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mv, .ball, .hot, .op {
+      border: 1px solid #b47622; background: linear-gradient(#342317, #10131b);
+      color: #ffe6b0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      padding: 6px 4px 7px; cursor: pointer; user-select: none;
+    }
+    .mv { width: 92px; height: 62px; border-radius: 10px; }
+    .mv b, .hot b { align-self: flex-start; font: 700 10px ui-monospace, monospace; opacity: .8; }
+    .mv em, .hot em, .ball em, .op em { font-style: normal; font-weight: 700; }
+    .mv small, .hot small, .ball small, .op small { color: var(--gold); }
+    .mv.on { box-shadow: 0 0 0 2px #ffe07a66; }
+    .ball {
+      width: 78px; height: 78px; border-radius: 50%; border-color: #ff5f5f;
+      background: linear-gradient(#3a1416, #10131b); position: relative; z-index: 2;
+    }
+    .ball i {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(#e6323c 0 46%, #111 46% 54%, #eee 54%);
+      border: 1px solid #333; margin-bottom: 2px;
+    }
+    .swap {
+      position: absolute; right: -2px; bottom: -2px; width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid #ff5f5f; background: #10131b; color: #ffd9d9; font-size: 12px;
+      display: grid; place-items: center;
+    }
+    .fan {
+      position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%);
+      display: none; align-items: center; gap: 8px; pointer-events: none;
+    }
+    .stage.fan-on .fan { display: flex; pointer-events: auto; }
+    .stage.fan-on .island .mv { opacity: .35; }
+    .op {
+      width: 68px; height: 68px; border-radius: 50%; border-color: #ff5f5f;
+      background: rgba(16,19,27,.94); pointer-events: auto;
+    }
+    .op.on { box-shadow: 0 0 0 2px #ffe07a88; }
+    .hots {
+      position: absolute; right: 14px; bottom: 16px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .hot { width: 58px; height: 52px; border-color: #4a5a80; background: linear-gradient(#1a2440, #0b1020); border-radius: 10px; }
+    .hot.vazio { border-style: dashed; color: #6a7590; }
+    .dock {
+      position: absolute; right: 0; top: 38%;
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
+    .aba {
+      width: 36px; height: 64px; border: 1px solid var(--gold); border-right: 0;
+      border-radius: 10px 0 0 10px; background: rgba(10,16,28,.92); color: var(--gold);
+      font: 700 18px/64px ui-sans-serif, system-ui, sans-serif; text-align: center; cursor: pointer;
+    }
+    .sheet {
+      display: none; width: 168px; padding: 10px 8px;
+      background: rgba(10,16,28,.92); border: 1px solid var(--line); border-right: 0;
+      border-radius: 12px 0 0 12px;
+    }
+    .stage.dock-on .sheet { display: flex; flex-direction: column; gap: 4px; }
+    .sheet button {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      background: none; border: 0; color: #ffe6b0; font: 600 12px ui-sans-serif, system-ui, sans-serif;
+      padding: 5px 4px; cursor: pointer; text-align: left;
+    }
+    .sheet button:hover { color: var(--gold); }
+    .ico { width: 22px; height: 22px; border-radius: 50%; background: #243050; border: 1px solid #c9a22766; }
+    .hint {
+      position: absolute; left: 16px; bottom: 16px;
+      background: rgba(16,22,36,.75); padding: 6px 10px; border-radius: 8px;
+      font: 12px ui-sans-serif, system-ui, sans-serif; color: #cfc8b0; max-width: 220px;
+    }
+    svg.wire { width: 100%; height: auto; background: #0e100c; border: 1px solid var(--line); }
+    .wire text { fill: #cfc8b0; font: 11px ui-sans-serif, system-ui, sans-serif; }
+    @media (max-width: 980px) {
+      header, main, footer { padding-left: 18px; padding-right: 18px; }
+      .row { grid-template-columns: 1fr; }
+      .mv { width: 64px; height: 54px; }
+      .hots { right: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">Concepts only · nothing in this page is wired into the live HUD</div>
+    <h1>Slide the menu. Keep the fight in the middle.</h1>
+    <p>
+      Click the mockup. The ☰ tab is a slide dock, not a 5×2 pad sitting on the action bar.
+      Hotkeys 5–9 live on the right. The equipped moves and ball stay centered, and changing
+      the ball grows the row left and right — not up and down.
+    </p>
+    <p class="legend"><a href="../hud-layouts/">← earlier HUD concepts</a></p>
+  </header>
+  <main>
+    <section class="row">
+      <div class="note">
+        <h3>Menu</h3>
+        <p>A tab on the right edge. Closed = one ☰. Open = a vertical list that slides over the world, then tucks away when you pick a window.</p>
+      </div>
+      <div class="note">
+        <h3>Hotkeys</h3>
+        <p>Potions, mounts, extras leave the bottom strip. They become a right-hand column so the town stays visible under the fight controls.</p>
+      </div>
+      <div class="note">
+        <h3>Center island</h3>
+        <p>Moves 1–2 · equipped ball · moves 3–4. Tap ⇄ and other balls fan beside the equipped one. Same idea if we later collapse unused moves.</p>
+      </div>
+    </section>
+
+    <section class="stage-wrap">
+      <div class="tag">Interactive mockup · not the game</div>
+      <div class="tools">
+        <button type="button" id="t-fan">Toggle ball fan (left / right)</button>
+        <button type="button" id="t-dock">Toggle menu dock</button>
+        <button type="button" id="t-reset">Reset</button>
+      </div>
+      <div class="stage" id="stage">
+        <div class="path"></div>
+        <div class="house" style="left:12%;top:28%;width:120px;height:70px"></div>
+        <div class="roof" style="left:10%;top:20%;width:140px;height:36px;clip-path:polygon(50% 0,100% 100%,0 100%)"></div>
+        <div class="house" style="right:18%;top:30%;width:100px;height:64px"></div>
+        <div class="roof" style="right:16%;top:22%;width:120px;height:32px;clip-path:polygon(50% 0,100% 100%,0 100%)"></div>
+        <div class="tree" style="left:30%;top:36%"></div>
+        <div class="tree" style="left:58%;top:34%"></div>
+        <div class="tree" style="left:72%;top:40%"></div>
+        <div class="hud">
+          <div class="quest">Quest · talk to Mom</div>
+          <div class="map"></div>
+          <div class="party"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="island" id="island">
+            <div class="mv on" data-mv><b>1</b><em>Thunder Shock</em><small>30/30</small></div>
+            <div class="mv" data-mv><b>2</b><em>Quick Attack</em><small>20/20</small></div>
+            <button type="button" class="ball" id="ball" title="equipped ball">
+              <i></i><em id="ball-name">Poké Ball</em><small>×10</small>
+              <span class="swap" id="swap">⇄</span>
+            </button>
+            <div class="mv" data-mv><b>3</b><em>Iron Tail</em><small>15/15</small></div>
+            <div class="mv" data-mv><b>4</b><em>Electro Ball</em><small>10/10</small></div>
+          </div>
+          <div class="fan" id="fan">
+            <button type="button" class="op" data-ball="Great Ball"> <em>Great</em><small>×5</small></button>
+            <button type="button" class="op" data-ball="Ultra Ball"><em>Ultra</em><small>×2</small></button>
+            <button type="button" class="op on" data-ball="Poké Ball"><em>Poké</em><small>×10</small></button>
+            <button type="button" class="op" data-ball="Master Ball"><em>Master</em><small>×1</small></button>
+          </div>
+          <div class="hots">
+            <div class="hot"><b>5</b><em>Potion</em><small>×4</small></div>
+            <div class="hot"><b>6</b><em>Super</em><small>×2</small></div>
+            <div class="hot"><b>7</b><em>Arcanine</em></div>
+            <div class="hot vazio"><b>8</b><em>+</em></div>
+            <div class="hot vazio"><b>9</b><em>+</em></div>
+          </div>
+          <div class="dock">
+            <div class="sheet" id="sheet">
+              <button type="button"><i class="ico"></i>Pokémon</button>
+              <button type="button"><i class="ico"></i>Bag</button>
+              <button type="button"><i class="ico"></i>Missions</button>
+              <button type="button"><i class="ico"></i>Map</button>
+              <button type="button"><i class="ico"></i>Pokédex</button>
+              <button type="button"><i class="ico"></i>Trainer</button>
+              <button type="button"><i class="ico"></i>Shop</button>
+              <button type="button"><i class="ico"></i>Social</button>
+              <button type="button"><i class="ico"></i>Battle</button>
+              <button type="button"><i class="ico"></i>Config</button>
+            </div>
+            <button type="button" class="aba" id="aba" title="slide menu">☰</button>
+          </div>
+          <div class="hint" id="hint">Click ⇄ to expand balls left and right. Click ☰ for the slide dock.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tag">Why left / right, not up / down</div>
+      <h2>The current bars grow on the Y axis</h2>
+      <svg class="wire" viewBox="0 0 640 200" aria-label="Now versus concept">
+        <text x="150" y="22" text-anchor="middle">today · stacked</text>
+        <rect x="8" y="32" width="284" height="156" fill="#161910" stroke="#3a3f2e"/>
+        <rect x="210" y="48" width="36" height="28" fill="#2a2e20"/>
+        <rect x="210" y="80" width="36" height="28" fill="#2a2e20"/>
+        <circle cx="228" cy="132" r="16" fill="#3a2a1a" stroke="#c9a227"/>
+        <rect x="210" y="152" width="36" height="28" fill="#2a2e20"/>
+        <text x="150" y="118">covers the partner</text>
+        <text x="470" y="22" text-anchor="middle">concept · fans sideways</text>
+        <rect x="332" y="32" width="300" height="156" fill="#161910" stroke="#3a3f2e"/>
+        <rect x="360" y="118" width="40" height="24" fill="#2a2e20"/>
+        <rect x="406" y="118" width="40" height="24" fill="#2a2e20"/>
+        <circle cx="482" cy="130" r="16" fill="#3a2a1a" stroke="#c9a227"/>
+        <rect x="504" y="118" width="40" height="24" fill="#2a2e20"/>
+        <rect x="550" y="118" width="40" height="24" fill="#2a2e20"/>
+        <text x="482" y="88" text-anchor="middle">world stays in the middle</text>
+      </svg>
+      <p class="legend">
+        Mobile / Amanda already grow the skill cluster up the right side. That hides the Pokémon you are fighting.
+        A horizontal fan keeps the camera on the encounter and still shows every equipped option.
+      </p>
+    </section>
+
+    <section class="note">
+      <h3>What this concept does not invent</h3>
+      <p>
+        Still no trainer HP or trainer EXP — those numbers are not in the save. The island is the
+        active partner’s moves plus the ball you have selected. Trainer stays a menu page
+        (name, money, badges, play time).
+      </p>
+    </section>
+  </main>
+  <footer>
+    <p>Concept only. Live <code>hud.mjs</code> / <code>hud_layout.json</code> are untouched.</p>
+  </footer>
+  <script>
+    const stage = document.getElementById('stage');
+    const hint = document.getElementById('hint');
+    const name = document.getElementById('ball-name');
+    function setFan(on) {
+      stage.classList.toggle('fan-on', on);
+      document.getElementById('t-fan').classList.toggle('on', on);
+      if (on) hint.textContent = 'Balls expand beside the equipped one. Pick one or tap ⇄ again.';
+    }
+    function setDock(on) {
+      stage.classList.toggle('dock-on', on);
+      document.getElementById('t-dock').classList.toggle('on', on);
+      document.getElementById('aba').setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (on) hint.textContent = 'Menu slides in from the right. Pick an item and it tucks away.';
+    }
+    document.getElementById('t-fan').onclick = () => setFan(!stage.classList.contains('fan-on'));
+    document.getElementById('t-dock').onclick = () => setDock(!stage.classList.contains('dock-on'));
+    document.getElementById('t-reset').onclick = () => { setFan(false); setDock(false); hint.textContent = 'Click ⇄ to expand balls left and right. Click ☰ for the slide dock.'; };
+    document.getElementById('swap').onclick = (e) => { e.stopPropagation(); setFan(!stage.classList.contains('fan-on')); };
+    document.getElementById('ball').onclick = () => setFan(!stage.classList.contains('fan-on'));
+    document.getElementById('aba').onclick = () => setDock(!stage.classList.contains('dock-on'));
+    document.getElementById('sheet').onclick = (e) => {
+      if (e.target.closest('button')) {
+        hint.textContent = 'Would open “' + e.target.closest('button').textContent.trim() + '”. Dock closes.';
+        setDock(false);
+      }
+    };
+    document.getElementById('fan').onclick = (e) => {
+      const b = e.target.closest('[data-ball]');
+      if (!b) return;
+      name.textContent = b.dataset.ball;
+      document.querySelectorAll('#fan .op').forEach((el) => el.classList.toggle('on', el === b));
+      setFan(false);
+      hint.textContent = 'Equipped ' + b.dataset.ball + '. Fan collapsed. Island stays centered.';
+    };
+    document.querySelectorAll('[data-mv]').forEach((el) => {
+      el.onclick = () => {
+        document.querySelectorAll('[data-mv]').forEach((m) => m.classList.remove('on'));
+        el.classList.add('on');
+        hint.textContent = 'Equipped move stays in the island. Change still grows sideways, not up.';
+      };
+    });
+  </script>
+</body>
+</html>
