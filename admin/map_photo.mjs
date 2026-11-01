@@ -4,10 +4,9 @@
  *  • Os outros: monta o cenário do GLB com a mesma regra do jogo/editor 3D (biblioteca = prefabs "lib" transladados pelos
  *    areaEnv+ambiente+objetos do JSON, mundo.x = −arquivo.x; montado = os nós do GLB) e fotografa UMA vez com câmera
  *    ortográfica de cima (norte pra cima = −z, como o minimapa). Fica em cache na sessão; a GPU é liberada depois.
- * Devolve { img, x0, z0, esc, w, h, fonte } — esc = pixels por metro; (x0, z0) = canto de cima/esquerda no mundo. */
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
+ * Devolve { img, x0, z0, esc, w, h, fonte } — esc = pixels por metro; (x0, z0) = canto de cima/esquerda no mundo.
+ * Three.js is loaded only for the GLB fallback. The admin page must have an import map (same as scenery.html);
+ * Kanto never needs it because the baked photo is enough. */
 const MAX_PX = 4096, PX_POR_M = 4, MARGEM = 12;
 const cache = new Map();
 const chaveNome = n => n.toLowerCase().replace(/^lib:?/, '').replace(/\s/g, '_').replace(/[\[\]\.:/]/g, '');
@@ -20,15 +19,43 @@ export function fotoDoMapa(nome, dados) {
 export const esquecerFoto = nome => cache.delete(nome);   // depois de salvar o cenário, a próxima foto sai nova
 
 async function carregar(nome, dados) {
-  const regua = await fetch('/ui/minimapa_' + nome + '.json').then(r => r.ok ? r.json() : null).catch(() => null);
-  if (regua?.esc > 0) {
-    const img = new Image(); img.src = '/ui/minimapa_' + nome + '.jpg'; await img.decode();
-    return { img, x0: regua.x0, z0: regua.z0, esc: regua.esc, w: img.naturalWidth, h: img.naturalHeight, fonte: 'game photo' };
-  }
+  const assada = await lerAssada(nome);
+  if (assada) return assada;
+  /* Kanto is ~32 MB of prefabs; photographing it in the browser freezes the tab. The baked photo is required. */
+  if (nome === 'kanto') throw new Error('baked Kanto photo missing (ui/minimapa_kanto.jpg + .json)');
   return fotografar(nome, dados);
 }
 
+async function lerAssada(nome) {
+  const bases = ['/ui/minimapa_' + nome, './ui/minimapa_' + nome];
+  for (const base of bases) {
+    try {
+      const r = await fetch(base + '.json', { cache: 'no-cache' });
+      if (!r.ok) continue;
+      const ct = r.headers.get('content-type') || '';
+      if (ct.includes('html') || ct.includes('text/html')) continue;
+      const regua = await r.json();
+      if (!(regua?.esc > 0)) continue;
+      const img = await carregarImg(base + '.jpg');
+      if (!img || !img.naturalWidth) continue;
+      return { img, x0: +regua.x0, z0: +regua.z0, esc: +regua.esc, w: img.naturalWidth, h: img.naturalHeight, fonte: 'game photo' };
+    } catch {}
+  }
+  return null;
+}
+function carregarImg(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const done = ok => { img.onload = img.onerror = null; resolve(ok ? img : null); };
+    img.onload = () => done(true);
+    img.onerror = () => done(false);
+    img.src = src;
+  });
+}
+
 async function fotografar(nome, dados) {
+  const THREE = await import('three');
+  const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
   const g = await new GLTFLoader().loadAsync('/scenery/' + nome + '.glb');
   g.scene.updateMatrixWorld(true);
   const raiz = g.scene.getObjectByName('Mapa') || g.scene;
@@ -57,7 +84,7 @@ async function fotografar(nome, dados) {
       caixaCena.union(im.boundingBox); cena.add(im);
     }
   } else { cena.add(g.scene); caixaCena.setFromObject(g.scene); }
-  if (caixaCena.isEmpty()) throw new Error('cenário vazio');
+  if (caixaCena.isEmpty()) throw new Error('empty scenery');
 
   // Enquadra pelas caixas das áreas (o mapa "de verdade"); sem caixas, pelo cenário. Pisos/água planos de ~1000 m ficariam enormes.
   let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
