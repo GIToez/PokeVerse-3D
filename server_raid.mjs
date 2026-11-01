@@ -38,7 +38,7 @@ const FATOR_HP = 1.5;                                                        // 
 const FORCA_CHEFE = 0.2;                                                     // golpe do chefe = fórmula do jogo no nível do alvo × isto × o `dano` da raid
 const CADA_ALVO_MS = 6000;                                                   // em média o chefe bate em cada participante a cada 6 s (com mais gente, bate mais vezes)
 const FLIPX = -1;                                                            // arquivo → mundo: o exportador espelha o x (o mesmo da moderação)
-const PREMIO = { dinheiro: 3000, bolas: { 1003: 5 }, itens: { 2003: 3, 2012: 2 } };   // Ultra Bola ×5, HiperPoção ×3, Reanimador ×2 (ids do menus_dados.json), pra quem bateu
+const PREMIO = { dinheiro: 3000, bolas: { 1003: 5 }, itens: { 2003: 3, 2012: 2 } };   // Ultra Bola ×5, HiperPoção ×3, Reanimador ×2 (ids do menu_data.json), pra quem bateu
 const FASES_FILA = new Set(['anunciada', 'contagem']), FASES_DENTRO = new Set(['indo', 'luta', 'fim']);
 const OP_ALIAS = { comecar: 'comecar', iniciar: 'comecar', start: 'comecar', cancela: 'cancelar', parar: 'cancelar' };
 const semAcento = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
@@ -64,11 +64,11 @@ export function criarRaid(h) {
     return pokedex.porN.get(+dex) || null;
   }
   const ESPECIE_VAZIA = { name: '?', types: ['Normal'], bs: [50, 50, 50, 50, 50, 50] };
-  /* Golpes: o data/golpes.json do painel (Fase 2) é a fonte; sem ele, a tabela gerada (moves_all.mjs). Relido quando muda. */
+  /* Golpes: o data/moves.json do painel (Fase 2) é a fonte; sem ele, a tabela gerada (moves_all.mjs). Relido quando muda. */
   let golpesCache = { mtime: -1, tab: TODOS };
   function golpes() {
     try {
-      const arq = nodePath.join(dadosPub, 'golpes.json'), mt = fs.statSync(arq).mtimeMs;
+      const arq = nodePath.join(dadosPub, 'moves.json'), mt = fs.statSync(arq).mtimeMs;
       if (mt !== golpesCache.mtime) {
         const d = JSON.parse(fs.readFileSync(arq, 'utf8'));
         golpesCache = { mtime: mt, tab: d && typeof d === 'object' && Object.keys(d).length ? Object.fromEntries(Object.entries(d).map(([k, g]) => [k, { ...g, id: k }])) : TODOS };

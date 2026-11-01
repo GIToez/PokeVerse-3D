@@ -197,9 +197,9 @@ import * as Chat from './chat.mjs';             // chat com abas Local/Global/Tr
 import * as Missoes from './missions.mjs';        // missões principais de Kanto (caps 1–20): passos verificados por eventos do jogo
 import * as Ind from './individual.mjs';         // IV + natureza por indivíduo (fórmulas completas da série)
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
-import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolucoes.json, data/exp.json)
+import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolutions.json, data/exp.json)
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
-import * as Dialogos from './dialogues.mjs';     // Fase 3 do painel: falas fixas (portão, Oak, abertura) vêm do data/dialogos.json
+import * as Dialogos from './dialogues.mjs';     // Fase 3 do painel: falas fixas (portão, Oak, abertura) vêm do data/dialogues.json
 import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atrasoDoGolpe, corrigirEfeito } from './moves.mjs';
 import * as R from './rules.mjs';              // fórmulas da série: stats, dano, tipos
 import * as I18n from './i18n.mjs';             // IDIOMA do jogador (11/09): pt (fonte), en, es
@@ -282,9 +282,9 @@ const __boot = (() => {
     falha(msg){ erro(msg, { tratado: true }); } };                          // erro TRATADO por um catch mas grave (ex.: o jogador não nasceu): vai como erro, de qualquer aparelho
 })();
 try { const m = sessionStorage.getItem('recargaModulo'); if (m){ sessionStorage.removeItem('recargaModulo'); __boot.falha('recarregou: módulo desencontrado (cache velho) · ' + m); } } catch {}   /* 19/09: a recarga do <head> diz no beacon quantas vezes salvou alguém */
-const NOME = new URLSearchParams(location.search).get('mapa')
+const NOME = ((id) => id === 'pallet_rota1' ? 'pallet_route1' : id)(new URLSearchParams(location.search).get('mapa')
   || (() => { try { const v = localStorage.getItem('ultimaCena'); return v && /^[\w-]{1,40}$/.test(v) ? v : null; } catch { return null; } })()
-  || 'kanto';   // padrão: Kanto inteira (30/08, pedido do Jaime); ?mapa=pallet_rota1 é o recorte leve
+  || 'kanto');   // default: all of Kanto; ?mapa=pallet_route1 is the light slice
 const NOMES_AREA = { 1101: 'Pallet Town', 1201: 'Route 1', 1102: 'Viridian City', 1202: 'Route 2', 1221: 'Route 21', 1222: 'Route 22' };
 const $ = id => document.getElementById(id);
 /* ======================================================== demo pública */
@@ -564,7 +564,7 @@ async function baixarBin(url, aoProgresso, tentativas = CARGA.tentativas){   // 
   const err = new Error('não baixou ' + url + ' em ' + tentativas + ' tentativas (' + recebido + '/' + (total || '?') + ' bytes): ' + (ultimo?.message || ultimo));
   err.url = url; err.recebido = recebido; err.total = total; throw err;
 }
-/** JSON com tentativa nova. `opcional`: 404/falha vira null (é o caso do cenas.json). */
+/** JSON com tentativa nova. `opcional`: 404/falha vira null (é o caso do scenes.json). */
 async function baixarJson(url, opcional = false){
   let ultimo = null;
   for (let t = 1; t <= CARGA.tentativas; t++){
@@ -647,7 +647,7 @@ try {
       .then(buf => new GLTFLoader().parseAsync(buf, './scenery/')),      // os nossos .glb são fechados (não puxam .bin nem textura solta)
     baixarJson('./scenery/' + NOME + '_chao.json'),
     baixarJson('./data/' + NOME + '.json'),
-    baixarJson('./data/cenas.json', true),                               // índice das cenas, se existir
+    baixarJson('./data/scenes.json', true),                               // índice das cenas, se existir
   ]);
   try { if (!/[?&]intro=1(&|$)/.test(location.search)) localStorage.setItem('ultimaCena', NOME); } catch {}   // próxima carga começa por aqui (palpite; o servidor corrige). Na INTRO não: fechar a aba no sonho da Liga reabria na arena como cena normal (12/09)
   __boot.cena(NOME);                                                    // diagnóstico do boot: a cena de verdade, não a da URL
@@ -910,11 +910,11 @@ cena.background = CEU;
 cena.fog = new THREE.Fog(CEU, 70, 190);
 /* Interior (cena só de áreas tipo 2): em volta do cômodo não há mundo — fundo escuro em vez
    do céu, névoa curta pra fechar o quadro. A câmera também nasce mais perto (zoom 0.7). */
-/* MÚSICA POR LUGAR (11/09): data/musicas.json (tools/musicas.mjs) = a faixa que o jogo ORIGINAL tocava em cada área de Kanto e
+/* MÚSICA POR LUGAR (11/09): data/music.json (tools/musicas.mjs) = a faixa que o jogo ORIGINAL tocava em cada área de Kanto e
    em cada interior; batalha por turnos tem a dela; vitória/derrota são jingles que voltam pra música do lugar. Funções içadas:
    iniciarTurno/fimTurno (top-level) e o boot (dentro do escopo) chamam a mesma atualizarMusica(). */
 let MUSICAS = null, musicaTravada = 0;
-fetch('./data/musicas.json').then(r => r.ok ? r.json() : null).then(j => { MUSICAS = j; }).catch(e => console.warn('musicas.json:', e));   // 12/09: o `atualizarMusica()` daqui nunca fazia nada (o jogador não existe ainda) e, chegando cedo, pegava `jogo` na zona morta com o erro engolido; o boot chama depois
+fetch('./data/music.json').then(r => r.ok ? r.json() : null).then(j => { MUSICAS = j; }).catch(e => console.warn('music.json:', e));   // 12/09: o `atualizarMusica()` daqui nunca fazia nada (o jogador não existe ainda) e, chegando cedo, pegava `jogo` na zona morta com o erro engolido; o boot chama depois
 function areaMusica(){ const a = jogo.ash; if (!a) return null; const c = (dados.caixas || []).find(c => c.sx > 0 && Math.abs(a.x - flipX * c.x) <= c.sx / 2 && Math.abs(a.z - c.z) <= c.sz / 2); return c ? c.a : (cenaAtual?.areas?.[0]?.id ?? null); }
 function musicaDoLugar(){
   if (!MUSICAS) return null;
@@ -2192,7 +2192,7 @@ async function prepararAgua(malhas){
         ondaAmp: { value: (q => q.has('ondas') ? +q.get('ondas') || 0 : 1)(new URLSearchParams(location.search)) },   // params0 ainda não existe aqui (TDZ): lê a URL direto
         /* cor/corRasa/cintila/céu/fresnel CALIBRADOS POR PIXEL contra o cliente real (02/09, centro do lago de Pallet: alvo
            RGB(58,98,207); em 31/08 o alvo era (70,103,195) e o render media (74,107,200) — o (99,130,168) visto antes era o
-           recorte ?mapa=pallet_rota1, que passa pelo instanciar simples e NÃO liga este shader). ?agua*= recalibram medindo o render. */
+           recorte ?mapa=pallet_route1, que passa pelo instanciar simples e NÃO liga este shader). ?agua*= recalibram medindo o render. */
         cintilaK: { value: numUrl('aguaCintila', 0.08) }, ceuK: { value: numUrl('aguaCeu', 0.15) }, fresK: { value: numUrl('aguaFres', 0.35) },
         cor: { value: corUrl('aguaCor', 0.20, 0.35, 0.72) }, corRasa: { value: corUrl('aguaRasa', 0.27, 0.43, 0.80) },
         tCaust: { value: null }, causticaK: { value: numUrl('aguaCaustica', 0.70) }, cianoK: { value: numUrl('aguaCiano', 0.52) }, corCiano: { value: corUrl('aguaCorCiano', 0.0, 0.626, 1.0) },   // look do BDSP (caustics + cor puxada pro ciano); ?aguaCaustica=0 e ?aguaCiano=0 voltam pro nosso
@@ -2835,7 +2835,7 @@ function deslocar(e, dx, dz){
 // `meio` (02/09): o RideType do MountConfig — 'anfibia' (RideType 0: as lendárias andam em terra E na água),
 // 'terra' (1: só chão seco), 'agua' (2: só nada — Lapras e Gyarados entram pela beira e não sobem na rua;
 // a 3ª do jogo é o Qwilfish, não exportado). Quem `voa` cruza água pelo ar de qualquer jeito.
-// Fase 2 do painel: a tabela mora em data/montarias.json (admin → Montarias, { glb, nome, poseIdle, poseRun, voa, escala, vel, meio, livre });
+// Fase 2 do painel: a tabela mora em data/mounts.json (admin → Montarias, { glb, nome, poseIdle, poseRun, voa, escala, vel, meio, livre });
 // aqui ela vira o formato de sempre. Sem o arquivo vale a lista abaixo (MONTARIAS_PADRAO).
 const MONTARIAS_PADRAO = [
   ['pm0249_00', 'Lugia',     'RideIdle1', 'Ride1', true,  0.6,  37500, 'anfibia'],
@@ -2862,7 +2862,7 @@ const MONTARIAS_PADRAO = [
   ['pm0131_00', 'Lapras',    'RideIdle2', 'Ride2', false, 0.9,  18750, 'agua'],
   ['pm0211_00', 'Qwilfish',  'RideIdle5', 'Ride5', false, 2.3,  10000, 'agua'],   // 02/09: a 3ª aquática do jogo (MountConfig 57002: MapSize 2,3, MoveSpeed2 = a pé)
 ];
-const MONTARIAS_ARQ = await fetch('./data/montarias.json').then(r => r.ok ? r.json() : null).then(l => Array.isArray(l) && l.length ? l : null).catch(() => null);
+const MONTARIAS_ARQ = await fetch('./data/mounts.json').then(r => r.ok ? r.json() : null).then(l => Array.isArray(l) && l.length ? l : null).catch(() => null);
 const MONTARIAS = MONTARIAS_ARQ ? MONTARIAS_ARQ.map(d => [d.glb, d.nome, d.poseIdle, d.poseRun, !!d.voa, d.escala, d.vel, d.meio]) : MONTARIAS_PADRAO;
 /** Quanto a montaria afunda quando está n'água (a origem do modelo é o chão; na água o corpo fica meio submerso). */
 const MERGULHO = { agua: 0.3, anfibia: 0.15 };
@@ -2872,7 +2872,7 @@ const AJUSTE_SELA = { pm0250_00: { osso: 'Spine1' },
                       pm0143_00: { osso: 'Head' } };   // Snorlax: no Spine2 o raio cai dentro da barriga e o treinador some no Pokémon
 /** A sela: o `eMount` do GLB quando veio inteiro (o Lugia tem o nó animado, certinho);
  *  senão um ponto na superfície do dorso, em cima do osso que o jogo usa
- *  (data/selas.json), em pé e olhando pra frente. */
+ *  (data/saddles.json), em pé e olhando pra frente. */
 function pontoDeSela(m){
   const chave = (m.glb || '').replace(/\.glb$/, '');
   const sela = SELAS[chave], aj = AJUSTE_SELA[chave];
@@ -3225,26 +3225,26 @@ const PELE = (() => {
   return v;
 })();
 /* Tamanho de cada espécie no campo, como o jogo desenha (ModelConfig.MapSize,
-   data/tamanhos.json): o jogador fica a 1,0× o prefab e cada Pokémon tem o seu
+   data/sizes.json): o jogador fica a 1,0× o prefab e cada Pokémon tem o seu
    fator — Pikachu 2,9×, Rattata 2,2×, Entei 1,2×, Lugia 0,5×… Modo `jogo`
    aplica isso ao seguidor, selvagens, trabalhador e voadores; `nativo` deixa os
    modelos na escala em que vieram (o chefão fica sempre nativo, grande de
    propósito). ?tamanhos=nativo, a caixa "tamanhos" no painel ou
    definirTamanhos('nativo') no console; a escolha fica no localStorage. */
-const TAMANHOS = await fetch('./data/tamanhos.json').then(r => r.json()).catch(() => ({}));
-/* Altura REAL de cada espécie (EudemonConfig.Height do jogo = a da Pokédex): data/alturas.json.
+const TAMANHOS = await fetch('./data/sizes.json').then(r => r.json()).catch(() => ({}));
+/* Altura REAL de cada espécie (EudemonConfig.Height do jogo = a da Pokédex): data/heights.json.
    Modo `proporcional` (padrão): todo mundo — selvagem, seguidor, trabalhador — sai da mesma régua,
    uma compressão suave da altura real (h = 1,3·real^0,55): Rattata 0,3 → 0,67 m, Pikachu 0,4 →
    0,79, Charizard 1,7 → 1,74, Snorlax 2,1 → 1,96, Gyarados 6,5 → teto. Pequeno continua pequeno
    sem sumir na grama, gigante continua gigante sem engolir a tela; e o seguidor é o mesmo Pokémon
    do mato, só com teto mais baixo (1,8 m) pra andar ao lado do Ash sem virar montanha. */
-const ALTURAS = await fetch('./data/alturas.json').then(r => r.json()).catch(() => ({}));
+const ALTURAS = await fetch('./data/heights.json').then(r => r.json()).catch(() => ({}));
 /* Portas e chegadas do jogo (NpcConfig tipo 6 = porta com `n` = ponto de chegada tipo 7 em outra
    cena/andar; `c` = cena, `a` = área). NPCs com modelo exportado: nome, GLB e falas em pt. */
-const PORTAS = await fetch('./data/portas.json').then(r => r.json()).catch(() => ({}));
-/* Ginásios de Kanto (data/ginasios.json, tools/ginasios.py): líder = treinador ⚔ dentro do interior do ginásio, time do FireRed
+const PORTAS = await fetch('./data/doors.json').then(r => r.json()).catch(() => ({}));
+/* Ginásios de Kanto (data/gyms.json, tools/ginasios.py): líder = treinador ⚔ dentro do interior do ginásio, time do FireRed
    re-nivelado (GDD §7.4), insígnia na vitória, cooldown na derrota. Indexado pelo cfg do líder (Npc1Id do dump). */
-const GINASIOS = await fetch('./data/ginasios.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+const GINASIOS = await fetch('./data/gyms.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
 const GINASIO_POR_CFG = {}; for (const g of Object.values(GINASIOS)) GINASIO_POR_CFG[g.cfgLider] = g;
 /* ELITE FOUR de Kanto (20/09, data/elite.json, gerado por tools/elite.mjs): os cinco quartos da Liga em sequência, sem cura
    entre as lutas. Quem manda é o SERVIDOR (servidor/elite.mjs); aqui é só o que o jogador vê — o membro em pé na sala, o
@@ -3255,10 +3255,10 @@ const eliteEstado = { corrida: null, vencida: false, proximo: 1 };         // re
 const ginasioCd = () => lerLS('ginasioCd', {});
 /** Cooldown do ginásio: { ate, n } por id; zera à meia-noite. Devolve segundos restantes (0 = livre). */
 function ginasioEspera(g){ const cd = ginasioCd()[g.numero]; if (!cd) return 0; if (new Date(cd.ate).toDateString() !== new Date().toDateString() && Date.now() > cd.ate) return 0; return Math.max(0, Math.ceil((cd.ate - Date.now()) / 1000)); }
-const CENAS_EXPORTADAS = new Set((await fetch('./data/interiores_mapas.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split(/\s+/).filter(Boolean).map(Number));   // interiores com GLB: porta só pra esses (Kanto tem portas pra cenas ainda não exportadas)
+const CENAS_EXPORTADAS = new Set((await fetch('./data/interior_maps.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split(/\s+/).filter(Boolean).map(Number));   // interiores com GLB: porta só pra esses (Kanto tem portas pra cenas ainda não exportadas)
 const NPCS_GLB = await fetch('./data/npcs_glb.json').then(r => r.json()).catch(() => ({}));
-Ind.carregarLearnset(await fetch('./data/learnset.json').then(r => r.json()).then(L => { for (const [id, g] of Object.entries(GOLPES)) if (Number.isInteger(g.pp) && g.pp > 0) (L.pp ||= {})[id] = g.pp; return L; }).catch(() => null));   // golpes por nível (Sword/Shield) + PP (Fase 2: o PP de cada golpe vem do data/golpes.json, que o painel edita)
-const ITENS_NOME = await fetch('./data/menus_dados.json').then(r => r.json()).then(d => Object.fromEntries(Object.entries(d.itens || {}).map(([id, it]) => [id, it.n]))).catch(() => ({}));   // nomes pros avisos de missão
+Ind.carregarLearnset(await fetch('./data/learnset.json').then(r => r.json()).then(L => { for (const [id, g] of Object.entries(GOLPES)) if (Number.isInteger(g.pp) && g.pp > 0) (L.pp ||= {})[id] = g.pp; return L; }).catch(() => null));   // golpes por nível (Sword/Shield) + PP (Fase 2: o PP de cada golpe vem do data/moves.json, que o painel edita)
+const ITENS_NOME = await fetch('./data/menu_data.json').then(r => r.json()).then(d => Object.fromEntries(Object.entries(d.itens || {}).map(([id, it]) => [id, it.n]))).catch(() => ({}));   // nomes pros avisos de missão
 await Evolucao.carregar();                                                 // regras de evolução + curvas de XP (antes do nascimento: o parceiro nasce com exp)
 let DEX_EXTRA = null; fetch('./data/dex_extra.json').then(r => r.json()).then(j => { DEX_EXTRA = j; }).catch(() => {});   // golpes por nível (regras "conhecendo X"); pode chegar depois
 const portasCena = []; const emPorta = new Set(); let portaOcupado = false;   // estado das portas/NPCs (funções mais abaixo)
@@ -3296,14 +3296,14 @@ function removerCorpo(e){
   p.__paiArvore = null; e.__longe = false;
 }
 /* Iniciais (mesa do laboratório do Oak, NPC 1180102 "prefabs/npc/empty"): só as gerações com os 3 modelos exportados. */
-/* Os iniciais que o laboratório oferece: data/iniciais.json ([{ gen, dex, nome, glb, tipos }], painel admin → Iniciais) — o MESMO
+/* Os iniciais que o laboratório oferece: data/starters.json ([{ gen, dex, nome, glb, tipos }], painel admin → Iniciais) — o MESMO
    arquivo pelo qual o SERVIDOR confere a escolha (server.mjs inicialOk), então o que aparece aqui é o que ele aceita.
    Aqui vira { gen: [inicial, …] }; sem o arquivo valem os de sempre (INICIAIS_PADRAO). */
 const INICIAIS_PADRAO = {
   1: [{ dex: 1, nome: 'Bulbasaur', glb: 'pm0001_00', tipos: ['Grass', 'Poison'] }, { dex: 4, nome: 'Charmander', glb: 'pm0004_00', tipos: ['Fire'] }, { dex: 7, nome: 'Squirtle', glb: 'pm0007_00', tipos: ['Water'] }],
   2: [{ dex: 152, nome: 'Chikorita', glb: 'pm0152_00', tipos: ['Grass'] }, { dex: 155, nome: 'Cyndaquil', glb: 'pm0155_00', tipos: ['Fire'] }, { dex: 158, nome: 'Totodile', glb: 'pm0158_00', tipos: ['Water'] }],
 };
-const INICIAIS = await fetch('./data/iniciais.json').then(r => r.ok ? r.json() : null).then(l => {
+const INICIAIS = await fetch('./data/starters.json').then(r => r.ok ? r.json() : null).then(l => {
   if (!Array.isArray(l) || !l.length) return null;
   const porGen = {}; for (const { gen, ...o } of l) (porGen[gen] ||= []).push(o);
   return porGen[1] ? porGen : null;                                        // a mesa do Oak e o pop-up da Amanda usam a geração 1
@@ -3328,15 +3328,15 @@ const COMPRIDOS = new Set([23, 24, 95, 130, 147, 148, 162, 206, 208]);   // Gyar
 const RUN_RAZAO = { 23: 6.87, 24: 2.08, 95: 1.93, 130: 2.46, 147: 2.04, 148: 2.19 };
 /* 16/09 (rukintk/Jaime: "Gastly não tá muito grande?"): a caixa posada do Gastly mede só o miolo (0,67 m) e a régua proporcional
    leva a 1,5 m — a nuvem de gás em volta não entra na conta e o conjunto fica maior que o treinador. Ajuste por espécie, por cima da régua.
-   Fase 2 do painel: o ajuste mora em data/especies.json ({ dex: { escala } }, admin → Espécies); sem o arquivo vale o de sempre. */
-const AJUSTE_PROPORCIONAL = await fetch('./data/especies.json').then(r => r.ok ? r.json() : null).then(e => e && typeof e === 'object'
+   Fase 2 do painel: o ajuste mora em data/species.json ({ dex: { escala } }, admin → Espécies); sem o arquivo vale o de sempre. */
+const AJUSTE_PROPORCIONAL = await fetch('./data/species.json').then(r => r.ok ? r.json() : null).then(e => e && typeof e === 'object'
   ? Object.fromEntries(Object.entries(e).filter(([, x]) => x?.escala > 0).map(([dex, x]) => [dex, x.escala])) : null).catch(() => null) || { 92: 0.7 };
 const AVES_ASA = new Set([16, 17, 18, 21, 22]);   // 15/09: aves cuja Idle abre ou levanta as asas — tamanho pelo maior lado do corpo parado (aplicarTamanho)
 const alturaProporcional = (real, papel) => THREE.MathUtils.clamp(1.3 * Math.pow(real, 0.55), ALT_MIN, papel === 'seguidor' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM);
 const dexDoGlb = glb => +((glb || '').match(/pm(\d{4})/)?.[1] || 0);
 // ponto de sela (eMount) de cada prefab do jogo, já no eixo do GLB: o exportador zerou
-// a transformação desse nó (tools/… gera data/selas.json a partir dos prefabs)
-const SELAS = await fetch('./data/selas.json').then(r => r.json()).catch(() => ({}));
+// a transformação desse nó (tools/… gera data/saddles.json a partir dos prefabs)
+const SELAS = await fetch('./data/saddles.json').then(r => r.json()).catch(() => ({}));
 jogo.tamanhos = params0.get('tamanhos') || (() => { try { const v = localStorage.getItem('tamanhos'); return v === 'jogo' ? null : v; } catch { return null; } })() || 'proporcional';   // 'jogo' era o padrão antigo: migra pro proporcional
 if (!['jogo', 'nativo', 'proporcional'].includes(jogo.tamanhos)) jogo.tamanhos = 'proporcional';
 function chaveTamanho(glb){
@@ -3400,7 +3400,7 @@ if (JOGAR){
       location.replace(u.toString()); await new Promise(() => {});
     }
     if (CAPTURA && (!params0.has('mapa') || params0.get('selvagens') !== '0')){   // ?captura=1 → Pallet + Rota 1 por padrão e SEM spawn natural: só aparece quem o painel povoar
-      const u = new URL(location.href); if (!u.searchParams.has('mapa')) u.searchParams.set('mapa', 'pallet_rota1'); u.searchParams.set('selvagens', '0'); u.searchParams.set('jogar', '1');
+      const u = new URL(location.href); if (!u.searchParams.has('mapa')) u.searchParams.set('mapa', 'pallet_route1'); u.searchParams.set('selvagens', '0'); u.searchParams.set('jogar', '1');
       try { sessionStorage.setItem('porta.ok', '1'); } catch {}
       location.replace(u.toString()); await new Promise(() => {});
     }
@@ -3735,9 +3735,9 @@ for (const [a, tiles] of aguaPorArea){                                   // áre
 const areaRespawn = new Map();                                           // morte/captura seguram o respawn da área por 12–20 s (GDD §2)
 let ZONAS = [];                                                          // zonas de spawn do editor de mapa (admin) — data/zonas_spawn.json; carregadas junto do habitats
 const zonaRespawn = new Map();                                           // id da zona → quando pode nascer o próximo (intervalo da zona)
-/* Fase 0: números que o painel admin edita (data/config_jogo.json, aba "Arquivos de dados"). Campo ausente ou fora do formato
+/* Fase 0: números que o painel admin edita (data/game_config.json, aba "Arquivos de dados"). Campo ausente ou fora do formato
    = o padrão escrito aqui; os parâmetros de teste da URL (?shinyTaxa, ?chefelv) continuam vencendo. */
-const CFG_JOGO = await fetch('./data/config_jogo.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null) || {};
+const CFG_JOGO = await fetch('./data/game_config.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null) || {};
 const cfgInt = (k, padrao, min, max) => { const v = CFG_JOGO[k]; return Number.isInteger(v) && v >= min && v <= max ? v : padrao; };
 const TAXA_SHINY = Math.max(2, +params0.get('shinyTaxa') || cfgInt('taxaShiny', 4096, 2, 1e6));       // shiny selvagem 1/4.096 (GDD §7.4); ?shinyTaxa=2 testa
 const SKITTISH_HP = cfgInt('skittishHp', 0, 0, 100);                   // 0 = off; aggressive wilds turn skittish at or below this HP %
@@ -3840,9 +3840,9 @@ function pontoLivre(a){
   }
   return null;
 }
-/* Pokédex de conhecimento: razão ♂/♀ por espécie (data/sexos.json, gerado do dex_extra) e o módulo instalado aqui — antes
+/* Pokédex de conhecimento: razão ♂/♀ por espécie (data/genders.json, gerado do dex_extra) e o módulo instalado aqui — antes
    do primeiro selvagem nascer. `BOLAS`/`pintarBarra` só são usados dentro dos callbacks (depois do boot: sem TDZ). */
-const SEXOS = await fetch('./data/sexos.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+const SEXOS = await fetch('./data/genders.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
 Conhecimento.instalar({ lerLS, gravarLS, porDex, sexos: SEXOS, avisar: txt => Chat.sistema(txt), nomeItem: id => I18n.t(BOLAS[id]?.[0] || ('item ' + id)),
   alfa: () => Conta.souAlfa?.(),                                          // Alpha Tester (12/09): a marca vem da conta (servidor)
   premiar: (id, n, titulo) => { if (comConta()){ bolsaOp('premio', { titulo }); return; }   // o prêmio do título vem do servidor (uma vez cada)
@@ -3878,7 +3878,7 @@ try {
         }).catch(() => {});
       }
       // Fase 3: músicas, diálogos, traduções e falas dos NPCs valem na hora (o resto do que entra no boot pede F5)
-      else if (arq === 'musicas') fetch('./data/musicas.json?t=' + Date.now()).then(r => r.json()).then(j => { MUSICAS = j; atualizarMusica(); Chat.sistema('Music reloaded.'); }).catch(() => {});
+      else if (arq === 'musicas') fetch('./data/music.json?t=' + Date.now()).then(r => r.json()).then(j => { MUSICAS = j; atualizarMusica(); Chat.sistema('Music reloaded.'); }).catch(() => {});
       else if (arq === 'dialogos') Dialogos.recarregar().then(() => Chat.sistema('Dialogue reloaded.'));
       else if (arq === 'traducoes') I18n.recarregar().then(() => Chat.sistema('Translations reloaded.'));
       else if (arq === 'npcs_glb') fetch('./data/npcs_glb.json?t=' + Date.now()).then(r => r.json()).then(j => {
@@ -5103,7 +5103,7 @@ function aposDesmaio(){
   p.hp = p.maxHp; p.desmaiado = 0;                                                                     // em memória também: qualquer gravação no unload sai curada
   portaOcupado = true;
   telaEscura(9000, (noCentro ? 'Centro Pokémon' : 'Laboratório') + '…');
-  if (NOME === 'kanto' || NOME === 'pallet_rota1') sessionStorage.setItem('mundo', NOME);            // sair de lá volta pro mundo certo
+  if (NOME === 'kanto' || NOME === 'pallet_route1') sessionStorage.setItem('mundo', NOME);            // sair de lá volta pro mundo certo
   const u = new URL(location.href); u.searchParams.set('mapa', alvo.mapa); u.searchParams.set('chegada', String(alvo.chegada)); u.searchParams.set('jogar', '1'); u.searchParams.delete('personagem');   // `jogar=1` explícito (12/09): com o storage bloqueado a tranca não consegue pôr
   setTimeout(() => { try { sessionStorage.setItem('porta.ok', '1'); } catch {} descarregarCena(); location.replace(u.toString()); }, 900);
 }
@@ -5698,11 +5698,11 @@ async function soltarDaBola(glb, { recolher = true } = {}){
 /* ===== Evolução no mundo (botão "✧ Evoluir" da janela Pokémon; SEM condição por enquanto — nível/pedra vêm depois).
    Mesmo roteiro da bancada com o material do jogo: efeito `FX_Evolution2` (escalado pra 1,4 alturas do Pokémon) +
    `ui/sound_evolution`; o parceiro em campo fica branco (materiais clonados, emissivo) e pulsa até o estouro dos
-   4,5 s, clarão na tela, troca pelo modelo da evolução (pokedex.json `evo` → data/elenco.json), que nasce branco,
+   4,5 s, clarão na tela, troca pelo modelo da evolução (pokedex.json `evo` → data/cast.json), que nasce branco,
    revela a cor em 1,5 s tocando `Buff`. O registro do time é atualizado (nível fica, HP proporcional). Ash e as
    trocas ficam travados enquanto dura (~7 s). */
-const ELENCO_JOGO = await fetch('./data/elenco.json').then(r => r.json()).catch(() => []);
-/* Regras de evolução DOS JOGOS ORIGINAIS (evolution.mjs ← data/evolucoes.json, do PokéAPI): nível, amizade alta, horário,
+const ELENCO_JOGO = await fetch('./data/cast.json').then(r => r.json()).catch(() => []);
+/* Regras de evolução DOS JOGOS ORIGINAIS (evolution.mjs ← data/evolutions.json, do PokéAPI): nível, amizade alta, horário,
    golpe conhecido, companheiro no time, pedra/Cabo de Ligação/item segurado (consumidos da mochila). `opcoesEvolucao(e)`
    avalia todas as regras da espécie (com o modelo exportado, quando há); `evolucaoDe(e)` é a primeira que já dá pra fazer. */
 function contextoEvolucao(){
@@ -5945,7 +5945,7 @@ async function interagir(){
    Cada porta (NPC tipo 6) ganha um anel amarelo no chão e o nome do destino; entrar no anel
    atravessa: mesma cena (escada da casa) teleporta pro ponto de chegada; outra cena recarrega
    com ?mapa=<cena>&chegada=<ponto>. Voltando pro overworld, cai no mapa de onde veio
-   (sessionStorage.mundo: kanto ou pallet_rota1). Cena sem dados de NPC (casa do Gary): a saída
+   (sessionStorage.mundo: kanto ou pallet_route1). Cena sem dados de NPC (casa do Gary): a saída
    fica atrás do ponto de nascimento. O Fairy tem a sua própria versão disso (start.mjs). */
 function nomeJogador(){ return lerLS('nome', '') || 'Ash'; }   // function: usada no nascimento, antes do fim do módulo
 /** Nome do jogador em cima da cabeça (como os NPCs); refeito quando o nome muda. */
@@ -6024,7 +6024,7 @@ function chegadaPedida(){
    o jogador nascia no VAZIO entre os dois andares (centro da bbox) e a porta da rua devolvia pra Pallet (rukintk). Aqui:
    nasce no ponto equivalente da casa dona (a chegada que a porta da rua aponta) e a porta da rua devolve pra rua de ONDE VEIO
    (a porta de dentro que o dump conhece, 6182301 → 7110304; ou a chegada gêmea da porta da rua, 6110304 → 7110304). */
-function areaDonaDaCena(){ return cenaAtual?.areas?.[0]?.id ?? null; }   // a casa "dona" do GLB é a 1ª área do índice (data/cenas.json); function (içada): o nascimento chama antes desta linha (TDZ)
+function areaDonaDaCena(){ return cenaAtual?.areas?.[0]?.id ?? null; }   // a casa "dona" do GLB é a 1ª área do índice (data/scenes.json); function (içada): o nascimento chama antes desta linha (TDZ)
 function casaCompartilhada(){
   if (casaCompartilhada.r !== undefined) return casaCompartilhada.r;
   let r = null;
@@ -6221,7 +6221,7 @@ async function atravessar(p){
     for (const q of portasCena) if (distPorta(q, ash.x, ash.z) < 1.9) emPorta.add(q);   // rearma: não fica repetindo a cada quadro parado na porta
     return;
   }
-  if (String(cenaDest) === NOME || (dest.c === 1000001 && (NOME === 'kanto' || NOME === 'pallet_rota1'))){
+  if (String(cenaDest) === NOME || (dest.c === 1000001 && (NOME === 'kanto' || NOME === 'pallet_route1'))){
     const pt = (dados.npcs || []).find(n => n.cfg === p.destino); if (!pt) return;   // escada: mesmo GLB, outro andar
     portaOcupado = true;
     await telaEscura(350, nomeAreaCena(dest.a));
@@ -6251,7 +6251,7 @@ async function atravessar(p){
     $('boot').hidden = true; portaOcupado = false; return;
   }
   portaOcupado = true;
-  if (NOME === 'kanto' || NOME === 'pallet_rota1') sessionStorage.setItem('mundo', NOME);
+  if (NOME === 'kanto' || NOME === 'pallet_route1') sessionStorage.setItem('mundo', NOME);
   const mapa = dest.c === 1000001 ? (sessionStorage.getItem('mundo') || 'kanto') : String(cenaDest);
   if (Math.floor((dest.a || 0) / 100) === 14) gravarLS('ultimoCentro', { mapa, chegada: p.destino, quando: Date.now() });   // Centro Pokémon = áreas 1401–1411: morte → acorda aqui (aposDesmaio)
   telaEscura(9000, (nomeAreaCena(dest.a) || mapa) + '…');
@@ -6276,7 +6276,7 @@ async function irParaCena({ mapa = null, chegada = null, texto = '', raid = null
   try { Menus.fechar(); } catch {}
   try { if (Troca.aberta()) Chat.sistema('The trade table closed: you were taken somewhere else.'); } catch {}   // o servidor cancela a troca quando a conexão cai na recarga
   try { if (jogo.turno){ if (jogo.turno.serv) Rede.pedirBatalha('sair').catch(() => {}); fimTurno(false, { desistiu: true }); } } catch (e){ console.warn('irParaCena: turno', e); }
-  try { if (NOME === 'kanto' || NOME === 'pallet_rota1') sessionStorage.setItem('mundo', NOME); } catch {}   // sair do interior depois volta pro mundo certo
+  try { if (NOME === 'kanto' || NOME === 'pallet_route1') sessionStorage.setItem('mundo', NOME); } catch {}   // sair do interior depois volta pro mundo certo
   if (raid != null){ Raid.carimbar(raid); Raid.marcarIda(raid); try { if (mapa) sessionStorage.removeItem('chegada.' + mapa); } catch {} }   // arena: a reserva de uma porta antiga não pode vencer a posição que o servidor deu
   else Raid.apagarCarimbo();
   telaEscura(9000, texto || '…');
@@ -6697,7 +6697,7 @@ function estadoPortao(){ return (estadoPortao.s ??= { celulas: [], fechado: fals
    (z > 46,35: passou das células 44–45 com a folga do pé, RAIO_PE) e ABRE com ele do lado da Rota 1 (z < 43,9). Quem vem de fora entra
    em Pallet e o portão fecha atrás; quem está em Pallet continua sem sair. */
 function fecharPortaoPallet(){
-  if ((NOME !== 'kanto' && NOME !== 'pallet_rota1') || lerLS('inicial', null)) return;
+  if ((NOME !== 'kanto' && NOME !== 'pallet_route1') || lerLS('inicial', null)) return;
   estadoPortao().armado = true; ajustarPortaoPallet();
 }
 function ajustarPortaoPallet(){
@@ -6715,7 +6715,7 @@ function vigiarPortaoPallet(dt){
   if (a.z < 48.5 && a.z > 43 && Math.abs(a.x) < 12 && estadoPortao().t <= 0){
     estadoPortao().t = 6;
     const n = (jogo.npcs || []).find(n => n.cfg === 8110103);
-    const falas = Dialogos.falas('portao');                               // Fase 3: data/dialogos.json (painel → Diálogos do jogo)
+    const falas = Dialogos.falas('portao');                               // Fase 3: data/dialogues.json (painel → Diálogos do jogo)
     if (n && !falando) mostrarFala(n.nome, falas, n).catch(() => {}); else flutuar(a, Dialogos.texto('portaoBalao'), '#ffd23a');
     Chat.sistema(Dialogos.texto('portaoChat'));
   }
@@ -6855,7 +6855,7 @@ function verificarPortas(dt){
 /* NPCs com modelo exportado (mãe, Oak, assistentes, Mimey…): parados em Idle, nome em cima;
    Z perto (ou toque neles) mostra as falas em pt do jogo numa caixa embaixo. */
 async function montarNpcs(){
-  const cenaId = +NOME || (NOME === 'kanto' || NOME === 'pallet_rota1' ? 1000001 : 0);
+  const cenaId = +NOME || (NOME === 'kanto' || NOME === 'pallet_route1' ? 1000001 : 0);
   /* Interiores: célula sem piso registrado (atrás do balcão do Centro) faz o chaoEm devolver a laje de baixo (−1,4 m) e o NPC
      nasce enterrado — só o nome aparece. Referência = o piso onde o jogador está: ninguém nasce abaixo dele. */
   const chaoRef = jogo.ash ? (chaoEm(jogo.ash.x, jogo.ash.z) ?? 0) : 0;
@@ -7267,7 +7267,7 @@ function palcoIniciais(){
 }
 function escolherInicial(){
   const ja = lerLS('inicial', null);
-  if (ja){ mostrarFala(Dialogos.texto('oakNome'), Dialogos.falas('oakJaEscolheu', { nome: ja.nome })); return; }   // Fase 3: data/dialogos.json
+  if (ja){ mostrarFala(Dialogos.texto('oakNome'), Dialogos.falas('oakJaEscolheu', { nome: ja.nome })); return; }   // Fase 3: data/dialogues.json
   if (Menus.temPopup?.('inicial')){                                     /* HUD v2 (decisão do Jaime, 18/09): a tela é a maquete da Amanda, sem abas de geração — só os 3 de Kanto; o palco 3D e o receberInicial continuam daqui */
     if (falando) return;
     jogo.ash.alvoX = null;
@@ -7313,7 +7313,7 @@ async function receberInicial(o, i){
   document.getElementById('segue-ctl')?.__encher?.();
   flutuar(jogo.ash, 'recebeu ' + o.nome + '!', '#8ef58e'); Chat.sistema('Recebeu ' + o.nome + ' do Professor Oak!');
   atualizarMissao();
-  mostrarFala(Dialogos.texto('oakNome'), Dialogos.falas('oakEntrega', { nome: o.nome }));   // Fase 3: data/dialogos.json
+  mostrarFala(Dialogos.texto('oakNome'), Dialogos.falas('oakEntrega', { nome: o.nome }));   // Fase 3: data/dialogues.json
 }
 $('fala').addEventListener('click', () => pularFala?.());
 /* ===== DE PÉ x CAÍDO (20/09, billzerax: "Meu Pokémon tenta atacar Pokémon já desmaiado") =====
@@ -7493,7 +7493,7 @@ if (jogo.ash){
     Object.assign(btn.style, { padding: '5px 10px', border: '1px solid #8ef58e', borderRadius: '6px', background: 'linear-gradient(#14401f,#10131b)', color: '#d9ffe0', font: 'inherit', cursor: 'pointer' });
     const encher = async () => {
       let lista = [];
-      try { lista = await fetch('./data/elenco.json').then(r => r.json()); } catch (e){ console.warn('elenco.json:', e); }
+      try { lista = await fetch('./data/cast.json').then(r => r.json()); } catch (e){ console.warn('cast.json:', e); }
       sel.innerHTML = '';
       const doTime = new Map((jogo.time || []).map(e => [e.glb.replace(/\.glb$/, ''), e]));
       for (const e of jogo.time || []){ const o = document.createElement('option'); o.value = e.glb.replace(/\.glb$/, ''); o.textContent = `★ ${e.nome} Lv${e.lv || '?'}`; sel.appendChild(o); }
@@ -8380,7 +8380,7 @@ if (JOGAR && params0.get('clima')) ligarClima(params0.get('clima'));
 
 /* ============================================================== batalha por turno (treinadores)
    Como combinado: selvagens continuam em tempo real; TREINADORES (e depois ginásios) lutam por turnos.
-   Dados: data/treinadores.json (tools/treinadores.py — PveTrainerConfig/TrainerMonsterConfig/EudemonMonsterConfig
+   Dados: data/trainers.json (tools/treinadores.py — PveTrainerConfig/TrainerMonsterConfig/EudemonMonsterConfig
    do dump: nome pt, time com níveis da rota, falas, prêmio). Spots: dados.treinadores do kanto.json.
    O rival é um "selvagem" com `emTurno` (a IA de tempo real pula ele); dano/efeitos/XP passam pelos mesmos
    golpear/lancarGolpe da caçada. Vitória fica em localStorage `treinadoresVencidos` (spotKey). */
@@ -8411,7 +8411,7 @@ async function povoarTreinadores(){
   if (povoandoT || !JOGAR || Fairy || !jogo.ash || jogo.raidArena || !(dados.treinadores || []).length) return;
   povoandoT = true;
   try {
-    if (!dadosTreinadores) dadosTreinadores = await fetch('./data/treinadores.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    if (!dadosTreinadores) dadosTreinadores = await fetch('./data/trainers.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
     /* 56 cfgs estão NAS DUAS listas do mapa (npcs e treinadores): o personagem entrava como NPC comum E como ⚔ —
        era a "gêmea" da Saya. O ⚔ é o dono: o NPC comum de cfg de treinador sai (varre todo tique, à prova da ordem
        de carga, porque o montarNpcs é assíncrono e pode terminar depois do primeiro tique). */

@@ -6,17 +6,17 @@
 
 | Role | Path |
 |---|---|
-| Scene index | `public/data/cenas.json` |
+| Scene index | `public/data/scenes.json` |
 | Outdoor world map | `public/data/kanto.json` (+ `scenery/kanto.glb`, `scenery/kanto_chao.json`) |
-| Light outdoor slice | `public/data/pallet_rota1.json` (+ `public/scenery/pallet_rota1.glb`) |
-| Doors / warps catalog | `public/data/portas.json` |
-| Interior scene id list | `public/data/interiores_mapas.txt` |
-| World-map UI click points | `public/data/mapa_kanto_pontos.json` + `ui/figma/backgrounds/mapa-kanto.png` |
-| Place-name EN | `public/data/locale/nomes_en.json` |
+| Light outdoor slice | `public/data/pallet_route1.json` (+ `public/scenery/pallet_route1.glb`) |
+| Doors / warps catalog | `public/data/doors.json` |
+| Interior scene id list | `public/data/interior_maps.txt` |
+| World-map UI click points | `public/data/kanto_map_points.json` + `ui/figma/backgrounds/mapa-kanto.png` |
+| Place-name EN | `public/data/locale/names_en.json` |
 | NPC models / dialogue lines | `public/data/npcs_glb.json` |
-| Scripted dialogues | `public/data/dialogos.json` |
-| Missions | `public/data/missoes.json` |
-| Gyms | `public/data/ginasios.json` |
+| Scripted dialogues | `public/data/dialogues.json` |
+| Missions | `public/data/missions.json` |
+| Gyms | `public/data/gyms.json` |
 | Spawn habitats (species by area) | `public/data/habitats.json` |
 | Spawn zones (unused/empty) | `public/data/zonas_spawn.json` → `{"v":1,"zonas":[]}` |
 | Scene loader (client) | `idx_mod_0.mjs` |
@@ -28,20 +28,20 @@
 
 | Metric | Count |
 |---|---:|
-| Top-level scenes in `cenas.json` | 72 |
+| Top-level scenes in `scenes.json` | 72 |
 | Outdoor areas inside scene `1000001` / `kanto` | 39 |
 | Interior/dungeon/special scenes | 71 |
-| Interior scenes with GLB (`interiores_mapas.txt` / scenery) | 71 / 71 listed |
+| Interior scenes with GLB (`interior_maps.txt` / scenery) | 71 / 71 listed |
 | Cave-type scenes | 6 |
-| Gym definitions (`ginasios.json`) | 8 |
-| `portas.json` entries | 6692 |
+| Gym definitions (`gyms.json`) | 8 |
+| `doors.json` entries | 6692 |
 | Door warps (t=6) | 2484 |
 | Arrival points (t=7) | 4208 |
 | Outdoor ledge markers in `kanto.portas` (tipo 72/73/74) | 848 |
 | NPCs placed on outdoor `kanto` map | 1305 |
 | Trainers placed on outdoor `kanto` map | 1984 |
 | NPC catalog `npcs_glb.json` | 377 |
-| Dialogue keys `dialogos.json` | 12 |
+| Dialogue keys `dialogues.json` | 12 |
 | Mission chapters | 20 |
 | Mission quests (total) | 56 |
 | Habitat areas with species | 53 |
@@ -53,13 +53,13 @@
 - **Bounding box (from area caixas):** X [-394.6 … 327.6] m, Z [-286.3 … 250.5] m ≈ **722 × 537 m**.
 - **39 outdoor areas** are AABBs inside that one mesh (`kanto.json` `caixas` / `areas` / `nomes`). Walking between Pallet → Viridian → Pewter etc. does **not** reload.
 - **Interiors / dungeons** are **separate scenes**: page reload with `?mapa=<sceneId>&chegada=<arrivalCfg>` (`idx_mod_0.mjs`). Boot loads `scenery/<NOME>.glb`, `scenery/<NOME>_chao.json`, `data/<NOME>.json`.
-- **Default boot map:** `NOME = kanto` (or last scene in `localStorage.ultimaCena`). Dev light slice: `?mapa=pallet_rota1` (Pallet + Route 1 only).
-- **Warps:** `portas.json` — `t=6` door NPC cfg → `n` arrival cfg (`t=7`). Outdoor ledge hops are `kanto.portas` tipo 72/73/74 (not scene changes).
-- **`interiores_mapas.txt`:** whitelist of exported interior scene IDs; doors to non-exported scenes are suppressed (no yellow ring).
+- **Default boot map:** `NOME = kanto` (or last scene in `localStorage.ultimaCena`). Dev light slice: `?mapa=pallet_route1` (Pallet + Route 1 only).
+- **Warps:** `doors.json` — `t=6` door NPC cfg → `n` arrival cfg (`t=7`). Outdoor ledge hops are `kanto.portas` tipo 72/73/74 (not scene changes).
+- **`interior_maps.txt`:** whitelist of exported interior scene IDs; doors to non-exported scenes are suppressed (no yellow ring).
 
 ### Fast travel / flying
-- **No classic HM Fly city teleporter.** World Map popup (`menus.mjs` `popupMa`) shows art `mapa-kanto.png` with click labels from `mapa_kanto_pontos.json` — **informational / area select UI**, not a free teleport network like Gen 1 Fly.
-- **Mounts:** `montarias.json` / `M` key. Some mounts have `voa` (IsFly) for free flight over terrain (staff/admin-gated for most; Arcanine + Lapras free). Surf via aquatic mounts on water.
+- **No classic HM Fly city teleporter.** World Map popup (`menus.mjs` `popupMa`) shows art `mapa-kanto.png` with click labels from `kanto_map_points.json` — **informational / area select UI**, not a free teleport network like Gen 1 Fly.
+- **Mounts:** `mounts.json` / `M` key. Some mounts have `voa` (IsFly) for free flight over terrain (staff/admin-gated for most; Arcanine + Lapras free). Surf via aquatic mounts on water.
 - **Respawn / “stuck”:** teleport to last Pokémon Center / Oak Lab via door system (`irParaCena`), not city Fly list.
 - **Admin:** `?adm=1` free flight for filming.
 
@@ -264,7 +264,7 @@
 | Cerulean Cave | ✅ PRESENT | PRESENT 2100006 |
 | Fighting Dojo | ✅ PRESENT | PRESENT 4120014 |
 | Bill's House | ✅ PRESENT | PRESENT 4110020 |
-| Underground Path (5/6 & 7/8) | ❌ MISSING | MISSING as named scene — Route 5–8 exist outdoors; no Underground Path dungeon in cenas.json |
+| Underground Path (5/6 & 7/8) | ❌ MISSING | MISSING as named scene — Route 5–8 exist outdoors; no Underground Path dungeon in scenes.json |
 | Pokemon Fan Club | ✅ PRESENT | LIKELY PRESENT via Vermilion warp “Clube dos Entusiastas” → shared interior scene |
 | Cerulean Bike Shop | ✅ PRESENT | PRESENT 4110003 Miracle Cycle |
 | Fuchsia Safari Gate / Warden | ✅ PRESENT | PRESENT via Safari scenes |
@@ -273,8 +273,8 @@
 ### Placeholder / incomplete signals
 
 - `zonas_spawn.json` is **empty** (`zonas: []`). Live grass/water encounters use `habitats.json` instead.
-- Several mission badge steps still say **"ginásios em breve"** (“gyms coming soon”) in objective text even though `ginasios.json` defines all 8 leaders/scenes.
-- Multiple **duplicate gym scene IDs** in `cenas.json` (e.g. Pewter `4120001` & `4120017`; Celadon `4120004` & `4120019`; Fuchsia `4120005` & `4120015`; Vermilion `4120003` & `4120016`) — `ginasios.json` points at the `cenaComPorta` variants (4120017, 4120002, 4120016, 4120019, 4120015, 4120006, 4120007, 4120008).
+- Several mission badge steps still say **"ginásios em breve"** (“gyms coming soon”) in objective text even though `gyms.json` defines all 8 leaders/scenes.
+- Multiple **duplicate gym scene IDs** in `scenes.json` (e.g. Pewter `4120001` & `4120017`; Celadon `4120004` & `4120019`; Fuchsia `4120005` & `4120015`; Vermilion `4120003` & `4120016`) — `gyms.json` points at the `cenaComPorta` variants (4120017, 4120002, 4120016, 4120019, 4120015, 4120006, 4120007, 4120008).
 - **Pokémon Centers / Marts** often share one GLB scene id with **city remapping** via arrival cfg digits (`idx_mod_0.mjs` remaps 14xx/15xx city codes) — `4110001` appears as Pewter PC in its JSON but warps from many cities reuse it.
 - Outdoor **Seafoam** (`1299`) is a surface marker on the big map; the full cave is separate scene `2100003`.
 - **Indigo Plateau** overworld plaza is not an outdoor `kanto` area; League is interior-only rooms.
@@ -303,11 +303,11 @@
 | Total `falas` strings in catalog | 442 |
 | Outdoor placed NPCs in `kanto.json` (incl. door/arrival markers) | 1305 |
 | Outdoor trainers in `kanto.json` | 1984 |
-| `dialogos.json` scripted keys | 12 |
+| `dialogues.json` scripted keys | 12 |
 
 NPC catalog `tipo` breakdown: tipo 1=150, tipo 2=33, tipo 4=63, tipo 8=37, tipo undef=94
 
-#### `dialogos.json` keys
+#### `dialogues.json` keys
 
 - **oakNome:** Professor Samuel
 - **portao:** Espera! Sem um Pokémon, a grama alta da Rota 1 é perigosa. / Fale com o Professor Oak no laboratório antes de sair de Pallet.
@@ -322,7 +322,7 @@ NPC catalog `tipo` breakdown: tipo 1=150, tipo 2=33, tipo 4=63, tipo 8=37, tipo 
 - **introRed:** Red: — Ainda não acabou.
 - **introMega:** Mega Charizard X!
 
-### Gyms (`ginasios.json`)
+### Gyms (`gyms.json`)
 
 | # | English gym name | Leader | City | Type | Scene | Badge | Team | Reward $ |
 |---:|---|---|---|---|---:|---|---|---:|
@@ -335,7 +335,7 @@ NPC catalog `tipo` breakdown: tipo 1=150, tipo 2=33, tipo 4=63, tipo 8=37, tipo 
 | 7 | Volcano Gym (Cinnabar) | Blaine | Cinnabar | Fogo | 4120007 | Volcano Badge (medalha Vermelho Escuro) | #58 Lv54, #77 Lv54, #78 Lv55, #59 Lv56 | 4300 |
 | 8 | Earth Gym (Viridian) | Giovanni | Viridian | Terra | 4120008 | Earth Badge (medalha Verde) | #111 Lv58, #51 Lv58, #31 Lv59, #34 Lv59, #112 Lv60 | 4800 |
 
-### Missions / quests (`missoes.json`)
+### Missions / quests (`missions.json`)
 
 Version 1, generated 2026-09-14.
 
@@ -403,12 +403,12 @@ Version 1, generated 2026-09-14.
 ## Scene loading (`idx_mod_0.mjs` / `world.mjs`)
 
 1. Resolve `NOME` from `?mapa=` → `localStorage.ultimaCena` → default `kanto`.
-2. After account/passe gate, parallel fetch: `./scenery/${NOME}.glb`, `./scenery/${NOME}_chao.json`, `./data/${NOME}.json`, plus `cenas.json` index.
+2. After account/passe gate, parallel fetch: `./scenery/${NOME}.glb`, `./scenery/${NOME}_chao.json`, `./data/${NOME}.json`, plus `scenes.json` index.
 3. `INTERIOR` if scene ≠ 1000001 and all areas have `tipo !== 1`.
-4. Door NPCs from map `npcs[]` whose `cfg` is in `portas.json` with `t=6`; crossing reloads via `irParaCena` → `?mapa=&chegada=` with `sessionStorage[porta.ok]`.
+4. Door NPCs from map `npcs[]` whose `cfg` is in `doors.json` with `t=6`; crossing reloads via `irParaCena` → `?mapa=&chegada=` with `sessionStorage[porta.ok]`.
 5. `world.mjs` handles shared wild Pokémon / capture networking once the scene is up — not scene discovery.
 
-## Appendix — all `cenas.json` scene IDs
+## Appendix — all `scenes.json` scene IDs
 
 | Scene ID | PT name | EN | Areas | objeto flag |
 |---:|---|---|---:|---|
@@ -490,13 +490,13 @@ Version 1, generated 2026-09-14.
 
 | Location | Scene | Access finding |
 |---|---:|---|
-| Safari Zone (full multi-zone dungeon) | 2100011 | **No inbound warps** in `portas.json` resolve to this scene. Outdoor Safari area `1192` warps only to “Safari House” areas remapped into shared house scenes `4110011` / `4110009`. The 7-area Safari GLB appears **orphaned** from the live door graph. |
+| Safari Zone (full multi-zone dungeon) | 2100011 | **No inbound warps** in `doors.json` resolve to this scene. Outdoor Safari area `1192` warps only to “Safari House” areas remapped into shared house scenes `4110011` / `4110009`. The 7-area Safari GLB appears **orphaned** from the live door graph. |
 | Pokémon Mansion | 2100013 | Reachable indirectly: Cinnabar → shared interior `4110013` area `1832` (“Cinnabar Abandoned Building”) → mansion. Single-floor vs Gen 1 multi-floor. |
 | Team Rocket Hideout | 2100005 | Entered from Game Corner `4110018` (door cfg `6184302`), not from outdoor Celadon directly. |
 | Shared Pokémon Centers / Marts | 4110001 / 4110007 | One GLB hosts many city-named areas (`1402` Pewter PC, `1409` Cinnabar PC, etc.); `idx_mod_0.mjs` remaps city digits on arrival. |
-| Duplicate gym GLBs | 4120001 vs 4120017 etc. | Only the `ginasios.json` `cena` IDs are the wired leaders. |
+| Duplicate gym GLBs | 4120001 vs 4120017 etc. | Only the `gyms.json` `cena` IDs are the wired leaders. |
 | Sevii / postgame islands | 2500001, 252*, 254* | Present as extra content beyond classic Kanto mainland. |
-| Non-Kanto `portas.json` rows | (e.g. c=2000001) | Catalog still contains other-region door rows; ~1919 warps resolve to scenes/areas **not** in this `cenas.json` Kanto export. |
+| Non-Kanto `doors.json` rows | (e.g. c=2000001) | Catalog still contains other-region door rows; ~1919 warps resolve to scenes/areas **not** in this `scenes.json` Kanto export. |
 
 ### Dungeon habitat coverage (`habitats.json`)
 

@@ -16,11 +16,11 @@ const fmt = (c, v) => v === undefined || v === null ? '' : c.resumo ? String(c.r
 const previas = new Map();
 const previaDe = caminho => { if (!previas.has(caminho)) previas.set(caminho, import(caminho).catch(e => { console.warn('prévia:', e); previas.delete(caminho); return null; })); return previas.get(caminho); };
 /* NOMES DOS ITENS (esq.usaItens): campo com `item: true` mostra o nome ao lado do número e sugere da lista (datalist); as
-   colunas calculadas (esq.colunas) recebem `ctx.item(id)`. Carrega o menus_dados.json do jogo uma vez, quando precisa. */
+   colunas calculadas (esq.colunas) recebem `ctx.item(id)`. Carrega o menu_data.json do jogo uma vez, quando precisa. */
 let itensJogo = null;
 async function carregarItens() {
   if (itensJogo) return itensJogo;
-  itensJogo = (await fetch('/data/menus_dados.json').then(r => r.json()).catch(() => ({}))).itens || {};
+  itensJogo = (await fetch('/data/menu_data.json').then(r => r.json()).catch(() => ({}))).itens || {};
   const dl = document.createElement('datalist'); dl.id = 'dl-d-itens';
   dl.innerHTML = Object.entries(itensJogo).map(([id, i]) => `<option value="${id}" label="${esc(t(i.n))}">`).join('');
   document.body.append(dl);

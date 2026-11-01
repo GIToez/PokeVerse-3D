@@ -577,7 +577,7 @@ export async function definirLoja(a, b, { nome: c = null, trava: e = null } = {}
 async function dados() {
   if (D) return D;
   if (!carregandoD)
-    carregandoD = fetch('./data/menus_dados.json')
+    carregandoD = fetch('./data/menu_data.json')
       .then((r) => r.json())
       .catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] }))
       .then(async (d) => {
@@ -4314,7 +4314,7 @@ function popupTr() {
 let ginasiosTr = null;
 async function carregarGinasios() {
   if (!ginasiosTr)
-    ginasiosTr = await fetch('./data/ginasios.json')
+    ginasiosTr = await fetch('./data/gyms.json')
       .then((r) => r.json())
       .catch(() => ({}));
   return ginasiosTr;
@@ -4970,7 +4970,7 @@ async function encherMapa(b) {
   Popup.rotulo(b, 'titulo');
   Popup.texto(b, 'regiao', 'Kanto');
   Popup.imagem(b, 'mapa', './ui/figma/backgrounds/mapa-kanto.png');
-  pontosMapa ??= await fetch('./data/mapa_kanto_pontos.json')
+  pontosMapa ??= await fetch('./data/kanto_map_points.json')
     .then((r) => r.json())
     .catch(() => ({ areas: {}, raio: 0.045 }));
   mapaHabitats ??= await fetch('./data/habitats.json')
@@ -6023,7 +6023,7 @@ const seloDx = (c, a, b) => {
 };
 async function carregarEvoDx() {
   if (!evoDx)
-    evoDx = await fetch('./data/evolucoes.json')
+    evoDx = await fetch('./data/evolutions.json')
       .then((r) => r.json())
       .catch(() => ({ por: {} }));
   return evoDx;
@@ -7363,7 +7363,7 @@ const cacheGlb = new Map(),
   texShiny = new Map();
 async function carregarElenco() {
   if (!elenco)
-    elenco = await fetch('./data/elenco.json')
+    elenco = await fetch('./data/cast.json')
       .then((r) => r.json())
       .catch(() => []);
   return elenco;

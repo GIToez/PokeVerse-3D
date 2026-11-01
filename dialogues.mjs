@@ -1,4 +1,4 @@
-/* Diálogos fixos do jogo (Fase 3 do painel → Arquivos de dados → Diálogos do jogo): saíram do index.html pro data/dialogos.json.
+/* Diálogos fixos do jogo (Fase 3 do painel → Arquivos de dados → Diálogos do jogo): saíram do index.html pro data/dialogues.json.
  * PADRAO = o texto que estava no código — vale pra chave que faltar no arquivo, ou sem o arquivo. {nome} = o nome do Pokémon.
  * Quem fala passa o texto pelo i18n depois (mostrarFala/legenda), então a tradução continua casando pelo português.
  * O painel avisa a aba do jogo ao salvar (dados-mudaram) e o index chama recarregar(): vale na próxima fala, sem F5. */
@@ -25,7 +25,7 @@ function aplicar(j) {
     if (Array.isArray(p) ? Array.isArray(v) && v.length && v.every(s => typeof s === 'string') : typeof v === 'string' && v.trim()) D[k] = v;
   }
 }
-const baixar = (bust = '') => fetch('./data/dialogos.json' + bust, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(aplicar).catch(() => {});
+const baixar = (bust = '') => fetch('./data/dialogues.json' + bust, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(aplicar).catch(() => {});
 await baixar();
 /** O painel salvou: relê (a próxima fala já sai nova). */
 export const recarregar = () => baixar('?t=' + Date.now());

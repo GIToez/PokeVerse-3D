@@ -460,7 +460,7 @@ function iconeItem(a) {
   if (v) return v;
   if (ICONES) return ICONES[a]?.i ? './ui/itens/' + ICONES[a].i + '.png' : null;
   if (!iconesP)
-    iconesP = fetch('./data/menus_dados.json')
+    iconesP = fetch('./data/menu_data.json')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         ICONES = d?.itens || {};

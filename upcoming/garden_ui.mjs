@@ -57,7 +57,7 @@ function itemDe(a, b) {
     const c = Ev.dados() && Ev.itemDe(k);
     if (c) return c;
   } catch {}
-  return b?.item?.(k) || Mo.lerJson('./data/menus_dados.json', b?.repintar)?.itens?.[k] || null;
+  return b?.item?.(k) || Mo.lerJson('./data/menu_data.json', b?.repintar)?.itens?.[k] || null;
 }
 const deps = (a) => ({ tr, item: (b) => itemDe(b, a), plantas: Ev.dados()?.horta?.plantas || {} });
 const canteiroEl = (a, i) =>

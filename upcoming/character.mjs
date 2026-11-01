@@ -30,7 +30,7 @@ export const SKINS_PREMIO = [
 export const SKINS_EXTRA = [];
 try {
   const noSite = typeof window !== 'undefined' && true;
-  const roupas = noSite ? [] : await fetch('./data/skins_treinador.json').then((r) => (r.ok ? r.json() : []));
+  const roupas = noSite ? [] : await fetch('./data/trainer_skins.json').then((r) => (r.ok ? r.json() : []));
   for (const s of roupas)
     if (
       s.glbOk &&
@@ -210,7 +210,7 @@ let _mochilas = null;
 const _cacheBolsa = new Map();
 export async function listaMochilas() {
   if (!_mochilas)
-    _mochilas = await fetch('./data/mochilas.json')
+    _mochilas = await fetch('./data/bags.json')
       .then((r) => r.json())
       .catch(() => []);
   return _mochilas;

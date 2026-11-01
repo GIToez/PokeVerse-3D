@@ -2,7 +2,7 @@ import { t as tr } from './i18n.mjs';   // IDIOMA (11/09, etapa 2): o tracker tr
 /* Motor de missões (caps 1–20 de Kanto): a cadeia principal é linear, cada missão tem passos que o jogo
    consegue verificar sozinho. O index.html manda EVENTOS (falou com NPC, chegou numa área, capturou,
    derrotou, subiu de nível, escolheu o inicial, curou, insígnia) e o motor avança, paga a recompensa
-   e devolve o texto do tracker. Dados: data/missoes.json (gerado por tools/missoes_kanto.mjs).
+   e devolve o texto do tracker. Dados: data/missions.json (gerado por tools/missoes_kanto.mjs).
 
    Tipos de passo:
      falar    { cfg | cfgs }              — conversar com o NPC (fala extra da missão em `fala`)
@@ -22,7 +22,7 @@ const LS = 'missoes';
 export async function instalar(c){
   ctx = c;
   if (pendente){ ctx.gravarLS(LS, pendente); pendente = null; }           // o servidor falou antes do instalar: o estado dele vale
-  dados = await fetch('./data/missoes.json').then(r => r.json()).catch(e => { console.warn('missoes.json:', e); return { capitulos: [] }; });
+  dados = await fetch('./data/missions.json').then(r => r.json()).catch(e => { console.warn('missions.json:', e); return { capitulos: [] }; });
   estado = ctx.lerLS(LS, null);
   if (estado){                                                            // estado antigo/malformado (sem feitas/prog): completa em vez de quebrar ("reading 'includes'")
     estado.feitas = Array.isArray(estado.feitas) ? estado.feitas : [];

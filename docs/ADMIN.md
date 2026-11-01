@@ -56,7 +56,7 @@ backup first, so you can undo the undo).
 
 ## Translations editor
 
-Under **Translations**, GMs edit `public/data/traducoes.json` — a list of
+Under **Translations**, GMs edit `public/data/translations.json` — a list of
 `{ pt, en, es }` rows. These override the static dictionaries in `public/data/locale/`
 and are the quickest way to fix or add a translation without touching files. See the
 [Languages](../README.md#languages) section and [`GLOSSARY.md`](GLOSSARY.md).

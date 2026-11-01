@@ -77,12 +77,12 @@ let sujoHab = false;
 const cam = { x: 0, z: 0, esc: 3 };
 let enquadrado = false;   // o mapa só enquadra quando o canvas tem tamanho de verdade (evita o fit num canvas 0/minúsculo no boot)
 let jogadorPos = null;    // { x, z, mapa } quando o jogo responde
-// Áreas (caixas do mapa): o nome que o JOGO mostra vem 1º do data/cenas.json e só depois do `nomes` do mapa (nomeAreaCena)
+// Áreas (caixas do mapa): o nome que o JOGO mostra vem 1º do data/scenes.json e só depois do `nomes` do mapa (nomeAreaCena)
 let caixaSel = null;      // caixa selecionada (objeto de dadosMapa.caixas)
 let sujoAreas = false, tilesMudados = false;
 const nomesMudados = new Set();   // ids de área renomeados/criados (só esses vão pro servidor)
 let areasOriginais = new Set();   // ids que já existiam no arquivo (o ID dessas não muda: habitats/níveis apontam pra ele)
-let nomesCena = {};       // id → nome no cenas.json
+let nomesCena = {};       // id → nome no scenes.json
 let idsUsados = new Set();// todo id de área de todas as cenas (id novo não pode herdar habitat de área de outro mapa)
 let desenhandoArea = false, rascunho = null;
 let foto = null;          // fundo "minimapa" do mapa atual ({ img, x0, z0, esc, w, h, fonte, mapa })
@@ -142,7 +142,7 @@ let Camadas = null;   // admin/layers.mjs (pontos e pincel) — criado no ligarU
 
 async function carregarCenas() {
   nomesCena = {}; idsUsados = new Set();
-  const ce = await fetch('/data/cenas.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
+  const ce = await fetch('/data/scenes.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
   for (const c of ce?.cenas || []) for (const a of c.areas || []) { idsUsados.add(+a.id); if (!(a.id in nomesCena)) nomesCena[a.id] = a.nome; }
 }
 async function trocarMapa(nome, semPerguntar = false) {

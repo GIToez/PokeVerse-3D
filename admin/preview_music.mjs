@@ -1,5 +1,5 @@
 /* Prévia das Músicas por área (esquema musicas, Fase 3): uma tabela amigável por cima dos campos JSON — cada área/interior com
- * o nome que o jogador vê (data/cenas.json), a faixa num seletor (só as que existem em som/, lista do servidor) e ▶ pra ouvir.
+ * o nome que o jogador vê (data/scenes.json), a faixa num seletor (só as que existem em som/, lista do servidor) e ▶ pra ouvir.
  * Mudar aqui escreve no campo JSON do formulário (que valida e marca "não salvo"); mudar o JSON à mão redesenha a tabela. */
 import { recurso, escreverCampo, nomesDeLugares } from '/admin/resources.mjs';
 

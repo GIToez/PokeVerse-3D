@@ -105,7 +105,7 @@ function montarPainel(){
     <div class="linha"><b style="color:#ffe07a">🎥 Cena de captura</b> <span class="k">H esconde · F9 flash</span></div>
     <div id="cap-status" class="k">spawn natural desligado: só aparece quem você povoar</div>
     <h2>Cena</h2>
-    <label><span>mapa</span><select id="c-mapa"><option value="pallet_rota1">Pallet + Rota 1 (leve)</option><option value="kanto">Kanto inteira</option><option value="casa">Terreno (lote)</option></select><button id="c-ir">ir</button></label>
+    <label><span>mapa</span><select id="c-mapa"><option value="pallet_route1">Pallet + Rota 1 (leve)</option><option value="kanto">Kanto inteira</option><option value="casa">Terreno (lote)</option></select><button id="c-ir">ir</button></label>
     <label><span>teleporte</span><select id="c-area">${areas}</select><button id="c-tele">ir</button></label>
     <div class="linha"><button id="c-exportar">Exportar cena</button><button id="c-importar">Importar</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Limpar receitas</button></div>
     <h2>Você</h2>
@@ -135,7 +135,7 @@ function montarPainel(){
   document.body.appendChild(painel);
   const dica = document.createElement('div'); dica.id = 'cap-dica'; dica.textContent = 'H: painel · F9: flash'; document.body.appendChild(dica);
   // cena
-  $('c-mapa').value = ctx.mapaNome === 'kanto' ? 'kanto' : ctx.mapaNome === 'casa' ? 'casa' : 'pallet_rota1';
+  $('c-mapa').value = ctx.mapaNome === 'kanto' ? 'kanto' : ctx.mapaNome === 'casa' ? 'casa' : 'pallet_route1';
   $('c-ir').onclick = () => { const u = new URL(location.href); u.searchParams.set('mapa', $('c-mapa').value); u.searchParams.delete('chegada'); location.href = u.toString(); };
   $('c-tele').onclick = () => irPara($('c-area').value);
   $('c-exportar').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(cena, null, 1)], { type: 'application/json' })); a.download = 'cena_captura.json'; a.click(); };

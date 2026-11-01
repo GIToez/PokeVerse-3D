@@ -125,32 +125,32 @@ model and scene files; see `docs/ADMIN.md`).
 
 | Schema | File (`public/data/`) | Purpose |
 |---|---|---|
-| `config_jogo`, `bolas` | `config_jogo.json` | Shiny rate, level caps, heal rules, ball multipliers, area levels |
-| `itens`, `lojas`, `insignias` | `menus_dados.json` | Items, shop inventories, badges |
-| `treinadores` | `treinadores.json` | Trainer teams and dialogue (60 trainers) |
+| `config_jogo`, `bolas` | `game_config.json` | Shiny rate, level caps, heal rules, ball multipliers, area levels |
+| `itens`, `lojas`, `insignias` | `menu_data.json` | Items, shop inventories, badges |
+| `treinadores` | `trainers.json` | Trainer teams and dialogue (60 trainers) |
 | `npcs` | `npcs_glb.json` | NPC identity, dialogue, roles |
-| `portas` | `portas.json` | Doors and arrival points |
-| `ginasios` | `ginasios.json` | Gym leaders and rewards |
-| `mochilas` | `mochilas.json` | Bag cosmetics |
-| `skins_treinador` | `skins_treinador.json` | Character outfits |
-| `receitas_cor` | `receitas_cor.json` | Dyeable clothing recipes |
+| `portas` | `doors.json` | Doors and arrival points |
+| `ginasios` | `gyms.json` | Gym leaders and rewards |
+| `mochilas` | `bags.json` | Bag cosmetics |
+| `skins_treinador` | `trainer_skins.json` | Character outfits |
+| `receitas_cor` | `color_recipes.json` | Dyeable clothing recipes |
 | `exp_curvas`, `exp_especies` | `exp.json` | EXP curves and per-species EXP |
-| `iniciais` | `iniciais.json` | Starters |
-| `montarias` | `montarias.json` | Mounts |
-| `golpes` | `golpes.json` | Moves |
+| `iniciais` | `starters.json` | Starters |
+| `montarias` | `mounts.json` | Mounts |
+| `golpes` | `moves.json` | Moves |
 | `learnset` | `learnset.json` | Level-up moves |
-| `missoes` | `missoes.json` | Story missions |
-| `evolucoes`, `evolucoes_itens` | `evolucoes.json` | Evolution rules and items |
+| `missoes` | `missions.json` | Story missions |
+| `evolucoes`, `evolucoes_itens` | `evolutions.json` | Evolution rules and items |
 | `especies`, `alturas`, `sexos`, `tamanhos` | matching files | Model scale, height, gender ratio, size |
 | `descricoes_pt`, `dex_extra` | `locale/dex_pt.json`, `dex_extra.json` | Pokédex text and extra fields |
-| `elenco` | `elenco.json` | 3D model roster |
-| `npc_tintas` | `npc_tintas.json` | NPC material colors |
-| `dialogos` | `dialogos.json` | Scripted dialogue (live) |
-| `traducoes` | `traducoes.json` | Translation overrides (live) |
-| `musicas` | `musicas.json` | Area and battle music (live) |
+| `elenco` | `cast.json` | 3D model roster |
+| `npc_tintas` | `npc_tints.json` | NPC material colors |
+| `dialogos` | `dialogues.json` | Scripted dialogue (live) |
+| `traducoes` | `translations.json` | Translation overrides (live) |
+| `musicas` | `music.json` | Area and battle music (live) |
 | `raid` | `raid.json` | Raid defaults |
 
-Also edited outside the schemas: `zonas_spawn.json`, `habitats.json`, each scene's `<id>.json`, `cenas.json`, map `.glb` files,
+Also edited outside the schemas: `zonas_spawn.json`, `habitats.json`, each scene's `<id>.json`, `scenes.json`, map `.glb` files,
 `eventos.json`, and `server/data/contas.json` (through the Players panel).
 
 ## Other pages and tools
@@ -160,7 +160,7 @@ Also edited outside the schemas: `zonas_spawn.json`, `habitats.json`, each scene
 | `public/game.html` | Early prototype sandbox, not the real game |
 | `public/map-editor.html` | Prototype map viewer, not the GM map editor |
 | `public/pokemon-viewer.html` | Standalone model viewer |
-| `tools/receitas_cor.mjs` | Regenerates dye recipes (overwrites panel edits) |
+| `tools/color_recipes.mjs` | Regenerates dye recipes (overwrites panel edits) |
 | `tools/locale_invert.mjs` | Builds the Portuguese dictionaries from the English ones |
 | `tools/locale_english_source.mjs` | Rewrites a JSON file's display text from Portuguese to English |
 | `tools/audit_pokemon.mjs` | Regenerates `docs/audit/POKEMON.md` |

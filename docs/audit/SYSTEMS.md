@@ -70,7 +70,7 @@ Elite Four runs, direct messages and the shared wild-Pokémon stream. Wild Poké
   type effectiveness (official 18-type chart in `public/pokedex.json`) and a random 0.85–1.0 factor. Minimum 1 damage unless immune.
 - **HP** is the standard formula times 3, to give real-time fights room (`individual.mjs`, `rules.mjs`).
 - **IVs** 0–31 for each stat, **25 natures** (±10%), **EVs always 0** (`individual.mjs:1–4`).
-- **Moves:** 194 defined (`public/data/golpes.json`, `moves_all.mjs`). 17 have dedicated particle effects; the rest use the
+- **Moves:** 194 defined (`public/data/moves.json`, `moves_all.mjs`). 17 have dedicated particle effects; the rest use the
   Pokémon's Attack/Buff/Cast animation. Projectiles travel at 14 m/s.
 - **Learnsets:** the last 4 moves at or below the Pokémon's level; up to 12 forgotten moves are remembered with their PP.
 
@@ -78,7 +78,7 @@ Elite Four runs, direct messages and the shared wild-Pokémon stream. Wild Poké
 
 - Formula (`idx_mod_0.mjs:4715–4725`, `rules.mjs:41–46`): `a = (3·HPmax − 2·HP) · catchRate · ballBonus / (3·HPmax)`. 255 or
   more catches outright; otherwise up to 4 shakes using the Gen III check.
-- Ball multipliers (`config_jogo.json`): Poké 1×, Great 1.5×, Ultra 2×, Master 255×, Safari 1.5×. Level, Net, Nest and
+- Ball multipliers (`game_config.json`): Poké 1×, Great 1.5×, Ultra 2×, Master 255×, Safari 1.5×. Level, Net, Nest and
   Repeat balls currently behave like 1×.
 - At most 4 balls in the air at once. Trainer Pokémon, raid bosses and bosses can't be caught.
 - New saves start with 10 Poké, 5 Great, 2 Ultra and 1 Master Ball (`idx_mod_0.mjs:4734`).
@@ -86,23 +86,23 @@ Elite Four runs, direct messages and the shared wild-Pokémon stream. Wild Poké
 ## Progression
 
 - **Badges and level cap:** each of the 8 Kanto badges raises the obedience cap. Pokémon above the cap sometimes ignore orders,
-  and extra XP is banked (`config_jogo.json:3–13`).
+  and extra XP is banked (`game_config.json:3–13`).
 - **XP:** Gen 5+ formula, ×3 from bosses, multiplied by any live event (`evolution.mjs:39–44`). Six EXP curves cover all 1025 species.
 - **Friendship:** starts at the species base (default 70). +1 per minute following, +2 per level, −1 per faint; friendship
   evolutions trigger at 160.
 - **Gym rematch cooldown:** after a loss, wait until midnight or pay a Coin fee.
 - **Elite Four:** no healing between fights.
-- **Starters:** Bulbasaur, Charmander, Squirtle, Chikorita, Cyndaquil, Totodile (`iniciais.json`).
+- **Starters:** Bulbasaur, Charmander, Squirtle, Chikorita, Cyndaquil, Totodile (`starters.json`).
 
 ## Economy
 
 - Currency is Coins (displayed as ₽). The default balance is 50,000 (`menus.mjs:159`).
-- The item catalog has 1,250 entries (`menus_dados.json`); only balls, medicine, PP restores and evolution items do anything in play.
+- The item catalog has 1,250 entries (`menu_data.json`); only balls, medicine, PP restores and evolution items do anything in play.
 - The premium currency (crystals) always shows 0.
 
 ## Mounts
 
-20 mounts in `montarias.json`, including Lugia, Ho-Oh and Rayquaza (flying, amphibious), Gyarados and Lapras (water), and
+20 mounts in `mounts.json`, including Lugia, Ho-Oh and Rayquaza (flying, amphibious), Gyarados and Lapras (water), and
 Arcanine, Charizard and Dragonite (land). Only Arcanine and Lapras are free; the rest need staff/GM rights or offline mode.
 The Giratina and Arceus entries point to models that don't exist. There is no mount shop.
 
@@ -132,4 +132,4 @@ X (Pokédex), U (Trainer), O (Settings). There is no run key. On phones, a virtu
 | Networking | `network.mjs`, `world.mjs` |
 | Character, dyes | `character.mjs`, `paint.mjs` |
 | Accounts, progress pass | `account.mjs`, `pass_rules.mjs` |
-| Tuning | `public/data/config_jogo.json` |
+| Tuning | `public/data/game_config.json` |

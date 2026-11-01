@@ -4,7 +4,7 @@
  *
  * Esquema:  { titulo, descricao, arquivo, caminho?, forma, id?, recarga?, campos }
  *   arquivo  = nome em public/data, sem .json
- *   caminho  = subchave dentro do arquivo (ex.: 'itens' em menus_dados.json); sem caminho = o arquivo inteiro
+ *   caminho  = subchave dentro do arquivo (ex.: 'itens' em menu_data.json); sem caminho = o arquivo inteiro
  *   forma    = 'objeto' (o arquivo é UM registro, ex.: config) · 'mapa' ({ id: registro }) · 'lista' ([registro, …])
  *   id       = (lista) campo que identifica o registro — obrigatório e único
  *   recarga  = 'vivo' se o jogo aplica sem recarregar; senão o jogo avisa pra dar F5
@@ -51,7 +51,7 @@ const canaisDaMascara = v => {
   }
   return null;
 };
-// itens e lojas (menus_dados.json) e treinadores (Fase 1)
+// itens e lojas (menu_data.json) e treinadores (Fase 1)
 const TIPOS_ITEM = { 1: 'Currency', 2: 'Materials', 3: 'Carried items', 4: 'Technical Machine', 5: 'Materials (2)', 6: 'Bundle', 7: 'Poké Ball', 8: 'Fragment',
   9: 'Recovery', 10: 'Title', 11: 'Outfit', 12: 'Mount', 13: 'Coupons', 14: 'Equipment', 15: 'Summoning Stone', 16: 'Habitat Buildings',
   17: 'Habitat Materials', 18: 'Habitat Food', 19: 'Habitat Seeds' };
@@ -77,7 +77,7 @@ const receitaCompleta = r => {
 
 export const ESQUEMAS = {
   config_jogo: {
-    titulo: 'Game settings', arquivo: 'config_jogo', forma: 'objeto',
+    titulo: 'Game settings', arquivo: 'game_config', forma: 'objeto',
     descricao: 'Numbers that used to be hard-coded. Empty field = uses the game default.',
     campos: [
       { k: 'taxaShiny', rotulo: 'Wild shiny (1 in N)', tipo: 'num', min: 2, max: 1000000, int: true, ajuda: 'Default 4096. Lower = more shinies.' },
@@ -92,7 +92,7 @@ export const ESQUEMAS = {
     ],
   },
   itens: {
-    titulo: 'Items', arquivo: 'menus_dados', caminho: 'itens', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'numbers only',
+    titulo: 'Items', arquivo: 'menu_data', caminho: 'itens', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'numbers only',
     descricao: 'Every item in the game (name, description, type, icon and price). Poké Balls are items too (type Poké Ball).',
     previa: '/admin/preview_item.mjs',
     campos: [
@@ -106,7 +106,7 @@ export const ESQUEMAS = {
     ],
   },
   lojas: {
-    titulo: 'Shops', arquivo: 'menus_dados', caminho: 'lojas', forma: 'mapa', registroLista: true, usaItens: true, idValido: /^\d{1,9}$/, idAjuda: 'numbers only',
+    titulo: 'Shops', arquivo: 'menu_data', caminho: 'lojas', forma: 'mapa', registroLista: true, usaItens: true, idValido: /^\d{1,9}$/, idAjuda: 'numbers only',
     descricao: 'What each shop sells: item, quantity per purchase, currency, price and minimum level. The game\'s Poké Mart is shop 2150101.',
     ajudaLista: 'the order here is the order in the shop',
     colunas: [
@@ -123,7 +123,7 @@ export const ESQUEMAS = {
     ],
   },
   treinadores: {
-    titulo: 'NPC Trainers', arquivo: 'treinadores', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'the trainer\'s cfg on the map, numbers only',
+    titulo: 'NPC Trainers', arquivo: 'trainers', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'the trainer\'s cfg on the map, numbers only',
     descricao: 'The trainers who challenge the player on the map: name, model, team, prize and lines. The ID is the cfg shown in the map\'s trainer layer.',
     previa: '/admin/preview_trainer.mjs',
     campos: [
@@ -153,7 +153,7 @@ export const ESQUEMAS = {
     ],
   },
   portas: {
-    titulo: 'Doors', arquivo: 'portas', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'the cfg of the door\'s point on the map',
+    titulo: 'Doors', arquivo: 'doors', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'the cfg of the door\'s point on the map',
     descricao: 'An NPC-layer point with a cfg listed here becomes a door: a "Door" leads to the destination "Arrival" (n); an "Arrival" is where the player spawns on entering. Edit on the map: Map Editor → Points.',
     validar: r => r.t === 6 && r.n === undefined ? 'a door needs a destination (n; 0 = dead end)' : null,
     campos: [
@@ -164,7 +164,7 @@ export const ESQUEMAS = {
     ],
   },
   bolas: {
-    titulo: 'Balls', arquivo: 'config_jogo', caminho: 'bolas', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'the ball\'s item number (type Poké Ball in Items)',
+    titulo: 'Balls', arquivo: 'game_config', caminho: 'bolas', forma: 'mapa', idValido: /^\d{1,9}$/, idAjuda: 'the ball\'s item number (type Poké Ball in Items)',
     descricao: 'The Poké Balls the player can use and each one\'s catch power. Only balls in this list appear in the selector and can be thrown. The price is set on the Shops screen.',
     campos: [
       { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 40, col: true, obrigatorio: true },
@@ -173,7 +173,7 @@ export const ESQUEMAS = {
     ],
   },
   ginasios: {
-    titulo: 'Gyms', arquivo: 'ginasios', forma: 'mapa',
+    titulo: 'Gyms', arquivo: 'gyms', forma: 'mapa',
     descricao: 'Leader, team, reward and lines of each gym.',
     campos: [
       { k: 'numero', rotulo: 'No.', tipo: 'num', min: 1, max: 99, int: true, col: true },
@@ -198,7 +198,7 @@ export const ESQUEMAS = {
     ],
   },
   mochilas: {
-    titulo: 'Backpacks', arquivo: 'mochilas', forma: 'lista', id: 'id',
+    titulo: 'Backpacks', arquivo: 'bags', forma: 'lista', id: 'id',
     descricao: 'Cosmetic trainer backpacks. The preview puts the backpack on a trainer (drag to rotate) and says whether the model exists in this copy.',
     previa: '/admin/preview_bag.mjs',                   // Fase 3
     campos: [
@@ -212,7 +212,7 @@ export const ESQUEMAS = {
     ],
   },
   skins_treinador: {
-    titulo: 'Trainer skins', arquivo: 'skins_treinador', forma: 'lista', id: 'id',
+    titulo: 'Trainer skins', arquivo: 'trainer_skins', forma: 'lista', id: 'id',
     descricao: 'Trainer outfit sets. Click a row to see the model in 3D (drag to rotate).',
     previa: '/admin/preview_skin.mjs',                      // data.mjs carrega e mostra o modelo acima do formulário
     campos: [
@@ -236,8 +236,8 @@ export const ESQUEMAS = {
     ],
   },
   receitas_cor: {
-    titulo: 'Color recipes', arquivo: 'receitas_cor', forma: 'mapa',
-    descricao: 'The parts of each outfit the player can paint: the name they see and the default color. Generated from the original game\'s masks (tools/receitas_cor.mjs); the ID is the prefab in lowercase. The preview shows edits live.',
+    titulo: 'Color recipes', arquivo: 'color_recipes', forma: 'mapa',
+    descricao: 'The parts of each outfit the player can paint: the name they see and the default color. Generated from the original game\'s masks (tools/color_recipes.mjs); the ID is the prefab in lowercase. The preview shows edits live.',
     previa: '/admin/preview_skin.mjs',
     validar: receitaCompleta,
     campos: [

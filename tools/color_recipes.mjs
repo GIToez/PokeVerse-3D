@@ -1,7 +1,7 @@
-/* Gera public/data/receitas_cor.json: as receitas de cor das roupas do jogo original que têm máscara RGB (Boy_012…022,
- * Girl_010…021). Uso: node tools/receitas_cor.mjs
+/* Gera public/data/color_recipes.json: as receitas de cor das roupas do jogo original que têm máscara RGB (Boy_012…022,
+ * Girl_010…021). Uso: node tools/color_recipes.mjs
  *
- * De onde sai cada receita: os materiais do GLB (public/scenery/pc/<Modelo>.glb) × data/npc_tintas.json (gerado dos .mat do
+ * De onde sai cada receita: os materiais do GLB (public/scenery/pc/<Modelo>.glb) × data/npc_tints.json (gerado dos .mat do
  * dump: máscara + cor de fábrica de cada canal R/G/B/preto). No .mat, o 4º número da cor (alfa) = 1 marca o canal que o jogo
  * original deixava o jogador TINGIR — são esses que viram partes editáveis. Fora eles:
  *   • canal com o tom de pele de fábrica → parte "pele" (a mesma do Herói/Heroína);
@@ -46,7 +46,7 @@ const NOMES = {
   Girl_021: { G: ['cabelo', 'cabelo'], B: ['roupa', 'tênis'] },
 };
 
-const T = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/npc_tintas.json'), 'utf8'));
+const T = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/npc_tints.json'), 'utf8'));
 const PELE = [[1, 0.7961, 0.6667], [1, 0.8588, 0.7686], [0.9922, 0.9098, 0.8275]];   // os tons de pele de fábrica do dump
 const ehPele = c => PELE.some(p => p.every((v, i) => Math.abs(v - c[i]) < 0.02));
 const hex = c => '#' + c.slice(0, 3).map(v => Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, '0')).join('');
@@ -85,6 +85,6 @@ for (const modelo of MODELOS) {
   r.padrao = Object.fromEntries(Object.keys(r.rotulos).map(k => [k, r.padrao[k]]));
   saida[id] = r;
 }
-fs.writeFileSync(path.join(RAIZ, 'public/data/receitas_cor.json'), JSON.stringify(saida, null, 1));
+fs.writeFileSync(path.join(RAIZ, 'public/data/color_recipes.json'), JSON.stringify(saida, null, 1));
 console.log(Object.keys(saida).length + ' receitas:', Object.entries(saida).map(([id, r]) => id + '[' + Object.values(r.rotulos).join(', ') + ']').join('  '));
 if (fora.length) console.log('fora:', fora.join('; '));

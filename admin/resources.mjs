@@ -13,9 +13,9 @@ export function recurso(nome) {
   }
   return cache.get(nome);
 }
-/** Os cenas.json do jogo: { cenas: { id → nome }, areas: { id → nome } } (nomes que o jogador vê). */
+/** Os scenes.json do jogo: { cenas: { id → nome }, areas: { id → nome } } (nomes que o jogador vê). */
 let nomes = null;
-export const nomesDeLugares = () => (nomes ||= carregarNomesMapa().then(() => fetch('/data/cenas.json').then(r => r.json()).then(ce => {
+export const nomesDeLugares = () => (nomes ||= carregarNomesMapa().then(() => fetch('/data/scenes.json').then(r => r.json()).then(ce => {
   const cenas = {}, areas = {};
   for (const c of ce?.cenas || []) {
     cenas[c.id] = traduzNome(c.nome);

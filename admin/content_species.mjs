@@ -1,11 +1,11 @@
 /* Painel admin — tela Espécies (Fase 2). Junta por nº da dex o que estava espalhado em vários arquivos e grava em cada um só o que
  * mudou, cada um pelo seu esquema (schemas_f2.mjs):
- *   altura real ........ alturas.json (+ dex_extra.a)    → tamanho no campo (régua proporcional) e a ficha da Pokédex
- *   % de machos ........ sexos.json (+ dex_extra.m/f)    → sorteio do sexo (knowledge.mjs) e a ficha
- *   ajuste de tamanho .. especies.json { escala }         → AJUSTE_PROPORCIONAL do index.html (o Gastly 0,7 veio do código)
+ *   altura real ........ heights.json (+ dex_extra.a)    → tamanho no campo (régua proporcional) e a ficha da Pokédex
+ *   % de machos ........ genders.json (+ dex_extra.m/f)    → sorteio do sexo (knowledge.mjs) e a ficha
+ *   ajuste de tamanho .. species.json { escala }         → AJUSTE_PROPORCIONAL do index.html (o Gastly 0,7 veio do código)
  *   descrição .......... idioma/dex_pt.json               → o texto da ficha em português (i18n.descricaoDex)
  *   EXP ................ exp.json → especies { c, b, a } → curva, EXP base e amizade base (evolution.mjs)
- *   modelos ............ elenco.json (nome, forma) e tamanhos.json (MapSize do modo de tamanho "jogo")
+ *   modelos ............ cast.json (nome, forma) e sizes.json (MapSize do modo de tamanho "jogo")
  * O nome OFICIAL da espécie (pokedex.json) não muda aqui: o jogo usa ele como chave (dano, cadeia de evolução, elenco). */
 import { esc, copia, campo, gravar, ler, ref, pad } from '/admin/content.mjs';
 import { TIPOS, CURVAS } from '/admin/schemas_f2.mjs';
@@ -13,7 +13,7 @@ import { TIPOS, CURVAS } from '/admin/schemas_f2.mjs';
 const ARQS = ['especies', 'alturas', 'sexos', 'tamanhos', 'descricoes_pt', 'dex_extra', 'elenco', 'exp_especies'];
 /** A régua do index.html (alturaProporcional): h = 1,3 · real^0,55, entre 0,55 m e 3,2 m (selvagem) / 1,8 m (seguidor). */
 const regua = (real, teto) => Math.min(teto, Math.max(0.55, 1.3 * Math.pow(real, 0.55)));
-/** A chave do tamanhos.json de um modelo (chaveTamanho do index.html): pm0017_00 → pm0017; forma com chave própria → pm0487_11. */
+/** A chave do sizes.json de um modelo (chaveTamanho do index.html): pm0017_00 → pm0017; forma com chave própria → pm0487_11. */
 const chaveTamanho = (glb, T) => { const m = String(glb).match(/^(pm\d{4})(?:_(\d\d))?/); if (!m) return null; return m[2] && m[2] !== '00' && T[m[1] + '_' + m[2]] != null ? m[1] + '_' + m[2] : m[1]; };
 const fmt = n => Number(n).toLocaleString('en-US');
 

@@ -27,17 +27,17 @@ export const ref = {
     for (const s of p.species || []) if (s.n > 0 && !m.has(s.n)) m.set(s.n, { nome: s.name, tipos: s.types || [] });
     return m;
   },
-  async itens() { return (await baixar('/data/menus_dados.json', {})).itens || {}; },
+  async itens() { return (await baixar('/data/menu_data.json', {})).itens || {}; },
   async areas() {
     await carregarNomesMapa();
-    const c = await baixar('/data/cenas.json', {}), areas = {}, cenas = {};
+    const c = await baixar('/data/scenes.json', {}), areas = {}, cenas = {};
     for (const ce of c.cenas || []) { cenas[ce.id] = traduzNome(ce.nome); for (const a of ce.areas || []) if (!(a.id in areas)) areas[a.id] = traduzNome(a.nome); }
     return { areas, cenas };
   },
   async npcs() { return await baixar('/data/npcs_glb.json', {}); },
   async dexExtra() { return await baixar('/data/dex_extra.json', { especies: {}, golpes: {} }); },
-  async golpes() { return await baixar('/data/golpes.json', {}); },
-  async elenco() { return await baixar('/data/elenco.json', []); },
+  async golpes() { return await baixar('/data/moves.json', {}); },
+  async elenco() { return await baixar('/data/cast.json', []); },
   esquecer(url) { cacheRef.delete(url); },
 };
 /** <datalist id> com as opções [valor, rótulo] (uma vez por id). */

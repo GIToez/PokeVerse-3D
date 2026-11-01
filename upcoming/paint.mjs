@@ -3,7 +3,7 @@ import { tingirPixels, deReceitaAntiga } from './free_paint.mjs';
 let TINTAS = null;
 let buscaTabela = null,
   avisouSemTabela = false;
-const URL_TABELA = './data/npc_tintas.json';
+const URL_TABELA = './data/npc_tints.json';
 const tabelaBoa = (t) => !!t && typeof t === 'object' && !Array.isArray(t) && Object.keys(t).length > 0;
 export function usarTabela(t) {
   if (tabelaBoa(t)) TINTAS = t;

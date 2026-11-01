@@ -19,7 +19,7 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
 
   async function referencia() {
     if (ref) return ref;
-    const d = await fetch('/data/menus_dados.json').then(r => r.json()).catch(() => ({}));
+    const d = await fetch('/data/menu_data.json').then(r => r.json()).catch(() => ({}));
     const itens = d.itens || {};
     ref = { itens, tipos: d.tipos || {}, insignias: d.insignias || [],
       bolas: Object.entries(itens).filter(([, i]) => i.t === 7).map(([id, i]) => ({ id, nome: t(i.n) })).sort((a, b) => a.id - b.id) };

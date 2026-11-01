@@ -36,7 +36,7 @@ export const SKINS = [
   { id: 'heroina',  sexo: 'menina', nome: 'Heroine',           glb: 'Girl_002',     tinta: 'heroina', desc: 'free colors: skin, hair, dress, eyes' },
   { id: 'girl_030', sexo: 'menina', nome: 'Straw Hat',   glb: 'Girl_030',     desc: 'Fashion 53021 · Luffy\'s' },
 ];
-/* O GUARDA-ROUPA: as outras roupas do dump já exportadas (data/skins_treinador.json com `glbOk`, por
+/* O GUARDA-ROUPA: as outras roupas do dump já exportadas (data/trainer_skins.json com `glbOk`, por
    tools/skins_treinador_ok.mjs) entram como skins de visual fixo (02/09): id = prefab em minúsculas (boy_013…), sem tinta.
    Ficam FORA da tela de criação (que renderiza 4–5 modelos 3D ao vivo por aba — 38 cartas por sexo pesariam demais):
    `skinDe`/`glbDe` reconhecem as duas listas, então um `personagem.tipo = 'boy_013'` salvo (bancada, guarda-roupa futuro no
@@ -45,8 +45,8 @@ export const SKINS_EXTRA = [];
 let roupas = [], receitasCor = {};
 try {
   [roupas, receitasCor] = await Promise.all([
-    fetch('./data/skins_treinador.json').then(r => r.ok ? r.json() : []),
-    fetch('./data/receitas_cor.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),   // receitas das roupas do dump (abaixo)
+    fetch('./data/trainer_skins.json').then(r => r.ok ? r.json() : []),
+    fetch('./data/color_recipes.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),   // receitas das roupas do dump (abaixo)
   ]);
   for (const s of roupas) if (s.glbOk && s.prefab !== 'Boy_001' && !SKINS.some(k => k.glb === s.prefab))
     SKINS_EXTRA.push({ id: s.prefab.toLowerCase(), sexo: s.sexo, nome: s.nome, glb: s.prefab, desc: 'Fashion ' + s.id + (s.inicial ? ' · inicial do jogo' : ''), extra: true });
@@ -76,15 +76,15 @@ export const PRESETS = {
   olhos: ['#ffffff', '#00bdff', '#ffab28', '#5bff28', '#8da5ff', '#6b3f2a', '#ee4444'],
   roupa: ['#f83537', '#1a4195', '#2aa84a', '#f2c230', '#8a3fd1', '#222222', '#eeeeee', '#ff7a1a', '#ff9bd7'],
   roupa2: ['#ffffff', '#f83537', '#1a4195', '#2aa84a', '#f2c230', '#8a3fd1', '#333333', '#ff9bd7'],
-  roupa3: ['#d18449', '#7a4a2a', '#f83537', '#1a4195', '#2aa84a', '#f2c230', '#222222', '#eeeeee'],   // 3ª peça das roupas do dump (receitas_cor.json)
+  roupa3: ['#d18449', '#7a4a2a', '#f83537', '#1a4195', '#2aa84a', '#f2c230', '#222222', '#eeeeee'],   // 3ª peça das roupas do dump (color_recipes.json)
 };
-/* RECEITAS DAS ROUPAS DO DUMP (27/10, data/receitas_cor.json — tools/receitas_cor.mjs, editável no painel): as roupas que o
+/* RECEITAS DAS ROUPAS DO DUMP (27/10, data/color_recipes.json — tools/color_recipes.mjs, editável no painel): as roupas que o
    jogo original deixava tingir (máscara RGB + canal marcado no .mat) ganham receita no MESMO formato das de cima, com
    id = prefab em minúsculas (boy_012…) — que é também o id da skin, então o `coresDe` acha as cores salvas do jogador.
    Não sobrescrevem as escritas aqui (heroi/heroina/misty). */
 for (const [id, r] of Object.entries(receitasCor || {}))
   if (!CANAIS[id] && r?.texturas && r.rotulos && r.padrao){ CANAIS[id] = r.texturas; ROTULOS[id] = r.rotulos; PADRAO[id] = r.padrao; }
-/* Painel admin → Skins de treinador, campo "Cores editáveis" (`tinta` no skins_treinador.json, 27/10): liga, desliga ou troca a
+/* Painel admin → Skins de treinador, campo "Cores editáveis" (`tinta` no trainer_skins.json, 27/10): liga, desliga ou troca a
    receita de cor de uma skin pelo MODELO (prefab = glb). Sem o campo vale a tabela acima; 'fixo' desliga; 'propria' = a
    receita com o id do próprio modelo; receita que não existe em CANAIS é ignorada. A máscara é feita pra UM modelo — a
    prévia do painel testa se a receita pega antes de salvar. */
@@ -98,7 +98,7 @@ for (const r of Array.isArray(roupas) ? roupas : []){
   }
 }
 /* QUEM APARECE NA TELA DE CRIAÇÃO (27/10, painel admin → Skins de treinador, "Aparece na criação" = `criacao` no
-   skins_treinador.json). As fixas de SKINS seguem na ordem de sempre e saem só se o arquivo disser criacao:false; as do
+   trainer_skins.json). As fixas de SKINS seguem na ordem de sempre e saem só se o arquivo disser criacao:false; as do
    guarda-roupa (SKINS_EXTRA) entram DEPOIS delas, na ordem do arquivo, quando criacao:true. Arquivo sem o campo = só as
    fixas, como era. O registro do Ash no dump é o Boy_001, mas o jogo desenha o Ash com o Male_XiaoZhi (por isso o
    Boy_001 nem entra no SKINS_EXTRA): o campo dele vale pro Male_XiaoZhi. */
@@ -151,14 +151,14 @@ export async function aplicar(corpo, p = ler()){
 }
 
 /* ------------------------------------------------------------------ mochila (acessório nas costas, 02/09)
-   O Fairy vende a mochila SEPARADA da roupa (FashionConfig Type 2, 32 modelos, data/mochilas.json): o prefab `Bag###`
+   O Fairy vende a mochila SEPARADA da roupa (FashionConfig Type 2, 32 modelos, data/bags.json): o prefab `Bag###`
    é uma malha SKINNED em 2 ossos do mesmo rig do treinador (`Bip001 Spine` e `Bip001 Spine1`). Aqui a malha da
    mochila é religada ao esqueleto do treinador já montado — os mesmos ossos por nome, com as inversas e o bindMatrix
-   do corpo dele —, então ela acompanha qualquer animação e qualquer roupa. Tinta pelo material (npc_tintas.json). */
+   do corpo dele —, então ela acompanha qualquer animação e qualquer roupa. Tinta pelo material (npc_tints.json). */
 let _mochilas = null;
 const _cacheBolsa = new Map();
 export async function listaMochilas(){
-  if (!_mochilas) _mochilas = await fetch('./data/mochilas.json').then(r => r.json()).catch(() => []);
+  if (!_mochilas) _mochilas = await fetch('./data/bags.json').then(r => r.json()).catch(() => []);
   return _mochilas;
 }
 export const mochilaSalva = () => lerLS('mochila', null);
@@ -388,7 +388,7 @@ export function criarPalco(caixa, coresDeTinta){
     suavizarRosto(g.scene);                                                   // normais da placa do rosto (geometria compartilhada com os clones)
     const obj = SkeletonUtils.clone(g.scene);
     obj.traverse(n => { if (n.isMesh){ n.frustumCulled = false; n.material = Array.isArray(n.material) ? n.material.map(m => m.clone()) : n.material.clone(); } });
-    await Tinta.aplicarTinta(obj);                                            // cores de fábrica (data/npc_tintas.json)
+    await Tinta.aplicarTinta(obj);                                            // cores de fábrica (data/npc_tints.json)
     if (s.tinta) await Tinta.pintar(obj, receita(s.tinta, coresDeTinta(s.tinta)));
     if (!P.ativo) return it;
     const mixer = new THREE.AnimationMixer(obj);

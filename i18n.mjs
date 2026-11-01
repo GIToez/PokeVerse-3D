@@ -1,29 +1,18 @@
-/* IDIOMA DO JOGADOR (11/09/2026) — PT (a fonte), EN e ES. Etapa 1: telas, HUD, menus, avisos e os nomes que vieram do
- * dump (itens, golpes, áreas, títulos, roupas, NPCs). Missões e falas dos NPCs ficam pra etapa 2.
- *
- * COMO FUNCIONA: o código continua escrito em português. `t(texto)` procura o texto no dicionário do idioma escolhido e
- * devolve a tradução; sem tradução, devolve o próprio texto. Duas formas de chave:
- *   exata     "Criar conta" → "Create account"
- *   padrão    "Você chegou em {x}." → "You arrived in {x}."   (o {x} casa com qualquer trecho; o que casou também passa
- *             pelo t(), então "Cidade Pallet" dentro da frase vira "Pallet Town")
- * Os pontos de saída (rótulos da maquete, Chat.sistema, flutuar, telaEscura, Popup.texto/botao, avisos das telas) chamam
- * o t() — assim as ~140 chamadas com texto montado por concatenação não precisaram mudar.
- *
- * Dicionários: data/locale/ui_<l>.json (escritos à mão) + data/locale/nomes_<l>.json (gerados de LanguageConfig_<l> pelo
- * tools/idioma_nomes.mjs). Escolha: ?idioma=en|es|pt na URL, a barra PT·EN·ES da tela de login (screens.mjs), o localStorage
- * `idioma` e a conta (POST /conta/idioma; volta no login). Padrão: o idioma do navegador, caindo em pt.
- * Nomes dos Pokémon ficam em inglês em todos os idiomas (decisão do Jaime, 11/09). */
+/* Player language. English is the source. `t()` leaves English alone and translates into PT/ES
+ * from data/locale/ui_<l>.json, content_<l>.json, names_<l>.json. names_en.json only maps leftover
+ * Portuguese dump strings. Default language is English; PT/ES are selectable (login bar, ?idioma=,
+ * saved choice). Pokémon species names stay English in every language. */
 export const IDIOMAS = { pt: 'Português', en: 'English', es: 'Español' };
 const LS = 'idioma';
-let atual = 'pt', exatas = new Map(), padroes = [], carregado = { pt: true };
+let atual = 'en', exatas = new Map(), padroes = [], carregado = { en: true };
 const cache = new Map();                                                  // idioma → { exatas, padroes }
 
 export const idioma = () => atual;
 export const ehPt = () => atual === 'pt';
 /** O que o navegador sugere, sem consultar nada guardado. */
 export function doNavegador(){
-  const n = String((navigator.languages && navigator.languages[0]) || navigator.language || 'pt').toLowerCase();
-  return n.startsWith('es') ? 'es' : n.startsWith('en') ? 'en' : 'pt';
+  const n = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase();
+  return n.startsWith('es') ? 'es' : n.startsWith('pt') ? 'pt' : 'en';
 }
 /** O idioma a usar nesta carga: URL > guardado no aparelho > navegador. */
 export function detectar(url = null){
@@ -55,10 +44,10 @@ function montar(dics){
 async function baixar(l, bust = ''){
   if (cache.has(l)) return cache.get(l);
   const pega = async n => { try { const r = await fetch('./data/locale/' + n + '_' + l + '.json'); return r.ok ? await r.json() : {}; } catch { return {}; } };
-  /* PAINEL (Fase 3 → Traduções): data/traducoes.json = [{ pt, en, es }] editado pelo GM — vence tudo (é a correção mais recente). */
+  /* PAINEL (Fase 3 → Traduções): data/translations.json = [{ pt, en, es }] editado pelo GM — vence tudo (é a correção mais recente). */
   const origens = l === 'pt' ? ['en'] : l === 'en' ? ['pt'] : ['en', 'pt'];
-  const painel = async () => { try { const r = await fetch('./data/traducoes.json' + bust, { cache: 'no-cache' }); const lista = r.ok ? await r.json() : []; const out = {}; for (const x of (Array.isArray(lista) ? lista : [])) { if (typeof x?.[l] !== 'string' || !x[l].trim()) continue; for (const o of origens) if (x[o]) out[String(x[o]).trim()] = x[l]; } return out; } catch { return {}; } };
-  const [ui, conteudo, nomes, doPainel] = await Promise.all([pega('ui'), pega('conteudo'), pega('nomes'), painel()]);
+  const painel = async () => { try { const r = await fetch('./data/translations.json' + bust, { cache: 'no-cache' }); const lista = r.ok ? await r.json() : []; const out = {}; for (const x of (Array.isArray(lista) ? lista : [])) { if (typeof x?.[l] !== 'string' || !x[l].trim()) continue; for (const o of origens) if (x[o]) out[String(x[o]).trim()] = x[l]; } return out; } catch { return {}; } };
+  const [ui, conteudo, nomes, doPainel] = await Promise.all([pega('ui'), pega('content'), pega('names'), painel()]);
   const d = montar([nomes, conteudo, ui, doPainel]);                       // a mão (ui, conteudo = missões/ginásios) vence o gerado (nomes); o painel vence tudo
   cache.set(l, d); return d;
 }
@@ -136,10 +125,9 @@ export function tHtml(html){
   if (!(exatas.size || padroes.length) || typeof html !== 'string') return html;
   return html.replace(/>([^<>]+)</g, (tudo, txt) => '>' + t(txt) + '<');
 }
-/* Place-name labels. Dump JSON and file ids (kanto, pallet_rota1, 4110001) stay as scene keys —
-   doors/GLB load those ids. Players only ever see English from rotuloLugar. Fade text often
-   appends "…" which used to miss the dictionary (Viridian-Centro de Pokémon…). */
-const MAPA_IDS = { kanto: 'Kanto', pallet_rota1: 'Pallet Town & Route 1', '1000001': 'Kanto' };
+/* Place names are English in the data. File ids (kanto, pallet_route1, 4110001) stay as scene keys.
+   rotuloLugar returns that English name; t() runs only when the player picked PT/ES. */
+const MAPA_IDS = { kanto: 'Kanto', pallet_route1: 'Pallet Town & Route 1', pallet_rota1: 'Pallet Town & Route 1', '1000001': 'Kanto' };
 const TOWNS = new Set(['Pallet', 'Lavender']);
 const cenasPorId = Object.create(null);
 const AINDA_PT = /[àáâãéêíóôõúç]|Cidade|Rota |Ilha |Piso |Ginásio|Casa |Loja |Quarto |Caverna|Floresta|Esconderijo|Edifício|Companhia|Usina|Caminho |Centro de|campo de|Túnel|Sala |cabine|cozinha|corredor|Liga |Monte |área |Safári|Brasas|índigo|Celeste|Lavanda|Seaform|personagem|departamentos/i;
@@ -186,13 +174,13 @@ function cidadeDe(nome){
   if (n === 'Cinnabar') return 'Cinnabar Island';
   return n + ' City';
 }
-function inglesLugar(s){
+function nomeEmIngles(s){
   let x = String(s || '').trim();
   if (!x) return x;
-  if (MAPA_IDS[x]) x = MAPA_IDS[x];
-  else if (cenasPorId[x]) x = cenasPorId[x];
+  if (MAPA_IDS[x]) return MAPA_IDS[x];
+  if (cenasPorId[x]) x = cenasPorId[x];
+  if (!AINDA_PT.test(x)) return x;
   const viaDic = t(x);
-  if (atual !== 'en') return viaDic || x;
   if (viaDic && !AINDA_PT.test(viaDic)) return viaDic;
   x = viaDic || x;
   for (const [a, b] of TROCAS) x = x.split(a).join(b);
@@ -221,10 +209,11 @@ export function registrarCenas(cenas){
     }
   }
 }
-/** Translate a map/area/scene label. Never returns a file id or leftover Portuguese. */
+/** Place label in the current language. English is the source; PT/ES go through t(). */
 export function rotuloLugar(s){
   if (s == null || s === '') return '';
   const raw = String(s), m = raw.match(/^(.*?)([.…]+)$/), nucleo = (m ? m[1] : raw).trim(), suf = m ? m[2] : '';
   if (!nucleo) return suf;
-  return inglesLugar(nucleo) + suf;
+  const en = nomeEmIngles(nucleo);
+  return (atual === 'en' ? en : (t(en) || en)) + suf;
 }

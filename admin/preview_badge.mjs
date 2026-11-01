@@ -1,8 +1,8 @@
 /* Prévia da insígnia (esquema `insignias`, Fase 2): o ícone ui/icones/<ícone>.png — o mesmo que o Treinador do jogo mostra —, o nome
- * e quais ginásios dão esta insígnia (ginasios.json → insignia.id). */
+ * e quais ginásios dão esta insígnia (gyms.json → insignia.id). */
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let raiz = null, ginasios = null;
-const carregarGinasios = () => (ginasios ||= fetch('/data/ginasios.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})));
+const carregarGinasios = () => (ginasios ||= fetch('/data/gyms.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})));
 
 export function mostrar(caixa, r) {
   if (!raiz) { raiz = document.createElement('div'); raiz.style.cssText = 'display:flex;gap:12px;align-items:center;margin-bottom:10px'; }

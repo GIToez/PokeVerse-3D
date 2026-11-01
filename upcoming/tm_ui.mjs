@@ -736,7 +736,7 @@ let LOJAS = null;
 function temLoja(a) {
   if (typeof ctx.temLoja === 'function') return Promise.resolve(!!ctx.temLoja(a));
   if (!LOJAS)
-    LOJAS = fetch('./data/menus_dados.json')
+    LOJAS = fetch('./data/menu_data.json')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d?.lojas || {})
       .catch(() => ({}));

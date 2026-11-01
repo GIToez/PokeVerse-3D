@@ -1,13 +1,13 @@
 /* Prévia das Mochilas (esquema mochilas, Fase 3): veste a mochila num treinador no MESMO palco da tela de criação
  * (character.mjs criarPalco + vestirMochila, a mesma função do jogo: religa a malha aos ossos do treinador e pinta pelo
- * npc_tintas.json) e diz se o modelo da mochila existe nesta cópia (scenery/pc/<glb>.glb). Arrastar gira. */
+ * npc_tints.json) e diz se o modelo da mochila existe nesta cópia (scenery/pc/<glb>.glb). Arrastar gira. */
 import { criarPalco, vestirMochila, tirarMochila } from '/character.mjs';
 import { recurso } from '/admin/resources.mjs';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let raiz = null, P = null, reg = null, treinador = null, it = null, vestida = null, montando = null;
 let skins = null;
-const skinsDe = () => (skins ||= fetch('/data/skins_treinador.json').then(r => r.json()).catch(() => []));
+const skinsDe = () => (skins ||= fetch('/data/trainer_skins.json').then(r => r.json()).catch(() => []));
 
 function montarRaiz() {
   raiz = document.createElement('div'); raiz.className = 'previa-skin';

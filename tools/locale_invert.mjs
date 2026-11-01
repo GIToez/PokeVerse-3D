@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 
 const DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'public/data/locale');
 
-for (const nome of ['ui', 'conteudo', 'nomes']) {
+for (const nome of ['ui', 'content', 'names']) {
   const en = JSON.parse(fs.readFileSync(path.join(DIR, nome + '_en.json'), 'utf8'));
   const pt = {};
   for (const [k, v] of Object.entries(en)) {

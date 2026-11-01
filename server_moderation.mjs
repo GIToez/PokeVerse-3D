@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import nodePath from 'node:path';
 
 const MAX_MIN = 525600;                                                      // 1 ano: acima disso é "pra sempre" (-1)
-/* Ponto de chegada em Kanto na frente do Centro Pokémon de cada cidade (portas.json: a porta de saída do Centro, 61409xx → 711xx01);
+/* Ponto de chegada em Kanto na frente do Centro Pokémon de cada cidade (doors.json: a porta de saída do Centro, 61409xx → 711xx01);
    Pallet não tem Centro: na porta do laboratório. As coordenadas saem do kanto.json (npcs[].cfg). */
 export const CIDADES = { pallet: 7110103, viridian: 7110201, pewter: 7110301, cerulean: 7110401, vermilion: 7110501,
   lavender: 7110601, celadon: 7110701, saffron: 7110801, fuchsia: 7110901, cinnabar: 7111001 };

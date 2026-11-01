@@ -4,6 +4,7 @@
 
 const FIXOS = {
   kanto: 'Kanto',
+  pallet_route1: 'Pallet Town & Route 1',
   pallet_rota1: 'Pallet Town & Route 1',
 };
 
@@ -90,7 +91,7 @@ function montar(dic) {
   padroes = pa;
 }
 
-/** Translate a Portuguese (or already-English) place name from cenas.json. */
+/** Translate a Portuguese (or already-English) place name from scenes.json. */
 export function traduzNome(s) {
   if (typeof s !== 'string' || !s) return s;
   const k = s.trim();
@@ -108,7 +109,7 @@ export function traduzNome(s) {
   return s;
 }
 
-/** English label for a map file id (`kanto`, `pallet_rota1`, `4110001`). */
+/** English label for a map file id (`kanto`, `pallet_route1`, `4110001`). */
 export function nomeMapa(id) {
   const k = String(id ?? '');
   if (FIXOS[k]) return FIXOS[k];
@@ -146,8 +147,8 @@ export function rotuloPrefab(raw) {
 export async function carregar() {
   if (pronto) return;
   const [ce, nomes] = await Promise.all([
-    fetch('/data/cenas.json').then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch('/data/locale/nomes_en.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+    fetch('/data/scenes.json').then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('/data/locale/names_en.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
   ]);
   for (const c of ce?.cenas || []) cenasPorId[String(c.id)] = c.nome;
   montar(nomes);

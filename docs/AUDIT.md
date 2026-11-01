@@ -144,7 +144,7 @@ from Portuguese by `*_en.json`, so the game is fully English either way.
 |---|---|
 | HUD layout (`ui/hud_layout.json`) | English |
 | Menus (`menus.mjs`) display text | English |
-| Place names (`nomes_en.json`) | Dictionary covers every scene and area name |
-| Main game (inline script in `index.html`), other modules, data files (`missoes.json`, `npcs_glb.json`, `menus_dados.json`…) | Still Portuguese source, translated where the dictionary has an entry |
+| Place names (`names_en.json`) | Dictionary covers every scene and area name |
+| Main game (inline script in `index.html`), other modules, data files (`missions.json`, `npcs_glb.json`, `menu_data.json`…) | Still Portuguese source, translated where the dictionary has an entry |
 | Saved-game keys, server routes, data field names | Intentionally Portuguese; renaming them would break existing saves and the admin panel |
 | Spanish | Selectable, but has no dictionaries |

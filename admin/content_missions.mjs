@@ -1,4 +1,4 @@
-/* Painel admin — tela Missões (Fase 2). Edita data/missoes.json → capitulos (esquema `missoes` do schemas_f2.mjs), a fonte que o
+/* Painel admin — tela Missões (Fase 2). Edita data/missions.json → capitulos (esquema `missoes` do schemas_f2.mjs), a fonte que o
  * jogo (missions.mjs) e o servidor (MISSOES, relido quando o arquivo muda) usam. Capítulo → missões → passos e recompensa.
  * O save do jogador guarda o id da missão atual e o NÚMERO do passo: mexer na ordem dos passos de uma missão em andamento muda o
  * passo em que a pessoa está (o servidor só corrige quando a missão some ou o passo passa do fim). */
@@ -27,7 +27,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
       <div class="acoes"><button data-a="cap">＋ Chapter</button><button data-a="mis">＋ Mission</button></div></div><div class="lista"></div></div>
     <div class="col-dir"><div class="barra-topo"><h2>Missions</h2><span class="sujo" hidden>● unsaved</span><button data-a="descartar">Discard</button><button class="prim" data-a="salvar">Save</button></div>
       <div class="fraco">The story in chapters: each mission has steps (the game checks them automatically) and a reward paid at the end. File
-        <code>public/data/missoes.json</code> — the same one the game and the server read (the server reloads it when it changes; the game, on F5).
+        <code>public/data/missions.json</code> — the same one the game and the server read (the server reloads it when it changes; the game, on F5).
         The save stores the mission <b>id</b> and the step <b>number</b>: changing the id or the step order of a mission someone is doing changes their progress.</div>
       <div class="editor"></div></div>`;
   const $ = s => sec.querySelector(s), lista = $('.lista'), editor = $('.editor');
