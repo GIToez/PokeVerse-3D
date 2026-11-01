@@ -38,13 +38,14 @@ export async function instalar(c){
     gravar();
   }
   checarImediatos();
+  atualizarPinsMapa();
   return true;
 }
 const todas = () => (dados?.capitulos || []).flatMap(c => c.missoes.map(m => ({ ...m, capitulo: c.id, capNome: c.nome })));
 const primeiraMissao = () => todas()[0] || null;
 const porId = id => todas().find(m => m.id === id) || null;
 const proxima = id => { const l = todas(); const i = l.findIndex(m => m.id === id); return i >= 0 ? (l[i + 1] || null) : null; };
-const gravar = () => ctx.gravarLS(LS, estado);
+const gravar = () => { ctx.gravarLS(LS, estado); atualizarPinsMapa(); };
 
 export function ativa(){ return estado?.atual ? porId(estado.atual) : null; }
 export function passoAtual(){ const m = ativa(); return m ? (m.passos[estado.passo] || null) : null; }
@@ -392,4 +393,94 @@ function htmlRecompensaTracker(m){
   if (exp) chips.push({ n: exp, nome: 'XP', icone: './ui/itens/ic_5.png' });
   if (!chips.length) return '';
   return '<div class="rec mi-recs">' + chips.map(p => '<span class="mi-rec" title="' + esc(p.nome) + ' ×' + p.n + '"><i style="background-image:url(\'' + p.icone + '\')"></i><b>×' + p.n + '</b></span>').join('') + '</div>';
+}
+
+/* World / mini-map pins: current next step of active quests, plus side quests you can start now.
+   Locked / not-yet-available quests stay off the map. A step inside a house uses the street door. */
+let locP = null, pinsCache = [];
+function carregarLoc(){
+  locP ??= Promise.all([
+    fetch('./data/doors.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+    fetch('./data/npcs_glb.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+    fetch('./data/kanto.json').then(r => r.ok ? r.json() : { npcs: [], caixas: [] }).catch(() => ({ npcs: [], caixas: [] })),
+  ]).then(([doors, npcs, kanto]) => ({ doors, npcs, kanto }));
+  return locP;
+}
+function cfgsDoPasso(p, m){
+  const raw = p?.cfgs ?? p?.cfg ?? m?.npc;
+  if (raw == null) return [];
+  return (Array.isArray(raw) ? raw : [raw]).map(Number).filter(n => n > 0);
+}
+function areaExterna(a){
+  const n = +a;
+  return (n >= 1101 && n <= 1110) || (n >= 1191 && n <= 1199) || (n >= 1201 && n <= 1225) || (n >= 1290 && n <= 1334);
+}
+function portaNaRua(doors, kanto, { cena, area } = {}){
+  const arrivals = Object.entries(doors).filter(([, p]) => p?.t === 7 && (
+    (area != null && +p.a === +area) || (cena != null && +p.c === +cena)
+  )).map(([id]) => +id);
+  if (!arrivals.length) return null;
+  const rua = Object.entries(doors).filter(([, p]) => p?.t === 6 && +p.c === 1000001 && arrivals.includes(+p.n));
+  const pick = rua[0];
+  if (!pick) return null;
+  const n = (kanto.npcs || []).find(x => +x.cfg === +pick[0]);
+  return {
+    x: n?.x, z: n?.z, area: n?.a || pick[1].a, cfgPorta: +pick[0], casa: true,
+  };
+}
+function alvosVisiveis(){
+  const out = [];
+  const m = ativa(), p = passoAtual();
+  if (m && p) out.push({ texto: p.texto || m.nome, nome: m.nome, passo: p, cfg: cfgsDoPasso(p, m)[0], area: p.area, cena: p.cena, id: m.id });
+  for (const s of laterais().filter(x => x.estado === 'ativa')){
+    const q = (s.passos || [])[s.passo || 0];
+    if (!q) continue;
+    out.push({ texto: q.texto || s.nome, nome: s.nome, passo: q, cfg: cfgsDoPasso(q, s)[0], area: q.area, cena: q.cena, id: s.id });
+  }
+  for (const s of laterais().filter(x => x.estado === 'disponivel')){
+    const q = (s.passos || [])[0];
+    out.push({ texto: s.nome, nome: s.nome, passo: q || { tipo: 'falar', cfg: s.npc }, cfg: s.npc || cfgsDoPasso(q, s)[0], area: q?.area, cena: q?.cena, id: s.id, start: true });
+  }
+  return out;
+}
+function resolverAlvo(a, loc){
+  const { doors, npcs, kanto } = loc;
+  const info = a.cfg != null ? npcs[String(a.cfg)] : null;
+  const cena = a.cena || info?.cena;
+  const area = a.area;
+  if (cena && +cena !== 1000001){
+    const porta = portaNaRua(doors, kanto, { cena, area });
+    if (porta && porta.x != null) return porta;
+  }
+  if (area != null && !areaExterna(area)){
+    const porta = portaNaRua(doors, kanto, { area, cena });
+    if (porta && porta.x != null) return porta;
+  }
+  if (a.cfg != null){
+    const n = (kanto.npcs || []).find(x => +x.cfg === +a.cfg);
+    if (n) return { x: n.x, z: n.z, area: n.a || area };
+  }
+  if (area != null){
+    const b = (kanto.caixas || []).find(c => +c.a === +area && c.sx > 0 && c.sz > 0);
+    if (b) return { x: b.x, z: b.z, area };
+    return { area };
+  }
+  return null;
+}
+export function pinsMapaSync(){ return pinsCache; }
+export function atualizarPinsMapa(){
+  if (!dados) return Promise.resolve(pinsCache);
+  return carregarLoc().then(loc => {
+    const seen = new Set(), pins = [];
+    for (const a of alvosVisiveis()){
+      const pos = resolverAlvo(a, loc);
+      if (!pos) continue;
+      const chave = [pos.cfgPorta || a.cfg || '', pos.x ?? '', pos.z ?? '', pos.area ?? '', a.texto].join(':');
+      if (seen.has(chave)) continue;
+      seen.add(chave);
+      pins.push({ tipo: 'quest', texto: a.texto, nome: a.nome, id: a.id, cfg: a.cfg, start: !!a.start, ...pos });
+    }
+    pinsCache = pins;
+    return pinsCache;
+  }).catch(() => pinsCache);
 }

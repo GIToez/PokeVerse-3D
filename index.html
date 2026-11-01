@@ -1018,10 +1018,17 @@ function desenharMM(foto, ax, az, raio){
   g2.fillStyle = '#79b7e0'; g2.fillRect(0, 0, W, H);
   const sx = (ax - rx - foto.x0) * foto.esc, sz = (az - rz - foto.z0) * foto.esc;
   try { g2.drawImage(foto.cv || foto.img, sx, sz, 2 * rx * foto.esc, 2 * rz * foto.esc, 0, 0, W, H); } catch (e){}
-  const ponto = (x, z, cor, r) => { const px = (x - ax + rx) * S, pz = (z - az + rz) * S; if (px < 0 || pz < 0 || px > W || pz > H) return; g2.beginPath(); g2.arc(px, pz, r, 0, Math.PI * 2); g2.fillStyle = cor; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#0009'; g2.stroke(); };
-  for (const s of jogo.selvagens || []) if (s.pivo?.visible && s.estado !== 'morto' && s.estado !== 'guardado') ponto(s.vx ?? s.x, s.vz ?? s.z, s.shiny ? '#ffe36b' : '#f4f4f4', 3.2);
-  for (const n of jogo.npcs || []) if (n.pivo?.visible !== false) ponto(n.vx ?? n.x, n.vz ?? n.z, '#4ff0e0', 3.6);
-  for (const n of jogo.treinadores || []) if (n.pivo?.visible !== false) ponto(n.vx ?? n.x, n.vz ?? n.z, '#ff8ad8', 3.6);
+  const questPonto = (x, z) => {
+    const px = (x - ax + rx) * S, pz = (z - az + rz) * S;
+    if (px < 0 || pz < 0 || px > W || pz > H) return;
+    g2.beginPath(); g2.moveTo(px, pz - 6); g2.lineTo(px + 4.5, pz + 3); g2.lineTo(px - 4.5, pz + 3); g2.closePath();
+    g2.fillStyle = '#ffd23a'; g2.fill(); g2.lineWidth = 1.4; g2.strokeStyle = '#0009'; g2.stroke();
+  };
+  for (const pin of (jogo.missoesOk && Missoes.pinsMapaSync?.()) || []){
+    const n = pin.cfg != null ? (jogo.npcs || []).find(x => +x.cfg === +pin.cfg && x.pivo?.visible !== false) : null;
+    if (n) questPonto(n.vx ?? n.x, n.vz ?? n.z);
+    else if (pin.x != null && pin.z != null) questPonto(pin.x, pin.z);
+  }
 }
 const mmRT = new THREE.WebGLRenderTarget(256, 256);                      // o minimapa desenha AQUI a cada 3 quadros; na tela vai só um quad com a textura (barato)
 const mmCena = new THREE.Scene();
@@ -7222,6 +7229,7 @@ function atualizarMissao(){
   const miolo = $('missao-txt') || m;                                    // o botão de recolher mora FORA do miolo que o tracker reescreve
   if (miolo.innerHTML !== txt){ miolo.innerHTML = txt; Hud.remontar(m); }   // Figma: título/passo/recompensa nos lugares da maquete
   atualizarMarcasMissao();
+  Missoes.atualizarPinsMapa?.();
 }
 /** XP "bruta" (recompensa de missão): mesma escada de nível do ganharExp. */
 function darExp(p, n){
