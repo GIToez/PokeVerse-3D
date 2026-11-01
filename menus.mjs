@@ -978,7 +978,7 @@ function encherTreinador(pop){
 }
 
 /* ---------------------------------------------------------------- Mapa */
-let pontosMapa = null, areaMapa = null, mapaResize = null;
+let pontosMapa = null, areaMapa = null, mapaResize = null, mapaRoda = null;
 function popupMa(){
   return null;                                                           // world map is the window (quest pins, live tab, click a zone)
 }
@@ -2002,13 +2002,16 @@ function rMapaMundo(corpo){
     };
   };
   const noRoda = ev => {
-    if (ev.target.closest('.mapa-menu, .mapa-dir, .mapa-esq, .mapa-zoom-btns')) return;
+    if (aberta !== 'mapa' || !corpo.isConnected) return;
+    if (ev.target.closest('.mapa-menu, .mapa-dir, .mapa-esq, .mapa-zoom-btns, #chat, .pf, input, textarea, select')) return;
+    if (!document.body.classList.contains('mapa-aberto') && !ev.target.closest('.mapa-overlay, .mapa-palco, #janela.mapa-cheia')) return;
     ev.preventDefault();
-    ev.stopPropagation();
+    ev.stopImmediatePropagation();
     aplicarZoom(limitarZ(z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12)), ev.clientX, ev.clientY);
   };
-  palco.addEventListener('wheel', noRoda, { passive: false });
-  corpo.querySelector('.mapa-overlay').addEventListener('wheel', noRoda, { passive: false });
+  if (mapaRoda) removeEventListener('wheel', mapaRoda, { capture: true });
+  mapaRoda = noRoda;
+  addEventListener('wheel', noRoda, { capture: true, passive: false });
   palco.addEventListener('pointerdown', ev => {
     if (ev.button !== 0) return;
     arrasto = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, px, py, moveu: false };
