@@ -19,9 +19,12 @@ They don't collide. A typical OpenTibia setup (TFS, Canary or OTServBR) uses:
 | **PokeVerse game server** | **5190** | **no** (local only, behind nginx) |
 | **PokeVerse website** | **80 / 443 via the same nginx** | yes |
 
-Give each its own subdomain (for example `play.example.com` for the OT website and `pokeverse.example.com` for this game)
-and add one more nginx `server` block. If the OT website runs on Apache instead, either move both sites behind nginx or
-translate the config below into an Apache virtual host (`mod_proxy_wstunnel` for the WebSocket).
+The live box is `40.160.145.24`. Open Tibia already runs there as `pokeverse`. This game is a second systemd unit
+(`pokeverse-3d`) in `/opt/pokeverse-3d`. See [live-server.md](live-server.md).
+
+Give the 3D site its own subdomain and add one more nginx `server` block. If the OT website runs on Apache instead, either
+move both sites behind nginx or translate the config below into an Apache virtual host (`mod_proxy_wstunnel` for the
+WebSocket).
 
 **Sizing:** the game server uses a few hundred MB of RAM. The project is about 1.1 GB on disk, plus backups under
 `server/data/backups/`. Each new player downloads roughly 90 MB to get into the world the first time (the Kanto map alone
@@ -36,9 +39,10 @@ players joining at once is close to 2 GB. A VPS that already runs an OT server c
 sudo apt install -y nginx certbot python3-certbot-nginx git
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt install -y nodejs
 
-sudo useradd --system --create-home --home-dir /srv/pokeverse pokeverse
-sudo -u pokeverse git clone https://github.com/GIToez/PokeVerse-3D.git /srv/pokeverse/app
-cd /srv/pokeverse/app && sudo -u pokeverse npm install --omit=dev
+# First time only, as ubuntu@40.160.145.24 (creates pokeverse if needed):
+#   scp scripts/live/bootstrap-ovh.sh ubuntu@40.160.145.24:
+#   ssh ubuntu@40.160.145.24 'bash bootstrap-ovh.sh'
+# After that the app lives at /opt/pokeverse-3d and the unit is pokeverse-3d.
 ```
 
 ## 2. Run the game server as a service
@@ -52,7 +56,7 @@ After=network.target
 
 [Service]
 User=pokeverse
-WorkingDirectory=/srv/pokeverse/app
+WorkingDirectory=/opt/pokeverse-3d
 Environment=HOST=127.0.0.1
 ExecStart=/usr/bin/node server.mjs
 Restart=always
@@ -64,7 +68,7 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload && sudo systemctl enable --now pokeverse
-curl http://127.0.0.1:5190/saude     # → {"ok":true,...}
+curl http://127.0.0.1:5190/health    # → {"ok":true,"game":"Pokemon 3D Base"}
 ```
 
 `HOST=127.0.0.1` keeps port 5190 off the internet. The server saves accounts on stop, so `systemctl restart` is safe.
@@ -76,8 +80,8 @@ curl http://127.0.0.1:5190/saude     # → {"ok":true,...}
 ```nginx
 server {
     listen 80;
-    server_name pokeverse.example.com;
-    root /srv/pokeverse/app;
+    server_name play.pokeverse.quest;
+    root /opt/pokeverse-3d;
     index index.html;
 
     # Never serve live data, server code, tools, or repo internals.
@@ -122,7 +126,7 @@ server {
 
 ```bash
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d pokeverse.example.com     # adds HTTPS and the 443 block
+sudo certbot --nginx -d play.pokeverse.quest     # adds HTTPS and the 443 block
 ```
 
 HTTPS is required, not optional: the client only uses the `/servidor` path when the page is served over HTTPS. Over
@@ -148,11 +152,11 @@ Create an account in the game, then:
 
 ```bash
 sudo systemctl stop pokeverse
-sudo -u pokeverse node /srv/pokeverse/app/tools/make_gm.mjs your_username
+sudo -u pokeverse node /opt/pokeverse-3d/tools/make_gm.mjs your_username
 sudo systemctl start pokeverse
 ```
 
-The admin panel is then at `https://pokeverse.example.com/admin`.
+The admin panel is then at `https://play.pokeverse.quest/admin`.
 
 ## Before opening it to the public
 
@@ -165,10 +169,30 @@ The admin panel is then at `https://pokeverse.example.com/admin`.
 
 ## Updating
 
+### Automatic (GitHub Actions)
+
+Pushes to `main` run `.github/workflows/deploy.yml`: SSH as `pokeverse@40.160.145.24` and run
+`scripts/live/deploy.sh` (reset to `origin/main`, `npm install --omit=dev`, `systemctl restart pokeverse-3d`).
+Manual run: Actions → **Deploy to OVH** → Run workflow.
+
+`OVH_USER` is not required. The workflow defaults to `pokeverse` and host `40.160.145.24`. Secrets:
+
+| Secret | What it is |
+|---|---|
+| `OVH_SSH_KEY` | Private key that logs in as **pokeverse** (not ubuntu) |
+| `OVH_HOST` | Optional. Defaults to `40.160.145.24` |
+| `OVH_USER` | Optional. Defaults to `pokeverse` |
+| `OVH_PORT` | Optional. Defaults to 22 |
+
+The first clone is `scripts/live/bootstrap-ovh.sh` as **ubuntu**. After that, every deploy is **pokeverse**. See
+[live-server.md](live-server.md).
+
+### Manual
+
 ```bash
-cd /srv/pokeverse/app && sudo -u pokeverse git pull && sudo -u pokeverse npm install --omit=dev
-sudo systemctl restart pokeverse
+ssh pokeverse@40.160.145.24 'bash /opt/pokeverse-3d/scripts/live/deploy.sh'
 ```
 
 Admin-panel edits are written into `public/data/` and `public/scenery/` in this checkout. Commit or back them up before
-pulling, or a pull that touches the same files will conflict.
+pulling. `deploy.sh` resets to `origin/main`, so uncommitted admin edits on the VPS are overwritten. `server/data/`
+(accounts) is gitignored and is left alone. The OT `pokeverse` unit is never restarted.

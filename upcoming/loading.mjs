@@ -142,7 +142,7 @@ export async function diagnosticar(a, b = 5000) {
   try {
     e = new URL('manifest.webmanifest?sonda=' + Date.now(), location.href).href;
   } catch {}
-  const [f, g] = await Promise.all([a ? d(a + '/saude') : Promise.resolve(0), e ? d(e) : Promise.resolve(0)]);
+  const [f, g] = await Promise.all([a ? d(a + '/health') : Promise.resolve(0), e ? d(e) : Promise.resolve(0)]);
   if (semInternet()) return 'offline';
   if (f >= 200 && f < 500) return 'ok';
   if (f >= 500) return 'servidor';
