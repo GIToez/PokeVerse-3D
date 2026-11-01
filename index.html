@@ -9,6 +9,15 @@
 <link rel="icon" href="./ui/favicon/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="./ui/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="./ui/favicon/favicon-16.png"><link rel="apple-touch-icon" href="./ui/favicon/apple-touch-icon.png"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#13254A">
 <title>Pokemon 3D Base</title>
 <script>
+/* Folder URLs under /concepts/ used to hit this page (Caddy's last try_files is /index.html).
+   Send those requests to the real gallery file until Caddy serves the directory index itself. */
+(function () {
+  var p = location.pathname || '';
+  if (p.indexOf('/concepts/') !== 0 || /\.[a-z0-9]+$/i.test(p)) return;
+  location.replace(p.replace(/\/?$/, '/') + 'index.html');
+})();
+</script>
+<script>
 /* TELA CHEIA QUE CAI NA PORTA (17/09 — diego5itu8334 no #bugs com vídeo, TheSyvel e dv_dasmerces no #alpha-testers; Android no Chrome
    e no Samsung Internet): toda porta recarrega a página e o navegador larga a tela cheia, que só volta dentro de um gesto do jogador.
    Até a troca de cena sem recarga, `sessionStorage['telaCheia']` guarda se o jogador ESTÁ em tela cheia: entrar grava, sair por

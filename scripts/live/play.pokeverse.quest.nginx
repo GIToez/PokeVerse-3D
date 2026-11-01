@@ -36,6 +36,6 @@ server {
         try_files /public$uri $uri =404;
     }
     location / {
-        try_files /public$uri $uri =404;
+        try_files /public$uri /public$uri/ /public$uri/index.html $uri $uri/ =404;
     }
 }

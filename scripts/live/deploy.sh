@@ -26,4 +26,13 @@ sudo -n systemctl restart "$SERVICE"
 sleep 1
 curl -fsS http://127.0.0.1:5190/health
 echo
+
+CADDY_SNIPPET=/etc/caddy/play.pokeverse.quest.caddy
+CADDY_SRC="$APP_DIR/scripts/live/play.pokeverse.quest.caddy"
+if [[ -f "$CADDY_SRC" && -f "$CADDY_SNIPPET" ]] && sudo -n true 2>/dev/null; then
+  echo "==> refresh Caddy site snippet"
+  sudo -n cp "$CADDY_SRC" "$CADDY_SNIPPET"
+  sudo -n systemctl reload caddy || echo "Caddy reload skipped (no permission or unit missing)"
+fi
+
 echo "==> deploy done $(git rev-parse --short HEAD)"

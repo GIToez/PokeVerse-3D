@@ -27,8 +27,14 @@ play.pokeverse.quest {
 	@mjs path *.mjs
 	header @mjs Content-Type application/javascript
 
+	redir /concepts /concepts/ 308
+	handle /concepts/* {
+		try_files /public{path} /public{path}/index.html {path} {path}/index.html
+		file_server
+	}
+
 	handle {
-		try_files /public{path} {path} /index.html
+		try_files /public{path} /public{path}/index.html {path} {path}/index.html /index.html
 		file_server
 	}
 }
