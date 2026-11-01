@@ -9,6 +9,9 @@
 <link rel="icon" href="./ui/favicon/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="./ui/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="./ui/favicon/favicon-16.png"><link rel="apple-touch-icon" href="./ui/favicon/apple-touch-icon.png"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#13254A">
 <title>Pokemon 3D Base</title>
 <script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
+</script>
+<script>
 /* Folder URLs under /concepts/ used to hit this page (Caddy's last try_files is /index.html).
    Send those requests to the real gallery file until Caddy serves the directory index itself. */
 (function () {
@@ -3078,6 +3081,7 @@ function atualizarMontaria(dt, moveu){
   ash.vx = selaMundo.x; ash.vy = selaMundo.y; ash.vz = selaMundo.z;
 }
 const params0 = new URLSearchParams(location.search);
+const CHEGADA_FRESCA = +params0.get('chegada') || 0;                     // door on THIS load only — F5 must not reuse last arrival
 /* CLIENTE DO JOGADOR × GM/DEV (06/09, pro alfa): quem joga não tem botão de bastidor nem parâmetro de vantagem. `GM` é ligado
    por (a) jogo LOCAL, sem servidor de contas (`rede=0`, `conta=0`, sandbox do Figma) — é a bancada de sempre — ou (b) a marca
    `gm` da CONTA, que só o servidor dá (`node servidor/gm.mjs <usuario> on`); aqui vale o espelho do último login e, logo depois
@@ -3181,6 +3185,22 @@ const gravarLS = (k, v) => { try { if (LS_TESTE){ LS_TESTE.set(k, JSON.stringify
    qualquer lerLS de save (introVista, seguidor, time…): é um await no topo do módulo, como o dos dados. */
 if (params0.has('idioma')){ try { const u = new URL(location.href); u.searchParams.delete('idioma'); history.replaceState(null, '', u); } catch {} }   // consumido: grudado na URL, desfazia a escolha seguinte (etapa 3)
 const CONTA = await contaP; __boot.marcar('login');                                                // o login começou lá em cima, antes do mapa (12/09)
+/** Last walk for spawn. Logged-in accounts use the server only (editing localStorage cannot warp). Guests use this tab. */
+function posParada(){
+  const srv = Conta.posSalva?.();
+  if (CONTA.modo === 'conta') return srv || null;
+  try {
+    const loc = JSON.parse(sessionStorage.getItem('parada.' + NOME) || 'null') || JSON.parse(localStorage.getItem('ultimaParada') || 'null');
+    if (loc && String(loc.mapa) === String(NOME) && Number.isFinite(+loc.x) && Number.isFinite(+loc.z)) return loc;
+  } catch {}
+  return srv || null;
+}
+function gravarParada(){
+  const a = jogo.ash; if (!a) return;
+  const p = { mapa: NOME, x: +a.x, y: +a.y || 0, z: +a.z, giro: a.giro || 0 };
+  try { sessionStorage.setItem('parada.' + NOME, JSON.stringify(p)); localStorage.setItem('ultimaParada', JSON.stringify(p)); } catch {}
+  Conta.lembrarPos?.(p);
+}
 remapearInteriorCompartilhado();                                                                   // loja/Centro compartilhados: elenco e saída da cidade certa (precisa do login: a chegada pode vir da conta)
 $('boot').hidden = false; $('boot').textContent = I18n.t('carregando o mapa…');   // AGORA sim é o mapa montando (antes do login o #boot fica vazio, Jaime 12/09)
 /* VOLTAR ONDE PAROU, INCLUSIVE DENTRO DE UM INTERIOR (10/09): a cena é escolhida lá em cima (`const NOME`), antes do login.
@@ -3515,9 +3535,9 @@ if (JOGAR){
     /* CHEGADA (08/09): a da URL vale só nesta carga — logo abaixo ela sai de lá, senão toda recarga seguinte repetiria o
        teleporte da última porta. A reserva no sessionStorage cobre recarregar no primeiro segundo, antes de o servidor
        saber que a pessoa trocou de cena. */
-    const chegadaFresca = +params0.get('chegada') || 0;
+    const chegadaFresca = CHEGADA_FRESCA;
     const chegadaReserva = +(() => { try { return sessionStorage.getItem('chegada.' + NOME) || 0; } catch { return 0; } })() || 0;
-    const porPorta = !!(chegadaFresca || chegadaReserva);
+    const porPorta = !!chegadaFresca;                                    // F5 / relog is NOT a door — last walk wins (session chegada is only for shared-house exits)
     const chegada = Fairy ? Fairy.pontoNascimento() : (chegadaFresca || chegadaReserva || 7110199);
     const casa = (!Fairy && porPorta) ? casaCompartilhada() : null;       // 13/09: casa que usa o interior de outra (Brock em Pewter → 4110008): nasce no ponto equivalente da casa dona
     if (casa) areaInteriorVisitada = casa.area;                            // …e o "Você chegou em" diz a casa visitada, não a dona
@@ -3556,7 +3576,7 @@ if (JOGAR){
        de Pallet. Só quando o mapa bate e a URL não pediu um lugar específico (`?chegada=` é teleporte de propósito).
        LIMITE: o mapa a carregar é escolhido lá em cima (const NOME), antes do login — voltar dentro de um interior ainda
        cai na rua. */
-    const paradaSalva = (!Fairy && !chegadaFresca && Conta.posSalva && Conta.posSalva()) || null;   // veio de porta AGORA? a porta manda; senão, onde parou
+    const paradaSalva = (!Fairy && !chegadaFresca && posParada()) || null;   // this-load door wins; else last walk (server when logged in)
     /* 13/09: parou EM CIMA da porta de um interior (< 1,3 m do ponto tipo 6)? Nasce pelo caminho da porta, não ali: nascendo dentro
        do raio a porta entra em `emPorta` e só dispara depois de sair e voltar — quem saía andando reto atravessava a soleira sem
        teleporte e ia parar no vazio de fora do cômodo (hipótese pros vídeos do l.neto no laboratório e na escola). */
@@ -3586,6 +3606,7 @@ if (JOGAR){
       const u = new URL(location.href); u.searchParams.delete('chegada'); history.replaceState(null, '', u);
     } catch {}
     jogo.ash = ash; jogo.pika = pika; jogo.ativo = true;
+    gravarParada();
     semCorte(ash); semCorte(pika);                                       // jogador e parceiro ficam SEMPRE desenhados: o corte por tronco de câmera não vale pra quem mora no meio da tela
     /* Jogo novo (sem inicial escolhido e time vazio): NÃO existe Pokémon até o Carvalho (pedido do Jaime, 06/09). O Pikachu
        provisório do boot continua existindo por baixo (83 usos de `jogo.pika` no quadro), mas invisível, fora do time, sem HUD
@@ -7733,7 +7754,10 @@ if (jogo.ash){
     sairDaArena: texto => { const c = lerLS('ultimoCentro', null); const alvo = (c?.mapa && c.chegada) ? c : RESPAWN_PADRAO; return irParaCena({ mapa: String(alvo.mapa), chegada: alvo.chegada, texto }); },
     nomeItem: id => ITENS_NOME[id] || BOLAS[id]?.[0] || null });
   __boot.marcar('rede');                                                 // diagnóstico do boot: vai conectar
-  Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
+  addEventListener('pagehide', () => gravarParada(), true);
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') gravarParada(); }, true);
+  Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');

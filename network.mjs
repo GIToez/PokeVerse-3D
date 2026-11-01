@@ -63,7 +63,7 @@ function entrar(){
   const a = ctx.jogo?.ash;
   if (!a){ setTimeout(entrar, 500); return; }
   const pk = ctx.jogo.semParceiro ? null : ctx.jogo.pika;              // jogo novo: sem Pokémon até o Carvalho
-  enviar({ t: 'entrar', token: ctx.token?.() || null, nome: ctx.nomeJogador(), mapa: ctx.mapa, chegada: ctx.chegada?.() || null, area: ctx.area?.() || null, x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +(a.giro || 0).toFixed(3),
+  enviar({ t: 'entrar', token: ctx.token?.() || null, nome: ctx.nomeJogador(), mapa: ctx.mapa, chegada: ctx.chegada?.() || null, porta: ctx.portaFresca?.() ? 1 : 0, area: ctx.area?.() || null, x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +(a.giro || 0).toFixed(3),
            anim: a.anim || 'Idle', personagem: ctx.Personagem?.ler?.() || null, parceiro: pk?.glb || null, shiny: !!pk?.shiny, uid: ctx.uidParceiro?.() ?? null, montaria: ctx.jogo?.montaria?.glb || null, titulo: ctx.tituloAtual?.() || '', versao: VERSAO_REDE,
            ...(pk ? { px: +pk.x.toFixed(2), pz: +pk.z.toFixed(2), pg: +(pk.giro || 0).toFixed(3), pa: pk.anim || 'Idle' } : {}) });   // onde o parceiro está DE VERDADE (os outros o desenhavam numa formação fixa)
   ping.enviado = performance.now(); enviar({ t: 'ping', hora: Date.now() });

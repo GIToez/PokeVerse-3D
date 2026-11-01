@@ -22,6 +22,7 @@ import { criarRecursos } from './server_resources.mjs';             // Fase 3: l
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
 import { criarBatalha } from './server_battle.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
+import { aceitarPos, posDaConta } from './server_pos.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
@@ -256,6 +257,15 @@ let _salvarPend = null;
 function gravarContasDisco() { try { fs.writeFileSync(contasArq, JSON.stringify(contas, null, 2)); } catch (e) { console.error('Failed to save accounts:', e.message); } }
 function salvarContasJa() { if (_salvarPend) { clearTimeout(_salvarPend); _salvarPend = null; } gravarContasDisco(); }
 function salvarContas() { if (!_salvarPend) _salvarPend = setTimeout(() => { _salvarPend = null; gravarContasDisco(); }, 500); }
+/** Walk position on the account. posGm (GM / raid teleport) stays the spawn until the player arrives. */
+function gravarPosConta(u, bruto, { porta = false, ja = false } = {}){
+  const c = contas[u];
+  if (!c || c.posGm) return;
+  const r = aceitarPos(c.pos, bruto, { porta, mapaPadrao: bruto?.mapa });
+  if (!r.mudou) return;
+  c.pos = r.pos;
+  (ja ? salvarContasJa : salvarContas)();
+}
 process.on('SIGINT', () => { salvarContasJa(); process.exit(0); });
 process.on('SIGTERM', () => { salvarContasJa(); process.exit(0); });
 process.on('beforeExit', () => salvarContasJa());
@@ -762,7 +772,7 @@ const httpServer = http.createServer((req, res) => {
       c.tokenExp = Date.now() + TOKEN_VIDA_MS;
       salvarContasJa();
       sessoes.set(token, u);
-      return json(200, { ok: true, token, usuario: u, rev: c.rev || 0, save: c.save || null, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(c.posGm ? { pos: c.posGm } : {}) });   // posGm: um GM levou a conta (/tp, /puxar)
+      return json(200, { ok: true, token, usuario: u, rev: c.rev || 0, save: c.save || null, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}) });   // posGm wins; else last walk (F5 / relog)
     }
 
     // ── Recuperação de senha ───────────────────────────────────────────────
@@ -783,7 +793,7 @@ const httpServer = http.createServer((req, res) => {
       const u = usuarioDe(req);
       if (!u) return json(401, { erro: 'Invalid session.' });
       const c = contas[u];
-      return json(200, { ok: true, save: c.save || null, rev: c.rev || 0, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(c.posGm ? { pos: c.posGm } : {}) });
+      return json(200, { ok: true, save: c.save || null, rev: c.rev || 0, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}) });
     }
 
     if (req.method === 'PUT' && rota === '/save') {
@@ -807,6 +817,7 @@ const httpServer = http.createServer((req, res) => {
         aplicarPrefs(c, d.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
         if (d.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, d.conhecimento);   // nº15: só soma, não sobrescreve
         if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
+        if (d.pos) gravarPosConta(u, d.pos, { porta: false });              // F5 / tab close: last walk, same jump rules (not a door)
         c.rev = (c.rev || 0) + 1;
         salvarContas();
         if (d.outroAparelho) return json(409, { erro: 'Session conflict.', outroAparelho: true });
@@ -1221,6 +1232,7 @@ wss.on('connection', ws => {
         }
         ws._usuario = uTok || ('Visitante' + ws._id);                    // identidade só do token; sem conta = Visitante (nunca o nome do cliente)
         if (ws._info) ws._info.nome = (uTok && contas[uTok]?.save?.nome) || ws._usuario;   // nome na cabeça/chat vem da CONTA
+        if (uTok) gravarPosConta(uTok, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro, chegada: m.chegada }, { porta: !!m.porta && !!m.chegada, ja: true });
 
         const outros = [];
         for (const [id, other] of conexoes) {
@@ -1247,6 +1259,13 @@ wss.on('connection', ws => {
 
       case 'pos':
         if (ws._info) { ws._info.x = m.x; ws._info.y = m.y; ws._info.z = m.z; ws._info.giro = m.giro; ws._info.anim = m.anim; if (m.px != null) { ws._info.px = m.px; ws._info.pz = m.pz; ws._info.pg = m.pg; ws._info.pa = m.pa; } }
+        if (ws._usuario && contas[ws._usuario]){
+          const agoraPos = Date.now();
+          if (!ws._posGravadaEm || agoraPos - ws._posGravadaEm > 2500){
+            ws._posGravadaEm = agoraPos;
+            gravarPosConta(ws._usuario, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro });
+          }
+        }
         broadcast(ws, { t: 'pos', id: ws._id, x: m.x, y: m.y, z: m.z, giro: m.giro, anim: m.anim, px: m.px, pz: m.pz, pg: m.pg, pa: m.pa });
         break;
 
@@ -1480,6 +1499,7 @@ wss.on('connection', ws => {
 
   ws.on('close', () => {
     try { batalha.aoSair(ws); } catch {}
+    if (ws._usuario && contas[ws._usuario] && ws._info) gravarPosConta(ws._usuario, { mapa: ws._mapa, x: ws._info.x, y: ws._info.y, z: ws._info.z, giro: ws._info.giro }, { ja: true });
     if (!conexoes.delete(ws._id)) return;                                 // já saiu da lista (sessão única) e o `saiu` já foi
     console.log(`[-] ${ws._usuario || ws._id} left (${conexoes.size} online)`);
     broadcast(ws, { t: 'saiu', id: ws._id });
