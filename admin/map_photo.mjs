@@ -23,7 +23,7 @@ async function carregar(nome, dados) {
   const regua = await fetch('/ui/minimapa_' + nome + '.json').then(r => r.ok ? r.json() : null).catch(() => null);
   if (regua?.esc > 0) {
     const img = new Image(); img.src = '/ui/minimapa_' + nome + '.jpg'; await img.decode();
-    return { img, x0: regua.x0, z0: regua.z0, esc: regua.esc, w: img.naturalWidth, h: img.naturalHeight, fonte: 'foto do jogo' };
+    return { img, x0: regua.x0, z0: regua.z0, esc: regua.esc, w: img.naturalWidth, h: img.naturalHeight, fonte: 'game photo' };
   }
   return fotografar(nome, dados);
 }
@@ -77,7 +77,7 @@ async function fotografar(nome, dados) {
     ren.render(cena, cam);
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     cv.getContext('2d').drawImage(ren.domElement, 0, 0);
-    return { img: cv, x0, z0, esc, w: W, h: H, fonte: 'gerada do GLB' };
+    return { img: cv, x0, z0, esc, w: W, h: H, fonte: 'generated from GLB' };
   } finally {
     g.scene.traverse(o => {
       if (!o.isMesh) return;

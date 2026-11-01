@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Editor de Cenário 3D — Pokemon 3D Base</title>
+<title>3D Scenery Editor — Pokemon 3D Base</title>
 <script type="importmap">
 { "imports": {
   "three": "/vendor/three/build/three.module.js",
@@ -56,50 +57,50 @@ header .sujo{ color:var(--acento); font-size:13px; }
 <body>
 <div id="app">
   <header>
-    <span class="marca">Pokemon 3D Base</span><span class="fraco">Editor de Cenário 3D</span>
-    <label class="fraco">Mapa <select id="sel-mapa" style="width:auto"></select></label>
+    <span class="marca">Pokemon 3D Base</span><span class="fraco">3D Scenery Editor</span>
+    <label class="fraco">Map <select id="sel-mapa" style="width:auto"></select></label>
     <div class="dir">
-      <a href="/admin">← Painel</a>
-      <span class="sujo" id="sujo" hidden>● não salvo</span>
-      <button id="b-recarregar">Descartar</button>
-      <button class="prim" id="b-salvar">Salvar cenário</button>
+      <a href="/admin">← Panel</a>
+      <span class="sujo" id="sujo" hidden>● unsaved</span>
+      <button id="b-recarregar">Discard</button>
+      <button class="prim" id="b-salvar">Save scenery</button>
     </div>
   </header>
   <div class="corpo">
     <div class="tela" id="tela">
       <div class="ferramentas">
-        <button id="t-sel" class="on" title="Selecionar/mover (S)">🖱️ Selecionar</button>
-        <button id="t-add" title="Colocar peça (A): escolha na paleta e clique no chão">➕ Colocar</button>
-        <button id="t-foco" title="Enquadrar tudo (F)">🎯 Enquadrar</button>
-        <label class="chk" style="display:flex;align-items:center;gap:5px;background:rgba(10,13,18,.82);border:1px solid var(--borda);border-radius:6px;padding:0 8px"><input type="checkbox" id="t-snap"> snap 0,5m</label>
+        <button id="t-sel" class="on" title="Select/move (S)">🖱️ Select</button>
+        <button id="t-add" title="Place piece (A): pick from the palette and click the ground">➕ Place</button>
+        <button id="t-foco" title="Frame everything (F)">🎯 Frame</button>
+        <label class="chk" style="display:flex;align-items:center;gap:5px;background:rgba(10,13,18,.82);border:1px solid var(--borda);border-radius:6px;padding:0 8px"><input type="checkbox" id="t-snap"> snap 0.5m</label>
       </div>
       <div class="hud" id="hud">—</div>
-      <div id="carregando">carregando o cenário…</div>
+      <div id="carregando">loading the scenery…</div>
     </div>
     <div class="lado">
       <div class="caixa">
-        <h3>Peça selecionada</h3>
-        <div id="sem-sel" class="fraco">Clique numa peça do cenário pra selecionar. Setas do gizmo movem; <b>Del</b> exclui.</div>
+        <h3>Selected piece</h3>
+        <div id="sem-sel" class="fraco">Click a scenery piece to select it. The gizmo arrows move it; <b>Del</b> deletes.</div>
         <div id="com-sel" hidden>
           <div style="margin-bottom:8px"><b id="s-nome"></b></div>
           <div class="prop">
             <label>Pos</label>
             <input type="number" id="s-x" step="0.1" title="X">
-            <input type="number" id="s-y" step="0.1" title="Y (altura)">
+            <input type="number" id="s-y" step="0.1" title="Y (height)">
             <input type="number" id="s-z" step="0.1" title="Z">
           </div>
           <div class="acoes">
-            <button id="s-var" title="Troca por outra variante/rotação da mesma peça">↻ Variante</button>
-            <button id="s-dup">Duplicar</button>
-            <button id="s-del" class="perigo">Excluir (Del)</button>
+            <button id="s-var" title="Swap for another variant/rotation of the same piece">↻ Variant</button>
+            <button id="s-dup">Duplicate</button>
+            <button id="s-del" class="perigo">Delete (Del)</button>
           </div>
         </div>
       </div>
       <div class="caixa">
-        <h3>Peças (prefabs) <span class="fraco" id="pal-qtd"></span></h3>
-        <input class="busca" id="pal-busca" placeholder="filtrar peças…">
+        <h3>Pieces (prefabs) <span class="fraco" id="pal-qtd"></span></h3>
+        <input class="busca" id="pal-busca" placeholder="filter pieces…">
         <div class="paleta" id="paleta"></div>
-        <div class="fraco" id="add-dica" style="margin-top:8px" hidden>Modo colocar: clique no chão pra pôr <b id="add-nome"></b>. Esc cancela.</div>
+        <div class="fraco" id="add-dica" style="margin-top:8px" hidden>Place mode: click the ground to place <b id="add-nome"></b>. Esc cancels.</div>
       </div>
     </div>
   </div>
