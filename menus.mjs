@@ -1845,8 +1845,8 @@ function rMapaMundo(corpo){
         <canvas class="mapa-vivos"></canvas>
         <div class="mapa-sel" hidden></div>
         <div class="mapa-rotulos"></div>
-        <div class="mapa-pins"></div>
       </div>
+      <div class="mapa-pins"></div>
     </div>
     <div class="mapa-esq" id="m-cards"></div>
     <aside class="mapa-dir" id="m-card" hidden></aside>
@@ -1883,8 +1883,38 @@ function rMapaMundo(corpo){
   let z = 1, px = 0, py = 0, arrasto = null, mundo = ctx.dados || { caixas: [], nomes: {} }, regua = mapaRegua;
   let regio = 'kanto', lugaresSel = [];
   const fx = ctx.flipX?.() ?? 1;
-  const vista = () => { zoomEl.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')'; };
-  const limitarZ = v => Math.max(0.55, Math.min(8, v));
+  const vista = () => {
+    zoomEl.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')';
+    zoomEl.style.setProperty('--mapa-z', String(z));
+    colocarPins();
+  };
+  const limitarZ = v => Math.max(0.35, Math.min(18, v));
+  const ecran = (wx, wz) => {
+    const fr = xzFrac(wx, wz);
+    if (!fr) return null;
+    const r = palco.getBoundingClientRect();
+    const w = parseFloat(zoomEl.style.width) || 0, h = parseFloat(zoomEl.style.height) || 0;
+    if (!r.width || !w || !h) return null;
+    return {
+      x: r.width / 2 + px + (fr.x - 0.5) * w * z,
+      y: r.height / 2 + py + (fr.y - 0.5) * h * z,
+    };
+  };
+  const tamPin = tipo => {
+    const base = tipo === 'quest' || tipo === 'voce' ? 15 : 12;
+    return Math.max(9, Math.min(56, base * (0.5 + 0.85 * z)));
+  };
+  const colocarPins = () => {
+    for (const el of pinsEl.querySelectorAll('.mapa-pin')){
+      const sc = ecran(+el.dataset.x, +el.dataset.z);
+      if (!sc){ el.style.visibility = 'hidden'; continue; }
+      const t = tamPin(el.dataset.tipo);
+      el.style.visibility = 'visible';
+      el.style.left = sc.x + 'px';
+      el.style.top = sc.y + 'px';
+      el.style.width = el.style.height = t + 'px';
+    }
+  };
   const metros = () => {
     if (!regua) return { mw: 768, mh: 576 };
     return { mw: regua.w / regua.esc, mh: regua.h / regua.esc };
@@ -1963,8 +1993,9 @@ function rMapaMundo(corpo){
       el.className = 'mapa-pin mapa-pin-' + tipo;
       el.style.backgroundImage = 'url(' + iconeFiltro(tipo) + ')';
       el.title = titulo;
-      el.style.left = (fr.x * 100) + '%';
-      el.style.top = (fr.y * 100) + '%';
+      el.dataset.tipo = tipo;
+      el.dataset.x = String(x);
+      el.dataset.z = String(zz);
       if (extra.area) el.dataset.a = String(extra.area);
       if (extra.i != null) el.dataset.i = String(extra.i);
       pinsEl.appendChild(el);
@@ -1978,6 +2009,7 @@ function rMapaMundo(corpo){
       else { const b = caixaDe(pin.area); if (b) add('quest', pin.texto, fx * b.x, b.z, { area: pin.area }); }
     }
     pois().forEach((p, i) => add(p.tipo, p.nome, fx * p.x, p.z, { area: p.area, i }));
+    colocarPins();
   };
   const abrirArea = async (a, { lugar = null } = {}) => {
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
@@ -2014,7 +2046,12 @@ function rMapaMundo(corpo){
     if (!vivos.width || !regua) return;
     g2.clearRect(0, 0, vivos.width, vivos.height);
     const ash = ctx.jogo?.ash;
-    if (ash) ponto(ash.vx ?? ash.x, ash.vz ?? ash.z, '#ff5f5f', 5.5);
+    const voce = pinsEl.querySelector('.mapa-pin-voce');
+    if (ash && voce){
+      voce.dataset.x = String(ash.vx ?? ash.x);
+      voce.dataset.z = String(ash.vz ?? ash.z);
+    }
+    colocarPins();
   };
   const quadro = () => {
     if (aberta !== 'mapa' || !corpo.isConnected) return;
@@ -2042,12 +2079,28 @@ function rMapaMundo(corpo){
   if (mapaRoda) removeEventListener('wheel', mapaRoda, { capture: true });
   mapaRoda = noRoda;
   addEventListener('wheel', noRoda, { capture: true, passive: false });
+  const toques = new Map();
+  let pinça = null;
   palco.addEventListener('pointerdown', ev => {
+    toques.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    try { palco.setPointerCapture(ev.pointerId); } catch {}
+    if (toques.size >= 2){
+      const pts = [...toques.values()];
+      pinça = { d: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, z, cx: (pts[0].x + pts[1].x) / 2, cy: (pts[0].y + pts[1].y) / 2 };
+      arrasto = null;
+      return;
+    }
     if (ev.button !== 0) return;
     arrasto = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, px, py, moveu: false };
-    try { palco.setPointerCapture(ev.pointerId); } catch {}
   });
   palco.addEventListener('pointermove', ev => {
+    if (toques.has(ev.pointerId)) toques.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (pinça && toques.size >= 2){
+      const pts = [...toques.values()];
+      const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+      aplicarZoom(limitarZ(pinça.z * (d / pinça.d)), (pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2);
+      return;
+    }
     if (!arrasto || ev.pointerId !== arrasto.id) return;
     const dx = ev.clientX - arrasto.x, dy = ev.clientY - arrasto.y;
     if (Math.hypot(dx, dy) > 4) arrasto.moveu = true;
@@ -2077,8 +2130,8 @@ function rMapaMundo(corpo){
     }
     if (melhor) abrirArea(melhor.a);
   };
-  palco.addEventListener('pointerup', solta);
-  palco.addEventListener('pointercancel', () => { arrasto = null; });
+  palco.addEventListener('pointerup', ev => { toques.delete(ev.pointerId); if (toques.size < 2) pinça = null; solta(ev); });
+  palco.addEventListener('pointercancel', ev => { toques.delete(ev.pointerId); if (toques.size < 2) pinça = null; arrasto = null; });
   corpo.querySelectorAll('.mapa-z').forEach(b => b.onclick = ev => {
     ev.stopPropagation();
     const r = palco.getBoundingClientRect();
