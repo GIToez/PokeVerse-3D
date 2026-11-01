@@ -1015,7 +1015,7 @@ async function encherMapa(pop){
   if (aberta !== 'mapa' || !Popup.aberto(pop)) return;
   const nomes = { ...(pontosMapa.nomes || {}), ...(ctx.dados?.nomes || {}) };   // a cena recortada (pallet_rota1) só conhece as próprias áreas; os pontos trazem os nomes de Kanto
   if (areaMapa == null || !nomes[areaMapa]) areaMapa = areaDoJogador() ?? +Object.keys(pontosMapa.areas || {})[0];
-  const a = areaMapa, nome = ctx.nomeArea?.(a) || nomes[a] || ('área ' + a);   // 17/09: o mesmo nome do minimapa e do "Você chegou em" (os pontos diziam "Cidade Cerulean"/"Cidade Lavender", sem tradução no EN/ES)
+  const a = areaMapa, nome = I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes[a] || ('área ' + a));
   Popup.texto(pop, 'area-nome', nome);
   const proprios = mapaHabitats.areas?.[String(a)] || [];
   const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats.generico || [] : []);
@@ -1377,7 +1377,7 @@ async function encherPokedex(pop){
     if (vl) vl.style.color = aberto ? '#FFFFFF' : '#B8C2D9';
   }
   const noMapa = (ctx.jogo.selvagens || []).filter(s => s.dex === selDex && s.estado !== 'morto').length;
-  const onde = (() => { const hb = ctx.habitats; if (!hb) return []; const out = []; for (const [area, lista] of Object.entries(hb.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || ('área ' + area)); return out; })();
+  const onde = (() => { const hb = ctx.habitats; if (!hb) return []; const out = []; for (const [area, lista] of Object.entries(hb.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(I18n.rotuloLugar(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || ('área ' + area))); return out; })();
   Popup.rotulo(pop, 'rotulo-onde');
   Popup.texto(pop, 'onde', nv >= 1 ? ((onde.length ? onde.join(', ') : 'não aparece no mato (só troca/evento)') + (noMapa ? ' · ' + noMapa + ' neste mapa agora' : '')) : '?');
   const avS = Popup.grupo(pop, 'aviso-stats'), avG = Popup.grupo(pop, 'aviso-golpes');
@@ -1549,11 +1549,11 @@ function rMapa(corpo){
       if (/road|floor|bridge|pier|stair/.test(n) && !/sea|water|shui/.test(n)) mapaRuas.push({ x: o.x, z: o.z, w: +o.w || 4 });
     }
   }
-  const ehCidade = nome => /Cidade|Ilha|Liga/.test(nome);
+  const ehCidade = nome => /Cidade|Ilha|Liga|City|Town|Island|League/.test(nome);
   const desenhar = () => {
     c.fillStyle = '#79b7e0'; c.fillRect(0, 0, 1280, 960);                // mar
     for (const b of caixas){                                             // áreas
-      const nome = dd.nomes?.[b.a] || ''; const cid = ehCidade(nome);
+      const nome = I18n.rotuloLugar(dd.nomes?.[b.a] || ''); const cid = ehCidade(nome);
       c.fillStyle = cid ? '#dcca97' : '#95c96f';
       c.beginPath(); c.roundRect(X(fx * b.x - b.sx / 2), Z(b.z - b.sz / 2), b.sx * k, b.sz * k, 6); c.fill();
       c.strokeStyle = mapaSel === b.a ? '#ffd23a' : '#6b6b4a'; c.lineWidth = mapaSel === b.a ? 3 : 1.2; c.stroke();
@@ -1562,8 +1562,8 @@ function rMapa(corpo){
     c.fillStyle = '#4d8fd6'; for (const t2 of dd.agua || []) c.fillRect(X(fx * t2.x), Z(t2.z), k, k);       // água
     c.fillStyle = '#3f8a2f'; for (const t2 of dd.grama || []) c.fillRect(X(fx * t2.x), Z(t2.z), k, k);      // grama alta
     for (const b of caixas){                                             // rótulos
-      const nome = dd.nomes?.[b.a] || ''; if (!nome || nome.startsWith('área')) continue;
-      const cid = ehCidade(nome), rot = nome.replace('Cidade ', ''), cx2 = X(fx * b.x), cz2 = Z(b.z);
+      const nome = I18n.rotuloLugar(dd.nomes?.[b.a] || ''); if (!nome || /^area /i.test(nome)) continue;
+      const cid = ehCidade(nome), rot = nome, cx2 = X(fx * b.x), cz2 = Z(b.z);
       c.font = (cid ? '600 19px' : '600 13px') + ' system-ui'; c.textAlign = 'center';
       if (cid){ const w = c.measureText(rot).width + 16; c.fillStyle = '#ffffffee'; c.beginPath(); c.roundRect(cx2 - w / 2, cz2 - 13, w, 26, 12); c.fill(); c.strokeStyle = '#444'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#1a1a1a'; c.fillText(rot, cx2, cz2 + 5); }
       else { c.strokeStyle = '#f2f7e6'; c.lineWidth = 3; c.strokeText(rot, cx2, cz2 + 4); c.fillStyle = '#1d3a12'; c.fillText(rot, cx2, cz2 + 4); }
@@ -1573,7 +1573,7 @@ function rMapa(corpo){
   };
   const cartao = async a => {
     mapaSel = a; desenhar();
-    const alvo = corpo.querySelector('#m-card'); const nome = dd.nomes?.[a] || ('área ' + a);
+    const alvo = corpo.querySelector('#m-card'); const nome = I18n.rotuloLugar(dd.nomes?.[a] || ('área ' + a));
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
     const proprios = mapaHabitats.areas?.[String(a)] || [];
     const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats.generico || [] : []);
@@ -1784,7 +1784,7 @@ async function mostrarDex(){
   const cadeia = conhecido && S ? cadeiaEvolucao(selDex) : [];
   const golpes = (X.g || []).slice().sort((p, q) => p[0] - q[0]);
   const noMapa = (ctx.jogo.selvagens || []).filter(s => s.dex === selDex && s.estado !== 'morto').length;
-  const onde = (() => { const h = ctx.habitats; if (!h) return []; const out = []; for (const [area, lista] of Object.entries(h.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || ('área ' + area)); if ((h.generico || []).some(e => e.dex === selDex)) out.push('grama de qualquer rota'); return out; })();
+  const onde = (() => { const h = ctx.habitats; if (!h) return []; const out = []; for (const [area, lista] of Object.entries(h.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(I18n.rotuloLugar(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || ('área ' + area))); if ((h.generico || []).some(e => e.dex === selDex)) out.push('any route grass'); return out; })();
   const catMap = { 1: 'físico', 2: 'especial', 3: 'status' };
   /* Pokédex de conhecimento: cada nível revela mais (1 tipos/onde · 2 stats, altura/peso, evolução, fraquezas · 3 taxa de
      captura, habilidades · 4 gênero, learnset completo, habilidade oculta · 5 Mestre). Sem o módulo: visto = 1, pego = 2. */

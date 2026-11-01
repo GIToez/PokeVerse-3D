@@ -689,6 +689,7 @@ try {
 }
 __boot.marcar('dados');                                                  // diagnóstico do boot: mapa + pokédex baixados
 const porDex = new Map(); for (const s of DB.species) if (!porDex.has(s.n)) porDex.set(s.n, s);
+I18n.registrarCenas(indice?.cenas);
 const cenaAtual = indice?.cenas.find(c => String(c.id) === NOME);
 /* Interiores COMPARTILHADOS (Centro Pokémon 4110001, loja 4110007): a sala é uma só, mas cada cidade tem o seu elenco e as suas
    portas — os ids seguem [tipo][14|15][cidade][índice], e o JSON exportado traz os de UMA cidade (Pewter no Centro, Cinnabar na
@@ -716,10 +717,10 @@ function remapearInteriorCompartilhado(){
   }
 }
 document.title = 'Pokemon 3D Base';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
-$('titulo').textContent = cenaAtual ? I18n.t(cenaAtual.nome) + ' · ' + NOME
-  : 'Kanto — ' + (dados.areas.length > 4
-    ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha/.test(n)).length })
-    : dados.areas.map(a => I18n.t(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a))).join(' + '));
+$('titulo').textContent = cenaAtual ? I18n.rotuloLugar(cenaAtual.nome) + ' · ' + I18n.rotuloLugar(NOME)
+  : I18n.rotuloLugar('kanto') + ' — ' + (dados.areas.length > 4
+    ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha|City|Town|Island/.test(n)).length })
+    : dados.areas.map(a => I18n.rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a))).join(' + '));
 if (DEMO){
   $('titulo').textContent = I18n.t('Pallet & Route 1 · demo');
   $('hud').querySelector('table').hidden = true;
@@ -3310,7 +3311,11 @@ const INICIAIS = await fetch('./data/iniciais.json').then(r => r.ok ? r.json() :
 const MAQUINA_INICIAL = 1180102;
 let mesaInicial = null;                                                   // { x, z, y, grupo, bolas, marcador }
 const cenaDaArea = a => indice?.cenas?.find(c => c.areas?.some(ar => ar.id === a))?.id;
-const nomeAreaCena = a => { for (const c of indice?.cenas || []){ const ar = c.areas?.find(x => x.id === a); if (ar) return ar.nome; } return dados.nomes?.[a] || ''; };
+const rotuloLugar = s => I18n.rotuloLugar(s);
+const nomeAreaCena = a => {
+  for (const c of indice?.cenas || []){ const ar = c.areas?.find(x => x.id === a); if (ar) return rotuloLugar(ar.nome); }
+  return rotuloLugar(dados.nomes?.[a] || '');
+};
 /* Cenas trancadas na entrada (15/09). Chave = id da cena, valor = o que o jogador lê. Tirar daqui reabre.
    19/09: as Ilhas Seafoam (2100003) saíram daqui — a colisão agora é o navmesh do original (data/2100003.json) e a travessia real
    das 24 escadas internas pousa em chão livre, com volta pra saída de cada entrada (6131001 e 6131002). Ver diário. */
@@ -3805,7 +3810,7 @@ const DENS_JOGADOR = (() => {                                            // Fase
   return Math.max(0.2, Math.min(4, v || 1));
 })();
 const caixaArea = new Map((dados.caixas || []).map(c => [c.a, c]));
-const cidades = new Set(Object.entries(dados.nomes || {}).filter(([, n]) => /^Cidade/.test(n)).map(([a]) => +a));
+const cidades = new Set(Object.entries(dados.nomes || {}).filter(([, n]) => /^(Cidade|.*\b(City|Town|Island)\b)/.test(n)).map(([a]) => +a));
 const dentroDeCidade = (x, z) => {                     // x, z em coordenadas de mundo
   for (const a of cidades){ const c = caixaArea.get(a); if (!c) continue;
     if (Math.abs(x - flipX * c.x) <= c.sx / 2 && Math.abs(z - c.z) <= c.sz / 2) return true; }
@@ -6192,7 +6197,7 @@ function prepararPortas(){
   }
   // if (portasCena.length) console.log('portas na cena:', portasCena.map(p => p.id + '→' + p.destino).join(' '));
 }
-async function telaEscura(ms, texto){ texto = I18n.t(texto);
+async function telaEscura(ms, texto){ texto = rotuloLugar(texto);
   const b = $('boot'); b.textContent = texto || '…'; b.hidden = false;
   await dorme(ms);
 }
@@ -7563,7 +7568,7 @@ if (jogo.ash){
      desligados; a opção fica em Configurações */
   const depuracao = on => { if (on === undefined) return MOBILE ? document.body.classList.contains('menu-aberto') : !document.body.classList.contains('sem-dbg'); document.body.classList.toggle('menu-aberto', !!on); document.body.classList.toggle('sem-dbg', !on); };
   const areaAtual = () => { const a = jogo.ash; if (!a) return null; const c = (dados.caixas || []).find(c => c.sx > 0 && Math.abs(a.x - flipX * c.x) <= c.sx / 2 && Math.abs(a.z - c.z) <= c.sz / 2); return c ? c.a : (cenaAtual?.areas?.[0]?.id ?? null); };
-  const nomeAreaAtual = () => { const a = areaInteriorVisitada ?? areaAtual(); return (a != null && (nomeAreaCena(a) || dados.nomes?.[a] || NOMES_AREA[a])) || cenaAtual?.nome || NOME; };
+  const nomeAreaAtual = () => { const a = areaInteriorVisitada ?? areaAtual(); return rotuloLugar((a != null && (nomeAreaCena(a) || dados.nomes?.[a] || NOMES_AREA[a])) || cenaAtual?.nome || NOME); };
   Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), preso: () => Menus.estouPreso(),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     moderar: (op, resto) => {                                             // MODERAÇÃO (08/09): o servidor confere a marca de GM
       const [a, b, ...c] = resto.split(/\s+/);
@@ -7760,7 +7765,7 @@ if (jogo.ash){
     criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p) return jogo.trocarJogador?.(p); }),   // Configurações → ✎ Personagem
     personagemNome: () => Personagem.nomeDe(Personagem.ler()),
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },
-    nomeArea: a => nomeAreaCena(a) || (dados.nomes?.[a]) || NOMES_AREA[a] || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
+    nomeArea: a => nomeAreaCena(a) || rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || '') || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
     get dados(){ return dados; }, flipX: () => flipX,
     golpesDe: dex => (jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
     atualizarSeguidorPainel: () => document.getElementById('segue-ctl')?.__encher?.(),
@@ -8046,7 +8051,7 @@ camadaInstanciada('t', dados.treinadores, new THREE.ConeGeometry(0.32, 1.0, 12).
 camadaInstanciada('p', dados.portas, new THREE.BoxGeometry(0.8, 0.25, 0.8).translate(0, 0.12, 0), '#ffd23a');
 
 // caixas das áreas: retângulo no chão + rótulo em DOM
-const nomeArea = a => I18n.t(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a));
+const nomeArea = a => I18n.rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a));
 const caixasG = new THREE.Group();
 const rotulos = [];
 for (const c of dados.caixas){
@@ -8096,13 +8101,13 @@ let zoom = THREE.MathUtils.clamp(+(params.get('zoom') || (jogo.ativo ? (INTERIOR
 if (indice?.cenas?.length && !DEMO){
   const sel = document.createElement('select');
   const opAtual = document.createElement('option');
-  opAtual.value = 'kanto'; opAtual.textContent = 'kanto · overworld';
+  opAtual.value = 'kanto'; opAtual.textContent = I18n.rotuloLugar('kanto') + ' · overworld';
   if (NOME === 'kanto') opAtual.selected = true;
   sel.appendChild(opAtual);
   for (const c of indice.cenas){
     if (c.id === 1000001) continue;
     const op = document.createElement('option');
-    op.value = c.id; op.textContent = c.id + ' · ' + I18n.t(c.nome) + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
+    op.value = c.id; op.textContent = I18n.rotuloLugar(c.nome || c.id) + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
     if (String(c.id) === NOME) op.selected = true;
     sel.appendChild(op);
   }

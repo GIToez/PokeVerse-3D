@@ -3,201 +3,201 @@
  "cenas": [
   {
    "id": 1000001,
-   "nome": "Cidade Pallet",
+   "nome": "Pallet Town",
    "areas": [
     {
      "id": 1101,
-     "nome": "Cidade Pallet",
+     "nome": "Pallet Town",
      "tipo": 1
     },
     {
      "id": 1102,
-     "nome": "Cidade Viridian",
+     "nome": "Viridian City",
      "tipo": 1
     },
     {
      "id": 1103,
-     "nome": "Cidade Pewter",
+     "nome": "Pewter City",
      "tipo": 1
     },
     {
      "id": 1104,
-     "nome": "Cidade Celeste",
+     "nome": "Cerulean City",
      "tipo": 1
     },
     {
      "id": 1105,
-     "nome": "Cidade Vermilion",
+     "nome": "Vermilion City",
      "tipo": 1
     },
     {
      "id": 1106,
-     "nome": "Cidade Lavanda",
+     "nome": "Lavender Town",
      "tipo": 1
     },
     {
      "id": 1107,
-     "nome": "Cidade Celadon",
+     "nome": "Celadon City",
      "tipo": 1
     },
     {
      "id": 1108,
-     "nome": "Cidade Saffron",
+     "nome": "Saffron City",
      "tipo": 1
     },
     {
      "id": 1109,
-     "nome": "Cidade Fuchsia",
+     "nome": "Fuchsia City",
      "tipo": 1
     },
     {
      "id": 1110,
-     "nome": "Ilha Cinnabar",
+     "nome": "Cinnabar Island",
      "tipo": 1
     },
     {
      "id": 1191,
-     "nome": "Floresta Verde",
+     "nome": "Viridian Forest",
      "tipo": 1
     },
     {
      "id": 1192,
-     "nome": "campo de safári",
+     "nome": "Safari Zone",
      "tipo": 1
     },
     {
      "id": 1193,
-     "nome": "Centro de Competição",
+     "nome": "Competition Center",
      "tipo": 1
     },
     {
      "id": 1201,
-     "nome": "Rota 1",
+     "nome": "Route 1",
      "tipo": 1
     },
     {
      "id": 1202,
-     "nome": "Rota 2",
+     "nome": "Route 2",
      "tipo": 1
     },
     {
      "id": 1203,
-     "nome": "Rota 3",
+     "nome": "Route 3",
      "tipo": 1
     },
     {
      "id": 1204,
-     "nome": "Rota 4",
+     "nome": "Route 4",
      "tipo": 1
     },
     {
      "id": 1205,
-     "nome": "Rota 5",
+     "nome": "Route 5",
      "tipo": 1
     },
     {
      "id": 1206,
-     "nome": "Rota 6",
+     "nome": "Route 6",
      "tipo": 1
     },
     {
      "id": 1207,
-     "nome": "Rota 7",
+     "nome": "Route 7",
      "tipo": 1
     },
     {
      "id": 1208,
-     "nome": "Rota 8",
+     "nome": "Route 8",
      "tipo": 1
     },
     {
      "id": 1209,
-     "nome": "Rota 9",
+     "nome": "Route 9",
      "tipo": 1
     },
     {
      "id": 1210,
-     "nome": "Rota 10",
+     "nome": "Route 10",
      "tipo": 1
     },
     {
      "id": 1211,
-     "nome": "Rota 11",
+     "nome": "Route 11",
      "tipo": 1
     },
     {
      "id": 1212,
-     "nome": "Rota 12",
+     "nome": "Route 12",
      "tipo": 1
     },
     {
      "id": 1213,
-     "nome": "Rota 13",
+     "nome": "Route 13",
      "tipo": 1
     },
     {
      "id": 1214,
-     "nome": "Rota 14",
+     "nome": "Route 14",
      "tipo": 1
     },
     {
      "id": 1215,
-     "nome": "Rota 15",
+     "nome": "Route 15",
      "tipo": 1
     },
     {
      "id": 1216,
-     "nome": "Rota 16",
+     "nome": "Route 16",
      "tipo": 1
     },
     {
      "id": 1217,
-     "nome": "Rota 17",
+     "nome": "Route 17",
      "tipo": 1
     },
     {
      "id": 1218,
-     "nome": "Rota 18",
+     "nome": "Route 18",
      "tipo": 1
     },
     {
      "id": 1219,
-     "nome": "Rota 19",
+     "nome": "Route 19",
      "tipo": 1
     },
     {
      "id": 1220,
-     "nome": "Rota 20",
+     "nome": "Route 20",
      "tipo": 1
     },
     {
      "id": 1221,
-     "nome": "Rota 21",
+     "nome": "Route 21",
      "tipo": 1
     },
     {
      "id": 1222,
-     "nome": "Rota 22",
+     "nome": "Route 22",
      "tipo": 1
     },
     {
      "id": 1223,
-     "nome": "Rota 23",
+     "nome": "Route 23",
      "tipo": 1
     },
     {
      "id": 1224,
-     "nome": "Rota 24",
+     "nome": "Route 24",
      "tipo": 1
     },
     {
      "id": 1225,
-     "nome": "Rota 25",
+     "nome": "Route 25",
      "tipo": 1
     },
     {
      "id": 1299,
-     "nome": "ilhas seaform",
+     "nome": "Seafoam Islands",
      "tipo": 1
     }
    ],
@@ -217,41 +217,41 @@
   },
   {
    "id": 2100001,
-   "nome": "Torre de Pokémon",
+   "nome": "Pokémon Tower",
    "areas": [
     {
      "id": 1301,
-     "nome": "Torre de Pokémon Piso 1",
+     "nome": "Pokémon Tower 1F",
      "tipo": 2
     },
     {
      "id": 1302,
-     "nome": "Torre de Pokémon Piso 2",
+     "nome": "Pokémon Tower 2F",
      "tipo": 2
     },
     {
      "id": 1303,
-     "nome": "Torre de Pokémon Piso 3",
+     "nome": "Pokémon Tower 3F",
      "tipo": 2
     },
     {
      "id": 1304,
-     "nome": "Torre de Pokémon Piso 4",
+     "nome": "Pokémon Tower 4F",
      "tipo": 2
     },
     {
      "id": 1305,
-     "nome": "Torre de Pokémon Piso 5",
+     "nome": "Pokémon Tower 5F",
      "tipo": 2
     },
     {
      "id": 1306,
-     "nome": "Torre de Pokémon Piso 6",
+     "nome": "Pokémon Tower 6F",
      "tipo": 2
     },
     {
      "id": 1307,
-     "nome": "Torre de Pokémon Piso 7",
+     "nome": "Pokémon Tower 7F",
      "tipo": 2
     }
    ],
@@ -259,11 +259,11 @@
   },
   {
    "id": 2100002,
-   "nome": "Usina Elétrica Abandonada",
+   "nome": "Abandoned Power Plant",
    "areas": [
     {
      "id": 1332,
-     "nome": "Usina Elétrica Abandonada",
+     "nome": "Abandoned Power Plant",
      "tipo": 2
     }
    ],
@@ -271,31 +271,31 @@
   },
   {
    "id": 2100003,
-   "nome": "Ilhas Seaform",
+   "nome": "Seafoam Islands",
    "areas": [
     {
      "id": 1310,
-     "nome": "Ilhas Seaform Piso 1",
+     "nome": "Seafoam Islands B1F",
      "tipo": 2
     },
     {
      "id": 1311,
-     "nome": "Ilhas Seaform Piso 2",
+     "nome": "Seafoam Islands B2F",
      "tipo": 2
     },
     {
      "id": 1312,
-     "nome": "Ilhas Seaform Piso 3",
+     "nome": "Seafoam Islands B3F",
      "tipo": 2
     },
     {
      "id": 1313,
-     "nome": "Ilhas Seaform Piso 4",
+     "nome": "Seafoam Islands B4F",
      "tipo": 2
     },
     {
      "id": 1314,
-     "nome": "Ilhas Seaform Piso 5",
+     "nome": "Seafoam Islands B5F",
      "tipo": 2
     }
    ],
@@ -303,21 +303,21 @@
   },
   {
    "id": 2100004,
-   "nome": "Caminho dos Campeões",
+   "nome": "Victory Road",
    "areas": [
     {
      "id": 1315,
-     "nome": "Caminho dos Campeões Piso 1",
+     "nome": "Victory Road Floor 1",
      "tipo": 2
     },
     {
      "id": 1316,
-     "nome": "Caminho dos Campeões Piso 2",
+     "nome": "Victory Road Floor 2",
      "tipo": 2
     },
     {
      "id": 1317,
-     "nome": "Caminho dos Campeões Piso 3",
+     "nome": "Victory Road Floor 3",
      "tipo": 2
     }
    ],
@@ -325,16 +325,16 @@
   },
   {
    "id": 2100005,
-   "nome": "Esconderijo da Equipe Rocket",
+   "nome": "Team Rocket Hideout",
    "areas": [
     {
      "id": 1308,
-     "nome": "Esconderijo da Equipe Rocket Piso 1",
+     "nome": "Rocket Hideout B1F",
      "tipo": 2
     },
     {
      "id": 1309,
-     "nome": "Esconderijo da Equipe Rocket Piso 2",
+     "nome": "Rocket Hideout B2F",
      "tipo": 2
     }
    ],
@@ -342,21 +342,21 @@
   },
   {
    "id": 2100006,
-   "nome": "Caverna Celeste",
+   "nome": "Cerulean Cave",
    "areas": [
     {
      "id": 1318,
-     "nome": "Caverna Celeste Piso 1",
+     "nome": "Cerulean Cave Floor 1",
      "tipo": 2
     },
     {
      "id": 1319,
-     "nome": "Caverna Celeste Piso 2",
+     "nome": "Cerulean Cave Floor 2",
      "tipo": 2
     },
     {
      "id": 1320,
-     "nome": "Caverna Celeste Piso 3",
+     "nome": "Cerulean Cave Floor 3",
      "tipo": 2
     }
    ],
@@ -364,21 +364,21 @@
   },
   {
    "id": 2100007,
-   "nome": "Monte Lua",
+   "nome": "Mt. Moon",
    "areas": [
     {
      "id": 1322,
-     "nome": "Monte Lua Piso 1",
+     "nome": "Mt. Moon 1F",
      "tipo": 2
     },
     {
      "id": 1323,
-     "nome": "Monte Lua Piso 1",
+     "nome": "Mt. Moon 1F",
      "tipo": 2
     },
     {
      "id": 1324,
-     "nome": "Monte Lua Piso 1",
+     "nome": "Mt. Moon 1F",
      "tipo": 2
     }
    ],
@@ -386,11 +386,11 @@
   },
   {
    "id": 2100008,
-   "nome": "Caverna Diglett",
+   "nome": "Diglett's Cave",
    "areas": [
     {
      "id": 1321,
-     "nome": "Caverna Diglett",
+     "nome": "Diglett's Cave",
      "tipo": 2
     }
    ],
@@ -398,21 +398,21 @@
   },
   {
    "id": 2100009,
-   "nome": "Companhia Silph",
+   "nome": "Silph Co.",
    "areas": [
     {
      "id": 1325,
-     "nome": "Companhia Silph Piso 1",
+     "nome": "Silph Co. 1F",
      "tipo": 2
     },
     {
      "id": 1326,
-     "nome": "Companhia Silph Piso 2",
+     "nome": "Silph Co. 2F",
      "tipo": 2
     },
     {
      "id": 1327,
-     "nome": "Companhia Silph Piso 3",
+     "nome": "Silph Co. 3F",
      "tipo": 2
     }
    ],
@@ -420,21 +420,21 @@
   },
   {
    "id": 2100010,
-   "nome": "Edifício de Celadon",
+   "nome": "Celadon Mansion",
    "areas": [
     {
      "id": 1328,
-     "nome": "Edifício de Celadon Piso 1",
+     "nome": "Celadon Mansion 1F",
      "tipo": 2
     },
     {
      "id": 1329,
-     "nome": "Edifício de Celadon Piso 2",
+     "nome": "Celadon Mansion 2F",
      "tipo": 2
     },
     {
      "id": 1330,
-     "nome": "Edifício de Celadon Piso 3",
+     "nome": "Celadon Mansion 3F",
      "tipo": 2
     }
    ],
@@ -442,41 +442,41 @@
   },
   {
    "id": 2100011,
-   "nome": "Campo de Safári (Kanto)",
+   "nome": "Safari Zone (Kanto)",
    "areas": [
     {
      "id": 3101,
-     "nome": "Campo de Safári (Kanto)",
+     "nome": "Safari Zone (Kanto)",
      "tipo": 1
     },
     {
      "id": 3104,
-     "nome": "Campo de Safári 1",
+     "nome": "Safari Zone 1",
      "tipo": 1
     },
     {
      "id": 3111,
-     "nome": "Campo de Safári 1",
+     "nome": "Safari Zone 1",
      "tipo": 1
     },
     {
      "id": 3112,
-     "nome": "Campo de Safári 2",
+     "nome": "Safari Zone 2",
      "tipo": 1
     },
     {
      "id": 3113,
-     "nome": "Campo de Safári 3",
+     "nome": "Safari Zone 3",
      "tipo": 1
     },
     {
      "id": 3114,
-     "nome": "Campo de Safári 1",
+     "nome": "Safari Zone 1",
      "tipo": 1
     },
     {
      "id": 100001,
-     "nome": "área 100001",
+     "nome": "area 100001",
      "tipo": 9998
     }
    ],
@@ -484,16 +484,16 @@
   },
   {
    "id": 2100012,
-   "nome": "Túnel de pedra",
+   "nome": "Rock Tunnel",
    "areas": [
     {
      "id": 1333,
-     "nome": "Túnel de pedra piso 1",
+     "nome": "Rock Tunnel 1F",
      "tipo": 2
     },
     {
      "id": 1334,
-     "nome": "Túnel de pedra piso 2",
+     "nome": "Rock Tunnel 2F",
      "tipo": 2
     }
    ],
@@ -501,11 +501,11 @@
   },
   {
    "id": 2100013,
-   "nome": "Casa de Pokémon",
+   "nome": "Pokémon House",
    "areas": [
     {
      "id": 1335,
-     "nome": "Casa de Pokémon",
+     "nome": "Pokémon House",
      "tipo": 2
     }
    ],
@@ -513,126 +513,126 @@
   },
   {
    "id": 2500001,
-   "nome": "Ilha Um",
+   "nome": "One Island",
    "areas": [
     {
      "id": 2249,
-     "nome": "Ilha Um",
+     "nome": "One Island",
      "tipo": 1
     },
     {
      "id": 2250,
-     "nome": "Ilha Dois",
+     "nome": "Two Island",
      "tipo": 1
     },
     {
      "id": 2251,
-     "nome": "Ilha Três",
+     "nome": "Three Island",
      "tipo": 1
     },
     {
      "id": 2252,
-     "nome": "Ilha Quatro",
+     "nome": "Four Island",
      "tipo": 1
     },
     {
      "id": 2253,
-     "nome": "Ilha Cinco",
+     "nome": "Five Island",
      "tipo": 1
     },
     {
      "id": 2254,
-     "nome": "Ilha Seis",
+     "nome": "Six Island",
      "tipo": 1
     },
     {
      "id": 2255,
-     "nome": "Ilha Sete",
+     "nome": "Seven Island",
      "tipo": 1
     },
     {
      "id": 2265,
-     "nome": "Cabo da Ponta",
+     "nome": "Cape Brink",
      "tipo": 1
     },
     {
      "id": 2266,
-     "nome": "Porto",
+     "nome": "Port",
      "tipo": 1
     },
     {
      "id": 2267,
-     "nome": "Ponte Suspensa",
+     "nome": "Bond Bridge",
      "tipo": 1
     },
     {
      "id": 2268,
-     "nome": "Floresta dos Berries",
+     "nome": "Berry Forest",
      "tipo": 1
     },
     {
      "id": 2270,
-     "nome": "Lugar Vazio",
+     "nome": "Empty Place",
      "tipo": 1
     },
     {
      "id": 2271,
-     "nome": "Torre Memorial",
+     "nome": "Memorial Pillar",
      "tipo": 1
     },
     {
      "id": 2272,
-     "nome": "Labirinto das Águas",
+     "nome": "Water Labyrinth",
      "tipo": 1
     },
     {
      "id": 2273,
-     "nome": "Resort Luxuoso",
+     "nome": "Resort Gorgeous",
      "tipo": 1
     },
     {
      "id": 2275,
-     "nome": "Caminho das águas",
+     "nome": "Water Path",
      "tipo": 1
     },
     {
      "id": 2276,
-     "nome": "Vale das Ruínas",
+     "nome": "Ruin Valley",
      "tipo": 1
     },
     {
      "id": 2277,
-     "nome": "Caverna de ponto Piso 1",
+     "nome": "Dotted Hole 1F",
      "tipo": 2
     },
     {
      "id": 2278,
-     "nome": "Caverna de ponto Piso -1",
+     "nome": "Dotted Hole B1F",
      "tipo": 2
     },
     {
      "id": 2279,
-     "nome": "Caverna de ponto Sala Secreta",
+     "nome": "Dotted Hole Secret Room",
      "tipo": 2
     },
     {
      "id": 2280,
-     "nome": "Caminho Verde",
+     "nome": "Green Path",
      "tipo": 1
     },
     {
      "id": 2281,
-     "nome": "Bosque Marcado",
+     "nome": "Pattern Bush",
      "tipo": 1
     },
     {
      "id": 2282,
-     "nome": "Ilha Solitária",
+     "nome": "Outcast Island",
      "tipo": 1
     },
     {
      "id": 2284,
-     "nome": "Entrada do cânion",
+     "nome": "Canyon Entrance",
      "tipo": 1
     },
     {
@@ -642,7 +642,7 @@
     },
     {
      "id": 2287,
-     "nome": "Rocha do umbigo",
+     "nome": "Navel Rock",
      "tipo": 1
     }
    ],
@@ -650,11 +650,11 @@
   },
   {
    "id": 2520001,
-   "nome": "Monte das Brasas-Caverna do Meio da Montanha",
+   "nome": "Mt. Ember Summit Path",
    "areas": [
     {
      "id": 2263,
-     "nome": "Monte das Brasas-Caverna do Meio da Montanha",
+     "nome": "Mt. Ember Summit Path",
      "tipo": 2
     }
    ],
@@ -662,21 +662,21 @@
   },
   {
    "id": 2520002,
-   "nome": "Monte das Brasas-Caverna Direita",
+   "nome": "Mt. Ember Ruby Path",
    "areas": [
     {
      "id": 2260,
-     "nome": "Monte das Brasas-Caverna Direita Piso -1",
+     "nome": "Mt. Ember Ruby Path B1F",
      "tipo": 2
     },
     {
      "id": 2261,
-     "nome": "Monte das Brasas-Caverna Direita Piso -2",
+     "nome": "Mt. Ember Ruby Path B2F",
      "tipo": 2
     },
     {
      "id": 2262,
-     "nome": "Monte das Brasas-Sala Secreta da Caverna Direita",
+     "nome": "Mt. Ember Ruby Path Secret Room",
      "tipo": 2
     }
    ],
@@ -684,11 +684,11 @@
   },
   {
    "id": 2520003,
-   "nome": "Fonte Termal do monte das Brasas",
+   "nome": "Mt. Ember Hot Spring",
    "areas": [
     {
      "id": 2258,
-     "nome": "Fonte Termal do monte das Brasas",
+     "nome": "Mt. Ember Hot Spring",
      "tipo": 2
     }
    ],
@@ -696,11 +696,11 @@
   },
   {
    "id": 2520004,
-   "nome": "Caverna Glacial",
+   "nome": "Icefall Cave",
    "areas": [
     {
      "id": 2269,
-     "nome": "Caverna Glacial",
+     "nome": "Icefall Cave",
      "tipo": 1
     }
    ],
@@ -708,11 +708,11 @@
   },
   {
    "id": 2520005,
-   "nome": "Caverna da Alteração",
+   "nome": "Alteration Cave",
    "areas": [
     {
      "id": 2283,
-     "nome": "Caverna da Alteração",
+     "nome": "Alteration Cave",
      "tipo": 2
     }
    ],
@@ -720,11 +720,11 @@
   },
   {
    "id": 2520006,
-   "nome": "Ruínas de Tanoby",
+   "nome": "Tanoby Ruins",
    "areas": [
     {
      "id": 2286,
-     "nome": "Ruínas de Tanoby",
+     "nome": "Tanoby Ruins",
      "tipo": 2
     }
    ],
@@ -732,11 +732,11 @@
   },
   {
    "id": 2520007,
-   "nome": "Caverna perdida",
+   "nome": "Lost Cave",
    "areas": [
     {
      "id": 2274,
-     "nome": "Caverna perdida",
+     "nome": "Lost Cave",
      "tipo": 2
     }
    ],
@@ -744,11 +744,11 @@
   },
   {
    "id": 2540001,
-   "nome": "Ilha um-Centro de Pokémon",
+   "nome": "One Island Pokémon Center",
    "areas": [
     {
      "id": 2289,
-     "nome": "Ilha um-Centro de Pokémon",
+     "nome": "One Island Pokémon Center",
      "tipo": 2
     }
    ],
@@ -756,11 +756,11 @@
   },
   {
    "id": 2540002,
-   "nome": "Arzamento de Equipe Rocket",
+   "nome": "Team Rocket Warehouse",
    "areas": [
     {
      "id": 2288,
-     "nome": "Arzamento de Equipe Rocket",
+     "nome": "Team Rocket Warehouse",
      "tipo": 2
     }
    ],
@@ -768,91 +768,91 @@
   },
   {
    "id": 4110001,
-   "nome": "Viridian-Centro de Pokémon",
+   "nome": "Viridian Pokémon Center",
    "areas": [
     {
      "id": 1401,
-     "nome": "Viridian-Centro de Pokémon",
+     "nome": "Viridian Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1402,
-     "nome": "Pewter-Centro de Pokémon",
+     "nome": "Pewter Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1403,
-     "nome": "Celeste-Centro de Pokémon",
+     "nome": "Cerulean Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1404,
-     "nome": "Vermilion-Centro de Pokémon",
+     "nome": "Vermilion Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1405,
-     "nome": "Lavanda-Centro de Pokémon",
+     "nome": "Lavender Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1406,
-     "nome": "Celadon-Centro de Pokémon",
+     "nome": "Celadon Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1407,
-     "nome": "Saffron-Centro de Pokémon",
+     "nome": "Saffron Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1408,
-     "nome": "Fuchsia-Centro de Pokémon",
+     "nome": "Fuchsia Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1409,
-     "nome": "Cinnabar-Centro de Pokémon",
+     "nome": "Cinnabar Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1410,
-     "nome": "Rota 4-Centro de Pokémon",
+     "nome": "Route 4 Pokémon Center",
      "tipo": 2
     },
     {
      "id": 1411,
-     "nome": "Rota 10-Centro de Pokémon",
+     "nome": "Route 10 Pokémon Center",
      "tipo": 2
     },
     {
      "id": 2290,
-     "nome": "Ilha dois-Centro de Pokémon",
+     "nome": "Two Island Pokémon Center",
      "tipo": 2
     },
     {
      "id": 2291,
-     "nome": "Ilha três-Centro de Pokémon",
+     "nome": "Three Island Pokémon Center",
      "tipo": 2
     },
     {
      "id": 2292,
-     "nome": "Ilha Quatro-Centro de Pokémon",
+     "nome": "Four Island Pokémon Center",
      "tipo": 2
     },
     {
      "id": 2293,
-     "nome": "Ilha Cinco-Centro de Pokémon",
+     "nome": "Five Island Pokémon Center",
      "tipo": 2
     },
     {
      "id": 2294,
-     "nome": "Ilha seis-Centro de Pokémon",
+     "nome": "Six Island Pokémon Center",
      "tipo": 2
     },
     {
      "id": 2295,
-     "nome": "Ilha sete-Centro de Pokémon",
+     "nome": "Seven Island Pokémon Center",
      "tipo": 2
     }
    ],
@@ -860,11 +860,11 @@
   },
   {
    "id": 4110002,
-   "nome": "Laboratório do Professor Oak",
+   "nome": "Professor Oak's Lab",
    "areas": [
     {
      "id": 1801,
-     "nome": "Laboratório do Professor Oak",
+     "nome": "Professor Oak's Lab",
      "tipo": 2
     }
    ],
@@ -872,11 +872,11 @@
   },
   {
    "id": 4110003,
-   "nome": "Bicicleta milagrosa",
+   "nome": "Miracle Cycle",
    "areas": [
     {
      "id": 1802,
-     "nome": "Bicicleta milagrosa",
+     "nome": "Miracle Cycle",
      "tipo": 2
     }
    ],
@@ -884,11 +884,11 @@
   },
   {
    "id": 4110004,
-   "nome": "Escola de Treinadores",
+   "nome": "Trainer School",
    "areas": [
     {
      "id": 1803,
-     "nome": "Escola de Treinadores",
+     "nome": "Trainer School",
      "tipo": 2
     }
    ],
@@ -896,11 +896,11 @@
   },
   {
    "id": 4110006,
-   "nome": "Liga Índigo-Centro de Pokémon",
+   "nome": "Indigo League Pokémon Center",
    "areas": [
     {
      "id": 1412,
-     "nome": "Liga Índigo-Centro de Pokémon",
+     "nome": "Indigo League Pokémon Center",
      "tipo": 2
     }
    ],
@@ -908,66 +908,66 @@
   },
   {
    "id": 4110007,
-   "nome": "Loja da Cidade Viridian",
+   "nome": "Viridian Mart",
    "areas": [
     {
      "id": 1501,
-     "nome": "Loja da Cidade Viridian",
+     "nome": "Viridian Mart",
      "tipo": 2
     },
     {
      "id": 1502,
-     "nome": "Loja da Cidade Pewter",
+     "nome": "Pewter Mart",
      "tipo": 2
     },
     {
      "id": 1503,
-     "nome": "Loja da Cidade Celeste",
+     "nome": "Cerulean Mart",
      "tipo": 2
     },
     {
      "id": 1504,
-     "nome": "Loja da Cidade Vermilion",
+     "nome": "Vermilion Mart",
      "tipo": 2
     },
     {
      "id": 1505,
-     "nome": "Loja da Cidade Lavanda",
+     "nome": "Lavender Mart",
      "tipo": 2
     },
     {
      "id": 1507,
-     "nome": "Loja de da Cidade Saffron",
+     "nome": "Saffron Mart",
      "tipo": 2
     },
     {
      "id": 1508,
-     "nome": "Loja da Cidade Fuchsia",
+     "nome": "Fuchsia Mart",
      "tipo": 2
     },
     {
      "id": 1509,
-     "nome": "Loja da Cidade Cinnabar",
+     "nome": "Cinnabar Mart",
      "tipo": 2
     },
     {
      "id": 2296,
-     "nome": "Ilha três-Loja de Amizade",
+     "nome": "Three Island Friendship Shop",
      "tipo": 2
     },
     {
      "id": 2297,
-     "nome": "Ilha Quatro-Loja de Amizade",
+     "nome": "Four Island Friendship Shop",
      "tipo": 2
     },
     {
      "id": 2298,
-     "nome": "Ilha seis-Loja de Amizade",
+     "nome": "Six Island Friendship Shop",
      "tipo": 2
     },
     {
      "id": 2299,
-     "nome": "Ilha sete-Loja de Amizade",
+     "nome": "Seven Island Friendship Shop",
      "tipo": 2
     }
    ],
@@ -975,36 +975,36 @@
   },
   {
    "id": 4110008,
-   "nome": "A casa do personagem principal",
+   "nome": "Player's House",
    "areas": [
     {
      "id": 1804,
-     "nome": "A casa do personagem principal Piso 1",
+     "nome": "Player's House 1F",
      "tipo": 2
     },
     {
      "id": 1805,
-     "nome": "A casa do personagem principal Piso 2",
+     "nome": "Player's House 2F",
      "tipo": 2
     },
     {
      "id": 1823,
-     "nome": "Pewter-Casa do Brock",
+     "nome": "Brock's House",
      "tipo": 2
     },
     {
      "id": 1827,
-     "nome": "Saffron-Casa da moça Piso 1",
+     "nome": "Saffron Girl's House 1F",
      "tipo": 2
     },
     {
      "id": 18231,
-     "nome": "Pewter-Casa do Brock",
+     "nome": "Brock's House",
      "tipo": 2
     },
     {
      "id": 18271,
-     "nome": "Saffron-Casa da moça Piso 2",
+     "nome": "Saffron Girl's House 2F",
      "tipo": 2
     }
    ],
@@ -1012,51 +1012,51 @@
   },
   {
    "id": 4110009,
-   "nome": "Cidade Pallet-Casa do Gary Oak",
+   "nome": "Blue's House",
    "areas": [
     {
      "id": 1806,
-     "nome": "Cidade Pallet-Casa do Gary Oak",
+     "nome": "Blue's House",
      "tipo": 2
     },
     {
      "id": 1807,
-     "nome": "Rota 2-Instituto de Florestas",
+     "nome": "Route 2 Gatehouse",
      "tipo": 2
     },
     {
      "id": 1813,
-     "nome": "Rota 5 - Casa central da Rota 5",
+     "nome": "Route 5 Gatehouse",
      "tipo": 2
     },
     {
      "id": 1814,
-     "nome": "Rota 16-Casa",
+     "nome": "Route 16 Gatehouse",
      "tipo": 2
     },
     {
      "id": 1816,
-     "nome": "Viridian-Casa da Velha",
+     "nome": "Viridian Old Lady's House",
      "tipo": 2
     },
     {
      "id": 1824,
-     "nome": "Celeste-Casa do Professor",
+     "nome": "Cerulean Professor's House",
      "tipo": 2
     },
     {
      "id": 1828,
-     "nome": "Fuchsia-Quarto 2 Casa do Bill",
+     "nome": "Fuchsia Bill's House",
      "tipo": 2
     },
     {
      "id": 1831,
-     "nome": "Celeste-Casa da Jenny",
+     "nome": "Cerulean Jenny's House",
      "tipo": 2
     },
     {
      "id": 1850,
-     "nome": "Campo de Safári Casa 5",
+     "nome": "Safari Zone House 5",
      "tipo": 2
     }
    ],
@@ -1064,41 +1064,41 @@
   },
   {
    "id": 4110010,
-   "nome": "Lavanda-Casa do Avaliador",
+   "nome": "Lavender Name Rater's House",
    "areas": [
     {
      "id": 1811,
-     "nome": "Lavanda-Casa do Avaliador",
+     "nome": "Lavender Name Rater's House",
      "tipo": 2
     },
     {
      "id": 1815,
-     "nome": "Fuchsia-Casa do diretor",
+     "nome": "Fuchsia Warden's House",
      "tipo": 2
     },
     {
      "id": 1817,
-     "nome": "Celeste-Quarto pequeno comum",
+     "nome": "Cerulean Small Room",
      "tipo": 2
     },
     {
      "id": 1818,
-     "nome": "Vermilion-Quarto 1",
+     "nome": "Vermilion Room 1",
      "tipo": 2
     },
     {
      "id": 1821,
-     "nome": "Fuchsia-Quarto 1",
+     "nome": "Fuchsia Room 1",
      "tipo": 2
     },
     {
      "id": 1822,
-     "nome": "Saffron-Casa do Tio Lutador",
+     "nome": "Saffron Fighting Man's House",
      "tipo": 2
     },
     {
      "id": 1830,
-     "nome": "Vermilion-Quarto 1",
+     "nome": "Vermilion Room 1",
      "tipo": 2
     }
    ],
@@ -1106,36 +1106,36 @@
   },
   {
    "id": 4110011,
-   "nome": "Vermilion-Quarto 3",
+   "nome": "Vermilion Room 3",
    "areas": [
     {
      "id": 1810,
-     "nome": "Vermilion-Quarto 3",
+     "nome": "Vermilion Room 3",
      "tipo": 2
     },
     {
      "id": 1812,
-     "nome": "Celadon-Quarto 1",
+     "nome": "Celadon Room 1",
      "tipo": 2
     },
     {
      "id": 1846,
-     "nome": "Campo de Safári Casa 1",
+     "nome": "Safari Zone House 1",
      "tipo": 2
     },
     {
      "id": 1847,
-     "nome": "Campo de Safári Casa 2",
+     "nome": "Safari Zone House 2",
      "tipo": 2
     },
     {
      "id": 1848,
-     "nome": "Campo de Safári Casa 3",
+     "nome": "Safari Zone House 3",
      "tipo": 2
     },
     {
      "id": 1849,
-     "nome": "Campo de Safári Casa 4",
+     "nome": "Safari Zone House 4",
      "tipo": 2
     }
    ],
@@ -1143,21 +1143,21 @@
   },
   {
    "id": 4110012,
-   "nome": "Pewter-Casa do Ata",
+   "nome": "Pewter Youngster's House",
    "areas": [
     {
      "id": 1808,
-     "nome": "Pewter-Casa do Ata",
+     "nome": "Pewter Youngster's House",
      "tipo": 2
     },
     {
      "id": 1825,
-     "nome": "Lavanda- Casa do Velho",
+     "nome": "Lavender Old Man's House",
      "tipo": 2
     },
     {
      "id": 1834,
-     "nome": "Rota 12-Casa",
+     "nome": "Route 12 Gatehouse",
      "tipo": 2
     }
    ],
@@ -1165,26 +1165,26 @@
   },
   {
    "id": 4110013,
-   "nome": "Celeste-Tio de medalhas",
+   "nome": "Cerulean Badge Man's House",
    "areas": [
     {
      "id": 1809,
-     "nome": "Celeste-Tio de medalhas",
+     "nome": "Cerulean Badge Man's House",
      "tipo": 2
     },
     {
      "id": 1832,
-     "nome": "Cinnabar-Edifício Abandonado",
+     "nome": "Pokémon Mansion",
      "tipo": 2
     },
     {
      "id": 1833,
-     "nome": "Fuchsia-Casa do Pescador",
+     "nome": "Fuchsia Fisherman's House",
      "tipo": 2
     },
     {
      "id": 1838,
-     "nome": "Celeste-Casa Roubada",
+     "nome": "Cerulean Robbed House",
      "tipo": 2
     }
    ],
@@ -1192,16 +1192,16 @@
   },
   {
    "id": 4110014,
-   "nome": "Loja de departamentos",
+   "nome": "Department Store",
    "areas": [
     {
      "id": 1506,
-     "nome": "Loja de departamentos Piso 1",
+     "nome": "Department Store 1F",
      "tipo": 2
     },
     {
      "id": 1588,
-     "nome": "Loja de departamentos Piso 2",
+     "nome": "Department Store 2F",
      "tipo": 2
     }
    ],
@@ -1209,11 +1209,11 @@
   },
   {
    "id": 4110015,
-   "nome": "Lavanda-Casa dos Espíritos",
+   "nome": "Lavender Volunteer House",
    "areas": [
     {
      "id": 1839,
-     "nome": "Lavanda-Casa dos Espíritos",
+     "nome": "Lavender Volunteer House",
      "tipo": 2
     }
    ],
@@ -1221,31 +1221,31 @@
   },
   {
    "id": 4110016,
-   "nome": "Celadon-Quarto 3",
+   "nome": "Celadon Room 3",
    "areas": [
     {
      "id": 1819,
-     "nome": "Celadon-Quarto 3",
+     "nome": "Celadon Room 3",
      "tipo": 2
     },
     {
      "id": 1820,
-     "nome": "Saffron-Clube de treinadores",
+     "nome": "Saffron Trainer Club",
      "tipo": 2
     },
     {
      "id": 1826,
-     "nome": "Celadon-Quarto 2",
+     "nome": "Celadon - Room 2",
      "tipo": 2
     },
     {
      "id": 1829,
-     "nome": "Fuchsia-Sala de descanso do Diretor",
+     "nome": "Fuchsia Warden's Rest Room",
      "tipo": 2
     },
     {
      "id": 1840,
-     "nome": "Clube dos Entusiastas",
+     "nome": "Pokémon Fan Club",
      "tipo": 2
     }
    ],
@@ -1253,21 +1253,21 @@
   },
   {
    "id": 4110017,
-   "nome": "Pewter-Museu de Ciências",
+   "nome": "Pewter Museum of Science",
    "areas": [
     {
      "id": 1841,
-     "nome": "Pewter-Museu de Ciências Piso 1",
+     "nome": "Pewter Museum of Science 1F",
      "tipo": 2
     },
     {
      "id": 1842,
-     "nome": "Pewter-Museu de Ciências Piso 2",
+     "nome": "Pewter Museum of Science 2F",
      "tipo": 2
     },
     {
      "id": 1851,
-     "nome": "Pewter-Museu de Ciências Piso 1",
+     "nome": "Pewter Museum of Science 1F",
      "tipo": 2
     }
    ],
@@ -1275,11 +1275,11 @@
   },
   {
    "id": 4110018,
-   "nome": "Salão de Videogames",
+   "nome": "Game Corner",
    "areas": [
     {
      "id": 1843,
-     "nome": "Salão de Videogames",
+     "nome": "Game Corner",
      "tipo": 2
     }
    ],
@@ -1287,11 +1287,11 @@
   },
   {
    "id": 4110019,
-   "nome": "Laboratório Cinnabar",
+   "nome": "Cinnabar Lab",
    "areas": [
     {
      "id": 1844,
-     "nome": "Laboratório Cinnabar",
+     "nome": "Cinnabar Lab",
      "tipo": 2
     }
    ],
@@ -1299,11 +1299,11 @@
   },
   {
    "id": 4110020,
-   "nome": "Cabana do Cabo",
+   "nome": "Sea Cottage",
    "areas": [
     {
      "id": 1845,
-     "nome": "Cabana do Cabo",
+     "nome": "Sea Cottage",
      "tipo": 2
     }
    ],
@@ -1311,11 +1311,11 @@
   },
   {
    "id": 4120001,
-   "nome": "Ginásio-Pewter",
+   "nome": "Pewter Gym",
    "areas": [
     {
      "id": 1601,
-     "nome": "Ginásio-Pewter",
+     "nome": "Pewter Gym",
      "tipo": 2
     }
    ],
@@ -1323,11 +1323,11 @@
   },
   {
    "id": 4120002,
-   "nome": "Ginásio - Celeste",
+   "nome": "Cerulean Gym",
    "areas": [
     {
      "id": 1602,
-     "nome": "Ginásio - Celeste",
+     "nome": "Cerulean Gym",
      "tipo": 2
     }
    ],
@@ -1335,21 +1335,21 @@
   },
   {
    "id": 4120003,
-   "nome": "Ginásio-Vermilion 1",
+   "nome": "Vermilion Gym 1",
    "areas": [
     {
      "id": 1603,
-     "nome": "Ginásio-Vermilion 1",
+     "nome": "Vermilion Gym 1",
      "tipo": 2
     },
     {
      "id": 1604,
-     "nome": "Ginásio-Vermilion 2",
+     "nome": "Vermilion Gym 2",
      "tipo": 2
     },
     {
      "id": 1605,
-     "nome": "Ginásio-Vermilion 3",
+     "nome": "Vermilion Gym 3",
      "tipo": 2
     }
    ],
@@ -1357,11 +1357,11 @@
   },
   {
    "id": 4120004,
-   "nome": "Celadon-Ginásio",
+   "nome": "Celadon Gym",
    "areas": [
     {
      "id": 1606,
-     "nome": "Celadon-Ginásio",
+     "nome": "Celadon Gym",
      "tipo": 2
     }
    ],
@@ -1369,31 +1369,31 @@
   },
   {
    "id": 4120005,
-   "nome": "Fuchsia-Ginásio 1",
+   "nome": "Fuchsia Gym 1",
    "areas": [
     {
      "id": 1607,
-     "nome": "Fuchsia-Ginásio 1",
+     "nome": "Fuchsia Gym 1",
      "tipo": 2
     },
     {
      "id": 1608,
-     "nome": "Fuchsia-Ginásio 2",
+     "nome": "Fuchsia Gym 2",
      "tipo": 2
     },
     {
      "id": 1609,
-     "nome": "Fuchsia-Ginásio 3",
+     "nome": "Fuchsia Gym 3",
      "tipo": 2
     },
     {
      "id": 1610,
-     "nome": "Fuchsia-Ginásio 4",
+     "nome": "Fuchsia Gym 4",
      "tipo": 2
     },
     {
      "id": 1611,
-     "nome": "Fuchsia-Ginásio 5",
+     "nome": "Fuchsia Gym 5",
      "tipo": 2
     }
    ],
@@ -1401,11 +1401,11 @@
   },
   {
    "id": 4120006,
-   "nome": "Saffron-Ginásio",
+   "nome": "Saffron Gym",
    "areas": [
     {
      "id": 1612,
-     "nome": "Saffron-Ginásio",
+     "nome": "Saffron Gym",
      "tipo": 2
     }
    ],
@@ -1413,11 +1413,11 @@
   },
   {
    "id": 4120007,
-   "nome": "Cinnabar-Ginásio",
+   "nome": "Cinnabar Gym",
    "areas": [
     {
      "id": 1613,
-     "nome": "Cinnabar-Ginásio",
+     "nome": "Cinnabar Gym",
      "tipo": 2
     }
    ],
@@ -1425,11 +1425,11 @@
   },
   {
    "id": 4120008,
-   "nome": "Viridian-Ginásio",
+   "nome": "Viridian Gym",
    "areas": [
     {
      "id": 1614,
-     "nome": "Viridian-Ginásio",
+     "nome": "Viridian Gym",
      "tipo": 2
     }
    ],
@@ -1437,16 +1437,16 @@
   },
   {
    "id": 4120009,
-   "nome": "Quarto da Lorelei",
+   "nome": "Lorelei's Room",
    "areas": [
     {
      "id": 1701,
-     "nome": "Quarto da Lorelei",
+     "nome": "Lorelei's Room",
      "tipo": 2
     },
     {
      "id": 1707,
-     "nome": "Quarto da Lorelei",
+     "nome": "Lorelei's Room",
      "tipo": 2
     }
    ],
@@ -1454,16 +1454,16 @@
   },
   {
    "id": 4120010,
-   "nome": "Quarto do Bruno",
+   "nome": "Bruno's Room",
    "areas": [
     {
      "id": 1702,
-     "nome": "Quarto do Bruno",
+     "nome": "Bruno's Room",
      "tipo": 2
     },
     {
      "id": 1708,
-     "nome": "Quarto do Bruno",
+     "nome": "Bruno's Room",
      "tipo": 2
     }
    ],
@@ -1471,16 +1471,16 @@
   },
   {
    "id": 4120011,
-   "nome": "Quarto da Agatha",
+   "nome": "Agatha's Room",
    "areas": [
     {
      "id": 1703,
-     "nome": "Quarto da Agatha",
+     "nome": "Agatha's Room",
      "tipo": 2
     },
     {
      "id": 1709,
-     "nome": "Quarto da Agatha",
+     "nome": "Agatha's Room",
      "tipo": 2
     }
    ],
@@ -1488,16 +1488,16 @@
   },
   {
    "id": 4120012,
-   "nome": "Quarto do Lance",
+   "nome": "Lance's Room",
    "areas": [
     {
      "id": 1704,
-     "nome": "Quarto do Lance",
+     "nome": "Lance's Room",
      "tipo": 2
     },
     {
      "id": 1710,
-     "nome": "Quarto do Lance",
+     "nome": "Lance's Room",
      "tipo": 2
     }
    ],
@@ -1505,16 +1505,16 @@
   },
   {
    "id": 4120013,
-   "nome": "Quarto do Campeão",
+   "nome": "Champion's Room",
    "areas": [
     {
      "id": 1705,
-     "nome": "Quarto do Campeão",
+     "nome": "Champion's Room",
      "tipo": 2
     },
     {
      "id": 1711,
-     "nome": "Quarto do Campeão",
+     "nome": "Champion's Room",
      "tipo": 2
     }
    ],
@@ -1522,11 +1522,11 @@
   },
   {
    "id": 4120014,
-   "nome": "Ginásio lutador",
+   "nome": "Fighting Dojo",
    "areas": [
     {
      "id": 1331,
-     "nome": "Ginásio lutador",
+     "nome": "Fighting Dojo",
      "tipo": 2
     }
    ],
@@ -1534,11 +1534,11 @@
   },
   {
    "id": 4120015,
-   "nome": "Fuchsia-Ginásio",
+   "nome": "Fuchsia Gym",
    "areas": [
     {
      "id": 1618,
-     "nome": "Fuchsia-Ginásio",
+     "nome": "Fuchsia Gym",
      "tipo": 2
     }
    ],
@@ -1546,11 +1546,11 @@
   },
   {
    "id": 4120016,
-   "nome": "Ginásio-Vermilion",
+   "nome": "Vermilion Gym",
    "areas": [
     {
      "id": 1616,
-     "nome": "Ginásio-Vermilion",
+     "nome": "Vermilion Gym",
      "tipo": 2
     }
    ],
@@ -1558,11 +1558,11 @@
   },
   {
    "id": 4120017,
-   "nome": "Ginásio-Pewter",
+   "nome": "Pewter Gym",
    "areas": [
     {
      "id": 1615,
-     "nome": "Ginásio-Pewter",
+     "nome": "Pewter Gym",
      "tipo": 2
     }
    ],
@@ -1570,11 +1570,11 @@
   },
   {
    "id": 4120018,
-   "nome": "centro de conexões",
+   "nome": "Connection Center",
    "areas": [
     {
      "id": 1706,
-     "nome": "centro de conexões",
+     "nome": "Connection Center",
      "tipo": 2
     }
    ],
@@ -1582,11 +1582,11 @@
   },
   {
    "id": 4120019,
-   "nome": "Celadon-Ginásio",
+   "nome": "Celadon Gym",
    "areas": [
     {
      "id": 1617,
-     "nome": "Celadon-Ginásio",
+     "nome": "Celadon Gym",
      "tipo": 2
     }
    ],
@@ -1594,41 +1594,41 @@
   },
   {
    "id": 4120020,
-   "nome": "Santa Anne",
+   "nome": "S.S. Anne",
    "areas": [
     {
      "id": 1336,
-     "nome": "Santa Anne",
+     "nome": "S.S. Anne",
      "tipo": 2
     },
     {
      "id": 1337,
-     "nome": "Santa Anne Piso 1",
+     "nome": "S.S. Anne 1F",
      "tipo": 2
     },
     {
      "id": 1338,
-     "nome": "Santa Anne Piso -1",
+     "nome": "S.S. Anne B1F",
      "tipo": 2
     },
     {
      "id": 1339,
-     "nome": "Santa Anne Piso 2",
+     "nome": "S.S. Anne 2F",
      "tipo": 2
     },
     {
      "id": 1340,
-     "nome": "cabine do capitão de Santa Anne",
+     "nome": "S.S. Anne Captain's Cabin",
      "tipo": 2
     },
     {
      "id": 1341,
-     "nome": "corredor do convés de Santa Anne",
+     "nome": "S.S. Anne Deck Corridor",
      "tipo": 2
     },
     {
      "id": 1342,
-     "nome": "cozinha de de Santa Anne",
+     "nome": "S.S. Anne Kitchen",
      "tipo": 2
     }
    ],
@@ -1636,96 +1636,96 @@
   },
   {
    "id": 4220010,
-   "nome": "Caminho de Provas",
+   "nome": "Trial Path",
    "areas": [
     {
      "id": 3201,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3202,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3203,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3204,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3205,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3206,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3207,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3208,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3209,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3210,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3211,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3212,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3213,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3214,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3215,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3216,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3217,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     },
     {
      "id": 3218,
-     "nome": "Caminho de Provas",
+     "nome": "Trial Path",
      "tipo": 3
     }
    ],
@@ -1733,16 +1733,16 @@
   },
   {
    "id": 4220013,
-   "nome": "parque natural",
+   "nome": "Nature Park",
    "areas": [
     {
      "id": 3121,
-     "nome": "parque natural",
+     "nome": "Nature Park",
      "tipo": 1
     },
     {
      "id": 3132,
-     "nome": "Pomar",
+     "nome": "Orchard",
      "tipo": 3
     }
    ],
@@ -1750,11 +1750,11 @@
   },
   {
    "id": 4400007,
-   "nome": "Terra dos Tesouros",
+   "nome": "Treasure Land",
    "areas": [
     {
      "id": 47002,
-     "nome": "Terra dos Tesouros",
+     "nome": "Treasure Land",
      "tipo": 2
     }
    ],
@@ -1762,171 +1762,171 @@
   },
   {
    "id": 4400008,
-   "nome": "Campo de Batalha Gigantamax",
+   "nome": "Gigantamax Battlefield",
    "areas": [
     {
      "id": 47001,
-     "nome": "Campo de Batalha Gigantamax",
+     "nome": "Gigantamax Battlefield",
      "tipo": 2
     },
     {
      "id": 47003,
-     "nome": "área 47003",
+     "nome": "area 47003",
      "tipo": 2
     },
     {
      "id": 47004,
-     "nome": "área 47004",
+     "nome": "area 47004",
      "tipo": 2
     },
     {
      "id": 47005,
-     "nome": "área 47005",
+     "nome": "area 47005",
      "tipo": 2
     },
     {
      "id": 47006,
-     "nome": "área 47006",
+     "nome": "area 47006",
      "tipo": 2
     },
     {
      "id": 47007,
-     "nome": "área 47007",
+     "nome": "area 47007",
      "tipo": 2
     },
     {
      "id": 47008,
-     "nome": "área 47008",
+     "nome": "area 47008",
      "tipo": 2
     },
     {
      "id": 47009,
-     "nome": "área 47009",
+     "nome": "area 47009",
      "tipo": 2
     },
     {
      "id": 47010,
-     "nome": "área 47010",
+     "nome": "area 47010",
      "tipo": 2
     },
     {
      "id": 47011,
-     "nome": "área 47011",
+     "nome": "area 47011",
      "tipo": 2
     },
     {
      "id": 47012,
-     "nome": "área 47012",
+     "nome": "area 47012",
      "tipo": 2
     },
     {
      "id": 47013,
-     "nome": "área 47013",
+     "nome": "area 47013",
      "tipo": 2
     },
     {
      "id": 47014,
-     "nome": "área 47014",
+     "nome": "area 47014",
      "tipo": 2
     },
     {
      "id": 47015,
-     "nome": "área 47015",
+     "nome": "area 47015",
      "tipo": 2
     },
     {
      "id": 47016,
-     "nome": "área 47016",
+     "nome": "area 47016",
      "tipo": 2
     },
     {
      "id": 47017,
-     "nome": "área 47017",
+     "nome": "area 47017",
      "tipo": 2
     },
     {
      "id": 47018,
-     "nome": "área 47018",
+     "nome": "area 47018",
      "tipo": 2
     },
     {
      "id": 47019,
-     "nome": "área 47019",
+     "nome": "area 47019",
      "tipo": 2
     },
     {
      "id": 47020,
-     "nome": "área 47020",
+     "nome": "area 47020",
      "tipo": 2
     },
     {
      "id": 47021,
-     "nome": "área 47021",
+     "nome": "area 47021",
      "tipo": 2
     },
     {
      "id": 47022,
-     "nome": "área 47022",
+     "nome": "area 47022",
      "tipo": 2
     },
     {
      "id": 47023,
-     "nome": "área 47023",
+     "nome": "area 47023",
      "tipo": 2
     },
     {
      "id": 47024,
-     "nome": "área 47024",
+     "nome": "area 47024",
      "tipo": 2
     },
     {
      "id": 47025,
-     "nome": "área 47025",
+     "nome": "area 47025",
      "tipo": 2
     },
     {
      "id": 47026,
-     "nome": "área 47026",
+     "nome": "area 47026",
      "tipo": 2
     },
     {
      "id": 47027,
-     "nome": "área 47027",
+     "nome": "area 47027",
      "tipo": 2
     },
     {
      "id": 47028,
-     "nome": "área 47028",
+     "nome": "area 47028",
      "tipo": 2
     },
     {
      "id": 47029,
-     "nome": "área 47029",
+     "nome": "area 47029",
      "tipo": 2
     },
     {
      "id": 47030,
-     "nome": "área 47030",
+     "nome": "area 47030",
      "tipo": 2
     },
     {
      "id": 47031,
-     "nome": "área 47031",
+     "nome": "area 47031",
      "tipo": 2
     },
     {
      "id": 47032,
-     "nome": "área 47032",
+     "nome": "area 47032",
      "tipo": 2
     },
     {
      "id": 47033,
-     "nome": "área 47033",
+     "nome": "area 47033",
      "tipo": 2
     },
     {
      "id": 47034,
-     "nome": "área 47034",
+     "nome": "area 47034",
      "tipo": 2
     }
    ],
@@ -1934,11 +1934,11 @@
   },
   {
    "id": 4400014,
-   "nome": "Território das Bestas Divinas",
+   "nome": "Divine Beasts' Territory",
    "areas": [
     {
      "id": 47101,
-     "nome": "Território das Bestas Divinas",
+     "nome": "Divine Beasts' Territory",
      "tipo": 2
     }
    ],
@@ -1946,11 +1946,11 @@
   },
   {
    "id": 4440001,
-   "nome": "Campo de Batalha da Comunidade",
+   "nome": "Community Battlefield",
    "areas": [
     {
      "id": 42001,
-     "nome": "Campo de Batalha da Comunidade",
+     "nome": "Community Battlefield",
      "tipo": 3
     }
    ],
@@ -1958,141 +1958,141 @@
   },
   {
    "id": 4440037,
-   "nome": "Caminho da Expedição Dificuldade fácil-1",
+   "nome": "Expedition Path (Easy) 1",
    "areas": [
     {
      "id": 47201,
-     "nome": "Caminho da Expedição Dificuldade fácil-1",
+     "nome": "Expedition Path (Easy) 1",
      "tipo": 3
     },
     {
      "id": 47202,
-     "nome": "Caminho da Expedição Dificuldade fácil-2",
+     "nome": "Expedition Path (Easy) 2",
      "tipo": 3
     },
     {
      "id": 47203,
-     "nome": "Caminho da Expedição Dificuldade fácil-3",
+     "nome": "Expedition Path (Easy) 3",
      "tipo": 3
     },
     {
      "id": 47204,
-     "nome": "Caminho da Expedição Dificuldade fácil-4",
+     "nome": "Expedition Path (Easy) 4",
      "tipo": 3
     },
     {
      "id": 47205,
-     "nome": "Caminho da Expedição Dificuldade fácil-5",
+     "nome": "Expedition Path (Easy) 5",
      "tipo": 3
     },
     {
      "id": 47206,
-     "nome": "Caminho da Expedição Dificuldade fácil-6",
+     "nome": "Expedition Path (Easy) 6",
      "tipo": 3
     },
     {
      "id": 47207,
-     "nome": "Caminho da Expedição Dificuldade fácil-7",
+     "nome": "Expedition Path (Easy) 7",
      "tipo": 3
     },
     {
      "id": 47208,
-     "nome": "Caminho da Expedição Dificuldade fácil-8",
+     "nome": "Expedition Path (Easy) 8",
      "tipo": 3
     },
     {
      "id": 47209,
-     "nome": "Caminho da Expedição Dificuldade fácil-9",
+     "nome": "Expedition Path (Easy) 9",
      "tipo": 3
     },
     {
      "id": 47210,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -1",
+     "nome": "Expedition Path (Hard) 1",
      "tipo": 3
     },
     {
      "id": 47211,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -2",
+     "nome": "Expedition Path (Hard) 2",
      "tipo": 3
     },
     {
      "id": 47212,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -3",
+     "nome": "Expedition Path (Hard) 3",
      "tipo": 3
     },
     {
      "id": 47213,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -4",
+     "nome": "Expedition Path (Hard) 4",
      "tipo": 3
     },
     {
      "id": 47214,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -5",
+     "nome": "Expedition Path (Hard) 5",
      "tipo": 3
     },
     {
      "id": 47215,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -6",
+     "nome": "Expedition Path (Hard) 6",
      "tipo": 3
     },
     {
      "id": 47216,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -7",
+     "nome": "Expedition Path (Hard) 7",
      "tipo": 3
     },
     {
      "id": 47217,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -8",
+     "nome": "Expedition Path (Hard) 8",
      "tipo": 3
     },
     {
      "id": 47218,
-     "nome": "Caminho de Expedição Dificuldade Dificuldade -9",
+     "nome": "Expedition Path (Hard) 9",
      "tipo": 3
     },
     {
      "id": 47219,
-     "nome": "Caminho de Expedição Dificuldade Mestre -1",
+     "nome": "Expedition Path (Master) 1",
      "tipo": 3
     },
     {
      "id": 47220,
-     "nome": "Caminho de Expedição Dificuldade Mestre -2",
+     "nome": "Expedition Path (Master) 2",
      "tipo": 3
     },
     {
      "id": 47221,
-     "nome": "Caminho de Expedição Dificuldade Mestre -3",
+     "nome": "Expedition Path (Master) 3",
      "tipo": 3
     },
     {
      "id": 47222,
-     "nome": "Caminho de Expedição Dificuldade Mestre -4",
+     "nome": "Expedition Path (Master) 4",
      "tipo": 3
     },
     {
      "id": 47223,
-     "nome": "Caminho de Expedição Dificuldade Mestre -5",
+     "nome": "Expedition Path (Master) 5",
      "tipo": 3
     },
     {
      "id": 47224,
-     "nome": "Caminho de Expedição Dificuldade Mestre -6",
+     "nome": "Expedition Path (Master) 6",
      "tipo": 3
     },
     {
      "id": 47225,
-     "nome": "Caminho de Expedição Dificuldade Mestre -7",
+     "nome": "Expedition Path (Master) 7",
      "tipo": 3
     },
     {
      "id": 47226,
-     "nome": "Caminho de Expedição Dificuldade Mestre -8",
+     "nome": "Expedition Path (Master) 8",
      "tipo": 3
     },
     {
      "id": 47227,
-     "nome": "Caminho de Expedição Dificuldade Mestre -9",
+     "nome": "Expedition Path (Master) 9",
      "tipo": 3
     }
    ],
@@ -2100,11 +2100,11 @@
   },
   {
    "id": 4700001,
-   "nome": "Casa",
+   "nome": "House",
    "areas": [
     {
      "id": 3131,
-     "nome": "Casa",
+     "nome": "House",
      "tipo": 3
     }
    ],

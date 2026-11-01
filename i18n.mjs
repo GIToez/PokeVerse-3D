@@ -136,3 +136,95 @@ export function tHtml(html){
   if (!(exatas.size || padroes.length) || typeof html !== 'string') return html;
   return html.replace(/>([^<>]+)</g, (tudo, txt) => '>' + t(txt) + '<');
 }
+/* Place-name labels. Dump JSON and file ids (kanto, pallet_rota1, 4110001) stay as scene keys —
+   doors/GLB load those ids. Players only ever see English from rotuloLugar. Fade text often
+   appends "…" which used to miss the dictionary (Viridian-Centro de Pokémon…). */
+const MAPA_IDS = { kanto: 'Kanto', pallet_rota1: 'Pallet Town & Route 1', '1000001': 'Kanto' };
+const TOWNS = new Set(['Pallet', 'Lavender']);
+const cenasPorId = Object.create(null);
+const AINDA_PT = /[àáâãéêíóôõúç]|Cidade|Rota |Ilha |Piso |Ginásio|Casa |Loja |Quarto |Caverna|Floresta|Esconderijo|Edifício|Companhia|Usina|Caminho |Centro de|campo de|Túnel|Sala |cabine|cozinha|corredor|Liga |Monte |área |Safári|Brasas|índigo|Celeste|Lavanda|Seaform|personagem|departamentos/i;
+const TROCAS = [
+  ['Liga ÍndigoCentro de Pokémon', 'Indigo League Pokémon Center'],
+  ['Centro de Pokémon', 'Pokémon Center'],
+  ['Centro de Pokemon', 'Pokémon Center'],
+  ['Cidade Celeste', 'Cerulean City'],
+  ['Cidade Lavanda', 'Lavender Town'],
+  ['Cidade Cerulean', 'Cerulean City'],
+  ['Cidade Lavender', 'Lavender Town'],
+  ['Cidade Pallet', 'Pallet Town'],
+  ['Ilha Cinnabar', 'Cinnabar Island'],
+  ['Floresta Verde', 'Viridian Forest'],
+  ['campo de safári', 'Safari Zone'],
+  ['Campo de Safári', 'Safari Zone'],
+  ['ilhas seaform', 'Seafoam Islands'],
+  ['Ilhas Seaform', 'Seafoam Islands'],
+  ['Celeste', 'Cerulean'],
+  ['Lavanda', 'Lavender'],
+  ['Seaform', 'Seafoam'],
+  ['Índigo', 'Indigo'],
+  ['Ginásio', 'Gym'],
+  ['Edifício', 'Building'],
+  ['Esconderijo da Equipe Rocket', 'Team Rocket Hideout'],
+  ['Esconderijo', 'Hideout'],
+  ['Companhia Silph', 'Silph Co.'],
+  ['Usina Elétrica Abandonada', 'Abandoned Power Plant'],
+  ['Caminho dos Campeões', 'Victory Road'],
+  ['Torre de Pokémon', 'Pokémon Tower'],
+  ['Túnel de pedra', 'Rock Tunnel'],
+  ['Monte Lua', 'Mt. Moon'],
+  ['Caverna Celeste', 'Cerulean Cave'],
+  ['Caverna Diglett', "Diglett's Cave"],
+  ['Loja de departamentos', 'Department Store'],
+  ['Laboratório do Professor Oak', "Professor Oak's Lab"],
+  ['A casa do personagem principal', "Player's House"],
+  ['área ', 'area '],
+  ['Área ', 'Area '],
+].sort((a, b) => b[0].length - a[0].length);
+function cidadeDe(nome){
+  const n = String(nome || '').trim();
+  if (TOWNS.has(n)) return n + ' Town';
+  if (n === 'Cinnabar') return 'Cinnabar Island';
+  return n + ' City';
+}
+function inglesLugar(s){
+  let x = String(s || '').trim();
+  if (!x) return x;
+  if (MAPA_IDS[x]) x = MAPA_IDS[x];
+  else if (cenasPorId[x]) x = cenasPorId[x];
+  const viaDic = t(x);
+  if (atual !== 'en') return viaDic || x;
+  if (viaDic && !AINDA_PT.test(viaDic)) return viaDic;
+  x = viaDic || x;
+  for (const [a, b] of TROCAS) x = x.split(a).join(b);
+  x = x.replace(/^Cidade\s+(.+)$/i, (_, n) => cidadeDe(n));
+  x = x.replace(/^Ilha\s+(.+)$/i, (_, n) => {
+    const num = { um: 'One', dois: 'Two', três: 'Three', tres: 'Three', quatro: 'Four', cinco: 'Five', seis: 'Six', sete: 'Seven' }[n.toLowerCase()];
+    return (num || n) + ' Island';
+  });
+  x = x.replace(/\bRota\s+/gi, 'Route ');
+  x = x.replace(/\bPiso\s+-/gi, 'B');
+  x = x.replace(/\bPiso\s+/gi, '');
+  x = x.replace(/\bCasa\b/gi, 'House');
+  x = x.replace(/\bQuarto\b/gi, 'Room');
+  x = x.replace(/\bLoja\b/gi, 'Mart');
+  x = x.replace(/\bCaverna\b/gi, 'Cave');
+  x = x.replace(/\s{2,}/g, ' ').replace(/^[-\s]+|[-\s]+$/g, '').trim();
+  return x || s;
+}
+/** Register scene-id → dump name so numbered maps show an English label. */
+export function registrarCenas(cenas){
+  for (const c of cenas || []){
+    if (c?.id == null) continue;
+    if (c.nome) cenasPorId[String(c.id)] = c.nome;
+    for (const ar of c.areas || []){
+      if (ar?.id != null && ar.nome) cenasPorId[String(ar.id)] = ar.nome;
+    }
+  }
+}
+/** Translate a map/area/scene label. Never returns a file id or leftover Portuguese. */
+export function rotuloLugar(s){
+  if (s == null || s === '') return '';
+  const raw = String(s), m = raw.match(/^(.*?)([.…]+)$/), nucleo = (m ? m[1] : raw).trim(), suf = m ? m[2] : '';
+  if (!nucleo) return suf;
+  return inglesLugar(nucleo) + suf;
+}
