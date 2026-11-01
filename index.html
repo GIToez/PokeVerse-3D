@@ -100,7 +100,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 </head>
 <body class="hud-esperando hud-dock notranslate" translate="no">   <!-- hud-dock: CSS regions place the overworld HUD; Figma still draws pop-ups -->
 <canvas id="tela"></canvas>
-<div id="sobre"></div>
+<div id="sobre" class="notranslate" translate="no"></div>
 <div id="hud">
   <h1 id="titulo">Kanto</h1>
   <table>
@@ -125,7 +125,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
   </div>
 </div>
 <div id="painel-fundo" hidden></div>
-<div id="barra" hidden>
+<div id="barra" class="notranslate" translate="no" hidden>
   <div class="ficha" id="f-parceiro"><b id="f-pika-nome">Pikachu</b> <span id="f-pika-lv"></span><i><b id="f-pika-hp"></b></i></div>
   <div id="skills">
     <button id="sk1" class="sk"></button><button id="sk2" class="sk"></button><button id="sk3" class="sk"></button><button id="sk4" class="sk"></button>
@@ -136,14 +136,14 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 </div>
 <div id="fala" hidden></div>
 <div id="turno" hidden></div>
-<div id="chat" hidden></div>
-<div id="missao" hidden><div id="missao-txt"></div><button type="button" id="missao-toggle" aria-expanded="true" title="collapse the mission"></button></div>
+<div id="chat" class="notranslate" translate="no" hidden></div>
+<div id="missao" class="notranslate" translate="no" hidden><div id="missao-txt"></div><button type="button" id="missao-toggle" aria-expanded="true" title="collapse the mission"></button></div>
 <div id="inicial" hidden></div>
 <div id="joy" hidden><div id="joy-knob"></div></div>
 <div id="cam-btns" hidden><button id="cam-esq" type="button">↺</button><button id="cam-dir" type="button">↻</button></div>
 <button id="menu-btn" type="button" hidden>☰</button>
 <button id="chat-btn" type="button" hidden>💬</button>   <!-- só a maquete do celular o posiciona ([abre:chat]); sem maquete fica escondido -->
-<div id="time-hud" hidden></div>
+<div id="time-hud" class="notranslate" translate="no" hidden></div>
 <div id="menu-icones"><button type="button" data-j="pokemon" title="Pokémon"><i class="ic ic-pokebola"></i><b>Pokémon</b></button><button type="button" data-j="mochila" title="Bag"><i class="ic ic-mochila"></i><b>Bag</b></button><button type="button" data-j="missoes" title="Missions"><i class="ic ic-missoes"></i><b>Missions</b></button><button type="button" data-j="mapa" title="Map"><i class="ic ic-mapa"></i><b>Map</b></button><button type="button" data-j="pokedex" title="Pokédex"><i class="ic ic-pokedex"></i><b>Pokédex</b></button><button type="button" data-j="treinador" title="Trainer"><i class="ic ic-personagem"></i><b>Trainer</b></button><button type="button" data-j="loja" title="Shop"><i class="ic ic-loja"></i><b>Shop</b></button><button type="button" data-j="social" title="Social"><i class="ic ic-amigos"></i><b>Social</b></button><button type="button" data-j="batalha" title="Battle"><i class="ic ic-batalha"></i><b>Battle</b></button><button type="button" data-j="config" title="Config"><i class="ic ic-ajuda"></i><b>Config</b></button></div>
 <div id="boot"><div class="girando"></div></div>
 <div id="gire" hidden><div class="gire-icone">📱</div><b>Vire o celular</b><span>O jogo é na horizontal.</span><button type="button" id="gire-cheia" hidden>Tela cheia</button></div>   <!-- celular em pé: cobre o jogo até deitar (a HUD só existe deitada) -->
@@ -5629,7 +5629,7 @@ function pintarTime(forcar = false){
       : '';
     const estado = ko ? I18n.t(' · fainted: click uses a Revive from the bag') : on ? I18n.t(' · in the field') : I18n.t(' · click to switch');
     const tituloSlot = escHtml(t.nome) + ' Lv' + t.lv + dica + estado + I18n.t(' · drag (or hold on touch) to reorder · Alt+↑/↓');
-    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
+    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome notranslate" translate="no">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
   }
   const html = partes.join('');
   /* Assinatura SEM o que muda a cada quadro (HP, cor, recarga da troca): em batalha o HP muda todo quadro e refazer o innerHTML
@@ -7884,6 +7884,7 @@ if (jogo.ash){
   if (!Fairy && !INTRO && !RAID && !TORNEIO && !DIRETOR && !MMFOTO) Raid.montarUI({ Hud, Menus, I18n });   // RAID AO VIVO (14/09): botão/banner/fila/barra do chefe (raid_ui.mjs, import dinâmico e protegido)
 }
 document.body.classList.remove('hud-esperando');                         // agora sim: a HUD aparece já no lugar do layout (em qualquer modo: sem jogador também)
+try { Hud.ancorarChat(); } catch {}
 Object.assign(window, { usarGolpe, proximoAlvo, emPe, dePeMaisPerto, desmaiar, aplicarOrdemTime, trocarPara, GOLPES, magias, golpear, RITMO_REGA, chegarChefe, montar, desmontar, MONTARIAS, definirTamanhos, TAMANHOS, atravessar, portasCena, descarregarCena, inventarioCena, ren, aposDesmaio, conferirParceiroDesmaiado, pendentes });   // depuração (12/09: porta, descarga, inventário e desmaio pros testes headless)
 function setHTML(el, html){ if (el.__html !== html){ el.innerHTML = html; el.__html = html; } }   // `function` (içada): pintarBarra pode ser chamada por mensagem da rede antes desta linha (auditoria 12/09)
 function setTexto(el, s){ if (el.__txt !== s){ el.textContent = s; el.__txt = s; } }

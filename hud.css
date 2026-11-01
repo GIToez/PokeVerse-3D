@@ -439,6 +439,11 @@ body.hud-dock{
   --dock-gold:#c9a24a;
   --dock-gold2:#f4aa35;
   --dock-line:#c9a24a88;
+  --chat-left:12px;
+  --chat-gap:14px;
+  --dock-bottom:14px;
+  --chat-w:360px;
+  --chat-h:248px;
 }
 body.hud-dock #barra .fig-img,
 body.hud-dock #skills .fig-img,
@@ -449,15 +454,25 @@ body.hud-dock #missao .fig-img{display:none !important}
 body.hud-dock #f-parceiro,
 body.hud-dock #f-alvo,
 body.hud-dock #menu-btn{display:none !important}
+
+/* Chat sits on the same baseline as the action bar, flush against its left edge. */
+body.hud-dock #chat{
+  left:var(--chat-left); right:auto; top:auto; bottom:var(--dock-bottom);
+  width:var(--chat-w, 360px) !important; height:var(--chat-h, 248px) !important;
+  border:1px solid var(--dock-line); border-radius:16px;
+  background:#121a2cf4; box-shadow:0 10px 22px #000a; z-index:23;
+}
+body.hud-dock #chat.fechado{height:auto !important}
+
+/* Action bar starts at the chat's right edge and fills the rest of the footer. */
 body.hud-dock #barra.dock-regiao,
 body.hud-dock #barra.dock-regiao.solto{
-  position:fixed; left:50%; right:auto; top:auto; bottom:12px;
-  transform:translateX(-50%);
+  position:fixed; left:calc(var(--chat-left) + var(--chat-w, 360px) + var(--chat-gap));
+  right:14px; top:auto; bottom:var(--dock-bottom); transform:none;
   display:flex; flex-direction:row; flex-wrap:nowrap;
-  align-items:center; justify-content:center;
-  gap:8px; width:max-content; height:auto;
-  max-width:min(1200px, calc(100vw - 20px));
-  padding:8px 14px;
+  align-items:center; justify-content:flex-start;
+  gap:10px; width:auto; height:78px;
+  max-width:none; padding:8px 14px;
   border:1px solid var(--dock-line); border-radius:40px;
   background:linear-gradient(180deg,#1a2746f6,#0d1424f8);
   box-shadow:0 10px 28px #000a, inset 0 1px 0 #ffffff14;
@@ -466,21 +481,28 @@ body.hud-dock #barra.dock-regiao.solto{
 body.hud-dock #barra[hidden]{display:none}
 body.hud-dock #skills{
   display:flex; flex-direction:row; align-items:center;
-  gap:6px; padding:0; background:none; width:auto; height:auto;
+  gap:8px; padding:0; background:none; width:auto; height:auto; flex:none;
 }
 body.hud-dock #barra button.sk:not(.bola){
-  width:124px; height:52px; border-radius:14px;
-  border:1px solid #c9a24a66;
-  background:linear-gradient(180deg,#243352,#12192a);
+  width:148px; height:64px; border-radius:16px; padding:6px 10px 8px;
+  border:1px solid #c9a24a77;
+  background:linear-gradient(180deg,#2a3b5c,#12192a);
   box-shadow:inset 0 1px 0 #ffffff18;
-  flex-direction:column; justify-content:flex-end;
+  flex-direction:column; justify-content:flex-end; align-items:flex-start;
 }
+body.hud-dock #barra button.sk em{
+  font-size:13px; font-weight:700; max-width:128px; text-align:left; position:relative;
+}
+body.hud-dock #barra button.sk b{
+  left:8px; top:6px; background:#0c1220cc;
+}
+body.hud-dock #barra button.sk small{right:8px; top:6px}
 body.hud-dock #atalhos{
   display:flex; flex-direction:row; align-items:center;
-  gap:6px; padding:0; background:none; width:auto; height:auto;
+  gap:8px; padding:0; background:none; width:auto; height:auto; flex:none;
 }
 body.hud-dock #atalhos .atalho{
-  width:52px; height:52px; border-radius:14px;
+  width:64px; height:64px; border-radius:16px;
   border:1px solid #c9a24a66;
   background:linear-gradient(180deg,#243352,#12192a);
 }
@@ -490,7 +512,7 @@ body.hud-dock #atalhos .atalho.vazio{
   background:linear-gradient(180deg,#1a2438,#101624);
 }
 body.hud-dock #bola-btn{
-  width:64px; height:64px; margin:0 6px;
+  width:78px; height:78px; margin:-6px 8px 0; flex:none;
   border-radius:50%;
   border:2px solid var(--dock-gold);
   background:radial-gradient(circle at 40% 32%,#3a2a14,#1a120c 62%,#0c1018);
@@ -500,12 +522,15 @@ body.hud-dock #bola-btn b,
 body.hud-dock #bola-btn #bola-n{
   border-color:var(--dock-gold); background:#0b1020ee; color:#ffe07a;
 }
+
+/* Party column: wide capsules with name + Lv + HP bar + HP numbers. */
 body.hud-dock #time-hud{
-  position:fixed; left:10px; top:50%; right:auto; bottom:auto;
-  transform:translateY(-50%);
+  position:fixed; left:12px; right:auto; top:auto;
+  bottom:calc(var(--dock-bottom) + var(--chat-h, 248px) + 16px);
+  transform:none;
   display:flex; flex-direction:column;
   width:auto; height:auto;
-  padding:8px; gap:6px;
+  padding:10px; gap:7px;
   border:1px solid var(--dock-line); border-radius:28px;
   background:linear-gradient(180deg,#1a2746f4,#0c1220f6);
   box-shadow:0 10px 24px #000a; overflow:visible; z-index:22;
@@ -514,20 +539,20 @@ body.hud-dock #time-hud[hidden]{display:none}
 body.hud-dock #time-hud .tcel{
   position:relative;
   display:flex; flex-direction:row; align-items:center;
-  width:232px; height:48px;
-  padding:3px 10px 3px 3px; gap:8px;
-  border:1px solid #c9a24a66; border-radius:24px;
+  width:268px; height:56px;
+  padding:4px 12px 4px 4px; gap:10px;
+  border:1px solid #c9a24a77; border-radius:28px;
   background:#10182aee; box-sizing:border-box;
 }
 body.hud-dock #time-hud .tslot{
-  position:relative; width:40px; height:40px; flex:none;
-  border-radius:50%; border:2px solid #c9a24a77;
+  position:relative; width:46px; height:46px; flex:none;
+  border-radius:50%; border:2px solid #c9a24a88;
   background:#0c1220; box-shadow:none; overflow:hidden;
 }
 body.hud-dock #time-hud .tslot.on{border-color:var(--dock-gold2); box-shadow:0 0 0 2px #f4aa3544}
 body.hud-dock #time-hud .tcel:has(.tslot.on){border-color:var(--dock-gold2)}
 body.hud-dock #time-hud .tslot img,
-body.hud-dock #time-hud .tpic{position:absolute; left:2px; top:2px; width:34px; height:34px}
+body.hud-dock #time-hud .tpic{position:absolute; left:3px; top:3px; width:38px; height:38px}
 body.hud-dock #time-hud .tpalco,
 body.hud-dock #time-hud .palco-3d{display:none}
 body.hud-dock #time-hud .tslot.t3d img.tpic{opacity:1}
@@ -536,23 +561,48 @@ body.hud-dock #time-hud .tslot > small,
 body.hud-dock #time-hud .tslot > i,
 body.hud-dock #time-hud .tslot > u{display:none}
 body.hud-dock #time-hud .tcard,
-body.hud-dock #time-hud:not(.fig) .tcard{
-  display:flex; position:relative; left:auto; top:auto;
-  flex:1; min-width:0; height:auto;
-  flex-direction:column; align-items:flex-start; justify-content:center;
-  gap:2px; pointer-events:none; background:none; border:0;
+body.hud-dock #time-hud:not(.fig) .tcard,
+body.hud-dock #time-hud.fig .tcard{
+  display:grid !important; position:relative !important; left:auto !important; top:auto !important;
+  flex:1; min-width:0; width:100%; height:auto;
+  grid-template-columns:1fr auto; grid-template-rows:auto 8px auto;
+  align-items:center; column-gap:8px; row-gap:3px;
+  pointer-events:none; background:none !important; border:0; box-shadow:none;
 }
-body.hud-dock #time-hud .tc-nome{display:block; font:700 12px/1.1 inherit; color:#fff; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-body.hud-dock #time-hud .tc-lv{display:block; font:600 10px/1 inherit; color:#ffe07a}
-body.hud-dock #time-hud .tc-lvn,
-body.hud-dock #time-hud .tc-hp{display:none}
+body.hud-dock #time-hud .tc-nome{
+  display:block; grid-column:1; grid-row:1;
+  font:700 13px/1.1 inherit; color:#fff;
+  max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+body.hud-dock #time-hud .tc-lv{
+  display:block; grid-column:2; grid-row:1;
+  font:700 11px/1 inherit; color:#ffe07a; white-space:nowrap;
+}
+body.hud-dock #time-hud .tc-lvn{display:none}
+body.hud-dock #time-hud .tc-hp{
+  display:block !important; grid-column:1 / -1; grid-row:3;
+  font:600 10px/1 inherit; color:#c9d4ea;
+}
 body.hud-dock #time-hud .tc-trilho,
-body.hud-dock #time-hud .tcard i{
-  display:block; position:relative; left:auto; top:auto;
-  width:100%; height:6px; border-radius:3px; background:#0009;
+body.hud-dock #time-hud .tcard i.tc-trilho,
+body.hud-dock #time-hud .tcard i,
+body.hud-dock #time-hud.fig .tcard i{
+  display:block !important; position:relative !important; left:auto !important; top:auto !important;
+  grid-column:1 / -1; grid-row:2;
+  width:100% !important; min-width:96px; height:8px !important;
+  border-radius:4px !important; overflow:hidden;
+  background:#070b14 !important; box-shadow:inset 0 0 0 1px #c9a24a66;
 }
-body.hud-dock #time-hud .tslot.vazio{width:40px; border-style:dashed}
-body.hud-dock #time-hud .tcel:has(.tslot.vazio){opacity:.45}
+body.hud-dock #time-hud .tc-fill,
+body.hud-dock #time-hud .tcard i b{
+  display:block !important; height:100% !important; border-radius:4px; min-width:4px;
+}
+body.hud-dock #time-hud .tslot.vazio{width:46px; border-style:dashed}
+body.hud-dock #time-hud .tcel:has(.tslot.vazio){
+  width:56px; height:56px; padding:4px; opacity:.5;
+}
+body.hud-dock #time-hud .tcel:has(.tslot.vazio) .tcard{display:none !important}
+
 body.hud-dock #missao{
   left:50%; top:10px; transform:translateX(-50%);
   padding:8px 22px; max-width:min(560px,52vw); width:auto; height:auto;
@@ -562,7 +612,7 @@ body.hud-dock #missao{
 }
 body.hud-dock #minimapa{right:14px; top:12px}
 body.hud-dock #mm-janela{
-  width:168px; height:168px;
+  width:176px; height:176px;
   border:3px solid var(--dock-gold); outline:1px solid #0c1220;
   border-radius:16px; box-shadow:0 8px 20px #000a;
 }
@@ -570,28 +620,33 @@ body.hud-dock #mm-area{
   margin-top:6px; border-radius:999px;
   border:1px solid var(--dock-line); background:#121a2cee; color:#ffe6b0;
 }
-body.hud-dock #chat{
-  left:12px; bottom:100px; right:auto; top:auto;
-  border:1px solid var(--dock-line); border-radius:16px;
-  background:#121a2ce8; box-shadow:0 8px 18px #0008;
-}
 body.hud-dock #menu-icones{
   display:flex; flex-direction:row; align-items:center;
   position:relative; left:auto; top:auto; right:auto; bottom:auto;
-  gap:0; padding:4px 6px; margin-left:8px;
+  gap:2px; padding:6px 8px; margin-left:auto;
   width:auto; height:auto;
-  border:1px solid #c9a24a55; border-radius:999px;
+  border:1px solid #c9a24a66; border-radius:999px;
   background:#0c1220cc; box-shadow:none; z-index:auto;
 }
-body.hud-dock #menu-icones > button[data-j]{width:40px; padding:2px; gap:0}
+body.hud-dock #menu-icones > button[data-j]{width:46px; padding:2px; gap:0}
 body.hud-dock #menu-icones > button[data-j] b{display:none}
-body.hud-dock #menu-icones .ic{width:32px; height:32px}
-body.hud-dock #fala{bottom:100px; border-radius:16px; border-color:var(--dock-line)}
-body.hud-dock #turno{bottom:100px; border-radius:20px; border-color:var(--dock-line)}
+body.hud-dock #menu-icones .ic{width:38px; height:38px}
+body.hud-dock #fala{bottom:calc(var(--dock-bottom) + 86px); border-radius:16px; border-color:var(--dock-line)}
+body.hud-dock #turno{bottom:calc(var(--dock-bottom) + 86px); border-radius:20px; border-color:var(--dock-line)}
+@media (max-width:1280px){
+  body.hud-dock{--chat-w:300px; --chat-h:210px}
+  body.hud-dock #barra button.sk:not(.bola){width:118px; height:58px}
+  body.hud-dock #time-hud .tcel{width:236px}
+}
 @media (max-width:1100px){
   body.hud-dock #barra button.sk:not(.bola){width:96px}
-  body.hud-dock #time-hud .tcel{width:200px}
+  body.hud-dock #time-hud .tcel{width:210px; height:52px}
+  body.hud-dock #menu-icones > button[data-j]{width:38px}
+  body.hud-dock #menu-icones .ic{width:32px; height:32px}
 }
-body.hud-dock.mobile #barra.dock-regiao{border-radius:22px; padding:6px 8px; gap:6px}
-body.hud-dock.mobile #time-hud{transform:none; top:64px}
-body.hud-dock.mobile #chat{bottom:118px}
+body.hud-dock.mobile #barra.dock-regiao,
+body.hud-dock.mobile #barra.dock-regiao.solto{
+  left:8px; right:8px; height:auto; border-radius:22px; padding:6px 8px; gap:6px; flex-wrap:wrap;
+}
+body.hud-dock.mobile #time-hud{left:8px; top:64px; bottom:auto}
+body.hud-dock.mobile #chat{left:8px; bottom:118px}

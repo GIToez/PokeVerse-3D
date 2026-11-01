@@ -23,10 +23,25 @@ let ctx = null, msgs = [];
 const montagens = new Set();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+function inglesarLinha(s){
+  if (typeof s !== 'string' || !s) return s;
+  let x = tr(s);
+  x = x
+    .replace(/^Você chegou n[ao]s?\s+/i, 'You arrived in ')
+    .replace(/^Você chegou em\s+/i, 'You arrived in ')
+    .replace(/^Você chegou ao\s+/i, 'You arrived in ')
+    .replace(/\bRota\s+/gi, 'Route ')
+    .replace(/^Conectado ao servidor/i, 'Connected to the server')
+    .replace(/\bneste mapa\b/gi, 'on this map')
+    .replace(/\bcomo\s+(?=\S)/i, 'as ')
+    .replace(/\bEnviar\b/g, 'Send');
+  return x;
+}
 export function instalar(c){
   ctx = c;
   const cedo = msgs.slice();                                              // 12/09: o que o boot já publicou (avisos, "[erro] …") ficava de fora quando o histórico do aparelho entrava
-  msgs = (ctx.lerLS('chat', []) || []).concat(cedo).slice(-200);
+  msgs = (ctx.lerLS('chat', []) || []).concat(cedo).slice(-200).map(m => (m && m.txt ? { ...m, txt: inglesarLinha(m.txt) } : m));
+  guardar();
   if (!msgs.length) sistema('Chat: Local (your map + everything), Global, Trade, Help. Commands: /g /t /h /l. With the server online, other players can read it.');
 }
 function guardar(){ ctx?.gravarLS('chat', msgs.slice(-200)); }
@@ -40,7 +55,7 @@ export function publicar(canal, txt, de = ctx?.nome || 'You', cargo = undefined)
   guardar();
   for (const m of [...montagens]){ if (!m.el.isConnected){ montagens.delete(m); continue; } m.atualizar(canal); }
 }
-export const sistema = txt => publicar('sistema', tr(txt), tr('System'), null);
+export const sistema = txt => publicar('sistema', inglesarLinha(txt), 'System', null);
 /** Envia o texto da caixa: a aba manda o canal, /g /t /h /l sobrepõem. Devolve o canal ou null. */
 export function enviar(aba, texto){
   let canal = ABAS.includes(aba) ? aba : 'local', t = String(texto || '').trim();
@@ -69,11 +84,19 @@ export function enviar(aba, texto){
 export const mensagens = () => msgs;
 export function limpar(){ msgs = []; guardar(); for (const m of montagens) m.atualizar(); }
 /** Monta o chat dentro de `el`. compacto = peça da HUD (botão de recolher). */
+function publicarTam(el){
+  if (!el || el.id !== 'chat' || !document.body.classList.contains('hud-dock')) return;
+  const w = Math.max(220, Math.round(el.offsetWidth || 360));
+  const h = el.classList.contains('fechado') ? Math.max(36, Math.round(el.offsetHeight || 44)) : Math.max(110, Math.round(el.offsetHeight || 248));
+  document.body.style.setProperty('--chat-w', w + 'px');
+  document.body.style.setProperty('--chat-h', h + 'px');
+}
 function ligarGrip(grip, el){
   let d0 = null;
   const aplicar = (w, h) => {
     el.style.setProperty('--chat-w', w + 'px');
     el.style.setProperty('--chat-h', h + 'px');
+    publicarTam(el);
   };
   grip.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); d0 = { x: ev.clientX, y: ev.clientY, w: el.offsetWidth, h: el.offsetHeight }; try { grip.setPointerCapture(ev.pointerId); } catch {} });
   grip.addEventListener('pointermove', ev => {
@@ -88,14 +111,14 @@ function ligarGrip(grip, el){
     try { localStorage.setItem('chat.tam', JSON.stringify(tam)); } catch {}
   };
   grip.addEventListener('pointerup', soltou); grip.addEventListener('pointercancel', soltou);
-  grip.addEventListener('dblclick', ev => { ev.preventDefault(); el.style.removeProperty('--chat-w'); el.style.removeProperty('--chat-h'); try { localStorage.removeItem('chat.tam'); ctx?.gravarLS?.('chat.tam', null); } catch {} });
+  grip.addEventListener('dblclick', ev => { ev.preventDefault(); el.style.removeProperty('--chat-w'); el.style.removeProperty('--chat-h'); try { localStorage.removeItem('chat.tam'); ctx?.gravarLS?.('chat.tam', null); } catch {} publicarTam(el); });
 }
 export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {}){
   if (el.__chat){ montagens.add(el.__chat); el.__chat.atualizar(); return el.__chat; }
   let aba = abaInicial; const naoLidas = { local: 0, global: 0, trade: 0, help: 0 };
   el.classList.add('chat-caixa', 'notranslate');
   el.setAttribute('translate', 'no');
-  el.innerHTML = `<div class="abas">${ABAS.map(a => `<button type="button" data-aba="${a}" class="${a === aba ? 'on' : ''}">${tr(CANAIS[a].nome)}<i hidden></i></button>`).join('')}${compacto ? '<button type="button" class="min" title="collapse / open">–</button>' : ''}</div><div class="msgs"></div><form autocomplete="off"><span class="canal"></span><input maxlength="240" placeholder="${tr('Enter to talk… /g /t /h /l')}"><button type="submit">${tr('Send')}</button></form>`;
+  el.innerHTML = `<div class="abas">${ABAS.map(a => `<button type="button" data-aba="${a}" class="${a === aba ? 'on' : ''}">${CANAIS[a].nome}<i hidden></i></button>`).join('')}${compacto ? '<button type="button" class="min" title="collapse / open">–</button>' : ''}</div><div class="msgs"></div><form autocomplete="off"><span class="canal"></span><input maxlength="240" placeholder="Enter to talk… /g /t /h /l"><button type="submit">Send</button></form>`;
   const msgsEl = el.querySelector('.msgs'), form = el.querySelector('form'), input = el.querySelector('input'), canalEl = el.querySelector('.canal');
   const visiveis = () => msgs.filter(m => aba === 'local' ? (m.c !== 'local' || m.a == null || ctx?.area == null || m.a === ctx.area()) : m.c === aba);
   const hora = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
@@ -104,19 +127,23 @@ export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {})
     const noFim = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 30;
     msgsEl.innerHTML = visiveis().slice(-150).map(linha).join('');
     if (noFim || true) msgsEl.scrollTop = msgsEl.scrollHeight;
-    canalEl.textContent = tr(CANAIS[aba].nome); canalEl.style.color = CANAIS[aba].cor;
+    canalEl.textContent = CANAIS[aba].nome; canalEl.style.color = CANAIS[aba].cor;
     el.querySelectorAll('[data-aba]').forEach(b => { b.classList.toggle('on', b.dataset.aba === aba); const i = b.querySelector('i'); const n = naoLidas[b.dataset.aba]; i.hidden = !n; i.textContent = n > 9 ? '9+' : n; });
   };
   el.querySelectorAll('[data-aba]').forEach(b => b.onclick = () => { aba = b.dataset.aba; naoLidas[aba] = 0; render(); input.focus(); });
   el.querySelector('.min')?.addEventListener('click', () => {
     el.classList.toggle('fechado'); if (!el.classList.contains('fechado')) render();
     if (el.id === 'chat' && el.dataset.dock === '1'){ try { localStorage.setItem('chat.dock', JSON.stringify(el.classList.contains('fechado') ? 'recolhido' : 'visivel')); } catch {} }   // chat ancorado do celular: lembra o recolhido entre as trocas de área
+    publicarTam(el);
   });
   if (el.id === 'chat'){                                                 // resize: tab grip + corner; size in LS chat.tam; double-click resets
     let tam = ctx?.lerLS?.('chat.tam', null);
     if (!tam) try { tam = JSON.parse(localStorage.getItem('chat.tam') || 'null'); } catch { tam = null; }
-    if (tam?.w) el.style.setProperty('--chat-w', tam.w + 'px');
-    if (tam?.h) el.style.setProperty('--chat-h', tam.h + 'px');
+    if (tam?.w >= 320) el.style.setProperty('--chat-w', tam.w + 'px');
+    else el.style.setProperty('--chat-w', '360px');
+    if (tam?.h >= 200) el.style.setProperty('--chat-h', tam.h + 'px');
+    else el.style.setProperty('--chat-h', '248px');
+    publicarTam(el);
     if (compacto && !el.querySelector('.dim')){
       const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'dim'; tab.title = tr('drag: resize chat · double-click: default'); tab.textContent = '◢';
       el.querySelector('.abas')?.appendChild(tab);
