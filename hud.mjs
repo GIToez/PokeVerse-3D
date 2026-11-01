@@ -201,8 +201,12 @@ export function posicionar(e, p, abs = false){
     e.style.transformOrigin = '50% 100%';                                // o bico do balão é a origem
   } else ancorar(e, p, k);
   e.style.transform = (e.__segue ? 'translate(-50%,-100%) ' : p.ax === 'center' ? 'translateX(-50%) ' : '') + 'scale(' + ((p.s || 1) * k) + ')' + (p.r ? ' rotate(' + p.r + 'deg)' : '');   // r = giro em graus (editor)
-  e.style.width = p.w ? p.w + 'px' : ''; e.style.height = p.h ? p.h + 'px' : '';   // qualquer peça; vazio = tamanho do CSS
-  e.style.maxWidth = p.w ? 'none' : ''; e.style.maxHeight = p.h ? 'none' : '';       // largura/altura do editor vencem o max-width/max-height do CSS
+  if (e.id === 'chat'){
+    e.style.width = ''; e.style.height = ''; e.style.maxWidth = ''; e.style.maxHeight = '';
+  } else {
+    e.style.width = p.w ? p.w + 'px' : ''; e.style.height = p.h ? p.h + 'px' : '';   // qualquer peça; vazio = tamanho do CSS
+    e.style.maxWidth = p.w ? 'none' : ''; e.style.maxHeight = p.h ? 'none' : '';       // largura/altura do editor vencem o max-width/max-height do CSS
+  }
   aplicarEstilo(e, p);
   if (p.img){ e.style.backgroundImage = 'url(' + p.img + ')'; fundoComFolga(e, p.imgPad); }
   else if (p.figma){ e.style.backgroundImage = 'none'; e.style.backgroundSize = ''; e.style.backgroundPosition = ''; }   // peça sem `imagem` no Figma NÃO tem fundo (nem o do CSS)
@@ -593,6 +597,7 @@ function recolherMenu(e, on){
 export function remontar(e){
   if (!e || !e.__figmaP) return;
   montarFigma(e, e.__figmaP, !!e.__figmaAbs);
+  if (!e.__figmaAbs && document.body.classList.contains('hud-ilha') && (e.id === 'skills' || e.id === 'atalhos' || e.id === 'bola-btn' || e.id === 'menu-icones')) aplicarIlha();
 }
 function montarFigma(e, F, abs){
   const lig = LIGACOES[e.id] || {};
@@ -956,8 +961,8 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
   const FB = layout?._figma
     ? { ...FALLBACK,
         'f-parceiro': { ax: 'left', x: 0, ay: 'top', y: 0, s: 1, oculto: true },          // o slot 1 do time já mostra o parceiro; o rótulo antigo ficava solto atrás do chat / embaixo do joystick
-        ...(preset === 'pc' ? { chat: { ax: 'left', x: 12, ay: 'bottom', y: 12, s: 1, w: 280, h: 220 },
-                                'menu-btn': { ax: 'right', x: 12, ay: 'top', y: 12, s: 1, oculto: true, forcarOculto: true } } : {}),   // chat sits left of the gold skill block (x 303)
+        ...(preset === 'pc' ? { chat: { ax: 'left', x: 12, ay: 'bottom', y: 12, s: 1 },
+                                'menu-btn': { ax: 'right', x: 12, ay: 'top', y: 12, s: 1, oculto: true, forcarOculto: true } } : {}),   // chat size is CSS --chat-w/--chat-h so the grip can resize it
         ...(preset === 'celular_deitado' ? { 'cam-btns': { ax: 'left', x: 367, ay: 'bottom', y: 8, s: 1 } } : {}) }   // ↺↻ não estão na maquete: rodapé central, longe da Pokébola
     : FALLBACK;
   if (!L){ barra?.classList.remove('solto'); for (const id of PECAS) limpar(raiz.getElementById(id)); aplicarImagens(null, raiz); return false; }
@@ -986,7 +991,7 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     if (movivel){ el.__regBase = reg; ligarArrasto(el, id, preset); }
   }
   aplicarImagens(L, raiz);
-  if (raiz === document) limparSobreposicaoHud();
+  if (raiz === document) aplicarIlha();
   return true;
 }
 
@@ -1051,28 +1056,89 @@ function ligarIlhaUmaVez(){
   }, true);
   document.addEventListener('keydown', ev => { if (ev.code === 'Escape'){ fecharLequeBola(); if (document.getElementById('menu-icones')?.classList.contains('aberto')) alternarDock(false); } });
 }
-function ancorarMenuNoDock(){
-  const barra = document.getElementById('barra'), menu = document.getElementById('menu-icones');
-  if (barra && menu && menu.parentElement !== barra) barra.appendChild(menu);
+function soltarFilhos(peca, seletor){
+  if (!peca) return [];
+  const nos = [...peca.querySelectorAll(seletor)];
+  for (const el of nos) Object.assign(el.style, { position: 'relative', left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', margin: '0', transform: 'none', pointerEvents: 'auto' });
+  return nos;
 }
-/** Drop leftover overlay / dock classes. Default Figma layout owns placement. */
-export function limparSobreposicaoHud(){
+/** Place the default Figma pieces: skills center-bottom, ball above them, hotkeys right, menu drawer under the minimap. */
+export function aplicarIlha(){
   if (typeof document === 'undefined') return;
-  document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile', 'hud-dock');
-  const barra = document.getElementById('barra');
-  if (barra){
-    barra.classList.remove('ilha-dock', 'dock-regiao');
-    barra.classList.add('solto');
-  }
-  for (const id of ['skills', 'atalhos', 'bola-btn', 'menu-icones', 'time-hud']){
-    document.getElementById(id)?.classList.remove('ilha-centro', 'ilha-atalhos', 'ilha-direita', 'ilha-bola', 'menu-pill', 'dock-slide');
-  }
-  document.getElementById('menu-dock-aba')?.remove();
+  const mobile = document.body.classList.contains('mobile');
+  document.body.classList.add('hud-ilha');
+  document.body.classList.remove('hud-dock', 'hud-ref');
+  document.body.classList.toggle('hud-ilha-mobile', mobile);
   ligarIlhaUmaVez();
+  const barra = document.getElementById('barra');
+  if (barra){ barra.classList.add('solto'); barra.classList.remove('dock-regiao'); }
+  const skills = document.getElementById('skills');
+  const bola = document.getElementById('bola-btn');
+  const atalhos = document.getElementById('atalhos');
+  const menu = document.getElementById('menu-icones');
+  const chat = document.getElementById('chat');
+  const mm = document.getElementById('minimapa');
+  const rodape = mobile ? 12 : 16;
+  if (skills){
+    skills.classList.add('ilha-centro');
+    const k = skills.__escala || 1;
+    Object.assign(skills.style, {
+      position: 'fixed', left: '50%', right: 'auto', top: 'auto',
+      bottom: rodape + 'px', transform: 'translateX(-50%) scale(' + k + ')', zIndex: '26'
+    });
+  }
+  if (bola){
+    bola.classList.add('ilha-bola');
+    const sh = skills ? (skills.getBoundingClientRect().height || 89) : 89;
+    const k = bola.__escala || 1;
+    Object.assign(bola.style, {
+      position: 'fixed', left: '50%', right: 'auto', top: 'auto',
+      bottom: (rodape + sh + 8) + 'px', transform: 'translateX(-50%) scale(' + k + ')', zIndex: '27'
+    });
+  }
+  if (atalhos){
+    atalhos.classList.add('ilha-direita');
+    const k = atalhos.__escala || 1;
+    Object.assign(atalhos.style, {
+      position: 'fixed', left: 'auto', right: mobile ? '10px' : '16px',
+      top: 'auto', bottom: rodape + 'px', transform: 'scale(' + k + ')', zIndex: '26'
+    });
+  }
+  if (menu){
+    if (menu.parentElement === barra) document.body.appendChild(menu);
+    menu.classList.add('dock-slide');
+    const top = mm ? Math.round(mm.getBoundingClientRect().bottom + 10) : (mobile ? 210 : 268);
+    Object.assign(menu.style, {
+      position: 'fixed', left: 'auto', right: '0px', top: top + 'px', bottom: 'auto',
+      transform: 'none', zIndex: '28', width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none',
+      overflow: 'visible', display: 'flex'
+    });
+    soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
+    let aba = document.getElementById('menu-dock-aba');
+    if (!aba){
+      aba = document.createElement('button');
+      aba.id = 'menu-dock-aba';
+      aba.type = 'button';
+      aba.textContent = '☰';
+      aba.title = tr('Menu');
+      aba.setAttribute('aria-expanded', menu.classList.contains('aberto') ? 'true' : 'false');
+      aba.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); alternarDock(); });
+    }
+    if (aba.parentElement !== menu) menu.insertBefore(aba, menu.firstChild);
+    if (!menu.__fechaAoEscolherDock){
+      menu.__fechaAoEscolherDock = true;
+      menu.addEventListener('click', ev => { if (ev.target.closest('button[data-j]') && menu.classList.contains('aberto')) alternarDock(false); });
+    }
+  }
+  if (chat){
+    Object.assign(chat.style, {
+      position: 'fixed', left: '12px', right: 'auto', top: 'auto', bottom: '12px',
+      transform: 'none', width: '', height: '', maxWidth: '', maxHeight: ''
+    });
+  }
   if (document.getElementById('bola-leque') && !document.getElementById('bola-leque').hidden) pintarLequeBola();
 }
-/** @deprecated Overlay restyle removed — Figma layout is the only HUD path. */
-export function aplicarIlha(){ limparSobreposicaoHud(); }
+export function limparSobreposicaoHud(){ aplicarIlha(); }
 export function ancorarChat(){}
 export function achatarParty(){}
 /** O layout que o último `aplicar` usou (rodada 26: o raid_ui.mjs lê dele os registros `popups.<ori>.raid.hud`). */
