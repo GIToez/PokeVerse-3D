@@ -1538,8 +1538,11 @@ function marcadoresMissao(){
   if (!M?.pronto?.()) return [];
   const m = M.ativa(), idx = M.indicePasso?.() ?? 0;
   const pins = [];
-  for (const p of (m?.passos || []).slice(idx)){
-    if (p.area){ pins.push({ area: +p.area, texto: p.texto || m.nome, tipo: 'quest' }); break; }
+  const passos = [...(m?.passos || []).slice(idx)];
+  for (const s of (M.laterais?.() || []).filter(x => x.estado === 'ativa'))
+    passos.push(...(s.passos || []).slice(s.passo || 0));
+  for (const p of passos){
+    if (p.area){ pins.push({ area: +p.area, texto: p.texto || m?.nome, tipo: 'quest' }); break; }
   }
   const c = ctx.lerLS?.('ultimoCentro', null);
   if (c?.chegada && ctx.PORTAS?.[c.chegada]?.a) pins.push({ area: +ctx.PORTAS[c.chegada].a, texto: 'Pokémon Center', tipo: 'centro' });
