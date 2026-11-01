@@ -146,6 +146,10 @@ const CSS = `
 .f2 table.esp td label { display: grid; gap: 2px; }
 .f2 table.esp td input[type=text], .f2 table.esp td input[type=number] { width: 100%; min-width: 80px; }
 .f2 .mini { font-size: 12px; color: var(--fraco); }
+.f2 .req-bloco { display: grid; gap: 4px; margin-top: 6px; }
+.f2 .req-bloco > b { font-size: 12px; color: var(--texto); }
+.f2 .req-item { display: flex; align-items: flex-start; gap: 8px; color: var(--texto); font-size: 13px; line-height: 1.35; cursor: pointer; }
+.f2 .req-item input { margin-top: 2px; }
 `;
 
 /** Registra as 4 telas: cada botão #lado [data-vista] monta a sua na primeira vez. ctx = { api, toast, avisarJogo }. */

@@ -30,7 +30,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
       <input type="search" class="busca" placeholder="filter missions…">
       <div class="acoes"><button data-a="cap">＋ Chapter</button><button data-a="mis">＋ Mission</button></div></div><div class="lista"></div></div>
     <div class="col-dir"><div class="barra-topo"><h2>Missions</h2><span class="sujo" hidden>● unsaved</span><button data-a="descartar">Discard</button><button class="prim" data-a="salvar">Save</button></div>
-      <div class="fraco">Main story is one linear chain: finishing the last mission of a chapter automatically starts the first mission of the next chapter (the game never waits for a “start chapter 2” flag). Side quests live in their own groups (a town, an NPC, a theme) — they are optional, can be accepted from a quest giver, and never block or replace the story. File
+      <div class="fraco">Main story is one linear chain: finishing the last mission of a chapter automatically starts the first mission of the next chapter (the game never waits for a “start chapter 2” flag). Side quests live in their own groups (a town, an NPC, a theme) — they are optional, can be accepted from a quest giver, and never block or replace the story. Open a side quest on the left to set <b>Requirements</b> (tick story or other side quests that must be finished first). File
         <code>public/data/missions.json</code> — the game and the server both read it. Saves store the current story mission <b>id</b> and step <b>number</b>, plus accepted side quests.</div>
       <div class="editor"></div></div>`;
   const $ = s => sec.querySelector(s), lista = $('.lista'), editor = $('.editor');
@@ -124,27 +124,14 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
       campo({ rotulo: 'Name', valor: m.nome, max_len: 100, classe: 'larga', aoMudar: v => { if (!v) return 'required'; m.nome = v; mudou(); } }),
       campo({ rotulo: 'Description (shown in Missions)', tipo: 'area', valor: m.des, max_len: 400, classe: 'larga', aoMudar: v => { poe(m, 'des', v?.trim() ? v : null); mudou(); } }));
     if (tab === 'side'){
-      const todas = [...caps, ...sides].flatMap(x => x.missoes);
       g.append(campo({ rotulo: 'Quest giver (NPC cfg)', tipo: 'num', valor: m.npc, step: 1, lista: 'dl-f2-npcs', classe: 'larga',
         ajuda: 'Talking to this NPC offers the side quest (Accept / Not now). Empty = listed in Missions only.',
-        dica: v => v == null ? '' : nomeNpc(v), aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'NPC cfg'; poe(m, 'npc', v); mudou(); } }),
-      campo({ rotulo: 'Start after (mission IDs)', valor: Array.isArray(m.exige) ? m.exige.join(', ') : (m.exige ?? ''), max_len: 80, classe: 'larga',
-        ajuda: 'Story or side quest IDs that must be finished first. Comma-separated. Empty = available immediately.',
-        dica: v => {
-          const ids = String(v || '').split(/[,\s]+/).map(Number).filter(n => n > 0);
-          if (!ids.length) return 'Available immediately';
-          return ids.map(id => { const hit = todas.find(y => y.id === id); return hit ? hit.nome : '⚠ unknown ' + id; }).join(' · ');
-        },
-        aoMudar: v => {
-          const ids = String(v || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean).map(Number);
-          if (ids.some(n => !Number.isInteger(n) || n < 1)) return 'mission ids, comma-separated';
-          if (ids.includes(m.id)) return 'cannot require itself';
-          if (ids.length) m.exige = ids; else delete m.exige;
-          mudou();
-        } }));
+        dica: v => v == null ? '' : nomeNpc(v), aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'NPC cfg'; poe(m, 'npc', v); mudou(); } }));
     }
     km.append(g);
-    editor.append(km, cartaoRecompensa(m));
+    editor.append(km);
+    if (tab === 'side') editor.append(cartaoExige(m));
+    editor.append(cartaoRecompensa(m));
     // ── passos
     const kp = cartao(`Steps (${m.passos.length})`, [['＋ Step', () => { m.passos.push({ tipo: 'falar', texto: 'Talk to …' }); mudou(); renderEditor(); }]]);
     const aviso = document.createElement('div'); aviso.className = 'mini';
@@ -154,6 +141,40 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     editor.append(kp);
   }
 
+  function cartaoExige(m) {
+    const escolhidos = new Set((Array.isArray(m.exige) ? m.exige : m.exige != null ? [m.exige] : []).map(Number).filter(n => n > 0 && n !== m.id));
+    const k = cartao('Requirements');
+    const info = document.createElement('div'); info.className = 'mini';
+    info.textContent = 'Tick every story or side quest that must be finished before this one shows up under Available now. Leave all unchecked to offer it immediately.';
+    k.append(info);
+    const bloco = (titulo, itens) => {
+      const wrap = document.createElement('div'); wrap.className = 'req-bloco';
+      const h = document.createElement('b'); h.textContent = titulo; wrap.append(h);
+      const usable = itens.filter(x => x.id !== m.id);
+      if (!usable.length) {
+        const vazio = document.createElement('div'); vazio.className = 'fraco'; vazio.textContent = 'None yet.';
+        wrap.append(vazio); return wrap;
+      }
+      for (const item of usable) {
+        const lab = document.createElement('label'); lab.className = 'req-item';
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = escolhidos.has(item.id);
+        cb.onchange = () => {
+          if (cb.checked) escolhidos.add(item.id); else escolhidos.delete(item.id);
+          const ids = [...escolhidos];
+          if (ids.length) m.exige = ids; else delete m.exige;
+          mudou();
+        };
+        lab.append(cb, document.createTextNode(' ' + item.rotulo));
+        wrap.append(lab);
+      }
+      return wrap;
+    };
+    k.append(
+      bloco('Main story', caps.flatMap(c => (c.missoes || []).map(x => ({ id: x.id, rotulo: `Ch. ${c.id} · ${x.nome} (#${x.id})` })))),
+      bloco('Side quests', sides.flatMap(c => (c.missoes || []).map(x => ({ id: x.id, rotulo: `${c.nome} · ${x.nome} (#${x.id})` })))),
+    );
+    return k;
+  }
   function cartaoRecompensa(m) {
     const r = m.recompensa || {};
     const atualizar = () => { if (Object.keys(r).length) m.recompensa = r; else delete m.recompensa; mudou(); };

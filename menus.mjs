@@ -1385,10 +1385,10 @@ function rMissoes(corpo){
     const grupos = [
       { id: 'ativa', nome: 'Active', missoes: lista.filter(m => m.estado === 'ativa') },
       { id: 'disponivel', nome: 'Available now', missoes: lista.filter(m => m.estado === 'disponivel') },
-      { id: 'travada', nome: 'Locked', missoes: lista.filter(m => m.estado === 'travada') },
       { id: 'feita', nome: 'Done', missoes: lista.filter(m => m.estado === 'feita') },
     ];
-    const sel = lista.find(m => String(m.id) === String(secSel)) || grupos.find(g => g.missoes.length)?.missoes[0] || null;
+    const visiveis = grupos.flatMap(g => g.missoes);
+    const sel = visiveis.find(m => String(m.id) === String(secSel)) || grupos.find(g => g.missoes.length)?.missoes[0] || null;
     secSel = sel ? String(sel.id) : null;
     const passoTxt = (m, p, i) => {
       const n = p.n || 0, prog = m.feitos || 0;
@@ -1396,7 +1396,7 @@ function rMissoes(corpo){
       return esc(tr(p.texto)) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : '');
     };
     const atual = sel
-      ? `<div class="missao-atual"><small style="color:var(--muted)">SIDE · ${esc(ESTADO_SEC[sel.estado] || sel.estado)}${sel.onde || sel.grupoNome ? ' · ' + esc(tr(sel.onde || sel.grupoNome)) : ''}</small><br><b>${esc(tr(sel.nome))}</b><br><span style="font-size:12px">${esc(tr(sel.des || ''))}${sel.estado === 'travada' && sel.exigeTxt ? '<br>' + esc(sel.exigeTxt) : ''}</span>
+      ? `<div class="missao-atual"><small style="color:var(--muted)">SIDE · ${esc(ESTADO_SEC[sel.estado] || sel.estado)}${sel.onde || sel.grupoNome ? ' · ' + esc(tr(sel.onde || sel.grupoNome)) : ''}</small><br><b>${esc(tr(sel.nome))}</b><br><span style="font-size:12px">${esc(tr(sel.des || ''))}${sel.estado === 'disponivel' && sel.npc != null ? '<br>Talk to the quest giver (gold !) to accept it.' : ''}</span>
         <div style="margin-top:8px;font-size:13px;line-height:1.5">${(sel.passos || []).map((p, i) => `<div>${sel.estado === 'feita' || i < (sel.passo || 0) ? '✔' : sel.estado === 'ativa' && i === (sel.passo || 0) ? '▶' : '○'} ${passoTxt(sel, p, i)}</div>`).join('')}</div>
         <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(sel.recompensa)}</div></div>`
       : '<div class="missao-atual"><b>No side quests for now.</b><br><span style="font-size:12px">Talk to an NPC with a gold ! to take one. They never replace the main story.</span></div>';
@@ -1421,7 +1421,7 @@ function rMissoes(corpo){
    varia (capítulo fechado 28 px, aberto 26 + missões×46 − 4 + 10), então a pilha é montada na mão. Os ícones de
    estado saem das referências `[estado:…]` da própria página, não de nomes de arquivo escritos aqui. */
 let popMi = null, capAberto = null, capAtivoVisto = null, secSel = null, secGrupoAberto = 'disponivel';
-const ESTADO_SEC = { ativa: 'Active', disponivel: 'Available now', travada: 'Locked', feita: 'Done' };
+const ESTADO_SEC = { ativa: 'Active', disponivel: 'Available now', feita: 'Done' };
 function popupMi(){
   if (popMi) return popMi;
   const def = defPopup('missoes');
@@ -1563,10 +1563,10 @@ function encherSecundarias(pop, G){
   const grupos = [
     ['ativa', 'Active'],
     ['disponivel', 'Available now'],
-    ['travada', 'Locked'],
     ['feita', 'Done'],
   ].map(([id, nome]) => ({ id, nome, missoes: lista.filter(x => x.estado === id) }));
-  const sel = lista.find(x => String(x.id) === String(secSel))
+  const visiveis = grupos.flatMap(g => g.missoes);
+  const sel = visiveis.find(x => String(x.id) === String(secSel))
     || grupos.find(g => g.missoes.length)?.missoes[0]
     || null;
   secSel = sel ? String(sel.id) : null;
@@ -1577,7 +1577,6 @@ function encherSecundarias(pop, G){
   Popup.texto(pop, 'missao-descricao', sel
     ? (sel.des || '')
       + (sel.estado === 'disponivel' && sel.npc != null ? ' Talk to the quest giver (gold !) to accept it.' : '')
-      + (sel.estado === 'travada' && sel.exigeTxt ? ' ' + sel.exigeTxt : '')
     : 'Talk to an NPC with a gold ! to take a side quest. They never replace the main story.', fa);
   const passos = sel?.passos || [];
   const idx = sel?.estado === 'ativa' ? (sel.passo || 0) : sel?.estado === 'feita' ? passos.length : -1;
@@ -1640,9 +1639,7 @@ function encherSecundarias(pop, G){
       if (nomeEl) nomeEl.style.color = '#FFFFFF';
       const resumo = m.estado === 'ativa'
         ? ((m.passos || [])[m.passo || 0]?.texto || m.des || '')
-        : m.estado === 'travada'
-          ? (m.exigeTxt || 'Locked')
-          : ((m.onde || m.grupoNome || '') + (m.recompensa ? ' · Reward: ' + textoRecompensaMi(m.recompensa) : ''));
+        : ((m.onde || m.grupoNome || '') + (m.recompensa ? ' · Reward: ' + textoRecompensaMi(m.recompensa) : ''));
       Popup.texto(pop, 'missao-resumo', resumo, el);
     });
     y += Math.max(0, (g.missoes.length - 1) * G.passoMis + G.hMis) + G.depois;
