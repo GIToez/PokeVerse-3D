@@ -123,6 +123,23 @@ body.mobile .janela .dex-dois{grid-template-columns:1fr}
 .premium-cab{margin-bottom:10px}.premium-cab>b{display:block;font-size:15px;color:#ffe07a}.premium-cab small{display:block;margin-top:3px;color:var(--muted);line-height:1.35}.premium-cab small b{color:#ffe07a}
 .janela .stats td.iv{color:var(--muted);font-size:11px;text-align:right;padding-left:10px}.janela .stats .mais{color:#8ef58e}.janela .stats .menos{color:#f58e8e}
 .janela .m-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}.janela .m-poke{text-align:center;font-size:11px;color:var(--muted)}.janela .m-poke img{width:52px;height:52px;image-rendering:pixelated}.janela .m-poke.sombra img{filter:brightness(0)}.janela .m-poke b{display:block;color:#dfe6f0;font-size:11px;font-weight:600}.janela .m-poke .pego{color:#8ef58e;display:block}
+.janela.larga[data-janela="mapa"]{width:min(1240px,97vw)}
+.mapa-mundo{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,320px);gap:12px;align-items:stretch;min-height:62vh}
+.mapa-palco{position:relative;border:1px solid #c9a24a66;border-radius:18px;overflow:hidden;background:#0b1020;cursor:pointer;min-height:420px}
+.mapa-foto,.mapa-palco canvas.mapa{display:block;width:100%;height:100%;object-fit:contain;background:#79b7e0}
+.mapa-pins{position:absolute;inset:0;pointer-events:none}
+.mapa-pin{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px #000a}
+.mapa-pin-voce{background:#ff5f5f}
+.mapa-pin-quest{background:#f4aa35;box-shadow:0 0 0 4px #f4aa3544,0 2px 8px #000a}
+.mapa-pin-centro{background:#7ea8ff}
+.mapa-sel{position:absolute;width:72px;height:48px;margin:-24px 0 0 -36px;border:2px solid #f4aa35;border-radius:10px;box-shadow:0 0 0 3px #f4aa3533;pointer-events:none}
+.mapa-lado{border:1px solid #c9a24a44;border-radius:16px;background:#10182a;padding:12px;overflow:auto;max-height:70vh}
+.mapa-card h3{margin:0 0 6px;color:#ffe07a}
+.mapa-dica,.mapa-live{color:var(--muted);font-size:11px;margin:0 0 8px}
+.mapa-live{color:#8ecdf5}
+.mapa-pin.mapa-pin-quest{animation:mapa-pulsa 1.6s ease-in-out infinite}
+@keyframes mapa-pulsa{0%,100%{box-shadow:0 0 0 4px #f4aa3544}50%{box-shadow:0 0 0 8px #f4aa3522}}
+@media (max-width:860px){.mapa-mundo{grid-template-columns:1fr}}
 /* ===== Pele da Amanda — o LIVRO (ABA_POKEMONS): fundo com as abas na lombada; página esquerda = time,
    página direita = ficha. Só no PC (no celular o livro precisa de outra diagramação). */
 body.pele-amanda:not(.mobile) .janela[data-janela=pokemon]{width:min(920px,96vw,126vh);aspect-ratio:1800/1308;max-height:none;border:0;border-radius:0;background:url(./ui/amanda/livro.png) center/100% 100% no-repeat;box-shadow:none;color:#4a3320;overflow:visible}
