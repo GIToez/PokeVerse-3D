@@ -152,7 +152,7 @@ Create an account in the game, then:
 
 ```bash
 sudo systemctl stop pokeverse
-sudo -u pokeverse node /srv/pokeverse/app/tools/make_gm.mjs your_username
+sudo -u pokeverse node /home/pokeverse/PokeVerse-3D/tools/make_gm.mjs your_username
 sudo systemctl start pokeverse
 ```
 
