@@ -148,31 +148,22 @@ body.mobile .janela .dex-dois{grid-template-columns:1fr}
 .premium-cab{margin-bottom:10px}.premium-cab>b{display:block;font-size:15px;color:#ffe07a}.premium-cab small{display:block;margin-top:3px;color:var(--muted);line-height:1.35}.premium-cab small b{color:#ffe07a}
 .janela .stats td.iv{color:var(--muted);font-size:11px;text-align:right;padding-left:10px}.janela .stats .mais{color:#8ef58e}.janela .stats .menos{color:#f58e8e}
 .janela .m-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}.janela .m-poke{text-align:center;font-size:11px;color:var(--muted)}.janela .m-poke img{width:52px;height:52px;image-rendering:pixelated}.janela .m-poke.sombra img{filter:brightness(0)}.janela .m-poke b{display:block;color:#dfe6f0;font-size:11px;font-weight:600}.janela .m-poke .pego{color:#8ef58e;display:block}
-/* Full-viewport K map: beat .janela.larga, the book skin, and the 1280×960 zoom box. HUD stays above (z 21+). */
-#janela.janela.mapa-cheia,
-body.pele-amanda:not(.mobile) #janela.janela.mapa-cheia,
-body.mobile #janela.janela.mapa-cheia{
-  position:fixed!important;inset:0!important;left:0!important;top:0!important;right:0!important;bottom:0!important;
-  transform:none!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;
-  aspect-ratio:auto!important;margin:0!important;padding:0!important;
-  border:0!important;border-radius:0!important;background:#3a6fd4!important;box-shadow:none!important;
-  z-index:18!important;overflow:hidden!important;display:block!important;pointer-events:auto;
+/* Near-fullscreen map popup (same family as other .pf windows, not a true fullscreen takeover). */
+.pf-mapa-fundo{position:fixed;inset:0;z-index:59;background:#0008}
+.pf.pf-mapa{
+  width:min(1760px, calc(100vw - 36px))!important;
+  height:min(980px, calc(100vh - 28px))!important;
+  border:1px solid #c9a24a88;border-radius:28px;overflow:hidden;
+  background:linear-gradient(180deg,#1a2746,#0e1526);
+  box-shadow:0 22px 50px #000c;
 }
-#janela.janela.mapa-cheia > header{
-  position:absolute!important;right:18px!important;top:12px!important;left:auto!important;width:auto!important;
-  padding:0!important;border:0!important;background:none!important;z-index:4;gap:8px;
+.pf-mapa .mapa-popup-corpo{position:absolute;inset:0}
+.pf-mapa .mapa-fecha{
+  position:absolute;right:12px;top:10px;z-index:6;
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid #c9a24a66;background:#121a2cf0;color:#ffe07a;
+  font:700 18px/1 inherit;cursor:pointer;
 }
-#janela.janela.mapa-cheia > header h2{display:none!important}
-#janela.janela.mapa-cheia > header .abas button{
-  padding:6px 14px;border-radius:999px;background:#121a2cf0;border:1px solid #c9a24a66;color:#ffe6b0;
-}
-#janela.janela.mapa-cheia > header .x{width:36px;height:36px;background:#121a2cf0;margin:0}
-#janela.janela.mapa-cheia > .corpo,
-body.pele-amanda:not(.mobile) #janela.janela.mapa-cheia > .corpo{
-  position:absolute!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important;
-  padding:0!important;overflow:hidden!important;min-height:0!important;
-}
-#janela.janela.mapa-cheia .livro-abas,#janela.janela.mapa-cheia .paginas{display:none!important}
 body.mapa-aberto #minimapa{visibility:hidden!important}
 .mapa-overlay{position:absolute;inset:0}
 .mapa-overlay .mapa-palco{
@@ -202,7 +193,7 @@ body.mapa-aberto #minimapa{visibility:hidden!important}
 .mapa-pill.sel{border-color:#7ea8ff88}
 .mapa-esq .mapa-card{pointer-events:auto;max-height:42vh;overflow:auto}
 .mapa-dir{
-  position:absolute;right:16px;top:64px;width:min(320px,32vw);max-height:calc(100vh - 96px);
+  position:absolute;right:16px;top:64px;width:min(320px,32vw);max-height:calc(100% - 96px);
   z-index:3;overflow:auto;padding:14px 16px;border-radius:18px;
   background:#121a2cf2;border:1px solid #c9a24a66;box-shadow:0 10px 28px #0006;
 }

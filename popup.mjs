@@ -323,6 +323,7 @@ export function montar(def, cb = {}, raizDOM = document.body){
 
 /** A janela inteira encolhe junto quando a tela é menor que a maquete (as coordenadas do Figma continuam valendo). */
 function escalar(pop){
+  if (pop.__skipEscala){ pop.__escala = 1; pop.style.transform = 'translate(-50%, -50%)'; return; }
   const d = pop.__def || {};
   // 05/09: em tela maior que a maquete o pop-up cresce JUNTO com a HUD (Hud.escalaAtual, até 1,25); em tela menor continua só cabendo (antes parava em 1 e ficava pequeno no 2K e no tablet)
   const s = d.semMargem ? Math.min(innerWidth / (d.w || 1), innerHeight / (d.h || 1)) : Math.min(Math.max(1, Hud.escalaAtual()), (innerWidth - 24) / (d.w || 1), (innerHeight - 24) / (d.h || 1)) * escalaPopup();   // tela de fora do jogo: ocupa tudo; pop-up: cabe na tela × fator global
@@ -331,7 +332,7 @@ function escalar(pop){
 }
 
 addEventListener('wheel', ev => {                                        // rolar dentro do pop-up não pode virar zoom da câmera
-  if (ev.target?.closest?.('.mapa-overlay, .mapa-palco, #janela.mapa-cheia')) return;   // K map owns the wheel (zoom); do not kill it here
+  if (ev.target?.closest?.('.mapa-overlay, .mapa-palco, .pf-mapa, #janela.mapa-cheia')) return;   // K map owns the wheel (zoom); do not kill it here
   if (ev.target?.closest?.('.pf, #janela, #chat')) ev.stopImmediatePropagation();   // 13/09 (l.neto): rolar o Pokémart (janela antiga) e o chat também dava zoom na câmera
 }, { capture: true, passive: true });
 /** Dica que aparece ao passar o mouse/segurar o dedo numa célula ([passa:x]). `dados` = { titulo, descricao }. */
