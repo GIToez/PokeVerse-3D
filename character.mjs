@@ -25,16 +25,16 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Tinta from './paint.mjs';
 
 export const SKINS = [
-  { id: 'ash',      sexo: 'menino', nome: 'Ash',               glb: 'Male_XiaoZhi', desc: 'Conjunto Ash (Fashion 52001)' },
-  { id: 'boy_012',  sexo: 'menino', nome: 'Casaco do Pikachu', glb: 'Boy_012',      desc: 'Fashion 52004' },
-  { id: 'boy_025',  sexo: 'menino', nome: 'Coração de Ouro',   glb: 'Boy_025',      desc: 'Fashion 52017 (HeartGold)' },
-  { id: 'heroi',    sexo: 'menino', nome: 'Herói',             glb: 'Boy_002',      tinta: 'heroi',   desc: 'cores livres: pele, cabelo, roupa, olhos' },
-  { id: 'boy_030',  sexo: 'menino', nome: 'Chapéu de Palha',   glb: 'Boy_030',      desc: 'Fashion 52021 · o do Luffy' },
-  { id: 'misty',    sexo: 'menina', nome: 'Misty',             glb: 'Girl_001',     tinta: 'misty',   desc: 'Fashion 53001 · cabelo e olhos à escolha' },
-  { id: 'girl_012', sexo: 'menina', nome: 'Casaco do Pikachu', glb: 'Girl_012',     desc: 'Fashion 53004' },
-  { id: 'girl_025', sexo: 'menina', nome: 'Alma de Prata',     glb: 'Girl_025',     desc: 'Fashion 53017 (SoulSilver)' },
-  { id: 'heroina',  sexo: 'menina', nome: 'Heroína',           glb: 'Girl_002',     tinta: 'heroina', desc: 'cores livres: pele, cabelo, vestido, olhos' },
-  { id: 'girl_030', sexo: 'menina', nome: 'Chapéu de Palha',   glb: 'Girl_030',     desc: 'Fashion 53021 · o do Luffy' },
+  { id: 'ash',      sexo: 'menino', nome: 'Ash',               glb: 'Male_XiaoZhi', desc: 'Ash outfit (Fashion 52001)' },
+  { id: 'boy_012',  sexo: 'menino', nome: 'Pikachu Jacket', glb: 'Boy_012',      desc: 'Fashion 52004' },
+  { id: 'boy_025',  sexo: 'menino', nome: 'HeartGold',   glb: 'Boy_025',      desc: 'Fashion 52017 (HeartGold)' },
+  { id: 'heroi',    sexo: 'menino', nome: 'Hero',             glb: 'Boy_002',      tinta: 'heroi',   desc: 'free colors: skin, hair, outfit, eyes' },
+  { id: 'boy_030',  sexo: 'menino', nome: 'Straw Hat',   glb: 'Boy_030',      desc: 'Fashion 52021 · Luffy\'s' },
+  { id: 'misty',    sexo: 'menina', nome: 'Misty',             glb: 'Girl_001',     tinta: 'misty',   desc: 'Fashion 53001 · choose hair and eyes' },
+  { id: 'girl_012', sexo: 'menina', nome: 'Pikachu Jacket', glb: 'Girl_012',     desc: 'Fashion 53004' },
+  { id: 'girl_025', sexo: 'menina', nome: 'SoulSilver',     glb: 'Girl_025',     desc: 'Fashion 53017 (SoulSilver)' },
+  { id: 'heroina',  sexo: 'menina', nome: 'Heroine',           glb: 'Girl_002',     tinta: 'heroina', desc: 'free colors: skin, hair, dress, eyes' },
+  { id: 'girl_030', sexo: 'menina', nome: 'Straw Hat',   glb: 'Girl_030',     desc: 'Fashion 53021 · Luffy\'s' },
 ];
 /* O GUARDA-ROUPA: as outras roupas do dump já exportadas (data/skins_treinador.json com `glbOk`, por
    tools/skins_treinador_ok.mjs) entram como skins de visual fixo (02/09): id = prefab em minúsculas (boy_013…), sem tinta.

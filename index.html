@@ -6312,7 +6312,7 @@ async function rodarIntro({ configurarSeguidor }){
     + '#intro-pular{position:fixed;right:18px;top:14px;z-index:41;background:#0009;color:#fff;border:1px solid #fff6;border-radius:8px;padding:6px 12px;font:600 13px system-ui,sans-serif;cursor:pointer}';
   document.head.appendChild(css);
   const leg = document.createElement('div'); leg.id = 'intro-leg'; document.body.appendChild(leg);
-  const pular = document.createElement('button'); pular.id = 'intro-pular'; pular.textContent = 'Pular ▸'; document.body.appendChild(pular);
+  const pular = document.createElement('button'); pular.id = 'intro-pular'; pular.textContent = I18n.t('Skip ▸'); document.body.appendChild(pular);
   pular.onclick = terminarIntro; window.addEventListener('keydown', e => { if (e.code === 'Escape') terminarIntro(); });
   const legenda = async (txt, seg) => { leg.textContent = txt; leg.classList.add('on'); await esperarSeg(seg); leg.classList.remove('on'); };
   const mover = async (seg, fn) => { const n = Math.max(1, Math.round(seg / 0.04)); for (let i = 1; i <= n; i++){ fn(i / n); await esperarSeg(0.04); } };
@@ -7680,7 +7680,7 @@ if (jogo.ash){
       if (r.itens && !comConta()){ const it = lerLS('itens', {}); for (const [id, n] of Object.entries(r.itens)){ if (+id >= 1001 && +id <= 1009){ jogo.bolas[id] = (jogo.bolas[id] || 0) + n; gravarLS('bolas', jogo.bolas); } else it[id] = (it[id] || 0) + n; } gravarLS('itens', it); try { pintarAtalhos(true); } catch (e){ console.warn('pintarAtalhos:', e); } }
       if (r.exp && jogo.pika && !comConta()) darExp(jogo.pika, r.exp);   // 13/09: com conta a XP da missão entra na FICHA pelo servidor (mensagem `xp`); somando aqui também, o nível do cliente corria na frente, ensinava golpes de níveis que não tinha e "perdia" tudo na sincronização (l.neto: Fire Fang/Flamethrower no Lv 17)
       const partes = [r.dinheiro ? r.dinheiro + ' Moedas' : null, ...Object.entries(r.itens || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n), r.exp ? r.exp + ' XP' : null].filter(Boolean);
-      if (partes.length) Chat.sistema('🎁 Recompensa: ' + partes.join(', ') + '.');
+      if (partes.length) Chat.sistema('🎁 Reward: ' + partes.join(', ') + '.');
       Som.tocar('ui/sound_pkmnhealing', { volume: .5 });
     },
     pintar: () => atualizarMissao(),
@@ -7688,7 +7688,7 @@ if (jogo.ash){
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)
-  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = nomeAreaAtual(); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema('Você chegou em ' + nomeAreaAtual() + '.'); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
+  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = I18n.t(nomeAreaAtual()); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema('Você chegou em ' + nomeAreaAtual() + '.'); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
     const aS = a + '@' + Rede.estadoRede().id;                              // com conta quem marca o passo 'ir' é o servidor: o `pos` só leva o NOME da área, a missão usa o número.
     if (a != null && comConta() && aS !== areaNoServidor){ areaNoServidor = aS; Rede.enviar({ t: 'missao_area', area: a }); }   // fora do "mudou de área": no load a conexão ainda não estava pronta e o aviso se perdia
   }, 700);

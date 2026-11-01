@@ -1393,7 +1393,7 @@ function rMissoes(corpo){
   if (!M?.pronto?.()){ corpo.innerHTML = '<div class="vazio">As missões ainda estão carregando…</div>'; return; }
   const caps = M.capitulos(), ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
   const nomeItem = id => D.itens[id]?.n || ('item ' + id);
-  const rec = r => [r?.dinheiro ? r.dinheiro + ' Moedas' : null, ...Object.entries(r?.itens || {}).map(([id, n]) => esc(nomeItem(id)) + ' ×' + n), r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
+  const rec = r => [r?.dinheiro ? r.dinheiro + ' coins' : null, ...Object.entries(r?.itens || {}).map(([id, n]) => esc(nomeItem(id)) + ' ×' + n), r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
   const passoTxt = (p, i) => { const n = p.n || 0; const c = i === idx && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : ''; return esc(p.texto) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(p.onde) + ')</small>' : ''); };
   const atual = ativa ? `<div class="missao-atual"><small style="color:var(--muted)">Capítulo ${ativa.capitulo} · ${esc(ativa.capNome)}</small><br><b>${esc(ativa.nome)}</b><br><span style="font-size:12px">${esc(ativa.des)}</span>
       <div style="margin-top:8px;font-size:13px;line-height:1.5">${ativa.passos.map((p, i) => `<div>${i < idx ? '✔' : i === idx ? '▶' : '○'} ${passoTxt(p, i)}</div>`).join('')}</div>
@@ -1438,7 +1438,7 @@ function arteExemplo(el){
 }
 function textoRecompensaMi(r){
   const nomeItem = id => D.itens[id]?.n || ('item ' + id);
-  return [r?.dinheiro ? r.dinheiro + ' Moedas' : null,
+  return [r?.dinheiro ? r.dinheiro + ' coins' : null,
           ...Object.entries(r?.itens || {}).map(([id, n]) => nomeItem(id) + ' ×' + n),
           r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
 }
@@ -1485,7 +1485,7 @@ function encherMissoes(pop){
     Popup.texto(pop, 'objetivo', (p2.texto || '') + cont, g);
     Popup.texto(pop, 'objetivo-local', p2.onde ? '(' + p2.onde + ')' : '', g);
   }
-  Popup.texto(pop, 'recompensa', ativa ? 'Recompensa: ' + textoRecompensaMi(ativa.recompensa) : '');
+  Popup.texto(pop, 'recompensa', ativa ? 'Reward: ' + textoRecompensaMi(ativa.recompensa) : '');
   // ---- lista de capítulos (altura variável)
   const caps = M.capitulos();
   if (ativa && ativa.capitulo !== capAtivoVisto){ capAtivoVisto = ativa.capitulo; capAberto = ativa.capitulo; }   // abre o ativo UMA vez (e quando muda); depois o jogador manda — antes, fechar o ativo reabria no mesmo render

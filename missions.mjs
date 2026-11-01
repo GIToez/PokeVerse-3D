@@ -180,14 +180,14 @@ export function textoTracker(){
   /* Dois blocos pro Figma ter onde encostar (missao-header/missao-corpo da maquete). Sem Figma o hud.css os
      deixa `display:contents` e o texto continua corrido como antes. */
   /* small.etapa (17/09, auditoria dos placeholders): objetivo atual / total, pra área txt/progresso da faixa do v2 (a maquete mostrava "3/5"); fora do Figma o hud.css esconde */
-  return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b><small class="etapa">' + (estado.passo + 1) + '/' + m.passos.length + '</small></div><div class="missao-corpo"><span class="passo">' + esc(tr(p.texto)) + cont + '</span>' + onde + (rec ? '<small class="rec">' + esc(tr('Recompensa:')) + ' ' + esc(rec) + '</small>' : '') + '</div>';
+  return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b><small class="etapa">' + (estado.passo + 1) + '/' + m.passos.length + '</small></div><div class="missao-corpo"><span class="passo">' + esc(tr(p.texto)) + cont + '</span>' + onde + (rec ? '<small class="rec">' + esc(tr('Reward:')) + ' ' + esc(rec) + '</small>' : '') + '</div>';
 }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 /** "500 moedas · Pokébola ×5 · 120 XP" a partir do que a missão dá (campos como vierem: moedas/dinheiro, exp, itens {id: n} ou [{nome, n}]). */
 function textoRecompensa(m){
   const r = m?.recompensa || m?.recompensas || m?.premio; if (!r) return '';
   const partes = [];
-  const moedas = r.moedas ?? r.dinheiro ?? r.money; if (moedas) partes.push(moedas + ' ' + tr('moedas'));
+  const moedas = r.moedas ?? r.dinheiro ?? r.money; if (moedas) partes.push(moedas + ' ' + tr('coins'));
   const exp = r.exp ?? r.xp; if (exp) partes.push(exp + ' XP');
   const nomeDe = id => ctx?.nomeItem?.(id) || ('item ' + id);           // nome de verdade (index: ITENS_NOME) em vez de "item 2002"
   const itens = r.itens || r.items; if (Array.isArray(itens)) for (const it of itens) partes.push(tr(it.nome || nomeDe(it.id)) + (it.n > 1 ? ' ×' + it.n : ''));   // idioma: nome do item

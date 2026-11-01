@@ -83,7 +83,7 @@ function receber(m){
       for (const j of m.jogadores || []) adicionar(j);
       soloWilds = !!m.soloWilds;
       if (!m.soloWilds) ctx.mundo?.ligar(m.id, m.selvagens || []);       // fase 3a: selvagens da sala (servidor de mundo). O dev local manda soloWilds → o cliente nasce os selvagens sozinho (index), com batalha/captura locais
-      ctx.Chat?.sistema('Conectado ao servidor' + (m.conta ? ' como ' + m.conta : '') + ': ' + (m.online || 1) + ' online, ' + ((m.jogadores || []).length + 1) + ' neste mapa.');
+      ctx.Chat?.sistema('Connected to the server' + (m.conta ? ' as ' + m.conta : '') + ': ' + (m.online || 1) + ' online, ' + ((m.jogadores || []).length + 1) + ' on this map.');
       /* JOGO ATUALIZADO (10/09): o cliente se atualiza sozinho, como um MMO faz — antes ele só pedia "recarregue a
          página", e quem estivesse jogando ficava com uma versão velha falando com o servidor novo. Recarrega UMA vez por
          versão (o carimbo no sessionStorage evita laço se o arquivo servido continuar velho, por cache ou deploy pela metade). */

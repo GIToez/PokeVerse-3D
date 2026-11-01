@@ -4,16 +4,16 @@
  * O painel avisa a aba do jogo ao salvar (dados-mudaram) e o index chama recarregar(): vale na próxima fala, sem F5. */
 export const PADRAO = {
   oakNome: 'Professor Samuel',
-  portao: ['Espera! Sem um Pokémon, a grama alta da Rota 1 é perigosa.', 'Fale com o Professor Oak no laboratório antes de sair de Pallet.'],
-  portaoBalao: 'Fale com o Professor Oak antes de sair!',
-  portaoChat: 'Assistente do professor: fale com o Professor Oak antes de sair de Pallet.',
-  oakJaEscolheu: ['Você já escolheu {nome}. Cuide bem dele!'],
-  oakEntrega: ['{nome} é seu! Cuide bem dele.', 'Na Rota 1 tem Pokémon selvagem: derrube um e jogue a bola (F) pra capturar.'],
-  escolhaTitulo: 'Escolhe o Pokémon que desejas.',
-  escolhaSub: 'O Início da Jornada · o escolhido vira o seu parceiro (Lv 5) e entra no time',
-  jaVenceu: 'Você já me venceu!',
-  introLiga: 'Liga Índigo — a final do campeonato',
-  introRed: 'Red: — Ainda não acabou.',
+  portao: ['Wait! Without a Pokémon, the tall grass on Route 1 is dangerous.', 'Talk to Professor Oak in the lab before leaving Pallet.'],
+  portaoBalao: 'Talk to Professor Oak before you leave!',
+  portaoChat: 'Professor\'s assistant: talk to Professor Oak before leaving Pallet.',
+  oakJaEscolheu: ['You already chose {nome}. Take good care of it!'],
+  oakEntrega: ['{nome} is yours! Take good care of it.', 'There are wild Pokémon on Route 1: knock one out and throw a ball (F) to catch it.'],
+  escolhaTitulo: 'Choose the Pokémon you want.',
+  escolhaSub: 'The Start of the Journey · your pick becomes your partner (Lv 5) and joins your team',
+  jaVenceu: 'You already beat me!',
+  introLiga: 'Indigo League — the championship final',
+  introRed: 'Red: — It\'s not over yet.',
   introMega: 'Mega Charizard X!',
 };
 let D = { ...PADRAO };
