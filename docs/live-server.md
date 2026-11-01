@@ -7,7 +7,7 @@ Same machine as the Open Tibia PokeVerse. The 3D game is a second service on tha
 | Host | `40.160.145.24` |
 | First-time SSH | `ubuntu@40.160.145.24` (only to run `scripts/live/bootstrap-ovh.sh`) |
 | Deploy SSH | `pokeverse@40.160.145.24` |
-| App dir | `/home/pokeverse/PokeVerse-3D` |
+| App dir | `/opt/pokeverse-3d` (not under `/home/pokeverse` — that user already exists for Discord/OT) |
 | systemd unit | `pokeverse-3d` (not `pokeverse` — that name is reserved for OT) |
 | Game port | `127.0.0.1:5190` |
 
@@ -33,7 +33,7 @@ GitHub Actions (push to `main`, or Actions → **Deploy to OVH**) SSHs as `pokev
 From your PC:
 
 ```bash
-ssh pokeverse@40.160.145.24 'bash ~/PokeVerse-3D/scripts/live/deploy.sh'
+ssh pokeverse@40.160.145.24 'bash /opt/pokeverse-3d/scripts/live/deploy.sh'
 ```
 
 Secrets on this repo: `OVH_HOST` (`40.160.145.24`), `OVH_SSH_KEY` (key that logs in as **pokeverse**), optional `OVH_USER` (only if you are not using `pokeverse`).
@@ -51,13 +51,14 @@ ssh ubuntu@40.160.145.24
 Use the OVH **ubuntu** password (or the key you used when you first set up this VPS). After you are on the box:
 
 ```bash
-sudo mkdir -p /home/pokeverse/.ssh
-sudo chmod 700 /home/pokeverse/.ssh
+PV_HOME="$(getent passwd pokeverse | cut -d: -f6)"
+sudo mkdir -p "$PV_HOME/.ssh"
+sudo chmod 700 "$PV_HOME/.ssh"
 # paste ONE public-key line (starts with ssh-ed25519 or ssh-rsa):
-sudo tee -a /home/pokeverse/.ssh/authorized_keys
+sudo tee -a "$PV_HOME/.ssh/authorized_keys"
 # Ctrl+D when done
-sudo chown -R pokeverse:pokeverse /home/pokeverse/.ssh
-sudo chmod 600 /home/pokeverse/.ssh/authorized_keys
+sudo chown -R pokeverse:pokeverse "$PV_HOME/.ssh"
+sudo chmod 600 "$PV_HOME/.ssh/authorized_keys"
 exit
 ```
 

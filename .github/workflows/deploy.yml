@@ -32,5 +32,5 @@ jobs:
           script: |
             set -euo pipefail
             export PV_SSH_USER="${{ secrets.OVH_USER || 'pokeverse' }}"
-            export PV_APP_DIR="/home/${PV_SSH_USER}/PokeVerse-3D"
+            export PV_APP_DIR="/opt/pokeverse-3d"
             bash "$PV_APP_DIR/scripts/live/deploy.sh"

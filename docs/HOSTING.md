@@ -20,7 +20,7 @@ They don't collide. A typical OpenTibia setup (TFS, Canary or OTServBR) uses:
 | **PokeVerse website** | **80 / 443 via the same nginx** | yes |
 
 The live box is `40.160.145.24`. Open Tibia already runs there as `pokeverse`. This game is a second systemd unit
-(`pokeverse-3d`) in `/home/pokeverse/PokeVerse-3D`. See [live-server.md](live-server.md).
+(`pokeverse-3d`) in `/opt/pokeverse-3d`. See [live-server.md](live-server.md).
 
 Give the 3D site its own subdomain and add one more nginx `server` block. If the OT website runs on Apache instead, either
 move both sites behind nginx or translate the config below into an Apache virtual host (`mod_proxy_wstunnel` for the
@@ -42,7 +42,7 @@ curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt in
 # First time only, as ubuntu@40.160.145.24 (creates pokeverse if needed):
 #   scp scripts/live/bootstrap-ovh.sh ubuntu@40.160.145.24:
 #   ssh ubuntu@40.160.145.24 'bash bootstrap-ovh.sh'
-# After that the app lives at /home/pokeverse/PokeVerse-3D and the unit is pokeverse-3d.
+# After that the app lives at /opt/pokeverse-3d and the unit is pokeverse-3d.
 ```
 
 ## 2. Run the game server as a service
@@ -56,7 +56,7 @@ After=network.target
 
 [Service]
 User=pokeverse
-WorkingDirectory=/home/pokeverse/PokeVerse-3D
+WorkingDirectory=/opt/pokeverse-3d
 Environment=HOST=127.0.0.1
 ExecStart=/usr/bin/node server.mjs
 Restart=always
@@ -81,7 +81,7 @@ curl http://127.0.0.1:5190/saude     # → {"ok":true,...}
 server {
     listen 80;
     server_name pokeverse.example.com;
-    root /home/pokeverse/PokeVerse-3D;
+    root /opt/pokeverse-3d;
     index index.html;
 
     # Never serve live data, server code, tools, or repo internals.
@@ -152,7 +152,7 @@ Create an account in the game, then:
 
 ```bash
 sudo systemctl stop pokeverse
-sudo -u pokeverse node /home/pokeverse/PokeVerse-3D/tools/make_gm.mjs your_username
+sudo -u pokeverse node /opt/pokeverse-3d/tools/make_gm.mjs your_username
 sudo systemctl start pokeverse
 ```
 
@@ -190,7 +190,7 @@ The first clone is `scripts/live/bootstrap-ovh.sh` as **ubuntu**. After that, ev
 ### Manual
 
 ```bash
-ssh pokeverse@40.160.145.24 'bash ~/PokeVerse-3D/scripts/live/deploy.sh'
+ssh pokeverse@40.160.145.24 'bash /opt/pokeverse-3d/scripts/live/deploy.sh'
 ```
 
 Admin-panel edits are written into `public/data/` and `public/scenery/` in this checkout. Commit or back them up before

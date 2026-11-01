@@ -4,7 +4,7 @@
 set -euo pipefail
 
 DEPLOY_USER="${PV_SSH_USER:-pokeverse}"
-APP_DIR="${PV_APP_DIR:-/home/${DEPLOY_USER}/PokeVerse-3D}"
+APP_DIR="${PV_APP_DIR:-/opt/pokeverse-3d}"
 SERVICE=pokeverse-3d
 
 if [[ "$(id -un)" != "$DEPLOY_USER" ]]; then

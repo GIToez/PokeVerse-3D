@@ -5,7 +5,8 @@ set -euo pipefail
 
 HOST_IP="${PV_HOST:-40.160.145.24}"
 DEPLOY_USER="${PV_SSH_USER:-pokeverse}"
-APP_DIR="${PV_APP_DIR:-/home/${DEPLOY_USER}/PokeVerse-3D}"
+# pokeverse already exists for Discord/OT; its home is not /home/pokeverse.
+APP_DIR="${PV_APP_DIR:-/opt/pokeverse-3d}"
 REPO="${PV_REPO:-https://github.com/GIToez/PokeVerse-3D.git}"
 SERVICE=pokeverse-3d
 
@@ -28,7 +29,14 @@ if ! id -u "$DEPLOY_USER" >/dev/null 2>&1; then
   echo "Created user $DEPLOY_USER"
 fi
 
-sudo mkdir -p "$(dirname "$APP_DIR")"
+DEPLOY_SHELL="$(getent passwd "$DEPLOY_USER" | cut -d: -f7)"
+if [[ "$DEPLOY_SHELL" == *nologin* || "$DEPLOY_SHELL" == *false* ]]; then
+  sudo usermod -s /bin/bash "$DEPLOY_USER"
+  echo "Set $DEPLOY_USER shell to /bin/bash so SSH deploy works"
+fi
+
+sudo mkdir -p "$APP_DIR"
+sudo chown "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
 if [[ ! -d "$APP_DIR/.git" ]]; then
   sudo -u "$DEPLOY_USER" git clone "$REPO" "$APP_DIR"
 else
