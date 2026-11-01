@@ -83,6 +83,7 @@ export const ESQUEMAS = {
       { k: 'taxaShiny', rotulo: 'Wild shiny (1 in N)', tipo: 'num', min: 2, max: 1000000, int: true, ajuda: 'Default 4096. Lower = more shinies.' },
       { k: 'tetoNivel', rotulo: 'Obedience cap by badges', tipo: 'numeros', tam: 9, min: 1, max: 100, int: true, ajuda: 'Highest level that obeys with 0, 1, … 8 badges. Default: 20, 26, 32, 38, 46, 52, 58, 62, 70.' },
       { k: 'desmaio', rotulo: 'Seconds fainted', tipo: 'num', min: 1, max: 120, int: true, ajuda: 'How long a wild Pokémon stays down (capture window). Default 8.' },
+      { k: 'skittishHp', rotulo: 'Turn skittish at HP %', tipo: 'num', min: 0, max: 100, int: true, ajuda: 'Aggressive wild Pokémon flee when their HP falls to this percent or below. 0 = off (default). Per-species values in Habitats / spawn zones override this.' },
       { k: 'maxBolasNoAr', rotulo: 'Balls in the air at once', tipo: 'num', min: 1, max: 20, int: true, ajuda: 'Default 4.' },
       { k: 'trocaCd', rotulo: 'Pokémon switch cooldown (s)', tipo: 'num', min: 0, max: 120, int: true, ajuda: 'Default 6.' },
       { k: 'chefeLv', rotulo: 'Test boss level (?chefe)', tipo: 'num', min: 1, max: 100, int: true, ajuda: 'Default 70.' },

@@ -3543,6 +3543,17 @@ const zonaRespawn = new Map();                                           // id d
 const CFG_JOGO = await fetch('./data/config_jogo.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null) || {};
 const cfgInt = (k, padrao, min, max) => { const v = CFG_JOGO[k]; return Number.isInteger(v) && v >= min && v <= max ? v : padrao; };
 const TAXA_SHINY = Math.max(2, +params0.get('shinyTaxa') || cfgInt('taxaShiny', 4096, 2, 1e6));       // shiny selvagem 1/4.096 (GDD §7.4); ?shinyTaxa=2 testa
+const SKITTISH_HP = cfgInt('skittishHp', 0, 0, 100);                   // 0 = off; aggressive wilds turn skittish at or below this HP %
+const ehAgressivo = p => p === 'agressivo' || p === 'aggressive';
+const ehArisco = p => p === 'arisco' || p === 'skittish';
+const rotuloPerfil = p => ehAgressivo(p) ? 'aggressive' : 'skittish';
+const ESTADO_EN = { vagando: 'wandering', fugindo: 'fleeing', atacando: 'attacking', desmaiado: 'fainted', capturando: 'catching', morto: 'gone', guardado: 'stored', chegando: 'arriving', koTurno: 'fainted' };
+const rotuloEstado = e => ESTADO_EN[e] || e;
+function aplicarSkittishHp(s){
+  if (!s || s.chefe || s.raid) return;
+  const lim = s.skittishHp === 0 ? 0 : (Number.isFinite(s.skittishHp) ? s.skittishHp : SKITTISH_HP);
+  if (lim > 0 && s.maxHp > 0 && (s.hp / s.maxHp) * 100 <= lim) s.perfil = 'arisco';
+}
 const texShinyCampo = new Map();
 const esperandoShiny = new Map();                                       // 14/09: raízes que pediram a textura antes de ela carregar (seguidor, montaria, parceiro do outro) — reaplica no onload
 const shinyFalhou = new Set();                                          // passe de progresso (19/09): textura shiny que não veio (403/404) — o passe-novo tenta de novo
@@ -4053,6 +4064,8 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   s.ivs = ivs || Ind.sortearIVs(); s.natureza = natureza || Ind.sortearNatureza();      // cada selvagem é um indivíduo: quem captura leva exatamente este (na rede, o servidor sorteou)
   s.maxHp = Ind.hpDe(S, s); s.hp = s.maxHp;
   s.perfil = perfil || (Math.random() < S.bs[1] / (S.bs[1] + S.bs[5]) ? 'agressivo' : 'arisco');
+  if (esp.skittishHp === 0) s.skittishHp = 0;
+  else if (Number.isFinite(+esp.skittishHp) && +esp.skittishHp > 0) s.skittishHp = Math.min(100, +esp.skittishHp);
   s.estado = 'vagando'; s.recarga = 0; s.paciencia = 0; s.assustado = false;
   s.movs = Ind.golpesPara(S.n, s.lv, GOLPES_ESPECIE[S.n] || ['tackle']); s.golpes = s.movs.map(m => GOLPES[m.id]).filter(Boolean); if (!s.golpes.length) s.golpes = [GOLPES.tackle];
   s.proximoGolpe = s.golpes[Math.floor(Math.random() * s.golpes.length)];
@@ -4061,7 +4074,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   tocarAnim(s, 'Idle');
   s.shiny = shiny != null ? !!shiny : Math.random() * TAXA_SHINY / Evento.shinyMult() < 1;   // Fase 3: ÷ multiplicador do evento ao vivo   // ✨ 1/4.096 (GDD §7.4); na rede quem sorteia é o servidor; a textura _1 é a mesma da bancada
   aplicarShinyCampo(s.pivo, s.shiny);
-  if (s.rotulo) s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${s.perfil === 'agressivo' ? '⚔' : '🏃'}</span><i><b></b></i>`;
+  if (s.rotulo) s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${ehAgressivo(s.perfil) ? '⚔' : '🏃'}</span><i><b></b></i>`;
   if (s.pivo.__pronto) return s;                   // corpo reaproveitado: shader e textura já estão na GPU
   /* O primeiro desenho de uma espécie nova compila shader e sobe textura de 2048² pra GPU
      de uma vez — 50–200 ms parados. compileAsync faz isso fora do quadro; o Pokémon só
@@ -4368,7 +4381,8 @@ function atualizarSelvagens(dt){
     else {
     // reação ao treinador: arisco foge, agressivo parte para cima do Pikachu
     if (s.semFuga > 0) s.semFuga -= dt;
-    if (s.perfil === 'arisco' && s.estado !== 'fugindo' && s.estado !== 'atacando' && !(s.semFuga > 0) && (dAsh < 4.5 || s.assustado)){   // 18/09 (revisão): `semFuga` = espera depois de uma fuga sem saída; hit already in `atacando` stays there (does not re-flee)
+    aplicarSkittishHp(s);
+    if (ehArisco(s.perfil) && s.estado !== 'fugindo' && s.estado !== 'atacando' && !(s.semFuga > 0) && (dAsh < 4.5 || s.assustado)){   // 18/09 (revisão): `semFuga` = espera depois de uma fuga sem saída; hit already in `atacando` stays there (does not re-flee)
       s.estado = 'fugindo'; s.fuga = s.assustado ? 3.5 : 0; s.assustado = false; s.alvoX = null;
       const tiles = (s.aquatico ? aguaPorArea : gramaPorArea).get(s.area) || [];
       let melhor = null, mb = -1;
@@ -4395,7 +4409,7 @@ function atualizarSelvagens(dt){
     }
     /* 19/09 (chaospider, "Dois bugs pelo preço de um - Safari Zone"): surfando, o parceiro sai da bola e nada do lado, e o agressivo que ele
        atacava de dentro do lago ficava apático (o "!jogo.montaria" era pro Arcanine, com o parceiro guardado na bola). Com o surf, reage como a pé. */
-    if (!jogo.turno && s.perfil === 'agressivo' && s.estado !== 'atacando' && pika.hp > 0 && (!jogo.montaria || jogo.montaria.surfando) && (dPika < 4.5 || dAsh < 4 || s.assustado)){   // em batalha por turno, os de fora não entram
+    if (!jogo.turno && ehAgressivo(s.perfil) && s.estado !== 'atacando' && pika.hp > 0 && (!jogo.montaria || jogo.montaria.surfando) && (dPika < 4.5 || dAsh < 4 || s.assustado)){   // em batalha por turno, os de fora não entram
       s.estado = 'atacando'; s.assustado = false; s.paciencia = 14; s.alvoX = null;
     }
     if (s.estado === 'fugindo'){
@@ -4493,7 +4507,7 @@ function atualizarSelvagens(dt){
     if (!s.__vistoReg && s.dex && dAsh < 18){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokédex de conhecimento: avistado (1× por indivíduo, a até 18 m)
     if (!s.rotulo){
       s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon';
-      s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${s.perfil === 'agressivo' ? '⚔' : '🏃'}</span><i><b></b></i>`;
+      s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${ehAgressivo(s.perfil) ? '⚔' : '🏃'}</span><i><b></b></i>`;
       $('sobre').appendChild(s.rotulo);
     }
     const perto = mostrarNomes && Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) < 30;
@@ -4658,7 +4672,11 @@ function aplicarGolpe(atacante, defensor, golpe, dano, eff){
   if (defensor.hp <= 0 && atacante === jogo.pika && defensor !== jogo.pika && !(defensor.rede && Mundo.estaAtivo()) && !jogo.turno?.serv) ganharExp(atacante, defensor);   // batalha do servidor: o XP vem dele   // (selvagem da rede: o XP vem do servidor, pra todo mundo que lutou — 3c)   // XP como nos jogos: quem derruba ganha
   if (defensor.hp > 0){
     tocarUma(defensor, 'Wound');
-    if (defensor.perfil === 'arisco' || defensor.estado === 'fugindo'){   // skittish / already running: a hit makes them fight back instead of running harder
+    const eraArisco = ehArisco(defensor.perfil) || defensor.estado === 'fugindo';
+    aplicarSkittishHp(defensor);
+    const porHp = Number.isFinite(defensor.skittishHp) ? defensor.skittishHp : SKITTISH_HP;
+    if (porHp > 0 && defensor.maxHp > 0 && (defensor.hp / defensor.maxHp) * 100 <= porHp) defensor.assustado = true;
+    else if (eraArisco){   // skittish / already running: a hit makes them fight back instead of running harder
       defensor.estado = 'atacando'; defensor.paciencia = 14; defensor.assustado = false; defensor.fuga = 0; defensor.alvoX = null;
     } else if (defensor.perfil) defensor.assustado = true;
   }
@@ -7600,7 +7618,7 @@ function pintarBarra(){
      o TEXTO muda (a largura da barra saiu do template e vai por Hud.fill), senão a árvore montada seria destruída a
      cada ponto de dano. */
   const elAlvo = $('f-alvo');
-  const htmlAlvo = a ? `<b class="alvo-nome">${a.nome}</b> <span class="alvo-lv">Lv ${a.lv}</span> <span class="alvo-estado">${a.estado === 'desmaiado' ? I18n.t('· fainted {n}s · F catch', { n: Math.max(0, Math.ceil(a.desmaio)) }) : [a.perfil, a.estado].filter(Boolean).map(x => '· ' + I18n.t(x)).join(' ')}</span><i class="alvo-trilho"><b class="alvo-fill"></b></i>`
+  const htmlAlvo = a ? `<b class="alvo-nome">${a.nome}</b> <span class="alvo-lv">Lv ${a.lv}</span> <span class="alvo-estado">${a.estado === 'desmaiado' ? I18n.t('· fainted {n}s · F catch', { n: Math.max(0, Math.ceil(a.desmaio)) }) : `· ${I18n.t(rotuloPerfil(a.perfil))} · ${I18n.t(rotuloEstado(a.estado))}`}</span><i class="alvo-trilho"><b class="alvo-fill"></b></i>`
                      : I18n.t('no target — click a wild Pokémon or ') + '<b>Tab</b>';
   if (elAlvo.__html !== htmlAlvo){ setHTML(elAlvo, htmlAlvo); Hud.remontar(elAlvo); }
   if (a) Hud.fill(elAlvo.querySelector('.alvo-fill'), a.hp / a.maxHp, corVida(a.hp / a.maxHp));

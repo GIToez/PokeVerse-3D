@@ -114,7 +114,7 @@ function montarPainel(){
     <label><input type="checkbox" id="v-shiny"> seguidor shiny <button id="v-seg-ok" class="ok" style="margin-left:auto">trocar seguidor</button></label>
     <h2>Selvagens</h2>
     <label><span>Pokémon</span><input type="number" id="s-dex" value="16" min="1" max="1025" style="flex:.6"><span id="s-nome" style="min-width:0;flex:1"></span><button id="s-dex-rand">🎲</button></label>
-    <label><span>nível</span><input type="number" id="s-lv" value="5" min="1" max="100" style="flex:.5"><span>perfil</span><select id="s-perfil" style="flex:1"><option value="">sorteia</option><option value="agressivo">⚔ agressivo (vem pra cima)</option><option value="arisco">🏃 arisco (foge)</option></select></label>
+    <label><span>level</span><input type="number" id="s-lv" value="5" min="1" max="100" style="flex:.5"><span>profile</span><select id="s-perfil" style="flex:1"><option value="">random</option><option value="agressivo">⚔ aggressive (charges you)</option><option value="arisco">🏃 skittish (flees)</option></select></label>
     <label><span>quantos</span><input type="number" id="s-n" value="3" min="1" max="12" style="flex:.5"><span>raio m</span><input type="number" id="s-raio" value="10" min="4" max="30" style="flex:.5"><input type="checkbox" id="s-shiny"> ✨ shiny</label>
     <div class="linha"><button id="s-volta" class="ok">povoar em volta</button><button id="s-frente">1 na frente</button><button id="s-guardar" title="guarda esta configuração pra repetir depois">+ receita</button></div>
     <div class="k">receitas (▶ povoa de novo; tudo fica salvo):</div>
