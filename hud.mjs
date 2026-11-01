@@ -592,7 +592,7 @@ function recolherMenu(e, on){
 /** Remonta a árvore do Figma numa peça já posicionada (o jogo chama quando recria o miolo de um botão). */
 export function remontar(e){
   if (e && e.__figmaP) montarFigma(e, e.__figmaP, !!e.__figmaAbs);
-  if (e && !e.__figmaAbs && document.body.classList.contains('hud-ilha') && (e.id === 'skills' || e.id === 'atalhos' || e.id === 'bola-btn' || e.id === 'menu-icones')) aplicarIlha();
+  if (e && !e.__figmaAbs && document.body.classList.contains('hud-ilha') && (e.id === 'skills' || e.id === 'atalhos' || e.id === 'bola-btn' || e.id === 'menu-icones' || e.id === 'barra')) aplicarIlha();
 }
 function montarFigma(e, F, abs){
   const lig = LIGACOES[e.id] || {};
@@ -1062,17 +1062,30 @@ function ligarIlhaUmaVez(){
 export function aplicarIlha(){
   if (typeof document === 'undefined') return;
   const mobile = document.body.classList.contains('mobile');
-  document.body.classList.add('hud-ilha');
+  document.body.classList.add('hud-ilha', 'hud-ref');
   document.body.classList.toggle('hud-ilha-mobile', mobile);
   ligarIlhaUmaVez();
+  const barra = document.getElementById('barra');
   const skills = document.getElementById('skills');
   const bola = document.getElementById('bola-btn');
   const atalhos = document.getElementById('atalhos');
   const menu = document.getElementById('menu-icones');
+  if (barra){
+    barra.classList.add('ilha-dock');
+    Object.assign(barra.style, { position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: mobile ? '10px' : '14px', transform: 'translateX(-50%)', display: 'flex', width: 'auto', height: 'auto', maxWidth: 'min(1120px, calc(100vw - 20px))', maxHeight: 'none', zIndex: '26', overflow: 'visible' });
+  }
+  for (const id of ['f-parceiro', 'f-alvo']){
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.classList.add('ilha-ficha');
+    Object.assign(el.style, { position: 'fixed', transform: 'none', margin: '0' });
+    if (id === 'f-parceiro') Object.assign(el.style, { left: mobile ? '8px' : '84px', right: 'auto', top: mobile ? '12px' : '18%', bottom: 'auto' });
+    else Object.assign(el.style, { left: 'auto', right: mobile ? '8px' : '16px', top: mobile ? '12px' : '248px', bottom: 'auto' });
+  }
   if (skills){
     skills.classList.add('ilha-centro');
     skills.style.backgroundImage = 'none';
-    Object.assign(skills.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: mobile ? '14px' : '18px', transform: 'translateX(-50%)', zIndex: '26' });
+    Object.assign(skills.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none', zIndex: '1' });
     const slots = soltarFilhos(skills, ':scope > .fig-grupo, :scope > button.sk');
     if (bola){
       noFluxo(bola);
@@ -1084,35 +1097,40 @@ export function aplicarIlha(){
       else if (!slots.length) skills.appendChild(bola);
     }
   } else if (bola){
-    Object.assign(bola.style, { position: 'fixed', left: '50%', right: 'auto', top: 'auto', bottom: '16px', transform: 'translateX(-50%)' });
+    Object.assign(bola.style, { position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none' });
   }
   if (atalhos){
-    atalhos.classList.add('ilha-direita');
+    atalhos.classList.remove('ilha-direita');
+    atalhos.classList.add('ilha-atalhos');
     atalhos.style.backgroundImage = 'none';
-    Object.assign(atalhos.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'column', position: 'fixed', left: 'auto', right: mobile ? '10px' : '16px', top: 'auto', bottom: mobile ? '14px' : '18px', transform: 'none', zIndex: '26', pointerEvents: 'none' });
+    if (barra && atalhos.parentElement !== barra) barra.appendChild(atalhos);
+    Object.assign(atalhos.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'row', position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none', zIndex: '1', pointerEvents: 'auto' });
     soltarFilhos(atalhos, ':scope > .fig-grupo, :scope > .atalho');
     for (const a of atalhos.querySelectorAll('.atalho')) a.style.pointerEvents = 'auto';
   }
   if (menu){
-    menu.classList.add('dock-slide');
+    menu.classList.toggle('dock-slide', mobile);
+    menu.classList.toggle('menu-pill', !mobile);
     menu.style.backgroundImage = 'none';
-    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'column', position: 'fixed', left: 'auto', top: 'auto', bottom: mobile ? '118px' : '168px', right: '0px', transform: 'none', zIndex: '28' });
+    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: mobile ? 'column' : 'row', position: 'fixed', left: 'auto', top: 'auto', bottom: mobile ? '118px' : '16px', right: mobile ? '0px' : '14px', transform: 'none', zIndex: '28' });
     soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
     let aba = document.getElementById('menu-dock-aba');
-    if (!aba){
-      aba = document.createElement('button');
-      aba.id = 'menu-dock-aba';
-      aba.type = 'button';
-      aba.textContent = '☰';
-      aba.title = tr('Menu');
-      aba.setAttribute('aria-expanded', 'false');
-      aba.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); alternarDock(); });
-    }
-    if (aba.parentElement !== menu) menu.insertBefore(aba, menu.firstChild);
-    if (!menu.__fechaAoEscolherDock){
-      menu.__fechaAoEscolherDock = true;
-      menu.addEventListener('click', ev => { if (ev.target.closest('button[data-j]') && menu.classList.contains('aberto')) alternarDock(false); });
-    }
+    if (mobile){
+      if (!aba){
+        aba = document.createElement('button');
+        aba.id = 'menu-dock-aba';
+        aba.type = 'button';
+        aba.textContent = '☰';
+        aba.title = tr('Menu');
+        aba.setAttribute('aria-expanded', 'false');
+        aba.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); alternarDock(); });
+      }
+      if (aba.parentElement !== menu) menu.insertBefore(aba, menu.firstChild);
+      if (!menu.__fechaAoEscolherDock){
+        menu.__fechaAoEscolherDock = true;
+        menu.addEventListener('click', ev => { if (ev.target.closest('button[data-j]') && menu.classList.contains('aberto')) alternarDock(false); });
+      }
+    } else if (aba) aba.remove();
   }
   if (document.getElementById('bola-leque') && !document.getElementById('bola-leque').hidden) pintarLequeBola();
 }

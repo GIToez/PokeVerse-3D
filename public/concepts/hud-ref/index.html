@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HUD reference preview</title>
+  <link rel="stylesheet" href="../../../hud.css">
+  <style>
+    html,body{margin:0;height:100%;background:#5a7a3a;font:13px/1.3 "Nunito Sans",system-ui,sans-serif;color:#d6e2ff}
+    .field{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 70%,#6b8c44,#3d5a28)}
+    #menu-grade,#boot,#gire,#hud,#sobre,#tela{display:none}
+  </style>
+</head>
+<body class="hud-ilha hud-ref">
+  <div class="field"></div>
+  <div id="missao">Talk to the man from Team Rocket · 2/4</div>
+  <div id="time-hud">
+    <button class="tslot on" type="button"><img alt="" src="../../../ui/mon/pm0004.png"><small>20</small><i><b style="width:80%;background:#86ef5f"></b></i></button>
+    <button class="tslot" type="button"><img alt="" src="../../../ui/mon/pm0029.png"><small>16</small><i><b style="width:60%;background:#86ef5f"></b></i></button>
+    <button class="tslot" type="button"><img alt="" src="../../../ui/mon/pm0008.png"><small>33</small><i><b style="width:90%;background:#86ef5f"></b></i></button>
+    <button class="tslot" type="button"><img alt="" src="../../../ui/mon/pm0025.png"><small>9</small><i><b style="width:40%;background:#ffd23a"></b></i></button>
+    <button class="tslot" type="button"><img alt="" src="../../../ui/mon/pm0001.png"><small>11</small><i><b style="width:70%;background:#86ef5f"></b></i></button>
+    <button class="tslot vazio" type="button">+</button>
+  </div>
+  <div id="minimapa"><div id="mm-janela" style="background:#2d6b3a"></div><div id="mm-area">Viridian City</div></div>
+  <div id="f-parceiro" class="ficha ilha-ficha"><b>Charmander</b> <span>Lv 20</span><i><b style="width:80%"></b></i></div>
+  <div id="f-alvo" class="ficha ilha-ficha">no target</div>
+  <div id="chat" class="chat-caixa fechado" style="display:flex">
+    <div class="abas"><button class="on" type="button">Local</button><button type="button">Global</button></div>
+  </div>
+  <div id="barra" class="ilha-dock" style="display:flex">
+    <div id="skills" class="ilha-centro">
+      <button class="sk" type="button"><b>1</b><em>Scratch</em></button>
+      <button class="sk" type="button"><b>2</b><em>Ember</em></button>
+      <button class="sk" type="button"><b>3</b><em>Growl</em></button>
+      <button class="sk" type="button"><b>4</b><em>Smokescreen</em></button>
+      <button id="bola-btn" class="sk bola ilha-bola" type="button"><b>F</b><div id="bola-icone"></div><em id="bola-nome">Poké Ball</em><small id="bola-n">×7</small></button>
+    </div>
+    <div id="atalhos" class="ilha-atalhos">
+      <button class="atalho vazio" type="button"><b>5</b><span>+</span></button>
+      <button class="atalho vazio" type="button"><b>6</b><span>+</span></button>
+      <button class="atalho vazio" type="button"><b>7</b><span>+</span></button>
+      <button class="atalho vazio" type="button"><b>8</b><span>+</span></button>
+      <button class="atalho vazio" type="button"><b>9</b><span>+</span></button>
+    </div>
+  </div>
+  <div id="menu-icones" class="menu-pill" style="display:flex">
+    <button type="button" data-j="pokemon"><i class="ic ic-pokebola"></i><b>Pokémon</b></button>
+    <button type="button" data-j="mochila"><i class="ic ic-mochila"></i><b>Bag</b></button>
+    <button type="button" data-j="pokedex"><i class="ic ic-pokedex"></i><b>Pokédex</b></button>
+    <button type="button" data-j="mapa"><i class="ic ic-mapa"></i><b>Map</b></button>
+    <button type="button" data-j="treinador"><i class="ic ic-personagem"></i><b>Trainer</b></button>
+    <button type="button" data-j="config"><i class="ic ic-ajuda"></i><b>Config</b></button>
+  </div>
+</body>
+</html>
