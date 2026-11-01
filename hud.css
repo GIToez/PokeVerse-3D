@@ -417,6 +417,28 @@ body.hud-ilha #skills.ilha-centro > .fig-grupo, body.hud-ilha #skills.ilha-centr
 body.hud-ilha #bola-btn.ilha-bola{
   position:relative !important; left:auto !important; top:auto !important; right:auto !important; bottom:auto !important;
   transform:none !important; margin:0 4px !important; pointer-events:auto; align-self:center;
+  overflow:visible !important;
+}
+body.hud-ilha #bola-btn.ilha-bola b,
+body.hud-ilha #bola-btn.ilha-bola #bola-n,
+body.hud-ilha #bola-btn.ilha-bola #bola-nome,
+body.hud-ilha #bola-btn.kit em,
+body.hud-ilha #bola-btn.kit #bola-n,
+body.hud-ilha #bola-btn.kit b{
+  display:block !important; visibility:visible !important; opacity:1 !important;
+}
+body.hud-ilha #bola-btn.ilha-bola b{
+  position:absolute; left:-2px; top:-2px; z-index:3; padding:1px 5px;
+  border:1px solid #F8C237; border-radius:8px; background:#0b1020ee; color:#ffe07a; font:700 11px/1 inherit;
+}
+body.hud-ilha #bola-btn.ilha-bola #bola-n{
+  position:absolute; right:-4px; top:-4px; z-index:3; padding:1px 6px;
+  border:1px solid #F8C237; border-radius:10px; background:#0b1020ee; color:#ffe07a; font:700 11px/1 inherit;
+}
+body.hud-ilha #bola-btn.ilha-bola #bola-nome{
+  position:absolute; left:50%; bottom:-16px; transform:translateX(-50%); z-index:3;
+  max-width:92px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  color:#ffe6b0; font:700 10px/1 inherit; text-shadow:0 1px 2px #000;
 }
 body.hud-ilha #atalhos.ilha-direita{
   display:flex !important; flex-direction:column !important; align-items:center !important;
@@ -429,25 +451,32 @@ body.hud-ilha #atalhos.ilha-direita > .fig-grupo, body.hud-ilha #atalhos.ilha-di
 }
 body.hud-ilha #menu-icones.dock-slide{
   display:flex !important; flex-direction:column !important; align-items:stretch !important;
-  gap:4px; padding:0; width:auto !important; height:auto !important;
+  gap:2px; padding:0; width:auto !important; height:auto !important;
   background:transparent; border:0; transform:none !important; pointer-events:auto;
+  filter:drop-shadow(0 8px 18px #000a);
 }
 body.hud-ilha #menu-icones.dock-slide.aberto{
-  padding:10px 8px 10px 6px; background:rgba(10,16,28,.88); border:1px solid var(--line); border-right:0;
-  border-radius:12px 0 0 12px;
+  padding:8px 10px 8px 8px; background:linear-gradient(180deg,#141c2ef5,#0a101ce8);
+  border:1px solid #F8C23799; border-right:0;
+  border-radius:14px 0 0 14px;
 }
 body.hud-ilha #menu-icones.dock-slide > button[data-j],
 body.hud-ilha #menu-icones.dock-slide > .fig-grupo{
   position:relative !important; left:auto !important; top:auto !important; width:auto !important;
 }
 body.hud-ilha #menu-icones.dock-slide > button[data-j]{
-  flex-direction:row; justify-content:flex-start; gap:8px; width:148px; padding:2px 8px 2px 4px;
+  flex-direction:row; justify-content:flex-start; align-items:center; gap:10px; width:168px; padding:6px 10px 6px 4px;
+  border-radius:10px;
+}
+body.hud-ilha #menu-icones.dock-slide > button[data-j]:hover{ background:#ffffff12 }
+body.hud-ilha #menu-icones.dock-slide > button[data-j] b{
+  display:block !important; font:700 12px/1.1 inherit; color:#ffe6b0; letter-spacing:.2px;
 }
 body.hud-ilha #menu-icones.dock-slide:not(.aberto) > button[data-j],
 body.hud-ilha #menu-icones.dock-slide:not(.aberto) > .fig-grupo{ display:none !important }
 body.hud-ilha #menu-dock-aba{
-  width:36px; height:64px; padding:0; border:1px solid #F8C237; border-right:0;
-  border-radius:10px 0 0 10px; background:rgba(10,16,28,.92); color:#F8C237;
+  width:40px; height:72px; padding:0; border:1px solid #F8C237; border-right:0;
+  border-radius:12px 0 0 12px; background:linear-gradient(180deg,#1b2438f5,#0c1220f0); color:#F8C237;
   font:700 18px/1 inherit; cursor:pointer; touch-action:manipulation; align-self:flex-end;
 }
 body.hud-ilha #menu-icones.dock-slide.aberto #menu-dock-aba{ position:absolute; left:0; top:50%; transform:translate(-100%, -50%) }
@@ -465,10 +494,11 @@ body.hud-ilha #menu-icones.dock-slide.aberto #menu-dock-aba{ position:absolute; 
 #bola-leque .bola-op i{ width:28px; height:28px; background:center/contain no-repeat; pointer-events:none }
 #bola-leque .bola-op em{ font-style:normal; font-weight:700; max-width:58px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 #bola-leque .bola-op small{ color:#ffd23a; font-weight:700 }
+#bola-leque .bola-op b{ font-size:9px; color:#ffe07a; font-weight:700 }
 #bola-leque .bola-op.on{ box-shadow:0 0 0 2px #ffe07a88 }
 body.hud-ilha #bola-btn.leque-aberto{ z-index:35 }
-body.hud-ilha-mobile #menu-icones.dock-slide > button[data-j]{ width:52px; padding:2px }
-body.hud-ilha-mobile #menu-icones.dock-slide > button[data-j] b{ display:none }
+body.hud-ilha-mobile #menu-icones.dock-slide > button[data-j]{ width:132px; padding:4px 8px 4px 2px }
+body.hud-ilha-mobile #menu-icones.dock-slide > button[data-j] b{ display:block !important; font-size:11px }
 body.hud-ilha #fala{ bottom:132px }
 body.hud-ilha-mobile #fala{ bottom:118px }
 

@@ -221,7 +221,7 @@ function fichaHtml(e){
   const aprender = novo ? `<div class="evo-linha" style="margin-top:6px"><b>✧ quer aprender ${esc(novo.nome)}</b> <small>${esc(novo.tipo || '')} · poder ${novo.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(novo.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">esquecer: ${movs.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">não aprender</button></div></div>` : '';
   // regras dos jogos originais (evolution.mjs): cada evolução com o que falta / ✔ pronto
   const ops = ctx.opcoesEvolucao?.(e) || [];
-  const evo = ops.length ? ops.map(o => `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(o.regra.texto)}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('em breve')) + '</span>' : o.pode ? '<span class="ok">✔ pronto' + (o.itemNome ? ' (usa ' + esc(o.itemNome) + ')' : '') + '</span>' : '<span class="falta">' + esc(o.falta) + '</span>'}</div>`).join('') : 'não evolui';
+  const evo = ops.length ? ops.map(o => `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(o.regra.texto)}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('coming soon')) + '</span>' : o.pode ? '<span class="ok">✔ ' + esc(tr('ready')) + (o.itemNome ? ' (' + esc(tr('uses {item}', { item: o.itemNome })) + ')' : '') + '</span>' : '<span class="falta">' + esc(o.falta) + '</span>'}</div>`).join('') : tr('does not evolve');
   const prox = ctx.expPara?.(e.dex, lv + 1), xp = (e.exp != null && prox ? `XP ${e.exp}/${prox}` : '') + (e.expReserva > 0 ? ' · ' + e.expReserva + ' XP guardada' : '');
   return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${lv}${lv > tetoObed() ? ' <span class="falta" title="acima do teto de nível: não obedece até a próxima insígnia">🔒 teto ' + tetoObed() + '</span>' : lv >= tetoObed() ? ' <span class="falta" title="no teto de nível: a XP fica guardada até a próxima insígnia">🔒 no teto</span>' : ''}${xp ? ' · ' + xp : ''}${e.amizade != null ? ' · amizade ' + e.amizade : ''}${e.seguindo ? ' · seguindo' : ''}</small></h3>
     <div>${(S.types || []).map(tipoHtml).join('')} <small style="color:var(--muted)">${S.kg ? S.kg + ' kg' : ''}</small></div>
@@ -569,7 +569,7 @@ function encherFichaPokemon(pop, e, lista){
       ? '→ pode evoluir para ' + prontas.map(o => o.nome).join(', ') + ' — clique em Evoluir e escolha'
       : ops.length
         ? '→ ' + ops[0].nome + ': ' + ops[0].regra.texto + (pronta ? '' : ' - ' + (ops[0].falta || 'ainda não'))
-        : emBreve ? '→ ' + emBreve.nome + ': ' + emBreve.regra.texto + ' (em breve)' : 'não evolui', f);
+        : emBreve ? '→ ' + emBreve.nome + ': ' + emBreve.regra.texto + ' (' + tr('coming soon') + ')' : tr('does not evolve'), f);
   if (evoEl){ evoEl.style.pointerEvents = novo ? 'auto' : ''; evoEl.style.cursor = novo ? 'pointer' : ''; }
   Popup.botao(pop, 'evoluir', !!pronta && !!e.seguindo, prontas.length > 1 ? '✦ Evolve (' + prontas.length + ' forms)' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve');
   const podeSoltar = !e.seguindo && lista.length > 1;
@@ -1104,8 +1104,8 @@ async function soAcao(nome, el){
   } else if (nome === 'convidar'){                                        // fase 4: convite de TROCA (o PvP ainda vem depois)
     Popup.mostrarExtra(pop, 'tooltip-amigo', false);
     if (!soAmigoMenu) return;
-    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /batalhar ' + soAmigoMenu.nick);
-    else Chat.sistema('Trade invite sent. To battle instead: /batalhar ' + soAmigoMenu.nick);
+    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /battle ' + soAmigoMenu.nick);
+    else Chat.sistema('Trade invite sent. To battle instead: /battle ' + soAmigoMenu.nick);
   } else if (nome === 'desfazer-amizade'){
     Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (!soAmigoMenu) return;
     const r = await soChamar('POST', '/social/remover', { usuario: soAmigoMenu.usuario });
@@ -1862,7 +1862,7 @@ function rLoja(corpo){
    Doação com recompensa (Medalhão de Membro trocável, cosméticos). Sem servidor não existe compra —
    e o Jaime pediu pra NÃO listar o que vai ter: só "em breve". O Pokémart (itens) é a janela 'mercado'. */
 function rPremium(corpo){
-  corpo.innerHTML = '<div class="vazio">Loja premium — em breve, junto com o servidor online.</div>';
+  corpo.innerHTML = '<div class="vazio">' + esc(tr('Premium shop — coming soon with the online server.')) + '</div>';
 }
 
 /* ------------------------------------------------------------------ Social / Batalha */
@@ -1875,9 +1875,9 @@ function rSocial(corpo){
   else corpo.innerHTML = '<div class="lista"><div class="linha" style="cursor:default"><span style="font-size:18px">✉️</span><span class="nome"><b>Bem-vindo a Kanto</b><small>Sistema · sua jornada começa em Pallet. Anexo: 5 Pokébolas (já na mochila).</small></span></div></div>';
 }
 function rBatalha(corpo){
-  const aba = abas([{ id: 'trein', nome: 'Treinadores' }, { id: 'pvp', nome: 'PvP' }, { id: 'rank', nome: 'Ranking' }]);
-  if (aba === 'trein'){ const n = new Set((ctx.dados.treinadores || []).map(t => String(t.cfg))).size, venc = new Set([].concat(ctx.lerLS('treinadoresVencidos', []) || []).map(k => String(k).split('@')[0])).size; /* 17/09: por treinador (cfg), não por vaga — o mapa tem 1.984 vagas pra 166 treinadores e as contas do bug das vagas (genandrade) têm o mesmo treinador 2–4 vezes na lista */ corpo.innerHTML = `<div class="vazio">${n} treinadores marcados neste mapa · <b>${venc}</b> vencidos.<br>Procure os nomes <b style="color:#ffb1b1">⚔</b> pelas rotas e fale (Z) pra desafiar — batalha por turnos; ginásios e insígnias vêm depois.</div>`; }
-  else corpo.innerHTML = '<div class="vazio">Precisa de servidor. A janela já existe pra você posicionar.</div>';
+  const aba = abas([{ id: 'trein', nome: tr('Trainers') }, { id: 'pvp', nome: tr('PvP') }, { id: 'rank', nome: tr('Ranking') }]);
+  if (aba === 'trein'){ const n = new Set((ctx.dados.treinadores || []).map(t => String(t.cfg))).size, venc = new Set([].concat(ctx.lerLS('treinadoresVencidos', []) || []).map(k => String(k).split('@')[0])).size; corpo.innerHTML = `<div class="vazio">${n} ${esc(tr('trainers marked on this map'))} · <b>${venc}</b> ${esc(tr('beaten'))}.<br>${esc(tr('Look for ⚔ names on the routes and talk (Z) to challenge — turn battles; gyms and badges come next.'))}</div>`; }
+  else corpo.innerHTML = '<div class="vazio">' + esc(tr('Player battles need an account. Stand next to another trainer and type /battle <name>.')) + '</div>';
 }
 
 /* ------------------------------------------------------------------ Atalhos 5–8 (seletor) */
@@ -2292,7 +2292,7 @@ function cfDialogoSenha(){
     const r = await ctx.conta.trocarSenha(atual.value, nova.value);
     if (!r.ok){ av.style.color = '#f58e8e'; av.textContent = tr(r.erro); return; }
     d.remove();
-    Chat.sistema('Senha trocada.' + (r.codigo ? ' GUARDE o código de recuperação NOVO (o antigo não vale mais): ' + r.codigo : ''));
+    Chat.sistema(tr('Password changed.') + (r.codigo ? ' ' + tr('SAVE the NEW recovery code (the old one no longer works): {x}', { x: r.codigo }) : ''));
   };
   atual.focus();
 }

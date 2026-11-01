@@ -5216,10 +5216,10 @@ function pintarAtalhos(forcar = false){
   const it = lerLS('itens', {}), partes = [];
   for (let i = 0; i < ATALHOS_N; i++){
     const b = jogo.atalhos[i], tecla = ATALHOS_TECLAS[i];
-    if (!b){ partes.push(`<button type="button" class="atalho vazio" data-i="${i}" title="atalho ${tecla}: clique pra escolher (poção, bola ou montaria)"><b>${tecla}</b><span>+</span></button>`); continue; }
+    if (!b){ partes.push(`<button type="button" class="atalho vazio" data-i="${i}" title="${I18n.t('hotkey {key}: click to pick (potion, ball, or mount)', { key: tecla })}"><b>${tecla}</b><span>+</span></button>`); continue; }
     const n = b.tipo === 'item' ? (b.bola ? (jogo.bolas?.[b.id] || 0) : (it[b.id] || 0)) : null;
     const on = (b.tipo === 'montaria' && jogo.montaria?.glb === b.glb) || (b.bola && String(jogo.bolaSel) === String(b.id));
-    partes.push(`<button type="button" class="atalho${n === 0 ? ' frio' : ''}${on ? ' on' : ''}" data-i="${i}" title="${escHtml(b.nome)} (${tecla}) · botão direito ou toque longo: trocar"><b>${tecla}</b><i style="background-image:url('${b.icone}')"></i><em>${escHtml(b.nome)}</em>${n > 1 ? `<small>×${n}</small>` : '<small></small>'}</button>`);
+    partes.push(`<button type="button" class="atalho${n === 0 ? ' frio' : ''}${on ? ' on' : ''}" data-i="${i}" title="${escHtml(b.nome)} (${tecla}) · ${I18n.t('right-click or long-press to change')}"><b>${tecla}</b><i style="background-image:url('${b.icone}')"></i><em>${escHtml(b.nome)}</em>${n > 1 ? `<small>×${n}</small>` : '<small></small>'}</button>`);
   }
   const html = partes.join(''); if (html === el.__html) return; el.__html = html; el.innerHTML = html; Hud.remontar(el);   // Figma: reaplica a barra prata nos botões novos
 }
@@ -5602,7 +5602,13 @@ function pintarTime(forcar = false){
     vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt };
     if (on && (forcar || !jogo.evoPronta || (jogo.quadroEvo = (jogo.quadroEvo || 0) + 1) % 30 === 0)) jogo.evoPronta = { v: evolucaoDe(p) };   // regras dos jogos (evolution.mjs), reavaliadas a cada 30 quadros
     const evo = on && !jogo.evoluindo && !jogo.trocandoSeguidor ? jogo.evoPronta?.v : null;   // botão ✧ no canto do slot em campo: só quando alguma regra já vale
-    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${escHtml(t.nome)} Lv${t.lv}${t.lv > tetoNivel() ? ' · 🔒 não obedece (teto Lv ' + tetoNivel() + ')' : t.lv >= tetoNivel() ? ' · no teto Lv ' + tetoNivel() + ' (XP guardada' + (t.expReserva > 0 ? ': ' + t.expReserva : '') + ')' : ''}${ko ? ' · desmaiado: clique usa um Reanimador da mochila' : on ? ' · em campo' : ' · clique pra trocar'} · arraste (ou segure, no toque) pra mudar a ordem · Alt+↑/↓" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="evoluir → ${escHtml(evo.nome)}${evo.itemNome ? ' (usa ' + escHtml(evo.itemNome) + ')' : ''}">✧</button>` : ''}</div>`);
+    const teto = tetoNivel();
+    const dica = t.lv > teto ? I18n.t(" · 🔒 won't obey (cap Lv {n})", { n: teto })
+      : t.lv >= teto ? I18n.t(' · at cap Lv {n} (banked XP{xp})', { n: teto, xp: t.expReserva > 0 ? ': ' + t.expReserva : '' })
+      : '';
+    const estado = ko ? I18n.t(' · fainted: click uses a Revive from the bag') : on ? I18n.t(' · in the field') : I18n.t(' · click to switch');
+    const tituloSlot = escHtml(t.nome) + ' Lv' + t.lv + dica + estado + I18n.t(' · drag (or hold on touch) to reorder · Alt+↑/↓');
+    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
   }
   const html = partes.join('');
   /* Assinatura SEM o que muda a cada quadro (HP, cor, recarga da troca): em batalha o HP muda todo quadro e refazer o innerHTML
@@ -7427,7 +7433,7 @@ function proximoTeto(){
 function foraDoTeto(p){ return p === jogo.pika && membroAtivo() < 0; }   // parceiro padrão de dev (sem time): sem teto
 function desobedece(p){
   if (!p || foraDoTeto(p) || !(p.lv > tetoNivel())) return null;
-  return p.nome + ' não obedece: Lv ' + p.lv + ' passa do teto Lv ' + tetoNivel() + ' — ' + proximoTeto();
+  return p.nome + I18n.t(" won't obey: Lv {lv} is over the cap Lv {cap} — {next}", { lv: p.lv, cap: tetoNivel(), next: proximoTeto() });
 }
 let avisoTetoEm = 0;
 function avisarTeto(p, motivo){
@@ -7733,7 +7739,7 @@ if (jogo.ash){
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
       else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvento(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
-      Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /batalhar ' + (m.de || '') + ' to accept (same map, within 14 m).');
+      Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).');
     }, batalhaAbrir: m => { abrirTurnoServidor(m); } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
@@ -7868,9 +7874,9 @@ function pintarBarra(){
   setTexto($('f-pika-lv'), 'Lv' + p.lv + ' · ' + I18n.t(jogo.montaria ? 'in Poké Ball' : p.desmaiado > 0 ? 'fainted' : p.emBatalha ? 'in battle' : 'following'));
   for (let i = 0; i < 4; i++){
     const id = p.golpesIds[i], g = id && GOLPES[id], el = $('sk' + (i + 1));
-    if (!g){ if (!el.classList.contains('vazio')){ el.classList.add('vazio'); for (const f of [...el.children]) if (!f.dataset.fig) f.remove(); el.__pronto = false; el.__id = null; el.__ic = null; el.__txt = null; el.__pct = null; el.title = 'sem golpe'; } continue; } else if (el.classList.contains('vazio')) el.classList.remove('vazio');
+    if (!g){ if (!el.classList.contains('vazio')){ el.classList.add('vazio'); for (const f of [...el.children]) if (!f.dataset.fig) f.remove(); el.__pronto = false; el.__id = null; el.__ic = null; el.__txt = null; el.__pct = null; el.title = I18n.t('no move'); } continue; } else if (el.classList.contains('vazio')) el.classList.remove('vazio');
     if (!el.__pronto){ el.insertAdjacentHTML('afterbegin', `<b>${i + 1}</b><em></em><s></s><i></i><small></small>`); el.__pronto = true; el.__em = el.querySelector(':scope > em'); el.__s = el.querySelector(':scope > s'); el.__i = el.querySelector(':scope > i'); el.__small = el.querySelector(':scope > small'); Hud.remontar($('skills')); }   // os <span data-fig> do Figma ficam; a peça remonta pra estilizar o miolo novo
-    if (el.__id !== id){ el.__id = id; el.__em.textContent = g.nome; el.__s.style.background = R.COR_TIPO?.[g.tipo] || '#556'; el.title = `${g.nome} · ${g.tipo} · poder ${g.poder} · recarga ${g.recarga}s`; Hud.encolher(el.__em); }
+    if (el.__id !== id){ el.__id = id; el.__em.textContent = g.nome; el.__s.style.background = R.COR_TIPO?.[g.tipo] || '#556'; el.title = `${g.nome} · ${g.tipo} · ${I18n.t('power')} ${g.poder} · ${I18n.t('cooldown')} ${g.recarga}s`; Hud.encolher(el.__em); }
     const ic = el.__ic || (el.__ic = el.querySelector('[data-var="tipo"]'));                       // Figma: ícone do tipo do golpe no slot (img/tipo)
     if (ic && ic.__tipo !== g.tipo){
       ic.__tipo = g.tipo; const srcTipo = './ui/figma/tipo/' + (TIPO_PT[g.tipo] || 'normal') + '.png';   /* 18/09 (rodada 32, Amanda: "a qualidade caiu depois do d6239fe0"): de volta aos PNGs de 692 px; o tamanho continua sendo a caixa do slot-tipo */
@@ -7884,7 +7890,7 @@ function pintarBarra(){
     if (el.__frio !== frio){ el.classList.toggle('frio', frio); el.__frio = frio; }
     const pct = rec > 0 ? Math.min(100, rec / (g.recarga || 1) * 100) : 0;
     if (el.__pct !== pct){ el.__i.style.height = pct + '%'; Hud.estado(el, 'cooldown', pct / 100); el.__pct = pct; }   // Figma: a sombra do estado [cooldown] desce junto
-    const txt = rec > 0 && p.hp > 0 ? rec.toFixed(1) : (m ? (semPp ? 'sem PP' : m.pp + '/' + m.ppMax) : '');
+    const txt = rec > 0 && p.hp > 0 ? rec.toFixed(1) : (m ? (semPp ? I18n.t('no PP') : m.pp + '/' + m.ppMax) : '');
     if (el.__txt !== txt){ el.__small.textContent = txt; el.__txt = txt; }
   }
   const a = jogo.alvo;
@@ -7900,6 +7906,7 @@ function pintarBarra(){
   setTexto($('bola-nome'), I18n.t(BOLAS[sel]?.[0] || sel)); setTexto($('bola-n'), '×' + nb);
   const bi = $('bola-icone'); if (bi && bi.__sel !== sel){ bi.__sel = sel; bi.classList.add('real'); bi.style.backgroundImage = "url('./ui/itens/ic_" + sel + ".png')"; }   // ícone real da bola (pacote Item)
   const bb = $('bola-btn'), semBola = nb <= 0; if (bb.__frio !== semBola){ bb.classList.toggle('frio', semBola); bb.__frio = semBola; }
+  if (bb) bb.title = I18n.t('{name} ×{n} · throw with F · Shift+F switches ball', { name: I18n.t(BOLAS[sel]?.[0] || sel), n: nb });
   pintarAtalhos();
 }
 
@@ -8545,8 +8552,16 @@ function treinadorVencido(cfg, lista = lerLS('treinadoresVencidos', [])){
 }
 /* ✔ QUE SÓ O SERVIDOR SABIA (17/09, revisão dos treinadores de rota): a vitória foi paga no servidor mas não chegou neste aparelho
    (queda no meio da animação — o fimTurno não rodou, caso do MASTER —, ou a lista local veio antes da vitória). O servidor recusa
-   a luta com `codigo: 'vencido'`; aqui o cliente passa a saber também: grava a chave (pelo cfg, como no fimTurno), troca o rótulo
-   pra ✔ e a fala pra de vitória. Assim o convite não abre de novo e o aviso "você já venceu" aparece uma vez só. */
+   the fight with `code: 'beaten'` (never Portuguese `codigo: 'vencido'`); the client also records it: saves the key (by cfg, like fimTurno), swaps the label
+   to ✔ and the line to the victory speech. The invite does not open again and "you already beat me" shows once. */
+function battleCode(r){
+  return String(r?.code || r?.codigo || '');
+}
+function battleCodeIs(r, name){
+  const c = battleCode(r);
+  const alias = { beaten: ['beaten', 'vencido'], dropped: ['dropped', 'queda'], busy: ['busy', 'ocupado'], turn: ['turn', 'vez'] };
+  return c === name || (alias[name] || []).includes(c);
+}
 function marcarTreinadorVencido(n){
   if (!n || n.ginasio || n.elite || n.cfg == null) return;
   const v0 = lerLS('treinadoresVencidos', []), v = Array.isArray(v0) ? v0 : [];
@@ -8611,7 +8626,7 @@ async function desafiarJogador(nome){
   if (!comConta()){ Chat.sistema('Log in to battle another player.'); return false; }
   const r = await Rede.pedirBatalha('desafiar', { tipo: 'jogador', id: nome });
   if (!r || r.erro){ Chat.sistema('⚔ ' + ((r && r.erro) || 'the server did not answer')); return false; }
-  if (r.espera){ Chat.sistema('⚔ Challenge sent to ' + (r.nomeInimigo || nome) + '. They type /batalhar <your name> to accept.'); return true; }
+    if (r.espera){ Chat.sistema('⚔ Challenge sent to ' + (r.nomeInimigo || nome) + '. They type /battle <your name> to accept.'); return true; }
   await abrirTurnoServidor(r); return true;
 }
 async function iniciarTurno(n, servPronto = null){
@@ -8620,7 +8635,7 @@ async function iniciarTurno(n, servPronto = null){
   if (jogo.montaria){ flutuar(a, 'get off the mount first (M)', '#ffd23a'); $('turno').hidden = true; return; }
   if (!servPronto && Math.hypot(a.x - n.x, a.z - n.z) > 14){ flutuar(a, 'get closer to the trainer', '#ffd23a'); $('turno').hidden = true; return; }
   const brigando = jogo.ordem || jogo.selvagens.some(s => s.estado === 'atacando' && Math.hypot(s.x - p.x, s.z - p.z) < 12);
-  if (brigando){ flutuar(a, 'termine a briga com o selvagem primeiro', '#ffd23a'); $('turno').hidden = true; return; }
+  if (brigando){ flutuar(a, I18n.t('finish the wild battle first'), '#ffd23a'); $('turno').hidden = true; return; }
   /* PASSO 4: com conta, quem conduz a batalha é o SERVIDOR — ele confere onde você está, monta o time do inimigo pelas
      tabelas e decide cada turno. Sem conta, o motor local de sempre. */
   let serv = servPronto || null;
@@ -8630,7 +8645,7 @@ async function iniciarTurno(n, servPronto = null){
   if (!serv && comConta()){
     const alvoId = n.elite ? n.elite.ordem : n.ginasio ? n.ginasio.insignia.id : n.spotKey;
     const r = await Rede.pedirBatalha('desafiar', { tipo: n.elite ? 'elite' : n.ginasio ? 'ginasio' : 'treinador', id: alvoId });
-    if (r && r.erro && !n.ginasio && (r.codigo === 'vencido' || /já venceu/.test(r.erro))) marcarTreinadorVencido(n);   // 17/09: o servidor sabe que ele já foi vencido (o texto cobre servidor sem o `codigo`)
+    if (r && r.erro && !n.ginasio && (battleCodeIs(r, 'beaten') || /already beat|já venceu/.test(r.erro))) marcarTreinadorVencido(n);
     if (!r || r.erro){ flutuar(a, (r && r.erro) || 'the server did not answer', '#f58e8e'); $('turno').hidden = true; return; }
     serv = r;
   }
@@ -8672,7 +8687,7 @@ async function iniciarTurno(n, servPronto = null){
   p.giro = Math.atan2(n.x - p.x, n.z - p.z); p.pivo.rotation.y = p.giro;
   p.emBatalha = true;
   tocarUma(p, 'Appear'); efeito('00016_Hit', p.peito, p.altura);
-  flutuar(p, 'vai, ' + p.nome + '!', '#ffe07a');
+  flutuar(p, I18n.t('Go, {name}!', { name: p.nome }), '#ffe07a');
   await esperarSeg(0.6);
   await proximoInimigoTurno();
   const T2 = jogo.turno; if (!T2) return;
@@ -8697,7 +8712,7 @@ async function proximoInimigoTurno(){
   jogo.selvagens.push(s); jogo.alvo = s;
   T.inimigo = s; T.caiu = false;
   tocarUma(s, 'Appear'); efeito('00016_Hit', s.peito, s.altura);
-  Chat.sistema(T.info.nome + ' mandou ' + s.nome + ' Lv' + s.lv + '!');
+  Chat.sistema(T.info.nome + I18n.t(' sent out ') + s.nome + ' Lv' + s.lv + '!');
   return true;
 }
 function koTurno(s){
@@ -8720,7 +8735,7 @@ async function rodadaDoServidor(T, acao){
   const r = acao.tipo === 'desistir' ? await Rede.pedirBatalha('sair') : await Rede.pedirBatalha('acao', pedido);
   /* `queda` (revisão de 20/09) = o socket morreu com a jogada no ar: o servidor já fechou a batalha do lado dele, então o
      painel fecha aqui na hora em vez de ficar 12 s esperando uma resposta que não vem mais. */
-  if (r && (r.codigo === 'queda' || /não está numa batalha/.test(r.erro || ''))){   // 13/09 (l.neto): a conexão caiu no meio (aba em segundo plano) e o servidor fechou a batalha ao reconectar — o painel ficava aberto repetindo o erro a cada clique
+  if (r && (battleCodeIs(r, 'dropped') || /not in a battle|não está numa batalha/.test(r.erro || ''))){
     Chat.sistema('⚠ The battle dropped with the connection. Talk to the trainer again to restart.');
     fimTurno(false, { desistiu: true }); return;
   }
@@ -8728,8 +8743,8 @@ async function rodadaDoServidor(T, acao){
      Com `vez` o servidor já andou sem nós (uma resposta se perdeu): a recusa traz o turno de AGORA e o cliente se acerta por
      ele (20/09, revisão). Largar o número, como se fazia, desarmava a trava da rajada até a rodada seguinte; só se a recusa
      vier sem o turno (servidor antigo, deploy pela metade) é que ele fica sem número. */
-  if (r && (r.codigo === 'ocupado' || r.codigo === 'vez')){
-    if (r.codigo === 'vez' && T.serv) T.serv = { ...T.serv, vez: r.vez ?? null };
+  if (r && (battleCodeIs(r, 'busy') || battleCodeIs(r, 'turn'))){
+    if (battleCodeIs(r, 'turn') && T.serv) T.serv = { ...T.serv, vez: r.vez ?? null };
     flutuar(jogo.ash, 'wait for your turn', '#ffd23a');
     T.fase = 'escolha'; pintarTurno(); return;
   }
@@ -8984,7 +8999,7 @@ function pintarTurno(){
   const iTroca = jogo.time.findIndex((c, j) => j !== ativo && !(c.hp === 0 && (c.koAte || 0) > agora) && !(c.hp === 0));
   const golpes = (p?.movs || []).map((m, i) => ({ g: GOLPES[m.id], m, i })).filter(x => x.g);
   el.innerHTML = `<div class="tcab">⚔ <b>${T.info.nome}</b> · Pokémon ${Math.min(T.idx + 1, T.info.time.length)}/${T.info.time.length} · rodada ${T.rodada}${livreE ? '' : ' <span class="tmini">…executando</span>'}</div>
-    <div class="tlinha">${golpes.map(({ g, m, i }) => `<button type="button" class="tbt golpe" data-tg="${i}" ${livreE && m.pp > 0 ? '' : 'disabled'}><b>${i + 1}</b>${g.nome || g.id}<small>${g.tipo || ''} · ${g.poder || '—'} · PP ${m.pp}/${m.ppMax}</small></button>`).join('')}${p && Ind.semPP(p) ? `<button type="button" class="tbt golpe" data-tg="s" ${livreE ? '' : 'disabled'}><b>!</b>Struggle<small>Normal · 50 · sem PP</small></button>` : ''}</div>
+    <div class="tlinha">${golpes.map(({ g, m, i }) => `<button type="button" class="tbt golpe" data-tg="${i}" ${livreE && m.pp > 0 ? '' : 'disabled'}><b>${i + 1}</b>${g.nome || g.id}<small>${g.tipo || ''} · ${g.poder || '—'} · PP ${m.pp}/${m.ppMax}</small></button>`).join('')}${p && Ind.semPP(p) ? `<button type="button" class="tbt golpe" data-tg="s" ${livreE ? '' : 'disabled'}><b>!</b>Struggle<small>Normal · 50 · ${I18n.t('no PP')}</small></button>` : ''}</div>
     <div class="tlinha"><button type="button" class="tbt" id="t-mochila" ${livreE ? '' : 'disabled'}>🎒 Mochila</button>
       <button type="button" class="tbt" id="t-troca" ${livreE && iTroca >= 0 ? '' : 'disabled'}>🔄 Trocar</button>
       <button type="button" class="tbt fugir" id="t-fugir" ${livreE ? '' : 'disabled'}>🏳 Desistir</button></div>`;

@@ -19,9 +19,9 @@ import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz te
  */
 export const PECAS = ['f-parceiro', 'skills', 'bola-btn', 'atalhos', 'f-alvo', 'missao', 'fala', 'joy', 'cam-btns', 'menu-btn', 'chat-btn', 'menu-icones', 'time-hud', 'chat', 'minimapa', 'painel-fundo', 'atalhos-v2', 'alerta-raid'];
 export const PECAS_V2 = ['atalhos-v2', 'alerta-raid'];                   // rodada 29: só existem na maquete v2 — o `aplicar` cria o <div> quando o layout traz a peça
-export const NOMES = { 'f-parceiro': 'parceiro (nome, nível, HP)', skills: 'golpes 1–4', 'bola-btn': 'bola (F)', atalhos: 'atalhos 5–9 (poções, bolas, montarias)', 'f-alvo': 'alvo (segue o inimigo)', missao: 'missão', fala: 'caixa de fala (segue o NPC)', joy: 'joystick (celular)', 'cam-btns': 'câmera ↺ ↻ (celular)', 'menu-btn': 'menu ☰ (grade completa)', 'chat-btn': 'botão do chat (celular)', 'menu-icones': 'botões de menu (ícones)', chat: 'chat (Local/Global/Trade/Help)', 'time-hud': 'time (6 Pokémon, troca rápida)', minimapa: 'minimapa (câmera de cima)', 'painel-fundo': 'painel de fundo (decorativo)', 'atalhos-v2': 'atalhos Eventos/Loja (v2)', 'alerta-raid': 'card da raid ao vivo (v2)' };
+export const NOMES = { 'f-parceiro': 'partner (name, level, HP)', skills: 'moves 1–4', 'bola-btn': 'ball (F)', atalhos: 'hotkeys 5–9 (potions, balls, mounts)', 'f-alvo': 'target (follows the enemy)', missao: 'mission', fala: 'speech box (follows the NPC)', joy: 'joystick (phone)', 'cam-btns': 'camera ↺ ↻ (phone)', 'menu-btn': 'menu ☰ (full grid)', 'chat-btn': 'chat button (phone)', 'menu-icones': 'menu buttons (icons)', chat: 'chat (Local/Global/Trade/Help)', 'time-hud': 'party (6 Pokémon, quick switch)', minimapa: 'minimap (top-down camera)', 'painel-fundo': 'background panel (decor)', 'atalhos-v2': 'Events/Shop hotkeys (v2)', 'alerta-raid': 'live raid card (v2)' };
 export const JANELAS = ['pokemon', 'mochila', 'missoes', 'mapa', 'pokedex', 'treinador', 'loja', 'social', 'batalha', 'config'];
-export const NOMES_JANELAS = { pokemon: 'Pokémon', mochila: 'Mochila', missoes: 'Missões', mapa: 'Mapa', pokedex: 'Pokédex', treinador: 'Treinador', loja: 'Loja', social: 'Social', batalha: 'Batalha', config: 'Config' };
+export const NOMES_JANELAS = { pokemon: 'Pokémon', mochila: 'Bag', missoes: 'Missions', mapa: 'Map', pokedex: 'Pokédex', treinador: 'Trainer', loja: 'Shop', social: 'Social', batalha: 'Battle', config: 'Settings' };
 export const PRESETS = { pc: { nome: 'PC', w: 1920, h: 900 }, celular_pe: { nome: 'celular em pé', w: 390, h: 844 }, celular_deitado: { nome: 'celular deitado', w: 844, h: 390 } };
 const CHAVE = 'hud.layout';
 const CHAVE_GUARDADO = 'hud.layout.antigo';                              // layout do editor posto de lado quando chega uma maquete nova
@@ -1021,7 +1021,8 @@ export function pintarLequeBola(){
     const nome = d.nome?.(id) || id;
     const qtd = d.qtd?.(id) ?? 0;
     const icone = d.icone?.(id) || '';
-    return `<button type="button" class="bola-op${on}" data-bola="${id}" title="${nome} ×${qtd}"><i style="background-image:url('${icone}')"></i><em>${nome}</em><small>×${qtd}</small></button>`;
+    const tecla = on ? 'F' : 'click → F';
+    return `<button type="button" class="bola-op${on}" data-bola="${id}" title="${nome} ×${qtd} · ${tecla}"><i style="background-image:url('${icone}')"></i><em>${nome}</em><small>×${qtd}</small><b>${tecla}</b></button>`;
   }).join('');
   if (leque.__html !== html){ leque.innerHTML = html; leque.__html = html; }
   const r = bola.getBoundingClientRect();
@@ -1095,7 +1096,7 @@ export function aplicarIlha(){
   if (menu){
     menu.classList.add('dock-slide');
     menu.style.backgroundImage = 'none';
-    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'column', position: 'fixed', left: 'auto', top: mobile ? '210px' : '268px', bottom: 'auto', right: '0px', transform: 'none', zIndex: '28' });
+    Object.assign(menu.style, { width: 'auto', height: 'auto', maxWidth: 'none', maxHeight: 'none', overflow: 'visible', display: 'flex', flexDirection: 'column', position: 'fixed', left: 'auto', top: 'auto', bottom: mobile ? '118px' : '168px', right: '0px', transform: 'none', zIndex: '28' });
     soltarFilhos(menu, ':scope > button, :scope > .fig-grupo');
     let aba = document.getElementById('menu-dock-aba');
     if (!aba){
