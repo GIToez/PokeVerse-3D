@@ -1104,8 +1104,8 @@ async function soAcao(nome, el){
   } else if (nome === 'convidar'){                                        // fase 4: convite de TROCA (o PvP ainda vem depois)
     Popup.mostrarExtra(pop, 'tooltip-amigo', false);
     if (!soAmigoMenu) return;
-    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /batalhar ' + soAmigoMenu.nick);
-    else Chat.sistema('Trade invite sent. To battle instead: /batalhar ' + soAmigoMenu.nick);
+    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /battle ' + soAmigoMenu.nick);
+    else Chat.sistema('Trade invite sent. To battle instead: /battle ' + soAmigoMenu.nick);
   } else if (nome === 'desfazer-amizade'){
     Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (!soAmigoMenu) return;
     const r = await soChamar('POST', '/social/remover', { usuario: soAmigoMenu.usuario });
@@ -1875,9 +1875,9 @@ function rSocial(corpo){
   else corpo.innerHTML = '<div class="lista"><div class="linha" style="cursor:default"><span style="font-size:18px">✉️</span><span class="nome"><b>Bem-vindo a Kanto</b><small>Sistema · sua jornada começa em Pallet. Anexo: 5 Pokébolas (já na mochila).</small></span></div></div>';
 }
 function rBatalha(corpo){
-  const aba = abas([{ id: 'trein', nome: 'Treinadores' }, { id: 'pvp', nome: 'PvP' }, { id: 'rank', nome: 'Ranking' }]);
-  if (aba === 'trein'){ const n = new Set((ctx.dados.treinadores || []).map(t => String(t.cfg))).size, venc = new Set([].concat(ctx.lerLS('treinadoresVencidos', []) || []).map(k => String(k).split('@')[0])).size; /* 17/09: by trainer (cfg), not by spot */ corpo.innerHTML = `<div class="vazio">${n} ${esc(tr('trainers marked on this map'))} · <b>${venc}</b> ${esc(tr('beaten'))}.<br>${esc(tr('Look for ⚔ names on the routes and talk (Z) to challenge — turn battles; gyms and badges come next.'))}</div>`; }
-  else corpo.innerHTML = '<div class="vazio">Precisa de servidor. A janela já existe pra você posicionar.</div>';
+  const aba = abas([{ id: 'trein', nome: tr('Trainers') }, { id: 'pvp', nome: tr('PvP') }, { id: 'rank', nome: tr('Ranking') }]);
+  if (aba === 'trein'){ const n = new Set((ctx.dados.treinadores || []).map(t => String(t.cfg))).size, venc = new Set([].concat(ctx.lerLS('treinadoresVencidos', []) || []).map(k => String(k).split('@')[0])).size; corpo.innerHTML = `<div class="vazio">${n} ${esc(tr('trainers marked on this map'))} · <b>${venc}</b> ${esc(tr('beaten'))}.<br>${esc(tr('Look for ⚔ names on the routes and talk (Z) to challenge — turn battles; gyms and badges come next.'))}</div>`; }
+  else corpo.innerHTML = '<div class="vazio">' + esc(tr('Player battles need an account. Stand next to another trainer and type /battle <name>.')) + '</div>';
 }
 
 /* ------------------------------------------------------------------ Atalhos 5–8 (seletor) */

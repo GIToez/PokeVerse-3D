@@ -7739,7 +7739,7 @@ if (jogo.ash){
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
       else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvento(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
-      Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /batalhar ' + (m.de || '') + ' to accept (same map, within 14 m).');
+      Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).');
     }, batalhaAbrir: m => { abrirTurnoServidor(m); } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
@@ -8626,7 +8626,7 @@ async function desafiarJogador(nome){
   if (!comConta()){ Chat.sistema('Log in to battle another player.'); return false; }
   const r = await Rede.pedirBatalha('desafiar', { tipo: 'jogador', id: nome });
   if (!r || r.erro){ Chat.sistema('⚔ ' + ((r && r.erro) || 'the server did not answer')); return false; }
-  if (r.espera){ Chat.sistema('⚔ Challenge sent to ' + (r.nomeInimigo || nome) + '. They type /batalhar <your name> to accept.'); return true; }
+    if (r.espera){ Chat.sistema('⚔ Challenge sent to ' + (r.nomeInimigo || nome) + '. They type /battle <your name> to accept.'); return true; }
   await abrirTurnoServidor(r); return true;
 }
 async function iniciarTurno(n, servPronto = null){
@@ -8635,7 +8635,7 @@ async function iniciarTurno(n, servPronto = null){
   if (jogo.montaria){ flutuar(a, 'get off the mount first (M)', '#ffd23a'); $('turno').hidden = true; return; }
   if (!servPronto && Math.hypot(a.x - n.x, a.z - n.z) > 14){ flutuar(a, 'get closer to the trainer', '#ffd23a'); $('turno').hidden = true; return; }
   const brigando = jogo.ordem || jogo.selvagens.some(s => s.estado === 'atacando' && Math.hypot(s.x - p.x, s.z - p.z) < 12);
-  if (brigando){ flutuar(a, 'termine a briga com o selvagem primeiro', '#ffd23a'); $('turno').hidden = true; return; }
+  if (brigando){ flutuar(a, I18n.t('finish the wild battle first'), '#ffd23a'); $('turno').hidden = true; return; }
   /* PASSO 4: com conta, quem conduz a batalha é o SERVIDOR — ele confere onde você está, monta o time do inimigo pelas
      tabelas e decide cada turno. Sem conta, o motor local de sempre. */
   let serv = servPronto || null;
@@ -8687,7 +8687,7 @@ async function iniciarTurno(n, servPronto = null){
   p.giro = Math.atan2(n.x - p.x, n.z - p.z); p.pivo.rotation.y = p.giro;
   p.emBatalha = true;
   tocarUma(p, 'Appear'); efeito('00016_Hit', p.peito, p.altura);
-  flutuar(p, 'vai, ' + p.nome + '!', '#ffe07a');
+  flutuar(p, I18n.t('Go, {name}!', { name: p.nome }), '#ffe07a');
   await esperarSeg(0.6);
   await proximoInimigoTurno();
   const T2 = jogo.turno; if (!T2) return;
@@ -8712,7 +8712,7 @@ async function proximoInimigoTurno(){
   jogo.selvagens.push(s); jogo.alvo = s;
   T.inimigo = s; T.caiu = false;
   tocarUma(s, 'Appear'); efeito('00016_Hit', s.peito, s.altura);
-  Chat.sistema(T.info.nome + ' mandou ' + s.nome + ' Lv' + s.lv + '!');
+  Chat.sistema(T.info.nome + I18n.t(' sent out ') + s.nome + ' Lv' + s.lv + '!');
   return true;
 }
 function koTurno(s){
