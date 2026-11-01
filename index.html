@@ -3755,6 +3755,24 @@ const ehArisco = p => p === 'arisco' || p === 'skittish';
 const rotuloPerfil = p => ehAgressivo(p) ? 'aggressive' : 'skittish';
 const ESTADO_EN = { vagando: 'wandering', fugindo: 'fleeing', atacando: 'attacking', desmaiado: 'fainted', capturando: 'catching', morto: 'gone', guardado: 'stored', chegando: 'arriving', koTurno: 'fainted' };
 const rotuloEstado = e => ESTADO_EN[e] || e;
+function iconeSelvagem(s){
+  if (s.estado === 'atacando') return '⚔';
+  if (s.estado === 'fugindo') return '🏃';
+  return ehAgressivo(s.perfil) ? '⚔' : '🏃';
+}
+function htmlRotuloSelvagem(s){
+  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}</span><i><b></b></i>`;
+}
+function pintarRotuloSelvagem(s){
+  if (!s?.rotulo) return;
+  const marca = (s.shiny ? '1' : '0') + '|' + s.nome + '|' + s.lv + '|' + iconeSelvagem(s);
+  if (s.rotMarca === marca) return;
+  s.rotulo.innerHTML = htmlRotuloSelvagem(s);
+  const b = s.rotulo.querySelector('i b');
+  if (b && s.maxHp) b.style.width = (s.hp / s.maxHp * 100) + '%';
+  s.rotMarca = marca;
+  s.rotHp = s.hp;
+}
 function aplicarSkittishHp(s){
   if (!s || s.chefe || s.raid) return;
   const lim = s.skittishHp === 0 ? 0 : (Number.isFinite(s.skittishHp) ? s.skittishHp : SKITTISH_HP);
@@ -4230,7 +4248,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   let s = poolMon.get(esp.glb)?.pop();
   if (s){
     if (PERF) PERF.ultimo = 'voltou ' + esp.nome;
-    s.travaAnim = 0; s.dtAcum = 0; s.quadro = 0; s.fuga = 0; s.chefe = false; s.rotHp = s.rotAlvo = undefined;
+    s.travaAnim = 0; s.dtAcum = 0; s.quadro = 0; s.fuga = 0; s.chefe = false; s.rotHp = s.rotAlvo = s.rotMarca = undefined;
     devolverAArvore(s);                                                  // corpo que estava guardado no pool volta pra cena
     s.pivo.visible = true;
   } else {
@@ -4280,7 +4298,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   tocarAnim(s, 'Idle');
   s.shiny = shiny != null ? !!shiny : Math.random() * TAXA_SHINY / Evento.shinyMult() < 1;   // Fase 3: ÷ multiplicador do evento ao vivo   // ✨ 1/4.096 (GDD §7.4); na rede quem sorteia é o servidor; a textura _1 é a mesma da bancada
   aplicarShinyCampo(s.pivo, s.shiny);
-  if (s.rotulo) s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${ehAgressivo(s.perfil) ? '⚔' : '🏃'}</span><i><b></b></i>`;
+  if (s.rotulo){ s.rotMarca = undefined; pintarRotuloSelvagem(s); }
   if (s.pivo.__pronto) return s;                   // corpo reaproveitado: shader e textura já estão na GPU
   /* O primeiro desenho de uma espécie nova compila shader e sobe textura de 2048² pra GPU
      de uma vez — 50–200 ms parados. compileAsync faz isso fora do quadro; o Pokémon só
@@ -4575,7 +4593,7 @@ function atualizarSelvagens(dt){
     if (s.estado === 'desmaiado'){
       s.mix.update(dt); s.desmaio -= dt;
       const seg = Math.max(0, Math.ceil(s.desmaio));
-      if (s.rotulo && !s.raid && s.rotDesm !== seg){ s.rotDesm = seg; s.rotulo.innerHTML = `<span>${s.nome} ${I18n.t('fainted')} · <b>F</b> ${I18n.t('catch')} ${seg}s</span><i><b></b></i>`; s.rotHp = undefined; }
+      if (s.rotulo && !s.raid && s.rotDesm !== seg){ s.rotDesm = seg; s.rotulo.innerHTML = `<span>${s.nome} ${I18n.t('fainted')} · <b>F</b> ${I18n.t('catch')} ${seg}s</span><i><b></b></i>`; s.rotHp = undefined; s.rotMarca = undefined; }
       if (s.desmaio <= 0 && !s.rede){ s.rotDesm = undefined; if (s.rotulo) s.rotulo.innerHTML = `<span>${s.nome} Lv${s.lv}</span><i><b></b></i>`; morrer(s); }   // na rede, quem some é o servidor (`sumiu`)
       continue;
     }
@@ -4713,7 +4731,6 @@ function atualizarSelvagens(dt){
     if (!s.__vistoReg && s.dex && dAsh < 18){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokédex de conhecimento: avistado (1× por indivíduo, a até 18 m)
     if (!s.rotulo){
       s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon';
-      s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${ehAgressivo(s.perfil) ? '⚔' : '🏃'}</span><i><b></b></i>`;
       $('sobre').appendChild(s.rotulo);
     }
     const perto = mostrarNomes && Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) < 30;
@@ -4721,7 +4738,8 @@ function atualizarSelvagens(dt){
     if (perto){
       const ehAlvo = jogo.alvo === s;
       if (s.rotAlvo !== ehAlvo){ s.rotulo.classList.toggle('alvo', ehAlvo); s.rotAlvo = ehAlvo; }
-      if (s.rotHp !== s.hp){ s.rotulo.querySelector('i b').style.width = (s.hp / s.maxHp * 100) + '%'; s.rotHp = s.hp; }
+      pintarRotuloSelvagem(s);
+      if (s.rotHp !== s.hp){ const barra = s.rotulo.querySelector('i b'); if (barra) barra.style.width = (s.hp / s.maxHp * 100) + '%'; s.rotHp = s.hp; }
     }
     if (perto){
       projetado.set(s.vx, s.vy + (s.rotuloAlto || 0.9), s.vz).project(cam);   // rotuloAlto: o chefe da raid é grande e paira
@@ -4885,6 +4903,7 @@ function aplicarGolpe(atacante, defensor, golpe, dano, eff){
     else if (eraArisco){   // skittish / already running: a hit makes them fight back instead of running harder
       defensor.estado = 'atacando'; defensor.paciencia = 14; defensor.assustado = false; defensor.fuga = 0; defensor.alvoX = null;
     } else if (defensor.perfil) defensor.assustado = true;
+    pintarRotuloSelvagem(defensor);
   }
   else if (defensor.emTurno) koTurno(defensor);                            // Pokémon de treinador: sem captura — sai de cena e o motor chama o próximo
   else if (defensor.raid){ defensor.hp = 0; }                              // RAID AO VIVO: o chefe só cai quando o SERVIDOR diz (sestado/sumiu) — nada de desmaio ou morte local
