@@ -146,6 +146,7 @@ export function receber(m){
     case 'troca_feita': {
       const nomes = l => (l || []).map(p => (p.shiny ? '✨ ' : '') + p.nome + ' Lv' + p.lv).join(', ') || 'nada';
       ctx.aplicarSave?.(m.save, m.rev);
+      ctx.possuirLista?.(m.recebi);
       fecharMesa();
       ctx.Chat?.sistema('Troca com ' + m.com + ' feita: você deu ' + nomes(m.dei) + ' e recebeu ' + nomes(m.recebi) + '.');
       return;

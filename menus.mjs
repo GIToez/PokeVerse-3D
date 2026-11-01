@@ -2228,6 +2228,7 @@ function dexEstado(){
   for (const s of ctx.jogo.selvagens || []) if (s.dex && !d[s.dex]) d[s.dex] = 'visto';
   for (const t of timeAtual()) if (t.dex) d[t.dex] = 'pego';
   for (const t of ctx.lerLS('caixa', [])) if (t.dex) d[t.dex] = 'pego';
+  ctx.conhecimento?.possuirLista?.([...timeAtual(), ...(ctx.lerLS('caixa', []) || [])]);
   ctx.gravarLS('dex', d); return d;
 }
 /** Visor 3D duplo: um renderizador (canvas 1200×600) com duas viewports — Normal à esquerda e
