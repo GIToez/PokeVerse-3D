@@ -18,6 +18,10 @@ import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz te
  * em 'hud.layout.antigo' (Configurações traz de volta): senão quem usou o editor nunca mais via a arte nova.
  */
 export const PECAS = ['f-parceiro', 'skills', 'bola-btn', 'atalhos', 'f-alvo', 'missao', 'fala', 'joy', 'cam-btns', 'menu-btn', 'chat-btn', 'menu-icones', 'time-hud', 'chat', 'minimapa', 'painel-fundo', 'atalhos-v2', 'alerta-raid'];
+/** Overworld pieces CSS places. `aplicar()` must not give them Figma x/y or they fight the dock. */
+export const PECAS_REGIAO = ['time-hud', 'skills', 'bola-btn', 'atalhos', 'menu-icones', 'chat', 'missao', 'minimapa', 'f-parceiro', 'f-alvo', 'menu-btn', 'atalhos-v2'];
+const REGIAO = new Set(PECAS_REGIAO);
+export const ehRegiao = () => typeof document !== 'undefined' && document.body.classList.contains('hud-dock');
 export const PECAS_V2 = ['atalhos-v2', 'alerta-raid'];                   // rodada 29: só existem na maquete v2 — o `aplicar` cria o <div> quando o layout traz a peça
 export const NOMES = { 'f-parceiro': 'partner (name, level, HP)', skills: 'moves 1–4', 'bola-btn': 'ball (F)', atalhos: 'hotkeys 5–9 (potions, balls, mounts)', 'f-alvo': 'target (follows the enemy)', missao: 'mission', fala: 'speech box (follows the NPC)', joy: 'joystick (phone)', 'cam-btns': 'camera ↺ ↻ (phone)', 'menu-btn': 'menu ☰ (full grid)', 'chat-btn': 'chat button (phone)', 'menu-icones': 'menu buttons (icons)', chat: 'chat (Local/Global/Trade/Help)', 'time-hud': 'party (6 Pokémon, quick switch)', minimapa: 'minimap (top-down camera)', 'painel-fundo': 'background panel (decor)', 'atalhos-v2': 'Events/Shop hotkeys (v2)', 'alerta-raid': 'live raid card (v2)' };
 export const JANELAS = ['pokemon', 'mochila', 'missoes', 'mapa', 'pokedex', 'treinador', 'loja', 'social', 'batalha', 'config'];
@@ -591,7 +595,9 @@ function recolherMenu(e, on){
 }
 /** Remonta a árvore do Figma numa peça já posicionada (o jogo chama quando recria o miolo de um botão). */
 export function remontar(e){
-  if (e && e.__figmaP) montarFigma(e, e.__figmaP, !!e.__figmaAbs);
+  if (!e || !e.__figmaP) return;
+  if (ehRegiao() && REGIAO.has(e.id)){ limpar(e); return; }
+  montarFigma(e, e.__figmaP, !!e.__figmaAbs);
 }
 function montarFigma(e, F, abs){
   const lig = LIGACOES[e.id] || {};
@@ -970,12 +976,22 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     const e = raiz.getElementById(id); if (!e || e.hidden) continue;
     const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0) aplicar.__congeladas[id] = registroDe(r, innerWidth, innerHeight, { congelada: true });
   }
-  barra?.classList.add('solto');
+  if (raiz === document) document.body.classList.add('hud-dock');
+  const dock = raiz === document && document.body.classList.contains('hud-dock');
+  if (dock){
+    barra?.classList.remove('solto');
+    barra?.classList.add('dock-regiao');
+    ancorarMenuNoDock();
+  } else {
+    barra?.classList.add('solto');
+    barra?.classList.remove('dock-regiao');
+  }
   const SB = SOBRE[preset] || {};
   const T = (layout?._figma && raiz === document) ? PRESETS[preset] : null;   // maquete do Figma na tela de verdade: vale a âncora "centro"
   const M = lerMover()[preset] || {};                                    // peças que o jogador arrastou (px da maquete)
   for (const id of PECAS){
     const el = raiz.getElementById(id);
+    if (dock && REGIAO.has(id)){ limpar(el); continue; }
     if (SB[id]){ posicionar(el, { ...(L[id] || {}), ...SB[id] }, false); continue; }   // decisão do jogo (chat do celular): âncora como está
     const reg = comAncoraCentro(L[id] || FB[id] || aplicar.__congeladas[id], el, T);
     const movivel = !!(el && reg && raiz === document && MOVIVEIS.includes(id));
@@ -1048,7 +1064,11 @@ function ligarIlhaUmaVez(){
   }, true);
   document.addEventListener('keydown', ev => { if (ev.code === 'Escape'){ fecharLequeBola(); if (document.getElementById('menu-icones')?.classList.contains('aberto')) alternarDock(false); } });
 }
-/** Drop leftover overlay classes so only `aplicar()` places pieces. */
+function ancorarMenuNoDock(){
+  const barra = document.getElementById('barra'), menu = document.getElementById('menu-icones');
+  if (barra && menu && menu.parentElement !== barra) barra.appendChild(menu);
+}
+/** Drop leftover overlay classes. `hud-dock` stays — CSS regions own those pieces. */
 export function limparSobreposicaoHud(){
   if (typeof document === 'undefined') return;
   document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile');

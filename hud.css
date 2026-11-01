@@ -431,3 +431,167 @@ body.sem-parceiro #skills, body.sem-parceiro #bola-btn, body.sem-parceiro #f-par
 #time-hud .tpalco{ position:absolute; left:2px; top:2px; width:48px; height:48px; pointer-events:none; z-index:1; background:none }
 #time-hud .tslot.t3d img.tpic{ opacity:0 }
 body.mobile #time-hud .tpalco{ width:42px; height:42px }
+
+/* ===== HUD dock: CSS regions own placement. Figma does not set x/y on these pieces. ===== */
+body.hud-dock{
+  --dock-navy:#121a2cf5;
+  --dock-navy2:#0c1220f6;
+  --dock-gold:#c9a24a;
+  --dock-gold2:#f4aa35;
+  --dock-line:#c9a24a88;
+}
+body.hud-dock #barra .fig-img,
+body.hud-dock #skills .fig-img,
+body.hud-dock #atalhos .fig-img,
+body.hud-dock #menu-icones .fig-img,
+body.hud-dock #time-hud .fig-img,
+body.hud-dock #missao .fig-img{display:none !important}
+body.hud-dock #f-parceiro,
+body.hud-dock #f-alvo,
+body.hud-dock #menu-btn{display:none !important}
+body.hud-dock #barra.dock-regiao,
+body.hud-dock #barra.dock-regiao.solto{
+  position:fixed; left:50%; right:auto; top:auto; bottom:12px;
+  transform:translateX(-50%);
+  display:flex; flex-direction:row; flex-wrap:nowrap;
+  align-items:center; justify-content:center;
+  gap:8px; width:max-content; height:auto;
+  max-width:min(1200px, calc(100vw - 20px));
+  padding:8px 14px;
+  border:1px solid var(--dock-line); border-radius:40px;
+  background:linear-gradient(180deg,#1a2746f6,#0d1424f8);
+  box-shadow:0 10px 28px #000a, inset 0 1px 0 #ffffff14;
+  z-index:24;
+}
+body.hud-dock #barra[hidden]{display:none}
+body.hud-dock #skills{
+  display:flex; flex-direction:row; align-items:center;
+  gap:6px; padding:0; background:none; width:auto; height:auto;
+}
+body.hud-dock #barra button.sk:not(.bola){
+  width:124px; height:52px; border-radius:14px;
+  border:1px solid #c9a24a66;
+  background:linear-gradient(180deg,#243352,#12192a);
+  box-shadow:inset 0 1px 0 #ffffff18;
+  flex-direction:column; justify-content:flex-end;
+}
+body.hud-dock #atalhos{
+  display:flex; flex-direction:row; align-items:center;
+  gap:6px; padding:0; background:none; width:auto; height:auto;
+}
+body.hud-dock #atalhos .atalho{
+  width:52px; height:52px; border-radius:14px;
+  border:1px solid #c9a24a66;
+  background:linear-gradient(180deg,#243352,#12192a);
+}
+body.hud-dock #barra button.sk.vazio,
+body.hud-dock #atalhos .atalho.vazio{
+  border-color:#c9a24a44; color:#6e7a94;
+  background:linear-gradient(180deg,#1a2438,#101624);
+}
+body.hud-dock #bola-btn{
+  width:64px; height:64px; margin:0 6px;
+  border-radius:50%;
+  border:2px solid var(--dock-gold);
+  background:radial-gradient(circle at 40% 32%,#3a2a14,#1a120c 62%,#0c1018);
+  box-shadow:0 0 0 4px #0c122088, 0 8px 16px #0008;
+}
+body.hud-dock #bola-btn b,
+body.hud-dock #bola-btn #bola-n{
+  border-color:var(--dock-gold); background:#0b1020ee; color:#ffe07a;
+}
+body.hud-dock #time-hud{
+  position:fixed; left:10px; top:50%; right:auto; bottom:auto;
+  transform:translateY(-50%);
+  display:flex; flex-direction:column;
+  width:auto; height:auto;
+  padding:8px; gap:6px;
+  border:1px solid var(--dock-line); border-radius:28px;
+  background:linear-gradient(180deg,#1a2746f4,#0c1220f6);
+  box-shadow:0 10px 24px #000a; overflow:visible; z-index:22;
+}
+body.hud-dock #time-hud[hidden]{display:none}
+body.hud-dock #time-hud .tcel{
+  position:relative;
+  display:flex; flex-direction:row; align-items:center;
+  width:232px; height:48px;
+  padding:3px 10px 3px 3px; gap:8px;
+  border:1px solid #c9a24a66; border-radius:24px;
+  background:#10182aee; box-sizing:border-box;
+}
+body.hud-dock #time-hud .tslot{
+  position:relative; width:40px; height:40px; flex:none;
+  border-radius:50%; border:2px solid #c9a24a77;
+  background:#0c1220; box-shadow:none; overflow:hidden;
+}
+body.hud-dock #time-hud .tslot.on{border-color:var(--dock-gold2); box-shadow:0 0 0 2px #f4aa3544}
+body.hud-dock #time-hud .tcel:has(.tslot.on){border-color:var(--dock-gold2)}
+body.hud-dock #time-hud .tslot img,
+body.hud-dock #time-hud .tpic{position:absolute; left:2px; top:2px; width:34px; height:34px}
+body.hud-dock #time-hud .tpalco,
+body.hud-dock #time-hud .palco-3d{display:none}
+body.hud-dock #time-hud .tslot.t3d img.tpic{opacity:1}
+body.hud-dock #time-hud .tk{display:none}
+body.hud-dock #time-hud .tslot > small,
+body.hud-dock #time-hud .tslot > i,
+body.hud-dock #time-hud .tslot > u{display:none}
+body.hud-dock #time-hud .tcard,
+body.hud-dock #time-hud:not(.fig) .tcard{
+  display:flex; position:relative; left:auto; top:auto;
+  flex:1; min-width:0; height:auto;
+  flex-direction:column; align-items:flex-start; justify-content:center;
+  gap:2px; pointer-events:none; background:none; border:0;
+}
+body.hud-dock #time-hud .tc-nome{display:block; font:700 12px/1.1 inherit; color:#fff; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+body.hud-dock #time-hud .tc-lv{display:block; font:600 10px/1 inherit; color:#ffe07a}
+body.hud-dock #time-hud .tc-lvn,
+body.hud-dock #time-hud .tc-hp{display:none}
+body.hud-dock #time-hud .tc-trilho,
+body.hud-dock #time-hud .tcard i{
+  display:block; position:relative; left:auto; top:auto;
+  width:100%; height:6px; border-radius:3px; background:#0009;
+}
+body.hud-dock #time-hud .tslot.vazio{width:40px; border-style:dashed}
+body.hud-dock #time-hud .tcel:has(.tslot.vazio){opacity:.45}
+body.hud-dock #missao{
+  left:50%; top:10px; transform:translateX(-50%);
+  padding:8px 22px; max-width:min(560px,52vw); width:auto; height:auto;
+  border:1px solid var(--dock-line); border-radius:999px;
+  background:linear-gradient(180deg,#1a2746f4,#0d1424f4);
+  box-shadow:0 8px 18px #0008;
+}
+body.hud-dock #minimapa{right:14px; top:12px}
+body.hud-dock #mm-janela{
+  width:168px; height:168px;
+  border:3px solid var(--dock-gold); outline:1px solid #0c1220;
+  border-radius:16px; box-shadow:0 8px 20px #000a;
+}
+body.hud-dock #mm-area{
+  margin-top:6px; border-radius:999px;
+  border:1px solid var(--dock-line); background:#121a2cee; color:#ffe6b0;
+}
+body.hud-dock #chat{
+  left:12px; bottom:100px; right:auto; top:auto;
+  border:1px solid var(--dock-line); border-radius:16px;
+  background:#121a2ce8; box-shadow:0 8px 18px #0008;
+}
+body.hud-dock #menu-icones{
+  display:flex; flex-direction:row; align-items:center;
+  position:relative; left:auto; top:auto; right:auto; bottom:auto;
+  gap:0; padding:4px 6px; margin-left:8px;
+  width:auto; height:auto;
+  border:1px solid #c9a24a55; border-radius:999px;
+  background:#0c1220cc; box-shadow:none; z-index:auto;
+}
+body.hud-dock #menu-icones > button[data-j]{width:40px; padding:2px; gap:0}
+body.hud-dock #menu-icones > button[data-j] b{display:none}
+body.hud-dock #menu-icones .ic{width:32px; height:32px}
+body.hud-dock #fala{bottom:100px; border-radius:16px; border-color:var(--dock-line)}
+body.hud-dock #turno{bottom:100px; border-radius:20px; border-color:var(--dock-line)}
+@media (max-width:1100px){
+  body.hud-dock #barra button.sk:not(.bola){width:96px}
+  body.hud-dock #time-hud .tcel{width:200px}
+}
+body.hud-dock.mobile #barra.dock-regiao{border-radius:22px; padding:6px 8px; gap:6px}
+body.hud-dock.mobile #time-hud{transform:none; top:64px}
+body.hud-dock.mobile #chat{bottom:118px}
