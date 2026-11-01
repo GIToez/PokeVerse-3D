@@ -9,9 +9,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import { carregar as carregarNomes, nomeMapa, nomeMapaComId, rotuloPrefab } from '/admin/map_names.mjs';
 
 const BASE = location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190';
 const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let token = localStorage.getItem('conta.token') || '';
 const api = async (rota, metodo = 'GET', corpo) => {
   const r = await fetch(BASE + rota, { method: metodo, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, body: corpo != null ? JSON.stringify(corpo) : undefined });
@@ -78,14 +80,15 @@ function setPos(peca, x, y, z) {
 // ── Carregar ──────────────────────────────────────────────────────────────────
 const loader = new GLTFLoader();
 async function listarMapas() {
+  await carregarNomes();
   const r = await api('/admin/mapas-glb');
   const mapas = r.mapas || [];
-  $('sel-mapa').innerHTML = mapas.map(m => `<option value="${m}">${m}</option>`).join('');
+  $('sel-mapa').innerHTML = mapas.map(m => `<option value="${esc(m)}" title="${esc(m)}">${esc(nomeMapaComId(m))}</option>`).join('');
   if (!mapas.length) { $('carregando').textContent = 'No maps with a local GLB.'; return; }
   await carregarMapa(mapas.includes('pallet_rota1') ? 'pallet_rota1' : mapas[0]);
 }
 async function carregarMapa(nome) {
-  $('carregando').hidden = false; $('carregando').textContent = 'loading ' + nome + '…';
+  $('carregando').hidden = false; $('carregando').textContent = 'loading ' + nomeMapa(nome) + '…';
   mapaAtual = nome; $('sel-mapa').value = nome; deselecionar();
   for (const g of instGrupos) { raizInst.remove(g); g.dispose?.(); }
   instGrupos = []; pecas = []; partes = new Map(); nomeDoPrefab = new Map(); sceneGLB = null; mapaNode = null;
@@ -169,7 +172,8 @@ function realcar(peca) {
 }
 function atualizarCamposSel() {
   if (!selPeca) return; const p = selPeca.pos;
-  $('s-nome').textContent = selPeca.nome || '(unnamed)';
+  $('s-nome').textContent = rotuloPrefab(selPeca.nome);
+  $('s-nome').title = selPeca.nome || '';
   $('s-x').value = +p.x.toFixed(3); $('s-y').value = +p.y.toFixed(3); $('s-z').value = +p.z.toFixed(3);
 }
 
@@ -222,21 +226,28 @@ function enquadrar() {
   const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.z, 10);
   orbit.target.copy(c); camera.position.set(c.x, c.y + r * 0.8, c.z + r * 0.9); orbit.update();
 }
-function atualizarHud() { $('hud').innerHTML = `<b>${pecas.length}</b> pieces · <b>${instGrupos.length}</b> types · <b>${modo === 'biblioteca' ? 'library' : 'assembled'}</b> · map <b>${mapaAtual}</b>`; }
+function atualizarHud() { $('hud').innerHTML = `<b>${pecas.length}</b> pieces · <b>${instGrupos.length}</b> types · <b>${modo === 'biblioteca' ? 'library' : 'assembled'}</b> · map <b>${esc(nomeMapa(mapaAtual))}</b>`; }
 
 // ── Paleta ────────────────────────────────────────────────────────────────────
 function renderPaleta() {
   const filtro = ($('pal-busca').value || '').toLowerCase();
   $('pal-qtd').textContent = '(' + tipos.length + ')';
-  const vis = tipos.filter(t => !filtro || t.nome.toLowerCase().includes(filtro));
-  $('paleta').innerHTML = vis.map(t => `<button data-id="${t.id}" class="${addTipo && t.id === addTipo.id ? 'on' : ''}" title="${t.nome}">${t.nome}</button>`).join('');
+  const vis = tipos.filter(t => {
+    if (!filtro) return true;
+    const en = rotuloPrefab(t.nome).toLowerCase();
+    return en.includes(filtro) || String(t.nome).toLowerCase().includes(filtro);
+  });
+  $('paleta').innerHTML = vis.map(t => {
+    const en = rotuloPrefab(t.nome);
+    return `<button data-id="${esc(t.id)}" class="${addTipo && t.id === addTipo.id ? 'on' : ''}" title="${esc(t.nome)}">${esc(en)}</button>`;
+  }).join('');
   for (const b of $('paleta').querySelectorAll('button')) b.onclick = () => { addTipo = tipos.find(t => t.id === b.dataset.id); usarFerramenta('add'); };
 }
 function usarFerramenta(f) {
   ferramenta = f;
   $('t-sel').classList.toggle('on', f === 'sel'); $('t-add').classList.toggle('on', f === 'add');
   $('add-dica').hidden = !(f === 'add' && addTipo);
-  if (f === 'add' && addTipo) $('add-nome').textContent = addTipo.nome;
+  if (f === 'add' && addTipo) $('add-nome').textContent = rotuloPrefab(addTipo.nome);
   if (f === 'sel') addTipo = null;
   renderPaleta();
 }

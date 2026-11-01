@@ -4,6 +4,7 @@
  * valida antes com o mesmo validarColecao que o servidor usa, e o servidor guarda backup de cada gravação (Histórico / Desfazer).
  * A tela de cada aba só é montada no primeiro clique (os arquivos de espécie somam ~1,5 MB). */
 import { ESQUEMAS, validarColecao } from '/admin/schemas.mjs';
+import { carregar as carregarNomesMapa, traduzNome } from '/admin/map_names.mjs';
 
 export const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export const copia = v => JSON.parse(JSON.stringify(v));
@@ -28,8 +29,9 @@ export const ref = {
   },
   async itens() { return (await baixar('/data/menus_dados.json', {})).itens || {}; },
   async areas() {
+    await carregarNomesMapa();
     const c = await baixar('/data/cenas.json', {}), areas = {}, cenas = {};
-    for (const ce of c.cenas || []) { cenas[ce.id] = ce.nome; for (const a of ce.areas || []) if (!(a.id in areas)) areas[a.id] = a.nome; }
+    for (const ce of c.cenas || []) { cenas[ce.id] = traduzNome(ce.nome); for (const a of ce.areas || []) if (!(a.id in areas)) areas[a.id] = traduzNome(a.nome); }
     return { areas, cenas };
   },
   async npcs() { return await baixar('/data/npcs_glb.json', {}); },
