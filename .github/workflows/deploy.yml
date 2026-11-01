@@ -33,4 +33,8 @@ jobs:
             set -euo pipefail
             export PV_SSH_USER="${{ secrets.OVH_USER || 'pokeverse' }}"
             export PV_APP_DIR="/opt/pokeverse-3d"
+            cd "$PV_APP_DIR"
+            git fetch --prune origin main
+            git checkout -q main
+            git reset --hard origin/main
             bash "$PV_APP_DIR/scripts/live/deploy.sh"
