@@ -98,6 +98,23 @@ move a JSON file's display text to English, run
 See [`docs/GLOSSARY.md`](docs/GLOSSARY.md) for the naming conventions used across the
 Portuguese codebase.
 
+## Original reference copy
+
+The game exactly as it was imported, before any renaming or translation, is kept under the git tag
+`original-import`. Use it to track down anything the English migration broke:
+
+```bash
+git fetch --tags
+git diff original-import -- path/to/file          # what changed in one file since the import
+git show original-import:missoes.mjs              # read a file as it was originally (now missions.mjs)
+git grep "some text" original-import              # search the original code
+git worktree add ../PokeVerse-3D-original original-import   # a full, separate folder of the original
+```
+
+Many files were renamed during the migration (for example `menus.mjs` and the `scenery/` folder had Portuguese
+names), so use the original path with `git show`; `git log --follow -- <new path>` shows the old name.
+The worktree folder shares this repository, and `git worktree remove ../PokeVerse-3D-original` deletes it.
+
 ## Project layout
 
 ```
