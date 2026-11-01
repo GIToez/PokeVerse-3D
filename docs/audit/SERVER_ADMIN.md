@@ -25,7 +25,7 @@ Healing (works anywhere, with a 2 s cooldown). Trades are relayed without a serv
 | Login | Also accepts a legacy unsalted SHA-256 format (should be retired, see `docs/SECURITY.md`) |
 | Sessions | Bearer token, valid 30 days; logging in elsewhere kicks the older session |
 | Password reset | Username + recovery code; a GM can issue a new code |
-| Roles | `gm` (full admin), `cargo` = `staff` or `mod` (chat badges; staff can run raids) |
+| Roles | `gm` (full admin), `cargo` = `staff` or `mod` (chat badges; staff can run raids). Set with Actions → **Set account role**, `tools/set_role.mjs`, or the Players panel. |
 | First GM | Must be set by hand in `server/data/contas.json` (see `docs/STARTUP.md`) |
 
 ## Limits and protections
