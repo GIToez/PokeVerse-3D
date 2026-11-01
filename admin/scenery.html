@@ -31,9 +31,11 @@ header{ display:flex; align-items:center; gap:14px; padding:0 16px; background:v
 header .marca{ font-weight:700; color:var(--acento); }
 header .dir{ margin-left:auto; display:flex; gap:10px; align-items:center; }
 header .sujo{ color:var(--acento); font-size:13px; }
-.corpo{ display:grid; grid-template-columns:1fr 320px; min-height:0; }
-.tela{ position:relative; background:#0a0d12; }
-.tela canvas{ display:block; }
+.corpo{ display:grid; grid-template-columns:minmax(0,1fr) 320px; min-height:0; }
+.tela{ position:relative; background:#0a0d12; overflow:hidden; min-width:0; min-height:0; }
+/* the drawing buffer is size × devicePixelRatio; without a CSS size the canvas grows the grid cell, which the
+   ResizeObserver feeds back into a bigger buffer every frame on scaled displays (125 %, 150 %) */
+.tela canvas{ display:block; position:absolute; inset:0; width:100%; height:100%; }
 .hud{ position:absolute; left:12px; bottom:12px; background:rgba(10,13,18,.82); border:1px solid var(--borda); border-radius:6px; padding:6px 10px; font-size:12px; pointer-events:none; }
 .hud b{ color:var(--acento); }
 .ferramentas{ position:absolute; left:12px; top:12px; display:flex; gap:6px; }
