@@ -412,7 +412,7 @@ function limparBolsa(d) {
   const bolsa = {};
   if (d.dinheiro !== undefined) {
     const n = Number(d.dinheiro);
-    if (!Number.isInteger(n) || n < 0 || n > 1e12) return { erro: 'Dinheiro: um número inteiro de 0 a 1 trilhão.' };
+    if (!Number.isInteger(n) || n < 0 || n > 1e12) return { erro: 'Money: a whole number from 0 to 1 trillion.' };
     bolsa.dinheiro = n;
   }
   for (const k of ['itens', 'bolas']) if (d[k] !== undefined) {
@@ -428,7 +428,7 @@ function limparBolsa(d) {
     bolsa[k] = m;
   }
   if (d.insignias !== undefined) {
-    if (!Array.isArray(d.insignias) || d.insignias.length > 200 || !d.insignias.every(i => Number.isInteger(i) && i > 0 && i < 1e7)) return { erro: 'Insígnias: uma lista de ids.' };
+    if (!Array.isArray(d.insignias) || d.insignias.length > 200 || !d.insignias.every(i => Number.isInteger(i) && i > 0 && i < 1e7)) return { erro: 'Badges: a list of ids.' };
     bolsa.insignias = [...new Set(d.insignias)];
   }
   return { bolsa };
@@ -438,8 +438,8 @@ function limparBolsa(d) {
    (golpes, HP, EXP…) continua o do servidor. */
 const NATUREZAS_OK = new Set(NATUREZAS);
 function limparTime(c, d) {
-  if (!Array.isArray(d.time) || !Array.isArray(d.caixa)) return { erro: 'Faltou o time ou a caixa.' };
-  if (d.time.length > 6) return { erro: 'O time tem no máximo 6 Pokémon.' };
+  if (!Array.isArray(d.time) || !Array.isArray(d.caixa)) return { erro: 'Missing the team or the box.' };
+  if (d.time.length > 6) return { erro: 'A team can have at most 6 Pokémon.' };
   const porUid = new Map(), vistos = new Set();
   for (const p of [...(c.save.time || []), ...(c.save.caixa || [])]) if (p?.uid != null) porUid.set(String(p.uid), p);
   const limpar = lista => {
@@ -547,15 +547,15 @@ const httpServer = http.createServer((req, res) => {
   // Caminho próprio: o corpo é um .glb (vários MB), não JSON — não passa pelo cap de 1MB nem pelo parse de texto.
   if (req.method === 'POST' && rota === '/admin/mapa-glb') {
     const u = usuarioDe(req);
-    if (!contas[u]?.gm) return json(403, { erro: 'Só conta GM.' });
+    if (!contas[u]?.gm) return json(403, { erro: 'GM accounts only.' });
     const m = String(url.searchParams.get('mapa') || '');
-    if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'mapa inválido' });
+    if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
     const chunks = []; let tam = 0, grande = false;
-    req.on('data', d => { if (grande) return; tam += d.length; if (tam > 150 * 1024 * 1024) { grande = true; json(413, { erro: 'GLB grande demais.' }); req.destroy(); return; } chunks.push(d); });
+    req.on('data', d => { if (grande) return; tam += d.length; if (tam > 150 * 1024 * 1024) { grande = true; json(413, { erro: 'GLB file is too large.' }); req.destroy(); return; } chunks.push(d); });
     req.on('end', () => {
       if (grande) return;
       const buf = Buffer.concat(chunks);
-      if (buf.length < 12 || buf.readUInt32LE(0) !== 0x46546C67) return json(400, { erro: 'o corpo não é um GLB válido (header glTF).' });   // "glTF" = 0x46546C67
+      if (buf.length < 12 || buf.readUInt32LE(0) !== 0x46546C67) return json(400, { erro: 'the body is not a valid GLB (glTF header).' });   // "glTF" = 0x46546C67
       const arq = caminhoGlb(m);   // grava onde o jogo lê (public/scenery/ ou scenery/ raiz)
       try {
         fazerBackup(arq, true);
@@ -573,7 +573,7 @@ const httpServer = http.createServer((req, res) => {
   req.on('data', d => {                                   // cap de corpo: evita encher a RAM/disco com POST gigante (nº17)
     if (corpoGrande) return;
     body += d;
-    if (body.length > capCorpo) { corpoGrande = true; json(413, { erro: 'Corpo grande demais.' }); req.destroy(); }
+    if (body.length > capCorpo) { corpoGrande = true; json(413, { erro: 'Request body is too large.' }); req.destroy(); }
   });
   req.on('end', () => {
     if (corpoGrande) return;
@@ -593,7 +593,7 @@ const httpServer = http.createServer((req, res) => {
     // GET /conta/logs — lista os últimos erros do cliente. nº16: só GM (o log tem IP+usuário de outros jogadores).
     if (req.method === 'GET' && rota === '/conta/logs') {
       const uLog = usuarioDe(req);
-      if (!contas[uLog]?.gm) return json(403, { erro: 'Sem permissão.' });
+      if (!contas[uLog]?.gm) return json(403, { erro: 'Permission denied.' });
       try {
         const linhas = fs.readFileSync(nodePath.join(DADOS, 'client.log'), 'utf8').trim().split('\n').filter(Boolean);
         const ultimas = linhas.slice(-50).map(l => { try { return JSON.parse(l); } catch { return { raw: l }; } });
@@ -607,11 +607,11 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Cadastro ──────────────────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/criar') {
-      if (limitado(ipDe(req), 'criar', 5, 60000)) return json(429, { erro: 'Muitas contas criadas desse IP. Espere um minuto.' });
+      if (limitado(ipDe(req), 'criar', 5, 60000)) return json(429, { erro: 'Too many accounts created from this IP. Wait a minute.' });
       const u = String(d.usuario || '').toLowerCase().trim();
-      if (!u || u.length < 3) return json(400, { erro: 'Nome de usuário muito curto (mínimo 3 letras).' });
-      if (!/^[a-z0-9_]{3,20}$/.test(u)) return json(400, { erro: 'Use apenas letras, números e _ (3–20 caracteres).' });
-      if (contas[u]) return json(409, { erro: 'Este usuário já existe.' });
+      if (!u || u.length < 3) return json(400, { erro: 'Username is too short (at least 3 letters).' });
+      if (!/^[a-z0-9_]{3,20}$/.test(u)) return json(400, { erro: 'Use only letters, numbers and _ (3–20 characters).' });
+      if (contas[u]) return json(409, { erro: 'This username is already taken.' });
       const codigo = crypto.randomBytes(8).toString('hex');
       const token = tokenNovo();
       contas[u] = { senha: hashSenha(d.senha || ''), email: d.email || '', save: null, rev: 0, codigo, token, tokenExp: Date.now() + TOKEN_VIDA_MS };
@@ -622,12 +622,12 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Login ─────────────────────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/entrar') {
-      if (limitado(ipDe(req), 'entrar', 10, 60000)) return json(429, { erro: 'Muitas tentativas. Espere um minuto.' });
+      if (limitado(ipDe(req), 'entrar', 10, 60000)) return json(429, { erro: 'Too many attempts. Wait a minute.' });
       const u = String(d.usuario || '').toLowerCase().trim();
       const c = contas[u];
-      if (!c || !conferirSenha(d.senha || '', c.senha)) return json(401, { erro: 'Usuário ou senha incorretos.' });
+      if (!c || !conferirSenha(d.senha || '', c.senha)) return json(401, { erro: 'Incorrect username or password.' });
       const ban = banidoAteDe(c);                                         // painel → Jogadores → Banir
-      if (ban) return json(403, { erro: 'Conta suspensa ' + (ban === -1 ? 'para sempre' : 'até ' + new Date(ban).toLocaleString('pt-BR')) + '.' + (c.banMotivo ? ' Motivo: ' + c.banMotivo : '') });
+      if (ban) return json(403, { erro: 'Account suspended ' + (ban === -1 ? 'permanently' : 'until ' + new Date(ban).toLocaleString('en-US')) + '.' + (c.banMotivo ? ' Reason: ' + c.banMotivo : '') });
       const manut = eventos.bloqueiaLogin(c); if (manut) return json(503, { erro: manut });   // Fase 3: modo manutenção (GM entra)
       const token = tokenNovo();
       c.token = token;
@@ -639,11 +639,11 @@ const httpServer = http.createServer((req, res) => {
 
     // ── Recuperação de senha ───────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/recuperar') {
-      if (limitado(ipDe(req), 'recuperar', 5, 60000)) return json(429, { erro: 'Muitas tentativas. Espere um minuto.' });
+      if (limitado(ipDe(req), 'recuperar', 5, 60000)) return json(429, { erro: 'Too many attempts. Wait a minute.' });
       const u = String(d.usuario || '').toLowerCase().trim();
       const c = contas[u];
-      if (!c) return json(400, { erro: 'Usuário não encontrado.' });
-      if (c.codigo !== d.codigo) return json(400, { erro: 'Código de recuperação incorreto.' });
+      if (!c) return json(400, { erro: 'User not found.' });
+      if (c.codigo !== d.codigo) return json(400, { erro: 'Incorrect recovery code.' });
       c.senha = hashSenha(d.nova || '');
       c.codigo = crypto.randomBytes(8).toString('hex');
       salvarContasJa();
@@ -653,16 +653,16 @@ const httpServer = http.createServer((req, res) => {
     // ── Save (requer auth) ────────────────────────────────────────────────
     if (req.method === 'GET' && rota === '/save') {
       const u = usuarioDe(req);
-      if (!u) return json(401, { erro: 'Sessão inválida.' });
+      if (!u) return json(401, { erro: 'Invalid session.' });
       const c = contas[u];
       return json(200, { ok: true, save: c.save || null, rev: c.rev || 0, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(c.posGm ? { pos: c.posGm } : {}) });
     }
 
     if (req.method === 'PUT' && rota === '/save') {
       const u = usuarioDe(req);
-      if (!u) return json(401, { erro: 'Sessão inválida.' });
+      if (!u) return json(401, { erro: 'Invalid session.' });
       // ANTI-TRAPAÇA: o cliente só pode ZERAR (save:null). Um save com conteúdo (dinheiro/time) é do SERVIDOR — recusa.
-      if (d.save != null) return json(403, { erro: 'Operação não permitida.' });
+      if (d.save != null) return json(403, { erro: 'Operation not allowed.' });
       contas[u].save = null;
       contas[u].rev = (contas[u].rev || 0) + 1;
       salvarContas();
@@ -681,7 +681,7 @@ const httpServer = http.createServer((req, res) => {
         if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
         c.rev = (c.rev || 0) + 1;
         salvarContas();
-        if (d.outroAparelho) return json(409, { erro: 'Conflito de sessão.', outroAparelho: true });
+        if (d.outroAparelho) return json(409, { erro: 'Session conflict.', outroAparelho: true });
       }
       return json(200, { ok: true, rev: contas[u]?.rev || 0 });
     }
@@ -696,9 +696,9 @@ const httpServer = http.createServer((req, res) => {
     // ── Configurações de conta ────────────────────────────────────────────
     if (req.method === 'POST' && rota === '/conta/nome') {
       const u = usuarioDe(req);
-      if (!u) return json(401, { erro: 'Sessão inválida.' });
+      if (!u) return json(401, { erro: 'Invalid session.' });
       const nome = String(d.nome || '').trim();
-      if (nome.length < 2) return json(400, { erro: 'Nome muito curto.' });
+      if (nome.length < 2) return json(400, { erro: 'Name is too short.' });
       if (!contas[u].save) contas[u].save = {};
       contas[u].save.nome = nome;
       salvarContas();
@@ -713,8 +713,8 @@ const httpServer = http.createServer((req, res) => {
 
     if (req.method === 'POST' && rota === '/conta/senha') {
       const u = usuarioDe(req);
-      if (!u) return json(401, { erro: 'Sessão inválida.' });
-      if (!conferirSenha(d.senhaAtual || '', contas[u].senha)) return json(400, { erro: 'Senha atual incorreta.' });
+      if (!u) return json(401, { erro: 'Invalid session.' });
+      if (!conferirSenha(d.senhaAtual || '', contas[u].senha)) return json(400, { erro: 'Current password is incorrect.' });
       contas[u].senha = hashSenha(d.nova || '');
       salvarContasJa();
       return json(200, { ok: true });
@@ -728,8 +728,8 @@ const httpServer = http.createServer((req, res) => {
 
     if (req.method === 'POST' && rota === '/conta/apagar') {
       const u = usuarioDe(req);
-      if (!u) return json(401, { erro: 'Sessão inválida.' });
-      if (!conferirSenha(d.senha || '', contas[u].senha)) return json(400, { erro: 'Senha incorreta.' });
+      if (!u) return json(401, { erro: 'Invalid session.' });
+      if (!conferirSenha(d.senha || '', contas[u].senha)) return json(400, { erro: 'Incorrect password.' });
       if (contas[u].token) sessoes.delete(contas[u].token);
       delete contas[u];
       salvarContasJa();
@@ -740,11 +740,11 @@ const httpServer = http.createServer((req, res) => {
     if (rota.startsWith('/admin/')) {
       if (rota === '/admin/eu' && req.method === 'GET') {                  // o painel pergunta quem é antes de abrir
         const u = usuarioDe(req);
-        if (!u) return json(401, { erro: 'Sessão inválida.' });
+        if (!u) return json(401, { erro: 'Invalid session.' });
         return json(200, { ok: true, usuario: u, gm: !!contas[u]?.gm, nome: contas[u]?.save?.nome || u });
       }
       const g = gmDe(req);
-      if (!g) return json(403, { erro: 'Só conta GM.' });
+      if (!g) return json(403, { erro: 'GM accounts only.' });
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;   // Fase 3: eventos ao vivo (server_events.mjs)
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
       if (rota === '/admin/modelos' && req.method === 'GET')
@@ -755,7 +755,7 @@ const httpServer = http.createServer((req, res) => {
       }
       if (rota === '/admin/zonas' && req.method === 'GET') return json(200, { ok: true, ...lerJson(ZONAS_ARQ, { v: 1, zonas: [] }) });
       if (rota === '/admin/zonas' && req.method === 'POST') {
-        if (!Array.isArray(d.zonas)) return json(400, { erro: 'Faltou a lista de zonas.' });
+        if (!Array.isArray(d.zonas)) return json(400, { erro: 'Missing the zone list.' });
         const zonas = d.zonas.slice(0, 500).map(limparZona).filter(Boolean);
         const ids = new Set(); for (const z of zonas) { while (ids.has(z.id)) z.id += '_'; ids.add(z.id); }
         gravarComBackup(ZONAS_ARQ, { v: 1, zonas });
@@ -781,18 +781,18 @@ const httpServer = http.createServer((req, res) => {
       }
       if (rota === '/admin/mapa-objetos' && req.method === 'GET') {
         const m = String(url.searchParams.get('mapa') || '');
-        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'mapa inválido' });
+        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
         const d2 = lerJson(nodePath.join(DADOS_PUB, m + '.json'), null);
-        if (!d2) return json(404, { erro: 'mapa não encontrado' });
+        if (!d2) return json(404, { erro: 'map not found' });
         // o jogo monta o cenário de 3 listas: areaEnv (chão), ambiente (água/céu) e objetos (props)
         return json(200, { ok: true, objetos: d2.objetos || [], ambiente: d2.ambiente || [], areaEnv: d2.areaEnv || [] });
       }
       if (rota === '/admin/mapa-objetos' && req.method === 'POST') {
         const m = String(d.mapa || '');
-        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'mapa inválido' });
+        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
         const arq = nodePath.join(DADOS_PUB, m + '.json');
         const d2 = lerJson(arq, null);
-        if (!d2) return json(404, { erro: 'mapa não encontrado' });
+        if (!d2) return json(404, { erro: 'map not found' });
         const limpa = l => (Array.isArray(l) ? l : []).slice(0, 200000).map(limparObjeto).filter(Boolean);
         let n = 0;
         for (const k of ['objetos', 'ambiente', 'areaEnv']) if (Array.isArray(d[k])) { d2[k] = limpa(d[k]); n += d2[k].length; }   // só troca as listas que vieram; o resto do mapa fica
@@ -809,11 +809,11 @@ const httpServer = http.createServer((req, res) => {
          grama de dentro dela (o spawn agrupa por tile.a). */
       if (rota === '/admin/mapa-areas' && req.method === 'POST') {
         const m = String(d.mapa || '');
-        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'mapa inválido' });
+        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
         const arq = nodePath.join(DADOS_PUB, m + '.json');
         const d2 = lerJson(arq, null);
-        if (!d2) return json(404, { erro: 'mapa não encontrado' });
-        if (!Array.isArray(d.caixas) || d.caixas.length > 2000) return json(400, { erro: 'Faltou a lista de caixas.' });
+        if (!d2) return json(404, { erro: 'map not found' });
+        if (!Array.isArray(d.caixas) || d.caixas.length > 2000) return json(400, { erro: 'Missing the box list.' });
         const num = (v, min, max) => { const n = +v; return Number.isFinite(n) && n >= min && n <= max ? +n.toFixed(3) : null; };
         const caixas = [];
         for (const c of d.caixas) {
@@ -862,9 +862,9 @@ const httpServer = http.createServer((req, res) => {
          pelo /admin/dados, com os esquemas `npcs` e `portas`. ── */
       if (rota === '/admin/mapa-camadas' && req.method === 'POST') {
         const m = String(d.mapa || '');
-        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'mapa inválido' });
+        if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
         const arq = nodePath.join(DADOS_PUB, m + '.json'), d2 = lerJson(arq, null);
-        if (!d2) return json(404, { erro: 'mapa não encontrado' });
+        if (!d2) return json(404, { erro: 'map not found' });
         const CAMPOS = { npcs: ['cfg', 'modelo', 'face', 'x', 'y', 'z', 'a'], treinadores: ['cfg', 'tipo', 'x', 'y', 'z', 'a'], grama: ['cfg', 'tipo', 'x', 'y', 'z', 'a'],
           agua: ['tipo', 'x', 'y', 'z', 'a'], spawn: ['x', 'z', 'y', 'a'] };
         const INTEIROS = new Set(['cfg', 'modelo', 'tipo', 'a']), contagem = {}, novas = {};
@@ -885,7 +885,7 @@ const httpServer = http.createServer((req, res) => {
           }
           novas[k] = lista; contagem[k] = lista.length;
         }
-        if (!Object.keys(novas).length) return json(400, { erro: 'Nada pra salvar.' });
+        if (!Object.keys(novas).length) return json(400, { erro: 'Nothing to save.' });
         Object.assign(d2, novas);
         gravarComBackup(arq, d2);
         console.log(`[admin] ${g} salvou camadas de ${m}: ${Object.entries(contagem).map(([k, n]) => k + ' ' + n).join(', ')}`);
@@ -906,14 +906,14 @@ const httpServer = http.createServer((req, res) => {
       }
       if (rota === '/admin/jogador' && req.method === 'GET') {
         const u = String(url.searchParams.get('u') || ''), c = contas[u];
-        if (!c) return json(404, { erro: 'Conta não encontrada.' });
+        if (!c) return json(404, { erro: 'Account not found.' });
         return json(200, { ok: true, conta: resumoConta(u, c), save: c.save || {}, rev: c.rev || 0, log: logAdminDe(u, 60) });
       }
       if (rota.startsWith('/admin/jogador/') && req.method === 'POST') {
         const acao = rota.slice('/admin/jogador/'.length), u = String(d.u || ''), c = contas[u];
-        if (!c) return json(404, { erro: 'Conta não encontrada.' });
+        if (!c) return json(404, { erro: 'Account not found.' });
         if (u === g && ((acao === 'cargo' && d.gm !== true) || (acao === 'moderar' && d.acao !== 'recado')))   // não se tranca pra fora do painel
-          return json(400, { erro: 'Isso não pode ser feito na sua própria conta.' });
+          return json(400, { erro: "This can't be done on your own account." });
         if (!c.save) c.save = {};
         const pronto = (extra = {}) => { c.rev = (c.rev || 0) + 1; salvarContasJa(); return json(200, { ok: true, conta: resumoConta(u, c), save: c.save, rev: c.rev, log: logAdminDe(u, 60), ...extra }); };
 
@@ -938,8 +938,8 @@ const httpServer = http.createServer((req, res) => {
         }
         if (acao === 'pokemon') {                                            // dar um Pokémon: o servidor sorteia IVs/natureza como numa captura
           const dex = +d.dex, lv = Math.max(1, Math.min(100, Math.round(+d.lv || 5)));
-          if (!especieValida(dex)) return json(400, { erro: 'Espécie inválida.' });
-          const glb = String(d.glb || ''); if (!/^pm\d{4}[\w-]{0,20}$/.test(glb)) return json(400, { erro: 'Modelo (glb) inválido.' });
+          if (!especieValida(dex)) return json(400, { erro: 'Invalid species.' });
+          const glb = String(d.glb || ''); if (!/^pm\d{4}[\w-]{0,20}$/.test(glb)) return json(400, { erro: 'Invalid model (glb).' });
           const pk = individuoServidor({ dex, lv, glb, nome: String(d.nome || '').slice(0, 30) });
           if (d.shiny === true) pk.shiny = true;
           if (!Array.isArray(c.save.time)) c.save.time = [];
@@ -969,13 +969,13 @@ const httpServer = http.createServer((req, res) => {
           logAdmin(g, u, 'novo código de recuperação', {});
           return pronto({ codigo: c.codigo });
         }
-        return json(404, { erro: 'Ação desconhecida.' });
+        return json(404, { erro: 'Unknown action.' });
       }
       // ── Dados genéricos (Fase 0): só os arquivos de admin/schemas.mjs; valida pelo esquema e grava com backup ──
       if (rota.startsWith('/admin/dados/')) {
         const nomeEsq = rota.slice('/admin/dados/'.length);
         const esq = Object.prototype.hasOwnProperty.call(ESQUEMAS, nomeEsq) ? ESQUEMAS[nomeEsq] : null;
-        if (!esq) return json(404, { erro: 'Arquivo não editável pelo painel: ' + nomeEsq });
+        if (!esq) return json(404, { erro: 'File is not editable from the panel: ' + nomeEsq });
         const arq = nodePath.join(DADOS_PUB, esq.arquivo + '.json');
         const vazio = esq.forma === 'lista' ? [] : {};
         const atual = lerJson(arq, esq.caminho ? {} : vazio);
@@ -1005,23 +1005,23 @@ const httpServer = http.createServer((req, res) => {
       if (rota === '/admin/backups/restaurar' && req.method === 'POST') {
         const nome = String(d.nome || '');
         const m = nome.match(RE_BACKUP);
-        if (!m) return json(400, { erro: 'nome de backup inválido' });
+        if (!m) return json(400, { erro: 'invalid backup name' });
         const origem = nodePath.join(BACKUPS, nome);
-        if (!fs.existsSync(origem)) return json(404, { erro: 'backup não encontrado' });
+        if (!fs.existsSync(origem)) return json(404, { erro: 'backup not found' });
         const ehGlb = m[4] === 'glb';
         const emPasta = Object.values(ESQUEMAS).find(e => e.arquivo.includes('/') && nodePath.basename(e.arquivo) === m[1])?.arquivo;   // Fase 2: o backup guarda só o nome (dex_pt), o arquivo mora em idioma/
         const destino = ehGlb ? caminhoGlb(m[1]) : nodePath.join(DADOS_PUB, (emPasta || m[1]) + '.json');
-        if (!fs.existsSync(destino)) return json(404, { erro: 'o arquivo de destino não existe' });   // só restaura por cima de um arquivo que existe
+        if (!fs.existsSync(destino)) return json(404, { erro: 'the target file does not exist' });   // só restaura por cima de um arquivo que existe
         const conteudo = fs.readFileSync(origem);                                // lê ANTES do backup novo (a limpeza pode apagar o mais antigo)
         fazerBackup(destino, ehGlb);
         const tmp = destino + '.tmp'; fs.writeFileSync(tmp, conteudo); fs.renameSync(tmp, destino);
         console.log(`[admin] ${g} restaurou ${nome}`);
         return json(200, { ok: true, arquivo: m[1], tipo: m[4] });
       }
-      return json(404, { erro: 'Rota admin não encontrada: ' + rota });
+      return json(404, { erro: 'Admin route not found: ' + rota });
     }
 
-    json(404, { erro: 'Rota não encontrada: ' + rota });
+    json(404, { erro: 'Route not found: ' + rota });
   });
 });
 
@@ -1219,12 +1219,12 @@ wss.on('connection', ws => {
           const c = u ? contas[u] : null;
 
           if (op === 'inicial' && m.mon && c) {
-            if (!inicialOk(m.mon.dex)) { enviar(ws, { t: 'posse_erro', op, erro: 'inicial inválido' }); return; }
+            if (!inicialOk(m.mon.dex)) { enviar(ws, { t: 'posse_erro', op, erro: 'invalid starter' }); return; }
             if (!c.save) c.save = {};
             if (!Array.isArray(c.save.time)) c.save.time = [];
             const jaEscolheu = c.save.time.some(p => p.inicial);
             if (jaEscolheu) {
-              enviar(ws, { t: 'posse_erro', op, erro: 'inicial já escolhido' });
+              enviar(ws, { t: 'posse_erro', op, erro: 'starter already chosen' });
             } else {
               const uid = String(Date.now()) + String(Math.floor(Math.random() * 9999)).padStart(4, '0');
               const ivs = ivsNovos();
@@ -1242,7 +1242,7 @@ wss.on('connection', ws => {
               if (rI) enviarMissao(ws, rI);
             }
           } else if (op === 'capturar' && m.pokemon && c) {
-            if (!especieValida(m.pokemon.dex)) { enviar(ws, { t: 'posse_erro', op, erro: 'espécie inválida' }); return; }   // nº14 (stopgap): recusa dex que não existe
+            if (!especieValida(m.pokemon.dex)) { enviar(ws, { t: 'posse_erro', op, erro: 'invalid species' }); return; }   // nº14 (stopgap): recusa dex que não existe
             if (!c.save) c.save = {};
             if (!Array.isArray(c.save.time)) c.save.time = [];
             if (!Array.isArray(c.save.caixa)) c.save.caixa = [];
@@ -1310,7 +1310,7 @@ wss.on('connection', ws => {
         }
 
         else if (m.t?.startsWith('bat_')) {
-          enviar(ws, { t: 'bat_erro', erro: 'Batalha PvP não disponível no servidor local.' });
+          enviar(ws, { t: 'bat_erro', erro: 'PvP battles are not available on the local server.' });
         }
 
         else if (m.t?.startsWith('troca_')) {
