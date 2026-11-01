@@ -4943,8 +4943,8 @@ function selvagemSobCursor(ev){
    a = (3·HPmax − 2·HP)·rate·bônus / (3·HPmax); a ≥ 255 pega direto; senão cada uma das 4
    chacoalhadas passa com probabilidade b/65536, b = 1048560 / (16711680/a)^¼. É o mesmo
    "ShakeCount" que o servidor manda pro cliente. Bola Mestra = 100%. */
-const BOLAS = { 1001: ['Pokébola', 1], 1002: ['Grande Bola', 1.5], 1003: ['Ultra Bola', 2], 1004: ['Bola Mestra', 255],
-                1005: ['Bola Safári', 1.5], 1006: ['Bola Nível', 1], 1007: ['Bola Rede', 1], 1008: ['Bola Ninho', 1], 1009: ['Bola Repetição', 1] };
+const BOLAS = { 1001: ['Poké Ball', 1], 1002: ['Great Ball', 1.5], 1003: ['Ultra Ball', 2], 1004: ['Master Ball', 255],
+                1005: ['Safari Ball', 1.5], 1006: ['Level Ball', 1], 1007: ['Net Ball', 1], 1008: ['Nest Ball', 1], 1009: ['Repeat Ball', 1] };
 /* Painel admin → tela Bolas (config_jogo.bolas = { id: { nome, taxa } }; o formato antigo [nome, taxa] também vale). Bola nova
    aqui passa a existir no jogo: o seletor e o arremesso só conhecem as ids desta tabela (Bola Rápida 1010 etc. ficavam de fora). */
 for (const [id, b] of Object.entries(CFG_JOGO.bolas || {})){
@@ -9251,8 +9251,8 @@ window.__figmaTeste = () => {
   }
   if (!(jogo.atalhos || []).some(Boolean)){                              // itens nos atalhos: sem eles a barra prata fica vazia e não dá pra conferir
     const it = lerLS('itens', {}); it['50001'] = Math.max(3, it['50001'] || 0); gravarLS('itens', it);
-    jogo.atalhos[0] = { tipo: 'item', id: '50001', nome: 'Poção', icone: './ui/itens/ic_50001.png' };
-    jogo.atalhos[1] = { tipo: 'item', id: '1001', nome: 'Pokébola', icone: './ui/itens/ic_1001.png', bola: true };
+    jogo.atalhos[0] = { tipo: 'item', id: '50001', nome: 'Potion', icone: './ui/itens/ic_50001.png' };
+    jogo.atalhos[1] = { tipo: 'item', id: '1001', nome: 'Poké Ball', icone: './ui/itens/ic_1001.png', bola: true };
     const m = MONTARIAS.find(x => x[0] === 'pm0249_00') || MONTARIAS[0];
     if (m) jogo.atalhos[2] = { tipo: 'montaria', glb: m[0], nome: m[1], icone: './ui/mon/pm' + m[0].slice(2, 6) + '.png' };
     pintarAtalhos(true);

@@ -80,7 +80,7 @@ function irPara(area){
   for (const e of [a, p]){ if (!e) continue; const dx = e === a ? 0 : 1.2, dz = e === a ? 0 : 1; e.x = x + dx; e.z = z + dz; e.y = ctx.chaoEm(e.x, e.z) ?? y; e.vx = e.x; e.vz = e.z; e.vy = e.y; e.pivo.position.set(e.x, e.y, e.z); e.alvoClique = null; }
   status('teleportado pra ' + ctx.nomeArea(+area));
 }
-function darBolas(id, n){ const b = ctx.jogo.bolas; b[id] = (b[id] || 0) + n; ctx.gravarLS('bolas', b); ctx.pintarHud(); status(`+${n} ${({ 1001: 'Pokébola', 1002: 'Grande Bola', 1003: 'Ultra Bola', 1004: 'Bola Mestra' })[id]} (tem ${b[id]})`); }
+function darBolas(id, n){ const b = ctx.jogo.bolas; b[id] = (b[id] || 0) + n; ctx.gravarLS('bolas', b); ctx.pintarHud(); status(`+${n} ${({ 1001: 'Poké Ball', 1002: 'Great Ball', 1003: 'Ultra Ball', 1004: 'Master Ball' })[id]} (have ${b[id]})`); }
 
 /* ---------------------------------------------------------------- textos */
 function pintarBanner(){ banner.innerHTML = '<b>' + esc(cena.banner.titulo) + '</b><span>' + esc(cena.banner.sub) + '</span>'; }

@@ -679,7 +679,7 @@ function acaoMochila(nome){
     if (!podeUsarMo(alvo)){ avisarMo(alvo.id, 'esse item não se usa pela Mochila'); render(); return; }   // só chega aqui pelo toque duplo (o botão fica desligado)
     if (alvo.it.t === 7){ ctx.jogo.bolaSel = alvo.id; ctx.gravarLS('bolaSel', alvo.id); render(); return; }   // Pokébola: vira a bola escolhida
     if (ctx.ehItemDeEvolucao?.(alvo.id)){
-      if (!evoluiAgoraMo(alvo)){ avisarMo(alvo.id, (alvo.it.n || 'esse item') + ' não tem efeito em ' + (ctx.jogo?.pika?.nome || 'seu Pokémon')); render(); return; }   // revisão (17/09): o aviso fica na janela (antes ela fechava e o aviso flutuava atrás)
+      if (!evoluiAgoraMo(alvo)){ avisarMo(alvo.id, (alvo.it.n || 'this item') + ' has no effect on ' + (ctx.jogo?.pika?.nome || 'your Pokémon')); render(); return; }   // revisão (17/09): o aviso fica na janela (antes ela fechava e o aviso flutuava atrás)
       fechar(); ctx.usarItemEvolucao?.(alvo.id); return;
     }
     ctx.usarItem?.(alvo.id, alvo.it.n || '', (txt, ok) => avisarMo(alvo.id, txt, ok));
@@ -691,7 +691,7 @@ function acaoMochila(nome){
     if (confirmarDescarte !== alvo.id){ confirmarDescarte = alvo.id; render(); return; }   // 1º clique pede confirmação
     if (ctx.comConta?.()) ctx.bolsaOp('descartar', { item: +alvo.id }).then(() => render());   // com conta é o servidor que joga fora
     else { const itens = ctx.lerLS('itens', {}); delete itens[alvo.id]; ctx.gravarLS('itens', itens); }
-    ctx.flutuar?.(ctx.jogo.ash, 'descartou ' + (alvo.it.n || 'item'), '#f58e8e');
+    ctx.flutuar?.(ctx.jogo.ash, tr('discarded {x}', { x: alvo.it.n || 'item' }), '#f58e8e');
     confirmarDescarte = null; selMo = 0; render();
   }
 }
@@ -706,9 +706,9 @@ function encherMochila(pop){
      as ESPERAS da coleta do cristal Teráxico (servidor/save.mjs: `cristal: { ...b.coletas }`, ponto → hora), não uma moeda. A
      "Cristal" do jogo original (moeda 2 do dump) era a de loja paga, que não existe aqui. Só número vale; o resto é 0. */
   const cristal = ctx.lerLS('cristal', 0);
-  Popup.texto(pop, 'pokedollar', dinheiro().toLocaleString('pt-BR'));
-  Popup.texto(pop, 'gold', (Number.isFinite(cristal) ? cristal : 0).toLocaleString('pt-BR'));
-  Popup.texto(pop, 'moedas', dinheiro().toLocaleString('pt-BR'));        // pacotes antigos tinham uma moeda só
+  Popup.texto(pop, 'pokedollar', dinheiro().toLocaleString('en-US'));
+  Popup.texto(pop, 'gold', (Number.isFinite(cristal) ? cristal : 0).toLocaleString('en-US'));
+  Popup.texto(pop, 'moedas', dinheiro().toLocaleString('en-US'));        // pacotes antigos tinham uma moeda só
   const celulas = Popup.celulas(pop, 'lista-itens', Math.max(lista.length, 1), 'item');
   if (!pop.__ligouItens){                                                // clique escolhe a célula (as clonadas também)
     pop.addEventListener('click', ev => {
@@ -722,7 +722,7 @@ function encherMochila(pop){
       if (!duplo){ render(); return; }
       const e2 = itensMochila()[n - 1];                                   // revisão (17/09): pedra que evolui pede confirmação — o Usar segue direto
       if (e2 && evoluiAgoraMo(e2) && !(avisoMo?.confirmaEvo && avisoMo.id === String(e2.id) && Date.now() < avisoMo.ate)){
-        avisarMo(e2.id, 'Evoluir não tem volta: faça de novo pra usar ' + (e2.it.n || 'o item')); avisoMo.confirmaEvo = true; render(); return;
+        avisarMo(e2.id, "Evolving can't be undone: do it again to use " + (e2.it.n || 'the item')); avisoMo.confirmaEvo = true; render(); return;
       }
       acaoMochila('usar');
     });
@@ -753,14 +753,14 @@ function encherMochila(pop){
   if (det){
     Popup.texto(pop, 'item-nome', alvo ? (alvo.it.n || '') : '', det);
     Popup.texto(pop, 'item-categoria', alvo ? catCurta(D.tipos?.[alvo.it.t] || '') : '', det);
-    Popup.texto(pop, 'item-qtd', alvo ? ('Você tem ' + alvo.n) : '', det);
+    Popup.texto(pop, 'item-qtd', alvo ? tr('You have {n}', { n: alvo.n }) : '', det);
     Popup.texto(pop, 'item-descricao', alvo ? semBr(alvo.it.d) : '', det);
     const dica = Popup.no(pop, 'item-dica', det);
     if (dica && dica.dataset.corBase == null) dica.dataset.corBase = dica.style.color;
     if (av){ Popup.texto(pop, 'item-dica', av.texto, det); if (dica) dica.style.color = av.ok ? '#8EF58E' : '#FFD23A'; }   // 17/09: motivo/resultado do Usar
     else { if (alvo && podeUsarMo(alvo)) Popup.rotulo(pop, 'item-dica', det); else Popup.texto(pop, 'item-dica', '', det); if (dica) dica.style.color = dica.dataset.corBase; }
     Popup.imagem(pop, 'item', alvo && alvo.it.i ? './ui/itens/' + alvo.it.i + '.png' : null, det);
-  } else linhaAvisoMo(pop, av || (alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Toque duas vezes no item pra usar', dica: true } : null));
+  } else linhaAvisoMo(pop, av || (alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Double-tap the item to use it', dica: true } : null));
   const bola = alvo && alvo.it.t === 7;
   Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), bola ? 'Choose' : 'Use');
   Popup.botao(pop, 'descartar', !!alvo && podeDescartarMo(alvo));
@@ -2442,7 +2442,7 @@ async function abrirPreviaMochila(){
       const tipos = CATS_MO[st.cat], b = st.busca.trim().toLowerCase();
       return MOCHILA_PREVIA.filter(([id]) => D.itens[id]).map(([id, n]) => ({ id: String(id), n, it: D.itens[id] }))
         .filter(e => (!tipos || tipos.includes(e.it.t)) && (!b || (e.it.n || '').toLowerCase().includes(b)))
-        .sort((x, y) => (x.it.t - y.it.t) || String(x.it.n).localeCompare(String(y.it.n), 'pt-BR'));
+        .sort((x, y) => (x.it.t - y.it.t) || String(x.it.n).localeCompare(String(y.it.n), 'en'));
     };
     const avisa = a => Chat.sistema('Prévia: "' + a + '" não mexe no inventário (mochila de exemplo).');
     const encher = () => {
@@ -2461,11 +2461,11 @@ async function abrirPreviaMochila(){
       if (det){
         Popup.texto(pop, 'item-nome', alvo ? (alvo.it.n || '') : '', det);
         Popup.texto(pop, 'item-categoria', alvo ? catCurta(D.tipos?.[alvo.it.t] || '') : '', det);
-        Popup.texto(pop, 'item-qtd', alvo ? ('Você tem ' + alvo.n) : '', det);
+        Popup.texto(pop, 'item-qtd', alvo ? tr('You have {n}', { n: alvo.n }) : '', det);
         Popup.texto(pop, 'item-descricao', alvo ? semBr(alvo.it.d) : '', det);
         if (alvo && podeUsarMo(alvo)) Popup.rotulo(pop, 'item-dica', det); else Popup.texto(pop, 'item-dica', '', det);
         Popup.imagem(pop, 'item', alvo && alvo.it.i ? './ui/itens/' + alvo.it.i + '.png' : null, det);
-      } else linhaAvisoMo(pop, alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Toque duas vezes no item pra usar', dica: true } : null);
+      } else linhaAvisoMo(pop, alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Double-tap the item to use it', dica: true } : null);
       Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), alvo && alvo.it.t === 7 ? 'Choose' : 'Use');
       Popup.botao(pop, 'descartar', !!alvo && podeDescartarMo(alvo));
     };
