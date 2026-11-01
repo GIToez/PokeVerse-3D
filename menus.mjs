@@ -88,7 +88,7 @@ export async function abrir(nome, aba = null){
     await dados(); render();
     return;
   }
-  const j = $('janela'); j.hidden = false; j.dataset.janela = nome; j.classList.toggle('larga', nome === 'pokedex');
+  const j = $('janela'); j.hidden = false; j.dataset.janela = nome; j.classList.toggle('larga', nome === 'pokedex' || nome === 'mapa');
   abasDoLivro(j, nome);                                                  // pele da Amanda: as abas desenhadas na lombada do livro viram botões
   const reg = ctx.jogo?.hudLayout?.[Hud.presetAtual()]?.['jan-' + nome];   // janela com lugar/tamanho do editor de HUD
   if (reg) Hud.posicionar(j, { ...reg, oculto: false }, false); else Hud.limpar(j);
@@ -971,31 +971,7 @@ function encherTreinador(pop){
 /* ---------------------------------------------------------------- Mapa */
 let pontosMapa = null, areaMapa = null;
 function popupMa(){
-  if (popMa) return popMa;
-  const def = defPopup('mapa'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
-  popMa = Popup.montar(def, {
-    acao: nome => { if (nome === 'trocar-regiao') Chat.sistema('Só Kanto por enquanto — outras regiões chegam depois.'); },
-    /* ÁREA DO JOGADOR A CADA ABERTURA (17/09, chaospider: da Rota 4 pra Cerulean e de Cerulean pra Rota 24 o Mapa seguia na área velha até
-       entrar e sair do Centro Pokémon). `areaMapa` é do módulo e só era recalculada quando estava null: a 1ª abertura prendia a área até a
-       página recarregar (porta recarrega, por isso o Centro "consertava"). Zerando ao abrir, a janela nasce onde o jogador está; o clique
-       no mapa continua trocando a área enquanto ela fica aberta. */
-    abrir: () => { areaMapa = null; },
-    fechar: () => { if (aberta === 'mapa') aberta = null; },
-  });
-  const mapa = Popup.grupo(popMa, 'mapa');
-  if (mapa){                                                             // clique na arte: a área mais perto (data/kanto_map_points.json)
-    mapa.style.pointerEvents = 'auto'; mapa.style.cursor = 'pointer';
-    mapa.addEventListener('click', ev => {
-      if (!pontosMapa) return;
-      const r = mapa.getBoundingClientRect(); const fx = (ev.clientX - r.left) / r.width, fy = (ev.clientY - r.top) / r.height;
-      let melhor = null, dm = Infinity;
-      const testar = (id, [px, py]) => { const d = Math.hypot((px - fx) * (r.width / r.height), py - fy); if (d < dm){ dm = d; melhor = id; } };
-      for (const [id, p] of Object.entries(pontosMapa.areas || {})) testar(+id, p);
-      for (const [id, lista] of Object.entries(pontosMapa.extras || {})) for (const p of lista) testar(+id, p);
-      if (melhor != null && dm < (pontosMapa.raio || 0.045) * (r.width / r.height) * 1.6){ areaMapa = melhor; render(); }
-    });
-  }
-  return popMa;
+  return null;                                                           // world map is the window (quest pins, live tab, click a zone)
 }
 function areaDoJogador(){
   const a = ctx.jogo?.ash, caixas = (ctx.dados?.caixas || []).filter(c => c.sx > 0 && c.sz > 0), fx = ctx.flipX();
@@ -1041,6 +1017,7 @@ async function encherMapa(pop){
     const sw = parseFloat(selo.style.width) || 70, sh = parseFloat(selo.style.height) || 67;
     Popup.mostrarExtra(pop, 'selo-area', true, { x: mx + pt[0] * mw - sw / 2, y: my + pt[1] * mh - sh / 2 });
   } else if (selo) Popup.mostrarExtra(pop, 'selo-area', false);
+  pintarPinsMapa(pop);
 }
 
 /* ---------------------------------------------------------------- Social (fase 2b, 06/09: amigos e mensagens diretas pela conta) */
@@ -1556,11 +1533,124 @@ function encherMissoes(pop){
 
 /* ------------------------------------------------------------------ Mapa */
 let mapaRuas = null, mapaHabitats = null, mapaSel = null;
+function marcadoresMissao(){
+  const M = ctx.missoes;
+  if (!M?.pronto?.()) return [];
+  const m = M.ativa(), idx = M.indicePasso?.() ?? 0;
+  const pins = [];
+  for (const p of (m?.passos || []).slice(idx)){
+    if (p.area){ pins.push({ area: +p.area, texto: p.texto || m.nome, tipo: 'quest' }); break; }
+  }
+  const c = ctx.lerLS?.('ultimoCentro', null);
+  if (c?.chegada && ctx.PORTAS?.[c.chegada]?.a) pins.push({ area: +ctx.PORTAS[c.chegada].a, texto: 'Pokémon Center', tipo: 'centro' });
+  return pins;
+}
+function nomeAreaMapa(a, nomes){
+  return I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes?.[a] || ctx.dados?.nomes?.[a] || ('Area ' + a));
+}
+function listaHabitat(a){
+  const proprios = mapaHabitats?.areas?.[String(a)] || [];
+  const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats?.generico || [] : []);
+  return { proprios, lista };
+}
+function htmlCartaoMapa(a, nome, { live = 0 } = {}){
+  const { proprios, lista } = listaHabitat(a);
+  const d = dexEstado();
+  const linha = e => {
+    const st = d[e.dex], visto = st === 'visto' || st === 'pego';
+    return `<div class="m-poke ${visto ? '' : 'sombra'}"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" loading="lazy" alt=""><b>${visto ? esc(e.nome) : '???'}</b>${e.agua ? '<small>Water</small>' : ''}${st === 'pego' ? '<small class="pego">caught</small>' : ''}</div>`;
+  };
+  const dica = lista.length
+    ? (proprios.length ? 'Pokémon of this area' : 'Common Pokémon of the region') + ' — get close to add them to the Pokédex.'
+    : 'No wild Pokémon here.';
+  return `<div class="ficha mapa-card"><h3>${esc(nome)}</h3>${live ? `<div class="mapa-live">${live} wild on this map now</div>` : ''}<div class="mapa-dica">${dica}</div>${lista.length ? `<div class="m-grade">${lista.map(linha).join('')}</div>` : ''}</div>`;
+}
+function pintarPinsMapa(pop){
+  const mapa = Popup.grupo(pop, 'mapa'); if (!mapa) return;
+  mapa.style.position = 'relative';
+  for (const n of mapa.querySelectorAll('.mapa-pin')) n.remove();
+  const voce = areaDoJogador();
+  const pins = marcadoresMissao();
+  if (voce) pins.unshift({ area: voce, texto: 'You', tipo: 'voce' });
+  for (const pin of pins){
+    const pt = pontosMapa?.areas?.[String(pin.area)]; if (!pt) continue;
+    const el = document.createElement('i');
+    el.className = 'mapa-pin mapa-pin-' + pin.tipo;
+    el.title = pin.texto;
+    el.style.left = (pt[0] * 100) + '%';
+    el.style.top = (pt[1] * 100) + '%';
+    mapa.appendChild(el);
+  }
+}
 function rMapa(corpo){
-  abas([{ id: 'kanto', nome: 'Kanto' }]);
   const dd = ctx.dados, caixas = (dd.caixas || []).filter(c => c.sx > 0 && c.sz > 0);
-  if (caixas.length < 2){ corpo.innerHTML = '<div class="vazio">Sem mapa nesta cena (interior). Saia pra rua pra ver Kanto.</div>'; return; }
-  corpo.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1 1 560px;min-width:340px"><canvas class="mapa" width="1280" height="960" style="width:100%;border-radius:12px;cursor:pointer"></canvas><div id="m-legenda" style="color:var(--muted);font-size:12px;margin-top:6px">clique numa área pra ver os Pokémon dela</div></div><div id="m-card" style="flex:1 1 240px;min-width:230px"></div></div>`;
+  const temAqui = caixas.length >= 2;
+  const nomeAqui = I18n.rotuloLugar(ctx.nomeAreaAtual?.() || dd?.nomes?.[areaDoJogador()] || 'This map');
+  abas([{ id: 'kanto', nome: 'Kanto' }, ...(temAqui ? [{ id: 'aqui', nome: nomeAqui }] : [])]);
+  if (abaAtual === 'aqui' && temAqui){ rMapaVivo(corpo, dd, caixas); return; }
+  rMapaMundo(corpo);
+}
+function rMapaMundo(corpo){
+  corpo.innerHTML = `<div class="mapa-mundo">
+    <div class="mapa-palco">
+      <img class="mapa-foto" src="./ui/figma/backgrounds/mapa-kanto.png" alt="Kanto">
+      <div class="mapa-pins"></div>
+      <div class="mapa-sel" hidden></div>
+    </div>
+    <aside class="mapa-lado" id="m-card"><div class="vazio">Click a city or route to see what lives there.</div></aside>
+  </div>`;
+  const palco = corpo.querySelector('.mapa-palco');
+  const pinsEl = corpo.querySelector('.mapa-pins');
+  const selEl = corpo.querySelector('.mapa-sel');
+  const card = corpo.querySelector('#m-card');
+  const abrirArea = async a => {
+    mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
+    pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, nomes: {}, raio: 0.045 }));
+    if (aberta !== 'mapa') return;
+    mapaSel = a;
+    const nome = nomeAreaMapa(a, pontosMapa.nomes);
+    const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
+    card.innerHTML = htmlCartaoMapa(a, nome, { live });
+    const pt = pontosMapa.areas?.[String(a)];
+    if (pt){ selEl.hidden = false; selEl.style.left = (pt[0] * 100) + '%'; selEl.style.top = (pt[1] * 100) + '%'; }
+    else selEl.hidden = true;
+  };
+  const pintarPins = () => {
+    pinsEl.innerHTML = '';
+    const voce = areaDoJogador();
+    const pins = marcadoresMissao();
+    if (voce) pins.unshift({ area: voce, texto: 'You are here', tipo: 'voce' });
+    for (const pin of pins){
+      const pt = pontosMapa?.areas?.[String(pin.area)]; if (!pt) continue;
+      const el = document.createElement('i');
+      el.className = 'mapa-pin mapa-pin-' + pin.tipo;
+      el.title = pin.texto;
+      el.style.left = (pt[0] * 100) + '%';
+      el.style.top = (pt[1] * 100) + '%';
+      pinsEl.appendChild(el);
+    }
+  };
+  palco.onclick = ev => {
+    if (!pontosMapa) return;
+    const r = palco.getBoundingClientRect();
+    const fx = (ev.clientX - r.left) / r.width, fy = (ev.clientY - r.top) / r.height;
+    let melhor = null, dm = Infinity;
+    const testar = (id, [px, py]) => { const d = Math.hypot((px - fx) * (r.width / r.height), py - fy); if (d < dm){ dm = d; melhor = +id; } };
+    for (const [id, p] of Object.entries(pontosMapa.areas || {})) testar(id, p);
+    for (const [id, lista] of Object.entries(pontosMapa.extras || {})) for (const p of lista) testar(id, p);
+    if (melhor != null && dm < (pontosMapa.raio || 0.045) * (r.width / r.height) * 1.8) abrirArea(melhor);
+  };
+  (async () => {
+    pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, nomes: {}, raio: 0.045 }));
+    mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
+    if (aberta !== 'mapa') return;
+    pintarPins();
+    const start = areaDoJogador() || marcadoresMissao()[0]?.area || 1101;
+    abrirArea(start);
+  })();
+}
+function rMapaVivo(corpo, dd, caixas){
+  corpo.innerHTML = `<div class="mapa-mundo"><div class="mapa-palco"><canvas class="mapa" width="1280" height="960"></canvas></div><aside class="mapa-lado" id="m-card"></aside></div>`;
   const cv = corpo.querySelector('canvas'), c = cv.getContext('2d');
   const fx = ctx.flipX();
   const xs = caixas.flatMap(b => [fx * b.x - b.sx / 2, fx * b.x + b.sx / 2]), zs = caixas.flatMap(b => [b.z - b.sz / 2, b.z + b.sz / 2]);
@@ -1598,14 +1688,10 @@ function rMapa(corpo){
   };
   const cartao = async a => {
     mapaSel = a; desenhar();
-    const alvo = corpo.querySelector('#m-card'); const nome = I18n.rotuloLugar(dd.nomes?.[a] || ('área ' + a));
+    const alvo = corpo.querySelector('#m-card'); const nome = I18n.rotuloLugar(dd.nomes?.[a] || ('Area ' + a));
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
-    const proprios = mapaHabitats.areas?.[String(a)] || [];
-    const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats.generico || [] : []);
-    const d = dexEstado();
-    const linha = e => { const st = d[e.dex]; const visto = st === 'visto' || st === 'pego';
-      return `<div class="m-poke ${visto ? '' : 'sombra'}"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" loading="lazy"><b>${visto ? esc(e.nome) : '???'}</b>${e.agua ? '<small>💧</small>' : ''}${st === 'pego' ? '<small class="pego">✔ pego</small>' : ''}</div>`; };
-    alvo.innerHTML = `<div class="ficha"><h3>${esc(nome)}</h3>${lista.length ? `<div style="color:var(--muted);font-size:11px;margin:4px 0 8px">${proprios.length ? 'Pokémon of this area' : 'Common Pokémon of the region'} — up close they get added to the Pokédex</div><div class="m-grade">${lista.map(linha).join('')}</div>` : '<div class="vazio" style="padding:14px 6px">No wild Pokémon here.</div>'}</div>`;
+    const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
+    alvo.innerHTML = htmlCartaoMapa(a, nome, { live });
   };
   cv.onclick = ev => {
     const r = cv.getBoundingClientRect();
