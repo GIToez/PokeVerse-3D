@@ -982,6 +982,7 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     barra?.classList.remove('solto');
     barra?.classList.add('dock-regiao');
     ancorarMenuNoDock();
+    ancorarChat();
   } else {
     barra?.classList.add('solto');
     barra?.classList.remove('dock-regiao');
@@ -1075,7 +1076,12 @@ export function limparSobreposicaoHud(){
   const barra = document.getElementById('barra');
   if (barra){
     barra.classList.remove('ilha-dock');
-    barra.classList.add('solto');
+    if (document.body.classList.contains('hud-dock')){
+      barra.classList.remove('solto');
+      barra.classList.add('dock-regiao');
+    } else {
+      barra.classList.add('solto');
+    }
   }
   for (const id of ['skills', 'atalhos', 'bola-btn', 'menu-icones', 'time-hud']){
     document.getElementById(id)?.classList.remove('ilha-centro', 'ilha-atalhos', 'ilha-direita', 'ilha-bola', 'menu-pill', 'dock-slide');
@@ -1086,7 +1092,16 @@ export function limparSobreposicaoHud(){
 }
 /** @deprecated Overlay restyle removed — Figma layout is the only HUD path. */
 export function aplicarIlha(){ limparSobreposicaoHud(); }
-export function ancorarChat(){}
+/** Publish chat box size onto body so the action bar can sit flush to its right. */
+export function ancorarChat(){
+  const el = document.getElementById('chat');
+  if (!el || !document.body.classList.contains('hud-dock')) return;
+  const fechado = el.classList.contains('fechado');
+  const w = Math.max(220, Math.round(el.offsetWidth || parseFloat(getComputedStyle(el).getPropertyValue('--chat-w')) || 360));
+  const h = fechado ? Math.max(36, Math.round(el.offsetHeight || 44)) : Math.max(110, Math.round(el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue('--chat-h')) || 248));
+  document.body.style.setProperty('--chat-w', w + 'px');
+  document.body.style.setProperty('--chat-h', h + 'px');
+}
 export function achatarParty(){}
 /** O layout que o último `aplicar` usou (rodada 26: o raid_ui.mjs lê dele os registros `popups.<ori>.raid.hud`). */
 export const layoutAtual = () => aplicar.__ultimo?.[0] || null;
