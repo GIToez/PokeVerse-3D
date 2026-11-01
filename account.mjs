@@ -91,9 +91,9 @@ async function api(metodo, caminho, corpo = null, keepalive = false){
   } catch (e){ return { ok: false, status: 0, dados: null, erro: 'Sem conexão com o servidor.' }; }
   finally { clearTimeout(t); }
 }
-async function saude(){
+async function health(){
   const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 2500);
-  try { const r = await fetch(base + '/saude', { signal: ctl.signal, cache: 'no-store' }); return r.ok; } catch { return false; } finally { clearTimeout(t); }
+  try { const r = await fetch(base + '/health', { signal: ctl.signal, cache: 'no-store' }); return r.ok; } catch { return false; } finally { clearTimeout(t); }
 }
 
 /* ------------------------------------------------------------------ espelho local ↔ save */
@@ -213,7 +213,7 @@ export async function garantir(c){
   ctx = c; const p = c.params;
   if (p.get('rede') === '0' || p.get('conta') === '0' || /[?&]figmateste=1(&|$)/.test(location.search)){ modo = 'offline'; return { modo }; }
   base = baseHttp(p);
-  if (!(await saude())){ modo = 'sem-servidor'; console.log('conta: servidor fora do ar em ' + base + ' — jogando no localStorage'); return { modo }; }
+  if (!(await health())){ modo = 'sem-servidor'; console.log('conta: servidor fora do ar em ' + base + ' — jogando no localStorage'); return { modo }; }
   token = ler(LS.token); usuario = ler(LS.usuario); rev = +ler(LS.rev) || 0;
   if (token){
     /* 08/09: até aqui, se a sessão anterior fechou com mudança não enviada, o espelho do APARELHO subia por cima antes de ler.

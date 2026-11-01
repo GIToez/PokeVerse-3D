@@ -244,11 +244,11 @@ async function api(a, b, c = null, d = false, f = 8000) {
     clearTimeout(t);
   }
 }
-async function saude(a = 2500) {
+async function health(a = 2500) {
   const b = new AbortController();
   const t = setTimeout(() => b.abort(), a);
   try {
-    const r = await fetch(base + '/saude', { signal: b.signal, cache: 'no-store' });
+    const r = await fetch(base + '/health', { signal: b.signal, cache: 'no-store' });
     return r.ok;
   } catch {
     return false;
@@ -524,9 +524,9 @@ export async function garantir(c) {
   if (ler(LS.token)) telas().catch(() => {});
   const a = true;
   let b = false;
-  for (let e = 1; !(await saude(Math.min(8000, 2500 * e))); e++) {
+  for (let e = 1; !(await health(Math.min(8000, 2500 * e))); e++) {
     b = true;
-    await esperarDeNovo(e, 'saude');
+    await esperarDeNovo(e, 'health');
   }
   if (encerrada) return encerrada;
   token = ler(LS.token);

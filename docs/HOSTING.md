@@ -68,7 +68,7 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload && sudo systemctl enable --now pokeverse
-curl http://127.0.0.1:5190/saude     # → {"ok":true,...}
+curl http://127.0.0.1:5190/health    # → {"ok":true,"game":"Pokemon 3D Base"}
 ```
 
 `HOST=127.0.0.1` keeps port 5190 off the internet. The server saves accounts on stop, so `systemctl restart` is safe.

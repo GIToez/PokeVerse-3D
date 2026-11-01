@@ -46,7 +46,7 @@ Healing (works anywhere, with a 2 s cooldown). Trades are relayed without a serv
 
 | Purpose | Routes |
 |---|---|
-| Health | `GET /saude`, `GET /alfa`, `POST /chaves/validar` |
+| Health | `GET /health` (alias `GET /saude`), `GET /alfa`, `POST /chaves/validar` |
 | Client diagnostics | `POST /conta/boot`, `POST /conta/log`, `GET /conta/logs` (GM) |
 | Accounts | `POST /conta/criar`, `/conta/entrar`, `/conta/recuperar`, `/conta/estado`, `/conta/sair`, `/conta/nome`, `/conta/idioma`, `/conta/senha`, `/conta/personagem/apagar`, `/conta/apagar`; `GET`/`PUT /save` |
 | Admin: identity | `GET /admin/eu` |

@@ -601,7 +601,9 @@ const httpServer = http.createServer((req, res) => {
       } catch { return json(200, { ok: true, total: 0, ultimas: [] }); }
     }
 
-    if (req.method === 'GET' && rota === '/saude') return json(200, { ok: true, jogo: 'Pokemon 3D Base' });
+    if (req.method === 'GET' && (rota === '/health' || rota === '/saude')) {
+      return json(200, { ok: true, game: 'Pokemon 3D Base' });
+    }
     if (req.method === 'GET' && rota === '/alfa') return json(200, { ok: true, chaveObrigatoria: false });
     if (req.method === 'POST' && rota === '/chaves/validar') return json(200, { ok: true, chave: d.chave });
 

@@ -24,6 +24,6 @@ npm install --omit=dev
 echo "==> restart ${SERVICE}"
 sudo -n systemctl restart "$SERVICE"
 sleep 1
-curl -fsS http://127.0.0.1:5190/saude
+curl -fsS http://127.0.0.1:5190/health
 echo
 echo "==> deploy done $(git rev-parse --short HEAD)"

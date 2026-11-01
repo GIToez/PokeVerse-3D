@@ -70,7 +70,7 @@ sudo chmod 440 /etc/sudoers.d/pokeverse-3d-deploy
 sudo systemctl daemon-reload
 sudo systemctl enable --now "$SERVICE"
 sleep 1
-curl -fsS http://127.0.0.1:5190/saude
+curl -fsS http://127.0.0.1:5190/health
 echo
 echo "Bootstrap done on ${HOST_IP}. Later deploys: ssh ${DEPLOY_USER}@${HOST_IP} 'bash ${APP_DIR}/scripts/live/deploy.sh'"
 echo "OT is unchanged. This unit is ${SERVICE} only."
