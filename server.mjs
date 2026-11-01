@@ -20,13 +20,14 @@ import { criarModeracao } from './server_moderation.mjs';           // Fase 3: c
 import { criarEventos } from './server_events.mjs';               // Fase 3: eventos ao vivo (EXP/shiny/densidade, aviso global, manutenção)
 import { criarRecursos } from './server_resources.mjs';             // Fase 3: listas de faixas/máscaras/modelos pras prévias do painel
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
+import { criarBatalha } from './server_battle.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
 
-const VERSAO_REDE = 15;   // deve bater com network.mjs
+const VERSAO_REDE = 19;   // deve bater com network.mjs (18+ understands bat_*; 19 adds PvP invites)
 
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao
@@ -187,7 +188,12 @@ function hashSenha(s, salt) { salt = salt || crypto.randomBytes(16).toString('he
 function conferirSenha(s, guardado) {
   if (!guardado) return false;
   if (guardado.includes(':')) { const salt = guardado.slice(0, guardado.indexOf(':')); return guardado === hashSenha(s, salt); }
-  return guardado === crypto.createHash('sha256').update(String(s ?? '') + 'pokefable').digest('hex');   // legado (contas antigas)
+  return guardado === crypto.createHash('sha256').update(String(s ?? '') + 'pokefable').digest('hex');   // legado: aceita uma vez e rehash abaixo
+}
+function migrarSenhaSeLegado(c, senha) {
+  if (!c?.senha || String(c.senha).includes(':')) return;
+  if (!conferirSenha(senha, c.senha)) return;
+  c.senha = hashSenha(senha);
 }
 function tokenNovo() { return crypto.randomBytes(32).toString('hex'); }
 const rnd = (n) => Math.floor(Math.random() * (n + 1));
@@ -531,12 +537,32 @@ function limparZona(z) {
   };
 }
 
+const ORIGENS_OK = new Set([
+  'https://play.pokeverse.quest',
+  'http://localhost:5300',
+  'http://127.0.0.1:5300',
+  'http://localhost:5190',
+  'http://127.0.0.1:5190',
+  ...(String(process.env.PV_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean)),
+]);
+const MAX_CONEXOES = Math.max(8, +process.env.PV_MAX_CONEXOES || 128);
+function origemOk(orig) {
+  if (!orig) return true;
+  try {
+    const u = new URL(orig);
+    if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') return true;
+  } catch {}
+  return ORIGENS_OK.has(orig);
+}
+
 // ── Servidor HTTP ────────────────────────────────────────────────────────────
 const httpServer = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const rota = url.pathname;
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const orig = req.headers.origin;
+  if (orig && !origemOk(orig)) { res.writeHead(403); res.end(); return; }
+  res.setHeader('Access-Control-Allow-Origin', orig && origemOk(orig) ? orig : 'https://play.pokeverse.quest');
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
@@ -651,6 +677,7 @@ const httpServer = http.createServer((req, res) => {
       const u = String(d.usuario || '').toLowerCase().trim();
       const c = contas[u];
       if (!c || !conferirSenha(d.senha || '', c.senha)) return json(401, { erro: 'Incorrect username or password.' });
+      migrarSenhaSeLegado(c, d.senha || '');
       const ban = banidoAteDe(c);                                         // painel → Jogadores → Banir
       if (ban) return json(403, { erro: 'Account suspended ' + (ban === -1 ? 'permanently' : 'until ' + new Date(ban).toLocaleString('en-US')) + '.' + (c.banMotivo ? ' Reason: ' + c.banMotivo : '') });
       const manut = eventos.bloqueiaLogin(c); if (manut) return json(503, { erro: manut });   // Fase 3: modo manutenção (GM entra)
@@ -1051,8 +1078,14 @@ const httpServer = http.createServer((req, res) => {
 });
 
 // ── WebSocket ────────────────────────────────────────────────────────────────
-const wss = new WebSocketServer({ server: httpServer });
 const conexoes = new Map();   // id → ws
+const wss = new WebSocketServer({
+  server: httpServer,
+  verifyClient: (info) => {
+    if (conexoes.size >= MAX_CONEXOES) return false;
+    return origemOk(info.origin || info.req?.headers?.origin);
+  },
+});
 let proxId = 1;
 // Fase 3 do painel: a lógica mora nos módulos; aqui só entram os helpers que eles reusam (os mesmos da tela Jogadores)
 const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, derrubar, logAdmin, gravarComBackup });
@@ -1060,6 +1093,7 @@ const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derr
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet') });
+const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao });
 
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
@@ -1118,6 +1152,7 @@ wss.on('connection', ws => {
           outros.push(infoJogador(other));
         }
         enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: [], online: conexoes.size, conta: ws._usuario, versao: VERSAO_REDE, soloWilds: true, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo
@@ -1315,14 +1350,17 @@ wss.on('connection', ws => {
             }
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
           } else {
-            enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 9999, bolas: c.save.bolas, itens: c.save.itens } : null });
+            const extra = c && batalha.bolsa(ws, op, m);
+            if (extra) enviar(ws, { t: 'bolsa', op, ...extra });
+            else enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 9999, bolas: c.save.bolas, itens: c.save.itens, insignias: c.save.insignias } : null });
           }
         }
 
         else if (m.t === 'vida_curar') {
+          const u = sessoes.get(ws._info?.token) || null;
+          if (u && batalha.bloquearCura(u)) { enviar(ws, { t: 'vida_erro', erro: 'no healing in the Elite Four: the five fights are one run' }); break; }
           if (ws._ultCura && Date.now() - ws._ultCura < 2000) break;      // anti-flood (prod: exigir estar num Centro Pokémon)
           ws._ultCura = Date.now();
-          const u = sessoes.get(ws._info?.token) || null;
           const c = u ? contas[u] : null;
           let vidas = null;
           if (c?.save?.time) {
@@ -1335,7 +1373,7 @@ wss.on('connection', ws => {
         }
 
         else if (m.t?.startsWith('bat_')) {
-          enviar(ws, { t: 'bat_erro', erro: 'PvP battles are not available on the local server.' });
+          batalha.receber(ws, m);
         }
 
         else if (m.t?.startsWith('troca_')) {
@@ -1355,6 +1393,7 @@ wss.on('connection', ws => {
   });
 
   ws.on('close', () => {
+    try { batalha.aoSair(ws); } catch {}
     if (!conexoes.delete(ws._id)) return;                                 // já saiu da lista (sessão única) e o `saiu` já foi
     console.log(`[-] ${ws._usuario || ws._id} left (${conexoes.size} online)`);
     broadcast(ws, { t: 'saiu', id: ws._id });

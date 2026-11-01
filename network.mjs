@@ -14,7 +14,7 @@ let ping = { enviado: 0, ms: null };
 let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null, tAparencia = 0, ultimaMont = null;   // ultimaMont (14/09): a montaria que a sala já sabe   // ultimoUid: qual Pokémon está em campo (passo 3: o XP e o dano caem nele); ultimoTitulo: o título sob o nome (12/09)
 import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
 import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
-export const VERSAO_REDE = 18;                                            // sobe a cada mudança de protocolo (server.mjs tem a dele): aba velha recebe o aviso de recarregar      // o que os outros sabem do MEU parceiro/roupa (troca do inicial, Shift+Z, evolução, ✎ Personagem)
+export const VERSAO_REDE = 19;                                            // 19: server-run trainer/gym/E4 + PvP invites (bat_convite / bat.abrir)
 
 export function instalar(c){
   ctx = c;
@@ -158,10 +158,18 @@ function receber(m){
       else if (m.erro) ctx.Chat?.sistema('⚠ ' + m.erro + '.');
       return;
     }
+    case 'bat_convite':
+      ctx.batalhaConvite?.(m);
+      return;
     case 'bat': case 'bat_erro': {                                       // batalha por turnos conduzida pelo servidor (passo 4)
-      const pend = batEsperando; if (!pend) return;
+      const pend = batEsperando;
+      if (!pend) {
+        if (m.t === 'bat' && (m.abrir || m.pvp) && !m.erro) ctx.batalhaAbrir?.(m);
+        else if (m.t === 'bat' && m.fim) ctx.batalhaFim?.(m);
+        return;
+      }
       batEsperando = null; clearTimeout(pend.timer);
-      pend.resolve(m.t === 'bat' ? m : { erro: m.erro || 'recusado', codigo: m.codigo || null, vez: m.vez ?? null });   // 17/09: 'vencido' = treinador já vencido (o index marca o ✔); `vez` (20/09) = o turno de agora, na recusa por turno vencido
+      pend.resolve(m.t === 'bat' ? m : { erro: m.erro || 'recusado', codigo: m.codigo || null, vez: m.vez ?? null, espera: m.espera ?? null });   // 17/09: 'vencido' = treinador já vencido (o index marca o ✔); `vez` (20/09) = o turno de agora, na recusa por turno vencido
       return;
     }
     case 'vida': case 'vida_erro': {                                     // resposta da cura completa

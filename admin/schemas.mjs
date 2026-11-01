@@ -172,6 +172,13 @@ export const ESQUEMAS = {
         ajuda: 'Poké Ball 1 · Great Ball 1.5 · Ultra Ball 2. 255 = always catches (Master Ball).' },
     ],
   },
+  elite: {
+    titulo: 'Elite Four', arquivo: 'elite', forma: 'objeto',
+    descricao: 'The five League rooms in order. The live client reads membros[].npc as the trainer standing in each room.',
+    campos: [
+      { k: 'membros', rotulo: 'Members', tipo: 'json', ajuda: 'List of { ordem, nome, titulo, tipo, npc, cena, glb, time, dinheiro, falaAntes, falaDerrota, falaVitoria, campeao }' },
+    ],
+  },
   ginasios: {
     titulo: 'Gyms', arquivo: 'gyms', forma: 'mapa',
     descricao: 'Leader, team, reward and lines of each gym.',

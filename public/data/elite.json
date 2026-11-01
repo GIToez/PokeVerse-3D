@@ -1,0 +1,110 @@
+{
+  "membros": [
+    {
+      "ordem": 1,
+      "nome": "Lorelei",
+      "titulo": "Elite Four",
+      "tipo": "Ice",
+      "npc": 4170199,
+      "cena": 4120009,
+      "glb": "npc/NPC1007",
+      "campeao": false,
+      "dinheiro": 5400,
+      "time": [
+        { "dex": 87, "lv": 54, "glb": "pm0087_00" },
+        { "dex": 91, "lv": 53, "glb": "pm0091_00" },
+        { "dex": 80, "lv": 54, "glb": "pm0080_00" },
+        { "dex": 124, "lv": 56, "glb": "pm0124_00" },
+        { "dex": 131, "lv": 56, "glb": "pm0131_00" }
+      ],
+      "falaAntes": ["I am Lorelei of the Elite Four. No one can best me when it comes to icy Pokémon."],
+      "falaDerrota": ["How dare you!"],
+      "falaVitoria": ["You're better than I thought. But that's not enough."]
+    },
+    {
+      "ordem": 2,
+      "nome": "Bruno",
+      "titulo": "Elite Four",
+      "tipo": "Fighting",
+      "npc": 4170299,
+      "cena": 4120010,
+      "glb": "npc/NPC1004",
+      "campeao": false,
+      "dinheiro": 5800,
+      "time": [
+        { "dex": 95, "lv": 53, "glb": "pm0095_00" },
+        { "dex": 107, "lv": 55, "glb": "pm0107_00" },
+        { "dex": 106, "lv": 55, "glb": "pm0106_00" },
+        { "dex": 95, "lv": 56, "glb": "pm0095_00" },
+        { "dex": 68, "lv": 58, "glb": "pm0068_00" }
+      ],
+      "falaAntes": ["I am Bruno of the Elite Four. Through rigorous training, people and Pokémon can become stronger."],
+      "falaDerrota": ["Why? How could I lose?"],
+      "falaVitoria": ["What a disappointment."]
+    },
+    {
+      "ordem": 3,
+      "nome": "Agatha",
+      "titulo": "Elite Four",
+      "tipo": "Ghost",
+      "npc": 4170399,
+      "cena": 4120011,
+      "glb": "npc/NPC1007",
+      "campeao": false,
+      "dinheiro": 6000,
+      "time": [
+        { "dex": 94, "lv": 56, "glb": "pm0094_00" },
+        { "dex": 42, "lv": 56, "glb": "pm0042_00" },
+        { "dex": 93, "lv": 55, "glb": "pm0093_00" },
+        { "dex": 24, "lv": 58, "glb": "pm0024_00" },
+        { "dex": 94, "lv": 60, "glb": "pm0094_00" }
+      ],
+      "falaAntes": ["I am Agatha of the Elite Four. Oak's taken a lot of interest in you, child."],
+      "falaDerrota": ["Oh, my! You're something special, child!"],
+      "falaVitoria": ["That was disappointing."]
+    },
+    {
+      "ordem": 4,
+      "nome": "Lance",
+      "titulo": "Elite Four",
+      "tipo": "Dragon",
+      "npc": 4170499,
+      "cena": 4120012,
+      "glb": "npc/NPC1004",
+      "campeao": false,
+      "dinheiro": 6200,
+      "time": [
+        { "dex": 130, "lv": 58, "glb": "pm0130_00" },
+        { "dex": 148, "lv": 56, "glb": "pm0148_00" },
+        { "dex": 148, "lv": 56, "glb": "pm0148_00" },
+        { "dex": 142, "lv": 60, "glb": "pm0142_00" },
+        { "dex": 149, "lv": 62, "glb": "pm0149_00" }
+      ],
+      "falaAntes": ["I am Lance of the Elite Four. I lead the most powerful dragons in the world."],
+      "falaDerrota": ["That's it! I hate to admit it, but you are a Pokémon master!"],
+      "falaVitoria": ["Did you see how strong dragon Pokémon can be?"]
+    },
+    {
+      "ordem": 5,
+      "nome": "Blue",
+      "titulo": "Champion",
+      "tipo": "Normal",
+      "npc": 4170599,
+      "cena": 4120013,
+      "glb": "pc/Boy_001",
+      "campeao": true,
+      "dinheiro": 10000,
+      "time": [
+        { "dex": 18, "lv": 61, "glb": "pm0018_00" },
+        { "dex": 65, "lv": 59, "glb": "pm0065_00" },
+        { "dex": 112, "lv": 61, "glb": "pm0112_00" },
+        { "dex": 103, "lv": 61, "glb": "pm0103_00" },
+        { "dex": 59, "lv": 63, "glb": "pm0059_00" },
+        { "dex": 9, "lv": 65, "glb": "pm0009_00" }
+      ],
+      "falaAntes": ["Hey! I was looking forward to seeing you, champ. I'm the Pokémon League Champion."],
+      "falaDerrota": ["NO! That can't be! You beat me? I spent so much time raising my Pokémon…"],
+      "falaVitoria": ["Hah! I knew I was the better trainer."]
+    }
+  ]
+}

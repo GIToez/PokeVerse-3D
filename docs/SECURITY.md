@@ -21,12 +21,12 @@ your own machine.
    contains password hashes and email addresses. It is gitignored; keep it that way.
 2. **No seeded accounts.** Do not ship a pre-made GM account (e.g. `admin`/`admin`).
    Create your own account and grant it GM locally (see [`STARTUP.md`](STARTUP.md)).
-3. **Legacy password fallback.** The server still accepts old unsalted
-   `sha256(password + "pokefable")` hashes for pre-existing accounts. Retire these by
-   forcing a password reset if you take the server online.
-4. **Permissive CORS.** The server sends `Access-Control-Allow-Origin: *` and does not
-   check the WebSocket origin — fine for localhost, risky on a public host. Restrict the
-   allowed origin before exposing it.
+3. **Legacy password fallback.** Old unsalted `sha256(password + "pokefable")` hashes
+   still authenticate once. On that successful login the server rewrites the hash to
+   scrypt (`salt:hash`) and never stores the legacy form again.
+4. **CORS / WebSocket origin.** Allowed origins are `https://play.pokeverse.quest` and
+   localhost. Extra hosts go in `PV_ORIGINS` (comma-separated). Requests from other
+   origins are rejected. There is a connection cap (`PV_MAX_CONEXOES`, default 128).
 5. **Dependency advisories.** `npm audit` reports Vite dev-server advisories. Run
    `npm audit fix` or bump Vite; the Vite dev server is not meant to be public anyway —
    use `npm run build` + a real static host for production.
