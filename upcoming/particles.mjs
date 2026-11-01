@@ -1,4 +1,3 @@
-/*! Poke Fable Online — pokefableonline.com — © 2026 TELIS E PRADO SERVIÇOS DIGITAIS LTDA. Todos os direitos reservados. Proibido copiar, redistribuir, hospedar cópia ou fazer engenharia reversa (Termos de Uso). */
 import*as THREE from"three";const BASE="./particulas";const VER=globalThis.__versao?.ativo?"":new URL(import.meta.url).search;const Shaders=await import("./effect_shaders.mjs"+VER);let usarJogo=!/[?&]shaders=0/.test(location.search);export function usarShadersDoJogo(v){usarJogo=!!v}let _materiais=null;function materiais(){return _materiais||=fetch(`${BASE}/materiais.json${VER}`).then(r=>r.ok?r.json():{}).catch(()=>({}))}const VERT=`
 attribute vec4 aCor;
 attribute vec4 aUV;      // xy = deslocamento do quadro, zw = tamanho do quadro

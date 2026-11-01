@@ -1,4 +1,3 @@
-/*! Poke Fable Online — pokefableonline.com — © 2026 TELIS E PRADO SERVIÇOS DIGITAIS LTDA. Todos os direitos reservados. Proibido copiar, redistribuir, hospedar cópia ou fazer engenharia reversa (Termos de Uso). */
 const CSS=`
 #grav-botao{position:fixed;right:12px;top:12px;z-index:30;padding:7px 12px;border:1px solid #b47622;border-radius:6px;background:linear-gradient(#342317,#10131b);color:#ffe6b0;font:12px/1.4 "Segoe UI",Arial,sans-serif;cursor:pointer;box-shadow:0 8px 18px #000a}
 #grav-botao b{display:inline-block;padding:0 5px;margin-left:6px;border:1px solid #b47622;border-radius:3px;font-family:ui-monospace,Consolas,monospace}

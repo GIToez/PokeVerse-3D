@@ -1,4 +1,3 @@
-/*! Poke Fable Online — pokefableonline.com — © 2026 TELIS E PRADO SERVIÇOS DIGITAIS LTDA. Todos os direitos reservados. Proibido copiar, redistribuir, hospedar cópia ou fazer engenharia reversa (Termos de Uso). */
 import*as THREE from"three";const BASE=new URL("./scenery/lodo/",import.meta.url);const RECEITAS={pm0088:{beto:"pm0089_00_Beto1.tga",mask:"pm0088_00_BetoMask.tga",cor:[0.18490271,0.06581523,0.2735849,0.43137255]},pm0089:{beto:"pm0089_00_Beto1.tga",mask:"pm0089_00_BetoMask.tga",cor:[0.10206581,0.06292275,0.13207549,0.43137255]}};export const EH_LODO=/BetoMask/i;const VS=`
 #include <common>
 #include <skinning_pars_vertex>
