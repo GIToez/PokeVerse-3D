@@ -19,6 +19,23 @@ const adminRoute = {
 export default defineConfig({
   appType: 'mpa',
   plugins: [adminRoute],
+  /* Bundle every three.js entry point up front. Discovering the editor-only addons (GLTFExporter, TransformControls) on
+     the first visit to /admin/scenery makes Vite re-bundle and reload, and imports in flight fail with "Outdated
+     Optimize Dep" (504). */
+  optimizeDeps: {
+    entries: ['index.html', 'admin/index.html', 'admin/scenery.html'],
+    include: [
+      'three',
+      'three/addons/controls/OrbitControls.js',
+      'three/addons/controls/PointerLockControls.js',
+      'three/addons/controls/TransformControls.js',
+      'three/addons/exporters/GLTFExporter.js',
+      'three/addons/loaders/GLTFLoader.js',
+      'three/addons/loaders/KTX2Loader.js',
+      'three/addons/loaders/OBJLoader.js',
+      'three/addons/utils/SkeletonUtils.js',
+    ],
+  },
   server: {
     port: 5300,
     host: true
