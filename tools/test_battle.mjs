@@ -66,7 +66,7 @@ batalha.receber(ws, { t: 'bat_sair' });
 
 batalha.receber(ws, { t: 'bat_desafiar', tipo: 'elite', id: 2 });
 const skip = last();
-if (skip.t !== 'bat_erro' || skip.codigo !== 'ordem') throw new Error('E4 should require room 1 first: ' + JSON.stringify(skip));
+if (skip.t !== 'bat_erro' || skip.code !== 'order') throw new Error('E4 should require room 1 first: ' + JSON.stringify(skip));
 
 batalha.receber(ws, { t: 'bat_desafiar', tipo: 'elite', id: 1 });
 const e4 = last();
@@ -97,5 +97,10 @@ while (rounds++ < 20) {
 if (!end?.fim?.venceu) throw new Error('expected to beat Camper-Keiji: ' + JSON.stringify(end));
 if (!contas.ash.save.treinadorPago.length) throw new Error('trainer payout missing');
 if (!(contas.ash.save.dinheiro > 50000)) throw new Error('prize money missing');
+
+batalha.receber(ws, { t: 'bat_desafiar', tipo: 'treinador', id: '4120102' });
+const again = last();
+if (again.code !== 'beaten') throw new Error('already-beaten trainer must use English code beaten, not vencido: ' + JSON.stringify(again));
+if (again.codigo) throw new Error('protocol field is code, not codigo: ' + JSON.stringify(again));
 
 console.log('battle tests ok', { trainer: open.nomeInimigo, gym: gym.nomeInimigo, e4: e4.nomeInimigo, thunderbolt: dano, eff, winRounds: rounds });

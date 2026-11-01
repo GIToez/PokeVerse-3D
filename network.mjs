@@ -169,7 +169,7 @@ function receber(m){
         return;
       }
       batEsperando = null; clearTimeout(pend.timer);
-      pend.resolve(m.t === 'bat' ? m : { erro: m.erro || 'recusado', codigo: m.codigo || null, vez: m.vez ?? null, espera: m.espera ?? null });   // 17/09: 'vencido' = treinador já vencido (o index marca o ✔); `vez` (20/09) = o turno de agora, na recusa por turno vencido
+      pend.resolve(m.t === 'bat' ? m : { erro: m.erro || m.error || 'refused', error: m.error || m.erro || 'refused', code: m.code || m.codigo || null, vez: m.vez ?? null, espera: m.espera ?? null });
       return;
     }
     case 'vida': case 'vida_erro': {                                     // resposta da cura completa
@@ -229,7 +229,7 @@ let batEsperando = null;
 function largarBatalha(motivo){
   const pend = batEsperando; if (!pend) return;
   batEsperando = null; clearTimeout(pend.timer);
-  pend.resolve({ erro: motivo || 'sem conexão com o servidor', codigo: 'queda' });
+  pend.resolve({ erro: motivo || 'no connection to the server', error: motivo || 'no connection to the server', code: 'dropped' });
 }
 export function pedirBatalha(op, dados = {}){
   if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
@@ -237,7 +237,7 @@ export function pedirBatalha(op, dados = {}){
      ar, o antigo era respondido com "pedido repetido" e o NOVO ia pro servidor assim mesmo — as duas mensagens chegavam lá,
      duas rodadas aconteciam e as respostas passavam a casar com o pedido errado (só existe uma vaga de espera). A partir daqui
      o segundo pedido é recusado SEM sair da máquina; só o `sair` fura a fila, porque desistir não pode ficar preso. */
-  if (batEsperando && op !== 'sair') return Promise.resolve({ erro: 'espere a resposta da jogada anterior', codigo: 'ocupado' });
+  if (batEsperando && op !== 'sair') return Promise.resolve({ erro: 'wait for the response to your previous move', error: 'wait for the response to your previous move', code: 'busy' });
   if (batEsperando){ clearTimeout(batEsperando.timer); batEsperando.resolve({ erro: 'pedido repetido' }); batEsperando = null; }
   return new Promise(resolve => {
     const timer = setTimeout(() => { batEsperando = null; resolve({ erro: 'o servidor não respondeu' }); }, 12000);

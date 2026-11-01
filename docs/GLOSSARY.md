@@ -9,6 +9,29 @@ mapping in the rename commit for the new English name. Data-file (`public/data/*
 names were left unchanged because many are referenced by key across the code and the
 admin schemas.
 
+## Protocol codes (English first)
+
+Error and state tokens on the wire use the field `code` and **English values**.
+Never ship `{ codigo: 'vencido' }`. See `.cursor/rules/english-first.mdc`.
+
+| Portuguese value | English `code` |
+| ---------------- | -------------- |
+| vencido          | beaten         |
+| time             | party          |
+| alvo             | target         |
+| espera           | wait           |
+| insignias        | badges         |
+| ordem            | order          |
+| ocupado          | busy           |
+| conta            | account        |
+| queda            | dropped        |
+| golpe            | move           |
+| troca            | switch         |
+| campo            | field          |
+| perto            | near           |
+| mapa             | map            |
+| vez              | turn           |
+
 ## Common words
 
 | Portuguese   | English            | Portuguese    | English              |

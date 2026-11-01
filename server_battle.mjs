@@ -30,6 +30,11 @@ function lerJson(rel, fallback) {
   }
 }
 
+/** English-first wire token. Never emit Portuguese codes like `vencido`. */
+function fail(error, code, extra = {}) {
+  return { erro: error, error, code, ...extra };
+}
+
 function cfgDeChave(id) {
   const s = String(id ?? '');
   if (s.startsWith('ginasio:') || s.startsWith('elite:')) return s;
@@ -237,7 +242,7 @@ export function criarBatalha(ctx) {
   function abrirNpc(ws, acc, tipo, id) {
     const s = saveDe(acc.c);
     const party = timeJogador(s);
-    if (!party.some((p) => p.hp > 0)) return { erro: 'your whole party is fainted', codigo: 'time' };
+    if (!party.some((p) => p.hp > 0)) return fail('your whole party is fainted', 'party');
     let nomeInimigo = 'Trainer';
     let timeInimigo = [];
     let premio = 200;
@@ -245,10 +250,10 @@ export function criarBatalha(ctx) {
 
     if (tipo === 'ginasio') {
       const g = ginasioPorId(id);
-      if (!g) return { erro: 'unknown gym', codigo: 'alvo' };
+      if (!g) return fail('unknown gym', 'target');
       const espera = esperarGym(s, g);
       if (espera > 0 && !s.ginasioPagoAgora?.[g.insignia.id]) {
-        return { erro: 'the leader is resting — pay to challenge now or wait', codigo: 'espera', espera };
+        return fail('the leader is resting — pay to challenge now or wait', 'wait', { espera });
       }
       nomeInimigo = g.lider;
       timeInimigo = g.time || [];
@@ -257,12 +262,12 @@ export function criarBatalha(ctx) {
     } else if (tipo === 'elite') {
       const ordem = +id;
       const M = elitePorOrdem.get(ordem);
-      if (!M) return { erro: 'unknown Elite Four member', codigo: 'alvo' };
-      if ((s.insignias || []).length < 8) return { erro: 'the League opens with all 8 Kanto badges', codigo: 'insignias' };
+      if (!M) return fail('unknown Elite Four member', 'target');
+      if ((s.insignias || []).length < 8) return fail('the League opens with all 8 Kanto badges', 'badges');
       const corrida = s.elite.corrida;
       const proximo = corrida?.proximo || 1;
       if (ordem !== proximo) {
-        return { erro: ordem < proximo ? 'you already beat this room on this run' : 'beat the previous room first', codigo: 'ordem' };
+        return fail(ordem < proximo ? 'you already beat this room on this run' : 'beat the previous room first', 'order');
       }
       nomeInimigo = M.nome;
       timeInimigo = M.time || [];
@@ -270,9 +275,9 @@ export function criarBatalha(ctx) {
       meta = { elite: ordem, membro: M };
     } else {
       const t = treinadorPorId(id);
-      if (!t) return { erro: 'unknown trainer', codigo: 'alvo' };
+      if (!t) return fail('unknown trainer', 'target');
       if (s.treinadorPago.some((k) => String(k).split('@')[0] === t.cfg)) {
-        return { erro: 'you already beat this trainer', codigo: 'vencido' };
+        return fail('you already beat this trainer', 'beaten');
       }
       nomeInimigo = t.info.nome;
       timeInimigo = t.info.time || [];
@@ -281,7 +286,7 @@ export function criarBatalha(ctx) {
     }
 
     const dele = timeInimigo.map(monNpc);
-    if (!dele.length) return { erro: 'this trainer has no team', codigo: 'time' };
+    if (!dele.length) return fail('this trainer has no team', 'party');
 
     const bat = {
       tipo,
@@ -339,8 +344,8 @@ export function criarBatalha(ctx) {
     const sb = saveDe(b.c);
     const ta = timeJogador(sa).filter((p) => p.hp > 0);
     const tb = timeJogador(sb).filter((p) => p.hp > 0);
-    if (!ta.length) return { erro: 'your whole party is fainted', codigo: 'time' };
-    if (!tb.length) return { erro: 'they have no Pokémon ready', codigo: 'time' };
+    if (!ta.length) return fail('your whole party is fainted', 'party');
+    if (!tb.length) return fail('they have no Pokémon ready', 'party');
     const nomeA = aWs._info?.nome || aAcc.u;
     const nomeB = b.ws._info?.nome || b.u;
     const batA = {
@@ -503,12 +508,12 @@ export function criarBatalha(ctx) {
     bat.log = [];
     const eu = bat.eu.field;
     const ele = bat.dele[bat.eleIdx];
-    if (!eu || !ele) return { erro: 'no Pokémon in the field', codigo: 'campo' };
-    if (acao.vez != null && +acao.vez !== bat.vez) return { erro: 'that turn already ended', codigo: 'vez', vez: bat.vez };
+    if (!eu || !ele) return fail('no Pokémon in the field', 'field');
+    if (acao.vez != null && +acao.vez !== bat.vez) return fail('that turn already ended', 'turn', { vez: bat.vez });
 
     if (acao.acao === 'trocar') {
       const prox = bat.eu.time.find((p) => String(p.uid) === String(acao.uid) && p.hp > 0);
-      if (!prox) return { erro: 'that Pokémon cannot battle', codigo: 'troca' };
+      if (!prox) return fail('that Pokémon cannot battle', 'switch');
       bat.eu.field = prox;
       bat.lances.push({ troca: prox.uid });
       bat.log.push('You sent out ' + (prox.nome || 'Pokémon') + '.');
@@ -516,8 +521,8 @@ export function criarBatalha(ctx) {
       const id = +acao.item;
       const regra = ITENS_BATALHA[id];
       const s = saveDe(acc.c);
-      if (!regra || !(s.itens[id] > 0)) return { erro: 'you cannot use that item here', codigo: 'item' };
-      if (bat.tipo === 'elite') return { erro: 'no healing in the Elite Four', codigo: 'elite' };
+      if (!regra || !(s.itens[id] > 0)) return fail('you cannot use that item here', 'item');
+      if (bat.tipo === 'elite') return fail('no healing in the Elite Four', 'elite');
       s.itens[id]--;
       if (s.itens[id] <= 0) delete s.itens[id];
       if (regra.cura === 'cheio') eu.hp = eu.maxHp;
@@ -536,7 +541,7 @@ export function criarBatalha(ctx) {
       } else {
         const lance = aplicarLance('eu', eu, ele, g.id === acao.golpe || g === STRUGGLE ? g : escolherGolpe(eu));
         if (lance) bat.lances.push(lance);
-        else return { erro: 'your Pokémon does not know that move', codigo: 'golpe', livres: (eu.movs || []).map((m) => m.id), pp: Object.fromEntries((eu.movs || []).map((m) => [m.id, m.pp])) };
+        else return fail('your Pokémon does not know that move', 'move', { livres: (eu.movs || []).map((m) => m.id), pp: Object.fromEntries((eu.movs || []).map((m) => [m.id, m.pp])) });
       }
     }
 
@@ -562,10 +567,10 @@ export function criarBatalha(ctx) {
 
   function jogarPvp(bat, acc, acao) {
     if (!bat.pvp) return jogarNpc(bat, acc, acao);
-    if (acao.vez != null && +acao.vez !== bat.vez) return { erro: 'that turn already ended', codigo: 'vez', vez: bat.vez };
+    if (acao.vez != null && +acao.vez !== bat.vez) return fail('that turn already ended', 'turn', { vez: bat.vez });
     bat.acao = acao;
     const outro = lutas.get(bat.pvp.outro);
-    if (!outro) return { erro: 'the other trainer left', codigo: 'queda' };
+    if (!outro) return fail('the other trainer left', 'dropped');
     if (!outro.acao) return { t: 'bat', espera: true, vez: bat.vez, eu: retrato(bat).eu, ele: retrato(bat).ele, dele: retrato(bat).dele };
 
     const aFirst = bat.pvp.lado === 'a' ? bat : outro;
@@ -659,15 +664,15 @@ export function criarBatalha(ctx) {
 
   function desafiar(ws, m) {
     const acc = contaDe(ws);
-    if (!acc) return { t: 'bat_erro', erro: 'log in to battle', codigo: 'conta' };
-    if (lutas.has(acc.u)) return { t: 'bat_erro', erro: 'you are already in a battle', codigo: 'ocupado' };
+    if (!acc) return { t: 'bat_erro', ...fail('log in to battle', 'account') };
+    if (lutas.has(acc.u)) return { t: 'bat_erro', ...fail('you are already in a battle', 'busy') };
     const tipo = m.tipo || 'treinador';
     if (tipo === 'jogador') {
       const b = acharJogador(m.id);
-      if (!b || b.u === acc.u) return { t: 'bat_erro', erro: 'that trainer is not online', codigo: 'alvo' };
-      if (b.ws._mapa !== ws._mapa) return { t: 'bat_erro', erro: 'you must be on the same map', codigo: 'mapa' };
-      if (dist2(ws, b.ws) > 14 * 14) return { t: 'bat_erro', erro: 'get closer to challenge them', codigo: 'perto' };
-      if (lutas.has(b.u)) return { t: 'bat_erro', erro: 'they are already battling', codigo: 'ocupado' };
+      if (!b || b.u === acc.u) return { t: 'bat_erro', ...fail('that trainer is not online', 'target') };
+      if (b.ws._mapa !== ws._mapa) return { t: 'bat_erro', ...fail('you must be on the same map', 'map') };
+      if (dist2(ws, b.ws) > 14 * 14) return { t: 'bat_erro', ...fail('get closer to challenge them', 'near') };
+      if (lutas.has(b.u)) return { t: 'bat_erro', ...fail('they are already battling', 'busy') };
       const chaveDeles = b.u + '>' + acc.u;
       if (m.aceitar || convites.get(chaveDeles)) {
         convites.delete(chaveDeles);
@@ -688,9 +693,9 @@ export function criarBatalha(ctx) {
 
   function acao(ws, m) {
     const acc = contaDe(ws);
-    if (!acc) return { t: 'bat_erro', erro: 'log in to battle', codigo: 'conta' };
+    if (!acc) return { t: 'bat_erro', ...fail('log in to battle', 'account') };
     const bat = lutas.get(acc.u);
-    if (!bat) return { t: 'bat_erro', erro: 'you are not in a battle', codigo: 'queda' };
+    if (!bat) return { t: 'bat_erro', ...fail('you are not in a battle', 'dropped') };
     const r = bat.pvp ? jogarPvp(bat, acc, m) : jogarNpc(bat, acc, m);
     if (r.erro) return { t: 'bat_erro', ...r };
     if (r.t !== 'bat') return { t: 'bat', ...r };
@@ -699,7 +704,7 @@ export function criarBatalha(ctx) {
 
   function sair(ws) {
     const acc = contaDe(ws);
-    if (!acc) return { t: 'bat_erro', erro: 'log in to battle', codigo: 'conta' };
+    if (!acc) return { t: 'bat_erro', ...fail('log in to battle', 'account') };
     const bat = lutas.get(acc.u);
     if (!bat) return { t: 'bat', fim: { venceu: false, desistiu: true } };
     if (bat.pvp && bat.par) {

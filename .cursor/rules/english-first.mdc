@@ -1,0 +1,42 @@
+---
+description: English is the source language for every player-facing string and protocol token
+alwaysApply: true
+---
+
+# English first
+
+English is the **source of truth**. Portuguese and Spanish are helper locales only (`ui_pt.json`, `ui_es.json`). Do not ship Portuguese (or Spanish) as the default key, identifier, tooltip, log line, or wire token.
+
+## Protocol codes (do not skip)
+
+Machine-readable error and state codes must be English identifiers.
+
+Forbidden (the bug that keeps coming back):
+
+```js
+{ codigo: 'vencido' }   // Portuguese field + Portuguese value
+```
+
+Required:
+
+```js
+{ code: 'beaten', error: 'you already beat this trainer' }
+```
+
+- Field name: `code` (not `codigo`) for error/state enums.
+- Values: English snake/kebab words (`beaten`, `dropped`, `busy`, `party`, `target`, `wait`, `badges`, `order`, `account`, `move`, `switch`, `field`, `near`, `map`, `turn`).
+- Player-visible `error` text: English first, then `I18n.t` / locale files for PT/ES.
+- Recovery **secrets** may stay on the account as `recoveryCode` (new work) — never reuse `codigo` as an error enum.
+- Client may accept a short alias list for one deploy (`vencido` → `beaten`) so mixed servers do not break. New code **emits English only**.
+
+## UI, items, HUD
+
+- Tooltips, titles, empty states, item **names and descriptions**, HUD labels, and editor names are written in English in source.
+- `I18n.t('won't obey')` — not `I18n.t('não obedece')` with English only in the locale file.
+- If a string is still Portuguese in `menu_data.json` or live HTML, that is a bug: translate the source, then add the PT helper.
+
+## What is allowed to stay Portuguese
+
+- Comments and existing internal variable names in old modules (migrate when you touch them).
+- `upcoming/` dumps you were told not to flatten.
+- Locale files whose job is to *be* the translation.
