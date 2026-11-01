@@ -2,6 +2,7 @@
  * Tabela e formulário saem de admin/schemas.mjs — os mesmos esquemas que o servidor usa pra validar, então o erro aparece no
  * campo antes de salvar e o servidor recusa o mesmo que a tela recusa. Registrar um arquivo novo = escrever um esquema. */
 import { ESQUEMAS, validarCampo, validarColecao } from '/admin/schemas.mjs';
+import { t } from '/i18n.mjs';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -21,11 +22,11 @@ async function carregarItens() {
   if (itensJogo) return itensJogo;
   itensJogo = (await fetch('/data/menus_dados.json').then(r => r.json()).catch(() => ({}))).itens || {};
   const dl = document.createElement('datalist'); dl.id = 'dl-d-itens';
-  dl.innerHTML = Object.entries(itensJogo).map(([id, i]) => `<option value="${id}" label="${esc(i.n)}">`).join('');
+  dl.innerHTML = Object.entries(itensJogo).map(([id, i]) => `<option value="${id}" label="${esc(t(i.n))}">`).join('');
   document.body.append(dl);
   return itensJogo;
 }
-const nomeItem = id => id == null || id === '' ? '' : itensJogo?.[id]?.n || '(item ' + id + ' does not exist)';
+const nomeItem = id => id == null || id === '' ? '' : t(itensJogo?.[id]?.n) || '(item ' + id + ' does not exist)';
 const ctxColuna = { item: nomeItem };
 /** Colunas da tabela: as calculadas do esquema (esq.colunas = [{ rotulo, valor(registro, ctx) }]) ou os campos marcados `col`. */
 const colunasDe = e => e.colunas || e.campos.filter(c => c.col).map(c => ({ rotulo: c.rotulo, valor: r => fmt(c, r?.[c.k]) }));

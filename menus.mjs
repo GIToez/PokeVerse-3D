@@ -113,7 +113,7 @@ function abasDoLivro(j, nome){
 function abas(lista){
   const el = $('j-abas'); el.innerHTML = '';
   if (!abaAtual || !lista.some(a => a.id === abaAtual)) abaAtual = lista[0]?.id || null;
-  for (const a of lista){ const b = document.createElement('button'); b.type = 'button'; b.textContent = a.nome; b.classList.toggle('on', a.id === abaAtual); b.onclick = () => { abaAtual = a.id; render(); }; el.appendChild(b); }
+  for (const a of lista){ const b = document.createElement('button'); b.type = 'button'; b.textContent = tr(a.nome); b.classList.toggle('on', a.id === abaAtual); b.onclick = () => { abaAtual = a.id; render(); }; el.appendChild(b); }
   return abaAtual;
 }
 function render(){
@@ -587,14 +587,14 @@ function rMochila(corpo){
   const q = quantidades();
   const tiposPresentes = new Set(Object.keys(q).map(id => D.itens[id]?.t).filter(Boolean));
   const ordem = [7, 9, 3, 4, 1, 2, 5, 6, 8, 10, 11, 12, 13, 14, 15];
-  const lista = ordem.filter(t => tiposPresentes.has(t)).map(t => ({ id: String(t), nome: D.tipos[t] || ('tipo ' + t) }));
+  const lista = ordem.filter(t => tiposPresentes.has(t)).map(t => ({ id: String(t), nome: tr(D.tipos[t] || ('tipo ' + t)) }));
   const aba = abas(lista.length ? lista : [{ id: '7', nome: 'Poké Ball' }]);
   const itens = Object.entries(q).filter(([id]) => String(D.itens[id]?.t) === aba && q[id] > 0);
   const av = avisoMo && Date.now() < avisoMo.ate ? avisoMo : null;         // 17/09: o motivo/resultado do "Usar no parceiro" aparece aqui, não atrás da janela
-  const cab = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('pt-BR')} ${esc(D.moedas?.[1] || 'Moeda')}</div>`
+  const cab = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('en-US')} ${esc(tr(D.moedas?.[1] || 'Moeda'))}</div>`
     + (av ? `<div class="aviso-uso" style="margin:-2px 0 8px;font-size:13px;font-weight:700;color:${av.ok ? '#8ef58e' : '#ffd23a'}">${esc(tr(av.texto))}</div>` : '');
-  if (!itens.length){ corpo.innerHTML = cab + '<div class="vazio">Nada aqui ainda. O Pokémart da cidade (fale com o vendedor) vende bolas e remédios; itens de missão chegam com as recompensas.</div>'; return; }
-  corpo.innerHTML = cab + `<div class="grade-itens">${itens.map(([id, n]) => { const it = D.itens[id]; const bola = it.t === 7; const rem = it.t === 9; const evo = !bola && !rem && ctx.ehItemDeEvolucao?.(id); return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">×${n}</span><b>${esc(it.n)}${bola && String(ctx.jogo.bolaSel) === String(id) ? ' <small style="color:#ffe07a">(F)</small>' : ''}</b><small>${esc(it.d || D.tipos[it.t] || '')}</small><div class="acoes">${bola ? `<button type="button" class="btn" data-bola="${id}">Usar no F</button><button type="button" class="btn" data-atalho="${id}" title="prende no primeiro atalho livre (5–8)">⚡ Atalho</button>` : rem ? `<button type="button" class="btn" data-usar="${id}">Usar no parceiro</button><button type="button" class="btn" data-atalho="${id}" title="prende no primeiro atalho livre (5–8)">⚡ Atalho</button>` : evo ? `<button type="button" class="btn ouro" data-evoitem="${id}" title="evolui o parceiro se a regra dele usa este item">✧ Usar no parceiro</button>` : ''}</div></div>`; }).join('')}</div>`;
+  if (!itens.length){ corpo.innerHTML = cab + '<div class="vazio">' + esc(tr('Nothing here yet. The town Pokémart (talk to the clerk) sells balls and medicine; mission items arrive as rewards.')) + '</div>'; return; }
+  corpo.innerHTML = cab + `<div class="grade-itens">${itens.map(([id, n]) => { const it = D.itens[id]; const bola = it.t === 7; const rem = it.t === 9; const evo = !bola && !rem && ctx.ehItemDeEvolucao?.(id); return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">×${n}</span><b>${esc(tr(it.n))}${bola && String(ctx.jogo.bolaSel) === String(id) ? ' <small style="color:#ffe07a">(F)</small>' : ''}</b><small>${esc(tr(it.d || D.tipos[it.t] || ''))}</small><div class="acoes">${bola ? `<button type="button" class="btn" data-bola="${id}">${esc(tr('Use on F'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : rem ? `<button type="button" class="btn" data-usar="${id}">${esc(tr('Use on partner'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : evo ? `<button type="button" class="btn ouro" data-evoitem="${id}" title="${esc(tr('evolves your partner if its rule uses this item'))}">✧ ${esc(tr('Use on partner'))}</button>` : ''}</div></div>`; }).join('')}</div>`;
   corpo.querySelectorAll('[data-bola]').forEach(b => b.onclick = () => { ctx.jogo.bolaSel = b.dataset.bola; ctx.gravarLS('bolaSel', ctx.jogo.bolaSel); render(); });
   corpo.querySelectorAll('[data-evoitem]').forEach(b => b.onclick = () => { fechar(); ctx.usarItemEvolucao?.(b.dataset.evoitem); });
   corpo.querySelectorAll('[data-usar]').forEach(b => b.onclick = () => { const id = b.dataset.usar; ctx.usarItem?.(id, D.itens[id]?.n || '', (txt, ok) => avisarMo(id, txt, ok)); render(); });   // a cura em si vive no index (usarItem), igual à dos atalhos; o aviso volta pra janela (17/09)
@@ -667,9 +667,9 @@ function itensMochila(){
   return Object.entries(q)
     .filter(([id, n]) => n > 0 && D.itens[id])
     .filter(([id]) => !tipos || tipos.includes(D.itens[id].t))
-    .filter(([id]) => !busca || (D.itens[id].n || '').toLowerCase().includes(busca))
+    .filter(([id]) => !busca || (D.itens[id].n || '').toLowerCase().includes(busca) || tr(D.itens[id].n || '').toLowerCase().includes(busca))
     .map(([id, n]) => ({ id, n, it: D.itens[id] }))
-    .sort((a, b) => (a.it.t - b.it.t) || String(a.it.n).localeCompare(String(b.it.n), 'pt-BR'));
+    .sort((a, b) => (a.it.t - b.it.t) || tr(a.it.n).localeCompare(tr(b.it.n), 'en'));
 }
 function acaoMochila(nome){
   const lista = itensMochila(), alvo = lista[selMo];
@@ -935,7 +935,7 @@ function encherTreinador(pop){
     ins.forEach((b, i) => {
       const cel = Popup.grupo(pop, 'insignia-' + (i + 1)); if (!cel) return;
       const conquistada = tem.has(b.id);
-      Popup.texto(pop, 'insignia-nome', b.n.replace(/^medalha /i, ''), cel);
+      Popup.texto(pop, 'insignia-nome', tr(b.n).replace(/^(Badge|medalha) /i, ''), cel);
       const ref = Popup.estadoRef(pop, cel, 'insignia', conquistada ? 'conquistada' : 'vazia');
       mioloInsignia(cel, ref, pop);                                        // v2 (18/09): a célula fica com o anel da cor dela; a referência pinta só o miolo
       const ic = porId[b.id]?.icone;
@@ -1392,7 +1392,7 @@ function rMissoes(corpo){
   const M = ctx.missoes;
   if (!M?.pronto?.()){ corpo.innerHTML = '<div class="vazio">As missões ainda estão carregando…</div>'; return; }
   const caps = M.capitulos(), ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
-  const nomeItem = id => D.itens[id]?.n || ('item ' + id);
+  const nomeItem = id => tr(D.itens[id]?.n || ('item ' + id));
   const rec = r => [r?.dinheiro ? r.dinheiro + ' coins' : null, ...Object.entries(r?.itens || {}).map(([id, n]) => esc(nomeItem(id)) + ' ×' + n), r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
   const passoTxt = (p, i) => { const n = p.n || 0; const c = i === idx && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : ''; return esc(p.texto) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(p.onde) + ')</small>' : ''); };
   const atual = ativa ? `<div class="missao-atual"><small style="color:var(--muted)">Capítulo ${ativa.capitulo} · ${esc(ativa.capNome)}</small><br><b>${esc(ativa.nome)}</b><br><span style="font-size:12px">${esc(ativa.des)}</span>
@@ -1437,7 +1437,7 @@ function arteExemplo(el){
   if (+el.dataset.exemploPad) Hud.fundoComFolga(el, +el.dataset.exemploPad);
 }
 function textoRecompensaMi(r){
-  const nomeItem = id => D.itens[id]?.n || ('item ' + id);
+  const nomeItem = id => tr(D.itens[id]?.n || ('item ' + id));
   return [r?.dinheiro ? r.dinheiro + ' coins' : null,
           ...Object.entries(r?.itens || {}).map(([id, n]) => nomeItem(id) + ' ×' + n),
           r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
@@ -1833,7 +1833,7 @@ function rTreinador(corpo){
   const d = dexEstado(); const pegos = Object.values(d).filter(v => v === 'pego').length, vistos = Object.keys(d).length;
   const ins = (D.insignias || []).filter(b => b.gen === 1); const tem = new Set(ctx.lerLS('insignias', []));
   corpo.innerHTML = `<div class="dois"><div class="ficha"><h3>${esc(ctx.nome || 'Ash')}</h3><table class="stats"><tr><td>dinheiro</td><td>${dinheiro().toLocaleString('pt-BR')} ${esc(D.moedas?.[1] || '')}</td></tr><tr><td>tempo de jogo</td><td>${h}h ${String(mi).padStart(2, '0')}m</td></tr><tr><td>time</td><td>${timeAtual().length}/6 · caixa ${ctx.lerLS('caixa', []).length}</td></tr><tr><td>pokédex</td><td>${vistos} vistos · ${pegos} capturados</td></tr><tr><td>insígnias</td><td>${tem.size}/8</td></tr><tr><td>personagem</td><td>${esc(ctx.personagemNome?.() || 'Ash')}</td></tr><tr><td>inicial</td><td>${esc(ctx.lerLS('inicial', null)?.nome || '—')}</td></tr></table></div>
-    <div class="ficha"><h3>Insígnias de Kanto</h3><div class="insignias">${ins.map(b => `<div class="insignia ${tem.has(b.id) ? 'tem' : ''}" title="${esc(b.n)}">${esc(b.n.replace(/^medalha /i, ''))}</div>`).join('')}</div><div style="margin-top:6px;font-size:12px">Obedecem até <b style="color:#ffe07a">Lv ${tetoObed()}</b> <small style="color:var(--muted)">· acima disso ignoram ordens às vezes; cada insígnia sobe o teto em 10</small></div><small style="color:var(--muted)">os 8 ginásios entram com as batalhas contra treinadores</small></div></div>`;
+    <div class="ficha"><h3>${esc(tr('Kanto Badges'))}</h3><div class="insignias">${ins.map(b => `<div class="insignia ${tem.has(b.id) ? 'tem' : ''}" title="${esc(tr(b.n))}">${esc(tr(b.n).replace(/^(Badge|medalha) /i, ''))}</div>`).join('')}</div><div style="margin-top:6px;font-size:12px">Obedecem até <b style="color:#ffe07a">Lv ${tetoObed()}</b> <small style="color:var(--muted)">· acima disso ignoram ordens às vezes; cada insígnia sobe o teto em 10</small></div><small style="color:var(--muted)">os 8 ginásios entram com as batalhas contra treinadores</small></div></div>`;
   if (ctx.conhecimento){                                               // Pokédex de conhecimento: placar do colecionador e títulos
     const r = ctx.conhecimento.resumo(), ts = ctx.conhecimento.listaTitulos();
     corpo.insertAdjacentHTML('beforeend', `<div class="ficha" style="margin-top:8px"><h3>Colecionador${r.tituloAtual ? ` <small style="color:var(--gold,#f4aa35)">🏅 ${esc(r.tituloAtual)}</small>` : ''}</h3>
@@ -1853,7 +1853,7 @@ function rLoja(corpo){
   const aba = (abaAtual && lojas[abaAtual]) ? abaAtual : '2150101';   // SÓ a loja deste vendedor: as abas "Loja 1107/1501/4103/4401" (outras lojas do dump) não fazem sentido no Pokémart (Jaime, 31/08)
   abas([{ id: aba, nome: nomeLoja(aba) }]);                              // uma aba só, com o nome da loja (e limpa abas da janela anterior)
   const lista = lojas[aba] || [];
-  corpo.innerHTML = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('pt-BR')} ${esc(D.moedas?.[1] || 'Moeda')} · preços do jogo original</div><div class="grade-itens">${lista.map(l => { const it = D.itens[l.item]; if (!it) return ''; return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">${l.preco.toLocaleString('pt-BR')}</span><b>${esc(it.n)}${l.n > 1 ? ' ×' + l.n : ''}</b><small>${esc(it.d || D.tipos[it.t] || '')}</small><div class="acoes"><button type="button" class="btn ouro" data-comprar="${l.item}" data-preco="${l.preco}" data-n="${l.n}" ${dinheiro() < l.preco ? 'disabled' : ''}>Comprar</button></div></div>`; }).join('')}</div>`;
+  corpo.innerHTML = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('en-US')} ${esc(tr(D.moedas?.[1] || 'Moeda'))} · ${esc(tr('original game prices'))}</div><div class="grade-itens">${lista.map(l => { const it = D.itens[l.item]; if (!it) return ''; return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">${l.preco.toLocaleString('en-US')}</span><b>${esc(tr(it.n))}${l.n > 1 ? ' ×' + l.n : ''}</b><small>${esc(tr(it.d || D.tipos[it.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-comprar="${l.item}" data-preco="${l.preco}" data-n="${l.n}" ${dinheiro() < l.preco ? 'disabled' : ''}>${esc(tr('Buy'))}</button></div></div>`; }).join('')}</div>`;
   corpo.querySelectorAll('[data-comprar]').forEach(b => b.onclick = () => { const id = b.dataset.comprar, preco = +b.dataset.preco, n = +b.dataset.n || 1; if (dinheiro() < preco) return; if (ctx.comConta?.()) ctx.bolsaOp('comprar', { loja: aba, item: +id }).then(() => render()); else if (D.itens[id]?.t === 7){ ctx.jogo.bolas[id] = (ctx.jogo.bolas[id] || 0) + n; ctx.gravarLS('bolas', ctx.jogo.bolas); } else { const it = itensLS(); it[id] = (it[id] || 0) + n; ctx.gravarLS('itens', it); } if (!ctx.comConta?.()){ setDinheiro(dinheiro() - preco); ctx.Som?.tocar?.('ui/sound_itemget', { volume: .7, prio: true }); } render(); });
 }
 
@@ -1893,7 +1893,7 @@ function rAtalho(corpo){
   const prender = (b) => { ctx.definirAtalho?.(slotAtalho, b); fechar(); };
   if (aba === 'itens'){
     const q = quantidades(); const lista = Object.entries(q).filter(([id, n]) => n > 0 && [7, 9].includes(D.itens[id]?.t));
-    corpo.innerHTML = cab + (lista.length ? `<div class="grade-itens">${lista.map(([id, n]) => { const it = D.itens[id]; return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">×${n}</span><b>${esc(it.n)}</b><small>${esc(D.tipos[it.t] || '')}</small><div class="acoes"><button type="button" class="btn ouro" data-item="${id}">Prender no ${tecla}</button></div></div>`; }).join('')}</div>` : '<div class="vazio">Nada pra prender: poções e bolas ficam aqui quando estiverem na mochila (Loja).</div>');
+    corpo.innerHTML = cab + (lista.length ? `<div class="grade-itens">${lista.map(([id, n]) => { const it = D.itens[id]; return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">×${n}</span><b>${esc(tr(it.n))}</b><small>${esc(tr(D.tipos[it.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-item="${id}">${esc(tr('Pin to'))} ${tecla}</button></div></div>`; }).join('')}</div>` : '<div class="vazio">' + esc(tr('Nothing to pin: potions and balls show up here when they are in the Bag (Shop).')) + '</div>');
     corpo.querySelectorAll('[data-item]').forEach(b => b.onclick = () => { const it = D.itens[b.dataset.item]; prender({ tipo: 'item', id: +b.dataset.item, nome: it.n, icone: './ui/itens/' + it.i + '.png', bola: it.t === 7 }); });
   } else {
     const lista = ctx.montarias?.() || [];

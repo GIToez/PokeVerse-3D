@@ -45,7 +45,7 @@ const ui = {};
 /** `pai`: onde pôr o botão (senão fica fixo no canto superior direito). */
 export function instalar({ pai = null } = {}){
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
-  ui.botao = document.createElement('button'); ui.botao.id = 'nav-botao'; ui.botao.type = 'button'; ui.botao.textContent = '☰ Páginas';
+  ui.botao = document.createElement('button'); ui.botao.id = 'nav-botao'; ui.botao.type = 'button'; ui.botao.textContent = '☰ Pages';
   ui.botao.hidden = true;   /* só aparece quando docs/paginas.json existe (local); no site fica escondido */
   ui.painel = document.createElement('div'); ui.painel.id = 'nav-painel'; ui.painel.hidden = true;
   if (pai){ ui.botao.style.position = 'static'; pai.appendChild(ui.botao); } else document.body.appendChild(ui.botao);
