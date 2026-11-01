@@ -667,8 +667,9 @@ body.hud-ref #mm-area{
 body.hud-ref #chat,
 body.hud-ref #chat.solto{
   position:fixed !important;
-  left:12px !important; bottom:88px !important; right:auto !important; top:auto !important;
+  left:12px !important; bottom:12px !important; right:auto !important; top:auto !important;
   width:var(--chat-w, 380px) !important; height:var(--chat-h, 230px) !important;
+  max-width:calc(100vw - 24px);
   border:1px solid var(--ref-line) !important; border-radius:16px !important;
   background:#121a2ce8 !important; box-shadow:0 8px 18px #0008 !important;
 }
@@ -689,8 +690,8 @@ body.hud-ref #menu-icones.menu-pill > .fig-grupo{
 body.hud-ref #menu-icones.menu-pill > button[data-j]{width:40px; padding:2px; gap:0}
 body.hud-ref #menu-icones.menu-pill > button[data-j] b{display:none !important}
 body.hud-ref #menu-icones.menu-pill .ic{width:32px; height:32px}
-body.hud-ref #fala{bottom:88px; border-radius:16px; border-color:var(--ref-line)}
-body.hud-ref #turno{bottom:88px; border-radius:20px; border-color:var(--ref-line)}
+body.hud-ref #fala{bottom:calc(12px + var(--chat-h, 230px) + 10px); border-radius:16px; border-color:var(--ref-line)}
+body.hud-ref #turno{bottom:calc(12px + var(--chat-h, 230px) + 10px); border-radius:20px; border-color:var(--ref-line)}
 @media (max-width:1100px){
   body.hud-ref #barra button.sk:not(.bola){width:96px !important}
   body.hud-ref #time-hud .tcel{width:200px !important}

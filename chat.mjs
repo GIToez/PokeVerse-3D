@@ -78,6 +78,7 @@ function ligarGrip(grip, el){
   grip.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); d0 = { x: ev.clientX, y: ev.clientY, w: el.offsetWidth, h: el.offsetHeight }; try { grip.setPointerCapture(ev.pointerId); } catch {} });
   grip.addEventListener('pointermove', ev => {
     if (!d0) return;
+    el.dataset.chatUserTam = '1';
     aplicar(Math.max(220, Math.min(innerWidth - 24, d0.w + (ev.clientX - d0.x))), Math.max(110, Math.min(innerHeight - 24, d0.h - (ev.clientY - d0.y))));
   });
   const soltou = () => {
@@ -88,7 +89,14 @@ function ligarGrip(grip, el){
     try { localStorage.setItem('chat.tam', JSON.stringify(tam)); } catch {}
   };
   grip.addEventListener('pointerup', soltou); grip.addEventListener('pointercancel', soltou);
-  grip.addEventListener('dblclick', ev => { ev.preventDefault(); el.style.removeProperty('--chat-w'); el.style.removeProperty('--chat-h'); try { localStorage.removeItem('chat.tam'); ctx?.gravarLS?.('chat.tam', null); } catch {} });
+  grip.addEventListener('dblclick', ev => {
+    ev.preventDefault();
+    delete el.dataset.chatUserTam;
+    el.style.removeProperty('--chat-w');
+    el.style.removeProperty('--chat-h');
+    try { localStorage.removeItem('chat.tam'); ctx?.gravarLS?.('chat.tam', null); } catch {}
+    try { dispatchEvent(new Event('hud-ancorar-chat')); } catch {}
+  });
 }
 export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {}){
   if (el.__chat){ montagens.add(el.__chat); el.__chat.atualizar(); return el.__chat; }
@@ -115,7 +123,7 @@ export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {})
   if (el.id === 'chat'){                                                 // resize: tab grip + corner; size in LS chat.tam; double-click resets
     let tam = ctx?.lerLS?.('chat.tam', null);
     if (!tam) try { tam = JSON.parse(localStorage.getItem('chat.tam') || 'null'); } catch { tam = null; }
-    if (tam?.w) el.style.setProperty('--chat-w', tam.w + 'px');
+    if (tam?.w && !document.body.classList.contains('hud-ref')) el.style.setProperty('--chat-w', tam.w + 'px');
     if (tam?.h) el.style.setProperty('--chat-h', tam.h + 'px');
     if (compacto && !el.querySelector('.dim')){
       const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'dim'; tab.title = tr('drag: resize chat · double-click: default'); tab.textContent = '◢';

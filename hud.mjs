@@ -1133,7 +1133,35 @@ export function aplicarIlha(){
     } else if (aba) aba.remove();
   }
   achatarParty(document.getElementById('time-hud'));
+  ancorarChat();
   if (document.getElementById('bola-leque') && !document.getElementById('bola-leque').hidden) pintarLequeBola();
+}
+/** Pin the chat to the left edge and fill the gap up to the skill dock. */
+export function ancorarChat(){
+  if (typeof document === 'undefined' || document.body.classList.contains('mobile')) return;
+  const chat = document.getElementById('chat');
+  if (!chat) return;
+  chat.style.position = 'fixed';
+  chat.style.left = '12px';
+  chat.style.bottom = '12px';
+  chat.style.right = 'auto';
+  chat.style.top = 'auto';
+  chat.style.transform = 'none';
+  chat.style.removeProperty('inset');
+  const barra = document.getElementById('barra');
+  let teto = Math.round(innerWidth * 0.42);
+  if (barra){
+    const r = barra.getBoundingClientRect();
+    if (r.left > 80) teto = Math.round(r.left - 24);
+  }
+  teto = Math.max(220, Math.min(teto, innerWidth - 24));
+  if (chat.dataset.chatUserTam !== '1') chat.style.setProperty('--chat-w', teto + 'px');
+  if (!ancorarChat.__liga){
+    ancorarChat.__liga = true;
+    addEventListener('resize', () => { clearTimeout(ancorarChat._t); ancorarChat._t = setTimeout(ancorarChat, 80); });
+    addEventListener('hud-ancorar-chat', () => ancorarChat());
+    if (barra && typeof ResizeObserver === 'function') new ResizeObserver(() => ancorarChat()).observe(barra);
+  }
 }
 export function achatarParty(el){
   if (!el || !document.body.classList.contains('hud-ref')) return;
