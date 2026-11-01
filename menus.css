@@ -79,6 +79,17 @@ body.hud-ref .janela .btn.ouro{border-color:#c9a24a;background:linear-gradient(#
 .janela .config select,.janela .config input[type=range]{min-width:160px}
 .janela .config select{padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:#0b1020;color:var(--text);font:inherit}
 .janela .missao-atual{padding:10px 12px;border:1px solid #b47622;border-radius:10px;background:#1b1a14;margin-bottom:10px}
+.mi-recs{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px}
+.mi-recs.grande{gap:12px}
+.mi-rec{width:72px;text-align:center}
+.mi-rec i{display:block;width:56px;height:56px;margin:0 auto 4px;border:1px solid #c9a24a66;border-radius:12px;background:#101624 center/44px no-repeat;box-shadow:0 2px 8px #0006}
+.mi-rec b{display:block;color:#ffe07a;font-size:13px;line-height:1.1}
+.mi-rec small{display:block;color:#dfe6f0;font-size:11px;line-height:1.15}
+.mi-rec.vazio{width:auto;color:var(--muted);font-size:12px}
+[data-fig="missao-ativa"] .mi-recs.grande{
+  position:absolute;left:0;right:0;bottom:0;margin:0;padding:6px 0 0;
+  min-height:78px;align-items:flex-start;
+}
 .janela .missao-atual b{color:#ffe07a}
 .janela .dex-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
 .janela .dex{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#0b1020;font-size:12px;color:var(--muted)}
@@ -355,6 +366,9 @@ body.pele-amanda:not(.mobile) .janela .item .n{background:#a0132f;color:#fff;bor
 /* missões: a missão atual num painel de moldura; capítulos em marrom */
 body.pele-amanda:not(.mobile) .janela .missao-atual{background:url(./ui/amanda/livro_moldura.png) center/100% 100% no-repeat;border:0;border-radius:0;padding:7% 9% 8%;color:#4a3320}
 body.pele-amanda:not(.mobile) .janela .missao-atual b{color:#6b4a2b}
+body.pele-amanda:not(.mobile) .janela .mi-rec i{background-color:#f6ead2;border-color:#c9a878}
+body.pele-amanda:not(.mobile) .janela .mi-rec b{color:#6b4a2b}
+body.pele-amanda:not(.mobile) .janela .mi-rec small{color:#8a6a48}
 body.pele-amanda:not(.mobile) .janela details summary{color:#6b4a2b!important}
 /* Pokédex: lista na página esquerda (rola sozinha), ficha na direita com o visor na moldura */
 body.pele-amanda:not(.mobile) .janela[data-janela=pokedex]>.corpo{overflow:hidden}
