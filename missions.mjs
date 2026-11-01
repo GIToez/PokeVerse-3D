@@ -362,8 +362,8 @@ export function textoTracker(){
   const prog = principal ? progresso() : (lado?.prog?.[m.id + ':' + passo] || 0);
   const cont = n > 1 || (n === 1 && (p.tipo === 'capturar' || p.tipo === 'derrotar')) ? ' <span class="prog">' + Math.min(prog, n) + '/' + n + '</span>' : '';
   const onde = p.onde ? '<small class="onde"> · ' + esc(tr(p.onde)) + '</small>' : '';
-  const rec = textoRecompensa(m);
-  return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b><small class="etapa">' + (passo + 1) + '/' + m.passos.length + '</small></div><div class="missao-corpo"><span class="passo">' + esc(tr(p.texto)) + cont + '</span>' + onde + (rec ? '<small class="rec">' + esc(tr('Reward:')) + ' ' + esc(rec) + '</small>' : '') + '</div>';
+  const rec = htmlRecompensaTracker(m);
+  return '<div class="missao-header"><b>' + esc(tr(m.nome)) + '</b><small class="etapa">' + (passo + 1) + '/' + m.passos.length + '</small></div><div class="missao-corpo"><span class="passo">' + esc(tr(p.texto)) + cont + '</span>' + onde + rec + '</div>';
 }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 /** "500 moedas · Pokébola ×5 · 120 XP" a partir do que a missão dá (campos como vierem: moedas/dinheiro, exp, itens {id: n} ou [{nome, n}]). */
@@ -374,6 +374,22 @@ function textoRecompensa(m){
   const exp = r.exp ?? r.xp; if (exp) partes.push(exp + ' XP');
   const nomeDe = id => ctx?.nomeItem?.(id) || ('item ' + id);           // nome de verdade (index: ITENS_NOME) em vez de "item 2002"
   const itens = r.itens || r.items; if (Array.isArray(itens)) for (const it of itens) partes.push(tr(it.nome || nomeDe(it.id)) + (it.n > 1 ? ' ×' + it.n : ''));   // idioma: nome do item
-  else if (itens && typeof itens === 'object') for (const [id, n] of Object.entries(itens)) partes.push(tr(nomeDe(id)) + (n > 1 ? ' ×' + n : ''));
+  else if (itens && typeof itens === 'object') for (const [id, n] of Object.entries(itens)) if (n > 0) partes.push(tr(nomeDe(id)) + (n > 1 ? ' ×' + n : ''));
   return partes.join(' · ');
+}
+function htmlRecompensaTracker(m){
+  const r = m?.recompensa || m?.recompensas || m?.premio; if (!r) return '';
+  const chips = [];
+  const moedas = r.moedas ?? r.dinheiro ?? r.money;
+  if (moedas) chips.push({ n: moedas, nome: tr('Coins'), icone: './ui/itens/ic_1.png' });
+  const nomeDe = id => ctx?.nomeItem?.(id) || ('item ' + id);
+  const add = (id, n, nome) => { if (!(n > 0)) return; chips.push({ n, nome: tr(nome || nomeDe(id)), icone: './ui/itens/ic_' + id + '.png' }); };
+  const itens = r.itens || r.items;
+  if (Array.isArray(itens)) for (const it of itens) add(it.id, it.n || 1, it.nome);
+  else if (itens && typeof itens === 'object') for (const [id, n] of Object.entries(itens)) add(id, n);
+  for (const [id, n] of Object.entries(r.bolas || {})) add(id, n);
+  const exp = r.exp ?? r.xp;
+  if (exp) chips.push({ n: exp, nome: 'XP', icone: './ui/itens/ic_5.png' });
+  if (!chips.length) return '';
+  return '<div class="rec mi-recs">' + chips.map(p => '<span class="mi-rec" title="' + esc(p.nome) + ' ×' + p.n + '"><i style="background-image:url(\'' + p.icone + '\')"></i><b>×' + p.n + '</b></span>').join('') + '</div>';
 }

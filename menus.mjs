@@ -1378,8 +1378,6 @@ function rMissoes(corpo){
   const aba = abas([{ id: 'principal', nome: 'Main story' }, { id: 'laterais', nome: 'Side quests' }]);
   const M = ctx.missoes;
   if (!M?.pronto?.()){ corpo.innerHTML = '<div class="vazio">Missions are still loading…</div>'; return; }
-  const nomeItem = id => tr(D.itens[id]?.n || ('item ' + id));
-  const rec = r => [r?.dinheiro ? r.dinheiro + ' coins' : null, ...Object.entries(r?.itens || {}).map(([id, n]) => esc(nomeItem(id)) + ' ×' + n), r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
   if (aba === 'laterais'){
     const lista = M.laterais?.() || [];
     const grupos = [
@@ -1398,11 +1396,11 @@ function rMissoes(corpo){
     const atual = sel
       ? `<div class="missao-atual"><small style="color:var(--muted)">SIDE · ${esc(ESTADO_SEC[sel.estado] || sel.estado)}${sel.onde || sel.grupoNome ? ' · ' + esc(tr(sel.onde || sel.grupoNome)) : ''}</small><br><b>${esc(tr(sel.nome))}</b><br><span style="font-size:12px">${esc(tr(sel.des || ''))}${sel.estado === 'disponivel' && sel.npc != null ? '<br>Talk to the quest giver (gold !) to accept it.' : ''}</span>
         <div style="margin-top:8px;font-size:13px;line-height:1.5">${(sel.passos || []).map((p, i) => `<div>${sel.estado === 'feita' || i < (sel.passo || 0) ? '✔' : sel.estado === 'ativa' && i === (sel.passo || 0) ? '▶' : '○'} ${passoTxt(sel, p, i)}</div>`).join('')}</div>
-        <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(sel.recompensa)}</div></div>`
+        <div class="mi-recs grande">${htmlRecompensa(sel.recompensa)}</div></div>`
       : '<div class="missao-atual"><b>No side quests for now.</b><br><span style="font-size:12px">Talk to an NPC with a gold ! to take one. They never replace the main story.</span></div>';
     corpo.innerHTML = atual + grupos.map(c => {
       const aberto = (sel && sel.estado === c.id) || (c.id === 'disponivel' && !sel);
-      return `<details ${aberto ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:#ffe07a">${esc(c.nome)} <small style="color:var(--muted)">${c.id === 'ativa' ? c.missoes.length + '/10' : c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" data-sec-id="${m.id}" style="${String(m.id) === secSel ? 'border-color:#ffd23a' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '○'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des || ''))} · Reward: ${rec(m.recompensa)}</small></span></div>`).join('') || '<div class="fraco">None.</div>'}</div></details>`;
+      return `<details ${aberto ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:#ffe07a">${esc(c.nome)} <small style="color:var(--muted)">${c.id === 'ativa' ? c.missoes.length + '/10' : c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" data-sec-id="${m.id}" style="${String(m.id) === secSel ? 'border-color:#ffd23a' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '○'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des || ''))}</small></span></div>`).join('') || '<div class="fraco">None.</div>'}</div></details>`;
     }).join('');
     corpo.querySelectorAll('[data-sec-id]').forEach(el => el.onclick = () => { secSel = el.dataset.secId; render(); });
     return;
@@ -1411,9 +1409,9 @@ function rMissoes(corpo){
   const passoTxt = (p, i) => { const n = p.n || 0; const c = i === idx && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : ''; return esc(tr(p.texto)) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : ''); };
   const atual = ativa ? `<div class="missao-atual"><small style="color:var(--muted)">Chapter ${ativa.capitulo} · ${esc(tr(ativa.capNome))}</small><br><b>${esc(tr(ativa.nome))}</b><br><span style="font-size:12px">${esc(tr(ativa.des))}</span>
       <div style="margin-top:8px;font-size:13px;line-height:1.5">${ativa.passos.map((p, i) => `<div>${i < idx ? '✔' : i === idx ? '▶' : '○'} ${passoTxt(p, i)}</div>`).join('')}</div>
-      <div style="margin-top:6px;font-size:12px;color:var(--muted)">Reward: ${rec(ativa.recompensa)}</div></div>`
+      <div class="mi-recs grande">${htmlRecompensa(ativa.recompensa)}</div></div>`
     : '<div class="missao-atual"><b>You finished everything in the story for now.</b><br><span style="font-size:12px">More chapters arrive in later versions. Side quests stay on the other tab.</span></div>';
-  corpo.innerHTML = atual + caps.map(c => { const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa'); return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length ? '✅' : aberta ? '▶️' : '🔒'} Chapter ${c.id} — ${esc(tr(c.nome))} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des))} · Reward: ${rec(m.recompensa)}</small></span></div>`).join('')}</div></details>`; }).join('');
+  corpo.innerHTML = atual + caps.map(c => { const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa'); return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length ? '✅' : aberta ? '▶️' : '🔒'} Chapter ${c.id} — ${esc(tr(c.nome))} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des))}</small></span></div>`).join('')}</div></details>`; }).join('');
 }
 
 /* ============================================================ pop-up Missões (maquete do Figma, rodada 10)
@@ -1461,10 +1459,63 @@ function arteExemplo(el){
   if (+el.dataset.exemploPad) Hud.fundoComFolga(el, +el.dataset.exemploPad);
 }
 function textoRecompensaMi(r){
-  const nomeItem = id => tr(D.itens[id]?.n || ('item ' + id));
-  return [r?.dinheiro ? r.dinheiro + ' coins' : null,
-          ...Object.entries(r?.itens || {}).map(([id, n]) => nomeItem(id) + ' ×' + n),
-          r?.exp ? r.exp + ' XP' : null].filter(Boolean).join(' · ') || '—';
+  return partesRecompensa(r).map(p => p.nome + (p.n > 1 || p.tipo !== 'item' ? ' ×' + p.n : '')).join(' · ') || '—';
+}
+function partesRecompensa(r){
+  if (!r) return [];
+  const out = [];
+  const moedas = r.dinheiro ?? r.moedas ?? r.money;
+  if (moedas) out.push({ tipo: 'moeda', n: moedas, nome: tr('Coins'), icone: './ui/itens/ic_1.png' });
+  const addItens = bag => {
+    if (!bag) return;
+    if (Array.isArray(bag)) for (const it of bag){
+      const id = it.id, n = it.n || 1, d = D.itens?.[id];
+      out.push({ tipo: 'item', n, nome: tr(it.nome || d?.n || ('item ' + id)), icone: d?.i ? './ui/itens/' + d.i + '.png' : (id ? './ui/itens/ic_' + id + '.png' : '') });
+    }
+    else for (const [id, n] of Object.entries(bag)){
+      if (!(n > 0)) continue;
+      const d = D.itens?.[id];
+      out.push({ tipo: 'item', n, nome: tr(d?.n || ('item ' + id)), icone: d?.i ? './ui/itens/' + d.i + '.png' : './ui/itens/ic_' + id + '.png' });
+    }
+  };
+  addItens(r.itens || r.items);
+  addItens(r.bolas);
+  const exp = r.exp ?? r.xp;
+  if (exp) out.push({ tipo: 'exp', n: exp, nome: 'XP', icone: './ui/itens/ic_5.png' });
+  return out;
+}
+function htmlRecompensa(r){
+  const partes = partesRecompensa(r);
+  if (!partes.length) return '<div class="mi-rec vazio">No reward listed</div>';
+  return partes.map(p => `<div class="mi-rec" title="${esc(p.nome)} ×${p.n}"><i style="background-image:url('${p.icone}')"></i><b>×${p.n}</b><small>${esc(p.nome)}</small></div>`).join('');
+}
+function acomodarRecompensas(pop){
+  const fa = Popup.grupo(pop, 'missao-ativa');
+  if (!fa || fa.dataset.recs) return fa;
+  fa.dataset.recs = '1';
+  const extra = 86;
+  fa.style.height = ((parseFloat(fa.style.height) || 170) + extra) + 'px';
+  fa.style.overflow = 'visible';
+  const div = Popup.grupo(pop, 'divisor'), lista = Popup.grupo(pop, 'lista-capitulos');
+  if (div) div.style.top = ((parseFloat(div.style.top) || 405) + extra) + 'px';
+  if (lista){
+    lista.style.top = ((parseFloat(lista.style.top) || 417) + extra) + 'px';
+    lista.style.height = Math.max(140, (parseFloat(lista.style.height) || 292) - extra) + 'px';
+  }
+  return fa;
+}
+function pintarRecompensaMi(pop, r){
+  const fa = acomodarRecompensas(pop);
+  if (!fa) return;
+  let box = fa.querySelector(':scope > .mi-recs');
+  if (!box){
+    box = document.createElement('div');
+    box.className = 'mi-recs grande';
+    fa.appendChild(box);
+  }
+  box.innerHTML = htmlRecompensa(r);
+  const txt = Popup.no(pop, 'recompensa');
+  if (txt){ txt.textContent = ''; txt.style.display = 'none'; }
 }
 /* Geometria da lista de capítulos, LIDA da maquete (PC: capítulo 20 px, grupo em y 26, missões de 42 a cada 46, +10 depois;
    deitado: 14 / 18,7 / 29,9 a cada 34,5). Medida uma vez, antes do 1º clonarSerie mexer na árvore. */
@@ -1511,7 +1562,7 @@ function encherMissoes(pop){
     Popup.texto(pop, 'objetivo', (p2.texto || '') + cont, g);
     Popup.texto(pop, 'objetivo-local', p2.onde ? '(' + p2.onde + ')' : '', g);
   }
-  Popup.texto(pop, 'recompensa', ativa ? 'Reward: ' + textoRecompensaMi(ativa.recompensa) : '');
+  pintarRecompensaMi(pop, ativa?.recompensa);
   // ---- lista de capítulos (altura variável)
   const caps = M.capitulos();
   const listaCaps = caps;
@@ -1550,7 +1601,7 @@ function encherMissoes(pop){
       if (ic2){ const url = iconeEstado(pop, 'missao', estM, 'objetivo-estado', ic2); ic2.style.backgroundImage = url ? 'url(' + url + ')' : 'none'; }
       const nomeEl = Popup.texto(pop, 'missao-nome', m.nome, el);
       if (nomeEl) nomeEl.style.color = estM === 'bloqueada' ? '#B8C2D9' : '#FFFFFF';
-      Popup.texto(pop, 'missao-resumo', (m.des || '') + ' · recompensa: ' + textoRecompensaMi(m.recompensa), el);
+      Popup.texto(pop, 'missao-resumo', m.des || '', el);
     });
     y += Math.max(0, (c.missoes.length - 1) * G.passoMis + G.hMis) + G.depois;
   });
@@ -1598,7 +1649,7 @@ function encherSecundarias(pop, G){
     Popup.texto(pop, 'objetivo', (p2.texto || '') + cont, g);
     Popup.texto(pop, 'objetivo-local', p2.onde ? '(' + p2.onde + ')' : '', g);
   }
-  Popup.texto(pop, 'recompensa', sel ? 'Reward: ' + textoRecompensaMi(sel.recompensa) : '');
+  pintarRecompensaMi(pop, sel?.recompensa);
   if (sel && secGrupoAberto != null && secGrupoAberto !== sel.estado && !grupos.find(g => g.id === secGrupoAberto)?.missoes.length)
     secGrupoAberto = sel.estado;
   if (secGrupoAberto == null) secGrupoAberto = grupos.find(g => g.missoes.length)?.id || 'disponivel';
@@ -1639,7 +1690,7 @@ function encherSecundarias(pop, G){
       if (nomeEl) nomeEl.style.color = '#FFFFFF';
       const resumo = m.estado === 'ativa'
         ? ((m.passos || [])[m.passo || 0]?.texto || m.des || '')
-        : ((m.onde || m.grupoNome || '') + (m.recompensa ? ' · Reward: ' + textoRecompensaMi(m.recompensa) : ''));
+        : (m.onde || m.grupoNome || '');
       Popup.texto(pop, 'missao-resumo', resumo, el);
     });
     y += Math.max(0, (g.missoes.length - 1) * G.passoMis + G.hMis) + G.depois;
