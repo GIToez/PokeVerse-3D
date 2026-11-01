@@ -91,8 +91,8 @@ move a JSON file's display text to English, run
 `node tools/locale_english_source.mjs <file.json>`. The dictionaries are:
 
 - `ui_<lang>.json` — UI, menus, HUD, and system messages
-- `conteudo_<lang>.json` — missions, gyms, and other content text
-- `nomes_<lang>.json` — names (areas, items, moves, titles, outfits, NPCs)
+- `content_<lang>.json` — missions, gyms, and other content text
+- `names_<lang>.json` — names (areas, items, moves, titles, outfits, NPCs)
 - `dex_<lang>.json` — Pokédex entries
 
 See [`docs/GLOSSARY.md`](docs/GLOSSARY.md) for the naming conventions used across the

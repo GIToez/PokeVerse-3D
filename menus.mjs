@@ -9,7 +9,7 @@ import * as I18n from './i18n.mjs';                                     // etapa
  *   loja (Pokémart do NPC 2150101 do dump, preços em Moeda), social (chat local, amigos, correio),
  *   batalha (PvP/ranking = em breve; treinadores do mapa), config (som, qualidade, tamanhos,
  *   depuração, Montar a HUD, galeria do Fairy, apagar progresso).
- * Dados: data/menus_dados.json (ItemConfig/ShopNpcData/BadgeConfig/quests do dump, em pt).
+ * Dados: data/menu_data.json (ItemConfig/ShopNpcData/BadgeConfig/quests do dump, em pt).
  * Estado em localStorage: itens, dinheiro, caixa, dex, tempo (o resto já existia: time, bolas…).
  */
 import * as THREE from 'three';
@@ -61,7 +61,7 @@ export function instalar(c){
 }
 async function dados(){
   if (D) return D;
-  if (!carregandoD) carregandoD = fetch('./data/menus_dados.json').then(r => r.json()).catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] }));
+  if (!carregandoD) carregandoD = fetch('./data/menu_data.json').then(r => r.json()).catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] }));
   D = await carregandoD; return D;
 }
 /* DIÁLOGOS DA ABA CONTA (15/09): "Estou preso" e "Mandar pra equipe" são DOM solto, fora do `aberta` — o /preso abre o diálogo com o
@@ -118,7 +118,7 @@ function abas(lista){
 }
 function render(){
   if (!aberta) return;
-  if (!D){ dados().then(repintar); return; }                             /* 19/09 (#relatos, Firefox): clique numa aba ou capítulo do pop-up enquanto o menus_dados.json ainda baixava (a 1ª janela aberta na sessão) chegava aqui com D null e quebrava em D.itens; espera a tabela e pinta de novo */
+  if (!D){ dados().then(repintar); return; }                             /* 19/09 (#relatos, Firefox): clique numa aba ou capítulo do pop-up enquanto o menu_data.json ainda baixava (a 1ª janela aberta na sessão) chegava aqui com D null e quebrava em D.itens; espera a tabela e pinta de novo */
   if (aberta === 'pokemon' && popPk && Popup.aberto(popPk)){ encherPokemon(popPk); return; }
   if (aberta === 'mochila' && popMo && Popup.aberto(popMo)){ encherMochila(popMo); return; }
   if (aberta === 'missoes' && popMi && Popup.aberto(popMi)){ encherMissoes(popMi); return; }
@@ -662,7 +662,7 @@ function popupMo(){
 }
 /** Itens da categoria e da busca, ordenados por tipo e depois por nome (a maquete não tem botão de ordenar). */
 function itensMochila(){
-  if (!D) return [];                                                      // 18/09 (firer): a Mochila aberta antes do menus_dados.json chegar quebrava em D.itens ("Cannot read properties of null"); sem tabela, lista vazia até o carregarDados terminar
+  if (!D) return [];                                                      // 18/09 (firer): a Mochila aberta antes do menu_data.json chegar quebrava em D.itens ("Cannot read properties of null"); sem tabela, lista vazia até o carregarDados terminar
   const q = quantidades(), tipos = CATS_MO[catMo], busca = buscaMo.trim().toLowerCase();
   return Object.entries(q)
     .filter(([id, n]) => n > 0 && D.itens[id])
@@ -854,7 +854,7 @@ function popupTr(){
   return popTr;
 }
 let ginasiosTr = null;
-async function carregarGinasios(){ if (!ginasiosTr) ginasiosTr = await fetch('./data/ginasios.json').then(r => r.json()).catch(() => ({})); return ginasiosTr; }
+async function carregarGinasios(){ if (!ginasiosTr) ginasiosTr = await fetch('./data/gyms.json').then(r => r.json()).catch(() => ({})); return ginasiosTr; }
 /** O bonequinho 3D do jogador (img/jogador [do-jogo]): clone do modelo em campo, com a roupa dele, girando devagar. */
 function visorTreinador(){
   if (visorTr) return visorTr;
@@ -983,7 +983,7 @@ function popupMa(){
     fechar: () => { if (aberta === 'mapa') aberta = null; },
   });
   const mapa = Popup.grupo(popMa, 'mapa');
-  if (mapa){                                                             // clique na arte: a área mais perto (data/mapa_kanto_pontos.json)
+  if (mapa){                                                             // clique na arte: a área mais perto (data/kanto_map_points.json)
     mapa.style.pointerEvents = 'auto'; mapa.style.cursor = 'pointer';
     mapa.addEventListener('click', ev => {
       if (!pontosMapa) return;
@@ -1010,10 +1010,10 @@ const ehRota = a => Math.floor(Number(a) / 100) === 12;
 async function encherMapa(pop){
   Popup.rotulo(pop, 'titulo'); Popup.texto(pop, 'regiao', 'Kanto');
   Popup.imagem(pop, 'mapa', './ui/figma/backgrounds/mapa-kanto.png');
-  pontosMapa ??= await fetch('./data/mapa_kanto_pontos.json').then(r => r.json()).catch(() => ({ areas: {}, raio: 0.045 }));
+  pontosMapa ??= await fetch('./data/kanto_map_points.json').then(r => r.json()).catch(() => ({ areas: {}, raio: 0.045 }));
   mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
   if (aberta !== 'mapa' || !Popup.aberto(pop)) return;
-  const nomes = { ...(pontosMapa.nomes || {}), ...(ctx.dados?.nomes || {}) };   // a cena recortada (pallet_rota1) só conhece as próprias áreas; os pontos trazem os nomes de Kanto
+  const nomes = { ...(pontosMapa.nomes || {}), ...(ctx.dados?.nomes || {}) };   // a cena recortada (pallet_route1) só conhece as próprias áreas; os pontos trazem os nomes de Kanto
   if (areaMapa == null || !nomes[areaMapa]) areaMapa = areaDoJogador() ?? +Object.keys(pontosMapa.areas || {})[0];
   const a = areaMapa, nome = I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes[a] || ('área ' + a));
   Popup.texto(pop, 'area-nome', nome);
@@ -1598,7 +1598,7 @@ function rMapa(corpo){
 /* ------------------------------------------------------------------ Pokédex (3D + shiny + ficha completa) */
 let selDex = null, elenco = null, dexView = null, dexExtra = null, dexBusca = '', dexShiny = false, selDexGlb = null;
 const cacheGlb = new Map(), texShiny = new Map();
-async function carregarElenco(){ if (!elenco) elenco = await fetch('./data/elenco.json').then(r => r.json()).catch(() => []); return elenco; }
+async function carregarElenco(){ if (!elenco) elenco = await fetch('./data/cast.json').then(r => r.json()).catch(() => []); return elenco; }
 async function carregarDexExtra(){ if (!dexExtra) dexExtra = await fetch('./data/dex_extra.json').then(r => r.json()).catch(() => ({ especies: {}, golpes: {} })); return dexExtra; }
 const glbDe = n => { const cands = (elenco || []).filter(e => e.n === n); return (cands.find(e => /_00$/.test(e.glb)) || cands[0])?.glb || null; };
 function dexEstado(){
@@ -2432,7 +2432,7 @@ const MOCHILA_PREVIA = [[1001, 25], [1002, 12], [1003, 6], [1004, 1], [1005, 30]
   [57031, 1], [57032, 1], [50304, 2], [50306, 1], [50307, 1], [50308, 3], [50309, 1]];
 async function abrirPreviaMochila(){
   if (!defPopup('mochila')) return false;
-  await dados(); if (!D?.itens) return false;                            /* a paleta pode abrir antes do menus_dados.json chegar */
+  await dados(); if (!D?.itens) return false;                            /* a paleta pode abrir antes do menu_data.json chegar */
   const def = defPopup('mochila'); if (!def) return false;
   fechar(); fecharGrade(); fecharPrevia();
   let pop = popsPrevia['mochila-cheia'];

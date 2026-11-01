@@ -996,7 +996,7 @@ function receber(m) {
         );
       return;
     }
-    case 'conteudo':
+    case 'content':
       ctx.conteudo?.(m);
       return;
     case 'catalogo':

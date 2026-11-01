@@ -1,5 +1,5 @@
 /* Painel admin — tela Learnset (Fase 2). Edita data/learnset.json → learnset ({ dex: [["golpe", nível], …] }, esquema `learnset`):
- * que golpe cada espécie aprende e em que nível. Os golpes são os de data/golpes.json (Arquivos de dados → Golpes: poder, PP,
+ * que golpe cada espécie aprende e em que nível. Os golpes são os de data/moves.json (Arquivos de dados → Golpes: poder, PP,
  * efeito…). O jogo (individual.mjs) dá ao Pokémon os 4 últimos golpes até o nível dele e ensina o do nível quando ele sobe. */
 import { esc, copia, campo, gravar, ler, ref, datalist, pad } from '/admin/content.mjs';
 import { TIPOS } from '/admin/schemas_f2.mjs';

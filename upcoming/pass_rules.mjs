@@ -7,7 +7,7 @@ export const FLAG_GM = 1;
 export const FLAG_CASCA = 2;
 export const FLAG_PECAS = 4;
 export const CASCA = Object.freeze({
-  cenas: Object.freeze(['kanto', 'pallet_rota1', '4120013', '4110008', '4110002', '4110009']),
+  cenas: Object.freeze(['kanto', 'pallet_route1', '4120013', '4110008', '4110002', '4110009']),
   areas: Object.freeze([1101, 1201]),
 });
 export const RECUSAS_DE_PROGRESSO = Object.freeze(['sem_cena', 'sem_dex', 'sem_skin', 'sem_cena_npc', 'sem_shiny']);
@@ -22,7 +22,7 @@ function marcaDoGlb(g) {
 }
 export const CENAS_LIVRES = [];
 export const BASE = {
-  cenas: ['kanto', 'pallet_rota1', '4120013', '4110008', '4110002'],
+  cenas: ['kanto', 'pallet_route1', '4120013', '4110008', '4110002'],
   dex: [1, 4, 7, 6, 150, 25, 17],
   skins: ['0006_51'],
 };
@@ -31,7 +31,7 @@ export const PASTAS_LIVRES = {
   fogo: "flame shader (Charmander, Moltres…): shared effect piece, not a single species' art",
   lodo: 'sludge shader (Grimer/Muk): same as fire',
 };
-const RE_CENA = /^\/cenario\/(kanto|pallet_rota1|casa|habitat|\d{7})(?:_chao\.json|(?:_ktx2)?\.glb)$/;
+const RE_CENA = /^\/cenario\/(kanto|pallet_route1|casa|habitat|\d{7})(?:_chao\.json|(?:_ktx2)?\.glb)$/;
 const RE_MON = /^\/cenario\/mon\/(pm\d{4}(?:_\d{2})?)\.glb$/;
 const RE_SHINY = /^\/cenario\/mon\/shiny\/([^/]+)_1\.png$/;
 const RE_LIVRE = new RegExp('^\\/cenario\\/(?:' + Object.keys(PASTAS_LIVRES).join('|') + ')\\/');
@@ -40,7 +40,7 @@ const RE_NPC_ARQ = /\/([A-Za-z0-9_.-]+)\.glb$/i;
 const RE_CASCA = /^\/cenario\/(?:pc|npc)\//;
 const RE_STEM = /^pm(\d{4})(?:_(\d{2}))?$/;
 const RE_STEM_TEX = /^(pm\d{4}(?:_\d{2}(?=[_.]|$))?)/;
-export const RE_ID_CENA = /^(?:kanto|pallet_rota1|casa|habitat|\d{7})$/;
+export const RE_ID_CENA = /^(?:kanto|pallet_route1|casa|habitat|\d{7})$/;
 export const ARTE_DE_RAID = { r01: '9700001', r03: '9700003', r05: '9700005' };
 const RE_RAID = /^\/cenario\/raid\/([a-z0-9]+)\/(?:marcas\/)?[a-z0-9_]+\.(?:glb|png)$/;
 export const OBJETOS_DE_CENA = { incubadora: 'habitat' };

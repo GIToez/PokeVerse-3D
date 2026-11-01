@@ -5,7 +5,7 @@
 
 const ehObjeto = v => v && typeof v === 'object' && !Array.isArray(v);
 
-// ── Cores de NPC (npc_tintas.json) ─────────────────────────────────────────────────────────────────────────────────────
+// ── Cores de NPC (npc_tints.json) ─────────────────────────────────────────────────────────────────────────────────────
 /** [r, g, b] ou [r, g, b, a], de 0 a 2 (o shader multiplica a textura: acima de 1 clareia). */
 const corRGBA = v => (Array.isArray(v) && (v.length === 3 || v.length === 4) && v.every(n => typeof n === 'number' && n >= 0 && n <= 2))
   ? null : 'use [r, g, b, a] with numbers from 0 to 2 (1 = the texture as is) — or pick the color in the preview above';
@@ -23,7 +23,7 @@ const traducaoCasa = r => {
   return null;
 };
 
-// ── Músicas (musicas.json): faixa = caminho em som/ sem .ogg ("bg/sound_road1") ──────────────────────────────────────────
+// ── Músicas (music.json): faixa = caminho em som/ sem .ogg ("bg/sound_road1") ──────────────────────────────────────────
 const FAIXA = /^(bg|ui)\/[\w-]{1,60}$/;
 const faixaOk = s => FAIXA.test(s) ? null : 'track in the format "bg/sound_road1" (file som/bg/sound_road1.ogg)';
 const mapaDeFaixas = v => {
@@ -42,7 +42,7 @@ const faixasFixas = ks => v => {
 
 export const ESQUEMAS_F3 = {
   npc_tintas: {
-    titulo: 'NPC colors', arquivo: 'npc_tintas', forma: 'mapa', idValido: /^[\w][\w .:()-]{0,79}$/, idAjuda: 'the model\'s material name (e.g. fc2013_00_nursejoy_hair_col) or "<model>:<material>"',
+    titulo: 'NPC colors', arquivo: 'npc_tints', forma: 'mapa', idValido: /^[\w][\w .:()-]{0,79}$/, idAjuda: 'the model\'s material name (e.g. fc2013_00_nursejoy_hair_col) or "<model>:<material>"',
     descricao: 'The factory color of each part of NPCs, outfits and backpacks: the texture is nearly white and the color comes from here, through the mask\'s R/G/B/black channels. The preview shows the model (when it exists in this copy) with your edits.',
     previa: '/admin/preview_paint.mjs',
     campos: [
@@ -59,7 +59,7 @@ export const ESQUEMAS_F3 = {
   },
   // as falas dos NPCs (npcs_glb.json) são a tela "NPCs (quem é quem)" da Fase 1; a Fase 3 só faz o jogo aberto aplicá-las na hora
   dialogos: {
-    titulo: 'Game dialogues', arquivo: 'dialogos', forma: 'objeto', recarga: 'vivo',
+    titulo: 'Game dialogues', arquivo: 'dialogues', forma: 'objeto', recarga: 'vivo',
     descricao: 'Lines that used to be hard-coded (Pallet gate, Professor Oak, starter choice, intro). Empty = the original text. {nome} = the Pokémon\'s name. The open game applies changes immediately.',
     campos: [
       { k: 'oakNome', rotulo: 'Professor\'s name in the lines', tipo: 'texto', max: 40, ajuda: 'Original: Professor Samuel.' },
@@ -77,7 +77,7 @@ export const ESQUEMAS_F3 = {
     ],
   },
   traducoes: {
-    titulo: 'Translations (EN/ES)', arquivo: 'traducoes', forma: 'lista', id: 'pt', recarga: 'vivo',
+    titulo: 'Translations (EN/ES)', arquivo: 'translations', forma: 'lista', id: 'pt', recarga: 'vivo',
     descricao: 'English is the source language. Each row: the English text exactly as it appears in the game, and the Portuguese/Spanish translation. {x} matches any snippet (e.g. "You arrived in {x}."). These override the dictionaries in data/locale/. The open game applies changes immediately.',
     validar: traducaoCasa,
     campos: [
@@ -88,7 +88,7 @@ export const ESQUEMAS_F3 = {
     ],
   },
   musicas: {
-    titulo: 'Music by area', arquivo: 'musicas', forma: 'objeto', recarga: 'vivo',
+    titulo: 'Music by area', arquivo: 'music', forma: 'objeto', recarga: 'vivo',
     descricao: 'The track that plays in each Kanto area, in each interior (scene) and in battles. Track = file in som/ without the .ogg. The preview lists the areas by name and plays the track; the open game switches immediately.',
     previa: '/admin/preview_music.mjs',
     campos: [

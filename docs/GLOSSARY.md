@@ -113,39 +113,39 @@ admin schemas.
 
 | File                 | Meaning                                   |
 | -------------------- | ----------------------------------------- |
-| `especies.json`      | Species overrides                         |
-| `golpes.json`        | Moves (194), with English + PT names      |
+| `species.json`      | Species overrides                         |
+| `moves.json`        | Moves (194), with English + PT names      |
 | `learnset.json`      | Per-level movesets                        |
-| `evolucoes.json`     | Evolution rules                           |
-| `cenas.json`         | Scenes / areas list                       |
+| `evolutions.json`     | Evolution rules                           |
+| `scenes.json`         | Scenes / areas list                       |
 | `kanto.json`         | Main Kanto overworld (objects, NPCs, …)   |
-| `pallet_rota1.json`  | Pallet Town + Route 1 data                |
-| `config_jogo.json`   | Game config (shiny rate, level caps, …)   |
-| `ginasios.json`      | Gyms                                       |
-| `treinadores.json`   | NPC trainers                              |
+| `pallet_route1.json`  | Pallet Town + Route 1 data                |
+| `game_config.json`   | Game config (shiny rate, level caps, …)   |
+| `gyms.json`      | Gyms                                       |
+| `trainers.json`   | NPC trainers                              |
 | `npcs_glb.json`      | NPC roster / models                       |
-| `npc_tintas.json`    | NPC colors                                |
-| `elenco.json`        | Cast (named NPC roster)                   |
-| `missoes.json`       | Missions (20 chapters)                    |
-| `dialogos.json`      | Dialogue                                  |
-| `iniciais.json`      | Starter Pokémon                           |
-| `montarias.json`     | Mounts                                    |
-| `selas.json`         | Saddles                                   |
-| `mochilas.json`      | Bags                                      |
-| `menus_dados.json`   | Items + shops                             |
-| `musicas.json`       | Music tracks                              |
+| `npc_tints.json`    | NPC colors                                |
+| `cast.json`        | Cast (named NPC roster)                   |
+| `missions.json`       | Missions (20 chapters)                    |
+| `dialogues.json`      | Dialogue                                  |
+| `starters.json`      | Starter Pokémon                           |
+| `mounts.json`     | Mounts                                    |
+| `saddles.json`         | Saddles                                   |
+| `bags.json`      | Bags                                      |
+| `menu_data.json`   | Items + shops                             |
+| `music.json`       | Music tracks                              |
 | `raid.json`          | Raid config                              |
 | `habitats.json`      | Habitats (wild spawns per area)           |
 | `zonas_spawn.json`   | Spawn zones                               |
-| `portas.json`        | Doors / warps                             |
+| `doors.json`        | Doors / warps                             |
 | `exp.json`           | EXP curves                                |
-| `skins_treinador.json` | Trainer skins                           |
-| `receitas_cor.json`  | Color recipes                             |
-| `sexos.json`         | Gender options                            |
-| `alturas.json` / `tamanhos.json` | Heights / sizes               |
-| `mapa_kanto_pontos.json` | Kanto map points                      |
+| `trainer_skins.json` | Trainer skins                           |
+| `color_recipes.json`  | Color recipes                             |
+| `genders.json`         | Gender options                            |
+| `heights.json` / `sizes.json` | Heights / sizes               |
+| `kanto_map_points.json` | Kanto map points                      |
 | `dex_extra.json`     | Extra Pokédex data                        |
-| `traducoes.json`     | GM-editable translation overrides         |
+| `translations.json`     | GM-editable translation overrides         |
 | `idioma/`            | Translation dictionaries (PT/EN/ES)       |
 
 ## Asset folders

@@ -35,9 +35,9 @@ const MANUAIS = {
   psychic:      { id: 'psychic',      nome: 'Psychic',       tipo: 'Psychic',  poder: 90,  cat: 'especial', alcance: 7,   recarga: 3.5, efeito: '00094', som: 'saint1',   anim: 'Cast',   atraso: 0.4,  inicio: true },
   lick:         { id: 'lick',         nome: 'Lick',          tipo: 'Ghost',    poder: 30,  cat: 'fisico',   alcance: 1.3, recarga: 1.4, efeito: '00122', som: 'darkness2', anim: 'Attack', atraso: 0.15, contato: true },
 };
-/* Fase 2 do painel: a tabela que vale é a do data/golpes.json (admin → Golpes), gerada destas duas (TODOS + MANUAIS, com o PP do
+/* Fase 2 do painel: a tabela que vale é a do data/moves.json (admin → Golpes), gerada destas duas (TODOS + MANUAIS, com o PP do
    learnset.json) — com o arquivo, ele é a fonte e os MANUAIS já estão dentro dele. Sem o arquivo vale a mistura de sempre. */
-const DO_ARQUIVO = await fetch('./data/golpes.json').then(r => r.ok ? r.json() : null).catch(() => null);
+const DO_ARQUIVO = await fetch('./data/moves.json').then(r => r.ok ? r.json() : null).catch(() => null);
 export const GOLPES = DO_ARQUIVO && typeof DO_ARQUIVO === 'object' && Object.keys(DO_ARQUIVO).length
   ? Object.fromEntries(Object.entries(DO_ARQUIVO).map(([k, g]) => [k, { ...g, id: k }]))   // golpe novo do painel não traz o id dentro
   : { ...TODOS, ...Object.fromEntries(Object.entries(MANUAIS).map(([k, v]) => [k, { ...TODOS[k], ...v, acerto: true }])) };

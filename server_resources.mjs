@@ -1,6 +1,6 @@
 /* Recursos pro painel (Fase 3): listas de arquivos que o navegador não consegue fazer sozinho (a Vite não lista pastas).
  * Só GM (o server.mjs confere antes). A Vite serve public/ e a raiz no mesmo caminho, então cada lista junta as duas pastas.
- *   /admin/recursos/faixas            → músicas no formato do musicas.json ("bg/sound_road1" = som/bg/sound_road1.ogg)
+ *   /admin/recursos/faixas            → músicas no formato do music.json ("bg/sound_road1" = som/bg/sound_road1.ogg)
  *   /admin/recursos/mascaras          → PNGs de scenery/npc/mask
  *   /admin/recursos/modelos?pasta=pc  → nomes dos .glb (pasta pc | npc | mon), sem extensão
  *   /admin/recursos/materiais         → { material: ['npc/fc2013_00', …] } — lido do JSON dos .glb de npc/ e pc/ (pra prévia da

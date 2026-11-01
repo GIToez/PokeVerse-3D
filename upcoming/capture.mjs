@@ -205,7 +205,7 @@ function montarPainel() {
     <div class="linha"><b style="color:#ffe07a">🎥 Capture scene</b> <span class="k">H hides · F9 flash</span></div>
     <div id="cap-status" class="k">natural spawn off: only what you spawn appears</div>
     <h2>Scene</h2>
-    <label><span>map</span><select id="c-mapa"><option value="pallet_rota1">Pallet + Route 1 (light)</option><option value="kanto">All of Kanto</option><option value="casa">Land (plot)</option></select><button id="c-ir">go</button></label>
+    <label><span>map</span><select id="c-mapa"><option value="pallet_route1">Pallet + Route 1 (light)</option><option value="kanto">All of Kanto</option><option value="casa">Land (plot)</option></select><button id="c-ir">go</button></label>
     <label><span>teleport</span><select id="c-area">${g}</select><button id="c-tele">go</button></label>
     <div class="linha"><button id="c-exportar">Export scene</button><button id="c-importar">Import</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Clear recipes</button></div>
     <h2>You</h2>
@@ -237,7 +237,7 @@ function montarPainel() {
   h.id = 'cap-dica';
   h.textContent = 'H: panel · F9: flash';
   document.body.appendChild(h);
-  $('c-mapa').value = ctx.mapaNome === 'kanto' ? 'kanto' : ctx.mapaNome === 'casa' ? 'casa' : 'pallet_rota1';
+  $('c-mapa').value = ctx.mapaNome === 'kanto' ? 'kanto' : ctx.mapaNome === 'casa' ? 'casa' : 'pallet_route1';
   $('c-ir').onclick = () => {
     const u = new URL(location.href);
     u.searchParams.set('mapa', $('c-mapa').value);

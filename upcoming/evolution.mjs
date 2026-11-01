@@ -10,7 +10,7 @@ export async function carregar(a = null) {
           .then((r) => r.json())
           .catch(() => b));
     [D, X] = await Promise.all([
-      b('./data/evolucoes.json', { por: {}, itens: {} }),
+      b('./data/evolutions.json', { por: {}, itens: {} }),
       b('./data/exp.json', { curvas: {}, especies: {} }),
     ]);
   }

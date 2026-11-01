@@ -2,7 +2,7 @@
  *  • BIBLIOTECA (kanto e +71 mapas): o GLB tem os prefabs na origem ("lib:<nome>"); o cenário são os `objetos` do JSON
  *    ({n,x,y,z}, 42k no kanto). Edito os objetos e re-instancio os prefabs nas posições (igual ao `instanciarBiblioteca` do
  *    jogo). Salva em /admin/mapa-objetos (JSON).
- *  • MONTADO (só pallet_rota1): o GLB já tem as peças posicionadas (os nós). Edito os nós. Salva o GLB (/admin/mapa-glb).
+ *  • MONTADO (só pallet_route1): o GLB já tem as peças posicionadas (os nós). Edito os nós. Salva o GLB (/admin/mapa-glb).
  * Render otimizado com InstancedMesh por tipo (1 draw call por tipo), pra aguentar os 42k do kanto. Só conta GM. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -85,7 +85,7 @@ async function listarMapas() {
   const mapas = r.mapas || [];
   $('sel-mapa').innerHTML = mapas.map(m => `<option value="${esc(m)}" title="${esc(m)}">${esc(nomeMapaComId(m))}</option>`).join('');
   if (!mapas.length) { $('carregando').textContent = 'No maps with a local GLB.'; return; }
-  await carregarMapa(mapas.includes('pallet_rota1') ? 'pallet_rota1' : mapas[0]);
+  await carregarMapa(mapas.includes('pallet_route1') ? 'pallet_route1' : mapas[0]);
 }
 async function carregarMapa(nome) {
   $('carregando').hidden = false; $('carregando').textContent = 'loading ' + nomeMapa(nome) + '…';

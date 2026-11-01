@@ -234,7 +234,7 @@ body.mobile .mp-filtro label{font-size:9px;padding:3px 2px;gap:6px}
 body.mobile .mp-filtro i{width:12px;height:12px;font-size:9px;border-radius:3px}`;
   document.head.appendChild(s);
 }
-const REGIAO_DA_CENA = { kanto: 'kanto', pallet_rota1: 'kanto', 1000001: 'kanto', 2500001: 'sevii' };
+const REGIAO_DA_CENA = { kanto: 'kanto', pallet_route1: 'kanto', 1000001: 'kanto', 2500001: 'sevii' };
 function ondeEstou() {
   const b = String(dep.cena?.() ?? ''),
     c = dep.areaAtual?.() ?? null,

@@ -1,5 +1,5 @@
 /* Prévia da Raid (esquema raid, Fase 3): o chefe em 3D (scenery/mon/<modelo>.glb, no palco da tela de criação — arrastar gira)
- * com nome e nível, e a arena pelo nome que o jogador vê (data/cenas.json). Campo vazio = o valor original (Mew, 4120009). */
+ * com nome e nível, e a arena pelo nome que o jogador vê (data/scenes.json). Campo vazio = o valor original (Mew, 4120009). */
 import { criarPalco } from '/character.mjs';
 import { nomesDeLugares, recurso } from '/admin/resources.mjs';
 
@@ -32,7 +32,7 @@ export async function atualizar(r) {
   const arena = String(v('arena')), nomeArena = lugares.cenas[arena];
   const glb = String(v('chefeGlb'));
   const el = raiz.querySelector('.previa-info');
-  const avisos = [!nomeArena ? `⚠ Scene <b>${esc(arena)}</b> does not exist in cenas.json — the queue leads nowhere.` : '',
+  const avisos = [!nomeArena ? `⚠ Scene <b>${esc(arena)}</b> does not exist in scenes.json — the queue leads nowhere.` : '',
     !modelos.includes(glb) ? `⚠ The model <code>scenery/mon/${esc(glb)}.glb</code> does not exist in this copy.` : ''].filter(Boolean);
   el.innerHTML = `<b>${esc(v('chefeNome'))}</b> Lv ${esc(v('chefeNivel'))} · arena <b>${esc(nomeArena || arena)}</b> (${esc(arena)}) · ${esc(v('vagas'))} slots` + (avisos.length ? '<br>' + avisos.join('<br>') : '');
   el.classList.toggle('aviso', avisos.length > 0);

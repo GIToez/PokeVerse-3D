@@ -1,6 +1,6 @@
 /* Evolução e XP como nos JOGOS ORIGINAIS (index.html + menus.mjs).
  *
- * Regras: data/evolucoes.json (tools/evolucoes.mjs ← PokéAPI): por espécie, uma lista de { para, nome, gatilho, texto, … }
+ * Regras: data/evolutions.json (tools/evolucoes.mjs ← PokéAPI): por espécie, uma lista de { para, nome, gatilho, texto, … }
  *   gatilho 'nivel' — Lv mínimo e/ou amizade alta (≥ 160), horário (dia/noite), item segurado, golpe conhecido / golpe de
  *                     um tipo, companheiro (ou tipo) no time, Atk×Def (Tyrogue); 'muda' = Shedinja (junto do Ninjask);
  *           'item'  — usar uma pedra (consome); 'troca' — troca, que aqui vira usar o Cabo de Ligação (ou o item segurado
@@ -16,7 +16,7 @@ let D = null, X = null;
 export async function carregar(){
   if (!D){
     [D, X] = await Promise.all([
-      fetch('./data/evolucoes.json').then(r => r.json()).catch(() => ({ por: {}, itens: {} })),
+      fetch('./data/evolutions.json').then(r => r.json()).catch(() => ({ por: {}, itens: {} })),
       fetch('./data/exp.json').then(r => r.json()).catch(() => ({ curvas: {}, especies: {} })),
     ]);
   }

@@ -68,7 +68,7 @@ function criaPadrao(a) {
   const e = naCriacao(a);
   if (e === null) return { ok: false, erro: 'foraDaCriacao' };
   if (e) return e.cria ? { ok: true } : { ok: false, erro: 'naoCria' };
-  const s = Mo.lerJson('./data/sexos.json', repintar);
+  const s = Mo.lerJson('./data/genders.json', repintar);
   if (!s) return { ok: true };
   const m = s[String(a)];
   if (m == null) return { ok: true };

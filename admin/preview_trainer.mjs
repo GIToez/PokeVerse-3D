@@ -1,7 +1,7 @@
 /* Prévia do treinador NPC (esquema `treinadores`): o modelo 3D do NPC no MESMO palco da tela de criação (character.mjs
  * criarPalco: Idle, gira sozinho, arrastar gira) e o time com nome e ícone de cada Pokémon (ui/mon/pmNNNN.png).
  * O palco busca em scenery/pc/; o NPC fica em scenery/npc/, então o glb vai como '../npc/<modelo>' (a URL se resolve sozinha).
- * A tinta de fábrica de alguns NPCs é por modelo (`<glb>:<material>` no npc_tintas.json): reaplica com o nome do GLB. */
+ * A tinta de fábrica de alguns NPCs é por modelo (`<glb>:<material>` no npc_tints.json): reaplica com o nome do GLB. */
 import { criarPalco } from '/character.mjs';
 import * as Tinta from '/paint.mjs';
 

@@ -5,10 +5,10 @@ import { fileURLToPath } from 'url';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const uiPath = path.join(RAIZ, 'public/data/locale/ui_en.json');
-const dados = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/menus_dados.json'), 'utf8'));
+const dados = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/menu_data.json'), 'utf8'));
 const ui = JSON.parse(fs.readFileSync(uiPath, 'utf8'));
-const conteudo = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/locale/conteudo_en.json'), 'utf8'));
-const nomes = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/locale/nomes_en.json'), 'utf8'));
+const conteudo = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/locale/content_en.json'), 'utf8'));
+const nomes = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/locale/names_en.json'), 'utf8'));
 const tem = k => (ui[k] || conteudo[k] || nomes[k]);
 
 const FIXOS = {

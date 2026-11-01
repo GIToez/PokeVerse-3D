@@ -1,5 +1,5 @@
 /* Prévia da skin no editor de dados (esquema skins_treinador → `previa`). Usa o MESMO palco 3D da tela de criação do jogo
- * (character.mjs criarPalco: Idle, gira sozinho, arrastar gira, tinta de fábrica do npc_tintas.json + receita de cor), então
+ * (character.mjs criarPalco: Idle, gira sozinho, arrastar gira, tinta de fábrica do npc_tints.json + receita de cor), então
  * o que aparece aqui é o que o jogador vê. Além do modelo:
  *  • com receita de cor ("Cores editáveis"): seletores pra testar as cores ao vivo (só na prévia; quem escolhe é o jogador) e o
  *    teste da receita — a máscara é feita pra UM modelo; se nenhuma textura dele bate com a receita, avisa que não vai pegar;
@@ -13,7 +13,7 @@ let P = null, raiz = null, atual = null;        // atual = { id, glb, tinta }
 const cores = {};                               // receita → cores de teste
 const coresDe = t => (cores[t] ||= { ...PADRAO[t] });
 let tabelaTintas = null;
-const tintas = () => (tabelaTintas ||= fetch('/data/npc_tintas.json').then(r => r.json()).catch(() => ({})));
+const tintas = () => (tabelaTintas ||= fetch('/data/npc_tints.json').then(r => r.json()).catch(() => ({})));
 /* Montagem em andamento por id. O P.montar põe o modelo na cena DEPOIS de baixar o GLB: descartar antes disso (trocou de
    linha no meio do carregamento) deixaria o modelo velho órfão e visível por cima do novo — então o velho só sai quando a
    montagem dele termina. */
@@ -110,7 +110,7 @@ function seletores(t, id, pegam) {
   el.querySelector('.padrao').onclick = () => { for (const i of el.querySelectorAll('input[type=color]')) i.value = PADRAO[t][i.dataset.k]; repintar(); };
 }
 
-/** Sem receita: quantas partes do modelo têm máscara de cor no npc_tintas.json (o jogo original tingia por ela). */
+/** Sem receita: quantas partes do modelo têm máscara de cor no npc_tints.json (o jogo original tingia por ela). */
 async function descreverMascara(nomes) {
   const T = await tintas();
   const comMascara = [...nomes].filter(n => T[n]?.mask && !T[n].isMask);

@@ -2,7 +2,7 @@
  * Usage: node tools/audit_pokemon.mjs   (re-run after adding models or editing habitats)
  *
  * Sources: public/scenery/mon/*.glb (models), public/pokedex.json (names/types), public/data/habitats.json (spawns),
- * public/data/config_jogo.json → nivelArea (levels), public/data/cenas.json (area names, translated with locale/*_en.json). */
+ * public/data/game_config.json → nivelArea (levels), public/data/scenes.json (area names, translated with locale/*_en.json). */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,7 +16,7 @@ const nomeDe = n => dex.get(n)?.name || extra[n]?.nome || extra[n]?.name || '#' 
 const tiposDe = n => (dex.get(n)?.types || []).join('/');
 
 const dic = {};
-for (const n of ['nomes', 'conteudo', 'ui']) Object.assign(dic, ler('public/data/locale/' + n + '_en.json'));
+for (const n of ['names', 'content', 'ui']) Object.assign(dic, ler('public/data/locale/' + n + '_en.json'));
 const padroes = Object.entries(dic).filter(([k]) => /\{\w+\}/.test(k) && !/^\{\w+\}$/.test(k)).map(([k, v]) => {
   const partes = k.split(/(\{\w+\})/); let re = '^'; const vars = [];
   for (const p of partes) { const m = /^\{(\w+)\}$/.exec(p); if (m) { vars.push(m[1]); re += '(.+?)'; } else re += p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -30,7 +30,7 @@ function ingles(s) {
 }
 
 const areaNome = {};
-for (const c of ler('public/data/cenas.json').cenas || []) for (const a of c.areas || []) areaNome[a.id] = ingles(a.nome);
+for (const c of ler('public/data/scenes.json').cenas || []) for (const a of c.areas || []) areaNome[a.id] = ingles(a.nome);
 
 const PASTA = path.join(RAIZ, 'public/scenery/mon');
 const porEspecie = new Map();
@@ -42,7 +42,7 @@ for (const f of fs.readdirSync(PASTA).filter(f => /^pm\d{4}.*\.glb$/.test(f)).so
 const geracao = n => n <= 151 ? 1 : n <= 251 ? 2 : n <= 386 ? 3 : n <= 493 ? 4 : n <= 649 ? 5 : n <= 721 ? 6 : n <= 809 ? 7 : n <= 905 ? 8 : 9;
 
 const hab = ler('public/data/habitats.json');
-const niveis = ler('public/data/config_jogo.json').nivelArea || {};
+const niveis = ler('public/data/game_config.json').nivelArea || {};
 const spawnam = new Set();
 for (const lista of Object.values(hab.areas || {})) for (const s of lista) spawnam.add(s.dex);
 
@@ -69,7 +69,7 @@ for (const [n, fs_] of [...porEspecie].sort((a, b) => a[0] - b[0]))
 L.push('');
 
 L.push('## Wild spawns by area', '');
-L.push('Levels come from `config_jogo.json` → `nivelArea`. Weight is the relative spawn chance (default 100; higher is more common). "water" means the Pokémon only appears on water.', '');
+L.push('Levels come from `game_config.json` → `nivelArea`. Weight is the relative spawn chance (default 100; higher is more common). "water" means the Pokémon only appears on water.', '');
 const ids = Object.keys(hab.areas || {}).sort((a, b) => a - b);
 for (const id of ids) {
   const lv = niveis[id];

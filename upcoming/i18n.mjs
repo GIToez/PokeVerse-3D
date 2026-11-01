@@ -75,8 +75,8 @@ async function baixar(l) {
   };
   const [b, c, e, f, g] = await Promise.all([
     a('ui'),
-    a(noSite() ? 'conteudo_aberto' : 'conteudo'),
-    a('nomes'),
+    a(noSite() ? 'conteudo_aberto' : 'content'),
+    a('names'),
     a('held'),
     a('conquistas'),
   ]);

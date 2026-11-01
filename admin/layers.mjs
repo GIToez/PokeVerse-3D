@@ -4,8 +4,8 @@
  *   <mapa>.json   npcs[] {cfg, modelo, face, x, y, z, a} · treinadores[] {cfg, tipo, x, y, z, a}
  *                 grama[] {cfg, tipo 41, x, y, z, a} · agua[] {tipo, x, y, z, a} · spawn[] {x, z, y, a} (piso de caverna)
  *   npcs_glb.json[cfg]     QUEM o NPC é: nome, glb (scenery/<glb>.glb), falas, papel, placa — sem cadastro, o jogo não monta o NPC
- *   portas.json[cfg]       ponto de NPC com cfg aqui é PORTA (t 6, leva à chegada n) ou CHEGADA (t 7, onde se nasce ao entrar)
- *   treinadores.json[cfg]  o time de quem nasce na vaga (vaga cujo cfg não está lá não nasce ninguém)
+ *   doors.json[cfg]       ponto de NPC com cfg aqui é PORTA (t 6, leva à chegada n) ou CHEGADA (t 7, onde se nasce ao entrar)
+ *   trainers.json[cfg]  o time de quem nasce na vaga (vaga cujo cfg não está lá não nasce ninguém)
  * O x do arquivo é espelhado (mundo = FLIPX·x), como as caixas. Os tiles são a grade de 1 m (centro em ,5) e a área de um
  * tile novo é a da caixa de área embaixo dele. Salvar: /admin/mapa-camadas (o mapa) + /admin/dados (npcs, portas). */
 import { ESQUEMAS, validarCampo } from '/admin/schemas.mjs';
@@ -26,7 +26,7 @@ export function criarCamadas(dep) {
   async function carregarRef() {
     if (ref) return ref;
     const ler = f => fetch('/data/' + f + '.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    const [npcs, portas, treinadores, cenas] = await Promise.all(['npcs_glb', 'portas', 'treinadores', 'cenas'].map(ler));
+    const [npcs, portas, treinadores, cenas] = await Promise.all(['npcs_glb', 'doors', 'trainers', 'scenes'].map(ler));
     ref = { npcs, portas, treinadores, cenas: Object.fromEntries((cenas.cenas || []).map(c => [c.id, traduzNome(c.nome)])) };
     const dl = (id, html) => { let d = document.getElementById(id); if (!d) { d = document.createElement('datalist'); d.id = id; document.body.append(d); } d.innerHTML = html; };
     dl('dl-c-npcs', Object.entries(npcs).map(([cfg, n]) => `<option value="${cfg}" label="${esc(n.nome || (n.placa ? 'Sign' : 'NPC'))}">`).join(''));

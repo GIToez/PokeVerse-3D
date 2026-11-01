@@ -278,7 +278,7 @@ Model file names are `pm<dex>_<form>.glb`. `_00` (or no suffix) is the default f
 
 ## Wild spawns by area
 
-Levels come from `config_jogo.json` → `nivelArea`. Weight is the relative spawn chance (default 100; higher is more common). "water" means the Pokémon only appears on water.
+Levels come from `game_config.json` → `nivelArea`. Weight is the relative spawn chance (default 100; higher is more common). "water" means the Pokémon only appears on water.
 
 ### Viridian City (area 1102) · Lv 3–7
 

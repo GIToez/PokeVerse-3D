@@ -510,7 +510,7 @@ function montarPainel() {
     <div class="linha"><b style="color:#ffe07a">🎬 Director</b> <span class="k">H hides · 1–9 trigger · Space = flash</span></div>
     <div id="dir-status" class="k">ready</div>
     <h2>Scene</h2>
-    <label><span>map</span><select id="c-mapa"><option value="4120013|7170501">League Arena</option><option value="casa|">Plot (plateau)</option><option value="pallet_rota1|">Pallet + Route 1</option><option value="kanto|">All of Kanto</option></select><button id="c-ir">go</button></label>
+    <label><span>map</span><select id="c-mapa"><option value="4120013|7170501">League Arena</option><option value="casa|">Plot (plateau)</option><option value="pallet_route1|">Pallet + Route 1</option><option value="kanto|">All of Kanto</option></select><button id="c-ir">go</button></label>
     <div class="linha"><button id="c-exportar">Export scene</button><button id="c-importar">Import</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Clear all</button></div>
     <div class="k">fixed positions: P1 to the south, P2 to the north (opposite side), Pokémon 3.5 m in front. Everything you create lands in place and is saved.</div>
     <h2>Players</h2>
@@ -982,7 +982,7 @@ const PECAS = [
 ];
 const CENA_ID = () => {
   const n = ctx.mapaNome;
-  return n === 'kanto' || n === 'pallet_rota1' ? 1000001 : Number(n) || 0;
+  return n === 'kanto' || n === 'pallet_route1' ? 1000001 : Number(n) || 0;
 };
 const livre = (x, z) => {
   try {
@@ -1016,8 +1016,8 @@ async function carregarPalco() {
       return a;
     }
   };
-  fichaTreino = await a('./data/treinadores.json', {});
-  fichaGin = Object.values(await a('./data/ginasios.json', {}));
+  fichaTreino = await a('./data/trainers.json', {});
+  fichaGin = Object.values(await a('./data/gyms.json', {}));
   const b = await a('./data/espaco_batalha.json', { medida: [], nome: {} });
   medidos = {};
   for (const m of b.medida || []) if (!m.erro) medidos[m.cfg] = { ...m, nome: b.nome?.[m.cfg] || m.cfg };
@@ -1474,7 +1474,7 @@ function montarPainelPalco() {
     } catch {}
     location.href = u.toString();
   };
-  $('pa-mapa').value = String(ctx.mapaNome) === 'pallet_rota1' ? 'kanto' : String(ctx.mapaNome);
+  $('pa-mapa').value = String(ctx.mapaNome) === 'pallet_route1' ? 'kanto' : String(ctx.mapaNome);
   $('pa-busca').oninput = pintarLista;
   $('pa-ordem').onchange = () => {
     ordenarAlvos();

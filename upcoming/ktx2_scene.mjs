@@ -1,4 +1,4 @@
-export const CENAS_KTX2 = new Set(['kanto', 'pallet_rota1']);
+export const CENAS_KTX2 = new Set(['kanto', 'pallet_route1']);
 export const arquivoKtx2 = (a) => a + '_ktx2.glb';
 export function configDaPlaca(a, { plataforma: b = '', agente: d = '' } = {}) {
   const e = (n) => !!a && a.has(n);

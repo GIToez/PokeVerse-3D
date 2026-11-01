@@ -16,7 +16,7 @@ if (!arquivo) { console.error('usage: node tools/locale_english_source.mjs <file
 const CAMPOS = new Set(campos.split(','));
 
 const dic = {};
-for (const n of ['nomes', 'conteudo', 'ui']) Object.assign(dic, JSON.parse(fs.readFileSync(path.join(LOC, n + '_en.json'), 'utf8')));
+for (const n of ['names', 'content', 'ui']) Object.assign(dic, JSON.parse(fs.readFileSync(path.join(LOC, n + '_en.json'), 'utf8')));
 
 const alvo = path.resolve(arquivo);
 const bruto = fs.readFileSync(alvo, 'utf8');

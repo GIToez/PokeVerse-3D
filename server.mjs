@@ -31,11 +31,11 @@ const VERSAO_REDE = 15;   // deve bater com network.mjs
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao
 const MISSAO_SEQ = [];    // ids na ordem certa
-/* Fase 2: data/missoes.json é a fonte das missões (o painel admin edita); relido quando o arquivo muda (mtime), então salvar no
+/* Fase 2: data/missions.json é a fonte das missões (o painel admin edita); relido quando o arquivo muda (mtime), então salvar no
    painel vale no próximo evento, sem reiniciar. Arquivo quebrado = fica com as missões que já estavam carregadas. */
 let missoesMtime = -1;
 function carregarMissoes() {
-  const arq = nodePath.join(__dir, 'public/data/missoes.json');
+  const arq = nodePath.join(__dir, 'public/data/missions.json');
   let mt; try { mt = fs.statSync(arq).mtimeMs; } catch { return; }
   if (mt === missoesMtime) return;
   missoesMtime = mt;
@@ -268,12 +268,12 @@ const NATUREZAS = ['Hardy','Lonely','Brave','Adamant','Naughty','Bold','Docile',
 function novoUid() { return String(Date.now()) + String(Math.floor(Math.random() * 9999)).padStart(4, '0'); }
 /* Captura: o cliente só diz QUAL Pokémon (dex/nome/modelo); o SERVIDOR gera IVs/natureza/shiny e clampa o nível.
    NOTA DE PRODUÇÃO: o certo é a espécie/nível virem de um encontro que o servidor assinou/guardou — aqui (dev) só se clampa. */
-/* Fase 0: a taxa de shiny vem do data/config_jogo.json (painel admin → Arquivos de dados), a mesma que o cliente usa no
+/* Fase 0: a taxa de shiny vem do data/game_config.json (painel admin → Arquivos de dados), a mesma que o cliente usa no
    selvagem. Relê só quando o arquivo muda (mtime): salvar no painel vale na próxima captura, sem reiniciar. */
 let cfgJogoCache = { mtime: -1, cfg: {} };
 function cfgJogo() {
   try {
-    const arq = nodePath.join(DADOS_PUB, 'config_jogo.json'), mt = fs.statSync(arq).mtimeMs;
+    const arq = nodePath.join(DADOS_PUB, 'game_config.json'), mt = fs.statSync(arq).mtimeMs;
     if (mt !== cfgJogoCache.mtime) cfgJogoCache = { mtime: mt, cfg: JSON.parse(fs.readFileSync(arq, 'utf8')) || {} };
   } catch { cfgJogoCache = { mtime: -1, cfg: {} }; }
   return cfgJogoCache.cfg;
@@ -284,13 +284,13 @@ function individuoServidor(base) {
   const ivs = ivsNovos();
   return { dex: base?.dex, nome: base?.nome, glb: base?.glb, lv, ivs, natureza: NATUREZAS[Math.floor(Math.random() * NATUREZAS.length)], shiny: Math.random() < 1 / taxaShiny(), uid: novoUid() };
 }
-/* Iniciais permitidos (Fase 2): os de data/iniciais.json — o MESMO arquivo que o laboratório do jogo oferece (o painel edita),
+/* Iniciais permitidos (Fase 2): os de data/starters.json — o MESMO arquivo que o laboratório do jogo oferece (o painel edita),
    relido quando muda. Sem o arquivo (ou quebrado) vale a lista antiga: os starters de cada geração. */
 const INICIAIS_PADRAO = new Set([1,4,7,152,155,158,252,255,258,387,390,393,495,498,501,650,653,656,722,725,728,810,813,816,906,909,912]);
 let iniciaisCache = { mtime: -1, dex: null };
 function inicialOk(dex) {
   try {
-    const arq = nodePath.join(DADOS_PUB, 'iniciais.json'), mt = fs.statSync(arq).mtimeMs;
+    const arq = nodePath.join(DADOS_PUB, 'starters.json'), mt = fs.statSync(arq).mtimeMs;
     if (mt !== iniciaisCache.mtime) { const l = JSON.parse(fs.readFileSync(arq, 'utf8')); iniciaisCache = { mtime: mt, dex: Array.isArray(l) && l.length ? new Set(l.map(o => +o?.dex)) : null }; }
   } catch { iniciaisCache = { mtime: -1, dex: null }; }
   return (iniciaisCache.dex || INICIAIS_PADRAO).has(+dex);
@@ -355,7 +355,7 @@ function usuarioDe(req) {
 const DADOS_PUB = nodePath.join(__dir, 'public/data');
 const MODELOS_DIR = nodePath.join(__dir, 'public/scenery/mon');
 const BACKUPS = nodePath.join(DADOS, 'backups');
-// Os GLB de mapa ficam em DOIS lugares (a Vite serve os dois em /scenery/): public/scenery/ (ex.: pallet_rota1) e scenery/ na raiz
+// Os GLB de mapa ficam em DOIS lugares (a Vite serve os dois em /scenery/): public/scenery/ (ex.: pallet_route1) e scenery/ na raiz
 // (os outros 72, incl. kanto). O editor lê/grava no MESMO lugar de onde o jogo carrega — public tem precedência no Vite.
 const CENARIO_PUB = nodePath.join(__dir, 'public/scenery');
 const CENARIO_RAIZ = nodePath.join(__dir, 'scenery');
@@ -400,11 +400,11 @@ function derrubar(u, texto) {
   return ws.length;
 }
 const resumoMon = p => ({ uid: p?.uid, dex: p?.dex, nome: p?.nome, lv: p?.lv, shiny: !!p?.shiny });
-// itens existentes (menus_dados.json do jogo), relido quando o arquivo muda — bolsa com id que o jogo não conhece é recusada
+// itens existentes (menu_data.json do jogo), relido quando o arquivo muda — bolsa com id que o jogo não conhece é recusada
 let itensCache = { mtime: -1, ids: null };
 function itemExiste(id) {
   try {
-    const arq = nodePath.join(DADOS_PUB, 'menus_dados.json'), mt = fs.statSync(arq).mtimeMs;
+    const arq = nodePath.join(DADOS_PUB, 'menu_data.json'), mt = fs.statSync(arq).mtimeMs;
     if (mt !== itensCache.mtime) itensCache = { mtime: mt, ids: new Set(Object.keys(JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {})) };
   } catch { return true; }                                                  // sem o arquivo (demo) não bloqueia
   return !itensCache.ids || itensCache.ids.has(String(id));
@@ -470,7 +470,7 @@ function limparTime(c, d) {
 function lerJson(arq, padrao) { try { return JSON.parse(fs.readFileSync(arq, 'utf8')); } catch { return padrao; } }
 /* Cópia do arquivo atual em server/data/backups/ antes de sobrescrever. Nomes: <base>-<data>.json e <base>-glb-<data>.glb.
    Mantém os 30 últimos de cada JSON e os 8 últimos de cada GLB (é grande). A limpeza do JSON ignora os "-glb-" do mesmo nome
-   (antes, salvar o JSON do pallet_rota1 podia apagar os backups do GLB dele). */
+   (antes, salvar o JSON do pallet_route1 podia apagar os backups do GLB dele). */
 const RE_BACKUP = /^(\w+?)-(glb-)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)\.(json|glb)$/;
 function fazerBackup(arq, ehGlb) {
   if (!fs.existsSync(arq)) return;
@@ -774,8 +774,8 @@ const httpServer = http.createServer((req, res) => {
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
       if (rota === '/admin/modelos' && req.method === 'GET')
         return json(200, { ok: true, modelos: [...modelosMon()].sort().map(glb => ({ glb, dex: +glb.slice(2, 6) })) });
-      if (rota === '/admin/mapas' && req.method === 'GET') {               // cenas que têm arquivo de mapa (o painel junta o nome do cenas.json)
-        let mapas = []; try { mapas = fs.readdirSync(DADOS_PUB).filter(f => /^(\d+|kanto|pallet_rota1)\.json$/.test(f)).map(f => f.slice(0, -5)); } catch {}
+      if (rota === '/admin/mapas' && req.method === 'GET') {               // cenas que têm arquivo de mapa (o painel junta o nome do scenes.json)
+        let mapas = []; try { mapas = fs.readdirSync(DADOS_PUB).filter(f => /^(\d+|kanto|pallet_route1)\.json$/.test(f)).map(f => f.slice(0, -5)); } catch {}
         return json(200, { ok: true, mapas });
       }
       if (rota === '/admin/zonas' && req.method === 'GET') return json(200, { ok: true, ...lerJson(ZONAS_ARQ, { v: 1, zonas: [] }) });
@@ -828,7 +828,7 @@ const httpServer = http.createServer((req, res) => {
       /* ── Editor de Mapa: ÁREAS (caixas + nomes) ──
          Uma área = id + nome + 1..N caixas {a,x,y,z,sx,sy,sz} (x em coords de ARQUIVO; o jogo espelha). A caixa decide a área
          onde o jogador está (nome na tela, música) e o limite do mundo na água. O nome que o jogo mostra vem PRIMEIRO do
-         data/cenas.json (nomeAreaCena) e depois do `nomes` do mapa — então renomear grava nos dois. Só os nomes enviados mudam
+         data/scenes.json (nomeAreaCena) e depois do `nomes` do mapa — então renomear grava nos dois. Só os nomes enviados mudam
          (o cliente manda os que editou; ex.: o cenas diz "Cidade Celeste" e o mapa "Cidade Cerulean", e isso fica como está).
          `tilesArea` (opcional) = o id de área de cada tile de grama/água, na ordem do arquivo: é como uma área nova assume a
          grama de dentro dela (o spawn agrupa por tile.a). */
@@ -865,7 +865,7 @@ const httpServer = http.createServer((req, res) => {
         }
         d2.caixas = caixas; d2.areas = areas; d2.nomes = nomes;
         gravarComBackup(arq, d2);
-        const arqCenas = nodePath.join(DADOS_PUB, 'cenas.json'), ce = lerJson(arqCenas, null);
+        const arqCenas = nodePath.join(DADOS_PUB, 'scenes.json'), ce = lerJson(arqCenas, null);
         if (Array.isArray(ce?.cenas)) {
           let mudou = false;
           for (const cena of ce.cenas) for (const x of cena.areas || []) if (renomeadas[x.id] && x.nome !== renomeadas[x.id]) { x.nome = renomeadas[x.id]; mudou = true; }
@@ -883,7 +883,7 @@ const httpServer = http.createServer((req, res) => {
       }
       /* ── Editor de Mapa: CAMADAS (Fase 1) — os pontos (npcs, treinadores) e os tiles (grama, agua, spawn = piso de caverna) do
          <mapa>.json. Só troca as listas que vieram. Cada item é refeito campo a campo na ordem do arquivo (número finito; cfg,
-         modelo, tipo e área inteiros); chave desconhecida cai fora. Quem o NPC é (npcs_glb) e as portas (portas.json) vão
+         modelo, tipo e área inteiros); chave desconhecida cai fora. Quem o NPC é (npcs_glb) e as portas (doors.json) vão
          pelo /admin/dados, com os esquemas `npcs` e `portas`. ── */
       if (rota === '/admin/mapa-camadas' && req.method === 'POST') {
         const m = String(d.mapa || '');

@@ -5,7 +5,7 @@
  *   colecao  = (dados, { validarCampo, validarRegistro, generica }) → { ok, v } | { ok: false, erro } — valida o conteúdo inteiro
  *              quando ele NÃO é feito de registros (mapa de números, pares [golpe, nível], capítulos → missões → passos), ou
  *              quando precisa de uma regra que cruza registros (`generica` = a validação normal do esquema).
- * Fonte de verdade das missões: data/missoes.json (o jogo em missions.mjs e o servidor em MISSOES). O menus_dados.missoes/passos
+ * Fonte de verdade das missões: data/missions.json (o jogo em missions.mjs e o servidor em MISSOES). O menus_dados.missoes/passos
  * é o dump do jogo original, que ninguém lê — o painel não edita. */
 
 const ok = v => ({ ok: true, v }), falha = erro => ({ ok: false, erro });
@@ -157,7 +157,7 @@ const regraEvolucao = r => {
 
 export const ESQUEMAS_F2 = {
   insignias: {
-    titulo: 'Badges', arquivo: 'menus_dados', caminho: 'insignias', forma: 'lista', id: 'id',
+    titulo: 'Badges', arquivo: 'menu_data', caminho: 'insignias', forma: 'lista', id: 'id',
     descricao: 'Name and icon of each badge. The game shows generation 1 (Kanto) badges in the Trainer card; which one each gym gives is set on the Gyms screen.',
     previa: '/admin/preview_badge.mjs',
     campos: [
@@ -182,7 +182,7 @@ export const ESQUEMAS_F2 = {
       ajuda: '101 comma-separated numbers: index 0, Lv 1 … Lv 100 (total EXP at the start of the level).' })),
   },
   iniciais: {
-    titulo: 'Starters', arquivo: 'iniciais', forma: 'lista', id: 'dex',
+    titulo: 'Starters', arquivo: 'starters', forma: 'lista', id: 'dex',
     descricao: 'The Pokémon Oak\'s lab offers, by generation. The game shows these and the server only accepts choosing one of them.',
     colecao: (d, { generica }) => {
       const r = generica(d); if (!r.ok) return r;
@@ -199,7 +199,7 @@ export const ESQUEMAS_F2 = {
     ],
   },
   montarias: {
-    titulo: 'Mounts', arquivo: 'montarias', forma: 'lista', id: 'glb',
+    titulo: 'Mounts', arquivo: 'mounts', forma: 'lista', id: 'glb',
     descricao: 'The Pokémon you can ride (M key and shortcuts 5–9): trainer pose, size, speed and where they can go.',
     campos: [
       { k: 'glb', rotulo: 'Model', tipo: 'texto', max: 20, col: true, obrigatorio: true, validar: s => RE_GLB_MON.test(s) ? null : 'Pokémon model, e.g. pm0249_00' },
@@ -214,7 +214,7 @@ export const ESQUEMAS_F2 = {
     ],
   },
   golpes: {
-    titulo: 'Moves', arquivo: 'golpes', forma: 'mapa', idValido: RE_GOLPE, idAjuda: 'lowercase letters and numbers, e.g. thunderbolt',
+    titulo: 'Moves', arquivo: 'moves', forma: 'mapa', idValido: RE_GOLPE, idAjuda: 'lowercase letters and numbers, e.g. thunderbolt',
     descricao: 'Moves with 3D effects: power, type, PP, range, cooldown and the effect/sound/animation. The learnset (who learns what) is on the Learnset screen.',
     campos: [
       { k: 'nome', rotulo: 'Name (English)', tipo: 'texto', max: 40, col: true, obrigatorio: true },
@@ -248,13 +248,13 @@ export const ESQUEMAS_F2 = {
     campos: [],
   },
   missoes: {
-    titulo: 'Quests', arquivo: 'missoes', caminho: 'capitulos', forma: 'lista', tela: 'missoes', naLista: true,
+    titulo: 'Quests', arquivo: 'missions', caminho: 'capitulos', forma: 'lista', tela: 'missoes', naLista: true,
     descricao: 'Story chapters, quests, steps and rewards (own screen).',
     colecao: validarCapitulos,
     campos: [],
   },
   evolucoes: {
-    titulo: 'Evolutions', arquivo: 'evolucoes', caminho: 'por', forma: 'mapa', registroLista: true, tela: 'evolucoes', naLista: true, idValido: RE_DEX, idAjuda: 'the dex no.',
+    titulo: 'Evolutions', arquivo: 'evolutions', caminho: 'por', forma: 'mapa', registroLista: true, tela: 'evolucoes', naLista: true, idValido: RE_DEX, idAjuda: 'the dex no.',
     descricao: 'How each species evolves (own screen).',
     validar: regraEvolucao,
     campos: [
@@ -282,7 +282,7 @@ export const ESQUEMAS_F2 = {
     ],
   },
   evolucoes_itens: {
-    titulo: 'Evolution items', arquivo: 'evolucoes', caminho: 'itens', forma: 'mapa', tela: 'evolucoes', idValido: /^\d{1,9}$/, idAjuda: 'the item id',
+    titulo: 'Evolution items', arquivo: 'evolutions', caminho: 'itens', forma: 'mapa', tela: 'evolucoes', idValido: /^\d{1,9}$/, idAjuda: 'the item id',
     descricao: 'The items the game lets you use on a Pokémon to evolve it (the Evolutions screen keeps this list up to date on its own).',
     campos: [
       { k: 'id', rotulo: 'ID', tipo: 'num', int: true, min: 1, max: 999999999, obrigatorio: true },
@@ -295,22 +295,22 @@ export const ESQUEMAS_F2 = {
   },
   // ── Espécies (tela própria: admin/content.mjs junta tudo por nº da dex e grava em cada arquivo o que mudou) ─────────────
   especies: {
-    titulo: 'Species', arquivo: 'especies', forma: 'mapa', tela: 'especies', naLista: true, idValido: RE_DEX, idAjuda: 'the dex no.',
+    titulo: 'Species', arquivo: 'species', forma: 'mapa', tela: 'especies', naLista: true, idValido: RE_DEX, idAjuda: 'the dex no.',
     descricao: 'Model names, size, height, gender, description and EXP of each species (own screen). This file stores the adjustments that don\'t exist in the data generated from the original game (currently: the in-field size).',
     campos: [
       { k: 'escala', rotulo: 'In-field size adjustment (×)', tipo: 'num', min: 0.1, max: 5, ajuda: 'Multiplies the size derived from the height (proportional scale, the default mode). 1 = no adjustment.' },
     ],
   },
   alturas: {
-    titulo: 'Heights', arquivo: 'alturas', forma: 'mapa', tela: 'especies', descricao: 'Real height of each species (m).',
+    titulo: 'Heights', arquivo: 'heights', forma: 'mapa', tela: 'especies', descricao: 'Real height of each species (m).',
     colecao: mapaDeNumeros(RE_DEX, { tipo: 'num', min: 0.01, max: 200 }, 'the dex no.'), campos: [],
   },
   sexos: {
-    titulo: 'Gender', arquivo: 'sexos', forma: 'mapa', tela: 'especies', descricao: '% male of each species (-1 = genderless).',
+    titulo: 'Gender', arquivo: 'genders', forma: 'mapa', tela: 'especies', descricao: '% male of each species (-1 = genderless).',
     colecao: mapaDeNumeros(RE_DEX, { tipo: 'num', min: -1, max: 100 }, 'the dex no.'), campos: [],
   },
   tamanhos: {
-    titulo: 'Sizes (game mode)', arquivo: 'tamanhos', forma: 'mapa', tela: 'especies', descricao: 'The original game\'s MapSize per model (only in the "game" size mode).',
+    titulo: 'Sizes (game mode)', arquivo: 'sizes', forma: 'mapa', tela: 'especies', descricao: 'The original game\'s MapSize per model (only in the "game" size mode).',
     colecao: mapaDeNumeros(/^pm\d{4}(_\d\d){0,2}$/, { tipo: 'num', min: 0.01, max: 50 }, 'pm0025 or pm0025_61'), campos: [],
   },
   descricoes_pt: {
@@ -327,7 +327,7 @@ export const ESQUEMAS_F2 = {
     ],
   },
   elenco: {
-    titulo: 'Cast (models)', arquivo: 'elenco', forma: 'lista', id: 'glb', tela: 'especies',
+    titulo: 'Cast (models)', arquivo: 'cast', forma: 'lista', id: 'glb', tela: 'especies',
     descricao: 'Every 3D Pokémon model the game has (forms, megas, gigantamax).',
     campos: [
       { k: 'n', rotulo: 'No. (dex)', tipo: 'num', int: true, min: 1, max: 2000, obrigatorio: true },

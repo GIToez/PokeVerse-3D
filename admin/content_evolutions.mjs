@@ -1,4 +1,4 @@
-/* Painel admin — tela Evoluções (Fase 2). Edita data/evolucoes.json → por ({ dex: [regra, …] }, esquema `evolucoes`, registroLista)
+/* Painel admin — tela Evoluções (Fase 2). Edita data/evolutions.json → por ({ dex: [regra, …] }, esquema `evolucoes`, registroLista)
  * e mantém o → itens (esquema `evolucoes_itens`): todo item que uma regra usa entra na lista de itens de evolução, senão o jogo não
  * deixa usá-lo no Pokémon. Quem avalia as regras é o evolution.mjs do jogo (lido no boot: o jogo aberto precisa de F5).
  * Item "que ainda não existe no jogo" = 0 (o arquivo antigo usava null; o jogo trata os dois igual e o painel grava 0). */
@@ -32,7 +32,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     <div class="col-esq"><div class="topo"><input type="search" class="busca" placeholder="search species (name or no.)…">
       <label class="chk"><input type="checkbox" class="todas"> show all species</label></div><div class="lista"></div></div>
     <div class="col-dir"><div class="barra-topo"><h2>Evolutions</h2><span class="sujo" hidden>● unsaved</span><button data-a="descartar">Discard</button><button class="prim" data-a="salvar">Save</button></div>
-      <div class="fraco">How each species evolves: level, friendship, time of day, item, trade… File <code>public/data/evolucoes.json</code>, read by the game
+      <div class="fraco">How each species evolves: level, friendship, time of day, item, trade… File <code>public/data/evolutions.json</code>, read by the game
         (evolution.mjs) at boot — after saving, F5 in the game. The target needs a 3D model (Species → models), otherwise the game won't evolve it.</div>
       <div class="editor"></div></div>`;
   const $ = s => sec.querySelector(s), lista = $('.lista'), editor = $('.editor');

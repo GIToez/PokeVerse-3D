@@ -211,7 +211,7 @@ function montarPainel(){
     <div class="linha"><b style="color:#ffe07a">🎬 Diretor</b> <span class="k">H esconde · 1–9 disparam · Espaço = flash</span></div>
     <div id="dir-status" class="k">pronto</div>
     <h2>Cena</h2>
-    <label><span>mapa</span><select id="c-mapa"><option value="4120013|7170501">Arena da Liga</option><option value="casa|">Terreno (platô)</option><option value="pallet_rota1|">Pallet + Rota 1</option><option value="kanto|">Kanto inteira</option></select><button id="c-ir">ir</button></label>
+    <label><span>mapa</span><select id="c-mapa"><option value="4120013|7170501">Arena da Liga</option><option value="casa|">Terreno (platô)</option><option value="pallet_route1|">Pallet + Rota 1</option><option value="kanto|">Kanto inteira</option></select><button id="c-ir">ir</button></label>
     <div class="linha"><button id="c-exportar">Exportar cena</button><button id="c-importar">Importar</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Limpar tudo</button></div>
     <div class="k">posições fixas: J1 ao sul, J2 ao norte (do outro lado), Pokémon 3,5 m na frente. Tudo que você cria já cai no lugar e fica salvo.</div>
     <h2>Jogadores</h2>
