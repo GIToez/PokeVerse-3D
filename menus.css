@@ -14,6 +14,20 @@
 #menu-grade button.breve{opacity:.55}
 /* janela */
 .janela{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(860px,96vw);max-height:92vh;display:flex;flex-direction:column;border:1px solid #b47622;border-radius:14px;background:var(--panel);box-shadow:0 12px 30px #000c;z-index:46;color:var(--text)}
+body.hud-ref .janela,body.hud-ref #menu-grade .caixa{
+  border:1px solid #c9a24a88;border-radius:28px;
+  background:linear-gradient(180deg,#1a2746f8,#0e1526fc);
+  box-shadow:0 18px 40px #000c;
+}
+body.hud-ref .janela>header,body.hud-ref #menu-grade h2{
+  position:relative;justify-content:center;border-bottom:1px solid #c9a24a44;padding:14px 18px 12px;
+}
+body.hud-ref .janela>header h2{text-align:center;letter-spacing:.4px}
+body.hud-ref .janela>header .x{position:absolute;right:12px;top:10px}
+body.hud-ref .janela .linha,body.hud-ref .janela .item,body.hud-ref .janela .ficha{
+  border-color:#c9a24a44;border-radius:14px;background:#10182a;
+}
+body.hud-ref .janela .btn.ouro{border-color:#c9a24a;background:linear-gradient(#3a2a14,#141820);color:#ffe6b0}
 .janela[hidden]{display:none}
 .janela>header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .janela>header h2{margin:0;font-size:16px;color:#ffe07a;flex:1}

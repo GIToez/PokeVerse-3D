@@ -513,3 +513,133 @@ body.hud-ilha-mobile #fala{ bottom:118px }
 #time-hud .tpalco{ position:absolute; left:2px; top:2px; width:48px; height:48px; pointer-events:none; z-index:1; background:none }
 #time-hud .tslot.t3d img.tpic{ opacity:0 }
 body.mobile #time-hud .tpalco{ width:42px; height:42px }
+
+/* ===== Reference dock (party rail · quest pill · one bottom bar · gold/navy) ===== */
+body.hud-ref{
+  --ref-navy:#121a2cf2;
+  --ref-navy2:#0c1220ee;
+  --ref-gold:#c9a24a;
+  --ref-gold2:#f4aa35;
+  --ref-line:#c9a24a88;
+}
+body.hud-ref #barra.ilha-dock{
+  gap:10px; align-items:center; justify-content:center;
+  padding:8px 16px 8px 12px;
+  border:1px solid var(--ref-line);
+  border-radius:40px;
+  background:linear-gradient(180deg,#1a2746f4,#0d1424f6);
+  box-shadow:0 10px 28px #000a, inset 0 1px 0 #ffffff14;
+}
+body.hud-ref #skills.ilha-centro{
+  display:flex !important; flex-direction:row !important; align-items:center !important;
+  gap:8px !important; padding:0 !important; background:none !important;
+  pointer-events:none;
+}
+body.hud-ref #skills.ilha-centro > .fig-grupo,
+body.hud-ref #skills.ilha-centro > button.sk{
+  position:relative !important; left:auto !important; top:auto !important; right:auto !important; bottom:auto !important;
+  transform:none !important; pointer-events:auto; flex:none;
+}
+body.hud-ref #barra button.sk,
+body.hud-ref #atalhos .atalho{
+  width:62px; height:62px; border-radius:16px;
+  border:1px solid #c9a24a66;
+  background:linear-gradient(180deg,#243352,#12192a);
+  box-shadow:inset 0 1px 0 #ffffff18;
+}
+body.hud-ref #barra button.sk.vazio,
+body.hud-ref #atalhos .atalho.vazio{
+  border-style:solid; border-color:#c9a24a44; color:#6e7a94;
+  background:linear-gradient(180deg,#1a2438,#101624);
+}
+body.hud-ref #bola-btn.ilha-bola{
+  width:72px !important; height:72px !important; margin:0 4px;
+  border-radius:50% !important;
+  border:2px solid var(--ref-gold) !important;
+  background:radial-gradient(circle at 40% 32%,#3a2a14,#1a120c 62%,#0c1018) !important;
+  box-shadow:0 0 0 4px #0c122088, 0 8px 16px #0008;
+}
+body.hud-ref #bola-btn.ilha-bola b,
+body.hud-ref #bola-btn.ilha-bola #bola-n{
+  border-color:var(--ref-gold); background:#0b1020ee; color:#ffe07a;
+}
+body.hud-ref #atalhos.ilha-atalhos{
+  display:flex !important; flex-direction:row !important; align-items:center !important;
+  gap:8px !important; padding:0 !important; background:none !important;
+}
+body.hud-ref #atalhos.ilha-atalhos > .fig-grupo,
+body.hud-ref #atalhos.ilha-atalhos > .atalho{
+  position:relative !important; left:auto !important; top:auto !important; transform:none !important; flex:none;
+}
+body.hud-ref #f-parceiro.ilha-ficha,
+body.hud-ref #f-alvo.ilha-ficha{
+  min-width:168px; padding:8px 12px;
+  border:1px solid var(--ref-line); border-radius:20px;
+  background:var(--ref-navy); color:#ffe6b0;
+  box-shadow:0 8px 18px #0008;
+  z-index:24;
+}
+body.hud-ref #time-hud{
+  left:10px; top:50%; transform:translateY(-42%);
+  padding:10px 8px; gap:8px;
+  border:1px solid var(--ref-line); border-radius:28px;
+  background:linear-gradient(180deg,#1a2746f2,#0c1220f4);
+  box-shadow:0 10px 24px #000a;
+}
+body.hud-ref #time-hud .tslot{
+  width:54px; height:54px; border-radius:50%;
+  border:2px solid #c9a24a77; background:#101624ee; box-shadow:none;
+}
+body.hud-ref #time-hud .tslot.on{ border-color:var(--ref-gold2); box-shadow:0 0 0 3px #f4aa3544 }
+body.hud-ref #time-hud .tslot i{ left:8px; right:8px; bottom:6px; height:5px; border-radius:3px }
+body.hud-ref #missao{
+  top:10px; padding:7px 22px; max-width:min(560px,56vw);
+  border:1px solid var(--ref-line); border-radius:999px;
+  background:linear-gradient(180deg,#1a2746f4,#0d1424f4);
+  box-shadow:0 8px 18px #0008;
+}
+body.hud-ref #minimapa{ right:14px; top:12px }
+body.hud-ref #mm-janela{
+  width:168px; height:168px;
+  border:3px solid var(--ref-gold); outline:1px solid #0c1220;
+  border-radius:18px; box-shadow:0 8px 20px #000a;
+}
+body.hud-ref #mm-area{
+  margin-top:6px; border-radius:999px;
+  border:1px solid var(--ref-line); background:#121a2cee; color:#ffe6b0;
+}
+body.hud-ref #chat{
+  left:12px; bottom:96px; width:min(320px,28vw) !important; height:168px !important;
+  border:1px solid var(--ref-line); border-radius:18px;
+  background:#121a2ce8; box-shadow:0 8px 18px #0008;
+}
+body.hud-ref #chat.fechado{ height:auto !important }
+body.hud-ref #chat .abas button{ border-radius:10px 10px 0 0 }
+body.hud-ref #menu-icones.menu-pill{
+  display:flex !important; flex-direction:row !important; align-items:center !important;
+  gap:2px; padding:6px 10px;
+  border:1px solid var(--ref-line); border-radius:999px;
+  background:linear-gradient(180deg,#1a2746f4,#0d1424f4);
+  box-shadow:0 8px 18px #0008;
+}
+body.hud-ref #menu-icones.menu-pill > button[data-j],
+body.hud-ref #menu-icones.menu-pill > .fig-grupo{
+  position:relative !important; left:auto !important; top:auto !important; width:auto !important;
+}
+body.hud-ref #menu-icones.menu-pill > button[data-j]{
+  width:52px; padding:2px 4px; gap:2px;
+}
+body.hud-ref #menu-icones.menu-pill > button[data-j] b{
+  display:block !important; font:600 9px/1 inherit; color:#ffe6b0; letter-spacing:.15px;
+}
+body.hud-ref #menu-icones.menu-pill .ic{ width:36px; height:36px }
+body.hud-ref #fala{ bottom:108px; border-radius:16px; border-color:var(--ref-line) }
+body.hud-ref #turno{ bottom:108px; border-radius:20px; border-color:var(--ref-line) }
+body.hud-ref:not(.mobile) #f-alvo.ilha-ficha{ top:196px }
+@media (max-width:1100px){
+  body.hud-ref #menu-icones.menu-pill > button[data-j] b{ display:none !important }
+  body.hud-ref #menu-icones.menu-pill > button[data-j]{ width:42px }
+}
+body.hud-ref.hud-ilha-mobile #barra.ilha-dock{ border-radius:22px; padding:6px 8px; gap:6px }
+body.hud-ref.hud-ilha-mobile #time-hud{ transform:none; top:64px; padding:8px 6px; border-radius:22px }
+body.hud-ref.hud-ilha-mobile #chat{ bottom:118px; width:min(280px,52vw) !important }
