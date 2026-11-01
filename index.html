@@ -4560,7 +4560,7 @@ function atualizarSelvagens(dt){
     else {
     // reação ao treinador: arisco foge, agressivo parte para cima do Pikachu
     if (s.semFuga > 0) s.semFuga -= dt;
-    if (s.perfil === 'arisco' && s.estado !== 'fugindo' && !(s.semFuga > 0) && (dAsh < 4.5 || s.assustado)){   // 18/09 (revisão): `semFuga` = espera depois de uma fuga sem saída
+    if (s.perfil === 'arisco' && s.estado !== 'fugindo' && s.estado !== 'atacando' && !(s.semFuga > 0) && (dAsh < 4.5 || s.assustado)){   // 18/09 (revisão): `semFuga` = espera depois de uma fuga sem saída; hit already in `atacando` stays there (does not re-flee)
       s.estado = 'fugindo'; s.fuga = s.assustado ? 3.5 : 0; s.assustado = false; s.alvoX = null;
       const tiles = (s.aquatico ? aguaPorArea : gramaPorArea).get(s.area) || [];
       let melhor = null, mb = -1;
@@ -4848,7 +4848,12 @@ function aplicarGolpe(atacante, defensor, golpe, dano, eff){
     if (res) setTimeout(() => Som.tocar('skill/' + res, { volume: vol }), 150);
   }
   if (defensor.hp <= 0 && atacante === jogo.pika && defensor !== jogo.pika && !(defensor.rede && Mundo.estaAtivo()) && !jogo.turno?.serv) ganharExp(atacante, defensor);   // batalha do servidor: o XP vem dele   // (selvagem da rede: o XP vem do servidor, pra todo mundo que lutou — 3c)   // XP como nos jogos: quem derruba ganha
-  if (defensor.hp > 0){ tocarUma(defensor, 'Wound'); if (defensor.perfil) defensor.assustado = true; }
+  if (defensor.hp > 0){
+    tocarUma(defensor, 'Wound');
+    if (defensor.perfil === 'arisco' || defensor.estado === 'fugindo'){   // skittish / already running: a hit makes them fight back instead of running harder
+      defensor.estado = 'atacando'; defensor.paciencia = 14; defensor.assustado = false; defensor.fuga = 0; defensor.alvoX = null;
+    } else if (defensor.perfil) defensor.assustado = true;
+  }
   else if (defensor.emTurno) koTurno(defensor);                            // Pokémon de treinador: sem captura — sai de cena e o motor chama o próximo
   else if (defensor.raid){ defensor.hp = 0; }                              // RAID AO VIVO: o chefe só cai quando o SERVIDOR diz (sestado/sumiu) — nada de desmaio ou morte local
   else if (defensor !== jogo.pika && !defensor.chefe){ if (defensor.estado !== 'desmaiado') desmaiar(defensor, atacante === jogo.pika); }   // selvagem derrubado: janela pra jogar a bola (na rede o sestado também chega)
