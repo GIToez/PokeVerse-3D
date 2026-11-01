@@ -37,3 +37,41 @@ ssh pokeverse@40.160.145.24 'bash ~/PokeVerse-3D/scripts/live/deploy.sh'
 ```
 
 Secrets on this repo: `OVH_HOST` (`40.160.145.24`), `OVH_SSH_KEY` (key that logs in as **pokeverse**), optional `OVH_USER` (only if you are not using `pokeverse`).
+
+## Permission denied as pokeverse
+
+`pokeverse` is key-only. There is no password that works. If Windows asks for `pokeverse@40.160.145.24's password:` and then says `Permission denied (publickey,password)`, stop — log in as **ubuntu** first.
+
+In PowerShell:
+
+```powershell
+ssh ubuntu@40.160.145.24
+```
+
+Use the OVH **ubuntu** password (or the key you used when you first set up this VPS). After you are on the box:
+
+```bash
+sudo mkdir -p /home/pokeverse/.ssh
+sudo chmod 700 /home/pokeverse/.ssh
+# paste ONE public-key line (starts with ssh-ed25519 or ssh-rsa):
+sudo tee -a /home/pokeverse/.ssh/authorized_keys
+# Ctrl+D when done
+sudo chown -R pokeverse:pokeverse /home/pokeverse/.ssh
+sudo chmod 600 /home/pokeverse/.ssh/authorized_keys
+exit
+```
+
+On the PC, if you do not already have a key:
+
+```powershell
+ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\pokeverse_ovh -N '""'
+Get-Content $env:USERPROFILE\.ssh\pokeverse_ovh.pub
+```
+
+Copy that `.pub` line into `authorized_keys` above. Then:
+
+```powershell
+ssh -i $env:USERPROFILE\.ssh\pokeverse_ovh pokeverse@40.160.145.24
+```
+
+The **private** file (`pokeverse_ovh`, no `.pub`) is what goes in GitHub secret `OVH_SSH_KEY`. Do not put the `.pub` file there. Do not paste the private key into chat.
