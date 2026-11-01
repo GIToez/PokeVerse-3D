@@ -8,7 +8,7 @@ const dbg = () => globalThis.__dbg || null;
 const reserva = () => {
   if (!avisou && dbg()) {
     avisou = true;
-    console.warn('Arrumar3d: sem o instalar do index — usando o window.__dbg (cena, câmera, chão)');
+    console.warn('Arrumar3d: no installer from index — using window.__dbg (scene, camera, ground)');
   }
   return dbg();
 };
@@ -767,7 +767,7 @@ async function materialDe(B, a) {
 }
 function molde(T, a, n) {
   const b = glbDe(T);
-  if (!b) return Promise.reject(new Error('a cena do terreno não tem GLB'));
+  if (!b) return Promise.reject(new Error('the land scene has no GLB'));
   const k = b + '|' + a + '|' + n;
   if (MOLDES.has(k)) return MOLDES.get(k);
   const p = (async () => {
@@ -801,7 +801,7 @@ function molde(T, a, n) {
         }
       }
     }
-    if (e.length) console.warn('Arrumar3d: prefab sem modelo no ' + b + ': ' + e.join(', '));
+    if (e.length) console.warn('Arrumar3d: prefab with no model in ' + b + ': ' + e.join(', '));
     return d;
   })();
   MOLDES.set(k, p);
@@ -855,7 +855,7 @@ export function garantirViva(T, a, b, n = 1) {
       })
       .catch((e) => {
         v.carregando = null;
-        console.warn('Arrumar3d: o modelo de ' + b + ' não montou:', e?.message || e);
+        console.warn('Arrumar3d: the model for ' + b + " didn't load:", e?.message || e);
         return false;
       });
     return v.carregando;
@@ -885,7 +885,7 @@ export function garantirViva(T, a, b, n = 1) {
     })
     .catch((e) => {
       v.carregando = null;
-      console.warn('Arrumar3d: o modelo de ' + b + ' não montou:', e?.message || e);
+      console.warn('Arrumar3d: the model for ' + b + " didn't load:", e?.message || e);
       return false;
     });
   return v.carregando;

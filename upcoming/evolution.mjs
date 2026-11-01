@@ -40,23 +40,23 @@ export function familiaAbaixo(a) {
 export const horario = () => Relogio.diaOuNoite();
 const TIPOS_PT = {
   Normal: 'Normal',
-  Fighting: 'Lutador',
-  Flying: 'Voador',
-  Poison: 'Veneno',
+  Fighting: 'Fighting',
+  Flying: 'Flying',
+  Poison: 'Poison',
   Ground: 'Terra',
   Rock: 'Pedra',
-  Bug: 'Inseto',
-  Ghost: 'Fantasma',
-  Steel: 'Aço',
+  Bug: 'Bug',
+  Ghost: 'Ghost',
+  Steel: 'Steel',
   Fire: 'Fogo',
   Water: 'Água',
   Grass: 'Planta',
   Electric: 'Elétrico',
   Psychic: 'Psíquico',
-  Ice: 'Gelo',
-  Dragon: 'Dragão',
-  Dark: 'Sombrio',
-  Fairy: 'Fada',
+  Ice: 'Ice',
+  Dragon: 'Dragon',
+  Dark: 'Dark',
+  Fairy: 'Fairy',
 };
 const curva = (a) => X?.curvas?.[X?.especies?.[a]?.c || 'medium'] || [];
 export function expPara(a, b) {
@@ -83,32 +83,31 @@ export function avaliar(r, m, a = {}) {
     c = m.amizade ?? amizadeBase(m.dex),
     d = (b) => (a.itens?.[b] || 0) > 0;
   if (r.gatilho === 'outro' || r.local || r.chuva || r.beleza)
-    return { pode: false, falta: 'não dá por aqui (' + r.texto + ')', consome: null };
+    return { pode: false, falta: "can't happen here (" + r.texto + ')', consome: null };
   if (r.gatilho === 'item' || r.gatilho === 'troca') {
-    if (!r.item)
-      return { pode: false, falta: 'precisa de ' + r.itemNome + ' (não existe no jogo ainda)', consome: null };
+    if (!r.item) return { pode: false, falta: 'needs ' + r.itemNome + ' (not in the game yet)', consome: null };
     return d(r.item)
       ? { pode: true, falta: '', consome: r.item }
-      : { pode: false, falta: 'falta ' + nomeItem(r.item) + ' na mochila (Pokémart)', consome: null };
+      : { pode: false, falta: 'falta ' + nomeItem(r.item) + ' in the bag (Poké Mart)', consome: null };
   }
-  if (r.gatilho === 'muda') return { pode: false, falta: 'vem junto com a outra evolução', consome: null, muda: true };
+  if (r.gatilho === 'muda')
+    return { pode: false, falta: 'comes along with the other evolution', consome: null, muda: true };
   const e = [];
   let f = null;
-  if (r.nivel && b < r.nivel) e.push(`Lv ${r.nivel} (está no ${b})`);
-  if (r.amizade && c < r.amizade) e.push(`amizade ${r.amizade} (está em ${c})`);
-  if (r.horario && r.horario !== horario()) e.push(r.horario === 'dia' ? 'só de dia' : 'só à noite');
+  if (r.nivel && b < r.nivel) e.push(`Lv ${r.nivel} (it's in ${b})`);
+  if (r.amizade && c < r.amizade) e.push(`amizade ${r.amizade} (currently ${c})`);
+  if (r.horario && r.horario !== horario()) e.push(r.horario === 'dia' ? 'day only' : 'night only');
   if ('segurando' in r) {
-    if (!r.segurando) e.push('precisa de ' + r.segurandoNome + ' (não existe no jogo ainda)');
-    else if (!d(r.segurando)) e.push('falta ' + nomeItem(r.segurando) + ' na mochila');
+    if (!r.segurando) e.push('needs ' + r.segurandoNome + ' (not in the game yet)');
+    else if (!d(r.segurando)) e.push('falta ' + nomeItem(r.segurando) + ' in the bag');
     else f = r.segurando;
   }
-  if (r.golpe && !a.conhece?.(m.dex, b)?.has(r.golpe)) e.push('precisa conhecer ' + r.golpeNome);
+  if (r.golpe && !a.conhece?.(m.dex, b)?.has(r.golpe)) e.push('must know ' + r.golpeNome);
   if (r.tipoGolpe && !a.tiposConhecidos?.(m.dex, b)?.has(r.tipoGolpe))
-    e.push('precisa conhecer um golpe do tipo ' + (TIPOS_PT[r.tipoGolpe] || r.tipoGolpe));
-  if (r.noTime && !(a.time || []).some((t) => t.dex === r.noTime))
-    e.push('precisa de outro Pokémon específico no time');
+    e.push('needs to know a move of type ' + (TIPOS_PT[r.tipoGolpe] || r.tipoGolpe));
+  if (r.noTime && !(a.time || []).some((t) => t.dex === r.noTime)) e.push('needs another specific Pokémon in the team');
   if (r.tipoNoTime && !(a.time || []).some((t) => t.dex !== m.dex && (a.tiposDe?.(t.dex) || []).includes(r.tipoNoTime)))
-    e.push('precisa de um Pokémon do tipo ' + (TIPOS_PT[r.tipoNoTime] || r.tipoNoTime) + ' no time');
+    e.push('needs a Pokémon of type ' + (TIPOS_PT[r.tipoNoTime] || r.tipoNoTime) + ' on the team');
   return { pode: !e.length, falta: e.join(' · '), consome: f };
 }
 export function opcoes(m, a = {}) {

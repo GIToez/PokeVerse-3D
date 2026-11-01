@@ -80,11 +80,11 @@ export function calcular(a, b, c, d, e, f) {
     h = [...b];
   const j = c === 'time' ? g : h,
     k = e === 'time' ? g : h;
-  if (d < 0 || d >= j.length) return { erro: 'esse Pokémon saiu da lista' };
+  if (d < 0 || d >= j.length) return { erro: 'that Pokémon left the list' };
   const l = j[d];
   if (c === 'time' && e === 'caixa') {
-    if (API && API.emCampo && API.emCampo(l)) return { erro: 'troque de parceiro antes de mandar ele pra caixa' };
-    if (g.length <= 1) return { erro: 'você não pode ficar sem nenhum Pokémon no time' };
+    if (API && API.emCampo && API.emCampo(l)) return { erro: 'switch partners before sending this one to the Box' };
+    if (g.length <= 1) return { erro: "you can't have zero Pokémon on your team" };
   }
   j.splice(d, 1);
   const m = clamp(f, 0, k.length);
@@ -220,7 +220,7 @@ function criarFantasma(a, r, z = null) {
     try {
       z.aoFantasma(g, a);
     } catch (e) {
-      console.warn('arrastar: fantasma', e);
+      console.warn('drag: ghost', e);
     }
   }
   document.body.appendChild(g);
@@ -440,7 +440,7 @@ function marcar(a, b) {
   try {
     z?.aoMarcar?.(a, b);
   } catch (e) {
-    console.warn('arrastar: marcar', e);
+    console.warn('drag: mark', e);
   }
 }
 function devolverVitima() {

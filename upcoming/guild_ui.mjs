@@ -5,7 +5,7 @@ import * as G from './guild.mjs';
 import * as Emblema from './guild_emblem.mjs';
 import { completar, fatiarArtes } from './guild_screens.mjs';
 import * as ArrumarBotao from './decorate_button.mjs';
-let dep = { defPopup: () => null, pedir: async () => ({ ok: false, erro: 'Sem servidor.' }), aviso: () => {} };
+let dep = { defPopup: () => null, pedir: async () => ({ ok: false, erro: 'No server.' }), aviso: () => {} };
 const avisoCru = (t) => (dep.avisoCru || dep.aviso)?.(t);
 let pop = null,
   defUsado = null,
@@ -36,7 +36,7 @@ const arte = () => pop?.__def?.__guilda?.artes || {};
 const setArte = (a, b) => {
   if (a && b) a.style.backgroundImage = 'url(' + b + ')';
 };
-const semFase = (t) => String(t).replace(/\s*\((?:fase|phase) 3[^)]*\)/i, ' (' + tr('em breve') + ')');
+const semFase = (t) => String(t).replace(/\s*\((?:fase|phase) 3[^)]*\)/i, ' (' + tr('coming soon') + ')');
 function rotuloEm(a, b, c, d = null) {
   const e = [...(a?.querySelectorAll('.pf-rotulo[data-fig="' + b + '"]') || [])][0];
   if (!e) return null;
@@ -140,8 +140,7 @@ function aplicarVista(v) {
   const a = convitesAntes;
   vista = v;
   convitesAntes = v.convites?.length || 0;
-  if (!v.guilda && convitesAntes > a && !aberto())
-    dep.aviso?.('Você recebeu um convite de guilda: abra a Guilda pra responder.');
+  if (!v.guilda && convitesAntes > a && !aberto()) dep.aviso?.('You got a guild invite: open Guild to respond.');
   if (v.guilda && (aba === 'explorar' || aba === 'criar')) aba = 'visao-geral';
   if (pop) desenhar();
 }
@@ -152,7 +151,7 @@ async function pedir(a, b = {}, { quieto: c = false } = {}) {
   try {
     r = await dep.pedir(a, b);
   } catch (e) {
-    r = { ok: false, erro: 'Sem conexão com o servidor.' };
+    r = { ok: false, erro: 'No connection to the server.' };
   }
   ocupado = false;
   if (r?.vista) aplicarVista(r.vista);
@@ -174,7 +173,7 @@ function desenhar() {
   mostrar($('btn-editar-guilda'), !!g && !c && !d && g.eu.pode.gerenciar);
   mostrar($('btn-voltar-fase2'), !!d);
   if (!vista) {
-    Popup.texto(pop, 'guilda-nome', 'carregando…');
+    Popup.texto(pop, 'guilda-nome', 'loading…');
     return;
   }
   if (!g) {
@@ -216,11 +215,11 @@ function desenharVisao(g) {
   Popup.textoCru(pop, 'guilda-nome', '[' + g.tag + '] ' + g.nome, c);
   Popup.textoCru(pop, 'guilda-desc', g.desc || '', c);
   Popup.texto(pop, 'nivel', String(g.nivel), c);
-  Popup.texto(pop, 'xp-info', g.xpProximo ? fmt(g.xpNoNivel) + ' / ' + fmt(g.xpProximo) + ' XP' : 'nível máximo', c);
+  Popup.texto(pop, 'xp-info', g.xpProximo ? fmt(g.xpNoNivel) + ' / ' + fmt(g.xpProximo) + ' XP' : 'max level', c);
   Popup.barra(pop, 'xp-guilda', g.xpProximo ? g.xpNoNivel / g.xpProximo : 1, null, c);
   Popup.texto(pop, 'membros-resumo', g.membros.length + ' / ' + g.vagas + ' · ' + g.online + ' online', c);
   {
-    const a = g.posicao ? tr('#{x} de Kanto', { x: g.posicao }) : '—';
+    const a = g.posicao ? tr('#{x} in Kanto', { x: g.posicao }) : '—';
     const b = g.titulo
       ? tr(g.titulo.nome)
       : g.semanaPassada?.posicao
@@ -229,9 +228,9 @@ function desenharVisao(g) {
     Popup.textoCru(pop, 'ranking-resumo', b ? a + ' · ' + b : a, c);
   }
   Popup.textoCru(pop, 'lider-nome', g.lider, c);
-  Popup.desligarGrupo(pop, 'btn-convidar', g.eu.pode.convidar, 'O seu cargo não convida.', c);
+  Popup.desligarGrupo(pop, 'btn-convidar', g.eu.pode.convidar, "Your role can't invite.", c);
   if (g.aviso?.texto) Popup.textoCru(pop, 'aviso', g.aviso.texto, c);
-  else Popup.texto(pop, 'aviso', 'Sem aviso por enquanto.', c);
+  else Popup.texto(pop, 'aviso', 'No notice yet.', c);
   Popup.textoCru(pop, 'aviso-autor', g.aviso ? '— ' + g.aviso.autor + ', ' + dataCurta(g.aviso.quando) : '', c);
   mostrar($('btn-editar-aviso', c), g.eu.pode.aviso);
   const B = g.beneficios || { linhas: [], proximo: '' };
@@ -246,10 +245,10 @@ function desenharVisao(g) {
 function premioTexto(p, a) {
   const s = [];
   if (p.dinheiro) s.push(fmt(p.dinheiro) + ' ₽');
-  if (p.pecaTm?.comum) s.push(p.pecaTm.comum + (p.pecaTm.comum > 1 ? ' peças' : ' peça') + ' de TM comum');
-  if (p.pecaTm?.forte) s.push(p.pecaTm.forte + (p.pecaTm.forte > 1 ? ' peças' : ' peça') + ' de TM forte');
-  if (p.tesouro) s.push('+' + p.tesouro + ' ' + a + ' pra guilda');
-  if (p.fragmentos) s.push(p.fragmentos + (p.fragmentos === 1 ? ' fragmento de guilda' : ' fragmentos de guilda'));
+  if (p.pecaTm?.comum) s.push(p.pecaTm.comum + (p.pecaTm.comum > 1 ? ' pieces' : ' piece') + ' of common TM');
+  if (p.pecaTm?.forte) s.push(p.pecaTm.forte + (p.pecaTm.forte > 1 ? ' pieces' : ' piece') + ' of strong TM');
+  if (p.tesouro) s.push('+' + p.tesouro + ' ' + a + ' to the guild');
+  if (p.fragmentos) s.push(p.fragmentos + (p.fragmentos === 1 ? ' guild fragment' : ' guild fragments'));
   return s.join(' + ');
 }
 function desenharChefe(g) {
@@ -262,30 +261,30 @@ function desenharChefe(g) {
     e = (t) => tr(d[t] || t);
   const f = (l) => (l.length > 1 ? l.slice(0, -1).join(', ') + ' ' + tr('e') + ' ' + l[l.length - 1] : l.join(''));
   Popup.imagem(pop, 'chefe-retrato', retrato(a.dex), c);
-  Popup.texto(pop, 'chefe-nome', (a.nome || '—') + ' · Lv ' + a.lv + ' · degrau ' + a.degrau + ' de ' + a.total, c);
+  Popup.texto(pop, 'chefe-nome', (a.nome || '—') + ' · Lv ' + a.lv + ' · step ' + a.degrau + ' de ' + a.total, c);
   const h = a.janelaAte > b ? Math.max(0, Math.ceil((a.janelaAte - b) / 1000)) : 0;
   Popup.texto(
     pop,
     'chefe-info',
     !a.liberado
-      ? 'O chefe da guilda abre no nível ' + a.nivelMinimo + ' da guilda.'
-      : 'Chefe do dia: ele não cai. ' +
+      ? 'The guild boss unlocks at level ' + a.nivelMinimo + ' of the guild.'
+      : 'Daily boss: it never falls. ' +
           a.entradasPorDia +
-          ' entrada por dia e ' +
+          ' entry per day and ' +
           Math.round(a.janelaS / 60) +
-          ' min a partir do 1º golpe. O seu dano vira fragmentos de guilda (faixas abaixo).',
+          ' min from the 1st hit. Your damage turns into guild fragments (tiers below).',
     c,
   );
   Popup.texto(
     pop,
     'chefe-tipos',
-    'Toma mais de ' +
+    'Weak to ' +
       f(a.tipos.mais.map(e)) +
-      ' (×1,5) · aguenta ' +
+      ' (×1,5) · resists ' +
       f(a.tipos.menos.map(e)) +
       ' (×0,5)' +
       (a.degrauMax < a.total
-        ? ' · a rotação vai até o degrau ' + a.degrauMax + ' com a guilda no nível ' + g.nivel
+        ? ' · the rotation goes up to tier ' + a.degrauMax + ' with the guild at level ' + g.nivel
         : ''),
     c,
   );
@@ -299,30 +298,30 @@ function desenharChefe(g) {
   Popup.texto(
     pop,
     'chefe-hp-info',
-    (a.meta.ok ? 'Meta batida: ' : 'Meta do dia: ') +
+    (a.meta.ok ? 'Goal reached: ' : 'Daily goal: ') +
       fmt(a.danoTotal) +
       ' / ' +
       fmt(a.meta.alvo) +
-      (a.meta.ok ? ' (+XP)' : ' de dano'),
+      (a.meta.ok ? ' (+XP)' : ' damage'),
     c,
   );
   const j = h
-    ? 'sua janela: ' + h + ' s'
+    ? 'your window: ' + h + ' s'
     : a.janela
-      ? 'sua janela de hoje acabou'
+      ? 'your window for today is over'
       : a.entradaHoje
-        ? 'na base, sem bater ainda'
-        : 'sua entrada de hoje: livre';
+        ? 'at the base, not hitting yet'
+        : 'your entry today: free';
   Popup.texto(
     pop,
     'chefe-semana',
-    'Hoje ' +
+    'Today ' +
       (a.dia || '') +
       ' · ' +
       j +
-      ' · sua contribuição: ' +
+      ' · your contribution: ' +
       fmt(a.meuDano) +
-      (a.minhaFaixa ? ' (faixa ' + a.minhaFaixa + ')' : ''),
+      (a.minhaFaixa ? ' (tier ' + a.minhaFaixa + ')' : ''),
     c,
   );
   Popup.textoCru(
@@ -330,19 +329,17 @@ function desenharChefe(g) {
     'chefe-top',
     a.top.length
       ? tr(
-          a.participantes === 1
-            ? 'Maiores contribuições: {x} ({n} membro bateu)'
-            : 'Maiores contribuições: {x} ({n} membros bateram)',
+          a.participantes === 1 ? 'Top contributors: {x} ({n} member hit)' : 'Top contributors: {x} ({n} members hit)',
           { x: a.top.map((t) => t.nick + ' ' + fmt(t.dano)).join(' · '), n: a.participantes },
         )
-      : tr('Ninguém bateu ainda hoje.'),
+      : tr('No one has hit yet today.'),
     c,
   );
   Popup.texto(
     pop,
     'chefe-marcos',
-    'Faixas de contribuição do dia → fragmentos de guilda (pelo correio, na virada) · troque na Loja da guilda: ' +
-      (a.loja.compradoEstaSemana ? 'você já trocou esta semana' : '1 troca por semana'),
+    'Daily contribution tiers → guild fragments (by mail, at reset) · trade them in the Guild Shop: ' +
+      (a.loja.compradoEstaSemana ? 'you already traded this week' : '1 trade per week'),
     c,
   );
   const k = a.liberado && (!a.entradaHoje || h > 0);
@@ -351,25 +348,25 @@ function desenharChefe(g) {
     'btn-chefe-entrar',
     k,
     !a.liberado
-      ? 'Abre no nível ' + a.nivelMinimo + ' da guilda'
+      ? 'Unlocks at level ' + a.nivelMinimo + ' of the guild'
       : a.janela
-        ? 'Sua janela de hoje acabou'
-        : 'Você já usou a entrada de hoje',
+        ? 'Your window for today is over'
+        : "You already used today's entry",
     c,
   );
   const t = $('btn-chefe-entrar', c)?.querySelector('.pf-rotulo');
-  if (t) t.textContent = tr(h ? 'Voltar pra luta' : 'Entrar e lutar');
+  if (t) t.textContent = tr(h ? 'Back to the fight' : 'Enter and fight');
   const o = Popup.celulas(pop, 'lista-marcos', Math.max(a.marcos.length, 1), 'evento');
   o.forEach((b, i) => {
     const m = a.marcos[i];
     b.style.display = m ? 'block' : 'none';
     if (!m) return;
     setArte(b, m.pago ? A.evento?.verde : m.alcancado ? A.evento?.laranja : A.evento?.cinza);
-    Popup.texto(pop, 'evento', fmt(m.dano) + ' de dano → ' + premioTexto(m.premio, a.tesouroNome), b);
+    Popup.texto(pop, 'evento', fmt(m.dano) + ' damage → ' + premioTexto(m.premio, a.tesouroNome), b);
     Popup.texto(
       pop,
       'evento-quando',
-      m.pago ? 'pago ✓' : m.alcancado ? 'alcançado' : 'faltam ' + fmt(m.dano - a.meuDano),
+      m.pago ? 'paid ✓' : m.alcancado ? 'reached' : 'faltam ' + fmt(m.dano - a.meuDano),
       b,
     );
   });
@@ -383,12 +380,12 @@ function desenharBase(g) {
   Popup.texto(
     pop,
     'base-info',
-    'Salão ' +
+    'Hall ' +
       (b.construidas.salao || 1) +
       ' · ' +
       n +
-      (n === 1 ? ' construção' : ' construções') +
-      ' · tesouro: ' +
+      (n === 1 ? ' building' : ' buildings') +
+      ' · treasury: ' +
       fmt(b.tesouro) +
       ' ' +
       b.tesouroNome,
@@ -396,15 +393,15 @@ function desenharBase(g) {
   );
   {
     const t = $('btn-base-ir', c)?.querySelector('.pf-rotulo');
-    if (t) t.textContent = tr(dep.naBase?.() ? 'Sair da base' : 'Ir pra base');
+    if (t) t.textContent = tr(dep.naBase?.() ? 'Leave base' : 'Go to base');
   }
   Popup.texto(
     pop,
     'base-nota',
-    'Cada construção pede um nível da guilda e custa ' +
+    'Each building requires a guild level and costs ' +
       b.tesouroNome +
-      ' (vem do chefe). ' +
-      (b.podeConstruir ? 'Clique numa vaga pra construir.' : 'Só quem usa o tesouro constrói.'),
+      ' (drops from the boss). ' +
+      (b.podeConstruir ? 'Click a slot to build.' : 'Only those who use the treasury can build.'),
     c,
   );
   {
@@ -439,7 +436,7 @@ function desenharBase(g) {
       e = document.createElement('button');
       e.type = 'button';
       e.id = 'btn-arrumar-base';
-      e.textContent = '🔧 ' + tr('Arrumar a base');
+      e.textContent = '🔧 ' + tr('Arrange base');
       Object.assign(e.style, {
         position: 'absolute',
         right: '12px',
@@ -469,14 +466,14 @@ function desenharBase(g) {
       pop,
       'evento',
       tr(v.nome) +
-        (v.max > 1 && v.atual ? ' ' + tr('(tamanho {a} de {b})', { a: v.atual, b: v.max }) : '') +
+        (v.max > 1 && v.atual ? ' ' + tr('(size {a} of {b})', { a: v.atual, b: v.max }) : '') +
         (v.descricao ? ' — ' + semFase(tr(v.descricao)) : ''),
       c,
     );
     Popup.texto(
       pop,
       'evento-quando',
-      v.pode ? 'construir · ' + fmt(v.proximo.custo) : !v.proximo ? (v.max > 1 ? 'no máximo' : 'pronta') : v.motivo,
+      v.pode ? 'build · ' + fmt(v.proximo.custo) : !v.proximo ? (v.max > 1 ? 'at most' : 'pronta') : v.motivo,
       c,
     );
     c.style.cursor = v.pode ? 'pointer' : 'default';
@@ -493,13 +490,13 @@ function desenharLoja(g) {
   Popup.texto(
     pop,
     'loja-info',
-    'Seus fragmentos de guilda: ' + fmt(d) + ' · ' + (f ? 'você já trocou esta semana' : e + ' troca por semana'),
+    'Your guild fragments: ' + fmt(d) + ' · ' + (f ? 'you already traded this week' : e + ' trade per week'),
     c,
   );
   Popup.texto(
     pop,
     'loja-nota',
-    'Os held dos chefes desta semana. O item vem PRESO à sua conta (não vai pro Mercado nem pra troca).',
+    "This week's boss held items. The item comes BOUND to your account (can't go to the Market or be traded).",
     c,
   );
   const j = (L.itens || []).slice().sort((a, b) => a.preco - b.preco || String(a.nome).localeCompare(String(b.nome)));
@@ -512,7 +509,7 @@ function desenharLoja(g) {
     a.__held = {
       ...h,
       pode: b,
-      motivo: f ? 'você já trocou esta semana' : d < h.preco ? 'faltam ' + fmt(h.preco - d) + ' fragmentos' : '',
+      motivo: f ? 'you already traded this week' : d < h.preco ? 'faltam ' + fmt(h.preco - d) + ' fragmentos' : '',
     };
     setArte(a, b ? A.evento?.laranja : A.evento?.cinza);
     Popup.texto(
@@ -520,10 +517,10 @@ function desenharLoja(g) {
       'evento',
       tr(h.nome) +
         (h.raridade === 'raro' ? ' (' + tr('raro') + ')' : '') +
-        (h.chefe ? ' — ' + tr('do {x}', { x: h.chefe }) : ''),
+        (h.chefe ? ' — ' + tr('from {x}', { x: h.chefe }) : ''),
       a,
     );
-    Popup.texto(pop, 'evento-quando', b ? 'trocar · ' + fmt(h.preco) : a.__held.motivo, a);
+    Popup.texto(pop, 'evento-quando', b ? 'trade · ' + fmt(h.preco) : a.__held.motivo, a);
     a.style.cursor = b ? 'pointer' : 'default';
   });
 }
@@ -532,8 +529,8 @@ function dataCurta(a) {
     b = new Date(vista?.agora || Date.now()),
     c = new Date(b.getTime() - 864e5);
   const h = d.toLocaleTimeString(local(), { hour: '2-digit', minute: '2-digit' });
-  if (d.toDateString() === b.toDateString()) return tr('hoje às {x}', { x: h });
-  if (d.toDateString() === c.toDateString()) return tr('ontem às {x}', { x: h });
+  if (d.toDateString() === b.toDateString()) return tr('today at {x}', { x: h });
+  if (d.toDateString() === c.toDateString()) return tr('yesterday at {x}', { x: h });
   return d.toLocaleDateString(local(), { day: '2-digit', month: '2-digit' }) + ', ' + h;
 }
 function desenharMembros(g) {
@@ -561,22 +558,22 @@ function desenharMembros(g) {
   mostrar(b, a.length > 0);
   if (a.length) {
     const p = a[0];
-    Popup.texto(pop, 'pedidos-titulo', 'Convites pendentes' + (a.length > 1 ? ' · ' + a.length : ''), c);
+    Popup.texto(pop, 'pedidos-titulo', 'Pending invites' + (a.length > 1 ? ' · ' + a.length : ''), c);
     Popup.textoCru(pop, 'candidato-nome', p.nick, b);
     Popup.texto(
       pop,
       'candidato-info',
       'Lv ' +
         p.lv +
-        ' · pediu entrada ' +
+        ' · requested to join ' +
         G.quando(p.quando, vista.agora) +
-        (a.length > 1 ? ' · +' + (a.length - 1) + ' na fila' : ''),
+        (a.length > 1 ? ' · +' + (a.length - 1) + ' in queue' : ''),
       b,
     );
     Popup.imagem(pop, 'retrato', retrato(p.dex), b);
     b.__pedido = p.id;
   }
-  Popup.texto(pop, 'membros-titulo', 'Membros — ' + g.membros.length + ' de ' + g.vagas, c);
+  Popup.texto(pop, 'membros-titulo', 'Members — ' + g.membros.length + ' de ' + g.vagas, c);
   const A = arte(),
     j = g.membros;
   const k = Popup.celulas(pop, 'lista-membros', Math.max(j.length, 1), 'membro');
@@ -591,7 +588,7 @@ function desenharMembros(g) {
     Popup.texto(pop, 'membro-nivel', 'Lv ' + m.lv, a);
     const b = Popup.texto(pop, 'membro-visto', m.online ? 'agora' : G.quando(m.vistoEm || 0, vista.agora), a);
     if (b) b.style.color = m.online ? '#43D17C' : '#A9CFE0';
-    Popup.texto(pop, 'membro-contribuicao', fmt(m.pts) + ' pts essa semana', a);
+    Popup.texto(pop, 'membro-contribuicao', fmt(m.pts) + ' pts this week', a);
     setArte($('camada-1', a), m.online ? A.online?.sim : A.online?.nao);
     Popup.imagem(pop, 'retrato', retrato(m.dex), a);
     const c = $('btn-mais', a);
@@ -615,7 +612,7 @@ function abrirMenuMembro(a) {
   const f = b === 'lider' && m.cargo === 'vice';
   const i = d && (f || (e('promover', m.cargo) && G.acima(b, G.CARGOS[G.CARGOS.indexOf(m.cargo) - 1])));
   Popup.botao(pop, 'ver-perfil', true);
-  Popup.botao(pop, 'promover', i, f ? 'passar liderança' : 'promover');
+  Popup.botao(pop, 'promover', i, f ? 'pass leadership' : 'promover');
   Popup.botao(pop, 'rebaixar', d && m.cargo !== 'recruta' && e('rebaixar', m.cargo));
   Popup.botao(pop, 'expulsar', d && e('expulsar', m.cargo));
   const t = Popup.extra(pop, 'tooltip-membro');
@@ -649,16 +646,16 @@ function desenharCargos(g) {
     d.style.cursor = 'pointer';
     if (k === cargoSel && b && b.parentElement !== d) d.appendChild(b);
   });
-  Popup.texto(pop, 'permissoes-titulo', 'Permissões — ' + G.nomeCargo(cargoSel), c);
+  Popup.texto(pop, 'permissoes-titulo', 'Permissions — ' + G.nomeCargo(cargoSel), c);
   const d = g.eu.pode.permissoes;
   Popup.texto(
     pop,
     'cargos-nota',
     d
       ? cargoSel === 'lider'
-        ? 'o Líder pode tudo · escolha outro cargo pra mudar'
-        : 'só o líder edita · promova e rebaixe na aba Membros'
-      : 'só o líder muda as permissões',
+        ? 'the Leader can do everything · pick another role to change'
+        : 'only the leader edits · promote and demote in the Members tab'
+      : 'only the leader changes permissions',
     c,
   );
   D.permissoes.forEach((p, i) => {
@@ -686,7 +683,7 @@ function desenharChat(g) {
     if (!m && i === d.length && a.length > d.length) {
       b.style.display = 'block';
       Popup.texto(pop, 'conversa-nome', '+' + (a.length - d.length) + ' online', b);
-      Popup.texto(pop, 'ultima-mensagem', 'veja todos na aba Membros', b);
+      Popup.texto(pop, 'ultima-mensagem', 'see everyone in the Members tab', b);
       Popup.imagem(pop, 'retrato', null, b);
       return;
     }
@@ -734,7 +731,7 @@ function desenharChat(g) {
         )
         .join('')
     : '<div style="color:#B8C2D9;text-align:center;margin-top:18%">' +
-      esc(tr('Ninguém falou ainda. Diga oi pra guilda!')) +
+      esc(tr('No one has talked yet. Say hi to the guild!')) +
       '</div>';
   h.scrollTop = h.scrollHeight;
 }
@@ -773,9 +770,9 @@ function textoAtividade(a) {
 }
 function nomeDaEquipe(p) {
   const n = /^o nome pra "([\s\S]*)"$/.exec(p);
-  if (n) return tr('o nome pra "{x}"', { x: n[1] });
+  if (n) return tr('the name to "{x}"', { x: n[1] });
   const t = /^a TAG pra \[([\s\S]*)\]$/.exec(p);
-  if (t) return tr('a TAG pra [{x}]', { x: t[1] });
+  if (t) return tr('the TAG to [{x}]', { x: t[1] });
   return tr(p);
 }
 function milhar(s) {
@@ -785,7 +782,7 @@ function milhar(s) {
 }
 function desenharAtividade(g) {
   const A = arte(),
-    b = g.atividade.length ? g.atividade : [{ texto: 'Nada por aqui ainda.', cor: 'cinza', quando: vista.agora }];
+    b = g.atividade.length ? g.atividade : [{ texto: 'Nothing here yet.', cor: 'cinza', quando: vista.agora }];
   const c = Popup.celulas(pop, 'lista-eventos', b.length, 'evento');
   c.forEach((c, i) => {
     const a = b[i];
@@ -811,7 +808,7 @@ function desenharExplorar() {
       const n = Popup.texto(
         pop,
         'guilda-nome',
-        busca ? 'Nenhuma guilda com "' + busca + '".' : 'Ainda não existe guilda. Que tal fundar a primeira?',
+        busca ? 'No guild with "' + busca + '".' : 'No guilds yet. How about founding the first one?',
         c,
       );
       if (n) n.style.display = 'flex';
@@ -842,17 +839,17 @@ function desenharExplorar() {
 }
 function botaoDaGuilda(x, a) {
   const b = a.esperaAte && a.esperaAte > vista.agora;
-  if (vista.pedidos.includes(x.id)) return ['cancelar', 'pedir', true, 'Pedido enviado: clique pra cancelar'];
-  if (x.membros >= x.vagas) return ['cheia', 'nada', false, 'A guilda está cheia'];
-  if (x.entrada === 'fechada') return ['—', 'nada', false, 'Só por convite'];
-  if (a.lv < x.nivelMin) return ['Lv ' + x.nivelMin + '+', 'nada', false, 'Essa guilda pede Lv ' + x.nivelMin];
+  if (vista.pedidos.includes(x.id)) return ['cancelar', 'pedir', true, 'Request sent: click to cancel'];
+  if (x.membros >= x.vagas) return ['cheia', 'nada', false, 'The guild is full'];
+  if (x.entrada === 'fechada') return ['—', 'nada', false, 'Invite only'];
+  if (a.lv < x.nivelMin) return ['Lv ' + x.nivelMin + '+', 'nada', false, 'This guild requires Lv ' + x.nivelMin];
   if (b) {
     const h = Math.max(1, Math.ceil((a.esperaAte - vista.agora) / 3600000));
     return [
       x.entrada === 'aberta' ? 'entrar' : 'pedir',
       'nada',
       false,
-      'Você saiu de uma guilda há pouco: pode entrar em outra daqui a ' + h + ' h',
+      'You left a guild recently: you can join another in ' + h + ' h',
     ];
   }
   return x.entrada === 'aberta' ? ['entrar', 'entrar', true, ''] : ['pedir', 'pedir', true, ''];
@@ -862,16 +859,16 @@ function oferecerConvite() {
   if (!a) return;
   convitesVistos.add(a.guilda.id);
   confirmar({
-    titulo: 'Convite de guilda',
-    texto: '{x} te convidou pra {y} (Lv {n} · {m}).',
+    titulo: 'Guild Invite',
+    texto: '{x} invited you to {y} (Lv {n} · {m}).',
     vars: {
       x: a.por,
       y: '[' + a.guilda.tag + '] ' + a.guilda.nome,
       n: a.guilda.nivel,
       m: a.guilda.membros + '/' + a.guilda.vagas,
     },
-    sim: 'Aceitar',
-    nao: 'Recusar',
+    sim: 'Accept',
+    nao: 'Decline',
     perigo: false,
     aoSim: () => pedir('aceitarConvite', { guilda: a.guilda.id }),
     aoNao: () => pedir('recusarConvite', { guilda: a.guilda.id }, { quieto: true }),
@@ -913,19 +910,19 @@ function desenharCriar(a) {
     if (document.activeElement !== j && j.value !== (rascunho[h] || '')) j.value = rascunho[h] || '';
   }
   Popup.seletor(pop, 'seletor-tipo-entrada', G.nomeEntrada(rascunho.entrada), c);
-  Popup.texto(pop, 'valor-nivel', rascunho.nivelMin ? 'Lv ' + rascunho.nivelMin + '+' : 'Qualquer um', c);
+  Popup.texto(pop, 'valor-nivel', rascunho.nivelMin ? 'Lv ' + rascunho.nivelMin + '+' : 'Anyone', c);
   desenharEmblema(c);
   if (!a) {
     Popup.texto(pop, 'custo-criacao', fmt(vista.eu.fundar?.custo ?? R.custo), c);
     const f = vista.eu.fundar;
-    rotuloEm(c, 'nota-custo', f.ok ? 'custo de fundação (não volta)' : f.motivo, f.ok ? '' : '#FF9A3C');
+    rotuloEm(c, 'nota-custo', f.ok ? 'founding cost (non-refundable)' : f.motivo, f.ok ? '' : '#FF9A3C');
     Popup.botao(pop, 'criar-guilda', f.ok);
   } else {
     const b = $('btn-dissolver', c);
     if (b) {
       b.dataset.desligado = g.eu.pode.dissolver ? '0' : '1';
       b.style.opacity = g.eu.pode.dissolver ? '1' : '0.5';
-      b.title = g.eu.pode.dissolver ? '' : tr('Só o Líder dissolve a guilda');
+      b.title = g.eu.pode.dissolver ? '' : tr('Only the Leader can disband the guild');
     }
   }
 }
@@ -940,7 +937,7 @@ function desenharEmblema(c) {
     const b = $('forma-emblema-' + (i + 1), c);
     if (!b) return;
     pintarBase(b, f.id, e.cor);
-    dica(b, 'Forma: ' + f.nome);
+    dica(b, 'Shape: ' + f.nome);
     if (f.id === e.forma) levarMarca(c.querySelector('[data-fig="marca-forma"]'), b, S.forma?.d || 0);
   });
   (D.cores || []).forEach((k, i) => {
@@ -1071,7 +1068,7 @@ function desenharSimbolos(c) {
         zIndex: '1',
       });
       b.append(a, s);
-      dica(b, 'Símbolo: ' + c.nome);
+      dica(b, 'Symbol: ' + c.nome);
       b.addEventListener('click', (a) => {
         a.stopPropagation();
         rascunho.emblema.simbolo = c.id;
@@ -1099,8 +1096,8 @@ function confirmar({
   titulo: a,
   texto: b,
   vars: e = null,
-  sim: f = 'Confirmar',
-  nao: g = 'Cancelar',
+  sim: f = 'Confirm',
+  nao: g = 'Cancel',
   perigo: h = true,
   aoSim: c,
   aoNao: i = null,
@@ -1211,15 +1208,15 @@ async function acao(a, b) {
     case 'dissolver':
       if (b.dataset.desligado === '1') return;
       return confirmar({
-        titulo: 'Dissolver a guilda?',
-        texto: 'Todos os membros saem e o nome [{x}] fica livre. Não tem volta.',
+        titulo: 'Disband the guild?',
+        texto: "All members leave and the name [{x}] becomes available. There's no undo.",
         vars: { x: g.tag },
         sim: 'Dissolver',
         aoSim: async () => {
           const r = await pedir('dissolver');
           if (r?.ok) {
             aba = 'explorar';
-            avisoCru(tr('A guilda {x} foi dissolvida.', { x: g.nome }));
+            avisoCru(tr('The guild {x} has been disbanded.', { x: g.nome }));
           }
         },
       });
@@ -1243,14 +1240,14 @@ async function acao(a, b) {
         return;
       }
       return confirmar({
-        titulo: 'Trocar na loja da guilda?',
-        texto: '{x} fragmentos de guilda por {y} (preso à sua conta). É 1 troca por semana.',
+        titulo: 'Trade at the guild shop?',
+        texto: "{x} guild fragments for {y} (bound to your account). It's 1 trade per week.",
         vars: { x: fmt(h.preco), y: tr(h.nome) },
-        sim: 'Fazer a troca',
+        sim: 'Make the trade',
         perigo: false,
         aoSim: async () => {
           const r = await pedir('lojaGuilda', { held: h.id });
-          if (r?.ok) avisoCru(tr('Trocado: {x} está na sua Mochila (preso).', { x: tr(r.entregue?.nome || h.nome) }));
+          if (r?.ok) avisoCru(tr('Traded: {x} is in your Bag (bound).', { x: tr(r.entregue?.nome || h.nome) }));
         },
       });
     }
@@ -1264,7 +1261,7 @@ async function acao(a, b) {
         if (dep.irCena) dep.irCena(r, 'chefe');
         else
           avisoCru(
-            tr('Indo pra base da guilda: o {x} está no platô.', {
+            tr('Heading to the guild base: {x} is on the plateau.', {
               x: r.chefe?.nome || vista?.guilda?.chefe?.nome || '?',
             }),
           );
@@ -1279,7 +1276,7 @@ async function acao(a, b) {
       const r = await pedir('irBase');
       if (r?.ok) {
         if (dep.irCena) dep.irCena(r, 'base');
-        else dep.aviso?.('Indo pra base da guilda.');
+        else dep.aviso?.('Heading to the guild base.');
       }
       return;
     }
@@ -1291,7 +1288,7 @@ async function acao(a, b) {
         return;
       }
       const r = await pedir('construir', { vaga: v.id });
-      if (r?.ok) avisoCru(tr('{x} construída!', { x: tr(v.nome) + (v.max > 1 ? ' ' + r.n : '') }));
+      if (r?.ok) avisoCru(tr('{x} built!', { x: tr(v.nome) + (v.max > 1 ? ' ' + r.n : '') }));
       return;
     }
     case 'editar-guilda':
@@ -1326,9 +1323,9 @@ async function acao(a, b) {
       if (r?.ok) {
         Popup.mostrarExtra(pop, 'dialogo-convidar', false);
         if (k) k.value = '';
-        avisoCru(tr('Convite enviado pra {x}.', { x: r.convidado || l }));
-        rotuloEm(d, 'nota', 'amigos também podem ser convidados pelo Social', '');
-      } else rotuloEm(d, 'nota', r?.erro || 'Não deu pra convidar.', '#FF9A3C');
+        avisoCru(tr('Invite sent to {x}.', { x: r.convidado || l }));
+        rotuloEm(d, 'nota', 'friends can also be invited from Social', '');
+      } else rotuloEm(d, 'nota', r?.erro || "Couldn't send the invite.", '#FF9A3C');
       return;
     }
     case 'sair-guilda': {
@@ -1355,7 +1352,7 @@ async function acao(a, b) {
       dep.perfil
         ? dep.perfil(alvo)
         : avisoCru(
-            tr('{x} · {y} · Lv {n} · na guilda desde {z}', {
+            tr('{x} · {y} · Lv {n} · in the guild since {z}', {
               x: alvo.nick,
               y: tr(G.nomeCargo(alvo.cargo)),
               n: alvo.lv,
@@ -1368,10 +1365,10 @@ async function acao(a, b) {
       Popup.mostrarExtra(pop, 'tooltip-membro', false);
       if (g.eu.cargo === 'lider' && alvo.cargo === 'vice')
         return confirmar({
-          titulo: 'Passar a liderança?',
-          texto: '{x} vira o Líder da guilda e você vira Vice.',
+          titulo: 'Pass leadership?',
+          texto: '{x} becomes the guild Leader and you become Vice.',
           vars: { x: alvo.nick },
-          sim: 'Passar',
+          sim: 'Transfer',
           perigo: false,
           aoSim: () => pedir('passarLideranca', { id: alvo.id }),
         });
@@ -1386,10 +1383,10 @@ async function acao(a, b) {
       Popup.mostrarExtra(pop, 'tooltip-membro', false);
       const m = alvo;
       return confirmar({
-        titulo: 'Expulsar {x}?',
-        texto: '{x} sai da guilda e só pode entrar em outra depois de {n} h.',
+        titulo: 'Kick {x}?',
+        texto: '{x} leaves the guild and can only join another after {n} h.',
         vars: { x: m.nick, n: G.dados().regras.esperaSairHoras },
-        sim: 'Expulsar',
+        sim: 'Kick',
         aoSim: () => pedir('expulsar', { id: m.id }),
       });
     }
@@ -1434,8 +1431,8 @@ function abre(a, b) {
   if (a === 'dialogo-sair' && g) {
     if (g.eu.cargo === 'lider' && g.membros.length <= 1) {
       confirmar({
-        titulo: 'Dissolver a guilda?',
-        texto: 'Você é o único membro: sair dissolve a guilda e o nome [{x}] fica livre.',
+        titulo: 'Disband the guild?',
+        texto: "You're the only member: leaving disbands the guild and the name [{x}] becomes available.",
         vars: { x: g.tag },
         sim: 'Dissolver',
         aoSim: () => pedir('dissolver'),

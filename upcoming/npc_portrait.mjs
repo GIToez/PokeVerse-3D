@@ -38,7 +38,7 @@ export function ligar(a, b, { escala: c = null } = {}) {
     try {
       i = new THREE.WebGLRenderer({ canvas: g, alpha: true, antialias: !ehToque() });
     } catch (e) {
-      console.warn('npc_retrato: sem WebGL pro NPC', e);
+      console.warn('npc_retrato: no WebGL for the NPC', e);
       return 0;
     }
     i.setPixelRatio(1);
@@ -107,7 +107,7 @@ async function carregar(b, c) {
     NPC.cena.add(f);
     NPC.w = NPC.h = 0;
   } catch (e) {
-    console.warn('npc_retrato: o NPC não carregou', e);
+    console.warn("npc_retrato: the NPC didn't load", e);
   }
 }
 function medir(a, d, e) {

@@ -112,7 +112,7 @@ function pintarCarta(a, e) {
 }
 const partesDe = (s) => {
   const n = canaisDe(s).length;
-  return n ? n + ' partes pra pintar' : 'visual fixo';
+  return n ? n + ' parts to paint' : 'fixed look';
 };
 function montarEscolha(b, d, f) {
   const g = !!b.__def?.v2;
@@ -154,7 +154,7 @@ function montarEscolha(b, d, f) {
       Popup.texto(b, 'personagem-nome', s.nome, c);
       Popup.texto(b, 'personagem-desc', g ? partesDe(s) : s.desc, c);
       n(c, s);
-      if (caixaDoModelo(c, s.id)) P.montar(s).catch((e) => console.warn('modelo do treinador', s.id, e));
+      if (caixaDoModelo(c, s.id)) P.montar(s).catch((e) => console.warn('trainer model', s.id, e));
       c.onclick = () => {
         if (estado.skinId === s.id) return;
         estado.skinId = s.id;
@@ -232,7 +232,7 @@ function linhaV2(c, e, g, C) {
   const o = e.querySelector(':scope > [data-fig="cor-atual"]:not(.tela-cor-atual)');
   if (o && !o.classList.contains('tela-cor-viva')) {
     o.classList.add('tela-cor-viva');
-    o.title = tr('Escolher outra cor');
+    o.title = tr('Pick another color');
     o.setAttribute('role', 'button');
     const d = defDe(c, [e.dataset.fig, 'cor-atual']);
     if (d?.sombra) o.style.setProperty('--sombra-cor', d.sombra);
@@ -254,7 +254,7 @@ function linhaV2(c, e, g, C) {
     q = document.createElement('div');
     q.className = 'tela-cor-atual';
     q.dataset.fig = 'cor-atual';
-    q.title = tr('Escolher outra cor');
+    q.title = tr('Pick another color');
     q.setAttribute('role', 'button');
     const _ = l ? i(l, 'left') + i(l, 'width') : m * 0.21,
       $ = j ? i(j, 'left') : m * 0.36;
@@ -400,7 +400,7 @@ function montarPersonalizar(c, d, g) {
     Popup.texto(c, 'modelo-nome', h.nome, n);
     P.montar(h)
       .then(() => P.selecionar(h.id))
-      .catch((e) => console.warn('modelo do treinador', e));
+      .catch((e) => console.warn('trainer model', e));
     if (x) {
       x.style.pointerEvents = 'auto';
       x.style.touchAction = 'pan-y';
@@ -517,7 +517,7 @@ function montarPersonalizar(c, d, g) {
       const y = c.querySelector('[data-fig="' + f + '"]');
       if (y) y.style.display = 'none';
     }
-    rotuloTexto(c, 'dica-tela', tr('este conjunto tem visual fixo — escolha só o nome'));
+    rotuloTexto(c, 'dica-tela', tr('this outfit has a fixed look — just choose the name'));
   }
   const w = c.querySelector('[data-fig="campo-nome"] input');
   if (w) {
@@ -527,7 +527,7 @@ function montarPersonalizar(c, d, g) {
     w.autocomplete = 'off';
     w.spellcheck = false;
     if (o) w.style.color = '#EAF6FB';
-    else w.placeholder = 'nome do personagem';
+    else w.placeholder = 'character name';
     w.addEventListener('input', () => {
       estado.nome = w.value;
     });
@@ -617,11 +617,11 @@ async function comecar(a, b, C) {
     .trim()
     .slice(0, 16);
   if (d.length < 3) {
-    C.aviso(tr('o nome precisa de pelo menos 3 letras'), true);
+    C.aviso(tr('the name needs at least 3 letters'), true);
     return;
   }
   ocupado = true;
-  C.aviso(tr('conferindo o nome…'));
+  C.aviso(tr('checking name…'));
   let r = { ok: true, nome: d };
   try {
     if (b?.conta?.trocarNome) r = await b.conta.trocarNome(d);
@@ -630,7 +630,7 @@ async function comecar(a, b, C) {
   }
   ocupado = false;
   if (!r?.ok) {
-    C.aviso(tr(r?.erro || 'esse nome não deu — tente outro'), true);
+    C.aviso(tr(r?.erro || "that name didn't work — try another"), true);
     return;
   }
   const p = { tipo: c.id };
@@ -754,7 +754,7 @@ function prepararSeletor(a, C) {
     d.__veu = n;
     const o = d.querySelector('[data-fig="btn-conta-gotas"]');
     if (o && typeof window.EyeDropper !== 'function')
-      Popup.desligarGrupo(a, o, false, 'O conta-gotas não funciona neste navegador');
+      Popup.desligarGrupo(a, o, false, "The eyedropper doesn't work in this browser");
     if (o && c && !d.querySelector('[data-fig="cor-atual-previa"]')) {
       const p = (a, k) => parseFloat(a.style[k]) || 0;
       const q = (p(o, 'left') + p(o, 'width') + p(c, 'left')) / 2,

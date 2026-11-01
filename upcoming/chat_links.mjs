@@ -12,4 +12,4 @@ export function temLink(a) {
   return PADROES.some((p) => p.test(t));
 }
 export const podeLink = (a) => a === 'staff' || a === 'mod' || a === 'tutor';
-export const AVISO_LINK = '🔗 Links não são permitidos no chat do jogo.';
+export const AVISO_LINK = "🔗 Links aren't allowed in game chat.";

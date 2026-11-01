@@ -112,14 +112,14 @@ export function mostrarCodigo(a, b, c = {}) {
   const d = c.pop || atual;
   if (d?.__def?.v2 && Popup.extra(d, 'dialogo-codigo')) return codigoV2(d, a, b);
   const f = painel(
-    '<b class="tela-tit">Anote o seu código de recuperação</b>' +
-      '<p class="tela-txt">É a ÚNICA forma de voltar pra sua conta se você esquecer a senha. Ele não fica guardado neste aparelho e não dá pra vê-lo de novo.</p>' +
+    '<b class="tela-tit">Write down your recovery code</b>' +
+      "<p class=\"tela-txt\">It's the ONLY way back into your account if you forget your password. It isn't stored on this device and can't be shown again.</p>" +
       '<div id="codigo-recuperacao" class="tela-codigo">' +
       a +
       '</div>' +
-      '<div class="tela-linha" style="align-items:center;margin-top:14px"><button type="button" class="btn" id="cod-copiar">Copiar</button>' +
-      '<label class="tela-marca"><input type="checkbox" id="cod-anotei"> anotei em lugar seguro</label>' +
-      '<button type="button" class="btn ouro" id="cod-ok" disabled>Continuar</button></div>',
+      '<div class="tela-linha" style="align-items:center;margin-top:14px"><button type="button" class="btn" id="cod-copiar">Copy</button>' +
+      '<label class="tela-marca"><input type="checkbox" id="cod-anotei"> saved it somewhere safe</label>' +
+      '<button type="button" class="btn ouro" id="cod-ok" disabled>Continue</button></div>',
   );
   const e = f.querySelector('#cod-ok');
   f.querySelector('#cod-anotei').onchange = (a) => {
@@ -128,7 +128,7 @@ export function mostrarCodigo(a, b, c = {}) {
   f.querySelector('#cod-copiar').onclick = () => {
     try {
       navigator.clipboard?.writeText(a);
-      f.querySelector('#cod-copiar').textContent = tr('copiado ✓');
+      f.querySelector('#cod-copiar').textContent = tr('copied ✓');
     } catch {}
   };
   e.onclick = () => {
@@ -138,12 +138,12 @@ export function mostrarCodigo(a, b, c = {}) {
 }
 function formRecuperar(a) {
   const f = painel(
-    '<b class="tela-tit">Esqueci a senha</b>' +
-      '<p class="tela-txt">Use o código de recuperação que apareceu quando você criou a conta. Se perdeu os dois, chame no Discord do jogo.</p>' +
-      '<label class="tela-campo">usuário<input id="rec-usuario" autocomplete="username" autocapitalize="none" spellcheck="false"></label>' +
-      '<label class="tela-campo">código de recuperação<input id="rec-codigo" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" style="text-transform:uppercase"></label>' +
-      '<label class="tela-campo" style="margin-bottom:12px">senha nova<input id="rec-senha" type="password" autocomplete="new-password"></label>' +
-      '<div class="tela-linha"><button type="button" class="btn" id="rec-nao">Voltar</button><button type="button" class="btn ouro" id="rec-sim" style="flex:1">Trocar a senha</button></div>' +
+    '<b class="tela-tit">Forgot password</b>' +
+      '<p class="tela-txt">Use the recovery code shown when you created the account. If you lost both, reach out on the game\'s Discord.</p>' +
+      '<label class="tela-campo">username<input id="rec-usuario" autocomplete="username" autocapitalize="none" spellcheck="false"></label>' +
+      '<label class="tela-campo">recovery code<input id="rec-codigo" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" style="text-transform:uppercase"></label>' +
+      '<label class="tela-campo" style="margin-bottom:12px">new password<input id="rec-senha" type="password" autocomplete="new-password"></label>' +
+      '<div class="tela-linha"><button type="button" class="btn" id="rec-nao">Back</button><button type="button" class="btn ouro" id="rec-sim" style="flex:1">Change password</button></div>' +
       '<div id="rec-aviso" class="tela-msg"></div>',
   );
   for (const d of f.querySelectorAll('input'))
@@ -164,15 +164,15 @@ function formRecuperar(a) {
     const u = f.querySelector('#rec-usuario').value.trim(),
       c = f.querySelector('#rec-codigo').value.trim(),
       d = f.querySelector('#rec-senha').value.trim();
-    if (!u || !c) return b('Preencha o usuário e o código.');
-    if (d.length < 6) return b('Senha nova: pelo menos 6 caracteres.');
-    b('Trocando…');
+    if (!u || !c) return b('Enter your username and code.');
+    if (d.length < 6) return b('New password: at least 6 characters.');
+    b('Changing…');
     const r = await ctx.conta.recuperar(u, c, d);
-    if (!r.ok) return b(r.erro || 'Não deu.');
+    if (!r.ok) return b(r.erro || "That didn't work.");
     f.remove();
     ctx.conta.codigoNovo?.();
-    if (r.codigo) mostrarCodigo(r.codigo, () => avisar(a, 'Senha trocada. Entre com ela.', false), { pop: a });
-    else avisar(a, 'Senha trocada. Entre com ela.', false);
+    if (r.codigo) mostrarCodigo(r.codigo, () => avisar(a, 'Password changed. Log in with it.', false), { pop: a });
+    else avisar(a, 'Password changed. Log in with it.', false);
   };
 }
 export function mostrar(b, L, c = {}) {
@@ -180,7 +180,7 @@ export function mostrar(b, L, c = {}) {
   ctx = c || ctx;
   const d = layout?.telas?.[ori()]?.[b] || layout?.telas?.pc?.[b];
   if (!d) {
-    console.warn('telas: não há maquete de ' + b);
+    console.warn('screens: no mockup for ' + b);
     return null;
   }
   fechar();
@@ -238,7 +238,7 @@ export function mostrar(b, L, c = {}) {
     const l = document.createElement('button');
     l.type = 'button';
     l.id = 'tela-esqueci';
-    l.textContent = 'esqueci minha senha';
+    l.textContent = 'forgot my password';
     const x = parseFloat(k?.style.left) || 0,
       y = (parseFloat(k?.style.top) || 0) + (parseFloat(k?.style.height) || 0) + 16,
       w = parseFloat(k?.style.width) || 200;
@@ -264,7 +264,7 @@ export function mostrar(b, L, c = {}) {
   } else {
     Popup.imagem(e, 'fundo', FUNDOS.login);
     Popup.imagem(e, 'logo', './ui/figma/backgrounds/logo-pokefable.png');
-    Popup.texto(e, 'versao', ctx?.conta ? VERSAO : 'v0.1.0 · prévia');
+    Popup.texto(e, 'versao', ctx?.conta ? VERSAO : 'v0.1.0 · preview');
   }
   for (const o of H ? [] : [...e.querySelectorAll('input')].filter((i) => !i.closest('.pf-extra'))) {
     const p = o.closest('[data-fig]')?.dataset.fig || '';
@@ -439,7 +439,7 @@ function discordDaMaquete(b) {
     a.href = DISCORD;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
-    a.title = tr('Comunidade, novidades e sorteios de chave');
+    a.title = tr('Community, news and key giveaways');
     a.setAttribute('aria-label', e ? 'Discord' : d?.textContent || 'Discord');
     Object.assign(a.style, {
       position: 'absolute',
@@ -459,7 +459,7 @@ function botaoDiscord(b) {
   a.href = DISCORD;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
-  a.title = tr('Comunidade, novidades e sorteios de chave');
+  a.title = tr('Community, news and key giveaways');
   a.innerHTML = LOGO_DISCORD + '<span>' + tr('Discord') + '</span>';
   b.appendChild(a);
 }
@@ -598,8 +598,8 @@ function tirarFundo() {
 export function atualizando() {
   if (document.getElementById('tela-atualizando')) return;
   const f = painel(
-    '<b class="tela-tit">O jogo foi atualizado</b>' +
-      '<p class="tela-txt" style="margin-bottom:0">Voltando em um instante…</p>',
+    '<b class="tela-tit">The game was updated</b>' +
+      '<p class="tela-txt" style="margin-bottom:0">Returning in a moment…</p>',
   );
   f.id = 'tela-atualizando';
   f.style.zIndex = '1200';
@@ -611,21 +611,21 @@ export function derrubado(a = 'Você entrou de outro lugar.', b = null, c = {}) 
   const d =
     b === 'fechado' || b === 'banido'
       ? (b === 'banido'
-          ? '<p class="tela-txt" style="margin:10px 0 0">Punido por engano? Peça revisão no Discord.</p>'
+          ? '<p class="tela-txt" style="margin:10px 0 0">Punished by mistake? Request a review on Discord.</p>'
           : '') +
         '<p style="margin:12px 0 16px"><a class="tela-alpha-discord" href="' +
         DISCORD +
         '" target="_blank" rel="noopener noreferrer">' +
         LOGO_DISCORD +
-        tr('Entre no nosso Discord') +
+        tr('Join our Discord') +
         '</a></p>'
       : b === 'apagada' || b === 'sessao'
         ? '<div style="height:16px"></div>'
-        : '<p class="tela-txt" style="margin:10px 0 16px">A sua conta só joga de um lugar por vez.</p>';
+        : '<p class="tela-txt" style="margin:10px 0 16px">Your account can only play from one place at a time.</p>';
   const f = painel(
     '<b class="tela-tit"></b>' +
       d +
-      '<button type="button" class="btn ouro" id="der-voltar" style="width:100%">Ir pro login</button>',
+      '<button type="button" class="btn ouro" id="der-voltar" style="width:100%">Go to login</button>',
   );
   f.querySelector('.tela-tit').textContent = a;
   f.id = 'tela-derrubado';
@@ -811,18 +811,18 @@ async function caixaAlphaKey(b, c = '') {
   if (document.getElementById('tela-alpha')) return;
   const f = painel(
     '<b class="tela-tit">Alpha Key</b>' +
-      '<p class="tela-txt">O alfa é fechado: pra criar conta você precisa da chave que recebeu. Cole ela aqui:</p>' +
+      '<p class="tela-txt">The alpha is closed: to create an account you need the key you received. Paste it here:</p>' +
       '<input id="alpha-chave" placeholder="ALPHA-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">' +
       '<div id="alpha-aviso" class="tela-msg"></div>' +
-      '<div class="tela-linha"><button type="button" class="btn" id="alpha-nao">Voltar</button><button type="button" class="btn ouro" id="alpha-sim" style="flex:1">Continuar</button></div>' +
+      '<div class="tela-linha"><button type="button" class="btn" id="alpha-nao">Back</button><button type="button" class="btn ouro" id="alpha-sim" style="flex:1">Continue</button></div>' +
       '<p class="tela-pe">' +
-      tr('Não tem uma chave?') +
+      tr("Don't have a key?") +
       ' ' +
       '<a class="tela-alpha-discord" href="' +
       DISCORD +
       '" target="_blank" rel="noopener noreferrer">' +
       LOGO_DISCORD +
-      tr('Peça no nosso Discord') +
+      tr('Ask on our Discord') +
       '</a></p>',
   );
   f.id = 'tela-alpha';
@@ -839,14 +839,14 @@ async function caixaAlphaKey(b, c = '') {
   };
   const i = async () => {
     const v = e.value.trim();
-    if (!v) return h('Cole a sua Alpha Key.');
+    if (!v) return h('Paste your Alpha Key.');
     g.disabled = true;
     const r = await ctx.conta.validarChave(v);
     g.disabled = false;
-    if (!r.ok) return h(r.erro || 'Chave inválida.');
+    if (!r.ok) return h(r.erro || 'Invalid key.');
     chaveAlfa = r.chave;
     f.remove();
-    avisar(b, 'Alpha Key aceita ✓ — agora crie a sua conta.');
+    avisar(b, 'Alpha Key accepted ✓ — now create your account.');
     b.querySelector('input')?.focus();
   };
   g.onclick = i;
@@ -1063,8 +1063,8 @@ function alphaV2(a, d, b = '') {
   if (!d.classList.contains('tela-caixa-v2')) {
     prepararCaixa(d);
     Popup.rotulo(a, 'texto-alpha', d);
-    botaoDaCaixa(f, tr('Voltar'));
-    botaoDaCaixa(g, tr('Continuar'));
+    botaoDaCaixa(f, tr('Back'));
+    botaoDaCaixa(g, tr('Continue'));
     if (c && !c.dataset.chave) {
       c.dataset.chave = '1';
       c.type = 'text';
@@ -1100,7 +1100,7 @@ function alphaV2(a, d, b = '') {
     });
     a.__acoes.set('alpha-continuar', async () => {
       const v = (c?.value || '').trim();
-      if (!v) return i('Cole a sua Alpha Key.');
+      if (!v) return i('Paste your Alpha Key.');
       if (g?.dataset.ocupado) return;
       ocupar(g, true);
       let r;
@@ -1111,10 +1111,10 @@ function alphaV2(a, d, b = '') {
       }
       ocupar(g, false);
       if (atual !== a || !d.classList.contains('tela-caixa-v2')) return;
-      if (!r?.ok) return i(r?.erro || 'Chave inválida.');
+      if (!r?.ok) return i(r?.erro || 'Invalid key.');
       chaveAlfa = r.chave;
       j();
-      avisar(a, 'Alpha Key aceita ✓ — agora crie a sua conta.');
+      avisar(a, 'Alpha Key accepted ✓ — now create your account.');
       a.querySelector(':scope > [data-fig^="tela-"] input')?.focus();
     });
     comIds(h, true);
@@ -1153,10 +1153,10 @@ function codigoV2(a, b, c, { animar: e = true } = {}) {
   if (!d) return null;
   Popup.rotulo(a, 'texto-codigo', d);
   Popup.rotulo(a, 'rotulo-anotei', d);
-  Popup.texto(a, 'copiar', 'Copiar', d);
+  Popup.texto(a, 'copiar', 'Copy', d);
   const f = Popup.textoCru(a, 'codigo', b, d);
-  const g = botaoDaCaixa(d.querySelector('[data-fig="btn-copiar"]'), tr('Copiar')),
-    h = botaoDaCaixa(d.querySelector('[data-fig="btn-continuar"]'), tr('Continuar'));
+  const g = botaoDaCaixa(d.querySelector('[data-fig="btn-copiar"]'), tr('Copy')),
+    h = botaoDaCaixa(d.querySelector('[data-fig="btn-continuar"]'), tr('Continue'));
   const i = d.querySelector('[data-fig="btn-anotei"]'),
     j = i?.querySelector('[data-txt="rotulo-anotei"]'),
     l = i?.querySelector(':scope > [data-fig="marca-visto"]');
@@ -1180,7 +1180,7 @@ function codigoV2(a, b, c, { animar: e = true } = {}) {
   ];
   comIds(o, true);
   if (j) m.setAttribute('aria-labelledby', 'cod-anotei-txt');
-  else m.setAttribute('aria-label', tr('anotei em lugar seguro'));
+  else m.setAttribute('aria-label', tr('I saved it somewhere safe'));
   n();
   let q = d.querySelector(':scope > .tela-sr');
   if (!q) {
@@ -1194,9 +1194,9 @@ function codigoV2(a, b, c, { animar: e = true } = {}) {
   a.__acoes.set('copiar-codigo', () => {
     const c = () => {
       if (!d.classList.contains('tela-caixa-v2')) return;
-      Popup.texto(a, 'copiar', 'copiado ✓', d);
-      g?.setAttribute('aria-label', tr('copiado ✓'));
-      q.textContent = tr('copiado ✓');
+      Popup.texto(a, 'copiar', 'copied ✓', d);
+      g?.setAttribute('aria-label', tr('copied ✓'));
+      q.textContent = tr('copied ✓');
     };
     try {
       const p = navigator.clipboard?.writeText(b);
@@ -1226,8 +1226,8 @@ function boasVindas(a, e, f) {
   const d = a?.__def?.v2 ? prepararCaixa(Popup.extra(a, 'dialogo-boas-vindas')) : null;
   if (!d || !Popup.extra(a, 'dialogo-codigo')) return mostrarCodigo(e, f, { pop: a });
   avisar(a, '');
-  Popup.texto(a, 'boas-vindas', 'Sua conta de treinador está pronta.', d);
-  const b = botaoDaCaixa(d.querySelector('[data-fig="btn-boas-vindas"]'), tr('Continuar'));
+  Popup.texto(a, 'boas-vindas', 'Your trainer account is ready.', d);
+  const b = botaoDaCaixa(d.querySelector('[data-fig="btn-boas-vindas"]'), tr('Continue'));
   const g = [
     [d, 'tela-boas-vindas'],
     [b, 'bv-continuar'],
@@ -1296,7 +1296,7 @@ function linhaAceite(b) {
   e.setAttribute('aria-hidden', 'true');
   const f = document.createElement('span');
   f.className = 'tela-aceite-txt';
-  for (const p of trT('Li e aceito os {termos} e a {privacidade}')
+  for (const p of trT('I have read and accept the {termos} and the {privacidade}')
     .split(/(\{termos\}|\{privacidade\})/)
     .filter(Boolean)) {
     const g = p === '{termos}' ? 'termos' : p === '{privacidade}' ? 'privacidade' : null;
@@ -1308,7 +1308,7 @@ function linhaAceite(b) {
     a.href = '/portal/' + g + '.html?idioma=' + l;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.textContent = trT(g === 'termos' ? 'Termos de Uso' : 'Política de Privacidade');
+    a.textContent = trT(g === 'termos' ? 'Terms of Use' : 'Privacy Policy');
     a.addEventListener('click', (a) => a.stopPropagation());
     f.appendChild(a);
   }
@@ -1378,9 +1378,9 @@ function aceiteNaMaquete(d) {
 export function pedirAceiteTermos({ versao: c = TERMOS_VERSAO, aceitar: a, sair: b } = {}) {
   return caixaDoAceite({
     id: 'tela-termos-novos',
-    texto: 'Para continuar jogando, leia e aceite a versão atual dos Termos de Uso e da Política de Privacidade.',
-    nao: 'Sair da conta',
-    sim: 'Aceitar e continuar',
+    texto: 'To keep playing, read and accept the current version of the Terms of Use and Privacy Policy.',
+    nao: 'Log out',
+    sim: 'Accept and continue',
     aceitar: () => a?.(c),
     aoNao: async () => {
       if (typeof b === 'function') {
@@ -1417,7 +1417,7 @@ function caixaDoAceite({ id: a, texto: b, nao: c, sim: d, aceitar: g = null, aoN
     const k = document.createElement('b');
     k.className = 'tela-tit';
     k.id = a + '-tit';
-    k.textContent = trT('Termos de Uso e Política de Privacidade');
+    k.textContent = trT('Terms of Use and Privacy Policy');
     const p = document.createElement('p');
     p.className = 'tela-txt';
     p.textContent = trT(b);
@@ -1447,7 +1447,7 @@ function caixaDoAceite({ id: a, texto: b, nao: c, sim: d, aceitar: g = null, aoN
       if (!m.checked) return;
       if (g) {
         s.disabled = true;
-        n.textContent = trT('Enviando…');
+        n.textContent = trT('Sending…');
         let r;
         try {
           r = await g();
@@ -1456,7 +1456,7 @@ function caixaDoAceite({ id: a, texto: b, nao: c, sim: d, aceitar: g = null, aoN
         }
         s.disabled = false;
         if (!r?.ok) {
-          n.textContent = r?.erro ? trT(r.erro) : tr('Não deu. Tente de novo.');
+          n.textContent = r?.erro ? trT(r.erro) : tr("That didn't work. Try again.");
           return;
         }
       }
@@ -1493,10 +1493,9 @@ function acao(b, a, c, d) {
       ctx?.Chat?.sistema?.(t);
       console.log('telas:', t);
     };
-    if (a === 'login')
-      i('Prévia: o login de verdade abre quando o jogo está com o servidor no ar (conta por usuário + senha).');
-    else if (a === 'cadastrar') i('Prévia: o cadastro de verdade abre quando o jogo está com o servidor no ar.');
-    else if (a === 'recuperar-senha') i('Prévia: recuperação de senha.');
+    if (a === 'login') i("Preview: real login opens when the game's server is online (username + password account).");
+    else if (a === 'cadastrar') i("Preview: real sign-up opens when the game's server is online.");
+    else if (a === 'recuperar-senha') i('Preview: password recovery.');
     fechar();
     return;
   }
@@ -1506,14 +1505,14 @@ function acao(b, a, c, d) {
     if (!r?.ok && r?.precisaChave) {
       chaveAlfa = null;
       avisar(d, '');
-      caixaAlphaKey(d, r.erro || 'Precisa de uma Alpha Key.');
+      caixaAlphaKey(d, r.erro || 'You need an Alpha Key.');
       return;
     }
     if (!r?.ok && r?.precisaCaptcha && ctx.conta.irParaEntrada?.()) return;
     if (!r?.ok)
       return reservaTermos(r?.erro)
         ? avisar(d, trT(r.erro), true, true)
-        : avisar(d, r?.erro || 'Não deu. Tente de novo.', true, !!r?.cru);
+        : avisar(d, r?.erro || "That didn't work. Try again.", true, !!r?.cru);
     if (typeof r.termosPendentes === 'string' && r.termosPendentes && ctx.conta.aceitarTermos) {
       avisar(d, '');
       return pedirAceiteTermos({
@@ -1525,20 +1524,20 @@ function acao(b, a, c, d) {
     const a = ctx.conta.codigoNovo?.();
     if (a)
       return boasVindas(d, a, () => {
-        avisar(d, 'Entrando…');
+        avisar(d, 'Signing in…');
         fechar();
         ctx.aoEntrar?.(r);
       });
-    avisar(d, 'Entrando…');
+    avisar(d, 'Signing in…');
     fechar();
     ctx.aoEntrar?.(r);
   };
   if (a === 'login') {
     const u = valor(d, 'campo-usuario'),
       s = valor(d, 'campo-senha');
-    if (!u || !s) return avisar(d, 'Preencha usuário e senha.', true);
+    if (!u || !s) return avisar(d, 'Enter your username and password.', true);
     ocupado = true;
-    avisar(d, 'Entrando…');
+    avisar(d, 'Signing in…');
     ctx.conta.entrar(u, s).then(h, (e) => h({ ok: false, erro: String(e?.message || e) }));
   } else if (a === 'cadastrar') {
     const u = valor(d, 'campo-usuario').toLowerCase(),
@@ -1546,15 +1545,15 @@ function acao(b, a, c, d) {
       s = valor(d, 'campo-senha'),
       j = valor(d, 'campo-confirmar-senha');
     if (!/^[a-z0-9_.]{3,16}$/.test(u))
-      return avisar(d, 'Nome de usuário: 3 a 16 letras minúsculas, números, ponto ou _.', true);
-    if (!e) return avisar(d, trT('Informe o seu e-mail: ele é obrigatório.'), true, true);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(e)) return avisar(d, 'E-mail inválido.', true);
-    if (e.split('@')[0].includes('+')) return avisar(d, trT('Use o seu e-mail sem apelido (sem o "+").'), true, true);
-    if (s.length < 6) return avisar(d, 'Senha: pelo menos 6 caracteres.', true);
-    if (s !== j) return avisar(d, 'As duas senhas não batem.', true);
+      return avisar(d, 'Username: 3 to 16 lowercase letters, numbers, dot or _.', true);
+    if (!e) return avisar(d, trT("Enter your e-mail: it's required."), true, true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(e)) return avisar(d, 'Invalid e-mail.', true);
+    if (e.split('@')[0].includes('+')) return avisar(d, trT('Use your e-mail without an alias (no "+").'), true, true);
+    if (s.length < 6) return avisar(d, 'Password: at least 6 characters.', true);
+    if (s !== j) return avisar(d, "The two passwords don't match.", true);
     const k = () => {
       ocupado = true;
-      avisar(d, 'Criando a conta…');
+      avisar(d, 'Creating account…');
       ctx.conta
         .criar(u, e, s, chaveAlfa, { termos: TERMOS_VERSAO })
         .then(h, (a) => h({ ok: false, erro: String(a?.message || a) }));
@@ -1564,16 +1563,16 @@ function acao(b, a, c, d) {
       avisar(d, '');
       return caixaDoAceite({
         id: 'tela-termos-cadastro',
-        texto: 'Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.',
-        nao: 'Voltar',
-        sim: 'Criar conta',
+        texto: 'To create the account, read and accept the Terms of Use and the Privacy Policy.',
+        nao: 'Back',
+        sim: 'Create account',
       }).then((a) => {
         ocupado = false;
         if (a) k();
         else
           avisar(
             d,
-            trT('Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.'),
+            trT("To create the account, check that you've read and accept the Terms of Use and the Privacy Policy."),
             true,
             true,
           );
@@ -1586,7 +1585,7 @@ function acao(b, a, c, d) {
       m?.focus();
       return avisar(
         d,
-        trT('Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.'),
+        trT("To create the account, check that you've read and accept the Terms of Use and the Privacy Policy."),
         true,
         true,
       );

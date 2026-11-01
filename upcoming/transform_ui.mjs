@@ -104,7 +104,7 @@ function tique() {
   try {
     ctx.conferir?.();
   } catch (e) {
-    console.warn('transformar: conferir', e);
+    console.warn('transform: check', e);
   }
   pintar();
 }
@@ -196,13 +196,13 @@ function pintar() {
   chip.innerHTML = C?.nome
     ? '🧬 ' + esc(D.nome) + ' → ' + esc(C.nome) + (C.ate ? ' · ' + mmss(C.ate - b) : '')
     : '🧬 ' +
-      esc(tr('Transformar')) +
+      esc(tr('Transform')) +
       (recargaAte > b
         ? ' · ' + mmss(recargaAte - b)
         : toque() || !tk('transformar')
           ? ''
           : ' <small style="opacity:.7">(' + esc(tk('transformar')) + ')</small>');
-  chip.title = tr('Transformar') + ' · ' + tr('visual provisório');
+  chip.title = tr('Transform') + ' · ' + tr('temporary look');
   chip.style.display = '';
   posicionar();
   if (aberto) pintarLista(D, b);
@@ -262,7 +262,7 @@ const ctxDe = (R) => ({
   teto: ctx.teto?.(),
 });
 function itens(D) {
-  if (D.transf) return [{ tipo: 'desfazer', rotulo: '↩ ' + tr('Desfazer transformação'), dex: D.transf.dex }];
+  if (D.transf) return [{ tipo: 'desfazer', rotulo: '↩ ' + tr('Undo transformation'), dex: D.transf.dex }];
   const a = [],
     P = ctx.posicao?.();
   const s = ctx.alvoSelvagem?.();
@@ -293,7 +293,7 @@ function itens(D) {
     a.push({
       tipo: 'jogador',
       id: j.id,
-      rotulo: '👤 ' + tr('Parceiro de {x}', { x: j.nome }) + ' · ' + (ctx.especie?.(b)?.name || '?'),
+      rotulo: '👤 ' + tr("{x}'s partner", { x: j.nome }) + ' · ' + (ctx.especie?.(b)?.name || '?'),
       dex: b,
       especie: ctx.especie?.(b)?.name || '?',
       dono: j.nome,
@@ -330,17 +330,17 @@ function pintarLista(D, a) {
   const e = [];
   e.push(
     '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:14px">🧬 ' +
-      esc(tr('Transformar')) +
+      esc(tr('Transform')) +
       '</b>' +
       '<small style="opacity:.6;font-weight:600">' +
-      esc(tr('visual provisório')) +
+      esc(tr('temporary look')) +
       '</small></div>',
   );
   if (D.transf)
     e.push(
       '<div style="opacity:.9">' +
         esc(
-          tr('Cópia de {alvo} · {min} min', {
+          tr('Copy of {alvo} · {min} min', {
             alvo: D.transf.nome,
             min: Math.max(1, Math.ceil(((+D.transf.ate || a) - a) / 60000)),
           }),
@@ -351,7 +351,7 @@ function pintarLista(D, a) {
     e.push(
       '<div style="opacity:.8;font-size:12px">' +
         esc(
-          tr('O Ditto copia um Pokémon de até {n} níveis acima dele, com 30% menos força, por {min} min.', {
+          tr('Ditto copies a Pokémon up to {n} levels above it, at 30% less strength, for {min} min.', {
             n: R.respeitoNiveis,
             min: R.duracaoMin,
           }),
@@ -384,10 +384,10 @@ function pintarLista(D, a) {
       '<div style="opacity:.8">' +
         esc(
           tk('proximo-alvo')
-            ? tr('Trave um selvagem como alvo ({x}) ou chegue perto de outro treinador pra copiar o Pokémon dele.', {
+            ? tr('Lock onto a wild Pokémon ({x}) or get close to another trainer to copy their Pokémon.', {
                 x: tk('proximo-alvo'),
               })
-            : tr('Trave um selvagem como alvo ou chegue perto de outro treinador pra copiar o Pokémon dele.'),
+            : tr('Lock onto a wild Pokémon or get close to another trainer to copy their Pokémon.'),
         ) +
         '</div>',
     );
@@ -436,33 +436,33 @@ function motivoCurto(v, D) {
     a = R.alcanceM || 12;
   switch (v?.erro) {
     case 'respeito':
-      return tr('nível alto demais (até {n})', { n: v.max ?? (+D?.lv || 1) + (R.respeitoNiveis || 5) });
+      return tr('level too high (up to {n})', { n: v.max ?? (+D?.lv || 1) + (R.respeitoNiveis || 5) });
     case 'alvoLonge':
-      return tr('longe demais ({d} m)', { d: v.distancia != null ? Math.round(v.distancia) : a });
+      return tr('too far ({d} m)', { d: v.distancia != null ? Math.round(v.distancia) : a });
     case 'alvoDesmaiado':
       return tr('desmaiado');
     case 'alvoChefe':
-      return tr('chefe da raid');
+      return tr('raid boss');
     case 'alvoTransformado':
-      return tr('já é uma cópia');
+      return tr('already a copy');
     case 'alvoDitto':
-      return tr('Ditto não copia Ditto');
+      return tr("Ditto can't copy Ditto");
     case 'alvoLendario':
       return tr('lendário');
     case 'alvoSemEspecie':
-      return tr('não dá pra copiar');
+      return tr("can't be copied");
     case 'alvoSemGolpes':
-      return tr('sem golpes pra copiar');
+      return tr('no moves to copy');
     case 'outraCena':
-      return tr('em outro lugar');
+      return tr('somewhere else');
     case 'semPosicao':
-      return tr('ande um pouco');
+      return tr('walk a bit');
     case 'recarga':
-      return tr('recarga ({s} s)', { s: v.restaS ?? '' });
+      return tr('cooldown ({s} s)', { s: v.restaS ?? '' });
     case 'desmaiado':
-      return tr('{x} desmaiado', { x: D?.nome || 'Ditto' });
+      return tr('{x} fainted', { x: D?.nome || 'Ditto' });
     case 'naoObedece':
-      return tr('não obedece');
+      return tr("won't obey");
     default:
       return tr(v?.texto || '');
   }
@@ -471,8 +471,8 @@ function motivoDoBotao(D, a, b) {
   if (b) return motivoCurto(b, D);
   if (a.some((a) => a.v?.ok)) return null;
   return !a.length || a.every((a) => a.v?.erro === 'alvoLonge')
-    ? tr('ninguém a {m} m', { m: T.regras()?.alcanceM || 12 })
-    : tr('nenhum alvo');
+    ? tr('no one within {m} m', { m: T.regras()?.alcanceM || 12 })
+    : tr('no target');
 }
 function pintarV2(D, b) {
   if (chip) chip.style.display = 'none';
@@ -493,7 +493,7 @@ function pintarV2(D, b) {
     f = C ? null : T.podeTransformar(dittoDe(D), null, ctxDe(R));
   const g = f && !['alvoNaoExiste', 'recarga'].includes(f.erro) ? f : null;
   let h = null,
-    i = tr('Transformar'),
+    i = tr('Transform'),
     j = '',
     k = 0;
   if (C?.nome) {
@@ -503,7 +503,7 @@ function pintarV2(D, b) {
     k = C.ate ? (C.ate - d) / (R.duracaoMin * 60000) : 1;
   } else if (recargaAte > d) {
     h = 'recarga';
-    i = tr('Recarga');
+    i = tr('Cooldown');
     j = mmss(recargaAte - d);
     k = (recargaAte - d) / (R.recargaS * 1000);
   } else {
@@ -521,14 +521,14 @@ function pintarV2(D, b) {
   Hud.sitAo(b, (a) => {
     if (a === 'acao') alternar();
   });
-  b.title = toque() ? '' : tr('Transformar') + (tk('transformar') ? ' (' + tk('transformar') + ')' : '');
+  b.title = toque() ? '' : tr('Transform') + (tk('transformar') ? ' (' + tk('transformar') + ')' : '');
   Hud.sitMostrar(b, true);
   const n = document.querySelector('#time-hud .tslot.on')?.closest('.tcel') || null;
   for (const s of document.querySelectorAll(c)) if (!C?.nome || s.parentElement !== n) s.remove();
   if (C?.nome && n) {
     const o = Hud.sitSobre(n, 'slot-poke', 'copia', true, 'time-hud');
     if (o) {
-      Hud.escrever(o, 'copia', tr('CÓPIA'));
+      Hud.escrever(o, 'copia', tr('COPY'));
       const a = Hud.fig(o, 'fill/anel-copia');
       if (a) Hud.fill(a, entre(k, 0, 1));
     }
@@ -576,15 +576,15 @@ function pintarListaV2(D, a, b) {
   if (!L) return;
   L.style.zIndex = '35';
   const e = Relogio.agora();
-  Hud.escrever(L, 'lista-titulo', tr('Transformar em…'));
+  Hud.escrever(L, 'lista-titulo', tr('Transform into…'));
   Hud.escrever(
     L,
     'lista-dica',
     toque()
-      ? tr('toque fora pra fechar')
+      ? tr('tap outside to close')
       : tk('transformar')
-        ? tr('{x} fecha', { x: tk('transformar') })
-        : tr('Esc fecha'),
+        ? tr('{x} closes', { x: tk('transformar') })
+        : tr('Esc closes'),
   );
   itensAgora = a;
   const f = a.map((a) => {
@@ -592,8 +592,8 @@ function pintarListaV2(D, a, b) {
       const C = D.transf || {};
       return {
         img: cabeca(C.dex),
-        nome: tr('Desfazer transformação'),
-        info: tr('volta a ser Ditto · {min} min', { min: Math.max(1, Math.ceil(((+C.ate || e) - e) / 60000)) }),
+        nome: tr('Undo transformation'),
+        info: tr('turns back into Ditto · {min} min', { min: Math.max(1, Math.ceil(((+C.ate || e) - e) / 60000)) }),
         pode: !pedindo,
       };
     }
@@ -602,10 +602,10 @@ function pintarListaV2(D, a, b) {
     const f = !c
       ? motivoCurto(b || a.v, D)
       : a.tipo === 'selvagem'
-        ? tr('selvagem · {d} m', { d })
+        ? tr('wild · {d} m', { d })
         : a.tipo === 'jogador'
-          ? tr('de {x} · {d} m', { x: a.dono, d })
-          : tr('do seu time');
+          ? tr("{x}'s · {d} m", { x: a.dono, d })
+          : tr('from your party');
     return {
       img: cabeca(a.dex),
       nome: (a.especie || '?') + (a.lv ? '  ·  Lv ' + a.lv : ''),
@@ -616,8 +616,8 @@ function pintarListaV2(D, a, b) {
   if (!f.length)
     f.push({
       img: null,
-      nome: tr('Ninguém pra copiar'),
-      info: toque() ? tr('toque num selvagem pra mirar') : tr('trave um selvagem como alvo'),
+      nome: tr('No one to copy'),
+      info: toque() ? tr('tap a wild Pokémon to target it') : tr('lock onto a wild Pokémon'),
       pode: false,
     });
   const g = Hud.sitCelulas(

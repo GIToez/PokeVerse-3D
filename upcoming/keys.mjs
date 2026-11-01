@@ -2,12 +2,12 @@ export const VERSAO = 1;
 export const CHAVE_TECLAS = 'controles.teclas',
   CHAVE_MOUSE = 'controles.mouse';
 export const GRUPOS = [
-  { id: 'andar', nome: 'Andar', cor: '#43D17C' },
-  { id: 'camera', nome: 'Câmera', cor: '#9DBBFF' },
-  { id: 'combate', nome: 'Combate', cor: '#FF7A2E' },
-  { id: 'atalhos', nome: 'Atalhos', cor: '#FF7ACB' },
-  { id: 'janelas', nome: 'Janelas', cor: '#9A6BFF' },
-  { id: 'conversa', nome: 'Conversa', cor: '#FCF2DA' },
+  { id: 'andar', nome: 'Movement', cor: '#43D17C' },
+  { id: 'camera', nome: 'Camera', cor: '#9DBBFF' },
+  { id: 'combate', nome: 'Combat', cor: '#FF7A2E' },
+  { id: 'atalhos', nome: 'Shortcuts', cor: '#FF7ACB' },
+  { id: 'janelas', nome: 'Windows', cor: '#9A6BFF' },
+  { id: 'conversa', nome: 'Talk', cor: '#FCF2DA' },
 ];
 export const COR = Object.fromEntries(GRUPOS.map((g) => [g.id, g.cor]));
 export function corClara(a) {
@@ -24,180 +24,182 @@ export function corClara(a) {
 const A = (b, c, d, e, p = null, a = null, f = {}) => ({ grupo: b, id: c, nome: d, detalhe: e, p, a, ...f });
 const vezes = (n, f) => Array.from({ length: n }, (_, i) => f(i + 1));
 export const ACOES = [
-  A('andar', 'andar-frente', 'Andar pra frente', 'relativo à câmera', 'KeyW', 'ArrowUp', {
+  A('andar', 'andar-frente', 'Move forward', 'relative to the camera', 'KeyW', 'ArrowUp', {
     segura: true,
     icone: { glifo: 'andar-frente' },
-    semTecla: 'sem tecla: só clicando no chão',
+    semTecla: 'no key: click the ground only',
   }),
-  A('andar', 'andar-tras', 'Andar pra trás', 'relativo à câmera', 'KeyS', 'ArrowDown', {
+  A('andar', 'andar-tras', 'Move back', 'relative to the camera', 'KeyS', 'ArrowDown', {
     segura: true,
     icone: { glifo: 'andar-tras' },
-    semTecla: 'sem tecla: só clicando no chão',
+    semTecla: 'no key: click the ground only',
   }),
-  A('andar', 'andar-esquerda', 'Andar pra esquerda', 'relativo à câmera', 'KeyA', 'ArrowLeft', {
+  A('andar', 'andar-esquerda', 'Move left', 'relative to the camera', 'KeyA', 'ArrowLeft', {
     segura: true,
     icone: { glifo: 'andar-esquerda' },
-    semTecla: 'sem tecla: só clicando no chão',
+    semTecla: 'no key: click the ground only',
   }),
-  A('andar', 'andar-direita', 'Andar pra direita', 'relativo à câmera', 'KeyD', 'ArrowRight', {
+  A('andar', 'andar-direita', 'Move right', 'relative to the camera', 'KeyD', 'ArrowRight', {
     segura: true,
     icone: { glifo: 'andar-direita' },
-    semTecla: 'sem tecla: só clicando no chão',
+    semTecla: 'no key: click the ground only',
   }),
-  A('andar', 'montar', 'Montar e desmontar', 'a montaria em uso ou a 1ª dos atalhos', 'KeyM', null, {
+  A('andar', 'montar', 'Mount and dismount', 'the mount in use or the 1st shortcut', 'KeyM', null, {
     icone: { arte: './ui/icones/montaria.png' },
-    semTecla: 'sem tecla: só pelo atalho da montaria',
+    semTecla: 'no key: mount shortcut only',
   }),
-  A('camera', 'camera-esquerda', 'Girar pra esquerda', 'segure pra girar', 'KeyQ', null, {
+  A('camera', 'camera-esquerda', 'Rotate left', 'hold to rotate', 'KeyQ', null, {
     segura: true,
     icone: { glifo: 'camera-esquerda' },
-    semTecla: 'sem tecla: a câmera não gira',
+    semTecla: "no key: the camera won't rotate",
   }),
-  A('camera', 'camera-direita', 'Girar pra direita', 'segure pra girar', 'KeyE', null, {
+  A('camera', 'camera-direita', 'Rotate right', 'hold to rotate', 'KeyE', null, {
     segura: true,
     icone: { glifo: 'camera-direita' },
-    semTecla: 'sem tecla: a câmera não gira',
+    semTecla: "no key: the camera won't rotate",
   }),
-  A('camera', 'zoom-mais', 'Aproximar', 'também na roda do mouse', 'Equal', 'NumpadAdd', {
+  A('camera', 'zoom-mais', 'Zoom in', 'also on the mouse wheel', 'Equal', 'NumpadAdd', {
     repete: true,
     icone: { glifo: 'zoom-mais' },
-    semTecla: 'sem tecla: só na roda do mouse',
+    semTecla: 'no key: mouse wheel only',
   }),
-  A('camera', 'zoom-menos', 'Afastar', 'também na roda do mouse', 'Minus', 'NumpadSubtract', {
+  A('camera', 'zoom-menos', 'Zoom out', 'also on the mouse wheel', 'Minus', 'NumpadSubtract', {
     repete: true,
     icone: { glifo: 'zoom-menos' },
-    semTecla: 'sem tecla: só na roda do mouse',
+    semTecla: 'no key: mouse wheel only',
   }),
   ...vezes(4, (n) =>
-    A('combate', 'golpe-' + n, 'Golpe ' + n, 'golpe do Pokémon em campo', 'Digit' + n, null, {
+    A('combate', 'golpe-' + n, 'Move ' + n, 'on-field Pokémon move', 'Digit' + n, null, {
       icone: { jogo: 'golpe' },
-      semTecla: 'sem tecla: só clicando no golpe',
+      semTecla: 'no key: click the move only',
     }),
   ),
-  A('combate', 'pokebola', 'Jogar a Pokébola', 'bola atual e quantidade', 'KeyF', null, {
+  A('combate', 'pokebola', 'Throw Poké Ball', 'current ball and count', 'KeyF', null, {
     icone: { jogo: 'bola' },
-    semTecla: 'sem tecla: só clicando na bola',
+    semTecla: 'no key: click the ball only',
   }),
-  A('combate', 'trocar-bola', 'Trocar o tipo de bola', 'passa pelas bolas que tem', 'Shift+KeyF', null, {
+  A('combate', 'trocar-bola', 'Switch ball type', 'cycles through the balls you have', 'Shift+KeyF', null, {
     icone: { glifo: 'trocar-bola' },
-    semTecla: 'sem tecla: só no ⇄ da bola',
+    semTecla: 'no key: only via the ball ⇄',
   }),
-  A('combate', 'proximo-alvo', 'Próximo alvo', 'mira o próximo selvagem', 'Tab', null, {
+  A('combate', 'proximo-alvo', 'Next target', 'targets the next wild Pokémon', 'Tab', null, {
     icone: { glifo: 'proximo-alvo' },
-    semTecla: 'sem tecla: só clicando no selvagem',
+    semTecla: 'no key: click the wild Pokémon only',
   }),
-  A('combate', 'trocar-pokemon', 'Trocar de Pokémon', 'o próximo do time que está de pé', 'Shift+KeyZ', null, {
+  A('combate', 'trocar-pokemon', 'Switch Pokémon', 'the next healthy team member', 'Shift+KeyZ', null, {
     icone: { glifo: 'trocar-pokemon' },
-    semTecla: 'sem tecla: só clicando no time',
+    semTecla: 'no key: click the team only',
   }),
-  A('combate', 'transformar', 'Transformar', 'a lista do Ditto em campo', 'KeyT', null, {
+  A('combate', 'transformar', 'Transform', "the on-field Ditto's list", 'KeyT', null, {
     exato: true,
     icone: { arte: './ui/mon/pm0132.png' },
-    semTecla: 'sem tecla: o Ditto fica sem a lista',
+    semTecla: 'no key: Ditto has no list',
   }),
   ...vezes(6, (n) =>
-    A('combate', 'time-' + n, 'Chamar o ' + n + 'º do time', 'casa vazia', null, null, { icone: { jogo: 'time' } }),
+    A('combate', 'time-' + n, 'Send out team slot ' + n, 'empty slot', null, null, {
+      icone: { jogo: 'time' },
+    }),
   ),
-  A('combate', 'ordem-subir', 'Subir no time', 'com o cartão do time em foco', 'Alt+ArrowUp', null, {
+  A('combate', 'ordem-subir', 'Team up', 'with the team card focused', 'Alt+ArrowUp', null, {
     fixa: 'pa',
     contexto: 'time',
     icone: { glifo: 'ordem-subir' },
   }),
-  A('combate', 'ordem-descer', 'Descer no time', 'com o cartão do time em foco', 'Alt+ArrowDown', null, {
+  A('combate', 'ordem-descer', 'Team down', 'with the team card focused', 'Alt+ArrowDown', null, {
     fixa: 'pa',
     contexto: 'time',
     icone: { glifo: 'ordem-descer' },
   }),
   ...vezes(5, (n) =>
-    A('atalhos', 'atalho-' + n, 'Atalho ' + n, 'vazio: abre o seletor', 'Digit' + (n + 4), null, {
+    A('atalhos', 'atalho-' + n, 'Shortcut ' + n, 'empty: opens the picker', 'Digit' + (n + 4), null, {
       icone: { jogo: 'atalho' },
-      semTecla: 'sem tecla: só clicando no atalho',
+      semTecla: 'no key: click the shortcut only',
     }),
   ),
-  A('janelas', 'janela-pokemon', 'Pokémon', 'time e caixa', 'KeyP', null, {
+  A('janelas', 'janela-pokemon', 'Pokémon', 'party and box', 'KeyP', null, {
     janela: 'pokemon',
     icone: { dock: 'pokemon' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
-  A('janelas', 'janela-mochila', 'Mochila', 'itens e bolas', 'KeyI', null, {
+  A('janelas', 'janela-mochila', 'Bag', 'items and balls', 'KeyI', null, {
     janela: 'mochila',
     icone: { dock: 'mochila' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
-  A('janelas', 'janela-missoes', 'Missões', 'a jornada por Kanto', 'KeyJ', null, {
+  A('janelas', 'janela-missoes', 'Missions', 'the journey through Kanto', 'KeyJ', null, {
     janela: 'missoes',
     icone: { dock: 'missoes' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
   A('janelas', 'janela-mapa', 'Mapa', 'Kanto', 'KeyK', null, {
     janela: 'mapa',
     icone: { dock: 'mapa' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
-  A('janelas', 'janela-pokedex', 'Pokédex', 'vistos e capturados', 'KeyX', null, {
+  A('janelas', 'janela-pokedex', 'Pokédex', 'seen and caught', 'KeyX', null, {
     janela: 'pokedex',
     icone: { dock: 'pokedex' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
-  A('janelas', 'janela-treinador', 'Treinador', 'insígnias, dinheiro', 'KeyU', null, {
+  A('janelas', 'janela-treinador', 'Trainer', 'badges, money', 'KeyU', null, {
     janela: 'treinador',
     icone: { dock: 'treinador' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
-  A('janelas', 'janela-config', 'Configurações', 'som, gráficos, HUD', 'KeyO', null, {
+  A('janelas', 'janela-config', 'Settings', 'sound, graphics, HUD', 'KeyO', null, {
     janela: 'config',
     icone: { dock: 'config' },
-    semTecla: 'sem tecla: só pelo menu',
+    semTecla: 'no key: menu only',
   }),
-  A('janelas', 'menu-grade', 'Menu', 'a grade com todas as janelas', null, null, { icone: { glifo: 'menu-grade' } }),
-  A('janelas', 'fechar', 'Fechar e voltar', 'fecha, solta o alvo ou abre o Menu', 'Escape', null, {
+  A('janelas', 'menu-grade', 'Menu', 'the grid with every window', null, null, { icone: { glifo: 'menu-grade' } }),
+  A('janelas', 'fechar', 'Close and go back', 'closes, drops the target or opens the Menu', 'Escape', null, {
     fixa: 'p',
     icone: { glifo: 'fechar' },
   }),
-  A('janelas', 'janela-mercado', 'Mercado', 'compra e venda entre treinadores', null, null, {
+  A('janelas', 'janela-mercado', 'Market', 'buying and selling between trainers', null, null, {
     recurso: 'mercado',
     icone: { dock: 'mercado' },
   }),
-  A('janelas', 'janela-social', 'Social', 'chat, amigos, correio', null, null, {
+  A('janelas', 'janela-social', 'Social', 'chat, friends, mail', null, null, {
     recurso: 'social',
     icone: { dock: 'social' },
   }),
-  A('janelas', 'janela-guilda', 'Guilda', 'a sua guilda', null, null, { recurso: 'guilda', icone: { dock: 'guilda' } }),
-  A('janelas', 'janela-eventos', 'Eventos', 'a agenda do servidor', null, null, {
+  A('janelas', 'janela-guilda', 'Guild', 'your guild', null, null, { recurso: 'guilda', icone: { dock: 'guilda' } }),
+  A('janelas', 'janela-eventos', 'Events', 'the server schedule', null, null, {
     recurso: 'eventos',
     icone: { dock: 'calendario' },
   }),
-  A('janelas', 'janela-loja', 'Loja', 'em breve', null, null, { recurso: 'loja', icone: { dock: 'loja' } }),
-  A('janelas', 'janela-correio', 'Correio', 'cartas da conta e prêmios', null, null, {
+  A('janelas', 'janela-loja', 'Shop', 'coming soon', null, null, { recurso: 'loja', icone: { dock: 'loja' } }),
+  A('janelas', 'janela-correio', 'Mail', 'account mail and rewards', null, null, {
     recurso: 'correio',
     icone: { dock: 'correio' },
   }),
-  A('janelas', 'janela-batalha', 'Batalha', 'PvP, ranking', null, null, {
+  A('janelas', 'janela-batalha', 'Battle', 'PvP, ranking', null, null, {
     recurso: 'batalha',
     icone: { dock: 'batalha' },
   }),
-  A('janelas', 'janela-raid', 'Raid ao vivo', 'só abre quando tem raid', null, null, {
+  A('janelas', 'janela-raid', 'Live Raid', 'only opens during a raid', null, null, {
     recurso: 'raid',
     icone: { dock: 'batalha' },
   }),
-  A('janelas', 'janela-fliperama', 'Fliperama', 'os minijogos (em breve)', null, null, {
+  A('janelas', 'janela-fliperama', 'Arcade', 'the minigames (coming soon)', null, null, {
     recurso: 'fliperama',
     icone: { dock: 'fliperama' },
   }),
-  A('conversa', 'interagir', 'Falar e interagir', 'avança a fala; sem NPC, faz carinho', 'KeyZ', null, {
+  A('conversa', 'interagir', 'Talk and interact', 'advances dialogue; with no NPC, pets', 'KeyZ', null, {
     icone: { glifo: 'interagir' },
-    semTecla: 'sem tecla: só clicando no NPC',
+    semTecla: 'no key: click the NPC only',
   }),
-  A('conversa', 'chat', 'Abrir o chat', 'põe o cursor no campo do chat', 'Enter', null, {
+  A('conversa', 'chat', 'Open chat', 'puts the cursor in the chat box', 'Enter', null, {
     icone: { glifo: 'chat' },
-    semTecla: 'sem tecla: só clicando no chat',
+    semTecla: 'no key: click the chat only',
   }),
-  A('conversa', 'chat-enviar', 'Enviar no chat', 'dentro do chat', 'Enter', null, {
+  A('conversa', 'chat-enviar', 'Send in chat', 'inside chat', 'Enter', null, {
     fixa: 'pa',
     contexto: 'chat',
     icone: { glifo: 'chat-enviar' },
   }),
-  A('conversa', 'chat-sair', 'Sair do chat', 'dentro do chat', 'Escape', null, {
+  A('conversa', 'chat-sair', 'Leave chat', 'inside chat', 'Escape', null, {
     fixa: 'pa',
     contexto: 'chat',
     icone: { glifo: 'chat-sair' },
@@ -276,8 +278,8 @@ const NOMES = {
   Escape: ['Esc', 'Esc', 'Esc'],
   Enter: ['Enter', 'Ent', 'Enter'],
   Tab: ['Tab', 'Tab', 'Tab'],
-  Space: ['Espaço', 'Esp', 'Espaço'],
-  Backspace: ['Apagar', 'Apg', 'Apagar'],
+  Space: ['Space', 'Spc', 'Space'],
+  Backspace: ['Delete', 'Del', 'Delete'],
   CapsLock: ['Caps', 'Cps', 'Caps'],
   ShiftLeft: ['Shift', '⇧', 'Shift'],
   ShiftRight: ['Shift', '⇧', 'Shift'],
@@ -298,11 +300,11 @@ const NOMES = {
   NumpadMultiply: ['Num *', 'N*', 'N*'],
   NumpadDivide: ['Num /', 'N/', 'N/'],
   NumpadDecimal: ['Num ,', 'N,', 'N,'],
-  MouseMeio: ['Meio', 'M3', 'Meio'],
+  MouseMeio: ['Middle', 'M3', 'Middle'],
   Mouse4: ['Mouse 4', 'M4', 'M4'],
   Mouse5: ['Mouse 5', 'M5', 'M5'],
 };
-const PALAVRAS = new Set(['Espaço', 'Apagar', 'Meio', 'Esp']);
+const PALAVRAS = new Set(['Space', 'Delete', 'Middle', 'Spc']);
 const MODO = { lista: 0, hud: 1, mapa: 2 };
 let LAYOUT = null;
 export function usarLayout(a) {
@@ -345,13 +347,13 @@ export function rotulo(a, b = 'lista', c = null) {
 const DO_NAVEGADOR = new Set(['F5', 'F11', 'F12']),
   DA_EQUIPE = new Set(['F7', 'F8']);
 export const MOTIVOS = {
-  modificador: 'Shift, Ctrl, Alt e Cmd sozinhos não valem: aperte junto com outra tecla.',
-  combinacao: 'Ctrl, Alt e Cmd são do navegador: escolha outra tecla (Shift + tecla vale).',
-  reservada: 'Essa tecla é do navegador: escolha outra.',
-  bastidor: 'Essa tecla não vale: escolha outra.',
-  desconhecida: 'Não deu pra ler essa tecla: escolha outra.',
-  fixa: 'Essa tecla é fixa: escolha outra.',
-  travada: 'Essa tecla é fixa.',
+  modificador: "Shift, Ctrl, Alt and Cmd alone don't count: press them with another key.",
+  combinacao: 'Ctrl, Alt and Cmd belong to the browser: pick another key (Shift + key works).',
+  reservada: 'That key belongs to the browser: pick another.',
+  bastidor: "That key isn't allowed: pick another.",
+  desconhecida: "Couldn't read that key: pick another.",
+  fixa: 'That key is fixed: pick another.',
+  travada: 'That key is fixed.',
 };
 export const recusaDoNavegador = (a) => a === 'reservada' || a === 'combinacao';
 export function capturar(a) {
@@ -433,7 +435,7 @@ export function criar({ armazenamento: b = null } = {}) {
       try {
         f();
       } catch (e) {
-        console.warn('teclas: aoMudar', e);
+        console.warn('keys: aoMudar', e);
       }
   };
   function u() {

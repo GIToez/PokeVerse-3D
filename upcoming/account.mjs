@@ -116,7 +116,7 @@ export function aplicarTitulosGanhos(l) {
     try {
       avisarTitulos?.(meusTitulos.slice());
     } catch (e) {
-      console.warn('títulos da conta:', e);
+      console.warn('account titles:', e);
     }
 }
 function aplicarConta(d) {
@@ -237,9 +237,9 @@ async function api(a, b, c = null, d = false, f = 8000) {
       i = await r.json();
     } catch {}
     if (r.status === 403 && i?.banido === true && h.Authorization) banido(i);
-    return { ok: r.ok, status: r.status, dados: i, erro: r.ok ? null : i?.erro || 'Erro ' + r.status };
+    return { ok: r.ok, status: r.status, dados: i, erro: r.ok ? null : i?.erro || 'Error ' + r.status };
   } catch (e) {
-    return { ok: false, status: 0, dados: null, erro: 'Sem conexão com o servidor.' };
+    return { ok: false, status: 0, dados: null, erro: 'No connection to the server.' };
   } finally {
     clearTimeout(t);
   }
@@ -485,10 +485,10 @@ function renovarAoVoltar() {
   passeCedo(5000).catch(() => {});
 }
 const AVISO_PORTAO = {
-  offline: 'Sem internet neste aparelho. Esperando a conexão voltar…',
-  instavel: 'Sua conexão está instável. Tentando falar com o servidor de novo…',
-  servidor: 'O servidor não está respondendo agora (pode estar reiniciando). Tentando de novo…',
-  ok: 'Tentando falar com o servidor de novo…',
+  offline: 'No internet on this device. Waiting for the connection to come back…',
+  instavel: 'Your connection is unstable. Trying to reach the server again…',
+  servidor: "The server isn't responding right now (it may be restarting). Trying again…",
+  ok: 'Trying to reach the server again…',
 };
 function avisoPortao(a) {
   if (ctx?.aoAvisoRede) {
@@ -509,7 +509,7 @@ const esperarDeNovo = async (a, b) => {
   avisoPortao(I18n.t(AVISO_PORTAO[c] || AVISO_PORTAO.instavel));
   if (a === 1)
     try {
-      window.__boot?.aviso?.('conta: ' + b + ' falhou (' + c + '), tentando de novo');
+      window.__boot?.aviso?.('conta: ' + b + ' failed (' + c + '), retrying');
     } catch {}
   await new Promise((r) => setTimeout(r, Math.min(5000, 1000 * a)));
 };
@@ -559,7 +559,7 @@ export async function garantir(c) {
   if (irParaEntrada()) return new Promise(() => {});
   const d = await c.layoutHudP;
   if (!d?.telas?.pc?.login) {
-    throw new Error('conta: sem a tela de login não há como entrar');
+    throw new Error("account: without the login screen there's no way to sign in");
   }
   try {
     c.aoTela?.();
@@ -598,7 +598,7 @@ export async function recuperar(a, b, c) {
     codigo: b,
     nova: c,
   });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra trocar a senha.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the password." };
   codigo = r.dados?.codigo || null;
   return { ok: true, codigo };
 }
@@ -607,7 +607,7 @@ export async function entrar(u, a) {
   if (!r.ok && typeof r.dados?.modelo === 'string')
     return { ok: false, erro: fraseDoServidor(r.dados, r.erro), cru: true };
   if (!r.ok || typeof r.dados?.token !== 'string')
-    return { ok: false, erro: r.erro || 'O servidor não tem contas (versão antiga).' };
+    return { ok: false, erro: r.erro || 'The server has no accounts (old version).' };
   guardarSessao(r.dados.token, r.dados.usuario, r.dados.rev);
   gravarPasse(r.dados);
   modo = 'conta';
@@ -622,7 +622,7 @@ export async function entrar(u, a) {
 }
 export async function aceitarTermos(a) {
   const r = await api('POST', '/conta/termos', { versao: a });
-  return r.ok ? { ok: true } : { ok: false, erro: r.erro || 'Não deu. Tente de novo.' };
+  return r.ok ? { ok: true } : { ok: false, erro: r.erro || "That didn't work. Try again." };
 }
 async function pedirTermos(a, c) {
   try {
@@ -643,7 +643,7 @@ export async function criar(u, a, b, c = null, d = {}) {
   if (!r.ok || typeof r.dados?.token !== 'string')
     return {
       ok: false,
-      erro: r.erro || 'O servidor não tem contas (versão antiga).',
+      erro: r.erro || 'The server has no accounts (old version).',
       precisaChave: !!r.dados?.precisaChave,
       precisaCaptcha: !!r.dados?.precisaCaptcha,
     };
@@ -691,8 +691,8 @@ function contaEncerrada(a, b) {
   return encerrada;
 }
 function banido(d) {
-  console.warn('conta: suspensa (403 do servidor)');
-  return contaEncerrada(fraseDoServidor(d, 'Conta suspensa.'), 'banido');
+  console.warn('account: suspended (403 from server)');
+  return contaEncerrada(fraseDoServidor(d, 'Account suspended.'), 'banido');
 }
 function fraseDoServidor(d, a) {
   if (typeof d?.modelo === 'string' && d.modelo && d.modelo.length <= 240) {
@@ -736,7 +736,7 @@ export async function conferirSessao() {
   const r = await api('GET', '/conta');
   if (r.status === 401 && !encerrada) {
     const b = banOuvido && Date.now() - banOuvido.em < 2 * 60e3 ? banOuvido : null;
-    contaEncerrada(b ? b.texto : fraseDoServidor(r.dados, 'Faça login de novo.'), b ? 'banido' : 'sessao');
+    contaEncerrada(b ? b.texto : fraseDoServidor(r.dados, 'Please log in again.'), b ? 'banido' : 'sessao');
   }
   return r.status;
 }
@@ -995,7 +995,7 @@ export function saveDoServidor(a, b) {
   try {
     avisarSaveNovo?.();
   } catch (e) {
-    console.warn('save do servidor:', e);
+    console.warn('server save:', e);
   }
 }
 const BOLSA_CHAVES = ['dinheiro', 'itens', 'presos', 'bolas', 'bolasPresas', 'insignias'];
@@ -1121,13 +1121,13 @@ export async function trocarNome(a) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 16);
-  if (n.length < 3) return { ok: false, erro: 'O nome do treinador tem de ter pelo menos 3 letras.' };
+  if (n.length < 3) return { ok: false, erro: 'The trainer name must have at least 3 letters.' };
   if (modo !== 'conta') {
     gravar('nome', JSON.stringify(n));
     return { ok: true, nome: n, local: true };
   }
   const r = await api('POST', '/conta/nome', { nome: n });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra trocar o nome.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the name." };
   const b = r.dados?.nome || n;
   gravarBruto('nome', JSON.stringify(b));
   ultimoHash = JSON.stringify(colherLocal() || {});
@@ -1135,11 +1135,11 @@ export async function trocarNome(a) {
 }
 export async function trocarSenha(a, b) {
   const r = await chamar('POST', '/conta/senha', { senhaAtual: a, nova: b });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra trocar a senha.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the password." };
   return { ok: true, codigo: r.dados?.codigo || null };
 }
 export async function apagarPersonagem(a, b = '') {
-  if (modo !== 'conta') return { ok: false, erro: 'Isto só vale com conta.' };
+  if (modo !== 'conta') return { ok: false, erro: 'This only works with an account.' };
   clearTimeout(timer);
   sujo = false;
   apagar(LS.sujo);
@@ -1152,7 +1152,7 @@ export async function apagarPersonagem(a, b = '') {
       sujo = true;
       timer = setTimeout(despachar, ESPERA_ENVIO);
     }
-    return { ok: false, erro: r.erro || 'Não deu pra apagar o personagem.' };
+    return { ok: false, erro: r.erro || "Couldn't delete the character." };
   }
   rev = r.dados?.rev ?? rev;
   gravar(LS.rev, String(rev));
@@ -1163,7 +1163,7 @@ export async function apagarPersonagem(a, b = '') {
 }
 export async function chamar(a, b, c = null, d = null) {
   if (modo !== 'conta' || !token)
-    return { ok: false, status: 0, dados: null, erro: 'Entre com uma conta pra usar isto.' };
+    return { ok: false, status: 0, dados: null, erro: 'Sign in with an account to use this.' };
   const p = Number(d?.prazo),
     e = Number.isFinite(p) && p >= 1000 ? Math.min(p, 60000) : 8000;
   return api(a, b, c, false, e);

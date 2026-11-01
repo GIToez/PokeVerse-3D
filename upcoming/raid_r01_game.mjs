@@ -132,7 +132,7 @@ export async function ligar(c) {
       for (const m of fila.splice(0)) receber(m);
       return cena;
     } catch (e) {
-      console.warn('R01: a arena não montou:', e);
+      console.warn('R01: the arena failed to build:', e);
       carregando = null;
       throw e;
     }
@@ -240,7 +240,7 @@ async function aplicarTroca(m) {
   try {
     if (i >= 0 && String(ctx.jogo.pika?.uid) !== String(m.uid)) await ctx.trocarPara?.(i, { forcado: true, r01: true });
   } catch (e) {
-    console.warn('R01: troca', e);
+    console.warn('R01: switch', e);
   }
   const b = ctx?.jogo?.pika;
   if (b) {
@@ -312,15 +312,15 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 export const ERROS = {
-  longe: 'Chegue mais perto do braseiro.',
-  braseiro_aceso: 'Este braseiro já está aceso.',
-  congelado: 'Congelado: espere o gelo quebrar.',
-  ritmo: 'Calma: muitos cliques seguidos.',
-  troca_congelado: 'Congelado: não dá pra trocar agora',
-  troca_mira: 'Na mira do Articuno: não dá pra trocar agora',
-  troca_recarga: 'Troca em {s} s',
-  troca_invalida: 'Esse Pokémon não pode entrar agora',
-  troca_sem_campo: 'Nenhum Pokémon de pé',
+  longe: 'Get closer to the brazier.',
+  braseiro_aceso: 'This brazier is already lit.',
+  congelado: 'Frozen: wait for the ice to break.',
+  ritmo: 'Easy: too many clicks in a row.',
+  troca_congelado: "Frozen: can't switch now",
+  troca_mira: "Targeted by Articuno: can't switch now",
+  troca_recarga: 'Switch in {s} s',
+  troca_invalida: "This Pokémon can't switch in now",
+  troca_sem_campo: 'No Pokémon left standing',
 };
 export function receber(m) {
   if (!m) return;
@@ -390,15 +390,15 @@ function conferirTroca() {
   if (j.trocandoSeguidor || j.evoluindo || tentativasTroca >= 6 || Date.now() - tentouTrocaEm < 1500) return;
   tentativasTroca++;
   console.warn(
-    'R01: o Pokémon em campo (uid ' +
+    'R01: the Pokémon on the field (uid ' +
       b.uid +
-      ') não é o do servidor (uid ' +
+      ") isn't the server's (uid " +
       a.uid +
-      ') — refazendo a troca (' +
+      ') — redoing the switch (' +
       tentativasTroca +
       ')',
   );
-  aplicarTroca(a).catch((e) => console.warn('R01: troca refeita', e));
+  aplicarTroca(a).catch((e) => console.warn('R01: switch redone', e));
 }
 export function vincularChefe(s) {
   const o = outra();

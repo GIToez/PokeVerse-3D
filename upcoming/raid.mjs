@@ -92,7 +92,7 @@ export function montarUI(a = {}) {
     try {
       const [b, c] = await Promise.all([import('./raid_ui.mjs'), import('./popup.mjs').catch(() => null)]);
       if (!b || typeof b.instalar !== 'function') {
-        console.warn('raid: raid_ui.mjs sem instalar() — a raid segue sem a interface');
+        console.warn('raid: raid_ui.mjs has no instalar() — the raid continues without its UI');
         return null;
       }
       b.instalar({
@@ -116,7 +116,7 @@ export function montarUI(a = {}) {
       if (ultimoChefe !== undefined) ui('chefe', ultimoChefe);
       return b;
     } catch (e) {
-      console.warn('raid: sem raid_ui.mjs (' + (e?.message || e) + ') — a raid segue sem a interface');
+      console.warn('raid: sem raid_ui.mjs (' + (e?.message || e) + ') — the raid continues without the UI');
       return null;
     }
   })();
@@ -188,7 +188,7 @@ function aoEstado(m) {
           (v && v.n >= 3)
         )
           return;
-        ctx.irParaCena?.({ mapa: snap.mapa, texto: 'Indo pra raid do ' + nomeChefe() + '…', raid: snap.id });
+        ctx.irParaCena?.({ mapa: snap.mapa, texto: 'Heading to the raid of ' + nomeChefe() + '…', raid: snap.id });
       },
       Math.max(2500, esperaIda(snap.id)),
     );
@@ -203,10 +203,10 @@ function aoEstado(m) {
     if (snap.fase === 'luta' && a !== 'luta')
       avisar(
         a && a !== 'nenhuma'
-          ? 'A raid começa!'
+          ? 'The raid begins!'
           : nomeChefe() === 'Mew'
-            ? 'A raid já começou: ataque o Mew!'
-            : 'A raid já começou: ataque o ' + nomeChefe() + '!',
+            ? 'The raid has started: attack Mew!'
+            : 'The raid has started: attack ' + nomeChefe() + '!',
       );
     if (!temRegistro && snap.fase === 'luta' && snap.hp != null && snap.maxHp)
       chefe({ nome: snap.nome, lv: null, hp: snap.hp, maxHp: snap.maxHp });
@@ -219,8 +219,8 @@ function aoEstado(m) {
         if (!ctx.emArena() || ctx.navegando?.() || (snap.eu && FASES_DENTRO.has(snap.fase))) return;
         apagarCarimbo();
         chefe(null);
-        if (ctx.sairDaArena) ctx.sairDaArena('A raid acabou. Voltando…');
-        else ctx.irParaCena?.({ mapa: null, texto: 'A raid acabou. Voltando…' });
+        if (ctx.sairDaArena) ctx.sairDaArena('The raid is over. Returning…');
+        else ctx.irParaCena?.({ mapa: null, texto: 'The raid is over. Returning…' });
       }, 4000);
     return;
   }
@@ -230,7 +230,7 @@ function aoEstado(m) {
       () => {
         timerIda = null;
         if (ctx.navegando?.() || !snap.eu || !FASES_IR.has(snap.fase) || jaFoi(snap.id)) return;
-        ctx.irParaCena?.({ mapa: snap.mapa, texto: 'Indo pra raid do ' + nomeChefe() + '…', raid: snap.id });
+        ctx.irParaCena?.({ mapa: snap.mapa, texto: 'Heading to the raid of ' + nomeChefe() + '…', raid: snap.id });
       },
       Math.max(2500, esperaIda(snap.id)),
     );
@@ -250,7 +250,7 @@ function aoIr(m) {
   }
   const b = (n = 0) => {
     if (!ctx.navegando?.())
-      return ctx.irParaCena?.({ mapa: a, texto: 'Indo pra raid do ' + nomeChefe() + '…', raid: m.id });
+      return ctx.irParaCena?.({ mapa: a, texto: 'Heading to the raid of ' + nomeChefe() + '…', raid: m.id });
     if (n < 20) timerIda = setTimeout(() => b(n + 1), 500);
   };
   b();
@@ -263,34 +263,34 @@ function aoVoltar(m) {
   timerIda = null;
   chefe(null);
   if (!ctx.emArena() && !ehArena(ctx.mapa)) return;
-  ctx.irParaCena?.({ mapa: m.mapa || null, texto: 'Voltando pra onde você estava…' });
+  ctx.irParaCena?.({ mapa: m.mapa || null, texto: 'Returning to where you were…' });
 }
-const FAIXAS = { participou: 'Participação', bronze: 'Bronze', prata: 'Prata', ouro: 'Ouro', lenda: 'Lenda' };
+const FAIXAS = { participou: 'Participation', bronze: 'Bronze', prata: 'Silver', ouro: 'Gold', lenda: 'Legend' };
 function aoFim(m) {
   const p = m.premio || null;
   let a;
   if (m.venceu && p && p.faixa) {
     const b = [];
-    if (p.dinheiro) b.push(p.dinheiro + ' ' + I18n.t('Moedas'));
+    if (p.dinheiro) b.push(p.dinheiro + ' ' + I18n.t('Coins'));
     for (const [c, n] of Object.entries(p.itens || {}))
       if (n > 0) b.push(I18n.t(ctx.nomeItem?.(c) || 'item ' + c) + ' ×' + n);
     for (const d of p.drop || [])
       if (d && d.qtd > 0) b.push(I18n.t(d.nome || ctx.nomeItem?.(d.id) || 'item ' + d.id) + ' ×' + d.qtd);
-    a = nomeChefe() + ' derrotado! Faixa ' + I18n.t(FAIXAS[p.faixa] || p.faixa) + ': ' + b.join(', ') + '.';
+    a = nomeChefe() + ' defeated! Tier ' + I18n.t(FAIXAS[p.faixa] || p.faixa) + ': ' + b.join(', ') + '.';
     try {
       ctx.Som?.tocar?.('ui/sound_pkmnget', { volume: 0.8, prio: true });
     } catch {}
   } else if (m.venceu && p?.semPremio === 'jaPago') {
-    a = nomeChefe() + ' derrotado! Você já levou o prêmio deste chefe hoje.';
+    a = nomeChefe() + " defeated! You already claimed this boss's reward today.";
   } else if (m.venceu && p?.semPremio === 'faixa') {
-    a = nomeChefe() + ' derrotado! A sua parte do dano ficou abaixo do mínimo: sem prêmio desta vez.';
+    a = nomeChefe() + ' defeated! Your share of damage was below the minimum: no reward this time.';
   } else if (m.venceu) {
-    a = nomeChefe() + ' derrotado! Você não causou dano: sem prêmio desta vez.';
+    a = nomeChefe() + ' defeated! You dealt no damage: no reward this time.';
   } else {
-    a = 'A raid acabou: o ' + nomeChefe() + ' escapou.';
+    a = 'The raid is over: ' + nomeChefe() + ' escapou.';
   }
   avisar(a);
   if ((p?.drop || []).some((d) => d && +d.id >= 900070 && +d.id <= 900079))
-    ctx.Chat?.sistema?.('Os fragmentos ficam na Mochila: com 20, use "Juntar" pra chamar o lendário pro seu time.');
-  if (ctx.emArena()) ctx.Chat?.sistema?.('Em instantes você volta pra onde estava.');
+    ctx.Chat?.sistema?.('Fragments go to your Bag: with 20, use "Combine" to bring the legendary to your team.');
+  if (ctx.emArena()) ctx.Chat?.sistema?.("You'll be back where you were in a moment.");
 }

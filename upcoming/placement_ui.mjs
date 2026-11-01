@@ -58,25 +58,25 @@ const vista = () => (terreno2d() && vistaT ? vistaT : C.vista(est, {}));
 const nomeVaga = (v) => tr(T.vagas[v]?.nome || v);
 const msgDe = (r) =>
   terreno2d()
-    ? tr(R.curto(r, R.LUGAR_TERRENO) || 'Não deu.')
-    : tr(C.ERROS[r?.codigo || r?.erro] || r?.erro || r?.msg || 'Não deu.');
+    ? tr(R.curto(r, R.LUGAR_TERRENO) || "That didn't work.")
+    : tr(C.ERROS[r?.codigo || r?.erro] || r?.erro || r?.msg || "That didn't work.");
 export async function abrir(g) {
   if (raiz) return true;
   if (Arrumar.aberto()) return true;
   if (!podeArrumar(g)) {
-    dep.aviso(tr('Só o Líder, o Vice e o Oficial arrumam a base.'));
+    dep.aviso(tr('Only the Leader, Vice and Officer can arrange the base.'));
     return false;
   }
   if (modo() === '3d' && (await Arrumar.abrir(g))) return true;
   try {
     await C.carregar('./data/colocacao.json');
   } catch {
-    dep.aviso(tr('O terreno da base não carregou.'));
+    dep.aviso(tr("The base plot didn't load."));
     return false;
   }
   T = C.terrenoDe('base');
   if (!T) {
-    dep.aviso(tr('O terreno da base não carregou.'));
+    dep.aviso(tr("The base plot didn't load."));
     return false;
   }
   lugar2d = 'base';
@@ -105,18 +105,18 @@ async function abrirTerreno2d(v) {
     return false;
   }
   if (typeof dep.pedirTerreno !== 'function') {
-    dep.aviso(tr('Sem resposta do servidor.'));
+    dep.aviso(tr('No response from the server.'));
     return false;
   }
   try {
     await C.carregar('./data/colocacao.json');
   } catch {
-    dep.aviso(tr('O seu terreno não carregou.'));
+    dep.aviso(tr("Your plot didn't load."));
     return false;
   }
   const b = C.terrenoDe(R.LUGAR_TERRENO);
   if (!b) {
-    dep.aviso(tr('O seu terreno não carregou.'));
+    dep.aviso(tr("Your plot didn't load."));
     return false;
   }
   let V = R.vistaDoTerreno(v);
@@ -127,7 +127,7 @@ async function abrirTerreno2d(v) {
     } catch {}
     V = R.vistaDoTerreno(r?.vista);
     if (!V) {
-      dep.aviso(tr(!r || R.semResposta(r) ? 'Sem resposta do servidor.' : 'O seu terreno não carregou.'));
+      dep.aviso(tr(!r || R.semResposta(r) ? 'No response from the server.' : "Your plot didn't load."));
       return false;
     }
   }
@@ -224,12 +224,12 @@ function montar() {
     '<div style="font:800 ' +
     (k ? 16 : 19) +
     "px 'Baloo 2', system-ui;color:#F8C237;text-align:center\">" +
-    escH(tr(terreno2d() ? 'Arrumar terreno' : 'Arrumar a base')) +
+    escH(tr(terreno2d() ? 'Arrange plot' : 'Arrange base')) +
     '</div>' +
     '<div id="ab-pecas" style="flex:1;min-height:0;overflow:auto;display:grid;gap:6px;align-content:start"></div>' +
     '<div style="display:flex;gap:6px">' +
-    botao('ab-girar', tr('Girar (R)')) +
-    botao('ab-pronto', tr('Pronto'), true) +
+    botao('ab-girar', tr('Rotate (R)')) +
+    botao('ab-pronto', tr('Done'), true) +
     '</div>' +
     '</div>';
   document.body.appendChild(raiz);
@@ -295,18 +295,18 @@ function pintarPainel() {
       j = '#7f8aa6';
     const k = [];
     if (!n) {
-      i = tr('não construída');
+      i = tr('not built');
     } else if (o) {
       i = o.padrao
-        ? tr('no lugar padrão')
-        : tr('no terreno') + (o.por ? ' · ' + tr('arrumada por {x}', { x: o.por }) : '');
+        ? tr('in the default spot')
+        : tr('on the plot') + (o.por ? ' · ' + tr('arranged by {x}', { x: o.por }) : '');
       j = o.padrao ? '#9ad0ff' : '#8EF58E';
-      k.push(['sel', tr('Selecionar')]);
-      if (f.guardavel) k.push(['guardar', tr('Guardar')]);
+      k.push(['sel', tr('Select')]);
+      if (f.guardavel) k.push(['guardar', tr('Store')]);
     } else if (g) {
-      i = g.motivo === 'sem_lugar' ? tr('sem lugar no padrão: coloque no terreno') : tr('guardada');
+      i = g.motivo === 'sem_lugar' ? tr('no spot in the layout: place it on the plot') : tr('guardada');
       j = '#ffb46b';
-      k.push(['colocar', tr('Colocar')]);
+      k.push(['colocar', tr('Place')]);
     }
     h.innerHTML =
       '<div style="color:#fff">' +
@@ -360,13 +360,13 @@ function pintarPainelTerreno() {
     });
     const k = [];
     if (l.grupo) {
-      k.push(['grupo', tr('Selecionar'), '']);
-      if (g) k.push(['guardarSel', tr('Guardar'), '']);
-    } else if (l.estado === 'mochila') k.push(['mochila', tr('Colocar'), String(l.item)]);
+      k.push(['grupo', tr('Select'), '']);
+      if (g) k.push(['guardarSel', tr('Store'), '']);
+    } else if (l.estado === 'mochila') k.push(['mochila', tr('Place'), String(l.item)]);
     else if (l.estado === 'terreno' || l.estado === 'padrao') {
-      k.push(['sel', tr('Selecionar'), '']);
-      if (l.guardavel) k.push(['guardar', tr('Guardar'), '']);
-    } else k.push(['colocar', tr('Colocar'), '']);
+      k.push(['sel', tr('Select'), '']);
+      if (l.guardavel) k.push(['guardar', tr('Store'), '']);
+    } else k.push(['colocar', tr('Place'), '']);
     const m = tr(l.nome) + ((l.grupo || l.estado === 'mochila') && l.qtd > 1 ? ' ×' + l.qtd : ''),
       [n, o] = R.textoEstado(l);
     j.innerHTML =
@@ -428,7 +428,7 @@ async function acaoDoPainel(a, v, i = '') {
 }
 async function pedir(a, b) {
   ocupado = true;
-  status(tr(terreno2d() ? 'Mandando…' : 'Mandando pra guilda…'));
+  status(tr(terreno2d() ? 'Sending…' : 'Sending to the Guild…'));
   let r = null;
   try {
     r = await (terreno2d() ? dep.pedirTerreno : dep.pedir)(a, b);
@@ -436,7 +436,7 @@ async function pedir(a, b) {
   ocupado = false;
   if (terreno2d() && R.semResposta(r)) r = null;
   if (!r) {
-    status(tr('Sem resposta do servidor.'));
+    status(tr('No response from the server.'));
     return null;
   }
   if (terreno2d()) {
@@ -457,10 +457,10 @@ async function pedir(a, b) {
     status(
       tr(
         {
-          mover: 'Mudou de lugar.',
-          colocar: terreno2d() ? 'Colocada no terreno.' : 'Voltou pro terreno.',
-          remover: 'Guardada.',
-        }[a] || 'Feito.',
+          mover: 'Moved.',
+          colocar: terreno2d() ? 'Placed on the plot.' : 'Back on the plot.',
+          remover: 'Stored.',
+        }[a] || 'Done.',
       ),
     );
   } else status('✗ ' + msgDe(r));
@@ -595,7 +595,7 @@ function desenhar() {
     for (const r of T.regioes) {
       const d = r.nivel > est.nivel;
       rotulo(
-        (d ? '🔒 ' : '') + tr(r.nome) + ' · ' + tr('nível {n}', { n: r.nivel }),
+        (d ? '🔒 ' : '') + tr(r.nome) + ' · ' + tr('level {n}', { n: r.nivel }),
         (r.caixa[0] + r.caixa[2]) / 2,
         r.caixa[1] + 2.5,
         d ? '#ff9c9c' : '#cfe8d6',
@@ -607,7 +607,7 @@ function desenhar() {
     else if (z.tipo === 'praca') circulo(z.c, '#5fd4ff', 'rgba(95,212,255,.10)', true);
     else if (z.tipo === 'chefe') {
       circulo(z.c, '#ff5a5a', 'rgba(255,90,90,.16)');
-      rotulo(tr('arena do chefe do dia'), z.c[0], z.c[1], '#ffb0b0');
+      rotulo(tr('daily boss arena'), z.c[0], z.c[1], '#ffb0b0');
     } else if (z.tipo === 'porta') retangulo(z.r, '#F8C237', 'rgba(248,194,55,.22)');
     else if (z.tipo === 'passagem') retangulo(z.r, '#d7a066', null, true);
   }
@@ -700,7 +700,7 @@ async function girar() {
   }
   const o = vista().colocadas.find((c) => c.id === sel);
   if (!o) {
-    status(tr(terreno2d() ? 'Selecione uma peça pra girar.' : 'Selecione uma construção pra girar.'));
+    status(tr(terreno2d() ? 'Select a piece to rotate.' : 'Select a building to rotate.'));
     return;
   }
   await pedir('mover', { id: o.id, vaga: o.vaga, x: o.x, z: o.z, giro: (o.giro + 90) % 360 });
@@ -821,13 +821,13 @@ function status(a) {
       ' — ' +
       nomeVaga(arrasto.vaga) +
       ' · ' +
-      tr(arrasto.modo === 'colocar' ? 'clique pra colocar, R gira, Esc solta' : 'solte pra mudar de lugar, R gira');
+      tr(arrasto.modo === 'colocar' ? 'click to place, R rotates, Esc drops' : 'release to move, R rotates');
     return;
   }
   b.textContent = tr(
     terreno2d()
-      ? 'Arraste uma peça pra mudar de lugar · R gira a selecionada · Esc fecha'
-      : 'Arraste uma construção pra mudar de lugar · R gira a selecionada · Esc fecha',
+      ? 'Drag a piece to move it · R rotates the selected one · Esc closes'
+      : 'Drag a building to move it · R rotates the selected one · Esc closes',
   );
 }
 export const __sonda = {

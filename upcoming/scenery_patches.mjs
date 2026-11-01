@@ -781,7 +781,7 @@ export function suavizarEmendas(
 }
 function materialDaEmenda(a, b) {
   const c = a.clone();
-  c.name = a.name + ' (emenda)';
+  c.name = a.name + ' (seam)';
   c.userData = { ...a.userData, emenda: true };
   c.transparent = true;
   c.depthWrite = false;

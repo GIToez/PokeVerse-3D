@@ -163,8 +163,8 @@ export async function montarArena({
                 Object.assign(
                   new Error(
                     c > d
-                      ? 'sem sinal da carga por ' + Math.round(c / 1000) + ' s'
-                      : 'passou de ' + Math.round(P.tetoMs / 1000) + ' s',
+                      ? 'no load signal for ' + Math.round(c / 1000) + ' s'
+                      : 'exceeded ' + Math.round(P.tetoMs / 1000) + ' s',
                   ),
                   { prazo: true },
                 ),
@@ -202,10 +202,10 @@ export async function montarArena({
         pendentes: [...o.keys()].slice(0, 12),
         erro: msgDe(e),
       };
-      console.warn('raid ' + a + ': a arena não montou na tentativa ' + n + ' de ' + P.tentativas + ':', aa);
+      console.warn('raid ' + a + ': the arena failed to build on attempt ' + n + ' de ' + P.tentativas + ':', aa);
       avisarBoot(aa);
       if (n < P.tentativas) {
-        i.texto(texto('A arena não carregou — tentando de novo ({n}/{total})…', d, { n: n + 1, total: P.tentativas }));
+        i.texto(texto("The arena didn't load — retrying ({n}/{total})…", d, { n: n + 1, total: P.tentativas }));
         await new Promise((r) => setTimeout(r, 800 * n));
       }
     }
@@ -213,14 +213,14 @@ export async function montarArena({
   avisarBoot({ raid: a, etapa: 'desistiu', tentativas: P.tentativas, erro: msgDe(j) });
   try {
     i.falha(
-      texto('A arena da raid não carregou.', d),
-      texto('Recarregue a página pra entrar na luta (você continua na raid).', d),
-      texto('Recarregar', d),
+      texto("The raid arena didn't load.", d),
+      texto("Reload the page to join the fight (you're still in the raid).", d),
+      texto('Reload', d),
     );
   } catch (e) {
-    console.warn('raid ' + a + ': a caixa da falha', e);
+    console.warn('raid ' + a + ': the failure box', e);
   }
-  throw j || new Error('a arena não montou');
+  throw j || new Error('the arena failed to build');
 }
 export function aquecerSemTravar(b, { raid: c, ms: d = PRAZOS.aquecerMs } = {}) {
   const f = Date.now();
@@ -228,7 +228,7 @@ export function aquecerSemTravar(b, { raid: c, ms: d = PRAZOS.aquecerMs } = {}) 
   const h = setTimeout(() => {
     g = true;
     avisarBoot({ raid: c, etapa: 'aquecer', ms: d });
-    console.warn('raid ' + c + ': o aquecer dos shaders passou de ' + d + ' ms (segue em segundo plano)');
+    console.warn('raid ' + c + ': shader warm-up exceeded ' + d + ' ms (continuing in background)');
   }, d);
   return Promise.resolve()
     .then(b)

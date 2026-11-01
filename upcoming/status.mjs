@@ -1122,7 +1122,7 @@ export function valeUsar(a, d, b, { modo: c = 'turnos' } = {}) {
 export const ROTULO = {
   burn: 'queimado',
   poison: 'envenenado',
-  'bad-poison': 'gravemente envenenado',
+  'bad-poison': 'badly poisoned',
   paralysis: 'paralisado',
   sleep: 'dormindo',
   freeze: 'congelado',
@@ -1130,19 +1130,19 @@ export const ROTULO = {
   flinch: 'hesitando',
   trap: 'preso',
   'leech-seed': 'semeado',
-  yawn: 'com sono',
-  nightmare: 'com pesadelo',
-  curse: 'amaldiçoado',
+  yawn: 'drowsy',
+  nightmare: 'having nightmares',
+  curse: 'cursed',
   'focus-energy': 'concentrado',
-  'laser-focus': 'mira no crítico',
-  disable: 'golpe bloqueado',
+  'laser-focus': 'crit-focused',
+  disable: 'move disabled',
   taunt: 'provocado',
-  encore: 'no bis',
-  safeguard: 'protegido de status',
+  encore: 'in an encore',
+  safeguard: 'status-protected',
   reflect: 'Refletir',
   'light-screen': 'Tela de Luz',
   mist: 'Neblina',
-  'lucky-chant': 'sem crítico contra',
+  'lucky-chant': 'crit-immune',
   tailwind: 'Vento de Cauda',
   'magnet-rise': 'levitando',
   protect: 'protegido',
@@ -1151,17 +1151,17 @@ export const ROTULO = {
   ingrain: 'enraizado',
   identificado: 'identificado',
   recarga: 'recarregando',
-  clima: 'com clima',
+  clima: 'weather active',
 };
 export const ATRIBUTO = {
-  attack: 'Ataque',
-  defense: 'Defesa',
-  'special-attack': 'Ataque Especial',
-  'special-defense': 'Defesa Especial',
-  speed: 'Velocidade',
-  accuracy: 'Precisão',
-  evasion: 'Evasão',
-  critico: 'Crítico',
+  attack: 'Attack',
+  defense: 'Defense',
+  'special-attack': 'Sp. Atk',
+  'special-defense': 'Sp. Def',
+  speed: 'Speed',
+  accuracy: 'Accuracy',
+  evasion: 'Evasion',
+  critico: 'Critical',
 };
 export const COR = {
   burn: '#EE8130',
@@ -1209,101 +1209,101 @@ export function resumo(c) {
 }
 const QUANTO = (n) => (Math.abs(n) >= 3 ? ' drasticamente' : Math.abs(n) === 2 ? ' muito' : '');
 const TXT_STATUS = {
-  burn: '{n} foi queimado!',
-  poison: '{n} foi envenenado!',
-  'bad-poison': '{n} foi gravemente envenenado!',
-  paralysis: '{n} ficou paralisado! Talvez não consiga se mover.',
-  sleep: '{n} adormeceu!',
-  freeze: '{n} foi congelado!',
-  confusion: '{n} ficou confuso!',
-  trap: '{n} ficou preso!',
-  'leech-seed': '{n} foi semeado!',
+  burn: '{n} was burned!',
+  poison: '{n} was poisoned!',
+  'bad-poison': '{n} was badly poisoned!',
+  paralysis: '{n} is paralyzed! It may be unable to move.',
+  sleep: '{n} fell asleep!',
+  freeze: '{n} was frozen solid!',
+  confusion: '{n} became confused!',
+  trap: '{n} was trapped!',
+  'leech-seed': '{n} was seeded!',
   flinch: '',
 };
 const TXT_VOL = {
-  'focus-energy': '{n} está se concentrando!',
-  'laser-focus': '{n} mira num golpe crítico!',
-  disable: '{g2} de {n} foi bloqueado!',
-  taunt: '{n} caiu na provocação!',
-  encore: '{n} vai repetir {g2}!',
-  safeguard: '{n} está protegido de status!',
-  reflect: 'Refletir protege {n} de golpes físicos!',
-  'light-screen': 'Tela de Luz protege {n} de golpes especiais!',
-  mist: 'A Neblina protege os atributos de {n}!',
-  'lucky-chant': '{n} está livre de golpes críticos!',
-  tailwind: 'O vento sopra a favor de {n}!',
-  'magnet-rise': '{n} flutua no campo magnético!',
-  protect: '{n} se protegeu!',
-  endure: '{n} se prepara pra aguentar!',
-  'aqua-ring': 'Um anel de água envolve {n}!',
-  ingrain: '{n} criou raízes!',
-  identificado: '{n} foi identificado!',
-  yawn: '{n} ficou com sono…',
-  nightmare: '{n} começou a ter um pesadelo!',
-  curse: '{n} foi amaldiçoado!',
+  'focus-energy': '{n} is focusing!',
+  'laser-focus': '{n} is aiming for a critical hit!',
+  disable: "{n}'s {g2} was disabled!",
+  taunt: '{n} fell for the taunt!',
+  encore: '{n} will repeat {g2}!',
+  safeguard: '{n} is protected from status!',
+  reflect: 'Reflect protects {n} from physical moves!',
+  'light-screen': 'Light Screen protects {n} from special moves!',
+  mist: "Mist protects {n}'s stats!",
+  'lucky-chant': '{n} is safe from critical hits!',
+  tailwind: 'A tailwind blows behind {n}!',
+  'magnet-rise': '{n} levitated with electromagnetism!',
+  protect: '{n} protected itself!',
+  endure: '{n} braced itself!',
+  'aqua-ring': 'A veil of water surrounds {n}!',
+  ingrain: '{n} planted its roots!',
+  identificado: '{n} was identified!',
+  yawn: '{n} grew drowsy…',
+  nightmare: '{n} began having a nightmare!',
+  curse: '{n} was cursed!',
 };
 const TXT_FIM = {
-  confusion: '{n} não está mais confuso.',
-  trap: '{n} se soltou.',
-  'leech-seed': 'A semente em {n} secou.',
-  disable: '{n} pode usar o golpe de novo.',
-  taunt: 'A provocação em {n} passou.',
-  encore: 'O bis de {n} acabou.',
-  safeguard: 'A proteção de status de {n} acabou.',
-  reflect: 'O Refletir de {n} acabou.',
-  'light-screen': 'A Tela de Luz de {n} acabou.',
-  mist: 'A Neblina de {n} se desfez.',
-  'lucky-chant': 'A Prece de Sorte de {n} acabou.',
-  tailwind: 'O vento a favor de {n} parou.',
-  'magnet-rise': '{n} voltou ao chão.',
+  confusion: '{n} is no longer confused.',
+  trap: '{n} broke free.',
+  'leech-seed': 'The seed on {n} withered.',
+  disable: '{n} can use the move again.',
+  taunt: "{n}'s taunt wore off.",
+  encore: "{n}'s Encore ended.",
+  safeguard: "{n}'s status protection wore off.",
+  reflect: "{n}'s Reflect wore off.",
+  'light-screen': "{n}'s Light Screen wore off.",
+  mist: "{n}'s Mist faded.",
+  'lucky-chant': "{n}'s Lucky Chant wore off.",
+  tailwind: "{n}'s tailwind petered out.",
+  'magnet-rise': '{n} came back down.',
   'laser-focus': '',
-  clima: 'O clima em volta de {n} voltou ao normal.',
-  curse: 'A maldição em {n} se desfez.',
-  nightmare: 'O pesadelo de {n} acabou.',
+  clima: 'The weather around {n} returned to normal.',
+  curse: 'The curse on {n} lifted.',
+  nightmare: "{n}'s nightmare ended.",
 };
 const TXT_CLIMA = {
-  chuva: 'Começou a chover em volta de {n}!',
-  sol: 'O sol ficou forte em volta de {n}!',
-  areia: 'Uma tempestade de areia envolve {n}!',
-  granizo: 'Começou a cair granizo em volta de {n}!',
+  chuva: 'It started to rain around {n}!',
+  sol: 'The sunlight turned harsh around {n}!',
+  areia: 'A sandstorm whips up around {n}!',
+  granizo: 'It started to hail around {n}!',
 };
 const TXT_DANO = {
-  burn: '{n} sofre com a queimadura.',
-  poison: '{n} sofre com o veneno.',
-  'bad-poison': '{n} sofre com o veneno.',
-  'leech-seed': 'A semente drena a energia de {n}.',
-  trap: '{n} sofre por estar preso.',
-  curse: '{n} sofre com a maldição.',
-  nightmare: '{n} se contorce no pesadelo.',
-  queda: '{n} caiu e se machucou.',
+  burn: '{n} is hurt by its burn.',
+  poison: '{n} is hurt by poison.',
+  'bad-poison': '{n} is hurt by poison.',
+  'leech-seed': "{n}'s health is sapped by Leech Seed.",
+  trap: '{n} is hurt by the trap.',
+  curse: '{n} is hurt by the curse.',
+  nightmare: '{n} is locked in a nightmare.',
+  queda: '{n} fell and hurt itself.',
   explosao: '',
   'final-gambit': '',
-  'belly-drum': '{n} deu metade do HP pelo poder.',
+  'belly-drum': '{n} cut its own HP to power up.',
 };
 const TXT_NAO = {
-  sono: '{n} está dormindo.',
-  congelado: '{n} está congelado!',
-  paralisia: '{n} está paralisado e não consegue se mover!',
-  hesitar: '{n} hesitou e não se moveu!',
-  recarga: '{n} precisa recarregar!',
-  disable: '{n} não pode usar esse golpe!',
-  taunt: '{n} não pode usar golpes de status agora!',
-  encore: '{n} só pode repetir o mesmo golpe!',
+  sono: '{n} is fast asleep.',
+  congelado: '{n} is frozen solid!',
+  paralisia: "{n} is paralyzed and can't move!",
+  hesitar: "{n} flinched and couldn't move!",
+  recarga: '{n} must recharge!',
+  disable: "{n} can't use that move!",
+  taunt: "{n} can't use status moves now!",
+  encore: '{n} can only repeat the same move!',
 };
 const TXT_FALHA = {
-  imune: 'Não afeta {n}…',
-  'ja-tem': '{n} já está assim.',
-  'outro-status': 'Mas falhou!',
-  safeguard: '{n} está protegido!',
-  mist: 'A Neblina protege {n}!',
-  acordado: '{n} não está dormindo.',
-  'sem-alvo': 'Mas não tinha alvo!',
-  'hp-cheio': 'O HP de {n} já está cheio!',
-  genero: 'Não afeta {n}…',
-  'sem-veneno': 'Não afeta {n}…',
-  'so-na-entrada': 'Mas falhou!',
-  'sem-efeito': 'Mas falhou!',
-  'sem-regra': 'Mas nada aconteceu.',
+  imune: "It doesn't affect {n}…",
+  'ja-tem': '{n} is already like that.',
+  'outro-status': 'But it failed!',
+  safeguard: '{n} is protected!',
+  mist: 'Mist protects {n}!',
+  acordado: "{n} isn't asleep.",
+  'sem-alvo': 'But there was no target!',
+  'hp-cheio': "{n}'s HP is already full!",
+  genero: "It doesn't affect {n}…",
+  'sem-veneno': "It doesn't affect {n}…",
+  'so-na-entrada': 'But it failed!',
+  'sem-efeito': 'But it failed!',
+  'sem-regra': 'But nothing happened.',
 };
 export function narrar(a, b = {}) {
   const c = (a) => (typeof b === 'function' ? b(a) : b[a]) || a || '';
@@ -1320,74 +1320,74 @@ export function narrar(a, b = {}) {
       .replace(/\{v\}/g, a.v ?? '');
   switch (a.t) {
     case 'usa':
-      return f('{n} usou {g}!');
+      return f('{n} used {g}!');
     case 'dano': {
-      if (a.motivo) return f(TXT_DANO[a.motivo] ?? '{n} perdeu {v} de HP.');
+      if (a.motivo) return f(TXT_DANO[a.motivo] ?? '{n} lost {v} HP.');
       const e = [
-        a.critico ? 'Um golpe crítico!' : '',
-        a.eff > 1 ? 'É super efetivo!' : a.eff < 1 ? 'Não é muito efetivo…' : '',
+        a.critico ? 'A critical hit!' : '',
+        a.eff > 1 ? "It's super effective!" : a.eff < 1 ? "It's not very effective…" : '',
       ].filter(Boolean);
       return e.join(' ');
     }
     case 'se-bate':
-      return f('{n} está confuso e se machucou!');
+      return f('{n} is confused and hurt itself!');
     case 'confuso':
-      return f('{n} está confuso…');
+      return f('{n} is confused…');
     case 'recuo':
-      return f('{n} sofreu o recuo do golpe.');
+      return f('{n} is damaged by recoil.');
     case 'cura':
       return a.motivo === 'dreno'
-        ? f('{n} drenou energia.')
+        ? f('{n} drained energy.')
         : a.motivo === 'leech-seed'
-          ? f('{n} recuperou HP com a semente.')
-          : f('{n} recuperou HP.');
+          ? f('{n} regained HP from the seed.')
+          : f('{n} restored HP.');
     case 'desmaia':
-      return f('{n} desmaiou!');
+      return f('{n} fainted!');
     case 'status':
       return f(TXT_STATUS[a.id] ?? '');
     case 'volatil':
       return a.id === 'clima' ? f(TXT_CLIMA[a.tipo] ?? '') : f(TXT_VOL[a.id] ?? '', { g2: a.golpe ? d(a.golpe) : '' });
     case 'nocaute':
-      return 'Foi um nocaute direto!';
+      return "It's a one-hit KO!";
     case 'fim':
       return f(TXT_FIM[a.id] ?? '');
     case 'acorda':
-      return f('{n} acordou!');
+      return f('{n} woke up!');
     case 'descongela':
-      return f('{n} descongelou!');
+      return f('{n} thawed out!');
     case 'nao-age':
-      return f(TXT_NAO[a.motivo] ?? 'Mas falhou!');
+      return f(TXT_NAO[a.motivo] ?? 'But it failed!');
     case 'falhou':
-      return f(TXT_FALHA[a.motivo] ?? 'Mas falhou!');
+      return f(TXT_FALHA[a.motivo] ?? 'But it failed!');
     case 'errou':
-      return f('O ataque de {n} errou!');
+      return f("{n}'s attack missed!");
     case 'imune':
-      return f('Não afeta {n}…');
+      return f("It doesn't affect {n}…");
     case 'protegeu':
-      return f('{n} se protegeu!');
+      return f('{n} protected itself!');
     case 'aguentou':
-      return f('{n} aguentou o golpe!');
+      return f('{n} endured the hit!');
     case 'acertos':
-      return f(`Acertou ${a.n} ${a.n === 1 ? 'vez' : 'vezes'}!`);
+      return f(`Hit ${a.n} ${a.n === 1 ? 'vez' : 'vezes'}!`);
     case 'estagio': {
       const h = ATRIBUTO[a.atributo] || a.atributo;
-      if (!a.n) return f(`${h} de {n} não ${a.limite === 'max' ? 'sobe' : 'cai'} mais!`);
-      return f(`${h} de {n} ${a.n > 0 ? 'subiu' : 'caiu'}${QUANTO(a.n)}!`);
+      if (!a.n) return f(`${h} of {n} won't ${a.limite === 'max' ? 'sobe' : 'cai'} anymore!`);
+      return f(`${h} of {n} ${a.n > 0 ? 'subiu' : 'caiu'}${QUANTO(a.n)}!`);
     }
     case 'estagio-volta':
-      return f(`${ATRIBUTO[a.atributo] || a.atributo} de {n} voltou ao normal.`);
+      return f(`${ATRIBUTO[a.atributo] || a.atributo} of {n} returned to normal.`);
     case 'zera-estagios':
-      return f('Os atributos de {n} voltaram ao normal!');
+      return f("{n}'s stats returned to normal!");
     case 'copia-estagios':
-      return f('{n} copiou as mudanças de atributo de {m}!');
+      return f("{n} copied {m}'s stat changes!");
     case 'troca-estagios':
-      return f('{n} trocou as mudanças de atributo com {m}!');
+      return f('{n} swapped stat changes with {m}!');
     case 'cura-status':
-      return f(`{n} não está mais ${ROTULO[a.id] || a.id}.`);
+      return f(`{n} is no longer ${ROTULO[a.id] || a.id}.`);
     case 'cura-time':
-      return f('O time de {n} foi curado!');
+      return f("{n}'s team was healed!");
     case 'nada':
-      return 'Mas nada aconteceu!';
+      return 'But nothing happened!';
   }
   return '';
 }

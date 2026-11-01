@@ -158,7 +158,7 @@ export function completar(j, o = null) {
     if (za) {
       tag(za, 'digita', '');
       const v = achaFundo(za.filhos, 'txt/valor');
-      if (v) v.exemplo = 'mensagem pra guilda…';
+      if (v) v.exemplo = 'message the guild…';
     }
     if (_a) tag(_a, 'acao', 'enviar-chat');
     if (o1 && za && _a) {
@@ -198,21 +198,21 @@ export function completar(j, o = null) {
   const fa = u['dialogo-convidar'];
   if (fa && !u['dialogo-aviso']) {
     const d = copia(fa);
-    rotular(d, 'Aviso do líder', 'titulo-dialogo');
+    rotular(d, "Leader's notice", 'titulo-dialogo');
     const c = acha(d.filhos, 'campo-nome');
     if (c) {
       c.nome = 'campo-aviso';
       const v = achaFundo(c.filhos, 'txt/valor');
-      if (v) v.exemplo = 'escreva o aviso pra guilda…';
+      if (v) v.exemplo = 'write a notice for the guild…';
     }
     const b = acha(d.filhos, 'btn-enviar-convite');
     if (b) {
       b.nome = 'btn-salvar-aviso';
       tag(b, 'acao', 'salvar-aviso');
-      rotular(b, 'Salvar aviso');
+      rotular(b, 'Save notice');
     }
     const n = acha(d.filhos, 'nota');
-    if (n) n.texto = 'todo mundo da guilda vê · em branco apaga';
+    if (n) n.texto = 'everyone in the guild sees it · leave blank to clear';
     u['dialogo-aviso'] = { ...d, abrePor: 'guilda' };
   }
   const ga = u['conteudo-criar'];
@@ -224,23 +224,23 @@ export function completar(j, o = null) {
       n.nome = 'seletor-nivel-minimo';
       tag(n, 'acao', 'nivel-minimo');
       n.x = r1(s.x + s.w + 20 * k);
-      rotular(n, 'Nível mínimo', 'rotulo');
+      rotular(n, 'Minimum level', 'rotulo');
       const v = achaFundo(n.filhos, 'txt/valor');
       if (v) {
         v.id = 'valor-nivel';
-        v.exemplo = 'Qualquer um';
+        v.exemplo = 'Anyone';
       }
       ga.filhos.splice(ga.filhos.indexOf(s) + 1, 0, n);
     }
   }
   if (ga && !u['conteudo-editar']) {
     const e = copia(ga);
-    rotular(e, 'Editar guilda', 'subtitulo');
+    rotular(e, 'Edit guild', 'subtitulo');
     for (const k of ['campo-nome-guilda', 'campo-tag-guilda']) {
       const g = acha(e.filhos, k);
       if (!g) continue;
       soLeitura(g);
-      rotular(g, k === 'campo-nome-guilda' ? 'não muda depois de fundada' : 'fixa', 'nota-campo');
+      rotular(g, k === 'campo-nome-guilda' ? "can't be changed after founding" : 'fixa', 'nota-campo');
       const v = achaFundo(g.filhos, 'txt/valor');
       if (v) v.id = k === 'campo-nome-guilda' ? 'editar-nome' : 'editar-tag';
     }
@@ -248,7 +248,7 @@ export function completar(j, o = null) {
     if (b) {
       b.nome = 'btn-salvar';
       tag(b, 'acao', 'salvar-guilda');
-      rotular(b, 'Salvar alterações');
+      rotular(b, 'Save changes');
     }
     const fb = acha(e.filhos, 'txt/custo-criacao'),
       gb = acha(e.filhos, 'nota-custo'),
@@ -265,7 +265,7 @@ export function completar(j, o = null) {
         fatiar: { w0: hb.w, h0: hb.h },
       });
       tag(d, 'acao', 'dissolver');
-      rotular(d, 'Dissolver a guilda');
+      rotular(d, 'Disband the guild');
       const t = acha(d.filhos, 'txt-btn');
       if (t) {
         t.x = r1((t.x * d.w) / hb.w);
@@ -284,7 +284,7 @@ export function completar(j, o = null) {
           const v = copia(jb);
           Object.assign(v, { nome: 'btn-voltar', x: ib.x, y: ib.y, w: ib.w, h: ib.h });
           tag(v, 'acao', 'voltar');
-          rotular(v, 'Voltar');
+          rotular(v, 'Back');
           kb.filhos.push(v);
         }
   }
@@ -309,7 +309,7 @@ export function completar(j, o = null) {
         ...(w !== ha.w || a0.h !== ha.h ? { fatiar: { w0: ha.w, h0: ha.h } } : {}),
       });
       tag(b, 'acao', 'editar-guilda');
-      rotular(b, 'Editar guilda');
+      rotular(b, 'Edit guild');
       const t = acha(b.filhos, 'txt-btn');
       if (t) {
         t.w = r1(b.w - 2 * t.x);
@@ -332,8 +332,8 @@ export function completar(j, o = null) {
     };
     $.filhos.push(
       mk('btn-ver-base', 'ver-base', 'Base', ia.x),
-      mk('btn-ver-chefe', 'ver-chefe', 'Chefe', ia.x - ia.w - 8 * k9),
-      mk('btn-ver-loja', 'ver-loja', 'Loja', ia.x - 2 * (ia.w + 8 * k9)),
+      mk('btn-ver-chefe', 'ver-chefe', 'Boss', ia.x - ia.w - 8 * k9),
+      mk('btn-ver-loja', 'ver-loja', 'Shop', ia.x - 2 * (ia.w + 8 * k9)),
     );
   }
   const ka = u['conteudo-atividade'],
@@ -365,7 +365,7 @@ export function completar(j, o = null) {
     const c = copia(ka),
       nb = acha(c.filhos, 'subtitulo'),
       ob = acha(c.filhos, 'lista-eventos');
-    if (nb) nb.texto = 'Chefe da guilda do dia';
+    if (nb) nb.texto = 'Daily Guild Boss';
     const pb = copia(ma);
     Object.assign(pb, {
       nome: 'img/chefe-retrato',
@@ -382,7 +382,7 @@ export function completar(j, o = null) {
     const qb = copia(qa);
     Object.assign(qb, { nome: 'btn-chefe-entrar', x: r1(c.w - qa.w), y: r1(44 * k9) });
     tag(qb, 'acao', 'chefe-entrar');
-    rotular(qb, 'Entrar e lutar');
+    rotular(qb, 'Enter and fight');
     if (ob) {
       ob.nome = 'lista-marcos';
       ob.y = r1(236 * k9);
@@ -414,12 +414,12 @@ export function completar(j, o = null) {
     const c = copia(ka),
       rb = acha(c.filhos, 'subtitulo'),
       sb = acha(c.filhos, 'lista-eventos');
-    if (rb) rb.texto = 'Base da guilda';
+    if (rb) rb.texto = 'Guild base';
     const H = 22 * k9;
     const tb = copia(qa);
     Object.assign(tb, { nome: 'btn-base-ir', x: r1(c.w - qa.w), y: r1(38 * k9) });
     tag(tb, 'acao', 'base-ir');
-    rotular(tb, 'Ir pra base');
+    rotular(tb, 'Go to base');
     if (sb) {
       sb.nome = 'lista-vagas';
       sb.y = r1(100 * k9);
@@ -438,7 +438,7 @@ export function completar(j, o = null) {
     const c = copia(ka),
       ub = acha(c.filhos, 'subtitulo'),
       vb = acha(c.filhos, 'lista-eventos');
-    if (ub) ub.texto = 'Loja da guilda';
+    if (ub) ub.texto = 'Guild Shop';
     const H = 22 * k9;
     if (vb) {
       vb.nome = 'lista-loja';
@@ -468,7 +468,7 @@ export function completar(j, o = null) {
         oculto: true,
       });
       tag(v, 'acao', 'voltar');
-      rotular(v, 'Voltar');
+      rotular(v, 'Back');
       r.filhos.push(v);
     }
   }

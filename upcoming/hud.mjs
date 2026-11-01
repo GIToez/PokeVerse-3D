@@ -23,25 +23,25 @@ export const PECAS = [
 ];
 export const PECAS_V2 = ['atalhos-v2', 'alerta-raid', 'turno-v2'];
 export const NOMES = {
-  'f-parceiro': 'parceiro (nome, nível, HP)',
-  skills: 'golpes 1–4',
+  'f-parceiro': 'partner (name, level, HP)',
+  skills: 'moves 1–4',
   'bola-btn': 'bola (F)',
-  atalhos: 'atalhos 5–9 (poções, bolas, montarias)',
-  'f-alvo': 'alvo (segue o inimigo)',
-  missao: 'missão',
-  fala: 'caixa de fala (segue o NPC)',
-  joy: 'joystick (celular)',
-  'cam-btns': 'câmera ↺ ↻ (celular)',
-  'menu-btn': 'menu ☰ (grade completa)',
-  'chat-btn': 'botão do chat (celular)',
-  'menu-icones': 'botões de menu (ícones)',
+  atalhos: 'shortcuts 5–9 (potions, balls, mounts)',
+  'f-alvo': 'target (follows the enemy)',
+  missao: 'mission',
+  fala: 'speech bubble (follows the NPC)',
+  joy: 'joystick (mobile)',
+  'cam-btns': 'camera ↺ ↻ (mobile)',
+  'menu-btn': 'menu ☰ (full grid)',
+  'chat-btn': 'chat button (mobile)',
+  'menu-icones': 'menu buttons (icons)',
   chat: 'chat (Local/Global/Trade/Help)',
-  'time-hud': 'time (6 Pokémon, troca rápida)',
-  minimapa: 'minimapa (câmera de cima)',
-  'painel-fundo': 'painel de fundo (decorativo)',
-  'atalhos-v2': 'atalhos Eventos/Loja (v2)',
-  'alerta-raid': 'card da raid ao vivo (v2)',
-  'turno-v2': 'luta por turno (v2)',
+  'time-hud': 'team (6 Pokémon, quick swap)',
+  minimapa: 'minimap (top-down camera)',
+  'painel-fundo': 'background panel (decorative)',
+  'atalhos-v2': 'Events/Shop shortcuts (v2)',
+  'alerta-raid': 'live raid card (v2)',
+  'turno-v2': 'turn-based battle (v2)',
 };
 export const JANELAS = [
   'pokemon',
@@ -57,20 +57,20 @@ export const JANELAS = [
 ];
 export const NOMES_JANELAS = {
   pokemon: 'Pokémon',
-  mochila: 'Mochila',
-  missoes: 'Missões',
+  mochila: 'Bag',
+  missoes: 'Missions',
   mapa: 'Mapa',
   pokedex: 'Pokédex',
-  treinador: 'Treinador',
-  loja: 'Loja',
+  treinador: 'Trainer',
+  loja: 'Shop',
   social: 'Social',
-  batalha: 'Batalha',
+  batalha: 'Battle',
   config: 'Config',
 };
 export const PRESETS = {
   pc: { nome: 'PC', w: 1920, h: 900 },
-  celular_pe: { nome: 'celular em pé', w: 390, h: 844 },
-  celular_deitado: { nome: 'celular deitado', w: 844, h: 390 },
+  celular_pe: { nome: 'phone in portrait', w: 390, h: 844 },
+  celular_deitado: { nome: 'phone in landscape', w: 844, h: 390 },
 };
 const CHAVE = 'hud.layout';
 const CHAVE_GUARDADO = 'hud.layout.antigo';
@@ -159,7 +159,7 @@ export async function carregarV2() {
   } catch (e) {
     try {
       window.__boot?.aviso?.(
-        'hud: o layout v2 não chegou, caiu no antigo',
+        'hud: v2 layout did not arrive, fell back to the old one',
         { erro: String(e?.message || e).slice(0, 120) },
         true,
       );
@@ -343,7 +343,7 @@ export function moedaNovaNaArte(a) {
           document.head.appendChild(i);
           return h;
         } catch (e) {
-          console.warn('moeda nova:', a, e?.message || e);
+          console.warn('new coin:', a, e?.message || e);
           return null;
         }
       })(),
@@ -372,7 +372,7 @@ export function arteNovaEmDados(a) {
           const f = trocarDesenho(c, d, b[2] || 'pilula');
           return f ? await paraDados(f) : null;
         } catch (e) {
-          console.warn('moeda nova:', a, e?.message || e);
+          console.warn('new coin:', a, e?.message || e);
           return null;
         }
       })(),
@@ -424,7 +424,7 @@ export function semMoedaNaArte(a) {
           document.head.appendChild(g);
           return f;
         } catch (e) {
-          console.warn('sem moeda:', a, e?.message || e);
+          console.warn('no coin:', a, e?.message || e);
           return null;
         }
       })(),
@@ -452,7 +452,7 @@ const carregarImagem = (a) =>
   new Promise((b, c) => {
     const d = new Image();
     d.onload = () => b(d);
-    d.onerror = () => c(new Error('não carregou ' + a));
+    d.onerror = () => c(new Error('failed to load ' + a));
     d.src = a;
   });
 const ehRoxo = (r, g, b, a) => a > 100 && r > 140 && b > 160 && g < 170;
@@ -1178,7 +1178,7 @@ const LIGACOES = {
       'btn-terreno': 'terreno',
       'btn-fliperama': 'fliperama',
     },
-    dicas: { 'btn-ranking': 'Ranking', 'btn-terreno': 'Terreno' },
+    dicas: { 'btn-ranking': 'Ranking', 'btn-terreno': 'Land' },
     folhaGrupo: (n) => {
       const m = n.match(/ui\/icone\/(\w+)$/);
       const j = m && ({ configuracoes: 'config' }[m[1]] || m[1]);
@@ -1507,7 +1507,7 @@ function aplicarRecolhe(e, a) {
   const b = a.dataset.tagval;
   const d = e.querySelector('[data-fig="' + b + '"],[data-figlig="' + b + '"]') || e.querySelector('.' + b);
   const f = estaRecolhido(e, b);
-  if (e.id === 'missao') a.title = tr(f ? 'abrir a missão' : 'recolher a missão');
+  if (e.id === 'missao') a.title = tr(f ? 'open the mission' : 'collapse the mission');
   if (d) d.style.display = f ? 'none' : '';
   const g = e.__figmaP?.refs?.recolhida,
     i = e.querySelector('[data-fig="missao-header"], [data-figlig="missao-header"]');
@@ -2687,7 +2687,7 @@ export function naTela(x, y, z) {
   if (!c && !naTela.avisou) {
     naTela.avisou = true;
     console.warn(
-      'Hud: peça [segue:x] sem câmera — o index tem de chamar Hud.usarCamera(cam) (a reserva window.__dbg não existe aqui)',
+      'Hud: [follow:x] requested without a camera — index must call Hud.usarCamera(cam) (the window.__dbg fallback does not exist here)',
     );
   }
   if (!c?.projectionMatrix || !c.matrixWorldInverse || ![x, y, z].every(Number.isFinite)) return null;

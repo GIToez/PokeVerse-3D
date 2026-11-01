@@ -45,13 +45,13 @@ export function enquadrar(b, f = {}) {
   const o = { ...PADRAO, ...f };
   const g = v3(b?.min),
     h = v3(b?.max);
-  if (![...g, ...h].every(num)) throw new Error('enquadrar: caixa sem min/max numéricos');
+  if (![...g, ...h].every(num)) throw new Error('framing: box without numeric min/max');
   const H = h[1] - g[1];
-  if (!(H > 0)) throw new Error('enquadrar: caixa sem altura');
-  if (!(o.fracao > 0 && o.pe >= 0 && o.pe + o.fracao <= 1)) throw new Error('enquadrar: fracao/pe fora de 0..1');
-  if (!(o.largura > 0 && o.altura > 0)) throw new Error('enquadrar: tamanho inválido');
+  if (!(H > 0)) throw new Error('framing: box has no height');
+  if (!(o.fracao > 0 && o.pe >= 0 && o.pe + o.fracao <= 1)) throw new Error('framing: fraction/foot out of 0..1');
+  if (!(o.largura > 0 && o.altura > 0)) throw new Error('framing: invalid size');
   if (o.projecao !== 'ortografica' && o.projecao !== 'perspectiva')
-    throw new Error('enquadrar: projeção desconhecida: ' + o.projecao);
+    throw new Error('framing: unknown projection: ' + o.projecao);
   const j = o.largura / o.altura;
   const a = rad(o.azimute),
     e = rad(o.elevacao),
@@ -91,11 +91,11 @@ export function enquadrar(b, f = {}) {
       distancia: ha,
     };
   } else {
-    if (!(o.fov > 0 && o.fov < 170)) throw new Error('enquadrar: fov inválido');
+    if (!(o.fov > 0 && o.fov < 170)) throw new Error('framing: invalid fov');
     const t = Math.tan(rad(o.fov) / 2),
       ia = 2 * o.pe - 1,
       ja = 2 * (o.pe + o.fracao) - 1;
-    if (!(c + ia * s * t > 0 && c + ja * s * t > 0)) throw new Error('enquadrar: elevação grande demais pro fov');
+    if (!(c + ia * s * t > 0 && c + ja * s * t > 0)) throw new Error('framing: elevation too large for fov');
     const k = (n) => (n * t) / (c + n * s * t);
     const ka = (d) => {
       const a = [m[0], g[1] - k(ia) * d, m[2]];

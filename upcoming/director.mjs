@@ -178,7 +178,7 @@ async function criarTreinador(n) {
   try {
     vivos[n].tr = await montarTreinador(j.tr.perso, j.tr.nick, j.tr.cor, lugarTreinador(n));
   } catch (e) {
-    status('treinador ' + n + ' não carregou: ' + (e?.message || e));
+    status('treinador ' + n + ' failed to load: ' + (e?.message || e));
   }
   sinc();
   pintarJog();
@@ -196,7 +196,7 @@ async function criarMon(n, a) {
     if (a === 'reserva') e.pivo.visible = false;
     vivos[n][a] = e;
   } catch (e) {
-    status(nomeDex(d.dex) + ' não carregou: ' + (e?.message || e));
+    status(nomeDex(d.dex) + ' failed to load: ' + (e?.message || e));
   }
   sinc();
   pintarJog();
@@ -251,7 +251,7 @@ async function golpe(a, b, c) {
     e = monAtivo(outro(a)),
     g = ctx.GOLPES[b],
     f = vivos[a].tr;
-  if (!d || !e || !g) return status('golpe: falta o Pokémon de um dos jogadores');
+  if (!d || !e || !g) return status("move: one of the players' Pokémon is missing");
   encarar();
   if (f?.acoes?.has('Attack')) ctx.tocarUma(f, 'Attack');
   if (cena.placar.nomeGolpe)
@@ -274,7 +274,7 @@ async function troca(n) {
     a = vivos[n].tr,
     b = monAtivo(n),
     c = j.ativo === 'reserva' ? vivos[n].mon : vivos[n].reserva;
-  if (!b || !c) return status('troca: o jogador ' + n + ' precisa de Pokémon e reserva');
+  if (!b || !c) return status('switch: player ' + n + ' needs a Pokémon and a reserve');
   if (a?.acoes?.has('Attack')) ctx.tocarUma(a, 'Attack');
   ctx.efeito('FX_Evolution2', b.peito, b.altura, { escala: 1.2 });
   await ctx.esperarSeg(0.35);
@@ -300,7 +300,7 @@ async function troca(n) {
   pintarCards();
   pintarJog();
   salvar();
-  mostrarFlash('VAI, ' + nomeDex(dadosAtivo(n).dex).toUpperCase() + '!', j.tr?.nick || '', 1.3);
+  mostrarFlash('GO, ' + nomeDex(dadosAtivo(n).dex).toUpperCase() + '!', j.tr?.nick || '', 1.3);
 }
 function ko(n) {
   const e = monAtivo(n);
@@ -391,12 +391,12 @@ function resumo(s) {
   const J = (n) => 'J' + n;
   if (s.tipo === 'golpe')
     return `${J(s.de)} usa ${ctx.GOLPES[s.golpe]?.nome || s.golpe} em ${J(outro(+s.de))}${s.dano ? ' (−' + s.dano + '%)' : ''}`;
-  if (s.tipo === 'troca') return `${J(s.de)} troca de Pokémon`;
-  if (s.tipo === 'ko') return `KO no Pokémon do ${J(s.de)}`;
-  if (s.tipo === 'levantar') return `levanta o Pokémon do ${J(s.de)}`;
+  if (s.tipo === 'troca') return `${J(s.de)} switches Pokémon`;
+  if (s.tipo === 'ko') return `KO on Pokémon of ${J(s.de)}`;
+  if (s.tipo === 'levantar') return `revives Pokémon of ${J(s.de)}`;
   if (s.tipo === 'flash') return `flash "${s.a}"`;
-  if (s.tipo === 'cam') return `câmera ${s.modo}${s.modo !== 'lateral' && s.modo !== 'aberta' ? ' ' + J(s.de) : ''}`;
-  if (s.tipo === 'hp') return `HP do ${J(s.de)} = ${s.valor}%`;
+  if (s.tipo === 'cam') return `camera ${s.modo}${s.modo !== 'lateral' && s.modo !== 'aberta' ? ' ' + J(s.de) : ''}`;
+  if (s.tipo === 'hp') return `HP of ${J(s.de)} = ${s.valor}%`;
   return s.tipo;
 }
 function salvar() {
@@ -426,20 +426,24 @@ function pintarJog() {
     $('j' + n + '-tr-est').textContent = j.tr
       ? vivos[n].tr
         ? '● ' + j.tr.nick + ' (' + ctx.Personagem.nomeDe(j.tr.perso) + ')'
-        : '… carregando'
-      : 'ainda não criado';
+        : '… loading'
+      : 'not created yet';
     $('j' + n + '-tr-est').className = 'estado' + (j.tr && vivos[n].tr ? '' : ' nao');
     $('j' + n + '-mon-est').textContent = j.mon
       ? vivos[n].mon
         ? '● ' + nomeDex(j.mon.dex) + ' Lv ' + j.mon.lv
-        : '… carregando'
-      : 'ainda não criado';
+        : '… loading'
+      : 'not created yet';
     $('j' + n + '-mon-est').className = 'estado' + (j.mon && vivos[n].mon ? '' : ' nao');
     $('j' + n + '-res-est').textContent = j.reserva
       ? vivos[n].reserva
-        ? '● ' + nomeDex(j.reserva.dex) + ' Lv ' + j.reserva.lv + (j.ativo === 'reserva' ? ' (em campo)' : ' (na bola)')
-        : '… carregando'
-      : 'sem reserva';
+        ? '● ' +
+          nomeDex(j.reserva.dex) +
+          ' Lv ' +
+          j.reserva.lv +
+          (j.ativo === 'reserva' ? ' (active)' : ' (in the ball)')
+        : '… loading'
+      : 'no reserve';
     $('j' + n + '-res-est').className = 'estado' + (j.reserva && vivos[n].reserva ? '' : ' nao');
   }
 }
@@ -447,7 +451,7 @@ function pintarSlots() {
   $('dir-slots').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     .map((k) => {
       const s = cena.slots[k];
-      return `<div class="slot"><b>${k}</b>${s ? esc(resumo(s)) : '<span class="k">vazio</span>'}${s ? ` <button data-run="${k}">▶</button><button data-del="${k}" class="perigo">×</button>` : ''}</div>`;
+      return `<div class="slot"><b>${k}</b>${s ? esc(resumo(s)) : '<span class="k">empty</span>'}${s ? ` <button data-run="${k}">▶</button><button data-del="${k}" class="perigo">×</button>` : ''}</div>`;
     })
     .join('');
   $('dir-slots')
@@ -472,7 +476,7 @@ function pintarExtras() {
         (a) =>
           `<li class="${a.id === selExtra ? 'on' : ''}" data-id="${a.id}">${a.tipo === 'tr' ? '🧢' : '🔴'} ${esc(a.nome)}</li>`,
       )
-      .join('') || '<li class="k">nenhum</li>';
+      .join('') || '<li class="k">none</li>';
   b.querySelectorAll('li[data-id]').forEach(
     (a) =>
       (a.onclick = () => {
@@ -482,15 +486,15 @@ function pintarExtras() {
   );
 }
 function blocoJogador(n, a) {
-  return `<div class="jog"><b class="t">Jogador ${n}</b> <span class="k">${n === 1 ? '(sul — a câmera "atrás do J1" fica nas costas dele)' : '(norte — exatamente do outro lado)'}</span>
-    <label><span>roupa</span><select id="j${n}-skin">${a}</select><button id="j${n}-rand" title="skin e cores aleatórias">🎲</button></label>
+  return `<div class="jog"><b class="t">Player ${n}</b> <span class="k">${n === 1 ? '(south — the "behind P1" camera sits at their back)' : '(north — exactly on the opposite side)'}</span>
+    <label><span>outfit</span><select id="j${n}-skin">${a}</select><button id="j${n}-rand" title="random skin and colors">🎲</button></label>
     <label><span>nick</span><input id="j${n}-nick" placeholder="nome"><input type="color" id="j${n}-cor" value="${n === 1 ? '#8ef58e' : '#c9a0ff'}"><button id="j${n}-nick-rand">🎲</button></label>
-    <div class="linha"><button id="j${n}-tr-ok" class="ok">criar / trocar treinador</button><span id="j${n}-tr-est" class="estado nao">ainda não criado</span></div>
+    <div class="linha"><button id="j${n}-tr-ok" class="ok">create / change trainer</button><span id="j${n}-tr-est" class="estado nao">not created yet</span></div>
     <label><span>Pokémon</span><input type="number" id="j${n}-dex" value="${n === 1 ? 6 : 9}" min="1" max="1010" style="flex:.5"><span id="j${n}-dex-nome" style="min-width:0;flex:1"></span><button id="j${n}-dex-rand">🎲</button></label>
-    <label><span>nível</span><input type="number" id="j${n}-lv" value="60" min="1" max="100" style="flex:.5"><span>tam. m</span><input type="number" id="j${n}-tam" placeholder="auto" step="0.1" style="flex:.5"></label>
-    <div class="linha"><button id="j${n}-mon-ok" class="ok">criar / trocar Pokémon</button><span id="j${n}-mon-est" class="estado nao">ainda não criado</span></div>
-    <label><span>reserva</span><input type="number" id="j${n}-rdex" value="${n === 1 ? 149 : 59}" min="1" max="1010" style="flex:.5"><span id="j${n}-rdex-nome" style="min-width:0;flex:1"></span><button id="j${n}-rdex-rand">🎲</button><input type="number" id="j${n}-rlv" value="60" min="1" max="100" style="flex:.5" title="nível"></label>
-    <div class="linha"><button id="j${n}-res-ok">criar reserva (fica na bola até a troca)</button><span id="j${n}-res-est" class="estado nao">sem reserva</span></div>
+    <label><span>level</span><input type="number" id="j${n}-lv" value="60" min="1" max="100" style="flex:.5"><span>tam. m</span><input type="number" id="j${n}-tam" placeholder="auto" step="0.1" style="flex:.5"></label>
+    <div class="linha"><button id="j${n}-mon-ok" class="ok">create / change Pokémon</button><span id="j${n}-mon-est" class="estado nao">not created yet</span></div>
+    <label><span>reserve</span><input type="number" id="j${n}-rdex" value="${n === 1 ? 149 : 59}" min="1" max="1010" style="flex:.5"><span id="j${n}-rdex-nome" style="min-width:0;flex:1"></span><button id="j${n}-rdex-rand">🎲</button><input type="number" id="j${n}-rlv" value="60" min="1" max="100" style="flex:.5" title="level"></label>
+    <div class="linha"><button id="j${n}-res-ok">create reserve (stays in the ball until the switch)</button><span id="j${n}-res-est" class="estado nao">no reserve</span></div>
   </div>`;
 }
 function montarPainel() {
@@ -503,45 +507,45 @@ function montarPainel() {
   painel = document.createElement('div');
   painel.id = 'dir';
   painel.innerHTML = `
-    <div class="linha"><b style="color:#ffe07a">🎬 Diretor</b> <span class="k">H esconde · 1–9 disparam · Espaço = flash</span></div>
-    <div id="dir-status" class="k">pronto</div>
-    <h2>Cena</h2>
-    <label><span>mapa</span><select id="c-mapa"><option value="4120013|7170501">Arena da Liga</option><option value="casa|">Terreno (platô)</option><option value="pallet_rota1|">Pallet + Rota 1</option><option value="kanto|">Kanto inteira</option></select><button id="c-ir">ir</button></label>
-    <div class="linha"><button id="c-exportar">Exportar cena</button><button id="c-importar">Importar</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Limpar tudo</button></div>
-    <div class="k">posições fixas: J1 ao sul, J2 ao norte (do outro lado), Pokémon 3,5 m na frente. Tudo que você cria já cai no lugar e fica salvo.</div>
-    <h2>Jogadores</h2>
+    <div class="linha"><b style="color:#ffe07a">🎬 Director</b> <span class="k">H hides · 1–9 trigger · Space = flash</span></div>
+    <div id="dir-status" class="k">ready</div>
+    <h2>Scene</h2>
+    <label><span>map</span><select id="c-mapa"><option value="4120013|7170501">League Arena</option><option value="casa|">Plot (plateau)</option><option value="pallet_rota1|">Pallet + Route 1</option><option value="kanto|">All of Kanto</option></select><button id="c-ir">go</button></label>
+    <div class="linha"><button id="c-exportar">Export scene</button><button id="c-importar">Import</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Clear all</button></div>
+    <div class="k">fixed positions: P1 to the south, P2 to the north (opposite side), Pokémon 3.5 m in front. Everything you create lands in place and is saved.</div>
+    <h2>Players</h2>
     ${blocoJogador(1, h)}${blocoJogador(2, h)}
-    <h2>Textos</h2>
-    <label><span>título</span><input id="t-titulo"></label>
-    <label><span>subtítulo</span><input id="t-sub"></label>
-    <label><span>flash</span><input id="t-fa" placeholder="grande"><input id="t-fb" placeholder="pequeno" style="flex:.8"><button id="t-flash">▶</button></label>
-    <label><input type="checkbox" id="t-cards"> mostrar placar (automático: nick, Pokémon, nível, HP, reserva)</label>
-    <label><input type="checkbox" id="t-nomegolpe"> mostrar o nome do golpe a cada ataque</label>
-    <h2>Ações <small>gravadas nas teclas 1–9</small></h2>
-    <label><span>tipo</span><select id="s-tipo"><option value="golpe">golpe</option><option value="troca">troca (sai o de campo, entra o reserva)</option><option value="ko">KO</option><option value="levantar">levantar</option><option value="flash">flash de texto</option><option value="cam">câmera</option><option value="hp">HP do placar</option></select></label>
-    <label id="s-de-box"><span>jogador</span><select id="s-de"><option value="1">Jogador 1</option><option value="2">Jogador 2</option></select></label>
-    <div id="s-golpe"><label><span>golpe</span><select id="s-golpe-id">${i}</select></label><label><span>dano %</span><input type="number" id="s-dano" value="25" min="0" max="100" style="flex:.5"><span class="k" style="min-width:0">tirado do Pokémon do outro jogador</span></label></div>
-    <div id="s-flashbox" hidden><label><span>grande</span><input id="s-fa"></label><label><span>pequeno</span><input id="s-fb"></label><label><span>segundos</span><input type="number" id="s-seg" value="1.5" step="0.1" style="flex:.5"></label></div>
-    <div id="s-cambox" hidden><label><span>modo</span><select id="s-cam-modo"><option value="atras">atrás do jogador</option><option value="pokemon">fechar no Pokémon do jogador</option><option value="treinador">fechar no treinador</option><option value="lateral">lateral (arena inteira)</option><option value="aberta">aberta (atrás do J1, longe)</option></select></label><label><span>zoom</span><input type="number" id="s-cam-zoom" placeholder="auto" step="0.05" style="flex:.5"></label></div>
-    <div id="s-hpbox" hidden><label><span>valor %</span><input type="number" id="s-hp-valor" value="50" min="0" max="100" style="flex:.5"></label></div>
-    <label><span>gravar em</span><select id="s-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => `<option>${k}</option>`).join('')}</select><button id="s-gravar" class="ok">gravar</button><button id="s-testar">testar agora</button></label>
+    <h2>Texts</h2>
+    <label><span>title</span><input id="t-titulo"></label>
+    <label><span>subtitle</span><input id="t-sub"></label>
+    <label><span>flash</span><input id="t-fa" placeholder="large"><input id="t-fb" placeholder="small" style="flex:.8"><button id="t-flash">▶</button></label>
+    <label><input type="checkbox" id="t-cards"> show scoreboard (automatic: nick, Pokémon, level, HP, reserve)</label>
+    <label><input type="checkbox" id="t-nomegolpe"> show the move name on each attack</label>
+    <h2>Actions <small>saved to keys 1–9</small></h2>
+    <label><span>type</span><select id="s-tipo"><option value="golpe">move</option><option value="troca">switch (active one out, reserve in)</option><option value="ko">KO</option><option value="levantar">revive</option><option value="flash">text flash</option><option value="cam">camera</option><option value="hp">scoreboard HP</option></select></label>
+    <label id="s-de-box"><span>player</span><select id="s-de"><option value="1">Player 1</option><option value="2">Player 2</option></select></label>
+    <div id="s-golpe"><label><span>move</span><select id="s-golpe-id">${i}</select></label><label><span>damage %</span><input type="number" id="s-dano" value="25" min="0" max="100" style="flex:.5"><span class="k" style="min-width:0">dealt to the other player's Pokémon</span></label></div>
+    <div id="s-flashbox" hidden><label><span>large</span><input id="s-fa"></label><label><span>small</span><input id="s-fb"></label><label><span>seconds</span><input type="number" id="s-seg" value="1.5" step="0.1" style="flex:.5"></label></div>
+    <div id="s-cambox" hidden><label><span>mode</span><select id="s-cam-modo"><option value="atras">behind the player</option><option value="pokemon">close on player's Pokémon</option><option value="treinador">close on the trainer</option><option value="lateral">side (whole arena)</option><option value="aberta">wide (behind P1, far)</option></select></label><label><span>zoom</span><input type="number" id="s-cam-zoom" placeholder="auto" step="0.05" style="flex:.5"></label></div>
+    <div id="s-hpbox" hidden><label><span>value %</span><input type="number" id="s-hp-valor" value="50" min="0" max="100" style="flex:.5"></label></div>
+    <label><span>save to</span><select id="s-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => `<option>${k}</option>`).join('')}</select><button id="s-gravar" class="ok">save</button><button id="s-testar">test now</button></label>
     <div id="dir-slots"></div>
-    <h2>Câmera</h2>
-    <div class="linha"><button id="c-atras1" class="ok">atrás do J1</button><button id="c-atras2">atrás do J2</button><button id="c-lateral">lateral</button><button id="c-aberta">aberta</button></div>
-    <label><span>giro</span><input type="range" id="c-giro" min="-180" max="180" step="1"><span id="c-girov"></span></label>
+    <h2>Camera</h2>
+    <div class="linha"><button id="c-atras1" class="ok">behind P1</button><button id="c-atras2">behind P2</button><button id="c-lateral">side</button><button id="c-aberta">wide</button></div>
+    <label><span>rotate</span><input type="range" id="c-giro" min="-180" max="180" step="1"><span id="c-girov"></span></label>
     <label><span>zoom</span><input type="range" id="c-zoom" min="0.3" max="4" step="0.05"><span id="c-zoomv"></span></label>
-    <div class="k">arrastar no jogo gira · roda do mouse = zoom · Q/E giram · WASD desloca a câmera · +/− zoom</div>
-    <details><summary>Avançado: figurantes</summary>
-      <div class="k">atores soltos (plateia, mais Pokémon). Nascem no centro da arena; WASD move o selecionado.</div>
-      <label><span>tipo</span><select id="x-tipo"><option value="mon">Pokémon</option><option value="tr">treinador (🎲 roupa/nick)</option></select><input type="number" id="x-dex" value="25" min="1" max="1010" style="flex:.5" title="dex"><button id="x-add">+ criar</button></label>
+    <div class="k">drag in game to rotate · mouse wheel = zoom · Q/E rotate · WASD pans the camera · +/− zoom</div>
+    <details><summary>Advanced: extras</summary>
+      <div class="k">free actors (audience, more Pokémon). They spawn at arena center; WASD moves the selected one.</div>
+      <label><span>type</span><select id="x-tipo"><option value="mon">Pokémon</option><option value="tr">trainer (🎲 outfit/nick)</option></select><input type="number" id="x-dex" value="25" min="1" max="1010" style="flex:.5" title="dex"><button id="x-add">+ create</button></label>
       <ul id="x-lista"></ul>
-      <div class="linha"><button id="x-mover">WASD move: a câmera</button><button id="x-remover" class="perigo">remover selecionado</button></div>
+      <div class="linha"><button id="x-mover">WASD moves: the camera</button><button id="x-remover" class="perigo">remove selected</button></div>
     </details>
-    <div class="k" style="margin-top:10px">OBS: janela do Chrome em 9:16 (ou recorte no OBS), aperta H pra sumir o painel e grava.</div>`;
+    <div class="k" style="margin-top:10px">OBS: Chrome window at 9:16 (or crop in OBS), press H to hide the panel and record.</div>`;
   document.body.appendChild(painel);
   const l = document.createElement('div');
   l.id = 'dir-dica';
-  l.textContent = 'H: painel · 1–9: ações · Espaço: flash · mouse/QE: girar · roda: zoom';
+  l.textContent = 'H: panel · 1–9: actions · Space: flash · mouse/QE: rotate · wheel: zoom';
   document.body.appendChild(l);
   for (const n of [1, 2]) {
     const j = cena.jog[n];
@@ -571,7 +575,7 @@ function montarPainel() {
       const p = roupaAleatoria();
       $('j' + n + '-skin').value = p.tipo;
       $('j' + n + '-skin').dataset.cores = JSON.stringify(p.cores || null);
-      status('J' + n + ': ' + ctx.Personagem.nomeDe(p) + (p.cores ? ' com cores aleatórias' : ''));
+      status('J' + n + ': ' + ctx.Personagem.nomeDe(p) + (p.cores ? ' with random colors' : ''));
     };
     $('j' + n + '-skin').onchange = () => {
       delete $('j' + n + '-skin').dataset.cores;
@@ -597,10 +601,10 @@ function montarPainel() {
       };
       $('j' + n + '-nick').value = j.tr.nick;
       salvar();
-      status('carregando treinador ' + n + '…');
+      status('loading trainer ' + n + '…');
       await criarTreinador(n);
       salvar();
-      status('J' + n + ' pronto no lugar');
+      status('J' + n + ' ready in place');
     };
     $('j' + n + '-mon-ok').onclick = async () => {
       j.mon = {
@@ -616,15 +620,15 @@ function montarPainel() {
       if (vivos[n].reserva) vivos[n].reserva.pivo.visible = false;
       encarar();
       salvar();
-      status(nomeDex(j.mon.dex) + ' na frente do J' + n);
+      status(nomeDex(j.mon.dex) + ' in front of P' + n);
     };
     $('j' + n + '-res-ok').onclick = async () => {
       j.reserva = { dex: +$('j' + n + '-rdex').value, lv: +$('j' + n + '-rlv').value || 50 };
       salvar();
-      status('carregando reserva…');
+      status('loading reserve…');
       await criarMon(n, 'reserva');
       salvar();
-      status('reserva do J' + n + ' pronto (na bola)');
+      status('reserve of P' + n + ' ready (in the ball)');
     };
   }
   $('t-titulo').value = cena.banner.titulo;
@@ -673,7 +677,7 @@ function montarPainel() {
     cena.slots[$('s-n').value] = q();
     pintarSlots();
     salvar();
-    status('ação gravada na tecla ' + $('s-n').value);
+    status('action saved to key ' + $('s-n').value);
   };
   $('s-testar').onclick = () => executar(q());
   $('c-atras1').onclick = () => camera('atras', 1);
@@ -720,7 +724,7 @@ function montarPainel() {
         salvar();
         location.reload();
       } catch {
-        status('JSON inválido');
+        status('invalid JSON');
       }
     };
     r.readAsText(f);
@@ -729,7 +733,7 @@ function montarPainel() {
   $('x-add').onclick = async () => {
     const S = spots(),
       a = $('x-tipo').value;
-    status('carregando…');
+    status('loading…');
     try {
       const L = {
         x: S.c.x + (Math.random() - 0.5) * 4,
@@ -743,14 +747,14 @@ function montarPainel() {
       extras.push({ id: Date.now(), tipo: a, e, nome: a === 'tr' ? e.nome : nomeDex(+$('x-dex').value) });
       sinc();
       pintarExtras();
-      status('figurante criado no centro');
+      status('extra created at center');
     } catch (b) {
-      status('não carregou: ' + (b?.message || b));
+      status("didn't load: " + (b?.message || b));
     }
   };
   $('x-mover').onclick = () => {
     moverExtra = !moverExtra;
-    $('x-mover').textContent = 'WASD move: ' + (moverExtra ? 'o figurante selecionado' : 'a câmera');
+    $('x-mover').textContent = 'WASD move: ' + (moverExtra ? 'the selected extra' : 'the camera');
   };
   $('x-remover').onclick = () => {
     const a = extras.find((x) => x.id === selExtra);
@@ -917,7 +921,7 @@ export async function abrir(c) {
   const e = ctx.lerLS('diretor.cena3', null);
   cena = {
     mapa: e?.mapa || '4120013|7170501',
-    banner: e?.banner || { titulo: '🏆 TORNEIO DE KANTO', sub: 'FINAL · Liga Índigo' },
+    banner: e?.banner || { titulo: '🏆 KANTO TOURNAMENT', sub: 'FINAL · Indigo League' },
     placar: e?.placar || { on: true, nomeGolpe: true, hp: { 1: 100, 2: 100 } },
     jog: e?.jog || {
       1: { tr: null, mon: null, reserva: null, ativo: 'mon' },
@@ -936,11 +940,11 @@ export async function abrir(c) {
   camera('atras', 1);
   $('boot').hidden = true;
   if (cena.jog[1].tr || cena.jog[2].tr) {
-    status('montando a cena salva…');
+    status('building the saved scene…');
     await montarTudo();
     encarar();
     pintarCards();
-    status('cena montada');
+    status('scene built');
   }
   window.__diretor = {
     cena: () => cena,
@@ -971,9 +975,9 @@ let tapete = null,
 let meuDex = 25,
   guardando = false;
 const PECAS = [
-  { id: 'jogador', n: '1', rot: 'você', cor: '#8ef58e' },
-  { id: 'meu', n: '2', rot: 'seu Pokémon', cor: '#7ad7ff' },
-  { id: 'dele', n: '3', rot: 'o Pokémon dele', cor: '#ffb46b' },
+  { id: 'jogador', n: '1', rot: 'you', cor: '#8ef58e' },
+  { id: 'meu', n: '2', rot: 'your Pokémon', cor: '#7ad7ff' },
+  { id: 'dele', n: '3', rot: 'their Pokémon', cor: '#ffb46b' },
   { id: 'npc', n: '4', rot: 'o rival', cor: '#ff9bd7' },
 ];
 const CENA_ID = () => {
@@ -1116,7 +1120,7 @@ async function montarCorpos(a, p) {
     porPalco(e, p.npc.x, p.npc.z, p.npc.giro ?? 0);
     corpos.npc = e;
   } catch (d) {
-    status('o rival não carregou: ' + (d?.message || d));
+    status("the rival didn't load: " + (d?.message || d));
   }
   try {
     corpos.dele = await montarMon(b, T.time?.[0]?.lv || 20, { ...p.dele, giro: 0 }, 0);
@@ -1125,7 +1129,7 @@ async function montarCorpos(a, p) {
     corpos.meu = await montarMon(meuDex, 25, { ...p.meu, giro: 0 }, 0);
   } catch {}
   try {
-    corpos.jogador = await montarTreinador({ tipo: 'ash' }, 'você', '#8ef58e', { ...p.jogador, giro: 0 });
+    corpos.jogador = await montarTreinador({ tipo: 'ash' }, 'you', '#8ef58e', { ...p.jogador, giro: 0 });
   } catch {}
   for (const k of Object.keys(corpos)) {
     const e = corpos[k];
@@ -1134,7 +1138,7 @@ async function montarCorpos(a, p) {
   encararPalco();
   ctx.jogo.cinem = Object.values(corpos).filter(Boolean);
   const m = medidos[a.chave];
-  status(T.nome + (m ? ' · medido: ' + m.limposAlcancaveis + ' de ' + m.nAlcanca + ' lados de chegada limpos' : ''));
+  status(T.nome + (m ? ' · measured: ' + m.limposAlcancaveis + ' de ' + m.nAlcanca + ' clear arrival sides' : ''));
 }
 function encararPalco() {
   const C = corpos;
@@ -1308,45 +1312,45 @@ function aferir() {
   if (!a) return;
   const C = corpos;
   if (!C.npc || !C.jogador || !C.meu || !C.dele) {
-    a.innerHTML = '<span class="k">monte o palco primeiro</span>';
+    a.innerHTML = '<span class="k">set up the stage first</span>';
     return;
   }
   const b = (e) => livre(e.x, e.z);
   const c = (a, e, c) =>
-    `<div class="slot"><b style="background:${c}22;color:${c}">${b(e) ? '✓' : '✗'}</b>${a} <span class="k">${b(e) ? 'em chão livre' : 'DENTRO DE PAREDE'}</span></div>`;
+    `<div class="slot"><b style="background:${c}22;color:${c}">${b(e) ? '✓' : '✗'}</b>${a} <span class="k">${b(e) ? 'on open ground' : 'INSIDE A WALL'}</span></div>`;
   const d = dist(C.npc, C.jogador),
     f = dist(C.meu, C.dele),
     g = dist(C.jogador, C.meu);
   const h = [];
-  if (d < 4.5) h.push('você a ' + r1(d) + ' m do rival — o jogo nunca chega a menos de 4,5');
-  if (d > 9) h.push('você a ' + r1(d) + ' m: longe demais, a câmera não pega os dois');
-  if (g < 1.2) h.push('seu Pokémon a ' + r1(g) + ' m de você — vai ficar colado');
+  if (d < 4.5) h.push('you at ' + r1(d) + ' m from the rival — the game never gets closer than 4.5');
+  if (d > 9) h.push('you at ' + r1(d) + " m: too far, the camera can't fit both");
+  if (g < 1.2) h.push('your Pokémon at ' + r1(g) + ' m from you — it will be glued to you');
   if (dist(C.npc, C.meu) > dist(C.npc, C.jogador))
-    h.push('seu Pokémon está ATRÁS de você — é o que o jogo faz hoje quando o recuo dá 4,5 m');
-  if (dist(C.npc, C.dele) > dist(C.npc, C.meu)) h.push('o Pokémon dele está atrás do seu');
-  if (f < 1.5) h.push('os dois Pokémon a ' + r1(f) + ' m — vão se atravessar');
-  if (f > 6) h.push('os dois Pokémon a ' + r1(f) + ' m — golpe de contato vai parecer lento');
+    h.push('your Pokémon is BEHIND you — the game does this today when the backoff hits 4.5 m');
+  if (dist(C.npc, C.dele) > dist(C.npc, C.meu)) h.push('their Pokémon is behind yours');
+  if (f < 1.5) h.push('both Pokémon at ' + r1(f) + ' m — they will overlap');
+  if (f > 6) h.push('both Pokémon at ' + r1(f) + ' m — contact moves will look slow');
   a.innerHTML =
     PECAS.map((p) => c(p.rot, C[p.id], p.cor)).join('') +
-    `<div class="k" style="margin-top:5px">você ↔ rival <b style="color:#e6ecff">${r1(d)} m</b> · seu mon ↔ o dele <b style="color:#e6ecff">${r1(f)} m</b> · você ↔ seu mon <b style="color:#e6ecff">${r1(g)} m</b></div>` +
+    `<div class="k" style="margin-top:5px">you ↔ rival <b style="color:#e6ecff">${r1(d)} m</b> · your mon ↔ theirs <b style="color:#e6ecff">${r1(f)} m</b> · you ↔ your mon <b style="color:#e6ecff">${r1(g)} m</b></div>` +
     (h.length
       ? '<div class="k" style="color:#ffb46b;margin-top:4px">⚠ ' + h.map(esc).join('<br>⚠ ') + '</div>'
-      : '<div class="k" style="color:#86ef5f;margin-top:4px">a fila está boa</div>');
+      : '<div class="k" style="color:#86ef5f;margin-top:4px">the line looks good</div>');
 }
 function guardarPalco() {
   const p = palcoAtual();
-  if (!p) return status('não há palco montado');
+  if (!p) return status('no stage set up');
   PALCOS[sel] = p;
   ctx.gravarLS('diretor.palcos', PALCOS);
   pintarLista();
-  status('palco de ' + p.nome + ' guardado (' + Object.keys(PALCOS).length + ' no total)');
+  status('stage for ' + p.nome + ' saved (' + Object.keys(PALCOS).length + ' total)');
 }
 function apagarPalco() {
   if (!sel || !PALCOS[sel]) return;
   delete PALCOS[sel];
   ctx.gravarLS('diretor.palcos', PALCOS);
   pintarLista();
-  status('palco apagado — volta pro procedural');
+  status('stage deleted — back to procedural');
 }
 async function gravarArquivo() {
   if (guardando) return;
@@ -1356,18 +1360,18 @@ async function gravarArquivo() {
     const r = await fetch('/_palco', { method: 'POST', headers: { 'content-type': 'application/json' }, body: b });
     if (r.ok) {
       const j = await r.json();
-      status('✔ gravado em ' + j.arquivo + ' · ' + j.palcos + ' palco(s)');
+      status('✔ saved to ' + j.arquivo + ' · ' + j.palcos + ' stage(s)');
       guardando = false;
       return;
     }
-    throw new Error('o servidor respondeu ' + r.status);
+    throw new Error('the server responded ' + r.status);
   } catch (e) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([b], { type: 'application/json' }));
     a.download = 'palcos.json';
     a.click();
     URL.revokeObjectURL(a.href);
-    status('este servidor não grava (' + (e.message || e) + ') — baixei palcos.json, mova pra data/');
+    status("this server can't save (" + (e.message || e) + ') — downloaded palcos.json, move it to data/');
   }
   guardando = false;
 }
@@ -1392,14 +1396,14 @@ function pintarLista() {
         return `<li class="${a.chave === sel ? 'on' : ''}" data-k="${esc(a.chave)}">
       <span style="color:${c}">${b ? '★' : '○'}</span>
       <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.nome)}</span>
-      ${m ? `<span class="k" title="ângulos de chegada limpos / por onde dá pra chegar">${m.limposAlcancaveis}/${m.nAlcanca}</span>` : ''}</li>`;
+      ${m ? `<span class="k" title="clear arrival angles / ways to arrive">${m.limposAlcancaveis}/${m.nAlcanca}</span>` : ''}</li>`;
       })
-      .join('') || '<li class="k">nenhum lugar de luta nesta cena</li>';
+      .join('') || '<li class="k">no battle spot in this scene</li>';
   c.querySelectorAll('li[data-k]').forEach((a) => (a.onclick = () => abrirAlvo(a.dataset.k)));
   const n = alvos.filter((a) => PALCOS[a.chave]).length;
   if ($('pa-conta'))
     $('pa-conta').textContent =
-      n + ' de ' + alvos.length + ' marcados nesta cena · ' + Object.keys(PALCOS).length + ' no total';
+      n + ' de ' + alvos.length + ' marked in this scene · ' + Object.keys(PALCOS).length + ' total';
   if ($('pa-pecas'))
     $('pa-pecas')
       .querySelectorAll('button[data-p]')
@@ -1409,56 +1413,56 @@ function montarPainelPalco() {
   painel = document.createElement('div');
   painel.id = 'dir';
   painel.innerHTML = `
-    <div class="linha"><b style="color:#ffe07a">📐 Marcador de palco</b> <span class="k">H esconde</span></div>
-    <div id="dir-status" class="k">carregando…</div>
-    <h2>Cena <small>${esc(String(ctx.mapaNome))}</small></h2>
-    <label><span>ir pra</span><select id="pa-mapa">
-      <option value="kanto">Kanto (a rua)</option>
-      <option value="4120017">Ginásio de Pewter · Brock</option>
-      <option value="4120002">Ginásio de Cerulean · Misty</option>
-      <option value="4120016">Ginásio de Vermilion · Lt. Surge</option>
-      <option value="4120019">Ginásio de Celadon · Erika</option>
-      <option value="4120015">Ginásio de Fuchsia · Koga</option>
-      <option value="4120006">Ginásio de Saffron · Sabrina</option>
-      <option value="4120007">Ginásio de Cinnabar · Blaine</option>
-      <option value="4120008">Ginásio de Viridian · Giovanni</option>
-      <option value="4120020">Santa Anne (4 pisos)</option>
-      <option value="2100009">Companhia Silph</option>
-      <option value="2100005">Esconderijo da Equipe Rocket</option>
-      <option value="2100001">Torre de Pokémon</option>
-      <option value="2100002">Usina Elétrica</option>
-      <option value="2100013">Mansão (Casa de Pokémon)</option>
-      <option value="2100010">Edifício de Celadon</option>
-    </select><button id="pa-ir">ir</button></label>
-    <div class="k">a bolinha diz o aperto medido: <span style="color:#86ef5f">●</span> folgado ·
-      <span style="color:#ffb46b">●</span> depende do lado · <span style="color:#f58e8e">●</span> nenhum lado bom.
-      ★ = já tem palco marcado.</div>
-    <h2>Onde se luta <small id="pa-conta"></small></h2>
-    <label><span>buscar</span><input id="pa-busca" placeholder="nome ou área"><select id="pa-ordem" style="flex:.7">
-      <option value="aperto">mais apertado primeiro</option><option value="nome">por nome</option><option value="marcados">marcados primeiro</option></select></label>
+    <div class="linha"><b style="color:#ffe07a">📐 Stage marker</b> <span class="k">H hides</span></div>
+    <div id="dir-status" class="k">loading…</div>
+    <h2>Scene <small>${esc(String(ctx.mapaNome))}</small></h2>
+    <label><span>go to</span><select id="pa-mapa">
+      <option value="kanto">Kanto (outdoors)</option>
+      <option value="4120017">Pewter Gym · Brock</option>
+      <option value="4120002">Cerulean Gym · Misty</option>
+      <option value="4120016">Vermilion Gym · Lt. Surge</option>
+      <option value="4120019">Celadon Gym · Erika</option>
+      <option value="4120015">Fuchsia Gym · Koga</option>
+      <option value="4120006">Saffron Gym · Sabrina</option>
+      <option value="4120007">Cinnabar Gym · Blaine</option>
+      <option value="4120008">Viridian Gym · Giovanni</option>
+      <option value="4120020">S.S. Anne (4 floors)</option>
+      <option value="2100009">Silph Co.</option>
+      <option value="2100005">Team Rocket Hideout</option>
+      <option value="2100001">Pokémon Tower</option>
+      <option value="2100002">Power Plant</option>
+      <option value="2100013">Pokémon Mansion</option>
+      <option value="2100010">Celadon Mansion</option>
+    </select><button id="pa-ir">go</button></label>
+    <div class="k">the dot shows the measured tightness: <span style="color:#86ef5f">●</span> roomy ·
+      <span style="color:#ffb46b">●</span> depends on the side · <span style="color:#f58e8e">●</span> no good side.
+      ★ = stage already marked.</div>
+    <h2>Where battles happen <small id="pa-conta"></small></h2>
+    <label><span>search</span><input id="pa-busca" placeholder="name or area"><select id="pa-ordem" style="flex:.7">
+      <option value="aperto">tightest first</option><option value="nome">by name</option><option value="marcados">marked first</option></select></label>
     <ul id="pa-lista" style="max-height:230px;overflow:auto"></ul>
-    <h2>As quatro posições <small>1–4 escolhem</small></h2>
+    <h2>The four positions <small>1–4 select</small></h2>
     <div class="linha" id="pa-pecas">${PECAS.map((p) => `<button data-p="${p.id}" style="border-color:${p.cor}66"><b style="color:${p.cor}">${p.n}</b> ${p.rot}</button>`).join('')}</div>
-    <div class="k">WASD move a peça escolhida (Shift = passo largo) · clique no chão põe ela ali ·
-      R/T giram o rival · setas movem a câmera · Q/E giram · roda = zoom</div>
+    <div class="k">WASD moves the chosen piece (Shift = big step) · click the ground to place it ·
+      R/T rotate the rival · arrows move the camera · Q/E rotate · wheel = zoom</div>
     <div id="pa-afere" style="margin-top:6px"></div>
-    <h2>Palco</h2>
-    <div class="linha"><button id="pa-sugerir">Sugerir (melhor ângulo medido)</button><button id="pa-hoje">Formação de hoje</button></div>
-    <label><span>seu mon</span><input type="number" id="pa-dex" value="25" min="1" max="1010" style="flex:.5"><span id="pa-dex-nome" style="min-width:0;flex:1"></span></label>
-    <div class="linha"><button id="pa-guardar" class="ok">★ Guardar este palco (G)</button><button id="pa-apagar" class="perigo">apagar</button></div>
-    <div class="linha"><button id="pa-gravar" class="ok">💾 Gravar data/palcos.json</button><button id="pa-ver">ver JSON</button></div>
-    <div class="k">Guardar prende no aparelho; Gravar escreve o arquivo (precisa da bancada
-      <code>node tools/serve_palco.mjs 5184</code>; em outro servidor ele baixa o JSON).</div>
-    <details><summary>O que é isto</summary>
-      <div class="k">A batalha contra treinador e líder acontece no mapa mesmo, em fila no eixo entre você e ele:
-      o rival parado, o Pokémon dele a 2,3 m, o seu a 4,9 m e você a 7,5 m. Hoje esse eixo é o lado de onde
-      você chegou — em 277 dos 354 lugares de Kanto dá pra chegar por um lado bom e por um lado ruim.
-      Marcar o palco fixa a fila num lugar escolhido, e só onde vale a pena: o resto segue calculado.</div>
+    <h2>Stage</h2>
+    <div class="linha"><button id="pa-sugerir">Suggest (best measured angle)</button><button id="pa-hoje">Current formation</button></div>
+    <label><span>your mon</span><input type="number" id="pa-dex" value="25" min="1" max="1010" style="flex:.5"><span id="pa-dex-nome" style="min-width:0;flex:1"></span></label>
+    <div class="linha"><button id="pa-guardar" class="ok">★ Keep this stage (G)</button><button id="pa-apagar" class="perigo">delete</button></div>
+    <div class="linha"><button id="pa-gravar" class="ok">💾 Write data/palcos.json</button><button id="pa-ver">view JSON</button></div>
+    <div class="k">Keep stores it on this device; Write saves the file (needs the workbench
+      <code>node tools/serve_palco.mjs 5184</code>; on another server it downloads the JSON).</div>
+    <details><summary>What is this</summary>
+      <div class="k">Trainer and Leader battles happen right on the map, lined up on the axis between you and them:
+      the rival stands still, their Pokémon at 2.3 m, yours at 4.9 m and you at 7.5 m. Today that axis is the side
+      you came from — in 277 of Kanto's 354 spots you can arrive from a good side or a bad side.
+      Marking a stage pins the line to a chosen spot, only where it's worth it: the rest stays computed.</div>
     </details>`;
   document.body.appendChild(painel);
   const c = document.createElement('div');
   c.id = 'dir-dica';
-  c.textContent = '1–4 peça · WASD move · clique põe · G guarda · N/B anda na lista · H painel';
+  c.textContent = '1–4 piece · WASD move · click places · G keep · N/B browse list · H panel';
   document.body.appendChild(c);
   $('pa-ir').onclick = () => {
     const v = $('pa-mapa').value;
@@ -1488,22 +1492,22 @@ function montarPainelPalco() {
     );
   $('pa-sugerir').onclick = async () => {
     const a = alvoDe(sel);
-    if (!a) return status('escolha um lugar na lista');
+    if (!a) return status('pick a spot from the list');
     await montarCorpos(a, sugerir(a));
     moverAnel();
     desenharRegua();
     aferir();
-    status('formação sugerida pelo melhor ângulo medido');
+    status('formation suggested by the best measured angle');
   };
   $('pa-hoje').onclick = async () => {
     const a = alvoDe(sel);
-    if (!a) return status('escolha um lugar na lista');
+    if (!a) return status('pick a spot from the list');
     const b = a.med?.melhorAng ?? 0;
     await montarCorpos(a, formacaoDoJogo(a.x, a.z, b));
     moverAnel();
     desenharRegua();
     aferir();
-    status('é o que o jogo faria hoje chegando por ' + Math.round(b) + '°');
+    status("it's what the game would do today arriving from " + Math.round(b) + '°');
   };
   const d = () => {
     $('pa-dex-nome').textContent = nomeDex($('pa-dex').value);
@@ -1677,8 +1681,8 @@ async function abrirPalco() {
   pintarLista();
   status(
     alvos.length
-      ? 'escolha um lugar na lista (' + alvos.length + ' nesta cena)'
-      : 'nenhum lugar de luta nesta cena — troque em "ir pra"',
+      ? 'pick a spot from the list (' + alvos.length + ' in this scene)'
+      : 'no battle spot in this scene — change it in "go to"',
   );
   if (alvos.length && !sel) await abrirAlvo((alvos.find((x) => PALCOS[x.chave]) || alvos[0]).chave);
   window.__palco = {

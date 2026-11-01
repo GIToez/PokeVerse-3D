@@ -27,9 +27,9 @@ export const BASE = {
   skins: ['0006_51'],
 };
 export const PASTAS_LIVRES = {
-  agua: 'textura do mar, do fluxo e das cáusticas: entra no primeiro quadro de qualquer cena, antes de existir jogador',
-  fogo: 'shader de chama (Charmander, Moltres…): peça de efeito compartilhada, não é a arte de uma espécie',
-  lodo: 'shader do lodo (Grimer/Muk): mesma coisa do fogo',
+  agua: 'sea, flow and caustics textures: loaded on the first frame of any scene, before the player exists',
+  fogo: "flame shader (Charmander, Moltres…): shared effect piece, not a single species' art",
+  lodo: 'sludge shader (Grimer/Muk): same as fire',
 };
 const RE_CENA = /^\/cenario\/(kanto|pallet_rota1|casa|habitat|\d{7})(?:_chao\.json|(?:_ktx2)?\.glb)$/;
 const RE_MON = /^\/cenario\/mon\/(pm\d{4}(?:_\d{2})?)\.glb$/;

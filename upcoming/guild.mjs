@@ -14,7 +14,7 @@ export function dados() {
 const R = () => D.regras;
 export const CARGOS = ['lider', 'vice', 'oficial', 'membro', 'recruta'];
 export const ENTRADAS = ['aberta', 'aprovacao', 'fechada'];
-const NOME_ENTRADA = { aberta: 'Aberta', aprovacao: 'Aprovação', fechada: 'Fechada' };
+const NOME_ENTRADA = { aberta: 'Open', aprovacao: 'Approval', fechada: 'Closed' };
 export const nomeEntrada = (e) => NOME_ENTRADA[e] || e;
 export const cargoDe = (a) => D.cargos.find((c) => c.id === a) || null;
 export const nomeCargo = (a) => cargoDe(a)?.nome || a;
@@ -36,21 +36,22 @@ const limpo = (s) =>
 export function validarNome(a) {
   const n = limpo(a),
     { min: b, max: c } = R().nome;
-  if (n.length < b || n.length > c) return { ok: false, erro: 'O nome precisa ter de ' + b + ' a ' + c + ' letras.' };
+  if (n.length < b || n.length > c) return { ok: false, erro: 'The name must have from ' + b + ' a ' + c + ' letras.' };
   if (!/^[\p{L}\p{N}][\p{L}\p{N} '\-]*$/u.test(n))
-    return { ok: false, erro: 'Use só letras, números, espaço, hífen e apóstrofo no nome.' };
+    return { ok: false, erro: 'Use only letters, numbers, spaces, hyphens and apostrophes in the name.' };
   return { ok: true, valor: n };
 }
 export function validarTag(a) {
   const t = limpo(a).toUpperCase(),
     { min: b, max: c } = R().tag;
   if (!new RegExp('^[A-Z0-9]{' + b + ',' + c + '}$').test(t))
-    return { ok: false, erro: 'A TAG tem ' + b + ' ou ' + c + ' letras ou números, sem acento.' };
+    return { ok: false, erro: 'The TAG must be ' + b + ' ou ' + c + ' letters or numbers, no accents.' };
   return { ok: true, valor: t };
 }
 export function validarDescricao(a) {
   const d = limpo(a);
-  if (d.length > R().descricaoMax) return { ok: false, erro: 'A descrição passa de ' + R().descricaoMax + ' letras.' };
+  if (d.length > R().descricaoMax)
+    return { ok: false, erro: 'The description exceeds ' + R().descricaoMax + ' letras.' };
   return { ok: true, valor: d };
 }
 const listaDe = (k) => (Array.isArray(D?.[k]) ? D[k] : []);
@@ -61,7 +62,7 @@ const antigoDe = (a) =>
     : null;
 const formaPadrao = () =>
   temId('formas', D?.emblema?.formaPadrao) ? D.emblema.formaPadrao : (listaDe('formas')[0]?.id ?? null);
-export const ERRO_EMBLEMA = 'Esse emblema não existe: escolha a forma, a cor e o símbolo da lista.';
+export const ERRO_EMBLEMA = "That emblem doesn't exist: pick a shape, color and symbol from the list.";
 export function emblemaPadrao() {
   return {
     forma: listaDe('formas')[0]?.id ?? null,
@@ -94,10 +95,10 @@ const mesmoEmblema = (a, b) => !!a && !!b && a.forma === b.forma && a.cor === b.
 export function quando(a, b) {
   const d = Math.max(0, b - a);
   if (d < 60e3) return 'agora';
-  if (d < HORA) return 'há ' + Math.floor(d / 60e3) + 'min';
-  if (d < DIA) return 'há ' + Math.floor(d / HORA) + 'h';
+  if (d < HORA) return '~ ' + Math.floor(d / 60e3) + 'min';
+  if (d < DIA) return '~ ' + Math.floor(d / HORA) + 'h';
   if (d < 2 * DIA) return 'ontem';
-  return 'há ' + Math.floor(d / DIA) + 'd';
+  return '~ ' + Math.floor(d / DIA) + 'd';
 }
 export const COR_ATIVIDADE = {
   criada: 'verde',
@@ -128,13 +129,13 @@ export function textoAtividade(a, b = (u) => u) {
     c = a.alvo ? b(a.alvo) : '';
   switch (a.tipo) {
     case 'criada':
-      return q + ' fundou a guilda';
+      return q + ' founded the guild';
     case 'entrou':
-      return q + ' entrou na guilda';
+      return q + ' joined the guild';
     case 'saiu':
-      return q + ' saiu da guilda';
+      return q + ' left the guild';
     case 'apagada':
-      return (a.extra || '?') + ' saiu da guilda' + (a.alvo ? ' e ' + c + ' assumiu a liderança' : '');
+      return (a.extra || '?') + ' left the guild' + (a.alvo ? ' e ' + c + ' took over leadership' : '');
     case 'expulso':
       return q + ' expulsou ' + c;
     case 'promovido':
@@ -142,21 +143,21 @@ export function textoAtividade(a, b = (u) => u) {
     case 'rebaixado':
       return q + ' mudou ' + c + ' pra ' + nomeCargo(a.extra);
     case 'lider':
-      return q + ' passou a liderança pra ' + c;
+      return q + ' passed leadership to ' + c;
     case 'destituido':
-      return c + ' assumiu a liderança (' + q + ' sumiu há ' + a.extra + ' dias)';
+      return c + ' took over leadership (' + q + ' was gone for ' + a.extra + ' days)';
     case 'aviso':
-      return q + ' mudou o aviso';
+      return q + ' changed the notice';
     case 'editou':
       return q + ' mudou ' + a.extra;
     case 'nivel':
-      return 'a guilda subiu pro nível ' + a.extra + '!';
+      return 'the guild reached level ' + a.extra + '!';
     case 'raid':
       return a.extra;
     case 'xp':
       return a.extra;
     case 'doou':
-      return q + ' doou ' + a.extra + ' pra guilda';
+      return q + ' doou ' + a.extra + ' to the guild';
     case 'chefe':
     case 'chefeMeta':
     case 'semana':
@@ -164,9 +165,9 @@ export function textoAtividade(a, b = (u) => u) {
     case 'construiu':
       return q + ' construiu ' + a.extra;
     case 'loja':
-      return q + ' trocou ' + a.extra + ' na loja da guilda';
+      return q + ' trocou ' + a.extra + ' in the guild shop';
     case 'equipe':
-      return 'a equipe mudou ' + a.extra;
+      return 'the team changed ' + a.extra;
     default:
       return a.extra || a.tipo;
   }
@@ -404,31 +405,31 @@ export class Livro {
   _podeFundar(u) {
     const c = this.amb.conta(u),
       a = this.amb.agora();
-    if (!c) return { ok: false, motivo: 'Entre com uma conta pra fundar uma guilda.' };
-    if (this.guildaDe(u)) return { ok: false, motivo: 'Você já está numa guilda.' };
+    if (!c) return { ok: false, motivo: 'Sign in with an account to found a guild.' };
+    if (this.guildaDe(u)) return { ok: false, motivo: "You're already in a guild." };
     if (a < this.esperaAte(u))
       return {
         ok: false,
-        motivo: 'Você saiu de uma guilda há pouco: espere ' + Math.ceil((this.esperaAte(u) - a) / HORA) + 'h.',
+        motivo: 'You left a guild recently: wait ' + Math.ceil((this.esperaAte(u) - a) / HORA) + 'h.',
       };
     if ((c.insignias || 0) < R().insigniasMin)
       return {
         ok: false,
-        motivo: 'Fundar pede ' + R().insigniasMin + (R().insigniasMin === 1 ? ' insígnia' : ' insígnias') + '.',
+        motivo: 'Founding requires ' + R().insigniasMin + (R().insigniasMin === 1 ? ' badge' : ' badges') + '.',
       };
     if ((c.dinheiro || 0) < R().custo)
       return {
         ok: false,
-        motivo: 'Faltam ' + (R().custo - (c.dinheiro || 0)).toLocaleString('pt-BR') + ' ₽ pra fundar.',
+        motivo: 'Short by ' + (R().custo - (c.dinheiro || 0)).toLocaleString('pt-BR') + ' ₽ to found it.',
       };
     return { ok: true, motivo: '' };
   }
   executar(u, b, a = {}) {
     const f = this['op_' + b];
-    if (typeof f !== 'function') return { ok: false, erro: 'Operação desconhecida.', tocados: [] };
-    if (!this.amb.conta(u)) return { ok: false, erro: 'Entre com uma conta pra usar a guilda.', tocados: [] };
+    if (typeof f !== 'function') return { ok: false, erro: 'Unknown operation.', tocados: [] };
+    if (!this.amb.conta(u)) return { ok: false, erro: 'Sign in to an account to use guilds.', tocados: [] };
     try {
-      return f.call(this, u, a || {}) || { ok: false, erro: 'Sem resposta.', tocados: [] };
+      return f.call(this, u, a || {}) || { ok: false, erro: 'No response.', tocados: [] };
     } catch (e) {
       return { ok: false, erro: String(e?.message || e), tocados: [] };
     }
@@ -464,11 +465,9 @@ export class Livro {
   }
   _podeEntrarAgora(u) {
     const a = this.amb.agora();
-    if (this.guildaDe(u)) return 'Você já está numa guilda.';
+    if (this.guildaDe(u)) return "You're already in a guild.";
     if (a < this.esperaAte(u))
-      return (
-        'Você saiu de uma guilda há pouco: pode entrar em outra em ' + Math.ceil((this.esperaAte(u) - a) / HORA) + 'h.'
-      );
+      return 'You left a guild recently: you can join another in ' + Math.ceil((this.esperaAte(u) - a) / HORA) + 'h.';
     return null;
   }
   op_criar(u, a) {
@@ -483,10 +482,10 @@ export class Livro {
     const c = emblemaDoPedido(a.emblema);
     if (!c.ok) return this._erro(c.erro);
     for (const g of Object.values(this.dados.guildas)) {
-      if (chave(g.nome) === chave(n.valor)) return this._erro('Já existe uma guilda com esse nome.');
-      if (g.tag === t.valor) return this._erro('A TAG [' + t.valor + '] já é de outra guilda.');
+      if (chave(g.nome) === chave(n.valor)) return this._erro('A guild with that name already exists.');
+      if (g.tag === t.valor) return this._erro('A TAG [' + t.valor + '] already belongs to another guild.');
     }
-    if (!this.amb.cobrar(u, R().custo)) return this._erro('Faltou dinheiro pra fundar.');
+    if (!this.amb.cobrar(u, R().custo)) return this._erro('Not enough money to found it.');
     const e = this.amb.agora(),
       f = 'g' + this.dados.prox++;
     const g = (this.dados.guildas[f] = {
@@ -514,36 +513,34 @@ export class Livro {
   }
   op_entrar(u, a) {
     const g = this.guilda(a.guilda);
-    if (!g) return this._erro('Essa guilda não existe mais.');
+    if (!g) return this._erro('This guild no longer exists.');
     const b = this._podeEntrarAgora(u);
     if (b) return this._erro(b);
     if (g.entrada !== 'aberta')
-      return this._erro(
-        g.entrada === 'aprovacao' ? 'Essa guilda entra por pedido.' : 'Essa guilda só entra por convite.',
-      );
-    if (this.total(g) >= this.vagas(g)) return this._erro('A guilda está cheia.');
-    if ((this.amb.conta(u).lv || 0) < g.nivelMin) return this._erro('Essa guilda pede Lv ' + g.nivelMin + ' ou mais.');
+      return this._erro(g.entrada === 'aprovacao' ? 'This guild is request-only.' : 'This guild is invite-only.');
+    if (this.total(g) >= this.vagas(g)) return this._erro('The guild is full.');
+    if ((this.amb.conta(u).lv || 0) < g.nivelMin)
+      return this._erro('This guild requires Lv ' + g.nivelMin + ' or higher.');
     this._entrarComo(g, u, 'recruta');
     this._registrar(g, 'entrou', u);
     return this._ok(g);
   }
   op_pedir(u, a) {
     const g = this.guilda(a.guilda);
-    if (!g) return this._erro('Essa guilda não existe mais.');
+    if (!g) return this._erro('This guild no longer exists.');
     const b = this._podeEntrarAgora(u);
     if (b) return this._erro(b);
     if (g.entrada !== 'aprovacao')
-      return this._erro(
-        g.entrada === 'aberta' ? 'Essa guilda é aberta: é só entrar.' : 'Essa guilda só entra por convite.',
-      );
-    if (this.total(g) >= this.vagas(g)) return this._erro('A guilda está cheia.');
-    if ((this.amb.conta(u).lv || 0) < g.nivelMin) return this._erro('Essa guilda pede Lv ' + g.nivelMin + ' ou mais.');
+      return this._erro(g.entrada === 'aberta' ? 'This guild is open: just join.' : 'This guild is invite-only.');
+    if (this.total(g) >= this.vagas(g)) return this._erro('The guild is full.');
+    if ((this.amb.conta(u).lv || 0) < g.nivelMin)
+      return this._erro('This guild requires Lv ' + g.nivelMin + ' or higher.');
     const j = this.jogador(u);
-    if (j.pedidos.includes(g.id)) return this._erro('Você já pediu pra entrar nessa guilda.');
+    if (j.pedidos.includes(g.id)) return this._erro('You already asked to join this guild.');
     if (j.pedidos.length >= R().pedidosPorJogador)
-      return this._erro('Você já tem ' + R().pedidosPorJogador + ' pedidos esperando resposta.');
+      return this._erro('You already have ' + R().pedidosPorJogador + ' pending requests.');
     if (g.pedidos.length >= R().pedidosPorGuilda)
-      return this._erro('Essa guilda tem pedidos demais na fila. Tente mais tarde.');
+      return this._erro('This guild has too many pending requests. Try again later.');
     j.pedidos.push(g.id);
     g.pedidos.push({ usuario: u, quando: this.amb.agora() });
     return { ok: true, tocados: [u, ...Object.keys(g.membros).filter((m) => pode(g, g.membros[m].cargo, 'aceitar'))] };
@@ -557,33 +554,33 @@ export class Livro {
   }
   op_aceitarPedido(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (!pode(g, g.membros[u].cargo, 'aceitar')) return this._erro('O seu cargo não aceita pedidos.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (!pode(g, g.membros[u].cargo, 'aceitar')) return this._erro("Your role can't accept requests.");
     const b = this._alvo(
         a,
         g.pedidos.map((x) => x.usuario),
       ),
       p = b ? g.pedidos.find((x) => x.usuario === b) : null;
-    if (!p) return this._erro('Esse pedido não está mais na fila.');
+    if (!p) return this._erro('That request is no longer in the queue.');
     const c = this._podeEntrarAgora(b);
     if (c) {
       g.pedidos = g.pedidos.filter((x) => x !== p);
       this.jogador(b).pedidos = this.jogador(b).pedidos.filter((x) => x !== g.id);
       return {
         ok: false,
-        erro: this.nick(b) + ' não pode entrar agora (já entrou em outra ou saiu há pouco).',
+        erro: this.nick(b) + " can't join right now (already joined another or left recently).",
         tocados: Object.keys(g.membros),
       };
     }
-    if (this.total(g) >= this.vagas(g)) return this._erro('A guilda está cheia.');
+    if (this.total(g) >= this.vagas(g)) return this._erro('The guild is full.');
     this._entrarComo(g, b, 'recruta');
     this._registrar(g, 'entrou', b);
     return this._ok(g);
   }
   op_recusarPedido(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (!pode(g, g.membros[u].cargo, 'aceitar')) return this._erro('O seu cargo não recusa pedidos.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (!pode(g, g.membros[u].cargo, 'aceitar')) return this._erro("Your role can't decline requests.");
     const b = this._alvo(
       a,
       g.pedidos.map((x) => x.usuario),
@@ -596,30 +593,30 @@ export class Livro {
   }
   op_convidar(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (!pode(g, g.membros[u].cargo, 'convidar')) return this._erro('O seu cargo não convida.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (!pode(g, g.membros[u].cargo, 'convidar')) return this._erro("Your role can't invite.");
     const b = this.amb.porNick(limpo(a.nick));
-    if (!b) return this._erro('Não achei um treinador com esse nome exato.');
-    if (b === u) return this._erro('Esse é você.');
-    if (this.guildaDe(b)) return this._erro(this.nick(b) + ' já está numa guilda.');
-    if (this.total(g) >= this.vagas(g)) return this._erro('A guilda está cheia.');
+    if (!b) return this._erro("Couldn't find a trainer with that exact name.");
+    if (b === u) return this._erro("That's you.");
+    if (this.guildaDe(b)) return this._erro(this.nick(b) + ' is already in a guild.');
+    if (this.total(g) >= this.vagas(g)) return this._erro('The guild is full.');
     const j = this.jogador(b);
-    if (j.convites.some((c) => c.guilda === g.id)) return this._erro(this.nick(b) + ' já tem um convite da guilda.');
+    if (j.convites.some((c) => c.guilda === g.id)) return this._erro(this.nick(b) + ' already has a guild invite.');
     j.convites.push({ guilda: g.id, por: u, quando: this.amb.agora() });
     return { ok: true, tocados: [b], convidado: this.nick(b) };
   }
   op_aceitarConvite(u, a) {
     const j = this.jogador(u),
       c = j.convites.find((x) => x.guilda === a.guilda);
-    if (!c) return this._erro('Esse convite não vale mais.');
+    if (!c) return this._erro('That invite is no longer valid.');
     const g = this.guilda(a.guilda);
     if (!g) {
       j.convites = j.convites.filter((x) => x !== c);
-      return this._erro('Essa guilda não existe mais.');
+      return this._erro('This guild no longer exists.');
     }
     const b = this._podeEntrarAgora(u);
     if (b) return this._erro(b);
-    if (this.total(g) >= this.vagas(g)) return this._erro('A guilda está cheia.');
+    if (this.total(g) >= this.vagas(g)) return this._erro('The guild is full.');
     this._entrarComo(g, u, 'recruta');
     this._registrar(g, 'entrou', u);
     return this._ok(g);
@@ -631,9 +628,9 @@ export class Livro {
   }
   op_sair(u) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     if (g.membros[u].cargo === 'lider') {
-      if (this.total(g) > 1) return this._erro('Passe a liderança antes de sair.');
+      if (this.total(g) > 1) return this._erro('Pass leadership before leaving.');
       return this.op_dissolver(u);
     }
     const a = Object.keys(g.membros);
@@ -643,12 +640,12 @@ export class Livro {
   }
   op_expulsar(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     const b = this._alvo(a, Object.keys(g.membros)),
       c = b ? g.membros[b] : null;
-    if (!c) return this._erro('Esse treinador não é da guilda.');
+    if (!c) return this._erro("That trainer isn't in the guild.");
     if (!pode(g, g.membros[u].cargo, 'expulsar', c.cargo))
-      return this._erro('Você não pode expulsar um ' + nomeCargo(c.cargo) + '.');
+      return this._erro("You can't kick a " + nomeCargo(c.cargo) + '.');
     const d = Object.keys(g.membros);
     this._sairDa(g, b, true);
     this._registrar(g, 'expulso', u, b);
@@ -656,32 +653,32 @@ export class Livro {
   }
   op_promover(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     const b = this._alvo(a, Object.keys(g.membros)),
       m = b ? g.membros[b] : null;
-    if (!m) return this._erro('Esse treinador não é da guilda.');
+    if (!m) return this._erro("That trainer isn't in the guild.");
     const c = g.membros[u].cargo;
-    if (m.cargo === 'vice' && c === 'lider') return this._erro('Pra fazer um Vice virar Líder, passe a liderança.');
-    if (!pode(g, c, 'promover', m.cargo)) return this._erro('Você não pode promover um ' + nomeCargo(m.cargo) + '.');
+    if (m.cargo === 'vice' && c === 'lider') return this._erro('To make a Vice the Leader, pass leadership.');
+    if (!pode(g, c, 'promover', m.cargo)) return this._erro("You can't promote a " + nomeCargo(m.cargo) + '.');
     const d = CARGOS[posto(m.cargo) - 1];
-    if (!acima(c, d)) return this._erro('Só dá pra promover até um cargo abaixo do seu.');
+    if (!acima(c, d)) return this._erro('You can only promote up to one rank below yours.');
     const e = nivelInfo(g.nivel),
       f = { vice: e.vices, oficial: e.oficiais }[d];
     if (f != null && this.contar(g, d) >= f)
-      return this._erro('A guilda já tem ' + f + ' ' + (d === 'vice' ? 'Vices' : 'Oficiais') + '.');
+      return this._erro('The guild already has ' + f + ' ' + (d === 'vice' ? 'Vices' : 'Officers') + '.');
     m.cargo = d;
     this._registrar(g, 'promovido', u, b, d);
     return this._ok(g);
   }
   op_rebaixar(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     const b = this._alvo(a, Object.keys(g.membros)),
       m = b ? g.membros[b] : null;
-    if (!m) return this._erro('Esse treinador não é da guilda.');
+    if (!m) return this._erro("That trainer isn't in the guild.");
     if (!pode(g, g.membros[u].cargo, 'rebaixar', m.cargo))
-      return this._erro('Você não pode mudar o cargo de um ' + nomeCargo(m.cargo) + '.');
-    if (m.cargo === 'recruta') return this._erro('Recruta já é o primeiro cargo.');
+      return this._erro("You can't change the role of a " + nomeCargo(m.cargo) + '.');
+    if (m.cargo === 'recruta') return this._erro('Recruit is already the lowest rank.');
     const c = CARGOS[posto(m.cargo) + 1];
     m.cargo = c;
     this._registrar(g, 'rebaixado', u, b, c);
@@ -689,11 +686,11 @@ export class Livro {
   }
   op_passarLideranca(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (g.membros[u].cargo !== 'lider') return this._erro('Só o líder passa a liderança.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (g.membros[u].cargo !== 'lider') return this._erro('Only the leader can pass on leadership.');
     const b = this._alvo(a, Object.keys(g.membros)),
       m = b ? g.membros[b] : null;
-    if (!m || b === u) return this._erro('Escolha outro membro da guilda.');
+    if (!m || b === u) return this._erro('Pick another guild member.');
     const c = m.cargo;
     m.cargo = 'lider';
     const d = nivelInfo(g.nivel);
@@ -708,8 +705,8 @@ export class Livro {
   }
   op_dissolver(u) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (g.membros[u].cargo !== 'lider') return this._erro('Só o líder dissolve a guilda.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (g.membros[u].cargo !== 'lider') return this._erro('Only the leader can disband the guild.');
     const a = Object.keys(g.membros);
     for (const m of a) this._sairDa(g, m, m === u);
     for (const p of g.pedidos) {
@@ -783,8 +780,8 @@ export class Livro {
   }
   op_editar(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (!pode(g, g.membros[u].cargo, 'gerenciar')) return this._erro('Só o Líder e o Vice mudam a guilda.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (!pode(g, g.membros[u].cargo, 'gerenciar')) return this._erro('Only the Leader and Vice can change the guild.');
     const b = [];
     let c = null;
     if (a.emblema != null) {
@@ -796,16 +793,16 @@ export class Livro {
       if (!d.ok) return this._erro(d.erro);
       if (d.valor !== g.desc) {
         g.desc = d.valor;
-        b.push('a descrição');
+        b.push('the description');
       }
     }
     if (a.entrada != null && ENTRADAS.includes(a.entrada) && a.entrada !== g.entrada) {
       g.entrada = a.entrada;
-      b.push('a entrada pra ' + nomeEntrada(a.entrada));
+      b.push('the entry to ' + nomeEntrada(a.entrada));
     }
     if (a.nivelMin != null && D.nivelMinimo.includes(+a.nivelMin) && +a.nivelMin !== g.nivelMin) {
       g.nivelMin = +a.nivelMin;
-      b.push('o nível mínimo pra ' + g.nivelMin);
+      b.push('minimum level to ' + g.nivelMin);
     }
     if (c && !mesmoEmblema(c.valor, g.emblema)) {
       g.emblema = c.valor;
@@ -817,25 +814,26 @@ export class Livro {
   }
   staffRenomear(b, a = {}) {
     const g = this.guilda(b);
-    if (!g) return this._erro('Essa guilda não existe mais.');
+    if (!g) return this._erro('This guild no longer exists.');
     const c = [],
       d = Object.values(this.dados.guildas).filter((o) => o !== g);
     if (a.nome != null) {
       const n = validarNome(a.nome);
       if (!n.ok) return this._erro(n.erro);
-      if (d.some((o) => chave(o.nome) === chave(n.valor))) return this._erro('Já existe uma guilda com esse nome.');
+      if (d.some((o) => chave(o.nome) === chave(n.valor))) return this._erro('A guild with that name already exists.');
       if (n.valor !== g.nome) {
         g.nome = n.valor;
-        c.push('o nome pra "' + n.valor + '"');
+        c.push('the name to "' + n.valor + '"');
       }
     }
     if (a.tag != null) {
       const t = validarTag(a.tag);
       if (!t.ok) return this._erro(t.erro);
-      if (d.some((o) => o.tag === t.valor)) return this._erro('A TAG [' + t.valor + '] já é de outra guilda.');
+      if (d.some((o) => o.tag === t.valor))
+        return this._erro('A TAG [' + t.valor + '] already belongs to another guild.');
       if (t.valor !== g.tag) {
         g.tag = t.valor;
-        c.push('a TAG pra [' + t.valor + ']');
+        c.push('the TAG to [' + t.valor + ']');
       }
     }
     if (!c.length) return this._ok(g, { nada: true });
@@ -844,8 +842,8 @@ export class Livro {
   }
   op_aviso(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (!pode(g, g.membros[u].cargo, 'aviso')) return this._erro('O seu cargo não muda o aviso.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (!pode(g, g.membros[u].cargo, 'aviso')) return this._erro("Your role can't change the notice.");
     const t = limpo(a.texto).slice(0, R().avisoMax);
     g.aviso = t ? { texto: t, autor: u, quando: this.amb.agora() } : null;
     this._registrar(g, 'aviso', u);
@@ -853,18 +851,18 @@ export class Livro {
   }
   op_permissao(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (g.membros[u].cargo !== 'lider') return this._erro('Só o líder muda as permissões.');
-    if (!CARGOS.includes(a.cargo) || a.cargo === 'lider') return this._erro('O líder pode tudo.');
-    if (!D.permissoes.some((p) => p.id === a.perm)) return this._erro('Permissão desconhecida.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (g.membros[u].cargo !== 'lider') return this._erro('Only the leader can change permissions.');
+    if (!CARGOS.includes(a.cargo) || a.cargo === 'lider') return this._erro('The leader can do everything.');
+    if (!D.permissoes.some((p) => p.id === a.perm)) return this._erro('Unknown permission.');
     (g.perms[a.cargo] ||= {})[a.perm] = !!a.ligado;
     return this._ok(g);
   }
   op_mensagem(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     const t = limpo(a.texto).slice(0, R().mensagemMax);
-    if (!t) return this._erro('Mensagem vazia.');
+    if (!t) return this._erro('Empty message.');
     const b = { de: u, texto: t, quando: this.amb.agora() };
     g.chat.push(b);
     if (g.chat.length > R().chatGuardado) g.chat.splice(0, g.chat.length - R().chatGuardado);
@@ -915,8 +913,8 @@ export class Livro {
           null,
           null,
           i
-            ? 'a guilda terminou a semana em 1º lugar de Kanto: título "' + e.nome + '" pra todo mundo!'
-            : 'a guilda terminou a semana em #' + f + ' de Kanto (' + h.toLocaleString('pt-BR') + ' pts)',
+            ? 'the guild finished the week 1st in Kanto: title "' + e.nome + '" for everyone!'
+            : 'the guild finished the week at #' + f + ' in Kanto (' + h.toLocaleString('pt-BR') + ' pts)',
         );
         if (i) g.titulo = { id: e.id, nome: e.nome, ate: a + e.dias * DIA, semana: g.semana?.chave || null };
       }
@@ -929,7 +927,7 @@ export class Livro {
   evento(u, a = {}) {
     const g = this.guildaDe(u),
       f = fonte(a.tipo);
-    if (!g || !f) return { ok: false, motivo: !g ? 'sem guilda' : 'fonte desconhecida', xp: 0, pts: 0, tocados: [] };
+    if (!g || !f) return { ok: false, motivo: !g ? 'no guild' : 'unknown source', xp: 0, pts: 0, tocados: [] };
     const m = g.membros[u],
       b = Math.max(0, +a.qtd || 1);
     if (!(b > 0)) return { ok: false, motivo: 'qtd', xp: 0, pts: 0, tocados: [] };
@@ -1039,19 +1037,19 @@ export class Livro {
         'chefe',
         null,
         null,
-        'chefe do dia ' +
+        'daily boss ' +
           c.dia +
           ' (' +
           (b?.nome || '?') +
-          ', degrau ' +
+          ', step ' +
           c.degrau +
           '): ' +
           n +
-          (n === 1 ? ' membro bateu' : ' membros bateram') +
+          (n === 1 ? ' member hit' : ' members hit') +
           ', ' +
           e.toLocaleString('pt-BR') +
-          ' de dano' +
-          (h ? ' — META BATIDA!' : ''),
+          ' damage' +
+          (h ? ' — GOAL REACHED!' : ''),
       );
       if (h) {
         const j = fonte('chefeMeta'),
@@ -1061,16 +1059,16 @@ export class Livro {
           this.ganharXp(
             g.id,
             (j.xp || 0) * c.degrau,
-            'a guilda bateu a meta do chefe do dia (' +
+            'the guild hit the daily boss goal (' +
               (b?.nome || '?') +
-              ', degrau ' +
+              ', step ' +
               c.degrau +
               ')! +' +
               ((j.xp || 0) * c.degrau).toLocaleString('pt-BR') +
               ' XP, +' +
               k +
               ' ' +
-              (D.base?.tesouro?.nome || 'Moeda de guilda'),
+              (D.base?.tesouro?.nome || 'Guild coin'),
           );
       }
     }
@@ -1133,7 +1131,7 @@ export class Livro {
   }
   op_chefeEntrar(u) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     this._virarSemanaTodas();
     const c = this._chefeDe(g),
       a = D.chefe.regras,
@@ -1142,9 +1140,9 @@ export class Livro {
       e = degrauDoChefe(c.degrau);
     if (g.nivel < (a.nivelMinimoGuilda || 1))
       return this._erro(
-        'O chefe da guilda abre no nível ' + a.nivelMinimoGuilda + ' (a guilda está no ' + g.nivel + ').',
+        'The guild boss unlocks at level ' + a.nivelMinimoGuilda + ' (the guild is at ' + g.nivel + ').',
       );
-    if (!e) return this._erro('A escada de chefes acabou por esta temporada.');
+    if (!e) return this._erro('The boss ladder is over for this season.');
     const f = () => ({
       ok: true,
       tocados: [u],
@@ -1157,7 +1155,7 @@ export class Livro {
     if (c.entradas[u] === d) {
       if (!c.janelas[u] || c.janelas[u].fim > b) return f();
       const h = this._entradasUsadas(c, u, d);
-      if (h >= this._entradasPorDia()) return this._erro('Sua janela de hoje acabou. Amanhã tem outro chefe.');
+      if (h >= this._entradasPorDia()) return this._erro('Your window for today is over. Another boss tomorrow.');
       delete c.janelas[u];
       (c.nEntradas ||= mapaLivre())[u] = h + 1;
       return f();
@@ -1171,17 +1169,17 @@ export class Livro {
   }
   chefeDano(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return { erro: 'sem guilda' };
+    if (!g) return { erro: 'no guild' };
     this._virarSemanaTodas();
     const c = this._chefeDe(g),
       b = this.amb.agora(),
       d = D.chefe.regras,
       e = degrauDoChefe(c.degrau),
       h = chaveDia(b);
-    if (!e) return { erro: 'a escada acabou' };
-    if (c.entradas[u] !== h) return { erro: 'fora da entrada' };
+    if (!e) return { erro: 'the ladder is over' };
+    if (c.entradas[u] !== h) return { erro: 'outside the entry' };
     if (!c.janelas[u]) c.janelas[u] = { inicio: b, fim: b + (d.janelaS || 120) * 1000 };
-    if (b > c.janelas[u].fim) return { erro: 'janela acabou', janela: c.janelas[u] };
+    if (b > c.janelas[u].fim) return { erro: 'window ended', janela: c.janelas[u] };
     a = Math.max(0, Math.round(+a || 0));
     const i = e.hp || 1,
       j = new Set();
@@ -1224,19 +1222,19 @@ export class Livro {
   }
   op_lojaGuilda(u, a = {}) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     const b = D.chefe.regras,
       L = this._lojaDe(g),
       c = chaveSemana(this.amb.agora()),
       d = String(a.held ?? ''),
       e = Math.max(0, +a.fragmentos || 0);
     const f = this._lojaDaSemana(g).find((h) => String(h.id) === d);
-    if (!f) return this._erro('Esse held item não está na loja desta semana.');
+    if (!f) return this._erro("That held item isn't in this week's shop.");
     if ((L.compras[u] || {})[c] >= (b.loja?.porMembroPorSemana || 1))
-      return this._erro('Você já trocou um held item esta semana.');
-    if (e < f.preco) return this._erro('Faltam fragmentos: ' + f.preco + ' (você tem ' + e + ').');
+      return this._erro('You already traded a held item this week.');
+    if (e < f.preco) return this._erro('Not enough fragments: ' + f.preco + ' (you have ' + e + ').');
     (L.compras[u] ||= {})[c] = ((L.compras[u] || {})[c] || 0) + 1;
-    this._registrar(g, 'loja', u, null, f.preco + ' fragmentos por ' + f.nome);
+    this._registrar(g, 'loja', u, null, f.preco + ' fragments for ' + f.nome);
     return {
       ok: true,
       tocados: [u],
@@ -1333,7 +1331,7 @@ export class Livro {
         fragmentoItem: h.loja?.fragmentoItem || 900040,
       },
       premioVia: h.premioVia || 'correio',
-      tesouroNome: D.base?.tesouro?.nome || 'Moeda de guilda',
+      tesouroNome: D.base?.tesouro?.nome || 'Guild coin',
     };
   }
   _baseDe(g) {
@@ -1341,7 +1339,7 @@ export class Livro {
   }
   op_irBase(u) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
+    if (!g) return this._erro("You're not in a guild.");
     return {
       ok: true,
       tocados: [],
@@ -1353,18 +1351,18 @@ export class Livro {
   }
   op_construir(u, a) {
     const g = this.guildaDe(u);
-    if (!g) return this._erro('Você não está numa guilda.');
-    if (!pode(g, g.membros[u].cargo, 'bau')) return this._erro('O seu cargo não usa o tesouro da guilda.');
+    if (!g) return this._erro("You're not in a guild.");
+    if (!pode(g, g.membros[u].cargo, 'bau')) return this._erro("Your role can't use the guild treasury.");
     const v = (D.base?.vagas || []).find((x) => x.id === a.vaga);
-    if (!v) return this._erro('Essa vaga não existe.');
+    if (!v) return this._erro("That slot doesn't exist.");
     const b = this._baseDe(g),
       c = b.construidas[v.id] || 0,
       d = proximoDaVaga(v, c);
-    if (!d) return this._erro(v.niveis ? v.nome + ' já está no tamanho máximo.' : v.nome + ' já está construída.');
+    if (!d) return this._erro(v.niveis ? v.nome + ' is already at max size.' : v.nome + ' is already built.');
     if (g.nivel < d.nivel)
-      return this._erro(v.nome + (v.niveis ? ' ' + d.n : '') + ' pede a guilda no nível ' + d.nivel + '.');
+      return this._erro(v.nome + (v.niveis ? ' ' + d.n : '') + ' requires guild level ' + d.nivel + '.');
     if (b.tesouro < d.custo)
-      return this._erro('Faltam ' + (d.custo - b.tesouro) + ' ' + D.base.tesouro.nome + ' pra construir.');
+      return this._erro('Short by ' + (d.custo - b.tesouro) + ' ' + D.base.tesouro.nome + ' to build.');
     b.tesouro -= d.custo;
     b.construidas[v.id] = d.n;
     this._registrar(g, 'construiu', u, null, v.nome + (v.niveis ? ' ' + d.n : ''));
@@ -1373,7 +1371,7 @@ export class Livro {
   _vistaBase(g, u) {
     const b = this._baseDe(g),
       a = pode(g, g.membros[u].cargo, 'bau'),
-      c = D.base?.tesouro?.nome || 'Moeda de guilda';
+      c = D.base?.tesouro?.nome || 'Guild coin';
     return {
       cena: D.base?.cena || 'casa',
       sala: this._salaDa(g),
@@ -1391,10 +1389,10 @@ export class Livro {
         const d = b.construidas[v.id] || 0,
           e = proximoDaVaga(v, d);
         let f = '';
-        if (!e) f = v.niveis ? 'no tamanho máximo' : 'construída';
-        else if (g.nivel < e.nivel) f = 'pede a guilda no nível ' + e.nivel;
+        if (!e) f = v.niveis ? 'at max size' : 'built';
+        else if (g.nivel < e.nivel) f = 'requires guild level ' + e.nivel;
         else if (b.tesouro < e.custo) f = 'faltam ' + (e.custo - b.tesouro) + ' ' + c;
-        else if (!a) f = 'só quem usa o tesouro constrói';
+        else if (!a) f = 'only treasury users can build';
         return {
           id: v.id,
           nome: v.nome,
@@ -1417,18 +1415,18 @@ export class Livro {
     return {
       linhas: [
         a
-          ? '+' + Math.round(a * 100) + '% de XP quando 2+ da guilda batem no mesmo selvagem'
-          : 'XP em grupo de guilda: a partir do nível 3 (+5%)',
+          ? '+' + Math.round(a * 100) + '% XP when 2+ guild members hit the same wild Pokémon'
+          : 'Guild group XP: from level 3 (+5%)',
         c
-          ? '+' + c + (c === 1 ? ' anúncio' : ' anúncios') + ' no Mercado pra cada membro'
-          : 'Anúncio a mais no Mercado: a partir do nível 2',
-        'Base com o Salão ' +
+          ? '+' + c + (c === 1 ? ' listing' : ' announcements') + ' on the Market per member'
+          : 'Extra Market listing: from level 2',
+        'Base with Hall ' +
           (b.construidas.salao || 1) +
-          (e ? ' + ' + e + (e === 1 ? ' construção' : ' construções') : '') +
-          ' · chefe do dia: degrau ' +
+          (e ? ' + ' + e + (e === 1 ? ' building' : ' buildings') : '') +
+          ' · daily boss: tier ' +
           this._chefeDe(g).degrau,
       ],
-      proximo: d ? 'no nível ' + d.nivel + ': ' + d.texto : 'todos os benefícios liberados',
+      proximo: d ? 'at level ' + d.nivel + ': ' + d.texto : 'all perks unlocked',
       xpGrupo: a,
       anuncios: c,
       todos: beneficiosDe(g.nivel).map((x) => x.texto),
@@ -1533,15 +1531,13 @@ export class Livro {
           : [],
         perms: Object.fromEntries(CARGOS.map((k) => [k, permissoesDe(g, k)])),
         eu: { cargo: i, pode: o, muda: cargoDe(i)?.muda || [] },
-        atividade: g.atividade
-          .slice(0, 50)
-          .map((a) => ({
-            tipo: a.tipo,
-            extra: a.extra,
-            quando: a.quando,
-            texto: textoAtividade(a, (x) => this.nick(x)),
-            cor: COR_ATIVIDADE[a.tipo] || 'ciano',
-          })),
+        atividade: g.atividade.slice(0, 50).map((a) => ({
+          tipo: a.tipo,
+          extra: a.extra,
+          quando: a.quando,
+          texto: textoAtividade(a, (x) => this.nick(x)),
+          cor: COR_ATIVIDADE[a.tipo] || 'ciano',
+        })),
         chat: g.chat
           .slice(-50)
           .map((m) => ({ de: this.idDe(m.de), texto: m.texto, quando: m.quando, nick: this.nick(m.de) })),

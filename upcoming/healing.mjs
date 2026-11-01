@@ -1,15 +1,15 @@
 export const CURAS = {
   2001: {
     hp: 20,
-    d: 'A medicina do tipo de pulverização para o tratamento de feridas. Pode ser utilizado para restaurar 20 HP para um Pokémon.',
+    d: 'A spray-type medicine for treating wounds. It can be used to restore 20 HP to a Pokémon.',
   },
   2002: {
     hp: 60,
-    d: 'A medicina do tipo de pulverização para o tratamento de feridas. Pode ser utilizado para restaurar 60 HP para um Pokémon',
+    d: 'A spray-type medicine for treating wounds. It can be used to restore 60 HP to a Pokémon',
   },
   2003: {
     hp: 200,
-    d: 'A medicina do tipo de pulverização para o tratamento de feridas. Pode ser utilizado para restaurar 200 HP para um Pokémon',
+    d: 'A spray-type medicine for treating wounds. It can be used to restore 200 HP to a Pokémon',
   },
   2004: { hp: 'cheio' },
   2005: { hp: 'cheio', status: true },
@@ -25,8 +25,8 @@ export const CURAS = {
   2015: { hp: 50 },
   2016: { hp: 70 },
   2017: { hp: 100 },
-  2018: { hp: 60, d: 'Um pó medicinal muito amargo. Restaura 60 HP de um Pokémon.' },
-  2019: { hp: 120, d: 'Uma raiz medicinal muito amarga. Restaura 120 HP de um Pokémon.' },
+  2018: { hp: 60, d: 'A very bitter medicinal powder. Restores 60 HP to a Pokémon.' },
+  2019: { hp: 120, d: 'A very bitter medicinal root. Restores 120 HP to a Pokémon.' },
   2020: { status: true },
   2021: { reanima: 1, amizade: 15 },
   2022: { pp: 10 },
@@ -49,17 +49,17 @@ export const CURAS = {
   2039: {
     hp: 60,
     amizade: 5,
-    d: 'Remédio de ervas. Restaura 60 HP de um Pokémon, mas tem gosto amargo e reduz a amizade.',
+    d: "A herbal medicine. Restores 60 HP to a Pokémon, but it's bitter and lowers friendship.",
   },
   2040: {
     hp: 100,
     amizade: 10,
-    d: 'Remédio de ervas. Restaura 100 HP de um Pokémon, mas tem gosto amargo e reduz a amizade.',
+    d: "A herbal medicine. Restores 100 HP to a Pokémon, but it's bitter and lowers friendship.",
   },
   2041: {
     hp: 150,
     amizade: 15,
-    d: 'Remédio de ervas. Restaura 150 HP de um Pokémon, mas tem gosto amargo e reduz a amizade.',
+    d: "A herbal medicine. Restores 150 HP to a Pokémon, but it's bitter and lowers friendship.",
   },
 };
 export const efeitoCura = (a) => CURAS[Number(a)] || null;

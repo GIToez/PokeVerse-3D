@@ -55,7 +55,7 @@ function carregar(a) {
         .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(a))))
         .then((b) => ctx.decodeAudioData(b))
         .catch((e) => {
-          console.warn('som ausente:', a);
+          console.warn('missing sound:', a);
           return null;
         }),
     );
@@ -244,7 +244,7 @@ export function musica(a, { fade: b = 1.5, loop: c = true, duracaoMax: d = 0, de
     try {
       m.depois?.();
     } catch (e) {
-      console.warn('música:', e);
+      console.warn('music:', e);
     }
   };
   if (!c) h.addEventListener('ended', j, { once: true });
@@ -252,7 +252,7 @@ export function musica(a, { fade: b = 1.5, loop: c = true, duracaoMax: d = 0, de
   h.addEventListener(
     'error',
     () => {
-      console.warn('música ausente:', a);
+      console.warn('missing music:', a);
       if (musAtual === m) {
         musAtual = null;
         musNome = null;

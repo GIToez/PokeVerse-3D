@@ -489,7 +489,7 @@ function pintarAcoes(a) {
     const i = g.querySelector('.pf-rotulo, [data-txt]');
     if (i && e) {
       i.textContent = tr(
-        f ? 'Ver no passe' : (E.aba === ABA_SKINMON && ROTULO_SKINMON[a]) || ROTULO_DO_BOTAO[a] || 'Equipar',
+        f ? 'View in pass' : (E.aba === ABA_SKINMON && ROTULO_SKINMON[a]) || ROTULO_DO_BOTAO[a] || 'Equip',
       );
       Hud.encolher(i);
     }
@@ -608,7 +608,7 @@ function pintarCarta(c, p) {
   const d = no(c, 'selo-em-uso');
   if (d) {
     d.style.display = p.emUso ? 'block' : 'none';
-    if (p.emUso) Popup.texto(pop, 'em-uso', 'EM USO', d);
+    if (p.emUso) Popup.texto(pop, 'em-uso', 'IN USE', d);
   }
   const m = no(c, 'marca-selecionada');
   if (m) m.style.display = String(p.id) === E.sel ? 'block' : 'none';
@@ -708,18 +708,18 @@ async function aoAcao(a) {
   if (estadoAcoes(p) === 'trancada-passe' && a === 'equipar' && passeAberto()) {
     som(0.5);
     if (!LojaUI.abrirNoPasse?.((E.aba === 'roupa' ? 'roupa' : E.aba) + ':' + p.id))
-      dep.Chat?.sistema?.(tr('A loja não abriu agora. Tente de novo.'));
+      dep.Chat?.sistema?.(tr("The shop didn't open. Try again."));
     return;
   }
   if (!acaoVale(estadoAcoes(p), a)) return;
   som(0.5);
   if (p.trancada && p.tipo === 'skinmon') {
-    if (!LojaUI.abrirNaSkinMon?.(p.id)) dep.Chat?.sistema?.(tr('A loja não abriu agora. Tente de novo.'));
+    if (!LojaUI.abrirNaSkinMon?.(p.id)) dep.Chat?.sistema?.(tr("The shop didn't open. Try again."));
     return;
   }
   if (p.trancada) {
     const l = lojaDaPeca(p);
-    if (l && !LojaUI.abrirNaPeca?.(l.chave)) dep.Chat?.sistema?.(tr('A loja não abriu agora. Tente de novo.'));
+    if (l && !LojaUI.abrirNaPeca?.(l.chave)) dep.Chat?.sistema?.(tr("The shop didn't open. Try again."));
     return;
   }
   const b = skinMonPedida(p, a);
@@ -728,9 +728,9 @@ async function aoAcao(a) {
     pintar();
     try {
       const d = await dep.ativarSkinMon?.(b.dex, b.id);
-      if (d) dep.Chat?.sistema?.(tr(b.id ? 'Skin ativa: {x}.' : 'Skin desativada: {x}.', { x: p.nome }));
+      if (d) dep.Chat?.sistema?.(tr(b.id ? 'Skin enabled: {x}.' : 'Skin disabled: {x}.', { x: p.nome }));
     } catch (e) {
-      console.warn('guarda-roupa: a skin de Pokémon', e);
+      console.warn('wardrobe: Pokémon skin', e);
     } finally {
       E.ocupado = false;
       if (aberto()) pintar();
@@ -747,9 +747,9 @@ async function aoAcao(a) {
         dep.Chat?.sistema?.(
           c.encaixe === 'mochila'
             ? c.valor
-              ? tr('Vestindo {x}.', { x: tr(p.nome) })
-              : tr('Mochila guardada.')
-            : tr(c.valor != null ? 'Efeito em uso: {x}.' : 'Efeito tirado: {x}.', { x: tr(p.nome) }),
+              ? tr('Wearing {x}.', { x: tr(p.nome) })
+              : tr('Bag stowed.')
+            : tr(c.valor != null ? 'Effect in use: {x}.' : 'Effect removed: {x}.', { x: tr(p.nome) }),
         );
     } catch (e) {
       console.warn('guarda-roupa:', e);
@@ -775,7 +775,7 @@ async function aoAcao(a) {
     const g = await dep.equipar?.(t);
     if (g) {
       const h = t ? p : E.pecas.find((x) => x.tipo === 'base');
-      dep.Chat?.sistema?.(tr('Vestindo {x}.', { x: h && traduzNome(h) ? tr(h.nome) : h?.nome || t }));
+      dep.Chat?.sistema?.(tr('Wearing {x}.', { x: h && traduzNome(h) ? tr(h.nome) : h?.nome || t }));
     }
   } catch (e) {
     console.warn('guarda-roupa:', e);
@@ -884,7 +884,7 @@ function quadro() {
       Efeitos.seguirAncora(V.efeito);
       V.efeito.atualizar(a, V.cam);
     } catch (e) {
-      console.warn('guarda-roupa: o efeito da prévia', e);
+      console.warn('wardrobe: preview effect', e);
       soltarEfeitoDaPrevia();
     }
   }
@@ -963,7 +963,7 @@ async function montarCorpoMon(a) {
   try {
     Fogo.aplicarFogo(b, './scenery/mon/' + a + '.glb');
   } catch (e) {
-    console.warn('guarda-roupa: o fogo da prévia', e);
+    console.warn('wardrobe: preview fire', e);
   }
   const d = new THREE.AnimationMixer(b);
   const f = g.animations.find((c) => c.name === 'Idle') || g.animations[0] || null;
@@ -1049,7 +1049,7 @@ async function mostrarNaPrevia(a) {
   try {
     m = g ? await montarCorpoMon(g) : await montarCorpo(h, d ? 'Run' : 'Idle');
   } catch (e) {
-    console.warn('guarda-roupa: a prévia não carregou', e);
+    console.warn("wardrobe: preview didn't load", e);
   }
   if (n !== V.pedido || !m) {
     if (m) soltarCorpo(m);
@@ -1110,7 +1110,7 @@ async function trocarEfeitoDaPrevia(b) {
   try {
     e = await Efeitos.efeitoDaPrevia(m.corpo, c, d, { escala: 1, altura: m.altura || 1.4 });
   } catch (x) {
-    console.warn('guarda-roupa: o efeito não carregou', x);
+    console.warn("wardrobe: effect didn't load", x);
   }
   if (n !== V.pedidoEfeito || V.atual !== m || !e || !V.cena) {
     if (e) {
@@ -1176,7 +1176,7 @@ export function fotoDaMochila(a) {
     },
     (e) => {
       FOTOS_MOCHILA.delete(a);
-      console.warn('guarda-roupa: a foto da mochila não saiu', e);
+      console.warn('wardrobe: bag photo failed', e);
       return null;
     },
   );
@@ -1226,7 +1226,7 @@ function fotoDaBase(b) {
     },
     (e) => {
       FOTOS.delete(k);
-      console.warn('guarda-roupa: a foto da base não saiu', e);
+      console.warn('wardrobe: base photo failed', e);
       return null;
     },
   );

@@ -53,7 +53,7 @@ export function convidar(a) {
         .trim(),
   );
   if (!b) {
-    ctx.Chat?.sistemaCru?.(tr('Ninguém por perto com o nome "{x}". Fique na mesma área e tente de novo.', { x: a }));
+    ctx.Chat?.sistemaCru?.(tr('No one nearby named "{x}". Stay in the same area and try again.', { x: a }));
     return false;
   }
   ctx.enviar({ t: 'troca_convidar', para: b.id });
@@ -65,7 +65,7 @@ function mostrarConvite(m) {
   estilo();
   convite = document.createElement('div');
   convite.id = 'troca-convite';
-  convite.innerHTML = `<span><b>${esc(m.nome)}</b> ${esc(tr('quer trocar Pokémon'))}</span><button class="btn ouro" id="tr-sim">${esc(tr('Aceitar'))}</button><button class="btn" id="tr-nao">${esc(tr('Recusar'))}</button>`;
+  convite.innerHTML = `<span><b>${esc(m.nome)}</b> ${esc(tr('wants to trade Pokémon'))}</span><button class="btn ouro" id="tr-sim">${esc(tr('Accept'))}</button><button class="btn" id="tr-nao">${esc(tr('Decline'))}</button>`;
   document.body.appendChild(convite);
   const a = (a) => {
     ctx.enviar({ t: 'troca_responder', de: m.de, ok: a });
@@ -98,13 +98,13 @@ function abrirMesa(m) {
   const t = document.createElement('div');
   t.id = 'troca-tela';
   t.innerHTML = `<div class="tr-caixa">
-    <header><span>${esc(tr('Troca com'))} <b>${esc(m.com.nome)}</b></span><button class="x" id="tr-x" title="${esc(tr('sair da troca'))}">✕</button></header>
+    <header><span>${esc(tr('Trade with'))} <b>${esc(m.com.nome)}</b></span><button class="x" id="tr-x" title="${esc(tr('leave trade'))}">✕</button></header>
     <div class="tr-mesa">
-      <section><h3>${esc(tr('Você oferece'))} <small id="tr-conta"></small></h3><div class="tr-lista" id="tr-meus"></div></section>
+      <section><h3>${esc(tr('You offer'))} <small id="tr-conta"></small></h3><div class="tr-lista" id="tr-meus"></div></section>
       <section><h3>${esc(m.com.nome)} ${esc(tr('oferece'))}</h3><div class="tr-lista" id="tr-dele"></div></section>
     </div>
-    <div class="tr-pe"><span id="tr-status">${esc(tr('Escolha até {n} e confirme. Os dois precisam confirmar.', { n: sessao.maxItens }))}</span>
-      <button class="btn ouro" id="tr-ok">${esc(tr('Confirmar'))}</button></div></div>`;
+    <div class="tr-pe"><span id="tr-status">${esc(tr('Choose up to {n} and confirm. Both players must confirm.', { n: sessao.maxItens }))}</span>
+      <button class="btn ouro" id="tr-ok">${esc(tr('Confirm'))}</button></div></div>`;
   document.body.appendChild(t);
   $('tr-x').onclick = () => {
     ctx.enviar({ t: 'troca_sair' });
@@ -114,10 +114,10 @@ function abrirMesa(m) {
     if (sessao.fase !== 'montando' || $('tr-ok').disabled) return;
     if (!sessao.confirmei && escolhidos.length && !estadoAtual?.dele?.length && !sessao.vazioOk) {
       sessao.vazioOk = true;
-      $('tr-ok').textContent = tr('Dar sem receber');
+      $('tr-ok').textContent = tr('Give without receiving');
       const a = $('tr-status');
       if (a) {
-        a.textContent = tr('⚠ {x} não está oferecendo nada. Toque de novo pra dar sem receber nada.', {
+        a.textContent = tr("⚠ {x} isn't offering anything. Tap again to give without receiving anything.", {
           x: sessao.com.nome,
         });
         a.style.color = '#ffd23a';
@@ -147,7 +147,7 @@ function pintarMeus() {
   if (!a) return;
   a.innerHTML = meus.length
     ? meus.map((p) => cartao(p, escolhidos.includes(chave(p)), true)).join('')
-    : '<div class="tr-vazio">você não tem Pokémon pra trocar</div>';
+    : '<div class="tr-vazio">you have no Pokémon to trade</div>';
   $('tr-conta').textContent = escolhidos.length ? '(' + escolhidos.length + '/' + sessao.maxItens + ')' : '';
   for (const b of a.querySelectorAll('button.tr-mon')) b.onclick = () => alternar(b.dataset.k);
 }
@@ -168,7 +168,7 @@ function pintarDele(a) {
   verNaTroca(a);
   b.innerHTML = a?.length
     ? a.map((p) => cartao(p, false, false)).join('')
-    : '<div class="tr-vazio">' + esc(tr('nada ainda')) + '</div>';
+    : '<div class="tr-vazio">' + esc(tr('nothing yet')) + '</div>';
 }
 function alternar(k) {
   if (!sessao || sessao.fase !== 'montando') return;
@@ -200,13 +200,16 @@ function pintarEstado(m) {
     }, 1500);
   }
   c.style.color = '';
-  b.textContent = m.confirmei ? tr('✓ Confirmado') : tr('Confirmar');
+  b.textContent = m.confirmei ? tr('✓ Confirmed') : tr('Confirm');
   b.classList.toggle('ouro', !m.confirmei);
   c.className = '';
-  if (m.confirmei && m.confirmou) c.textContent = tr('Fechando a troca…');
-  else if (m.confirmei) c.textContent = tr('Esperando {x} confirmar.', { x: m.com?.nome || tr('o outro') });
-  else if (m.confirmou) c.textContent = tr('{x} já confirmou. Falta você.', { x: m.com?.nome || tr('O outro') });
-  else c.textContent = tr('Escolha até {n} e confirme. Mexer na mesa derruba as confirmações.', { n: sessao.maxItens });
+  if (m.confirmei && m.confirmou) c.textContent = tr('Closing the trade…');
+  else if (m.confirmei) c.textContent = tr('Waiting for {x} to confirm.', { x: m.com?.nome || tr('o outro') });
+  else if (m.confirmou) c.textContent = tr('{x} already confirmed. Your turn.', { x: m.com?.nome || tr('O outro') });
+  else
+    c.textContent = tr('Choose up to {n} and confirm. Changing the table resets confirmations.', {
+      n: sessao.maxItens,
+    });
 }
 export function receber(m) {
   switch (m.t) {
@@ -214,10 +217,10 @@ export function receber(m) {
       mostrarConvite(m);
       return;
     case 'troca_convidou':
-      ctx.Chat?.sistemaCru?.(tr('Convite de troca enviado pra {x}.', { x: m.nome }));
+      ctx.Chat?.sistemaCru?.(tr('Trade invite sent to {x}.', { x: m.nome }));
       return;
     case 'troca_recusou':
-      ctx.Chat?.sistemaCru?.(tr('{x} recusou a troca.', { x: m.nome }));
+      ctx.Chat?.sistemaCru?.(tr('{x} declined the trade.', { x: m.nome }));
       return;
     case 'troca_abriu':
       abrirMesa(m);
@@ -230,7 +233,7 @@ export function receber(m) {
       if (sessao) {
         sessao.fase = 'salvando';
         const a = $('tr-status');
-        if (a) a.textContent = tr('Salvando o progresso dos dois…');
+        if (a) a.textContent = tr("Saving both players' progress…");
       }
       return;
     case 'troca_feita': {
@@ -239,20 +242,20 @@ export function receber(m) {
       verNaTroca(m.recebi);
       fecharMesa();
       ctx.Chat?.sistemaCru?.(
-        tr('Troca com {x} feita: você deu {y} e recebeu {z}.', { x: m.com, y: b(m.dei), z: b(m.recebi) }),
+        tr('Trade with {x} done: you gave {y} and received {z}.', { x: m.com, y: b(m.dei), z: b(m.recebi) }),
       );
       return;
     }
     case 'troca_aviso':
-      ctx.Chat?.sistemaCru?.(tr('Troca: {x}.', { x: tr(String(m.motivo || '')).replace(/[.!?…]$/, '') }));
+      ctx.Chat?.sistemaCru?.(tr('Trade: {x}.', { x: tr(String(m.motivo || '')).replace(/[.!?…]$/, '') }));
       return;
     case 'troca_cancelou':
       if (m.motivo === 'mesa vazia' && sessao) {
-        ctx.Chat?.sistema('Troca: a mesa está vazia: escolham pelo menos um Pokémon.');
+        ctx.Chat?.sistema('Trade: the table is empty: pick at least one Pokémon.');
         return;
       }
       ctx.Chat?.sistemaCru?.(
-        tr('Troca cancelada: {x}.', { x: tr(String(m.motivo || 'sem motivo')).replace(/[.!?…]$/, '') }),
+        tr('Trade canceled: {x}.', { x: tr(String(m.motivo || 'no reason')).replace(/[.!?…]$/, '') }),
       );
       fecharMesa();
       fecharConvite();

@@ -78,7 +78,7 @@ export function instalar({ pai: c = null, ...b } = {}) {
   ui.caixa = criar('div', 'grav-caixa');
   ui.menu = criar('div', 'grav-menu');
   ui.menu.innerHTML =
-    '<button class="rec" data-acao="gravar">● Gravar</button><button data-acao="refazer">↺ Refazer</button><button data-acao="cancelar">✕</button>';
+    '<button class="rec" data-acao="gravar">● Record</button><button data-acao="refazer">↺ Redo</button><button data-acao="cancelar">✕</button>';
   ui.aviso = criar('div', 'grav-aviso');
   ui.botao.addEventListener('click', () => {
     ui.botao.blur();
@@ -127,7 +127,7 @@ function escolher() {
   ret = null;
   ui.sel = criar('div', 'grav-sel');
   ui.dica = criar('div', 'grav-dica');
-  ui.dica.innerHTML = 'Arraste para marcar a área do vídeo · <b>Enter</b> tela inteira · <b>Esc</b> cancelar';
+  ui.dica.innerHTML = 'Drag to mark the video area · <b>Enter</b> full screen · <b>Esc</b> cancel';
   ui.caixa.className = '';
   let a = null;
   const b = (e) => {
@@ -159,7 +159,7 @@ function escolher() {
       ret = null;
       ui.caixa.className = '';
       ui.sel.classList.remove('marcado');
-      avisar('área muito pequena — arraste de novo');
+      avisar('area too small — drag again');
       return;
     }
     pronto();
@@ -176,7 +176,7 @@ function pronto() {
   ui.menu.style.left = Math.min(ret.x, innerWidth - 230) + 'px';
   ui.menu.style.top = (a ? ret.y + ret.h + 8 : Math.max(8, ret.y - 46)) + 'px';
   if (ui.dica)
-    ui.dica.innerHTML = `Área ${ret.w}×${ret.h} · <b>● Gravar</b> começa${cfg.forcarCanvas ? '' : ' (o Chrome pergunta uma vez se pode capturar a aba)'} · <b>Esc</b> cancelar`;
+    ui.dica.innerHTML = `Área ${ret.w}×${ret.h} · <b>● Record</b> starts${cfg.forcarCanvas ? '' : ' (Chrome asks once whether it can capture the tab)'} · <b>Esc</b> cancel`;
   pintarBotao();
 }
 function cancelar() {
@@ -197,7 +197,7 @@ async function gravar() {
   try {
     stream = await capturar();
   } catch (e) {
-    avisar('não deu para capturar: ' + (e.message || e));
+    avisar("couldn't capture: " + (e.message || e));
     ui.menu.style.display = 'flex';
     return;
   }
@@ -247,9 +247,9 @@ async function capturar() {
       try {
         await v.cropTo(await CropTarget.fromElement(ui.caixa));
       } catch (e) {
-        avisar('sem recorte (gravando a aba inteira): ' + e.message);
+        avisar('no crop (recording the whole tab): ' + e.message);
       }
-    } else if (!m) avisar('este navegador não recorta a captura — gravando a aba inteira');
+    } else if (!m) avisar("this browser can't crop the capture — recording the whole tab");
     modo = 'aba';
     return s;
   }
@@ -292,7 +292,7 @@ function salvar() {
   setTimeout(() => URL.revokeObjectURL(a.href), 30000);
   const e = stream.getVideoTracks()[0]?.getSettings?.() || {};
   avisar(
-    `salvo em Downloads: ${c} (${(b.size / 1048576).toFixed(1)} MB · ${e.width || '?'}×${e.height || '?'} · ${(tipo || 'webm').replace(/^video\//, '').split(';')[0]} ${tipo.includes('640028') ? 'High' : tipo.includes('42E01E') || /avc1$|mp4$/.test(tipo) ? 'Baseline' : ''} · ${Math.round(bps / 1e6)} Mbps${modo === 'canvas' ? ' · sem os rótulos' : ''})`,
+    `saved to Downloads: ${c} (${(b.size / 1048576).toFixed(1)} MB · ${e.width || '?'}×${e.height || '?'} · ${(tipo || 'webm').replace(/^video\//, '').split(';')[0]} ${tipo.includes('640028') ? 'High' : tipo.includes('42E01E') || /avc1$|mp4$/.test(tipo) ? 'Baseline' : ''} · ${Math.round(bps / 1e6)} Mbps${modo === 'canvas' ? ' · without labels' : ''})`,
     12000,
   );
   estado = 'parado';
@@ -315,10 +315,10 @@ function pintarBotao() {
   b.classList.toggle('gravando', estado === 'gravando');
   if (estado === 'gravando') {
     const s = Math.floor((performance.now() - t0) / 1000);
-    b.innerHTML = `Parar ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}<b>R</b>`;
-  } else if (estado === 'parado') b.innerHTML = '🎥 Gravar vídeo<b>R</b>';
-  else if (estado === 'parando') b.innerHTML = 'salvando…';
-  else b.innerHTML = '✕ Cancelar<b>Esc</b>';
+    b.innerHTML = `Stop ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}<b>R</b>`;
+  } else if (estado === 'parado') b.innerHTML = '🎥 Record video<b>R</b>';
+  else if (estado === 'parando') b.innerHTML = 'saving…';
+  else b.innerHTML = '✕ Cancel<b>Esc</b>';
 }
 function avisar(a, b = 4000) {
   ui.aviso.textContent = a;

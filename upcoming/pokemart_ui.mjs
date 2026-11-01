@@ -225,7 +225,7 @@ function linhas() {
         feitas: h,
         acabou: !!g && h >= g,
         trava: i,
-        jaTem: i === 'você já tem essa vara',
+        jaTem: i === 'you already have this rod',
         vara: !!a,
         tem: num(c[e]),
       };
@@ -250,13 +250,13 @@ function maximo(r) {
 }
 function motivo(r, q) {
   if (!r) return null;
-  if (r.acabou) return { texto: tr('Esse acabou por hoje. Amanhã chega mais!'), alerta: false };
+  if (r.acabou) return { texto: tr("That one's sold out for today. More tomorrow!"), alerta: false };
   if (r.trava) return { texto: comPonto(maiuscula(r.jaTem ? tr(r.trava) : r.trava)), alerta: true };
   if (r.lim && r.feitas + q > r.lim)
-    return { texto: comPonto(maiuscula(tr('limite de hoje: {x} de {y}', { x: r.feitas, y: r.lim }))), alerta: true };
+    return { texto: comPonto(maiuscula(tr("today's limit: {x} of {y}", { x: r.feitas, y: r.lim }))), alerta: true };
   if (solta(r) + r.n * q > 999)
-    return { texto: comPonto(maiuscula(tr('a mochila não cabe mais desse item'))), alerta: true };
-  if (saldo() < r.preco * q) return { texto: comPonto(maiuscula(tr('moedas insuficientes'))), alerta: true };
+    return { texto: comPonto(maiuscula(tr("your Bag can't hold more of this item"))), alerta: true };
+  if (saldo() < r.preco * q) return { texto: comPonto(maiuscula(tr('not enough coins'))), alerta: true };
   return null;
 }
 function falar(a, b = false) {
@@ -342,7 +342,7 @@ async function comprar(q) {
     S.comprando = false;
     if (!aberto()) return;
     if (!a || a.erro) {
-      falar(maiuscula(textoErro(a?.erro || 'Sem conexão com o servidor.').replace(/^⚠\s*/, '')), true);
+      falar(maiuscula(textoErro(a?.erro || 'No connection to the server.').replace(/^⚠\s*/, '')), true);
       pintar();
       return;
     }
@@ -361,7 +361,7 @@ async function comprar(q) {
       dep.Som?.tocar?.('ui/sound_itemget', { volume: 0.7, prio: true });
     } catch {}
   }
-  falar(tr('Aqui está! Volte sempre.'));
+  falar(tr('Here you go! Come again.'));
   S.compradoAte = Date.now() + 1200;
   setTimeout(() => {
     if (aberto()) pintar();
@@ -456,12 +456,12 @@ function pintarTudo(e) {
   M.caberDepois(Popup.textoCru(pop, 'loja-local', nomeLoja()));
   Popup.textoCru(pop, 'saldo', fmt(saldo()));
   const m = npcDaLoja();
-  M.caberDepois(Popup.textoCru(pop, 'npc-nome', m?.nome ? I18n.tNome(m.nome) : tr('Vendedor')));
+  M.caberDepois(Popup.textoCru(pop, 'npc-nome', m?.nome ? I18n.tNome(m.nome) : tr('Seller')));
   const o = !f.length;
   Popup.textoCru(
     pop,
     'fala-npc',
-    o ? tr('Estou sem estoque no momento.') : S.fala || tr('Boas-vindas! Dê uma olhada no que temos à venda.'),
+    o ? tr("I'm out of stock right now.") : S.fala || tr('Welcome! Take a look at what we have for sale.'),
   );
   mostra(Popup.grupo(pop, 'selo-alerta'), !!S.erro && !o);
   mostra(Popup.grupo(pop, 'vazio-prateleira'), o);
@@ -476,7 +476,7 @@ function pintarTudo(e) {
     if (r) {
       Popup.imagem(pop, 'item', icone(r), q);
       Popup.textoCru(pop, 'item-nome', tr(r.it.n || '') + (r.n > 1 ? ' ×' + r.n : ''), q);
-      M.caberDepois(Popup.textoCru(pop, 'item-qtd', tr('na mochila: {x}', { x: fmt(r.tem) }), q));
+      M.caberDepois(Popup.textoCru(pop, 'item-qtd', tr('in bag: {x}', { x: fmt(r.tem) }), q));
       const aa = r.acabou
         ? [tr('Hoje: {a} de {b}', { a: r.feitas, b: r.lim }), REGRA_COR.esgotado]
         : r.trava
@@ -509,7 +509,7 @@ function pintarTudo(e) {
     Popup.textoCru(
       pop,
       'saldo-depois',
-      !r ? '' : y ? tr('Faltam {n}', { n: fmt(w - saldo()) }) : tr('Fica com {x}', { x: fmt(saldo() - w) }),
+      !r ? '' : y ? tr('Missing {n}', { n: fmt(w - saldo()) }) : tr("You'll have {x}", { x: fmt(saldo() - w) }),
     ),
     y ? CORAL : null,
   );
@@ -518,11 +518,7 @@ function pintarTudo(e) {
   const _ = Popup.grupo(pop, 'btn-comprar');
   mostra(_ && filho(_, 'selo-comprando'), S.comprando);
   mostra(_ && filho(_, 'selo-comprado'), !S.comprando && Date.now() < S.compradoAte);
-  Popup.textoCru(
-    pop,
-    'dica',
-    tr(celular() ? 'Toque duas vezes num item pra comprar 1.' : 'Clique duas vezes num item pra comprar 1.'),
-  );
+  Popup.textoCru(pop, 'dica', tr(celular() ? 'Double-tap an item to buy 1.' : 'Double-click an item to buy 1.'));
   const $ = S.sacola && Date.now() < S.sacola.ate ? S.sacola : null;
   mostra(Popup.grupo(pop, 'selo-sacola'), !!$);
   if ($) Popup.textoCru(pop, 'sacola-qtd', '+' + $.n);
@@ -540,12 +536,12 @@ function pintarCelula(c, r) {
   Popup.textoCru(pop, 'item-nome', tr(r.it.n || '') + (r.n > 1 ? ' ×' + r.n : ''), c);
   const g = r.acabou ? 'esgotado' : r.jaTem ? 'ja-tem' : r.trava ? 'trava' : r.lim ? 'hoje' : null;
   for (const s of ['hoje', 'esgotado', 'trava', 'ja-tem']) mostra(filho(c, 'selo-' + s), g === s);
-  if (g === 'esgotado') Popup.textoCru(pop, 'esgotado', tr('Esgotado'), c);
-  if (g === 'ja-tem') Popup.textoCru(pop, 'ja-tem', tr('Já é sua'), c);
+  if (g === 'esgotado') Popup.textoCru(pop, 'esgotado', tr('Sold out'), c);
+  if (g === 'ja-tem') Popup.textoCru(pop, 'ja-tem', tr('Already yours'), c);
   if (g === 'trava')
-    Popup.textoCru(pop, 'trava', tr('Maestria {x}', { x: (/(\d+)/.exec(String(r.trava)) || [])[1] || '?' }), c);
+    Popup.textoCru(pop, 'trava', tr('Mastery {x}', { x: (/(\d+)/.exec(String(r.trava)) || [])[1] || '?' }), c);
   if (g === 'hoje') {
-    Popup.textoCru(pop, 'hoje', tr('Hoje {a}/{b}', { a: r.feitas, b: r.lim }), c);
+    Popup.textoCru(pop, 'hoje', tr('Today {a}/{b}', { a: r.feitas, b: r.lim }), c);
     const f = c.querySelector('[data-fill="hoje-barra"]');
     if (f) {
       if (f.__figW == null) f.__figW = +f.dataset.w0 || parseFloat(f.style.width) || 0;

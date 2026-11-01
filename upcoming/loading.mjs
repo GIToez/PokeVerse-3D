@@ -94,13 +94,13 @@ export async function baixar(
           return JSON.parse(m);
         } catch (e) {
           if (d || f) return null;
-          throw erro('JSON inválido em ' + a + ': ' + (e?.message || e), { url: a, definitivo: true });
+          throw erro('Invalid JSON in ' + a + ': ' + (e?.message || e), { url: a, definitivo: true });
         }
       } catch (e) {
         if (e?.definitivo) throw e;
         h =
-          e?.name === 'AbortError' ? erro('sem resposta por ' + Math.round(j / 1000) + ' s', { semResposta: true }) : e;
-        console.warn('carga: ' + a + ' falhou na tentativa ' + t + ' de ' + c + ' —', h?.message || h);
+          e?.name === 'AbortError' ? erro('no response for ' + Math.round(j / 1000) + ' s', { semResposta: true }) : e;
+        console.warn('carga: ' + a + ' failed on attempt ' + t + ' de ' + c + ' —', h?.message || h);
         if (t >= c) break;
         await dorme(CARGA.esperaMs * t);
       } finally {
@@ -111,10 +111,10 @@ export async function baixar(
     largar(a);
   }
   if (d) {
-    console.warn('carga: ' + a + ' (opcional) ficou de fora:', h?.message || h);
+    console.warn('carga: ' + a + ' (optional) was skipped:', h?.message || h);
     return null;
   }
-  throw erro('não baixou ' + a + ' em ' + c + ' tentativas: ' + (h?.message || h), {
+  throw erro('did not download ' + a + ' em ' + c + ' tentativas: ' + (h?.message || h), {
     url: a,
     rede: true,
     servidor: !!h?.servidor,

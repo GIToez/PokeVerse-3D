@@ -90,32 +90,32 @@ export function textoEstado(l) {
     return [
       l.preso
         ? l.qtd > 1
-          ? 'na mochila · presas'
-          : 'na mochila · presa'
+          ? 'in bag · stuck'
+          : 'in the bag · bound'
         : l.qtd > 1
-          ? 'na mochila · negociáveis'
-          : 'na mochila · negociável',
+          ? 'in the bag · tradable'
+          : 'in bag · tradable',
       null,
     ];
   if (l.grupo && l.estado === 'terreno') return textoDoGrupo(l);
-  if (l.estado === 'padrao') return ['no lugar padrão', null];
-  if (l.estado === 'terreno') return l.por ? ['arrumada por {x}', { x: l.por }] : ['no terreno', null];
+  if (l.estado === 'padrao') return ['in the default spot', null];
+  if (l.estado === 'terreno') return l.por ? ['arranged by {x}', { x: l.por }] : ['on the plot', null];
   if (l.estado === 'guardada') return ['guardada', null];
-  return l.motivo === 'revalidar' ? ['sem lugar: o terreno mudou', null] : ['sem lugar no padrão', null];
+  return l.motivo === 'revalidar' ? ['no spot: the plot changed', null] : ['no spot in the default layout', null];
 }
 function textoDoGrupo(l) {
   const p = Math.max(0, +l.presas || 0),
     s = Math.max(0, +l.soltas || 0);
-  if (!(p + s) || p + s !== l.qtd) return ['no terreno', null];
-  if (p && s) return ['presas: {a} · negociáveis: {b}', { a: p, b: s }];
+  if (!(p + s) || p + s !== l.qtd) return ['on the plot', null];
+  if (p && s) return ['bound: {a} · tradable: {b}', { a: p, b: s }];
   return [
     p
       ? p > 1
-        ? 'no terreno · presas'
-        : 'no terreno · presa'
+        ? 'on the plot · bound'
+        : 'on the plot · bound'
       : s > 1
-        ? 'no terreno · negociáveis'
-        : 'no terreno · negociável',
+        ? 'on the plot · tradable'
+        : 'on the plot · tradable',
     null,
   ];
 }
@@ -124,9 +124,9 @@ export function resumo(T, a) {
   const b = a.filter((l) => l.estado === 'terreno' || l.estado === 'padrao').length,
     c = a.length - b;
   return [
-    ['Base da guilda', null],
-    b === 1 ? ['1 peça', null] : ['{n} peças', { n: b }],
-    ...(c ? [c === 1 ? ['1 guardada', null] : ['{n} guardadas', { n: c }]] : []),
+    ['Guild base', null],
+    b === 1 ? ['1 piece', null] : ['{n} pieces', { n: b }],
+    ...(c ? [c === 1 ? ['1 stored', null] : ['{n} stored', { n: c }]] : []),
   ];
 }
 function resumoTerreno(a) {
@@ -139,29 +139,29 @@ function resumoTerreno(a) {
     else c++;
   }
   return [
-    ['Seu terreno', null],
-    b === 1 ? ['1 peça', null] : ['{n} peças', { n: b }],
-    ...(c ? [c === 1 ? ['1 guardada', null] : ['{n} guardadas', { n: c }]] : []),
-    ...(d ? [d === 1 ? ['1 na mochila', null] : ['{n} na mochila', { n: d }]] : []),
+    ['Your plot', null],
+    b === 1 ? ['1 piece', null] : ['{n} pieces', { n: b }],
+    ...(c ? [c === 1 ? ['1 stored', null] : ['{n} stored', { n: c }]] : []),
+    ...(d ? [d === 1 ? ['1 in bag', null] : ['{n} in bag', { n: d }]] : []),
   ];
 }
 export const CURTOS = {
-  peca_de_superior: 'Arrumada por um cargo acima do seu.',
-  fora_do_lugar: 'Entre no lugar pra arrumar.',
-  em_uso: 'Em uso: esvazie antes de guardar.',
-  sem_papel: 'Seu cargo não mexe aqui.',
-  nao_guardavel: 'Essa não se guarda: só se move.',
-  nao_construida: 'Ainda não foi construída.',
-  limite_por_tipo: 'Já tem o máximo dessa peça.',
-  ja_colocada: 'Já está no terreno: mova.',
-  sem_item: 'O item não está na bolsa.',
-  entre_regioes: 'Entre duas áreas: escolha uma.',
+  peca_de_superior: 'Arranged by a rank above yours.',
+  fora_do_lugar: 'Enter the place to arrange.',
+  em_uso: 'In use: empty it before storing.',
+  sem_papel: "Your rank can't edit here.",
+  nao_guardavel: "This one can't be stored: only moved.",
+  nao_construida: 'Not built yet.',
+  limite_por_tipo: 'Already at the max for this piece.',
+  ja_colocada: 'Already on the plot: move it.',
+  sem_item: 'The item is not in the bag.',
+  entre_regioes: 'Between two areas: pick one.',
 };
 export const CURTOS_TERRENO = {
-  em_uso: 'Tire o ovo antes de guardar.',
-  fora_do_lugar: 'Entre no seu terreno pra arrumar.',
-  fora: 'Entre no seu terreno pra arrumar.',
-  sem_papel: 'Só o dono arruma o terreno.',
+  em_uso: 'Remove the egg before storing.',
+  fora_do_lugar: 'Enter your land to arrange.',
+  fora: 'Enter your land to arrange.',
+  sem_papel: 'Only the owner can arrange the land.',
 };
 export const semResposta = (r) =>
   !!r && r.ok === false && !r.codigo && (r.erro === 'desligado' || r.erro === 'semResposta');
@@ -173,13 +173,13 @@ export function curto(r, a = null) {
     (c && ((a === 'casa' && daTabela(CURTOS_TERRENO, c)) || daTabela(CURTOS, c) || daTabela(C.ERROS, c))) ||
     r.msg ||
     r.erro ||
-    'Não cabe aqui: ache um lugar verde'
+    "Doesn't fit here: find a green spot"
   );
 }
 export function dicaDe(r, { ocupado: a = false, lugar: b = null } = {}) {
-  if (a) return { texto: 'Mandando…', cabe: true };
-  if (!r) return { texto: 'Toque no chão pra pôr a peça', cabe: true };
-  return r.ok ? { texto: 'Arraste pra mover · verde cabe', cabe: true } : { texto: curto(r, b), cabe: false };
+  if (a) return { texto: 'Sending…', cabe: true };
+  if (!r) return { texto: 'Tap the ground to place the piece', cabe: true };
+  return r.ok ? { texto: 'Drag to move · green fits', cabe: true } : { texto: curto(r, b), cabe: false };
 }
 export const PASSO = 0.5;
 export const snap = (v) => Math.round(v / PASSO) * PASSO + 0;

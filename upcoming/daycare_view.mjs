@@ -1,27 +1,27 @@
 import { travado as estaTravado } from './pokemon_lock.mjs';
 import { arteOvo, tipoDoOvo } from './incubator_view.mjs';
-export const PADRAO = { taxa: 1000, eclosaoH: 24, ovosMax: 6, local: 'Rota 5 · Creche da Hideko', npc: 'Hideko' };
+export const PADRAO = { taxa: 1000, eclosaoH: 24, ovosMax: 6, local: "Route 5 · Hideko's Daycare", npc: 'Hideko' };
 export const FALA =
-  'Cuidar e criar Pokémon é a maior alegria da minha vida~ Traga um casal da mesma espécie e eu cuido do ovo pra você.';
+  "Caring for and raising Pokémon is the greatest joy of my life~ Bring a pair of the same species and I'll look after the egg for you.";
 export const ARTE = { npc: './ui/amanda/ovos/hideko-corpo.png', ovo: arteOvo('normal') };
 export const TEXTOS = {
-  especieDiferente: 'Os dois precisam ser da mesma espécie.',
-  naoCria: 'Essa espécie não põe ovo.',
-  foraDaCriacao: 'Essa espécie ainda não tem criação.',
-  semModelo: 'Essa espécie ainda não choca.',
-  mesmoSexo: 'Precisa de um macho e uma fêmea.',
-  ovosCheio: 'Você já tem ovos demais guardados.',
-  semMoedas: 'Moedas insuficientes pra taxa da creche.',
-  travado: 'Esse Pokémon está travado: destrave antes de levar à creche.',
-  paisIguais: 'Escolha dois Pokémon diferentes.',
+  especieDiferente: 'Both must be the same species.',
+  naoCria: "This species doesn't lay eggs.",
+  foraDaCriacao: "This species can't be bred yet.",
+  semModelo: "This species can't hatch yet.",
+  mesmoSexo: 'Needs a male and a female.',
+  ovosCheio: 'You already have too many eggs stored.',
+  semMoedas: 'Not enough coins for the Daycare fee.',
+  travado: 'This Pokémon is locked: unlock it before taking it to the Daycare.',
+  paisIguais: 'Choose two different Pokémon.',
 };
 export const SELOS = {
   sexo_m: 'MACHO',
-  sexo_f: 'FÊMEA',
-  sexo_n: 'SEM GÊNERO',
-  especie: 'OUTRA ESPÉCIE',
-  naoCria: 'NÃO CRIA',
-  travado: 'TRAVADO',
+  sexo_f: 'FEMALE',
+  sexo_n: 'GENDERLESS',
+  especie: 'OTHER SPECIES',
+  naoCria: "CAN'T BREED",
+  travado: 'LOCKED',
 };
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
 const semTr = (s, v) => (v ? String(s).replace(/\{(\w+)\}/g, (m, k) => (k in v ? String(v[k]) : m)) : s);
@@ -55,11 +55,11 @@ export function avisoDaCreche(a, b = {}) {
     R = regras(E);
   if (E.erro?.erro) {
     if (E.erro.erro === 'semMoedas' && E.moedas != null && num(E.moedas) < R.taxa)
-      return { erro: 'semMoedas', texto: d('Faltam {n} pra taxa.', { n: moeda(R.taxa - num(E.moedas), b) }) };
+      return { erro: 'semMoedas', texto: d('{n} short of the fee.', { n: moeda(R.taxa - num(E.moedas), b) }) };
     return {
       erro: E.erro.erro,
       texto: d(
-        E.erro.motivo || TEXTOS[E.erro.erro] || 'Não deu.',
+        E.erro.motivo || TEXTOS[E.erro.erro] || "That didn't work.",
         E.erro.vars && typeof E.erro.vars === 'object' ? E.erro.vars : null,
       ),
     };
@@ -77,7 +77,7 @@ export function avisoDaCreche(a, b = {}) {
   if (!(M && F)) return null;
   if (R.guardados >= R.ovosMax) return { erro: 'ovosCheio', texto: d(TEXTOS.ovosCheio) };
   if (E.moedas != null && num(E.moedas) < R.taxa)
-    return { erro: 'semMoedas', texto: d('Faltam {n} pra taxa.', { n: moeda(R.taxa - num(E.moedas), b) }) };
+    return { erro: 'semMoedas', texto: d('{n} short of the fee.', { n: moeda(R.taxa - num(E.moedas), b) }) };
   return null;
 }
 function slot(e, a, b) {
@@ -85,10 +85,10 @@ function slot(e, a, b) {
   if (!e)
     return {
       vazio: true,
-      nome: c(a === 'm' ? 'Escolha um macho' : 'Escolha uma fêmea'),
-      ivs: c('do time ou da Caixa'),
+      nome: c(a === 'm' ? 'Choose a male' : 'Choose a female'),
+      ivs: c('from the team or the Box'),
       img: null,
-      botao: c('Escolher'),
+      botao: c('Choose'),
       uid: null,
     };
   const d =
@@ -103,7 +103,7 @@ function slot(e, a, b) {
     ivs: d,
     img: cabeca(e.dex),
     shiny: !!e.shiny,
-    botao: c('Trocar'),
+    botao: c('Swap'),
   };
 }
 export function vistaCreche(c, d = {}) {
@@ -119,12 +119,12 @@ export function vistaCreche(c, d = {}) {
   const k = {
     img: arteOvo(tipoDoOvo(j, d.tipos)),
     titulo: !f
-      ? e('Escolha um macho e uma fêmea')
+      ? e('Choose a male and a female')
       : i
-        ? e('Esse casal não dá ovo')
-        : e('Um ovo de {x}', { x: especieDe(j, d) }),
+        ? e("This pair can't make an egg")
+        : e('A {x} Egg', { x: especieDe(j, d) }),
     regras: e(
-      'Choca em {h} h numa incubadora. Cada IV vem do pai ou da mãe e pode cair ou subir um pouquinho. A natureza é sorteada (com a Pedra Eterna, 50% de passar a de quem segura). Os dois pais ficam com a Hideko.',
+      "Hatches in {h} h in an Incubator. Each IV comes from the father or mother and may drop or rise a little. The nature is random (with an Everstone, 50% chance to pass on the holder's). Both parents stay with Hideko.",
       { h: R.eclosaoH },
     ),
     aviso: g,
@@ -133,8 +133,8 @@ export function vistaCreche(c, d = {}) {
   if (E.dialogo === 'confirmar' && M && F && !g) {
     l = {
       tipo: 'confirmar',
-      titulo: e('Criar o ovo?'),
-      texto: e('O {a} ♂ e a {b} ♀ ficam com a Hideko e viram um ovo. Taxa de {t}. Não dá pra desfazer.', {
+      titulo: e('Breed the egg?'),
+      texto: e("The {a} ♂ and the {b} ♀ stay with Hideko and become an egg. Fee: {t}. This can't be undone.", {
         a: nomeDe(M, d),
         b: nomeDe(F, d),
         t: moeda(R.taxa, d),
@@ -145,12 +145,12 @@ export function vistaCreche(c, d = {}) {
       m = num(o.especie ?? o.pais?.[0]?.dex ?? j, 0);
     l = {
       tipo: 'recebido',
-      titulo: e('Você ganhou um ovo!'),
+      titulo: e('You got an egg!'),
       img: arteOvo(tipoDoOvo(m, d.tipos)),
       texto:
         m > 0
-          ? e('Ovo de {x}. Ponha numa incubadora no seu terreno pra chocar.', { x: especieDe(m, d) })
-          : e('Ponha o ovo numa incubadora no seu terreno pra chocar.'),
+          ? e('{x} Egg. Put it in an Incubator on your land to hatch.', { x: especieDe(m, d) })
+          : e('Put the egg in an Incubator on your land to hatch.'),
     };
   }
   return {
@@ -203,21 +203,21 @@ export function vistaSeletor(c, d = {}, { lado: f = 'm', aba: g = 'time', sel: h
   const p = o.find((l) => l.marcado && l.ok) || null;
   const q = k ? especieDe(num(k.dex), d) : null;
   return {
-    titulo: j(f === 'm' ? 'Escolha o macho' : 'Escolha a fêmea'),
+    titulo: j(f === 'm' ? 'Choose the male' : 'Choose the female'),
     pedido: q
       ? j(
           f === 'm'
-            ? 'Pra creche: um macho de {x}, a espécie da fêmea.'
-            : 'Pra creche: uma fêmea de {x}, a espécie do macho.',
+            ? "For the Daycare: a male {x}, the female's species."
+            : "For the Daycare: a female {x}, the male's species.",
           { x: q },
         )
       : j(
           f === 'm'
-            ? 'Pra creche: um macho de uma espécie que põe ovo.'
-            : 'Pra creche: uma fêmea de uma espécie que põe ovo.',
+            ? 'For the Daycare: a male of a species that lays eggs.'
+            : 'For the Daycare: a female of a species that lays eggs.',
         ),
     linhas: o,
-    vazio: o.length ? null : j(g === 'caixa' ? 'Nenhum Pokémon que sirva na Caixa.' : 'Nenhum Pokémon no time.'),
-    botao: { ligado: !!p, texto: p ? j('Escolher {x}', { x: p.nome }) : j('Escolher') },
+    vazio: o.length ? null : j(g === 'caixa' ? 'No suitable Pokémon in the Box.' : 'No Pokémon on the team.'),
+    botao: { ligado: !!p, texto: p ? j('Choose {x}', { x: p.nome }) : j('Choose') },
   };
 }

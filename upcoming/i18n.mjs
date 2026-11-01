@@ -1,16 +1,16 @@
 export const IDIOMAS = { pt: 'Português', en: 'English', es: 'Español' };
 const LS = 'idioma';
-let atual = 'pt',
+let atual = 'en',
   exatas = new Map(),
   padroes = [],
   modelos = new Map(),
-  carregado = { pt: true };
+  carregado = {};
 const faltasMap = new Map(),
   saidas = new Set();
 const cache = new Map();
 export const idioma = () => atual;
 export const LOCAIS = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
-export const local = () => LOCAIS[atual] || 'pt-BR';
+export const local = () => LOCAIS[atual] || 'en-US';
 export const ehPt = () => atual === 'pt';
 export function doNavegador() {
   const n = String((navigator.languages && navigator.languages[0]) || navigator.language || 'pt').toLowerCase();
@@ -22,7 +22,7 @@ export function detectar(a = null) {
     const v = localStorage.getItem(LS);
     if (IDIOMAS[v]) return v;
   } catch {}
-  return doNavegador();
+  return 'en';
 }
 function compilar(a, b) {
   const c = a.split(/(\{\w+\})/);
@@ -92,7 +92,7 @@ function montarPartes(a, l) {
   return d;
 }
 export function acrescentar(a, l = atual) {
-  if (!a || typeof a !== 'object' || Array.isArray(a) || !Object.hasOwn(IDIOMAS, l) || l === 'pt') return 0;
+  if (!a || typeof a !== 'object' || Array.isArray(a) || !Object.hasOwn(IDIOMAS, l)) return 0;
   let h = historia.get(l);
   if (!h) {
     h = new Map();
@@ -136,23 +136,15 @@ export async function carregarDex() {
   return dex;
 }
 export async function carregar(l) {
-  if (!IDIOMAS[l]) l = 'pt';
+  if (!IDIOMAS[l]) l = 'en';
   dex = dexCache.get(l) || {};
-  if (l === 'pt') {
-    atual = 'pt';
-    exatas = new Map();
-    padroes = [];
-    modelos = new Map();
-    document.documentElement.lang = 'pt-BR';
-    return atual;
-  }
   const d = await baixar(l);
   atual = l;
   exatas = d.exatas;
   padroes = d.padroes;
   modelos = d.modelos || new Map();
   carregado[l] = true;
-  document.documentElement.lang = l;
+  document.documentElement.lang = LOCAIS[l] || l;
   return atual;
 }
 export async function definir(l) {
@@ -230,7 +222,7 @@ export function dataDasVars(v) {
 function traduzir(s, a, b) {
   if (typeof s !== 'string' || !s) return s;
   let r = s;
-  if (atual !== 'pt' && TEM_LETRA.test(s)) {
+  if (TEM_LETRA.test(s)) {
     const k = s.trim(),
       e = exatas.get(k) ?? (k.includes('{') ? modelos.get(k) : undefined);
     let c = e != null;
@@ -253,12 +245,12 @@ function traduzir(s, a, b) {
   return r;
 }
 export function tExato(s) {
-  if (atual === 'pt' || typeof s !== 'string' || !s) return s;
+  if (typeof s !== 'string' || !s) return s;
   const k = s.trim(),
     e = exatas.get(k);
   return e == null ? s : k === s ? e : s.replace(k, e);
 }
 export function tHtml(a) {
-  if (atual === 'pt' || typeof a !== 'string') return a;
+  if (typeof a !== 'string') return a;
   return a.replace(/>([^<>]+)</g, (a, b) => '>' + t(b) + '<');
 }

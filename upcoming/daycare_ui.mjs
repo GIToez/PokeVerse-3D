@@ -7,7 +7,7 @@ import { CRECHE, exemploCreche } from './daycare_garden_samples.mjs';
 import * as TerrenoEstado from './plot_state.mjs';
 const tr = (s, v) => I18n.t(s, v);
 export const EXEMPLOS = CRECHE.map(([a, b]) => ({ id: a, nome: b }));
-export const AVISOS = { previa: 'Prévia: isto é só um exemplo.', desligado: 'Sem conexão com o servidor.' };
+export const AVISOS = { previa: 'Preview: this is just an example.', desligado: 'No connection to the server.' };
 const COR_AVISO = '#FF5B5B',
   COR_NOTA = '#F5B93B';
 let dep = {
@@ -420,7 +420,7 @@ function pintar() {
   const c = nota
     ? { texto: nota, cor: COR_NOTA }
     : v.esperando
-      ? { texto: tr('um instante…'), cor: COR_NOTA }
+      ? { texto: tr('one moment…'), cor: COR_NOTA }
       : v.resultado.aviso
         ? { texto: v.resultado.aviso.texto, cor: COR_AVISO }
         : null;
@@ -534,7 +534,7 @@ function abrirSeletor(a, b = 'time') {
   if (!E) return;
   const p = montarSeletor();
   if (!p) {
-    avisar('O seletor não está na maquete.');
+    avisar("The selector isn't in the mockup.");
     return;
   }
   S = { lado: a, aba: b, sel: null };

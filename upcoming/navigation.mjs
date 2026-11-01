@@ -37,7 +37,7 @@ export function instalar({ pai: a = null } = {}) {
   ui.botao = document.createElement('button');
   ui.botao.id = 'nav-botao';
   ui.botao.type = 'button';
-  ui.botao.textContent = '☰ Páginas';
+  ui.botao.textContent = '☰ Pages';
   ui.botao.hidden = true;
   ui.painel = document.createElement('div');
   ui.painel.id = 'nav-painel';
@@ -123,7 +123,7 @@ function pintar() {
         b.href = new URL(a.url, RAIZ).href;
         if (aqui(a.url)) b.classList.add('aqui');
       }
-      b.innerHTML = `${a.nome}<span>${a.desc}</span>${b.classList?.contains('aqui') ? '<span>◂ você está aqui</span>' : ''}`;
+      b.innerHTML = `${a.nome}<span>${a.desc}</span>${b.classList?.contains('aqui') ? '<span>◂ you are here</span>' : ''}`;
       ui.painel.appendChild(b);
     }
     if (g.dica) {
@@ -146,6 +146,6 @@ async function checar(g) {
   } catch {}
   clearTimeout(t);
   a.className = 'pt ' + (b ? 'on' : 'off');
-  a.title = b ? 'servidor no ar' : 'servidor fora do ar';
+  a.title = b ? 'server up' : 'server down';
 }
 const ACOES = {};

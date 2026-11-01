@@ -73,12 +73,12 @@ async function buscar(a = false) {
       b = null;
     try {
       const c = baseHttp();
-      if (!c) throw new Error('sem servidor');
+      if (!c) throw new Error('no server');
       const r = await fetch(c + '/ranking', { cache: 'no-store' });
       if (!r.ok) throw new Error('erro ' + r.status);
       R = await r.json();
     } catch {
-      b = 'Sem conexão com o servidor.';
+      b = 'No connection to the server.';
     }
     if (R && Conta.comConta()) {
       const r = await Conta.chamar('GET', '/ranking/eu');
@@ -101,33 +101,33 @@ const tempo = (a) => {
 const dataDe = (a) => (String(a || '').match(/\d{2}\/\d{2}/) || [null])[0];
 function valorDe(a, x, b = null) {
   const v = x?.valor;
-  if (a === 'mestre') return [b != null ? fmt(b) : x?.mestre != null ? fmt(x.mestre) : '—', 'nível'];
+  if (a === 'mestre') return [b != null ? fmt(b) : x?.mestre != null ? fmt(x.mestre) : '—', 'level'];
   if (v == null) return ['—', ''];
   switch (a) {
     case 'insignias':
-      return [fmt(v), plural(v, 'insígnia', 'insígnias')];
+      return [fmt(v), plural(v, 'badge', 'badges')];
     case 'hall':
-      return [dataDe(x.texto) || '✔', 'campeão'];
+      return [dataDe(x.texto) || '✔', 'champion'];
     case 'elite':
       return [tempo(v), 'min'];
     case 'historia':
-      return [fmt(v), plural(v, 'missão', 'missões')];
+      return [fmt(v), plural(v, 'mission', 'missions')];
     case 'treinadores':
       return [fmt(v), plural(v, 'treinador', 'treinadores')];
     case 'kanto':
     case 'nacional':
     case 'shiny_especies':
-      return [fmt(v), plural(v, 'espécie', 'espécies')];
+      return [fmt(v), plural(v, 'species', 'species')];
     case 'conhecimento':
     case 'sem_raid':
       return [fmt(v), plural(v, 'ponto', 'pontos')];
     case 'lendarios':
-      return [fmt(v), plural(v, 'lendário', 'lendários')];
+      return [fmt(v), plural(v, 'lendário', 'legendaries')];
     case 'shiny_capturados':
     case 'sem_shinies':
       return [fmt(v), plural(v, 'shiny', 'shinies')];
     case 'shiny_caixa':
-      return [fmt(v), 'na caixa'];
+      return [fmt(v), 'in the Box'];
     case 'sem_capturas':
       return [fmt(v), plural(v, 'captura', 'capturas')];
     case 'sem_selvagens':
@@ -341,10 +341,10 @@ function pintar(a) {
     const t = f.length
       ? ''
       : !R
-        ? dados.erro || (buscando ? 'carregando…' : 'Sem conexão com o servidor.')
+        ? dados.erro || (buscando ? 'loading…' : 'No connection to the server.')
         : e
-          ? 'nenhuma guilda pontuou ainda'
-          : 'ninguém nesta lista ainda';
+          ? 'no guild has scored yet'
+          : 'nobody on this list yet';
     h.textContent = tr(t);
     h.style.display = t ? 'flex' : 'none';
   }
@@ -357,7 +357,7 @@ function pintar(a) {
     Popup.textoCru(
       pop,
       'premio-semana',
-      k ? tr('prêmio do 1º: "{x}" por 7 dias', { x: tr(k) }) : tr('o 1º da semana leva um título por 7 dias'),
+      k ? tr('1st place prize: "{x}" for 7 days', { x: tr(k) }) : tr("the week's 1st place gets a title for 7 days"),
       b,
     );
   }
@@ -378,7 +378,7 @@ function pintarGuilda(a, x) {
   Popup.texto(
     pop,
     'membros',
-    num(x.membros) === 1 ? tr('{n} membro', { n: fmt(x.membros) }) : tr('{n} membros', { n: fmt(x.membros) }),
+    num(x.membros) === 1 ? tr('{n} member', { n: fmt(x.membros) }) : tr('{n} members', { n: fmt(x.membros) }),
     a,
   );
   Popup.textoCru(pop, 'valor', fmt(x.pts), a);
@@ -397,8 +397,8 @@ function pintarSua(b, a) {
     const g = E.guilda;
     Popup.textoCru(pop, 'posicao', g?.pos ? '#' + g.pos : '—', c);
     pintarEmblema(c, g?.emblema || null);
-    Popup.textoCru(pop, 'guilda', g ? comTag(g.nome, g.tag) : tr('você não está numa guilda'), c);
-    Popup.texto(pop, 'membros', g ? 'sua guilda' : '', c);
+    Popup.textoCru(pop, 'guilda', g ? comTag(g.nome, g.tag) : tr("you're not in a guild"), c);
+    Popup.texto(pop, 'membros', g ? 'your guild' : '', c);
     Popup.textoCru(pop, 'valor', g ? fmt(g.pts) : '', c);
     Popup.texto(pop, 'unidade', g ? plural(g.pts, 'ponto', 'pontos') : '', c);
     return;
@@ -408,7 +408,7 @@ function pintarSua(b, a) {
   Popup.textoCru(pop, 'posicao', P?.pos ? '#' + P.pos : '—', c);
   Popup.imagem(pop, 'retrato', cabeca(V.dex), c);
   Popup.textoCru(pop, 'jogador', comTag(V.nick || Conta.estado().usuario || '', V.tag), c);
-  Popup.textoCru(pop, 'titulo-jogador', P?.pos ? tr('você') : tr('você') + ' · ' + tr('fora da lista'), c);
+  Popup.textoCru(pop, 'titulo-jogador', P?.pos ? tr('you') : tr('you') + ' · ' + tr('not on the list'), c);
   const [v, u] = valorDe(a, P, a === 'mestre' ? (E.mestre?.nivel ?? null) : null);
   Popup.textoCru(pop, 'valor', v, c);
   Popup.texto(pop, 'unidade', u, c);

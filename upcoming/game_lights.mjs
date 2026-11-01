@@ -39,7 +39,7 @@ export function separarVidros(d, e) {
       let c = f.get(x);
       if (!c) {
         c = x.clone();
-        c.name = (x.name || '') + ' · vidro do poste';
+        c.name = (x.name || '') + ' · lamp post glass';
         f.set(x, c);
       }
       return c;

@@ -522,7 +522,7 @@ export function instanciar(a, b) {
         .then((b) => {
           if (V.cena === a && V.lista === L && !V.conjuntos.has(d)) montarConjunto(b, f);
         })
-        .catch((e) => console.warn('terreno: o modelo ' + d + ' não carregou:', e?.message || e));
+        .catch((e) => console.warn('plot: the model ' + d + " didn't load:", e?.message || e));
   }
   return L.length;
 }

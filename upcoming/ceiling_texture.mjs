@@ -82,7 +82,7 @@ export async function reduzirImagem(a, c = '', { fecharOriginal: d = true } = {}
   } catch (e) {
     j = null;
     try {
-      console.warn('teto de textura:', c, e?.message || e);
+      console.warn('texture cap:', c, e?.message || e);
     } catch {}
   }
   if (!j) {

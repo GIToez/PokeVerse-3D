@@ -7468,7 +7468,7 @@ export const TODOS = {
   transform: {
     id: 'transform',
     nome: 'Transform',
-    nomePt: 'Transformar',
+    nomePt: 'Transform',
     tipo: 'Normal',
     poder: 0,
     cat: 'status',

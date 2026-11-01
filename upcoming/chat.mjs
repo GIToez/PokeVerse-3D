@@ -8,9 +8,9 @@ export const CANAIS = {
   global: { nome: 'Global', cor: '#ffe07a', tag: 'G' },
   trade: { nome: 'Trade', cor: '#8ef58e', tag: 'T' },
   help: { nome: 'Help', cor: '#7fd7ff', tag: 'H' },
-  sistema: { nome: 'Sistema', cor: '#9aa5c0', tag: 'S' },
-  pm: { nome: 'Sussurro', cor: '#f0a6ff', tag: 'W' },
-  guilda: { nome: 'Guilda', cor: '#C8A6FF', tag: 'Gu' },
+  sistema: { nome: 'System', cor: '#9aa5c0', tag: 'S' },
+  pm: { nome: 'Whisper', cor: '#f0a6ff', tag: 'W' },
+  guilda: { nome: 'Guild', cor: '#C8A6FF', tag: 'Gu' },
 };
 export const ABAS = ['local', 'global', 'trade', 'help'];
 const MUDO_PADRAO_MIN = 60;
@@ -48,7 +48,7 @@ export function avisar() {
 }
 function dicaCampo() {
   const k = Teclas.rotuloAcao('chat', 'lista', tr);
-  return k === '—' ? '/g /t /h /l' : tr('{x} pra falar… /g /t /h /l', { x: k });
+  return k === '—' ? '/g /t /h /l' : tr('{x} to talk… /g /t /h /l', { x: k });
 }
 Teclas.aoMudar(() => {
   for (const m of montagens) {
@@ -64,7 +64,7 @@ export function instalar(c) {
   msgs = historicoLimpo(ctx.lerLS('chat', [])).concat(a).slice(-200);
   if (!msgs.length)
     sistema(
-      'Chat: Local (seu mapa; a fala aparece em cima da cabeça), Global, Trade, Help. Comandos: /g /t /h /l. Com o servidor no ar, os outros jogadores leem.',
+      'Chat: Local (your map; speech shows above your head), Global, Trade, Help. Commands: /g /t /h /l. With the server online, other players can read it.',
     );
 }
 export function historicoLimpo(v) {
@@ -88,7 +88,7 @@ const telaDeToque = () => {
 };
 export function publicar(b, d, e = null, f = undefined, g = undefined, h = undefined) {
   const i = e == null;
-  if (i) e = (ctx?.tagGuilda ? '[' + ctx.tagGuilda + '] ' : '') + (ctx?.nome || 'Você');
+  if (i) e = (ctx?.tagGuilda ? '[' + ctx.tagGuilda + '] ' : '') + (ctx?.nome || 'You');
   if (!CANAIS[b]) b = 'local';
   const q = f === undefined ? Conta.meuCargoAtual?.() : f;
   const j = b !== 'sistema' && (g === undefined ? i && Conta.souMembro?.() === true : g === true);
@@ -125,8 +125,8 @@ export function publicar(b, d, e = null, f = undefined, g = undefined, h = undef
     Avisos.somar('guilda');
   }
 }
-export const sistema = (a) => publicar('sistema', tr(a), 'Sistema', null);
-export const sistemaCru = (a) => publicar('sistema', String(a), 'Sistema', null);
+export const sistema = (a) => publicar('sistema', tr(a), 'System', null);
+export const sistemaCru = (a) => publicar('sistema', String(a), 'System', null);
 export const avisoSistema = (a) => {
   sistemaCru(a);
   avisar();
@@ -139,9 +139,9 @@ export const SELO_MEDALHAO = './ui/amanda/efeitos/medalhao-selo@2x.png';
 export const seloDe = (m) =>
   m && m.md === true && m.c !== 'sistema'
     ? '<i class="selo-md" role="img" aria-label="' +
-      esc(tr('Medalhão')) +
+      esc(tr('Medallion')) +
       '" title="' +
-      esc(tr('Medalhão')) +
+      esc(tr('Medallion')) +
       '" style="display:inline-block;width:1.3em;height:1.3em;vertical-align:-0.32em;margin-right:3px;background:url(' +
       SELO_MEDALHAO +
       ') 50% 50% / contain no-repeat"></i>'
@@ -185,7 +185,7 @@ export function enviar(a, b) {
       const [u, n, ...r] = p.split(/\s+/).filter(Boolean),
         v = minutosDoTexto(n);
       if (u && v != null && !(v > 0)) {
-        sistema('Os minutos do /mudo têm de passar de zero. Pra tirar o silêncio, use /desmudo nome.');
+        sistema('The /mudo minutes must be above zero. To lift the mute, use /desmudo name.');
         return 'sistema';
       }
       if (u) p = [u, String(v != null ? v : MUDO_PADRAO_MIN), ...(n && v == null ? [n] : []), ...r].join(' ');
@@ -197,15 +197,15 @@ export function enviar(a, b) {
   if (f) {
     const [x, ...y] = f[2].trim().split(/\s+/).filter(Boolean);
     if (!x) {
-      sistema('Use: /desmudo nome.');
+      sistema('Use: /desmudo name.');
       return 'sistema';
     }
     import('./network.mjs')
       .then((R) => {
         if (!R.enviar?.({ t: 'mod_desmudo', usuario: x, motivo: y.join(' ').slice(0, 120) }))
-          sistema('Sem conexão com o servidor.');
+          sistema('No connection to the server.');
       })
-      .catch(() => sistema('Sem conexão com o servidor.'));
+      .catch(() => sistema('No connection to the server.'));
     return 'sistema';
   }
   const i = t.match(/^\/(renomear|rename)\b\s*(.*)$/i);
@@ -216,7 +216,7 @@ export function enviar(a, b) {
     const $ = (q?.[1] || '').trim(),
       aa = (q?.[2] || '').trim();
     if (!$ || !aa) {
-      sistema('Use: /renomear nome novo-nome (ou ? pra um nome aleatório) | motivo. Nome com espaço vai entre aspas.');
+      sistema('Use: /renomear name new-name (or ? for a random name) | reason. Names with spaces go in quotes.');
       return 'sistema';
     }
     import('./network.mjs')
@@ -229,9 +229,9 @@ export function enviar(a, b) {
             motivo: _.join('|').trim().slice(0, 120),
           })
         )
-          sistema('Sem conexão com o servidor.');
+          sistema('No connection to the server.');
       })
-      .catch(() => sistema('Sem conexão com o servidor.'));
+      .catch(() => sistema('No connection to the server.'));
     return 'sistema';
   }
   const j = t.match(/^\/(trocar|trade|intercambiar)\s+(.+)$/i);
@@ -282,7 +282,7 @@ export function montar(e, { compacto: f = false, aba: g = 'local' } = {}) {
   let j = g;
   const k = { local: 0, global: 0, trade: 0, help: 0 };
   e.classList.add('chat-caixa');
-  e.innerHTML = `<div class="abas">${ABAS.map((a) => `<button type="button" data-aba="${a}" class="${a === j ? 'on' : ''}">${tr(CANAIS[a].nome)}<i hidden></i></button>`).join('')}${f ? '<button type="button" class="min" title="' + esc(tr('recolher / abrir')) + '">–</button>' : ''}</div><div class="msgs"></div><form autocomplete="off"><span class="canal"></span><input maxlength="240"><button type="submit">${tr('Enviar')}</button></form>`;
+  e.innerHTML = `<div class="abas">${ABAS.map((a) => `<button type="button" data-aba="${a}" class="${a === j ? 'on' : ''}">${tr(CANAIS[a].nome)}<i hidden></i></button>`).join('')}${f ? '<button type="button" class="min" title="' + esc(tr('collapse / expand')) + '">–</button>' : ''}</div><div class="msgs"></div><form autocomplete="off"><span class="canal"></span><input maxlength="240"><button type="submit">${tr('Send')}</button></form>`;
   const l = e.querySelector('.msgs'),
     o = e.querySelector('form'),
     p = e.querySelector('input'),
@@ -351,7 +351,7 @@ export function montar(e, { compacto: f = false, aba: g = 'local' } = {}) {
     const $ = document.createElement('button');
     $.type = 'button';
     $.className = 'dim';
-    $.title = tr('arraste: tamanho do chat · duplo clique: padrão');
+    $.title = tr('drag: chat size · double-click: default');
     e.querySelector('.abas').appendChild($);
     let d0 = null;
     $.addEventListener('pointerdown', (a) => {

@@ -22,13 +22,13 @@ const VISTA_CRECHE = { taxa: 1000, eclosaoH: 24, limites: { ovosMax: 6, guardado
 export const CRECHE = [
   ['vazia', 'vazia', () => ({ macho: null, femea: null, moedas: 12450 })],
   ['casal', 'casal', () => ({ macho: porUid(101), femea: porUid(103), moedas: 12450 })],
-  ['especie-diferente', 'espécies diferentes', () => ({ macho: porUid(101), femea: porUid(104), moedas: 12450 })],
-  ['sem-moedas', 'sem moedas', () => ({ macho: porUid(101), femea: porUid(103), moedas: 750 })],
-  ['nao-cria', 'não cria', () => ({ macho: porUid(204), femea: null, moedas: 12450 })],
+  ['especie-diferente', 'different species', () => ({ macho: porUid(101), femea: porUid(104), moedas: 12450 })],
+  ['sem-moedas', 'no coins', () => ({ macho: porUid(101), femea: porUid(103), moedas: 750 })],
+  ['nao-cria', "can't breed", () => ({ macho: porUid(204), femea: null, moedas: 12450 })],
   ['confirmar', 'confirmar', () => ({ macho: porUid(101), femea: porUid(103), moedas: 12450, dialogo: 'confirmar' })],
   [
     'ovo-recebido',
-    'ovo recebido',
+    'egg received',
     () => ({
       macho: null,
       femea: null,
@@ -45,10 +45,10 @@ export const CRECHE = [
       },
     }),
   ],
-  ['escolher-macho', 'escolher o macho', () => ({ macho: null, femea: porUid(103), moedas: 12450, seletor: 'm' })],
+  ['escolher-macho', 'choose the male', () => ({ macho: null, femea: porUid(103), moedas: 12450, seletor: 'm' })],
   [
     'escolher-femea',
-    'escolher a fêmea',
+    'choose the female',
     () => ({ macho: porUid(101), femea: null, moedas: 12450, seletor: 'f', seletorAba: 'caixa' }),
   ],
 ];
@@ -67,12 +67,12 @@ const PAIS_CHARMANDER = [
 ];
 const parece = (a, b = false) =>
   b
-    ? { texto: 'Precisa de {n} h numa incubadora pra chocar.', vars: { n: Math.ceil(a / HORA) } }
+    ? { texto: 'Needs {n} h in an Incubator to hatch.', vars: { n: Math.ceil(a / HORA) } }
     : a <= 0
-      ? { texto: 'Está pronto pra chocar!' }
+      ? { texto: 'Ready to hatch!' }
       : a <= 2 * HORA
-        ? { texto: 'Dá pra ouvir barulhinhos lá dentro: falta pouco.' }
-        : { texto: 'Parece demorar umas {n} h.', vars: { n: Math.ceil(a / HORA) } };
+        ? { texto: 'You can hear little noises inside: almost there.' }
+        : { texto: 'Looks like it takes about {n} h.', vars: { n: Math.ceil(a / HORA) } };
 function vistaOvos(a, { falta: b = 11 * HORA + 24 * MIN, tickets: c = 0, vazia: d = false, muitas: e = false } = {}) {
   const f = a - ((24 - 12 * c) * HORA - b),
     g = a + b;
@@ -273,8 +273,8 @@ const NASCEU = {
   ],
   daPedra: 'mae',
   avisos: [
-    { texto: 'Nasceu uma {x}!', vars: { x: 'Charmander' } },
-    { texto: 'A Pedra Eterna passou a natureza ({x}).', vars: { x: 'Modest' } },
+    { texto: 'A {x} hatched!', vars: { x: 'Charmander' } },
+    { texto: 'The Everstone passed on the nature ({x}).', vars: { x: 'Modest' } },
   ],
 };
 export const INCUBADORA = [
@@ -283,10 +283,10 @@ export const INCUBADORA = [
   ['vazia', 'vazia', (a) => ({ vista: vistaOvos(a, { vazia: true }), incubadora: 'incubadora#3', tickets: 2 })],
   [
     'ticket-usado',
-    'ticket usado',
+    'ticket used',
     (a) => ({ vista: vistaOvos(a, { falta: 3 * HORA + 5 * MIN, tickets: 1 }), incubadora: 'incubadora#1', tickets: 1 }),
   ],
-  ['sem-ticket', 'sem ticket', (a) => ({ vista: vistaOvos(a), incubadora: 'incubadora#1', tickets: 0 })],
+  ['sem-ticket', 'no ticket', (a) => ({ vista: vistaOvos(a), incubadora: 'incubadora#1', tickets: 0 })],
   [
     'nasceu',
     'nasceu',
@@ -299,7 +299,7 @@ export const INCUBADORA = [
   ],
   [
     'nasceu-shiny',
-    'nasceu shiny',
+    'hatched shiny',
     (a) => ({
       vista: vistaOvos(a, { falta: 0 }),
       incubadora: 'incubadora#1',
@@ -315,7 +315,7 @@ export const INCUBADORA = [
           ivs: [30, 27, 19, 8, 22, 31],
         },
         daPedra: null,
-        avisos: [{ texto: 'Nasceu um {x}!', vars: { x: 'Charmander' } }, { texto: 'É shiny!' }],
+        avisos: [{ texto: 'A {x} hatched!', vars: { x: 'Charmander' } }, { texto: "It's shiny!" }],
         heranca: [
           { de: 'pai', delta: 0 },
           { de: 'mae', delta: -3 },
@@ -329,7 +329,7 @@ export const INCUBADORA = [
   ],
   [
     'muitas',
-    '6 incubadoras',
+    '6 incubators',
     (a) => ({ vista: vistaOvos(a, { muitas: true }), incubadora: 'incubadora#4', tickets: 2 }),
   ],
 ];
@@ -386,23 +386,23 @@ function contaHorta(a, b) {
   return { horta: { canteiros: 4, premios: [], plantas: c } };
 }
 const MISSOES = [
-  { nome: 'A Horta', feito: 1, total: 1 },
+  { nome: 'The Garden', feito: 1, total: 1 },
   { nome: 'O Início da Jornada', feito: 4, total: 4 },
   { nome: 'Aula de Captura', feito: 3, total: 3 },
-  { nome: 'O Ginásio Sem Líder', feito: 2, total: 2 },
-  { nome: 'A Estrada do Norte', feito: 2, total: 3 },
-  { nome: 'O Nome Que Ninguém Diz', feito: 0, total: 2 },
+  { nome: 'The Leaderless Gym', feito: 2, total: 2 },
+  { nome: 'The Northern Road', feito: 2, total: 3 },
+  { nome: 'The Name No One Says', feito: 0, total: 2 },
 ];
 export const HORTA = [
-  ['quatro', '4 de 6 canteiros', {}],
+  ['quatro', '4 of 6 plots', {}],
   ['crescendo', 'crescendo', { sel: 1 }],
-  ['plantar', 'plantar (sementes)', { sel: 3, plantar: { aba: 'sementes', sel: 190006 } }],
-  ['plantar-bagas', 'plantar (bagas)', { sel: 3, plantar: { aba: 'bagas', sel: null } }],
-  ['fechado', 'canteiro fechado', { sel: 5 }],
-  ['missoes', 'ver missões', { sel: 5, dialogo: 'missoes', missoes: MISSOES }],
-  ['sem-horta', 'sem horta', {}],
-  ['cheia', '6 canteiros', {}],
-  ['mochila-cheia', 'mochila cheia', { mochilaCheia: true }],
+  ['plantar', 'plant (seeds)', { sel: 3, plantar: { aba: 'sementes', sel: 190006 } }],
+  ['plantar-bagas', 'plant (berries)', { sel: 3, plantar: { aba: 'bagas', sel: null } }],
+  ['fechado', 'plot locked', { sel: 5 }],
+  ['missoes', 'see missions', { sel: 5, dialogo: 'missoes', missoes: MISSOES }],
+  ['sem-horta', 'no garden', {}],
+  ['cheia', '6 plots', {}],
+  ['mochila-cheia', 'bag full', { mochilaCheia: true }],
   ['colheita', 'colheita', { colhido: { canteiro: 0, id: 900100, qtd: 3 } }],
 ];
 export function exemploHorta(a, b, c = Date.now()) {
@@ -410,8 +410,8 @@ export function exemploHorta(a, b, c = Date.now()) {
   return { agora: c, horta: b.estadoHorta(contaHorta(e[0], c), c), bolsa: { ...BOLSA }, ...structuredClone(e[2]) };
 }
 export const TERRENO = [
-  ...HORTA.map(([a, b]) => ['horta:' + a, 'horta · ' + b]),
-  ...INCUBADORA.map(([a, b]) => ['ovos:' + a, 'ovos · ' + b]),
+  ...HORTA.map(([a, b]) => ['horta:' + a, 'garden · ' + b]),
+  ...INCUBADORA.map(([a, b]) => ['ovos:' + a, 'eggs · ' + b]),
 ];
 export function exemploTerreno(a, b, c = Date.now()) {
   const [d, e] = String(a || '').split(':'),

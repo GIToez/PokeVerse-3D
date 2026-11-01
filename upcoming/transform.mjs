@@ -85,7 +85,7 @@ export function podeTransformar(a, b, c = {}) {
   if (!R.copiaLendario && (D.lendarios || []).includes(num(b.dex))) return erroDe('alvoLendario');
   if (!especieValida(b.especie) || typeof b.glb !== 'string' || !b.glb) return erroDe('alvoSemEspecie');
   if (!golpesCopiados(b.movs, c.golpeExiste).length) return erroDe('alvoSemGolpes');
-  const h = b.especie.name || 'o alvo';
+  const h = b.especie.name || 'the target';
   if (!e || L.respeito) {
     const k = num(a.lv, 1) + R.respeitoNiveis;
     if (num(b.lv) > k) return erroDe('respeito', { alvo: h, lvAlvo: num(b.lv), nome: g, max: k }, { max: k });
@@ -104,7 +104,7 @@ export function transformar(a, b, c, d = {}) {
   const R = regras(),
     E = b?.especie;
   if (!a || !especieValida(E) || typeof b.glb !== 'string' || !b.glb)
-    throw new Error('transformar: alvo sem espécie ou sem modelo');
+    throw new Error('transform: target has no species or model');
   const e = d.modo === 'luta' ? 'luta' : 'mundo',
     t = num(c);
   a.transf = {

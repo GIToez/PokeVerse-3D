@@ -32,21 +32,21 @@ const ICONE_DESTRAVE = {
   viagem: './ui/amanda/no-lugar-de-emoji/localizacao.png',
 };
 const METAIS = ['bronze', 'prata', 'ouro', 'platina', 'diamante'];
-const NOME_DEGRAU = { bronze: 'Bronze', prata: 'Prata', ouro: 'Ouro', platina: 'Platina', diamante: 'Diamante' };
+const NOME_DEGRAU = { bronze: 'Bronze', prata: 'Silver', ouro: 'Gold', platina: 'Platina', diamante: 'Diamante' };
 const nomeDegrau = (d) => tr(NOME_DEGRAU[d] || d || '');
 const metal = (d) => (METAIS.includes(d) ? d : 'bronze');
 const RARIDADE_DO_METAL = { bronze: 'comum', prata: 'raro', ouro: 'epico', platina: 'lendario', diamante: 'lendario' };
 const METAL_DA_RARIDADE = { comum: 'bronze', raro: 'prata', epico: 'ouro', lendario: 'platina' };
-const NOME_RARIDADE = { comum: 'COMUM', raro: 'RARO', epico: 'ÉPICO', lendario: 'LENDÁRIO' };
+const NOME_RARIDADE = { comum: 'COMMON', raro: 'RARE', epico: 'EPIC', lendario: 'LEGENDARY' };
 const raridadeMestre = (n) => (n <= 10 ? 'comum' : n <= 25 ? 'raro' : n <= 50 ? 'epico' : 'lendario');
 const ORIGEM = {
   conquista: 'conquista',
   existente: 'conquista',
-  mestre: 'Nível de Mestre',
-  semana: 'ranking da semana',
+  mestre: 'Master Level',
+  semana: 'weekly ranking',
   guilda: 'guilda',
-  hall: 'Hall da Fama',
-  fundador: 'Pacote Fundador',
+  hall: 'Hall of Fame',
+  fundador: 'Founder Pack',
 };
 const CATEGORIA_SEMANA = {
   'semana-capturas': 'captura',
@@ -244,7 +244,7 @@ function serie(d, e, n) {
   }
 }
 function preparar() {
-  Popup.texto(pop, 'titulo', 'Conquistas');
+  Popup.texto(pop, 'titulo', 'Achievements');
   for (const a of pop.querySelectorAll('[data-tag="aba"]:not([data-fig^="conteudo-"])')) Popup.rotulo(pop, 'aba', a);
   for (const g of [
     'filtro-resgatar',
@@ -258,7 +258,7 @@ function preparar() {
   ])
     for (const h of pop.querySelectorAll('[data-txt="' + g + '"]'))
       Popup.texto(pop, g, h.dataset.exemplo || '', h.parentElement);
-  Popup.texto(pop, 'proximo-titulo', 'Próximos destraves');
+  Popup.texto(pop, 'proximo-titulo', 'Next unlocks');
   const b = Popup.grupo(pop, 'lista-categorias');
   if (b && celular()) M.filaHorizontal(b, 'cat', 15);
   for (const c of celulasDe(b, 'cat')) Object.assign(c.style, { pointerEvents: 'auto', cursor: 'pointer' });
@@ -404,10 +404,10 @@ function pintar() {
 function pintarCabecalho(V) {
   const R = V?.resumo || {};
   const c = Popup.grupo(pop, 'pilula-mestre');
-  if (c) escrever('mestre', V ? tr('Mestre {n}', { n: num(V.mestre?.nivel, 1) }) : '—', c);
+  if (c) escrever('mestre', V ? tr('Master {n}', { n: num(V.mestre?.nivel, 1) }) : '—', c);
   const d = (V?.conquistas || []).reduce((s, a) => s + (a.degraus?.length || 0), 0);
-  const e = tr('{a} de {b} concluídas', { a: num(R.conquistas), b: num(R.total) });
-  escrever('resumo', !V ? '' : celular() ? e : e + ' · ' + tr('{a} de {b} degraus', { a: num(R.degraus), b: d }));
+  const e = tr('{a} of {b} completed', { a: num(R.conquistas), b: num(R.total) });
+  escrever('resumo', !V ? '' : celular() ? e : e + ' · ' + tr('{a} of {b} tiers', { a: num(R.degraus), b: d }));
   const f = Popup.grupo(pop, 'aba-conquistas'),
     g = f && filho(f, 'selo-aba-resgatar'),
     n = num(R.aResgatar);
@@ -426,9 +426,9 @@ function pintarAvisoVista(V) {
   if (!a) return;
   let t = null,
     b = null;
-  if (!V) t = !dep.comConta?.() ? tr('Entre com uma conta pra ver as conquistas.') : erroVista || tr('um instante…');
+  if (!V) t = !dep.comConta?.() ? tr('Sign in with an account to see achievements.') : erroVista || tr('one moment…');
   else if (A.aba === 'conquistas' && !listaConquistas(V).length) {
-    t = tr('Nada por aqui.');
+    t = tr('Nothing here.');
     b = Popup.grupo(pop, 'lista-conquistas');
   }
   if (!t) {
@@ -574,7 +574,7 @@ function aoClique(b) {
 }
 function resgatar(a) {
   if (!a?.podeResgatar) return;
-  avisar(tr('um instante…'), true, true);
+  avisar(tr('one moment…'), true, true);
   dep.enviar?.({ t: 'progressao_resgatar', id: a.id });
 }
 function listaConquistas(V) {
@@ -590,7 +590,7 @@ function pintarConquistas(V) {
   const e = V?.categorias || [],
     R = V?.resumo || {};
   const f = [
-    { id: 'todas', nome: 'Todas', concluidas: num(R.conquistas), total: num(R.total), aResgatar: num(R.aResgatar) },
+    { id: 'todas', nome: 'All', concluidas: num(R.conquistas), total: num(R.total), aResgatar: num(R.aResgatar) },
     ...e,
   ];
   celulasDe(d, 'cat')
@@ -615,8 +615,8 @@ function pintarConquistas(V) {
   escrever(
     'cat-resumo',
     V
-      ? tr('{a} de {b} concluídas', { a: num(g.concluidas), b: num(g.total) }) +
-          (num(g.aResgatar) ? ' · ' + tr('{n} a resgatar', { n: num(g.aResgatar) }) : '')
+      ? tr('{a} of {b} completed', { a: num(g.concluidas), b: num(g.total) }) +
+          (num(g.aResgatar) ? ' · ' + tr('{n} to redeem', { n: num(g.aResgatar) }) : '')
       : '',
   );
   const h = Popup.grupo(pop, 'filtro-resgatar');
@@ -668,7 +668,7 @@ function pintarPlaca(c, a) {
   mostra(escrever('premio', r ? tr(r.nome || '') : '', c), !!r);
   const b = filho(c, 'btn-resgatar');
   mostra(b, !!a.podeResgatar);
-  if (b) escrever('btn-resgatar', tr('Resgatar'), b);
+  if (b) escrever('btn-resgatar', tr('Redeem'), b);
   c.style.cursor = e ? 'default' : 'pointer';
 }
 const escadaAberta = () => {
@@ -698,7 +698,7 @@ function pintarEscada(V) {
   imagem('dlg-miolo', mioloUrl(a.categoria), e);
   escrever('dlg-nome', tr(a.nome), e);
   const h = (V?.categorias || []).find((c) => c.id === a.categoria);
-  escrever('dlg-cat', (h ? tr(h.nome) + ' · ' : '') + tr('{n} degraus', { n: D.length }), e);
+  escrever('dlg-cat', (h ? tr(h.nome) + ' · ' : '') + tr('{n} tiers', { n: D.length }), e);
   escrever(
     'dlg-progresso',
     a.valor == null ? '' : a.concluida ? tr('completa') : fmt(a.valor) + ' / ' + fmt(a.alvo),
@@ -721,41 +721,41 @@ function pintarEscada(V) {
     const r = d.recompensa;
     mostra(imagem('linha-premio-tipo', r ? ICONE_PREMIO[r.tipo] || null : null, c), !!r);
     escrever('linha-premio', r ? tr(r.nome || '') : '—', c);
-    escrever('linha-xp', tr('+{n} XP de Mestre', { n: fmt(d.pontosMestre) }), c);
+    escrever('linha-xp', tr('+{n} Master XP', { n: fmt(d.pontosMestre) }), c);
     const h = !a.existente && i === g && i < f;
     const b = filho(c, 'btn-resgatar-linha');
     mostra(b, h);
-    if (b) escrever('btn-resgatar-linha', tr('Resgatar'), b);
+    if (b) escrever('btn-resgatar-linha', tr('Redeem'), b);
     mostra(filho(c, 'selo-resgatado'), i < g);
     let j = '';
-    if (i < g) j = tr('Resgatado');
+    if (i < g) j = tr('Redeemed');
     else if (i < f && !h)
       j = d.em
-        ? tr('concluído em {x}', { x: new Date(d.em).toLocaleDateString(I18n.local(), LOCAL_DATA) })
+        ? tr('completed on {x}', { x: new Date(d.em).toLocaleDateString(I18n.local(), LOCAL_DATA) })
         : tr('completa');
-    else if (i >= f) j = a.valor == null ? '' : tr('faltam {n}', { n: fmt(Math.max(0, num(d.min) - num(a.valor))) });
+    else if (i >= f) j = a.valor == null ? '' : tr('{n} to go', { n: fmt(Math.max(0, num(d.min) - num(a.valor))) });
     mostra(escrever('linha-estado', j, c), !!j && i >= g);
   });
 }
 const nomeMoldura = (a) => {
   const m = /^mestre-(\w+)$/.exec(String(a || ''));
-  return m ? 'Moldura de Mestre (' + m[1] + ')' : String(a || '');
+  return m ? 'Master Frame (' + m[1] + ')' : String(a || '');
 };
 function nomeTitulo(V, a) {
   const t = (V?.titulos?.catalogo || []).find((x) => x.id === a) || (V?.titulos?.ativos || []).find((x) => x.id === a);
   return t?.nome ? tr(t.nome) : null;
 }
 function textoDestrave(V, x, a) {
-  if (x.caixa) return ['caixa', tr('+{n} vagas na Caixa', { n: fmt(x.caixa) })];
-  if (x.anuncios) return ['anuncios', tr('+{n} anúncios no Mercado', { n: fmt(x.anuncios) })];
+  if (x.caixa) return ['caixa', tr('+{n} Box slots', { n: fmt(x.caixa) })];
+  if (x.anuncios) return ['anuncios', tr('+{n} Market listings', { n: fmt(x.anuncios) })];
   if (x.titulo) {
     const n = nomeTitulo(V, x.titulo);
-    return ['titulo', n ? tr('Título: {x}', { x: n }) : tr('um título novo')];
+    return ['titulo', n ? tr('Title: {x}', { x: n }) : tr('a new title')];
   }
   if (x.moldura) return ['moldura', tr(nomeMoldura(x.moldura))];
-  if (x.estrela) return ['estrela', tr('+1 estrela na moldura de Mestre')];
+  if (x.estrela) return ['estrela', tr('+1 star on the Master frame')];
   if (x.viagem)
-    return ['viagem', tr('−{n}% na recarga do Teleporte e do Voo', { n: Math.round(100 * (num(x.viagem) - num(a))) })];
+    return ['viagem', tr('−{n}% Teleport and Fly cooldown', { n: Math.round(100 * (num(x.viagem) - num(a))) })];
   return [null, ''];
 }
 function pintarMestre(V) {
@@ -764,26 +764,23 @@ function pintarMestre(V) {
   const e = V?.mestre || {},
     f = num(e.proximo) - num(e.base);
   escrever('mestre-nivel', V ? fmt(num(e.nivel, 1)) : '—', C);
-  escrever('mestre-xp', V ? tr('{x} XP de Mestre', { x: fmt(e.xp) }) : '', C);
+  escrever('mestre-xp', V ? tr('{x} Master XP', { x: fmt(e.xp) }) : '', C);
   barra('mestre', f > 0 ? Math.max(0, Math.min(1, (num(e.xp) - num(e.base)) / f)) : V ? 1 : 0, OURO, C);
-  escrever('mestre-falta', V ? tr('faltam {x} XP pro Mestre {n}', { x: fmt(e.falta), n: num(e.nivel, 1) + 1 }) : '', C);
+  escrever('mestre-falta', V ? tr('{x} XP to Master {n}', { x: fmt(e.falta), n: num(e.nivel, 1) + 1 }) : '', C);
   const g = (V?.titulos?.ativos || []).filter((t) => t.origem === 'mestre').map((t) => tr(t.nome));
-  mostra(
-    escrever('mestre-titulos', g.length ? tr('Títulos de Mestre: {x}', { x: g.join(', ') }) : '', C),
-    g.length > 0,
-  );
+  mostra(escrever('mestre-titulos', g.length ? tr('Master Titles: {x}', { x: g.join(', ') }) : '', C), g.length > 0);
   const h = e.destrava || {},
     j = [];
   const k = num(h.caixa) - num(V?.caixa?.base, 300);
-  if (k > 0) j.push(tr('+{n} vagas na Caixa', { n: fmt(k) }));
+  if (k > 0) j.push(tr('+{n} Box slots', { n: fmt(k) }));
   const l = (h.molduras || []).at(-1);
   if (l) j.push(tr(nomeMoldura(l)));
   const o = num(h.estrelas);
-  if (o === 1) j.push(tr('+1 estrela na moldura de Mestre'));
-  else if (o > 1) j.push(tr('+{n} estrelas na moldura de Mestre', { n: fmt(o) }));
+  if (o === 1) j.push(tr('+1 star on the Master frame'));
+  else if (o > 1) j.push(tr('+{n} stars on the Master frame', { n: fmt(o) }));
   const s = Math.round(100 * num(h.menosRecargaViagem));
-  if (s > 0) j.push(tr('−{n}% na recarga do Teleporte e do Voo', { n: s }));
-  mostra(escrever('mestre-tem', j.length ? tr('Você já tem: {x}', { x: j.join(' · ') }) : '', C), j.length > 0);
+  if (s > 0) j.push(tr('−{n}% Teleport and Fly cooldown', { n: s }));
+  mostra(escrever('mestre-tem', j.length ? tr('You already have: {x}', { x: j.join(' · ') }) : '', C), j.length > 0);
   const u = Array.isArray(e.proximos) && e.proximos.length ? e.proximos : e.proximoDestrave ? [e.proximoDestrave] : [];
   const v = filho(C, 'lista-destraves');
   let w = num(h.menosRecargaViagem);
@@ -793,7 +790,7 @@ function pintarMestre(V) {
     const d = u[i - 1];
     mostra(ca, !!d);
     if (!d) continue;
-    escrever('destrave-nivel', tr('Mestre {n}', { n: d.nivel }), ca);
+    escrever('destrave-nivel', tr('Master {n}', { n: d.nivel }), ca);
     const da = (d.destrava || [])
       .map((x) => {
         const r = textoDestrave(V, x, w);
@@ -837,14 +834,14 @@ function pintarMestre(V) {
     }
   }
   const K = V?.caixa;
-  escrever('caixa-vagas', K && Number.isFinite(K.total) ? tr('Caixa: {n} vagas', { n: fmt(K.total) }) : '', C);
+  escrever('caixa-vagas', K && Number.isFinite(K.total) ? tr('Box: {n} slots', { n: fmt(K.total) }) : '', C);
   const y = K?.proximoMestre
-    ? ' · ' + tr('no Mestre {n}: +{x} vagas', { n: K.proximoMestre.nivel, x: K.proximoMestre.mais })
+    ? ' · ' + tr('at Master {n}: +{x} slots', { n: K.proximoMestre.nivel, x: K.proximoMestre.mais })
     : '';
   escrever(
     'caixa-detalhe',
     K && Number.isFinite(K.total)
-      ? tr('{a} da base + {b} do Mestre + {c} compradas; o time fica de fora', {
+      ? tr("{a} base + {b} from Master + {c} bought; the team doesn't count", {
           a: fmt(K.base),
           b: fmt(K.mestre),
           c: fmt(K.compradas),
@@ -853,7 +850,7 @@ function pintarMestre(V) {
     C,
   );
   const z = (n, a) => (Number.isSafeInteger(n) && n > 0 ? tr(a, { n: fmt(n) }) : '');
-  const _ = [z(K?.medalhao, '+{n} do Medalhão'), z(K?.fundador, '+{n} do Pacote Fundador')].filter(Boolean);
+  const _ = [z(K?.medalhao, '+{n} from the Medallion'), z(K?.fundador, '+{n} from the Founder Pack')].filter(Boolean);
   mostra(escrever('caixa-extras', _.join(' · '), C), _.length > 0);
   const P = (V?.conquistas || []).find((x) => x.id === 'pesca-maestria'),
     $ = P?.degraus || [];
@@ -875,7 +872,7 @@ function pintarMestre(V) {
   const pp = $[num(P?.degrausFeitos)];
   escrever(
     'pesca-prox',
-    !P ? '' : pp ? tr('próximo: {d} na {n}', { d: nomeDegrau(pp.degrau), n: fmt(pp.min) }) : tr('completa'),
+    !P ? '' : pp ? tr('next: {d} at {n}', { d: nomeDegrau(pp.degrau), n: fmt(pp.min) }) : tr('completa'),
     C,
   );
   const aa = e.partes || [];
@@ -899,7 +896,7 @@ function pintarMestre(V) {
     if (V && !aa.length)
       escrever(
         'xp-vazio',
-        tr('Nada ainda: insígnias, espécies na Pokédex, capítulos da história, raids e conquistas dão XP de Mestre.'),
+        tr('Nothing yet: Badges, Pokédex species, story chapters, raids and achievements give Master XP.'),
         C,
       );
   }
@@ -940,9 +937,9 @@ function modelosTitulos(V) {
     {
       id: '(automatico)',
       auto: true,
-      nome: tr('Automático'),
-      sub: k ? tr('o último que você ganhou: {x}', { x: tr(k) }) : tr('sem título por enquanto'),
-      como: tr('Mostra debaixo do seu nome o último título que você ganhou.'),
+      nome: tr('Automatic'),
+      sub: k ? tr('the last one you earned: {x}', { x: tr(k) }) : tr('no title for now'),
+      como: tr('Shows the last title you earned under your name.'),
       raridade: null,
       categoria: 'todas',
       tem: true,
@@ -959,8 +956,8 @@ function modelosTitulos(V) {
         id: x.id,
         secreto: true,
         nome: '???',
-        sub: tr('Secreto · a descobrir'),
-        como: tr('Continue jogando pra descobrir.'),
+        sub: tr('Secret · to discover'),
+        como: tr('Keep playing to find out.'),
         raridade: null,
         categoria: 'oculta',
         tem: false,
@@ -991,8 +988,8 @@ function modelosTitulos(V) {
     } else if (x.origem === 'mestre' && x.nivel) {
       o.raridade = raridadeMestre(x.nivel);
       o.categoria = 'mestre';
-      o.como = tr('Chegue ao Nível de Mestre {n}.', { n: x.nivel });
-      o.sub = tr('Nível de Mestre {n}', { n: x.nivel });
+      o.como = tr('Reach Master Level {n}.', { n: x.nivel });
+      o.sub = tr('Master Level {n}', { n: x.nivel });
       if (!g && h.nivel != null) {
         o.valor = num(h.nivel);
         o.alvo = x.nivel;
@@ -1000,13 +997,13 @@ function modelosTitulos(V) {
     } else if (x.origem === 'semana') {
       o.raridade = 'raro';
       o.categoria = CATEGORIA_SEMANA[x.id] || 'todas';
-      o.como = tr('Fique em 1º lugar numa lista do ranking da semana. O título vale 7 dias.');
-      o.sub = tr('ranking da semana') + (b?.ate ? ' · ' + tr('até {x}', { x: j(b.ate) }) : '');
+      o.como = tr('Get 1st place on a weekly ranking list. The title lasts 7 days.');
+      o.sub = tr('weekly ranking') + (b?.ate ? ' · ' + tr('until {x}', { x: j(b.ate) }) : '');
     } else {
       o.raridade = x.origem === 'hall' || x.origem === 'fundador' ? 'lendario' : 'raro';
       o.categoria = x.origem === 'guilda' ? 'guilda' : x.origem === 'hall' ? 'elite' : 'todas';
       o.como = tr(ORIGEM[x.origem] || x.origem || '');
-      o.sub = o.como + (b?.ate ? ' · ' + tr('até {x}', { x: j(b.ate) }) : '');
+      o.sub = o.como + (b?.ate ? ' · ' + tr('until {x}', { x: j(b.ate) }) : '');
     }
     return o;
   };
@@ -1045,14 +1042,14 @@ function pintarTitulos(V) {
       faltam: d.filter((o) => !o.tem && !o.secreto).length,
       secretos: d.filter((o) => o.secreto).length,
     };
-  const g = { todos: 'Todos {n}', tenho: 'Tenho {n}', faltam: 'Faltam {n}', secretos: 'Secretos {n}' };
+  const g = { todos: 'All {n}', tenho: 'Owned {n}', faltam: 'Missing {n}', secretos: 'Secret {n}' };
   for (const k of Object.keys(g)) {
     const f = C.querySelector('[data-fig="filtro-titulos-' + k + '"]');
     if (!f) continue;
     vestir(f, 'filtro-titulos', A.filtroTit === k ? 'ativo' : 'inativo');
     escrever(
       'filtro-titulos',
-      k === 'faltam' && I18n.idioma() !== 'pt' ? tr('Faltam {n} (títulos)', { n: e[k] }) : tr(g[k], { n: e[k] }),
+      k === 'faltam' && I18n.idioma() !== 'pt' ? tr('{n} missing (titles)', { n: e[k] }) : tr(g[k], { n: e[k] }),
       f,
     );
   }
@@ -1112,18 +1109,18 @@ function pintarDetalhe(C, o) {
   escrever(
     'detalhe-estado',
     o.usando
-      ? tr('Você está usando')
+      ? tr("You're using")
       : o.tem
-        ? tr('Você tem')
+        ? tr('You have')
         : o.secreto
-          ? tr('Secreto · a descobrir')
-          : tr('Você ainda não tem'),
+          ? tr('Secret · to discover')
+          : tr("You don't have it yet"),
     D,
   );
-  escrever('detalhe-secao', o.secreto ? tr('Dica') : tr('Como conquistar'), D);
+  escrever('detalhe-secao', o.secreto ? tr('Tip') : tr('How to unlock'), D);
   escrever('detalhe-como', o.como || '', D);
   const c = !o.tem && !o.secreto && o.alvo != null;
-  mostra(escrever('detalhe-progresso-rotulo', c ? tr('Progresso') : '', D), c);
+  mostra(escrever('detalhe-progresso-rotulo', c ? tr('Progress') : '', D), c);
   mostra(escrever('detalhe-progresso', c ? fmt(Math.min(o.valor, o.alvo)) + ' / ' + fmt(o.alvo) : '', D), c);
   mostra(barra('detalhe-barra', c && o.alvo ? Math.min(1, o.valor / o.alvo) : 0, OURO, D), c);
   const d = filho(D, 'btn-ir-titulo'),
@@ -1141,16 +1138,16 @@ function pintarDetalhe(C, o) {
     escrever(
       'ir-titulo',
       f === 'mestre' && o.conquista === 'pesca-maestria'
-        ? tr('Ver a Maestria da Pesca ›')
+        ? tr('See Fishing Mastery ›')
         : f === 'mestre'
-          ? tr('Ver o Nível de Mestre ›')
-          : tr('Ir até a conquista ›'),
+          ? tr('See Master Level ›')
+          : tr('Go to achievement ›'),
       d,
     );
   mostra(e, !!o.tem);
   if (e && o.tem) {
     vestir(e, 'btn-usar-titulo', o.usando ? 'usando' : null);
-    escrever('usar-titulo', o.usando ? tr('Usando') : tr('Usar este título'), e);
+    escrever('usar-titulo', o.usando ? tr('In use') : tr('Use this title'), e);
     e.style.cursor = o.usando ? 'default' : 'pointer';
     e.dataset.desligado = o.usando ? '1' : '0';
   }
@@ -1158,7 +1155,7 @@ function pintarDetalhe(C, o) {
 function usarTitulo() {
   const o = modelosTitulos(vista()).find((x) => x.id === A.titulo);
   if (!o || !o.tem || o.usando) return;
-  avisar(tr('um instante…'), true, true);
+  avisar(tr('one moment…'), true, true);
   dep.enviar?.({ t: 'progressao_titulo', id: o.auto ? null : o.id });
 }
 function irAoTitulo() {
@@ -1191,7 +1188,7 @@ function pintarMontarias(V) {
     imagem('licenca-icone', './ui/amanda/montarias/licenca-' + e + '.png', j);
     escrever('licenca-nome', tr(x.nome), j);
     escrever('licenca-efeito', tr(x.efeito || ''), j);
-    escrever('licenca-estado', x.tem ? tr('Licença') : tr('sem licença'), j);
+    escrever('licenca-estado', x.tem ? tr('License') : tr('no license'), j);
     mostra(filho(j, 'selo-tem'), !!x.tem);
     mostra(filho(j, 'selo-sem'), !x.tem);
   }
@@ -1202,22 +1199,22 @@ function pintarMontarias(V) {
     (a, b) => !!b.pode - !!a.pode || !!b.cartao - !!a.cartao,
   );
   if (f.length && !g.length)
-    h.push({ id: 'bicicleta-azul', nome: 'Bicicleta', semBici: true, licencaBici: !!L.bicicleta?.tem });
+    h.push({ id: 'bicicleta-azul', nome: 'Bicycle', semBici: true, licencaBici: !!L.bicicleta?.tem });
   celulas(filho(C, 'lista-montarias'), h.length).forEach((a, i) => pintarMontaria(a, h[i]));
 }
 function pintarMontaria(a, m) {
   vestir(a, 'montaria', m.pode ? 'pronta' : 'falta');
   const b = imagem('montaria', arteMontaria(m), a);
   if (b) b.style.opacity = m.semBici ? '0.45' : '';
-  escrever('montaria-nome', m.semBici ? tr('Bicicleta') : I18n.tNome(m.nome || ''), a);
+  escrever('montaria-nome', m.semBici ? tr('Bicycle') : I18n.tNome(m.nome || ''), a);
   mostra(filho(a, 'selo-basica'), !!m.basica);
   if (m.semBici) {
-    escrever('montaria-estado', tr(m.licencaBici ? 'sem cartão' : 'sem licença'), a);
+    escrever('montaria-estado', tr(m.licencaBici ? 'no card' : 'no license'), a);
     for (const f of MEIOS) mostra(filho(a, 'vel-' + f), false);
     escrever('montaria-voo', '', a);
     escrever(
       'montaria-como',
-      tr('como ganhar: a missão "A Bicicleta de Cerulean", depois da 2ª insígnia (você escolhe a cor)'),
+      tr('how to get: the mission "The Cerulean Bicycle", after the 2nd Badge (you pick the color)'),
       a,
     );
     return;
@@ -1226,14 +1223,14 @@ function pintarMontaria(a, m) {
   escrever(
     'montaria-estado',
     m.pode
-      ? tr(m.shinyLicenca ? 'a shiny monta já' : 'pronta pra montar')
+      ? tr(m.shinyLicenca ? 'the shiny can ride now' : 'ready to ride')
       : c
-        ? tr('cartão guardado')
+        ? tr('card stored')
         : m.motivo === 'so_pacote'
-          ? tr('do Pacote Fundador')
+          ? tr('from the Founder Pack')
           : m.motivo === 'sem_cartao'
-            ? tr('sem cartão')
-            : tr('sem licença'),
+            ? tr('no card')
+            : tr('no license'),
     a,
   );
   for (const h of MEIOS) {
@@ -1245,19 +1242,19 @@ function pintarMontaria(a, m) {
     escrever('vel-' + h, Number.isFinite(+v) && +v > 0 ? fmtVel(v) : '—', g);
   }
   const d = [
-    m.voa ? (m.podeVoar ? tr('voa') : tr('só em terra: falta a licença de voo')) : '',
-    m.pode && m.precisaNadar ? tr('só em terra: falta a licença de água') : '',
-    m.shinyLicenca && m.cartao ? tr('a normal pede a licença') : '',
+    m.voa ? (m.podeVoar ? tr('voa') : tr('land only: missing the flying license')) : '',
+    m.pode && m.precisaNadar ? tr('land only: missing the water license') : '',
+    m.shinyLicenca && m.cartao ? tr('the normal one needs the license') : '',
   ]
     .filter(Boolean)
     .join(' · ');
   escrever('montaria-voo', d, a);
   const e = c
-    ? tr('monta quando você tiver a {y}', { y: c })
+    ? tr('rides once you have the {y}', { y: c })
     : m.pacote && !m.pago
-      ? tr('vem no Pacote Fundador, na Loja')
+      ? tr('comes in the Founder Pack, in the Shop')
       : !m.cartao && m.conquista
-        ? tr('como ganhar: {x}', {
+        ? tr('how to earn: {x}', {
             x: tr(m.conquista.nome) + (m.conquista.descricao ? ' — ' + tr(m.conquista.descricao) : ''),
           })
         : '';

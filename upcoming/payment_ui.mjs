@@ -237,7 +237,7 @@ function montar() {
   const x = novo('div', dlg, 'fechar');
   caixa(x, ...G.fechar);
   x.dataset.pgBotao = 'fechar';
-  x.title = tr('Fechar');
+  x.title = tr('Close');
   if (P.fechar)
     Object.assign(x.style, {
       backgroundImage: 'url(' + P.fechar + ')',
@@ -392,7 +392,7 @@ export function fechar(a = true) {
     try {
       b.cb.aoFechar?.({ pago: b.fase === 'pago', vencido: !!b.erro?.vencido });
     } catch (e) {
-      console.warn('pagamento: aoFechar', e);
+      console.warn('payment: aoFechar', e);
     }
 }
 function aoClicar(a) {
@@ -454,7 +454,7 @@ async function escolher(a, b = false) {
     const h = corpoDoCheckout(c.compra, c.compra.moeda, a),
       i = h && d ? { ...h, nova: true } : h;
     if (!i) {
-      falhou(c, f, { mensagem: 'Não deu pra abrir o pagamento.', tentar: false });
+      falhou(c, f, { mensagem: "Couldn't open the payment.", tentar: false });
       return;
     }
     const p = Conta.chamar('POST', '/loja/checkout', i, { prazo: PRAZO_CHECKOUT_MS });
@@ -474,7 +474,7 @@ async function escolher(a, b = false) {
       try {
         j.aoAba?.(L.url);
       } catch (e) {
-        console.warn('pagamento: aoAba', e);
+        console.warn('payment: aoAba', e);
       }
       return;
     }
@@ -485,14 +485,14 @@ async function escolher(a, b = false) {
         try {
           l.aoRecusa?.(L);
         } catch (e) {
-          console.warn('pagamento: aoRecusa', e);
+          console.warn('payment: aoRecusa', e);
         }
         return;
       }
       try {
         c.cb.aoErro?.(L);
       } catch (e) {
-        console.warn('pagamento: aoErro', e);
+        console.warn('payment: aoErro', e);
       }
       falhou(c, f, {
         mensagem: L.mensagem,
@@ -512,19 +512,19 @@ async function escolher(a, b = false) {
   try {
     await montarFormulario(c, f, g);
   } catch (e) {
-    console.warn('pagamento: o formulário da Stripe não montou', e?.message || e);
+    console.warn("payment: the Stripe form didn't mount", e?.message || e);
     falhou(
       c,
       f,
       e?.atualizado
-        ? { mensagem: 'O jogo foi atualizado. Recarregue a página pra pagar.', tentar: false }
+        ? { mensagem: 'The game was updated. Reload the page to pay.', tentar: false }
         : e?.carga
           ? {
               mensagem:
-                'Não deu pra carregar o pagamento da Stripe. Confira a conexão (um bloqueador de anúncios também pode barrar) e tente de novo.',
+                "Couldn't load the Stripe payment. Check your connection (an ad blocker may also block it) and try again.",
               tentar: true,
             }
-          : { mensagem: 'O pagamento não abriu. Tente de novo.', tentar: true, doFormulario: true },
+          : { mensagem: "The payment didn't open. Try again.", tentar: true, doFormulario: true },
     );
   }
 }
@@ -564,7 +564,7 @@ export function carregarStripe(a = STRIPE_JS) {
   if (stripeDe === a && stripeP) return stripeP;
   if (stripeDe && stripeP)
     return Promise.reject(
-      Object.assign(new Error('outro Stripe.js já carregado (' + stripeDe + ')'), { atualizado: true }),
+      Object.assign(new Error('another Stripe.js already loaded (' + stripeDe + ')'), { atualizado: true }),
     );
   stripeDe = a;
   stripeP = new Promise((b, c) => {
@@ -586,13 +586,13 @@ export function carregarStripe(a = STRIPE_JS) {
       } catch {}
       stripeP = null;
       stripeDe = null;
-      const e = new Error(a || 'o Stripe.js não definiu o Stripe');
+      const e = new Error(a || "Stripe.js didn't define Stripe");
       e.carga = true;
       c(e);
     };
-    const g = setTimeout(() => f('o Stripe.js não chegou em ' + PRAZO_STRIPE_MS / 1000 + ' s'), PRAZO_STRIPE_MS);
+    const g = setTimeout(() => f("Stripe.js didn't arrive within " + PRAZO_STRIPE_MS / 1000 + ' s'), PRAZO_STRIPE_MS);
     s.onload = () => f(null);
-    s.onerror = () => f('o Stripe.js não carregou');
+    s.onerror = () => f("Stripe.js didn't load");
     document.head.appendChild(s);
   });
   return stripeP;
@@ -611,7 +611,7 @@ function montarFormulario(a, b, c) {
     }
     destruir(a);
     const g = METODOS_JS.includes(c.metodoJs) ? c.metodoJs : 'initEmbeddedCheckout';
-    if (typeof f[g] !== 'function') throw Object.assign(new Error('o Stripe.js não tem o ' + g), { carga: true });
+    if (typeof f[g] !== 'function') throw Object.assign(new Error("Stripe.js doesn't have " + g), { carga: true });
     const h = await f[g]({ fetchClientSecret: async () => c.clientSecret, onComplete: () => completo(a, b) });
     if (S !== a || b !== a.ger) {
       try {
@@ -636,10 +636,11 @@ function destruir(a) {
   try {
     b.destroy();
   } catch (e) {
-    console.warn('pagamento: destroy', e?.message || e);
+    console.warn('payment: destroy', e?.message || e);
   }
 }
-export const MSG_PIX_FALHOU = 'O Pix não foi pago: o prazo acabou ou o banco recusou. Se quiser, gere outro Pix.';
+export const MSG_PIX_FALHOU =
+  "The Pix wasn't paid: it timed out or the bank declined it. If you want, generate another Pix.";
 export function pagamentoFalhou(a) {
   if (typeof a !== 'string' || !a) return false;
   for (const [k, g] of sessoes) if (g.L?.sessao === a) sessoes.delete(k);
@@ -656,7 +657,7 @@ export function pagamentoFalhou(a) {
   try {
     b.cb.aoVencido?.();
   } catch (e) {
-    console.warn('pagamento: aoVencido', e);
+    console.warn('payment: aoVencido', e);
   }
   return true;
 }
@@ -690,8 +691,8 @@ function completo(a, b) {
         a.erro = {
           mensagem:
             a.compra.tipo === 'produto'
-              ? 'O Pix venceu sem pagamento. Se você já pagou, o pacote chega sozinho; se não, gere outro Pix.'
-              : 'O Pix venceu sem pagamento. Se você já pagou, os Diamantes chegam sozinhos; se não, gere outro Pix.',
+              ? 'The Pix expired unpaid. If you already paid, the pack arrives on its own; if not, generate another Pix.'
+              : 'The Pix expired unpaid. If you already paid, the Diamonds arrive on their own; if not, generate another Pix.',
           tentar: true,
           vencido: true,
         };
@@ -699,14 +700,14 @@ function completo(a, b) {
         try {
           a.cb.aoVencido?.();
         } catch (e) {
-          console.warn('pagamento: aoVencido', e);
+          console.warn('payment: aoVencido', e);
         }
       }, PIX_VENCE_MS),
     );
     try {
       a.cb.aoCompleto?.(c);
     } catch (e) {
-      console.warn('pagamento: aoCompleto', e);
+      console.warn('payment: aoCompleto', e);
     }
     return;
   }
@@ -715,7 +716,7 @@ function completo(a, b) {
   try {
     d.aoCompleto?.(c);
   } catch (e) {
-    console.warn('pagamento: aoCompleto', e);
+    console.warn('payment: aoCompleto', e);
   }
 }
 function pintar() {
@@ -724,7 +725,7 @@ function pintar() {
   const C = c.compra,
     G = dlg.__G,
     d = dlg.__ori;
-  escrever(el('titulo'), tr('Pagamento'));
+  escrever(el('titulo'), tr('Payment'));
   const e = el('icone');
   if (e) {
     e.style.backgroundImage = C.icone ? 'url(' + C.icone + ')' : 'none';
@@ -735,16 +736,16 @@ function pintar() {
   escrever(el('grande'), d === 'pc' ? C.grande : C.linha || C.grande);
   if (d === 'pc') {
     escrever(el('rotulo'), C.rotulo || '');
-    escrever(el('moeda'), h === 'brl' ? tr('em reais (BRL)') : tr('em dólares (USD)'));
+    escrever(el('moeda'), h === 'brl' ? tr('in reais (BRL)') : tr('in dollars (USD)'));
   }
   escrever(el('preco'), g ? (d === 'pc' ? dinheiro(g, h) : dinheiro(g, h) + ' · ' + h.toUpperCase()) : '');
   escrever(
     el('rodape'),
-    tr('Pagamento processado pela Stripe.') + ' ' + tr(C.nota || 'Os Diamantes ficam presos à sua conta.'),
+    tr('Payment processed by Stripe.') + ' ' + tr(C.nota || 'Diamonds are bound to your account.'),
   );
   const a = el('termos');
   if (a) {
-    a.textContent = tr('Termos de Uso');
+    a.textContent = tr('Terms of Use');
     a.href = '/portal/termos.html?idioma=' + (I18n.idioma?.() || 'pt');
   }
   const j = c.fase === 'pago',
@@ -755,12 +756,12 @@ function pintar() {
     j
       ? l
         ? C.tipo === 'produto'
-          ? tr('Ainda aguardando o banco. Pode fechar e seguir jogando: o pacote chega sozinho.')
-          : tr('Ainda aguardando o banco. Pode fechar e seguir jogando: os Diamantes chegam sozinhos.')
-        : tr('Pix feito! Aguardando o banco confirmar…')
+          ? tr('Still waiting for the bank. You can close this and keep playing: the pack arrives on its own.')
+          : tr('Still waiting for the bank. You can close this and keep playing: the Diamonds arrive on their own.')
+        : tr('Pix done! Waiting for the bank to confirm…')
       : d === 'pc'
-        ? tr('Como você quer pagar?')
-        : tr('Pagar com'),
+        ? tr('How do you want to pay?')
+        : tr('Pay with'),
   );
   if (k) {
     k.style.color = j ? '#F5B93B' : '#EAF6FB';
@@ -787,7 +788,7 @@ function pintar() {
     if (_) _.style.display = z ? 'block' : 'none';
     if (r) {
       r.style.color = z ? '#1D2B45' : '#EAF6FB';
-      escrever(r, m === 'pix' ? tr('Pix') : tr('Cartão'));
+      escrever(r, m === 'pix' ? tr('Pix') : tr('Card'));
     }
     b.dataset.desligado = (c.fase === 'abrindo' || j) && !z ? '1' : '0';
   }
@@ -802,17 +803,17 @@ function pintar() {
     f === 'escolha'
       ? C.metodos.includes('pix')
         ? tr(
-            'Escolha Pix ou Cartão: o pagamento abre aqui mesmo, sem sair do jogo. No Pix, o QR code aparece aqui pra você pagar no app do banco.',
+            'Choose Pix or Card: payment opens right here, without leaving the game. With Pix, the QR code appears here for you to pay in your bank app.',
           )
-        : tr('O pagamento abre aqui mesmo, sem sair do jogo.')
+        : tr('Payment opens right here, without leaving the game.')
       : f === 'abrindo'
-        ? tr('abrindo o pagamento…')
+        ? tr('opening payment…')
         : f === 'erro'
-          ? tr(c.erro?.mensagem || 'Não deu pra abrir o pagamento.')
+          ? tr(c.erro?.mensagem || "Couldn't open the payment.")
           : f === 'previa'
             ? c.metodo === 'pix'
-              ? tr('Prévia: aqui entra o formulário da Stripe com o QR code do Pix. Nada é cobrado.')
-              : tr('Prévia: aqui entra o formulário da Stripe com os campos do cartão. Nada é cobrado.')
+              ? tr('Preview: the Stripe form with the Pix QR code goes here. Nothing is charged.')
+              : tr('Preview: the Stripe form with the card fields goes here. Nothing is charged.')
             : '';
   if (u) {
     u.style.display = x ? 'flex' : 'none';
@@ -828,11 +829,7 @@ function pintar() {
     v.dataset.desligado = f === 'erro' && aa > 0 ? '1' : '0';
     escrever(
       v.querySelector('[data-pg="rotulo"]'),
-      c.erro?.vencido
-        ? tr('Gerar outro Pix')
-        : aa > 0
-          ? tr('Tentar de novo em {n} s', { n: aa })
-          : tr('Tentar de novo'),
+      c.erro?.vencido ? tr('Generate another Pix') : aa > 0 ? tr('Try again in {n} s', { n: aa }) : tr('Try again'),
     );
   }
 }

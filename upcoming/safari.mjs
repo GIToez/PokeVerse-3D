@@ -54,14 +54,14 @@ function etiqueta(a) {
 export class Safari {
   constructor(a, b = {}) {
     if (!a || !a.regras || !a.zona || !Array.isArray(a.subAreas))
-      throw new Error('safari: dado inválido (data/safari.json)');
+      throw new Error('safari: invalid data (data/safari.json)');
     if (a.regras.cotaDia != null)
       throw new Error(
-        'safari: o dado pede cota por dia (regras.cotaDia), mas o Safári não tem cota (safari-cota): só a taxa',
+        'safari: data asks for a daily quota (regras.cotaDia), but the Safari has no quota (safari-cota): only the fee',
       );
     if (a.regras.batalha !== true)
       throw new Error(
-        'safari: o dado é de antes da batalha no Safári (regras.batalha) — regerar com o tools/safari.mjs desta versão',
+        "safari: data is from before Safari battles (regras.batalha) — regenerate with this version's tools/safari.mjs",
       );
     this.D = a;
     this.R = a.regras;
@@ -191,7 +191,7 @@ export class Safari {
     return { ok: true, safari: c };
   }
   estadoDe(c) {
-    if (!c || typeof c !== 'object') throw new Error('safari: conta inválida');
+    if (!c || typeof c !== 'object') throw new Error('safari: invalid account');
     if (!c.safari || typeof c.safari !== 'object')
       c.safari = { v: 1, sessao: null, ultimoFim: null, historico: [], total: { entradas: 0, capturas: 0, gasto: 0 } };
     const e = c.safari;

@@ -37,11 +37,11 @@ export function textoBonus(p) {
   return a > 0 && a <= 999 ? '+' + a + '%' : '';
 }
 const DESTAQUES = {
-  'mais-vendido': 'Mais vendido',
-  'melhor-valor': 'Melhor valor',
+  'mais-vendido': 'Best seller',
+  'melhor-valor': 'Best value',
   popular: 'Popular',
-  'mais-popular': 'Mais popular',
-  novo: 'Novo',
+  'mais-popular': 'Most popular',
+  novo: 'New',
 };
 export function chaveDestaque(p) {
   const d = p?.destaque;
@@ -237,7 +237,7 @@ export function lerCheckout(r, a = null, b = null) {
     return {
       tipo: 'erro',
       codigo: 'resposta-torta',
-      mensagem: 'O servidor não mandou o pagamento. Tente de novo.',
+      mensagem: "The server didn't send the payment. Try again.",
       tentar: true,
       daConta: false,
     };
@@ -246,7 +246,7 @@ export function lerCheckout(r, a = null, b = null) {
     return {
       tipo: 'erro',
       codigo: 'sessao-expirada',
-      mensagem: 'Sua sessão expirou. Feche o jogo e entre de novo na sua conta.',
+      mensagem: 'Your session expired. Close the game and sign in to your account again.',
       tentar: false,
       daConta: false,
     };
@@ -256,14 +256,14 @@ export function lerCheckout(r, a = null, b = null) {
       ? d.erro.slice(0, 300)
       : typeof r?.erro === 'string' && r.erro
         ? r.erro.slice(0, 300)
-        : 'Não deu pra abrir o pagamento.';
-  if (e === c || /^[a-z0-9_-]+$/.test(e)) e = 'Não deu pra abrir o pagamento.';
+        : "Couldn't open the payment.";
+  if (e === c || /^[a-z0-9_-]+$/.test(e)) e = "Couldn't open the payment.";
   if (c === 'sem-conexao')
     return {
       tipo: 'erro',
       codigo: c,
       mensagem:
-        'O pagamento não respondeu a tempo (a conexão ou a Stripe estão lentas). Espere uns segundos e tente de novo.',
+        "The payment didn't respond in time (your connection or Stripe is slow). Wait a few seconds and try again.",
       tentar: true,
       daConta: false,
       espera: ESPERA_SEM_RESPOSTA_MS,

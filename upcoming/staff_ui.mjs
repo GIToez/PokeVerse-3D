@@ -50,7 +50,7 @@ export function receber(m) {
   if (!m) return;
   if (m.t === 'staff_erro') {
     esperando = false;
-    aviso = tr(m.texto || 'Não deu.');
+    aviso = tr(m.texto || "That didn't work.");
     if (painel) pintar();
     else if (estado) ctx.Chat?.sistemaCru?.('⚠ ' + aviso);
     return;
@@ -75,14 +75,12 @@ export function receber(m) {
     ctx.Chat?.sistemaCru?.('⚠ ' + aviso);
   } else if (m.mudou) aviso = '';
   if (m.mudou && m.op === 'livre')
-    ctx.Chat?.sistema?.(
-      tr(estado.livre ? 'Livre caminho ligado.' : 'Livre caminho desligado: você joga como qualquer jogador.'),
-    );
+    ctx.Chat?.sistema?.(tr(estado.livre ? 'Free path on.' : 'Free path off: you play like any other player.'));
   if (m.mudou && m.op === 'seguidor')
     ctx.Chat?.sistema?.(
       estado.seguidor
-        ? tr('{x} segue você.', { x: nome(estado.seguidor.dex) })
-        : tr('O Pokémon que seguia você voltou.'),
+        ? tr('{x} is following you.', { x: nome(estado.seguidor.dex) })
+        : tr('The Pokémon following you returned.'),
     );
   mostrarBotao();
   if (painel) pintar();
@@ -147,7 +145,7 @@ function mostrarBotao() {
 function pintarBotao() {
   if (!botao) return;
   botao.textContent = '★ ' + tr('Staff') + (livre() ? ' · ' + tr('livre') : '');
-  botao.title = tr('Modo staff');
+  botao.title = tr('Staff mode');
 }
 function telaOcupada() {
   if (painel) return true;
@@ -295,37 +293,37 @@ function pintar() {
     '<div style="position:relative;font:800 ' +
     (k ? '15px' : '18px') +
     " 'Baloo 2', system-ui, sans-serif;color:#F8C237;text-align:center\">★ " +
-    esc(tr('Modo staff')) +
+    esc(tr('Staff mode')) +
     '<button type="button" class="sf-x" title="' +
-    esc(tr('Fechar')) +
+    esc(tr('Close')) +
     '" style="position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:1px solid #F8C237;background:#13254A;color:#fff;font:800 14px system-ui, sans-serif;cursor:pointer;line-height:1;padding:0">✕</button></div>' +
     '<div style="display:grid;gap:6px;background:rgba(0,0,0,.25);border-radius:10px;padding:8px 10px">' +
     '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1;color:#fff;font-size:14px">' +
-    esc(tr('Livre caminho')) +
+    esc(tr('Free path')) +
     '</span>' +
     '<span style="flex:0 0 132px;display:flex">' +
-    botaoHtml('sf-livre', esc(tr(L ? 'Ligado' : 'Desligado')), !esperando, L ? '#8EF58E' : '#F8C237') +
+    botaoHtml('sf-livre', esc(tr(L ? 'On' : 'Off')), !esperando, L ? '#8EF58E' : '#F8C237') +
     '</span></div>' +
     '<div style="' +
     b +
     '">' +
     esc(
       tr(
-        'Passa por portas trancadas, NPCs que barram, travas de área e licenças de montaria, e o passe cobre todas as cenas. Desligado, você joga como qualquer jogador.',
+        'Bypasses locked doors, blocking NPCs, area locks and mount licenses, and skips all cutscenes. When off, you play like any other player.',
       ),
     ) +
     '</div></div>' +
     '<div style="display:grid;gap:6px;background:rgba(0,0,0,.25);border-radius:10px;padding:8px 10px">' +
     '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1;color:#fff;font-size:14px">' +
-    esc(tr('Pokémon que segue')) +
+    esc(tr('Following Pokémon')) +
     '</span>' +
     '<span style="font-size:12px;color:' +
     (S ? '#F8C237' : '#8c97b3') +
     '">' +
-    (S ? esc(nome(S.dex)) + (S.shiny ? ' ✨' : '') : esc(tr('Nenhum'))) +
+    (S ? esc(nome(S.dex)) + (S.shiny ? ' ✨' : '') : esc(tr('None'))) +
     '</span></div>' +
     '<div style="display:flex;gap:6px;align-items:center"><input class="sf-busca" type="search" placeholder="' +
-    esc(tr('Buscar espécie')) +
+    esc(tr('Search species')) +
     '" value="' +
     esc(filtro) +
     '" style="flex:1;min-width:0;background:#0B1220;border:1px solid #2a3550;border-radius:8px;color:#fff;padding:6px 8px;font:inherit">' +
@@ -353,19 +351,19 @@ function pintar() {
                 '</option>',
             )
             .join('')
-        : '<option disabled>' + esc(tr('Nenhuma espécie com esse nome.')) + '</option>'
-      : '<option disabled>' + esc(tr('um instante…')) + '</option>') +
+        : '<option disabled>' + esc(tr('No species with that name.')) + '</option>'
+      : '<option disabled>' + esc(tr('one moment…')) + '</option>') +
     '</select>' +
     '<div style="display:flex;gap:8px">' +
-    botaoHtml('sf-por', esc(tr('Pôr pra seguir')), !esperando && escolha.dex != null) +
-    botaoHtml('sf-tirar', esc(tr('Tirar')), !esperando && !!S) +
+    botaoHtml('sf-por', esc(tr('Set as follower')), !esperando && escolha.dex != null) +
+    botaoHtml('sf-tirar', esc(tr('Remove')), !esperando && !!S) +
     '</div>' +
     '<div style="' +
     b +
     '">' +
     esc(
       tr(
-        'Só visual: aparece pra você e pra quem está na sala — o modelo entra no passe de quem está lá só enquanto você estiver junto, e não fica liberado na conta de ninguém. Não luta, não é capturado e não conta pra Pokédex, ranking nem conquistas.',
+        "Cosmetic only: visible to you and everyone in the room — the model is loaded for others only while you're with them, and isn't unlocked on anyone's account. It doesn't battle, can't be caught and doesn't count for the Pokédex, rankings or achievements.",
       ),
     ) +
     '</div></div>' +
@@ -374,9 +372,9 @@ function pintar() {
     ';text-align:center;color:' +
     (esperando ? '#8EF58E' : '#f58e8e') +
     '">' +
-    esc(esperando ? tr('um instante…') : aviso) +
+    esc(esperando ? tr('one moment…') : aviso) +
     '</div>' +
-    (k ? '' : '<div style="display:flex">' + botaoHtml('sf-fechar', esc(tr('Fechar'))) + '</div>');
+    (k ? '' : '<div style="display:flex">' + botaoHtml('sf-fechar', esc(tr('Close'))) + '</div>');
   const $ = (s) => d.querySelector(s);
   $('.sf-x').onclick = () => fecharTopo();
   if ($('.sf-fechar')) $('.sf-fechar').onclick = () => fecharTopo();
@@ -410,7 +408,7 @@ function pintar() {
 }
 function pedir(a, b = true) {
   if (!ctx.enviar?.({ t: 'staff', ...a })) {
-    aviso = tr('Sem conexão com o servidor.');
+    aviso = tr('No connection to the server.');
     if (painel) pintar();
     return;
   }
@@ -469,7 +467,7 @@ async function montarSeguidor(b = false) {
       seg.falhou = true;
       seg.pedido = null;
     }
-    console.warn('staff: o modelo do seguidor', f);
+    console.warn('staff: the follower model', f);
   }
 }
 function pontoDoSeguidor(e, a, s) {

@@ -10,13 +10,13 @@ import { TERRENO, exemploTerreno } from './daycare_garden_samples.mjs';
 const tr = (s, v) => I18n.t(s, v);
 export const EXEMPLOS = TERRENO.map(([a, b]) => ({ id: a, nome: b }));
 export const AVISOS = {
-  previa: 'Prévia: isto é só um exemplo.',
-  desligado: 'Sem conexão com o servidor.',
-  fora: 'Vá pro seu terreno pra isso.',
-  arrumarFora: 'Entre no seu terreno pra arrumar.',
-  naoDeu: 'Não deu.',
+  previa: 'Preview: this is just an example.',
+  desligado: 'No connection to the server.',
+  fora: 'Go to your plot for that.',
+  arrumarFora: 'Enter your land to arrange.',
+  naoDeu: "That didn't work.",
 };
-export const BOTAO_IR = { ir: 'Ir pro terreno', sair: 'Sair do terreno' };
+export const BOTAO_IR = { ir: 'Go to the plot', sair: 'Leave plot' };
 export const ICONE_TERRENO = './ui/amanda/horta/icone-terreno.png';
 const ITEM_TICKET = 900150;
 const ABAS = { horta: Horta, ovos: Ovos };
@@ -272,7 +272,7 @@ function montarPop() {
   });
   if (!pop) return null;
   pop.id = 'pf-terreno';
-  Popup.textoCru(pop, 'titulo', tr('Seu terreno'));
+  Popup.textoCru(pop, 'titulo', tr('Your plot'));
   for (const a of pop.querySelectorAll(':scope > [data-tag="aba"][data-fig^="aba-"]')) Popup.rotulo(pop, 'aba', a);
   vestirBotaoIr(pop);
   Horta.montar(pop);

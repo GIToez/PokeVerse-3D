@@ -72,8 +72,8 @@ export function montar(a) {
   const D = Mo.filho(C, 'detalhe-ovo');
   M.detalhe = { cheio: D, vazia: Mo.pagina(a, D, 'detalhe-ovo', 'vazia') };
   const f = M.detalhe.vazia && Mo.filho(M.detalhe.vazia, 'rotulo-ovos');
-  if (f && (/Mochila/.test(f.textContent || '') || f.textContent === tr('Ovos na Mochila')))
-    f.textContent = tr('Ovos guardados');
+  if (f && (/Mochila/.test(f.textContent || '') || f.textContent === tr('Eggs in Bag')))
+    f.textContent = tr('Stored eggs');
   const T = Mo.filho(D, 'ticket');
   M.ticket = {
     normal: T,
@@ -196,7 +196,7 @@ export function fecharTopo(a, E) {
   return false;
 }
 function pedir(m, E, a, b = true) {
-  const c = a.mandar ? a.mandar(m, { terreno: b }) : 'Sem conexão com o servidor.';
+  const c = a.mandar ? a.mandar(m, { terreno: b }) : 'No connection to the server.';
   if (c == null) {
     E.esperando = true;
     E.aviso = null;
@@ -230,7 +230,7 @@ export function receber(m, E, a) {
   }
   E.esperando = false;
   if (m.t === 'ovo_erro') {
-    avisar(a.texto ? a.texto(m) : tr(m.motivo || 'Não deu.'), 'ruim', E, a);
+    avisar(a.texto ? a.texto(m) : tr(m.motivo || "That didn't work."), 'ruim', E, a);
     return true;
   }
   if (m.t !== 'ovo') return false;

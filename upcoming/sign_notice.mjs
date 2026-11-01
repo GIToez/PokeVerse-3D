@@ -129,9 +129,9 @@ export function textosWebgl(a) {
 export const LS_ADIADO = 'aviso.semPlaca.ate',
   SS_VISTO = 'aviso.semPlaca',
   DIAS_ADIADO = 7;
-export const FRASE_1 = 'O seu navegador está desenhando o jogo sem a placa de vídeo.';
-export const FRASE_2 = 'Se o seu computador tiver uma, ligar a aceleração de hardware deixa o jogo bem mais rápido.';
-export const BOTAO_ADIAR = 'Não mostrar de novo';
+export const FRASE_1 = 'Your browser is rendering the game without the graphics card.';
+export const FRASE_2 = 'If your computer has one, turning on hardware acceleration makes the game much faster.';
+export const BOTAO_ADIAR = "Don't show again";
 const LARG = 440,
   MARGEM = 12;
 function caixasDaHud(a) {
@@ -200,8 +200,8 @@ export function mostrar({ t = (s) => s, I18n: b = null, aoFim: c = null } = {}) 
   x.type = 'button';
   x.dataset.acao = 'fechar';
   x.textContent = '✕';
-  x.setAttribute('aria-label', t('Fechar'));
-  x.title = t('Fechar');
+  x.setAttribute('aria-label', t('Close'));
+  x.title = t('Close');
   x.style.cssText =
     'position:absolute;top:6px;right:6px;width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:#c9d4ee;font:700 14px/24px inherit;font-family:inherit;cursor:pointer';
   d.append(f, g, h, i, x);

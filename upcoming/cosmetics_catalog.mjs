@@ -54,7 +54,10 @@ export function carregar({ forcar: a = false, maxIdade: b = null } = {}) {
       if (!r?.ok || !ehCatalogo(r.dados)) {
         if (r && r.status !== 0)
           console.warn(
-            'catálogo das peças: o servidor não deu (' + (r.status || '?') + '): ' + (r.erro || 'formato inesperado'),
+            "parts catalog: the server didn't provide it (" +
+              (r.status || '?') +
+              '): ' +
+              (r.erro || 'unexpected format'),
           );
         return vigente;
       }
@@ -62,7 +65,7 @@ export function carregar({ forcar: a = false, maxIdade: b = null } = {}) {
       return vigente;
     })
     .catch((e) => {
-      console.warn('catálogo das peças:', e);
+      console.warn('parts catalog:', e);
       return vigente;
     })
     .finally(() => {
@@ -90,7 +93,7 @@ export function usar(a) {
   try {
     aplicarNasSkins(dep.skinsExtra, a);
   } catch (e) {
-    console.warn('catálogo das peças: as roupas do personagem', e);
+    console.warn("parts catalog: the character's outfits", e);
   }
   if (
     !b ||
@@ -103,7 +106,7 @@ export function usar(a) {
       try {
         c(a, b);
       } catch (e) {
-        console.warn('catálogo das peças: quem ouve', e);
+        console.warn('parts catalog: listeners', e);
       }
   return a;
 }
@@ -227,7 +230,7 @@ export function skinsExtraDoCatalogo(a) {
         sexo: texto(p.sexo) || 'menino',
         nome: texto(p.nome) || p.id,
         glb: p.glb,
-        desc: 'Pacote Fundador',
+        desc: 'Founder Pack',
         extra: true,
         exclusiva: p.exclusiva,
       });
@@ -237,7 +240,7 @@ export function skinsExtraDoCatalogo(a) {
         sexo: texto(p.sexo) || 'menino',
         nome: texto(p.nome) || p.id,
         glb: p.glb,
-        desc: 'Guarda-roupa',
+        desc: 'Wardrobe',
         extra: true,
       });
   }
@@ -287,7 +290,7 @@ export function aplicarDadoInteiro(a, b) {
       sexo: texto(s.sexo) || 'menino',
       nome: texto(s.nome) || s.tipo,
       glb: s.glb,
-      desc: 'Pacote Fundador',
+      desc: 'Founder Pack',
       extra: true,
       exclusiva: s.exclusiva,
     });
@@ -306,7 +309,7 @@ export function aplicarDadoInteiro(a, b) {
       sexo: texto(g.sexo) || 'menino',
       nome: texto(g.nome) || g.tipo,
       glb: g.glb,
-      desc: 'Guarda-roupa',
+      desc: 'Wardrobe',
       extra: true,
     });
     n++;

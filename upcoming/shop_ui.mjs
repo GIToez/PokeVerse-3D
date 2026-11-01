@@ -81,19 +81,19 @@ const medalhoesDe = (q) => ({
     const d = descontoDosMedalhoes(q, p?.preco);
     return d ? '−' + d + '%' : null;
   },
-  nome: () => tr(q === 2 ? 'Medalhão · 60 dias' : 'Medalhão · 90 dias'),
+  nome: () => tr(q === 2 ? 'Medallion · 60 days' : 'Medallion · 90 days'),
   tipo: (p) => {
     const d = descontoDosMedalhoes(q, p?.preco);
-    return d ? tr('{q} Medalhões · −{d}%', { q, d }) : tr('{q} Medalhões', { q });
+    return d ? tr('{q} Medallions · −{d}%', { q, d }) : tr('{q} Medallions', { q });
   },
   desc: () =>
     tr(
-      '{q} Medalhões de 30 dias: +{xp} % de XP, +{vagas} vagas na Caixa, +{anuncios} anúncios e o selo no chat. Use ou venda no Mercado por Moedas.',
+      '{q} 30-day Medallions: +{xp} % XP, +{vagas} Box slots, +{anuncios} listings and the chat badge. Use them or sell them on the Market for Coins.',
       { q, ...BENEFICIOS_MEDALHAO },
     ),
   descLonga: () =>
     tr(
-      '{q} Medalhões de 30 dias ({total} dias somando os {q}): cada um dá +{xp} % de XP nos seus Pokémon, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % na recarga da Viagem e do Teleporte e o selo no chat. Use ou venda no Mercado por Moedas.',
+      '{q} 30-day Medallions ({total} days across all {q}): each gives +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the chat badge. Use them or sell them on the Market for Coins.',
       { q, total: 30 * q, ...BENEFICIOS_MEDALHAO },
     ),
   cheio: () => {
@@ -102,20 +102,20 @@ const medalhoesDe = (q) => ({
   },
 });
 const CATALOGO = {
-  perfumeShiny: { aba: 'cosmeticos', filtro: 'perfumes', tipo: () => tr('Shiny ×2 por 1 hora') },
+  perfumeShiny: { aba: 'cosmeticos', filtro: 'perfumes', tipo: () => tr('Shiny ×2 for 1 hour') },
   vagasCaixa: {
     aba: 'conforto',
     filtro: 'caixa',
     icone: 'ui/amanda/loja/vagas-caixa@2x.png',
-    tipo: (p) => tr('{c}/{t} compradas', { c: fmt(p.compradas), t: fmt(p.teto) }),
-    nome: (p) => tr('Vagas na Caixa +{n}', { n: fmt((p.pacote || 0) * VAGAS_POR_COMPRA) }),
+    tipo: (p) => tr('{c}/{t} purchased', { c: fmt(p.compradas), t: fmt(p.teto) }),
+    nome: (p) => tr('Box slots +{n}', { n: fmt((p.pacote || 0) * VAGAS_POR_COMPRA) }),
   },
   [MEDALHAO_ID]: {
     aba: 'conforto',
     filtro: 'conta',
     icone: ARTE_MEDALHAO,
     tam: null,
-    tipo: () => tr('Vende no Mercado'),
+    tipo: () => tr('Sells on the Market'),
     desc: () => textoMedalhao('media', tr),
     descLonga: () => textoMedalhao('longa', tr),
   },
@@ -125,23 +125,23 @@ const CATALOGO = {
     aba: 'conforto',
     filtro: 'ovos',
     icone: 'ui/itens/ic_900150@2x.png',
-    tipo: () => tr('-12 h · 1 por ovo'),
-    desc: () => tr('Corta 12 horas da eclosão de um ovo na incubadora. Vale uma vez por ovo.'),
+    tipo: () => tr('-12 h · 1 per egg'),
+    desc: () => tr("Cuts 12 hours off an egg's hatch time in the incubator. Once per egg."),
   },
   incubadora: {
     aba: 'conforto',
     filtro: 'ovos',
     icone: 'ui/itens/ic_900151@2x.png',
-    tipo: () => tr('+1 ovo por dia'),
-    desc: () => tr('Mais uma incubadora pro seu terreno: choca um ovo em 24 h. Negociável: dá pra vender no Mercado.'),
+    tipo: () => tr('+1 egg per day'),
+    desc: () => tr('One more Incubator for your land: hatches an egg in 24 h. Tradable: can be sold on the Market.'),
   },
 };
 const FILTRO_DA_PECA = { roupa: 'roupas', mochila: 'mochilas', peito: 'efeitos', rastro: 'efeitos' };
-const TIPO_DA_PECA = { roupa: 'Roupa', mochila: 'Mochila', peito: 'Efeito', rastro: 'Rastro', montaria: 'Montaria' };
+const TIPO_DA_PECA = { roupa: 'Outfit', mochila: 'Bag', peito: 'Effect', rastro: 'Trail', montaria: 'Montaria' };
 const FILTROS_NOVOS = [
-  ['roupas', 'Roupas'],
+  ['roupas', 'Outfits'],
   ['mochilas', 'Mochilas'],
-  ['skinsmon', 'Skins de Pokémon', 1.5],
+  ['skinsmon', 'Pokémon Skins', 1.5],
 ];
 const ABAS = ['destaques', 'passe', 'cosmeticos', 'conforto', 'diamantes'];
 const INDICE_FOTOS = './ui/guarda-roupa/miniaturas/indice.json';
@@ -278,7 +278,7 @@ function pagamentoDoServidor(m) {
   E.esperando = null;
   clearTimeout(E.timerEspera);
   if (aberto() && E.dialogo === 'aguardando')
-    dialogo('recusado', { titulo: 'O Pix não foi pago', texto: Pagamento.MSG_PIX_FALHOU, tentar: null });
+    dialogo('recusado', { titulo: "The Pix wasn't paid", texto: Pagamento.MSG_PIX_FALHOU, tentar: null });
 }
 let V3 = null,
   V3P = null;
@@ -296,7 +296,7 @@ function vitrine3d(f) {
         return m;
       })
       .catch((e) => {
-        console.warn('loja: a vitrine 3D não carregou, ficam os retratos', e);
+        console.warn("shop: the 3D showcase didn't load, showing portraits instead", e);
         return null;
       });
   V3P.then((m) => {
@@ -400,7 +400,7 @@ async function carregar() {
   }
   E.vit = b?.vitrine || null;
   if (E.vit) E.vitEm = Date.now();
-  E.erro = E.vit ? null : b?.mensagem || 'A loja não respondeu. Feche e abra de novo.';
+  E.erro = E.vit ? null : b?.mensagem || "The shop didn't respond. Close and open it again.";
   E.carregando = false;
   E.saldoVisto = saldo();
   if (!E.navegou) E.slide = slideInicial();
@@ -465,7 +465,7 @@ function novaVista(v) {
   if (E.refPasse && PT.compraPassou(E.refPasse, v) === true) {
     E.refPasse = null;
     a.passe = true;
-    chatPasse(tr('💎 Passe da temporada: a compra de antes tinha passado (o passe foi liberado).'));
+    chatPasse(tr('💎 Season pass: your earlier purchase went through (pass unlocked).'));
   }
   if (E.refNiveis && PT.compraPassou(E.refNiveis, v) === true) {
     const n = E.refNiveis.n;
@@ -473,8 +473,8 @@ function novaVista(v) {
     a.niveis = n;
     chatPasse(
       n === 1
-        ? tr('💎 Passe da temporada: a compra de antes tinha passado (+1 nível).')
-        : tr('💎 Passe da temporada: a compra de antes tinha passado (+{n} níveis).', { n }),
+        ? tr('💎 Season pass: your earlier purchase went through (+1 level).')
+        : tr('💎 Season pass: your earlier purchase went through (+{n} levels).', { n }),
     );
   }
   atualizarAbaPasse();
@@ -488,8 +488,7 @@ function respostaSolta(m) {
       b = (p) => p && (p.rid == null || p.rid === m.rid);
     if (a === 'comprarPasse' && b(E.refPasse)) {
       E.refPasse = null;
-      if (m.ok && !r.passe)
-        chatPasse(tr('💎 Passe da temporada: a compra de antes tinha passado (o passe foi liberado).'));
+      if (m.ok && !r.passe) chatPasse(tr('💎 Season pass: your earlier purchase went through (pass unlocked).'));
     }
     if (a === 'comprarNivel' && b(E.refNiveis)) {
       const n = E.refNiveis.n;
@@ -497,14 +496,14 @@ function respostaSolta(m) {
       if (m.ok && !r.niveis)
         chatPasse(
           n === 1
-            ? tr('💎 Passe da temporada: a compra de antes tinha passado (+1 nível).')
-            : tr('💎 Passe da temporada: a compra de antes tinha passado (+{n} níveis).', { n }),
+            ? tr('💎 Season pass: your earlier purchase went through (+1 level).')
+            : tr('💎 Season pass: your earlier purchase went through (+{n} levels).', { n }),
         );
     }
     if (m.ok && (a === 'pegar' || a === 'pegarTudo' || a === 'comprarPasse')) {
       posseNova(m);
       const c = PT.nomesEntregues(E.temporada, m.entregues, ctxPasse());
-      if (c.length) chatPasse(tr('🎁 Passe da temporada: {x}.', { x: listaNomes(c) }));
+      if (c.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(c) }));
     }
   }
   if (aberto() && !E.ocupado) pintar();
@@ -515,7 +514,7 @@ function posseNova(r) {
     Conta.gravarBruto?.('pecas', JSON.stringify(r.pecas));
     if (Array.isArray(r.skins)) Conta.gravarBruto?.('skins', JSON.stringify(r.skins));
   } catch (e) {
-    console.warn('loja: a posse nova (passe)', e);
+    console.warn('shop: new ownership (pass)', e);
   }
 }
 function atualizarAbaPasse() {
@@ -550,10 +549,9 @@ export function temporadaEvento(m) {
     a = PT.pontosPorMissao(E.temporada);
   const b = chatPasse;
   for (const f of (Array.isArray(m.feitas) ? m.feitas : []).slice(0, 5))
-    if (f && typeof f.texto === 'string')
-      b(tr('🏅 Passe da temporada: {x} (+{n} XP).', { x: PT.textoDaMissao(f, C), n: a }));
+    if (f && typeof f.texto === 'string') b(tr('🏅 Season pass: {x} (+{n} XP).', { x: PT.textoDaMissao(f, C), n: a }));
   if (m.subiu === true && Number.isSafeInteger(m.nivel))
-    b(tr('🏅 Passe da temporada: você chegou ao nível {n}!', { n: m.nivel }));
+    b(tr('🏅 Season pass: you reached level {n}!', { n: m.nivel }));
   if (typeof m.aviso === 'string' && m.aviso) {
     const c = typeof m.avisoChave === 'string' && m.avisoChave ? m.avisoChave : m.aviso;
     const d = c === m.avisoChave && m.avisoVars && typeof m.avisoVars === 'object' ? m.avisoVars : null;
@@ -587,7 +585,7 @@ function produtoPeca(p) {
     id: p.id,
     preco: p.preco,
     nome: c,
-    desc: tr('Presa à sua conta. Toque na peça pra provar.'),
+    desc: tr('Bound to your account. Tap the piece to try it on.'),
     icone: F?.foto || (typeof q.icone === 'string' ? q.icone : ICONE_DIAMANTE),
     tam: null,
     loop: F?.loop || null,
@@ -607,8 +605,8 @@ const ehMontariaShiny = (a) => typeof a === 'string' && a.startsWith('montariaSh
 const ehMontariaNormal = (a) => typeof a === 'string' && a.startsWith('montariaNormal:');
 const ehMontariaLoja = (a) => ehMontariaShiny(a) || ehMontariaNormal(a);
 const CADEADO_LOJA = './ui/amanda/trava/cadeado-32@2x.png';
-const TIPO_MONTARIA = { terra: 'Montaria · terra', voo: 'Montaria · voo', surf: 'Montaria · surf' };
-const TRAVA_MONTARIA = { voo: 'Libera com a licença de voo', surf: 'Libera com a licença de surf' };
+const TIPO_MONTARIA = { terra: 'Montaria · terra', voo: 'Mount · flying', surf: 'Montaria · surf' };
+const TRAVA_MONTARIA = { voo: 'Unlocks with the Fly license', surf: 'Unlocks with the Surf license' };
 const tipoDaMontaria = (q) =>
   Object.hasOwn(TIPO_MONTARIA, String(q?.tipo))
     ? q.tipo
@@ -631,11 +629,11 @@ function produtoMontaria(p) {
     desc: tr(
       q.meio === 'agua'
         ? p.temNormal
-          ? 'Você já tem esta montaria: a shiny é a mesma, na cor shiny. Ela só nada, com a licença de surf. Presa à sua conta.'
-          : 'A montaria na cor shiny, a mesma velocidade: ela só nada, e com a licença de surf. Presa à sua conta.'
+          ? 'You already have this mount: the shiny is the same one, in shiny colors. It only swims, with the surf license. Bound to your account.'
+          : 'The mount in shiny color, same speed: it can only swim, with the Surf license. Bound to your account.'
         : p.temNormal
-          ? 'Você já tem esta montaria: a shiny é a mesma, na cor shiny, e monta em terra sem licença. Voar e nadar seguem as licenças. Presa à sua conta.'
-          : 'A licença da montaria na cor shiny: monta em terra na hora, a mesma velocidade. Voar e nadar seguem as licenças. Presa à sua conta.',
+          ? 'You already own this mount: the shiny is the same, in shiny color, and rides on land without a license. Flying and swimming need their licenses. Bound to your account.'
+          : 'The mount license in shiny color: ride on land right away, same speed. Flying and swimming need their licenses. Bound to your account.',
     ),
     icone: c || (b ? iconeDaMontaria(q, a) : a ? './ui/mon/pm' + a + '.png' : ICONE_DIAMANTE),
     tam: null,
@@ -678,8 +676,8 @@ function produtoMontariaNormal(p) {
     nome: tr('{x} Normal', { x: I18n.tNome(String(q.nome || q.id || '')) }),
     desc: tr(
       q.meio === 'agua'
-        ? 'A montaria, presa à sua conta: ela só nada, e com a licença de surf.'
-        : 'A licença da montaria: monta em terra na hora. Voar e nadar seguem as licenças. Presa à sua conta.',
+        ? 'The mount, bound to your account: it can only swim, with the Surf license.'
+        : 'The mount license: ride on land right away. Flying and swimming need their licenses. Bound to your account.',
     ),
     icone: iconeDaMontaria(q, a),
     tam: null,
@@ -718,12 +716,12 @@ function produtoSkinMon(p) {
     preco: p.preco,
     nome: b,
     desc: tr(
-      'A skin do Pokémon, só visual: todo Pokémon dessa espécie aparece com ela quando você ativa no Guarda-roupa. Presa à sua conta.',
+      'A Pokémon skin, cosmetic only: every Pokémon of that species shows it once you activate it in the Wardrobe. Bound to your account.',
     ),
     icone: F?.foto || (a ? './ui/mon/pm' + a + '.png' : ICONE_DIAMANTE),
     tam: null,
     loop: F?.loop || null,
-    tipo: tr('Skin de Pokémon'),
+    tipo: tr('Pokémon Skin'),
     aba: 'cosmeticos',
     filtro: 'skinsmon',
     preso: true,
@@ -808,9 +806,9 @@ const doProvador = (a) =>
   (ehMontariaLoja(a) ? montariasLoja() : ehSkinMonLoja(a) ? skinsMonLoja() : pecasLoja()).find((x) => x.id === a) ||
   null;
 const INFO_MONTARIA = {
-  terra: 'Presa à conta. Monta em terra na hora; voar e nadar seguem as licenças.',
-  voo: 'Presa à conta. Monta em terra na hora; voa com a licença de voo.',
-  surf: 'Presa à conta. Ela só nada, com a licença de surf.',
+  terra: 'Account-bound. Ride on land right away; flying and swimming need their licenses.',
+  voo: 'Account-bound. Ride on land right away; fly with the Fly license.',
+  surf: 'Account-bound. It can only swim, with the Surf license.',
 };
 let ProvUI = null,
   ProvP = null;
@@ -823,7 +821,7 @@ const provadorUI = () =>
     })
     .catch((e) => {
       ProvP = null;
-      console.warn('loja: o provador não carregou', e);
+      console.warn("shop: the fitting room didn't load", e);
       return null;
     }));
 const ARTE_LISA = (a) =>
@@ -837,7 +835,7 @@ function itemProvadorLoja(b) {
     ...ProvUI.provaDe(P.peca),
     nome: P.nome,
     tipo: P.tipo,
-    info: tr('Preso à conta: não vai pro Mercado nem pra troca.'),
+    info: tr("Account-bound: can't go to the Market or be traded."),
     foto: P.icone,
     estado: P.jaTem ? 'ja-e-seu' : null,
     pintarAcoes: (a) => {
@@ -847,7 +845,7 @@ function itemProvadorLoja(b) {
       if (b.dataset.arte0 == null)
         b.dataset.arte0 = (b.style.backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1] || '';
       const c = E.confirmar === P.id && E.ocupado !== P.id;
-      if (c) ProvUI.linhaDePreco(b, tr('Confirmar'), null, { icone: null, liso: ARTE_LISA(pop) });
+      if (c) ProvUI.linhaDePreco(b, tr('Confirm'), null, { icone: null, liso: ARTE_LISA(pop) });
       else {
         ProvUI.semLinha(b, b.dataset.arte0);
         const t = b.querySelector('[data-txt="preco"]');
@@ -879,9 +877,9 @@ function itemMontaria(P) {
         b.dataset.arte0 = (b.style.backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1] || '';
       const c = E.confirmar === P.id && E.ocupado !== P.id;
       if (P.travada) {
-        ProvUI.linhaDePreco(b, tr('Com cadeado'), '', { icone: CADEADO_LOJA, liso: ARTE_LISA(pop) });
+        ProvUI.linhaDePreco(b, tr('Locked'), '', { icone: CADEADO_LOJA, liso: ARTE_LISA(pop) });
         b.title = P.trava;
-      } else if (c) ProvUI.linhaDePreco(b, tr('Confirmar'), null, { icone: null, liso: ARTE_LISA(pop) });
+      } else if (c) ProvUI.linhaDePreco(b, tr('Confirm'), null, { icone: null, liso: ARTE_LISA(pop) });
       else {
         ProvUI.semLinha(b, b.dataset.arte0);
         b.title = '';
@@ -900,7 +898,7 @@ function itemSkinMon(P) {
   return {
     nome: P.nome,
     tipo: P.tipo,
-    info: tr('Só visual: todo Pokémon dessa espécie aparece com ela. Presa à sua conta.'),
+    info: tr('Cosmetic only: every Pokémon of that species shows it. Bound to your account.'),
     foto: P.icone,
     estado: P.jaTem ? 'ja-e-seu' : null,
     montaria: { glb: P.glb, shiny: false },
@@ -913,7 +911,7 @@ function itemSkinMon(P) {
       if (b.dataset.arte0 == null)
         b.dataset.arte0 = (b.style.backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1] || '';
       const c = E.confirmar === P.id && E.ocupado !== P.id;
-      if (c) ProvUI.linhaDePreco(b, tr('Confirmar'), null, { icone: null, liso: ARTE_LISA(pop) });
+      if (c) ProvUI.linhaDePreco(b, tr('Confirm'), null, { icone: null, liso: ARTE_LISA(pop) });
       else {
         ProvUI.semLinha(b, b.dataset.arte0);
         const t = b.querySelector('[data-txt="preco"]');
@@ -980,9 +978,9 @@ function abrirNoGuardaRoupa(a) {
   if (ehSkinMonLoja(a)) {
     import('./wardrobe_ui.mjs')
       .then((m) => {
-        if (!m.abrir('skinsmon', a.slice(8))) dep.Chat?.sistema?.(tr('O Guarda-roupa não abriu agora.'));
+        if (!m.abrir('skinsmon', a.slice(8))) dep.Chat?.sistema?.(tr("The Wardrobe didn't open just now."));
       })
-      .catch((e) => console.warn('loja: provar', e));
+      .catch((e) => console.warn('shop: try on', e));
     return;
   }
   const q = (E.vit?.pecas || []).find((x) => x?.id === a)?.peca;
@@ -990,9 +988,9 @@ function abrirNoGuardaRoupa(a) {
   const b = q.tipo === 'roupa' ? 'roupa' : q.tipo;
   import('./wardrobe_ui.mjs')
     .then((m) => {
-      if (!m.abrir(b, q.id)) dep.Chat?.sistema?.(tr('O Guarda-roupa não abriu agora.'));
+      if (!m.abrir(b, q.id)) dep.Chat?.sistema?.(tr("The Wardrobe didn't open just now."));
     })
-    .catch((e) => console.warn('loja: provar', e));
+    .catch((e) => console.warn('shop: try on', e));
 }
 function produto(p) {
   const C = CATALOGO[p.id] || {},
@@ -1001,7 +999,7 @@ function produto(p) {
     n = a ? VAGAS_POR_COMPRA : 1;
   const b = C.nome ? C.nome(p) : tr(U.titulo || p.nome || p.id);
   let c = C.desc ? C.desc(p) : U.texto ? tr(U.texto, { n: fmt((p.pacote || 0) * n) }) : '';
-  if (a && p.caixa?.vagas) c += (c ? ' ' : '') + tr('Sua Caixa tem {n} vagas.', { n: fmt(p.caixa.vagas) });
+  if (a && p.caixa?.vagas) c += (c ? ' ' : '') + tr('Your Box has {n} slots.', { n: fmt(p.caixa.vagas) });
   const d = C.icone || U.icone || (p.item ? dep.iconeItem?.(p.item) : null) || ICONE_DIAMANTE;
   const e = C.cheio ? C.cheio(p) : null;
   return {
@@ -1270,7 +1268,7 @@ function montarPop() {
       Popup.texto(
         pop,
         'filtro',
-        f.dataset.tagval === 'todos' && I18n.idioma() === 'en' ? 'Todas' : t.dataset.exemplo || '',
+        f.dataset.tagval === 'todos' && I18n.idioma() === 'en' ? 'All' : t.dataset.exemplo || '',
         f,
       );
   }
@@ -1278,7 +1276,7 @@ function montarPop() {
     const u = no(pop, 'aba-passe'),
       t = u?.querySelector('[data-txt="aba"]');
     if (t) {
-      Popup.texto(pop, 'aba', 'Passe da temporada', u);
+      Popup.texto(pop, 'aba', 'Season Pass', u);
       caber(t);
     }
   }
@@ -1699,9 +1697,9 @@ function aoAcao(a) {
     import('./progression_ui.mjs')
       .then((m) => {
         Popup.fechar(pop);
-        if (!m.abrir('montarias')) dep.Chat?.sistema?.(tr('As montarias não abriram agora.'));
+        if (!m.abrir('montarias')) dep.Chat?.sistema?.(tr("Mounts couldn't open right now."));
       })
-      .catch((e) => console.warn('loja: montarias', e));
+      .catch((e) => console.warn('shop: mounts', e));
     return;
   }
   if (a === 'resgatar-provando') {
@@ -1731,9 +1729,9 @@ function aoAcao(a) {
       import('./wardrobe_ui.mjs')
         .then((g) => {
           if (!g.abrir(x.premio.tipo === 'roupa' ? 'roupa' : x.premio.tipo, b.id))
-            dep.Chat?.sistema?.(tr('O Guarda-roupa não abriu agora.'));
+            dep.Chat?.sistema?.(tr("The Wardrobe didn't open just now."));
         })
-        .catch((e) => console.warn('loja: guarda-roupa', e));
+        .catch((e) => console.warn('shop: wardrobe', e));
     return;
   }
   if (a === 'comprar-diamantes') {
@@ -1764,14 +1762,14 @@ function aoAcao(a) {
     try {
       dep.dialogoEmail?.();
     } catch (e) {
-      console.warn('loja: e-mail', e);
+      console.warn('shop: email', e);
     }
     return;
   }
   if (a === 'abrir-suporte') {
     fecharDialogo();
     if (dep.suporte) dep.suporte();
-    else dep.Chat?.sistema?.(tr('Fale com a equipe em Configurações → Conta → Mandar pra equipe.'));
+    else dep.Chat?.sistema?.(tr('Contact the team in Settings → Account → Send to team.'));
     return;
   }
   if (a === 'tentar-de-novo') {
@@ -2076,7 +2074,7 @@ async function comprarProduto(a, b = false) {
     }
     const l = P.preco - saldo();
     if (l > 0) {
-      E.aviso = tr('Faltam {n} Diamantes: escolha um pacote.', { n: fmt(l) });
+      E.aviso = tr('You need {n} more Diamonds: choose a pack.', { n: fmt(l) });
       E.confirmar = null;
       irAba('diamantes');
       return;
@@ -2099,7 +2097,7 @@ async function comprarProduto(a, b = false) {
     E.confirmar = null;
     clearTimeout(E.timerConf);
     pintar();
-    dep.Chat?.sistema?.(tr('Prévia: nada é cobrado.'));
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
     return;
   }
   E.confirmar = null;
@@ -2110,7 +2108,7 @@ async function comprarProduto(a, b = false) {
   const i = a === 'vagasCaixa';
   const j = dep.pedirLoja
     ? await dep.pedirLoja('comprar', { produto: a, ...(i ? { pacotes: VAGAS_POR_COMPRA } : {}), ref: h })
-    : { ok: false, erro: 'sem-conexao', mensagem: 'Sem conexão com o servidor.' };
+    : { ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' };
   E.ocupado = null;
   if (j?.erro === 'sem-resposta') E.refIncerta[a] = h;
   else if (j?.ok || (j?.erro && j.erro !== 'sem-conexao')) delete E.refIncerta[a];
@@ -2125,7 +2123,7 @@ async function comprarProduto(a, b = false) {
       try {
         Conta.gravarBruto?.('skinsMon', JSON.stringify(j.skinsMon));
       } catch (e) {
-        console.warn('loja: a skin nova', e);
+        console.warn('shop: the new skin', e);
       }
     }
     if (c && j.pecas && typeof j.pecas === 'object') {
@@ -2133,33 +2131,34 @@ async function comprarProduto(a, b = false) {
         Conta.gravarBruto?.('pecas', JSON.stringify(j.pecas));
         if (Array.isArray(j.skins)) Conta.gravarBruto?.('skins', JSON.stringify(j.skins));
       } catch (e) {
-        console.warn('loja: a posse nova', e);
+        console.warn('shop: new ownership', e);
       }
     }
     const m = !!(j.repetido && g);
     const o = E.vit?.produtos?.find((x) => x.id === 'vagasCaixa')?.caixa?.vagas,
       r = j.vagas?.novas ?? VAGAS_POR_COMPRA * (p.pacote || 0);
-    const s = i ? tr('{n} vagas na Caixa', { n: fmt(r) }) : P.nome;
+    const s = i ? tr('{n} Box slots', { n: fmt(r) }) : P.nome;
     const t = m
-      ? tr('A compra de antes tinha passado: {x}. Nada foi cobrado de novo.', { x: s })
+      ? tr('Your earlier purchase went through: {x}. Nothing was charged again.', { x: s })
       : i
-        ? tr('Mais {n} vagas na Caixa.', { n: fmt(r) }) +
-          (o ? ' ' + tr('Agora a Caixa tem {n} vagas.', { n: fmt(o) }) : '')
+        ? tr('{n} more Box slots.', { n: fmt(r) }) + (o ? ' ' + tr('Your Box now has {n} slots.', { n: fmt(o) }) : '')
         : c
-          ? tr('Comprou: {x}. Está no seu Guarda-roupa, presa à sua conta.', { x: P.nome })
+          ? tr("Purchased: {x}. It's in your Wardrobe, bound to your account.", { x: P.nome })
           : d
-            ? tr('Comprou: {x}. Já está nas suas montarias (os atalhos e o M), presa à sua conta.', { x: P.nome })
+            ? tr("Purchased: {x}. It's already in your mounts (shortcuts and M), bound to your account.", { x: P.nome })
             : f
-              ? tr('Comprou: {x}. Ative no Guarda-roupa, na aba Pokémon: a skin é presa à sua conta.', { x: P.nome })
+              ? tr('Purchased: {x}. Activate it in the Wardrobe, Pokémon tab: the skin is bound to your account.', {
+                  x: P.nome,
+                })
               : Object.hasOwn(MEDALHOES, a)
                 ? tr(
-                    'Comprou: {x}. Os {q} Medalhões de 30 dias estão na Mochila: cada um que você usar soma 30 dias, e o que sobrar dá pra vender no Mercado.',
+                    'Purchased: {x}. The {q} 30-day Medallions are in your Bag: each one you use adds 30 days, and you can sell the rest on the Market.',
                     { x: P.nome, q: MEDALHOES[a] },
                   )
-                : tr('Comprou: {x}. Está na Mochila.', { x: P.nome }) +
+                : tr("Bought: {x}. It's in your Bag.", { x: P.nome }) +
                   (a === MEDALHAO_ID ? ' ' + textoMedalhao('media', tr) : '');
     if (!j.repetido || m) {
-      const u = tr('💎 Loja de Diamantes: {x} (−{n} Diamantes).', { x: s, n: fmt(j.compra?.qtd ?? P.preco) });
+      const u = tr('💎 Diamond Shop: {x} (−{n} Diamonds).', { x: s, n: fmt(j.compra?.qtd ?? P.preco) });
       if (dep.Chat?.sistemaCru) dep.Chat.sistemaCru(u);
       else dep.Chat?.sistema?.(u);
     }
@@ -2170,9 +2169,9 @@ async function comprarProduto(a, b = false) {
   if (j?.erro === 'sem-resposta') {
     pintar();
     dialogo('recusado', {
-      titulo: 'Sem resposta do servidor',
+      titulo: 'No response from server',
       texto:
-        'O servidor não respondeu. Se o saldo caiu, a compra passou: "Tentar de novo" confere sem cobrar duas vezes.',
+        'The server didn\'t respond. If your balance dropped, the purchase went through: "Try again" checks without charging twice.',
       tentar: () => comprarProduto(a, true),
     });
     return;
@@ -2183,7 +2182,9 @@ async function comprarProduto(a, b = false) {
     return;
   }
   if (j?.erro === 'saldo-insuficiente') {
-    E.aviso = j.falta ? tr('Faltam {n} Diamantes: escolha um pacote.', { n: fmt(j.falta) }) : tr('Faltam Diamantes.');
+    E.aviso = j.falta
+      ? tr('You need {n} more Diamonds: choose a pack.', { n: fmt(j.falta) })
+      : tr('Not enough Diamonds.');
     irAba('diamantes');
     return;
   }
@@ -2194,16 +2195,15 @@ async function comprarProduto(a, b = false) {
   if (j?.erro === 'montaria-sem-licenca') {
     pintar();
     dialogo('recusado', {
-      titulo: 'Com cadeado',
-      texto:
-        j.mensagem || 'Essa montaria shiny ainda está com cadeado: falta a licença daquele tipo. Nada foi cobrado.',
+      titulo: 'Locked',
+      texto: j.mensagem || "This shiny mount is still locked: you need that type's license. Nothing was charged.",
     });
     return;
   }
   pintar();
   dialogo('recusado', {
-    titulo: 'Não deu pra comprar',
-    texto: j?.mensagem || j?.erro || 'Não deu.',
+    titulo: "Couldn't purchase",
+    texto: j?.mensagem || j?.erro || "That didn't work.",
     tentar: () => comprarProduto(a, true),
   });
 }
@@ -2276,17 +2276,17 @@ function compraDoPagamento(a, b) {
   const m = a.moeda,
     n = b.diamantes;
   if (b.produto) {
-    const f = tr(b.nome || 'Pacote Fundador');
+    const f = tr(b.nome || 'Founder Pack');
     return {
       tipo: 'produto',
       id: b.produto,
       grande: f,
-      rotulo: tr('Pacote Fundador'),
-      linha: tr('Pacote Fundador') + ' · ' + f,
+      rotulo: tr('Founder Pack'),
+      linha: tr('Founder Pack') + ' · ' + f,
       icone: ARTE_FUNDADOR.compra,
       iconeModo: 'cheio',
       preco: b.preco || null,
-      nota: 'O pacote fica preso à sua conta.',
+      nota: 'The pack is bound to your account.',
     };
   }
   const c = b.arte || ICONE_DIAMANTE,
@@ -2319,8 +2319,8 @@ function pagarAqui(a, b, c) {
   };
   if (!d.metodos.length) {
     dialogo('recusado', {
-      titulo: 'Não deu pra abrir o pagamento',
-      texto: 'Nenhuma forma de pagamento nesta moeda agora.',
+      titulo: "Couldn't open payment",
+      texto: 'No payment method in this currency right now.',
       tentar: null,
     });
     return;
@@ -2412,7 +2412,7 @@ function pagarAqui(a, b, c) {
   if (!f) {
     E.esperando = null;
     if (!dialogoAberto()) pop.__lj.veu.style.display = 'none';
-    dialogo('recusado', { titulo: 'Não deu pra abrir o pagamento', texto: 'Feche a Loja e abra de novo.', tentar: c });
+    dialogo('recusado', { titulo: "Couldn't open payment", texto: 'Close the Shop and open it again.', tentar: c });
   }
 }
 async function checkoutAba(a, b, c) {
@@ -2427,7 +2427,7 @@ async function checkoutAba(a, b, c) {
   E.ocupado = null;
   if (d?.ok && d.dados?.url && !urlPagamentoOk(d.dados.url)) {
     d.ok = false;
-    d.dados = { erro: 'O servidor não mandou o pagamento. Tente de novo.', codigo: 'resposta-torta' };
+    d.dados = { erro: "The server didn't send the payment. Try again.", codigo: 'resposta-torta' };
   }
   if (d?.ok && d.dados?.url) {
     if (w && !w.closed) {
@@ -2467,7 +2467,7 @@ async function checkoutAba(a, b, c) {
   if (e === 'fundador-fechado' && E.info) E.info.ofertas = [];
   pintar();
   dialogo('recusado', {
-    titulo: 'Não deu pra abrir o pagamento',
+    titulo: "Couldn't open payment",
     texto: f,
     tentar: SEM_TENTAR.has(e) || !L.tentar ? null : c,
   });
@@ -2536,45 +2536,50 @@ function pintarDialogo() {
       else icone(d, arteDaCompra(n), 'nova');
       if (E.esperando?.confirmando) {
         const e = Date.now() - (E.esperando.pagoEm || 0) >= ESPERA_CONFIRMACAO_MS;
-        T('titulo-compra', tr('Aguardando a confirmação…'));
+        T('titulo-compra', tr('Waiting for confirmation…'));
         T(
           'texto-compra',
           e
             ? c
               ? tr(
-                  'A confirmação está demorando. Pode fechar e seguir jogando: o pacote chega sozinho. Se não chegar em 1 hora, fale com a equipe.',
+                  "Confirmation is taking a while. You can close this and keep playing: the pack will arrive on its own. If it hasn't arrived within 1 hour, contact the team.",
                 )
               : tr(
-                  'A confirmação está demorando. Pode fechar e seguir jogando: os Diamantes chegam sozinhos. Se não chegarem em 1 hora, fale com a equipe.',
+                  "Confirmation is taking a while. You can close this and keep playing: the Diamonds will arrive on their own. If they haven't arrived within 1 hour, contact the team.",
                 )
             : c
-              ? tr('Pagamento feito! Assim que o banco confirmar, o pacote chega na sua conta (leva alguns segundos).')
+              ? tr(
+                  'Payment done! As soon as the bank confirms, the pack arrives in your account (takes a few seconds).',
+                )
               : n
                 ? tr(
-                    'Pagamento feito! Assim que o banco confirmar, os {n} Diamantes entram na sua conta (leva alguns segundos).',
+                    'Payment done! As soon as the bank confirms, the {n} Diamonds go into your account (takes a few seconds).',
                     { n: fmt(n) },
                   )
                 : tr(
-                    'Pagamento feito! Assim que o banco confirmar, os Diamantes entram na sua conta (leva alguns segundos).',
+                    'Payment done! As soon as the bank confirms, the Diamonds go into your account (takes a few seconds).',
                   ),
         );
         a('btn-ok', 'Ok');
         break;
       }
-      T('titulo-compra', tr('Aguardando o pagamento'));
+      T('titulo-compra', tr('Awaiting payment'));
       T(
         'texto-compra',
         E.esperando?.abrindo
-          ? tr('abrindo o pagamento…')
+          ? tr('opening payment…')
           : c
-            ? tr('O pagamento abriu noutra aba. Quando terminar, o pacote chega na sua conta sozinho.')
+            ? tr("Payment opened in another tab. When you're done, the pack arrives in your account automatically.")
             : n
-              ? tr('O pagamento abriu noutra aba. Quando terminar, os {n} Diamantes chegam aqui sozinhos.', {
-                  n: fmt(n),
-                })
-              : tr('O pagamento abriu noutra aba. Quando terminar, os Diamantes chegam aqui sozinhos.'),
+              ? tr(
+                  'Payment opened in another tab. When you finish, your {n} Diamonds will arrive here automatically.',
+                  {
+                    n: fmt(n),
+                  },
+                )
+              : tr("Payment opened in another tab. When you're done, the Diamonds will arrive here automatically."),
       );
-      a('btn-ok', E.esperando?.url ? 'Abrir o pagamento' : 'Ok');
+      a('btn-ok', E.esperando?.url ? 'Open payment' : 'Ok');
       break;
     }
     case 'confirmado':
@@ -2583,31 +2588,31 @@ function pintarDialogo() {
       T('titulo-compra', D.titulo || tr('+{n} Diamantes', { n: fmt(D.n || 0) }));
       T(
         'texto-compra',
-        D.texto || tr('Compra confirmada! Os Diamantes já estão no seu saldo e ficam presos à sua conta.'),
+        D.texto || tr('Purchase confirmed! The Diamonds are in your balance and bound to your account.'),
       );
       a('btn-ok', D.botao || 'Ok');
       break;
     case 'email-nao-verificado': {
       const g = E.email || '',
         h = g.replace(/^(.)[^@]*(@.*)$/, '$1•••$2');
-      T('titulo-compra', tr('Confirme seu e-mail'));
+      T('titulo-compra', tr('Confirm your e-mail'));
       T(
         'texto-compra',
         g
-          ? tr('Pra comprar Diamantes, confirme o e-mail da sua conta ({x}).', { x: h })
-          : tr('Pra comprar Diamantes, cadastre e confirme um e-mail na sua conta.'),
+          ? tr("To buy Diamonds, confirm your account's e-mail ({x}).", { x: h })
+          : tr('To buy Diamonds, add and confirm an email on your account.'),
       );
-      a('btn-reenviar-email', g ? 'Reenviar e-mail' : 'Cadastrar e-mail');
+      a('btn-reenviar-email', g ? 'Resend email' : 'Register email');
       break;
     }
     case 'carteira-bloqueada':
       icone(d, A + 'icone-compra-exemplo-3.png', true);
-      T('titulo-compra', tr('Compras pausadas'));
-      T('texto-compra', tr(D.texto || 'A sua carteira está bloqueada por um estorno: fale com a equipe.'));
+      T('titulo-compra', tr('Purchases paused'));
+      T('texto-compra', tr(D.texto || 'Your wallet is locked due to a chargeback: contact the team.'));
       break;
     case 'recusado':
-      T('titulo-compra', tr(D.titulo || 'Pagamento recusado'));
-      T('texto-compra', tr(D.texto || 'Não deu.'));
+      T('titulo-compra', tr(D.titulo || 'Payment declined'));
+      T('texto-compra', tr(D.texto || "That didn't work."));
       {
         const b = no(d, 'btn-tentar-de-novo');
         if (b) b.style.display = E.tentar ? 'block' : 'none';
@@ -2621,10 +2626,10 @@ const DLG_H = 'dialogo-pacote-halloween';
 const ARTE_HALLOWEEN = 'halloween';
 const ABOBORA = './ui/amanda/halloween/';
 const DESC_HALLOWEEN =
-  'Abra a abóbora: as Sombras de Abóbora (menino e menina), o Spectrier, o Cavaleiro Fantasma e os morceguinhos da Possessão.';
+  'Open the pumpkin: the Pumpkin Shadows (boy and girl), Spectrier, the Phantom Rider and the little Possession bats.';
 const NOTA_HALLOWEEN = {
-  pc: 'Roupas e efeito vão pro Guarda-roupa; as montarias, pras suas Montarias. Tudo preso à conta: não dá pra vender nem trocar.',
-  cel: 'Roupas e efeito vão pro Guarda-roupa; as montarias, pras Montarias. Preso à conta.',
+  pc: "Outfits and effect go to the Wardrobe; mounts go to your Mounts. All account-bound: can't be sold or traded.",
+  cel: 'Outfits and effect go to the Wardrobe; mounts go to Mounts. Account-bound.',
 };
 function placaDoItem(a) {
   const p = String(a || '');
@@ -2702,11 +2707,11 @@ function pintarVitrineHalloween(a, H, n) {
   const b = no(c, 'pilula-desconto');
   mostra(b, !!p.desconto && !p.tudo);
   if (b && p.desconto) Popup.textoCru(pop, 'desconto', '−' + p.desconto + '%', b);
-  Popup.textoCru(pop, 'oferta-nome', tr(p.nome || 'Pacote de Halloween'), c);
+  Popup.textoCru(pop, 'oferta-nome', tr(p.nome || 'Halloween Pack'), c);
   Popup.textoCru(pop, 'oferta-desc', tr(DESC_HALLOWEEN), c);
   const d = c.querySelector('[data-fig="valor"]');
   if (d) {
-    const f = Popup.textoCru(pop, 'preco', p.tudo ? tr('JÁ É SEU') : p.preco === 0 ? tr('GRÁTIS') : fmt(p.preco), d);
+    const f = Popup.textoCru(pop, 'preco', p.tudo ? tr('ALREADY YOURS') : p.preco === 0 ? tr('FREE') : fmt(p.preco), d);
     if (f) caberLinha(f);
     const g = d.querySelector('[data-txt="preco-antigo"]'),
       h = !p.tudo && Number.isSafeInteger(p.de) && p.de > p.preco;
@@ -2812,7 +2817,7 @@ function pintarHalloween() {
     desenharDoRef(d, DLG_H, a);
     animarAbobora(d, false);
   }
-  const b = Popup.textoCru(pop, 'titulo-dialogo', tr(p.nome || 'Pacote de Halloween'), d);
+  const b = Popup.textoCru(pop, 'titulo-dialogo', tr(p.nome || 'Halloween Pack'), d);
   if (b) caberLinha(b);
   const c = no(d, 'contagem');
   if (c) Popup.textoCru(pop, 'oferta-contagem', prazoHalloween(p), c);
@@ -2831,7 +2836,7 @@ function pintarHalloween() {
       t.dataset.ljCor0 = t.style.color || '';
     }
     const i = e.has(h) && a === 'venda';
-    t.textContent = i ? tr('JÁ É SEU') : t.dataset.lj0;
+    t.textContent = i ? tr('ALREADY YOURS') : t.dataset.lj0;
     t.style.color = i ? '#8CF5B0' : t.dataset.ljCor0;
   }
   const f = no(d, 'preco-separados');
@@ -2852,10 +2857,10 @@ function pintarHalloween() {
     const o = p.preco === 0;
     const q = no(g, 'txt-btn');
     if (q) {
-      q.textContent = tr(m ? (o ? 'pegando…' : 'comprando…') : l ? 'Confirmar' : o ? 'Pegar' : 'Comprar');
+      q.textContent = tr(m ? (o ? 'claiming…' : 'buying…') : l ? 'Confirm' : o ? 'Claim' : 'Buy');
       caberLinha(q);
     }
-    const r = Popup.textoCru(pop, 'preco', o ? tr('GRÁTIS') : fmt(p.preco), g);
+    const r = Popup.textoCru(pop, 'preco', o ? tr('FREE') : fmt(p.preco), g);
     if (r) caberLinha(r);
     g.dataset.desligado = n ? '0' : '1';
     g.style.opacity = n || m ? '1' : '0.5';
@@ -2875,7 +2880,7 @@ async function comprarHalloween(a = false) {
   if (!c) {
     const g = p.preco - saldo();
     if (g > 0) {
-      E.aviso = tr('Faltam {n} Diamantes: escolha um pacote.', { n: fmt(g) });
+      E.aviso = tr('You need {n} more Diamonds: choose a pack.', { n: fmt(g) });
       E.confirmar = null;
       E.hSozinha = false;
       fecharHalloween();
@@ -2899,7 +2904,7 @@ async function comprarHalloween(a = false) {
   if (E.exemplo) {
     E.confirmar = null;
     pintarHalloween();
-    dep.Chat?.sistema?.(tr('Prévia: nada é cobrado.'));
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
     return;
   }
   E.confirmar = null;
@@ -2909,7 +2914,7 @@ async function comprarHalloween(a = false) {
   const d = c || (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)).slice(0, 24);
   const f = dep.pedirLoja
     ? await dep.pedirLoja('comprar', { produto: b, ref: d, preco: p.preco })
-    : { ok: false, erro: 'sem-conexao', mensagem: 'Sem conexão com o servidor.' };
+    : { ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' };
   E.ocupado = null;
   if (f?.erro === 'sem-resposta') E.refIncerta[b] = d;
   else if (f?.ok || (f?.erro && f.erro !== 'sem-conexao')) delete E.refIncerta[b];
@@ -2927,14 +2932,14 @@ async function comprarHalloween(a = false) {
       if (Array.isArray(f.skins)) Conta.gravarBruto?.('skins', JSON.stringify(f.skins));
       if (Array.isArray(f.skinsMon)) Conta.gravarBruto?.('skinsMon', JSON.stringify(f.skinsMon));
     } catch (e) {
-      console.warn('loja: a posse nova (pacote)', e);
+      console.warn('shop: new ownership (bundle)', e);
     }
     const h = !!(f.repetido && c);
     if (!f.repetido || h) {
       const i = f.gratis
-        ? tr('🎃 {x}: as peças que faltavam são suas, de graça.', { x: tr(p.nome || 'Pacote de Halloween') })
-        : tr('💎 Loja de Diamantes: {x} (−{n} Diamantes).', {
-            x: tr(p.nome || 'Pacote de Halloween'),
+        ? tr('🎃 {x}: the missing pieces are yours, free.', { x: tr(p.nome || 'Halloween Pack') })
+        : tr('💎 Diamond Shop: {x} (−{n} Diamonds).', {
+            x: tr(p.nome || 'Halloween Pack'),
             n: fmt(f.compra?.qtd ?? p.preco),
           });
       if (dep.Chat?.sistemaCru) dep.Chat.sistemaCru(i);
@@ -2946,15 +2951,17 @@ async function comprarHalloween(a = false) {
   if (f?.erro === 'sem-resposta') {
     pintarHalloween();
     dialogo('recusado', {
-      titulo: 'Sem resposta do servidor',
+      titulo: 'No response from server',
       texto:
-        'O servidor não respondeu. Se o saldo caiu, a compra passou: "Tentar de novo" confere sem cobrar duas vezes.',
+        'The server didn\'t respond. If your balance dropped, the purchase went through: "Try again" checks without charging twice.',
       tentar: () => comprarHalloween(true),
     });
     return;
   }
   if (f?.erro === 'saldo-insuficiente') {
-    E.aviso = f.falta ? tr('Faltam {n} Diamantes: escolha um pacote.', { n: fmt(f.falta) }) : tr('Faltam Diamantes.');
+    E.aviso = f.falta
+      ? tr('You need {n} more Diamonds: choose a pack.', { n: fmt(f.falta) })
+      : tr('Not enough Diamonds.');
     E.hSozinha = false;
     fecharHalloween();
     irAba('diamantes');
@@ -2966,8 +2973,8 @@ async function comprarHalloween(a = false) {
   }
   pintar();
   dialogo('recusado', {
-    titulo: 'Não deu pra comprar',
-    texto: f?.mensagem || f?.erro || 'Não deu.',
+    titulo: "Couldn't purchase",
+    texto: f?.mensagem || f?.erro || "That didn't work.",
     tentar: f?.erro === 'pacote-recusado' ? () => comprarHalloween(true) : null,
   });
 }
@@ -2979,9 +2986,9 @@ function guardaRoupaHalloween() {
   fecharHalloween();
   import('./wardrobe_ui.mjs')
     .then((m) => {
-      if (!m.abrir('roupa', b)) dep.Chat?.sistema?.(tr('O Guarda-roupa não abriu agora.'));
+      if (!m.abrir('roupa', b)) dep.Chat?.sistema?.(tr("The Wardrobe didn't open just now."));
     })
-    .catch((e) => console.warn('loja: guarda-roupa', e));
+    .catch((e) => console.warn('shop: wardrobe', e));
 }
 function pararAbobora() {
   const a = E.abobora;
@@ -3696,7 +3703,7 @@ const provador3d = () =>
     })
     .catch((e) => {
       P3P = null;
-      console.warn('loja: o provador do pacote não carregou', e);
+      console.warn("shop: pack fitting room didn't load", e);
       return null;
     }));
 function soltarP3() {
@@ -3719,9 +3726,9 @@ function provarF(a, b = false) {
     import('./wardrobe_ui.mjs')
       .then((g) => {
         if (!g.abrir(p.tipo === 'roupa' ? 'roupa' : p.tipo, p.id))
-          dep.Chat?.sistema?.(tr('O Guarda-roupa não abriu agora.'));
+          dep.Chat?.sistema?.(tr("The Wardrobe didn't open just now."));
       })
-      .catch((e) => console.warn('loja: guarda-roupa', e));
+      .catch((e) => console.warn('shop: wardrobe', e));
     return;
   }
   fecharProvador();
@@ -3793,7 +3800,7 @@ function pintarProvadorF(d, J) {
   };
   if (!P3 || !ProvUI) {
     F.montado = null;
-    j('Carregando…');
+    j('Loading…');
     return;
   }
   if (!i || !P3.ligado()) {
@@ -3818,7 +3825,7 @@ function pintarProvadorF(d, J) {
     j(null);
     return;
   }
-  j('Carregando…');
+  j('Loading…');
   let q;
   const r = anelDoPalco(a, i);
   if (p.tipo === 'montaria')
@@ -3945,31 +3952,31 @@ function larguraDoTexto(a) {
   return Math.ceil(r.getBoundingClientRect().width / k);
 }
 export const EXEMPLOS = [
-  { id: 'pacote', nome: 'Pacote Fundador · o slide (a partir de)', nivel: 0, slide: true },
-  { id: 'subida', nome: 'Pacote Fundador · o slide pra quem tem o Desafiante', nivel: 1, slide: true },
-  { id: 'ja-e-seu', nome: 'Pacote Fundador · o slide (a conta tem o Campeão)', nivel: 3, slide: true },
-  { id: 'janela-campeao', nome: 'Pacote Fundador · a janela no Campeão', nivel: 0, slide: true, janela: 3 },
-  { id: 'janela-elite', nome: 'Pacote Fundador · a janela no Elite', nivel: 0, slide: true, janela: 2 },
-  { id: 'janela-desafiante', nome: 'Pacote Fundador · a janela no Desafiante', nivel: 0, slide: true, janela: 1 },
+  { id: 'pacote', nome: 'Founder Pack · the slide (starting at)', nivel: 0, slide: true },
+  { id: 'subida', nome: 'Founder Pack · the slide for Challenger owners', nivel: 1, slide: true },
+  { id: 'ja-e-seu', nome: 'Founder Pack · the slide (account has Champion)', nivel: 3, slide: true },
+  { id: 'janela-campeao', nome: 'Founder Pack · window on Champion', nivel: 0, slide: true, janela: 3 },
+  { id: 'janela-elite', nome: 'Founder Pack · window on Elite', nivel: 0, slide: true, janela: 2 },
+  { id: 'janela-desafiante', nome: 'Founder Pack · window on Challenger', nivel: 0, slide: true, janela: 1 },
   {
     id: 'janela-subida',
-    nome: 'Pacote Fundador · o Elite pra quem tem o Desafiante (Melhorar)',
+    nome: 'Founder Pack · Elite for Challenger owners (Upgrade)',
     nivel: 1,
     slide: true,
     janela: 2,
   },
   {
     id: 'campeao-melhorar',
-    nome: 'Pacote Fundador · o Campeão pra quem tem o Elite (Melhorar)',
+    nome: 'Founder Pack · Champion for Elite owners (Upgrade)',
     nivel: 2,
     slide: true,
     janela: 3,
   },
-  { id: 'elite-ja-e-seu', nome: 'Pacote Fundador · o Elite já é seu', nivel: 2, slide: true, janela: 2 },
-  { id: 'janela-ja-e-seu', nome: 'Pacote Fundador · o Campeão já é seu', nivel: 3, slide: true, janela: 3 },
+  { id: 'elite-ja-e-seu', nome: 'Founder Pack · Elite already yours', nivel: 2, slide: true, janela: 2 },
+  { id: 'janela-ja-e-seu', nome: 'Founder Pack · the Champion is already yours', nivel: 3, slide: true, janela: 3 },
   {
     id: 'heranca-aberta',
-    nome: 'Pacote Fundador · a herança aberta (Campeão)',
+    nome: 'Founder Pack · the open heritage (Champion)',
     nivel: 0,
     slide: true,
     janela: 3,
@@ -3977,7 +3984,7 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-campeao',
-    nome: 'Pacote Fundador · o provador do Campeão (o Leon)',
+    nome: 'Founder Pack · Champion fitting room (Leon)',
     nivel: 0,
     slide: true,
     janela: 3,
@@ -3985,7 +3992,7 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-asas',
-    nome: 'Pacote Fundador · o provador do Campeão (as Asas Flamejantes)',
+    nome: 'Founder Pack · the Champion fitting room (the Flaming Wings)',
     nivel: 0,
     slide: true,
     janela: 3,
@@ -3993,7 +4000,7 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-montaria',
-    nome: 'Pacote Fundador · montado no Solgaleo (Campeão)',
+    nome: 'Founder Pack · riding Solgaleo (Champion)',
     nivel: 0,
     slide: true,
     janela: 3,
@@ -4001,7 +4008,7 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-montaria-shiny',
-    nome: 'Pacote Fundador · montado no Solgaleo shiny (Campeão)',
+    nome: 'Founder Pack · riding shiny Solgaleo (Champion)',
     nivel: 0,
     slide: true,
     janela: 3,
@@ -4009,7 +4016,7 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-skate',
-    nome: 'Pacote Fundador · montado no Skate (Desafiante)',
+    nome: 'Founder Pack · riding the Skateboard (Challenger)',
     nivel: 0,
     slide: true,
     janela: 1,
@@ -4017,7 +4024,7 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-hoverboard',
-    nome: 'Pacote Fundador · montado no Hoverboard (Elite)',
+    nome: 'Founder Pack · riding the Hoverboard (Elite)',
     nivel: 0,
     slide: true,
     janela: 2,
@@ -4025,25 +4032,25 @@ export const EXEMPLOS = [
   },
   {
     id: 'provando-desafiante',
-    nome: 'Pacote Fundador · o provador do Desafiante (a mochila)',
+    nome: 'Founder Pack · Challenger fitting room (backpack)',
     nivel: 0,
     slide: true,
     janela: 1,
     provarF: 'mochila:Bag042',
   },
-  { id: 'medalhao', nome: 'Medalhão · à venda (aba Diamantes)', aba: 'diamantes' },
-  { id: 'medalhao-ativo', nome: 'Medalhão · ativo até (aba Diamantes)', aba: 'diamantes', dias: 23 },
-  { id: 'ovos', nome: 'Ovos · o Ticket e a Incubadora à venda (Conforto)', aba: 'conforto', filtro: 'ovos' },
+  { id: 'medalhao', nome: 'Medallion · for sale (Diamonds tab)', aba: 'diamantes' },
+  { id: 'medalhao-ativo', nome: 'Medallion · active until (Diamonds tab)', aba: 'diamantes', dias: 23 },
+  { id: 'ovos', nome: 'Eggs · Ticket and Incubator for sale (Comfort)', aba: 'conforto', filtro: 'ovos' },
   {
     id: 'montarias-shiny',
-    nome: 'Montarias shiny · os retratos shiny (Cosméticos › Montarias)',
+    nome: 'Shiny mounts · shiny portraits (Cosmetics › Mounts)',
     aba: 'cosmeticos',
     filtro: 'montarias',
     montarias: true,
   },
   {
     id: 'provador',
-    nome: 'Provador · Cosméticos (a roupa vestida no pedestal)',
+    nome: 'Fitting room · Cosmetics (outfit worn on pedestal)',
     aba: 'cosmeticos',
     pecas: true,
     montarias: true,
@@ -4051,21 +4058,21 @@ export const EXEMPLOS = [
   },
   {
     id: 'provador-mochila',
-    nome: 'Provador · Cosméticos (a mochila)',
+    nome: 'Fitting room · Cosmetics (backpack)',
     aba: 'cosmeticos',
     pecas: true,
     provar: 'mochila',
   },
   {
     id: 'provador-passe',
-    nome: 'Provador · Passe (o Prêmio final)',
+    nome: 'Fitting room · Pass (final Reward)',
     aba: 'passe',
     passe: 'sem-passe',
     provarPasse: true,
   },
   {
     id: 'provador-montaria',
-    nome: 'Provador · a montaria (o Rapidash shiny girando)',
+    nome: 'Fitting room · the mount (shiny Rapidash spinning)',
     aba: 'cosmeticos',
     filtro: 'montarias',
     montarias: true,
@@ -4073,14 +4080,14 @@ export const EXEMPLOS = [
   },
   {
     id: 'provador-montaria-sua',
-    nome: 'Provador · a montaria que já é sua (Ver nas montarias)',
+    nome: 'Fitting room · mount you already own (View in mounts)',
     aba: 'cosmeticos',
     filtro: 'montarias',
     montarias: true,
     provar: 'montaria:pm0006',
   },
-  { id: 'diamantes-8', nome: 'Diamantes · 8 pacotes e o valor livre', aba: 'diamantes', pacotes: 8 },
-  { id: 'pagamento', nome: 'Pagamento · Pix ou Cartão (prévia)', aba: 'diamantes', pacotes: 8, pagar: 'd1000' },
+  { id: 'diamantes-8', nome: 'Diamonds · 8 packs and the custom amount', aba: 'diamantes', pacotes: 8 },
+  { id: 'pagamento', nome: 'Payment · Pix or Card (preview)', aba: 'diamantes', pacotes: 8, pagar: 'd1000' },
   ...PT.EXEMPLOS.map((e) => ({
     id: e.id,
     nome: e.nome,
@@ -4089,24 +4096,24 @@ export const EXEMPLOS = [
     ...(e.dialogo ? { dialogo: e.dialogo } : {}),
     ...(e.aba ? { abaDesafios: e.aba } : {}),
   })),
-  { id: 'halloween', nome: 'Pacote de Halloween · o slide', halloween: [], skins: true },
-  { id: 'halloween-janela', nome: 'Pacote de Halloween · a abóbora abrindo', halloween: [], janelaH: true },
+  { id: 'halloween', nome: 'Halloween Pack · the slide', halloween: [], skins: true },
+  { id: 'halloween-janela', nome: 'Halloween Pack · pumpkin opening', halloween: [], janelaH: true },
   {
     id: 'halloween-parcial',
-    nome: 'Pacote de Halloween · pra quem já tem a Possessão e o Spectrier',
+    nome: 'Halloween Pack · for those who own Possession and Spectrier',
     halloween: [0, 1],
     janelaH: true,
   },
   {
     id: 'halloween-gratis',
-    nome: 'Pacote de Halloween · grátis pra quem já tem a Possessão e a roupa de menino (o resto sai de graça)',
+    nome: 'Halloween Pack · free for those who own Possession and the boy outfit (the rest is free)',
     halloween: [0, 3],
     janelaH: true,
   },
-  { id: 'halloween-comprado', nome: 'Pacote de Halloween · já é seu', halloween: [0, 1, 2, 3, 4], janelaH: true },
+  { id: 'halloween-comprado', nome: 'Halloween Pack · already yours', halloween: [0, 1, 2, 3, 4], janelaH: true },
   {
     id: 'skins-halloween',
-    nome: 'Skins de Pokémon · as 4 de Halloween a 150 (com a foto)',
+    nome: 'Pokémon skins · the 4 Halloween ones at 150 (with photo)',
     aba: 'cosmeticos',
     filtro: 'skinsmon',
     skins: true,
@@ -4116,18 +4123,18 @@ export const EXEMPLOS = [
 const ATE_HALLOWEEN = '2026-11-02T02:59:59Z';
 function halloweenDeExemplo(a = []) {
   const L = [
-    ['peca:peito:56015', 'peito', 56015, 'Possessão Fantasmagórica Laranja', 600],
+    ['peca:peito:56015', 'peito', 56015, 'Orange Ghastly Possession', 600],
     ['montariaNormal:pm0897', 'montaria', 'pm0897', 'Spectrier', 550],
-    ['montariaNormal:pm0897_71', 'montaria', 'pm0897_71', 'Cavaleiro Fantasma', 550],
-    ['peca:roupa:boy_043', 'roupa', 'boy_043', 'Sombras de Abóbora (menino)', 600],
-    ['peca:roupa:girl_043', 'roupa', 'girl_043', 'Sombras de Abóbora (menina)', 600],
+    ['montariaNormal:pm0897_71', 'montaria', 'pm0897_71', 'Phantom Rider', 550],
+    ['peca:roupa:boy_043', 'roupa', 'boy_043', 'Pumpkin Shadows (boy)', 600],
+    ['peca:roupa:girl_043', 'roupa', 'girl_043', 'Pumpkin Shadows (girl)', 600],
   ];
   const b = PE.precoDaConta({ preco: 1200, de: 2900, valores: L.map((x, i) => ({ valor: x[4], tem: a.includes(i) })) });
   const c = Date.parse(ATE_HALLOWEEN),
     d = c > Date.now() ? c : Date.now() + (7 * 24 + 4) * 3600e3 + 120e3;
   return {
     id: 'pacote:halloween-2026',
-    nome: 'Pacote de Halloween',
+    nome: 'Halloween Pack',
     arte: ARTE_HALLOWEEN,
     preco: b.tudo ? null : b.preco,
     precoCheio: 1200,
@@ -4144,9 +4151,9 @@ function halloweenDeExemplo(a = []) {
   };
 }
 const SKINS_EXEMPLO = [
-  ['pm0001_31', 'Bulbasaur Bruxinho'],
-  ['pm0004_31', 'Charmander Vampiro'],
-  ['pm0007_31', 'Squirtle Abóbora'],
+  ['pm0001_31', 'Witchy Bulbasaur'],
+  ['pm0004_31', 'Vampire Charmander'],
+  ['pm0007_31', 'Pumpkin Squirtle'],
   ['pm0025_31', 'Pikachu Mimikyu'],
 ].map(([a, b], i) => ({
   id: 'skinMon:' + a,
@@ -4210,16 +4217,16 @@ export async function previa(a = EXEMPLOS[0].id) {
   const b = EXEMPLOS.find((e) => e.id === a) || EXEMPLOS[0];
   await Promise.all([carregarIndice(), carregarExemplo()]);
   const c = ofertasDeExemplo(E.tabelaExemplo, { nomeDaPeca: nomeDaPecaExemplo });
-  if (!c.length) console.warn('loja: a prévia não achou a tabela do Pacote Fundador (' + TABELA_FUNDADOR + ')');
+  if (!c.length) console.warn("shop: preview couldn't find the Founder Pack table (" + TABELA_FUNDADOR + ')');
   const d = 1000;
   const f = {
     aberta: true,
     saldo: { total: 1250, bloqueada: false, comprados: d },
     produtos: [
-      { id: 'perfumeShiny', nome: 'Perfume de Shiny', preco: 90, pacote: 5, preso: true },
+      { id: 'perfumeShiny', nome: 'Shiny Perfume', preco: 90, pacote: 5, preso: true },
       {
         id: 'vagasCaixa',
-        nome: 'Vagas na Caixa',
+        nome: 'Box Slots',
         preco: 50,
         pacote: 50,
         compradas: 0,
@@ -4233,14 +4240,14 @@ export async function previa(a = EXEMPLOS[0].id) {
       { id: 'medalhao90', nome: TXT.medalhaoNome, preco: 570, item: 900170, qtd: 3, preso: false, soComprados: false },
       {
         id: 'ticketEclosao',
-        nome: 'Ticket de eclosão',
+        nome: 'Hatch Ticket',
         preco: 20,
         item: 900150,
         qtd: 1,
         preso: true,
         soComprados: false,
       },
-      { id: 'incubadora', nome: 'Incubadora', preco: 250, item: 900151, qtd: 1, preso: false, soComprados: false },
+      { id: 'incubadora', nome: 'Incubator', preco: 250, item: 900151, qtd: 1, preso: false, soComprados: false },
     ],
   };
   if (b.pecas) f.pecas = pecasDeExemplo();
@@ -4358,9 +4365,9 @@ export function repintar() {
     } catch {}
     dialogo('confirmado', {
       icone: ARTE_FUNDADOR.compra,
-      titulo: tr('Pago ✔') + ' · ' + tr('Pacote Fundador') + (a ? ' · ' + tr(a) : ''),
+      titulo: tr('Paid ✔') + ' · ' + tr('Founder Pack') + (a ? ' · ' + tr(a) : ''),
       texto: tr(TXT.notaComprado),
-      botao: 'Continuar',
+      botao: 'Continue',
     });
   }
   if (E.esperando && !E.esperando.produto && !E.esperando.abrindo && saldo() > E.esperando.saldoAntes) {
@@ -4387,9 +4394,9 @@ export function repintar() {
       dialogo('confirmado', {
         n,
         ...(e.arte ? { icone: e.arte, folga: 'nova' } : {}),
-        titulo: h ? tr('Os {n} Diamantes chegaram', { n: fmt(n) }) : tr('Pago ✔ +{n} Diamantes', { n: fmt(n) }),
-        texto: tr('Os Diamantes já estão no seu saldo e ficam presos à sua conta.'),
-        botao: 'Continuar',
+        titulo: h ? tr('Your {n} Diamonds arrived', { n: fmt(n) }) : tr('Paid ✔ +{n} Diamonds', { n: fmt(n) }),
+        texto: tr('The Diamonds are in your balance and bound to your account.'),
+        botao: 'Continue',
       });
     }
   }
@@ -4466,7 +4473,7 @@ function pintar() {
 }
 const textoEspera = () =>
   E.carregando && !E.vit
-    ? 'carregando…'
+    ? 'loading…'
     : E.erro
       ? E.erro
       : !E.vit?.aberta || !(E.vit.produtos || []).length
@@ -4501,7 +4508,7 @@ function pintarCard(c, P) {
   }
   Popup.textoCru(pop, 'oferta-nome', P.nome, c);
   Popup.textoCru(pop, 'oferta-tipo', P.tipo, c);
-  c.title = (P.descLonga || P.desc) + (P.preso ? ' ' + tr('Preso à conta: não vai pro Mercado nem pra troca.') : '');
+  c.title = (P.descLonga || P.desc) + (P.preso ? ' ' + tr("Account-bound: can't go to the Market or be traded.") : '');
   mostra(no(c, 'selo-provar'), provaPeca(P) && !P.jaTem);
   const b = no(c, 'btn-comprar');
   let d = no(c, 'pilula-limite');
@@ -4513,7 +4520,7 @@ function pintarCard(c, P) {
     if (b)
       Object.assign(d.style, { left: b.style.left, top: b.style.top, width: b.style.width, height: b.style.height });
     if (P.limite) {
-      Popup.texto(pop, 'limite', P.jaTem ? 'JÁ É SEU' : 'LIMITE ATINGIDO', d);
+      Popup.texto(pop, 'limite', P.jaTem ? 'ALREADY YOURS' : 'LIMIT REACHED', d);
       d.style.display = 'block';
     } else d.style.display = 'none';
   }
@@ -4531,7 +4538,7 @@ function pintarCard(c, P) {
     const t = b.querySelector('[data-txt="preco"]');
     if (t) {
       confirmarNoBotao(b, t, E.confirmar === P.id && E.ocupado !== P.id);
-      t.textContent = E.ocupado === P.id ? '…' : E.confirmar === P.id ? tr('Confirmar') : fmt(P.preco);
+      t.textContent = E.ocupado === P.id ? '…' : E.confirmar === P.id ? tr('Confirm') : fmt(P.preco);
       caber(t);
     }
     b.style.filter = E.confirmar === P.id ? 'brightness(1.12) saturate(1.2)' : '';
@@ -4553,7 +4560,7 @@ function pintarCard(c, P) {
     c.appendChild(h);
   }
   if (g) {
-    Popup.textoCru(pop, 'aviso-falta', f || (e ? tr('faltam {n} comprados', { n: fmt(e) }) : ''), c);
+    Popup.textoCru(pop, 'aviso-falta', f || (e ? tr('{n} more purchases needed', { n: fmt(e) }) : ''), c);
     mostra(g, !!(e || f));
   }
   if (g && (f || g.dataset.fs0)) encolherAviso(g, c);
@@ -4668,7 +4675,7 @@ function pintarDestaques() {
     delete a.dataset.produto;
   } else {
     a.dataset.produto = P.id;
-    Popup.texto(pop, 'oferta-selo', P.preso ? 'PRESO À CONTA' : 'NEGOCIÁVEL', a);
+    Popup.texto(pop, 'oferta-selo', P.preso ? 'ACCOUNT-BOUND' : 'TRADABLE', a);
     Popup.textoCru(pop, 'oferta-nome', P.nome, a);
     const k = Popup.textoCru(pop, 'oferta-desc', P.desc, a);
     if (k) k.title = P.descLonga && P.descLonga !== P.desc ? P.descLonga : '';
@@ -4693,10 +4700,10 @@ function pintarDestaques() {
       s = P.limite || !!r;
     if (q) {
       q.textContent = P.limite
-        ? tr('Máximo comprado')
+        ? tr('Max purchased')
         : r
-          ? tr('Faltam {n} comprados', { n: fmt(r) })
-          : tr(E.ocupado === P.id ? 'comprando…' : E.confirmar === P.id ? 'Confirmar' : 'Comprar');
+          ? tr('{n} more purchases needed', { n: fmt(r) })
+          : tr(E.ocupado === P.id ? 'buying…' : E.confirmar === P.id ? 'Confirm' : 'Buy');
       Hud.encolher(q);
       caberLinha(q);
     }
@@ -4726,7 +4733,7 @@ function pintarVitrineFundador(a, F, n) {
   Popup.textoCru(pop, 'oferta-titulo', V.titulo, c);
   Popup.textoCru(pop, 'oferta-desc', V.linha, c);
   const b = Popup.textoCru(pop, 'a-partir', V.aPartir, c),
-    d = Popup.textoCru(pop, 'preco-reais', V.preco ? dinheiro(V.preco, m) : tr('Em breve'), c);
+    d = Popup.textoCru(pop, 'preco-reais', V.preco ? dinheiro(V.preco, m) : tr('Coming soon'), c);
   mostra(b, V.mostraPreco);
   mostra(d, V.mostraPreco);
   if (b) caberLinha(b);
@@ -4843,9 +4850,13 @@ function pintarAba(a) {
   const j = textoEspera();
   avisoLista(
     g,
-    L.length ? '' : j && j !== 'Nada à venda na loja de Diamantes agora.' ? j : 'Nada à venda nesta aba agora.',
+    L.length
+      ? ''
+      : j && j !== 'Nada à venda na loja de Diamantes agora.'
+        ? j
+        : 'Nothing for sale in this tab right now.',
   );
-  Popup.textoCru(pop, 'itens-contagem', L.length === 1 ? tr('1 item') : tr('{n} itens', { n: fmt(L.length) }), b);
+  Popup.textoCru(pop, 'itens-contagem', L.length === 1 ? tr('1 item') : tr('{n} items', { n: fmt(L.length) }), b);
 }
 function pintarDiamantes() {
   const b = bloco('diamantes');
@@ -4897,7 +4908,7 @@ function pintarDiamantes() {
       const o = no(c, 'btn-comprar-pacote'),
         r = o?.querySelector('.pf-rotulo, [data-txt]');
       if (r) {
-        r.textContent = E.ocupado === b.id ? tr('abrindo o pagamento…') : dinheiro(b[m], m);
+        r.textContent = E.ocupado === b.id ? tr('opening payment…') : dinheiro(b[m], m);
         Hud.encolher(r);
         caberLinha(r);
       }
@@ -4910,7 +4921,7 @@ function pintarDiamantes() {
     cartaoLivre(a, e.length);
     if (a.__lj) a.__lj.horizontal = true;
     setasDaFileira(a);
-    if (!e.length) avisoPacotes(a, E.carregando ? 'carregando…' : 'A loja não respondeu. Feche e abra de novo.');
+    if (!e.length) avisoPacotes(a, E.carregando ? 'loading…' : "The shop didn't respond. Close and open it again.");
     else avisoPacotes(a, '');
     const A = avisoCompra(d),
       k = h && e.length ? [A.titulo ? '' : A.t1, A.t2].filter(Boolean).join(' ') : '';
@@ -5060,7 +5071,7 @@ function montarLivre(c, a) {
       Object.assign(u, { type: 'text', inputMode: 'numeric', autocomplete: 'off', spellcheck: false, maxLength: 7 });
       u.setAttribute('pattern', '[0-9]*');
       u.setAttribute('enterkeyhint', 'done');
-      u.setAttribute('aria-label', tr('Quantos Diamantes'));
+      u.setAttribute('aria-label', tr('How many Diamonds'));
       u.dataset.ljLivre = '1';
       const w = parseFloat(r.style.fontSize) || 16,
         z = w < 16 ? w / 16 : 1;
@@ -5165,7 +5176,7 @@ function pintarLivre(d = false, e = null) {
     h = g ? precoLivre(n, E.info, m) : null;
   const i = c.querySelector(':scope > [data-fig="titulo-livre"]');
   if (i) {
-    i.textContent = tr('Quantos você quiser');
+    i.textContent = tr('As many as you want');
     caberLinha(i);
   }
   const j = c.querySelector('input[data-lj-livre]');
@@ -5195,8 +5206,8 @@ function pintarLivre(d = false, e = null) {
     mostra(q, true);
     const t =
       L.passo > 1
-        ? tr('de {a} a {b} Diamantes, de {p} em {p}', { a: fmt(L.min), b: fmt(L.max), p: fmt(L.passo) })
-        : tr('de {a} a {b} Diamantes', { a: fmt(L.min), b: fmt(L.max) });
+        ? tr('{a} to {b} Diamonds, in steps of {p}', { a: fmt(L.min), b: fmt(L.max), p: fmt(L.passo) })
+        : tr('{a} to {b} Diamonds', { a: fmt(L.min), b: fmt(L.max) });
     Popup.textoCru(pop, 'preco-antigo', t, c);
     cor(q, g || E.livre.texto === '' ? null : '#FF8A80');
     caberLinha(q);
@@ -5205,7 +5216,7 @@ function pintarLivre(d = false, e = null) {
     r = s?.querySelector('.pf-rotulo, [data-txt]'),
     u = f && g && !!h;
   if (r) {
-    r.textContent = E.ocupado === LIVRE ? tr('abrindo o pagamento…') : tr('Comprar');
+    r.textContent = E.ocupado === LIVRE ? tr('opening payment…') : tr('Buy');
     Hud.encolher(r);
     caberLinha(r);
   }
@@ -5229,7 +5240,7 @@ function montarFaixaLivre(f) {
   Object.assign(c, { type: 'text', inputMode: 'numeric', autocomplete: 'off', spellcheck: false, maxLength: 7 });
   c.setAttribute('pattern', '[0-9]*');
   c.setAttribute('enterkeyhint', 'done');
-  c.setAttribute('aria-label', tr('Quantos Diamantes'));
+  c.setAttribute('aria-label', tr('How many Diamonds'));
   c.dataset.ljLivreTopo = '1';
   const d = parseFloat(b?.style.fontSize) || 15,
     z = d < 16 ? d / 16 : 1;
@@ -5346,18 +5357,18 @@ function pintarFaixaLivre(L, n, c, d, e, g) {
   const i = !Number.isFinite(n)
     ? ''
     : n > L.max
-      ? tr('O máximo é {n} Diamantes por compra', { n: fmt(L.max) })
+      ? tr('Max {n} Diamonds per purchase', { n: fmt(L.max) })
       : n < L.min
-        ? tr('O mínimo é {n} Diamantes', { n: fmt(L.min) })
+        ? tr('Minimum is {n} Diamonds', { n: fmt(L.min) })
         : !c
-          ? tr('De {p} em {p} Diamantes', { p: fmt(L.passo) })
+          ? tr('In steps of {p} Diamonds', { p: fmt(L.passo) })
           : '';
   const j = Popup.textoCru(
     pop,
     'aviso-topo',
     !E.info?.aberta
-      ? tr('A compra de Diamantes ainda está fechada')
-      : i || tr('de {a} a {b} Diamantes', { a: fmt(L.min), b: fmt(L.max) }),
+      ? tr('Diamond purchases are still closed')
+      : i || tr('{a} to {b} Diamonds', { a: fmt(L.min), b: fmt(L.max) }),
     f,
   );
   if (j) cor(j, i || !E.info?.aberta ? '#FF8A80' : null);
@@ -5448,18 +5459,18 @@ function avisoCompra(a) {
     ? E.aviso
     : !E.info
       ? E.carregando
-        ? tr('carregando…')
-        : tr('A loja não respondeu. Feche e abra de novo.')
+        ? tr('loading…')
+        : tr("The shop didn't respond. Close and open it again.")
       : !a
-        ? tr('A compra de Diamantes ainda está fechada.')
+        ? tr('Diamond purchases are still closed.')
         : b
-          ? tr('MODO DE TESTE: nada é cobrado (cartão 4242 4242 4242 4242).')
-          : tr('Comprar Diamantes');
+          ? tr('TEST MODE: nothing is charged (card 4242 4242 4242 4242).')
+          : tr('Buy Diamonds');
   const e = !(a || E.aviso)
     ? ''
     : moeda() === 'brl'
-      ? tr('Pagamento pela Stripe: cartão, e Pix em reais. Os Diamantes ficam presos à sua conta.')
-      : tr('Pagamento pela Stripe, com cartão. Os Diamantes ficam presos à sua conta.');
+      ? tr('Payment via Stripe: card, and Pix in BRL. Diamonds are bound to your account.')
+      : tr('Payment via Stripe, by card. Diamonds are bound to your account.');
   return { t1: d, t2: e, titulo: c, cor: E.aviso || (a && b) ? '#FFE7A0' : E.info && !a ? '#FF8A80' : null };
 }
 function pintarMedalhao(g, a) {
@@ -5477,15 +5488,15 @@ function pintarMedalhao(g, a) {
   if (MEDALHAO === 'em-breve') {
     Popup.imagem(pop, 'medalhao', null, g);
     mostra(i, false);
-    Popup.texto(pop, 'medalhao-nome', 'Medalhão · 30 dias', g);
-    Popup.texto(pop, 'medalhao-desc', 'Chega numa próxima atualização.', g);
+    Popup.texto(pop, 'medalhao-nome', 'Medallion · 30 days', g);
+    Popup.texto(pop, 'medalhao-desc', 'Coming in a future update.', g);
     mostra(e, true);
-    if (e) Popup.texto(pop, 'negociavel', 'NEGOCIÁVEL', e);
+    if (e) Popup.texto(pop, 'negociavel', 'TRADABLE', e);
     mostra(b, true);
     if (b) {
       const t = b.querySelector('[data-txt="preco"]');
       if (t) {
-        t.textContent = tr('Em breve');
+        t.textContent = tr('Coming soon');
         caber(t);
       }
       b.style.opacity = '0.5';
@@ -5525,7 +5536,7 @@ function pintarMedalhao(g, a) {
     const u = q ? descontoDosMedalhoes(q, j?.preco) : null;
     const v = q
       ? u
-        ? tr('{q} Medalhões de 30 dias, com {d} % a menos. Use ou venda no Mercado por Moedas.', { q, d: u })
+        ? tr('{q} 30-day Medallions, {d} % off. Use them or sell them on the Market for Coins.', { q, d: u })
         : s.desc
       : textoMedalhao('curta', tr);
     Popup.textoCru(pop, 'medalhao-desc', F.falta ? tr(TXT.medalhaoFaltam, { n: fmt(F.falta) }) : v, g);
@@ -5542,13 +5553,13 @@ function pintarMedalhao(g, a) {
       caberLinha(l);
     }
     mostra(e, true);
-    if (e) Popup.texto(pop, 'negociavel', 'NEGOCIÁVEL', e);
+    if (e) Popup.texto(pop, 'negociavel', 'TRADABLE', e);
     mostra(b, true);
     if (b) {
       const t = b.querySelector('[data-txt="preco"]');
       if (t) {
         confirmarNoBotao(b, t, F.botao === 'confirmar');
-        t.textContent = F.botao === 'ocupado' ? '…' : F.botao === 'confirmar' ? tr('Confirmar') : fmt(F.preco);
+        t.textContent = F.botao === 'ocupado' ? '…' : F.botao === 'confirmar' ? tr('Confirm') : fmt(F.preco);
         caber(t);
       }
       b.dataset.desligado = F.desligado ? '1' : '0';
@@ -5638,7 +5649,7 @@ function chipsMoeda(g) {
   const j = px(d, 'left') + px(d, 'width'),
     k = Math.round((px(g, 'height') - h) / 2);
   [
-    ['usd', 'Dólar (US$)'],
+    ['usd', 'Dollar (US$)'],
     ['brl', 'Real (R$)'],
   ].forEach(([m, a], i) => {
     const c = b.cloneNode(true);
@@ -5717,7 +5728,7 @@ function pintarChipsMedalhao(g, a) {
     const t = c.querySelector('[data-txt="filtro"]'),
       s = c.dataset.ljMed === 'medalhao90' ? 90 : c.dataset.ljMed === 'medalhao60' ? 60 : 30;
     if (t && r) {
-      t.textContent = tr('{n} dias', { n: s });
+      t.textContent = tr('{n} days', { n: s });
       caber(t);
     }
   }
@@ -6053,7 +6064,7 @@ function pintarCardPasse(g, K, M) {
     g.appendChild(k);
     const t = k.querySelector('[data-txt="resgatar"]');
     if (t) {
-      t.textContent = tr('RESGATAR');
+      t.textContent = tr('REDEEM');
       caber(t);
     }
   }
@@ -6127,10 +6138,10 @@ function pintarCardPasse(g, K, M) {
   g.title = K.dica;
 }
 const TIPO_NO_PROVADOR = {
-  roupa: 'Roupa',
-  mochila: 'Mochila',
-  peito: 'Efeito de peito',
-  rastro: 'Rastro',
+  roupa: 'Outfit',
+  mochila: 'Bag',
+  peito: 'Chest effect',
+  rastro: 'Trail',
   titulo: 'Título',
 };
 const ESTADO_DAS_ACOES = { pronto: 'resgatar', cadeado: 'liberar', pego: 'ja-e-seu' };
@@ -6156,7 +6167,7 @@ function itemProvadorPasse(c) {
   return {
     ...(e || {}),
     nome: d,
-    tipo: tr(TIPO_NO_PROVADOR[p.tipo] || 'Roupa'),
+    tipo: tr(TIPO_NO_PROVADOR[p.tipo] || 'Outfit'),
     info: PT.infoDoProvador(x.nivel, x.trilha, x.estado, C),
     foto: urlImg(PT.iconeDoPremio(p, C.sexo)),
     estado: f,
@@ -6164,7 +6175,7 @@ function itemProvadorPasse(c) {
       if (f !== 'liberar') return;
       const b = no(a, 'btn-liberar-provando'),
         c = PT.precoDoPasse(E.temporada);
-      ProvUI.linhaDePreco(b, tr('Liberar'), c != null ? fmt(c) : '—', { liso: ARTE_LISA_PASSE() });
+      ProvUI.linhaDePreco(b, tr('Unlock'), c != null ? fmt(c) : '—', { liso: ARTE_LISA_PASSE() });
     },
   };
 }
@@ -6301,7 +6312,7 @@ function detalheDesafio(i) {
   try {
     dep.Som?.tocar?.('ui/sound_click', { volume: 0.4 });
   } catch {}
-  dialogo('confirmado', { icone: urlImg(x.icone), titulo: tr('Desafio do passe'), texto: x.detalhe });
+  dialogo('confirmado', { icone: urlImg(x.icone), titulo: tr('Pass challenge'), texto: x.detalhe });
   const a = no(dlg(), 'camada-1');
   if (a) a.style.display = x.concluido ? 'block' : 'none';
 }
@@ -6352,7 +6363,7 @@ function marcarAbaDialogo(d, b) {
   }
 }
 function pintarDesafios(d, C, a) {
-  Popup.texto(pop, 'titulo-dialogo', 'Desafios do passe', d);
+  Popup.texto(pop, 'titulo-dialogo', 'Pass challenges', d);
   marcarAbaDialogo(d, E.abaDesafios);
   const D = PT.desafios(E.temporada, E.abaDesafios, C);
   E.detalhes = D.linhas;
@@ -6389,7 +6400,7 @@ function pintarDesafios(d, C, a) {
     mostra(b, !x.concluido);
     mostra(d, x.concluido);
     if (b) Popup.textoCru(pop, 'xp-desafio', x.xp, b);
-    if (d) Popup.texto(pop, 'concluido', 'CONCLUÍDO', d);
+    if (d) Popup.texto(pop, 'concluido', 'COMPLETE', d);
     c.title = [x.texto, x.dica].filter(Boolean).join(' — ');
     c.style.opacity = x.apagado ? '0.6' : '';
   });
@@ -6425,7 +6436,7 @@ function pintarLiberar(d, C) {
       Popup.textoCru(pop, 'item-premium', x.nome, c);
       Popup.textoCru(pop, 'item-premium-desc', x.desc, c);
     });
-  Popup.textoCru(pop, 'saldo-dialogo', tr('Seu saldo: {n}', { n: fmt(saldo()) }), d);
+  Popup.textoCru(pop, 'saldo-dialogo', tr('Your balance: {n}', { n: fmt(saldo()) }), d);
   const b = no(d, 'btn-confirmar'),
     e = b?.querySelector('[data-txt="preco"]'),
     f = E.ocupadoPasse === 'passe' || E.conferindo === 'dialogo-liberar-premium';
@@ -6447,7 +6458,7 @@ function pintarLiberar(d, C) {
 function pintarComprarNiveis(d, C) {
   const N = PT.comprarNiveis(E.temporada, E.qNiveis, C);
   if (N.q) E.qNiveis = N.q;
-  Popup.texto(pop, 'titulo-dialogo', 'Comprar níveis', d);
+  Popup.texto(pop, 'titulo-dialogo', 'Buy levels', d);
   Popup.textoCru(pop, 'nivel-atual', String(N.atual), d);
   Popup.textoCru(pop, 'nivel-novo', String(N.novo), d);
   Popup.textoCru(pop, 'qtd-niveis', String(N.q), d);
@@ -6463,7 +6474,7 @@ function pintarComprarNiveis(d, C) {
     }
   }
   Popup.textoCru(pop, 'nivel-info', N.texto, d);
-  Popup.textoCru(pop, 'saldo-dialogo', tr('Seu saldo: {n}', { n: fmt(saldo()) }), d);
+  Popup.textoCru(pop, 'saldo-dialogo', tr('Your balance: {n}', { n: fmt(saldo()) }), d);
   const a = no(d, 'btn-confirmar'),
     c = a?.querySelector('[data-txt="preco"]'),
     e = E.ocupadoPasse === 'niveis' || E.conferindo === 'dialogo-comprar-nivel';
@@ -6480,7 +6491,7 @@ function pintarComprarNiveis(d, C) {
 }
 const novaRef = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)).slice(0, 24);
 const esperar = (a) => new Promise((r) => setTimeout(r, a));
-const SEM_CONEXAO = () => ({ ok: false, erro: 'sem-conexao', mensagem: 'Sem conexão com o servidor.' });
+const SEM_CONEXAO = () => ({ ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' });
 async function pedirPasse(a, b = {}) {
   if (!dep.pedirTemporada) return SEM_CONEXAO();
   for (let i = 0; ; i++) {
@@ -6496,7 +6507,7 @@ async function pedirPasse(a, b = {}) {
   }
 }
 function faltaDiamantes(n) {
-  E.aviso = n > 0 ? tr('Faltam {n} Diamantes: escolha um pacote.', { n: fmt(n) }) : tr('Faltam Diamantes.');
+  E.aviso = n > 0 ? tr('You need {n} more Diamonds: choose a pack.', { n: fmt(n) }) : tr('Not enough Diamonds.');
   fecharDialogoPasse();
   irAba('diamantes');
 }
@@ -6526,8 +6537,8 @@ function recusaVer(r, a, b) {
       titulo: a,
       texto:
         r.erro === 'sem-conexao'
-          ? 'Sem conexão com o servidor.'
-          : 'O servidor não respondeu. Nada foi cobrado: tente de novo.',
+          ? 'No connection to the server.'
+          : "The server didn't respond. Nothing was charged: try again.",
       tentar: b,
     });
     return;
@@ -6544,14 +6555,17 @@ function dialogoPasseLiberado(a, b = []) {
   const c = PT.nomesEntregues(E.temporada, b, ctxPasse());
   dialogo('confirmado', {
     icone: urlImg(L.vitrine.icone) || ICONE_DIAMANTE,
-    titulo: tr('Passe da temporada liberado!'),
+    titulo: tr('Season Pass unlocked!'),
     texto: a
-      ? tr('A compra de antes tinha passado: {x}. Nada foi cobrado de novo.', { x: tr('Passe da temporada') })
+      ? tr('Your earlier purchase went through: {x}. Nothing was charged again.', { x: tr('Season Pass') })
       : c.length
-        ? tr('A trilha paga é sua. Na sua conta agora: {x}. O que você já alcançou nela está pronto pra pegar.', {
-            x: listaNomes(c),
-          })
-        : tr('A trilha paga é sua: o que você já alcançou nela está pronto pra pegar.'),
+        ? tr(
+            "The paid track is yours. Now on your account: {x}. Everything you've already reached on it is ready to claim.",
+            {
+              x: listaNomes(c),
+            },
+          )
+        : tr("The paid track is yours: everything you've already reached on it is ready to claim."),
   });
 }
 function dialogoNiveisDeAntes(n, a = null) {
@@ -6560,16 +6574,16 @@ function dialogoNiveisDeAntes(n, a = null) {
   } catch {}
   E.centrarTrilha = true;
   pintar();
-  const x = n === 1 ? tr('+1 nível no passe') : tr('+{n} níveis no passe', { n });
+  const x = n === 1 ? tr('+1 pass level') : tr('+{n} pass levels', { n });
   dialogo('confirmado', {
     icone: ICONE_DIAMANTE,
-    titulo: tr('A compra de antes tinha passado'),
+    titulo: tr('Your earlier purchase went through'),
     texto: a
       ? tr(
-          '{x}, por {d} Diamantes, na compra que não tinha respondido. Nada foi cobrado agora: se quiser mais níveis, compre de novo.',
+          "{x}, for {d} Diamonds, from the purchase that didn't respond. Nothing was charged now: buy again if you want more levels.",
           { x, d: fmt(a) },
         )
-      : tr('{x}, na compra que não tinha respondido. Nada foi cobrado agora: se quiser mais níveis, compre de novo.', {
+      : tr("{x}, from the purchase that didn't respond. Nothing was charged now: buy again if you want more levels.", {
           x,
         }),
   });
@@ -6581,7 +6595,7 @@ async function resgatar(a, b) {
     K = c?.[b];
   if (!K?.clicavel) return;
   if (E.exemplo) {
-    dep.Chat?.sistema?.(tr('Prévia: nada é cobrado.'));
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
     return;
   }
   E.ocupadoPasse = 'pegar:' + b + ':' + a;
@@ -6596,9 +6610,9 @@ async function resgatar(a, b) {
     } catch {}
     posseNova(r);
     const d = PT.nomesEntregues(E.temporada, r.entregues, ctxPasse());
-    if (d.length) chatPasse(tr('🎁 Passe da temporada: {x}.', { x: listaNomes(d) }));
+    if (d.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(d) }));
     if ((r.pendentes || []).some((x) => x?.estado === 'falhou'))
-      dep.Chat?.sistema?.(tr('Parte do prêmio não coube agora (a bolsa está cheia?): ela continua pronta pra pegar.'));
+      dep.Chat?.sistema?.(tr("Part of the reward didn't fit right now (Bag full?): it's still ready to claim."));
     pintar();
     return;
   }
@@ -6611,7 +6625,7 @@ async function resgatar(a, b) {
     else verTemporada();
     return;
   }
-  recusaPasse(r, 'Não deu pra pegar');
+  recusaPasse(r, "Couldn't claim");
 }
 async function liberarPremium() {
   if (E.ocupadoPasse || E.conferindo) return;
@@ -6627,7 +6641,7 @@ async function liberarPremium() {
     return;
   }
   if (E.exemplo) {
-    dep.Chat?.sistema?.(tr('Prévia: nada é cobrado.'));
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
     return;
   }
   if (!E.refPasse && L.preco - saldo() > 0) {
@@ -6640,7 +6654,7 @@ async function liberarPremium() {
   const b = await pedirPasse('ver');
   if (!b?.ok || !b.vista) {
     E.ocupadoPasse = null;
-    if (aberto()) recusaVer(b, 'Não deu pra liberar o passe', a);
+    if (aberto()) recusaVer(b, "Couldn't unlock the pass", a);
     return;
   }
   const c = novaVista(b.vista);
@@ -6682,15 +6696,15 @@ async function liberarPremium() {
     fecharDialogoPasse();
     posseNova(r);
     if (r.repetido) {
-      chatPasse(tr('💎 Passe da temporada: a compra de antes tinha passado (o passe foi liberado).'));
+      chatPasse(tr('💎 Season pass: your earlier purchase went through (pass unlocked).'));
       dialogoPasseLiberado(true);
       return;
     }
-    chatPasse(tr('💎 Passe da temporada liberado (−{n} Diamantes).', { n: fmt(r.compra?.qtd ?? d.preco) }));
+    chatPasse(tr('💎 Season Pass unlocked (−{n} Diamonds).', { n: fmt(r.compra?.qtd ?? d.preco) }));
     const g = PT.nomesEntregues(E.temporada, r.entregues, ctxPasse());
-    if (g.length) chatPasse(tr('🎁 Passe da temporada: {x}.', { x: listaNomes(g) }));
+    if (g.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(g) }));
     if ((r.pendentes || []).some((x) => x?.estado === 'falhou'))
-      dep.Chat?.sistema?.(tr('Parte do prêmio não coube agora (a bolsa está cheia?): ela continua pronta pra pegar.'));
+      dep.Chat?.sistema?.(tr("Part of the reward didn't fit right now (Bag full?): it's still ready to claim."));
     dialogoPasseLiberado(false, r.entregues);
     return;
   }
@@ -6698,7 +6712,7 @@ async function liberarPremium() {
     precoMudou('passe', PT.precoDoPasse(E.temporada));
     return;
   }
-  recusaPasse(r, 'Não deu pra liberar o passe', a);
+  recusaPasse(r, "Couldn't unlock the pass", a);
 }
 async function comprarNiveis() {
   if (E.ocupadoPasse || E.conferindo) return;
@@ -6714,7 +6728,7 @@ async function comprarNiveis() {
     return;
   }
   if (E.exemplo) {
-    dep.Chat?.sistema?.(tr('Prévia: nada é cobrado.'));
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
     return;
   }
   if (!E.refNiveis && N.total - saldo() > 0) {
@@ -6732,7 +6746,7 @@ async function comprarNiveis() {
   const b = await pedirPasse('ver');
   if (!b?.ok || !b.vista) {
     E.ocupadoPasse = null;
-    if (aberto()) recusaVer(b, 'Não deu pra comprar os níveis', a);
+    if (aberto()) recusaVer(b, "Couldn't buy the levels", a);
     return;
   }
   const c = novaVista(b.vista);
@@ -6780,8 +6794,8 @@ async function comprarNiveis() {
       const n = q;
       chatPasse(
         n === 1
-          ? tr('💎 Passe da temporada: a compra de antes tinha passado (+1 nível).')
-          : tr('💎 Passe da temporada: a compra de antes tinha passado (+{n} níveis).', { n }),
+          ? tr('💎 Season pass: your earlier purchase went through (+1 level).')
+          : tr('💎 Season pass: your earlier purchase went through (+{n} levels).', { n }),
       );
       dialogoNiveisDeAntes(n, r.compra?.qtd ?? null);
       return;
@@ -6793,16 +6807,16 @@ async function comprarNiveis() {
       d = fmt(r.compra?.qtd ?? e.total);
     chatPasse(
       q === 1
-        ? tr('💎 Passe da temporada: +1 nível (−{d} Diamantes).', { d })
-        : tr('💎 Passe da temporada: +{n} níveis (−{d} Diamantes).', { n: q, d }),
+        ? tr('💎 Season pass: +1 level (−{d} Diamonds).', { d })
+        : tr('💎 Season Pass: +{n} levels (−{d} Diamonds).', { n: q, d }),
     );
     E.centrarTrilha = true;
     pintar();
     dialogo('confirmado', {
       icone: ICONE_DIAMANTE,
-      titulo: q === 1 ? tr('+1 nível no passe') : tr('+{n} níveis no passe', { n: q }),
+      titulo: q === 1 ? tr('+1 pass level') : tr('+{n} pass levels', { n: q }),
       texto: tr(
-        'Agora você está no nível {n}. Os Diamantes e os visuais desses níveis estão prontos pra pegar; o resto chega jogando.',
+        "You're now at level {n}. The Diamonds and cosmetics from those levels are ready to claim; the rest comes as you play.",
         { n: i },
       ),
     });
@@ -6812,7 +6826,7 @@ async function comprarNiveis() {
     precoMudou('nivel', PT.custoDoNivel(E.temporada));
     return;
   }
-  recusaPasse(r, 'Não deu pra comprar os níveis', a);
+  recusaPasse(r, "Couldn't buy the levels", a);
 }
 function pintarPasseEmBreve(b) {
   const a = no(b, 'faixa-temporada');
@@ -6832,7 +6846,7 @@ function pintarPasseEmBreve(b) {
   a.style.top = Math.round((px(b, 'height') - px(a, 'height')) / 2) + 'px';
   const e = Popup.imagem(pop, 'banner-temporada', FUNDO_PASSE, a);
   if (e) Object.assign(e.style, { backgroundSize: 'cover', backgroundPosition: 'center' });
-  Popup.texto(pop, 'temporada', 'EM BREVE', a);
-  Popup.texto(pop, 'temporada-nome', 'Passe de batalha', a);
-  Popup.texto(pop, 'temporada-termina', 'Chega numa próxima atualização.', a);
+  Popup.texto(pop, 'temporada', 'COMING SOON', a);
+  Popup.texto(pop, 'temporada-nome', 'Battle pass', a);
+  Popup.texto(pop, 'temporada-termina', 'Coming in a future update.', a);
 }

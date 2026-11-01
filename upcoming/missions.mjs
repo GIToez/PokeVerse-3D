@@ -95,7 +95,7 @@ async function buscarDaRota(a, b = 3) {
         try {
           acrescentarTraducoes(r.d.traducoes, r.l);
         } catch (e) {
-          console.warn('missões: traduções da história:', e);
+          console.warn('missions: story translations:', e);
         }
       if ((r.d.versao ?? null) !== versaoAtual) semJeito.clear();
       fonte = 'rota';
@@ -136,7 +136,7 @@ async function carregarDados(c) {
       const a = await doArquivo();
       if (a) {
         console.warn(
-          'missões: o servidor não tem o GET /conta/conteudo (é de antes da beta 95?) — na página local, a história dos arquivos',
+          "missions: the server doesn't have GET /conta/conteudo (is it older than beta 95?) — on the local page, the story from the files",
         );
         return a;
       }
@@ -158,7 +158,7 @@ function avisarOuvintes() {
     try {
       a(dados);
     } catch (e) {
-      console.warn('missões: quem lê a história:', e);
+      console.warn('missions: who reads the story:', e);
     }
 }
 export function aoConteudo(a) {
@@ -168,7 +168,7 @@ export function aoConteudo(a) {
     try {
       a(dados);
     } catch (e) {
-      console.warn('missões: quem lê a história:', e);
+      console.warn('missions: who reads the story:', e);
     }
   return () => ouvintes.delete(a);
 }
@@ -256,12 +256,12 @@ function soltarFila(a = false) {
     if (c != null) {
       diag.semHistoria++;
       semJeito.add(String(c));
-      console.warn('missões: o servidor cita ' + c + ' e a história dela não chegou' + (a ? ' (12 s)' : ''));
+      console.warn('missions: the server mentions ' + c + " and its story didn't arrive" + (a ? ' (12 s)' : ''));
     }
     try {
       x.fn();
     } catch (e) {
-      console.warn('missões: aplicar o estado do servidor:', e);
+      console.warn('missions: applying server state:', e);
     }
   }
   if (diag.esperas.length > 20) diag.esperas.splice(0, diag.esperas.length - 20);
@@ -433,7 +433,7 @@ function concluirPasso() {
   const m = ativa();
   if (!m) return;
   const p = m.passos[estado.passo];
-  ctx.aviso?.('✔ ' + tr(p?.texto || 'passo concluído'), { cru: true });
+  ctx.aviso?.('✔ ' + tr(p?.texto || 'step complete'), { cru: true });
   estado.passo++;
   if (estado.passo >= m.passos.length) concluirMissao(m);
   else {
@@ -449,9 +449,9 @@ function concluirMissao(m) {
   estado.passo = 0;
   gravar();
   ctx.recompensa?.(m.recompensa || {}, m);
-  ctx.aviso?.(tr('🏁 Missão concluída: {x}', { x: tr(m.nome) }), { destaque: true, cru: true });
-  if (a) ctx.aviso?.(tr('📜 Nova missão: {x}', { x: tr(a.nome) }), { cru: true });
-  else ctx.aviso?.('Você concluiu tudo o que existe por enquanto — mais capítulos vêm com as próximas versões.');
+  ctx.aviso?.(tr('🏁 Mission complete: {x}', { x: tr(m.nome) }), { destaque: true, cru: true });
+  if (a) ctx.aviso?.(tr('📜 New mission: {x}', { x: tr(a.nome) }), { cru: true });
+  else ctx.aviso?.("You've completed everything available for now — more chapters come with future versions.");
   checarImediatos();
 }
 function checarImediatos() {
@@ -530,7 +530,7 @@ export function evento(b) {
         const f = ctx.lerLS('itens', {});
         const n = p.n || 1;
         if ((f[p.item] || 0) < n) {
-          ctx.aviso?.(tr('Você ainda não tem {x} ×{n}.', { x: tNome(ctx.nomeItem?.(p.item) || 'o item'), n }), {
+          ctx.aviso?.(tr("You don't have {x} ×{n} yet.", { x: tNome(ctx.nomeItem?.(p.item) || 'the item'), n }), {
             cru: true,
           });
           return false;
@@ -723,7 +723,7 @@ export function textoTracker() {
   const m = b || ativa();
   if (!m)
     return historiaPendente()
-      ? '<div class="missao-header"><b>' + esc(tr('A história está chegando…')) + '</b></div>'
+      ? '<div class="missao-header"><b>' + esc(tr('The story is coming…')) + '</b></div>'
       : null;
   const c = b ? a.passo || 0 : estado.passo,
     d = (b ? '◆ ' : '') + tr(m.nome);
@@ -749,7 +749,7 @@ export function textoTracker() {
     g +
     '</span>' +
     h +
-    (i ? '<small class="rec">' + esc(tr('Recompensa:')) + ' ' + esc(i) + '</small>' : '') +
+    (i ? '<small class="rec">' + esc(tr('Reward:')) + ' ' + esc(i) + '</small>' : '') +
     '</div>'
   );
 }

@@ -26,8 +26,8 @@ export const TIPOS = Object.freeze([
   'horta_erro',
 ]);
 const OPS_TERRENO = new Set(['ir', 'sair', 'vista', 'colocar', 'mover', 'remover']);
-export const TEXTO_SEM_RESPOSTA = 'O servidor não respondeu.',
-  TEXTO_DESLIGADO = 'Sem conexão com o servidor.';
+export const TEXTO_SEM_RESPOSTA = "The server didn't respond.",
+  TEXTO_DESLIGADO = 'No connection to the server.';
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
 const obj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
 let ENVIAR = null,
@@ -96,7 +96,7 @@ export function varsDe(v) {
             : '';
   return o;
 }
-export function textoDe(m, a = 'Não deu.') {
+export function textoDe(m, a = "That didn't work.") {
   const b = () => (a ? tr(a) : '');
   if (typeof m === 'string') return m.trim() && m.length <= 400 ? tr(m) : b();
   if (!obj(m)) return b();
@@ -305,7 +305,7 @@ function chocou(m) {
       area: null,
     });
   } catch (e) {
-    console.warn('terreno: conhecimento', e);
+    console.warn('plot: knowledge', e);
   }
   paraOChat(m.avisos);
   avisar('chocou', m);
@@ -321,7 +321,7 @@ function resolver(a, r) {
 }
 export function pedir(b, c = {}) {
   if (typeof b !== 'string' || !(OPS_TERRENO.has(b) || INTENCOES.includes(b)))
-    return Promise.resolve({ ok: false, erro: 'pedidoInvalido', texto: 'Pedido inválido.' });
+    return Promise.resolve({ ok: false, erro: 'pedidoInvalido', texto: 'Invalid request.' });
   if (!ligado()) return Promise.resolve({ ok: false, erro: 'desligado', texto: TEXTO_DESLIGADO });
   const a = obj(c) ? c : {};
   return new Promise((c) => {

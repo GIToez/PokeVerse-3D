@@ -191,7 +191,7 @@ function medirCaber(a, b, e) {
 }
 const descItem = (s) => textoLimpo(s);
 const CAT_CURTA = {
-  'Itens transportados': 'Transportado',
+  'Itens transportados': 'Carried',
   'Máquina Técnica': 'TM',
   'Chamando a Pedra': 'Pedra',
   'Edifícios do Habitat': 'Habitat',
@@ -200,29 +200,29 @@ const CAT_CURTA = {
   'Sementes do Habitat': 'Habitat',
 };
 const catCurta = (s) => CAT_CURTA[s] || s;
-const catDoItem = (a) => (a?.uso?.tipo === 'medalhao' ? 'Conta' : catCurta(D?.tipos?.[a?.t] || ''));
+const catDoItem = (a) => (a?.uso?.tipo === 'medalhao' ? 'Account' : catCurta(D?.tipos?.[a?.t] || ''));
 export const JANELAS = {
-  pokemon: { titulo: 'Pokémon', icone: 'pokebola', sub: 'time e caixa' },
-  mochila: { titulo: 'Mochila', icone: 'mochila', sub: 'itens e bolas' },
-  missoes: { titulo: 'Missões', icone: 'missoes', sub: 'a jornada por Kanto' },
+  pokemon: { titulo: 'Pokémon', icone: 'pokebola', sub: 'party and box' },
+  mochila: { titulo: 'Bag', icone: 'mochila', sub: 'items and balls' },
+  missoes: { titulo: 'Missions', icone: 'missoes', sub: 'the journey through Kanto' },
   mapa: { titulo: 'Mapa', icone: 'mapa', sub: 'Kanto' },
-  pokedex: { titulo: 'Pokédex', icone: 'pokedex', sub: 'vistos e capturados' },
-  treinador: { titulo: 'Treinador', icone: 'personagem', sub: 'insígnias, dinheiro' },
-  terreno: { titulo: 'Terreno', icone: 'terreno', sub: 'horta e ovos' },
-  loja: { titulo: 'Loja', icone: 'loja', sub: 'em breve', breve: true },
-  pokemart: { titulo: 'Pokémart', icone: 'loja', sub: 'itens em Moedas', oculto: true },
-  mercado: { titulo: 'Mercado', icone: 'loja', sub: 'compre e venda com outros treinadores' },
-  social: { titulo: 'Social', icone: 'amigos', sub: 'chat, amigos, correio', breve: true },
-  batalha: { titulo: 'Batalha', icone: 'batalha', sub: 'PvP, ranking', breve: true },
-  config: { titulo: 'Configurações', icone: 'ajuda', sub: 'som, gráficos, HUD' },
-  atalho: { titulo: 'Atalho', icone: 'mochila', sub: 'poções, bolas, montarias', oculto: true },
-  raid: { titulo: 'Raid', icone: 'batalha', sub: 'raid ao vivo', oculto: true },
-  correio: { titulo: 'Correio', icone: 'amigos', sub: 'cartas, prêmios e avisos', oculto: true },
+  pokedex: { titulo: 'Pokédex', icone: 'pokedex', sub: 'seen and caught' },
+  treinador: { titulo: 'Trainer', icone: 'personagem', sub: 'badges, money' },
+  terreno: { titulo: 'Land', icone: 'terreno', sub: 'garden and eggs' },
+  loja: { titulo: 'Shop', icone: 'loja', sub: 'coming soon', breve: true },
+  pokemart: { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },
+  mercado: { titulo: 'Market', icone: 'loja', sub: 'buy and sell with other trainers' },
+  social: { titulo: 'Social', icone: 'amigos', sub: 'chat, friends, mail', breve: true },
+  batalha: { titulo: 'Battle', icone: 'batalha', sub: 'PvP, ranking', breve: true },
+  config: { titulo: 'Settings', icone: 'ajuda', sub: 'sound, graphics, HUD' },
+  atalho: { titulo: 'Shortcut', icone: 'mochila', sub: 'potions, balls, mounts', oculto: true },
+  raid: { titulo: 'Raid', icone: 'batalha', sub: 'live raid', oculto: true },
+  correio: { titulo: 'Mail', icone: 'amigos', sub: 'letters, rewards and notices', oculto: true },
 };
 const ORDEM = Object.keys(JANELAS);
 function teclasDaGrade() {
   return [
-    tr('Esc fecha'),
+    tr('Esc closes'),
     ...ORDEM.map((k) => [k, Teclas.acao('janela-' + k) ? Teclas.rotuloAcao('janela-' + k, 'lista', tr) : '—'])
       .filter(([, s]) => s && s !== '—')
       .map(([k, s]) => s + ' ' + tr(JANELAS[k].titulo).toLowerCase()),
@@ -234,7 +234,7 @@ export function instalar(c) {
   GuildaUI.instalar({
     defPopup,
     pedir: (a, b) =>
-      ctx.guilda ? ctx.guilda(a, b) : Promise.resolve({ ok: false, erro: 'Sem conexão com o servidor.' }),
+      ctx.guilda ? ctx.guilda(a, b) : Promise.resolve({ ok: false, erro: 'No connection to the server.' }),
     aviso: (t) => Chat.sistema(t),
     avisoCru: (t) => Chat.sistemaCru(t),
     naBase: () => !!ctx.naBaseGuilda?.(),
@@ -255,7 +255,7 @@ export function instalar(c) {
     skinEquipada: () => ctx.skinEquipada?.() || null,
     vestir: async (t) => {
       if (await ctx.equiparSkin?.(t))
-        Chat.sistema(tr('Vestindo {x}.', { x: ctx.Personagem?.nomeDe?.({ tipo: t }) || t }));
+        Chat.sistema(tr('Wearing {x}.', { x: ctx.Personagem?.nomeDe?.({ tipo: t }) || t }));
       if (popSo && Popup.aberto(popSo) && aberta === 'social') encherSocial(popSo);
     },
     aplicarTitulos: (l) => ctx.conta?.aplicarTitulosGanhos?.(l),
@@ -385,7 +385,7 @@ export function instalar(c) {
       if (!TerrenoEstado.ligado()) return;
       const p = TerrenoEstado.prontos();
       Avisos.selo('terreno', p.horta + p.ovos);
-      if (p.horta > h) Chat.avisoSistema('🌱 ' + tr('Tem colheita pronta na sua horta (Menu → Terreno → Horta).'));
+      if (p.horta > h) Chat.avisoSistema('🌱 ' + tr('You have a harvest ready in your garden (Menu → Land → Garden).'));
       if (p.ovos > q) Chat.avisar();
       h = p.horta;
       q = p.ovos;
@@ -503,7 +503,7 @@ export function instalar(c) {
   j.id = 'janela';
   j.className = 'janela';
   j.hidden = true;
-  j.innerHTML = `<header><h2 id="j-titulo"></h2><div class="abas" id="j-abas"></div><button type="button" class="x" id="j-x" aria-label="fechar">✕</button></header><div class="corpo" id="j-corpo"></div>`;
+  j.innerHTML = `<header><h2 id="j-titulo"></h2><div class="abas" id="j-abas"></div><button type="button" class="x" id="j-x" aria-label="close">✕</button></header><div class="corpo" id="j-corpo"></div>`;
   j.querySelector('#j-x').onclick = () => fechar();
   document.body.appendChild(j);
   addEventListener('keydown', tecla, true);
@@ -597,11 +597,11 @@ export function segurarDialogo(a) {
 }
 const NOMES_EM_BREVE = {
   ranking: 'Ranking',
-  'guarda-roupa': 'Guarda-roupa',
-  incubadora: 'Incubadora',
+  'guarda-roupa': 'Wardrobe',
+  incubadora: 'Incubator',
   creche: 'Creche',
-  horta: 'Horta',
-  terreno: 'Terreno',
+  horta: 'Garden',
+  terreno: 'Land',
 };
 function abrirOutroPopup(a, b) {
   if (['mochila', 'pokemon', 'treinador', 'mapa', 'pokedex', 'missoes', 'mercado', 'config'].includes(a)) {
@@ -624,10 +624,7 @@ function abrirOutroPopup(a, b) {
   if ((a === 'incubadora' || (a === 'terreno' && b?.dataset?.fig === 'linha-ovos')) && IncubadoraUI.disponivel())
     return abrirTerreno('ovos');
   if ((a === 'horta' || a === 'terreno') && HortaUI.disponivel()) return abrirTerreno('horta');
-  return abrirEmBreve(
-    a,
-    NOMES_EM_BREVE[a] ? { nome: NOMES_EM_BREVE[a], texto: 'Chega numa próxima atualização.' } : null,
-  );
+  return abrirEmBreve(a, NOMES_EM_BREVE[a] ? { nome: NOMES_EM_BREVE[a], texto: 'Coming in a future update.' } : null);
 }
 Popup.aoAbrirOutro?.(abrirOutroPopup);
 function terrenoLigado() {
@@ -643,10 +640,10 @@ function gradeTerreno() {
 }
 export function abrirTerreno(a = 'horta', b = null) {
   const c = a === 'ovos' ? 'ovos' : 'horta',
-    d = () => abrirEmBreve('terreno', { nome: NOMES_EM_BREVE.terreno, texto: 'Chega numa próxima atualização.' });
+    d = () => abrirEmBreve('terreno', { nome: NOMES_EM_BREVE.terreno, texto: 'Coming in a future update.' });
   if (!terrenoLigado()) {
     if (soLigado()) {
-      Chat.sistema('Sem conexão com o servidor.');
+      Chat.sistema('No connection to the server.');
       return false;
     }
     return d();
@@ -667,7 +664,7 @@ export function abrirCreche(n = null) {
   fecharPrevia();
   return (
     CrecheUI.abrir(estadoDaCreche()) ||
-    abrirEmBreve('creche', { nome: NOMES_EM_BREVE.creche, texto: 'Chega numa próxima atualização.' })
+    abrirEmBreve('creche', { nome: NOMES_EM_BREVE.creche, texto: 'Coming in a future update.' })
   );
 }
 function entradaCreche(e) {
@@ -811,7 +808,7 @@ export async function abrir(a, b = null) {
     try {
       ctx.recuperarGolpes?.();
     } catch (e) {
-      console.warn('golpes perdidos:', e);
+      console.warn('moves lost:', e);
     }
   }
   const c =
@@ -1211,14 +1208,14 @@ const mesmoRegistro = (x, e) =>
   e?.uid != null ? String(x?.uid) === String(e.uid) : !!x && x.glb === e.glb && x.lv === e.lv && x.nome === e.nome;
 function botaoSoltar(a, n, b, c = false) {
   if (c)
-    return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('Esse Pokémon está travado: destrave antes de soltar.'))}">${esc(tr('Soltar'))}</button>`;
+    return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('This Pokémon is locked: unlock it before releasing.'))}">${esc(tr('Release'))}</button>`;
   if (b)
-    return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('troque de parceiro antes de soltar'))}">${esc(tr('Soltar'))}</button>`;
+    return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('switch partners before releasing'))}">${esc(tr('Release'))}</button>`;
   if (n <= 1)
-    return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr('é o seu único Pokémon'))}">${esc(tr('Soltar'))}</button>`;
+    return `<button type="button" class="btn" data-arr-nao="1" disabled title="${esc(tr("it's your only Pokémon"))}">${esc(tr('Release'))}</button>`;
   return confirmarSoltar === a
-    ? `<button type="button" class="btn perigo" data-arr-nao="1" data-soltar="${esc(a)}" title="${esc(tr('não tem volta'))}">${esc(tr('✔ Soltar de vez'))}</button><button type="button" class="btn" data-arr-nao="1" data-soltar-nao="1">${esc(tr('✖ Cancelar'))}</button>`
-    : `<button type="button" class="btn" data-arr-nao="1" data-soltar-pede="${esc(a)}" title="${esc(tr('libera o Pokémon (pede confirmação)'))}">${esc(tr('Soltar'))}</button>`;
+    ? `<button type="button" class="btn perigo" data-arr-nao="1" data-soltar="${esc(a)}" title="${esc(tr("can't be undone"))}">${esc(tr('✔ Release for good'))}</button><button type="button" class="btn" data-arr-nao="1" data-soltar-nao="1">${esc(tr('✖ Cancel'))}</button>`
+    : `<button type="button" class="btn" data-arr-nao="1" data-soltar-pede="${esc(a)}" title="${esc(tr('releases the Pokémon (asks for confirmation)'))}">${esc(tr('Release'))}</button>`;
 }
 async function soltar(a, b) {
   confirmarSoltar = null;
@@ -1230,7 +1227,7 @@ async function soltar(a, b) {
   }
   const d = await ctx.soltarNoServidor?.(c[k]);
   if (d && d.ok === false) {
-    Chat.sistemaCru(tr('Soltar: {x}.', { x: tr(String(d.erro || 'o servidor recusou')).replace(/[.!?…]$/, '') }));
+    Chat.sistemaCru(tr('Release: {x}.', { x: tr(String(d.erro || 'the server refused')).replace(/[.!?…]$/, '') }));
     render();
     return;
   }
@@ -1241,7 +1238,7 @@ async function soltar(a, b) {
     ctx.pintarTime?.(true);
     ctx.atualizarSeguidorPainel?.();
   }
-  ctx.flutuar?.(ctx.jogo.ash, tr('Adeus, {x}! 👋', { x: e.nome }), '#8ecbff', true);
+  ctx.flutuar?.(ctx.jogo.ash, tr('Goodbye, {x}! 👋', { x: e.nome }), '#8ecbff', true);
   selPokemon = 0;
   render();
 }
@@ -1302,10 +1299,10 @@ function timeAtual() {
 }
 function fichaHtml(e) {
   const S = ctx.porDex.get(e.dex);
-  if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>sem dados na pokédex</small></div>`;
+  if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>no Pokédex data</small></div>`;
   const c = e.lv || 5,
     d = S.bs || [45, 45, 45, 45, 45, 45];
-  const f = ['HP', 'Ataque', 'Defesa', 'At. Esp.', 'Def. Esp.', 'Velocidade'];
+  const f = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
   const h = ctx.Ind
     ? ctx.Ind.statsDe(S, { ...e, lv: c })
     : d.map((b, i) => (i === 0 ? ctx.R.hpAt(b, c) : ctx.R.statAt(b, c)));
@@ -1329,28 +1326,28 @@ function fichaHtml(e) {
     .join('');
   const p = e.aprender?.[0] ? ctx.golpe?.(e.aprender[0]) || null : null;
   const q = p
-    ? `<div class="evo-linha" style="margin-top:6px"><b>✧ quer aprender ${esc(p.nome)}</b> <small>${esc(p.tipo || '')} · ${esc(tr('poder'))} ${p.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(p.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">${esc(tr('esquecer:'))}${l.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">não aprender</button></div></div>`
+    ? `<div class="evo-linha" style="margin-top:6px"><b>✧ wants to learn ${esc(p.nome)}</b> <small>${esc(p.tipo || '')} · ${esc(tr('poder'))} ${p.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(p.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">${esc(tr('esquecer:'))}${l.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">don't learn</button></div></div>`
     : '';
   const r = ctx.opcoesEvolucao?.(e) || [];
   const s = r.length
     ? r
         .map(
           (o) =>
-            `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(o.regra.texto)}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('em breve')) + '</span>' : o.pode ? '<span class="ok">✔ pronto' + (o.itemNome ? ' (usa ' + esc(o.itemNome) + ')' : '') + '</span>' : '<span class="falta">' + esc(o.falta) + '</span>'}</div>`,
+            `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(o.regra.texto)}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('coming soon')) + '</span>' : o.pode ? '<span class="ok">✔ ready' + (o.itemNome ? ' (uses ' + esc(o.itemNome) + ')' : '') + '</span>' : '<span class="falta">' + esc(o.falta) + '</span>'}</div>`,
         )
         .join('')
-    : 'não evolui';
+    : "doesn't evolve";
   const t = ctx.expPara?.(e.dex, c + 1),
     u =
-      (c >= 100 ? tr('XP máx.') : e.exp != null && t ? `XP ${e.exp}/${t}` : '') +
-      (e.expReserva > 0 ? ' · ' + e.expReserva + ' XP guardada' : '');
+      (c >= 100 ? tr('Max XP') : e.exp != null && t ? `XP ${e.exp}/${t}` : '') +
+      (e.expReserva > 0 ? ' · ' + e.expReserva + ' XP stored' : '');
   const w = Array.isArray(e.evs),
     x = w ? e.evs.reduce((a, b) => a + (+b || 0), 0) : 0;
-  return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${c}${c > tetoObed() ? ' <span class="falta" title="acima do teto de nível: não obedece até a próxima insígnia">🔒 teto ' + tetoObed() + '</span>' : c >= tetoObed() ? ' <span class="falta" title="no teto de nível: a XP fica guardada até a próxima insígnia">🔒 no teto</span>' : ''}${u ? ' · ' + u : ''}${e.amizade != null ? ' · amizade ' + e.amizade : ''}${e.seguindo ? ' · seguindo' : ''}</small></h3>
+  return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${c}${c > tetoObed() ? ' <span class="falta" title="above the level cap: won\'t obey until the next Badge">🔒 cap ' + tetoObed() + '</span>' : c >= tetoObed() ? ' <span class="falta" title="at the level cap: XP is banked until your next Badge">🔒 capped</span>' : ''}${u ? ' · ' + u : ''}${e.amizade != null ? ' · friendship ' + e.amizade : ''}${e.seguindo ? ' · following' : ''}</small></h3>
     <div>${(S.types || []).map(tipoHtml).join('')} <small style="color:var(--muted)">${S.kg ? S.kg + ' kg' : ''}</small></div>
     <div class="hp"><b style="width:${Math.round((100 * (e.hp ?? h[0])) / (e.maxHp || h[0]))}%"></b></div>
-    <table class="stats">${h.map((v, i) => `<tr><td>${f[i]}${k(i)}</td><td>${v}</td><td class="iv">${e.ivs ? 'IV ' + e.ivs[i] : ''}</td>${w ? `<td class="iv">EV ${e.evs[i] ?? 0}</td>` : ''}</tr>`).join('')}<tr><td>total base</td><td>${S.bst || d.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''}</td>${w ? `<td class="iv">EV ${x}/${ctx.Ev?.dados() ? ctx.Ev.totalMax() : 510}</td>` : ''}</tr>${e.natureza ? `<tr><td>natureza</td><td colspan="${w ? 3 : 2}"><b>${esc(e.natureza)}</b> <small style="color:var(--muted)">${esc(ctx.Ind.descNatureza(e.natureza))}</small></td></tr>` : ''}</table>
-    <div class="k" style="margin-top:8px;color:var(--muted);font-size:11px">golpes</div><div class="lista">${n || '<small>—</small>'}</div>${q}${reaprenderHtml(e)}
+    <table class="stats">${h.map((v, i) => `<tr><td>${f[i]}${k(i)}</td><td>${v}</td><td class="iv">${e.ivs ? 'IV ' + e.ivs[i] : ''}</td>${w ? `<td class="iv">EV ${e.evs[i] ?? 0}</td>` : ''}</tr>`).join('')}<tr><td>total base</td><td>${S.bst || d.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''}</td>${w ? `<td class="iv">EV ${x}/${ctx.Ev?.dados() ? ctx.Ev.totalMax() : 510}</td>` : ''}</tr>${e.natureza ? `<tr><td>nature</td><td colspan="${w ? 3 : 2}"><b>${esc(e.natureza)}</b> <small style="color:var(--muted)">${esc(ctx.Ind.descNatureza(e.natureza))}</small></td></tr>` : ''}</table>
+    <div class="k" style="margin-top:8px;color:var(--muted);font-size:11px">moves</div><div class="lista">${n || '<small>—</small>'}</div>${q}${reaprenderHtml(e)}
     <div style="margin-top:8px;font-size:12px">${s}</div></div>`;
 }
 function indiceEmCampo() {
@@ -1374,14 +1371,14 @@ function rCaixa(a) {
     d = ctx.lerLS('caixa', []) || [],
     f = indiceEmCampo();
   const g = (i, a) =>
-    `<span class="arr-mini"><button type="button" class="btn" data-arr-nao="1" data-sobe="${i}" title="${esc(tr('sobe um lugar'))}">↑</button><button type="button" class="btn" data-arr-nao="1" data-desce="${i}" title="${esc(tr('desce um lugar'))}">↓</button><button type="button" class="btn" data-arr-nao="1" ${a ? `disabled title="${esc(tr(i === f ? 'troque de parceiro antes' : 'é o seu único Pokémon'))}"` : `data-guardar="${i}" title="${esc(tr('manda pra caixa'))}"`}>→ ${esc(tr('caixa'))}</button></span>`;
+    `<span class="arr-mini"><button type="button" class="btn" data-arr-nao="1" data-sobe="${i}" title="${esc(tr('move up one'))}">↑</button><button type="button" class="btn" data-arr-nao="1" data-desce="${i}" title="${esc(tr('move down one'))}">↓</button><button type="button" class="btn" data-arr-nao="1" ${a ? `disabled title="${esc(tr(i === f ? 'switch partners first' : "it's your only Pokémon"))}"` : `data-guardar="${i}" title="${esc(tr('send to Box'))}"`}>→ ${esc(tr('caixa'))}</button></span>`;
   const h = c
     .map((e, i) => {
       const a = i === f || c.length <= 1;
       return linhaPk(
         e,
         i === f
-          ? ' <small>· ' + esc(tr('em campo')) + '</small>'
+          ? ' <small>· ' + esc(tr('in battle')) + '</small>'
           : e.hp === 0
             ? ' <small style="color:#f58e8e">· ' + esc(tr('desmaiado')) + '</small>'
             : '',
@@ -1395,18 +1392,18 @@ function rCaixa(a) {
       linhaPk(
         e,
         '',
-        `<button type="button" class="btn" data-arr-nao="1" data-trazer="${i}" ${c.length >= 6 ? `disabled title="${esc(tr('o time está cheio — arraste pra cima de um do time pra trocar'))}"` : ''}>${esc(tr('Trazer para o time'))}</button>${botaoSoltar(chaveDe(e), 2, false, !!e.travado)}`,
+        `<button type="button" class="btn" data-arr-nao="1" data-trazer="${i}" ${c.length >= 6 ? `disabled title="${esc(tr('party is full — drag onto a party member to swap'))}"` : ''}>${esc(tr('Bring to party'))}</button>${botaoSoltar(chaveDe(e), 2, false, !!e.travado)}`,
         false,
       ),
     )
     .join('');
   a.innerHTML = `<div class="dois arr-dois">
     <div class="arr-col"><div class="arr-titulo">${esc(tr('Time'))} <small>${c.length}/6</small></div>
-      <div class="arr-dica">${esc(tr('arraste pra mudar a ordem — no celular, segure o dedo pra pegar'))}</div>
-      <div class="lista" id="arr-time">${h || `<div class="vazio">${esc(tr('Sem Pokémon no time.'))}</div>`}</div></div>
-    <div class="arr-col"><div class="arr-titulo">${esc(tr('Caixa'))} <small>${d.length}${ProgressaoUi.vagasDaCaixa() != null ? ' / ' + ProgressaoUi.vagasDaCaixa() : ''}</small></div>
-      <div class="arr-dica">${esc(tr('arraste um daqui pro time (time cheio = troca com a casa onde soltar)'))}</div>
-      <div class="lista" id="arr-caixa">${j || `<div class="vazio">${esc(tr('A caixa está vazia. "Enviar para a caixa", na aba Time, guarda um Pokémon aqui.'))}</div>`}</div></div></div>`;
+      <div class="arr-dica">${esc(tr('drag to reorder — on mobile, press and hold to pick up'))}</div>
+      <div class="lista" id="arr-time">${h || `<div class="vazio">${esc(tr('No Pokémon in the party.'))}</div>`}</div></div>
+    <div class="arr-col"><div class="arr-titulo">${esc(tr('Box'))} <small>${d.length}${ProgressaoUi.vagasDaCaixa() != null ? ' / ' + ProgressaoUi.vagasDaCaixa() : ''}</small></div>
+      <div class="arr-dica">${esc(tr('drag one from here to the party (full party = swaps with the slot you drop on)'))}</div>
+      <div class="lista" id="arr-caixa">${j || `<div class="vazio">${esc(tr('The Box is empty. "Send to Box", on the Team tab, stores a Pokémon here.'))}</div>`}</div></div></div>`;
   const k = a.querySelector('#arr-time'),
     l = a.querySelector('#arr-caixa');
   k.querySelectorAll('.linha').forEach((n, i) => {
@@ -1453,7 +1450,7 @@ function rCaixa(a) {
 function rPokemon(a) {
   const c = abas([
     { id: 'time', nome: 'Time' },
-    { id: 'caixa', nome: 'Caixa' },
+    { id: 'caixa', nome: 'Box' },
   ]);
   if (c === 'caixa') {
     rCaixa(a);
@@ -1461,13 +1458,13 @@ function rPokemon(a) {
   }
   const d = timeAtual();
   if (!d.length) {
-    a.innerHTML = '<div class="vazio">Sem Pokémon ainda — escolha o inicial no laboratório do Oak.</div>';
+    a.innerHTML = '<div class="vazio">No Pokémon yet — pick your starter at Oak\'s lab.</div>';
     return;
   }
   if (selPokemon >= d.length) selPokemon = 0;
   const e = d[selPokemon];
-  a.innerHTML = `<div class="dois"><div class="lista">${d.map((p, i) => `<div class="linha ${i === selPokemon ? 'on' : ''}" data-i="${i}"><span class="nome"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${p.sexo === 'm' ? ' <small class="sexo m">♂</small>' : p.sexo === 'f' ? ' <small class="sexo f">♀</small>' : ''}${p.seguindo ? ' <small>· seguindo</small>' : ''}${p.hp === 0 ? ' <small style="color:#f58e8e">· desmaiado</small>' : ''}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${p.maxHp ? Math.round((100 * p.hp) / p.maxHp) : 100}%"></b></div></span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</div>`).join('')}${'<div class="linha vazia"></div>'.repeat(Math.max(0, 6 - d.length))}
-    <div style="color:var(--muted);font-size:11px;margin-top:6px">${d.length}/6 no time</div></div>
+  a.innerHTML = `<div class="dois"><div class="lista">${d.map((p, i) => `<div class="linha ${i === selPokemon ? 'on' : ''}" data-i="${i}"><span class="nome"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${p.sexo === 'm' ? ' <small class="sexo m">♂</small>' : p.sexo === 'f' ? ' <small class="sexo f">♀</small>' : ''}${p.seguindo ? ' <small>· following</small>' : ''}${p.hp === 0 ? ' <small style="color:#f58e8e">· fainted</small>' : ''}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${p.maxHp ? Math.round((100 * p.hp) / p.maxHp) : 100}%"></b></div></span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</div>`).join('')}${'<div class="linha vazia"></div>'.repeat(Math.max(0, 6 - d.length))}
+    <div style="color:var(--muted);font-size:11px;margin-top:6px">${d.length}/6 in team</div></div>
     <div>${fichaHtml(e)}<div class="acoes">${
       e.seguindo
         ? (() => {
@@ -1479,17 +1476,17 @@ function rPokemon(a) {
               ? c
                   .map(
                     (o) =>
-                      `<button type="button" class="btn ouro" data-evo="${b.indexOf(o)}" title="${esc(o.regra.texto)}">✧ Evoluir → ${esc(o.nome)}${o.itemNome ? ' (usa ' + esc(o.itemNome) + ')' : ''}</button>`,
+                      `<button type="button" class="btn ouro" data-evo="${b.indexOf(o)}" title="${esc(o.regra.texto)}">✧ Evolve → ${esc(o.nome)}${o.itemNome ? ' (uses ' + esc(o.itemNome) + ')' : ''}</button>`,
                   )
                   .join('')
-              : `<button type="button" class="btn ouro" disabled title="${esc(b[0]?.falta || (d ? d.nome + ': ' + tr('em breve') : tr('não evolui')))}">✧ Evoluir${b[0] ? ' — ' + esc(b[0].falta) : d ? ' — ' + esc(d.nome) + ' (' + esc(tr('em breve')) + ')' : ''}</button>`;
+              : `<button type="button" class="btn ouro" disabled title="${esc(b[0]?.falta || (d ? d.nome + ': ' + tr('coming soon') : tr("doesn't evolve")))}">✧ Evolve${b[0] ? ' — ' + esc(b[0].falta) : d ? ' — ' + esc(d.nome) + ' (' + esc(tr('coming soon')) + ')' : ''}</button>`;
           })()
-        : `<button type="button" class="btn ouro" id="p-seguir">Seguir</button><button type="button" class="btn" id="p-caixa">Enviar para a caixa</button>`
+        : `<button type="button" class="btn ouro" id="p-seguir">Follow</button><button type="button" class="btn" id="p-caixa">Send to Box</button>`
     }${botaoSoltar(chaveDe(e), d.length, !!e.seguindo, !!e.travado)}${
       e.hp === 0
         ? (() => {
             const r = ctx.reanimadorNaMochila?.();
-            return `<button type="button" class="btn ouro" id="p-reanimar" ${r ? '' : 'disabled'} title="${r ? 'usa ' + esc(r.nome) : 'compre um Reanimador no Pokémart'}">💊 ${r ? esc(r.nome) + ' (' + r.n + ')' : 'Reanimador — não tem na mochila'}</button>`;
+            return `<button type="button" class="btn ouro" id="p-reanimar" ${r ? '' : 'disabled'} title="${r ? 'usa ' + esc(r.nome) : 'buy a Revive at the Poké Mart'}">💊 ${r ? esc(r.nome) + ' (' + r.n + ')' : 'Revive — not in your Bag'}</button>`;
           })()
         : ''
     }</div></div></div>`;
@@ -1587,10 +1584,10 @@ export function escolherEvolucao(e, a) {
     f.appendChild(d);
     const g = document.createElement('div');
     Object.assign(g.style, { font: "800 18px 'Baloo 2', system-ui", color: '#F8C237', textAlign: 'center' });
-    g.textContent = tr('Para qual evolução?');
+    g.textContent = tr('Which evolution?');
     const h = document.createElement('div');
     Object.assign(h.style, { textAlign: 'center', lineHeight: '1.3' });
-    h.textContent = (e?.nome || 'Este Pokémon') + ' ' + tr('pode evoluir de mais de um jeito. Escolha:');
+    h.textContent = (e?.nome || 'This Pokémon') + ' ' + tr('can evolve in more than one way. Choose:');
     d.append(g, h);
     const i = (a) => {
       escolhaEvo = null;
@@ -1620,7 +1617,7 @@ export function escolherEvolucao(e, a) {
     }
     const j = document.createElement('button');
     j.type = 'button';
-    j.textContent = tr('Agora não');
+    j.textContent = tr('Not now');
     Object.assign(j.style, {
       background: '#0B1220',
       border: '1px solid rgba(248,194,55,.4)',
@@ -1743,7 +1740,7 @@ let reaprenderAberto = false;
 function reaprenderHtml(e) {
   const a = ctx.golpesReaprender?.(e) || [];
   if (!a.length) return '';
-  return `<details class="reaprender" style="margin-top:6px"><summary data-reaprender="1" style="cursor:pointer;font-size:12px">↻ ${esc(tr('Reaprender golpe'))} (${a.length})</summary><div style="margin-top:4px;font-size:12px">${a.map((g) => `<button type="button" class="btn" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')} · poder ${g.poder ?? '—'}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join(' ')}</div></details>`;
+  return `<details class="reaprender" style="margin-top:6px"><summary data-reaprender="1" style="cursor:pointer;font-size:12px">↻ ${esc(tr('Relearn move'))} (${a.length})</summary><div style="margin-top:4px;font-size:12px">${a.map((g) => `<button type="button" class="btn" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')} · power ${g.poder ?? '—'}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join(' ')}</div></details>`;
 }
 function montarReaprender(a) {
   const f = Popup.grupo(a, 'ficha');
@@ -1842,17 +1839,17 @@ function atualizarReaprender(a, e) {
   const c = e ? ctx.golpesReaprender?.(e) || [] : [];
   if (!c.length) reaprenderAberto = false;
   b.style.display = c.length ? 'block' : 'none';
-  b.textContent = '↻ ' + tr('Reaprender') + ((parseFloat(b.style.width) || 0) < 120 ? '' : ' (' + c.length + ')');
-  b.title = tr('Golpes que ele aprende até o nível atual e ainda não tem');
+  b.textContent = '↻ ' + tr('Relearn') + ((parseFloat(b.style.width) || 0) < 120 ? '' : ' (' + c.length + ')');
+  b.title = tr("Moves it learns up to its current level and doesn't know yet");
   l.style.display = reaprenderAberto ? 'block' : 'none';
   if (!reaprenderAberto) return;
   const d =
     'display:inline-block;margin:3px 4px 3px 0;padding:3px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font:inherit;cursor:pointer';
   l.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b>↻ ' +
-    esc(tr('Reaprender')) +
+    esc(tr('Relearn')) +
     '</b><small style="opacity:.8;margin:0 6px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
-    esc(tr('clique no golpe que quer de volta')) +
+    esc(tr('click the move you want back')) +
     '</small><button type="button" data-reaprender-fechar="1" style="' +
     d +
     ';margin:0;padding:1px 7px">✕</button></div>' +
@@ -1879,7 +1876,7 @@ function atualizarReaprender(a, e) {
       )
       .join('');
 }
-const SELO_ORIGEM = { horta: 'vem da horta', lojaGuilda: 'da loja da guilda' };
+const SELO_ORIGEM = { horta: 'comes from the Garden', lojaGuilda: 'from the guild shop' };
 function abrePokemon(a) {
   const e = timeAtual()[selPokemon];
   if (a === 'menu-item-segurado') {
@@ -2013,7 +2010,7 @@ function fichaV2(c, f, e) {
   seloTravado(f, !!e?.travado);
   if (c.querySelector('[data-tag="acao"][data-tagval="travar"]')) {
     estadoBotaoTravar(c, !!e?.travado);
-    Popup.botao(c, 'travar', !!e?.uid && d, e?.travado ? 'Destravar' : 'Travar');
+    Popup.botao(c, 'travar', !!e?.uid && d, e?.travado ? 'Unlock' : 'Lock');
   }
   const g = f.querySelector(':scope > [data-fig="item-segurado"]');
   if (g) {
@@ -2038,7 +2035,7 @@ function fichaV2(c, f, e) {
       Popup.imagem(c, 'item-segurado', null, g);
       Popup.estadoRef(c, g, 'item-segurado', 'vazio');
       if (p) p.style.display = '';
-      g.title = tr('Segurar um item: escolha na Mochila');
+      g.title = tr('Hold an item: choose it in the Bag');
     }
     const q = Popup.extra(c, 'menu-item-segurado');
     if (q && q.style.display !== 'none') {
@@ -2077,10 +2074,10 @@ function resumoLinhaOvos(r) {
     p = n('prontos'),
     g = n('guardados'),
     a = [];
-  if (c) a.push(tr('{n} chocando', { n: c }));
-  if (p) a.push(tr(p === 1 ? '{n} pronto' : '{n} prontos', { n: p }));
-  if (g) a.push(tr(g === 1 ? '{n} guardado' : '{n} guardados', { n: g }));
-  return a.length ? tr('Ovos: {x}', { x: a.join(' · ') }) : tr('Sem ovos');
+  if (c) a.push(tr('{n} hatching', { n: c }));
+  if (p) a.push(tr(p === 1 ? '{n} ready' : '{n} ready', { n: p }));
+  if (g) a.push(tr(g === 1 ? '{n} stored' : '{n} stored', { n: g }));
+  return a.length ? tr('Ovos: {x}', { x: a.join(' · ') }) : tr('No eggs');
 }
 function linhaOvos(a) {
   const b = a ? [...a.querySelectorAll('[data-fig="linha-ovos"]')] : [];
@@ -2126,9 +2123,12 @@ function acaoPokemon(a) {
       if (r?.ok)
         Chat.sistemaCru(
           (r.travado ? '🔒 ' : '🔓 ') +
-            tr(r.travado ? '{x} travado: não sai por soltar, troca, Mercado nem entrega.' : '{x} destravado.', {
-              x: a,
-            }),
+            tr(
+              r.travado ? "{x} locked: can't be released, traded, sold on the Market or handed in." : '{x} unlocked.',
+              {
+                x: a,
+              },
+            ),
         );
       else if (r?.erro) Chat.sistemaCru('⚠ ' + tr(String(r.erro)));
       render();
@@ -2197,7 +2197,7 @@ function encherPokemon(a) {
   Popup.rotulo(a, 'titulo');
   {
     const d = a.querySelector('[data-txt="contagem-time"]');
-    Popup.texto(a, 'contagem-time', b.length + (/^\d+\/\d+$/.test(d?.dataset.exemplo || '') ? '/6' : '/6 no time'));
+    Popup.texto(a, 'contagem-time', b.length + (/^\d+\/\d+$/.test(d?.dataset.exemplo || '') ? '/6' : '/6 in party'));
   }
   const c = a.__prefItem || 'item-time';
   for (let i = 0; i < 6; i++) {
@@ -2219,7 +2219,7 @@ function encherCartaoTime(a, b, p, c, d = false) {
   const S = ctx.porDex.get(p.dex),
     e = S?.types?.[0] || null;
   Popup.textoCru(a, 'item-nome', (p.shiny ? '✨ ' : '') + p.nome, b);
-  Popup.texto(a, 'item-status', p.seguindo ? 'Seguindo' : p.hp === 0 ? 'Desmaiado' : '', b);
+  Popup.texto(a, 'item-status', p.seguindo ? 'Following' : p.hp === 0 ? 'Fainted' : '', b);
   (d ? Popup.textoCru : Popup.texto)(a, 'item-nivel', c, b);
   Popup.badge(a, 'item-tipo', e && TIPO_FIG[e], e && (S.types.length > 1 ? S.types.join(' · ') : e), b);
   alinharTiposDoTime(a, b, (S?.types || []).length);
@@ -2252,8 +2252,8 @@ function encherFichaPokemon(c, e, d) {
         no.style.cursor = '';
       }
     }
-    Popup.botao(c, 'evoluir', false, '✦ Evoluir');
-    Popup.botao(c, 'soltar', false, 'Soltar');
+    Popup.botao(c, 'evoluir', false, '✦ Evolve');
+    Popup.botao(c, 'soltar', false, 'Release');
     for (const id of ['hp', 'ataque', 'defesa', 'at-esp', 'def-esp', 'velocidade']) {
       h('stat-' + id + '-iv', f);
       Popup.barra(c, 'stat-' + id + '-iv', 0, null, f);
@@ -2279,7 +2279,7 @@ function encherFichaPokemon(c, e, d) {
   Popup.texto(
     c,
     'ficha-status',
-    e.seguindo ? 'Seguindo' : e.hp === 0 ? 'Desmaiado' : j > tetoObed() ? 'No teto' : '',
+    e.seguindo ? 'Following' : e.hp === 0 ? 'Fainted' : j > tetoObed() ? 'At level cap' : '',
     f,
   );
   caberTexto(
@@ -2290,7 +2290,7 @@ function encherFichaPokemon(c, e, d) {
         String(e.dex).padStart(3, '0') +
         ' · Lv ' +
         j +
-        (j >= 100 ? ' · ' + tr('XP máx.') : e.exp != null && p ? ' · XP ' + e.exp + '/' + p : '') +
+        (j >= 100 ? ' · ' + tr('Max XP') : e.exp != null && p ? ' · XP ' + e.exp + '/' + p : '') +
         (e.amizade != null ? ' · ' + tr('amizade') + ' ' + e.amizade : ''),
       f,
     ),
@@ -2347,7 +2347,7 @@ function encherFichaPokemon(c, e, d) {
       'golpe-info',
       'poder ' +
         (g.poder ?? '—') +
-        ' · recarga ' +
+        ' · cooldown ' +
         (g.recarga ?? '—') +
         's' +
         (g.ppMax != null ? ' · PP ' + g.pp + '/' + g.ppMax : ''),
@@ -2367,7 +2367,7 @@ function encherFichaPokemon(c, e, d) {
       Popup.textoCru(
         c,
         'golpe-info',
-        tr(ctx.golpeSemVolta?.(e, e.movs?.[i]?.id) ? '⚠ de TM: não volta · ✔ de novo' : '✔ de novo: aprende {y}', {
+        tr(ctx.golpeSemVolta?.(e, e.movs?.[i]?.id) ? '⚠ TM move: no undo · ✔ again' : '✔ again: learns {y}', {
           y: tr(ca.nome),
         }),
         no,
@@ -2382,20 +2382,20 @@ function encherFichaPokemon(c, e, d) {
     c,
     'evolucao',
     ca
-      ? tr('✖ toque AQUI pra não aprender {x} · ou toque no golpe que vai esquecer', { x: I18n.tNome(ca.nome) })
+      ? tr('✖ tap HERE to not learn {x} · or tap the move to forget', { x: I18n.tNome(ca.nome) })
       : ha.length > 1
-        ? tr('→ pode evoluir para {x} — clique em Evoluir e escolha', { x: ha.map((o) => o.nome).join(', ') })
+        ? tr('→ can evolve into {x} — click Evolve and choose', { x: ha.map((o) => o.nome).join(', ') })
         : ea.length
           ? fa
             ? tr('→ {x}: {y}', { x: ea[0].nome, y: I18n.tNome(ea[0].regra.texto) })
             : tr('→ {x}: {y} - {z}', {
                 x: ea[0].nome,
                 y: I18n.tNome(ea[0].regra.texto),
-                z: I18n.tNome(ea[0].falta || 'ainda não'),
+                z: I18n.tNome(ea[0].falta || 'not yet'),
               })
           : ga
-            ? tr('→ {x}: {y} (em breve)', { x: ga.nome, y: I18n.tNome(ga.regra.texto) })
-            : tr('não evolui'),
+            ? tr('→ {x}: {y} (coming soon)', { x: ga.nome, y: I18n.tNome(ga.regra.texto) })
+            : tr("doesn't evolve"),
     f,
   );
   if (ia) {
@@ -2408,10 +2408,10 @@ function encherFichaPokemon(c, e, d) {
     c,
     'evoluir',
     !!fa && !!e.seguindo,
-    ha.length > 1 ? '✦ Evoluir (' + ha.length + ' formas)' : fa ? '✦ Evoluir → ' + fa.nome : '✦ Evoluir',
+    ha.length > 1 ? '✦ Evolve (' + ha.length + ' forms)' : fa ? '✦ Evolve → ' + fa.nome : '✦ Evolve',
   );
   const ja = !e.seguindo && !e.travado && d.length > 1;
-  Popup.botao(c, 'soltar', ja, confirmarSoltar === chaveDe(e) ? '✔ Confirmar' : 'Soltar');
+  Popup.botao(c, 'soltar', ja, confirmarSoltar === chaveDe(e) ? '✔ Confirm' : 'Release');
   atualizarReaprender(c, e);
   trancaNaFicha(c, e);
   fichaV2(c, f, e);
@@ -2461,9 +2461,12 @@ function trancaNaFicha(a, e) {
       if (r?.ok)
         Chat.sistemaCru(
           (r.travado ? '🔒 ' : '🔓 ') +
-            tr(r.travado ? '{x} travado: não sai por soltar, troca, Mercado nem entrega.' : '{x} destravado.', {
-              x: d,
-            }),
+            tr(
+              r.travado ? "{x} locked: can't be released, traded, sold on the Market or handed in." : '{x} unlocked.',
+              {
+                x: d,
+              },
+            ),
         );
       else if (r?.erro) Chat.sistemaCru('⚠ ' + tr(String(r.erro)));
       render();
@@ -2472,7 +2475,7 @@ function trancaNaFicha(a, e) {
   }
   b.__e = e;
   b.style.display = 'block';
-  b.textContent = e.travado ? '🔓 ' + tr('Destravar') : '🔒 ' + tr('Travar');
+  b.textContent = e.travado ? '🔓 ' + tr('Unlock') : '🔒 ' + tr('Lock');
 }
 let popCx = null;
 const cx = {
@@ -2505,19 +2508,19 @@ const CX_TIPOS = {
   agua: 'Água',
   planta: 'Planta',
   eletrico: 'Elétrico',
-  gelo: 'Gelo',
-  lutador: 'Lutador',
+  gelo: 'Ice',
+  lutador: 'Fighting',
   venenoso: 'Venenoso',
   terrestre: 'Terra',
-  voador: 'Voador',
+  voador: 'Flying',
   psiquico: 'Psíquico',
-  inseto: 'Inseto',
+  inseto: 'Bug',
   pedra: 'Pedra',
-  fantasma: 'Fantasma',
-  dragao: 'Dragão',
-  noturno: 'Sombrio',
-  metalico: 'Aço',
-  fada: 'Fada',
+  fantasma: 'Ghost',
+  dragao: 'Dragon',
+  noturno: 'Dark',
+  metalico: 'Steel',
+  fada: 'Fairy',
 };
 const CX_BOLAS = {
   1001: 'itens',
@@ -2692,7 +2695,7 @@ function contadorCaixa(N, c, v) {
   if (!v || !Number.isFinite(v.total))
     return {
       estado: 'sem-conta',
-      texto: tr('{n} guardados', { n: cxNum(N) }),
+      texto: tr('{n} stored', { n: cxNum(N) }),
       k: 0,
       cor: null,
       faixas: [],
@@ -2716,7 +2719,7 @@ function contadorCaixa(N, c, v) {
   });
   return {
     estado: h,
-    texto: tr('{a} de {b}', { a: cxNum(N), b: cxNum(d) }),
+    texto: tr('{a} of {b}', { a: cxNum(N), b: cxNum(d) }),
     k: d ? Math.min(1, N / d) : 1,
     cor: h === 'normal' ? '#35C6E8' : h === 'quase' ? '#F5B93B' : '#FF5B5B',
     faixas: l,
@@ -2740,7 +2743,7 @@ function encherCaixa(a) {
     Popup.textoCru(
       a,
       'contagem-time',
-      /^\d+\/\d+$/.test(e?.dataset.exemplo || '') ? X.time.length + '/6' : tr('{n}/6 no time', { n: X.time.length }),
+      /^\d+\/\d+$/.test(e?.dataset.exemplo || '') ? X.time.length + '/6' : tr('{n}/6 in party', { n: X.time.length }),
     );
   }
   bandejaCx(a, X, S);
@@ -2837,12 +2840,12 @@ function caixasCx(a, X, S, c, d, C) {
     cxMostrar(aa, !c);
     cxMostrar(pa, c);
     if (c) {
-      Popup.textoCru(a, 'achados', tr('{n} achados', { n: cxNum(d.length) }), pa);
+      Popup.textoCru(a, 'achados', tr('{n} found', { n: cxNum(d.length) }), pa);
       Popup.rotulo(a, 'achados-dica', pa);
     } else {
       const ba = m == null ? CX_POR_CAIXA : Math.max(0, Math.min(CX_POR_CAIXA, m - (k - 1) * CX_POR_CAIXA)),
         ca = Math.max(0, Math.min(CX_POR_CAIXA, N - (k - 1) * CX_POR_CAIXA));
-      Popup.textoCru(a, 'bloco-nome', tr('Caixa {n}', { n: k }), aa);
+      Popup.textoCru(a, 'bloco-nome', tr('Box {n}', { n: k }), aa);
       Popup.textoCru(a, 'bloco-qtd', ca + '/' + ba, aa);
     }
     $.forEach((b, j) => {
@@ -2981,7 +2984,7 @@ function contadorCx(a, C, v) {
     b.dataset.maximo = i ? '1' : '0';
     b.style.cursor = i ? 'default' : 'pointer';
     Popup.estadoRef(a, b, 'btn-mais-vagas', i ? 'maximo' : 'normal');
-    Popup.texto(a, 'btn-mais-vagas', i ? 'Máximo comprado' : 'Mais vagas', b);
+    Popup.texto(a, 'btn-mais-vagas', i ? 'Max purchased' : 'More slots', b);
   }
 }
 function pintarVagasCx(c, v, N) {
@@ -2995,7 +2998,7 @@ function pintarVagasCx(c, v, N) {
       : f.id === 'base'
         ? cxNum(f.n)
         : f.id === 'compradas' && Number.isSafeInteger(v?.tetoCompradas)
-          ? tr('{a} de {b}', { a: cxNum(f.n), b: cxNum(v.tetoCompradas) })
+          ? tr('{a} of {b}', { a: cxNum(f.n), b: cxNum(v.tetoCompradas) })
           : '+' + cxNum(f.n);
   for (const f of C.faixas) {
     const g = cxFilho(d, 'vaga-' + f.id);
@@ -3008,7 +3011,7 @@ function pintarVagasCx(c, v, N) {
   Popup.textoCru(
     c,
     'vagas-prox',
-    h && +h.mais > 0 ? tr('próximo: +{n} no Mestre {m}', { n: cxNum(h.mais), m: cxNum(h.nivel) }) : '',
+    h && +h.mais > 0 ? tr('next: +{n} at Master {m}', { n: cxNum(h.mais), m: cxNum(h.nivel) }) : '',
     d,
   );
   Popup.textoCru(
@@ -3016,7 +3019,7 @@ function pintarVagasCx(c, v, N) {
     'vagas-total',
     C.total == null
       ? ''
-      : tr('Total {t} · {n} guardados · {l} livres', { t: cxNum(C.total), n: cxNum(N), l: cxNum(C.livres) }),
+      : tr('Total {t} · {n} stored · {l} free', { t: cxNum(C.total), n: cxNum(N), l: cxNum(C.livres) }),
     d,
   );
 }
@@ -3030,12 +3033,12 @@ function filtrosCx(a) {
   if (d) {
     const g = Object.keys(TIPO_FIG).find((t) => TIPO_FIG[t] === cx.tipo) || null;
     iconesTipo(a, d, g ? [g] : []);
-    Popup.textoCru(a, 'filtro-tipo', g ? tr(CX_TIPOS[cx.tipo] || 'Tipo') : tr('Tipo'), d);
+    Popup.textoCru(a, 'filtro-tipo', g ? tr(CX_TIPOS[cx.tipo] || 'Type') : tr('Type'), d);
   }
   const e = Popup.grupo(a, 'btn-filtros');
   if (e) {
     const n = (cx.tipo && cx.tipo !== 'todos' ? 1 : 0) + (cx.lvMin || cx.lvMax ? 1 : 0);
-    Popup.textoCru(a, 'filtros-qtd', n ? tr('Filtros · {n}', { n }) : tr('Filtros'), e);
+    Popup.textoCru(a, 'filtros-qtd', n ? tr('Filters · {n}', { n }) : tr('Filters'), e);
     cxMostrar(cxFilho(e, 'marca-ativa'), n > 0);
   }
   const f = Popup.extra(a, 'folha-filtros');
@@ -3056,8 +3059,8 @@ function avisosCx(a, X, b, c, C) {
       a,
       'aviso-caixa',
       C.estado === 'acima'
-        ? tr('Acima do limite: a Caixa guarda todos, mas só recebe de novo abaixo de {n}.', { n: cxNum(C.total) })
-        : tr('Caixa cheia: solte um Pokémon ou compre mais vagas.'),
+        ? tr('Over the limit: the Box keeps them all, but only accepts more once below {n}.', { n: cxNum(C.total) })
+        : tr('Box full: release a Pokémon or buy more slots.'),
       d,
     );
   const f = Popup.grupo(a, 'vazio-caixa'),
@@ -3133,16 +3136,16 @@ function fichaCx(a, S, X) {
     if (ii) ii.style.display = u ? 'block' : 'none';
   }
   const w = p.travado
-    ? 'Esse Pokémon está travado: destrave antes de soltar.'
+    ? 'This Pokémon is locked: unlock it before releasing.'
     : m
-      ? 'troque de parceiro antes de soltar'
+      ? 'switch partners before releasing'
       : l
-        ? 'é o seu único Pokémon'
+        ? "it's your only Pokémon"
         : '';
   const y = m
-    ? 'troque de parceiro antes de mandar ele pra caixa'
+    ? 'switch partners before sending this one to the Box'
     : l
-      ? 'você não pode ficar sem nenhum Pokémon no time'
+      ? "you can't have zero Pokémon on your team"
       : '';
   if (cx.soltar && (cx.soltar !== S.chave || w)) cx.soltar = null;
   const z = !!cx.soltar;
@@ -3162,10 +3165,10 @@ function fichaCx(a, S, X) {
     Popup.estadoRef(a, _, 'btn-travar', p.travado ? 'travado' : 'normal');
     const aa = !!S.reg?.uid && !!ctx.comConta?.();
     botaoCx(_, aa);
-    _.title = aa ? tr(p.travado ? 'Destravar' : 'Travar') : '';
+    _.title = aa ? tr(p.travado ? 'Unlock' : 'Lock') : '';
   }
   cxMostrar(f.querySelector(':scope > [data-txt="aviso-soltar"]'), z);
-  if (z) Popup.textoCru(a, 'aviso-soltar', tr('Soltar {x} de vez? Não tem volta.', { x: nomeCx(p) }), f);
+  if (z) Popup.textoCru(a, 'aviso-soltar', tr("Release {x} for good? This can't be undone.", { x: nomeCx(p) }), f);
   cxMostrar(c('dica'), !z);
   dicaCx(a, f);
 }
@@ -3302,7 +3305,7 @@ function trocaCx(a) {
     return;
   }
   if (k === X.emCampo) {
-    avisoCx('troque de parceiro antes');
+    avisoCx('switch partners first');
     return;
   }
   cx.troca = null;
@@ -3377,7 +3380,9 @@ function travarCx(e) {
     if (r?.ok)
       Chat.sistemaCru(
         (r.travado ? '🔒 ' : '🔓 ') +
-          tr(r.travado ? '{x} travado: não sai por soltar, troca, Mercado nem entrega.' : '{x} destravado.', { x: a }),
+          tr(r.travado ? "{x} locked: can't be released, traded, sold on the Market or handed in." : '{x} unlocked.', {
+            x: a,
+          }),
       );
     else if (r?.erro) Chat.sistemaCru('⚠ ' + tr(String(r.erro)));
     render();
@@ -3521,7 +3526,7 @@ function rMochila(a) {
   if (!h.length) {
     a.innerHTML =
       k +
-      '<div class="vazio">Nada aqui ainda. O Pokémart da cidade (fale com o vendedor) vende bolas e remédios; itens de missão chegam com as recompensas.</div>';
+      '<div class="vazio">Nothing here yet. The town Poké Mart (talk to the clerk) sells balls and medicine; mission items come as rewards.</div>';
     return;
   }
   a.innerHTML =
@@ -3532,7 +3537,7 @@ function rMochila(a) {
         const c = b.t === 7;
         const e = b.t === 9 || !!ctx.ehItemDeEv?.(a);
         const f = !c && !e && ctx.ehItemDeEvolucao?.(a);
-        return `<div class="item q${b.q || 1}"><i class="ic-item" style="${iconeItem(b)}"></i><span class="n">×${n}</span><b>${esc(tr(b.n))}${c && String(ctx.jogo.bolaSel) === String(a) ? ' <small style="color:#ffe07a">(F)</small>' : ''}</b><small>${esc(tr(descItem(b.d)) || tr(D.tipos[b.t] || ''))}</small><div class="acoes">${c ? `<button type="button" class="btn" data-bola="${a}">Usar no F</button><button type="button" class="btn" data-atalho="${a}" title="prende no primeiro atalho livre (5–8)">⚡ Atalho</button>` : e ? `<button type="button" class="btn" data-usar="${a}">Usar no parceiro</button><button type="button" class="btn" data-atalho="${a}" title="prende no primeiro atalho livre (5–8)">⚡ Atalho</button>` : f ? `<button type="button" class="btn ouro" data-evoitem="${a}" title="evolui o parceiro se a regra dele usa este item">✧ Usar no parceiro</button>` : ehMedalhaoMo({ it: b }) ? '<button type="button" class="btn ouro" data-medalhao="' + a + '">' + esc(tr('Usar')) + '</button>' : ehTicketMo({ it: b }) || ehSementeMo({ it: b }) ? '<button type="button" class="btn ouro" data-terreno="' + a + '">' + esc(tr(ehSementeMo({ it: b }) ? 'Plantar' : 'Usar')) + '</button>' : ''}</div></div>`;
+        return `<div class="item q${b.q || 1}"><i class="ic-item" style="${iconeItem(b)}"></i><span class="n">×${n}</span><b>${esc(tr(b.n))}${c && String(ctx.jogo.bolaSel) === String(a) ? ' <small style="color:#ffe07a">(F)</small>' : ''}</b><small>${esc(tr(descItem(b.d)) || tr(D.tipos[b.t] || ''))}</small><div class="acoes">${c ? `<button type="button" class="btn" data-bola="${a}">Use on F</button><button type="button" class="btn" data-atalho="${a}" title="pins to the first free shortcut (5–8)">⚡ Shortcut</button>` : e ? `<button type="button" class="btn" data-usar="${a}">Use on partner</button><button type="button" class="btn" data-atalho="${a}" title="pins to the first free shortcut (5–8)">⚡ Shortcut</button>` : f ? `<button type="button" class="btn ouro" data-evoitem="${a}" title="evolves your partner if its evolution uses this item">✧ Use on partner</button>` : ehMedalhaoMo({ it: b }) ? '<button type="button" class="btn ouro" data-medalhao="' + a + '">' + esc(tr('Use')) + '</button>' : ehTicketMo({ it: b }) || ehSementeMo({ it: b }) ? '<button type="button" class="btn ouro" data-terreno="' + a + '">' + esc(tr(ehSementeMo({ it: b }) ? 'Plantar' : 'Use')) + '</button>' : ''}</div></div>`;
       })
       .join('')}</div>`;
   a.querySelectorAll('[data-bola]').forEach(
@@ -3612,7 +3617,7 @@ function usarNoTerrenoMo(a) {
   if (!soLigado()) {
     avisarMo(
       a.id,
-      ehSementeMo(a) ? 'entre com uma conta pra plantar' : 'entre com uma conta pra usar o Ticket de eclosão',
+      ehSementeMo(a) ? 'sign in with an account to plant' : 'sign in with an account to use the Hatch Ticket',
     );
     render();
     return;
@@ -3661,7 +3666,9 @@ function dataMedalhao(a) {
   return ctx.conta?.dataDoMedalhao?.(+a) || '';
 }
 function notaMedalhaoMo() {
-  return ctx.conta?.souMembro?.() ? tr('Medalhão ativo até {x}.', { x: dataMedalhao(ctx.conta.meuMedalhaoAte()) }) : '';
+  return ctx.conta?.souMembro?.()
+    ? tr('Medallion active until {x}.', { x: dataMedalhao(ctx.conta.meuMedalhaoAte()) })
+    : '';
 }
 async function usarMedalhaoMo(a) {
   if (medalhaoNoAr) return null;
@@ -3674,12 +3681,12 @@ async function usarMedalhaoMo(a) {
     medalhaoNoAr = false;
   }
   if (!r || r.erro || !r.medalhao)
-    return { ok: false, texto: r?.erro ? String(r.erro) : 'o servidor não respondeu', cru: !!r?.cru };
+    return { ok: false, texto: r?.erro ? String(r.erro) : 'the server did not respond', cru: !!r?.cru };
   const b = ctx.conta?.aplicarMedalhao?.(r.medalhao) || ctx.conta?.meuMedalhaoAte?.() || 0,
     c = b ? dataMedalhao(b) : '';
   const d = typeof r.modelo === 'string' && r.modelo ? tr(r.modelo, varsDoServidor(r.vars)) : '';
   Chat.sistemaCru(
-    '🏅 ' + ([d, c ? tr('Medalhão ativo até {x}.', { x: c }) : ''].filter(Boolean).join(' ') || tr('Medalhão')),
+    '🏅 ' + ([d, c ? tr('Medallion active until {x}.', { x: c }) : ''].filter(Boolean).join(' ') || tr('Medallion')),
   );
   try {
     ctx.Som?.tocar?.('ui/sound_keyitemget', { volume: 0.6, prio: true });
@@ -3687,11 +3694,11 @@ async function usarMedalhaoMo(a) {
   try {
     ProgressaoUi.pedirVista();
   } catch {}
-  return { ok: true, texto: c ? tr('Medalhão ativo até {x}', { x: c }) : d || tr('Medalhão'), cru: true };
+  return { ok: true, texto: c ? tr('Medallion active until {x}', { x: c }) : d || tr('Medallion'), cru: true };
 }
 function usarMedalhaoNaMochila(a) {
   if (!soLigado()) {
-    avisarMo(a, 'entre com uma conta pra usar o Medalhão');
+    avisarMo(a, 'sign in to an account to use the Medallion');
     render();
     return;
   }
@@ -3802,7 +3809,7 @@ function acaoMochila(a) {
   if (a === 'usar') {
     confirmarDescarte = null;
     if (!podeUsarMo(c)) {
-      avisarMo(c.id, 'esse item não se usa pela Mochila');
+      avisarMo(c.id, "this item can't be used from the Bag");
       render();
       return;
     }
@@ -3814,13 +3821,13 @@ function acaoMochila(a) {
     }
     if (c.it.lendario) {
       if (!soLigado()) {
-        avisarMo(c.id, 'entre com uma conta pra juntar os fragmentos');
+        avisarMo(c.id, 'sign in with an account to combine the fragments');
         render();
         return;
       }
       juntandoMo = c.id;
       ctx.juntarFragmentos?.(c.it.lendario);
-      avisarMo(c.id, 'Juntando os fragmentos…', true);
+      avisarMo(c.id, 'Gathering the fragments…', true);
       render();
       return;
     }
@@ -3832,7 +3839,7 @@ function acaoMochila(a) {
     }
     if (HeldUi.ehHeld(c.id)) {
       if (!soLigado()) {
-        avisarMo(c.id, 'entre com uma conta pra segurar item');
+        avisarMo(c.id, 'sign in to an account to hold items');
         render();
         return;
       }
@@ -3842,7 +3849,7 @@ function acaoMochila(a) {
     }
     if (c.it.t === 4 && TmUi.ehMaquina(c.id)) {
       if (!soLigado()) {
-        avisarMo(c.id, 'entre com uma conta pra usar TM');
+        avisarMo(c.id, 'sign in to an account to use TMs');
         render();
         return;
       }
@@ -3860,7 +3867,7 @@ function acaoMochila(a) {
     }
     if (c.it.perfume) {
       if (!soLigado()) {
-        avisarMo(c.id, 'entre com uma conta pra usar o perfume');
+        avisarMo(c.id, 'sign in with an account to use the perfume');
         render();
         return;
       }
@@ -3872,7 +3879,7 @@ function acaoMochila(a) {
     }
     if (ctx.ehItemDeEvolucao?.(c.id)) {
       if (!evoluiAgoraMo(c)) {
-        avisarMo(c.id, (c.it.n || 'esse item') + ' não tem efeito em ' + (ctx.jogo?.pika?.nome || 'seu Pokémon'));
+        avisarMo(c.id, (c.it.n || 'this item') + ' has no effect on ' + (ctx.jogo?.pika?.nome || 'your Pokémon'));
         render();
         return;
       }
@@ -3897,7 +3904,7 @@ function acaoMochila(a) {
       delete d[c.id];
       ctx.gravarLS('itens', d);
     }
-    ctx.flutuar?.(ctx.jogo.ash, tr('descartou {x}', { x: I18n.tNome(c.it.n || 'item') }), '#f58e8e', true);
+    ctx.flutuar?.(ctx.jogo.ash, tr('discarded {x}', { x: I18n.tNome(c.it.n || 'item') }), '#f58e8e', true);
     confirmarDescarte = null;
     selMo = 0;
     render();
@@ -3956,7 +3963,7 @@ function encherMochila(a) {
       }
       const f = itensMochila()[n - 1];
       if (f && evoluiAgoraMo(f) && !(avisoMo?.confirmaEvo && avisoMo.id === String(f.id) && Date.now() < avisoMo.ate)) {
-        avisarMo(f.id, 'Evoluir não tem volta: faça de novo pra usar ' + (f.it.n || 'o item'));
+        avisarMo(f.id, "Evolving can't be undone: do it again to use " + (f.it.n || 'the item'));
         avisoMo.confirmaEvo = true;
         render();
         return;
@@ -3967,7 +3974,7 @@ function encherMochila(a) {
         soLigado() &&
         !(avisoMo?.confirmaEvo && avisoMo.id === String(f.id) && Date.now() < avisoMo.ate)
       ) {
-        avisarMo(f.id, 'Usar o Medalhão não tem volta: faça de novo pra confirmar');
+        avisarMo(f.id, "Using the Medallion can't be undone: do it again to confirm");
         avisoMo.confirmaEvo = true;
         render();
         return;
@@ -4032,11 +4039,11 @@ function encherMochila(a) {
       const r = k.querySelector('[data-fig="linha-preso"]');
       if (r) {
         r.style.display = h?.preso ? 'block' : 'none';
-        if (h?.preso) Popup.texto(a, 'item-preso', 'Preso à conta: não vai pro Mercado nem pra troca', r);
+        if (h?.preso) Popup.texto(a, 'item-preso', "Account-bound: can't go to the Market or be traded", r);
       }
     }
     Popup.texto(a, 'item-categoria', h ? catDoItem(h.it) : '', k);
-    Popup.texto(a, 'item-qtd', h ? 'Você tem ' + h.n : '', k);
+    Popup.texto(a, 'item-qtd', h ? 'You have ' + h.n : '', k);
     caberTexto(
       h && ehMedalhaoMo(h) && notaMedalhaoMo()
         ? Popup.textoCru(a, 'item-descricao', tr(descItem(h.it.d)) + ' ' + notaMedalhaoMo(), k)
@@ -4064,7 +4071,7 @@ function encherMochila(a) {
       a,
       j ||
         (h && podeUsarMo(h) && !a.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]')
-          ? { texto: 'Toque duas vezes no item pra usar', dica: true }
+          ? { texto: 'Double-tap the item to use it', dica: true }
           : null),
     );
   const l = h && (h.it.t === 7 || !!ctx.ehVara?.(h.id));
@@ -4073,7 +4080,7 @@ function encherMochila(a) {
     a,
     'usar',
     !!h && podeUsarMo(h),
-    l ? 'Escolher' : h?.it?.lendario ? 'Juntar' : m ? 'Segurar' : ehSementeMo(h) ? 'Plantar' : 'Usar',
+    l ? 'Choose' : h?.it?.lendario ? 'Combine' : m ? 'Hold' : ehSementeMo(h) ? 'Plantar' : 'Use',
   );
   {
     const s = a.__refs?.['btn-usar'] && a.querySelector('[data-fig="btn-usar"]');
@@ -4081,15 +4088,14 @@ function encherMochila(a) {
   }
   Popup.botao(a, 'descartar', !!h && podeDescartarMo(h));
   const o = a.querySelector('[data-tagval="descartar"]');
-  if (o)
-    o.title = h && confirmarDescarte === h.id ? 'clique de novo pra descartar de vez' : 'descartar o item escolhido';
+  if (o) o.title = h && confirmarDescarte === h.id ? 'click again to discard for good' : 'discard the selected item';
 }
 let popTr = null,
   popMa = null,
   popSo = null,
   popDx = null;
 const pad3 = (n) => String(n).padStart(3, '0');
-const NOMES_NIVEL = ['desconhecido', 'Avistado', 'Registrado', 'Estudado', 'Especialista', 'Mestre'];
+const NOMES_NIVEL = ['desconhecido', 'Seen', 'Registered', 'Studied', 'Expert', 'Master'];
 function bolinhas(a, n, c = '#2FAE47', d = '#39424E') {
   if (!a) return;
   const e = [...a.querySelectorAll('[data-fig="bolinha"]')];
@@ -4434,7 +4440,7 @@ function guardaRoupaTr(a) {
     textDecoration: 'underline dotted',
     textUnderlineOffset: '3px',
   });
-  b.title = tr('Trocar de roupa');
+  b.title = tr('Change outfit');
   b.addEventListener('click', (c) => {
     c.stopPropagation();
     abrirGuardaRoupa(a, b);
@@ -4453,7 +4459,7 @@ function conquistasTr(b) {
   if (!c || c.querySelector('.tr-conq')) return;
   const a = document.createElement('span');
   a.className = 'tr-conq';
-  a.textContent = '· ' + tr('Todas as conquistas') + ' ▸';
+  a.textContent = '· ' + tr('All Achievements') + ' ▸';
   Object.assign(a.style, {
     marginLeft: '6px',
     pointerEvents: 'auto',
@@ -4463,7 +4469,7 @@ function conquistasTr(b) {
     textUnderlineOffset: '3px',
     whiteSpace: 'nowrap',
   });
-  a.title = tr('Conquistas, Nível de Mestre e títulos');
+  a.title = tr('Achievements, Master Level and titles');
   a.addEventListener('click', (a) => {
     a.stopPropagation();
     ProgressaoUi.abrir();
@@ -4477,7 +4483,7 @@ function conquistasTr(b) {
     return !!c && c.width > 0 && b.width > 0 && b.right > c.left - 4 && b.left < c.right;
   };
   if (e()) {
-    a.textContent = '· ' + tr('Conquistas') + ' ▸';
+    a.textContent = '· ' + tr('Achievements') + ' ▸';
     if (e()) a.textContent = '▸';
   }
 }
@@ -4511,8 +4517,8 @@ function tituloTr(b, c = false) {
     e.appendChild(a);
   }
   const f = ProgressaoUi.tituloEscolhido() ?? ctx.conhecimento?.tituloAtual?.() ?? '';
-  a.textContent = '· ' + (f ? tr(f) : tr('Escolher título')) + ' ▸';
-  a.title = tr('Trocar o título (aba Títulos)');
+  a.textContent = '· ' + (f ? tr(f) : tr('Choose title')) + ' ▸';
+  a.title = tr('Change title (Titles tab)');
   const k = d.offsetWidth ? d.getBoundingClientRect().width / d.offsetWidth : 1,
     r = document.createRange();
   r.selectNodeContents(d);
@@ -4603,19 +4609,19 @@ function listaGuardaRoupa(a, c) {
     };
     e.appendChild(b);
   };
-  i(f ? P.nomeDe(f) : 'Herói', tr('sua roupa'), !g, () => ctx.equiparSkin?.(null));
+  i(f ? P.nomeDe(f) : 'Herói', tr('your outfit'), !g, () => ctx.equiparSkin?.(null));
   for (const t of h)
     i(P?.nomeDe?.({ tipo: t }) || t, tr(P?.skinDe?.({ tipo: t })?.desc || 'skin'), g === t, () => ctx.equiparSkin?.(t));
   if (!h.length) {
     const d = document.createElement('div');
-    d.textContent = tr('As skins da sua conta aparecem aqui.');
+    d.textContent = tr('Your account skins show up here.');
     Object.assign(d.style, { padding: '6px 10px', color: '#9fb0d0', fontWeight: '600', fontSize: '12px' });
     e.appendChild(d);
   }
   const j = document.createElement('div');
   Object.assign(j.style, { height: '1px', margin: '4px 6px', background: 'rgba(248,194,55,.35)' });
   e.appendChild(j);
-  i('✎ ' + tr('Trocar a roupa base…'), '', false, () => {
+  i('✎ ' + tr('Change base outfit…'), '', false, () => {
     fechar();
     return ctx.criarPersonagem?.();
   });
@@ -4640,7 +4646,7 @@ function treinadorV2(c) {
   if (d) {
     const n = ProgressaoUi.nivelMestre?.();
     d.style.display = n != null ? 'block' : 'none';
-    if (n != null) Popup.texto(c, 'mestre', tr('Mestre {n}', { n }), d);
+    if (n != null) Popup.texto(c, 'mestre', tr('Master {n}', { n }), d);
   }
   if (d && !ctx.MOBILE && !d.__conq) {
     d.__conq = true;
@@ -4660,12 +4666,12 @@ function treinadorV2(c) {
       const h = Popup.texto(
         c,
         'bonus-caca',
-        tr('{a} de {b}', { a: g.toLocaleString(I18n.local()), b: f ? f.toLocaleString(I18n.local()) : '—' }),
+        tr('{a} of {b}', { a: g.toLocaleString(I18n.local()), b: f ? f.toLocaleString(I18n.local()) : '—' }),
         e,
       );
       if (h) caberTexto(h, 0.6);
       Popup.barra(c, 'bonus-caca', f ? g / f : 0, null, e);
-      e.title = tr('Moedas extras por queda; recarrega todo dia e guarda até 7 dias. O XP continua sempre.');
+      e.title = tr('Extra coins per knockout; refills daily and stacks up to 7 days. XP always keeps coming.');
     }
   }
 }
@@ -4720,26 +4726,26 @@ function pescaTr(a) {
     p.appendChild(c);
   }
   c.textContent = r.proximo
-    ? tr(r.proximo.faltam === 1 ? 'nível {x} · falta 1 pesca' : 'nível {x} · faltam {n} pescas', {
+    ? tr(r.proximo.faltam === 1 ? 'level {x} · 1 catch to go' : 'level {x} · {n} catches to go', {
         x: r.nivel,
         n: r.proximo.faltam,
       })
-    : tr(r.tabela ? 'nível {x} (máximo)' : 'nível {x}', { x: r.nivel });
+    : tr(r.tabela ? 'level {x} (max)' : 'level {x}', { x: r.nivel });
   const g = r.proximo
     ? tr(
         r.proximo.faltam === 1
-          ? 'Maestria de pesca {x} · falta 1 pesca pro nível {y}'
-          : 'Maestria de pesca {x} · faltam {n} pescas pro nível {y}',
+          ? 'Fishing mastery {x} · 1 more catch to level {y}'
+          : 'Fishing mastery {x} · {n} more catches to level {y}',
         { x: r.nivel, n: r.proximo.faltam, y: r.proximo.nivel },
       )
-    : tr('Maestria de pesca {x}', { x: r.nivel });
+    : tr('Fishing mastery {x}', { x: r.nivel });
   caberTexto(c, 0.7);
   b.title = g;
   if (!c.title) c.title = g;
 }
 function abrirRankingTr() {
   if (RankingUI.abrir()) return true;
-  return abrirEmBreve('ranking', { nome: NOMES_EM_BREVE.ranking, texto: 'Chega numa próxima atualização.' });
+  return abrirEmBreve('ranking', { nome: NOMES_EM_BREVE.ranking, texto: 'Coming in a future update.' });
 }
 function encherTreinador(e) {
   Popup.rotulo(e, 'titulo');
@@ -4758,7 +4764,7 @@ function encherTreinador(e) {
   treinadorV2(e);
   Popup.texto(e, 'dinheiro', dinheiro().toLocaleString(I18n.local()) + ' ' + (f.moedas?.[1] || 'Moeda'));
   Popup.texto(e, 'tempo-jogo', h + 'h ' + String(j).padStart(2, '0') + 'm');
-  Popup.texto(e, 'time-resumo', (ctx.jogo.time || []).length + '/6 · caixa ' + (ctx.lerLS('caixa', []) || []).length);
+  Popup.texto(e, 'time-resumo', (ctx.jogo.time || []).length + '/6 · box ' + (ctx.lerLS('caixa', []) || []).length);
   Popup.texto(e, 'pokedex-resumo', l + ' vistos · ' + k + ' capturados');
   Popup.texto(e, 'insignias-resumo', m.size + '/8');
   const s = P?.visual?.() || o;
@@ -4801,26 +4807,26 @@ function encherTreinador(e) {
   const y = tetoObed();
   const z = e.querySelector('[data-fig="nota-ranking"]');
   if (z) {
-    z.textContent = tr('shiny 1/16.384 pra todos');
+    z.textContent = tr('shiny 1/16,384 for everyone');
     minhaPosicao().then((p) => {
       if (p && p.especies?.pos && aberta === 'treinador' && Popup.aberto(e))
         z.textContent =
-          (p.mestre?.nivel ? tr('Mestre {n}', { n: p.mestre.nivel }) + ' · ' : '') +
+          (p.mestre?.nivel ? tr('Master {n}', { n: p.mestre.nivel }) + ' · ' : '') +
           (p.conhecimento?.pos
-            ? tr('ranking: {a}º em espécies · {c}º em conhecimento (de {b})', {
+            ? tr('ranking: #{a} in species · #{c} in knowledge (of {b})', {
                 a: p.especies.pos,
                 c: p.conhecimento.pos,
                 b: p.total,
               })
-            : tr(p.especies.pos + 'º de ' + p.total + ' no ranking · shiny 1/16.384 pra todos'));
+            : tr('#' + p.especies.pos + ' of ' + p.total + ' in the ranking · shiny 1/16,384 for everyone'));
     });
   }
   Popup.texto(
     e,
     'obedecem',
-    'Obedecem até Lv ' +
+    'Obey up to Lv ' +
       y +
-      ' · acima disso não obedecem golpes; cada insígnia sobe o teto (' +
+      " · above that they won't obey moves; each Badge raises the cap (" +
       TETO_OBED.slice(0, 8).join('/') +
       ', Elite 100)',
   );
@@ -4834,18 +4840,18 @@ function encherTreinador(e) {
       r.pegosKanto +
         '/' +
         r.kantoAte +
-        ' capturados (' +
+        ' caught (' +
         Math.round((r.pegosKanto / r.kantoAte) * 100) +
         '%) · ' +
         r.vistosKanto +
         ' vistos',
     );
-    Popup.texto(e, 'col-nacional', r.pegos + ' capturados · ' + r.vistos + ' vistos');
+    Popup.texto(e, 'col-nacional', r.pegos + ' caught · ' + r.vistos + ' vistos');
     Popup.texto(e, 'col-shinies', '✨ ' + r.shinies);
     Popup.texto(
       e,
       'col-conhecimento',
-      r.pontosTotal + ' pontos · ' + r.mestres + ' Mestre · ' + r.estudadas + ' Estudado+',
+      r.pontosTotal + ' points · ' + r.mestres + ' Master · ' + r.estudadas + ' Studied+',
     );
     const $ = (x) =>
       String(x || '')
@@ -4880,7 +4886,7 @@ function popupMa() {
   if (MapaUI.ehNovo(a)) return (popMa = MapaUI.montar(a));
   popMa = Popup.montar(a, {
     acao: (a, b) => {
-      if (a === 'trocar-regiao') Chat.sistema('Só Kanto por enquanto — outras regiões chegam depois.');
+      if (a === 'trocar-regiao') Chat.sistema('Only Kanto for now — other regions come later.');
       else if (a === 'teleporte') ViagemUi.clicouTeleporteV2();
       else if (a === 'voar') ViagemUi.voarDaLinha(b);
     },
@@ -4937,7 +4943,7 @@ function marcarBalsa(a, c) {
   const b = document.createElement('i'),
     e = Math.round((parseFloat(Popup.extra(a, 'selo-area')?.style.width) || 70) * 0.5);
   b.className = 'mapa-balsa';
-  b.title = tr('Balsa das Ilhas');
+  b.title = tr('Island Ferry');
   Object.assign(b.style, {
     position: 'absolute',
     left: BALSA_NO_MAPA.x * 100 + '%',
@@ -4974,7 +4980,7 @@ async function encherMapa(b) {
   const f = { ...(pontosMapa.nomes || {}), ...(ctx.dados?.nomes || {}) };
   if (areaMapa == null || !f[areaMapa]) areaMapa = areaDoJogador() ?? +Object.keys(pontosMapa.areas || {})[0];
   const a = areaMapa,
-    g = ctx.nomeArea?.(a) || f[a] || 'área ' + a;
+    g = ctx.nomeArea?.(a) || f[a] || 'area ' + a;
   Popup.texto(b, 'area-nome', g);
   const h = mapaHabitats.areas?.[String(a)] || [];
   const j = h.length ? h : ehRota(a) ? mapaHabitats.generico || [] : [];
@@ -4984,9 +4990,9 @@ async function encherMapa(b) {
     'area-dica',
     j.length
       ? h.length
-        ? 'Pokémon desta área — de perto eles entram na Pokédex.'
-        : 'Pokémon comuns da região — de perto eles entram na Pokédex.'
-      : 'Sem Pokémon selvagens aqui.',
+        ? 'Pokémon of this area — up close they get added to the Pokédex.'
+        : 'Common Pokémon of the region — up close they get added to the Pokédex.'
+      : 'No wild Pokémon here.',
   );
   const d = dexEstado();
   const k = Popup.celulas(b, 'lista-pokemons', Math.max(j.length, 1), 'pokemon');
@@ -5048,7 +5054,7 @@ const soLigado = () => ctx.conta?.estado?.().modo === 'conta';
 const soChamar = (a, b, c) =>
   soLigado()
     ? ctx.conta.chamar(a, b, c)
-    : Promise.resolve({ ok: false, erro: 'Entre com uma conta pra ter amigos e mensagens.' });
+    : Promise.resolve({ ok: false, erro: 'Sign in with an account to have friends and messages.' });
 const tempoAtras = (a) => {
   const s = Math.max(0, (Date.now() - a) / 1000);
   return s < 90
@@ -5157,13 +5163,13 @@ async function soAcao(b, c) {
     const e = soInput(d, 'dialogo-convite', 'campo-nome');
     const f = (e?.value || '').trim();
     if (!f) {
-      Chat.sistema('Digite o nome exato do treinador.');
+      Chat.sistema("Type the trainer's exact name.");
       return;
     }
     const r = await soChamar('POST', '/social/pedido', { para: f });
     if (r.ok) {
       Chat.sistemaCru(
-        tr(r.dados.amigos ? '🤝 Você e {x} agora são amigos.' : '📨 Convite enviado pra {x}.', { x: r.dados.nick }),
+        tr(r.dados.amigos ? '🤝 You and {x} are now friends.' : '📨 Invite sent to {x}.', { x: r.dados.nick }),
       );
       if (e) e.value = '';
       Popup.mostrarExtra(d, 'dialogo-convite', false);
@@ -5175,7 +5181,7 @@ async function soAcao(b, c) {
     const r = await soChamar('POST', '/social/' + b, { de: g });
     if (r.ok)
       Chat.sistemaCru(
-        b === 'aceitar' ? tr('🤝 Você e {x} agora são amigos.', { x: r.dados.nick || g }) : tr('Convite recusado.'),
+        b === 'aceitar' ? tr('🤝 You and {x} are now friends.', { x: r.dados.nick || g }) : tr('Invite declined.'),
       );
     else Chat.sistemaCru(tr('Social: {x}', { x: tr(String(r.erro)) }));
     await soCarregar();
@@ -5189,23 +5195,23 @@ async function soAcao(b, c) {
     if (ctx.guilda && ctx.contaLigada?.()) {
       const r = await ctx.guilda('convidar', { nick: soAmigoMenu.nick }).catch(() => null);
       if (r?.ok) {
-        Chat.sistemaCru(tr('Convite de guilda enviado pra {x}.', { x: r.convidado || soAmigoMenu.nick }));
+        Chat.sistemaCru(tr('Guild invite sent to {x}.', { x: r.convidado || soAmigoMenu.nick }));
         return;
       }
       if (r && r.erro && !/não está numa guilda/i.test(r.erro)) {
-        Chat.sistemaCru(tr('Guilda') + ': ' + tr(String(r.erro)));
+        Chat.sistemaCru(tr('Guild') + ': ' + tr(String(r.erro)));
         return;
       }
     }
     if (!ctx.trocar?.(soAmigoMenu.nick))
       Chat.sistema(
-        'Pra trocar, vocês precisam estar na mesma área, um do lado do outro. (O desafio de batalha chega com o PvP.)',
+        'To trade, you both need to be in the same area, next to each other. (Battle challenges come with PvP.)',
       );
   } else if (b === 'desfazer-amizade') {
     Popup.mostrarExtra(d, 'tooltip-amigo', false);
     if (!soAmigoMenu) return;
     const r = await soChamar('POST', '/social/remover', { id: soAmigoMenu.id });
-    if (r.ok) Chat.sistemaCru(tr('{x} saiu da sua lista de amigos.', { x: soAmigoMenu.nick }));
+    if (r.ok) Chat.sistemaCru(tr('{x} was removed from your friends list.', { x: soAmigoMenu.nick }));
     else Chat.sistemaCru(tr('Social: {x}', { x: tr(String(r.erro)) }));
     soCarregar();
   } else if (b === 'enviar' && abaSo === 'correio') {
@@ -5214,7 +5220,7 @@ async function soAcao(b, c) {
     const h = soInput(d, 'conteudo-mensagens', 'campo-mensagem');
     const i = (h?.value || '').trim();
     if (!soConversa) {
-      Chat.sistema('Escolha uma conversa ou abra pelo menu do amigo.');
+      Chat.sistema("Choose a conversation or open one from a friend's menu.");
       return;
     }
     if (!i) return;
@@ -5223,7 +5229,7 @@ async function soAcao(b, c) {
       if (h) h.value = '';
       soMsgs.push({ de: soDados?.eu?.id, texto: i, hora: r.dados.hora, lida: true });
       const j = soDados?.amigos.find((a) => a.id === soConversa)?.nick || soConversa;
-      Chat.publicar('pm', i, tr('você') + ' → ' + j);
+      Chat.publicar('pm', i, tr('you') + ' → ' + j);
       encherSocial(d);
       soCarregar();
     } else Chat.sistemaCru(tr('Mensagem: {x}', { x: tr(String(r.erro)) }));
@@ -5312,7 +5318,7 @@ export function missoesNoHud() {
       r.title = m.titulo + (m.objetivo ? ' — ' + m.objetivo : '');
     });
     d.style.pointerEvents = 'auto';
-    d.title = tr('recolher a missão');
+    d.title = tr('collapse the mission');
     if (!d.__recolhe) {
       d.__recolhe = true;
       d.addEventListener('click', () => {
@@ -5339,7 +5345,7 @@ setInterval(() => {
   try {
     missoesNoHud();
   } catch (e) {
-    console.warn('missões no HUD:', e);
+    console.warn('missions on HUD:', e);
   }
 }, 1000);
 {
@@ -5408,10 +5414,10 @@ export function fragmentosRede(m) {
   if (m?.t === 'fragmentos_ok')
     avisarMo(
       a,
-      (m.ficha?.shiny ? '✨ ' : '') + (m.ficha?.nome || 'O lendário') + ' entrou no seu time (ou na Caixa)!',
+      (m.ficha?.shiny ? '✨ ' : '') + (m.ficha?.nome || 'The legendary') + ' joined your team (or the Box)!',
       true,
     );
-  else if (m?.t === 'fragmentos_erro') avisarMo(a, m.erro || 'não deu pra juntar agora', false);
+  else if (m?.t === 'fragmentos_erro') avisarMo(a, m.erro || "couldn't combine right now", false);
   try {
     if (aberta) render();
   } catch {}
@@ -5444,10 +5450,10 @@ export function socialEvento(m) {
     (m.tipo === 'removido' ? Chat.sistemaCru : Chat.avisoSistema)(
       tr(
         m.tipo === 'pedido'
-          ? '🤝 {x} quer ser seu amigo: Social → Solicitações.'
+          ? '🤝 {x} wants to be your friend: Social → Requests.'
           : m.tipo === 'aceito'
-            ? '🤝 {x} aceitou seu convite.'
-            : '{x} desfez a amizade.',
+            ? '🤝 {x} accepted your invite.'
+            : '{x} unfriended you.',
         { x: n },
       ),
     );
@@ -5456,7 +5462,7 @@ export function socialEvento(m) {
 }
 let rankingEu = null,
   rankingEuEm = 0;
-const NOMES_RANKING = { especies: 'espécies de Kanto', shinies: 'shinies', conhecimento: 'pontos de conhecimento' };
+const NOMES_RANKING = { especies: 'Kanto species', shinies: 'shinies', conhecimento: 'knowledge points' };
 async function pegarRanking(a, b = false) {
   const c = ctx.conta?.baseUrl?.();
   if (!c) return null;
@@ -5493,7 +5499,7 @@ const tempoCurto = (a) => {
 };
 const valorChat = (a, x) =>
   a === 'mestre'
-    ? tr('Mestre {n}', { n: x.mestre })
+    ? tr('Master {n}', { n: x.mestre })
     : a === 'elite'
       ? tempoCurto(x.valor)
       : a === 'hall'
@@ -5502,7 +5508,7 @@ const valorChat = (a, x) =>
 export async function mostrarRanking(a = '') {
   const R = await pegarRanking('/ranking');
   if (!R) {
-    Chat.sistema('Ranking: sem servidor no ar.');
+    Chat.sistema('Ranking: no server online.');
     return false;
   }
   const b = String(a || '')
@@ -5511,9 +5517,7 @@ export async function mostrarRanking(a = '') {
     g = Object.hasOwn(APELIDOS_RANKING, b) ? APELIDOS_RANKING[b] : b,
     d = GRUPOS_CHAT[Object.hasOwn(GRUPOS_CHAT, g) ? g : ''];
   const e = new Map((R.categorias || []).map((c) => [c.id, c.nome]));
-  Chat.sistemaCru(
-    R.total === 1 ? tr('🏆 Ranking (1 treinador):') : tr('🏆 Ranking ({n} treinadores):', { n: R.total }),
-  );
+  Chat.sistemaCru(R.total === 1 ? tr('🏆 Ranking (1 trainer):') : tr('🏆 Ranking ({n} trainers):', { n: R.total }));
   for (const f of d) {
     const l = (R.listas?.[f] || []).slice(0, 5);
     Chat.sistemaCru(
@@ -5527,11 +5531,11 @@ export async function mostrarRanking(a = '') {
                 return x.pos + 'º ' + x.nick + (v ? ' (' + v + ')' : '');
               })
               .join(' · ')
-          : tr('ninguém ainda')),
+          : tr('nobody yet')),
     );
   }
   if (!Object.hasOwn(GRUPOS_CHAT, g) || !g)
-    Chat.sistema(tr('Mais listas: /ranking jornada · colecionador · shiny · semana · pesca'));
+    Chat.sistema(tr('More lists: /ranking jornada · colecionador · shiny · semana · pesca'));
   return true;
 }
 async function minhaPosicao() {
@@ -5543,7 +5547,7 @@ async function minhaPosicao() {
 }
 export async function enviarDm(b, c) {
   if (!soLigado()) {
-    Chat.sistema('Mensagem direta precisa de conta no servidor.');
+    Chat.sistema('Direct messages need a server account.');
     return false;
   }
   if (!soDados) {
@@ -5553,12 +5557,12 @@ export async function enviarDm(b, c) {
   const v = String(b || '').toLowerCase();
   const a = (soDados?.amigos || []).find((x) => x.nick.toLowerCase() === v);
   if (!a) {
-    Chat.sistemaCru(tr('Não achei "{x}" na sua lista de amigos (mensagem direta é só entre amigos).', { x: b }));
+    Chat.sistemaCru(tr('Couldn\'t find "{x}" in your friends list (direct messages are friends-only).', { x: b }));
     return false;
   }
   const r = await soChamar('POST', '/social/mensagem', { para: a.id, texto: c });
   if (r.ok) {
-    Chat.publicar('pm', c, tr('você') + ' → ' + a.nick);
+    Chat.publicar('pm', c, tr('you') + ' → ' + a.nick);
     if (soConversa === a.id) soMsgs.push({ de: soDados.eu.id, texto: c, hora: r.dados.hora });
     return true;
   }
@@ -5598,7 +5602,7 @@ function encherSolicitacoes(a) {
     });
     b.appendChild(e);
   }
-  e.textContent = P.length ? '' : tr('Nenhum convite pendente.');
+  e.textContent = P.length ? '' : tr('No pending invites.');
 }
 function listaDasMensagens(a, b) {
   return Popup.rolagemDasCelulas(a, b, 'lista-conversas', 'conversa', { ate: (parseFloat(b.style.height) || 440) - 16 })
@@ -5610,7 +5614,7 @@ function modoMensagens(a, b, d) {
   if (e) e.style.visibility = d ? 'hidden' : '';
   const f = b.querySelector('[data-fig="btn-enviar"] .pf-rotulo, [data-fig="btn-enviar"] [data-txt]');
   if (f) {
-    const t = tr(d ? CorreioUI.rotuloAcao() : 'Enviar');
+    const t = tr(d ? CorreioUI.rotuloAcao() : 'Send');
     if (f.textContent !== t) f.textContent = t;
   }
   const g = b.querySelector('[data-fig="conversa-log"]');
@@ -5654,7 +5658,7 @@ function encherMensagens(b, d) {
     Popup.textoCru(
       b,
       'ultima-mensagem',
-      /^você: /.test(v.ultima || '') ? tr('você: {x}', { x: v.ultima.slice(6) }) : v.ultima || '',
+      /^você: /.test(v.ultima || '') ? tr('you: {x}', { x: v.ultima.slice(6) }) : v.ultima || '',
       c,
     );
     Popup.textoCru(b, 'nao-lidas', v.naoLidas ? String(Math.min(+v.naoLidas, 99)) : '', c);
@@ -5715,7 +5719,7 @@ function encherMensagens(b, d) {
         '<small style="color:#7f8db0;font-size:.8em;margin:0 ' +
         o +
         'px 2px">' +
-        esc(a ? tr('Você') : n) +
+        esc(a ? tr('You') : n) +
         ' · ' +
         p(m) +
         '</small>' +
@@ -5734,16 +5738,15 @@ function encherMensagens(b, d) {
       '<div style="position:absolute;left:12px;right:12px;top:50%;transform:translateY(-50%);color:#B8C2D9;text-align:center;pointer-events:none">' +
       esc(t) +
       '</div>';
-    if (!soConversa) j.innerHTML = r(tr('Escolha uma conversa ao lado, ou clique num amigo e peça "mensagem".'));
-    else
-      j.innerHTML = soMsgs.length ? soMsgs.map(q).join('') : r(tr('Sem mensagens ainda. Diga oi pra {x}.', { x: n }));
+    if (!soConversa) j.innerHTML = r(tr('Pick a conversation on the side, or click a friend and choose "message".'));
+    else j.innerHTML = soMsgs.length ? soMsgs.map(q).join('') : r(tr('No messages yet. Say hi to {x}.', { x: n }));
     j.scrollTop = j.scrollHeight;
     if (k) g.scrollTop = g.scrollHeight;
   }
   const h = soInput(b, 'conteudo-mensagens', 'campo-mensagem');
   if (h) {
     const s = D?.amigos.find((a) => a.id === soConversa)?.nick || e.find((x) => x.com === soConversa)?.nick;
-    h.placeholder = soConversa ? tr('mensagem pra {x}…', { x: s }) : tr('escolha uma conversa');
+    h.placeholder = soConversa ? tr('message to {x}…', { x: s }) : tr('choose a conversation');
     if (!h.__enter) {
       h.__enter = true;
       h.addEventListener('keydown', (a) => {
@@ -5766,7 +5769,7 @@ function abaCorreio(a) {
   f.dataset.tagval = 'correio';
   f.style.left = d(b) + e + 'px';
   const t = f.querySelector('[data-txt="aba"]');
-  if (t) t.dataset.exemplo = 'Correio';
+  if (t) t.dataset.exemplo = 'Mail';
   f.addEventListener('click', (b) => {
     b.stopPropagation();
     Popup.trocarAba(a, 'correio');
@@ -5860,14 +5863,14 @@ function encherSocial(b) {
   const D = soDados;
   const o = () => b.querySelectorAll('[data-fig="lista-amigos"] > [data-fig^="amigo-"]');
   if (!soLigado()) {
-    Popup.texto(b, 'amigos-contagem', 'entre com uma conta pra ter amigos');
+    Popup.texto(b, 'amigos-contagem', 'sign in to an account to have friends');
     for (const c of o()) c.style.display = 'none';
     Popup.texto(b, 'solicitacoes-qtd', '');
     bolinhaPedidos(b, 0);
     return;
   }
   if (!D) {
-    Popup.texto(b, 'amigos-contagem', 'carregando…');
+    Popup.texto(b, 'amigos-contagem', 'loading…');
     for (const c of o()) c.style.display = 'none';
     bolinhaPedidos(b, 0);
     soCarregar();
@@ -5900,8 +5903,8 @@ function encherSocial(b) {
         : !a.vistoEm
           ? 'offline'
           : tempoAtras(a.vistoEm) === 'agora'
-            ? 'saiu agora'
-            : 'offline há ' + tempoAtras(a.vistoEm),
+            ? 'just left'
+            : 'offline for ' + tempoAtras(a.vistoEm),
       c,
     );
     const e = Popup.imagem(b, 'retrato', retrato(a.dex), c);
@@ -5931,9 +5934,7 @@ function encherSocial(b) {
       k.appendChild(s);
     }
     s.textContent = tr(
-      D.amigos.length
-        ? 'Ninguém com esse nome.'
-        : 'Sem amigos ainda. "Adicionar amigo" pede o nome exato do treinador.',
+      D.amigos.length ? 'No one with that name.' : 'No friends yet. "Add friend" needs the trainer\'s exact name.',
     );
     s.style.display = 'block';
   } else {
@@ -5996,23 +5997,23 @@ const GENS_DX = [
 const SECOES_DX = ['ficha', 'status', 'evolucao', 'golpes', 'pesquisa'];
 const STATS_DX = [
   ['hp', 'HP'],
-  ['atq', 'Atq'],
+  ['atq', 'Atk'],
   ['def', 'Def'],
   ['ate', 'AtE'],
-  ['dfe', 'DfE'],
-  ['vel', 'Vel'],
+  ['dfe', 'SpD'],
+  ['vel', 'Spe'],
 ];
-const CAT_DX = { 1: 'físico', 2: 'especial', 3: 'status' };
+const CAT_DX = { 1: 'physical', 2: 'especial', 3: 'status' };
 const TAREFAS_DX = {
-  avistar: 'Avistar',
-  capturar: 'Capturar um',
-  rotas: 'Capturar em {n} rotas',
-  macho: 'Capturar um macho',
-  femea: 'Capturar uma fêmea',
-  golpes: 'Ver golpes em batalha',
-  evoluir: 'Ver a espécie evoluir',
-  enfrentar: 'Enfrentar em batalha',
-  shiny: 'Encontrar um shiny',
+  avistar: 'Spot one',
+  capturar: 'Catch one',
+  rotas: 'Catch on {n} routes',
+  macho: 'Catch a male',
+  femea: 'Catch a female',
+  golpes: 'See moves in battle',
+  evoluir: 'See the species evolve',
+  enfrentar: 'Face in battle',
+  shiny: 'Find a shiny',
 };
 const SILHUETA_DX = 'brightness(0) opacity(.85)';
 const multDx = (m) => (m === 0 ? '×0' : m === 0.25 ? '×¼' : m === 0.5 ? '×½' : '×' + m);
@@ -6101,12 +6102,12 @@ async function encherPokedex(e) {
     const r = K.resumo(),
       z = /^Kanto\b/.test(e.querySelector('[data-txt="colecionador"]')?.dataset.exemplo || '');
     const _ =
-      (z ? '' : 'Colecionador ') +
+      (z ? '' : 'Collector ') +
       'Kanto · ' +
       r.pegosKanto +
       '/' +
       r.kantoAte +
-      ' capturados · ' +
+      ' caught · ' +
       r.vistosKanto +
       ' vistos · ' +
       r.shinies +
@@ -6114,7 +6115,7 @@ async function encherPokedex(e) {
     Popup.texto(e, 'colecionador', _);
     minhaPosicao().then((p) => {
       if (p && p.especies?.pos && aberta === 'pokedex' && Popup.aberto(e))
-        Popup.texto(e, 'colecionador', _ + ' · ' + p.especies.pos + 'º de ' + p.total + ' no ranking');
+        Popup.texto(e, 'colecionador', _ + ' · ' + '#' + p.especies.pos + ' of ' + p.total + ' in the ranking');
     });
   }
   const t = Popup.celulas(e, 'lista-especies', Math.max(j.length, 1), 'especie');
@@ -6185,17 +6186,17 @@ async function encherPokedex(e) {
       e,
       'como-subir',
       y >= 5
-        ? 'Nível máximo: você é Mestre desta espécie.'
+        ? "Max level: you're a Master of this species."
         : w && w.proximo != null
           ? w.pontos +
             '/' +
             w.proximo +
             ' pra ' +
             NOMES_NIVEL[y + 1] +
-            ($.length ? ' — pra subir: ' + $.join(', ') : '')
+            ($.length ? ' — to level up: ' + $.join(', ') : '')
           : v
             ? ''
-            : 'Encontre este Pokémon pra abrir a ficha.',
+            : 'Find this Pokémon to unlock its entry.',
     );
   }
   const f = Popup.grupo(e, 'ficha-especie');
@@ -6212,7 +6213,7 @@ async function encherPokedex(e) {
     if (aa) {
       aa.style.display = y < 2 ? 'block' : 'none';
       ca(aa);
-      Popup.texto(e, 'aviso', 'stats, evolução e fraquezas abrem no nível 2 (capture um)', aa);
+      Popup.texto(e, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', aa);
     }
     if (ba) {
       const da = (X.g || []).length,
@@ -6222,7 +6223,7 @@ async function encherPokedex(e) {
       Popup.texto(
         e,
         'aviso',
-        'golpes abrem vendo a espécie batalhar (' + ea + '/' + da + ' do learnset vistos; tudo no nível 4)',
+        'moves unlock by watching the species battle (' + ea + '/' + da + ' of learnset seen; everything at level 4)',
         ba,
       );
     }
@@ -6243,7 +6244,7 @@ function abasDx(a, b, c) {
   }
   Popup.marcarFiltro(Popup.grupo(a, 'secao-' + secaoDx));
 }
-const ABA_DX_CHAVE = { ficha: () => tr('Ficha (aba da Pokédex)'), status: () => tr('Status (aba da Pokédex)') };
+const ABA_DX_CHAVE = { ficha: () => tr('Summary (Pokédex tab)'), status: () => tr('Status (Pokédex tab)') };
 function rotulosAbasDx(a) {
   for (const b of SECOES_DX) {
     const g = Popup.grupo(a, 'secao-' + b);
@@ -6305,7 +6306,7 @@ function paginaFichaDx(d, S, X, j) {
       if (!ca) {
         const r2 = Popup.imagem(d, 'retrato-2d', iconeMonDex(selDex), da);
         if (r2) r2.style.filter = j >= 1 ? '' : SILHUETA_DX;
-        Popup.texto(d, 'sem-modelo', 'Modelo 3D shiny ainda não chegou', da);
+        Popup.texto(d, 'sem-modelo', "Shiny 3D model hasn't arrived yet", da);
       }
     }
     if (ea) {
@@ -6313,7 +6314,7 @@ function paginaFichaDx(d, S, X, j) {
       ea.style.display = ca || !da ? ea.dataset.d0 : 'none';
     }
     v.canvas.style.display = ca || !da ? 'block' : 'none';
-    mostrarModeloDex(ca, j >= 1).catch((e) => console.warn('pokédex 3D:', e));
+    mostrarModeloDex(ca, j >= 1).catch((e) => console.warn('3D pokédex:', e));
   }
   const r = ctx.alturas?.[selDex] ?? X.a,
     t = S?.kg ?? X.p;
@@ -6327,12 +6328,12 @@ function paginaFichaDx(d, S, X, j) {
       u
         ? X.ho
           ? j >= 4
-            ? tr('{a} (oculta: {b})', { a: u, b: tr(X.ho) })
-            : tr('{a} (oculta: abre no nível 4)', { a: u })
+            ? tr('{a} (hidden: {b})', { a: u, b: tr(X.ho) })
+            : tr('{a} (hidden: unlocks at level 4)', { a: u })
           : u
         : '—',
     ],
-    ['info-g-nero', 4, X.m != null ? (X.m < 0 ? tr('sem gênero') : '♂ ' + X.m + '% · ♀ ' + X.f + '%') : '—'],
+    ['info-g-nero', 4, X.m != null ? (X.m < 0 ? tr('genderless') : '♂ ' + X.m + '% · ♀ ' + X.f + '%') : '—'],
     [
       'info-ev',
       2,
@@ -6346,7 +6347,7 @@ function paginaFichaDx(d, S, X, j) {
     [
       'info-taxa-de-captura',
       3,
-      tr('{a} · {b}% (Pokébola)', { a: z, b: (chanceCaptura(S?.rate ?? X.c ?? 45) * 100).toFixed(1) }),
+      tr('{a} · {b}% (Poké Ball)', { a: z, b: (chanceCaptura(S?.rate ?? X.c ?? 45) * 100).toFixed(1) }),
     ],
   ];
   for (const g of d.querySelectorAll('[data-fig="tabela-infos"] > [data-fig^="info-"], [data-fig="info-ev"]')) {
@@ -6369,7 +6370,7 @@ function paginaFichaDx(d, S, X, j) {
     const vl = Popup.textoCru(
       d,
       'info-valor',
-      fa ? l[2] : ga ? '' : tr('abre no nível {n} ({x})', { n: l[1], x: tr(NOMES_NIVEL[l[1]]) }),
+      fa ? l[2] : ga ? '' : tr('unlocks at level {n} ({x})', { n: l[1], x: tr(NOMES_NIVEL[l[1]]) }),
       g,
     );
     if (vl) {
@@ -6377,20 +6378,20 @@ function paginaFichaDx(d, S, X, j) {
       vl.style.color = fa ? (ga ? vl.dataset.cor0 : '#FFFFFF') : '#B8C2D9';
       rolarSeCortado(vl);
     }
-    if (l[0] === 'info-taxa-de-captura' && vl && fa) vl.title = tr('com HP cheio e Pokébola');
+    if (l[0] === 'info-taxa-de-captura' && vl && fa) vl.title = tr('at full HP with a Poké Ball');
   }
   const $ = (ctx.jogo.selvagens || []).filter((s) => s.dex === selDex && s.estado !== 'morto').length;
   const aa = (() => {
     const a = areasDoMato(selDex);
     for (const b of ondePesca(selDex))
-      a.push(tr('{x} (pesca)', { x: tr(ctx.nomeArea?.(b) || ctx.dados?.nomes?.[b] || 'área ' + b) }));
+      a.push(tr('{x} (fishing)', { x: tr(ctx.nomeArea?.(b) || ctx.dados?.nomes?.[b] || 'area ' + b) }));
     return a;
   })();
   Popup.rotulo(d, 'rotulo-onde');
   const ba =
     j >= 1
-      ? (aa.length ? aa.map((n) => tr(n)).join(', ') : tr('não aparece no mato nem na pesca (só troca/evento)')) +
-        ($ ? ' · ' + tr('{x} neste mapa agora', { x: $ }) : '')
+      ? (aa.length ? aa.map((n) => tr(n)).join(', ') : tr("doesn't appear in grass or fishing (trade/event only)")) +
+        ($ ? ' · ' + tr('{x} on this map now', { x: $ }) : '')
       : '?';
   caberTexto(Popup.textoCru(d, 'onde', ba), 0.85);
 }
@@ -6405,7 +6406,7 @@ function paginaStatusDx(a, S, b) {
   if (f) f.style.display = d ? 'block' : 'none';
   if (h) {
     h.style.display = d ? 'none' : 'block';
-    Popup.texto(a, 'aviso', 'stats, evolução e fraquezas abrem no nível 2 (capture um)', h);
+    Popup.texto(a, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', h);
   }
   if (!d) return;
   const j = S?.bs || [];
@@ -6471,7 +6472,7 @@ function paginaEvolucaoDx(a, d, b) {
     h = Popup.grupo(a, 'aviso-evolucao');
   if (h) {
     h.style.display = g ? 'none' : 'block';
-    Popup.texto(a, 'aviso', 'stats, evolução e fraquezas abrem no nível 2 (capture um)', h);
+    Popup.texto(a, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', h);
   }
   const j = g && ctx.porDex.get(selDex) ? cadeiaEvolucao(selDex).filter(({ s }) => s.n <= 649) : [];
   const l = evoDx?.por || {},
@@ -6527,7 +6528,7 @@ function paginaEvolucaoDx(a, d, b) {
     Popup.atualizarRolagem?.(q);
   }
 }
-const CAT_GOLPE_DX = { fisico: 'físico', especial: 'especial', status: 'status' };
+const CAT_GOLPE_DX = { fisico: 'physical', especial: 'especial', status: 'status' };
 function learnsetDaLinhaDx(a) {
   const b = new Map();
   for (const d of familiaAbaixo(a))
@@ -6572,11 +6573,11 @@ function paginaGolpesDx(a, X, b, K) {
     Popup.texto(
       a,
       'aviso',
-      'golpes abrem vendo a espécie batalhar (' +
+      'moves unlock by watching the species battle (' +
         new Set(e.filter((x) => f.has(String(x.id))).map((x) => x.id)).size +
         '/' +
         new Set(e.map((x) => x.id)).size +
-        ' do learnset vistos; tudo no nível 4)',
+        ' of learnset seen; everything at level 4)',
       h,
     );
   }
@@ -6613,8 +6614,8 @@ function paginaPesquisaDx(d, K, e, f) {
     d,
     'como-subir',
     f >= 5
-      ? tr('Nível máximo')
-      : tr('{a}/{b} pontos pra {x}', { a: h, b: e?.proximo ?? L[f + 1], x: tr(NOMES_NIVEL[f + 1]) }),
+      ? tr('Max level')
+      : tr('{a}/{b} points to {x}', { a: h, b: e?.proximo ?? L[f + 1], x: tr(NOMES_NIVEL[f + 1]) }),
     g,
   );
   caberTexto(Popup.texto(d, 'proximo-revela', K.revelaTexto?.(Math.min(5, f + 1)) || '', g), 0.8);
@@ -6666,7 +6667,7 @@ function rMissoes(a) {
   abas([{ id: 'principal', nome: 'Principal' }]);
   const M = ctx.missoes;
   if (!M?.pronto?.()) {
-    a.innerHTML = '<div class="vazio">As missões ainda estão carregando…</div>';
+    a.innerHTML = '<div class="vazio">Missions are still loading…</div>';
     return;
   }
   const b = M.capitulos(),
@@ -6676,7 +6677,7 @@ function rMissoes(a) {
   const g = (a) => D.itens[a]?.n || 'item ' + a;
   const h = (r) =>
     [
-      r?.dinheiro ? r.dinheiro + ' Moedas' : null,
+      r?.dinheiro ? r.dinheiro + ' Coins' : null,
       ...Object.entries(r?.itens || {}).map(([a, n]) => esc(g(a)) + ' ×' + n),
       r?.exp ? r.exp + ' XP' : null,
     ]
@@ -6688,25 +6689,25 @@ function rMissoes(a) {
     return esc(p.texto) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : '');
   };
   const k = d
-    ? `<div class="missao-atual"><small style="color:var(--muted)">Capítulo ${d.capitulo} · ${esc(d.capNome)}</small><br><b>${esc(d.nome)}</b><br><span style="font-size:12px">${esc(d.des)}</span>
+    ? `<div class="missao-atual"><small style="color:var(--muted)">Chapter ${d.capitulo} · ${esc(d.capNome)}</small><br><b>${esc(d.nome)}</b><br><span style="font-size:12px">${esc(d.des)}</span>
       <div style="margin-top:8px;font-size:13px;line-height:1.5">${d.passos.map((p, i) => `<div>${i < e ? '✔' : i === e ? '▶' : '○'} ${j(p, i)}</div>`).join('')}</div>
-      <div style="margin-top:6px;font-size:12px;color:var(--muted)">recompensa: ${h(d.recompensa)}</div></div>`
+      <div style="margin-top:6px;font-size:12px;color:var(--muted)">reward: ${h(d.recompensa)}</div></div>`
     : M.historiaPendente?.()
       ? '<div class="missao-atual"><b>' +
-        esc(tr('A história está chegando…')) +
+        esc(tr('The story is coming…')) +
         '</b><br><span style="font-size:12px">' +
-        esc(tr('A próxima missão aparece aqui assim que chegar.')) +
+        esc(tr('The next mission appears here as soon as it arrives.')) +
         '</span></div>'
-      : '<div class="missao-atual"><b>Você concluiu tudo o que existe por enquanto.</b><br><span style="font-size:12px">Mais capítulos chegam nas próximas versões.</span></div>';
+      : '<div class="missao-atual"><b>You\'ve completed everything available for now.</b><br><span style="font-size:12px">More chapters are coming in future versions.</span></div>';
   a.innerHTML =
     k +
     b
       .map((c) => {
         if (c.trancado)
-          return `<div class="linha" style="cursor:default;opacity:.55;margin-top:8px"><span style="font-size:16px">🔒</span><span class="nome"><b>${esc(tr('Capítulo {n}', { n: c.id }))}</b></span></div>`;
+          return `<div class="linha" style="cursor:default;opacity:.55;margin-top:8px"><span style="font-size:16px">🔒</span><span class="nome"><b>${esc(tr('Chapter {n}', { n: c.id }))}</b></span></div>`;
         const a = c.missoes.filter((m) => m.estado === 'feita').length,
           b = c.missoes.some((m) => m.estado === 'ativa');
-        return `<details ${b ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${a === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${a === c.missoes.length ? '✅' : b ? '▶️' : '🔒'} Capítulo ${c.id} — ${esc(c.nome)} <small style="color:var(--muted)">${a}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map((m) => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(m.nome)}</b><small>${esc(m.des)} · recompensa: ${h(m.recompensa)}</small></span></div>`).join('')}</div></details>`;
+        return `<details ${b ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${a === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${a === c.missoes.length ? '✅' : b ? '▶️' : '🔒'} Chapter ${c.id} — ${esc(c.nome)} <small style="color:var(--muted)">${a}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map((m) => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(m.nome)}</b><small>${esc(m.des)} · reward: ${h(m.recompensa)}</small></span></div>`).join('')}</div></details>`;
       })
       .join('');
 }
@@ -6780,7 +6781,7 @@ function textoRecompensaMi(r) {
   const a = (a) => tr(D.itens[a]?.n || 'item ' + a);
   return (
     [
-      r?.dinheiro ? tr('{x} Moedas', { x: r.dinheiro }) : null,
+      r?.dinheiro ? tr('{x} Coins', { x: r.dinheiro }) : null,
       ...Object.entries(r?.itens || {}).map(([b, n]) => a(b) + ' ×' + n),
       r?.exp ? r.exp + ' XP' : null,
     ]
@@ -6894,7 +6895,7 @@ function encherMissoes(b) {
   for (const w of b.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(b, 'aba', w);
   if (!M?.pronto?.()) {
     if (M?.servidorNoComando?.())
-      esperaDaHistoria(b, 'As missões ainda estão carregando…', 'Elas aparecem aqui assim que chegarem.');
+      esperaDaHistoria(b, 'Missions are still loading…', "They'll show up here as soon as they arrive.");
     return;
   }
   for (const z of b.querySelectorAll('[data-trancado]')) {
@@ -6920,11 +6921,11 @@ function encherMissoes(b) {
     f = M.progresso();
   const h = Popup.grupo(b, 'missao-ativa');
   const l = !d && !!M.historiaPendente?.();
-  Popup.texto(b, 'capitulo-local', d ? 'Capítulo ' + d.capitulo + ' · ' + d.capNome : '', h);
+  Popup.texto(b, 'capitulo-local', d ? 'Chapter ' + d.capitulo + ' · ' + d.capNome : '', h);
   Popup.texto(
     b,
     'missao-titulo',
-    d ? d.nome : l ? 'A história está chegando…' : 'Você concluiu tudo o que existe por enquanto.',
+    d ? d.nome : l ? 'The story is coming…' : "You've completed everything available for now.",
     h,
   );
   Popup.texto(
@@ -6933,8 +6934,8 @@ function encherMissoes(b) {
     d
       ? d.des || ''
       : l
-        ? 'A próxima missão aparece aqui assim que chegar.'
-        : 'Mais capítulos chegam nas próximas versões.',
+        ? 'The next mission appears here as soon as it arrives.'
+        : 'More chapters arrive in future versions.',
     h,
   );
   const o = d?.passos || [];
@@ -6997,7 +6998,7 @@ function encherMissoes(b) {
       if (c.trancado) cadeadoNaLinha(h, G);
     }
     if (c.trancado) {
-      const l = Popup.textoCru(b, 'capitulo-nome', tr('Capítulo {n}', { n: c.id }), a);
+      const l = Popup.textoCru(b, 'capitulo-nome', tr('Chapter {n}', { n: c.id }), a);
       if (l) {
         if (l.dataset.cor0 === undefined) l.dataset.cor0 = l.style.color || '';
         l.style.color = '#B8C2D9';
@@ -7006,7 +7007,7 @@ function encherMissoes(b) {
       y += G.passoCap;
       return;
     }
-    Popup.texto(b, 'capitulo-nome', 'Capítulo ' + c.id + ' · ' + c.nome, a);
+    Popup.texto(b, 'capitulo-nome', 'Chapter ' + c.id + ' · ' + c.nome, a);
     Popup.texto(b, 'capitulo-progresso', f + '/' + c.missoes.length, a);
     if (!d) {
       y += G.passoCap;
@@ -7086,19 +7087,19 @@ function areasDoMato(a) {
   const b = habitatsDaDex(),
     c = [];
   for (const [d, f] of Object.entries(b?.areas || {}))
-    if (f.some((e) => e.dex === a)) c.push(ctx.nomeArea?.(+d) || ctx.dados?.nomes?.[d] || 'área ' + d);
+    if (f.some((e) => e.dex === a)) c.push(ctx.nomeArea?.(+d) || ctx.dados?.nomes?.[d] || 'area ' + d);
   return c;
 }
 let secSel = null,
   secGrupoAberto = 'ativa';
-const ESTADO_SEC = { ativa: 'Ativa', disponivel: 'Disponível', feita: 'Concluída' };
+const ESTADO_SEC = { ativa: 'Active', disponivel: 'Available', feita: 'Completed' };
 function encherSecundarias(a, G) {
   const M = ctx.missoes,
     b = M.secundarias?.() || [];
   const c = [
-    ['ativa', 'Ativas'],
-    ['disponivel', 'Disponíveis agora'],
-    ['feita', 'Feitas'],
+    ['ativa', 'Active'],
+    ['disponivel', 'Available now'],
+    ['feita', 'Done'],
   ].map(([a, c]) => ({ id: a, nome: c, missoes: b.filter((x) => x.estado === a) }));
   const d =
     b.find((x) => String(x.id) === String(secSel) && x.estado !== 'travada') ||
@@ -7109,11 +7110,11 @@ function encherSecundarias(a, G) {
   Popup.texto(
     a,
     'capitulo-local',
-    d ? tr('Secundária') + ' · ' + tr(ESTADO_SEC[d.estado]) + (d.onde ? ' · ' + tr(d.onde) : '') : '',
+    d ? tr('Side') + ' · ' + tr(ESTADO_SEC[d.estado]) + (d.onde ? ' · ' + tr(d.onde) : '') : '',
     e,
   );
-  Popup.texto(a, 'missao-titulo', d ? d.nome : 'Nenhuma missão secundária por enquanto.', e);
-  Popup.texto(a, 'missao-descricao', d ? d.des || '' : 'Elas aparecem com o "!" em cima de quem dá a missão.', e);
+  Popup.texto(a, 'missao-titulo', d ? d.nome : 'No side missions for now.', e);
+  Popup.texto(a, 'missao-descricao', d ? d.des || '' : 'They appear with a "!" above whoever gives the mission.', e);
   const f = d?.passos || [],
     h = d?.estado === 'ativa' ? d.passo : d?.estado === 'feita' ? f.length : -1;
   const j = janelaObjetivos(f.length, h);
@@ -7233,10 +7234,10 @@ function rMapa(f) {
   const g = ctx.dados,
     h = (g.caixas || []).filter((c) => c.sx > 0 && c.sz > 0);
   if (h.length < 2) {
-    f.innerHTML = '<div class="vazio">Sem mapa nesta cena (interior). Saia pra rua pra ver Kanto.</div>';
+    f.innerHTML = '<div class="vazio">No map in this scene (indoors). Go outside to see Kanto.</div>';
     return;
   }
-  f.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1 1 560px;min-width:340px"><canvas class="mapa" width="1280" height="960" style="width:100%;border-radius:12px;cursor:pointer"></canvas><div id="m-legenda" style="color:var(--muted);font-size:12px;margin-top:6px">clique numa área pra ver os Pokémon dela</div></div><div id="m-card" style="flex:1 1 240px;min-width:230px"></div></div>`;
+  f.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1 1 560px;min-width:340px"><canvas class="mapa" width="1280" height="960" style="width:100%;border-radius:12px;cursor:pointer"></canvas><div id="m-legenda" style="color:var(--muted);font-size:12px;margin-top:6px">click an area to see its Pokémon</div></div><div id="m-card" style="flex:1 1 240px;min-width:230px"></div></div>`;
   const i = f.querySelector('canvas'),
     c = i.getContext('2d');
   const j = ctx.flipX();
@@ -7324,7 +7325,7 @@ function rMapa(f) {
     mapaSel = a;
     _();
     const b = f.querySelector('#m-card');
-    const c = g.nomes?.[a] || 'área ' + a;
+    const c = g.nomes?.[a] || 'area ' + a;
     mapaHabitats ??= await fetch('./data/habitats.json')
       .then((r) => r.json())
       .catch(() => ({ areas: {}, generico: [] }));
@@ -7334,9 +7335,9 @@ function rMapa(f) {
     const j = (e) => {
       const a = d[e.dex];
       const b = a === 'visto' || a === 'pego';
-      return `<div class="m-poke ${b ? '' : 'sombra'}"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" loading="lazy"><b>${b ? esc(e.nome) : '???'}</b>${e.agua ? '<small>💧</small>' : ''}${a === 'pego' ? '<small class="pego">✔ pego</small>' : ''}</div>`;
+      return `<div class="m-poke ${b ? '' : 'sombra'}"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" loading="lazy"><b>${b ? esc(e.nome) : '???'}</b>${e.agua ? '<small>💧</small>' : ''}${a === 'pego' ? '<small class="pego">✔ caught</small>' : ''}</div>`;
     };
-    b.innerHTML = `<div class="ficha"><h3>${esc(c)}</h3>${i.length ? `<div style="color:var(--muted);font-size:11px;margin:4px 0 8px">${h.length ? 'Pokémon desta área' : 'Pokémon comuns da região'} — de perto eles entram na Pokédex</div><div class="m-grade">${i.map(j).join('')}</div>` : '<div class="vazio" style="padding:14px 6px">Sem Pokémon selvagens aqui.</div>'}</div>`;
+    b.innerHTML = `<div class="ficha"><h3>${esc(c)}</h3>${i.length ? `<div style="color:var(--muted);font-size:11px;margin:4px 0 8px">${h.length ? 'Pokémon of this area' : 'Common Pokémon of the region'} — up close they enter the Pokédex</div><div class="m-grade">${i.map(j).join('')}</div>` : '<div class="vazio" style="padding:14px 6px">No wild Pokémon here.</div>'}</div>`;
   };
   i.onclick = (c) => {
     const r = i.getBoundingClientRect();
@@ -7560,7 +7561,7 @@ function aplicarShiny(a) {
   try {
     Fogo.shinyFogo(a, true);
   } catch (e) {
-    console.warn('fogo shiny:', e);
+    console.warn('shiny fire:', e);
   }
   const b = [];
   a.traverse((o) => {
@@ -7691,7 +7692,7 @@ async function mostrarModeloDex(a, b) {
     if (r && selDexGlb === a)
       r.innerHTML = n
         ? '✨ Shiny'
-        : '✨ Shiny <small style="color:var(--muted)">(sem textura shiny exportada — igual ao normal)</small>';
+        : '✨ Shiny <small style="color:var(--muted)">(no shiny texture exported — same as normal)</small>';
   });
   return true;
 }
@@ -7758,12 +7759,12 @@ function rPokedex(c) {
   const j = i.filter((s) => d[s.n]).length,
     k = i.filter((s) => d[s.n] === 'pego').length;
   if (!h.some((s) => s.n === selDex)) selDex = (h.find((s) => d[s.n]) || h[0])?.n || null;
-  c.innerHTML = `<div class="dois dex-dois"><div><div class="dex-topo"><input id="dex-busca" placeholder="buscar por nome ou número…" value="${esc(dexBusca)}" autocomplete="off"><span>👁 ${j} · ★ ${k} / ${i.length}</span></div>
+  c.innerHTML = `<div class="dois dex-dois"><div><div class="dex-topo"><input id="dex-busca" placeholder="search by name or number…" value="${esc(dexBusca)}" autocomplete="off"><span>👁 ${j} · ★ ${k} / ${i.length}</span></div>
     ${(() => {
       const K = ctx.conhecimento;
       if (!K) return '';
       const r = K.resumo();
-      return `<div class="dex-colec"><b>Colecionador</b> Kanto ${r.pegosKanto}/${r.kantoAte} capturados (${Math.round((r.pegosKanto / r.kantoAte) * 100)}%) · ${r.vistosKanto} vistos · ✨ ${r.shinies} shiny · 📖 ${r.mestres} mestre${r.mestres === 1 ? '' : 's'}${r.tituloAtual ? ` · 🏅 ${esc(r.tituloAtual)}` : ''}</div>`;
+      return `<div class="dex-colec"><b>Collector</b> Kanto ${r.pegosKanto}/${r.kantoAte} caught (${Math.round((r.pegosKanto / r.kantoAte) * 100)}%) · ${r.vistosKanto} vistos · ✨ ${r.shinies} shiny · 📖 ${r.mestres} mestre${r.mestres === 1 ? '' : 's'}${r.tituloAtual ? ` · 🏅 ${esc(r.tituloAtual)}` : ''}</div>`;
     })()}
     <div class="dex-lista">${
       h
@@ -7776,7 +7777,7 @@ function rPokedex(c) {
                 : '';
             })()}</div>`,
         )
-        .join('') || '<div class="vazio">nada com esse nome nesta geração</div>'
+        .join('') || '<div class="vazio">nothing by that name in this generation</div>'
     }</div></div><div class="ficha dex-ficha" id="dex-ficha"></div></div>`;
   const l = c.querySelector('#dex-busca');
   l.addEventListener('input', () => {
@@ -7816,7 +7817,7 @@ async function mostrarDex() {
   const o = ctx.alturas?.[selDex] ?? X.a,
     r = S?.kg ?? X.p;
   const u = S?.bs || [],
-    w = ['HP', 'Atq', 'Def', 'AtE', 'DfE', 'Vel'];
+    w = ['HP', 'Atk', 'Def', 'AtE', 'SpD', 'Spe'];
   const z = fraquezas(S?.types || []);
   const _ = k && S ? cadeiaEvolucao(selDex) : [];
   const aa = (X.g || []).slice().sort((p, q) => p[0] - q[0]);
@@ -7825,18 +7826,18 @@ async function mostrarDex() {
     const h = habitatsDaDex();
     if (!h) return [];
     const a = areasDoMato(selDex);
-    if ((h.generico || []).some((e) => e.dex === selDex)) a.push('grama de qualquer rota');
+    if ((h.generico || []).some((e) => e.dex === selDex)) a.push('grass on any route');
     return a;
   })();
-  const da = { 1: 'físico', 2: 'especial', 3: 'status' };
+  const da = { 1: 'physical', 2: 'especial', 3: 'status' };
   const K = ctx.conhecimento,
     rv = K ? K.revela(selDex) : null;
   const nv = rv ? rv.nivel : j === 'pego' ? 2 : j ? 1 : 0;
-  const ea = ['desconhecido', 'Avistado', 'Registrado', 'Estudado', 'Especialista', 'Mestre'];
+  const ea = ['desconhecido', 'Seen', 'Registered', 'Studied', 'Expert', 'Master'];
   const fa = new Set(K?.registro(selDex)?.gl || []);
   const ga = K && nv < 5 ? K.falta(selDex).slice(0, 4) : [];
   const ha = nv >= 4 ? aa : aa.filter(([, a]) => fa.has(a));
-  const ia = (n, a) => `<td class="oculto">🔒 nível ${n} (${ea[n]})${a ? ' · ' + a : ''}</td>`;
+  const ia = (n, a) => `<td class="oculto">🔒 level ${n} (${ea[n]})${a ? ' · ' + a : ''}</td>`;
   const ja = ([a, b]) => {
     const g = G[b];
     return g
@@ -7844,26 +7845,26 @@ async function mostrarDex() {
       : '';
   };
   f.innerHTML = `<h3>${nv >= 1 ? esc(S?.name) : '?????'} <small style="color:var(--muted)">Nº ${String(selDex).padStart(3, '0')} · ${j === 'pego' ? 'capturado' : j ? 'visto' : 'desconhecido'}</small></h3>
-    <div class="dex-nivel"><span class="pts" title="${rv ? tr(rv.pontos + ' pontos de conhecimento') : ''}">${'●'.repeat(nv)}${'○'.repeat(5 - nv)}</span> <b>${tr(ea[nv])}</b>${rv && rv.proximo != null ? ` <small>${rv.pontos}/${rv.proximo} pra ${ea[nv + 1]}</small>` : nv >= 5 ? ' <small>✨ você sabe tudo sobre a espécie</small>' : ''}${ga.length ? `<div class="dex-falta">pra subir: ${ga.map(esc).join(' · ')}</div>` : ''}</div>
+    <div class="dex-nivel"><span class="pts" title="${rv ? tr(rv.pontos + ' knowledge points') : ''}">${'●'.repeat(nv)}${'○'.repeat(5 - nv)}</span> <b>${tr(ea[nv])}</b>${rv && rv.proximo != null ? ` <small>${rv.pontos}/${rv.proximo} pra ${ea[nv + 1]}</small>` : nv >= 5 ? ' <small>✨ you know everything about this species</small>' : ''}${ga.length ? `<div class="dex-falta">to level up: ${ga.map(esc).join(' · ')}</div>` : ''}</div>
     <div class="dex-visor"></div>
     <div class="dex-rotulos"><span>Normal</span><span id="dex-rotulo-shiny">✨ Shiny</span></div>
-    <div style="color:var(--muted);font-size:11px;text-align:center">${l ? 'arraste pra girar os dois' : 'sem modelo 3D exportado ainda'}</div>
+    <div style="color:var(--muted);font-size:11px;text-align:center">${l ? 'drag to rotate both' : 'no 3D model exported yet'}</div>
     ${
       nv >= 1
         ? `
     <div>${(S?.types || []).map(tipoHtml).join('')}</div>
     ${(I18n.descricaoDex(selDex) || X.d) && nv >= 2 ? `<p class="dex-des">${esc(I18n.descricaoDex(selDex) || X.d)}</p>` : ''}
     <table class="stats dex-tab">
-      <tr><td>altura / peso</td>${nv >= 2 ? `<td>${o ? o.toFixed(1) + ' m' : '—'} · ${r ? r + ' kg' : '—'}</td>` : ia(2, 'capture um')}</tr>
-      ${X.h?.length ? `<tr><td>habilidades</td>${nv >= 3 ? `<td>${X.h.map(esc).join(', ')}${X.ho ? (nv >= 4 ? ` <small style="color:var(--muted)">(oculta: ${esc(X.ho)})</small>` : ' <small class="oculto">(oculta: 🔒 nível 4)</small>') : ''}</td>` : ia(3)}</tr>` : ''}
-      ${X.m != null ? `<tr><td>gênero</td>${nv >= 4 ? `<td>${X.m < 0 ? 'sem gênero' : `♂ ${X.m}% · ♀ ${X.f}%`}</td>` : ia(4)}</tr>` : ''}
-      <tr><td>taxa de captura</td>${nv >= 3 ? `<td>${S?.rate ?? X.c ?? '—'} · ${(chanceCaptura(S?.rate ?? X.c ?? 45) * 100).toFixed(1)}% com HP cheio e Pokébola (desmaiado: ${(chanceCaptura((S?.rate ?? 45) * 3) * 100).toFixed(0)}%)</td>` : ia(3, 'enfrente e capture mais')}</tr>
-      <tr><td>onde encontrar</td><td>${ca.length ? ca.map(esc).join(', ') : 'não aparece no mato (só troca/evento)'}${ba ? ` · <b>${ba} neste mapa agora</b>` : ''}</td></tr>
+      <tr><td>height / weight</td>${nv >= 2 ? `<td>${o ? o.toFixed(1) + ' m' : '—'} · ${r ? r + ' kg' : '—'}</td>` : ia(2, 'catch one')}</tr>
+      ${X.h?.length ? `<tr><td>abilities</td>${nv >= 3 ? `<td>${X.h.map(esc).join(', ')}${X.ho ? (nv >= 4 ? ` <small style="color:var(--muted)">(oculta: ${esc(X.ho)})</small>` : ' <small class="oculto">(hidden: 🔒 level 4)</small>') : ''}</td>` : ia(3)}</tr>` : ''}
+      ${X.m != null ? `<tr><td>gender</td>${nv >= 4 ? `<td>${X.m < 0 ? 'genderless' : `♂ ${X.m}% · ♀ ${X.f}%`}</td>` : ia(4)}</tr>` : ''}
+      <tr><td>catch rate</td>${nv >= 3 ? `<td>${S?.rate ?? X.c ?? '—'} · ${(chanceCaptura(S?.rate ?? X.c ?? 45) * 100).toFixed(1)}% at full HP with a Poké Ball (fainted: ${(chanceCaptura((S?.rate ?? 45) * 3) * 100).toFixed(0)}%)</td>` : ia(3, 'battle and catch more')}</tr>
+      <tr><td>where to find</td><td>${ca.length ? ca.map(esc).join(', ') : "doesn't appear in grass (trade/event only)"}${ba ? ` · <b>${ba} on this map now</b>` : ''}</td></tr>
     </table>
     ${
       nv >= 2
         ? `<div class="dex-stats">${u.map((b, i) => `<span><small>${w[i]}</small>${b}</span>`).join('')}<span><small>total</small>${S?.bst || u.reduce((x, y) => x + y, 0)}</span></div>
-    <div class="dex-secao">evolução</div><div class="dex-cadeia">${_.map(
+    <div class="dex-secao">evolution</div><div class="dex-cadeia">${_.map(
       ({ s, prof: a }) =>
         `<span class="${s.n === selDex ? 'on' : ''}" data-n="${s.n}" style="margin-left:${a * 14}px">${a ? '▸ ' : ''}${esc(s.name)}${(() => {
           const a = _.find((c) => (c.s.evo || []).some((e) => e.to === s.name));
@@ -7871,12 +7872,12 @@ async function mostrarDex() {
           return e ? ` <small>${e.lvl ? 'Nv. ' + e.lvl : ''}${e.cond ? ' ' + esc(e.cond) : ''}</small>` : '';
         })()}</span>`,
     ).join('')}</div>
-    <div class="dex-secao">fraco contra ${z.fraco.length}</div><div>${z.fraco.map(([t, m]) => `<span class="tipo" style="background:${ctx.R.COR_TIPO?.[t] || '#556'}">${t} ×${m}</span>`).join('') || '—'}</div>
-    <div class="dex-secao">resiste a ${z.resiste.length + z.imune.length}</div><div>${[...z.resiste, ...z.imune].map(([t, m]) => `<span class="tipo" style="background:${ctx.R.COR_TIPO?.[t] || '#556'}">${t} ×${m === 0 ? '0' : m === 0.25 ? '¼' : '½'}</span>`).join('') || '—'}</div>`
-        : '<div class="dex-secao oculto">🔒 stats, evolução e fraquezas abrem no nível 2 (Registrado): capture um</div>'
+    <div class="dex-secao">weak to ${z.fraco.length}</div><div>${z.fraco.map(([t, m]) => `<span class="tipo" style="background:${ctx.R.COR_TIPO?.[t] || '#556'}">${t} ×${m}</span>`).join('') || '—'}</div>
+    <div class="dex-secao">resists ${z.resiste.length + z.imune.length}</div><div>${[...z.resiste, ...z.imune].map(([t, m]) => `<span class="tipo" style="background:${ctx.R.COR_TIPO?.[t] || '#556'}">${t} ×${m === 0 ? '0' : m === 0.25 ? '¼' : '½'}</span>`).join('') || '—'}</div>`
+        : '<div class="dex-secao oculto">🔒 stats, evolution and weaknesses unlock at level 2 (Registered): catch one</div>'
     }
-    ${aa.length ? (ha.length ? `<div class="dex-secao">golpes por nível${nv < 4 ? ` <small>(${ha.length}/${aa.length} vistos · o learnset completo abre no nível 4)</small>` : ''}</div><div class="dex-golpes">${ha.map(ja).join('')}</div>` : `<div class="dex-secao oculto">🔒 golpes: veja a espécie usar golpes em batalha (${aa.length} no learnset; completo no nível 4)</div>`) : ''}`
-        : '<div style="color:var(--muted);font-size:12px;margin-top:8px">Encontre este Pokémon pra abrir a ficha.</div>'
+    ${aa.length ? (ha.length ? `<div class="dex-secao">moves by level${nv < 4 ? ` <small>(${ha.length}/${aa.length} seen · full learnset unlocks at level 4)</small>` : ''}</div><div class="dex-golpes">${ha.map(ja).join('')}</div>` : `<div class="dex-secao oculto">🔒 moves: see the species use moves in battle (${aa.length} in the learnset; complete at level 4)</div>`) : ''}`
+        : '<div style="color:var(--muted);font-size:12px;margin-top:8px">Find this Pokémon to unlock its entry.</div>'
     }`;
   f.querySelector('.dex-visor').appendChild(v.canvas);
   f.querySelectorAll('.dex-cadeia [data-n]').forEach(
@@ -7895,7 +7896,7 @@ async function mostrarDex() {
   try {
     await mostrarModeloDex(l, nv >= 1);
   } catch (e) {
-    console.warn('pokédex 3D:', e);
+    console.warn('3D pokédex:', e);
   }
 }
 function pararDex() {
@@ -7908,7 +7909,7 @@ export const insigniaCurta = (s) =>
     .replace(/^(insígnia|medalla|medalha)\s+/i, '')
     .replace(/\s+badge$/i, '');
 function rTreinador(a) {
-  abas([{ id: 'ficha', nome: 'Ficha' }]);
+  abas([{ id: 'ficha', nome: 'Profile' }]);
   const t = ctx.lerLS('tempo', 0),
     h = Math.floor(t / 3600),
     c = Math.floor((t % 3600) / 60);
@@ -7917,20 +7918,20 @@ function rTreinador(a) {
     f = Object.keys(d).length;
   const g = (D.insignias || []).filter((b) => b.gen === 1);
   const i = new Set(ctx.lerLS('insignias', []));
-  a.innerHTML = `<div class="dois"><div class="ficha"><h3>${esc(ctx.nome || 'Ash')}</h3><table class="stats"><tr><td>dinheiro</td><td>${dinheiro().toLocaleString(I18n.local())} ${esc(D.moedas?.[1] || '')}</td></tr><tr><td>tempo de jogo</td><td>${h}h ${String(c).padStart(2, '0')}m</td></tr><tr><td>time</td><td>${timeAtual().length}/6 · caixa ${ctx.lerLS('caixa', []).length}</td></tr><tr><td>pokédex</td><td>${f} vistos · ${e} capturados</td></tr><tr><td>insígnias</td><td>${i.size}/8</td></tr><tr><td>personagem</td><td>${esc(ctx.personagemNome?.() || 'Ash')}</td></tr><tr><td>inicial</td><td>${esc(ctx.lerLS('inicial', null)?.nome || '—')}</td></tr></table></div>
-    <div class="ficha"><h3>Insígnias de Kanto</h3><div class="insignias">${g.map((b) => `<div class="insignia ${i.has(b.id) ? 'tem' : ''}" title="${esc(tr(b.n))}">${esc(insigniaCurta(tr(b.n)))}</div>`).join('')}</div><div style="margin-top:6px;font-size:12px">Obedecem até <b style="color:#ffe07a">Lv ${tetoObed()}</b> <small style="color:var(--muted)">· acima disso ignoram ordens às vezes; cada insígnia sobe o teto em 10</small></div><small style="color:var(--muted)">os 8 ginásios entram com as batalhas contra treinadores</small></div></div>`;
+  a.innerHTML = `<div class="dois"><div class="ficha"><h3>${esc(ctx.nome || 'Ash')}</h3><table class="stats"><tr><td>money</td><td>${dinheiro().toLocaleString(I18n.local())} ${esc(D.moedas?.[1] || '')}</td></tr><tr><td>play time</td><td>${h}h ${String(c).padStart(2, '0')}m</td></tr><tr><td>time</td><td>${timeAtual().length}/6 · box ${ctx.lerLS('caixa', []).length}</td></tr><tr><td>pokédex</td><td>${f} vistos · ${e} caught</td></tr><tr><td>badges</td><td>${i.size}/8</td></tr><tr><td>personagem</td><td>${esc(ctx.personagemNome?.() || 'Ash')}</td></tr><tr><td>starter</td><td>${esc(ctx.lerLS('inicial', null)?.nome || '—')}</td></tr></table></div>
+    <div class="ficha"><h3>Kanto Badges</h3><div class="insignias">${g.map((b) => `<div class="insignia ${i.has(b.id) ? 'tem' : ''}" title="${esc(tr(b.n))}">${esc(insigniaCurta(tr(b.n)))}</div>`).join('')}</div><div style="margin-top:6px;font-size:12px">Obey up to <b style="color:#ffe07a">Lv ${tetoObed()}</b> <small style="color:var(--muted)">· above that they sometimes ignore orders; each Badge raises the cap by 10</small></div><small style="color:var(--muted)">the 8 Gyms arrive with Trainer battles</small></div></div>`;
   if (ctx.conhecimento) {
     const r = ctx.conhecimento.resumo(),
       j = ctx.conhecimento.listaTitulos();
     a.insertAdjacentHTML(
       'beforeend',
-      `<div class="ficha" style="margin-top:8px"><h3>Colecionador${r.tituloAtual ? ` <small style="color:var(--gold,#f4aa35)">🏅 ${esc(r.tituloAtual)}</small>` : ''}</h3>
-      <table class="stats"><tr><td>Kanto</td><td>${r.pegosKanto}/${r.kantoAte} capturados (${Math.round((r.pegosKanto / r.kantoAte) * 100)}%) · ${r.vistosKanto} vistos</td></tr>
-      <tr><td>nacional</td><td>${r.pegos} capturados · ${r.vistos} vistos</td></tr>
-      <tr><td>shinies capturados</td><td>✨ ${r.shinies}</td></tr>
-      <tr><td>conhecimento</td><td>${r.mestres} espécie${r.mestres === 1 ? '' : 's'} em Mestre · ${r.estudadas} em Estudado+ · ${r.pontosTotal} pontos</td></tr></table>
+      `<div class="ficha" style="margin-top:8px"><h3>Collector${r.tituloAtual ? ` <small style="color:var(--gold,#f4aa35)">🏅 ${esc(r.tituloAtual)}</small>` : ''}</h3>
+      <table class="stats"><tr><td>Kanto</td><td>${r.pegosKanto}/${r.kantoAte} caught (${Math.round((r.pegosKanto / r.kantoAte) * 100)}%) · ${r.vistosKanto} seen</td></tr>
+      <tr><td>national</td><td>${r.pegos} caught · ${r.vistos} seen</td></tr>
+      <tr><td>shinies caught</td><td>✨ ${r.shinies}</td></tr>
+      <tr><td>knowledge</td><td>${r.mestres} species at Master · ${r.estudadas} at Studied+ · ${r.pontosTotal} points</td></tr></table>
       <div class="titulos">${j.map((x) => `<div class="titulo ${x.tem ? 'tem' : ''}" title="${esc(x.desc)}">${x.tem ? '🏅' : '○'} ${esc(x.nome)} <small>${esc(x.desc)}</small></div>`).join('')}</div>
-      <div style="color:var(--muted);font-size:11px;margin-top:6px">ranking entre jogadores chega com o servidor; a chance de shiny é igual pra todos (1/16.384), sem exceção.</div></div>`,
+      <div style="color:var(--muted);font-size:11px;margin-top:6px">player rankings arrive with the server; shiny odds are the same for everyone (1/16,384), no exceptions.</div></div>`,
     );
   }
 }
@@ -7946,8 +7947,8 @@ function rLoja(c) {
           .replace(/^Loja da (Ilha )/, '$1')
           .replace(/^Loja (de )?da Cidade /, '')
           .replace(/^Loja da Cidade /, '')
-          .replace(/^Loja de departamentos.*$/i, 'Loja de Departamentos')
-      : 'Loja ' + String(a).slice(-4);
+          .replace(/^Loja de departamentos.*$/i, 'Department Store')
+      : 'Shop ' + String(a).slice(-4);
   };
   const g = abaAtual && e[abaAtual] ? abaAtual : '2150101';
   abas([{ id: g, nome: f(g) }]);
@@ -7962,11 +7963,11 @@ function rLoja(c) {
         h = f?.limites?.[String(l.item)],
         j = h ? f.hoje?.[String(l.item)] || 0 : 0,
         k = !!h && j >= h;
-      return `<div class="item q${c.q || 1}"><i class="ic-item" style="${iconeItem(c)}"></i><span class="n">${l.preco.toLocaleString(I18n.local())}</span><b>${esc(tr(c.n))}${l.n > 1 ? ' ×' + l.n : ''}</b><small style="color:#ffe07a">${esc(tr('na mochila: {x}', { x: i[l.item] || 0 }))}</small>${e ? `<small style="color:#ff9a7a">${esc(tr(e))}</small>` : ''}${h ? `<small style="color:${k ? '#ff9a7a' : '#9ad0ff'}">${esc(tr('Hoje: {a} de {b}', { a: j, b: h }))}</small>` : ''}<small>${esc(tr(descItem(c.d)) || tr(D.tipos[c.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-comprar="${l.item}" data-preco="${l.preco}" data-n="${l.n}" ${dinheiro() < l.preco || e || k ? 'disabled' : ''}>${esc(tr('Comprar'))}</button></div></div>`;
+      return `<div class="item q${c.q || 1}"><i class="ic-item" style="${iconeItem(c)}"></i><span class="n">${l.preco.toLocaleString(I18n.local())}</span><b>${esc(tr(c.n))}${l.n > 1 ? ' ×' + l.n : ''}</b><small style="color:#ffe07a">${esc(tr('in bag: {x}', { x: i[l.item] || 0 }))}</small>${e ? `<small style="color:#ff9a7a">${esc(tr(e))}</small>` : ''}${h ? `<small style="color:${k ? '#ff9a7a' : '#9ad0ff'}">${esc(tr('Hoje: {a} de {b}', { a: j, b: h }))}</small>` : ''}<small>${esc(tr(descItem(c.d)) || tr(D.tipos[c.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-comprar="${l.item}" data-preco="${l.preco}" data-n="${l.n}" ${dinheiro() < l.preco || e || k ? 'disabled' : ''}>${esc(tr('Buy'))}</button></div></div>`;
     })
     .join(
       '',
-    )}</div>${h.length ? '' : `<div style="color:var(--muted);text-align:center;padding:24px 8px">${esc(tr('Este vendedor está sem estoque no momento.'))}</div>`}`;
+    )}</div>${h.length ? '' : `<div style="color:var(--muted);text-align:center;padding:24px 8px">${esc(tr('This vendor is out of stock right now.'))}</div>`}`;
   c.querySelectorAll('[data-comprar]').forEach(
     (b) =>
       (b.onclick = () => {
@@ -7992,19 +7993,19 @@ function rLoja(c) {
   );
 }
 const MC_CATS = [
-  ['todas', 'Todas'],
+  ['todas', 'All'],
   ['pokemon', 'Pokémon'],
-  ['pokebolas', 'Pokébolas'],
-  ['medicina', 'Medicina'],
+  ['pokebolas', 'Poké Balls'],
+  ['medicina', 'Medicine'],
   ['tms', 'TMs'],
   ['outros', 'Outros'],
 ];
 const MC_ORDENS = [
-  ['preco-asc', 'preço ↑'],
-  ['preco-desc', 'preço ↓'],
-  ['expira', 'expira antes'],
+  ['preco-asc', 'price ↑'],
+  ['preco-desc', 'price ↓'],
+  ['expira', 'expiring soon'],
   ['nome', 'nome'],
-  ['nivel', 'nível ↓'],
+  ['nivel', 'level ↓'],
   ['iv', 'IV ↓'],
 ];
 let mc = {
@@ -8040,7 +8041,7 @@ function mcMon(m) {
   return Mercado.cartaoMon(m, mcEspecie);
 }
 const mcIvPerfeitos = (n) =>
-  n === 0 ? tr('nenhum IV perfeito') : n === 1 ? tr('1 IV perfeito') : tr('{n} IVs perfeitos', { n });
+  n === 0 ? tr('no perfect IVs') : n === 1 ? tr('1 perfect IV') : tr('{n} perfect IVs', { n });
 function mcCartaoHtml(m) {
   const c = mcMon(m);
   if (!c) return '';
@@ -8054,11 +8055,11 @@ function mcCartaoHtml(m) {
 function mcPodeAbrir() {
   if (!ctx.comConta?.())
     return ctx.conta?.estado?.().modo === 'conta'
-      ? 'Sem conexão com o servidor. Tentando de novo…'
-      : 'O mercado é entre jogadores: entre com uma conta.';
-  if (ctx.jogo?.turno) return 'Não dá pra usar o mercado no meio de uma batalha.';
-  if (ctx.emTroca?.()) return 'Feche a troca antes de abrir o mercado.';
-  if (ctx.jogo?.raidArena || ctx.jogo?.raid) return 'Não dá pra usar o mercado durante a raid.';
+      ? 'No connection to the server. Retrying…'
+      : 'The Market is between players: sign in to an account.';
+  if (ctx.jogo?.turno) return "You can't use the Market in the middle of a battle.";
+  if (ctx.emTroca?.()) return 'Close the trade before opening the Market.';
+  if (ctx.jogo?.raidArena || ctx.jogo?.raid) return "You can't use the Market during a raid.";
   return null;
 }
 const MC_MEXE = new Set(['anunciar', 'anunciar_mon', 'comprar', 'cancelar']);
@@ -8085,25 +8086,25 @@ function rMercado(a) {
     return;
   }
   if (!Mercado.catalogo()) {
-    a.innerHTML = `<div class="vazio">${esc(tr('carregando…'))}</div>`;
+    a.innerHTML = `<div class="vazio">${esc(tr('loading…'))}</div>`;
     Mercado.carregar('./data/mercado.json')
       .then(() => {
         if (aberta === 'mercado') render();
       })
       .catch((e) => {
         console.warn('mercado:', e);
-        a.innerHTML = `<div class="vazio">${esc(tr('O mercado não carregou. Tente de novo.'))}</div>`;
+        a.innerHTML = `<div class="vazio">${esc(tr("The Market didn't load. Try again."))}</div>`;
       });
     return;
   }
   const c = abas([
-    { id: 'comprar', nome: 'Comprar' },
-    { id: 'vender', nome: 'Vender' },
-    { id: 'minhas', nome: 'Minhas ofertas' },
-    { id: 'precos', nome: 'Preços' },
+    { id: 'comprar', nome: 'Buy' },
+    { id: 'vender', nome: 'Sell' },
+    { id: 'minhas', nome: 'My listings' },
+    { id: 'precos', nome: 'Prices' },
   ]);
   const R = Mercado.regras() || {};
-  const d = `<div style="margin-top:10px;color:var(--muted);font-size:11px">taxa do mercado: ${Math.round((R.taxa || 0) * 100)}% ao anunciar (não volta) · anúncios valem ${R.validadeHoras || 48} h · até ${mc.minhas?.limite || R.ofertasPorJogador || 8} anúncios por conta · itens-chave não podem ser vendidos</div>`;
+  const d = `<div style="margin-top:10px;color:var(--muted);font-size:11px">market fee: ${Math.round((R.taxa || 0) * 100)}% when listing (non-refundable) · listings last ${R.validadeHoras || 48} h · up to ${mc.minhas?.limite || R.ofertasPorJogador || 8} listings per account · key items can't be sold</div>`;
   if (c === 'comprar') rComprar(a, d);
   else if (c === 'vender') rVender(a, d);
   else if (c === 'minhas') rMinhas(a, d);
@@ -8114,10 +8115,10 @@ function mcLinhaOferta(o, a) {
   if (o.tipo === 'pokemon') {
     const m = o.mon,
       c = mcMon(m);
-    return `<div class="linha mc-linha" data-cartao="${o.id}" style="cursor:default"><img src="${mcIconeMon(m)}" alt="" style="width:34px;height:34px"><span class="nome"><b>${esc(c.nome)}${c.shiny ? ' ✨' : ''} <small>Lv ${c.lv} · IV ${c.ivPorCento}%</small></b><small>${esc(tr(c.natureza))} · ${esc(o.vendedor)} · ${esc(tr('expira em'))} ${b}</small></span><span style="text-align:right"><b>${mcMoedas(o.precoUnit)}</b></span>${a ? `<button type="button" class="btn ouro" data-acao="${a}" data-id="${o.id}">${esc(tr(a === 'comprar' ? 'Comprar' : 'Cancelar'))}</button>` : ''}<div class="mc-flutua" hidden>${mcCartaoHtml(m)}</div></div>`;
+    return `<div class="linha mc-linha" data-cartao="${o.id}" style="cursor:default"><img src="${mcIconeMon(m)}" alt="" style="width:34px;height:34px"><span class="nome"><b>${esc(c.nome)}${c.shiny ? ' ✨' : ''} <small>Lv ${c.lv} · IV ${c.ivPorCento}%</small></b><small>${esc(tr(c.natureza))} · ${esc(o.vendedor)} · ${esc(tr('expires in'))} ${b}</small></span><span style="text-align:right"><b>${mcMoedas(o.precoUnit)}</b></span>${a ? `<button type="button" class="btn ouro" data-acao="${a}" data-id="${o.id}">${esc(tr(a === 'comprar' ? 'Buy' : 'Cancel'))}</button>` : ''}<div class="mc-flutua" hidden>${mcCartaoHtml(m)}</div></div>`;
   }
   const d = Mercado.item(o.item) || { nome: 'item ' + o.item };
-  return `<div class="linha" style="cursor:default"><img src="${mcIconeItem(o.item)}" alt="" style="width:34px;height:34px" onerror="this.style.visibility='hidden'"><span class="nome"><b>${esc(tr(d.nome))} <small>×${o.quantidade}</small></b><small>${esc(o.vendedor)} · ${esc(tr('expira em'))} ${b}</small></span><span style="text-align:right"><b>${mcMoedas(o.precoUnit)}</b><br><small style="color:var(--muted)">${esc(tr('cada'))}</small></span>${a ? `<button type="button" class="btn ouro" data-acao="${a}" data-id="${o.id}" data-max="${o.quantidade}">${esc(tr(a === 'comprar' ? 'Comprar' : 'Cancelar'))}</button>` : ''}</div>`;
+  return `<div class="linha" style="cursor:default"><img src="${mcIconeItem(o.item)}" alt="" style="width:34px;height:34px" onerror="this.style.visibility='hidden'"><span class="nome"><b>${esc(tr(d.nome))} <small>×${o.quantidade}</small></b><small>${esc(o.vendedor)} · ${esc(tr('expires in'))} ${b}</small></span><span style="text-align:right"><b>${mcMoedas(o.precoUnit)}</b><br><small style="color:var(--muted)">${esc(tr('cada'))}</small></span>${a ? `<button type="button" class="btn ouro" data-acao="${a}" data-id="${o.id}" data-max="${o.quantidade}">${esc(tr(a === 'comprar' ? 'Buy' : 'Cancel'))}</button>` : ''}</div>`;
 }
 function mcLigarCartoes(a) {
   document.querySelectorAll('body > .mc-flutua').forEach((f) => f.remove());
@@ -8193,7 +8194,7 @@ function rComprar(a, c) {
       .join('')}</select>
     ${d ? `<label style="font-size:12px"><input id="mc-shiny" type="checkbox"${mc.shiny ? ' checked' : ''}> shiny</label><label style="font-size:12px">Lv ≥ <input id="mc-lv" type="number" min="0" max="100" value="${mc.lvMin || ''}" style="width:52px"></label><label style="font-size:12px">IV ≥ <input id="mc-iv" type="number" min="0" max="100" value="${mc.ivMin || ''}" style="width:52px">%</label>` : ''}
     <button type="button" class="btn" id="mc-atualizar">↻</button><span style="flex:1"></span><span style="color:var(--muted);font-size:12px">${IC_MOEDA}${mcNumero(dinheiro())}</span></div>
-    ${mc.aviso}<div class="lista" id="mc-lista">${!L ? `<div class="vazio">${esc(tr('carregando…'))}</div>` : !L.ofertas.length ? `<div class="vazio">${esc(tr('Nenhuma oferta por aqui ainda. Seja o primeiro a anunciar!'))}</div>` : L.ofertas.map((o) => mcLinhaOferta(o, 'comprar')).join('')}</div>
+    ${mc.aviso}<div class="lista" id="mc-lista">${!L ? `<div class="vazio">${esc(tr('loading…'))}</div>` : !L.ofertas.length ? `<div class="vazio">${esc(tr('No offers here yet. Be the first to list one!'))}</div>` : L.ofertas.map((o) => mcLinhaOferta(o, 'comprar')).join('')}</div>
     ${L && L.paginas > 1 ? `<div style="display:flex;gap:6px;justify-content:center;margin-top:8px"><button type="button" class="btn" id="mc-ant"${mc.pagina <= 0 ? ' disabled' : ''}>‹</button><span style="font-size:12px;line-height:28px">${mc.pagina + 1} / ${L.paginas}</span><button type="button" class="btn" id="mc-prox"${mc.pagina >= L.paginas - 1 ? ' disabled' : ''}>›</button></div>` : ''}${c}`;
   const e = (b = true) => {
     mc.lista = null;
@@ -8244,14 +8245,14 @@ function rComprar(a, c) {
         if (!o) return;
         let a = 1;
         if (o.tipo === 'item' && o.quantidade > 1) {
-          const v = prompt(tr('Quantos? (até') + ' ' + o.quantidade + ')', String(o.quantidade));
+          const v = prompt(tr('How many? (up to') + ' ' + o.quantidade + ')', String(o.quantidade));
           if (v == null) return;
           a = Math.max(1, Math.min(o.quantidade, Math.round(+v) || 0));
         }
         const c = a * o.precoUnit;
         if (
           !confirm(
-            `${tr('Comprar')} ${o.tipo === 'pokemon' ? mcMon(o.mon).nome + ' Lv' + o.mon.lv : a + '× ' + tr(Mercado.item(o.item)?.nome || 'item')} ${tr('por')} ${mcMoedas(c)}?`,
+            `${tr('Buy')} ${o.tipo === 'pokemon' ? mcMon(o.mon).nome + ' Lv' + o.mon.lv : a + '× ' + tr(Mercado.item(o.item)?.nome || 'item')} ${tr('por')} ${mcMoedas(c)}?`,
           )
         )
           return;
@@ -8264,11 +8265,11 @@ function rComprar(a, c) {
         }
         ctx.Som?.tocar?.('ui/sound_itemget', { volume: 0.6 });
         mcAviso(
-          tr('Comprado!') +
+          tr('Bought!') +
             ' ' +
             (r.comprou?.mon
-              ? mcMon(r.comprou.mon).nome + ' ' + tr('já está com você.')
-              : a + '× ' + tr(Mercado.item(o.item)?.nome || 'item') + ' ' + tr('na mochila.')),
+              ? mcMon(r.comprou.mon).nome + ' ' + tr('is already with you.')
+              : a + '× ' + tr(Mercado.item(o.item)?.nome || 'item') + ' ' + tr('in the bag.')),
           '#8fe08f',
         );
         e(false);
@@ -8295,23 +8296,23 @@ function rVender(d, e) {
   const l = [...j.map((p, i) => ({ p, onde: 'time', i })), ...k.map((p, i) => ({ p, onde: 'caixa', i }))].filter(
     (x) => x.p && x.p.uid,
   );
-  d.innerHTML = `${mc.aviso}<h3 style="margin:4px 0 6px;font-size:13px">${esc(tr('Itens'))}</h3><div class="lista">${
+  d.innerHTML = `${mc.aviso}<h3 style="margin:4px 0 6px;font-size:13px">${esc(tr('Items'))}</h3><div class="lista">${
     !h.length
-      ? `<div class="vazio">${esc(tr('Nada anunciável na mochila.'))}</div>`
+      ? `<div class="vazio">${esc(tr('Nothing listable in your Bag.'))}</div>`
       : h
           .map((x) => {
             const f = Mercado.faixa(x.id);
-            return `<div class="linha" style="cursor:default;flex-wrap:wrap"><img src="${mcIconeItem(x.id)}" alt="" style="width:30px;height:30px" onerror="this.style.visibility='hidden'"><span class="nome"><b>${esc(tr(x.it.nome))} <small>×${x.n}</small></b><small>${esc(tr('de'))} ${mcMoedas(f.piso)} ${esc(tr('a'))} ${mcMoedas(f.teto)}${f.naLoja ? ` · ${esc(tr('a loja vende por'))} ${mcMoedas(f.naLoja)}` : ''}</small></span><label style="font-size:12px">qtd <input type="number" min="1" max="${x.n}" value="${Math.min(x.n, 1)}" data-qtd="${x.id}" style="width:56px"></label><label style="font-size:12px">${esc(tr('cada'))} <input type="number" min="${f.piso}" max="${f.teto}" value="${Math.min(f.teto, f.ref)}" data-preco="${x.id}" style="width:80px"></label><button type="button" class="btn ouro" data-anunciar="${x.id}">${esc(tr('Anunciar'))}</button></div>`;
+            return `<div class="linha" style="cursor:default;flex-wrap:wrap"><img src="${mcIconeItem(x.id)}" alt="" style="width:30px;height:30px" onerror="this.style.visibility='hidden'"><span class="nome"><b>${esc(tr(x.it.nome))} <small>×${x.n}</small></b><small>${esc(tr('de'))} ${mcMoedas(f.piso)} ${esc(tr('a'))} ${mcMoedas(f.teto)}${f.naLoja ? ` · ${esc(tr('the shop sells it for'))} ${mcMoedas(f.naLoja)}` : ''}</small></span><label style="font-size:12px">qty <input type="number" min="1" max="${x.n}" value="${Math.min(x.n, 1)}" data-qtd="${x.id}" style="width:56px"></label><label style="font-size:12px">${esc(tr('cada'))} <input type="number" min="${f.piso}" max="${f.teto}" value="${Math.min(f.teto, f.ref)}" data-preco="${x.id}" style="width:80px"></label><button type="button" class="btn ouro" data-anunciar="${x.id}">${esc(tr('List'))}</button></div>`;
           })
           .join('')
   }</div>
-    <h3 style="margin:12px 0 6px;font-size:13px">${esc(tr('Pokémon'))} <small style="color:var(--muted);font-weight:400">${esc(tr('preço livre; quem compra vê a ficha inteira'))}</small></h3><div class="lista">${
+    <h3 style="margin:12px 0 6px;font-size:13px">${esc(tr('Pokémon'))} <small style="color:var(--muted);font-weight:400">${esc(tr('set your own price; buyers see the full details'))}</small></h3><div class="lista">${
       !l.length
-        ? `<div class="vazio">${esc(tr('Nenhum Pokémon registrado.'))}</div>`
+        ? `<div class="vazio">${esc(tr('No Pokémon registered.'))}</div>`
         : l
             .map((x) => {
               const c = mcMon(x.p);
-              return `<div class="linha mc-linha" style="cursor:default;flex-wrap:wrap"><img src="${mcIconeMon(x.p)}" alt="" style="width:30px;height:30px"><span class="nome"><b>${esc(c.nome)}${c.shiny ? ' ✨' : ''} <small>Lv ${c.lv} · IV ${c.ivPorCento}%</small></b><small>${esc(tr(x.onde === 'time' ? 'no time' : 'na caixa'))} · ${esc(tr(c.natureza))}</small></span><label style="font-size:12px">${esc(tr('preço'))} <input type="number" min="1" value="" placeholder="₽" data-preco-mon="${x.p.uid}" style="width:96px"></label><button type="button" class="btn ouro" data-anunciar-mon="${x.p.uid}">${esc(tr('Anunciar'))}</button><div class="mc-flutua" hidden>${mcCartaoHtml(x.p)}</div></div>`;
+              return `<div class="linha mc-linha" style="cursor:default;flex-wrap:wrap"><img src="${mcIconeMon(x.p)}" alt="" style="width:30px;height:30px"><span class="nome"><b>${esc(c.nome)}${c.shiny ? ' ✨' : ''} <small>Lv ${c.lv} · IV ${c.ivPorCento}%</small></b><small>${esc(tr(x.onde === 'time' ? 'on team' : 'in the Box'))} · ${esc(tr(c.natureza))}</small></span><label style="font-size:12px">${esc(tr('price'))} <input type="number" min="1" value="" placeholder="₽" data-preco-mon="${x.p.uid}" style="width:96px"></label><button type="button" class="btn ouro" data-anunciar-mon="${x.p.uid}">${esc(tr('List'))}</button><div class="mc-flutua" hidden>${mcCartaoHtml(x.p)}</div></div>`;
             })
             .join('')
     }</div>${e}`;
@@ -8324,7 +8325,7 @@ function rVender(d, e) {
         const { taxa: f, total: g } = Mercado.custoDeAnunciar(e, c);
         if (
           !confirm(
-            `${tr('Anunciar')} ${c}× ${tr(Mercado.item(a)?.nome || 'item')} ${tr('por')} ${mcMoedas(e)} ${tr('cada')} (${mcMoedas(g)})?\n${tr('Taxa agora')}: ${mcMoedas(f)} — ${tr('não volta, nem se cancelar.')}`,
+            `${tr('List')} ${c}× ${tr(Mercado.item(a)?.nome || 'item')} ${tr('por')} ${mcMoedas(e)} ${tr('cada')} (${mcMoedas(g)})?\n${tr('Taxa agora')}: ${mcMoedas(f)} — ${tr("it's not refunded, even if you cancel.")}`,
           )
         )
           return;
@@ -8336,7 +8337,7 @@ function rVender(d, e) {
           return;
         }
         ctx.Som?.tocar?.('ui/sound_click', { volume: 0.6 });
-        mcAviso(tr('Anunciado! Está na aba Minhas ofertas.'), '#8fe08f');
+        mcAviso(tr("Listed! It's in the My Offers tab."), '#8fe08f');
         mc.minhas = null;
         render();
       }),
@@ -8349,14 +8350,14 @@ function rVender(d, e) {
         const x = l.find((y) => String(y.p.uid) === String(a));
         if (!x) return;
         if (!(c > 0)) {
-          mcAviso(tr('Diga um preço.'));
+          mcAviso(tr('Name a price.'));
           render();
           return;
         }
         const { taxa: e } = Mercado.custoDeAnunciar(c, 1);
         if (
           !confirm(
-            `${tr('Anunciar')} ${mcMon(x.p).nome} Lv${x.p.lv} ${tr('por')} ${mcMoedas(c)}?\n${tr('Taxa agora')}: ${mcMoedas(e)} — ${tr('não volta, nem se cancelar. Ele sai do seu time até ser vendido ou cancelado.')}`,
+            `${tr('List')} ${mcMon(x.p).nome} Lv${x.p.lv} ${tr('por')} ${mcMoedas(c)}?\n${tr('Taxa agora')}: ${mcMoedas(e)} — ${tr("won't be refunded, even if you cancel. It leaves your team until it sells or is canceled.")}`,
           )
         )
           return;
@@ -8368,7 +8369,7 @@ function rVender(d, e) {
           return;
         }
         ctx.Som?.tocar?.('ui/sound_click', { volume: 0.6 });
-        mcAviso(tr('Anunciado! Está na aba Minhas ofertas.'), '#8fe08f');
+        mcAviso(tr("Listed! It's in the My Offers tab."), '#8fe08f');
         mc.minhas = null;
         render();
       }),
@@ -8386,8 +8387,8 @@ async function mcCarregarMinhas() {
     mc.agora = r.agora;
     for (const a of r.avisos || []) {
       const t = Mercado.textoAviso(a.aviso, tr, I18n.local());
-      if (t) Chat.sistemaCru(tr('Mercado: {x}', { x: t }));
-      else Chat.sistema('Mercado: ' + a.texto);
+      if (t) Chat.sistemaCru(tr('Market: {x}', { x: t }));
+      else Chat.sistema('Market: ' + a.texto);
     }
   }
   if (aberta === 'mercado' && (abaAtual === 'minhas' || abaAtual === 'minhas-ofertas' || abaAtual === 'vender'))
@@ -8395,11 +8396,11 @@ async function mcCarregarMinhas() {
 }
 function rMinhas(c, d) {
   const M = mc.minhas;
-  c.innerHTML = `${mc.aviso}${M?.avisos?.length ? `<div style="margin-bottom:8px;font-size:12px;color:#8fe08f">${M.avisos.map((a) => '• ' + esc(Mercado.textoAviso(a.aviso, tr, I18n.local()) || tr(a.texto))).join('<br>')}</div>` : ''}<div class="lista">${!M ? `<div class="vazio">${esc(tr('carregando…'))}</div>` : !M.ofertas.length ? `<div class="vazio">${esc(tr('Você não tem anúncios no ar.'))}</div>` : M.ofertas.map((o) => mcLinhaOferta(o, 'cancelar')).join('')}</div>${d}`;
+  c.innerHTML = `${mc.aviso}${M?.avisos?.length ? `<div style="margin-bottom:8px;font-size:12px;color:#8fe08f">${M.avisos.map((a) => '• ' + esc(Mercado.textoAviso(a.aviso, tr, I18n.local()) || tr(a.texto))).join('<br>')}</div>` : ''}<div class="lista">${!M ? `<div class="vazio">${esc(tr('loading…'))}</div>` : !M.ofertas.length ? `<div class="vazio">${esc(tr('You have no active listings.'))}</div>` : M.ofertas.map((o) => mcLinhaOferta(o, 'cancelar')).join('')}</div>${d}`;
   c.querySelectorAll('[data-acao="cancelar"]').forEach(
     (b) =>
       (b.onclick = async () => {
-        if (!confirm(tr('Cancelar este anúncio? O que está nele volta pra você; a taxa não.'))) return;
+        if (!confirm(tr("Cancel this listing? Its contents return to you; the fee doesn't."))) return;
         b.disabled = true;
         const r = await mcPedir('cancelar', { oferta: b.dataset.id });
         if (r.erro) {
@@ -8407,7 +8408,7 @@ function rMinhas(c, d) {
           render();
           return;
         }
-        mcAviso(tr('Cancelado.'), '#8fe08f');
+        mcAviso(tr('Canceled.'), '#8fe08f');
         mc.minhas = null;
         render();
         mcCarregarMinhas();
@@ -8418,25 +8419,25 @@ function rMinhas(c, d) {
 }
 function rPrecos(a, c) {
   const P = mc.precos;
-  a.innerHTML = `${mc.aviso}<div style="display:flex;gap:6px;margin-bottom:8px"><input id="mc-pbusca" type="text" placeholder="${esc(tr('nome do item'))}" value="${esc(mc.precoItem?.nome || '')}" style="flex:1"><button type="button" class="btn" id="mc-pver">${esc(tr('Ver'))}</button></div>
+  a.innerHTML = `${mc.aviso}<div style="display:flex;gap:6px;margin-bottom:8px"><input id="mc-pbusca" type="text" placeholder="${esc(tr('item name'))}" value="${esc(mc.precoItem?.nome || '')}" style="flex:1"><button type="button" class="btn" id="mc-pver">${esc(tr('View'))}</button></div>
     <div id="mc-psug"></div>
     ${
       P
-        ? `<div class="linha" style="cursor:default;flex-wrap:wrap"><img src="${mcIconeItem(P.item)}" alt="" style="width:34px;height:34px" onerror="this.style.visibility='hidden'"><span class="nome"><b>${esc(tr(P.estatistica.nome))}</b><small>${esc(tr('referência'))} ${mcMoedas(P.estatistica.referencia)}${P.estatistica.naLoja ? ` · ${esc(tr('a loja vende por'))} ${mcMoedas(P.estatistica.naLoja)}` : ''}</small></span></div>
+        ? `<div class="linha" style="cursor:default;flex-wrap:wrap"><img src="${mcIconeItem(P.item)}" alt="" style="width:34px;height:34px" onerror="this.style.visibility='hidden'"><span class="nome"><b>${esc(tr(P.estatistica.nome))}</b><small>${esc(tr('reference'))} ${mcMoedas(P.estatistica.referencia)}${P.estatistica.naLoja ? ` · ${esc(tr('the shop sells it for'))} ${mcMoedas(P.estatistica.naLoja)}` : ''}</small></span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-top:8px;font-size:12px">${[
       [tr('vendas'), P.estatistica.vendas],
       [tr('mediana'), P.estatistica.mediana != null ? mcMoedas(P.estatistica.mediana) : '—'],
       [tr('menor'), P.estatistica.menor != null ? mcMoedas(P.estatistica.menor) : '—'],
       [tr('maior'), P.estatistica.maior != null ? mcMoedas(P.estatistica.maior) : '—'],
-      [tr('mais barato agora'), P.estatistica.aberta != null ? mcMoedas(P.estatistica.aberta) : '—'],
-      [tr('em estoque'), P.estatistica.emEstoque],
+      [tr('cheapest now'), P.estatistica.aberta != null ? mcMoedas(P.estatistica.aberta) : '—'],
+      [tr('in stock'), P.estatistica.emEstoque],
     ]
       .map(
         ([k, v]) =>
           `<div class="linha" style="cursor:default;justify-content:space-between"><small style="color:var(--muted)">${esc(k)}</small><b>${esc(String(v))}</b></div>`,
       )
       .join('')}</div>`
-        : `<div class="vazio">${esc(tr('Procure um item pra ver o que ele anda custando no mercado (mediana, não média: uma venda estranha não move o número).'))}</div>`
+        : `<div class="vazio">${esc(tr("Search for an item to see what it's going for on the market (median, not average: one odd sale doesn't move the number)."))}</div>`
     }${c}`;
   const d = Mercado.catalogo()?.itens || {};
   const e = () => {
@@ -8568,7 +8569,7 @@ function mcMarcar(a, b) {
 }
 function mcModos(a) {
   for (const g of a?.querySelectorAll('[data-fig^="modo-"]') || [])
-    Popup.texto(popMc, 'modo', g.dataset.tagval === 'pokemon' ? 'Pokémon' : 'Itens', g);
+    Popup.texto(popMc, 'modo', g.dataset.tagval === 'pokemon' ? 'Pokémon' : 'Items', g);
   mcMarcar(a, mcEhMon() ? 'pokemon' : 'itens');
 }
 function mcTrocarCat(c) {
@@ -8669,7 +8670,7 @@ function defMercado() {
         defMcV2 = j?.popups?.[a]?.mercado || null;
         if (defMcV2 && aberta === 'mercado') abrir('mercado', abaAtual);
       })
-      .catch((e) => console.warn('mercado: layout v2:', e));
+      .catch((e) => console.warn('market: layout v2:', e));
   }
   return null;
 }
@@ -8755,10 +8756,10 @@ function mcMostrarAba(a, b) {
 }
 function mcRotulos(a) {
   for (const [b, c] of [
-    ['aba-comprar', 'Comprar'],
-    ['aba-vender', 'Vender'],
-    ['aba-minhas-ofertas', 'Minhas ofertas'],
-    ['aba-precos', 'Preços'],
+    ['aba-comprar', 'Buy'],
+    ['aba-vender', 'Sell'],
+    ['aba-minhas-ofertas', 'My listings'],
+    ['aba-precos', 'Prices'],
   ]) {
     const g = Popup.grupo(a, b);
     if (!g) continue;
@@ -8784,7 +8785,7 @@ function mcCatMarcar(a) {
     const d = mc.cat === c;
     if (c === 'bagas') {
       g.style.pointerEvents = b ? 'none' : '';
-      g.title = b ? tr('Bagas: chegam com a horta') : '';
+      g.title = b ? tr('Berries: arrive with the garden') : '';
       if (b) {
         g.style.opacity = '0.35';
         const f = g.querySelector(':scope > [data-fig="marca-ativa"]');
@@ -8806,7 +8807,7 @@ function encherMercado(a) {
   Popup.trocarAba(a, d);
   mcMostrarAba(a, d);
   Popup.rotulo(a, 'titulo');
-  Popup.texto(a, 'titulo', tr('Mercado'));
+  Popup.texto(a, 'titulo', tr('Market'));
   mcRotulos(a);
   {
     const c = a.querySelector(':scope > .mc-contagem');
@@ -8824,7 +8825,7 @@ function encherMercado(a) {
         if (aberta === 'mercado') render();
       })
       .catch((e) => console.warn('mercado:', e));
-    mcVazio(a, tr('carregando…'));
+    mcVazio(a, tr('loading…'));
     return;
   }
   mcVazio(a, null);
@@ -9076,8 +9077,8 @@ function mcPintarContagem(c) {
     e = c.getBoundingClientRect(),
     r = l.getBoundingClientRect();
   d.textContent = L.__pedindo
-    ? tr('carregando…')
-    : tr('{a} de {b}', { a: mcNumero(Math.min(L.ofertas.length, L.total)), b: mcNumero(L.total) });
+    ? tr('loading…')
+    : tr('{a} of {b}', { a: mcNumero(Math.min(L.ofertas.length, L.total)), b: mcNumero(L.total) });
   Object.assign(d.style, {
     display: 'block',
     left: (r.right - e.left) / k + 'px',
@@ -9101,7 +9102,7 @@ function mcEncherComprar(a) {
   });
   if (!L) mcCarregarLista(a);
   else if (L.erro) mcVazio(a, L.erro, '#f58e8e');
-  else if (!L.ofertas.length) mcVazio(a, tr('Nenhuma oferta por aqui ainda. Seja o primeiro a anunciar!'));
+  else if (!L.ofertas.length) mcVazio(a, tr('No offers here yet. Be the first to list one!'));
   mcPintarContagem(a);
   if (L) mcPertoDoFim(mcListaVisivel(a));
 }
@@ -9272,11 +9273,11 @@ async function mcAcaoPopup(a, b, d) {
     ctx.Som?.tocar?.('ui/sound_itemget', { volume: 0.6 });
     mcVazio(
       a,
-      tr('Comprado!') +
+      tr('Bought!') +
         ' ' +
         (r.comprou?.mon
-          ? mcMon(r.comprou.mon).nome + ' ' + tr('já está com você.')
-          : mcd.qtd + '× ' + tr(Mercado.item(o.item)?.nome || 'item') + ' ' + tr('na mochila.')),
+          ? mcMon(r.comprou.mon).nome + ' ' + tr('is already with you.')
+          : mcd.qtd + '× ' + tr(Mercado.item(o.item)?.nome || 'item') + ' ' + tr('in the bag.')),
       '#8fe08f',
     );
     Mercado.tirarDaLista(mc.lista, o.id, r.comprou?.mon ? Infinity : (r.comprou?.qtd ?? mcd.qtd));
@@ -9288,11 +9289,11 @@ async function mcAcaoPopup(a, b, d) {
     const e = mcEntradasVenda()[mcv.sel];
     if (!e) return;
     if (!(mcv.preco > 0)) {
-      mcVazio(a, tr('Diga um preço.'), '#f58e8e');
+      mcVazio(a, tr('Name a price.'), '#f58e8e');
       return;
     }
     const { taxa: f } = Mercado.custoDeAnunciar(mcv.preco, mcv.qtd);
-    const g = `${tr('Anunciar')} ${mcv.qtd}× ${e.nome} ${tr('por')} ${mcMoedas(mcv.preco)} ${tr('cada')}?\n${tr('Taxa agora')}: ${mcMoedas(f)} — ${tr('não volta, nem se cancelar.')}`;
+    const g = `${tr('List')} ${mcv.qtd}× ${e.nome} ${tr('por')} ${mcMoedas(mcv.preco)} ${tr('cada')}?\n${tr('Taxa agora')}: ${mcMoedas(f)} — ${tr("it's not refunded, even if you cancel.")}`;
     if (!confirm(g)) return;
     const r = await mcPedir('anunciar', { item: e.id, qtd: mcv.qtd, preco: mcv.preco });
     if (r.erro) {
@@ -9300,7 +9301,7 @@ async function mcAcaoPopup(a, b, d) {
       return;
     }
     ctx.Som?.tocar?.('ui/sound_click', { volume: 0.6 });
-    mcVazio(a, tr('Anunciado! Está na aba Minhas ofertas.'), '#8fe08f');
+    mcVazio(a, tr("Listed! It's in the My Offers tab."), '#8fe08f');
     mc.minhas = null;
     mcv.sel = 0;
     mcv.preco = 0;
@@ -9312,13 +9313,13 @@ async function mcAcaoPopup(a, b, d) {
     const c = d?.closest?.('[data-fig^="minha-oferta-"]');
     const h = c?.dataset.oferta;
     if (!h) return;
-    if (!confirm(tr('Cancelar este anúncio? O que está nele volta pra você; a taxa não.'))) return;
+    if (!confirm(tr("Cancel this listing? Its contents return to you; the fee doesn't."))) return;
     const r = await mcPedir('cancelar', { oferta: h });
     if (r.erro) {
       mcVazio(a, r.erro, '#f58e8e');
       return;
     }
-    mcVazio(a, tr('Cancelado.'), '#8fe08f');
+    mcVazio(a, tr('Canceled.'), '#8fe08f');
     mc.minhas = null;
     render();
   }
@@ -9381,7 +9382,7 @@ function mcEncherVender(g) {
   Popup.texto(
     g,
     'slots-venda',
-    tr('anúncios: {a} de {b}', {
+    tr('listings: {a} of {b}', {
       a: mc.minhas?.ofertas?.length ?? '…',
       b: mc.minhas?.limite || Mercado.regras()?.ofertasPorJogador || 8,
     }),
@@ -9408,7 +9409,7 @@ function mcEncherVender(g) {
     )
       f.style.display = e ? '' : 'none';
   if (!e) {
-    mcVazio(g, tr('Nada anunciável na mochila.'));
+    mcVazio(g, tr('Nothing listable in your Bag.'));
     return;
   }
   const m = mcDireto(d);
@@ -9418,8 +9419,8 @@ function mcEncherVender(g) {
     g,
     'em-estoque',
     e.tipo === 'item'
-      ? `${tr('você tem')} ${e.n} · ${tr('de')} ${mcMoedas(e.faixa.piso)} ${tr('a')} ${mcMoedas(e.faixa.teto)}`
-      : `${e.sub} · ${tr(e.onde === 'time' ? 'no time' : 'na caixa')} · ${tr('preço livre')}`,
+      ? `${tr('you have')} ${e.n} · ${tr('de')} ${mcMoedas(e.faixa.piso)} ${tr('a')} ${mcMoedas(e.faixa.teto)}`
+      : `${e.sub} · ${tr(e.onde === 'time' ? 'on team' : 'in the Box')} · ${tr('any price')}`,
     d,
   );
   const o = d.querySelector('[data-fig="campo-qtd-venda"] input'),
@@ -9494,7 +9495,7 @@ function mcEncherMinhas(a) {
     if (f.classList.contains('pf-rotulo') && /coletar|recuperar/i.test(f.textContent)) f.style.display = 'none';
     if (f.classList.contains('pf-rotulo') && /vendido vira moedas/i.test(f.textContent))
       f.textContent = tr(
-        'o que vender vira Moedas na hora, esteja você online ou não · anúncio expirado volta sozinho pra sua mochila',
+        "what sells turns into Coins instantly, whether you're online or not · expired listings return to your bag automatically",
       );
   }
   const b = mcListaMinhas(a, d);
@@ -9508,7 +9509,7 @@ function mcEncherMinhas(a) {
     h = b?.__passo || (e[1] ? parseFloat(e[1].style.top) - g || 80 : 80);
   const j = e[0],
     l = j?.style.backgroundImage || '',
-    m = j?.querySelector('[data-fig="etiqueta"]')?.textContent || tr('à venda'),
+    m = j?.querySelector('[data-fig="etiqueta"]')?.textContent || tr('for sale'),
     n = j?.querySelector('[data-fig="etiqueta"]')?.style.color || '';
   const p = j?.querySelector('[data-fig="btn-acao"]'),
     q = p?.style.backgroundImage || '',
@@ -9555,7 +9556,7 @@ function mcEncherMinhas(a) {
         mcMoedas(o.precoUnit) +
         (e ? '' : ' ' + tr('cada')) +
         ' · ' +
-        tr('expira em') +
+        tr('expires in') +
         ' ' +
         Mercado.faltaPra(o, mc.agora || Date.now()),
       c,
@@ -9564,7 +9565,7 @@ function mcEncherMinhas(a) {
   });
   if (b) Popup.alturaRolagem(a, 'lista-minhas-ofertas', Math.max(1, M?.ofertas.length || 0) * h - (b.__vao || 0));
   if (!M) mcCarregarMinhas();
-  else if (!M.ofertas.length) mcVazio(a, tr('Você não tem anúncios no ar.'));
+  else if (!M.ofertas.length) mcVazio(a, tr('You have no active listings.'));
 }
 const mcNomesItem = (a) => {
   const n = String(a?.nome || '').toLowerCase(),
@@ -9670,7 +9671,7 @@ function mcEncherPrecos(a) {
   const b = mcDireto(d);
   mcCampo(d, 'campo-busca-preco', mcp.q || '');
   Popup.imagem(a, 'item', mcp.item ? mcIconeItem(mcp.item) : null, b);
-  Popup.textoCru(a, 'item-nome', E ? tr(E.nome) : tr('procure um item'), b);
+  Popup.textoCru(a, 'item-nome', E ? tr(E.nome) : tr('search for an item'), b);
   Popup.textoCru(
     a,
     'preco-medio',
@@ -9679,15 +9680,15 @@ function mcEncherPrecos(a) {
         ? tr('mediana: {x}', { x: mcMoedas(E.mediana) }) +
           (document.body.classList.contains('mobile') ? '' : ' · ' + E.vendas + ' ' + tr('vendas'))
         : E.aberta != null
-          ? tr('à venda: {x}', { x: mcMoedas(E.aberta) })
-          : tr('sem vendas ainda')
+          ? tr('for sale: {x}', { x: mcMoedas(E.aberta) })
+          : tr('no sales yet')
       : '',
     d,
   );
   const e = P?.vendas || [];
   const g = mcNoDe(d, 'nota');
   if (g) {
-    g.textContent = tr('as últimas vendas deste item, da mais nova pra mais velha');
+    g.textContent = tr("this item's latest sales, newest to oldest");
     g.style.whiteSpace = 'normal';
   }
   const h = Popup.celulas(a, mcListaVendas(a, d) ? 'lista-vendas' : 'conteudo-precos', Math.max(1, e.length), 'venda');
@@ -9718,7 +9719,7 @@ function mcEncherPrecos(a) {
       d.appendChild(j);
     }
   }
-  mcGrafico(j, e, E ? tr('ainda não há vendas suficientes pra desenhar') : tr('procure um item pra ver o histórico'));
+  mcGrafico(j, e, E ? tr('not enough sales yet to draw a chart') : tr('search for an item to see its history'));
 }
 function mcGrafico(a, b, c) {
   if (!a) return;
@@ -9903,7 +9904,7 @@ function mcEncherComprarMon(a) {
     j('btn-ordenar-iv', 'IV ▾', mc.ordem === 'iv');
     j(
       'btn-ordenar',
-      tr('preço') + (mc.ordem === 'preco-desc' ? ' ▾' : ' ▴'),
+      tr('price') + (mc.ordem === 'preco-desc' ? ' ▾' : ' ▴'),
       mc.ordem === 'preco-asc' || mc.ordem === 'preco-desc',
     );
   }
@@ -9924,8 +9925,8 @@ function mcEncherComprarMon(a) {
     mcVazio(
       a,
       mc.shiny || mc.lvMin || mc.lvMax || mc.ivMin || mc.ivSomaMin || mc.evSomaMin || mc.busca
-        ? 'Nenhum Pokémon à venda com esses filtros.'
-        : 'Nenhum Pokémon à venda ainda. Seja o primeiro a anunciar!',
+        ? 'No Pokémon for sale with these filters.'
+        : 'No Pokémon for sale yet. Be the first to list one!',
     );
   mcPintarContagem(a);
   if (L) mcPertoDoFim(mcListaVisivel(a));
@@ -10049,7 +10050,7 @@ function pintarFichaMon(c, d, m) {
   Popup.textoCru(
     c,
     'pokemon-info',
-    [mcNv(k.lv), h, tr('natureza {x}', { x: tr(k.natureza) }) + mcNatSobeDesce(k.natureza)].filter(Boolean).join(' · '),
+    [mcNv(k.lv), h, tr('nature {x}', { x: tr(k.natureza) }) + mcNatSobeDesce(k.natureza)].filter(Boolean).join(' · '),
     D,
   );
   if (!mcNoDe(d, 'tipo-2')) {
@@ -10129,7 +10130,7 @@ async function mcComprarMon(a) {
   Mercado.tirarDaLista(mc.lista, o.id);
   mc.minhas = null;
   render();
-  mcVazio(a, tr('Comprado! {x} já está com você.', { x: mcNomeMon(mcMon(r.comprou?.mon || o.mon)) }), '#8fe08f');
+  mcVazio(a, tr('Purchased! {x} is now yours.', { x: mcNomeMon(mcMon(r.comprou?.mon || o.mon)) }), '#8fe08f');
 }
 function mcEntradasMon() {
   const a = ctx.jogo?.time || [],
@@ -10173,7 +10174,7 @@ function mcEncherVenderMon(d) {
   Popup.textoCru(
     v,
     'slots-venda',
-    tr('anúncios: {a} de {b}', {
+    tr('listings: {a} of {b}', {
       a: mc.minhas?.ofertas?.length ?? '…',
       b: mc.minhas?.limite || Mercado.regras()?.ofertasPorJogador || 8,
     }),
@@ -10216,7 +10217,7 @@ function mcEncherVenderMon(d) {
   for (const f of v.children)
     if (!f.classList.contains('pf-sb') && (parseFloat(f.style.left) || 0) >= j) f.style.visibility = e ? '' : 'hidden';
   if (!e) {
-    mcVazio(d, E.length ? 'Seus Pokémon estão travados: destrave um pra anunciar.' : 'Nenhum Pokémon pra anunciar.');
+    mcVazio(d, E.length ? 'Your Pokémon are locked: unlock one to list it.' : 'No Pokémon to list.');
     return;
   }
   Popup.imagem(v, 'pokemon', mcIconeMon(e.p), P);
@@ -10238,7 +10239,7 @@ function mcResumoVendaMon(a, v = a?.querySelector(':scope > [data-variante="vend
 async function mcAnunciarMon(a) {
   const e = mcEntradasMon().find((x) => x.uid === mcv.uidMon);
   if (!e) {
-    mcVazio(a, 'Escolha um Pokémon na lista.', '#f58e8e');
+    mcVazio(a, 'Choose a Pokémon from the list.', '#f58e8e');
     return;
   }
   if (e.travado) {
@@ -10246,13 +10247,13 @@ async function mcAnunciarMon(a) {
     return;
   }
   if (!(mcv.precoMon > 0)) {
-    mcVazio(a, 'Diga um preço.', '#f58e8e');
+    mcVazio(a, 'Name a price.', '#f58e8e');
     return;
   }
   const { taxa: b } = Mercado.custoDeAnunciar(mcv.precoMon, 1);
   if (
     !confirm(
-      `${tr('Anunciar')} ${e.k.nome} ${tr('por')} ${mcMoedas(mcv.precoMon)}?\n${tr('Taxa agora')}: ${mcMoedas(b)} — ${tr('não volta, nem se cancelar. Ele sai do seu time até ser vendido ou cancelado.')}`,
+      `${tr('List')} ${e.k.nome} ${tr('por')} ${mcMoedas(mcv.precoMon)}?\n${tr('Taxa agora')}: ${mcMoedas(b)} — ${tr("won't be refunded, even if you cancel. It leaves your team until it sells or is canceled.")}`,
     )
   )
     return;
@@ -10267,7 +10268,7 @@ async function mcAnunciarMon(a) {
   mcv.uidMon = null;
   mcv.precoMon = 0;
   render();
-  mcVazio(a, 'Anunciado! Está na aba Minhas ofertas.', '#8fe08f');
+  mcVazio(a, "Listed! It's in the My Offers tab.", '#8fe08f');
 }
 function mcAcharEspecie(q) {
   const s = mcSimples(q);
@@ -10296,7 +10297,7 @@ function mcPrepararPrecosMon(a, v) {
   for (const c of mcCelsDe(l, 'venda')) mcVestir(c, v.__moldes, 'normal');
   const m = mcNoDe(v, 'nota');
   if (m) {
-    m.textContent = tr('as últimas vendas desta espécie, da mais nova pra mais velha');
+    m.textContent = tr('the latest sales of this species, newest to oldest');
     m.style.whiteSpace = 'normal';
   }
 }
@@ -10319,10 +10320,10 @@ function mcPrecoTopoMon(v, E) {
   if (MC_PRECO_MON === 'mediana' && E.mediana != null) return tr('mediana: {x}', { x: mcMoedas(E.mediana) });
   if (MC_PRECO_MON !== 'mediana' && E.mediaPeriodo != null)
     return b
-      ? tr('média: {x}', { x: mcMoedas(E.mediaPeriodo) })
-      : tr('média {d} dias: {x}', { d: E.dias, x: mcMoedas(E.mediaPeriodo) });
-  if (E.aberta != null) return tr('à venda: {x}', { x: mcMoedas(E.aberta) });
-  return tr(E.vendas ? (b ? 'sem vendas na semana' : 'sem vendas nos últimos {d} dias') : 'sem vendas ainda', {
+      ? tr('average: {x}', { x: mcMoedas(E.mediaPeriodo) })
+      : tr('{d}-day average: {x}', { d: E.dias, x: mcMoedas(E.mediaPeriodo) });
+  if (E.aberta != null) return tr('for sale: {x}', { x: mcMoedas(E.aberta) });
+  return tr(E.vendas ? (b ? 'no sales this week' : 'no sales in the last {d} days') : 'no sales yet', {
     d: E.dias,
   });
 }
@@ -10334,7 +10335,7 @@ function mcEncherPrecosMon(a) {
     D = mcDireto(v);
   mcCampo(v, 'campo-busca-preco', mcpm.q);
   Popup.imagem(v, 'pokemon', mcpm.dex ? mcCabeca(mcpm.dex) : null, D);
-  Popup.textoCru(v, 'pokemon-nome', mcpm.dex ? mcEspecie(mcpm.dex) : tr('procure um Pokémon'), D);
+  Popup.textoCru(v, 'pokemon-nome', mcpm.dex ? mcEspecie(mcpm.dex) : tr('search for a Pokémon'), D);
   Popup.textoCru(v, 'preco-medio', mcPrecoTopoMon(v, E), D);
   const b = P?.vendas || [],
     d = mcNoDe(v, 'lista-vendas');
@@ -10356,7 +10357,7 @@ function mcEncherPrecosMon(a) {
   mcGrafico(
     mcNoDe(v, 'grafico-precos'),
     b,
-    !mcpm.dex ? tr('procure um Pokémon pra ver o histórico') : tr('ainda não há vendas suficientes pra desenhar'),
+    !mcpm.dex ? tr('search for a Pokémon to see its history') : tr('not enough sales yet to draw a chart'),
   );
 }
 async function mcBuscarPrecoMon(a, q) {
@@ -10385,36 +10386,37 @@ async function mcBuscarPrecoMon(a, q) {
   if (aberta === 'mercado') render();
 }
 function rPremium(a) {
-  a.innerHTML = '<div class="vazio">Loja premium — em breve, junto com o servidor online.</div>';
+  a.innerHTML = '<div class="vazio">Premium shop — coming soon, along with the online server.</div>';
 }
 function rSocial(a) {
   const b = abas([
     { id: 'chat', nome: 'Chat' },
     { id: 'amigos', nome: 'Amigos' },
-    { id: 'correio', nome: 'Correio' },
+    { id: 'correio', nome: 'Mail' },
   ]);
   if (b === 'chat') {
     a.innerHTML =
-      '<div class="chat-janela"></div><div style="color:var(--muted);font-size:11px;margin-top:6px">o mesmo chat da HUD, em tela cheia: Local mostra tudo com etiqueta [G] [T] [H] [S]; /g /t /h /l mudam o canal</div>';
+      '<div class="chat-janela"></div><div style="color:var(--muted);font-size:11px;margin-top:6px">the same chat as the HUD, full screen: Local shows everything tagged [G] [T] [H] [S]; /g /t /h /l switch channel</div>';
     Chat.montar(a.querySelector('.chat-janela'), { compacto: false });
   } else if (b === 'amigos')
     a.innerHTML =
-      '<div class="vazio">Lista de amigos vazia. Adicionar, convidar pra batalha e presentear entram com o servidor.</div>';
+      '<div class="vazio">Friends list is empty. Adding, battle invites and gifting arrive with the server.</div>';
   else
     a.innerHTML =
-      '<div class="lista"><div class="linha" style="cursor:default"><span style="font-size:18px">✉️</span><span class="nome"><b>Boas-vindas a Kanto</b><small>Sistema · sua jornada começa em Pallet. Anexo: 5 Pokébolas (já na mochila).</small></span></div></div>';
+      '<div class="lista"><div class="linha" style="cursor:default"><span style="font-size:18px">✉️</span><span class="nome"><b>Welcome to Kanto</b><small>System · your journey begins in Pallet. Attachment: 5 Poké Balls (already in your Bag).</small></span></div></div>';
 }
 function rBatalha(a) {
   const b = abas([
-    { id: 'trein', nome: 'Treinadores' },
+    { id: 'trein', nome: 'Trainers' },
     { id: 'pvp', nome: 'PvP' },
     { id: 'rank', nome: 'Ranking' },
   ]);
   if (b === 'trein') {
     const n = new Set((ctx.dados.treinadores || []).map((t) => String(t.cfg))).size,
       c = new Set([].concat(ctx.lerLS('treinadoresVencidos', []) || []).map((k) => String(k).split('@')[0])).size;
-    a.innerHTML = `<div class="vazio">${n} treinadores marcados neste mapa · <b>${c}</b> vencidos.<br>Procure os nomes <b style="color:#ffb1b1">⚔</b> pelas rotas e fale (Z) pra desafiar — batalha por turnos; ginásios e insígnias vêm depois.</div>`;
-  } else a.innerHTML = '<div class="vazio">Precisa de servidor. A janela já existe pra você posicionar.</div>';
+    a.innerHTML = `<div class="vazio">${n} trainers marked on this map · <b>${c}</b> defeated.<br>Look for the <b style="color:#ffb1b1">⚔</b> names along the routes and talk (Z) to challenge — turn-based battle; Gyms and Badges come later.</div>`;
+  } else
+    a.innerHTML = '<div class="vazio">Requires the server. The window is already here so you can position it.</div>';
 }
 let slotAtalho = 0;
 export function repintar() {
@@ -10435,12 +10437,12 @@ function rAtalho(a) {
   const c = esc(Teclas.rotuloAcao('atalho-' + (slotAtalho + 1), 'lista', tr)),
     d = (ctx.atalhos?.() || [])[slotAtalho];
   $('j-titulo').innerHTML =
-    `<i class="ic ic-mochila" style="display:inline-block;width:26px;height:26px;vertical-align:middle;margin-right:6px"></i>${esc(tr('Atalho'))} ${c}`;
+    `<i class="ic ic-mochila" style="display:inline-block;width:26px;height:26px;vertical-align:middle;margin-right:6px"></i>${esc(tr('Shortcut'))} ${c}`;
   const e = abas([
-    { id: 'itens', nome: 'Itens' },
+    { id: 'itens', nome: 'Items' },
     { id: 'montarias', nome: 'Montarias' },
   ]);
-  const f = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">${esc(tr('tecla'))} <b style="color:#ffe07a">${c}</b> ${esc(tr('ou toque no slot usa'))}; ${d ? esc(tr('hoje:')) + ' <b>' + esc(tr(d.nome)) + '</b>' : esc(tr('slot vazio'))}</div>`;
+  const f = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">${esc(tr('tecla'))} <b style="color:#ffe07a">${c}</b> ${esc(tr('or tap the slot to use'))}; ${d ? esc(tr('hoje:')) + ' <b>' + esc(tr(d.nome)) + '</b>' : esc(tr('empty slot'))}</div>`;
   const g = (b) => {
     ctx.definirAtalho?.(slotAtalho, b);
     fechar();
@@ -10454,11 +10456,11 @@ function rAtalho(a) {
         ? `<div class="grade-itens">${h
             .map(([a, n]) => {
               const b = D.itens[a];
-              return `<div class="item q${b.q || 1}"><i class="ic-item" style="${iconeItem(b)}"></i><span class="n">×${n}</span><b>${esc(tr(b.n))}</b><small>${esc(tr(D.tipos[b.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-item="${a}">${esc(tr('Prender no {x}', { x: c }))}</button></div></div>`;
+              return `<div class="item q${b.q || 1}"><i class="ic-item" style="${iconeItem(b)}"></i><span class="n">×${n}</span><b>${esc(tr(b.n))}</b><small>${esc(tr(D.tipos[b.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-item="${a}">${esc(tr('Bind to {x}', { x: c }))}</button></div></div>`;
             })
             .join('')}</div>`
         : '<div class="vazio">' +
-          esc(tr('Nada pra prender: poções e bolas ficam aqui quando estiverem na mochila (Loja).')) +
+          esc(tr("Nothing to pin: potions and balls show up here when they're in your bag (Shop).")) +
           '</div>');
     a.querySelectorAll('[data-item]').forEach(
       (b) =>
@@ -10479,7 +10481,7 @@ function rAtalho(a) {
       f +
       `<div class="grade-itens">${j
         .map((m) => {
-          return `<div class="item" style="position:relative"><i class="ic-item" style="background-image:url('${o(m) || k(m)}')"></i>${m.shinyLigado && !o(m) ? l : ''}<b>${p(m)}</b><small>${esc(tr(m.voa ? 'voadora · passa por cima de tudo' : m.meio === 'agua' ? 'aquática · só na água' : m.meio === 'anfibia' ? 'terra e água' : 'terrestre · só em terra'))}</small><div class="acoes"><button type="button" class="btn ouro" data-monta="${m.glb}">${esc(tr('Prender no {x}', { x: c }))}</button>${m.shiny && m.normal ? `<button type="button" class="btn" data-shiny="${m.glb}" title="${esc(tr('Você tem as duas versões: escolha a cor que monta.'))}">${esc(tr(m.shinyLigado ? 'Shiny: sim' : 'Shiny: não'))}</button>` : ''}</div></div>`;
+          return `<div class="item" style="position:relative"><i class="ic-item" style="background-image:url('${o(m) || k(m)}')"></i>${m.shinyLigado && !o(m) ? l : ''}<b>${p(m)}</b><small>${esc(tr(m.voa ? 'flying · passes over everything' : m.meio === 'agua' ? 'aquatic · water only' : m.meio === 'anfibia' ? 'land and water' : 'land · land only'))}</small><div class="acoes"><button type="button" class="btn ouro" data-monta="${m.glb}">${esc(tr('Bind to {x}', { x: c }))}</button>${m.shiny && m.normal ? `<button type="button" class="btn" data-shiny="${m.glb}" title="${esc(tr('You have both versions: choose which color to ride.'))}">${esc(tr(m.shinyLigado ? 'Shiny: sim' : 'Shiny: no'))}</button>` : ''}</div></div>`;
         })
         .join('')}</div>`;
     a.querySelectorAll('[data-monta]').forEach(
@@ -10504,7 +10506,7 @@ function rAtalho(a) {
     (a.insertAdjacentHTML(
       'beforeend',
       '<div class="acoes" style="margin-top:12px"><button type="button" class="btn" id="a-limpar">' +
-        esc(tr('Esvaziar o atalho')) +
+        esc(tr('Clear the shortcut')) +
         '</button></div>',
     ),
       (a.querySelector('#a-limpar').onclick = () => g(null)));
@@ -10569,14 +10571,14 @@ function rRaid(a) {
   } catch (e) {
     console.warn('raid:', e);
   }
-  a.innerHTML = '<div class="vazio">' + esc(tr('Nenhuma raid anunciada agora.')) + '</div>';
+  a.innerHTML = '<div class="vazio">' + esc(tr('No raids announced right now.')) + '</div>';
 }
 let confirmarApagar = false;
 let popCf = null,
   abaCf = 'geral';
-const PARADAS = { 'tamanho-interface': { ops: ['pequena', 'normal', 'grande'], rot: ['Menor', 'Normal', 'Maior'] } };
+const PARADAS = { 'tamanho-interface': { ops: ['pequena', 'normal', 'grande'], rot: ['Smaller', 'Normal', 'Larger'] } };
 const CF_ADM = ['ajuste-tamanho-pokemon', 'ajuste-densidade-selvagens'];
-const QUALIDADES = { ops: ['baixa', 'media', 'alta'], rot: ['Baixa', 'Média', 'Alta'] };
+const QUALIDADES = { ops: ['baixa', 'media', 'alta'], rot: ['Low', 'Medium', 'High'] };
 const CF_VOLUMES = { 'vol-musica': 'mus', 'vol-efeitos': 'sfx', 'vol-interface': 'ui' };
 const CF_TOGGLES = {
   mudo: { ler: () => !!Som.estado().mudo, por: (v) => Som.ajustar({ mudo: v }) },
@@ -10598,7 +10600,7 @@ const vImagem = (a, k) => {
   const F = Pref.faixaNum(CF_IMAGEM[a]);
   return F ? F.min + Math.max(0, Math.min(1, k)) * (F.max - F.min) : 1;
 };
-const CF_SEMPRE = { 'confirmar-importante': 'o jogo sempre pede confirmação' };
+const CF_SEMPRE = { 'confirmar-importante': 'the game always asks for confirmation' };
 const paradaDe = (a, b) => {
   const P = PARADAS[a];
   const i = P.ops.indexOf(String(b ?? ''));
@@ -10613,15 +10615,15 @@ const paradaDoK = (a, k) => {
   return Math.max(0, Math.min(n - 1, Math.round(k * (n - 1))));
 };
 const CF_FALTA = {
-  'lado-joystick': 'em breve',
-  'tamanho-joystick': 'em breve',
-  'tamanho-botoes': 'em breve',
-  vibracao: 'em breve',
-  'quem-mensagem': 'precisa do servidor — em breve',
-  'quem-convida': 'precisa do servidor — em breve',
-  'status-online': 'precisa do servidor — em breve',
-  'fonte-chat': 'o chat já se redimensiona pelo canto ◢',
-  'filtro-chat': 'em breve — hoje quem cuida é a moderação (/aviso, /mudo)',
+  'lado-joystick': 'coming soon',
+  'tamanho-joystick': 'coming soon',
+  'tamanho-botoes': 'coming soon',
+  vibracao: 'coming soon',
+  'quem-mensagem': 'needs the server — coming soon',
+  'quem-convida': 'needs the server — coming soon',
+  'status-online': 'needs the server — coming soon',
+  'fonte-chat': 'the chat already resizes from the corner ◢',
+  'filtro-chat': 'coming soon — for now moderation handles it (/aviso, /mudo)',
 };
 function popupCf() {
   if (popCf) return popCf;
@@ -10730,11 +10732,11 @@ function cfAcao(a, b, c) {
   }
   if (a === 'resetar-paineis') {
     Hud.zerarMover();
-    Chat.sistema('Painéis de volta ao lugar padrão.');
+    Chat.sistema('Panels back in their default place.');
     return;
   }
   if (a === 'logout') {
-    Popup.botao(popCf, 'logout', false, 'Saindo…');
+    Popup.botao(popCf, 'logout', false, 'Signing out…');
     ctx.conta?.sair?.();
     return;
   }
@@ -10762,16 +10764,16 @@ const cfDiagTexto = () => {
     ? Object.entries(d)
         .map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v))
         .join('\n')
-    : 'indisponível';
+    : 'unavailable';
 };
 async function cfCopiarDiag() {
   const a = cfDiagTexto();
   try {
     await navigator.clipboard.writeText(a);
-    Popup.botao(popCf, 'copiar-diagnostico', true, 'Copiado!');
-    setTimeout(() => Popup.botao(popCf, 'copiar-diagnostico', true, 'Copiar'), 2000);
+    Popup.botao(popCf, 'copiar-diagnostico', true, 'Copied!');
+    setTimeout(() => Popup.botao(popCf, 'copiar-diagnostico', true, 'Copy'), 2000);
   } catch {
-    Chat.sistema('Não deu pra copiar sozinho — o texto está aí na caixa, dá pra selecionar.');
+    Chat.sistema("Couldn't copy automatically — the text is in the box, you can select it.");
   }
 }
 async function cfApagarProgresso() {
@@ -10818,12 +10820,12 @@ function cfDialogoRelato() {
     gap: '8px',
   });
   d.innerHTML =
-    '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Mandar pra equipe</div>' +
-    '<div style="text-align:center">Conte o que aconteceu. O diagnóstico do aparelho vai junto.</div>' +
-    '<textarea rows="4" maxlength="1000" placeholder="o que aconteceu?"></textarea>' +
+    '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Send to team</div>' +
+    '<div style="text-align:center">Tell us what happened. Your device diagnostics are sent too.</div>' +
+    '<textarea rows="4" maxlength="1000" placeholder="what happened?"></textarea>' +
     '<div class="cf-relato-av" style="min-height:16px;color:#f58e8e;text-align:center"></div>' +
-    '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Enviar</button>' +
-    '<button type="button" class="nao" style="flex:1">Cancelar</button></div>';
+    '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Send</button>' +
+    '<button type="button" class="nao" style="flex:1">Cancel</button></div>';
   const c = d.querySelector('textarea');
   Object.assign(c.style, {
     background: '#0B1220',
@@ -10845,7 +10847,7 @@ function cfDialogoRelato() {
       cursor: 'pointer',
     });
   d.innerHTML = tHtml(d.innerHTML);
-  d.querySelector('textarea').placeholder = tr('o que aconteceu?');
+  d.querySelector('textarea').placeholder = tr('what happened?');
   document.body.appendChild(d);
   DIALOGOS.add(d);
   const f = d.querySelector('textarea'),
@@ -10856,7 +10858,7 @@ function cfDialogoRelato() {
   d.querySelector('.ok').onclick = async () => {
     const b = f.value.trim();
     if (!b) {
-      g.textContent = tr('Conte o que aconteceu antes de mandar.');
+      g.textContent = tr('Tell us what happened before sending.');
       return;
     }
     const c = ctx.diagnostico?.() || {},
@@ -10872,19 +10874,19 @@ function cfDialogoRelato() {
         await navigator.clipboard.writeText(h);
       } catch {}
       d.remove();
-      Chat.sistema('Você está jogando sem conta: o relato foi copiado — cole no Discord da equipe.');
+      Chat.sistema("You're playing without an account: the report was copied — paste it in the team's Discord.");
       return;
     }
     g.style.color = '#B8C2D9';
-    g.textContent = tr('enviando…');
+    g.textContent = tr('sending…');
     const r = await ctx.conta.chamar('POST', '/conta/relato', { texto: b, diag: c, contexto: e });
     if (!r.ok) {
       g.style.color = '#f58e8e';
-      g.textContent = tr(r.erro || 'não foi');
+      g.textContent = tr(r.erro || 'failed');
       return;
     }
     d.remove();
-    Chat.sistema('Relato enviado pra equipe. Obrigado!');
+    Chat.sistema('Report sent to the team. Thanks!');
   };
 }
 export const PRESO = { minimo: 50, palavras: 5, repeticao: 7, diferentes: 12 };
@@ -10948,14 +10950,14 @@ export function estouPreso() {
   h(
     'div',
     { font: '800 ' + (g ? 16 : 18) + "px 'Baloo 2', system-ui", color: '#F8C237', textAlign: 'center' },
-    'Estou preso',
+    "I'm stuck",
   );
   h(
     'div',
     { textAlign: 'center', lineHeight: '1.3' },
     f
-      ? 'Conte o que você estava fazendo e onde tentou ir quando travou. Sua posição e o diagnóstico vão juntos pra equipe. Depois de enviar, você volta pro último Centro Pokémon.'
-      : 'Conte o que você estava fazendo e onde tentou ir quando travou. Sua posição e o diagnóstico vão juntos pra equipe. Depois de enviar, você volta pro laboratório do Professor Oak.',
+      ? "Tell us what you were doing and where you tried to go when you got stuck. Your position and diagnostics are sent to the team too. After sending, you'll return to the last Pokémon Center."
+      : "Tell us what you were doing and where you tried to go when you got stuck. Your position and diagnostics are sent to the team. After sending, you'll return to Professor Oak's lab.",
   );
   h(
     'div',
@@ -10968,7 +10970,7 @@ export function estouPreso() {
       borderRadius: '8px',
       padding: g ? '4px 8px' : '6px 10px',
     },
-    'Use só se estiver preso de verdade: uso falso ou pra atalho tira o acesso ao alfa.',
+    'Only use this if you are truly stuck: misuse or using it as a shortcut costs you alpha access.',
   );
   const i = h('textarea', {
     background: '#0B1220',
@@ -10983,7 +10985,7 @@ export function estouPreso() {
   i.rows = g ? 3 : 4;
   i.maxLength = 1000;
   i.placeholder = tr(
-    'Ex.: estava descendo a escada da caverna do Monte Lua, virei pra esquerda e fiquei travado entre a pedra e a parede; não consigo andar pra lado nenhum.',
+    "E.g.: I was going down the stairs in the Mt. Moon cave, turned left and got stuck between the rock and the wall; I can't move in any direction.",
   );
   const k = h('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px' });
   const l = document.createElement('span'),
@@ -11001,8 +11003,8 @@ export function estouPreso() {
   q.type = s.type = 'button';
   q.className = 'ok';
   s.className = 'nao';
-  q.textContent = tr('Enviar');
-  s.textContent = tr('Cancelar');
+  q.textContent = tr('Send');
+  s.textContent = tr('Cancel');
   for (const b of [q, s])
     Object.assign(b.style, {
       flex: '1',
@@ -11022,19 +11024,19 @@ export function estouPreso() {
     v = false;
   const w = () => {
     const j = ctx.jogo || {};
-    if (j.turno) return tr('Você está numa batalha por turno: termine a batalha antes de usar o "Estou preso".');
-    if (j.raidArena) return tr('Você está na arena da raid: quando a raid acabar, você volta sozinho pra onde estava.');
+    if (j.turno) return tr('You\'re in a turn-based battle: finish it before using "I\'m stuck".');
+    if (j.raidArena) return tr("You're in the raid arena: when the raid ends, you'll be returned to where you were.");
     if (ctx.conta?.estado?.().modo !== 'conta')
       return tr(
-        'Você está jogando sem conta: o "Estou preso" precisa de uma conta, porque o relato tem de chegar na equipe antes de você ser levado. Entre com a sua conta do alfa e tente de novo.',
+        "You're playing without an account: \"I'm stuck\" needs one, because the report has to reach the team before you're moved. Sign in with your alpha account and try again.",
       );
     return '';
   };
   const x = {
     curto: null,
-    palavras: 'Escreva pelo menos 5 palavras: o que você estava fazendo e onde tentou ir quando travou.',
+    palavras: 'Write at least 5 words: what you were doing and where you tried to go when you got stuck.',
     enchimento:
-      'Isso parece enchimento (letra repetida ou quase nenhum caractere diferente). Conte de verdade o que aconteceu.',
+      'That looks like filler (repeated letters or barely any different characters). Tell us what actually happened.',
   };
   const y = () => {
     const R = regrasPreso(i.value),
@@ -11043,10 +11045,10 @@ export function estouPreso() {
     m.style.color = R.n >= PRESO.minimo ? '#8fe08f' : '#f58e8e';
     const a = PRESO.minimo - R.n;
     l.textContent = R.ok
-      ? tr('Pronto pra enviar.')
+      ? tr('Ready to send.')
       : R.motivo === 'curto'
         ? R.n
-          ? tr('Faltam {n} caracteres.', { n: a })
+          ? tr('{n} characters left.', { n: a })
           : ''
         : tr(x[R.motivo]);
     l.style.color = R.ok ? '#8fe08f' : '#B8C2D9';
@@ -11091,7 +11093,7 @@ export function estouPreso() {
     u = '';
     y();
     o.style.color = '#B8C2D9';
-    o.textContent = tr('enviando…');
+    o.textContent = tr('sending…');
     let a = {},
       b = {};
     try {
@@ -11112,14 +11114,14 @@ export function estouPreso() {
     });
     t = false;
     if (!r.ok) {
-      let d = tr(r.erro || 'não foi');
+      let d = tr(r.erro || 'failed');
       if (!I18n.ehPt() && d === r.erro) {
         const g = /(\d+)\s*min/.exec(r.erro || '')?.[1];
         if (r.status === 429 && g)
-          d = tr('Você usou o "Estou preso" há pouco. Espere {n} min antes de usar de novo.', { n: g });
+          d = tr('You used "I\'m stuck" recently. Wait {n} min before using it again.', { n: g });
         else if (r.status === 400)
-          d = tr('O relato não passou nas regras: pelo menos 50 caracteres e 5 palavras, sem enchimento.');
-        else if (r.status === 409) d = tr('Agora não dá: você está numa batalha ou na luta da raid.');
+          d = tr("The report didn't meet the rules: at least 50 characters and 5 words, no filler.");
+        else if (r.status === 409) d = tr("Not now: you're in a battle or the raid fight.");
       }
       u = d;
       y();
@@ -11128,7 +11130,7 @@ export function estouPreso() {
     if (!Number.isFinite(r.dados?.preso?.usos24h)) {
       v = true;
       u = tr(
-        'O servidor ainda não conhece o "Estou preso": o seu relato chegou na equipe, mas você não foi levado. Recarregue a página daqui a pouco e tente de novo.',
+        "The server doesn't support \"I'm stuck\" yet: your report reached the team, but you weren't moved. Reload the page in a bit and try again.",
       );
       y();
       return;
@@ -11136,14 +11138,14 @@ export function estouPreso() {
     _();
     Chat.sistema(
       f
-        ? 'Relato enviado pra equipe. Levando você pro último Centro Pokémon…'
-        : 'Relato enviado pra equipe. Levando você pro laboratório do Professor Oak…',
+        ? 'Report sent to the team. Taking you to the last Pokémon Center…'
+        : "Report sent to the team. Taking you to Professor Oak's lab…",
     );
     const n = +r.dados?.preso?.usos24h || 0;
-    if (n >= 3) Chat.sistema(tr('Você já usou o "Estou preso" {n} vezes nas últimas 24 h.', { n }));
+    if (n >= 3) Chat.sistema(tr('You have already used "I\'m stuck" {n} times in the last 24 h.', { n }));
     fechar();
     const c = await ctx.irDestinoPreso?.();
-    if (c === false) Chat.sistema('O jogo já estava trocando de lugar. Se continuar preso, recarregue a página.');
+    if (c === false) Chat.sistema("The game was already moving you. If you're still stuck, reload the page.");
   };
   y();
   setTimeout(() => i.focus(), 50);
@@ -11168,7 +11170,7 @@ function cfLinhaEmail(a) {
 async function cfDialogoEmail() {
   if (document.querySelector('.cf-email')) return;
   if (ctx.conta?.estado?.().modo !== 'conta') {
-    Chat.sistema('Você está jogando sem conta.');
+    Chat.sistema('You are playing without an account.');
     return;
   }
   if (cfEmail === null) await cfBuscarEmail();
@@ -11218,10 +11220,10 @@ async function cfDialogoEmail() {
   };
   const e =
     '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">' +
-    esc(tr('E-mail da conta')) +
+    esc(tr('Account email')) +
     '</div>' +
     '<div style="text-align:center;line-height:1.35">' +
-    esc(tr('Comprar Diamantes pede um e-mail verificado: é por ele que a equipe acha o dono da conta.')) +
+    esc(tr("Buying Diamonds requires a verified email: that's how the team identifies the account owner.")) +
     '</div>';
   const f = () => d.querySelector('.cf-email-av');
   const g = (t, b = false, c = false) => {
@@ -11239,18 +11241,18 @@ async function cfDialogoEmail() {
       '<div class="cf-email-av" style="min-height:16px;text-align:center"></div>' +
       '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1"></button><button type="button" class="nao" style="flex:1"></button></div>';
     const [a, b] = d.querySelectorAll('input');
-    a.placeholder = tr('seu e-mail');
-    b.placeholder = tr('sua senha');
+    a.placeholder = tr('your email');
+    b.placeholder = tr('your password');
     a.value = cfEmail || '';
-    d.querySelector('.ok').textContent = tr('Salvar e mandar o código');
-    d.querySelector('.nao').textContent = tr('Cancelar');
+    d.querySelector('.ok').textContent = tr('Save and send the code');
+    d.querySelector('.nao').textContent = tr('Cancel');
     c();
     d.querySelector('.nao').onclick = () => d.remove();
     d.querySelector('.ok').onclick = async () => {
-      g('salvando…', true);
+      g('saving…', true);
       const r = await h('POST', '/conta/email', { email: a.value.trim(), senha: b.value });
       if (!r?.ok) {
-        g(r?.dados?.erro || r?.erro || 'Não deu.');
+        g(r?.dados?.erro || r?.erro || "That didn't work.");
         return;
       }
       cfEmail = r.dados?.email || a.value.trim();
@@ -11265,7 +11267,7 @@ async function cfDialogoEmail() {
     a.focus();
   };
   const k = async () => {
-    l('mandando o código…', true);
+    l('sending the code…', true);
     const r = await h('POST', '/conta/email/codigo');
     if (r?.ok && r.dados?.jaVerificado) {
       cfEmailOk = true;
@@ -11274,10 +11276,10 @@ async function cfDialogoEmail() {
       return;
     }
     if (!r?.ok) {
-      g(r?.dados?.erro || r?.erro || 'Não deu pra mandar o código.');
+      g(r?.dados?.erro || r?.erro || "Couldn't send the code.");
       return;
     }
-    g(tr('Mandamos um código de 6 dígitos pra {x}.', { x: r.dados?.para || cfEmail }), true, true);
+    g(tr('We sent a 6-digit code to {x}.', { x: r.dados?.para || cfEmail }), true, true);
   };
   const l = (a, b) => {
     d.innerHTML =
@@ -11291,10 +11293,10 @@ async function cfDialogoEmail() {
       '<div style="display:flex;gap:10px"><button type="button" class="trocar" style="flex:1"></button><button type="button" class="nao" style="flex:1"></button></div>';
     const f = d.querySelector('input');
     f.placeholder = '000000';
-    d.querySelector('.ok').textContent = tr('Confirmar');
-    d.querySelector('.de-novo').textContent = tr('Mandar o código');
-    d.querySelector('.trocar').textContent = tr('Trocar o e-mail');
-    d.querySelector('.nao').textContent = tr('Fechar');
+    d.querySelector('.ok').textContent = tr('Confirm');
+    d.querySelector('.de-novo').textContent = tr('Send the code');
+    d.querySelector('.trocar').textContent = tr('Change email');
+    d.querySelector('.nao').textContent = tr('Close');
     c();
     if (a) g(a, b);
     d.querySelector('.nao').onclick = () => d.remove();
@@ -11304,8 +11306,8 @@ async function cfDialogoEmail() {
       const r = await h('POST', '/conta/email/confirmar', { codigo: f.value });
       if (!r?.ok) {
         g(
-          tr(r?.dados?.erro || r?.erro || 'Não deu.') +
-            (r?.dados?.restam != null ? ' ' + tr('Restam {x} tentativa(s).', { x: r.dados.restam }) : ''),
+          tr(r?.dados?.erro || r?.erro || "That didn't work.") +
+            (r?.dados?.restam != null ? ' ' + tr('{x} attempt(s) left.', { x: r.dados.restam }) : ''),
           false,
           true,
         );
@@ -11324,20 +11326,20 @@ async function cfDialogoEmail() {
     d.innerHTML =
       e +
       '<div style="text-align:center;color:#8EF58E">✓ ' +
-      esc(tr('E-mail verificado')) +
+      esc(tr('Email verified')) +
       ': ' +
       esc(cfEmail) +
       '</div>' +
       '<div style="display:flex;gap:10px"><button type="button" class="trocar" style="flex:1"></button><button type="button" class="nao" style="flex:1"></button></div>';
-    d.querySelector('.trocar').textContent = tr('Trocar o e-mail');
-    d.querySelector('.nao').textContent = tr('Fechar');
+    d.querySelector('.trocar').textContent = tr('Change email');
+    d.querySelector('.nao').textContent = tr('Close');
     c();
     d.querySelector('.nao').onclick = () => d.remove();
     d.querySelector('.trocar').onclick = () => j();
   };
   if (!cfEmail) j();
   else if (cfEmailOk) n();
-  else l('Toque em Mandar o código: os 6 dígitos chegam no seu e-mail.', true);
+  else l('Tap Send code: the 6 digits will arrive in your email.', true);
 }
 const DISCORD_CONVITE = 'https://discord.gg/P2NeDwbcwj';
 let cfDiscord = null;
@@ -11435,21 +11437,21 @@ function cfPintarDiscord() {
       v = b.querySelector('.cf-discord-valor'),
       n = b.querySelector('.cf-discord-nota');
     if (!r || !v) continue;
-    r.textContent = tr('Conta do Discord');
+    r.textContent = tr('Discord account');
     v.textContent = !a
-      ? tr('— (jogando sem conta)')
+      ? tr('— (playing without an account)')
       : cfDiscord?.vinculado
         ? (cfDiscord.nome || tr('vinculada')) + ' ✓'
-        : tr('vincular ▸');
+        : tr('link ▸');
     v.style.pointerEvents = a ? 'auto' : 'none';
     v.style.textDecoration = a ? 'underline dotted' : 'none';
-    if (n) n.textContent = tr('Vincule pra receber no nosso Discord os cargos do jogo, como o de Fundador.');
+    if (n) n.textContent = tr('Link it to get your in-game roles, like Founder, on our Discord.');
   }
 }
 async function cfDialogoDiscord() {
   if (document.querySelector('.cf-discord-dlg')) return;
   if (ctx.conta?.estado?.().modo !== 'conta') {
-    Chat.sistema('Você está jogando sem conta.');
+    Chat.sistema('You are playing without an account.');
     return;
   }
   if (cfDiscord === null) await cfBuscarDiscord();
@@ -11506,9 +11508,9 @@ async function cfDialogoDiscord() {
       e +
       '<div style="line-height:1.45">' +
       [
-        tr('1. Toque em Gerar código.'),
-        tr('2. No nosso Discord, mande /vincular com o código (só você vê a resposta do Ash).'),
-        tr('3. Pronto: os cargos do jogo, como o de Fundador, chegam sozinhos.'),
+        tr('1. Tap Generate code.'),
+        tr("2. On our Discord, send /vincular with the code (only you see Ash's reply)."),
+        tr('3. Done: game roles, like Founder, arrive automatically.'),
       ]
         .map(esc)
         .join('<br>') +
@@ -11519,30 +11521,30 @@ async function cfDialogoDiscord() {
       '<div style="display:flex;gap:10px"><button type="button" class="abrir" style="flex:1"></button><button type="button" class="nao" style="flex:1"></button></div>';
     const q = (s) => d.querySelector(s);
     let a = null;
-    q('.gerar').textContent = tr('Gerar código');
-    q('.copiar').textContent = tr('Copiar');
-    q('.abrir').textContent = tr('Abrir o Discord');
-    q('.nao').textContent = tr('Fechar');
+    q('.gerar').textContent = tr('Generate code');
+    q('.copiar').textContent = tr('Copy');
+    q('.abrir').textContent = tr('Open Discord');
+    q('.nao').textContent = tr('Close');
     c();
     q('.gerar').onclick = async () => {
-      f(tr('pedindo o código…'), true);
+      f(tr('requesting the code…'), true);
       const r = await g('POST', '/discord/codigo');
       if (!r?.ok || !r.dados?.codigo) {
-        f(tr(r?.dados?.erro || r?.erro || 'Não deu.'));
+        f(tr(r?.dados?.erro || r?.erro || "That didn't work."));
         return;
       }
       a = r.dados.codigo;
       q('.cf-discord-cod').textContent = a;
-      f(tr('Vale 10 minutos. Depois de mandar no Discord, toque em Fechar.'), true);
+      f(tr('Valid for 10 minutes. After sending it on Discord, tap Close.'), true);
     };
     q('.copiar').onclick = () => {
       if (!a) {
-        f(tr('Gere o código primeiro.'));
+        f(tr('Generate the code first.'));
         return;
       }
       const b = '/vincular ' + a;
       Promise.resolve(navigator.clipboard?.writeText(b)).then(
-        () => f(tr('Copiado: {x}', { x: b }), true),
+        () => f(tr('Copied: {x}', { x: b }), true),
         () => f(b, true),
       );
     };
@@ -11557,33 +11559,33 @@ async function cfDialogoDiscord() {
     d.innerHTML =
       e +
       '<div style="text-align:center;color:#8EF58E">✓ ' +
-      esc(tr('Vinculado ao Discord: {x}', { x: cfDiscord?.nome || '—' })) +
+      esc(tr('Linked to Discord: {x}', { x: cfDiscord?.nome || '—' })) +
       '</div>' +
       '<div style="text-align:center;line-height:1.4">' +
-      esc(tr('Os cargos do jogo, como o de Fundador, ficam em dia sozinhos no nosso Discord.')) +
+      esc(tr('Game roles, like Founder, stay up to date automatically on our Discord.')) +
       '</div>' +
       '<div class="cf-discord-av" style="min-height:16px;text-align:center"></div>' +
       '<div style="display:flex;gap:10px"><button type="button" class="soltar" style="flex:1"></button><button type="button" class="nao" style="flex:1"></button></div>';
     const q = (s) => d.querySelector(s);
     let a = false;
-    q('.soltar').textContent = tr('Desvincular');
-    q('.nao').textContent = tr('Fechar');
+    q('.soltar').textContent = tr('Unlink');
+    q('.nao').textContent = tr('Close');
     c();
     q('.soltar').onclick = async () => {
       if (!a) {
         a = true;
-        f(tr('Toque de novo pra confirmar.'));
+        f(tr('Tap again to confirm.'));
         return;
       }
       const r = await g('POST', '/discord/desvincular');
       if (!r?.ok) {
-        f(tr(r?.dados?.erro || r?.erro || 'Não deu.'));
+        f(tr(r?.dados?.erro || r?.erro || "That didn't work."));
         return;
       }
       cfDiscord = { vinculado: false, nome: null };
       cfPintarDiscord();
       i();
-      f(tr('Desvinculado. Os cargos do jogo saem do seu Discord em alguns minutos.'), true);
+      f(tr('Unlinked. Game roles will be removed from your Discord in a few minutes.'), true);
     };
     q('.nao').onclick = h;
   };
@@ -11605,47 +11607,47 @@ const DESCONTO_DIA = { brl: 10, usd: 50 };
 const PRODUTOS_LOJA = {
   perfumeShiny: {
     icone: 'ui/itens/ic_50223@2x.png',
-    titulo: 'Perfume Prateado',
+    titulo: 'Silver Perfume',
     texto:
-      'Dobra a chance de shiny dos selvagens que aparecem pra você por 1 hora. Usar outro com um ativo soma mais 1 hora.',
+      'Doubles the shiny chance of wild Pokémon that appear for you for 1 hour. Using another while one is active adds 1 more hour.',
   },
-  vagasCaixa: { icone: 'ui/icones/caixa.png', titulo: 'Vagas na Caixa', texto: 'Mais {n} vagas na Caixa, pra sempre.' },
+  vagasCaixa: { icone: 'ui/icones/caixa.png', titulo: 'Box Slots', texto: '{n} more Box slots, forever.' },
   medalhao30: {
     icone: 'ui/itens/ic_900170.png',
-    titulo: 'Medalhão · 30 dias',
+    titulo: 'Medallion · 30 days',
     texto: TEXTOS_FUNDADOR.medalhaoDescLonga,
     vars: BENEFICIOS_MEDALHAO,
   },
   medalhao60: {
     icone: 'ui/itens/ic_900170.png',
-    titulo: 'Medalhão · 60 dias',
+    titulo: 'Medallion · 60 days',
     texto:
-      '{q} Medalhões de 30 dias ({total} dias somando os {q}): cada um dá +{xp} % de XP nos seus Pokémon, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % na recarga da Viagem e do Teleporte e o selo no chat. Use ou venda no Mercado por Moedas.',
+      '{q} 30-day Medallions ({total} days across all {q}): each gives +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the chat badge. Use them or sell them on the Market for Coins.',
     vars: { ...BENEFICIOS_MEDALHAO, q: 2, total: 60 },
   },
   medalhao90: {
     icone: 'ui/itens/ic_900170.png',
-    titulo: 'Medalhão · 90 dias',
+    titulo: 'Medallion · 90 days',
     texto:
-      '{q} Medalhões de 30 dias ({total} dias somando os {q}): cada um dá +{xp} % de XP nos seus Pokémon, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % na recarga da Viagem e do Teleporte e o selo no chat. Use ou venda no Mercado por Moedas.',
+      '{q} 30-day Medallions ({total} days across all {q}): each gives +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the chat badge. Use them or sell them on the Market for Coins.',
     vars: { ...BENEFICIOS_MEDALHAO, q: 3, total: 90 },
   },
   ticketEclosao: {
     icone: 'ui/itens/ic_900150.png',
-    titulo: 'Ticket de eclosão',
-    texto: 'Corta 12 horas da eclosão de um ovo na incubadora. Vale uma vez por ovo.',
+    titulo: 'Hatch Ticket',
+    texto: "Cuts 12 hours off an egg's hatch time in the incubator. Once per egg.",
   },
   incubadora: {
     icone: 'ui/itens/ic_900151.png',
-    titulo: 'Incubadora',
-    texto: 'Mais uma incubadora pro seu terreno: choca um ovo em 24 h. Negociável: dá pra vender no Mercado.',
+    titulo: 'Incubator',
+    texto: 'One more Incubator for your land: hatches an egg in 24 h. Tradable: can be sold on the Market.',
   },
 };
 let lojaRepintar = null;
 export async function abrirLojaDiamantes(a = null) {
   if (document.querySelector('.loja-dia')) return;
   if (ctx.conta?.estado?.().modo !== 'conta') {
-    Chat.sistema('Entre com uma conta pra usar a loja de Diamantes.');
+    Chat.sistema('Sign in with an account to use the Diamond Shop.');
     return;
   }
   if (LojaUI.abrir(a)) return;
@@ -11670,7 +11672,7 @@ export async function abrirLojaDiamantes(a = null) {
     display: 'grid',
     gap: '8px',
   });
-  d.innerHTML = '<div style="text-align:center">' + esc(tr('carregando…')) + '</div>';
+  d.innerHTML = '<div style="text-align:center">' + esc(tr('loading…')) + '</div>';
   document.body.appendChild(d);
   segurarDialogo(d);
   const [r, e, f] = await Promise.all([
@@ -11713,7 +11715,7 @@ export async function abrirLojaDiamantes(a = null) {
     if (!h)
       return (
         '<div style="text-align:center;color:#f5c58e">' +
-        esc(tr('A loja não respondeu. Feche e abra de novo.')) +
+        esc(tr("The shop didn't respond. Close and open it again.")) +
         '</div>'
       );
     if (!h.aberta || !h.produtos?.length)
@@ -11733,22 +11735,24 @@ export async function abrirLojaDiamantes(a = null) {
         if (b) {
           g +=
             '<br><span style="color:#7f8aa6">' +
-            (p.caixa ? esc(tr('Sua Caixa tem {n} vagas.', { n: p.caixa.vagas })) + ' ' : '') +
-            esc(tr('Você comprou {c} de {t} vagas.', { c: p.compradas, t: p.teto })) +
+            (p.caixa ? esc(tr('Your Box has {n} slots.', { n: p.caixa.vagas })) + ' ' : '') +
+            esc(tr('You bought {c} of {t} slots.', { c: p.compradas, t: p.teto })) +
             '</span>';
           if (p.cabem > 1)
             g +=
               '<div style="display:flex;gap:6px;align-items:center;margin-top:4px">' +
               y('vg-menos', '−', n > 1).replace('padding:9px', 'padding:2px 10px') +
               '<span style="color:#fff;min-width:92px;text-align:center">' +
-              esc(tr('{n} vagas', { n: n * p.pacote })) +
+              esc(tr('{n} slots', { n: n * p.pacote })) +
               '</span>' +
               y('vg-mais', '+', n < p.cabem).replace('padding:9px', 'padding:2px 10px') +
               '</div>';
         }
         g +=
           '<br><span style="color:#7f8aa6;font-size:11px">' +
-          esc(tr(p.preso ? 'Preso à conta: não vai pro Mercado nem pra troca.' : 'Pode ir pro Mercado e pra troca.')) +
+          esc(
+            tr(p.preso ? "Account-bound: can't go to the Market or be traded." : 'You can go to the Market and trade.'),
+          ) +
           '</span>';
         if (p.soComprados)
           g +=
@@ -11756,11 +11760,11 @@ export async function abrirLojaDiamantes(a = null) {
             esc(tr('Diamantes comprados: {n}', { n: _().toLocaleString(I18n.local()) })) +
             '</span>';
         const h = f
-          ? tr('Máximo comprado')
+          ? tr('Max purchased')
           : l === p.id
-            ? tr('Confirmar: {x} Diamantes', { x: d.toLocaleString(I18n.local()) })
+            ? tr('Confirm: {x} Diamonds', { x: d.toLocaleString(I18n.local()) })
             : e
-              ? tr('Faltam {n}', { n: e.toLocaleString(I18n.local()) })
+              ? tr('Missing {n}', { n: e.toLocaleString(I18n.local()) })
               : tr('{x} Diamantes', { x: d.toLocaleString(I18n.local()) });
         const i = l === p.id ? 'background:#F8C237;color:#1A1A1A;' : '';
         return (
@@ -11789,7 +11793,7 @@ export async function abrirLojaDiamantes(a = null) {
       (g?.aberta
         ? '<div style="display:flex;gap:8px">' +
           y('m-brl', esc(tr('Real (R$)')), j === 'brl') +
-          y('m-usd', esc(tr('Dólar (US$)')), j === 'usd') +
+          y('m-usd', esc(tr('Dollar (US$)')), j === 'usd') +
           '</div>' +
           a
             .map((p) => {
@@ -11805,17 +11809,15 @@ export async function abrirLojaDiamantes(a = null) {
               ).replace('class="pac"', 'class="pac" data-pacote="' + esc(p.id) + '"');
             })
             .join('')
-        : '<div style="text-align:center;color:#f5c58e">' +
-          esc(tr('A compra de Diamantes ainda está fechada.')) +
-          '</div>') +
+        : '<div style="text-align:center;color:#f5c58e">' + esc(tr('Diamond purchases are still closed.')) + '</div>') +
       (g?.aberta
         ? '<div style="text-align:center;font-size:11px;color:#7f8aa6">' +
-          esc(tr('Pagamento pela Stripe: cartão, e Pix em reais. Os Diamantes ficam presos à sua conta.')) +
+          esc(tr('Payment via Stripe: card, and Pix in BRL. Diamonds are bound to your account.')) +
           '</div>'
         : '') +
       (g?.modo === 'teste'
         ? '<div style="text-align:center;font-size:11px;color:#f5c58e">' +
-          esc(tr('MODO DE TESTE: nada é cobrado (cartão 4242 4242 4242 4242).')) +
+          esc(tr('TEST MODE: nothing is charged (card 4242 4242 4242 4242).')) +
           '</div>'
         : '')
     );
@@ -11833,12 +11835,12 @@ export async function abrirLojaDiamantes(a = null) {
       esc(tr('Diamantes')) +
       '</div>' +
       '<div style="text-align:center;color:#fff">' +
-      esc(tr('Saldo: {x} Diamantes', { x: z().toLocaleString(I18n.local()) })) +
-      (h?.saldo?.bloqueada ? ' <small style="color:#f58e8e">' + esc(tr('(carteira bloqueada)')) + '</small>' : '') +
+      esc(tr('Balance: {x} Diamonds', { x: z().toLocaleString(I18n.local()) })) +
+      (h?.saldo?.bloqueada ? ' <small style="color:#f58e8e">' + esc(tr('(wallet locked)')) + '</small>' : '') +
       '</div>' +
       '<div style="display:flex;gap:8px">' +
-      e('loja', 'Loja') +
-      e('comprar', 'Comprar Diamantes') +
+      e('loja', 'Shop') +
+      e('comprar', 'Buy Diamonds') +
       '</div>' +
       (i === 'loja' ? aa() : ba()) +
       '<div class="loja-av" style="min-height:16px;text-align:center;color:' +
@@ -11846,7 +11848,7 @@ export async function abrirLojaDiamantes(a = null) {
       '">' +
       s.msg +
       '</div>' +
-      y('nao', esc(tr('Fechar')));
+      y('nao', esc(tr('Close')));
     d.querySelector('.nao').onclick = ca;
     d.querySelector('.aba-loja').onclick = () => {
       i = 'loja';
@@ -11913,8 +11915,8 @@ export async function abrirLojaDiamantes(a = null) {
         esc(
           tr(
             p.soComprados
-              ? 'Faltam {n} Diamantes comprados: escolha um pacote.'
-              : 'Faltam {n} Diamantes: escolha um pacote.',
+              ? 'You need {n} more purchased Diamonds: choose a pack.'
+              : 'You need {n} more Diamonds: choose a pack.',
             { n: c.toLocaleString(I18n.local()) },
           ),
         ),
@@ -11934,7 +11936,7 @@ export async function abrirLojaDiamantes(a = null) {
     l = null;
     clearTimeout(o);
     q = true;
-    da(esc(tr('comprando…')), true);
+    da(esc(tr('buying…')), true);
     const e = (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)).slice(0, 24);
     const f = await ctx.pedirLoja('comprar', { produto: a, ...(b ? { pacotes: n } : {}), ref: e });
     q = false;
@@ -11948,13 +11950,13 @@ export async function abrirLojaDiamantes(a = null) {
         j = f.vagas?.novas ?? n * p.pacote,
         m = h?.produtos?.find((x) => x.id === 'vagasCaixa')?.caixa?.vagas;
       const r = b
-        ? tr('Mais {n} vagas na Caixa.', { n: j }) + (m ? ' ' + tr('Agora a Caixa tem {n} vagas.', { n: m }) : '')
-        : tr('Comprou: {x}. Está na Mochila.', { x: g });
+        ? tr('{n} more Box slots.', { n: j }) + (m ? ' ' + tr('Your Box now has {n} slots.', { n: m }) : '')
+        : tr("Bought: {x}. It's in your Bag.", { x: g });
       k = 1;
       if (!f.repetido)
         Chat.sistemaCru(
-          tr('💎 Loja de Diamantes: {x} (−{n} Diamantes).', {
-            x: b ? tr('{n} vagas na Caixa', { n: j }) : g,
+          tr('💎 Diamond Shop: {x} (−{n} Diamonds).', {
+            x: b ? tr('{n} Box slots', { n: j }) : g,
             n: f.compra?.qtd ?? p.preco * n,
           }),
         );
@@ -11964,8 +11966,8 @@ export async function abrirLojaDiamantes(a = null) {
     da(
       esc(
         f?.erro === 'saldo-insuficiente' && f.falta
-          ? tr('Faltam {n} Diamantes.', { n: f.falta })
-          : tr(f?.mensagem || f?.erro || 'Não deu.'),
+          ? tr('{n} Diamonds short.', { n: f.falta })
+          : tr(f?.mensagem || f?.erro || "That didn't work."),
       ),
     );
   };
@@ -11973,19 +11975,19 @@ export async function abrirLojaDiamantes(a = null) {
     da(
       esc(a) +
         '<br><button type="button" class="ir-email" style="margin-top:6px;background:#F8C237;border:0;border-radius:10px;padding:7px 12px;color:#1A1A1A;font:inherit;cursor:pointer">' +
-        esc(tr('Verificar e-mail')) +
+        esc(tr('Verify email')) +
         '</button>',
     );
   const ga = async (a) => {
     if (!cfEmailOk) {
-      fa(tr('Pra comprar Diamantes, verifique o seu e-mail (Configurações → Conta → E-mail).'));
+      fa(tr('To buy Diamonds, verify your email (Settings → Account → Email).'));
       return;
     }
     let w = null;
     try {
       w = window.open('about:blank', '_blank');
     } catch {}
-    da(esc(tr('abrindo o pagamento…')), true);
+    da(esc(tr('opening payment…')), true);
     const b = await ctx.conta.chamar('POST', '/loja/checkout', { pacote: a, moeda: j }, { prazo: 20000 });
     if (b?.ok && b.dados?.url) {
       if (w && !w.closed) {
@@ -11996,13 +11998,13 @@ export async function abrirLojaDiamantes(a = null) {
         }
       }
       da(
-        esc(tr('O pagamento abriu noutra aba. Quando terminar, os Diamantes chegam aqui sozinhos.')) +
+        esc(tr("Payment opened in another tab. When you're done, the Diamonds will arrive here automatically.")) +
           (w
             ? ''
             : ' <a href="' +
               esc(b.dados.url) +
               '" target="_blank" rel="noopener" style="color:#F8C237">' +
-              esc(tr('Abrir o pagamento')) +
+              esc(tr('Open payment')) +
               '</a>'),
         true,
       );
@@ -12016,14 +12018,14 @@ export async function abrirLojaDiamantes(a = null) {
       fa(tr(b.dados.erro));
       return;
     }
-    da(esc(tr(b?.dados?.erro || b?.erro || 'Não deu.')));
+    da(esc(tr(b?.dados?.erro || b?.erro || "That didn't work.")));
   };
   da('');
 }
 function cfDialogoSenha() {
   if (!popCf || document.querySelector('.cf-senha')) return;
   if (ctx.conta?.estado?.().modo !== 'conta') {
-    Chat.sistema('Você está jogando sem conta: não há senha pra trocar.');
+    Chat.sistema("You're playing without an account: there's no password to change.");
     return;
   }
   const d = document.createElement('div');
@@ -12045,13 +12047,13 @@ function cfDialogoSenha() {
     gap: '8px',
   });
   d.innerHTML =
-    '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Trocar senha</div>' +
-    '<input type="password" autocomplete="current-password" placeholder="senha de agora">' +
-    '<input type="password" autocomplete="new-password" placeholder="senha nova (6 a 64)">' +
-    '<input type="password" autocomplete="new-password" placeholder="repita a senha nova">' +
+    '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Change password</div>' +
+    '<input type="password" autocomplete="current-password" placeholder="current password">' +
+    '<input type="password" autocomplete="new-password" placeholder="new password (6 to 64)">' +
+    '<input type="password" autocomplete="new-password" placeholder="repeat the new password">' +
     '<div class="cf-senha-av" style="min-height:16px;color:#f58e8e;text-align:center"></div>' +
-    '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Trocar</button>' +
-    '<button type="button" class="nao" style="flex:1">Cancelar</button></div>';
+    '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Trade</button>' +
+    '<button type="button" class="nao" style="flex:1">Cancel</button></div>';
   for (const i of d.querySelectorAll('input'))
     Object.assign(i.style, {
       background: '#0B1220',
@@ -12082,15 +12084,15 @@ function cfDialogoSenha() {
       g = c.value.trim(),
       h = e.value.trim();
     if (g !== h) {
-      f.textContent = tr('as duas senhas novas têm de ser iguais.');
+      f.textContent = tr('the two new passwords must match.');
       return;
     }
     if (g.length < 6) {
-      f.textContent = tr('a senha nova precisa de 6 caracteres ou mais.');
+      f.textContent = tr('the new password needs 6 or more characters.');
       return;
     }
     f.style.color = '#B8C2D9';
-    f.textContent = tr('trocando…');
+    f.textContent = tr('exchanging…');
     const r = await ctx.conta.trocarSenha(b, g);
     if (!r.ok) {
       f.style.color = '#f58e8e';
@@ -12100,9 +12102,9 @@ function cfDialogoSenha() {
     d.remove();
     if (r.codigo)
       Chat.sistemaCru(
-        tr('Senha trocada. GUARDE o código de recuperação NOVO (o antigo não vale mais): {x}', { x: r.codigo }),
+        tr('Password changed. SAVE the NEW recovery code (the old one no longer works): {x}', { x: r.codigo }),
       );
-    else Chat.sistema('Senha trocada.');
+    else Chat.sistema('Password changed.');
   };
   a.focus();
 }
@@ -12164,10 +12166,10 @@ function cfDialogoApagar(a, { local: f = false } = {}) {
   });
   if (A) molduraDaArte(d, A.painel, 24);
   const k = [
-    tr('o time e a caixa: todos os seus Pokémon'),
-    tr('a mochila: itens, Pokébolas e dinheiro'),
-    tr('as insígnias, as missões, a Elite dos Quatro e as licenças de montaria'),
-    tr('a Pokédex e onde você parou no mapa'),
+    tr('team and Box: all your Pokémon'),
+    tr('the Bag: items, Poké Balls and money'),
+    tr('your Badges, missions, the Elite Four and your mount licenses'),
+    tr('your Pokédex and where you left off on the map'),
   ];
   const l = (a, b, c, d) =>
     '<div class="cf-apagar-campo" style="display:grid"><input class="' +
@@ -12184,14 +12186,14 @@ function cfDialogoApagar(a, { local: f = false } = {}) {
     '<div style="font:800 ' +
     (j ? '16px' : '20px') +
     " 'Baloo 2', system-ui;color:#FF5B5B;text-align:center\">" +
-    esc(tr(g ? 'Apagar o personagem?' : 'Apagar o progresso?')) +
+    esc(tr(g ? 'Delete the character?' : 'Erase your progress?')) +
     '</div>' +
     '<div style="text-align:center">' +
     esc(
       tr(
         g
-          ? 'Isso apaga TODO o progresso do seu treinador e não tem volta. Você perde:'
-          : 'Isso apaga TODO o progresso deste aparelho e não tem volta. Você perde:',
+          ? "This erases ALL of your trainer's progress and can't be undone. You lose:"
+          : "This erases ALL progress on this device and can't be undone. You lose:",
       ),
     ) +
     '</div>' +
@@ -12202,26 +12204,24 @@ function cfDialogoApagar(a, { local: f = false } = {}) {
     '</ul>' +
     (g
       ? '<div><b style="color:#8EF58E">' +
-        esc(tr('Fica na conta:')) +
+        esc(tr('Stays on the account:')) +
         '</b> ' +
-        esc(
-          tr('o login, o e-mail, o nome do treinador, os Diamantes, os títulos, as conquistas, os amigos e a guilda.'),
-        ) +
+        esc(tr('your login, email, Trainer name, Diamonds, titles, Achievements, friends and Guild.')) +
         '</div>'
       : '') +
     (g && !ctx.gm?.()
-      ? '<div style="color:#F8C237">' +
-        esc(tr('Depois de apagar, só dá pra recomeçar de novo daqui a 7 dias.')) +
-        '</div>'
+      ? '<div style="color:#F8C237">' + esc(tr('After erasing, you can only start over again in 7 days.')) + '</div>'
       : '') +
     '<div class="cf-apagar-campos" style="display:grid;gap:' +
     (j ? '4px 14px' : '6px') +
     ';' +
     (j && g ? 'grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:auto auto' : '') +
     '">' +
-    m(esc(tr('Para confirmar, digite o nome do seu treinador:')) + ' <b style="color:#F8C237">' + esc(h) + '</b>') +
-    l('cf-apagar-nome', 'text', 'off', tr('nome do treinador')) +
-    (g ? m(esc(tr('E a sua senha:'))) + l('cf-apagar-senha', 'password', 'current-password', tr('sua senha')) : '') +
+    m(esc(tr('To confirm, type your trainer name:')) + ' <b style="color:#F8C237">' + esc(h) + '</b>') +
+    l('cf-apagar-nome', 'text', 'off', tr('trainer name')) +
+    (g
+      ? m(esc(tr('And your password:'))) + l('cf-apagar-senha', 'password', 'current-password', tr('your password'))
+      : '') +
     '</div>' +
     '<div class="cf-apagar-av" style="min-height:16px;color:#f58e8e;text-align:center"></div>' +
     '<div style="display:flex;gap:12px"><button type="button" class="ok" style="flex:1"></button><button type="button" class="nao" style="flex:1"></button></div>';
@@ -12230,8 +12230,8 @@ function cfDialogoApagar(a, { local: f = false } = {}) {
     q = d.querySelector('.cf-apagar-av');
   const s = d.querySelector('.ok'),
     u = d.querySelector('.nao');
-  s.textContent = tr('Apagar tudo');
-  u.textContent = tr('Cancelar');
+  s.textContent = tr('Erase everything');
+  u.textContent = tr('Cancel');
   const v = j ? '32px' : '38px';
   for (const c of d.querySelectorAll('.cf-apagar-campo')) {
     const i = c.querySelector('input');
@@ -12313,18 +12313,18 @@ function cfDialogoApagar(a, { local: f = false } = {}) {
       return;
     }
     if (!o.value) {
-      _(tr('Digite a sua senha.'));
+      _(tr('Enter your password.'));
       o.focus();
       return;
     }
     x = true;
     z();
-    _(tr('apagando…'), true);
+    _(tr('deleting…'), true);
     const r = await ctx.conta.apagarPersonagem(o.value, n.value);
     x = false;
     z();
     if (!r?.ok) {
-      _(tr(r?.erro || 'Não deu pra apagar o personagem.'));
+      _(tr(r?.erro || "Couldn't delete the character."));
       (/nome/i.test(r?.erro || '') ? n : o).select();
       return;
     }
@@ -12377,7 +12377,7 @@ export function abrirInicial({ lista: b, palco: c = null, aoEscolher: d = null, 
       for (const m of a.querySelectorAll(':scope > [data-sobre="selecionado"]'))
         m.style.display = i === g ? 'block' : 'none';
     });
-    Popup.botao(popIn, 'escolher-inicial', true, g >= 0 ? 'Escolher ' + b[g].nome : 'Escolher');
+    Popup.botao(popIn, 'escolher-inicial', true, g >= 0 ? 'Choose ' + b[g].nome : 'Choose');
   };
   popIn = Popup.montar(f, {
     escolhe: (x, a) => {
@@ -12521,7 +12521,7 @@ function abrirPrevia(b) {
       fechar: () => {
         if (popPrevia === d) popPrevia = null;
       },
-      acao: (a) => Chat.sistema('Prévia: a ação "' + a + '" ainda não tem função.'),
+      acao: (a) => Chat.sistema('Preview: the action "' + a + '" doesn\'t do anything yet.'),
     });
     Popup.encherExemplo(d);
   }
@@ -12544,9 +12544,7 @@ export function previa(a = null) {
   const d = c && ctx.jogo?.hudLayout?.popups?.[c];
   if (!d || !ehV2()) {
     Chat.sistema(
-      'Prévia: só com o visual novo (a carga está com ?hud=antigo)' +
-        (ctx.MOBILE ? ' e com o celular deitado' : '') +
-        '.',
+      'Preview: new look only (loaded with ?hud=antigo)' + (ctx.MOBILE ? ' and with the phone in landscape' : '') + '.',
     );
     return false;
   }
@@ -12556,15 +12554,15 @@ export function previa(a = null) {
   const p = document.createElement('div');
   p.id = 'previa';
   p.innerHTML =
-    '<b>Prévia das telas (adm)</b><span class="fecha" title="fechar (F7)">×</span>' +
-    '<div class="sec">Maquete, com os exemplos da Amanda</div><div class="bts" data-sec="maquete"></div>' +
-    '<div class="sec">Loja · Pacote Fundador e Medalhão (exemplos, nada é cobrado)</div><div class="bts" data-sec="loja"></div>' +
-    '<div class="sec">Creche e Terreno (estados de exemplo)</div><div class="bts" data-sec="ovos"></div>' +
-    '<div class="sec">Janelas do jogo</div><div class="bts" data-sec="janela"></div>' +
-    '<div class="sec">Banner "Em breve" por recurso</div><div class="bts" data-sec="breve"></div>' +
+    '<b>Screen preview (admin)</b><span class="fecha" title="close (F7)">×</span>' +
+    '<div class="sec">Mockup, with Amanda\'s examples</div><div class="bts" data-sec="maquete"></div>' +
+    '<div class="sec">Shop · Founder Pack and Medallion (examples, nothing is charged)</div><div class="bts" data-sec="loja"></div>' +
+    '<div class="sec">Daycare and Land (sample states)</div><div class="bts" data-sec="ovos"></div>' +
+    '<div class="sec">Game windows</div><div class="bts" data-sec="janela"></div>' +
+    '<div class="sec">"Coming soon" banner per feature</div><div class="bts" data-sec="breve"></div>' +
     '<small>' +
     c +
-    ' · nada é gravado · Esc fecha o pop-up, F7 a paleta</small>';
+    ' · nothing is saved · Esc closes the pop-up, F7 the palette</small>';
   const i = (a, c, d) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -12583,8 +12581,8 @@ export function previa(a = null) {
       });
   for (const [M, n] of [
     [CrecheUI, 'creche'],
-    [HortaUI, 'terreno · horta'],
-    [IncubadoraUI, 'terreno · ovos'],
+    [HortaUI, 'plot · garden'],
+    [IncubadoraUI, 'plot · eggs'],
   ])
     if (M.disponivel())
       for (const e of M.EXEMPLOS)
@@ -12599,7 +12597,7 @@ export function previa(a = null) {
       fecharPrevia();
       abrir(n);
     });
-  i('janela', 'mochila cheia', () => abrirPreviaMochila());
+  i('janela', 'bag full', () => abrirPreviaMochila());
   for (const r of ['loja', 'fliperama', 'batalha', 'guilda', 'mercado', 'eventos'])
     i('breve', r, () => {
       fecharPrevia();
@@ -12679,7 +12677,7 @@ async function abrirPreviaMochila() {
         .filter((e) => (!a || a.includes(e.it.t)) && (!b || nomeDeBusca(e.it).includes(b)))
         .sort((x, y) => x.it.t - y.it.t || String(x.it.n).localeCompare(String(y.it.n), 'pt-BR'));
     };
-    const l = (a) => Chat.sistema('Prévia: "' + a + '" não mexe no inventário (mochila de exemplo).');
+    const l = (a) => Chat.sistema('Preview: "' + a + '" doesn\'t touch the inventory (sample bag).');
     const m = () => {
       const L = k();
       if (j.sel >= L.length) j.sel = 0;
@@ -12711,7 +12709,7 @@ async function abrirPreviaMochila() {
       if (g) {
         Popup.texto(h, 'item-nome', b ? b.it.n || '' : '', g);
         Popup.texto(h, 'item-categoria', b ? catDoItem(b.it) : '', g);
-        Popup.texto(h, 'item-qtd', b ? 'Você tem ' + b.n : '', g);
+        Popup.texto(h, 'item-qtd', b ? 'You have ' + b.n : '', g);
         caberTexto(Popup.texto(h, 'item-descricao', b ? descItem(b.it.d) : '', g), 0.85);
         if (b && podeUsarMo(b)) Popup.rotulo(h, 'item-dica', g);
         else Popup.texto(h, 'item-dica', '', g);
@@ -12720,15 +12718,10 @@ async function abrirPreviaMochila() {
         linhaAvisoMo(
           h,
           b && podeUsarMo(b) && !h.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]')
-            ? { texto: 'Toque duas vezes no item pra usar', dica: true }
+            ? { texto: 'Double-tap the item to use it', dica: true }
             : null,
         );
-      Popup.botao(
-        h,
-        'usar',
-        !!b && podeUsarMo(b),
-        b && b.it.t === 7 ? 'Escolher' : b?.it?.lendario ? 'Juntar' : 'Usar',
-      );
+      Popup.botao(h, 'usar', !!b && podeUsarMo(b), b && b.it.t === 7 ? 'Choose' : b?.it?.lendario ? 'Combine' : 'Use');
       Popup.botao(h, 'descartar', !!b && podeDescartarMo(b));
     };
     h = popsPrevia['mochila-cheia'] = Popup.montar(g, {
@@ -12845,7 +12838,7 @@ function cfLinhaInstalar(a) {
     ' "Nunito Sans", system-ui, sans-serif';
   e.innerHTML = '';
   const g = document.createElement('span');
-  g.textContent = tr(d === 'instalado' ? 'App' : 'Instalar como app');
+  g.textContent = tr(d === 'instalado' ? 'App' : 'Install as app');
   Object.assign(g.style, {
     position: 'absolute',
     left: '0',
@@ -12860,7 +12853,7 @@ function cfLinhaInstalar(a) {
   const b = document.createElement('button');
   b.type = 'button';
   b.textContent =
-    d === 'instalado' ? tr('instalado ✓') : d === 'ios' ? tr('Compartilhar → Tela de Início') : tr('📲 Instalar');
+    d === 'instalado' ? tr('installed ✓') : d === 'ios' ? tr('Share → Add to Home Screen') : tr('📲 Install');
   Object.assign(b.style, {
     position: 'absolute',
     left: V.bx + 'px',
@@ -12908,7 +12901,7 @@ function cfLinhaIdioma(a) {
     (e?.style.fontWeight || '700') + ' ' + (e?.style.fontSize || '14.5px') + ' "Nunito Sans", system-ui, sans-serif';
   d.innerHTML = '';
   const g = document.createElement('span');
-  g.textContent = tr('Idioma');
+  g.textContent = tr('Language');
   Object.assign(g.style, {
     position: 'absolute',
     left: '0',
@@ -12953,28 +12946,28 @@ function cfLinhaIdioma(a) {
     d.appendChild(b);
   });
 }
-const CF_EFEITOS_ROT = { desligado: 'Desligado', perto: 'Perto', todos: 'Todos' };
+const CF_EFEITOS_ROT = { desligado: 'Off', perto: 'Nearby', todos: 'All' };
 const CF_EFEITOS_PESA = true;
 function cfNotaEfeitos(e = Efeitos.escolhaEmVigor()) {
-  const a = Efeitos.ajustadoAoAparelho?.() ? ' · ' + tr('ajustado ao seu aparelho') : '';
-  if (e === 'desligado') return tr('só os seus efeitos aparecem') + a;
+  const a = Efeitos.ajustadoAoAparelho?.() ? ' · ' + tr('tuned to your device') : '';
+  if (e === 'desligado') return tr('only your effects show') + a;
   if (e === 'perto') {
     const n = Efeitos.tetoAgora('perto').limite;
     return (
       (n >= 2
-        ? tr('os seus e os dos {n} jogadores mais perto', { n })
+        ? tr("yours and the {n} nearest players'", { n })
         : n === 1
-          ? tr('os seus e os do jogador mais perto')
-          : tr('só os seus efeitos aparecem')) + a
+          ? tr("yours and the nearest player's")
+          : tr('only your effects show')) + a
     );
   }
   return (
-    tr('os seus e os de todos até {m} m', { m: Efeitos.DIST_MAX }) +
+    tr("yours and everyone's within {m} m", { m: Efeitos.DIST_MAX }) +
     (a ||
       (Efeitos.todosLimitado?.()
-        ? ' · ' + tr('limitado no celular')
+        ? ' · ' + tr('limited on mobile')
         : CF_EFEITOS_PESA
-          ? ' · ' + tr('pode pesar no celular')
+          ? ' · ' + tr('may be heavy on phones')
           : ''))
   );
 }
@@ -13054,13 +13047,13 @@ function cfLinhaEfeitos(c) {
     const z = o.cloneNode(true);
     z.dataset.fig = 'subtitulo-efeitos';
     z.style.top = t + 'px';
-    z.textContent = tr('Efeitos');
+    z.textContent = tr('Effects');
     k = f.cloneNode(true);
     k.dataset.fig = 'seletor-efeitos-outros';
     k.dataset.tagval = 'efeitos-outros';
     Object.assign(k.style, { left: o.style.left, top: u + 'px' });
     const _ = k.querySelector(':scope > [data-fig="rotulo"]');
-    if (_) _.textContent = tr('Efeitos dos outros');
+    if (_) _.textContent = tr("Others' effects");
     const $ = g.cloneNode(true);
     $.dataset.fig = 'nota-efeitos';
     $.style.top = y + 'px';
@@ -13096,7 +13089,7 @@ function cfLinhaEfeitosV1(a) {
         k = i * 1.2,
         l = j * 1.25,
         m = Math.max(0, (f(c.style.height) - k - l) / 2);
-      g.textContent = tr('Efeitos dos outros');
+      g.textContent = tr("Others' effects");
       Object.assign(g.style, { top: m + 'px', height: k + 'px' });
       const n = g.cloneNode(false);
       n.dataset.fig = 'nota-efeitos';
@@ -13116,7 +13109,7 @@ function cfLinhaEfeitosV1(a) {
   cfPintarEfeitos(a, c, c.querySelector(':scope > [data-fig="nota-efeitos"]'));
 }
 const CF_GUIA_OPS = ['minimapa', 'desligado'],
-  CF_GUIA_ROT = { minimapa: 'Ligado', desligado: 'Desligado' };
+  CF_GUIA_ROT = { minimapa: 'On', desligado: 'Off' };
 const cfGuiaModo = () => {
   try {
     return localStorage.getItem('guia.modo') === 'desligado' ? 'desligado' : 'minimapa';
@@ -13139,7 +13132,7 @@ function cfLinhaGuia(a) {
     c.dataset.tagval = 'guia';
     Object.assign(c.style, { left: f.style.left, top: g.style.top });
     const h = c.querySelector(':scope > [data-fig="rotulo"]');
-    if (h) h.textContent = tr('Guia da missão');
+    if (h) h.textContent = tr('Mission guide');
     c.addEventListener('click', (b) => {
       b.stopPropagation();
       const i = CF_GUIA_OPS.indexOf(cfGuiaModo()),
@@ -13153,7 +13146,7 @@ function cfLinhaGuia(a) {
     b.append(c);
   }
   Popup.seletor(a, c, tr(CF_GUIA_ROT[cfGuiaModo()]));
-  c.title = tr('a seta no chão e o ponto no minimapa');
+  c.title = tr('the arrow on the ground and the dot on the minimap');
   for (const t of [c.querySelector(':scope > [data-fig="rotulo"]')]) if (t) cfCaberTexto(t);
 }
 function cfAbrirApagar() {
@@ -13246,18 +13239,18 @@ function encherCfConta(a) {
     'email',
     b
       ? cfEmail
-        ? cfEmail.replace(/^(.)[^@]*(@.*)$/, '$1•••$2') + ' · ' + tr(cfEmailOk ? 'verificado ✓' : 'verificar ▸')
-        : tr('cadastrar e-mail ▸')
-      : '— (jogando sem conta)',
+        ? cfEmail.replace(/^(.)[^@]*(@.*)$/, '$1•••$2') + ' · ' + tr(cfEmailOk ? 'verified ✓' : 'verify ▸')
+        : tr('add email ▸')
+      : '— (playing without an account)',
   );
   if (b && cfEmail !== null) cfLinhaEmail(a);
   if (b && cfEmail === null) cfBuscarEmail();
-  Popup.botao(a, 'logout', b, 'Sair da conta');
-  Popup.botao(a, 'trocar-senha', b, 'Trocar senha');
-  Popup.botao(a, 'diagnostico-chat', true, 'Mandar pra equipe');
+  Popup.botao(a, 'logout', b, 'Log out');
+  Popup.botao(a, 'trocar-senha', b, 'Change password');
+  Popup.botao(a, 'diagnostico-chat', true, 'Send to the team');
   cfCaixaDiagnostico(a);
-  Popup.desligarGrupo(a, 'btn-sair', b, 'você está jogando sem conta');
-  Popup.desligarGrupo(a, 'btn-trocar-senha', b, 'você está jogando sem conta');
+  Popup.desligarGrupo(a, 'btn-sair', b, "you're playing without an account");
+  Popup.desligarGrupo(a, 'btn-trocar-senha', b, "you're playing without an account");
   const d = a.querySelector('[data-fig="diagnostico-info"]');
   if (d) {
     let e = d.querySelector('pre');
@@ -13322,44 +13315,44 @@ function encherCfControles(a) {
 function encherCfSocial(a) {
   Popup.toggle(a, 'toggle-filtro-chat', false);
   Popup.toggle(a, 'toggle-status-online', true);
-  Popup.seletor(a, 'seletor-quem-mensagem', 'Todos');
-  Popup.seletor(a, 'seletor-quem-convida', 'Todos');
+  Popup.seletor(a, 'seletor-quem-mensagem', 'All');
+  Popup.seletor(a, 'seletor-quem-convida', 'All');
   Popup.seletor(a, 'seletor-fonte-chat', 'Normal');
   cfSecaoDiscord(a);
 }
 function rConfig(a) {
-  abas([{ id: 'geral', nome: 'Geral' }]);
+  abas([{ id: 'geral', nome: 'General' }]);
   const p = new URLSearchParams(location.search);
   const c = ctx.lerLS('volume', 100);
   a.innerHTML = `<div class="config">
-    <label><span>seu nome (aparece em cima da cabeça e no chat)</span><input type="text" id="c-nome" maxlength="16" value="${esc(ctx.nome || 'Ash')}" style="width:160px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#0b1020;color:var(--text);font:inherit"></label>
-    <div id="c-nome-aviso" style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">o nome é único: não dá pra usar o de outro treinador</div>
+    <label><span>your name (shown above your head and in chat)</span><input type="text" id="c-nome" maxlength="16" value="${esc(ctx.nome || 'Ash')}" style="width:160px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#0b1020;color:var(--text);font:inherit"></label>
+    <div id="c-nome-aviso" style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">names are unique: you can't use another trainer's name</div>
     <label><span>volume</span><input type="range" id="c-vol" min="0" max="100" value="${c}"> <span id="c-volv">${c}%</span></label>
-    <label><span>qualidade gráfica</span><select id="c-qual"><option value="">automática (${esc(ctx.qualidade || '?')})</option><option value="alta">alta</option><option value="media">média (sombra só sua, até 1,5×)</option><option value="baixa">baixa (sem sombra, 0,75×)</option></select></label>
-    <label><span>tamanho dos Pokémon</span><select id="c-tam"><option value="proporcional">proporcional (padrão)</option><option value="jogo">como o jogo</option><option value="nativo">nativo do modelo</option></select></label>
-    <label><span>tamanho da interface (HUD e janelas)</span><select id="c-ui"><option value="pequena">pequena</option><option value="normal">normal</option><option value="grande">grande</option></select><small id="c-uiv" style="color:var(--muted);font-size:11px;white-space:nowrap"></small></label>
-    <label><span>${esc(tr('efeitos dos outros jogadores'))}<br><small id="c-efxv" style="color:var(--muted);font-size:11px"></small></span><select id="c-efx">${Efeitos.ESCOLHAS_OUTROS.map((o) => `<option value="${o}">${esc(tr(CF_EFEITOS_ROT[o]))}</option>`).join('')}</select></label>
+    <label><span>graphics quality</span><select id="c-qual"><option value="">automatic (${esc(ctx.qualidade || '?')})</option><option value="alta">high</option><option value="media">medium (only your shadow, up to 1.5×)</option><option value="baixa">low (no shadow, 0.75×)</option></select></label>
+    <label><span>Pokémon size</span><select id="c-tam"><option value="proporcional">proportional (default)</option><option value="jogo">like the game</option><option value="nativo">model native</option></select></label>
+    <label><span>interface size (HUD and windows)</span><select id="c-ui"><option value="pequena">small</option><option value="normal">normal</option><option value="grande">large</option></select><small id="c-uiv" style="color:var(--muted);font-size:11px;white-space:nowrap"></small></label>
+    <label><span>${esc(tr("other players' effects"))}<br><small id="c-efxv" style="color:var(--muted);font-size:11px"></small></span><select id="c-efx">${Efeitos.ESCOLHAS_OUTROS.map((o) => `<option value="${o}">${esc(tr(CF_EFEITOS_ROT[o]))}</option>`).join('')}</select></label>
     ${
       ctx.conta?.estado?.().modo === 'conta'
-        ? `<label><span>conta: <b>${esc(ctx.conta.estado().usuario)}</b> · o jogo fica salvo no servidor, não neste aparelho</span><button type="button" class="btn" id="c-sair">Sair da conta</button></label>
-    <label><span>apagar o PERSONAGEM: começa do zero (Pokémon, itens, insígnias, missões); a conta continua sua</span><button type="button" class="btn" id="c-apagar-perso">Apagar personagem</button></label>
-    <div style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">apagar a CONTA inteira: só a equipe apaga — peça pelo Mandar pra equipe ou no Discord</div>`
+        ? `<label><span>account: <b>${esc(ctx.conta.estado().usuario)}</b> · your game is saved on the server, not on this device</span><button type="button" class="btn" id="c-sair">Sign out</button></label>
+    <label><span>delete the CHARACTER: start from scratch (Pokémon, items, badges, missions); the account stays yours</span><button type="button" class="btn" id="c-apagar-perso">Delete character</button></label>
+    <div style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">delete the whole ACCOUNT: only the team can do it — ask via Send to team or on Discord</div>`
         : ''
     }
-    <label><span>painel de missão: arraste com o mouse ou o dedo pra mudar de lugar</span><button type="button" class="btn" id="c-missao-lugar">↺ lugar padrão</button></label>
-    ${Hud.temGuardado() ? `<label><span>a HUD veio com uma maquete nova; o layout que você montou no editor ficou guardado</span><button type="button" class="btn" id="c-hud-meu">↺ usar o meu de novo</button></label>` : ''}
-    ${ctx.gm?.() ? `<label><span>densidade de selvagens</span><select id="c-dens"><option value="">normal</option><option value="0.5">pouca</option><option value="1.5">muita</option><option value="3">lotado</option></select></label>` : ''}
-    ${ctx.gm?.() ? `<label><span>painéis de depuração (hud, chefe, montaria, seguidor)</span><input type="checkbox" id="c-dbg"></label>` : ''}
-    <div class="acoes" style="margin-top:12px"><button type="button" class="btn ouro" id="c-perso">✎ Personagem</button>${ctx.gm?.() ? `<button type="button" class="btn ouro" id="c-hud">🧩 Montar a HUD</button><button type="button" class="btn" id="c-galeria">Galeria da UI do Fairy</button><button type="button" class="btn" id="c-bancada">Bancada de habilidades</button>` : ''}<button type="button" class="btn" id="c-apagar">Apagar progresso (reinicia tudo)</button></div>
-    <div style="color:var(--muted);font-size:11px;margin-top:8px">qualidade e densidade recarregam a cena.</div>
-    <details style="margin-top:10px"><summary style="cursor:pointer;color:#ffe07a">Diagnóstico do aparelho — abra e copie quando algo ficar preto ou errado</summary><pre id="c-diag" style="white-space:pre-wrap;font-size:11px;color:var(--muted);max-height:260px;overflow:auto;background:#0b1020;padding:8px;border-radius:8px;margin:6px 0"></pre><button type="button" class="btn" id="c-diag-copiar">copiar</button> <button type="button" class="btn" id="c-diag-chat">mandar pro chat</button></details></div>`;
+    <label><span>mission panel: drag with the mouse or your finger to move it</span><button type="button" class="btn" id="c-missao-lugar">↺ default position</button></label>
+    ${Hud.temGuardado() ? `<label><span>the HUD came with a new mockup; the layout you built in the editor was saved</span><button type="button" class="btn" id="c-hud-meu">↺ use mine again</button></label>` : ''}
+    ${ctx.gm?.() ? `<label><span>wild Pokémon density</span><select id="c-dens"><option value="">normal</option><option value="0.5">low</option><option value="1.5">high</option><option value="3">packed</option></select></label>` : ''}
+    ${ctx.gm?.() ? `<label><span>debug panels (hud, boss, mount, follower)</span><input type="checkbox" id="c-dbg"></label>` : ''}
+    <div class="acoes" style="margin-top:12px"><button type="button" class="btn ouro" id="c-perso">✎ Character</button>${ctx.gm?.() ? `<button type="button" class="btn ouro" id="c-hud">🧩 Build the HUD</button><button type="button" class="btn" id="c-galeria">Fairy UI gallery</button><button type="button" class="btn" id="c-bancada">Ability workbench</button>` : ''}<button type="button" class="btn" id="c-apagar">Delete progress (resets everything)</button></div>
+    <div style="color:var(--muted);font-size:11px;margin-top:8px">quality and density reload the scene.</div>
+    <details style="margin-top:10px"><summary style="cursor:pointer;color:#ffe07a">Device diagnostics — open and copy when something goes black or looks wrong</summary><pre id="c-diag" style="white-space:pre-wrap;font-size:11px;color:var(--muted);max-height:260px;overflow:auto;background:#0b1020;padding:8px;border-radius:8px;margin:6px 0"></pre><button type="button" class="btn" id="c-diag-copiar">copy</button> <button type="button" class="btn" id="c-diag-chat">send to chat</button></details></div>`;
   const e = () => {
     const d = ctx.diagnostico?.();
     return d
       ? Object.entries(d)
           .map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v))
           .join('\n')
-      : 'indisponível';
+      : 'unavailable';
   };
   const f = a.querySelector('#c-diag');
   f.textContent = e();
@@ -13368,7 +13361,7 @@ function rConfig(a) {
     f.textContent = b;
     try {
       await navigator.clipboard.writeText(b);
-      a.querySelector('#c-diag-copiar').textContent = 'copiado!';
+      a.querySelector('#c-diag-copiar').textContent = 'copied!';
     } catch {
       const r = document.createRange();
       r.selectNodeContents(f);
@@ -13405,7 +13398,7 @@ function rConfig(a) {
     const c = b.target,
       d = a.querySelector('#c-nome-aviso');
     c.disabled = true;
-    d.textContent = 'conferindo…';
+    d.textContent = 'checking…';
     d.style.color = '#98a4c0';
     const r = await ctx.renomear?.(c.value);
     c.disabled = false;
@@ -13414,7 +13407,7 @@ function rConfig(a) {
       d.textContent = r.erro;
       d.style.color = '#f58e8e';
     } else {
-      d.textContent = 'pronto — você agora é ' + ctx.nome + '.';
+      d.textContent = 'done — you are now ' + ctx.nome + '.';
       d.style.color = '#8fe08f';
     }
   };
@@ -13440,10 +13433,10 @@ function rConfig(a) {
     l = a.querySelector('#c-uiv');
   const m = () => {
     l.textContent =
-      'nesta tela: HUD ' +
+      'on this screen: HUD ' +
       Math.round(Hud.escalaAtual() * 100) +
-      '% · janelas ' +
-      (ctx.MOBILE ? 'tela cheia' : Math.round(Popup.escalaPopup() * 100) + '%');
+      '% · windows ' +
+      (ctx.MOBILE ? 'full screen' : Math.round(Popup.escalaPopup() * 100) + '%');
   };
   i.value = Hud.tamanhoUI();
   m();
@@ -13466,13 +13459,13 @@ function rConfig(a) {
   const w = a.querySelector('#c-hud-meu');
   if (w)
     w.onclick = () => {
-      w.textContent = Hud.restaurarGuardado() ? 'pronto — recarregue a página' : 'não deu pra restaurar';
+      w.textContent = Hud.restaurarGuardado() ? 'done — reload the page' : "couldn't restore";
       w.disabled = true;
     };
   const x = a.querySelector('#c-sair');
   if (x)
     x.onclick = () => {
-      x.textContent = 'Saindo…';
+      x.textContent = 'Signing out…';
       ctx.conta.sair();
     };
   {
@@ -13513,10 +13506,10 @@ function rConfig(a) {
   z.onclick = () => {
     if (!confirmarApagar) {
       confirmarApagar = true;
-      z.textContent = 'Tem certeza? Clique de novo';
+      z.textContent = 'Are you sure? Click again';
       setTimeout(() => {
         confirmarApagar = false;
-        z.textContent = 'Apagar progresso';
+        z.textContent = 'Delete progress';
       }, 4000);
       return;
     }

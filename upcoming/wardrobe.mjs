@@ -1,43 +1,43 @@
 export const ABAS = ['roupa', 'mochila', 'peito', 'rastro'];
 export const AVISOS = {
-  mochila: { vazio: 'Você ainda não tem nenhuma mochila.', dica: 'Quando ganhar uma, ela aparece aqui.' },
-  peito: { vazio: 'Você ainda não tem nenhum efeito de peito.', dica: 'Quando ganhar um, ele aparece aqui.' },
-  rastro: { vazio: 'Você ainda não tem nenhum rastro.', dica: 'Quando ganhar um rastro, ele aparece aqui.' },
+  mochila: { vazio: "You don't have any bags yet.", dica: 'When you earn one, it shows up here.' },
+  peito: { vazio: "You don't have any chest effects yet.", dica: 'When you earn one, it shows up here.' },
+  rastro: { vazio: "You don't have any trails yet.", dica: 'When you earn a trail, it shows up here.' },
   skinsmon: {
-    vazio: 'Você ainda não tem nenhuma skin de Pokémon.',
-    dica: 'As skins da loja e dos eventos aparecem aqui.',
+    vazio: "You don't have any Pokémon skins yet.",
+    dica: 'Skins from the shop and events show up here.',
   },
 };
 export const SEM_MOCHILA = '__sem-mochila__';
 export const INFO_DO_TIPO = {
-  'sem-mochila': 'Só a roupa',
-  mochila: 'Mochila',
-  peito: 'Efeito de peito',
-  rastro: 'Rastro',
+  'sem-mochila': 'Outfit only',
+  mochila: 'Bag',
+  peito: 'Chest effect',
+  rastro: 'Trail',
 };
 export const ONDE = {
-  loja: 'Na loja',
-  evento: 'Em eventos',
-  conquista: 'Em conquistas',
-  passe: 'Passe da temporada',
-  oculta: 'Não liberada',
+  loja: 'In the shop',
+  evento: 'In events',
+  conquista: 'In achievements',
+  passe: 'Season Pass',
+  oculta: 'Locked',
 };
-export const INFO_GUARDA_ROUPA = 'Guarda-roupa';
+export const INFO_GUARDA_ROUPA = 'Wardrobe';
 export const NOME_DO_TIPO = {
-  roupa: 'Roupa',
-  mochila: 'Mochila',
-  peito: 'Efeito de peito',
-  rastro: 'Rastro',
-  skinmon: 'Skin de Pokémon',
+  roupa: 'Outfit',
+  mochila: 'Bag',
+  peito: 'Chest effect',
+  rastro: 'Trail',
+  skinmon: 'Pokémon Skin',
 };
 export const ENCAIXE_DA_CARTA = { 'sem-mochila': 'mochila', mochila: 'mochila', peito: 'peito', rastro: 'rastro' };
-const INFO_PADRAO = { base: 'Sua roupa', skin: 'Skin exclusiva' };
+const INFO_PADRAO = { base: 'Your outfit', skin: 'Exclusive skin' };
 export const MARCA_DA_ORIGEM = { 'pacote-fundador': 'marca-origem-fundador', 'pacote-alpha': 'marca-origem-alpha' };
 export const MARCAS = Object.values(MARCA_DA_ORIGEM);
 export const INFO_DA_ORIGEM = {
-  'pacote-fundador': 'Pacote Fundador',
-  'pacote-alpha': 'Hall da Fama',
-  conquista: 'Conquista',
+  'pacote-fundador': 'Founder Pack',
+  'pacote-alpha': 'Hall of Fame',
+  conquista: 'Achievement',
 };
 export const marcaDe = (a) =>
   a?.origem && Object.hasOwn(MARCA_DA_ORIGEM, a.origem) ? MARCA_DA_ORIGEM[a.origem] : null;
@@ -47,7 +47,7 @@ export function origensDasSkins(a) {
     if (typeof s?.tipo === 'string' && typeof s.exclusiva === 'string') b[s.tipo] = s.exclusiva;
   return b;
 }
-export const contagem = (n) => (n === 1 ? ['1 peça', null] : ['{n} peças', { n }]);
+export const contagem = (n) => (n === 1 ? ['1 piece', null] : ['{n} pieces', { n }]);
 export const BASES = ['heroi', 'boy_012', 'boy_025', 'heroina', 'girl_012', 'girl_025'];
 const texto = (v) => (typeof v === 'string' ? v : '');
 export function pecasDaRoupa({
@@ -160,7 +160,7 @@ export function pecasDaMochila({ tem: a = [], equipada: b = null, dados: c = nul
   const i = {
     id: SEM_MOCHILA,
     tipo: 'sem-mochila',
-    nome: 'Sem mochila',
+    nome: 'No bag',
     info: INFO_DO_TIPO['sem-mochila'],
     foto: null,
     emUso: b == null || b === '',
@@ -300,7 +300,7 @@ export function skinMonPedida(a, b) {
   if (b === 'equipar') return { dex: a.dex, id: a.id };
   return undefined;
 }
-export const ROTULO_SKINMON = { normal: 'Ativar', 'em-uso': 'Desativar' };
+export const ROTULO_SKINMON = { normal: 'Enable', 'em-uso': 'Disable' };
 export function estadoAcoes(a) {
   if (!a) return null;
   if (a.trancada)
@@ -329,12 +329,12 @@ export const ACOES = {
   'trancada-oculta': [],
 };
 export const ROTULO_DO_BOTAO = {
-  normal: 'Equipar',
-  'trancada-loja': 'Ver na loja',
-  'trancada-evento': 'Em eventos',
-  'trancada-conquista': 'Em conquistas',
-  'trancada-passe': 'Passe da temporada',
-  'trancada-oculta': 'Não liberada',
+  normal: 'Equip',
+  'trancada-loja': 'View in shop',
+  'trancada-evento': 'In events',
+  'trancada-conquista': 'In achievements',
+  'trancada-passe': 'Season Pass',
+  'trancada-oculta': 'Locked',
 };
 export const trancadaSemBotao = (a) =>
   a === 'trancada-evento' || a === 'trancada-conquista' || a === 'trancada-passe' || a === 'trancada-oculta';
@@ -357,12 +357,12 @@ export function encaixePedido(a, b) {
 }
 export function infoDaPrevia(a) {
   if (!a) return [];
-  if (a.trancada) return [NOME_DO_TIPO[a.tipo === 'skin' ? 'roupa' : a.tipo] || 'Roupa', ONDE[a.onde] || ONDE.evento];
-  if (a.tipo === 'skinmon') return [NOME_DO_TIPO.skinmon, a.emUso ? 'Ativa' : 'Desativada'];
-  if (a.tipo === 'base') return ['Sua roupa', 'Cores livres'];
+  if (a.trancada) return [NOME_DO_TIPO[a.tipo === 'skin' ? 'roupa' : a.tipo] || 'Outfit', ONDE[a.onde] || ONDE.evento];
+  if (a.tipo === 'skinmon') return [NOME_DO_TIPO.skinmon, a.emUso ? 'Active' : 'Disabled'];
+  if (a.tipo === 'base') return ['Your outfit', 'Cores livres'];
   if (a.tipo === 'sem-mochila') return [INFO_DO_TIPO['sem-mochila']];
   if (Object.hasOwn(ENCAIXE_DA_CARTA, a.tipo))
     return a.info && a.info !== INFO_DO_TIPO[a.tipo] ? [INFO_DO_TIPO[a.tipo], a.info] : [INFO_DO_TIPO[a.tipo]];
   if (a.info === INFO_GUARDA_ROUPA) return [NOME_DO_TIPO.roupa, INFO_GUARDA_ROUPA];
-  return a.info && a.info !== INFO_PADRAO.skin ? ['Skin exclusiva', a.info] : ['Skin exclusiva'];
+  return a.info && a.info !== INFO_PADRAO.skin ? ['Exclusive skin', a.info] : ['Exclusive skin'];
 }

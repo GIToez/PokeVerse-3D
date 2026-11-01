@@ -25,24 +25,24 @@ export function item(a) {
   return I && typeof I === 'object' && Object.hasOwn(I, k) ? I[k] || null : null;
 }
 export const MOTIVOS = {
-  semCatalogo: 'O mercado ainda está carregando.',
-  naoVende: 'Este item não pode ser anunciado.',
-  semItem: 'Você não tem esse item.',
-  poucos: 'Você não tem essa quantidade.',
-  qtdInvalida: 'Quantidade inválida.',
-  precoInvalido: 'Preço inválido.',
-  barato: 'Preço abaixo do mínimo: o vendedor da cidade paga mais que isso.',
-  caro: 'Preço acima do máximo.',
-  caroLoja: 'A loja da cidade vende por menos — ninguém compraria.',
-  semTaxa: 'Você não tem Moedas pra pagar a taxa do anúncio.',
-  cheio: 'Você já tem o máximo de anúncios abertos.',
-  nivel: 'Você ainda não pode usar o mercado.',
-  insignia: 'O Mercado abre depois da 1ª insígnia.',
-  semSaldo: 'Você não tem Moedas suficientes.',
-  sumiu: 'Esta oferta não existe mais.',
-  propria: 'Você não pode comprar a sua própria oferta.',
-  expirada: 'Esta oferta expirou.',
-  mochilaCheia: 'Sua mochila não tem espaço.',
+  semCatalogo: 'The Market is still loading.',
+  naoVende: "This item can't be listed.",
+  semItem: "You don't have that item.",
+  poucos: "You don't have that many.",
+  qtdInvalida: 'Invalid quantity.',
+  precoInvalido: 'Invalid price.',
+  barato: 'Price below the minimum: the city vendor pays more than that.',
+  caro: 'Price above the maximum.',
+  caroLoja: 'The city shop sells it for less — nobody would buy.',
+  semTaxa: "You don't have Coins to pay the listing fee.",
+  cheio: 'You already have the maximum number of open listings.',
+  nivel: "You can't use the Market yet.",
+  insignia: 'The Market opens after the 1st Badge.',
+  semSaldo: "You don't have enough Coins.",
+  sumiu: 'This offer no longer exists.',
+  propria: "You can't buy your own offer.",
+  expirada: 'This offer has expired.',
+  mochilaCheia: 'Your Bag has no space.',
 };
 export function custoDeAnunciar(a, b) {
   const c = Math.max(0, Math.round(a)) * Math.max(0, Math.round(b));
@@ -104,12 +104,12 @@ export function podeComprar(a, c, d = c?.quantidade, e = Date.now()) {
   return { ok: true, total: f, quantidade: n };
 }
 export const MOTIVOS_MON = {
-  semMon: 'Você não tem esse Pokémon.',
-  seguidor: 'Este Pokémon está te acompanhando. Troque de parceiro antes de anunciar.',
-  ultimo: 'Você não pode ficar sem nenhum Pokémon.',
-  emTroca: 'Este Pokémon está numa troca.',
-  jaAnunciado: 'Este Pokémon já está anunciado.',
-  travado: 'Esse Pokémon está travado: destrave antes de anunciar.',
+  semMon: "You don't have that Pokémon.",
+  seguidor: 'This Pokémon is following you. Switch partners before listing it.',
+  ultimo: "You can't be left without any Pokémon.",
+  emTroca: 'This Pokémon is in a trade.',
+  jaAnunciado: 'This Pokémon is already listed.',
+  travado: 'This Pokémon is locked: unlock it before listing.',
 };
 export function cartaoMon(a, b = null) {
   if (!a) return null;
@@ -415,7 +415,7 @@ export function textoAviso(a, b = (s) => s, c = 'pt-BR') {
     ? { n: a.qtd ?? '?', x: b(String(a.itemNome || 'item')) }
     : { x: String(a.mon?.nome || '?'), n: a.mon?.lv ?? '?' };
   if (a.k === 'vendeu')
-    return b(d ? 'Você vendeu {n}× {x} por {v} Moedas pra {p}.' : 'Você vendeu {x} Lv{n} por {v} Moedas pra {p}.', {
+    return b(d ? 'You sold {n}× {x} for {v} Coins to {p}.' : 'You sold {x} Lv{n} for {v} Coins to {p}.', {
       ...e,
       v: Math.round(num(a.total)).toLocaleString(c),
       p: String(a.quem || '?'),
@@ -423,15 +423,15 @@ export function textoAviso(a, b = (s) => s, c = 'pt-BR') {
   if (a.k === 'expirou')
     return b(
       d
-        ? 'Seu anúncio de {n}× {x} expirou; voltou pra sua mochila.'
-        : 'Seu anúncio de {x} Lv{n} expirou; ele voltou pra você.',
+        ? 'Your listing of {n}× {x} expired; it went back to your Bag.'
+        : 'Your listing of {x} Lv{n} expired; it was returned to you.',
       e,
     );
   if (a.k === 'retirada')
     return b(
       d
-        ? 'Um moderador tirou seu anúncio de {n}× {x}: {m}. O item voltou pra sua mochila (a taxa não volta).'
-        : 'Um moderador tirou seu anúncio de {x} Lv{n}: {m}. Ele voltou pra você (a taxa não volta).',
+        ? 'A moderator removed your listing of {n}× {x}: {m}. The item went back to your Bag (the fee is not refunded).'
+        : "A moderator removed your {x} Lv{n} listing: {m}. It was returned to you (the fee isn't refunded).",
       { ...e, m: String(a.motivo || '') },
     );
   return null;
@@ -487,7 +487,7 @@ export async function maisOfertas(L, c, { valendo: d = () => true } = {}) {
   const g = async (p) => {
     const x = await c(p);
     if (!d()) return { velha: true };
-    if (!x || x.erro || x.pagina !== p) return { erro: x?.erro || 'página trocada' };
+    if (!x || x.erro || x.pagina !== p) return { erro: x?.erro || 'page changed' };
     return x;
   };
   const h = (a, b) =>
@@ -555,7 +555,7 @@ export async function maisOfertas(L, c, { valendo: d = () => true } = {}) {
     m = { total: r.total, paginas: r.paginas, agora: r.agora, fim: _ };
     if (_ || j.some((o) => !f.has(o?.id))) break;
   }
-  if (!m) return { erro: q || 'a lista mudou' };
+  if (!m) return { erro: q || 'the list changed' };
   return { ofertas: j, novas: j.filter((o) => !f.has(o?.id)).length, ...m, prox: l };
 }
 export default {

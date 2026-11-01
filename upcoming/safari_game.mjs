@@ -149,7 +149,7 @@ function abrirAtendente(n = null) {
     const g = document.createElement('button');
     g.type = 'button';
     g.className = 'sf-entrar';
-    g.textContent = tr('Entrar ({x} Moedas)', { x: Number(R.preco || 0).toLocaleString('pt-BR') });
+    g.textContent = tr('Enter ({x} Coins)', { x: Number(R.preco || 0).toLocaleString('pt-BR') });
     g.onclick = () => {
       g.disabled = true;
       atualizarDialogo('');
@@ -163,7 +163,7 @@ function abrirAtendente(n = null) {
   const f = document.createElement('button');
   f.type = 'button';
   f.className = 'sf-nao';
-  f.textContent = tr(ativa() ? 'Ok' : 'Agora não');
+  f.textContent = tr(ativa() ? 'Ok' : 'Not now');
   f.onclick = () => fecharDialogo();
   e.appendChild(f);
   document.body.appendChild(dialogo);
@@ -220,7 +220,7 @@ function abrirDialogoV2(a, n) {
     Hud.escrever(
       a,
       'fala',
-      tr('Boas-vindas à Zona Safári! São {b} Bolas Safári e {m} minutos. Vamos?', {
+      tr('Welcome to the Safari Zone! You get {b} Safari Balls and {m} minutes. Ready?', {
         b: R.bolasPorEntrada ?? 30,
         m: Math.round((R.duracaoMs || 0) / 60000),
       }),
@@ -230,8 +230,8 @@ function abrirDialogoV2(a, n) {
       c.dataset.desligado = '0';
       c.style.opacity = '1';
     }
-    Hud.rotular(a, 'txt-btn', tr('Entrar ({x} Moedas)', { x: Number(R.preco || 0).toLocaleString('pt-BR') }), c);
-    Hud.rotular(a, 'txt-btn', tr('Agora não'), d);
+    Hud.rotular(a, 'txt-btn', tr('Enter ({x} Coins)', { x: Number(R.preco || 0).toLocaleString('pt-BR') }), c);
+    Hud.rotular(a, 'txt-btn', tr('Not now'), d);
   }
   Hud.sitAo(a, (b, d) => {
     if (b === 'fecha') fecharDialogo();
@@ -266,7 +266,7 @@ function posicionarDialogo() {
 }
 const nomeDaZona = () => {
   const a = document.getElementById('mm-area')?.textContent || '';
-  return /saf[aá]ri/i.test(a) ? a : tr('Zona Safári');
+  return /saf[aá]ri/i.test(a) ? a : tr('Safari Zone');
 };
 function pintarV2(a) {
   if (painel) painel.hidden = true;
@@ -288,14 +288,14 @@ function pintarV2(a) {
   Hud.sitMostrar(a, b);
 }
 const MOTIVO_FIM = {
-  tempo: 'O tempo acabou. Voltando pra entrada…',
-  bolas: 'As Bolas Safári acabaram. Voltando…',
-  fora: 'Você saiu da área do Safári.',
+  tempo: "Time's up. Returning to the entrance…",
+  bolas: 'Out of Safari Balls. Returning…',
+  fora: 'You left the Safari area.',
 };
 function avisoFim(m) {
   const a = Hud.sit('aviso-safari-fim');
   if (!a) return;
-  Hud.escrever(a, 'safari-fim-titulo', tr('Fim da visita ao Safári'));
+  Hud.escrever(a, 'safari-fim-titulo', tr('Safari visit over'));
   Hud.escrever(a, 'safari-fim-motivo', tr(MOTIVO_FIM[m?.motivo] || m?.texto || texto('fim_saiu')));
   a.style.zIndex = '37';
   Hud.sitEm(a, innerWidth / 2, Math.round(innerHeight * 0.16), 'topo-meio');

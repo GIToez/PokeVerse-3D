@@ -23,10 +23,10 @@ async function baixarTabela() {
       const r = await fetch(URL_TABELA, { signal: d?.signal, cache: c > 1 ? 'no-cache' : 'default' });
       if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
       const t = await r.json();
-      if (!tabelaBoa(t)) throw new Error('tabela vazia');
+      if (!tabelaBoa(t)) throw new Error('empty table');
       return t;
     } catch (e) {
-      a = e?.name === 'AbortError' ? new Error('sem resposta') : e;
+      a = e?.name === 'AbortError' ? new Error('no response') : e;
       if (e?.status === 404) break;
     } finally {
       clearTimeout(f);
@@ -34,13 +34,11 @@ async function baixarTabela() {
     if (c < 4) await new Promise((s) => setTimeout(s, 800 * c));
   }
   const b = String(a?.message || a).slice(0, 120);
-  console.warn(
-    'tinta: a tabela das cores não chegou (' + b + ') — os treinadores ficam sem cor até a próxima tentativa',
-  );
+  console.warn("paint: the color table didn't arrive (" + b + ') — trainers stay uncolored until the next attempt');
   if (!avisouSemTabela) {
     avisouSemTabela = true;
     try {
-      window.__boot?.aviso?.('tinta sem tabela', { erro: b }, true);
+      window.__boot?.aviso?.('paint without table', { erro: b }, true);
     } catch {}
   }
   return null;
@@ -63,7 +61,7 @@ const carregarImagem = (a) =>
   new Promise((b, c) => {
     const d = new Image();
     d.onload = () => b(d);
-    d.onerror = () => c(new Error('máscara ' + a));
+    d.onerror = () => c(new Error('mask ' + a));
     d.src = a;
   });
 const mascara = (a) => {

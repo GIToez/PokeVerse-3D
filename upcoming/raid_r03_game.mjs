@@ -137,11 +137,11 @@ export async function ligar(c) {
       cena = d;
       for (const m of fila.splice(0)) receber(m);
       aquecerSemTravar(() => cena.aquecer(), { raid: 'r03' }).then((a) => {
-        if (a) console.log('R03: shaders aquecidos em ' + a.ms + ' ms (' + a.programas + ' programas)');
+        if (a) console.log('R03: shaders warmed up in ' + a.ms + ' ms (' + a.programas + ' programs)');
       });
       return cena;
     } catch (e) {
-      console.warn('R03: a arena não montou:', e);
+      console.warn('R03: the arena failed to build:', e);
       carregando = null;
       throw e;
     }
@@ -361,7 +361,7 @@ async function aplicarTroca(m) {
   try {
     if (i >= 0 && String(ctx.jogo.pika?.uid) !== String(m.uid)) await ctx.trocarPara?.(i, { forcado: true, r01: true });
   } catch (e) {
-    console.warn('R03: troca', e);
+    console.warn('R03: switch', e);
   }
   const b = ctx?.jogo?.pika;
   if (b) {
@@ -432,15 +432,15 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) soltarF();
 });
 export const ERROS = {
-  longe: 'Chegue mais perto do gerador.',
-  gerador_normal: 'Este gerador não está em sobrecarga.',
-  paralisado: 'Paralisado: espere passar.',
-  ritmo: 'Calma: muitos cliques seguidos.',
-  troca_paralisado: 'Paralisado: não dá pra trocar agora',
-  troca_mira: 'Na mira do Zapdos: não dá pra trocar agora',
-  troca_recarga: 'Troca em {s} s',
-  troca_invalida: 'Esse Pokémon não pode entrar agora',
-  troca_sem_campo: 'Nenhum Pokémon de pé',
+  longe: 'Get closer to the generator.',
+  gerador_normal: "This generator isn't overloaded.",
+  paralisado: 'Paralyzed: wait for it to wear off.',
+  ritmo: 'Easy: too many clicks in a row.',
+  troca_paralisado: "Paralyzed: can't switch now",
+  troca_mira: "Targeted by Zapdos: can't switch now",
+  troca_recarga: 'Switch in {s} s',
+  troca_invalida: "This Pokémon can't switch in now",
+  troca_sem_campo: 'No Pokémon left standing',
 };
 export function receber(m) {
   if (!m) return;
@@ -512,15 +512,15 @@ function conferirTroca() {
   if (j.trocandoSeguidor || j.evoluindo || tentativasTroca >= 6 || Date.now() - tentouTrocaEm < 1500) return;
   tentativasTroca++;
   console.warn(
-    'R03: o Pokémon em campo (uid ' +
+    'R03: the Pokémon on the field (uid ' +
       b.uid +
-      ') não é o do servidor (uid ' +
+      ") isn't the server's (uid " +
       a.uid +
-      ') — refazendo a troca (' +
+      ') — redoing the switch (' +
       tentativasTroca +
       ')',
   );
-  aplicarTroca(a).catch((e) => console.warn('R03: troca refeita', e));
+  aplicarTroca(a).catch((e) => console.warn('R03: switch redone', e));
 }
 export const ALTURA_VOLTORB = 0.78;
 export function vincularChefe(s) {

@@ -181,7 +181,7 @@ async function corpo(r) {
     }
   } catch (e) {
     r.falhou = Date.now();
-    console.warn('mundo: não criou ' + r.nome, e);
+    console.warn('world: failed to create ' + r.nome, e);
   } finally {
     r.criando = false;
   }

@@ -1,40 +1,40 @@
 let io = null,
   dados = null;
 const pegosSessao = new Set();
-const NIVEIS = ['desconhecido', 'Avistado', 'Registrado', 'Estudado', 'Especialista', 'Mestre'];
+const NIVEIS = ['desconhecido', 'Seen', 'Registered', 'Studied', 'Expert', 'Master'];
 const LIMIAR = [0, 1, 4, 10, 18, 28];
 export const TITULOS = [
-  { id: 'alphaTester', nome: 'Alpha Tester', cond: (r) => !!r.alfa, desc: 'jogou no alpha de PokeVerse' },
+  { id: 'alphaTester', nome: 'Alpha Tester', cond: (r) => !!r.alfa, desc: 'played the PokeVerse alpha' },
   {
     id: 'testadorBeta',
-    nome: 'Campeão do Alpha',
+    nome: 'Alpha Champion',
     cond: (r) => Array.isArray(r.ganhos) && r.ganhos.includes('testadorBeta'),
-    desc: 'campeão do Hall da Fama do Alpha',
+    desc: 'Alpha Hall of Fame champion',
   },
   {
     id: 'pacoteFundador',
-    nome: 'Fundador',
+    nome: 'Founder',
     cond: (r) => Array.isArray(r.ganhos) && r.ganhos.includes('pacoteFundador'),
-    desc: 'apoiou com o Pacote Fundador',
+    desc: 'backed with the Founder Pack',
   },
-  { id: 'observador', nome: 'Observador', cond: (r) => r.vistos >= 25, desc: '25 espécies vistas' },
+  { id: 'observador', nome: 'Observer', cond: (r) => r.vistos >= 25, desc: '25 species seen' },
   {
     id: 'colecionador',
-    nome: 'Colecionador',
+    nome: 'Collector',
     cond: (r) => r.pegos >= 25,
-    desc: '25 espécies capturadas',
+    desc: '25 species caught',
     premio: [1003, 5],
   },
-  { id: 'shiny', nome: 'Caçador de Shiny', cond: (r) => r.shinies >= 1, desc: 'capturou um shiny' },
-  { id: 'estudioso', nome: 'Estudioso', cond: (r) => r.estudadas >= 10, desc: '10 espécies em Estudado+' },
+  { id: 'shiny', nome: 'Shiny Hunter', cond: (r) => r.shinies >= 1, desc: 'caught a shiny' },
+  { id: 'estudioso', nome: 'Scholar', cond: (r) => r.estudadas >= 10, desc: '10 species at Studied+' },
   {
     id: 'mestreKanto',
-    nome: 'Mestre de Kanto',
+    nome: 'Kanto Master',
     cond: (r) => r.pegosKanto >= 151,
-    desc: 'as 151 de Kanto capturadas',
+    desc: 'all 151 Kanto species caught',
     premio: [1004, 1],
   },
-  { id: 'professor', nome: 'Professor', cond: (r) => r.mestres >= 25, desc: '25 espécies em nível Mestre' },
+  { id: 'professor', nome: 'Professor', cond: (r) => r.mestres >= 25, desc: '25 species at Master level' },
 ];
 export const NOMES_TITULOS = TITULOS.map((t) => t.nome);
 const SEXO_NENHUM = '-';
@@ -125,19 +125,19 @@ export function falta(a) {
   const g = io?.areasSelvagem?.(a) ?? null,
     h = g == null || g > 0,
     i = g == null ? 3 : Math.min(3, g);
-  if (!r.p && h) f.push('capturar um');
-  if (r.p && b.length < i) f.push('capturar em outra rota (' + b.length + '/' + i + ')');
+  if (!r.p && h) f.push('catch one');
+  if (r.p && b.length < i) f.push('catch on another route (' + b.length + '/' + i + ')');
   if (h && temGenero(a) && !d.includes(SEXO_NENHUM)) {
     const m = io.sexos?.[a] ?? 50;
-    if (m > 0 && !d.includes('m')) f.push('capturar um ♂');
-    if (m < 100 && !d.includes('f')) f.push('capturar uma ♀');
+    if (m > 0 && !d.includes('m')) f.push('catch a ♂');
+    if (m < 100 && !d.includes('f')) f.push('catch a ♀');
   }
   const j = +io?.golpesDaEspecie?.(a) || 0,
     k = j > 0 ? Math.min(8, j) : 8;
-  if (c.length < k) f.push('ver mais golpes da espécie (' + c.length + '/' + k + ')');
-  if (!r.ev && io?.evolui?.(a) !== false) f.push('ver a espécie evoluir');
-  if (e < 15) f.push('enfrentar mais vezes (' + e + '/15)');
-  if (!r.sh && h) f.push('encontrar um shiny ✨');
+  if (c.length < k) f.push('see more of its moves (' + c.length + '/' + k + ')');
+  if (!r.ev && io?.evolui?.(a) !== false) f.push('see the species evolve');
+  if (e < 15) f.push('battle it more (' + e + '/15)');
+  if (!r.sh && h) f.push('find a shiny ✨');
   return f;
 }
 export function tarefas(a) {
@@ -171,11 +171,11 @@ export function tarefas(a) {
 export const limiares = () => LIMIAR.slice();
 const REVELA = [
   '',
-  'Avistado revela os tipos e onde a espécie vive',
-  'Registrado revela stats, altura, peso, evolução e fraquezas',
-  'Estudado revela taxa de captura e habilidades',
-  'Especialista revela gênero, learnset completo e habilidade oculta',
-  'Mestre: você sabe tudo sobre a espécie',
+  'Seen reveals types and where the species lives',
+  'Registered reveals stats, height, weight, evolution and weaknesses',
+  'Studied reveals catch rate and abilities',
+  'Expert reveals gender, full learnset and hidden ability',
+  'Master: you know everything about the species',
 ];
 export const revelaTexto = (n) => REVELA[n] || '';
 export function evento(a, e = {}) {
@@ -214,7 +214,7 @@ export function evento(a, e = {}) {
   if (d > c) {
     const S = io.porDex?.get(b);
     io.avisar?.(
-      `📖 ${S?.name || 'Nº ' + b}: conhecimento nível ${d} (${NIVEIS[d]})${d < 5 ? ' — ' + (['', 'a ficha mostra os tipos e onde vive', 'revela stats, altura e peso', 'revela taxa de captura e habilidades', 'revela gênero, learnset completo e habilidade oculta'][d] || '') : ' — você sabe TUDO sobre a espécie!'}`,
+      `📖 ${S?.name || 'Nº ' + b}: knowledge level ${d} (${NIVEIS[d]})${d < 5 ? ' — ' + (['', 'a ficha mostra os tipos e onde vive', 'revela stats, altura e peso', 'revela taxa de captura e habilidades', 'revela gênero, learnset completo e habilidade oculta'][d] || '') : ' — you know EVERYTHING about this species!'}`,
     );
   }
   conferirTitulos();
@@ -289,7 +289,7 @@ function conferirTitulos() {
     d.titulos.push(t.id);
     a = true;
     io.avisar?.(
-      `🏅 Título conquistado: ${t.nome} (${t.desc})${t.premio ? ' — ganhou ' + t.premio[1] + '× ' + (io.nomeItem?.(t.premio[0]) || 'item') : ''}`,
+      `🏅 Title earned: ${t.nome} (${t.desc})${t.premio ? ' — earned ' + t.premio[1] + '× ' + (io.nomeItem?.(t.premio[0]) || 'item') : ''}`,
     );
     if (t.premio) io.premiar?.(t.premio[0], t.premio[1], t.id);
   }
@@ -312,7 +312,7 @@ export function reconciliarTitulos() {
   try {
     conferirTitulos();
   } catch (e) {
-    console.warn('títulos:', e);
+    console.warn('titles:', e);
   }
 }
 export function sortearSexo(a) {

@@ -97,7 +97,7 @@ export function avisoSemLugar(n) {
   Popup.textoCru(
     avisoPop,
     'aviso',
-    n === 1 ? tr('1 peça ficou sem lugar: veja no Arrumar') : tr('{n} peças ficaram sem lugar: veja no Arrumar', { n }),
+    n === 1 ? tr('1 piece has no spot: check Arrange') : tr('{n} pieces have no spot: check Arrange', { n }),
   );
   const s = Hud.escalaAtual() || 1;
   avisoPop.style.display = 'block';

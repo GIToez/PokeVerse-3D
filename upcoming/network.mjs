@@ -103,7 +103,7 @@ export function salaPronta() {
     try {
       receber(q);
     } catch (e) {
-      console.warn('rede: a fila da sala nova (' + q?.t + ')', e);
+      console.warn('network: the new room queue (' + q?.t + ')', e);
     }
   mandarPos(performance.now(), true);
 }
@@ -200,19 +200,19 @@ function aoFechar() {
   for (const o of [...outros.values()]) remover(o);
   ctx.mundo?.desligar();
   if (b) Conta.conferirSessao?.().catch(() => {});
-  if (!largarBatalha('a conexão caiu no meio da jogada')) ctx.batalhaCaiu?.();
+  if (!largarBatalha('the connection dropped mid-move')) ctx.batalhaCaiu?.();
   if (a) avisarQueda();
   else if (!jaLigou && tentativas === 2) avisarQueda(true);
   agendar();
 }
 const QUEDA = {
-  instavel: 'Sua conexão oscilou e caiu. Reconectando…',
-  offline: 'Sem internet neste aparelho. O jogo reconecta sozinho quando ela voltar.',
-  servidor: 'O servidor não está respondendo agora (pode estar reiniciando). O jogo reconecta sozinho.',
-  ok: 'A conexão caiu por um instante. Reconectando…',
+  instavel: 'Your connection dropped. Reconnecting…',
+  offline: "No internet on this device. The game will reconnect automatically when it's back.",
+  servidor: "The server isn't responding right now (it may be restarting). The game will reconnect automatically.",
+  ok: 'The connection dropped for a moment. Reconnecting…',
 };
 const PRIMEIRA = {
-  instavel: 'Sua conexão está instável: ainda tentando falar com o servidor…',
+  instavel: 'Your connection is unstable: still trying to reach the server…',
   offline: QUEDA.offline,
   servidor: QUEDA.servidor,
 };
@@ -282,7 +282,7 @@ function vigiar() {
     s.onmessage = null;
     s.close();
   } catch {}
-  console.warn('rede: nada chegou em ' + Math.round(VIGIA_MS / 1000) + ' s com a aba à vista — reconectando');
+  console.warn('network: nothing arrived in ' + Math.round(VIGIA_MS / 1000) + ' s with the tab visible — reconnecting');
   aoFechar();
 }
 let fundoLigado = false;
@@ -349,8 +349,8 @@ if (typeof addEventListener === 'function')
       ws?.close();
     } catch {}
   });
-export const textoModErro = (a) => (a ? '⚠ ' + tr(String(a)) + '.' : '⚠ ' + tr('Não deu.'));
-export const textoErro = (a, b = 'Não deu.') => {
+export const textoModErro = (a) => (a ? '⚠ ' + tr(String(a)) + '.' : '⚠ ' + tr("That didn't work."));
+export const textoErro = (a, b = "That didn't work.") => {
   const s = String(a || b),
     t = NO_IDIOMA.has(s) ? s : String(tr(s));
   return '⚠ ' + (/[.!?…]$/.test(t) ? t : t + '.');
@@ -497,8 +497,8 @@ function receber(m) {
       ctx.Chat?.sistemaCru?.(
         tr(
           m.conta
-            ? 'Conectado ao servidor como {x}: {n} online, {m} neste mapa.'
-            : 'Conectado ao servidor: {n} online, {m} neste mapa.',
+            ? 'Connected to the server as {x}: {n} online, {m} on this map.'
+            : 'Connected to the server: {n} online, {m} on this map.',
           { x: m.conta, n: m.online || 1, m: (m.jogadores || []).length + 1 },
         ),
       );
@@ -510,7 +510,8 @@ function receber(m) {
         } catch {
           c = true;
         }
-        if (c) ctx.Chat?.sistema('⚠ O jogo foi atualizado no servidor. Feche e abra a página pra pegar a versão nova.');
+        if (c)
+          ctx.Chat?.sistema('⚠ The game was updated on the server. Close and reopen the page to get the new version.');
         else {
           desligado = true;
           clearTimeout(timer);
@@ -576,7 +577,7 @@ function receber(m) {
             }
             return montarMontariaOutro(o);
           })
-          .catch((e) => console.warn('rede: parceiro novo de ' + o.nome, e));
+          .catch((e) => console.warn('network: new partner of ' + o.nome, e));
       return;
     }
     case 'personagem': {
@@ -621,7 +622,7 @@ function receber(m) {
       const o = outros.get(m.id);
       if (!o) return;
       o.segStaff = seguidorValido(m.seguidor);
-      if (o.ent) montarSeguidorStaff(o).catch((e) => console.warn('rede: seguidor da staff ' + o.nome, e));
+      if (o.ent) montarSeguidorStaff(o).catch((e) => console.warn('network: staff follower ' + o.nome, e));
       return;
     }
     case 'cargo': {
@@ -895,16 +896,16 @@ function receber(m) {
               tr(String(x.area || x.mapa || '')),
           )
           .join(' | ');
-        r('👥 {n} online: {x}', { n: l.length, x: $ || tr('ninguém') });
+        r('👥 {n} online: {x}', { n: l.length, x: $ || tr('nobody') });
       } else if (m.op === 'ver') {
         const q =
           m.banidoAte === -1
-            ? tr('banido pra sempre')
+            ? tr('banned permanently')
             : m.banidoAte
-              ? tr('banido até {x}', { x: w(m.banidoAte) })
+              ? tr('banned until {x}', { x: w(m.banidoAte) })
               : m.mudoAte
-                ? tr('de mudo até {x}', { x: w(m.mudoAte, true) })
-                : tr('sem nada');
+                ? tr('muted until {x}', { x: w(m.mudoAte, true) })
+                : tr('nothing');
         C?.sistemaCru?.(
           '🔎 ' +
             m.usuario +
@@ -913,36 +914,36 @@ function receber(m) {
             q +
             (m.motivo ? ' — ' + m.motivo : ''),
         );
-      } else if (m.op === 'aviso') r('📢 aviso enviado.');
+      } else if (m.op === 'aviso') r('📢 announcement sent.');
       else if (m.op === 'mudo')
-        r(
-          m.mantido ? '🔇 {x} já estava de mudo por mais tempo: ficou o que valia.' : '🔇 {x} silenciado por {n} min.',
-          { x: m.usuario, n: m.minutos },
-        );
-      else if (m.op === 'kick') r('⛔ {x} foi tirado ({n} conexão).', { x: m.usuario, n: m.derrubou || 0 });
+        r(m.mantido ? '🔇 {x} was already muted for longer: the longer mute stays.' : '🔇 {x} muted for {n} min.', {
+          x: m.usuario,
+          n: m.minutos,
+        });
+      else if (m.op === 'kick') r('⛔ {x} was kicked ({n} connection).', { x: m.usuario, n: m.derrubou || 0 });
       else if (m.op === 'banir')
-        r(m.ate === -1 ? '⛔ {x} banido pra sempre.' : '⛔ {x} banido até {y}.', {
+        r(m.ate === -1 ? '⛔ {x} banned permanently.' : '⛔ {x} banned until {y}.', {
           x: m.usuario,
           y: m.ate === -1 ? '' : w(m.ate),
         });
-      else if (m.op === 'perdoar') r('✅ {x} liberado.', { x: m.usuario });
+      else if (m.op === 'perdoar') r('✅ {x} unmuted.', { x: m.usuario });
       else if (m.op === 'tp')
         r(
           m.derrubou
-            ? '🧭 {x} levado pra {y} ({a}, {b}) — ele recebeu o recado de F5.'
-            : '🧭 {x} levado pra {y} ({a}, {b}) — nasce lá na próxima entrada.',
+            ? '🧭 {x} sent to {y} ({a}, {b}) — they got the F5 notice.'
+            : "🧭 {x} sent to {y} ({a}, {b}) — they'll spawn there on their next login.",
           { x: m.usuario, y: m.nome ? tr(String(m.nome)) : String(m.mapa ?? ''), a: m.x, b: m.z },
         );
       else if (m.op === 'mercado') {
         if (m.tirou != null)
           C?.sistemaCru?.(
-            '🧹 Anúncio #' +
+            '🧹 Listing #' +
               m.tirou +
               ' de ' +
               m.vendedor +
-              ' tirado (' +
+              ' removed (' +
               m.descricao +
-              '): o bem voltou pro dono, a taxa não. Motivo: ' +
+              '): the item went back to its owner, the fee did not. Reason: ' +
               m.motivo +
               '.',
           );
@@ -955,7 +956,7 @@ function receber(m) {
               ': ' +
               (l.length
                 ? l.length +
-                  (l.length > 1 ? ' anúncios — ' : ' anúncio — ') +
+                  (l.length > 1 ? ' listings — ' : ' listing — ') +
                   l
                     .map(
                       (o) =>
@@ -966,13 +967,13 @@ function receber(m) {
                         ' a ' +
                         Math.round(o.precoUnit || 0).toLocaleString('pt-BR') +
                         (o.tipo === 'item' && o.quantidade > 1 ? ' cada' : '') +
-                        ' (vence em ' +
+                        ' (expires in ' +
                         h(o) +
                         ' h)',
                     )
                     .join(' · ') +
-                  '. Pra tirar: /mercado tirar id motivo.'
-                : 'nenhum anúncio aberto.'),
+                  '. To remove: /mercado tirar id reason.'
+                : 'no open listings.'),
           );
         }
       } else if (m.op === 'renomear')
@@ -981,16 +982,16 @@ function receber(m) {
             (m.de ?? '—') +
             '" (' +
             m.usuario +
-            ') agora se chama "' +
+            ') is now called "' +
             m.para +
             '"' +
-            (m.derrubou ? ' — ele recebeu o recado de F5.' : '.'),
+            (m.derrubou ? ' — they got the F5 notice.' : '.'),
         );
       else if (m.op === 'puxar')
         r(
           m.derrubou
-            ? '🧲 {x} puxado até você — ele recebeu o recado de F5.'
-            : '🧲 {x} puxado até você — está offline: nasce do seu lado na próxima entrada.',
+            ? '🧲 {x} pulled to you — they got the F5 notice.'
+            : "🧲 {x} pulled to you — they're offline: they'll spawn next to you on their next login.",
           { x: m.usuario },
         );
       return;
@@ -1127,7 +1128,7 @@ function receber(m) {
       try {
         ctx.aoTransf?.(m, !!ia);
       } catch (e) {
-        console.warn('rede: transf', e);
+        console.warn('network: transf', e);
       }
       if (ia) ia.resolve(m);
       return;
@@ -1136,8 +1137,8 @@ function receber(m) {
       if (m.save) ctx.troca?.aplicarSave?.(m.save, m.rev);
       {
         const t = textoAviso(m.aviso, tr, localDoIdioma());
-        if (t && ctx.Chat?.sistemaCru) ctx.Chat.sistemaCru(tr('Mercado: {x}', { x: t }));
-        else if (m.texto) ctx.Chat?.sistemaCru?.(tr('Mercado: {x}', { x: String(m.texto) }));
+        if (t && ctx.Chat?.sistemaCru) ctx.Chat.sistemaCru(tr('Market: {x}', { x: t }));
+        else if (m.texto) ctx.Chat?.sistemaCru?.(tr('Market: {x}', { x: String(m.texto) }));
       }
       try {
         ctx.Som?.tocar?.('ui/sound_click', { volume: 0.6 });
@@ -1151,7 +1152,7 @@ function receber(m) {
 }
 const posseEsperando = new Map();
 export function pedirPosse(a, b = {}) {
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   const c = posseEsperando.get(a);
   if (c) {
     clearTimeout(c.timer);
@@ -1161,7 +1162,7 @@ export function pedirPosse(a, b = {}) {
   return new Promise((c) => {
     const d = setTimeout(() => {
       posseEsperando.delete(a);
-      c({ erro: 'o servidor não respondeu' });
+      c({ erro: 'the server did not respond' });
     }, 6000);
     posseEsperando.set(a, { resolve: c, timer: d });
     enviar({ t: 'posse_' + a, ...b });
@@ -1170,12 +1171,12 @@ export function pedirPosse(a, b = {}) {
 const guildaEsperando = new Map();
 let guildaRid = 0;
 export function pedirGuilda(a, b = {}) {
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ ok: false, erro: 'Sem conexão com o servidor.' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ ok: false, erro: 'No connection to the server.' });
   const c = ++guildaRid;
   return new Promise((d) => {
     const e = setTimeout(() => {
       guildaEsperando.delete(c);
-      d({ ok: false, erro: 'O servidor não respondeu.' });
+      d({ ok: false, erro: "The server didn't respond." });
     }, 8000);
     guildaEsperando.set(c, { resolve: d, timer: e });
     enviar({ ...b, t: 'guilda', op: a, rid: c });
@@ -1183,7 +1184,7 @@ export function pedirGuilda(a, b = {}) {
 }
 const mercadoEsperando = new Map();
 export function pedirMercado(a, b = {}) {
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   const c = mercadoEsperando.get(a);
   if (c) {
     clearTimeout(c.timer);
@@ -1193,7 +1194,7 @@ export function pedirMercado(a, b = {}) {
   return new Promise((c) => {
     const d = setTimeout(() => {
       mercadoEsperando.delete(a);
-      c({ erro: 'o servidor não respondeu' });
+      c({ erro: 'the server did not respond' });
     }, 8000);
     mercadoEsperando.set(a, { resolve: c, timer: d });
     enviar({ t: 'mercado_' + a, ...b });
@@ -1202,12 +1203,12 @@ export function pedirMercado(a, b = {}) {
 const bolsaEsperando = new Map();
 let bolsaRid = 0;
 export function pedirBolsa(a, b = {}) {
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   const c = ++bolsaRid;
   return new Promise((d) => {
     const e = setTimeout(() => {
       bolsaEsperando.delete(c);
-      d({ erro: 'o servidor não respondeu' });
+      d({ erro: 'the server did not respond' });
     }, 6000);
     bolsaEsperando.set(c, { op: a, resolve: d, timer: e });
     enviar({ ...b, t: 'bolsa_' + a, rid: c });
@@ -1217,12 +1218,12 @@ const lojaEsperando = new Map();
 let lojaRid = 0;
 export function pedirLoja(a, b = {}) {
   if (!ws || ws.readyState !== 1)
-    return Promise.resolve({ ok: false, erro: 'sem-conexao', mensagem: 'Sem conexão com o servidor.' });
+    return Promise.resolve({ ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' });
   const c = ++lojaRid;
   return new Promise((d) => {
     const e = setTimeout(() => {
       lojaEsperando.delete(c);
-      d({ ok: false, erro: 'sem-resposta', mensagem: 'O servidor não respondeu.' });
+      d({ ok: false, erro: 'sem-resposta', mensagem: "The server didn't respond." });
     }, 8000);
     lojaEsperando.set(c, { resolve: d, timer: e });
     enviar({ ...b, t: 'loja_' + a, rid: c });
@@ -1252,7 +1253,7 @@ function baldeTemporada(k, t) {
   b.t = t;
   return b;
 }
-const SEM_CONEXAO = () => ({ ok: false, erro: 'sem-conexao', mensagem: 'Sem conexão com o servidor.' });
+const SEM_CONEXAO = () => ({ ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' });
 function lembrarVencido(a, b) {
   const t = Date.now();
   temporadaVencidos.set(a, { op: b, em: t });
@@ -1284,7 +1285,7 @@ function drenarTemporada() {
     const d = setTimeout(() => {
       temporadaEsperando.delete(c);
       lembrarVencido(c, P.op);
-      P.resolve({ ok: false, erro: 'sem-resposta', mensagem: 'O servidor não respondeu.', rid: c });
+      P.resolve({ ok: false, erro: 'sem-resposta', mensagem: "The server didn't respond.", rid: c });
     }, 8000);
     temporadaEsperando.set(c, { resolve: P.resolve, timer: d });
     if (!enviar({ ...P.dados, t: 'temporada', op: P.op, rid: c })) {
@@ -1306,13 +1307,13 @@ function avisarTemporada(m) {
     try {
       a(m);
     } catch (e) {
-      console.warn('rede: temporada', e);
+      console.warn('network: season', e);
     }
   }
 }
 let vidaEsperando = null;
 export function pedirVida(a = 'curar') {
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   if (vidaEsperando) {
     clearTimeout(vidaEsperando.timer);
     vidaEsperando.resolve({ erro: 'pedido repetido' });
@@ -1321,7 +1322,7 @@ export function pedirVida(a = 'curar') {
   return new Promise((b) => {
     const c = setTimeout(() => {
       vidaEsperando = null;
-      b({ erro: 'o servidor não respondeu' });
+      b({ erro: 'the server did not respond' });
     }, 6000);
     vidaEsperando = { resolve: b, timer: c };
     enviar({ t: 'vida_' + a });
@@ -1333,16 +1334,16 @@ function largarBatalha(a) {
   if (!b) return false;
   batEsperando = null;
   clearTimeout(b.timer);
-  b.resolve({ erro: a || 'sem conexão com o servidor', codigo: 'queda' });
+  b.resolve({ erro: a || 'no connection to the server', codigo: 'queda' });
   return true;
 }
 export function consultarBatalha() {
   if (comConta && ws && ws.readyState === 1) enviar({ t: 'bat_consultar' });
 }
 export function pedirBatalha(a, b = {}) {
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   if (batEsperando && a !== 'sair')
-    return Promise.resolve({ erro: 'espere a resposta da jogada anterior', codigo: 'ocupado' });
+    return Promise.resolve({ erro: 'wait for the response to your previous move', codigo: 'ocupado' });
   if (batEsperando) {
     clearTimeout(batEsperando.timer);
     batEsperando.resolve({ erro: 'pedido repetido' });
@@ -1352,7 +1353,7 @@ export function pedirBatalha(a, b = {}) {
     const d = setTimeout(() => {
       batEsperando = null;
       if (a === 'desafiar') enviar({ t: 'bat_largar' });
-      c({ erro: 'o servidor não respondeu' });
+      c({ erro: 'the server did not respond' });
     }, 12000);
     batEsperando = { resolve: c, timer: d };
     enviar({ t: 'bat_' + a, ...b });
@@ -1386,7 +1387,7 @@ export function pedirPorta(a, b, c, d = 1500) {
 const transfEsperando = new Map();
 function pedirTransf(a) {
   if (!ws || ws.readyState !== 1)
-    return Promise.resolve({ ok: false, erro: 'semConexao', texto: 'Sem conexão com o servidor.' });
+    return Promise.resolve({ ok: false, erro: 'semConexao', texto: 'No connection to the server.' });
   const u = String(a.uid ?? ''),
     b = transfEsperando.get(u);
   if (b) {
@@ -1397,7 +1398,7 @@ function pedirTransf(a) {
   return new Promise((b) => {
     const c = setTimeout(() => {
       transfEsperando.delete(u);
-      b({ ok: false, erro: 'semResposta', texto: 'O servidor não respondeu.' });
+      b({ ok: false, erro: 'semResposta', texto: "The server didn't respond." });
     }, 6000);
     transfEsperando.set(u, { resolve: b, timer: c });
     enviar(a);
@@ -1434,7 +1435,7 @@ function adicionar(j) {
   };
   outros.set(o.id, o);
   o.personagem = j.personagem || null;
-  montar(o, j.personagem).catch((e) => console.warn('rede: não montou ' + o.nome, e));
+  montar(o, j.personagem).catch((e) => console.warn('network: failed to build ' + o.nome, e));
 }
 export function remontarRoupasNovas() {
   const P = ctx?.Personagem;
@@ -1499,7 +1500,12 @@ async function montar(o, a) {
     const b = baseDoCriador(P, p);
     if (o.removido || d === './scenery/pc/' + b.glb + '.glb') throw e;
     console.warn(
-      'rede: a roupa de ' + o.nome + ' não veio (' + (e?.message || e) + '); vai a base do criador, ' + b.glb,
+      'network: the outfit of ' +
+        o.nome +
+        " didn't arrive (" +
+        (e?.message || e) +
+        "); using the creator's base, " +
+        b.glb,
     );
     p = vestirBase(p, b);
     f = await ctx.montarPersonagem('./scenery/pc/' + b.glb + '.glb', null, 0);
@@ -1512,7 +1518,7 @@ async function montar(o, a) {
   try {
     if (p && P?.aplicar) await P.aplicar(f.pivo, p);
   } catch (e) {
-    console.warn('rede: roupa de ' + o.nome, e);
+    console.warn('network: outfit of ' + o.nome, e);
   }
   o.visual = p;
   const y = ctx.chaoEm?.(o.alvo.x, o.alvo.z) ?? o.alvo.y;
@@ -1636,7 +1642,7 @@ function definirLonge(o, a) {
     try {
       ctx.efeitosDaSala?.(o.ent.pivo, o.visual);
     } catch (e) {
-      console.warn('rede: efeitos de ' + o.nome, e);
+      console.warn('network: effects of ' + o.nome, e);
     }
 }
 function seguirLonge(o, e, a, b) {
@@ -1702,7 +1708,7 @@ async function montarParceiro(o) {
     if (o.longe) guardarLonge(o);
   } catch (e) {
     o.parFalhou = true;
-    console.warn('rede: parceiro de ' + o.nome, e);
+    console.warn('network: partner of ' + o.nome, e);
   }
 }
 async function montarMontariaOutro(o) {
@@ -1796,7 +1802,7 @@ async function montarSeguidorStaff(o) {
     if (o.longe) guardarLonge(o);
   } catch (e) {
     o.segFalhou = true;
-    console.warn('rede: seguidor da staff ' + o.nome, e);
+    console.warn('network: staff follower ' + o.nome, e);
   }
 }
 function pontoDoSeguidor(e, a, s) {

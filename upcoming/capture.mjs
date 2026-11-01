@@ -59,7 +59,7 @@ async function povoar({ dex: b, lv: c, perfil: f, shiny: g, n, raio: h, frente: 
       o = ctx.chaoEm(x, z) != null && ctx.livre(x, z) && Math.hypot(x - a.x, z - a.z) >= 3;
     }
     if (!o) {
-      status('sem chão livre em volta — anda pra um lugar mais aberto');
+      status('no free ground around — move to a more open spot');
       continue;
     }
     try {
@@ -78,7 +78,7 @@ async function povoar({ dex: b, lv: c, perfil: f, shiny: g, n, raio: h, frente: 
       meus.push(s);
       m++;
     } catch (e) {
-      status(nomeDex(b) + ' não carregou: ' + (e?.message || e));
+      status(nomeDex(b) + ' failed to load: ' + (e?.message || e));
       break;
     }
   }
@@ -99,11 +99,11 @@ function pintarVivos() {
     meus
       .map(
         (s, i) =>
-          `<li>${s.shiny ? '✨ ' : ''}<b>${esc(s.nome)}</b> Lv${s.lv} ${s.perfil === 'agressivo' ? '⚔' : '🏃'}<small>${Math.round(Math.hypot(s.x - a.x, s.z - a.z))} m</small><button data-i="${i}" class="perigo" title="tirar da cena">✕</button></li>`,
+          `<li>${s.shiny ? '✨ ' : ''}<b>${esc(s.nome)}</b> Lv${s.lv} ${s.perfil === 'agressivo' ? '⚔' : '🏃'}<small>${Math.round(Math.hypot(s.x - a.x, s.z - a.z))} m</small><button data-i="${i}" class="perigo" title="remove from scene">✕</button></li>`,
       )
-      .join('') || '<li class="k">nenhum povoado por você</li>';
+      .join('') || '<li class="k">none spawned by you</li>';
   c.querySelectorAll('button[data-i]').forEach((b) => (b.onclick = () => tirar(meus[+b.dataset.i])));
-  $('cap-conta').textContent = meus.length + ' seu(s) · ' + ctx.jogo.selvagens.length + ' no mapa';
+  $('cap-conta').textContent = meus.length + ' yours · ' + ctx.jogo.selvagens.length + ' on the map';
 }
 async function trocarSeguidor(a, b) {
   status('carregando ' + nomeDex(a) + '…');
@@ -116,7 +116,7 @@ async function trocarSeguidor(a, b) {
 }
 function irPara(b) {
   const c = ctx.centroArea.get(+b);
-  if (!c) return status('área sem centro conhecido');
+  if (!c) return status('area with no known center');
   let x = c.cx,
     z = c.cz,
     y = ctx.livre(x, z) ? ctx.chaoEm(x, z) : null;
@@ -127,7 +127,7 @@ function irPara(b) {
     z = c.cz + Math.cos(f) * d;
     y = ctx.livre(x, z) ? ctx.chaoEm(x, z) : null;
   }
-  if (y == null) return status('não achei chão nessa área');
+  if (y == null) return status("couldn't find ground in this area");
   const a = ctx.jogo.ash,
     p = ctx.jogo.pika;
   for (const e of [a, p]) {
@@ -143,7 +143,7 @@ function irPara(b) {
     e.pivo.position.set(e.x, e.y, e.z);
     e.alvoClique = null;
   }
-  status('teleportado pra ' + ctx.nomeArea(+b));
+  status('teleported to ' + ctx.nomeArea(+b));
 }
 function darBolas(a, n) {
   const b = ctx.jogo.bolas;
@@ -151,7 +151,7 @@ function darBolas(a, n) {
   ctx.gravarLS('bolas', b);
   ctx.pintarHud();
   status(
-    `+${n} ${{ 1001: 'Pokébola', 1002: 'Grande Bola', 1003: 'Ultra Bola', 1004: 'Bola Mestra' }[a]} (tem ${b[a]})`,
+    `+${n} ${{ 1001: 'Pokébola', 1002: 'Grande Bola', 1003: 'Ultra Bola', 1004: 'Bola Mestra' }[a]} (have ${b[a]})`,
   );
 }
 function pintarBanner() {
@@ -178,9 +178,9 @@ function pintarReceitas() {
     cena.receitas
       .map(
         (r, i) =>
-          `<li>${r.shiny ? '✨ ' : ''}<b>${esc(nomeDex(r.dex))}</b> ×${r.n} Lv${r.lv || '?'} ${r.perfil === 'agressivo' ? '⚔' : r.perfil === 'arisco' ? '🏃' : '🎲'} <small>${r.frente ? 'na frente' : r.raio + ' m'}</small><button data-run="${i}" title="povoar agora">▶</button><button data-del="${i}" class="perigo">✕</button></li>`,
+          `<li>${r.shiny ? '✨ ' : ''}<b>${esc(nomeDex(r.dex))}</b> ×${r.n} Lv${r.lv || '?'} ${r.perfil === 'agressivo' ? '⚔' : r.perfil === 'arisco' ? '🏃' : '🎲'} <small>${r.frente ? 'in front' : r.raio + ' m'}</small><button data-run="${i}" title="povoar agora">▶</button><button data-del="${i}" class="perigo">✕</button></li>`,
       )
-      .join('') || '<li class="k">nenhuma receita salva</li>';
+      .join('') || '<li class="k">no saved recipes</li>';
   a.querySelectorAll('[data-run]').forEach(
     (b) => (b.onclick = () => povoar(cena.receitas[+b.dataset.run]).then((k) => status(k + ' nasceram'))),
   );
@@ -202,40 +202,40 @@ function montarPainel() {
   painel = document.createElement('div');
   painel.id = 'cap';
   painel.innerHTML = `
-    <div class="linha"><b style="color:#ffe07a">🎥 Cena de captura</b> <span class="k">H esconde · F9 flash</span></div>
-    <div id="cap-status" class="k">spawn natural desligado: só aparece quem você povoar</div>
-    <h2>Cena</h2>
-    <label><span>mapa</span><select id="c-mapa"><option value="pallet_rota1">Pallet + Rota 1 (leve)</option><option value="kanto">Kanto inteira</option><option value="casa">Terreno (lote)</option></select><button id="c-ir">ir</button></label>
-    <label><span>teleporte</span><select id="c-area">${g}</select><button id="c-tele">ir</button></label>
-    <div class="linha"><button id="c-exportar">Exportar cena</button><button id="c-importar">Importar</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Limpar receitas</button></div>
-    <h2>Você</h2>
-    <label><span>roupa</span><select id="v-skin">${c}</select><button id="v-rand" title="skin e cores aleatórias">🎲</button><button id="v-ok">trocar</button></label>
-    <label><span>seguidor</span><input type="number" id="v-dex" value="25" min="1" max="1025" style="flex:.6"><span id="v-nome" style="min-width:0;flex:1"></span><button id="v-dex-rand">🎲</button></label>
-    <label><input type="checkbox" id="v-shiny"> seguidor shiny <button id="v-seg-ok" class="ok" style="margin-left:auto">trocar seguidor</button></label>
-    <h2>Selvagens</h2>
+    <div class="linha"><b style="color:#ffe07a">🎥 Capture scene</b> <span class="k">H hides · F9 flash</span></div>
+    <div id="cap-status" class="k">natural spawn off: only what you spawn appears</div>
+    <h2>Scene</h2>
+    <label><span>map</span><select id="c-mapa"><option value="pallet_rota1">Pallet + Route 1 (light)</option><option value="kanto">All of Kanto</option><option value="casa">Land (plot)</option></select><button id="c-ir">go</button></label>
+    <label><span>teleport</span><select id="c-area">${g}</select><button id="c-tele">go</button></label>
+    <div class="linha"><button id="c-exportar">Export scene</button><button id="c-importar">Import</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Clear recipes</button></div>
+    <h2>You</h2>
+    <label><span>outfit</span><select id="v-skin">${c}</select><button id="v-rand" title="random skin and colors">🎲</button><button id="v-ok">change</button></label>
+    <label><span>follower</span><input type="number" id="v-dex" value="25" min="1" max="1025" style="flex:.6"><span id="v-nome" style="min-width:0;flex:1"></span><button id="v-dex-rand">🎲</button></label>
+    <label><input type="checkbox" id="v-shiny"> shiny follower <button id="v-seg-ok" class="ok" style="margin-left:auto">change follower</button></label>
+    <h2>Wild</h2>
     <label><span>Pokémon</span><input type="number" id="s-dex" value="16" min="1" max="1025" style="flex:.6"><span id="s-nome" style="min-width:0;flex:1"></span><button id="s-dex-rand">🎲</button></label>
-    <label><span>nível</span><input type="number" id="s-lv" value="5" min="1" max="100" style="flex:.5"><span>perfil</span><select id="s-perfil" style="flex:1"><option value="">sorteia</option><option value="agressivo">⚔ agressivo (vem pra cima)</option><option value="arisco">🏃 arisco (foge)</option></select></label>
-    <label><span>quantos</span><input type="number" id="s-n" value="3" min="1" max="12" style="flex:.5"><span>raio m</span><input type="number" id="s-raio" value="10" min="4" max="30" style="flex:.5"><input type="checkbox" id="s-shiny"> ✨ shiny</label>
-    <div class="linha"><button id="s-volta" class="ok">povoar em volta</button><button id="s-frente">1 na frente</button><button id="s-guardar" title="guarda esta configuração pra repetir depois">+ receita</button></div>
-    <div class="k">receitas (▶ povoa de novo; tudo fica salvo):</div>
+    <label><span>level</span><input type="number" id="s-lv" value="5" min="1" max="100" style="flex:.5"><span>profile</span><select id="s-perfil" style="flex:1"><option value="">random</option><option value="agressivo">⚔ aggressive (charges you)</option><option value="arisco">🏃 skittish (flees)</option></select></label>
+    <label><span>how many</span><input type="number" id="s-n" value="3" min="1" max="12" style="flex:.5"><span>radius m</span><input type="number" id="s-raio" value="10" min="4" max="30" style="flex:.5"><input type="checkbox" id="s-shiny"> ✨ shiny</label>
+    <div class="linha"><button id="s-volta" class="ok">spawn around</button><button id="s-frente">1 in front</button><button id="s-guardar" title="save this setup to repeat later">+ recipe</button></div>
+    <div class="k">recipes (▶ spawns again; everything is saved):</div>
     <ul id="cap-receitas"></ul>
-    <div class="linha"><button id="s-tudo">▶ povoar todas as receitas</button><button id="s-limpar" class="perigo">tirar os meus</button></div>
+    <div class="linha"><button id="s-tudo">▶ spawn all recipes</button><button id="s-limpar" class="perigo">remove mine</button></div>
     <div class="k" id="cap-conta"></div>
     <ul id="cap-vivos"></ul>
-    <h2>Mochila</h2>
-    <div class="linha"><button id="b-1001">+10 Pokébola</button><button id="b-1002">+10 Grande</button><button id="b-1003">+10 Ultra</button><button id="b-1004">+1 Mestra</button></div>
-    <h2>Textos</h2>
-    <label><span>título</span><input id="t-titulo"></label>
-    <label><span>subtítulo</span><input id="t-sub"></label>
-    <label><span>flash</span><input id="t-fa" placeholder="grande"><input id="t-fb" placeholder="pequeno" style="flex:.8"><button id="t-flash">▶</button></label>
-    <h2>Câmera</h2>
+    <h2>Bag</h2>
+    <div class="linha"><button id="b-1001">+10 Poké Ball</button><button id="b-1002">+10 Great</button><button id="b-1003">+10 Ultra</button><button id="b-1004">+1 Master</button></div>
+    <h2>Texts</h2>
+    <label><span>title</span><input id="t-titulo"></label>
+    <label><span>subtitle</span><input id="t-sub"></label>
+    <label><span>flash</span><input id="t-fa" placeholder="large"><input id="t-fb" placeholder="small" style="flex:.8"><button id="t-flash">▶</button></label>
+    <h2>Camera</h2>
     <label><span>zoom</span><input type="range" id="c-zoom" min="0.35" max="3" step="0.05"><span id="c-zoomv"></span></label>
-    <div class="k">a câmera é a do jogo (botão direito arrasta, roda dá zoom). Tab mira o selvagem mais perto; golpes nos atalhos; bola no atalho da Pokébola.</div>
-    <div class="k" style="margin-top:10px">OBS: monta a cena, aperta H pra sumir o painel e grava jogando.</div>`;
+    <div class="k">the camera is the game's (right-click drags, wheel zooms). Tab targets the nearest wild Pokémon; moves on the hotkeys; ball on the Poké Ball hotkey.</div>
+    <div class="k" style="margin-top:10px">OBS: set up the scene, press H to hide the panel and record while playing.</div>`;
   document.body.appendChild(painel);
   const h = document.createElement('div');
   h.id = 'cap-dica';
-  h.textContent = 'H: painel · F9: flash';
+  h.textContent = 'H: panel · F9: flash';
   document.body.appendChild(h);
   $('c-mapa').value = ctx.mapaNome === 'kanto' ? 'kanto' : ctx.mapaNome === 'casa' ? 'casa' : 'pallet_rota1';
   $('c-ir').onclick = () => {
@@ -265,9 +265,9 @@ function montarPainel() {
         salvar();
         pintarReceitas();
         pintarBanner();
-        status('cena importada');
+        status('scene imported');
       } catch {
-        status('JSON inválido');
+        status('invalid JSON');
       }
     };
     r.readAsText(f);
@@ -293,7 +293,7 @@ function montarPainel() {
     }
     $('v-skin').value = p.tipo;
     $('v-skin').dataset.cores = JSON.stringify(p.cores || null);
-    status('roupa sorteada: ' + ctx.Personagem.nomeDe(p) + ' — clique em trocar');
+    status('random outfit: ' + ctx.Personagem.nomeDe(p) + ' — click change');
   };
   $('v-skin').onchange = () => {
     delete $('v-skin').dataset.cores;
@@ -301,7 +301,7 @@ function montarPainel() {
   $('v-ok').onclick = async () => {
     const a = $('v-skin').dataset.cores ? JSON.parse($('v-skin').dataset.cores) : null;
     const p = { tipo: $('v-skin').value, ...(a ? { cores: a } : {}) };
-    status('trocando roupa…');
+    status('changing outfit…');
     await ctx.jogo.trocarJogador(p);
     cena.roupa = p;
     salvar();
@@ -324,7 +324,7 @@ function montarPainel() {
   };
   $('v-seg-ok').onclick = () =>
     trocarSeguidor(+$('v-dex').value, $('v-shiny').checked).catch((e) =>
-      status('seguidor não carregou: ' + (e?.message || e)),
+      status('follower failed to load: ' + (e?.message || e)),
     );
   const j = (a) => ({
     dex: +$('s-dex').value,
@@ -340,27 +340,27 @@ function montarPainel() {
     i();
   };
   $('s-volta').onclick = () => {
-    status('povoando…');
-    povoar(j(false)).then((k) => status(k + ' ' + nomeDex($('s-dex').value) + ' em volta de você'));
+    status('spawning…');
+    povoar(j(false)).then((k) => status(k + ' ' + nomeDex($('s-dex').value) + ' around you'));
   };
   $('s-frente').onclick = () => {
-    status('povoando…');
-    povoar(j(true)).then((k) => status(k ? nomeDex($('s-dex').value) + ' na sua frente' : 'não coube na frente'));
+    status('spawning…');
+    povoar(j(true)).then((k) => status(k ? nomeDex($('s-dex').value) + ' in front of you' : "didn't fit in front"));
   };
   $('s-guardar').onclick = () => {
     cena.receitas.push(j(false));
     pintarReceitas();
     salvar();
-    status('receita guardada');
+    status('recipe saved');
   };
   $('s-tudo').onclick = async () => {
     let t = 0;
     for (const r of cena.receitas) t += await povoar(r);
-    status(t + ' nasceram (todas as receitas)');
+    status(t + ' spawned (all recipes)');
   };
   $('s-limpar').onclick = () => {
     for (const s of [...meus]) tirar(s);
-    status('seus selvagens saíram de cena');
+    status('your wild Pokémon left the scene');
   };
   for (const [l, n] of [
     [1001, 10],

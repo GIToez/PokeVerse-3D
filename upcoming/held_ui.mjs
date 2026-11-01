@@ -123,16 +123,16 @@ function pintar() {
   const b = (t) => {
     const h = t.held && t.held.id != null ? t.held : null,
       a = h && num(h.id) === A.item;
-    const b = h ? (h.preso ? '🔒 ' : '') + nomeItem(h.id) : tr('sem item');
+    const b = h ? (h.preso ? '🔒 ' : '') + nomeItem(h.id) : tr('no item');
     const c =
       (a
         ? ''
         : botao(
             'seg',
-            esc(tr(h ? 'Trocar' : 'Segurar')),
+            esc(tr(h ? 'Swap' : 'Hold')),
             true,
             ' data-uid="' + esc(t.uid) + '"' + (h ? ' data-trocar="1"' : ''),
-          )) + (h ? botao('tirar', esc(tr('Tirar')), true, ' data-uid="' + esc(t.uid) + '"') : '');
+          )) + (h ? botao('tirar', esc(tr('Remove')), true, ' data-uid="' + esc(t.uid) + '"') : '');
     return (
       '<div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);border-radius:8px;padding:6px 8px"><div style="flex:1;min-width:0">' +
       '<div style="color:#fff">' +
@@ -150,15 +150,17 @@ function pintar() {
     );
   };
   A.d.innerHTML =
-    titulo(tr('Segurar: {x}', { x: nomeItem(A.item) }) + (A.preso ? ' 🔒' : '')) +
+    titulo(tr('Hold: {x}', { x: nomeItem(A.item) }) + (A.preso ? ' 🔒' : '')) +
     (textoItem(A.item) ? '<div style="text-align:center">' + esc(textoItem(A.item)) + '</div>' : '') +
     (A.preso
       ? '<div style="text-align:center;font-size:11px;color:#7f8aa6">' +
-        esc(tr('Preso à conta: ao tirar, volta pra pilha presa (não se vende nem se troca).')) +
+        esc(tr("Account-bound: when removed, it returns to the bound stack (can't be sold or traded).")) +
         '</div>'
       : '') +
     '<div style="display:grid;gap:4px">' +
-    (a.length ? a.map(b).join('') : '<div style="text-align:center">' + esc(tr('Sem Pokémon no time.')) + '</div>') +
+    (a.length
+      ? a.map(b).join('')
+      : '<div style="text-align:center">' + esc(tr('No Pokémon in the party.')) + '</div>') +
     '</div>' +
     '<div class="held-av" style="min-height:16px;text-align:center;color:' +
     (A.bom ? '#8EF58E' : '#f58e8e') +
@@ -166,12 +168,12 @@ function pintar() {
     esc(A.aviso) +
     '</div>' +
     '<div style="display:flex;gap:8px">' +
-    botao('nao', esc(tr('Fechar'))) +
+    botao('nao', esc(tr('Close'))) +
     '</div>';
   for (const x of A.d.querySelectorAll('button')) x.style.flex = x.classList.contains('nao') ? '1' : '0 0 auto';
   A.d.querySelector('.nao').onclick = () => fecharTopo();
   const c = (h) => {
-    A.aviso = tr('um instante…');
+    A.aviso = tr('one moment…');
     A.bom = true;
     pintar();
     ctx.enviar?.({ t: 'arranjo', held: h });
@@ -474,7 +476,7 @@ function escolherV2(c) {
   if (!t) return;
   const h = heldDeT(t);
   if (h && num(h.id) === A.item) {
-    A.aviso = tr('{x} já segura {y}.', { x: t.nome || '#' + t.dex, y: nomeItem(A.item) });
+    A.aviso = tr('{x} already holds {y}.', { x: t.nome || '#' + t.dex, y: nomeItem(A.item) });
     A.bom = false;
     pintarV2();
     return;
@@ -501,7 +503,7 @@ function confirmarV2() {
   const b = () => {
     if (V !== A || !A.esperando) return;
     A.esperando = false;
-    A.aviso = tr('Sem conexão com o servidor. Tente de novo.');
+    A.aviso = tr('No connection to the server. Try again.');
     A.bom = false;
     pintarV2();
   };
@@ -539,16 +541,16 @@ function pintarV2() {
     if (A.sel == null && !A.tocou) A.sel = (e.find((t) => !heldDeT(t)) || null)?.uid ?? null;
   }
   Popup.imagem(a, 'item', urlItem(A.item), d);
-  Popup.textoCru(a, 'dialogo-titulo', tr('Segurar: {x}', { x: nomeItem(A.item) }) + (A.preso ? ' 🔒' : ''), d);
+  Popup.textoCru(a, 'dialogo-titulo', tr('Hold: {x}', { x: nomeItem(A.item) }) + (A.preso ? ' 🔒' : ''), d);
   const g = A.esperando
-    ? tr('um instante…')
+    ? tr('one moment…')
     : A.aviso
       ? A.aviso
       : !e.length
-        ? tr('Sem Pokémon no time.')
+        ? tr('No Pokémon in the party.')
         : A.preso
-          ? tr('Quem segura? Preso à conta: ao tirar, volta pra pilha presa.')
-          : tr('Quem segura? Quem já segura um item troca: o antigo volta pra Mochila.');
+          ? tr('Who holds it? Account-bound: when removed, it returns to the bound stack.')
+          : tr('Who holds it? Anyone already holding an item swaps: the old one goes back to the Bag.');
   cor(Popup.textoCru(a, 'dialogo-dica', g, d), A.esperando || (A.aviso && A.bom) ? COR_BOM : A.aviso ? COR_RUIM : null);
   const j = filho(d, 'lista-time');
   for (let i = 1; i <= 6; i++) {
@@ -576,8 +578,8 @@ function pintarV2() {
     caberItem(
       p,
       c.querySelector('[data-txt="pokemon-nivel"]'),
-      h ? tr('segura: {x}', { x: nomeItem(h.id) }) : tr('sem item'),
-      h ? nomeItem(h.id) : tr('sem item'),
+      h ? tr('segura: {x}', { x: nomeItem(h.id) }) : tr('no item'),
+      h ? nomeItem(h.id) : tr('no item'),
     );
     cor(p, h ? d.__corSegura : d.__corSem);
     c.style.opacity = o ? '' : '0.55';
@@ -592,14 +594,14 @@ function pintarV2() {
     b.style.opacity = l ? '1' : '0.5';
     b.style.cursor = l ? 'pointer' : 'default';
     const r = b.querySelector('.pf-rotulo, [data-txt]'),
-      q = tr(k && heldDeT(k) ? 'Trocar' : 'Segurar');
+      q = tr(k && heldDeT(k) ? 'Swap' : 'Hold');
     if (r && !A.feito && r.textContent !== q) {
       r.textContent = q;
       Hud.encolher(r);
     }
   }
 }
-const nomeDoUid = (a) => (ctx.time?.() || []).find((t) => String(t?.uid) === String(a))?.nome || tr('Seu Pokémon');
+const nomeDoUid = (a) => (ctx.time?.() || []).find((t) => String(t?.uid) === String(a))?.nome || tr('Your Pokémon');
 function narrar(a) {
   if (!a || a.t !== 'held' || !Object.hasOwn(NARRACAO, a.ev)) return '';
   const b = a.golpe ? ctx.golpe?.(a.golpe)?.nome || a.golpe : '';
@@ -623,30 +625,30 @@ function textoCurto(a) {
     v = Math.max(0, Math.round(num(a.v)));
   switch (a.ev) {
     case 'cura':
-      return v ? i + '  +' + v + ' HP' : tr('{i}: curou', { i });
+      return v ? i + '  +' + v + ' HP' : tr('{i}: healed', { i });
     case 'dano':
     case 'reflete':
-      return v ? i + '  −' + v + ' HP' : tr('{i}: machucou', { i });
+      return v ? i + '  −' + v + ' HP' : tr('{i}: hurt', { i });
     case 'sobrevive':
-      return tr('{i}: aguentou!', { i });
+      return tr('{i}: held on!', { i });
     case 'curaStatus':
-      return tr('{i}: curou', { i });
+      return tr('{i}: healed', { i });
     case 'estagio':
-      return tr('{i}: ativou!', { i });
+      return tr('{i}: activated!', { i });
     case 'consumiu':
-      return tr('{i} (gastou)', { i });
+      return tr('{i} (used up)', { i });
     case 'gema': {
       const m = num(ITEM(a.item)?.efeito?.valor, 1.3);
-      return tr('{i}: +{p}% (gastou)', { i, p: Math.round((m - 1) * 100) });
+      return tr('{i}: +{p}% (used up)', { i, p: Math.round((m - 1) * 100) });
     }
     case 'estourou':
-      return tr('{i} estourou!', { i });
+      return tr('{i} popped!', { i });
     case 'imune':
-      return tr('{i}: imune a Terra', { i });
+      return tr('{i}: immune to Ground', { i });
     case 'hesitar':
-      return tr('{i}: hesitou!', { i });
+      return tr('{i}: flinched!', { i });
     case 'trava':
-      return tr('{i}: só {g}', { i, g: a.golpe ? ctx.golpe?.(a.golpe)?.nome || a.golpe : '' });
+      return tr('{i}: only {g}', { i, g: a.golpe ? ctx.golpe?.(a.golpe)?.nome || a.golpe : '' });
     default:
       return narrar(a);
   }
@@ -715,8 +717,8 @@ export function receber(m) {
   if (m.t === 'held_ok') {
     const a = nomeDoUid(m.uid);
     const b = m.held
-      ? tr('{x} está segurando {y}.', { x: a, y: nomeItem(m.held.id) })
-      : tr('{x} guardou o item na mochila.', { x: a });
+      ? tr('{x} is holding {y}.', { x: a, y: nomeItem(m.held.id) })
+      : tr('{x} put the item in the Bag.', { x: a });
     try {
       ctx.Som?.tocar?.('ui/sound_itemget', { volume: 0.5, prio: true });
     } catch {}
@@ -731,7 +733,7 @@ export function receber(m) {
     return;
   }
   if (m.t === 'held_erro') {
-    const c = tr(String(m.motivo || m.erro || 'Não deu.'));
+    const c = tr(String(m.motivo || m.erro || "That didn't work."));
     if (respostaV2(false, c)) return;
     if (aberto) {
       aberto.aviso = c;

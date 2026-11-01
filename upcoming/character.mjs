@@ -6,12 +6,12 @@ import * as TL from './free_paint.mjs';
 try {
   await TL.carregar();
 } catch (e) {
-  console.warn('tinta livre:', e);
+  console.warn('free paint:', e);
 }
 export const SKINS = [
   { id: 'heroi', sexo: 'menino', nome: 'Herói', glb: 'Boy_002', tinta: 'heroi', desc: 'Cores livres' },
   { id: 'boy_012', sexo: 'menino', nome: 'Casaco do Pikachu', glb: 'Boy_012', tinta: 'boy_012', desc: 'Cores livres' },
-  { id: 'boy_025', sexo: 'menino', nome: 'Coração de Ouro', glb: 'Boy_025', tinta: 'boy_025', desc: 'Cores livres' },
+  { id: 'boy_025', sexo: 'menino', nome: 'HeartGold', glb: 'Boy_025', tinta: 'boy_025', desc: 'Cores livres' },
   { id: 'heroina', sexo: 'menina', nome: 'Heroína', glb: 'Girl_002', tinta: 'heroina', desc: 'Cores livres' },
   {
     id: 'girl_012',
@@ -21,11 +21,11 @@ export const SKINS = [
     tinta: 'girl_012',
     desc: 'Cores livres',
   },
-  { id: 'girl_025', sexo: 'menina', nome: 'Alma de Prata', glb: 'Girl_025', tinta: 'girl_025', desc: 'Cores livres' },
+  { id: 'girl_025', sexo: 'menina', nome: 'SoulSilver', glb: 'Girl_025', tinta: 'girl_025', desc: 'Cores livres' },
 ];
 export const SKINS_PREMIO = [
-  { id: 'ash', sexo: 'menino', nome: 'Ash', glb: 'Male_XiaoZhi', desc: 'Caixa do Hall da Fama' },
-  { id: 'misty', sexo: 'menina', nome: 'Misty', glb: 'Girl_001', tinta: 'misty', desc: 'Caixa do Hall da Fama' },
+  { id: 'ash', sexo: 'menino', nome: 'Ash', glb: 'Male_XiaoZhi', desc: 'Hall of Fame Box' },
+  { id: 'misty', sexo: 'menina', nome: 'Misty', glb: 'Girl_001', tinta: 'misty', desc: 'Hall of Fame Box' },
 ];
 export const SKINS_EXTRA = [];
 try {
@@ -43,11 +43,11 @@ try {
         sexo: s.sexo,
         nome: s.nome,
         glb: s.prefab,
-        desc: 'Fashion ' + s.id + (s.inicial ? ' · inicial do jogo' : ''),
+        desc: 'Fashion ' + s.id + (s.inicial ? ' · game starter' : ''),
         extra: true,
       });
 } catch (e) {
-  console.warn('skins do dump:', e);
+  console.warn('dump skins:', e);
 }
 try {
   const noSite = typeof window !== 'undefined' && true;
@@ -59,7 +59,7 @@ try {
         sexo: s.sexo,
         nome: s.nome,
         glb: s.glb,
-        desc: 'Pacote Fundador',
+        desc: 'Founder Pack',
         extra: true,
         exclusiva: s.exclusiva,
       });
@@ -68,7 +68,7 @@ try {
     if (k && typeof g.nome === 'string' && g.nome) k.nome = g.nome;
   }
 } catch (e) {
-  console.warn('skins da conta:', e);
+  console.warn('account skins:', e);
 }
 export const PADRAO = {
   heroi: { pele: '#ffcbaa', cabelo: '#322527', roupa: '#f83537', roupa2: '#ffffff', olhos: '#ffffff' },
@@ -77,8 +77,8 @@ export const PADRAO = {
 };
 const ROTULOS_TL = (a) => Object.fromEntries(TL.slotsDe(a).map((s) => [s.id, s.rotulo]));
 export const ROTULOS = {
-  heroi: { pele: 'pele', cabelo: 'cabelo', roupa: 'boné e camisa', roupa2: 'jaqueta e calça (tom)', olhos: 'olhos' },
-  heroina: { pele: 'pele', cabelo: 'cabelo', roupa: 'vestido', roupa2: 'chapéu (tom)', olhos: 'olhos' },
+  heroi: { pele: 'pele', cabelo: 'cabelo', roupa: 'cap and shirt', roupa2: 'jacket and pants (tone)', olhos: 'olhos' },
+  heroina: { pele: 'pele', cabelo: 'cabelo', roupa: 'vestido', roupa2: 'hat (shade)', olhos: 'olhos' },
   misty: { cabelo: 'cabelo', olhos: 'olhos' },
 };
 for (const id of Object.keys(TL.dados()?.roupas || {})) {
@@ -251,7 +251,7 @@ export async function vestirMochila(c, d) {
   const f = SkeletonUtils.clone(g.scene);
   const h = f.getObjectByProperty('isSkinnedMesh', true);
   if (!h) {
-    console.warn('mochila sem malha skinned:', d);
+    console.warn('bag without skinned mesh:', d);
     return null;
   }
   const i = [];
@@ -260,13 +260,13 @@ export async function vestirMochila(c, d) {
   });
   const j = i.sort((a, b) => b.skeleton.bones.length - a.skeleton.bones.length)[0];
   if (!j?.skeleton) {
-    console.warn('mochila: treinador sem esqueleto');
+    console.warn('bag: trainer has no skeleton');
     return null;
   }
   const k = h.skeleton.bones.map((b) => b.name);
   const l = k.map((n) => j.skeleton.bones.find((b) => b.name === n) || c.getObjectByName(n) || null);
   if (l.some((o) => !o)) {
-    console.warn('mochila: osso não achado no treinador', k);
+    console.warn('bag: bone not found on the trainer', k);
     return null;
   }
   const p = new THREE.Skeleton(
@@ -759,13 +759,13 @@ export function abrir({ som: a = null, cancelavel: d = false, sobreJogo: f = fal
   const v = document.createElement('div');
   v.id = 'criar';
   if (f) v.classList.add('sobre-jogo');
-  v.innerHTML = `<div class="caixa">${d ? '<button type="button" class="x" aria-label="fechar">✕</button>' : ''}<h2>Seu treinador</h2>
-    <div class="sub">escolha quem você é e o seu nome${d ? '' : ' — dá pra mudar depois em Configurações → ✎ Personagem'}</div>
-    <div class="sexos"><button type="button" data-sexo="menino">Menino</button><button type="button" data-sexo="menina">Menina</button></div>
+  v.innerHTML = `<div class="caixa">${d ? '<button type="button" class="x" aria-label="close">✕</button>' : ''}<h2>Your Trainer</h2>
+    <div class="sub">choose who you are and your name${d ? '' : ' — you can change it later in Settings → ✎ Character'}</div>
+    <div class="sexos"><button type="button" data-sexo="menino">Boy</button><button type="button" data-sexo="menina">Girl</button></div>
     <div class="cartas"></div>
     <div class="cores" hidden></div>
-    <div class="nome"><label>nome <input type="text" maxlength="16" autocomplete="off" spellcheck="false" value="${esc(q)}"></label><small class="aviso-nome">aparece em cima da cabeça e no chat · 3 a 16 letras · não pode repetir o de outro treinador</small></div>
-    <div class="acoes">${d ? '<button type="button" class="cancela">Cancelar</button>' : ''}<button type="button" class="ok">${d ? 'Salvar' : 'Começar ▶'}</button></div></div>`;
+    <div class="nome"><label>name <input type="text" maxlength="16" autocomplete="off" spellcheck="false" value="${esc(q)}"></label><small class="aviso-nome">shows above your head and in chat · 3 to 16 letters · can't match another trainer's</small></div>
+    <div class="acoes">${d ? '<button type="button" class="cancela">Cancel</button>' : ''}<button type="button" class="ok">${d ? 'Save' : 'Start ▶'}</button></div></div>`;
   document.body.appendChild(v);
   const w = v.querySelector('.caixa'),
     y = v.querySelector('.cartas'),
@@ -798,7 +798,7 @@ export function abrir({ som: a = null, cancelavel: d = false, sobreJogo: f = fal
             `<label class="cor"><span>${esc(ROTULOS[a][k])}</span><input type="color" data-k="${k}" value="${b[k]}"><span class="presets">${(PRESETS[k] || []).map((h) => `<i data-k="${k}" data-h="${h}" style="background:${h}"></i>`).join('')}</span></label>`,
         )
         .join('') +
-      '<button type="button" class="aleatorio">🎲 aleatório</button><button type="button" class="padrao">padrão do jogo</button>';
+      '<button type="button" class="aleatorio">🎲 random</button><button type="button" class="padrao">game default</button>';
     const d = () => {
       z.querySelectorAll('input[type=color]').forEach((i) => (b[i.dataset.k] = i.value));
       P.repintar(m.id, a, b);
@@ -888,7 +888,7 @@ export function abrir({ som: a = null, cancelavel: d = false, sobreJogo: f = fal
     const b = (_.value.trim() || contaUsuario() || m.nome).slice(0, 16);
     if (g) {
       ia = true;
-      ka('conferindo o nome…');
+      ka('checking name…');
       let r = null;
       try {
         r = await g(b);
@@ -897,7 +897,7 @@ export function abrir({ som: a = null, cancelavel: d = false, sobreJogo: f = fal
       }
       ia = false;
       if (!r?.ok) {
-        ka(r?.erro || 'Esse nome não deu. Tente outro.');
+        ka(r?.erro || "That name didn't work. Try another.");
         _.focus();
         _.select();
         return;

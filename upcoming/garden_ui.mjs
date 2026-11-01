@@ -258,7 +258,7 @@ export function fecharTopo(a, E) {
   return false;
 }
 function pedir(m, a, E, b) {
-  const c = b.mandar ? b.mandar(m, { terreno: true }) : 'Sem conexão com o servidor.';
+  const c = b.mandar ? b.mandar(m, { terreno: true }) : 'No connection to the server.';
   if (c == null) {
     E.esperando = true;
     b.repintar();
@@ -286,7 +286,7 @@ export function receber(m, E, a) {
       bolha(
         M?.pop,
         Number.isInteger(+m.canteiro) ? +m.canteiro : (M?.vista?.sel ?? 0),
-        a.texto ? a.texto(m) : tr(m.texto || 'Não deu.'),
+        a.texto ? a.texto(m) : tr(m.texto || "That didn't work."),
         null,
       );
     a.repintar();

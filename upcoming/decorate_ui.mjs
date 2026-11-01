@@ -138,7 +138,7 @@ function mostrar(a, b) {
 export async function abrir(g) {
   if (S) return true;
   if (!R.podeArrumar(g)) {
-    dep.aviso(tr('Só o Líder, o Vice e o Oficial arrumam a base.'));
+    dep.aviso(tr('Only the Leader, Vice and Officer can arrange the base.'));
     return false;
   }
   if (!disponivel()) return false;
@@ -222,7 +222,7 @@ export async function abrirTerreno(a) {
   }
   if (!disponivel()) return typeof dep.abrir2dTerreno === 'function' ? !!(await dep.abrir2dTerreno(a)) : false;
   if (typeof dep.pedirTerreno !== 'function') {
-    dep.aviso(tr('Sem resposta do servidor.'));
+    dep.aviso(tr('No response from the server.'));
     return false;
   }
   try {
@@ -244,10 +244,10 @@ export async function abrirTerreno(a) {
       avisoCru(
         '✗ ' +
           (!r || R.semResposta(r)
-            ? tr('Sem resposta do servidor.')
+            ? tr('No response from the server.')
             : typeof r.erro === 'string' && r.erro
               ? tr(r.erro, r.vars && typeof r.vars === 'object' ? r.vars : undefined)
-              : tr('O seu terreno não carregou.')),
+              : tr("Your plot didn't load.")),
       );
       return false;
     }
@@ -306,7 +306,11 @@ function bolsaAgora() {
 function textoDoDialogo() {
   if (!P?.dialogo) return;
   if (S?.lugar === R.LUGAR_TERRENO)
-    Popup.texto(P.dialogo, 'dialogo-texto', 'A horta volta pro lugar padrão. As incubadoras ficam onde estão.');
+    Popup.texto(
+      P.dialogo,
+      'dialogo-texto',
+      'The garden goes back to its default spot. Incubators stay where they are.',
+    );
   else Popup.rotulo(P.dialogo, 'dialogo-texto');
 }
 export function fechar() {
@@ -358,7 +362,7 @@ export function receberVista(g) {
   S.vista = g.base.colocacao || S.vista;
   S.papel = g.eu?.cargo || S.papel;
   if (!R.podeArrumar(g)) {
-    dep.aviso(tr('Só o Líder, o Vice e o Oficial arrumam a base.'));
+    dep.aviso(tr('Only the Leader, Vice and Officer can arrange the base.'));
     fechar();
     return;
   }
@@ -729,7 +733,7 @@ function pintarBarra() {
   const c = document.body.classList.contains('mobile');
   const e = a.querySelector('[data-tagval="girar"] .pf-rotulo');
   if (e) {
-    const t = tr(c ? 'Girar' : 'Girar · R');
+    const t = tr(c ? 'Rotate' : 'Rotate · R');
     if (e.textContent !== t) e.textContent = t;
   }
   const f = (c, d, e = true) => {
@@ -820,11 +824,11 @@ async function pedir(a, b) {
   if (r?.ok) S.mudou = true;
   return r;
 }
-const recusa = (r) => (r ? tr(R.curto(r, S?.lugar) || 'Não deu.') : tr('Sem resposta do servidor.'));
+const recusa = (r) => (r ? tr(R.curto(r, S?.lugar) || "That didn't work.") : tr('No response from the server.'));
 const textoErro = (r) =>
   r?.erro
     ? tr(r.erro, noTerrenoAgora() && r.vars && typeof r.vars === 'object' ? r.vars : undefined)
-    : tr('Sem resposta do servidor.');
+    : tr('No response from the server.');
 async function colocar() {
   const m = S?.mao;
   if (!m || S.ocupado) return;
@@ -884,7 +888,7 @@ async function guardar() {
 function abrirDialogo() {
   if (!P?.dialogo || !S || S.ocupado) return;
   if (!temForaDoPadrao()) {
-    nota(tr('Já está tudo no lugar padrão.'));
+    nota(tr('Everything is already in its default spot.'));
     return;
   }
   if (S.mao) soltarMao();
@@ -899,12 +903,14 @@ async function voltarPadrao() {
   if (P?.dialogo) Popup.fechar(P.dialogo);
   const a = R.planoPadrao(S.T, S.est, { papel: S.papel });
   if (!a.passos.length) {
-    const t = tr(a.presas.length ? 'Não deu pra voltar tudo ao padrão.' : 'Já está tudo no lugar padrão.');
+    const t = tr(
+      a.presas.length ? "Couldn't reset everything to default." : 'Everything is already in its default spot.',
+    );
     nota(t, a.presas.length ? 'erro' : 'ok');
     dep.aviso(t);
     return;
   }
-  nota(tr('Voltando ao padrão…'), 'ok', 0);
+  nota(tr('Resetting to default…'), 'ok', 0);
   for (const p of a.passos) {
     const r = await pedir(p.op, p.args);
     if (!S) return;
@@ -918,7 +924,7 @@ async function voltarPadrao() {
   }
   A3.sincronizar(S.T, S.vista);
   pintar();
-  const t = tr(a.presas.length ? 'Não deu pra voltar tudo ao padrão.' : 'Tudo voltou pro lugar padrão.');
+  const t = tr(a.presas.length ? "Couldn't reset everything to default." : 'Everything is back in its default spot.');
   nota(t, a.presas.length ? 'erro' : 'ok');
   dep.aviso(t);
 }

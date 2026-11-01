@@ -36,24 +36,24 @@ export function abrir(a) {
 export function acao() {
   const c = selecionada();
   if (!c) {
-    ctx.Chat?.sistema?.(tr('Escolha uma carta ao lado.'));
+    ctx.Chat?.sistema?.(tr('Pick a letter on the side.'));
     return;
   }
   ctx.enviar?.({ t: pendente(c) ? 'correio_resgatar' : 'correio_apagar', id: c.id });
 }
-export const rotuloAcao = () => (pendente(selecionada()) || !selecionada() ? 'Resgatar' : 'Apagar');
+export const rotuloAcao = () => (pendente(selecionada()) || !selecionada() ? 'Redeem' : 'Delete');
 function anexoEmTexto(a) {
   if (a.tipo === 'item') {
     const b = ctx.item?.(a.id);
     return '+' + num(a.qtd, 1) + ' ' + tr(b?.n || 'item ' + a.id) + (a.preso ? ' 🔒' : '');
   }
-  if (a.tipo === 'dinheiro') return '+' + tr('{x} Moedas', { x: num(a.qtd).toLocaleString(local()) });
+  if (a.tipo === 'dinheiro') return '+' + tr('{x} Coins', { x: num(a.qtd).toLocaleString(local()) });
   if (a.tipo === 'diamantes') return '+' + num(a.qtd) + ' ' + tr('Diamantes');
-  if (a.tipo === 'titulo') return tr('título') + ' "' + tr(ctx.nomeTitulo?.(a.id) || a.id) + '"';
+  if (a.tipo === 'titulo') return tr('title') + ' "' + tr(ctx.nomeTitulo?.(a.id) || a.id) + '"';
   if (a.tipo === 'pokemon')
     return tr('Pokémon') + (a.ficha?.lv ? ' Lv ' + a.ficha.lv : '') + (a.ficha?.shiny ? ' ✨' : '');
   if (a.tipo === 'cartao')
-    return a.classe === 'roupa' ? tr('roupa') + ' "' + (ctx.nomeRoupa?.(a.id) || a.id) + '"' : tr('cartão de visual');
+    return a.classe === 'roupa' ? tr('roupa') + ' "' + (ctx.nomeRoupa?.(a.id) || a.id) + '"' : tr('look card');
   if (a.tipo === 'montaria') return tr('montaria') + ' "' + nomeMontaria(a) + '" ✨';
   if (a.tipo === 'skinMon') return nomeSkinMon(a);
   return tr(a.tipo);
@@ -81,7 +81,7 @@ const dexDaSkinMon = (a) => (/^pm(\d{4})_\d{2}$/.exec(String(a?.id || '')) || []
 function nomeSkinMon(a) {
   if (typeof a?.nome === 'string' && a.nome) return a.nome;
   const d = dexDaSkinMon(a);
-  return tr('Skin de {x}', { x: (d ? ctx.nomePokemon?.(+d) : null) || 'Pokémon' });
+  return tr('{x} skin', { x: (d ? ctx.nomePokemon?.(+d) : null) || 'Pokémon' });
 }
 export const iconeDoAnexo = (a) => {
   if (a?.tipo === 'skinMon' && dexDaSkinMon(a)) return './ui/mon/pm' + dexDaSkinMon(a) + '.png';
@@ -123,16 +123,16 @@ const dataCurta = (a) => {
     b = new Date(),
     c = new Date(Date.now() - 864e5);
   const e = d.toLocaleTimeString(local(), { hour: '2-digit', minute: '2-digit' });
-  if (d.toDateString() === b.toDateString()) return tr('hoje, {x}', { x: e });
+  if (d.toDateString() === b.toDateString()) return tr('today, {x}', { x: e });
   if (d.toDateString() === c.toDateString()) return tr('ontem');
   return d.toLocaleDateString(local(), { day: '2-digit', month: '2-digit' });
 };
 function validade(c, a) {
   if (c.resgatada) return { txt: tr('resgatada'), cor: '#7EE07E' };
-  if (!c.venceEm) return { txt: tr('não vence'), cor: '#F5B93B' };
+  if (!c.venceEm) return { txt: tr('never expires'), cor: '#F5B93B' };
   const b = Math.max(0, Math.ceil((num(c.venceEm) - Date.now()) / 864e5));
   if (c.vencida) return { txt: tr('vencida'), cor: '#E5474D' };
-  return { txt: a ? tr('vence em {n} dias', { n: b }) : tr('vence em {n}d', { n: b }), cor: null };
+  return { txt: a ? tr('expires in {n} days', { n: b }) : tr('expires in {n}d', { n: b }), cor: null };
 }
 export function anexoV2(a) {
   if (a.tipo === 'item') {
@@ -144,7 +144,7 @@ export function anexoV2(a) {
     };
   }
   if (a.tipo === 'dinheiro')
-    return { nome: tr('Moedas'), qtd: num(a.qtd).toLocaleString(local()), img: './ui/itens/ic_1.png' };
+    return { nome: tr('Coins'), qtd: num(a.qtd).toLocaleString(local()), img: './ui/itens/ic_1.png' };
   if (a.tipo === 'diamantes')
     return {
       nome: tr('Diamantes'),
@@ -165,7 +165,7 @@ export function anexoV2(a) {
     };
   if (a.tipo === 'cartao')
     return {
-      nome: a.classe === 'roupa' ? ctx.nomeRoupa?.(a.id) || a.id : tr('cartão de visual'),
+      nome: a.classe === 'roupa' ? ctx.nomeRoupa?.(a.id) || a.id : tr('look card'),
       qtd: '',
       img: iconeAvulso(a) || './ui/amanda/correio/anexo-roupa.png',
     };
@@ -262,19 +262,19 @@ export function encherV2(b, d) {
     b,
     'correio-contagem',
     L.length
-      ? (L.length === 1 ? tr('1 carta') : tr('{n} cartas', { n: L.length })) +
+      ? (L.length === 1 ? tr('1 letter') : tr('{n} letters', { n: L.length })) +
           ' · ' +
-          (naoLidas === 1 ? tr('1 não lida') : tr('{n} não lidas', { n: naoLidas }))
-      : tr('Nenhuma carta.'),
+          (naoLidas === 1 ? tr('1 unread') : tr('{n} unread', { n: naoLidas }))
+      : tr('No mail.'),
   );
-  d.texto(b, 'correio-aviso', tr('Cartas sem anexo somem quando vencem'));
+  d.texto(b, 'correio-aviso', tr('Mail without attachments disappears when it expires'));
   const h = d.celulas(b, 'lista-cartas', L.length, 'carta');
   h.forEach((a, i) => {
     const c = L[i];
     if (!c) return;
     a.dataset.cartaId = String(c.id);
     emblema(d, b, 'remetente', remetenteDe(c, g), a, g);
-    const e = d.textoCru(b, 'carta-titulo', c.titulo || tr('(sem título)'), a);
+    const e = d.textoCru(b, 'carta-titulo', c.titulo || tr('(no title)'), a);
     if (e) {
       e.style.fontWeight = c.lida ? '700' : '900';
       e.style.opacity = c.resgatada ? '0.6' : '1';
@@ -319,13 +319,13 @@ export function encherV2(b, d) {
   k.textContent = c
     ? ''
     : L.length
-      ? tr('Escolha uma carta ao lado.')
-      : tr('Nenhuma carta. Prêmios de evento, da guilda e avisos da equipe chegam aqui.');
+      ? tr('Pick a letter on the side.')
+      : tr('No mail. Event rewards, guild rewards and team notices arrive here.');
   k.style.visibility = 'visible';
   if (!c) return;
   emblema(d, b, 'remetente-aberta', remetenteDe(c, g), j, g);
-  d.textoCru(b, 'aberta-titulo', c.titulo || tr('(sem título)'), j);
-  d.textoCru(b, 'aberta-de', tr('de {x}', { x: c.de || 'PokeVerse' }), j);
+  d.textoCru(b, 'aberta-titulo', c.titulo || tr('(no title)'), j);
+  d.textoCru(b, 'aberta-de', tr('from {x}', { x: c.de || 'PokeVerse' }), j);
   d.texto(b, 'aberta-data', dataCurta(c.em), j);
   const v = validade(c, true),
     l = d.texto(b, 'aberta-validade', v.txt, j);
@@ -349,7 +349,7 @@ export function encherV2(b, d) {
   d.texto(
     b,
     'anexos-contagem',
-    o.length ? (o.length === 1 ? tr('1 item') : tr('{n} itens', { n: o.length })) : tr('sem anexos'),
+    o.length ? (o.length === 1 ? tr('1 item') : tr('{n} items', { n: o.length })) : tr('no attachments'),
     j,
   );
   const p = d.grupo(b, 'lista-anexos');
@@ -399,15 +399,15 @@ export function encherV2(b, d) {
     const w = r.querySelector(':scope > [data-tag="acao"][data-tagval="resgatar-carta"]'),
       y = r.querySelector(':scope > [data-tag="acao"][data-tagval="apagar-carta"]');
     if (w) w.style.display = u === 'resgatada' || u === 'sem-anexo' ? 'none' : 'block';
-    d.botao(b, 'resgatar-carta', pendente(c), 'Resgatar tudo');
-    d.botao(b, 'apagar-carta', !pendente(c), 'Apagar');
+    d.botao(b, 'resgatar-carta', pendente(c), 'Redeem all');
+    d.botao(b, 'apagar-carta', !pendente(c), 'Delete');
     {
       const z =
         r.querySelector(':scope > [data-fig="fx/escurecer"]') || y?.querySelector(':scope > [data-fig="fx/escurecer"]');
       if (z) z.style.display = pendente(c) ? 'block' : 'none';
     }
-    if (u === 'mochila-cheia') d.texto(b, 'aviso-resgate', 'Mochila cheia: libere espaço pra resgatar tudo.', r);
-    if (u === 'resgatada') d.texto(b, 'resgatada', 'RESGATADA', r);
+    if (u === 'mochila-cheia') d.texto(b, 'aviso-resgate', 'Bag full: free up space to claim everything.', r);
+    if (u === 'resgatada') d.texto(b, 'resgatada', 'REDEEMED', r);
   }
 }
 export function acaoV2(a, b) {
@@ -443,8 +443,8 @@ export function receber(m) {
       ctx.Chat?.sistemaCru?.(
         '📬 ' +
           (naoLidas === 1
-            ? tr('Você tem 1 carta nova no correio (o atalho Correio, no alto).')
-            : tr('Você tem {x} cartas novas no correio (o atalho Correio, no alto).', { x: naoLidas })),
+            ? tr('You have 1 new letter in your mail (the Mail shortcut, at the top).')
+            : tr('You have {x} new letters in your mail (the Mail shortcut, at the top).', { x: naoLidas })),
       );
     }
     ctx.repintar?.();
@@ -456,7 +456,8 @@ export function receber(m) {
       ctx.Som?.tocar?.('ui/sound_successful', { volume: 0.45, prio: true });
     } catch {}
     (ctx.Chat?.avisoSistema || ctx.Chat?.sistemaCru)?.(
-      '📬 ' + tr('Carta nova de {x}: {y} (o atalho Correio, no alto).', { x: m.de || 'PokeVerse', y: m.titulo || '' }),
+      '📬 ' +
+        tr('New mail from {x}: {y} (the Mail shortcut, at the top).', { x: m.de || 'PokeVerse', y: m.titulo || '' }),
     );
     if (cartas) listar(true);
     ctx.repintar?.();
@@ -464,7 +465,7 @@ export function receber(m) {
   }
   if (m.t === 'correio_erro') {
     if (m.op === 'resgatar' && /cabe|pilha|mochila|lugar/i.test(String(m.erro || ''))) resgateFalhou = 'mochila-cheia';
-    ctx.Chat?.sistemaCru?.(tr('Correio') + ': ' + tr(String(m.erro || 'erro')));
+    ctx.Chat?.sistemaCru?.(tr('Mail') + ': ' + tr(String(m.erro || 'erro')));
     ctx.repintar?.();
     return;
   }
@@ -479,7 +480,7 @@ export function receber(m) {
     if (b.length)
       ctx.Chat?.sistemaCru?.(
         '🎽 ' +
-          tr('Skin nova: {x}. Vista na carta ou na ficha do Treinador (Personagem).', {
+          tr('New skin: {x}. Wear it from the mail or the Trainer card (Character).', {
             x: b.map((a) => ctx.nomeRoupa?.(a.id) || a.id).join(', '),
           }),
       );
@@ -508,7 +509,7 @@ export function encher(a, d, e, f) {
     b.__carta = c.id;
     b.style.pointerEvents = 'auto';
     b.style.cursor = 'pointer';
-    e.texto(a, 'conversa-nome', c.titulo || tr('(sem título)'), b);
+    e.texto(a, 'conversa-nome', c.titulo || tr('(no title)'), b);
     e.textoCru(
       a,
       'ultima-mensagem',
@@ -563,11 +564,11 @@ export function encher(a, d, e, f) {
 }
 function conteudoDaCarta(L) {
   const b = (t) => '<div style="color:#B8C2D9;text-align:center;margin-top:18%">' + esc(t) + '</div>';
-  if (ctx.semConta?.()) return b(tr('Entre com uma conta pra ter correio.'));
-  if (!cartas) return b(tr('carregando…'));
-  if (!L.length) return b(tr('Nenhuma carta. Prêmios de evento, da guilda e avisos da equipe chegam aqui.'));
+  if (ctx.semConta?.()) return b(tr('Sign in with an account to get mail.'));
+  if (!cartas) return b(tr('loading…'));
+  if (!L.length) return b(tr('No mail. Event rewards, guild rewards and team notices arrive here.'));
   const c = selecionada();
-  if (!c) return b(tr('Escolha uma carta ao lado.'));
+  if (!c) return b(tr('Pick a letter on the side.'));
   const d =
     new Date(num(c.em)).toLocaleDateString(local(), { day: '2-digit', month: '2-digit' }) +
     ' ' +
@@ -578,7 +579,7 @@ function conteudoDaCarta(L) {
     : c.vencida
       ? ' · ' + tr('vencida')
       : e != null && (c.anexos || []).length
-        ? ' · ' + tr('vence em {x} dias', { x: Math.max(0, e) })
+        ? ' · ' + tr('expires in {x} days', { x: Math.max(0, e) })
         : '';
   const g = (c.anexos || [])
     .map((a) => {
@@ -592,17 +593,17 @@ function conteudoDaCarta(L) {
         '">' +
         (b ? '<img alt="" src="' + esc(b) + '" style="width:24px;height:24px;object-fit:contain">' : '') +
         esc(anexoEmTexto(a)) +
-        (d ? ' <small style="color:#9fb0d0">(' + esc(tr('chega em breve')) + ')</small>' : '') +
+        (d ? ' <small style="color:#9fb0d0">(' + esc(tr('arriving soon')) + ')</small>' : '') +
         '</span>'
       );
     })
     .join('');
   return (
     "<div style=\"font:800 20px/1.25 'Baloo 2', 'Nunito Sans', system-ui, sans-serif;color:#F8C237\">" +
-    esc(c.titulo || tr('(sem título)')) +
+    esc(c.titulo || tr('(no title)')) +
     '</div>' +
     '<div style="color:#9fb0d0;font-size:12px;margin-top:2px">' +
-    esc(tr('De')) +
+    esc(tr('From')) +
     ': ' +
     esc(c.de || 'PokeVerse') +
     ' · ' +
@@ -614,7 +615,7 @@ function conteudoDaCarta(L) {
     '</div>' +
     (g
       ? '<div style="margin-top:14px"><div style="color:#9fb0d0;font-size:12px;margin-bottom:2px">' +
-        esc(c.resgatada ? tr('Resgatado') : tr('Anexos')) +
+        esc(c.resgatada ? tr('Redeemed') : tr('Attachments')) +
         '</div>' +
         g +
         '</div>'
@@ -638,7 +639,7 @@ function vestirAgora(c) {
           '<button type="button" data-vestir="' +
           esc(a.id) +
           '" style="padding:6px 14px;border-radius:16px;border:1px solid #F8C237;background:#F8C237;color:#1A1A1A;font:800 13px \'Nunito Sans\', system-ui, sans-serif;cursor:pointer">' +
-          esc(tr('Vestir {x}', { x: ctx.nomeRoupa?.(a.id) || a.id })) +
+          esc(tr('Wear {x}', { x: ctx.nomeRoupa?.(a.id) || a.id })) +
           '</button>',
       )
       .join('') +

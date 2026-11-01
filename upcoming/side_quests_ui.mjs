@@ -91,7 +91,7 @@ function esperar() {
     pintarV2();
     return;
   }
-  avisar(tr('um instante…'), true);
+  avisar(tr('one moment…'), true);
   for (const b of aberto?.d?.querySelectorAll('button') || []) b.disabled = true;
 }
 function liberar() {
@@ -114,23 +114,23 @@ export function fecharTopo(a = true) {
   } else A.d?.remove();
   return true;
 }
-const NOME_CHAVE = { teleporte: 'Teleporte', viagem: 'Viagem entre os Centros', 'mo-corte': 'Corte' };
+const NOME_CHAVE = { teleporte: 'Teleport', viagem: 'Travel between Centers', 'mo-corte': 'Corte' };
 const NOME_LICENCA = {
-  bicicleta: 'Licença de bicicleta',
-  terra: 'Licença de montaria terrestre',
-  agua: 'Licença de montaria aquática',
-  voo: 'Licença de voo',
+  bicicleta: 'Bike license',
+  terra: 'Land mount license',
+  agua: 'Water mount license',
+  voo: 'Fly license',
 };
 export function recompensa(r) {
   if (!r || typeof r !== 'object') return '—';
   const a = [];
-  if (r.dinheiro) a.push(tr('{x} Moedas', { x: r.dinheiro }));
+  if (r.dinheiro) a.push(tr('{x} Coins', { x: r.dinheiro }));
   const b = Object.entries(r.itens || {}).map(([a, n]) => tr(ctx.nomeItem?.(a) || 'item ' + a) + ' ×' + n);
-  a.push(...(b.length > 3 ? [...b.slice(0, 2), tr('+{n} itens', { n: b.length - 2 })] : b));
+  a.push(...(b.length > 3 ? [...b.slice(0, 2), tr('+{n} items', { n: b.length - 2 })] : b));
   if (r.exp) a.push(r.exp + ' XP');
   if (r.licenca) a.push(tr(NOME_LICENCA[r.licenca] || r.licenca));
   for (const k of [].concat(r.chaves || [])) a.push(tr(NOME_CHAVE[k] || k));
-  if (r.presente) a.push(tr('um Pokémon de presente'));
+  if (r.presente) a.push(tr('a gift Pokémon'));
   return a.join(' · ') || '—';
 }
 export function bloqueio(s, b = M()) {
@@ -141,12 +141,12 @@ export function bloqueio(s, b = M()) {
     const d = a.depoisDe == null || b.estadoDe?.(a.depoisDe) === 'feita';
     const e = a.depoisDeSecundaria == null || !!b.secundariaFeita?.(a.depoisDeSecundaria);
     if (!d && e && c && String(c.id) === String(a.depoisDe))
-      return { texto: tr('Abre depois de “{x}”', { x: tr(c.nome || '') }) };
+      return { texto: tr('Opens after “{x}”', { x: tr(c.nome || '') }) };
     if (d && !e) {
       const f = (b.secundarias?.() || []).find(
         (x) => x.estado === 'ativa' && String(x.id) === String(a.depoisDeSecundaria),
       );
-      if (f) return { texto: tr('Abre depois de “{x}”', { x: tr(f.nome || '') }) };
+      if (f) return { texto: tr('Opens after “{x}”', { x: tr(f.nome || '') }) };
     }
   } catch {}
   return null;
@@ -207,21 +207,21 @@ function oferecer(a, c) {
     '</div>' +
     (temCaptura(s) ? '<div style="font-size:11px;color:#7f8aa6">' + esc(tr(AVISO_CAPTURA)) + '</div>' : '') +
     '<div style="display:flex">' +
-    botao('sec-aceitar', esc(tr('Aceitar')), f < g, ' data-id="' + esc(s.id) + '"') +
+    botao('sec-aceitar', esc(tr('Accept')), f < g, ' data-id="' + esc(s.id) + '"') +
     '</div></div>';
   d.innerHTML =
-    titulo(tr(e || ''), tr('Tem uma missão pra você.')) +
+    titulo(tr(e || ''), tr("There's a mission for you.")) +
     '<div style="display:grid;gap:8px">' +
     a.map(h).join('') +
     '</div>' +
     (f >= g
       ? '<div style="text-align:center;font-size:11px">' +
-        esc(tr('Você já tem {n} missões secundárias: termine ou abandone uma.', { n: g })) +
+        esc(tr('You already have {n} side missions: finish or abandon one.', { n: g })) +
         '</div>'
       : '') +
     aviso() +
     '<div style="display:flex">' +
-    botao('sec-nao', esc(tr('Agora não'))) +
+    botao('sec-nao', esc(tr('Not now'))) +
     '</div>';
   d.querySelector('.sec-nao').onclick = () => fecharTopo();
   for (const b of d.querySelectorAll('.sec-aceitar'))
@@ -267,18 +267,18 @@ function abrirEscolha(e, a) {
   aberto.chave = a;
   aberto.missao = e.missao.id;
   d.innerHTML =
-    titulo(tr(e.missao.nome), tr(e.passo.texto || 'Escolha')) +
+    titulo(tr(e.missao.nome), tr(e.passo.texto || 'Choose')) +
     '<div style="display:grid;gap:6px">' +
     (e.passo.opcoes || [])
       .map((o) => botao('sec-op', esc(tr(o.nome || o.id)), true, ' data-op="' + esc(o.id) + '"'))
       .join('') +
     '</div>' +
     '<div style="text-align:center;font-size:11px">' +
-    esc(tr('A escolha fica gravada: não dá pra trocar depois.')) +
+    esc(tr("The choice is saved: you can't change it later.")) +
     '</div>' +
     aviso() +
     '<div style="display:flex">' +
-    botao('sec-nao', esc(tr('Depois'))) +
+    botao('sec-nao', esc(tr('Later'))) +
     '</div>';
   d.querySelector('.sec-nao').onclick = () => fecharTopo();
   for (const b of d.querySelectorAll('.sec-op'))
@@ -331,18 +331,23 @@ function abrirEntrega(b, f) {
   d.innerHTML =
     titulo(tr(b.missao.nome), tr(p.texto || '')) +
     '<div style="text-align:center">' +
-    esc(tr('{a} pediu {n}. Escolha quem entregar: o Pokémon sai da sua posse.', { a: tr(f || ''), n: g })) +
+    esc(
+      tr('{a} asked for {n}. Choose who to hand over: the Pokémon will leave your possession.', {
+        a: tr(f || ''),
+        n: g,
+      }),
+    ) +
     '</div>' +
     (i.length
       ? '<div style="display:grid;gap:4px;max-height:46vh;overflow-y:auto">' + i.map(k).join('') + '</div>'
-      : '<div style="text-align:center">' + esc(tr('Você não tem nenhum Pokémon dessa espécie.')) + '</div>') +
+      : '<div style="text-align:center">' + esc(tr("You don't have any Pokémon of that species.")) + '</div>') +
     '<div style="text-align:center;font-size:11px">' +
-    esc(tr('Shiny, lendário e Pokémon travado não são entregues.')) +
+    esc(tr("Shiny, legendary and locked Pokémon can't be handed over.")) +
     '</div>' +
     aviso() +
     '<div style="display:flex;gap:8px">' +
-    botao('sec-ok', esc(tr('Entregar')), false) +
-    botao('sec-nao', esc(tr('Cancelar'))) +
+    botao('sec-ok', esc(tr('Deliver')), false) +
+    botao('sec-nao', esc(tr('Cancel'))) +
     '</div>';
   const l = d.querySelector('.sec-ok');
   d.querySelector('.sec-nao').onclick = () => fecharTopo();
@@ -353,7 +358,7 @@ function abrirEntrega(b, f) {
       if (m.checked) {
         if (A.marcados.size >= A.falta) {
           m.checked = false;
-          return avisar(tr('Já marcou {n}.', { n: A.falta }));
+          return avisar(tr('Already marked {n}.', { n: A.falta }));
         }
         A.marcados.add(m.dataset.uid);
       } else A.marcados.delete(m.dataset.uid);
@@ -563,7 +568,7 @@ function aoEscolher(a, v, b) {
   if (a !== 'entrega' || !b?.dataset.uid) return;
   const c = b.dataset.uid;
   if (b.dataset.ok !== '1') {
-    A.aviso = tr(b.dataset.motivo || 'Esse não é o Pokémon que pediram.');
+    A.aviso = tr(b.dataset.motivo || "That's not the Pokémon they asked for.");
     A.bom = false;
     pintarV2();
     return;
@@ -573,7 +578,7 @@ function aoEscolher(a, v, b) {
   else if (A.falta <= 1) {
     A.marcados.clear();
     A.marcados.add(c);
-  } else if (A.marcados.size >= A.falta) A.aviso = tr('Já marcou {n}.', { n: A.falta });
+  } else if (A.marcados.size >= A.falta) A.aviso = tr('Already marked {n}.', { n: A.falta });
   else A.marcados.add(c);
   pintarV2();
 }
@@ -620,7 +625,7 @@ function objetivosDe(s) {
       ),
   );
   const b = (p) => tr(p.texto || '') + (num(p.n) > 1 ? '  (0/' + num(p.n) + ')' : '');
-  return a.length <= 3 ? a.map(b) : [b(a[0]), b(a[1]), tr('e mais {n} objetivos', { n: a.length - 2 })];
+  return a.length <= 3 ? a.map(b) : [b(a[0]), b(a[1]), tr('and {n} more objectives', { n: a.length - 2 })];
 }
 const ICONE_CHAVE = {
   teleporte: './ui/amanda/questline/chave-teleporte.png',
@@ -630,7 +635,7 @@ const ICONE_CHAVE = {
 function premiosDe(r, a) {
   if (!r || typeof r !== 'object') return [];
   const l = [];
-  if (r.presente) l.push({ txt: tr('um Pokémon de presente'), ic: cabeca(r.presente.dex) });
+  if (r.presente) l.push({ txt: tr('a gift Pokémon'), ic: cabeca(r.presente.dex) });
   if (r.licenca)
     l.push({
       txt: tr(NOME_LICENCA[r.licenca] || r.licenca),
@@ -638,26 +643,26 @@ function premiosDe(r, a) {
     });
   for (const k of [].concat(r.chaves || [])) l.push({ txt: tr(NOME_CHAVE[k] || k), ic: ICONE_CHAVE[k] || null });
   for (const x of Array.isArray(r.extras) ? r.extras : [])
-    if (x?.tipo === 'canteiro') l.push({ txt: tr('Canteiro da horta'), ic: './ui/amanda/horta/icone-canteiro-64.png' });
+    if (x?.tipo === 'canteiro') l.push({ txt: tr('Garden plot'), ic: './ui/amanda/horta/icone-canteiro-64.png' });
   for (const [b, n] of Object.entries(r.itens || {}))
     l.push({ txt: tr(ctx.nomeItem?.(b) || 'item ' + b) + ' ×' + n, ic: iconeItem(b) });
   if (r.dinheiro)
-    l.push({ txt: tr('{x} Moedas', { x: fmt(r.dinheiro) }), ic: a.__moeda?.url || null, pad: a.__moeda?.pad || 0 });
+    l.push({ txt: tr('{x} Coins', { x: fmt(r.dinheiro) }), ic: a.__moeda?.url || null, pad: a.__moeda?.pad || 0 });
   if (r.exp) l.push({ txt: fmt(r.exp) + ' XP', ic: null });
-  return l.length <= 3 ? l : [l[0], l[1], { txt: tr('+{n} prêmios', { n: l.length - 2 }), ic: null }];
+  return l.length <= 3 ? l : [l[0], l[1], { txt: tr('+{n} rewards', { n: l.length - 2 }), ic: null }];
 }
 const ondeCurto = (a) =>
   String(tr(a || ''))
     .split(/[,;]/)[0]
     .trim();
 const temCaptura = (s) => (s?.passos || []).some((p) => p?.tipo === 'capturar');
-const AVISO_CAPTURA = 'Só contam as capturas feitas depois de aceitar a missão.';
+const AVISO_CAPTURA = 'Only catches made after accepting the mission count.';
 function pintarOferta(A) {
   const a = A.pop,
     s = A.lista?.[A.i];
   if (!s) return;
   Popup.textoCru(a, 'oferta-titulo', tr(s.nome || ''));
-  Popup.texto(a, 'missao-tipo', 'SECUNDÁRIA');
+  Popup.texto(a, 'missao-tipo', 'SIDE');
   Popup.textoCru(a, 'missao-quem', [A.npc.nome ? tr(A.npc.nome) : '', ondeCurto(s.onde)].filter(Boolean).join(' · '));
   Popup.texto(a, 'missao-texto', s.des || '');
   const b = objetivosDe(s);
@@ -690,9 +695,9 @@ function pintarOferta(A) {
   const d =
     A.bloq ||
     (teto()
-      ? tr('Você já tem {n} missões secundárias: termine ou abandone uma.', { n: M()?.TETO_SECUNDARIAS || 10 })
+      ? tr('You already have {n} side missions: finish or abandon one.', { n: M()?.TETO_SECUNDARIAS || 10 })
       : '');
-  const e = A.esperando ? tr('um instante…') : A.aviso || d || (temCaptura(s) ? tr(AVISO_CAPTURA) : '');
+  const e = A.esperando ? tr('one moment…') : A.aviso || d || (temCaptura(s) ? tr(AVISO_CAPTURA) : '');
   const t = filho(a, 'txt/missao-bloqueio');
   if (t) {
     Popup.textoCru(a, 'missao-bloqueio', e);
@@ -805,13 +810,13 @@ function pintarEscolha(A) {
     e = A.e,
     E = a.__esc,
     b = e.passo.opcoes || [];
-  Popup.textoCru(a, 'escolha-titulo', tr(e.passo.texto || 'Escolha'));
+  Popup.textoCru(a, 'escolha-titulo', tr(e.passo.texto || 'Choose'));
   const f = e.missao.recompensa?.presente,
     g = f && String(f.porEscolha) === String(e.passo.chave) ? num(f.lv) : 0;
   const h = g
-    ? tr('O Pokémon escolhido vem no Lv {n}. A escolha fica gravada.', { n: g })
-    : tr('A escolha fica gravada: não dá pra trocar depois.');
-  const d = Popup.textoCru(a, 'escolha-dica', A.esperando ? tr('um instante…') : A.aviso || h);
+    ? tr('The chosen Pokémon comes at Lv {n}. The choice is saved.', { n: g })
+    : tr("The choice is saved: you can't change it later.");
+  const d = Popup.textoCru(a, 'escolha-dica', A.esperando ? tr('one moment…') : A.aviso || h);
   cor(d, A.esperando || (A.aviso && A.bom) ? '#8EF58E' : A.aviso ? '#F58E8E' : null);
   (A.cels || []).forEach((c, k) => {
     const o = b[k];
@@ -827,11 +832,11 @@ function pintarEscolha(A) {
   botaoV2(a, 'escolher', !!A.sel && !A.esperando);
 }
 const ROTULO_MOTIVO = {
-  travado: 'TRAVADO',
+  travado: 'LOCKED',
   shiny: 'SHINY',
-  lendario: 'LENDÁRIO',
-  especie: 'OUTRA ESPÉCIE',
-  semDados: 'FECHADO',
+  lendario: 'LEGENDARY',
+  especie: 'OTHER SPECIES',
+  semDados: 'CLOSED',
 };
 function prepararEntrega(b) {
   const d = Popup.grupo(b, 'lista-pokemon');
@@ -925,14 +930,14 @@ function pintarEntrega(A) {
   Popup.textoCru(
     b,
     'seletor-titulo',
-    A.falta > 1 ? tr('Entregar {n} Pokémon', { n: A.falta }) : tr('Entregar um Pokémon'),
+    A.falta > 1 ? tr('Hand over {n} Pokémon', { n: A.falta }) : tr('Hand over a Pokémon'),
   );
   const g = !f
     ? tr(p.texto || '')
     : A.falta > 1
-      ? tr('Pra missão “{x}”: {n} {y}.', { x: tr(A.nomeMissao || ''), n: A.falta, y: f })
-      : tr('Pra missão “{x}”: um {y}.', { x: tr(A.nomeMissao || ''), y: f });
-  const h = Popup.textoCru(b, 'seletor-pedido', A.esperando ? tr('um instante…') : A.aviso || g);
+      ? tr('For mission “{x}”: {n} {y}.', { x: tr(A.nomeMissao || ''), n: A.falta, y: f })
+      : tr('For mission “{x}”: one {y}.', { x: tr(A.nomeMissao || ''), y: f });
+  const h = Popup.textoCru(b, 'seletor-pedido', A.esperando ? tr('one moment…') : A.aviso || g);
   cor(h, A.esperando || (A.aviso && A.bom) ? '#8EF58E' : A.aviso ? '#F58E8E' : null);
   for (const a of b.querySelectorAll('[data-tag="aba"]')) mostrar(filho(a, 'marca-ativa'), a.dataset.tagval === A.aba);
   const L = linhasEntrega(A),
@@ -956,7 +961,7 @@ function pintarEntrega(A) {
     );
     mostrar(filho(c, 'marca-selecionada'), A.marcados.has(a));
     if (!x.ok) {
-      const t = Popup.textoCru(b, 'motivo', tr(ROTULO_MOTIVO[x.erro] || 'BLOQUEADO'), c);
+      const t = Popup.textoCru(b, 'motivo', tr(ROTULO_MOTIVO[x.erro] || 'LOCKED'), c);
       caberDepois(t, 7);
     }
   });
@@ -968,8 +973,8 @@ function pintarEntrega(A) {
     const t = L.length
       ? ''
       : A.aba === 'caixa'
-        ? tr('Nenhum Pokémon dessa espécie na Caixa.')
-        : tr('Você não tem nenhum Pokémon dessa espécie.');
+        ? tr('No Pokémon of that species in the Box.')
+        : tr("You don't have any Pokémon of that species.");
     m.textContent = t;
     m.style.display = t ? 'flex' : 'none';
   }
@@ -980,7 +985,7 @@ function pintarEntrega(A) {
     b,
     'entregar-pokemon',
     k > 0 && !A.esperando,
-    k === 1 ? tr('Entregar {x}', { x: nomeDe(o) }) : k > 1 ? tr('Entregar {n} Pokémon', { n: k }) : tr('Entregar'),
+    k === 1 ? tr('Deliver {x}', { x: nomeDe(o) }) : k > 1 ? tr('Hand over {n} Pokémon', { n: k }) : tr('Deliver'),
   );
 }
 export function painel(a, c) {
@@ -1023,16 +1028,16 @@ export function painel(a, c) {
     const i = M().foco?.() === String(c.id),
       p = (c.passos || [])[c.passo];
     f =
-      b('sec-foco', i ? tr('Voltar a seguir a história') : tr('Seguir no rastreador')) +
-      (p?.tipo === 'escolher' ? b('sec-escolher', tr('Escolher')) : '') +
-      b('sec-largar', tr('Abandonar')) +
-      (p?.tipo === 'doar' ? e(tr('Fale com quem pediu pra entregar.')) : '');
+      b('sec-foco', i ? tr('Resume following the story') : tr('Track')) +
+      (p?.tipo === 'escolher' ? b('sec-escolher', tr('Choose')) : '') +
+      b('sec-largar', tr('Abandon')) +
+      (p?.tipo === 'doar' ? e(tr('Talk to whoever asked for the delivery.')) : '');
   } else if (c.estado === 'disponivel')
     f = e(
-      tr('Pra aceitar, fale com quem dá a missão: {x}.', { x: tr(c.onde || '') }) +
+      tr('To accept, talk to the mission giver: {x}.', { x: tr(c.onde || '') }) +
         (temCaptura(c) ? ' ' + tr(AVISO_CAPTURA) : ''),
     );
-  else if (c.estado === 'feita') f = e(tr('Missão concluída.'));
+  else if (c.estado === 'feita') f = e(tr('Mission complete.'));
   d.innerHTML = f;
   d.querySelector('.sec-foco')?.addEventListener('click', (a) => {
     a.stopPropagation();
@@ -1043,7 +1048,7 @@ export function painel(a, c) {
     a.stopPropagation();
     if (!conferirEscolha(ctx.areaAtual?.(), true))
       ctx.Chat?.sistema?.(
-        tr('Vá até o lugar da escolha: {x}.', { x: tr((c.passos || [])[c.passo]?.onde || c.onde || '') }),
+        tr('Go to the choice location: {x}.', { x: tr((c.passos || [])[c.passo]?.onde || c.onde || '') }),
       );
   });
   d.querySelector('.sec-largar')?.addEventListener('click', (a) => {
@@ -1055,14 +1060,14 @@ function confirmarAbandono(a) {
   const d = dialogo('abandono');
   aberto.missao = a.id;
   d.innerHTML =
-    titulo(tr('Abandonar'), tr(a.nome)) +
+    titulo(tr('Abandon'), tr(a.nome)) +
     '<div style="text-align:center">' +
-    esc(tr('O progresso dela se perde; dá pra aceitar de novo depois, com quem dá a missão.')) +
+    esc(tr('Its progress is lost; you can accept it again later from the mission giver.')) +
     '</div>' +
     aviso() +
     '<div style="display:flex;gap:8px">' +
-    botao('sec-ok', esc(tr('Abandonar'))) +
-    botao('sec-nao', esc(tr('Cancelar'))) +
+    botao('sec-ok', esc(tr('Abandon'))) +
+    botao('sec-nao', esc(tr('Cancel'))) +
     '</div>';
   d.querySelector('.sec-nao').onclick = () => fecharTopo();
   d.querySelector('.sec-ok').onclick = () => {
@@ -1083,7 +1088,7 @@ export function receber(m) {
     );
   if (m.t === 'missao_erro') {
     if (aberto) {
-      avisar(tr(String(m.erro || 'Não deu.')) + (String(m.erro || '').endsWith('.') ? '' : '.'));
+      avisar(tr(String(m.erro || "That didn't work.")) + (String(m.erro || '').endsWith('.') ? '' : '.'));
       liberar();
       return true;
     }
@@ -1093,19 +1098,19 @@ export function receber(m) {
     const A = aberto,
       b = A?.v2 && A.tipo === 'oferta' && A.npc?.cfg != null ? M()?.secundariasDoNpc?.(A.npc.cfg) || [] : [];
     fecharTopo();
-    ctx.Chat?.sistemaCru?.('📜 ' + tr('Missão aceita: {x}.', { x: a(m.aceitou) }));
+    ctx.Chat?.sistemaCru?.('📜 ' + tr('Mission accepted: {x}.', { x: a(m.aceitou) }));
     try {
       ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 });
     } catch {}
     if (b.length) abrirOfertaV2(b, A.npc);
   } else if (m.op === 'abandonar') {
     fecharTopo();
-    ctx.Chat?.sistemaCru?.(tr('Missão abandonada: {x}.', { x: a(m.abandonou ?? m.id ?? aberto?.missao) }));
+    ctx.Chat?.sistemaCru?.(tr('Mission abandoned: {x}.', { x: a(m.abandonou ?? m.id ?? aberto?.missao) }));
   } else if (m.op === 'escolher') {
     fecharTopo(false);
   } else if (m.op === 'doar') {
     fecharTopo();
-    ctx.Chat?.sistemaCru?.('🤝 ' + tr('Entregue: {n} Pokémon.', { n: (m.uids || []).length }));
+    ctx.Chat?.sistemaCru?.('🤝 ' + tr('Handed over: {n} Pokémon.', { n: (m.uids || []).length }));
   }
   ctx.repintar?.();
   return true;

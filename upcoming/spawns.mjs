@@ -22,7 +22,7 @@ function marcar(a) {
     const v = { ...vistas(), [a]: Date.now() };
     C.marcar(v);
   } catch (e) {
-    console.warn('aparição: marca', e);
+    console.warn('spawn: mark', e);
   }
 }
 let texBrilho = null;
@@ -317,7 +317,7 @@ export function quadro(b) {
     try {
       g = a.passo(a, b);
     } catch (e) {
-      console.warn('aparição', e);
+      console.warn('spawn', e);
     }
     if (!g) soltar(a);
   }
@@ -343,7 +343,7 @@ export function quadro(b) {
       ativas.push(a);
     })
     .catch((e) => {
-      console.warn('aparição ' + c.id + ':', e?.message || e);
+      console.warn('spawn ' + c.id + ':', e?.message || e);
     })
     .finally(() => {
       carregando = false;

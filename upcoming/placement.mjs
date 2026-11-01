@@ -20,45 +20,45 @@ export function terrenoDe(a) {
     : null;
 }
 export const ERROS = {
-  lugar_desconhecido: 'Esse lugar não aceita construções.',
-  pedido_invalido: 'Pedido inválido.',
-  vaga_desconhecida: 'Essa construção não existe aqui.',
-  coordenada_invalida: 'Posição inválida.',
-  fora_do_passo: 'A posição anda de 0,5 em 0,5 m.',
-  giro_invalido: 'Gire de 90 em 90 graus.',
-  sem_papel: 'Você não pode mexer nas construções daqui.',
-  fora_do_lugar: 'Entre no lugar pra arrumar as construções.',
-  nao_construida: 'Essa construção ainda não foi construída.',
-  sem_item: 'Você não tem esse item na bolsa.',
-  item_invalido: 'Esse item não vai nesse lugar.',
-  limite_por_tipo: 'Já tem o máximo dessa peça no terreno.',
-  em_uso: 'Isso está em uso: esvazie antes de guardar.',
-  ja_colocada: 'Já está no terreno: use mover.',
-  nao_colocada: 'Isso não está no terreno.',
-  peca_de_superior: 'Quem arrumou essa construção tem cargo acima do seu.',
-  nao_guardavel: 'Essa construção não se guarda: só se move.',
-  fora_do_lote: 'Fora do terreno de construção.',
-  no_mar: "Uma parte fica em cima d'água.",
-  na_beira: 'Muito perto da beira.',
-  sobre_obstaculo: 'Em cima de algo fixo da cena.',
-  na_passagem: 'Em cima do caminho entre as áreas.',
-  entre_regioes: 'Fica entre duas áreas: escolha uma só.',
-  regiao_fechada: 'Essa área ainda não abriu.',
-  na_chegada: 'Em cima do ponto de chegada.',
-  na_praca: 'Na praça da chegada: deixe livre.',
-  na_porta: 'Na frente de uma porta.',
-  no_chefe: 'Na arena do chefe do dia.',
-  sobre_construcao: 'Encostado demais em outra construção.',
-  fecha_caminho: 'Fecharia o caminho a pé.',
+  lugar_desconhecido: "This place doesn't accept buildings.",
+  pedido_invalido: 'Invalid request.',
+  vaga_desconhecida: "That building doesn't exist here.",
+  coordenada_invalida: 'Invalid position.',
+  fora_do_passo: 'Position moves in 0.5 m steps.',
+  giro_invalido: 'Rotate in 90-degree steps.',
+  sem_papel: "You can't move the buildings here.",
+  fora_do_lugar: 'Enter the place to arrange the buildings.',
+  nao_construida: "That building hasn't been built yet.",
+  sem_item: "You don't have that item in your Bag.",
+  item_invalido: "That item doesn't go here.",
+  limite_por_tipo: 'The plot already has the max of this piece.',
+  em_uso: 'This is in use: empty it before storing.',
+  ja_colocada: 'Already on the plot: use move.',
+  nao_colocada: "That isn't on the plot.",
+  peca_de_superior: 'Whoever placed this building outranks you.',
+  nao_guardavel: "This building can't be stored: only moved.",
+  fora_do_lote: 'Outside the building plot.',
+  no_mar: 'Part of it is over water.',
+  na_beira: 'Too close to the edge.',
+  sobre_obstaculo: 'On top of something fixed in the scene.',
+  na_passagem: 'On the path between areas.',
+  entre_regioes: 'It sits between two areas: pick just one.',
+  regiao_fechada: "This area hasn't opened yet.",
+  na_chegada: 'On the arrival point.',
+  na_praca: 'In the arrival plaza: keep it clear.',
+  na_porta: 'In front of a door.',
+  no_chefe: 'In the daily boss arena.',
+  sobre_construcao: 'Too close to another building.',
+  fecha_caminho: 'Would block the walking path.',
 };
 const erro = (a, b, c = {}) => ({ ok: false, erro: a, msg: b || ERROS[a] || a, ...c });
 const papelNome = {
-  dono: 'o dono',
-  lider: 'o Líder',
-  vice: 'um Vice',
-  oficial: 'um Oficial',
-  membro: 'um Membro',
-  recruta: 'um Recruta',
+  dono: 'the Owner',
+  lider: 'the Leader',
+  vice: 'a Vice',
+  oficial: 'an Officer',
+  membro: 'a Member',
+  recruta: 'a Recruit',
 };
 const COS = { 0: 1, 90: 0, 180: -1, 270: 0 },
   SEN = { 0: 0, 90: 1, 180: 0, 270: -1 };
@@ -267,7 +267,7 @@ export function caminhoLivre(T, h) {
   };
   for (const o of h) r(crescer(o.caixa, e), 0);
   const s = celulaDe(P, T.origem.x, T.origem.z);
-  if (!s || !p[s[1] * l + s[0]]) return { alvo: 'a chegada' };
+  if (!s || !p[s[1] * l + s[0]]) return { alvo: 'the arrival point' };
   const t = new Uint8Array(N),
     u = new Int32Array(N);
   let a = 0,
@@ -298,7 +298,7 @@ export function caminhoLivre(T, h) {
   };
   for (const al of T.alvos || []) if (!_(al.x, al.z)) return { alvo: al.nome };
   for (const o of h) {
-    if (o.porta && !_(o.porta.frente[0], o.porta.frente[1])) return { alvo: 'a porta de ' + o.nome };
+    if (o.porta && !_(o.porta.frente[0], o.porta.frente[1])) return { alvo: 'the door of ' + o.nome };
     const aa = faixa(P, crescer(o.caixa, e + n)),
       ba = faixa(P, crescer(o.caixa, e));
     let ok = false;
@@ -332,7 +332,7 @@ function conferirLugar(T, a, b, n, x, z, d, e) {
   const m = celulaDe(P, x, z),
     p = m ? P.info[P.cod[m[1] * P.g.nx + m[0]]] : null;
   if (!p || p.tipo === 'mar')
-    return erro('fora_do_lote', T.id === 'casa' ? 'Fora do gramado do terreno.' : 'Fora das ilhas da base.');
+    return erro('fora_do_lote', T.id === 'casa' ? "Outside the plot's lawn." : 'Outside the base islands.');
   const f = faixa(P, h);
   if (f.fora) return erro('no_mar');
   let q = false,
@@ -357,21 +357,24 @@ function conferirLugar(T, a, b, n, x, z, d, e) {
   if (s)
     return erro(
       'na_beira',
-      'Muito perto da beira: deixe ' + String(R().folgaBeira).replace('.', ',') + ' m até a borda.',
+      'Too close to the edge: leave ' + String(R().folgaBeira).replace('.', ',') + ' m from the edge.',
     );
   if (t >= 0) {
     const ob = (T.obstaculos || []).find((o) => sobrepoe(h, o.caixa));
-    return erro('sobre_obstaculo', 'Em cima de ' + (ob ? T.tiposObstaculo[ob.tipo] : 'algo fixo da cena') + '.');
+    return erro(
+      'sobre_obstaculo',
+      'On top of ' + (ob ? T.tiposObstaculo[ob.tipo] : 'something fixed in the scene') + '.',
+    );
   }
   if (u) return erro('na_passagem');
-  if (w) return erro('fora_do_lote', 'Esse chão não é de construção (é passagem entre as áreas).');
+  if (w) return erro('fora_do_lote', "This ground isn't for building (it's a passage between areas).");
   if (_.size > 1) return erro('entre_regioes');
   const $ = P.regiaoPorId[[..._][0]];
   if (!$) return erro('fora_do_lote');
   if ((+a.nivel || 0) < $.nivel)
     return erro(
       'regiao_fechada',
-      $.nome + ' abre no nível ' + $.nivel + (T.id === 'base' ? ' da guilda.' : ' do terreno.'),
+      $.nome + ' opens at level ' + $.nivel + (T.id === 'base' ? ' of the guild.' : ' of the plot.'),
     );
   const cf = crescer(h, R().folgaPeca);
   for (const ca of T.zonas || []) {
@@ -383,16 +386,16 @@ function conferirLugar(T, a, b, n, x, z, d, e) {
     return erro(
       da,
       ca.tipo === 'porta'
-        ? 'Na frente da ' + ca.nome + '.'
+        ? 'In front of the ' + ca.nome + '.'
         : ca.tipo === 'passagem'
-          ? 'Em cima do caminho (' + ca.nome + ').'
+          ? 'On the path (' + ca.nome + ').'
           : undefined,
     );
   }
   if (l)
     for (const ea of T.zonas || [])
       if (ea.tipo !== 'porta' && tocaZona(l.r, ea) && ea.tipo !== 'praca' && ea.tipo !== 'chegada') {
-        return erro('na_porta', 'A porta de ' + v.nome + ' daria pra ' + ea.nome + '.');
+        return erro('na_porta', 'The door of ' + v.nome + ' would face ' + ea.nome + '.');
       }
   const { pe } = ocupacao(T, a.colocacoes, a),
     aa = pe.filter((o) => o.id !== e);
@@ -400,19 +403,19 @@ function conferirLugar(T, a, b, n, x, z, d, e) {
     if (sobrepoe(cf, o.caixa))
       return erro(
         'sobre_construcao',
-        'Encostado demais em ' + o.nome + ' (folga de ' + String(R().folgaPeca).replace('.', ',') + ' m).',
+        'Too close to ' + o.nome + ' (clearance of ' + String(R().folgaPeca).replace('.', ',') + ' m).',
       );
-    if (o.porta && sobrepoe(cf, o.porta.r)) return erro('na_porta', 'Na frente da porta de ' + o.nome + '.');
+    if (o.porta && sobrepoe(cf, o.porta.r)) return erro('na_porta', 'In front of the door of ' + o.nome + '.');
     if (l && sobrepoe(l.r, o.caixa))
-      return erro('na_porta', 'A porta de ' + v.nome + ' ficaria tapada por ' + o.nome + '.');
+      return erro('na_porta', 'The door of ' + v.nome + ' would be blocked by ' + o.nome + '.');
   }
   const eu = { id: e ?? b, vaga: b, nome: v.nome, caixa: h, porta: l };
   const ba = caminhoLivre(T, [...aa, eu]);
-  if (ba) return erro('fecha_caminho', 'Fecharia o caminho até ' + ba.alvo + '.');
+  if (ba) return erro('fecha_caminho', 'Would block the path to ' + ba.alvo + '.');
   return { ok: true, caixa: h, porta: l?.r || null, y: $.y, regiao: $.id };
 }
 export function validar(T, a, b, d = {}) {
-  if (!D) return erro('lugar_desconhecido', 'Dados da colocação não carregados.');
+  if (!D) return erro('lugar_desconhecido', 'Placement data not loaded.');
   if (!T || !T.vagas) return erro('lugar_desconhecido');
   const e = b && typeof b === 'object' ? b.acao : null;
   if (e !== 'colocar' && e !== 'mover' && e !== 'remover') return erro('pedido_invalido');
@@ -424,11 +427,11 @@ export function validar(T, a, b, d = {}) {
     return erro(
       'sem_papel',
       T.id === 'casa'
-        ? 'Só o dono mexe nas construções do terreno.'
-        : 'Só o Líder, um Vice ou um Oficial arruma a base.',
+        ? "Only the owner can move the plot's buildings."
+        : 'Only the Leader, a Vice, or an Officer can arrange the base.',
     );
   if (R().exigeNaSala && d.naSala !== true)
-    return erro('fora_do_lugar', T.id === 'casa' ? 'Entre no seu terreno pra arrumar.' : 'Entre na base pra arrumar.');
+    return erro('fora_do_lugar', T.id === 'casa' ? 'Enter your land to arrange.' : 'Enter the base to arrange.');
   const g = p.id || p.vaga;
   if (!g) return erro('vaga_desconhecida');
   const h = p.vaga || String(g).split('#')[0];
@@ -438,34 +441,34 @@ export function validar(T, a, b, d = {}) {
   const { pe: i } = ocupacao(T, f, C);
   if (e === 'colocar') {
     if (v.tipo === 'construcao') {
-      if (!n) return erro('nao_construida', v.nome + ' ainda não foi construída.');
-      if (f.some((c) => c?.vaga === h)) return erro('ja_colocada', v.nome + ' já está no terreno: use mover.');
+      if (!n) return erro('nao_construida', v.nome + " hasn't been built yet.");
+      if (f.some((c) => c?.vaga === h)) return erro('ja_colocada', v.nome + ' is already on the plot: use move.');
     } else {
       const l = limiteDe(v),
         q = f.filter((c) => c?.vaga === h).length;
       if (q >= l)
         return erro(
           'limite_por_tipo',
-          'Só cabe ' + l + ' ' + v.nome + (T.id === 'casa' ? ' por terreno.' : ' na base.'),
+          'Only room for ' + l + ' ' + v.nome + (T.id === 'casa' ? ' per plot.' : ' in the base.'),
         );
       const r = itemEscolhido(v, p.item, d.itens);
       if (r === null) return erro('item_invalido');
-      if (r === undefined) return erro('sem_item', 'Você não tem ' + v.nome + ' na bolsa.');
+      if (r === undefined) return erro('sem_item', "You don't have " + v.nome + ' in your Bag.');
     }
   }
   let j = null;
   if (e !== 'colocar') {
     j = i.find((o) => o.id === g) || (p.vaga && !p.id ? i.find((o) => o.vaga === h) : null);
-    if (!j) return erro('nao_colocada', v.nome + ' não está no terreno.');
+    if (!j) return erro('nao_colocada', v.nome + " isn't on the plot.");
     const s = (R().superiores || {})[d.papel] || [];
     if (j.papel && s.includes(j.papel))
       return erro(
         'peca_de_superior',
-        'Quem arrumou ' + v.nome + ' foi ' + (papelNome[j.papel] || j.papel) + ': o seu cargo não desfaz.',
+        'The one who placed ' + v.nome + ' foi ' + (papelNome[j.papel] || j.papel) + ": your rank can't undo it.",
       );
     if (e === 'remover') {
       if (v.tipo === 'construcao' && (R().naoGuardaveis || []).includes(h))
-        return erro('nao_guardavel', v.nome + ' não se guarda: só se move.');
+        return erro('nao_guardavel', v.nome + " can't be stored: only moved.");
       if (typeof d.emUso === 'function') {
         const m = d.emUso(j.id, h);
         if (m) return erro('em_uso', typeof m === 'string' ? m : undefined);

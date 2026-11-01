@@ -67,10 +67,10 @@ export function fotoDoItem(a, b, { indice: c = null, shiny: d = false } = {}) {
   return null;
 }
 export const TIPO_DO_ITEM = Object.freeze({
-  roupa: 'Roupa',
-  mochila: 'Mochila',
-  peito: 'Efeito',
-  rastro: 'Rastro',
+  roupa: 'Outfit',
+  mochila: 'Bag',
+  peito: 'Effect',
+  rastro: 'Trail',
   montaria: 'Montaria',
 });
 export const EXTRAS = Object.freeze({
@@ -78,68 +78,68 @@ export const EXTRAS = Object.freeze({
     tag: 'diam',
     icone: 'ui/amanda/loja/diamante@2x.png',
     nome: '{n} Diamantes',
-    desc: 'Pra gastar na Loja: cosméticos e o Passe',
+    desc: 'To spend in the Shop: cosmetics and the Pass',
   },
   vagas: {
     tag: 'vagas',
     icone: 'ui/amanda/loja/vagas-caixa@2x.png',
-    nome: '+{n} vagas na Caixa',
-    desc: 'Mais espaço na Caixa de Pokémon',
+    nome: '+{n} Box slots',
+    desc: 'More space in the Pokémon Box',
   },
   incubadoras: {
     tag: 'inc',
     icone: 'ui/amanda/itens_novos/ic_900030@2x.png',
-    nome1: '1 Incubadora',
-    nome: '{n} Incubadoras',
-    desc: 'Pra chocar mais ovos ao mesmo tempo',
+    nome1: '1 Incubator',
+    nome: '{n} Incubators',
+    desc: 'Hatch more eggs at once',
   },
   meses: {
     tag: 'med',
     icone: 'ui/amanda/itens_novos/ic_900170@2x.png',
-    nome1: '1 mês de Medalhão',
-    nome: '{n} meses de Medalhão',
-    desc: '+20% de XP e mais vagas',
+    nome1: '1 month of Medallion',
+    nome: '{n} months of Medallion',
+    desc: '+20% XP and more slots',
   },
   titulo: {
     tag: 'tit',
     icone: 'ui/amanda/correio/anexo-titulo@2x.png',
-    nome: 'Título Fundador',
-    desc: 'Aparece com o seu nome pra todo mundo',
+    nome: 'Founder Title',
+    desc: 'Shown with your name to everyone',
   },
 });
-export const DESC_SKIN = 'Skin exclusiva';
+export const DESC_SKIN = 'Exclusive skin';
 export const NOME_VEICULO = { skate: 'Skate', hoverboard: 'Hoverboard', pm0791: 'Solgaleo' };
-export const DESC_MONTARIA = 'Montaria · monta na hora',
-  DESC_MONTARIA_SHINY = 'Montaria shiny · monta na hora';
+export const DESC_MONTARIA = 'Mount · ride instantly',
+  DESC_MONTARIA_SHINY = 'Shiny mount · ride instantly';
 export const NOME_RECURSO = {
-  meses: 'Medalhão',
+  meses: 'Medallion',
   diamantes: 'Diamantes',
-  vagas: 'Vagas na Caixa',
-  incubadoras: 'Incubadora',
-  titulo: 'Fundador',
+  vagas: 'Box Slots',
+  incubadoras: 'Incubator',
+  titulo: 'Founder',
 };
 export const ORDEM_RECURSOS = ['diamantes', 'vagas', 'incubadoras', 'meses', 'titulo'];
 export const TEXTOS = {
-  maisN: '{x}, mais {n} itens: tudo preso à sua conta.',
-  mais1: '{x}, mais 1 item: tudo preso à sua conta.',
-  skinN: '{x}: skins exclusivas, presas à sua conta.',
-  skin1: '{x}: skin exclusiva, presa à sua conta.',
-  subida: 'Você já tem o {x}: pague só a diferença.',
-  notaNormal: 'Chega tudo na sua conta, preso a ela. Não dá pra vender nem trocar.',
-  notaSubida: 'Você já tem o {x}: pague só a diferença. O que falta chega na sua conta.',
-  notaComprado: 'Já está tudo na sua conta. As skins e as mochilas ficam no seu Guarda-roupa.',
-  mes1: '1 mês',
+  maisN: '{x}, plus {n} items: all bound to your account.',
+  mais1: '{x}, plus 1 item: all bound to your account.',
+  skinN: '{x}: exclusive skins, bound to your account.',
+  skin1: '{x}: exclusive skin, bound to your account.',
+  subida: 'You already have {x}: pay only the difference.',
+  notaNormal: "Everything goes to your account, bound to it. Can't be sold or traded.",
+  notaSubida: 'You already have {x}: pay only the difference. The rest goes to your account.',
+  notaComprado: 'Everything is already in your account. Skins and backpacks are in your Wardrobe.',
+  mes1: '1 month',
   mesN: '{n} meses',
   titulo: 'Título',
-  jaTem: 'Você já tem',
-  medalhaoNome: 'Medalhão · 30 dias',
-  medalhaoDesc: '+{xp} % de XP, +{vagas} vagas na Caixa e +{anuncios} anúncios. Use ou venda no Mercado por Moedas.',
+  jaTem: 'You already have it',
+  medalhaoNome: 'Medallion · 30 days',
+  medalhaoDesc: '+{xp} % XP, +{vagas} Box slots and +{anuncios} listings. Use it or sell it on the Market for Coins.',
   medalhaoDescMedia:
-    '+{xp} % de XP, +{vagas} vagas na Caixa, +{anuncios} anúncios, −{recarga} % na recarga da Viagem e o selo no chat. Use ou venda no Mercado por Moedas.',
+    '+{xp} % XP, +{vagas} Box slots, +{anuncios} listings, −{recarga} % Travel cooldown, and the chat badge. Use it or sell it on the Market for Coins.',
   medalhaoDescLonga:
-    '{dias} dias com +{xp} % de XP nos seus Pokémon, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % na recarga da Viagem e do Teleporte e o selo no chat. Use ou venda no Mercado por Moedas.',
-  medalhaoFaltam: 'Faltam {n} Diamantes comprados (só os comprados valem).',
-  medalhaoAtivo: 'ativo até {data}',
+    '{dias} days of +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % Travel and Teleport cooldown, and the chat badge. Use it or sell it on the Market for Coins.',
+  medalhaoFaltam: '{n} more purchased Diamonds needed (only purchased ones count).',
+  medalhaoAtivo: 'active until {data}',
 };
 export const BENEFICIOS_MEDALHAO = Object.freeze({ dias: 30, xp: 20, vagas: 100, anuncios: 10, recarga: 50 });
 export function textoMedalhao(a = 'curta', t = null) {
@@ -353,7 +353,7 @@ export function vitrineDoNivel({
     preco: i.jaTem ? null : i.preco,
     riscado: !i.jaTem && i.subida ? i.cheio : null,
     prazo: i.jaTem ? '' : prazo(a?.termina, h),
-    botao: i.jaTem ? 'JÁ É SEU' : 'Comprar',
+    botao: i.jaTem ? 'ALREADY YOURS' : 'Buy',
   };
 }
 export function janelaDoNivel({
@@ -373,7 +373,7 @@ export function janelaDoNivel({
   return {
     nivel: a?.nivel ?? null,
     estado: h.jaTem ? 'comprado' : 'normal',
-    titulo: t('Pacote Fundador') + ' · ' + t(texto(a?.nome)),
+    titulo: t('Founder Pack') + ' · ' + t(texto(a?.nome)),
     skins: ordemDoPalco(S.skins),
     itens: S.itens,
     nota: notaDoNivel({ estado: h, nomeDaConta: i ? t(i.nome) : '', t }),
@@ -384,48 +384,53 @@ export function janelaDoNivel({
   };
 }
 export const TEXTOS_CAMINHO = Object.freeze({
-  titulo: 'Pacote Fundador',
-  slide: 'Os 3 personagens, montarias e muito mais. Prove tudo antes de comprar.',
-  selo: 'SÓ DURANTE O BETA',
-  verPacote: 'Ver o pacote',
-  aPartir: 'a partir de',
-  termina: 'termina em',
-  vitrine: 'Prove ao vivo',
-  vitrineSubPc: 'Clique num item pra ver no seu personagem',
-  vitrineSubCel: 'Toque num item pra ver no seu personagem',
-  extras: 'E vem junto',
-  extrasSub: 'Passe o mouse pra saber mais',
-  nota: 'Tudo fica preso à sua conta: não dá pra vender nem trocar.',
-  comprar: 'Comprar · {preco}',
-  melhorar: 'Melhorar · {preco}',
-  diferenca: 'Paga só a diferença: {cheio} − {antes}',
-  emBreve: 'Em breve',
-  jaESeu: 'JÁ É SEU',
-  jaFrase: 'Já está tudo na sua conta. As skins e as mochilas ficam no seu Guarda-roupa.',
-  ver: 'Ver',
-  fechar: 'Fechar',
-  jaVem: 'Já vem junto, sem pagar de novo',
-  maisItens: '+{n} itens',
+  titulo: 'Founder Pack',
+  slide: 'All 3 characters, mounts and much more. Try everything before buying.',
+  selo: 'BETA ONLY',
+  verPacote: 'View the pack',
+  aPartir: 'from',
+  termina: 'ends in',
+  vitrine: 'Try it live',
+  vitrineSubPc: 'Click an item to preview it on your character',
+  vitrineSubCel: 'Tap an item to preview it on your character',
+  extras: 'Also included',
+  extrasSub: 'Hover to learn more',
+  nota: "Everything is bound to your account: can't be sold or traded.",
+  comprar: 'Buy · {preco}',
+  melhorar: 'Upgrade · {preco}',
+  diferenca: 'Pay only the difference: {cheio} − {antes}',
+  emBreve: 'Coming soon',
+  jaESeu: 'ALREADY YOURS',
+  jaFrase: 'Everything is already in your account. Skins and backpacks are in your Wardrobe.',
+  ver: 'View',
+  fechar: 'Close',
+  jaVem: 'Already included, no paying twice',
+  maisItens: '+{n} items',
   mochilas: '{n} mochilas',
-  voltar: 'Voltar à vitrine',
-  arraste: 'Arraste pra girar',
+  voltar: 'Back to showcase',
+  arraste: 'Drag to rotate',
 });
 export const FRASES_NIVEL = Object.freeze({
   1: {
-    inclui: 'Inclui tudo do Desafiante',
-    selo: 'do Desafiante',
-    jaTem: 'Você já tem o Desafiante',
-    vemNo: 'Vem no Desafiante',
+    inclui: 'Includes everything in Challenger',
+    selo: 'Challenger',
+    jaTem: 'You already have Challenger',
+    vemNo: 'Included in Challenger',
   },
-  2: { inclui: 'Inclui tudo do Elite', selo: 'do Elite', jaTem: 'Você já tem o Elite', vemNo: 'Vem no Elite' },
-  3: { vemNo: 'Vem no Campeão' },
+  2: {
+    inclui: 'Includes everything in Elite',
+    selo: 'Elite',
+    jaTem: 'You already have Elite',
+    vemNo: 'Included in Elite',
+  },
+  3: { vemNo: 'Included in Champion' },
 });
 export const DESCRICOES = Object.freeze({
-  asasDicaPc: 'Mochila em forma de asas: vai nas costas do seu personagem. Clique pra provar.',
-  asasDicaCel: 'Mochila em forma de asas, vai nas costas. Toque pra provar.',
-  asasProvador: 'Vai nas costas do seu personagem. Presa à sua conta: troque quando quiser no Guarda-roupa.',
-  montariaProvador: 'Seu personagem monta e corre pelo mapa. Presa à sua conta.',
-  incubadoraCampeao: 'Cada incubadora choca um ovo. Com 3, você choca 3 ovos ao mesmo tempo no seu terreno.',
+  asasDicaPc: "Wing-shaped backpack: worn on your character's back. Click to try it on.",
+  asasDicaCel: 'Wing-shaped backpack, worn on the back. Tap to try it on.',
+  asasProvador: "Worn on your character's back. Bound to your account: swap anytime in the Wardrobe.",
+  montariaProvador: 'Your character rides and runs across the map. Bound to your account.',
+  incubadoraCampeao: 'Each incubator hatches one egg. With 3, you hatch 3 eggs at once on your plot.',
 });
 const ASAS = /^Bag023(_1)?$/;
 export const TIPOS_QUE_PROVAM = Object.freeze(['roupa', 'mochila', 'peito', 'montaria']);
@@ -435,7 +440,7 @@ export const totalDoNivel = (a, { indice: b = null } = {}) => {
   const S = slotsDoNivel(a, { indice: b });
   return S.skins.length + S.itens.length;
 };
-const textoTotal = (n, t, a) => (n === 1 ? t('1 item') : t('{n} itens', { n: n.toLocaleString(a) }));
+const textoTotal = (n, t, a) => (n === 1 ? t('1 item') : t('{n} items', { n: n.toLocaleString(a) }));
 export function nivelInicial(c, d = 0) {
   const L = (Array.isArray(c) ? c : [])
     .map((o) => o?.nivel)

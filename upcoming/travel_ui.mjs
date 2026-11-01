@@ -16,8 +16,8 @@ const falta = (a) => {
   return Math.max(0, Math.ceil(s - (Date.now() - vistaEm) / 1000));
 };
 const SEM_CHAVE = {
-  teleporte: 'Você ainda não aprendeu o Teleporte: procure a missão “O Abra do Salão”, em Celadon.',
-  viagem: 'Você ainda não sabe viajar entre os Centros: procure a missão “Os Ventos de Kanto”, em Celadon.',
+  teleporte: "You haven't learned Teleport yet: look for the mission “The Hall's Abra” in Celadon.",
+  viagem: "You don't know how to travel between Centers yet: look for the mission “The Winds of Kanto” in Celadon.",
 };
 const AREAS_ARQUIPELAGO = new Set([
   2249, 2250, 2251, 2252, 2253, 2254, 2255, 2265, 2266, 2267, 2268, 2270, 2271, 2272, 2273, 2275, 2276, 2280, 2281,
@@ -26,8 +26,8 @@ const AREAS_ARQUIPELAGO = new Set([
 const semArLivre = () =>
   tr(
     AREAS_ARQUIPELAGO.has(+ctx.areaAtual?.())
-      ? 'Os ventos fortes das ilhas não deixam voar daqui. Viaje pela balsa.'
-      : 'Só dá pra viajar ao ar livre.',
+      ? "The strong island winds won't let you fly from here. Take the ferry."
+      : 'You can only travel outdoors.',
   );
 export function instalar(c) {
   ctx = c || {};
@@ -121,10 +121,10 @@ function ligarRelogio() {
     }, 1000);
 }
 const V2 = {
-  teleporte: { no: 'btn-teleporte', txt: 'teleporte', sub: 'teleporte-sub', rotulo: 'Voltar ao Centro' },
+  teleporte: { no: 'btn-teleporte', txt: 'teleporte', sub: 'teleporte-sub', rotulo: 'Return to Center' },
   viagem: { no: 'btn-voar', txt: 'voar', sub: 'voar-sub', rotulo: 'Voar' },
 };
-const MOTIVO_CURTO = { teleporte: 'Missão em Celadon', viagem: 'Missão em Celadon' };
+const MOTIVO_CURTO = { teleporte: 'Mission in Celadon', viagem: 'Mission in Celadon' };
 function pintarV2() {
   const a = mapaPop;
   if (!a || !a.querySelector('[data-fig="btn-voar"]')) return;
@@ -150,7 +150,7 @@ function pintarV2() {
     Popup.texto(
       a,
       d.sub,
-      i === 'recarga' ? mmss(f) : i === 'bloqueado' ? (h ? MOTIVO_CURTO[g] : 'Entre com uma conta') : '',
+      i === 'recarga' ? mmss(f) : i === 'bloqueado' ? (h ? MOTIVO_CURTO[g] : 'Sign in with an account') : '',
       b,
     );
     if (i === 'recarga') {
@@ -161,9 +161,9 @@ function pintarV2() {
       i === 'bloqueado'
         ? h
           ? tr(SEM_CHAVE[g])
-          : tr('Entre com uma conta.')
+          : tr('Sign in with an account.')
         : i === 'recarga'
-          ? tr('Ainda recarregando: falta {x}.', { x: mmss(f) })
+          ? tr('Still recharging: {x} left.', { x: mmss(f) })
           : tr(d.rotulo);
   }
   const c = Popup.extra(a, 'lista-voar');
@@ -178,7 +178,7 @@ export function abrirListaV2() {
     return true;
   }
   if (!ctx.comConta?.()) {
-    avisoSo(tr('Voar'), tr('Entre com uma conta.'));
+    avisoSo(tr('Voar'), tr('Sign in with an account.'));
     return true;
   }
   const c = naoDa('viagem');
@@ -219,8 +219,8 @@ function xDaLista(a) {
   x.type = 'button';
   x.className = 'vg-x';
   x.textContent = '✕';
-  x.title = tr('Fechar');
-  x.setAttribute('aria-label', tr('Fechar'));
+  x.title = tr('Close');
+  x.setAttribute('aria-label', tr('Close'));
   Object.assign(x.style, {
     position: 'absolute',
     top: -Math.round(s * 0.35) + 'px',
@@ -264,19 +264,19 @@ function pintarListaV2() {
   xDaLista(e);
   const V = vista?.viagem || {},
     f = falta('viagem');
-  const g = (c) => ctx.nomeArea?.(c.area) || tr('Centro Pokémon');
+  const g = (c) => ctx.nomeArea?.(c.area) || tr('Pokémon Center');
   centrosV2 = umPorCentro(V.centros).sort(
     (a, b) => ILHA_CENTRO(a.area) - ILHA_CENTRO(b.area) || g(a).localeCompare(g(b)),
   );
-  Popup.texto(d, 'lista-titulo', 'Voar para…', e);
+  Popup.texto(d, 'lista-titulo', 'Fly to…', e);
   Popup.textoCru(
     d,
     'lista-dica',
     !centrosV2.length
-      ? tr('Nenhum Centro visitado ainda.')
+      ? tr('No Centers visited yet.')
       : f > 0
-        ? tr('Recarregando: falta {x}.', { x: mmss(f) })
-        : tr('Escolha um Centro. Recarga: {n} min.', { n: V.recargaMin || 5 }),
+        ? tr('Recharging: {x} left.', { x: mmss(f) })
+        : tr('Choose a Center. Cooldown: {n} min.', { n: V.recargaMin || 5 }),
     e,
   );
   const h = Popup.celulas(d, 'lista-centros', centrosV2.length, 'centro');
@@ -290,7 +290,7 @@ function pintarListaV2() {
     const b = j != null && String(a.area) === String(j);
     const e = c.querySelector(':scope > [data-fig="selo-atual"]');
     if (e) e.style.display = b ? 'block' : 'none';
-    if (b) Popup.texto(d, 'atual', 'VOCÊ ESTÁ AQUI', c);
+    if (b) Popup.texto(d, 'atual', 'YOU ARE HERE', c);
     c.style.opacity = f > 0 || b ? '0.6' : '1';
   });
   Popup.atualizarRolagem?.(e.querySelector('[data-fig="lista-centros"]'));
@@ -307,7 +307,7 @@ export function voarDaLinha(a) {
   ctx.enviar?.({ t: 'viagem', mapa: c.mapa, chegada: +c.chegada });
 }
 export function clicouTeleporteV2() {
-  if (!ctx.comConta?.()) return avisoSo(tr('Voltar ao Centro'), tr('Entre com uma conta.'));
+  if (!ctx.comConta?.()) return avisoSo(tr('Return to Center'), tr('Sign in with an account.'));
   clicouTeleporte();
 }
 function pintarBotoes() {
@@ -322,8 +322,8 @@ function pintarBotoes() {
   };
   const t = a.querySelector('.vg-tel'),
     v = a.querySelector('.vg-voo');
-  t.textContent = '⟲ ' + c('teleporte', tr('Voltar ao Centro'));
-  v.textContent = '✈ ' + c('viagem', tr('Viajar'));
+  t.textContent = '⟲ ' + c('teleporte', tr('Return to Center'));
+  v.textContent = '✈ ' + c('viagem', tr('Travel'));
   for (const [b, d] of [
     [t, 'teleporte'],
     [v, 'viagem'],
@@ -393,7 +393,7 @@ function avisoSo(a, b) {
     '<div style="text-align:center">' +
     esc(b) +
     '</div><div style="display:flex">' +
-    botao('vg-ok', esc(tr('Fechar'))) +
+    botao('vg-ok', esc(tr('Close'))) +
     '</div>';
   d.querySelector('.vg-ok').onclick = () => fecharTopo();
 }
@@ -401,40 +401,40 @@ function naoDa(a) {
   const V = vista?.[a];
   if (!V) return null;
   if (!V.tem) return tr(SEM_CHAVE[a]);
-  if (ctx.emTurno?.()) return tr('Não dá no meio de uma batalha.');
+  if (ctx.emTurno?.()) return tr("Can't do that mid-battle.");
   const f = falta(a);
-  if (f > 0) return tr('Ainda recarregando: falta {x}.', { x: mmss(f) });
+  if (f > 0) return tr('Still recharging: {x} left.', { x: mmss(f) });
   return null;
 }
 function clicouTeleporte() {
   const a = naoDa('teleporte');
-  if (a) return avisoSo(tr('Voltar ao Centro'), a);
+  if (a) return avisoSo(tr('Return to Center'), a);
   const V = vista?.teleporte;
   if (!V) {
     pedirVista();
     return;
   }
   const b = V.destino?.centro
-    ? ctx.nomeArea?.(V.destino.area) || tr('Centro Pokémon')
+    ? ctx.nomeArea?.(V.destino.area) || tr('Pokémon Center')
     : tr('Laboratório do Professor Oak');
   const d = dialogo();
   aberto = { d, tipo: 'teleporte' };
   d.innerHTML =
-    titulo(tr('Voltar ao Centro')) +
+    titulo(tr('Return to Center')) +
     '<div style="text-align:center">' +
-    esc(tr('Ir pra {x}? Depois disso, o Teleporte recarrega por {n} min.', { x: tr(b), n: V.recargaMin })) +
+    esc(tr('Go to {x}? After that, Teleport recharges for {n} min.', { x: tr(b), n: V.recargaMin })) +
     '</div>' +
     '<div class="vg-av" style="min-height:16px;text-align:center;color:#f58e8e"></div>' +
     '<div style="display:flex;gap:8px">' +
     botao('vg-ir', esc(tr('Ir'))) +
-    botao('vg-nao', esc(tr('Cancelar'))) +
+    botao('vg-nao', esc(tr('Cancel'))) +
     '</div>';
   d.querySelector('.vg-nao').onclick = () => fecharTopo();
   d.querySelector('.vg-ir').onclick = () => pedir({ t: 'teleporte' });
 }
 function clicouViagem() {
   const a = naoDa('viagem');
-  if (a) return avisoSo(tr('Viajar'), a);
+  if (a) return avisoSo(tr('Travel'), a);
   if (!vista?.viagem) {
     pedirVista();
     return;
@@ -448,19 +448,19 @@ function pintarViagem() {
   if (!A || A.tipo !== 'viagem') return;
   const V = vista?.viagem || {},
     f = falta('viagem');
-  const e = (c) => ctx.nomeArea?.(c.area) || tr('Centro Pokémon');
+  const e = (c) => ctx.nomeArea?.(c.area) || tr('Pokémon Center');
   const g = umPorCentro(V.centros).sort((a, b) => e(a).localeCompare(e(b)));
   let h;
   if (!V.aoArLivre) h = '<div style="text-align:center">' + esc(semArLivre()) + '</div>';
   else if (!g.length)
-    h = '<div style="text-align:center">' + esc(tr('Você ainda não entrou em nenhum Centro Pokémon.')) + '</div>';
+    h = '<div style="text-align:center">' + esc(tr("You haven't entered any Pokémon Center yet.")) + '</div>';
   else
     h =
       '<div style="text-align:center;font-size:11px">' +
       esc(
         f > 0
-          ? tr('Ainda recarregando: falta {x}.', { x: mmss(f) })
-          : tr('Escolha o Centro Pokémon. Depois disso, a Viagem recarrega por {n} min.', { n: V.recargaMin }),
+          ? tr('Still recharging: {x} left.', { x: mmss(f) })
+          : tr('Choose the Pokémon Center. After that, Travel recharges for {n} min.', { n: V.recargaMin }),
       ) +
       '</div>' +
       '<div style="display:grid;gap:6px">' +
@@ -473,7 +473,7 @@ function pintarViagem() {
             '</span><span style="flex:0 0 auto;display:flex">' +
             botao(
               'vg-ir',
-              esc(tr('Viajar')),
+              esc(tr('Travel')),
               f === 0,
               ' data-mapa="' + esc(c.mapa) + '" data-chegada="' + esc(c.chegada) + '"',
             ) +
@@ -482,13 +482,13 @@ function pintarViagem() {
         .join('') +
       '</div>';
   A.d.innerHTML =
-    titulo(tr('Viajar')) +
+    titulo(tr('Travel')) +
     h +
     '<div class="vg-av" style="min-height:16px;text-align:center;color:#f58e8e">' +
     esc(A.aviso || '') +
     '</div>' +
     '<div style="display:flex">' +
-    botao('vg-nao', esc(tr('Fechar'))) +
+    botao('vg-nao', esc(tr('Close'))) +
     '</div>';
   A.d.querySelector('.vg-nao').onclick = () => fecharTopo();
   for (const b of A.d.querySelectorAll('.vg-ir[data-chegada]'))
@@ -501,7 +501,7 @@ function pedir(a) {
   const c = A.d.querySelector('.vg-av');
   if (c) {
     c.style.color = '#8EF58E';
-    c.textContent = tr('um instante…');
+    c.textContent = tr('one moment…');
   }
   for (const b of A.d.querySelectorAll('button')) b.disabled = true;
   ctx.enviar?.(a);
@@ -527,11 +527,11 @@ export function receber(m) {
     ctx.irParaCena?.({
       mapa: m.mapa,
       chegada: m.chegada,
-      texto: (m.centro ? tr('Centro Pokémon') : tr('Laboratório')) + '…',
+      texto: (m.centro ? tr('Pokémon Center') : tr('Lab')) + '…',
     });
     return;
   }
-  const a = tr(m.texto || 'Não deu.') + (m.erro === 'recarga' && m.faltaS ? ' ' + mmss(m.faltaS) : '');
+  const a = tr(m.texto || "That didn't work.") + (m.erro === 'recarga' && m.faltaS ? ' ' + mmss(m.faltaS) : '');
   if (aberto) {
     aberto.esperando = null;
     aberto.aviso = a;

@@ -216,7 +216,7 @@ function estadoDaVaga(a, b) {
   if (Teclas.fixa(a.id, b)) return { estado: 'fixa', texto: rot(v) };
   if (disputa && disputa.id === a.id && disputa.slot === b) return { estado: 'conflito', texto: rot(disputa.combo) };
   if (disputa && disputa.outro.id === a.id && disputa.outro.slot === b) return { estado: 'conflito', texto: rot(v) };
-  if (edit && edit.id === a.id && edit.slot === b) return { estado: 'esperando', texto: tr('aperte…'), tem: !!v };
+  if (edit && edit.id === a.id && edit.slot === b) return { estado: 'esperando', texto: tr('press…'), tem: !!v };
   return v ? { estado: 'normal', texto: rot(v) } : { estado: 'vazia', texto: '—' };
 }
 function pintarTecla(b, a, c) {
@@ -262,7 +262,7 @@ function pintarLinha(b, a) {
   else encaixar(c, J.icone || a.icone?.arte || null, a.icone?.jogo === 'golpe' ? 22 : 24);
   Popup.texto(pop, 'acao-nome', a.nome, b);
   const e = Teclas.semTecla(a.id),
-    f = e ? tr(a.semTecla || 'sem tecla') : J.tr ? tr(J.detalhe) : J.detalhe;
+    f = e ? tr(a.semTecla || 'no key') : J.tr ? tr(J.detalhe) : J.detalhe;
   const d = Popup.textoCru(pop, 'acao-detalhe', f, b);
   if (d) {
     if (!d.dataset.cor0) d.dataset.cor0 = d.style.color || '#A9CFE0';
@@ -384,8 +384,8 @@ function pintar() {
       pop,
       'conflito',
       disputa.antiga
-        ? tr('{nova} já é {acao}. Se trocar, ela vai pra tecla {antiga}.', j)
-        : tr('{nova} já é {acao}. Usar aqui deixa ela sem essa tecla.', j),
+        ? tr('{nova} is already {acao}. If you swap, it moves to the {antiga} key.', j)
+        : tr('{nova} is already {acao}. Using it here leaves that action without a key.', j),
       d,
     );
     mostrar(filho(d, 'btn-trocar-as-duas'), !!disputa.antiga);
@@ -447,7 +447,7 @@ function encherCelular(b) {
       return false;
     }
   })();
-  if (filho(b, 'seletor-lado-joystick')) Popup.seletor(pop, 'seletor-lado-joystick', a ? 'Direita' : 'Esquerda');
+  if (filho(b, 'seletor-lado-joystick')) Popup.seletor(pop, 'seletor-lado-joystick', a ? 'Right' : 'Left');
   if (filho(b, 'ajuste-tamanho-joystick')) Popup.ajuste(pop, 'ajuste-tamanho-joystick', 0.5, 'Normal');
   if (filho(b, 'ajuste-tamanho-botoes')) Popup.ajuste(pop, 'ajuste-tamanho-botoes', 0.5, 'Normal');
   if (filho(b, 'toggle-vibracao')) Popup.toggle(pop, 'toggle-vibracao', false);

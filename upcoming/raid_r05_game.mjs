@@ -133,18 +133,18 @@ export async function ligar(c) {
       aquecerSemTravar(() => cena.aquecer(), { raid: 'r05' }).then((a) => {
         if (a)
           console.log(
-            'R05: shaders aquecidos em ' +
+            'R05: shaders warmed up in ' +
               a.ms +
               ' ms (' +
               a.programas +
-              ' programas, ' +
+              ' programs, ' +
               (a.compilou?.linkProgram ?? '?') +
-              ' ligados)',
+              ' linked)',
           );
       });
       return cena;
     } catch (e) {
-      console.warn('R05: a arena não montou:', e);
+      console.warn('R05: the arena failed to build:', e);
       carregando = null;
       throw e;
     }
@@ -261,10 +261,10 @@ export function golpeBarrado() {
   if (E.situacao !== 'luta') return false;
   let b = null;
   if (E.atordoadoAte > E.tempo)
-    b = t('Atordoado pela cópia: espere {s} s', { s: Math.max(1, Math.ceil(E.atordoadoAte - E.tempo)) });
+    b = t('Stunned by the copy: wait {s} s', { s: Math.max(1, Math.ceil(E.atordoadoAte - E.tempo)) });
   else if (E.copias.some((c) => c.viva)) {
     const a = resolverAlvo();
-    if (!a || a.tipo === 'chefe') b = t('Escolha uma cópia pra atacar');
+    if (!a || a.tipo === 'chefe') b = t('Pick a copy to attack');
   }
   if (!b) return false;
   const d = performance.now();
@@ -300,7 +300,11 @@ function aoTocar(c) {
     ctx.jogo.alvoVisto = chefeMundo;
     ctx.jogo.alvoDesde = performance.now();
   }
-  cena.avisar(t(a.tipo === 'copia' ? 'Cópia na mira' : a.tipo === 'bolha' ? 'Bolha na mira' : 'Mew na mira'), 1, false);
+  cena.avisar(
+    t(a.tipo === 'copia' ? 'Copy targeted' : a.tipo === 'bolha' ? 'Bubble targeted' : 'Mew targeted'),
+    1,
+    false,
+  );
 }
 addEventListener('pointerdown', aoTocar, true);
 const _alvo = new THREE.Vector3(),
@@ -399,7 +403,7 @@ async function aplicarTroca(m) {
   try {
     if (i >= 0 && String(ctx.jogo.pika?.uid) !== String(m.uid)) await ctx.trocarPara?.(i, { forcado: true, r01: true });
   } catch (e) {
-    console.warn('R05: troca', e);
+    console.warn('R05: switch', e);
   }
   const b = ctx?.jogo?.pika;
   if (b) {
@@ -435,17 +439,17 @@ function treinadorNoSpawn(x, z) {
   }
 }
 export const ERROS = {
-  preso: 'Preso na bolha: espere ou peça ajuda aos aliados.',
-  longe: 'Fora de alcance',
-  mew_oculto: 'No Teleporte, ataque uma das cópias',
-  alvo_invalido: 'Esse alvo já sumiu',
-  ritmo: 'Calma: muitos cliques seguidos.',
-  troca_bolha: 'Preso na bolha: não dá pra trocar agora',
-  troca_mira: 'Na mira do Mew: não dá pra trocar agora',
-  troca_recarga: 'Troca em {s} s',
-  troca_invalida: 'Esse Pokémon não pode entrar agora',
-  troca_sem_campo: 'Nenhum Pokémon de pé',
-  atordoado: 'Atordoado pela cópia: espere {s} s',
+  preso: 'Trapped in the bubble: wait or ask allies for help.',
+  longe: 'Out of range',
+  mew_oculto: 'During Teleport, attack one of the copies',
+  alvo_invalido: 'That target is gone',
+  ritmo: 'Easy: too many clicks in a row.',
+  troca_bolha: "Trapped in the bubble: can't switch now",
+  troca_mira: "Targeted by Mew: can't switch now",
+  troca_recarga: 'Switch in {s} s',
+  troca_invalida: "This Pokémon can't switch in now",
+  troca_sem_campo: 'No Pokémon left standing',
+  atordoado: 'Stunned by the copy: wait {s} s',
 };
 export function receber(m) {
   if (!m) return;
@@ -531,15 +535,15 @@ function conferirTroca() {
   if (j.trocandoSeguidor || j.evoluindo || tentativasTroca >= 6 || Date.now() - tentouTrocaEm < 1500) return;
   tentativasTroca++;
   console.warn(
-    'R05: o Pokémon em campo (uid ' +
+    'R05: the Pokémon on the field (uid ' +
       b.uid +
-      ') não é o do servidor (uid ' +
+      ") isn't the server's (uid " +
       a.uid +
-      ') — refazendo a troca (' +
+      ') — redoing the switch (' +
       tentativasTroca +
       ')',
   );
-  aplicarTroca(a).catch((e) => console.warn('R05: troca refeita', e));
+  aplicarTroca(a).catch((e) => console.warn('R05: switch redone', e));
 }
 export function vincularChefe(s) {
   if (!s?.pivo) return;

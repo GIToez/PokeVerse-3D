@@ -93,32 +93,33 @@ export function textoMaestria() {
   if (r.proximo)
     return tr(
       r.proximo.faltam === 1
-        ? 'Maestria de pesca {x} · falta 1 pesca pro nível {y}'
-        : 'Maestria de pesca {x} · faltam {n} pescas pro nível {y}',
+        ? 'Fishing mastery {x} · 1 more catch to level {y}'
+        : 'Fishing mastery {x} · {n} more catches to level {y}',
       { x: r.nivel, n: r.proximo.faltam, y: r.proximo.nivel },
     );
-  return r.tabela
-    ? tr('Maestria de pesca {x} · nível máximo', { x: r.nivel })
-    : tr('Maestria de pesca {x}', { x: r.nivel });
+  return r.tabela ? tr('Fishing mastery {x} · max level', { x: r.nivel }) : tr('Fishing mastery {x}', { x: r.nivel });
 }
 export function notaItem(a) {
   const v = varaDe(a);
   if (!v) return null;
   const b = varaEscolhida()?.item === v.item;
   return liberada(v)
-    ? textoMaestria() + (b ? '. ' + tr('É a vara em uso.') : '.')
-    : tr('Pede maestria de pesca {x} (você tem {y}).', { x: v.maestria, y: maestria.nivel }) +
+    ? textoMaestria() + (b ? '. ' + tr("It's the rod in use.") : '.')
+    : tr('Requires fishing mastery {x} (you have {y}).', { x: v.maestria, y: maestria.nivel }) +
         ' ' +
         textoMaestria() +
         '.';
 }
 export function escolherVara(a) {
   const v = varaDe(a);
-  if (!v) return { ok: false, texto: tr('Essa vara não existe.') };
+  if (!v) return { ok: false, texto: tr("That rod doesn't exist.") };
   if (!liberada(v))
-    return { ok: false, texto: tr('Pede maestria de pesca {x} (você tem {y}).', { x: v.maestria, y: maestria.nivel }) };
+    return {
+      ok: false,
+      texto: tr('Requires fishing mastery {x} (you have {y}).', { x: v.maestria, y: maestria.nivel }),
+    };
   ctx.gravarLS?.('vara', +v.item);
-  return { ok: true, texto: tr('Agora você pesca com a {x}.', { x: tr(v.nome) }) };
+  return { ok: true, texto: tr('You now fish with the {x}.', { x: tr(v.nome) }) };
 }
 export function pontoDaBoia(p = ctx?.jogo?.ash) {
   if (!p || !ctx) return null;
@@ -171,7 +172,7 @@ export function tentar() {
   const p = podeLancar();
   if (!p.ok) {
     if (p.montado && p.ponto) {
-      ctx.flutuar(ctx.jogo.ash, tr('Desça da montaria pra pescar.'), '#ffd23a');
+      ctx.flutuar(ctx.jogo.ash, tr('Dismount to fish.'), '#ffd23a');
       return true;
     }
     return false;
@@ -233,21 +234,21 @@ export function mensagem(m) {
       S.fase = 'fisgado';
       S.janelaMs = Math.max(200, +m.janelaMs || 1500);
       S.janelaAte = performance.now() + S.janelaMs;
-      mostrarAviso(tr('Fisgou!'));
+      mostrarAviso(tr('Hooked!'));
       ctx.som?.('ui/sound_fishrod3', { volume: 0.9, prio: true });
       return;
     case 'pesca_escapou':
-      if (S.fase) terminar(m.texto || 'Escapou!');
+      if (S.fase) terminar(m.texto || 'It got away!');
       return;
     case 'pesca_erro':
       if (m.erro === 'cedo' || m.erro === 'escapou') {
-        terminar(m.texto || 'Escapou!');
+        terminar(m.texto || 'It got away!');
         return;
       }
       if (S.fase) {
         acabar(null);
       }
-      ctx.flutuar(ctx.jogo.ash, tr(m.texto || 'Não dá pra pescar agora.'), '#ffd23a');
+      ctx.flutuar(ctx.jogo.ash, tr(m.texto || "Can't fish right now."), '#ffd23a');
       return;
     case 'pesca_emergiu':
       emergiu(m);
@@ -280,19 +281,19 @@ function emergiu(m) {
     ctx.gravarLS?.('pesca', { ...(p && typeof p === 'object' ? p : {}), ...maestria });
     if (m.maestria.subiu)
       setTimeout(() => {
-        ctx.flutuar(ctx.jogo.ash, tr('Maestria de pesca {x}!', { x: maestria.nivel }), '#9fe0ff');
-        ctx.chat?.(tr('Maestria de pesca {x}!', { x: maestria.nivel }));
+        ctx.flutuar(ctx.jogo.ash, tr('Fishing mastery {x}!', { x: maestria.nivel }), '#9fe0ff');
+        ctx.chat?.(tr('Fishing mastery {x}!', { x: maestria.nivel }));
       }, 700);
     for (const c of m.maestria.desbloqueou || []) {
       const v = varaDe(c);
       if (v)
         setTimeout(() => {
-          ctx.flutuar(ctx.jogo.ash, tr('Você destravou a {x}!', { x: tr(v.nome) }), '#8ef58e');
-          ctx.chat?.(tr('Você destravou a {x}! O Nelson vende, em Vermilion.', { x: tr(v.nome) }));
+          ctx.flutuar(ctx.jogo.ash, tr('You unlocked the {x}!', { x: tr(v.nome) }), '#8ef58e');
+          ctx.chat?.(tr('You unlocked the {x}! Nelson sells it in Vermilion.', { x: tr(v.nome) }));
         }, 1400);
     }
   }
-  if (m.especie?.nome) ctx.chat?.(tr('Você fisgou um {x} (Lv {n})!', { x: m.especie.nome, n: m.especie.lv }));
+  if (m.especie?.nome) ctx.chat?.(tr('You hooked a {x} (Lv {n})!', { x: m.especie.nome, n: m.especie.lv }));
   S.fase = 'saindo';
   const b = clipe('Fishing_Success', false) || 1;
   clipeVara('Success', false);
@@ -348,7 +349,7 @@ function atualizarBotao() {
   if (!ctx.mobile?.()) {
     if (p?.ok && !S.dicaZ && teclaPesca()) {
       S.dicaZ = true;
-      ctx.flutuar(ctx.jogo.ash, tr('Aperte {x} pra pescar', { x: teclaPesca() }), '#9fe0ff');
+      ctx.flutuar(ctx.jogo.ash, tr('Press {x} to fish', { x: teclaPesca() }), '#9fe0ff');
     }
     if (botao) botao.hidden = true;
     return;
@@ -360,7 +361,7 @@ function atualizarBotao() {
   }
   if (!botao) criarBotao();
   botao.hidden = false;
-  botao.textContent = tr(S.fase === 'fisgado' ? 'Puxar!' : S.fase ? 'Puxar' : 'Pescar');
+  botao.textContent = tr(S.fase === 'fisgado' ? 'Reel in!' : S.fase ? 'Reel' : 'Fish');
   botao.classList.toggle('fisgou', S.fase === 'fisgado');
 }
 function segurar() {
@@ -492,11 +493,11 @@ function mostrarAviso(b) {
   if (a) {
     if (aviso) aviso.hidden = true;
     a.style.zIndex = '36';
-    Hud.escrever(a, 'fisgou', tr('FISGOU!'));
+    Hud.escrever(a, 'fisgou', tr('HOOKED!'));
     Hud.escrever(
       a,
       'fisgou-dica',
-      ctx.mobile?.() ? tr('toque!') : teclaPesca() ? tr('aperte {x}!', { x: teclaPesca() }) : '',
+      ctx.mobile?.() ? tr('tap!') : teclaPesca() ? tr('press {x}!', { x: teclaPesca() }) : '',
     );
     Hud.fill(Hud.fig(a, 'fill/fisgou'), 1, COR_JANELA);
     Hud.sitMostrar(a, true);
@@ -532,7 +533,7 @@ function atualizarV2(p) {
     const c = !S.fase && !!p?.ok && !ctx.bloqueado?.();
     if (c) {
       Hud.escrever(d, 'dica-tecla', teclaPesca('hud') || '—');
-      Hud.escrever(d, 'dica-pescar', tr('Pescar'));
+      Hud.escrever(d, 'dica-pescar', tr('Fish'));
       d.style.zIndex = '35';
       seguir(d, 0.7);
     }
@@ -554,7 +555,7 @@ function atualizarV2(p) {
   }
   const a = !!S.fase || !!p?.ok;
   b.classList.toggle('pesca-v2-fisgou', S.fase === 'fisgado');
-  b.title = tr(S.fase === 'fisgado' ? 'Puxar!' : S.fase ? 'Puxar' : 'Pescar');
+  b.title = tr(S.fase === 'fisgado' ? 'Reel in!' : S.fase ? 'Reel' : 'Fish');
   if (a) posicionarBotao(b);
   Hud.sitMostrar(b, a);
   return true;
@@ -628,12 +629,12 @@ function lojaNoMenu() {
     a,
     (QL.varas || []).map((v) => ({ item: +v.item, n: 1, preco: +v.preco })),
     {
-      nome: 'Varas do Nelson',
+      nome: "Nelson's Rods",
       trava: (l) => {
         const v = varaDe(l.item);
         if (!v) return null;
-        if (tenho(v.item)) return 'você já tem essa vara';
-        return liberada(v) ? null : tr('pede maestria de pesca {x}', { x: v.maestria });
+        if (tenho(v.item)) return 'you already have this rod';
+        return liberada(v) ? null : tr('requires fishing mastery {x}', { x: v.maestria });
       },
     },
   );

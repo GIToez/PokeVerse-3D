@@ -1,4 +1,4 @@
-export const STATS = ['HP', 'Ataque', 'Defesa', 'At. Esp.', 'Def. Esp.', 'Velocidade'];
+export const STATS = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
 export const IV_MAX = 31,
   IV_TOTAL = 31 * 6;
 export const HP_X = 3;

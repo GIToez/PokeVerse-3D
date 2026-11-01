@@ -5,7 +5,7 @@ export const ARTE = {
   fase: (n) => './ui/amanda/horta/planta-fase-' + Math.max(1, Math.min(4, Math.floor(n) || 1)) + '.png',
   canteiro: './ui/amanda/horta/icone-canteiro-64.png',
 };
-export const MISSAO_HORTA = 'A Horta';
+export const MISSAO_HORTA = 'The Garden';
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
 const semTr = (s, v) => (v ? String(s).replace(/\{(\w+)\}/g, (m, k) => (k in v ? String(v[k]) : m)) : s);
 const icone = (a) => (a?.i ? './ui/itens/' + a.i + '.png' : null);
@@ -17,7 +17,7 @@ export const frutoCurto = (a, b = {}) => nomeItem(a, b).replace(/^Fruto de\s+/i,
 export function duracao(a, b = {}) {
   const c = b.tr || semTr,
     m = Math.ceil(Math.max(0, num(a)) / MIN);
-  if (m < 1) return c('menos de 1 min');
+  if (m < 1) return c('under 1 min');
   const h = Math.floor(m / 60),
     r = m % 60;
   return h ? h + ' h' + (r ? ' ' + r + ' min' : '') : r + ' min';
@@ -42,7 +42,7 @@ export function nomeCurto(b, c = {}) {
 export function nomePlantado(b, c = {}) {
   const d = c.tr || semTr,
     a = atributo(b, c);
-  return a ? d('Semente de {x}', { x: a }) : nomeItem(b, c);
+  return a ? d('{x} Seed', { x: a }) : nomeItem(b, c);
 }
 function canteiroDe(c, i, a, b) {
   const d = b.tr || semTr;
@@ -61,7 +61,7 @@ function canteiroDe(c, i, a, b) {
       planta: ARTE.fase(g ? 4 : num(c.fase, 1)),
       progresso: g ? 1 : Math.max(0, Math.min(1, num(c.progresso))),
       nome: g ? nomeItem(j, b) : nomePlantado(c.semente, b),
-      pilula: g ? d('PRONTA!') : duracao(l, b),
+      pilula: g ? d('READY!') : duracao(l, b),
       faltaMs: l,
       totalMs: k,
       decorridoMs: Math.max(0, k - l),
@@ -72,16 +72,16 @@ function canteiroDe(c, i, a, b) {
     }
     return v;
   }
-  if (c.aberto) return { i, estado: 'vazio', nome: d('Canteiro livre'), pilula: d('LIVRE') };
+  if (c.aberto) return { i, estado: 'vazio', nome: d('Free plot'), pilula: d('LIVRE') };
   const e = Math.max(1, num(c.faltam, i + 1 - a)),
     f = a < 1 && i === 0;
   return {
     i,
     estado: 'fechado',
-    nome: d('Canteiro fechado'),
+    nome: d('Locked plot'),
     faltam: e,
     primeiro: f,
-    pilula: e === 1 ? d('+1 missão') : d('+{n} missões', { n: e }),
+    pilula: e === 1 ? d('+1 mission') : d('+{n} missions', { n: e }),
   };
 }
 export function canteiroEscolhido(a, b) {
@@ -119,7 +119,7 @@ export function vistaHorta(d, e = {}) {
           }
         : null;
   return {
-    contagem: f('{a} de {b} canteiros', { a: h, b: g }),
+    contagem: f('{a} of {b} plots', { a: h, b: g }),
     canteiros: k,
     sel: l,
     prontos: k.filter((c) => c.estado === 'pronto').length,
@@ -127,22 +127,22 @@ export function vistaHorta(d, e = {}) {
     colheu: m,
     mochilaCheia: E.mochilaCheia
       ? {
-          titulo: f('Mochila cheia'),
-          texto: f('Libere espaço na Mochila pra colher. A colheita espera no canteiro, não se perde.'),
+          titulo: f('Bag full'),
+          texto: f("Free up Bag space to harvest. The harvest waits in the plot, it won't be lost."),
         }
       : null,
   };
 }
 function vistaFicha(E, a, c) {
   const b = a.tr || semTr,
-    d = b('CANTEIRO {n}', { n: c.i + 1 });
+    d = b('PLOT {n}', { n: c.i + 1 });
   if (c.estado === 'pronto')
     return {
       estado: 'pronto',
       canteiro: c.i,
       rotulo: d,
       nome: c.nome,
-      texto: b('Pronta pra colher!'),
+      texto: b('Ready to harvest!'),
       planta: c.planta,
       progresso: 1,
       colheita: c.colheita,
@@ -153,7 +153,7 @@ function vistaFicha(E, a, c) {
       n = Math.max(1, num(e?.colheita, 1)),
       h = Math.max(1, Math.round(c.totalMs / HORA));
     const f =
-      b('Plantada há {x}: fica pronta em {h} h e dá {n}× {y}.', {
+      b('Planted {x} ago: ready in {h} h, yields {n}× {y}.', {
         x: duracao(c.decorridoMs, a),
         h,
         n,
@@ -161,14 +161,14 @@ function vistaFicha(E, a, c) {
       }) +
       ' ' +
       (c.preso
-        ? b('A colheita vem presa à conta: não vai pro Mercado nem pra troca.')
-        : b('A colheita sai solta: dá pra vender no Mercado.'));
+        ? b("The harvest is account-bound: it can't go to the Market or be traded.")
+        : b('The harvest is unbound: you can sell it on the Market.'));
     return {
       estado: 'crescendo',
       canteiro: c.i,
       rotulo: d,
       nome: c.nome,
-      texto: b('Pronta em {x}', { x: duracao(c.faltaMs, a) }),
+      texto: b('Ready in {x}', { x: duracao(c.faltaMs, a) }),
       planta: c.planta,
       progresso: c.progresso,
       info: f,
@@ -187,18 +187,18 @@ function vistaFicha(E, a, c) {
     estado: 'fechado',
     canteiro: c.i,
     rotulo: d,
-    nome: b('Canteiro fechado'),
+    nome: b('Locked plot'),
     faltam: c.faltam,
     texto: c.primeiro
-      ? b('Abre na missão {x}', { x: b(MISSAO_HORTA) })
+      ? b('Opens at mission {x}', { x: b(MISSAO_HORTA) })
       : c.faltam === 1
-        ? b('Abre com +1 missão')
-        : b('Abre com +{n} missões', { n: c.faltam }),
+        ? b('Opens with +1 mission')
+        : b('Opens with +{n} missions', { n: c.faltam }),
     info: c.primeiro
-      ? b('A missão {x} abre o primeiro canteiro. Ela chega depois da 2ª insígnia.', { x: b(MISSAO_HORTA) })
+      ? b('Mission {x} opens the first plot. It arrives after the 2nd Badge.', { x: b(MISSAO_HORTA) })
       : c.faltam === 1
-        ? b('Complete mais 1 missão pra abrir este canteiro.')
-        : b('Complete mais {n} missões pra abrir este canteiro.', { n: c.faltam }),
+        ? b('Complete 1 more mission to open this plot.')
+        : b('Complete {n} more missions to open this plot.', { n: c.faltam }),
   };
 }
 export function vistaPlantar(a, b = {}, { canteiro: c = 0, aba: d = 'sementes', sel: e = null } = {}) {
@@ -229,24 +229,24 @@ export function vistaPlantar(a, b = {}, { canteiro: c = 0, aba: d = 'sementes', 
       tempo: h + ' h',
       nome: nomePlantado(k.id, b),
       texto:
-        f('Dá {n}× {x}.', { n, x: frutoCurto(p.fruto, b) }) +
+        f('Yields {n}× {x}.', { n, x: frutoCurto(p.fruto, b) }) +
         ' ' +
         (p.preso
-          ? f('A colheita vem presa à conta: não vai pro Mercado nem pra troca.')
-          : f('A colheita sai solta: dá pra vender no Mercado.')),
+          ? f("The harvest is account-bound: it can't go to the Market or be traded.")
+          : f('The harvest is unbound: you can sell it on the Market.')),
     };
   }
   return {
     canteiro: num(c),
-    rotulo: f('CANTEIRO {n}', { n: num(c) + 1 }),
-    abas: { sementes: f('Sementes de EV'), bagas: f('Bagas') },
+    rotulo: f('PLOT {n}', { n: num(c) + 1 }),
+    abas: { sementes: f('EV Seeds'), bagas: f('Berries') },
     aba: i === 'semente' ? 'sementes' : 'bagas',
     itens: j.map(({ p, ...x }) => ({ ...x, marcado: !!k && x.id === k.id })),
     vazio: j.length
       ? null
       : i === 'semente'
-        ? f('Você não tem sementes de EV. Elas caem dos Pokémon selvagens.')
-        : f('Você não tem bagas pra plantar.'),
+        ? f("You don't have EV seeds. They drop from wild Pokémon.")
+        : f("You don't have any Berries to plant."),
     info: l,
     escolhido: k ? k.id : null,
     botao: { ligado: !!k && !E.esperando, texto: f('Plantar') },
@@ -271,14 +271,14 @@ export function vistaMissoes(a, b = {}, c = 0) {
         };
       })
     : Array.from({ length: f }, (_, k) => ({
-        nome: e + k === 0 ? d(MISSAO_HORTA) : d('Uma missão da história'),
+        nome: e + k === 0 ? d(MISSAO_HORTA) : d('A story mission'),
         estado: 'pendente',
         progresso: 0,
         texto: '—',
       }));
   return {
-    rotulo: d('CANTEIRO {n}', { n: i + 1 }),
-    titulo: f === 1 ? d('Falta 1 missão') : d('Faltam {n} missões', { n: f }),
+    rotulo: d('PLOT {n}', { n: i + 1 }),
+    titulo: f === 1 ? d('1 mission left') : d('{n} missions left', { n: f }),
     linhas: h,
   };
 }

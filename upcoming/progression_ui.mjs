@@ -13,17 +13,17 @@ const esc = (s) =>
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
 const LOCAL = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
 const fmt = (n) => num(n).toLocaleString(LOCAL[I18n.idioma?.()] || 'pt-BR');
-const NOME_DEGRAU = { bronze: 'Bronze', prata: 'Prata', ouro: 'Ouro', platina: 'Platina', diamante: 'Diamante' };
+const NOME_DEGRAU = { bronze: 'Bronze', prata: 'Silver', ouro: 'Gold', platina: 'Platina', diamante: 'Diamante' };
 const COR_DEGRAU = { bronze: '#d08c4a', prata: '#c9d3e3', ouro: '#F8C237', platina: '#8fe3d9', diamante: '#9fd3ff' };
 const ICONE_REC = { titulo: '🏷️', montaria: '🐎', cosmetico: '🎨', moldura: '🖼️' };
 const ORIGEM = {
   conquista: 'conquista',
   existente: 'conquista',
-  mestre: 'Nível de Mestre',
-  semana: 'ranking da semana',
+  mestre: 'Master Level',
+  semana: 'weekly ranking',
   guilda: 'guilda',
-  hall: 'Hall da Fama',
-  fundador: 'Pacote Fundador',
+  hall: 'Hall of Fame',
+  fundador: 'Founder Pack',
 };
 const nomeDegrau = (d) => tr(NOME_DEGRAU[d] || d || '');
 export function instalar(c) {
@@ -196,7 +196,7 @@ export function abrir(a = 'conquistas') {
   }
   const d = dialogo('prog-janela');
   aberto = { d, aba: a, cat: 'todas', soResgatar: false, aviso: '', bom: false };
-  if (!ctx.comConta?.()) aberto.aviso = tr('Entre com uma conta pra ver as conquistas.');
+  if (!ctx.comConta?.()) aberto.aviso = tr('Sign in with an account to see achievements.');
   else pedirVista();
   pintar();
   return true;
@@ -206,13 +206,13 @@ function pintar() {
   if (!A) return;
   const V = vista;
   const c = [
-    ['conquistas', tr('Conquistas') + (V?.resumo?.aResgatar ? ' (' + V.resumo.aResgatar + ')' : '')],
-    ['mestre', tr('Nível de Mestre')],
-    ['titulos', tr('Títulos')],
+    ['conquistas', tr('Achievements') + (V?.resumo?.aResgatar ? ' (' + V.resumo.aResgatar + ')' : '')],
+    ['mestre', tr('Master Level')],
+    ['titulos', tr('Titles')],
     ['montarias', tr('Montarias')],
   ];
   const e = !V
-    ? '<div style="text-align:center;padding:12px">' + esc(A.aviso || tr('um instante…')) + '</div>'
+    ? '<div style="text-align:center;padding:12px">' + esc(A.aviso || tr('one moment…')) + '</div>'
     : A.aba === 'mestre'
       ? pintarMestre(V)
       : A.aba === 'titulos'
@@ -221,15 +221,15 @@ function pintar() {
           ? pintarMontarias(V)
           : pintarConquistas(V, A);
   const f = V
-    ? tr('Mestre {n}', { n: V.mestre?.nivel ?? 1 }) +
+    ? tr('Master {n}', { n: V.mestre?.nivel ?? 1 }) +
       ' · ' +
-      tr('{a} de {b} concluídas', { a: V.resumo?.conquistas ?? 0, b: V.resumo?.total ?? 0 })
+      tr('{a} of {b} completed', { a: V.resumo?.conquistas ?? 0, b: V.resumo?.total ?? 0 })
     : '';
   A.d.innerHTML =
     '<button type="button" class="x-fechar" aria-label="' +
-    esc(tr('Fechar')) +
+    esc(tr('Close')) +
     '" style="position:sticky;top:0;justify-self:end;margin-bottom:-34px;z-index:2;width:30px;height:30px;border-radius:15px;border:1px solid #F8C237;background:#13254A;color:#F8C237;font:800 15px/1 system-ui,sans-serif;cursor:pointer">✕</button>' +
-    titulo(tr('Conquistas'), f) +
+    titulo(tr('Achievements'), f) +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">' +
     c.map(([a, b]) => chip('aba', a, b, A.aba === a)).join('') +
     '</div>' +
@@ -242,7 +242,7 @@ function pintar() {
         '</div>'
       : '') +
     '<div style="display:flex;gap:8px">' +
-    botao('nao', esc(tr('Fechar'))) +
+    botao('nao', esc(tr('Close'))) +
     '</div>';
   A.d.querySelector('.nao').style.flex = '1';
   A.d.querySelector('.nao').onclick = () => fecharTopo();
@@ -266,25 +266,25 @@ function pintar() {
     };
   for (const x of A.d.querySelectorAll('.resg'))
     x.onclick = () => {
-      A.aviso = tr('um instante…');
+      A.aviso = tr('one moment…');
       A.bom = true;
       pintar();
       ctx.enviar?.({ t: 'progressao_resgatar', id: x.dataset.id });
     };
   for (const x of A.d.querySelectorAll('.tit'))
     x.onclick = () => {
-      A.aviso = tr('um instante…');
+      A.aviso = tr('one moment…');
       A.bom = true;
       pintar();
       ctx.enviar?.({ t: 'progressao_titulo', id: x.dataset.id || null });
     };
 }
 const DICA_KO =
-  'Derrotas contam quando o selvagem tem no máximo 10 níveis a menos que o seu Pokémon mais forte na luta (do Lv 60 pra cima, sempre contam).';
+  'Defeats count when the wild Pokémon is at most 10 levels below your strongest Pokémon in the battle (from Lv 60 up, they always count).';
 function pintarConquistas(V, A) {
   const d = V.categorias || [];
   const e = [
-    chip('cat', 'todas', tr('Todas'), A.cat === 'todas'),
+    chip('cat', 'todas', tr('All'), A.cat === 'todas'),
     ...d.map((c) =>
       chip('cat', c.id, tr(c.nome) + ' ' + c.concluidas + '/' + c.total + (c.aResgatar ? ' •' : ''), A.cat === c.id),
     ),
@@ -306,13 +306,13 @@ function pintarConquistas(V, A) {
     '<label style="display:flex;gap:6px;align-items:center;justify-content:center;font-size:11px;cursor:pointer"><input type="checkbox" class="so-resg"' +
     (A.soResgatar ? ' checked' : '') +
     '> ' +
-    esc(tr('só as que têm prêmio pra resgatar')) +
+    esc(tr('only ones with rewards to claim')) +
     '</label>' +
     (['todas', 'luta', 'shiny'].includes(A.cat)
       ? '<div style="font-size:11px;color:#7f8aa6;text-align:center">' + esc(tr(DICA_KO)) + '</div>'
       : '') +
     '<div style="display:grid;gap:6px">' +
-    (f.length ? f.map(cartao).join('') : '<div style="text-align:center">' + esc(tr('Nada por aqui.')) + '</div>') +
+    (f.length ? f.map(cartao).join('') : '<div style="text-align:center">' + esc(tr('Nothing here.')) + '</div>') +
     '</div>'
   );
 }
@@ -335,7 +335,7 @@ function cartao(a) {
     esc(tr(a.nome)) +
     (a.concluida ? ' <span style="color:#8EF58E">✓</span>' : '') +
     '</span>' +
-    (a.podeResgatar ? botao('resg', esc(tr('Resgatar')), true, ' data-id="' + esc(a.id) + '"') : '') +
+    (a.podeResgatar ? botao('resg', esc(tr('Redeem')), true, ' data-id="' + esc(a.id) + '"') : '') +
     '</div>' +
     '<div style="font-size:11px">' +
     esc(tr(a.descricao || '')) +
@@ -392,27 +392,25 @@ function pintarMestre(V) {
     fmt(M.nivel ?? 1) +
     '</span>' +
     '<span>' +
-    esc(tr('{x} XP de Mestre', { x: fmt(M.xp) })) +
+    esc(tr('{x} Master XP', { x: fmt(M.xp) })) +
     '</span></div>' +
     '<div style="height:8px;background:#0B1220;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:' +
     b +
     '%;background:#F8C237"></i></div>' +
     '<div style="text-align:center;font-size:11px">' +
-    esc(tr('faltam {x} XP pro Mestre {n}', { x: fmt(M.falta), n: num(M.nivel, 1) + 1 })) +
+    esc(tr('{x} XP to Master {n}', { x: fmt(M.falta), n: num(M.nivel, 1) + 1 })) +
     '</div>' +
     (d.length
-      ? '<div style="text-align:center;font-size:11px">' +
-        esc(tr('Títulos de Mestre: {x}', { x: d.join(', ') })) +
-        '</div>'
+      ? '<div style="text-align:center;font-size:11px">' + esc(tr('Master Titles: {x}', { x: d.join(', ') })) + '</div>'
       : '') +
     (e && M.proximoDestrave
       ? '<div style="text-align:center;font-size:11px">' +
-        esc(tr('No Mestre {n}: um título novo', { n: M.proximoDestrave.nivel })) +
+        esc(tr('At Master {n}: a new title', { n: M.proximoDestrave.nivel })) +
         '</div>'
       : '') +
     pintarCaixa(V) +
     '<div style="font-size:11px;color:#7f8aa6;text-align:center">' +
-    esc(tr('De onde vem o XP:')) +
+    esc(tr('Where XP comes from:')) +
     '</div>' +
     (c
       ? '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:#7f8aa6"><td style="padding:2px 4px"></td><td style="padding:2px 4px;text-align:right">' +
@@ -421,9 +419,7 @@ function pintarMestre(V) {
         c +
         '</table>'
       : '<div style="text-align:center">' +
-        esc(
-          tr('Nada ainda: insígnias, espécies na Pokédex, capítulos da história, raids e conquistas dão XP de Mestre.'),
-        ) +
+        esc(tr('Nothing yet: Badges, Pokédex species, story chapters, raids and achievements give Master XP.')) +
         '</div>')
   );
 }
@@ -431,17 +427,17 @@ export function pintarCaixa(V) {
   const K = V?.caixa;
   if (!K || !Number.isFinite(K.total)) return '';
   const d = K.proximoMestre
-    ? ' · ' + tr('no Mestre {n}: +{x} vagas', { n: K.proximoMestre.nivel, x: K.proximoMestre.mais })
+    ? ' · ' + tr('at Master {n}: +{x} slots', { n: K.proximoMestre.nivel, x: K.proximoMestre.mais })
     : '';
   const e = (n, a) => (Number.isSafeInteger(n) && n > 0 ? tr(a, { n: fmt(n) }) : '');
-  const f = [e(K.medalhao, '+{n} do Medalhão'), e(K.fundador, '+{n} do Pacote Fundador')].filter(Boolean);
+  const f = [e(K.medalhao, '+{n} from the Medallion'), e(K.fundador, '+{n} from the Founder Pack')].filter(Boolean);
   return (
     '<div style="text-align:center;font-size:12px;background:rgba(0,0,0,.25);border-radius:8px;padding:6px 8px"><span style="color:#fff">' +
-    esc(tr('Caixa: {n} vagas', { n: fmt(K.total) })) +
+    esc(tr('Box: {n} slots', { n: fmt(K.total) })) +
     '</span><br>' +
     '<small>' +
     esc(
-      tr('{a} da base + {b} do Mestre + {c} compradas; o time fica de fora', {
+      tr("{a} base + {b} from Master + {c} bought; the team doesn't count", {
         a: fmt(K.base),
         b: fmt(K.mestre),
         c: fmt(K.compradas),
@@ -477,13 +473,13 @@ function pintarTitulos(V) {
   const d = (a) => new Date(a).toLocaleDateString(LOCAL[I18n.idioma?.()] || 'pt-BR');
   return (
     '<div style="text-align:center;font-size:11px">' +
-    esc(tr('O título aparece debaixo do seu nome pra todo mundo.')) +
+    esc(tr('The title shows under your name for everyone.')) +
     '</div>' +
     '<div style="display:grid;gap:4px">' +
     c(
       '',
-      tr('Automático'),
-      b ? tr('o último que você ganhou: {x}', { x: tr(b) }) : tr('sem título por enquanto'),
+      tr('Automatic'),
+      b ? tr('the last one you earned: {x}', { x: tr(b) }) : tr('no title for now'),
       !T.escolhido,
     ) +
     a
@@ -491,7 +487,7 @@ function pintarTitulos(V) {
         c(
           t.id,
           tr(t.nome),
-          tr(ORIGEM[t.origem] || t.origem || '') + (t.ate ? ' · ' + tr('até {x}', { x: d(t.ate) }) : ''),
+          tr(ORIGEM[t.origem] || t.origem || '') + (t.ate ? ' · ' + tr('until {x}', { x: d(t.ate) }) : ''),
           T.escolhido === t.id,
         ),
       )
@@ -500,30 +496,30 @@ function pintarTitulos(V) {
     (a.length
       ? ''
       : '<div style="text-align:center;font-size:11px">' +
-        esc(tr('Resgate as conquistas que dão título pra escolher aqui.')) +
+        esc(tr('Claim achievements that grant titles to pick them here.')) +
         '</div>')
   );
 }
 const NOME_LICENCA = {
-  bicicleta: 'Licença de bicicleta',
-  terra: 'Licença de montaria terrestre',
-  agua: 'Licença de montaria aquática',
-  voo: 'Licença de voo',
+  bicicleta: 'Bike license',
+  terra: 'Land mount license',
+  agua: 'Water mount license',
+  voo: 'Fly license',
 };
 const NOME_CARTAO = { pm0078: 'Rapidash', pm0211: 'Qwilfish', pm0018: 'Pidgeot' };
 const ORDEM_LIC = ['bicicleta', 'terra', 'agua', 'voo'];
 const ONDE_LICENCA = {
-  bicicleta: 'a missão de Cerulean',
-  terra: '3ª insígnia',
-  agua: 'capítulo 10 da história',
-  voo: 'depois da Liga',
+  bicicleta: 'the Cerulean mission',
+  terra: '3rd badge',
+  agua: 'story chapter 10',
+  voo: 'after the League',
 };
 function montariaSemLicenca(m) {
   if (!m || m.pode || !m.cartao || m.motivo !== 'sem_licenca') return null;
   const a = (Array.isArray(m.precisa) && m.precisa.length ? m.precisa : []).filter((e) =>
     Object.hasOwn(NOME_LICENCA, e),
   );
-  if (!a.length) return tr('licença dela');
+  if (!a.length) return tr('its license');
   return a
     .map((e) => tr(vista?.montarias?.licencas?.[e]?.nome || NOME_LICENCA[e]) + ' (' + tr(ONDE_LICENCA[e]) + ')')
     .join(' + ');
@@ -553,7 +549,7 @@ function pintarMontarias(V) {
         '<small style="color:' +
         (x.tem ? '#8EF58E' : '#7f8aa6') +
         '">' +
-        esc(x.tem ? tr('Licença') + ' ✓' : tr('sem licença')) +
+        esc(x.tem ? tr('License') + ' ✓' : tr('no license')) +
         '</small></div>'
       );
     })
@@ -570,27 +566,27 @@ function pintarMontarias(V) {
       .join(' · ');
     const b = montariaSemLicenca(m);
     const c = m.pode
-      ? tr(m.shinyLicenca ? 'a shiny monta já' : 'pronta pra montar')
+      ? tr(m.shinyLicenca ? 'the shiny can ride now' : 'ready to ride')
       : b
-        ? '🔒 ' + tr('cartão guardado')
+        ? '🔒 ' + tr('card stored')
         : m.motivo === 'so_pacote'
-          ? tr('do Pacote Fundador')
+          ? tr('from the Founder Pack')
           : m.motivo === 'sem_cartao'
-            ? tr('sem cartão')
-            : tr('sem licença');
+            ? tr('no card')
+            : tr('no license');
     const d = b
-      ? tr('monta quando você tiver a {y}', { y: b })
+      ? tr('rides once you have the {y}', { y: b })
       : m.pacote && !m.pago
-        ? tr('vem no Pacote Fundador, na Loja')
+        ? tr('comes in the Founder Pack, in the Shop')
         : !m.cartao && m.conquista
-          ? tr('como ganhar: {x}', {
+          ? tr('how to earn: {x}', {
               x: tr(m.conquista.nome) + (m.conquista.descricao ? ' — ' + tr(m.conquista.descricao) : ''),
             })
           : '';
     const e = [
-      m.voa ? (m.podeVoar ? tr('voa') : tr('só em terra: falta a licença de voo')) : '',
-      m.pode && m.precisaNadar ? tr('só em terra: falta a licença de água') : '',
-      m.shinyLicenca && m.cartao ? tr('a normal pede a licença') : '',
+      m.voa ? (m.podeVoar ? tr('voa') : tr('land only: missing the flying license')) : '',
+      m.pode && m.precisaNadar ? tr('land only: missing the water license') : '',
+      m.shinyLicenca && m.cartao ? tr('the normal one needs the license') : '',
     ]
       .filter(Boolean)
       .join(' · ');
@@ -598,7 +594,7 @@ function pintarMontarias(V) {
       '<div style="background:rgba(0,0,0,.25);border-radius:8px;padding:6px 8px;display:grid;gap:2px">' +
       '<div style="display:flex;align-items:baseline;gap:6px"><span style="color:#fff;flex:1;min-width:0">' +
       esc(tr(m.nome)) +
-      (m.basica ? ' <small style="color:#F8C237">' + esc(tr('básica')) + '</small>' : '') +
+      (m.basica ? ' <small style="color:#F8C237">' + esc(tr('basic')) + '</small>' : '') +
       (m.shiny ? ' <small style="color:#8be9fd">' + esc(tr('Shiny')) + '</small>' : '') +
       '</span>' +
       '<small style="color:' +
@@ -618,24 +614,24 @@ function pintarMontarias(V) {
     f.length && !g.length
       ? '<div style="background:rgba(0,0,0,.25);border-radius:8px;padding:6px 8px;display:grid;gap:2px">' +
         '<div style="display:flex;align-items:baseline;gap:6px"><span style="color:#fff;flex:1;min-width:0">' +
-        esc(tr('Bicicleta')) +
+        esc(tr('Bicycle')) +
         '</span>' +
         '<small style="color:#f5c28e">' +
-        esc(tr(L.bicicleta?.tem ? 'sem cartão' : 'sem licença')) +
+        esc(tr(L.bicicleta?.tem ? 'no card' : 'no license')) +
         '</small></div>' +
         '<small style="color:#7f8aa6">' +
-        esc(tr('como ganhar: a missão "A Bicicleta de Cerulean", depois da 2ª insígnia (você escolhe a cor)')) +
+        esc(tr('how to get: the mission "The Cerulean Bicycle", after the 2nd Badge (you pick the color)')) +
         '</small></div>'
       : '';
   return (
     '<div style="text-align:center;font-size:11px">' +
-    esc(tr('A velocidade é a da licença, não a da espécie.')) +
+    esc(tr('Speed comes from the license, not the species.')) +
     '</div>' +
     '<div style="display:grid;gap:4px">' +
     c +
     '</div>' +
     '<div style="display:grid;gap:6px">' +
-    (h.length || j ? h.map(i).join('') + j : '<div style="text-align:center">' + esc(tr('Nada por aqui.')) + '</div>') +
+    (h.length || j ? h.map(i).join('') + j : '<div style="text-align:center">' + esc(tr('Nothing here.')) + '</div>') +
     '</div>'
   );
 }
@@ -654,11 +650,11 @@ export function receber(m) {
         vista = m.vista;
         vistaMudou();
       }
-      const a = m.titulo ? tr('o título {x}', { x: tr(m.nome) }) : tr(m.nome || '');
+      const a = m.titulo ? tr('the title {x}', { x: tr(m.nome) }) : tr(m.nome || '');
       const b = m.montaria ? montariaSemLicenca(montariaDaVista(m.montaria)) : null;
       const c = b
-        ? tr('Cartão do {x} guardado: monta quando você tiver a {y}.', { x: I18n.tNome(m.nome || ''), y: b })
-        : tr('Resgatado: {x}.', { x: a }) + (m.titulo ? ' ' + tr('Escolha o título na aba Títulos.') : '');
+        ? tr('{x} card saved: ride it once you have the {y}.', { x: I18n.tNome(m.nome || ''), y: b })
+        : tr('Redeemed: {x}.', { x: a }) + (m.titulo ? ' ' + tr('Pick the title in the Titles tab.') : '');
       try {
         ctx.Som?.tocar?.('ui/sound_itemget', { volume: 0.5, prio: true });
       } catch {}
@@ -673,9 +669,9 @@ export function receber(m) {
       acertarEscolhido();
       repintar();
     } else {
-      ConquistasUI.avisar(tr(m.texto || m.erro || 'Não deu.'), false);
+      ConquistasUI.avisar(tr(m.texto || m.erro || "That didn't work."), false);
       if (aberto) {
-        aberto.aviso = tr(m.texto || m.erro || 'Não deu.');
+        aberto.aviso = tr(m.texto || m.erro || "That didn't work.");
         aberto.bom = false;
         repintar();
       }
@@ -687,18 +683,15 @@ export function receber(m) {
       if (vista?.titulos) vista.titulos.escolhido = m.id || null;
       acertarEscolhido();
       if (aberto) {
-        aberto.aviso = m.id ? tr('Título escolhido: {x}.', { x: tr(m.nome || '') }) : tr('Título automático.');
+        aberto.aviso = m.id ? tr('Title selected: {x}.', { x: tr(m.nome || '') }) : tr('Automatic title.');
         aberto.bom = true;
       }
-      ConquistasUI.avisar(
-        m.id ? tr('Título escolhido: {x}.', { x: tr(m.nome || '') }) : tr('Título automático.'),
-        true,
-      );
+      ConquistasUI.avisar(m.id ? tr('Title selected: {x}.', { x: tr(m.nome || '') }) : tr('Automatic title.'), true);
       repintar();
     } else {
-      ConquistasUI.avisar(tr(m.texto || m.erro || 'Não deu.'), false);
+      ConquistasUI.avisar(tr(m.texto || m.erro || "That didn't work."), false);
       if (aberto) {
-        aberto.aviso = tr(m.texto || m.erro || 'Não deu.');
+        aberto.aviso = tr(m.texto || m.erro || "That didn't work.");
         aberto.bom = false;
         repintar();
       }
@@ -713,8 +706,8 @@ export function receber(m) {
     }
     const d = tr(
       m.erro === 'sem_conta'
-        ? 'Entre com uma conta pra ver as conquistas.'
-        : 'As conquistas estão fora do ar agora. Tente de novo daqui a pouco.',
+        ? 'Sign in with an account to see achievements.'
+        : 'Achievements are offline right now. Try again in a bit.',
     );
     if (ConquistasUI.aberto()) {
       if (vista) ConquistasUI.avisar(d, false);
@@ -730,7 +723,7 @@ export function receber(m) {
   if (m.t === 'progressao') {
     const f = Array.isArray(m.novas) ? m.novas : [];
     for (const n of f)
-      ctx.Chat?.sistemaCru?.('🏅 ' + tr('Conquista: {x} ({y})', { x: tr(n.nome || ''), y: nomeDegrau(n.degrau) }));
+      ctx.Chat?.sistemaCru?.('🏅 ' + tr('Achievement: {x} ({y})', { x: tr(n.nome || ''), y: nomeDegrau(n.degrau) }));
     const g = f.filter((n) => {
       const r = n?.recompensa;
       return (
@@ -740,18 +733,18 @@ export function receber(m) {
         !(vista?.conquistas || []).find((x) => x?.id === n.id)?.existente
       );
     });
-    if (g.length) ctx.Chat?.sistemaCru?.('🎁 ' + tr('Recompensa pronta: abra Conquistas (no Treinador) pra resgatar.'));
+    if (g.length) ctx.Chat?.sistemaCru?.('🎁 ' + tr('Reward ready: open Achievements (under Trainer) to claim it.'));
     if (f.length && !algumAberto()) pedirVista();
-    if (m.mestre?.subiu) ctx.Chat?.sistemaCru?.('⭐ ' + tr('Nível de Mestre {n}!', { n: m.mestre.nivel }));
+    if (m.mestre?.subiu) ctx.Chat?.sistemaCru?.('⭐ ' + tr('Master Level {n}!', { n: m.mestre.nivel }));
     const h = Array.isArray(m.licencas) ? m.licencas : [],
       i = Array.isArray(m.cartoes) ? m.cartoes : [];
     for (const e of h)
       ctx.Chat?.sistemaCru?.(
-        '🪪 ' + tr('Licença nova: {x}', { x: tr(vista?.montarias?.licencas?.[e]?.nome || NOME_LICENCA[e] || e) }),
+        '🪪 ' + tr('New license: {x}', { x: tr(vista?.montarias?.licencas?.[e]?.nome || NOME_LICENCA[e] || e) }),
       );
     for (const k of i)
       ctx.Chat?.sistemaCru?.(
-        '🐎 ' + tr('Montaria nova: {x}', { x: I18n.tNome(montariaDaVista(k)?.nome || NOME_CARTAO[k] || k) }),
+        '🐎 ' + tr('New mount: {x}', { x: I18n.tNome(montariaDaVista(k)?.nome || NOME_CARTAO[k] || k) }),
       );
     if (h.length || i.length) {
       try {
@@ -762,7 +755,9 @@ export function receber(m) {
     if (m.semana?.nome) {
       ctx.Chat?.sistemaCru?.(
         '🏅 ' +
-          tr('Título da semana: {x} (vale 7 dias). Escolha na aba Títulos das Conquistas.', { x: tr(m.semana.nome) }),
+          tr('Title of the week: {x} (lasts 7 days). Pick it in the Titles tab of Achievements.', {
+            x: tr(m.semana.nome),
+          }),
       );
       try {
         ctx.Som?.tocar?.('ui/sound_itemget', { volume: 0.5, prio: true });

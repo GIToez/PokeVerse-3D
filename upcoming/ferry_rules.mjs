@@ -1,6 +1,6 @@
 export const RAIO_CAIS = 4;
-export const TEXTO_INSIGNIAS = 'A balsa só leva às Ilhas Sevii quem tem sete insígnias.';
-export const TEXTO_CAMPEAO = 'Esta parada só abre pra quem venceu a Elite dos Quatro.';
+export const TEXTO_INSIGNIAS = 'The ferry only takes Trainers with seven Badges to the Sevii Islands.';
+export const TEXTO_CAMPEAO = 'This stop only opens for those who beat the Elite Four.';
 const num = (v, p = 0) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : p;
@@ -40,7 +40,7 @@ export function paradasDe(b) {
 }
 export const paradaDaPorta = (a, b) => (Array.isArray(a) ? a : []).find((p) => p.porta === num(b)) || null;
 export function porqueFechada(p, { insignias: a = 0, campeao: b = false } = {}) {
-  if (!p) return { motivo: 'parada', texto: 'Essa parada não existe.' };
+  if (!p) return { motivo: 'parada', texto: "That stop doesn't exist." };
   if (p.campeao && !b) return { motivo: 'campeao', texto: TEXTO_CAMPEAO };
   if (p.insignias > 0 && num(a) < p.insignias) return { motivo: 'insignias', texto: TEXTO_INSIGNIAS };
   return null;

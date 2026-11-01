@@ -21,29 +21,29 @@ const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
 const ZEROS = () => [0, 0, 0, 0, 0, 0];
 const soma = (l) => l.reduce((a, b) => a + b, 0);
 export const ERRO = {
-  NAO_E_EV: 'não é item de EV',
+  NAO_E_EV: 'not an EV item',
   TETO: 'teto',
-  NADA_A_TIRAR: 'nada a tirar',
-  SEM_FICHA: 'sem ficha',
-  SEM_CONTA: 'sem conta',
-  HORTA_FECHADA: 'sem horta',
-  CANTEIRO_NAO_EXISTE: 'canteiro não existe',
-  CANTEIRO_TRANCADO: 'canteiro trancado',
-  CANTEIRO_OCUPADO: 'canteiro ocupado',
-  CANTEIRO_VAZIO: 'canteiro vazio',
-  NAO_PLANTAVEL: 'não se planta',
-  AINDA_NAO: 'ainda não',
-  OUTRA_CASA: 'casa de outro jogador',
-  RELOGIO: 'relógio inválido',
-  SEM_ORIGEM: 'prêmio sem origem',
-  PREMIO_INVALIDO: 'prêmio inválido',
-  JA_PAGO: 'já pago',
-  TETO_CANTEIROS: 'teto de canteiros',
-  MOCHILA_CHEIA: 'mochila cheia',
-  SEM_ITEM: 'sem o item',
-  FORA_DO_TERRENO: 'fora do terreno',
-  DESLIGADA: 'horta desligada',
-  INTERNO: 'erro interno',
+  NADA_A_TIRAR: 'nothing to remove',
+  SEM_FICHA: 'no record',
+  SEM_CONTA: 'no account',
+  HORTA_FECHADA: 'no garden',
+  CANTEIRO_NAO_EXISTE: "plot bed doesn't exist",
+  CANTEIRO_TRANCADO: 'plot locked',
+  CANTEIRO_OCUPADO: 'plot occupied',
+  CANTEIRO_VAZIO: 'plot empty',
+  NAO_PLANTAVEL: "can't be planted",
+  AINDA_NAO: 'not yet',
+  OUTRA_CASA: "another player's house",
+  RELOGIO: 'invalid clock',
+  SEM_ORIGEM: 'reward with no source',
+  PREMIO_INVALIDO: 'invalid reward',
+  JA_PAGO: 'already paid',
+  TETO_CANTEIROS: 'garden bed limit',
+  MOCHILA_CHEIA: 'bag full',
+  SEM_ITEM: 'missing the item',
+  FORA_DO_TERRENO: 'outside the plot',
+  DESLIGADA: 'garden disabled',
+  INTERNO: 'internal error',
 };
 export const idDe = (v) => {
   const n = typeof v === 'number' ? v : typeof v === 'string' && /^\d{1,9}$/.test(v) ? +v : NaN;
@@ -117,7 +117,7 @@ export function ganharPorKo(a, b, { mult: c = 1 } = {}) {
   const m = Math.max(0, Math.min(R().regras.mult.max, Math.floor(num(c, 1))));
   if (!r) {
     a.evs = f;
-    return { ganhou: d, cortado: e, evs: [...f], total: g, cheio: g >= totalMax(), motivo: 'espécie sem rendimento' };
+    return { ganhou: d, cortado: e, evs: [...f], total: g, cheio: g >= totalMax(), motivo: 'species has no yield' };
   }
   for (let i = 0; i < 6; i++) {
     const h = r[i] * m;
@@ -133,7 +133,7 @@ export function ganharPorKo(a, b, { mult: c = 1 } = {}) {
 }
 export function lvMeuMaxDe(a) {
   const b = Object.entries(a && typeof a === 'object' ? a : {});
-  if (!b.length) throw new Error('niveis_area.json vazio: sem selvagem não há teto do lvMeu');
+  if (!b.length) throw new Error('niveis_area.json empty: no wild Pokémon means no lvMeu cap');
   let c = 0;
   for (const [d, f] of b) {
     if (
@@ -142,7 +142,7 @@ export function lvMeuMaxDe(a) {
       !f.every((v) => Number.isInteger(v) && v >= 1 && v <= 100) ||
       f[0] > f[1]
     )
-      throw new Error('niveis_area.json: faixa quebrada na área ' + d + ': ' + JSON.stringify(f));
+      throw new Error('niveis_area.json: broken range in area ' + d + ': ' + JSON.stringify(f));
     if (f[1] > c) c = f[1];
   }
   return c;

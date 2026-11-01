@@ -43,14 +43,14 @@ const RESUMO_PXM = 2,
   RESUMO_ATE = 3,
   ALTA_DE = 10;
 const FILTROS = [
-  ['centro', 'Centro Pokémon'],
-  ['loja', 'Loja'],
-  ['ginasio', 'Ginásio'],
-  ['missoes', 'Missões'],
-  ['servicos', 'Lab, escola, museu, creche'],
+  ['centro', 'Pokémon Center'],
+  ['loja', 'Shop'],
+  ['ginasio', 'Gym'],
+  ['missoes', 'Missions'],
+  ['servicos', 'Lab, school, museum, daycare'],
   ['balsa', 'Balsa'],
-  ['entradas', 'Entradas e cavernas'],
-  ['rotas', 'Nomes das rotas'],
+  ['entradas', 'Entrances and caves'],
+  ['rotas', 'Route names'],
 ];
 const SERVICOS = new Set(['lab', 'escola', 'museu', 'creche', 'outro', 'casa_missao']);
 let dep = {};
@@ -76,7 +76,7 @@ export const popAtual = () => pop;
 async function lerDadosJs(a) {
   const t = await fetch(url(a)).then((r) => (r.ok ? r.text() : Promise.reject(new Error(a + ': ' + r.status))));
   const m = t.match(/=\s*(\{[\s\S]*\})\s*;?\s*$/);
-  if (!m) throw new Error(a + ': sem o objeto');
+  if (!m) throw new Error(a + ': object missing');
   return JSON.parse(m[1]);
 }
 function carregar() {
@@ -98,7 +98,7 @@ function carregar() {
       falhou = false;
     })
     .catch((e) => {
-      console.warn('mapa: os dados não chegaram', e);
+      console.warn('map: data did not arrive', e);
       carga = null;
       falhou = true;
     }));
@@ -397,7 +397,7 @@ function pintarFiltro(d) {
   const f = filtro();
   d.innerHTML =
     '<h4>' +
-    esc(tr('Marcadores')) +
+    esc(tr('Markers')) +
     '</h4>' +
     FILTROS.map(
       ([k, t]) =>
@@ -539,7 +539,7 @@ function pintarMenuRegiao() {
   if (j) j.style.color = c.dataset.cor0;
   if (k) k.style.color = b.dataset.cor0;
   Popup.texto(pop, 'regiao-nome', 'Kanto', b);
-  Popup.texto(pop, 'regiao-nome', 'Ilhas Sevii', c);
+  Popup.texto(pop, 'regiao-nome', 'Sevii Islands', c);
 }
 function trocarRegiao(a, b = null) {
   est.reg = a;
@@ -1075,12 +1075,12 @@ function camadaViva() {
     L = lang(),
     g = F === 'perto';
   const T = {
-    entrada: tr('Entrada'),
-    saida: tr('Saída'),
-    ver: tr('Ver mapa'),
+    entrada: tr('Entrance'),
+    saida: tr('Exit'),
+    ver: tr('View map'),
     voltar: tr('Kanto'),
     balsa: tr('Balsa'),
-    sevii: tr('Ilhas Sevii'),
+    sevii: tr('Sevii Islands'),
   };
   const i = missaoAtiva(),
     j = i?.alvo || null,
@@ -1349,7 +1349,7 @@ function pintarEscala() {
 }
 function pintarControles() {
   const a = (est.eu = ondeEstou() || est.eu);
-  Popup.texto(pop, 'local-rotulo', 'Você está em');
+  Popup.texto(pop, 'local-rotulo', 'You are in');
   const b = a?.area ?? dep.areaAtual?.() ?? null,
     c = b != null ? nomeDaArea(b) : null;
   Popup.textoCru(pop, 'local-atual', c || '—');
@@ -1361,13 +1361,13 @@ function pintarControles() {
       Popup.textoCru(pop, 'missao-nome', d.titulo);
       Popup.textoCru(pop, 'missao-passo', d.passo);
       e.style.opacity = d.alvo ? '1' : '0.75';
-      e.title = d.alvo ? '' : tr('O mapa ainda não sabe onde fica este passo.');
+      e.title = d.alvo ? '' : tr("The map doesn't know where this step is yet.");
     }
   }
   const f = filtro(),
     n = FILTROS.filter(([k]) => f[k] !== false).length;
-  Popup.texto(pop, 'marcadores', 'Marcadores');
-  Popup.textoCru(pop, 'marcadores-qtd', tr('{n} de {m}', { n, m: FILTROS.length }));
+  Popup.texto(pop, 'marcadores', 'Markers');
+  Popup.textoCru(pop, 'marcadores-qtd', tr('{n} of {m}', { n, m: FILTROS.length }));
   const g = est.modo === 'sub',
     i = Popup.grupo(pop, 'btn-regiao');
   if (i) {
@@ -1466,7 +1466,7 @@ function pintarArea(a) {
   const b = todosLugares(),
     d = Lug.lugarDoSel(b, a),
     f = d || Lug.lugarDaArea(b, a);
-  Popup.textoCru(pop, 'area-nome', d ? d.nome[lang()] || d.nome.pt : nomeDaArea(a, false) || 'área ' + a, p);
+  Popup.textoCru(pop, 'area-nome', d ? d.nome[lang()] || d.nome.pt : nomeDaArea(a, false) || 'area ' + a, p);
   const g = HABITATS || { areas: {}, generico: [] },
     h = d ? d.lista : g.areas?.[String(a)] || [];
   const j = h.length ? h : !d && ehRota(a) ? g.generico || [] : [];
@@ -1475,14 +1475,14 @@ function pintarArea(a) {
     pop,
     'area-dica',
     !j.length
-      ? 'Sem Pokémon selvagens aqui.'
+      ? 'No wild Pokémon here.'
       : !h.length
-        ? 'Pokémon comuns da região — de perto eles entram na Pokédex.'
+        ? 'Common Pokémon of the region — up close they get added to the Pokédex.'
         : d && d.andares > 1
-          ? 'Pokémon de todos os andares — de perto eles entram na Pokédex.'
+          ? 'Pokémon on every floor — up close they enter the Pokédex.'
           : !d && f?.andares > 1
-            ? 'Pokémon deste andar — de perto eles entram na Pokédex.'
-            : 'Pokémon desta área — de perto eles entram na Pokédex.',
+            ? 'Pokémon on this floor — up close they enter the Pokédex.'
+            : 'Pokémon of this area — up close they get added to the Pokédex.',
     p,
   );
   let k = {};
@@ -1543,8 +1543,8 @@ function textoMissoesDaArea(a, b = null) {
   const l = [...d];
   if (!l.length) return '';
   return l.length === 1
-    ? tr('1 missão aqui: {x}', { x: l[0] })
-    : tr('{n} missões aqui: {x}', { n: l.length, x: l.join(', ') });
+    ? tr('1 mission here: {x}', { x: l[0] })
+    : tr('{n} missions here: {x}', { n: l.length, x: l.join(', ') });
 }
 function areaNoPonto(b, c) {
   const d = D();
@@ -1683,7 +1683,7 @@ export function pintar() {
   pedir();
 }
 function pintarControlesSemDados() {
-  Popup.texto(pop, 'local-rotulo', 'Você está em');
+  Popup.texto(pop, 'local-rotulo', 'You are in');
   const a = Popup.grupo(pop, 'missao-ativa');
   if (a) a.style.display = 'none';
   ViagemUi.noMapa(pop);

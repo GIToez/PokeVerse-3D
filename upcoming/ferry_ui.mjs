@@ -343,7 +343,7 @@ export function abrir(a) {
   const O = paradaDaPorta(lista(), a);
   if (!O) return false;
   if (ctx.emTurno?.()) {
-    ctx.Chat?.sistema?.(tr('Não dá no meio de uma batalha.'));
+    ctx.Chat?.sistema?.(tr("Can't do that mid-battle."));
     return true;
   }
   const b = popupBalsa();
@@ -406,10 +406,10 @@ function pintar() {
     V = vistaBalsa(L, {}, { tr }).paradas;
   A.d.innerHTML =
     '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">' +
-    esc(tr('Balsa das Ilhas')) +
+    esc(tr('Island Ferry')) +
     '</div>' +
     '<div style="text-align:center;font-size:11px">' +
-    esc(tr('Escolha a parada.')) +
+    esc(tr('Choose a stop.')) +
     '</div>' +
     '<div style="display:grid;gap:6px">' +
     L.map(
@@ -429,7 +429,7 @@ function pintar() {
         '</span>' +
         '<span style="flex:0 0 auto;display:flex">' +
         (p.aqui
-          ? '<span style="color:#F8C237;font-size:11px">' + esc(tr('Você está aqui')) + '</span>'
+          ? '<span style="color:#F8C237;font-size:11px">' + esc(tr('You are here')) + '</span>'
           : botao('bs-ir', esc(tr('Ir')), p.aberta && !A.esperando, ' data-parada="' + esc(p.id) + '"')) +
         '</span></div>',
     ).join('') +
@@ -437,10 +437,10 @@ function pintar() {
     '<div class="bs-av" style="min-height:16px;text-align:center;color:' +
     (A.esperando ? '#8EF58E' : '#f58e8e') +
     '">' +
-    esc(A.esperando ? tr('um instante…') : A.aviso) +
+    esc(A.esperando ? tr('one moment…') : A.aviso) +
     '</div>' +
     '<div style="display:flex">' +
-    botao('bs-nao', esc(tr('Fechar'))) +
+    botao('bs-nao', esc(tr('Close'))) +
     '</div>';
   A.d.querySelector('.bs-nao').onclick = () => fecharTopo();
   for (const b of A.d.querySelectorAll('.bs-ir[data-parada]')) b.onclick = () => ir(b.dataset.parada);
@@ -483,7 +483,7 @@ export function receber(m) {
   }
   if (m.t !== 'balsa') return;
   if (m.ok) return partir(m);
-  const a = tr(m.texto || 'Não deu.');
+  const a = tr(m.texto || "That didn't work.");
   if (A) {
     A.esperando = false;
     A.aviso = a;

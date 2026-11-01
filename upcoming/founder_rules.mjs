@@ -77,70 +77,70 @@ export function validarTabela(t) {
       c.push(m);
     };
   try {
-    if (!obj(t)) return { ok: false, erros: ['a tabela não é um objeto'] };
-    if (t.origem !== ORIGEM) e('origem: tem de ser "' + ORIGEM + '"');
+    if (!obj(t)) return { ok: false, erros: ['the table is not an object'] };
+    if (t.origem !== ORIGEM) e('origem: must be "' + ORIGEM + '"');
     if (t.titulo !== TITULO)
-      e('titulo: tem de ser "' + TITULO + '" (o "fundador" é o título da guilda e o "desafiante" o do ginásio)');
-    if (t.diasPorMes !== DIAS_POR_MES) e('diasPorMes: tem de ser ' + DIAS_POR_MES);
-    if (!Array.isArray(t.niveis)) return { ok: false, erros: [...c, 'niveis: tem de ser uma lista'] };
+      e('titulo: must be "' + TITULO + '" ("founder" is the guild title and "challenger" the gym one)');
+    if (t.diasPorMes !== DIAS_POR_MES) e('diasPorMes: must be ' + DIAS_POR_MES);
+    if (!Array.isArray(t.niveis)) return { ok: false, erros: [...c, 'niveis: must be a list'] };
     if (t.niveis.length !== NIVEL_MAX)
-      e('niveis: são ' + NIVEL_MAX + ' (Desafiante, Elite e Campeão), vieram ' + t.niveis.length);
+      e('niveis: expected ' + NIVEL_MAX + ' (Challenger, Elite and Champion), got ' + t.niveis.length);
     for (const k of CHAVES_PRECOS)
-      if (k.length > TETO_ID) e('a chave de preço "' + k + '" passa de ' + TETO_ID + ' caracteres');
+      if (k.length > TETO_ID) e('the price key "' + k + '" exceeds ' + TETO_ID + ' caracteres');
     let d = null;
     for (let i = 0; i < t.niveis.length; i++) {
       const f = t.niveis[i],
         h = NIVEIS[i],
-        j = 'nível ' + (i + 1);
+        j = 'level ' + (i + 1);
       if (!obj(f)) {
-        e(j + ': não é um objeto');
+        e(j + ': is not an object');
         d = null;
         continue;
       }
       if (!h) {
-        e(j + ': a mais');
+        e(j + ': extra');
         continue;
       }
-      if (f.id !== h.id) e(j + ': o id é "' + h.id + '" (veio ' + JSON.stringify(f.id) + ')');
-      if (typeof f.id === 'string' && f.id.length > TETO_ID) e(j + ': o id passa de ' + TETO_ID + ' caracteres');
-      if (f.nivel !== h.nivel) e(j + ': `nivel` tem de ser ' + h.nivel);
+      if (f.id !== h.id) e(j + ': the id is "' + h.id + '" (got ' + JSON.stringify(f.id) + ')');
+      if (typeof f.id === 'string' && f.id.length > TETO_ID) e(j + ': the id exceeds ' + TETO_ID + ' caracteres');
+      if (f.nivel !== h.nivel) e(j + ': `nivel` must be ' + h.nivel);
       if (typeof f.nome !== 'string' || !f.nome.trim() || f.nome.length > TETOS.nome)
-        e(j + ': falta o nome (até ' + TETOS.nome + ' letras)');
+        e(j + ': missing name (up to ' + TETOS.nome + ' letters)');
       for (const m of MOEDAS)
         if (!inteiro(f[m], MINIMO_CENTAVOS, TETOS.centavos))
-          e(j + ': o preço em ' + m + ' (centavos, inteiro, de ' + MINIMO_CENTAVOS + ' a ' + TETOS.centavos + ')');
-      if (!inteiro(f.diamantes, 1, TETOS.diamantes)) e(j + ': diamantes (inteiro de 1 a ' + TETOS.diamantes + ')');
-      if (!inteiro(f.vagas, 0, TETOS.vagas)) e(j + ': vagas (inteiro de 0 a ' + TETOS.vagas + ')');
+          e(j + ': the price in ' + m + ' (cents, integer, from ' + MINIMO_CENTAVOS + ' a ' + TETOS.centavos + ')');
+      if (!inteiro(f.diamantes, 1, TETOS.diamantes)) e(j + ': diamonds (integer from 1 to ' + TETOS.diamantes + ')');
+      if (!inteiro(f.vagas, 0, TETOS.vagas)) e(j + ': slots (integer from 0 to ' + TETOS.vagas + ')');
       if (!inteiro(f.incubadoras, 0, TETOS.incubadoras))
-        e(j + ': incubadoras (inteiro de 0 a ' + TETOS.incubadoras + ')');
-      if (!inteiro(f.meses, 0, TETOS.meses)) e(j + ': meses (inteiro de 0 a ' + TETOS.meses + ')');
+        e(j + ': incubators (integer from 0 to ' + TETOS.incubadoras + ')');
+      if (!inteiro(f.meses, 0, TETOS.meses)) e(j + ': months (integer from 0 to ' + TETOS.meses + ')');
       if (f.dias !== f.meses * DIAS_POR_MES)
-        e(j + ': dias = ' + DIAS_POR_MES + ' × meses (veio ' + JSON.stringify(f.dias) + ')');
-      if (f.titulo !== TITULO) e(j + ': o título é "' + TITULO + '"');
-      if (!(f.termina === null || inteiro(f.termina, 1))) e(j + ': termina é null (sem prazo) ou a hora em ms');
-      if (!Array.isArray(f.pecas)) e(j + ': pecas tem de ser uma lista');
+        e(j + ': days = ' + DIAS_POR_MES + ' × months (got ' + JSON.stringify(f.dias) + ')');
+      if (f.titulo !== TITULO) e(j + ': the title is "' + TITULO + '"');
+      if (!(f.termina === null || inteiro(f.termina, 1))) e(j + ': termina is null (no deadline) or the time in ms');
+      if (!Array.isArray(f.pecas)) e(j + ': pecas must be a list');
       else
         for (const p of f.pecas) {
           const l = lerPeca(p);
-          if (!l) e(j + ': peça fora do formato "tipo:id": ' + JSON.stringify(p));
-          else if (l.tipo === 'peito' || l.tipo === 'rastro') e(j + ': o ' + l.tipo + ' vai nos `efeitos` (' + p + ')');
+          if (!l) e(j + ': piece not in "type:id" format: ' + JSON.stringify(p));
+          else if (l.tipo === 'peito' || l.tipo === 'rastro') e(j + ': o ' + l.tipo + ' goes in `efeitos` (' + p + ')');
         }
-      if (!obj(f.efeitos)) e(j + ': efeitos tem de ser { peito: [ids], chao: [ids] }');
+      if (!obj(f.efeitos)) e(j + ': efeitos must be { peito: [ids], chao: [ids] }');
       else
         for (const [g, l] of Object.entries(f.efeitos)) {
           if (!Object.hasOwn(CLASSE_DO_EFEITO, g)) {
-            e(j + ': grupo de efeito desconhecido "' + g + '" (são peito e chao)');
+            e(j + ': unknown effect group "' + g + '" (they are peito and chao)');
             continue;
           }
           if (!Array.isArray(l) || l.some((a) => !inteiro(a, 1, 999999999)))
-            e(j + ': efeitos.' + g + ' é uma lista de ids inteiros');
+            e(j + ': efeitos.' + g + ' is a list of integer ids');
         }
       const n = pecasDoNivel(f);
-      if (new Set(n).size !== n.length) e(j + ': peça repetida');
+      if (new Set(n).size !== n.length) e(j + ': duplicate piece');
       if (Object.hasOwn(f, 'montarias')) {
         const M = f.montarias;
         if (!obj(M) || Object.keys(M).some((k) => k !== 'normais' && k !== 'shiny'))
-          e(j + ': montarias é { normais: [ids], shiny: [ids] }');
+          e(j + ': montarias is { normais: [ids], shiny: [ids] }');
         else
           for (const [k, o] of [
             ['normais', RE_MONTARIA],
@@ -152,12 +152,12 @@ export function validarTabela(t) {
                 j +
                   ': montarias.' +
                   k +
-                  ' é uma lista de ids ' +
-                  (k === 'shiny' ? '"pmNNNN"' : '("pmNNNN" ou o veículo)') +
-                  ', até ' +
+                  ' is a list of ids ' +
+                  (k === 'shiny' ? '"pmNNNN"' : '("pmNNNN" or the vehicle)') +
+                  ', up to ' +
                   TETO_MONTARIAS,
               );
-            else if (new Set(l).size !== l.length) e(j + ': montaria repetida em montarias.' + k);
+            else if (new Set(l).size !== l.length) e(j + ': duplicate mount in mounts.' + k);
           }
       }
       if (d && d.nivel === f.nivel - 1) {
@@ -165,23 +165,19 @@ export function validarTabela(t) {
           if (inteiro(f[m]) && inteiro(d[m]) && f[m] - d[m] < MINIMO_CENTAVOS)
             e(
               j +
-                ': o preço cheio em ' +
+                ': the full price in ' +
                 m +
-                ' tem de ser maior que o do nível de baixo (a subida custa pelo menos ' +
+                ' must be higher than the tier below (the upgrade costs at least ' +
                 MINIMO_CENTAVOS +
                 ' centavos)',
             );
         if (inteiro(f.diamantes) && inteiro(d.diamantes) && !(f.diamantes > d.diamantes))
-          e(
-            j +
-              ': os Diamantes têm de ser MAIS que os do nível de baixo (todo pagamento cria um lote: é a âncora do estorno)',
-          );
+          e(j + ': Diamonds must be MORE than the tier below (every payment creates a batch: it is the refund anchor)');
         for (const k of ['vagas', 'incubadoras', 'meses'])
-          if (inteiro(f[k]) && inteiro(d[k]) && f[k] < d[k])
-            e(j + ': ' + k + ' não pode ser menos que no nível de baixo');
+          if (inteiro(f[k]) && inteiro(d[k]) && f[k] < d[k]) e(j + ': ' + k + ' cannot be less than in the tier below');
         const q = pecasDoNivel(d),
           r = q.filter((p) => !n.includes(p));
-        if (r.length) e(j + ': o nível de cima traz tudo o que o de baixo tem — faltam ' + r.join(', '));
+        if (r.length) e(j + ': the upper tier includes everything from the one below — missing ' + r.join(', '));
         {
           const a = montariasDoNivel(d),
             b = montariasDoNivel(f),
@@ -189,15 +185,15 @@ export function validarTabela(t) {
               ...a.normais.filter((x) => !b.normais.includes(x)),
               ...a.shiny.filter((x) => !b.shiny.includes(x)).map((x) => 'shiny:' + x),
             ];
-          if (s.length) e(j + ': o nível de cima traz todas as montarias do de baixo — faltam ' + s.join(', '));
+          if (s.length) e(j + ': the upper tier includes all mounts from the one below — missing ' + s.join(', '));
         }
         if (f.termina !== d.termina)
-          e(j + ': o prazo (termina) é do pacote: os ' + NIVEL_MAX + ' níveis acabam juntos');
+          e(j + ': the deadline (termina) belongs to the pack: all ' + NIVEL_MAX + ' tiers end together');
       }
       d = f;
     }
   } catch (x) {
-    c.push('a tabela quebrou a conferência: ' + (x?.message || x));
+    c.push('the table failed validation: ' + (x?.message || x));
   }
   return { ok: c.length === 0, erros: c };
 }
@@ -320,15 +316,15 @@ export function estadoDaVenda(t, a) {
   if (!v.ok)
     return {
       aberta: false,
-      motivos: ['a tabela do pacote é inválida (' + v.erros.length + ' erro(s)): ' + v.erros.join('; ')],
+      motivos: ['the pack table is invalid (' + v.erros.length + ' error(s)): ' + v.erros.join('; ')],
     };
   const c = t.niveis
     .filter((a) => Object.hasOwn(a, 'aguardando'))
-    .map((a) => 'o nível ' + a.nivel + ' (' + a.id + ') tem o campo `aguardando`');
+    .map((a) => 'tier ' + a.nivel + ' (' + a.id + ') has the `aguardando` field');
   const d = t.niveis[0].termina,
     e = typeof b === 'number' && Number.isFinite(b);
-  if (d !== null && !e) c.push('o prazo (termina) está marcado e não veio a hora pra saber se acabou');
-  else if (d !== null && !(d > b)) c.push('o prazo da oferta acabou (termina = ' + d + ')');
+  if (d !== null && !e) c.push('the deadline (termina) is set and no time was given to check if it ended');
+  else if (d !== null && !(d > b)) c.push('the offer deadline has passed (termina = ' + d + ')');
   return { aberta: c.length === 0, motivos: c };
 }
 export function ofertasPublicas(t, a) {

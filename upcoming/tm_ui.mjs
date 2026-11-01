@@ -21,8 +21,8 @@ export function moedaCurta(v, l = I18n.idioma()) {
   );
 }
 const FAIXA_COR = { comum: '#9fd3ff', forte: '#ffb86b', rara: '#e59bff' };
-const PECA_NOME = { 900020: 'Peça de TM comum', 900021: 'Peça de TM forte', 900022: 'Peça de TM rara' };
-const nomePeca = (p) => tr(ctx.item?.(p)?.n || PECA_NOME[p] || 'peça');
+const PECA_NOME = { 900020: 'Common TM Piece', 900021: 'Strong TM Piece', 900022: 'Rare TM piece' };
+const nomePeca = (p) => tr(ctx.item?.(p)?.n || PECA_NOME[p] || 'piece');
 export function instalar(c) {
   ctx = c || {};
 }
@@ -80,13 +80,13 @@ const travaDe = (M) => Math.max(0, Math.floor(num(REGRAS.trava?.[M.faixa])));
 function descricao(M) {
   const a = travaDe(M);
   return (
-    tr('Ensina {x} a um Pokémon do time. Uso único: a máquina some depois de ensinar.', { x: nomeGolpe(M) }) +
+    tr('Teaches {x} to a party Pokémon. Single use: the machine is consumed after teaching.', { x: nomeGolpe(M) }) +
     '\n' +
     [
       tr('TM {x}', { x: tr(M.faixa) }),
       tipoDe(M),
-      M.poder ? tr('Poder {x}', { x: M.poder }) : '',
-      a ? tr('pede {x} insígnia(s)', { x: a }) : '',
+      M.poder ? tr('Power {x}', { x: M.poder }) : '',
+      a ? tr('requires {x} badge(s)', { x: a }) : '',
     ]
       .filter(Boolean)
       .join(' · ')
@@ -98,9 +98,9 @@ const doTutor = (a) => {
 };
 function descricaoTutor(G) {
   return (
-    tr('O tutor ensina {x} por {y} ₽.', { x: nomeGolpe(G), y: reais(precoTutor()) }) +
+    tr('The tutor teaches {x} for {y} ₽.', { x: nomeGolpe(G), y: reais(precoTutor()) }) +
     '\n' +
-    [tipoDe(G), G.poder ? tr('Poder {x}', { x: G.poder }) : ''].filter(Boolean).join(' · ')
+    [tipoDe(G), G.poder ? tr('Power {x}', { x: G.poder }) : ''].filter(Boolean).join(' · ')
   );
 }
 export function corrigirItens(a) {
@@ -265,16 +265,16 @@ function pintarBalcao() {
   const q = B.modo === 'tutor',
     r = !!(b && B.tutor);
   const s = tr(b?.nome || REGRAS.tutor?.tutores?.find((x) => String(x.cfg) === String(B.cfg))?.nome || '');
-  const u = q ? tr('Tutor de golpes') : tr('Balcão de TMs');
+  const u = q ? tr('Move Tutor') : tr('TM Counter');
   let v = '';
   if (q) {
     const _ = precoTutor(),
       $ = golpesDoTutor().map(doTutor);
     v =
       '<div style="text-align:center">' +
-      esc(tr('Ensina golpes que não têm TM. {x} ₽ cada.', { x: reais(_) })) +
+      esc(tr('Teaches moves without a TM. {x} ₽ each.', { x: reais(_) })) +
       ' <span style="color:#fff">' +
-      esc(tr('Você tem {x} ₽.', { x: reais(dinheiro()) })) +
+      esc(tr('You have {x} ₽.', { x: reais(dinheiro()) })) +
       '</span></div>' +
       '<div class="tm-lista" style="display:grid;gap:4px;max-height:' +
       (k ? 'max(90px, calc(100vh - 190px))' : 'min(46vh,360px)') +
@@ -288,18 +288,13 @@ function pintarBalcao() {
                 '<div style="font-size:11px;color:#7f8aa6">' +
                 (b.length
                   ? '<span style="color:#8EF58E">✓ ' + esc(j(b).join(', ')) + '</span>'
-                  : esc(tr(a.length ? 'quem aprende já sabe' : 'ninguém do time aprende'))) +
+                  : esc(tr(a.length ? 'learners already know it' : 'no one in the party can learn it'))) +
                 '</div>',
-              botao(
-                'ensinar',
-                esc(tr('Ensinar')),
-                b.length > 0 && dinheiro() >= _,
-                ' data-golpe="' + esc(G.chave) + '"',
-              ),
+              botao('ensinar', esc(tr('Teach')), b.length > 0 && dinheiro() >= _, ' data-golpe="' + esc(G.chave) + '"'),
             );
           }).join('')
         : '<div style="text-align:center;padding:12px">' +
-          esc(tr('O tutor não tem golpe pra ensinar agora.')) +
+          esc(tr('The tutor has no move to teach right now.')) +
           '</div>') +
       '</div>';
   } else {
@@ -330,7 +325,7 @@ function pintarBalcao() {
       botao('meu', esc(tr('pro meu time')), true, B.meuTime ? ' data-on="1"' : '') +
       '</div>' +
       '<input class="tm-busca" placeholder="' +
-      esc(tr('buscar golpe ou tipo')) +
+      esc(tr('search move or type')) +
       '" value="' +
       esc(B.busca) +
       '" style="background:#0B1220;border:1px solid rgba(248,194,55,.4);border-radius:8px;padding:' +
@@ -347,17 +342,17 @@ function pintarBalcao() {
                 cabecaGolpe(
                   M,
                   '<small style="color:' + FAIXA_COR[M.faixa] + '">' + esc(tr(M.faixa)) + '</small> ',
-                  quantos(M.item) ? ' · ' + esc(tr('na mochila: {x}', { x: quantos(M.item) })) : '',
+                  quantos(M.item) ? ' · ' + esc(tr('in bag: {x}', { x: quantos(M.item) })) : '',
                 ) +
                   '<div style="font-size:11px;color:#7f8aa6">' +
                   esc(receitaTxt(M.faixa)) +
                   (a.length ? ' <span style="color:#8EF58E">✓ ' + esc(j(a).join(', ')) + '</span>' : '') +
                   '</div>',
-                botao('montar', esc(tr('Montar')), cabe(M.faixa), ' data-item="' + M.item + '"'),
+                botao('montar', esc(tr('Craft')), cabe(M.faixa), ' data-item="' + M.item + '"'),
               );
             })
             .join('')
-        : '<div style="text-align:center;padding:12px">' + esc(tr('Nenhuma TM nesse filtro.')) + '</div>') +
+        : '<div style="text-align:center;padding:12px">' + esc(tr('No TMs match this filter.')) + '</div>') +
       '</div>';
   }
   d.innerHTML =
@@ -375,8 +370,8 @@ function pintarBalcao() {
     esc(B.aviso) +
     '</div>' +
     '<div style="display:flex;gap:8px">' +
-    (b ? botao('loja', esc(tr('Ver a loja'))) : '') +
-    botao('nao', esc(tr('Fechar'))) +
+    (b ? botao('loja', esc(tr('View shop'))) : '') +
+    botao('nao', esc(tr('Close'))) +
     '</div>';
   for (const x of d.querySelectorAll('button'))
     x.style.flex = ['fx', 'meu', 'montar', 'ensinar', 'modo'].some((c) => x.classList.contains(c)) ? '0 0 auto' : '1';
@@ -422,7 +417,7 @@ function pintarBalcao() {
   for (const x of d.querySelectorAll('.montar'))
     x.onclick = () => {
       if (x.disabled) return;
-      B.aviso = tr('montando…');
+      B.aviso = tr('crafting…');
       B.bom = true;
       pintarBalcao();
       ctx.enviar?.({ t: 'tm_montar', item: +x.dataset.item });
@@ -455,20 +450,20 @@ export async function abrirTutor(a) {
 function situacao(t, E) {
   const M = E.M;
   if (E.tutor ? !aprendeNoTutor(t.dex, M.chave) : !APRENDE.get(+t.dex)?.has(M.chave))
-    return { pode: false, txt: tr('não aprende') };
-  if ((t.movs || []).some((m) => m.id === M.chave)) return { pode: false, txt: tr('já sabe') };
+    return { pode: false, txt: tr("can't learn") };
+  if ((t.movs || []).some((m) => m.id === M.chave)) return { pode: false, txt: tr('already knows') };
   if (E.tutor) {
     const a = precoTutor() - dinheiro();
-    if (a > 0) return { pode: false, txt: tr('faltam {x} ₽', { x: reais(a) }) };
+    if (a > 0) return { pode: false, txt: tr('{x} ₽ short', { x: reais(a) }) };
   } else {
     const b = travaDe(M);
     if ((ctx.lerLS?.('insignias', []) || []).length < b)
-      return { pode: false, txt: tr('precisa de {x} insígnia(s)', { x: b }) };
+      return { pode: false, txt: tr('needs {x} badge(s)', { x: b }) };
   }
-  return { pode: true, txt: (t.movs || []).length >= 4 ? tr('vai esquecer um golpe') : tr('pode aprender') };
+  return { pode: true, txt: (t.movs || []).length >= 4 ? tr('will forget a move') : tr('can learn') };
 }
 function mandar(E, a, b = null) {
-  E.aviso = tr('ensinando…');
+  E.aviso = tr('teaching…');
   E.bom = true;
   pintarEnsinar();
   const c = b ? { esquecer: b } : {};
@@ -489,7 +484,7 @@ function pintarEnsinar() {
     '</div>' +
     (b
       ? '<div style="text-align:center;color:#fff">' +
-        esc(tr('{x} já sabe 4 golpes. Qual ele esquece?', { x: b.nome || '' })) +
+        esc(tr('{x} already knows 4 moves. Which should it forget?', { x: b.nome || '' })) +
         '</div>' +
         '<div style="display:grid;gap:6px">' +
         (b.movs || [])
@@ -531,7 +526,7 @@ function pintarEnsinar() {
                 );
               })
               .join('')
-          : '<div style="text-align:center">' + esc(tr('Sem Pokémon no time.')) + '</div>') +
+          : '<div style="text-align:center">' + esc(tr('No Pokémon in the party.')) + '</div>') +
         '</div>') +
     '<div class="tm-av" style="min-height:16px;text-align:center;color:' +
     (E.bom ? '#8EF58E' : '#f58e8e') +
@@ -539,8 +534,8 @@ function pintarEnsinar() {
     esc(E.aviso) +
     '</div>' +
     '<div style="display:flex;gap:8px">' +
-    (b ? botao('voltar', esc(tr('Voltar'))) : '') +
-    botao('nao', esc(tr('Fechar'))) +
+    (b ? botao('voltar', esc(tr('Back'))) : '') +
+    botao('nao', esc(tr('Close'))) +
     '</div>';
   for (const x of d.querySelectorAll('.voltar, .nao')) x.style.flex = '1';
   d.querySelector('.nao').onclick = () => {
@@ -571,16 +566,16 @@ export function receber(m) {
   if (!m || m.t !== 'tm') return;
   const a = () =>
     m.falta?.item
-      ? tr('Faltam {x}× {y}.', { x: m.falta.qtd, y: nomePeca(m.falta.item) })
+      ? tr('Missing {x}× {y}.', { x: m.falta.qtd, y: nomePeca(m.falta.item) })
       : m.falta?.dinheiro
-        ? tr('Faltam {x} ₽.', { x: reais(m.falta.dinheiro) })
+        ? tr('{x} ₽ short.', { x: reais(m.falta.dinheiro) })
         : null;
   if (m.op === 'montar') {
     const B = balcaoAberto,
       M = MAQ.get(+m.item);
     const b = m.ok
-      ? tr('Você montou: {x}.', { x: M ? nomeDaMaquina(M.item) : m.item })
-      : a() || tr(String(m.erro || 'Não deu.'));
+      ? tr('You built: {x}.', { x: M ? nomeDaMaquina(M.item) : m.item })
+      : a() || tr(String(m.erro || "That didn't work."));
     if (m.ok) {
       try {
         ctx.Som?.tocar?.('ui/sound_keyitemget', { volume: 0.6, prio: true });
@@ -606,14 +601,14 @@ export function receber(m) {
     if (m.ok) {
       const f = ctx.golpe?.(m.golpe)?.nome || m.golpe,
         t = (ctx.time?.() || []).find((q) => String(q.uid) === String(m.uid));
-      const g = tr('{x} aprendeu {y}!', { x: t?.nome || tr('Seu Pokémon'), y: I18n.tNome(f) });
+      const g = tr('{x} learned {y}!', { x: t?.nome || tr('Your Pokémon'), y: I18n.tNome(f) });
       try {
         ctx.Som?.tocar?.('ui/sound_successful', { volume: 0.6, prio: true });
       } catch {}
       ctx.Chat?.sistemaCru?.(
         g +
           (m.esquecido
-            ? ' (' + tr('esqueceu {x}', { x: I18n.tNome(ctx.golpe?.(m.esquecido)?.nome || m.esquecido) }) + ')'
+            ? ' (' + tr('forgot {x}', { x: I18n.tNome(ctx.golpe?.(m.esquecido)?.nome || m.esquecido) }) + ')'
             : ''),
       );
       E?.d.remove();
@@ -637,8 +632,8 @@ export function receber(m) {
     const c = V?.ens?.M || E?.M;
     const e =
       m.trava != null && c?.faixa
-        ? tr('TM {x} pede {y} insígnia(s).', { x: tr(c.faixa), y: m.trava })
-        : a() || tr(String(m.erro || 'Não deu.'));
+        ? tr('TM {x} requires {y} badge(s).', { x: tr(c.faixa), y: m.trava })
+        : a() || tr(String(m.erro || "That didn't work."));
     if (E) {
       E.aviso = e;
       E.bom = false;
@@ -678,7 +673,7 @@ const urlItem = (a) => {
   return i ? './ui/itens/' + i + '.png' : null;
 };
 const urlMon = (a) => './ui/mon/pm' + String(a).padStart(4, '0') + '.png';
-const CAT = { fisico: 'Físico', physical: 'Físico', especial: 'Especial', special: 'Especial', status: 'Status' };
+const CAT = { fisico: 'Physical', physical: 'Physical', especial: 'Especial', special: 'Especial', status: 'Status' };
 const COR_FALTA = '#FF7B7B',
   COR_BOM = '#7BE0A0';
 const FAIXA_PILULA = { comum: '#A9CFE0', forte: '#6FD8FF', rara: '#F5B93B' };
@@ -1081,7 +1076,7 @@ function aoAcao(n) {
     pintarV2();
     if (ctx.enviar?.({ t: 'tm_montar', item: M.item }) === false) {
       V.esperando = false;
-      V.aviso = tr('Sem conexão com o servidor. Tente de novo.');
+      V.aviso = tr('No connection to the server. Try again.');
       pintarV2();
     }
     return;
@@ -1119,7 +1114,7 @@ function mandarV2(E, a, b = null) {
   );
   if (d === false) {
     E.esperando = false;
-    E.aviso = tr('Sem conexão com o servidor. Tente de novo.');
+    E.aviso = tr('No connection to the server. Try again.');
     pintarV2();
   }
 }
@@ -1165,12 +1160,12 @@ function pintarV2() {
   if (!a || !Popup.aberto(a)) return;
   const P = a.__tms || {};
   if (!V.solo) {
-    Popup.texto(a, 'titulo', V.b ? 'Balcão de TMs' : 'Tutor de golpes');
+    Popup.texto(a, 'titulo', V.b ? 'TM Counter' : 'Move Tutor');
     const c = Popup.grupo(a, 'aba-montar'),
       d = Popup.grupo(a, 'aba-tutor');
     if (c) {
       c.style.display = V.b ? '' : 'none';
-      Popup.texto(a, 'aba', 'Montar TM', c);
+      Popup.texto(a, 'aba', 'Craft TM', c);
     }
     if (d) {
       d.style.display = V.tutor ? '' : 'none';
@@ -1180,7 +1175,7 @@ function pintarV2() {
       const e = !!(V.b && V.loja);
       P.loja.style.display = e ? 'block' : 'none';
       P.loja.style.left = (V.tutor ? P.lojaX.tutor : P.lojaX.so) + 'px';
-      const t = e ? Popup.texto(a, 'ver-loja', 'Ver a loja', P.loja) : null;
+      const t = e ? Popup.texto(a, 'ver-loja', 'View shop', P.loja) : null;
       if (t && !t.dataset.medido) {
         t.dataset.medido = '1';
         Hud.encolher(t);
@@ -1228,7 +1223,7 @@ function pintarMontarV2() {
   }
   for (const f of ['todas', 'comum', 'forte', 'rara']) {
     const g = Popup.grupo(a, 'filtro-' + f);
-    if (g) escreve(a, 'filtro', f === 'todas' ? tr('Todas') : cap(tr(f)), g);
+    if (g) escreve(a, 'filtro', f === 'todas' ? tr('All') : cap(tr(f)), g);
   }
   const d = listaV2();
   if (!d.some((M) => M.item === V.sel)) V.sel = d[0]?.item ?? null;
@@ -1247,7 +1242,7 @@ function pintarMontarV2() {
   const h = a.querySelector('[data-txt="lista-vazia"]');
   if (h) {
     h.style.display = d.length ? 'none' : h.dataset.display || 'flex';
-    if (!d.length) Popup.texto(a, 'lista-vazia', 'Nenhuma TM com esse nome ou filtro.');
+    if (!d.length) Popup.texto(a, 'lista-vazia', 'No TMs match that name or filter.');
   }
   const j = Popup.grupo(a, 'lista-tms');
   if (j && V.rolar) {
@@ -1294,7 +1289,7 @@ function fichaV2(M) {
   if (!M) {
     Popup.mostrarDoRef(f, null);
     cor(
-      escreve(a, 'montar-info', a.querySelector('[data-txt="lista-vazia"]') ? '' : tr('Nenhuma TM nesse filtro.'), f),
+      escreve(a, 'montar-info', a.querySelector('[data-txt="lista-vazia"]') ? '' : tr('No TMs match this filter.'), f),
       null,
     );
     return;
@@ -1317,8 +1312,8 @@ function fichaV2(M) {
   escreve(
     a,
     'tm-descricao',
-    tr('Ensina {x} a um Pokémon do time. Uso único: a máquina some depois de ensinar.', { x: nomeGolpe(M) }) +
-      (j > l ? ' ' + tr('Pede {x} insígnias pra ensinar (você tem {y}).', { x: j, y: l }) : ''),
+    tr('Teaches {x} to a party Pokémon. Single use: the machine is consumed after teaching.', { x: nomeGolpe(M) }) +
+      (j > l ? ' ' + tr('Requires {x} badges to teach (you have {y}).', { x: j, y: l }) : ''),
     d,
   );
   const m = timeV(),
@@ -1357,12 +1352,12 @@ function fichaV2(M) {
     if (c && b?.selo) c.style.backgroundImage = 'url(' + b.selo + ')';
     Popup.imagem(a, 'peca', urlItem(p), v);
     escreve(a, 'receita-qtd', '×' + reais(q), v);
-    cor(escreve(a, 'receita-tem', tr('tem {x}', { x: reais(h) }), v), h < q ? COR_FALTA : null);
+    cor(escreve(a, 'receita-tem', tr('have {x}', { x: reais(h) }), v), h < q ? COR_FALTA : null);
   });
   if (w) {
     escreve(a, 'receita-qtd', reais(r.dinheiro), w);
     cor(
-      escreve(a, 'receita-tem', tr('tem {x}', { x: moedaCurta(dinheiro()) }), w),
+      escreve(a, 'receita-tem', tr('have {x}', { x: moedaCurta(dinheiro()) }), w),
       dinheiro() < num(r.dinheiro) ? COR_FALTA : null,
     );
   }
@@ -1378,7 +1373,7 @@ function fichaV2(M) {
       a,
       'montar-tm',
       !$ && !V.esperando,
-      $ ? (_.pecas.length ? 'Faltam peças' : 'Falta dinheiro') : 'Montar',
+      $ ? (_.pecas.length ? 'Missing pieces' : 'Not enough money') : 'Craft',
     );
     if ($) aa.style.opacity = '1';
     cor(aa.querySelector('.pf-rotulo, [data-txt]'), $ ? P.btnFaltaCor : null);
@@ -1386,7 +1381,7 @@ function fichaV2(M) {
   let ba,
     c = null;
   if (V.esperando) {
-    ba = tr('montando…');
+    ba = tr('crafting…');
     c = COR_BOM;
   } else if (V.aviso) {
     ba = V.aviso;
@@ -1396,12 +1391,12 @@ function fichaV2(M) {
       ..._.pecas.map(([p, n]) => n + '× ' + nomePeca(p)),
       ...(_.dinheiro > 0 ? [reais(_.dinheiro) + ' ₽'] : []),
     ];
-    ba = tr('Falta {x} pra montar esta TM.', { x: da.join(' + ') });
+    ba = tr('You need {x} more to build this TM.', { x: da.join(' + ') });
     c = COR_FALTA;
   } else
     ba = quantos(M.item)
-      ? tr('Na Mochila: {x}. Use lá pra ensinar.', { x: quantos(M.item) })
-      : tr('A TM montada vai pra Mochila: use lá pra ensinar.');
+      ? tr('In Bag: {x}. Use it there to teach.', { x: quantos(M.item) })
+      : tr('The built TM goes to your Bag: use it there to teach.');
   cor(escreve(a, 'montar-info', ba, f), c);
 }
 function pintarTutorV2() {
@@ -1416,8 +1411,8 @@ function pintarTutorV2() {
     'tutor-dica',
     V.aviso ||
       (g.length
-        ? tr('Golpes que não têm TM: o tutor ensina na hora, por {x} ₽ cada.', { x: reais(f) })
-        : tr('O tutor não tem golpe pra ensinar agora.')),
+        ? tr('Moves without a TM: the tutor teaches them on the spot, for {x} ₽ each.', { x: reais(f) })
+        : tr('The tutor has no move to teach right now.')),
     e,
   );
   cor(j, V.aviso ? (V.bom ? COR_BOM : COR_FALTA) : null);
@@ -1447,7 +1442,8 @@ function pintarTutorV2() {
       Popup.imagem(d, 'pokemon', urlMon(t.dex), a);
       const p = no(a, 'fx/apagado');
       if (p) p.style.display = o === 'nao-aprende' ? 'block' : 'none';
-      a.title = (t.nome || '#' + t.dex) + ': ' + tr(o === 'aprende' ? 'pode aprender' : n ? 'já sabe' : 'não aprende');
+      a.title =
+        (t.nome || '#' + t.dex) + ': ' + tr(o === 'aprende' ? 'can learn' : n ? 'already knows' : "can't learn");
     }
     escreve(d, 'golpe-preco', reais(f), c);
     const b = no(c, 'btn-tutor');
@@ -1462,20 +1458,20 @@ function pintarTutorV2() {
 function situacaoV2(t, E) {
   const M = E.M;
   if (E.tutor ? !aprendeNoTutor(t.dex, M.chave) : !APRENDE.get(+t.dex)?.has(M.chave))
-    return { est: 'nao-aprende', txt: tr('não aprende') };
-  if (sabe(t, M.chave)) return { est: 'ja-sabe', txt: tr('já sabe') };
+    return { est: 'nao-aprende', txt: tr("can't learn") };
+  if (sabe(t, M.chave)) return { est: 'ja-sabe', txt: tr('already knows') };
   if (E.tutor) {
     const a = precoTutor() - dinheiro();
-    if (a > 0) return { est: 'insignias', txt: tr('faltam {x} ₽', { x: reais(a) }) };
+    if (a > 0) return { est: 'insignias', txt: tr('{x} ₽ short', { x: reais(a) }) };
   } else {
     const b = travaDe(M);
     if ((ctx.lerLS?.('insignias', []) || []).length < b)
-      return { est: 'insignias', txt: tr('precisa de {x} insígnias', { x: b }) };
+      return { est: 'insignias', txt: tr('needs {x} badges', { x: b }) };
   }
   return {
     est: 'pode',
     pode: true,
-    txt: (t.movs || []).length >= 4 ? tr('vai esquecer um golpe') : tr('pode aprender'),
+    txt: (t.movs || []).length >= 4 ? tr('will forget a move') : tr('can learn'),
   };
 }
 function pintarEnsinarV2() {
@@ -1497,19 +1493,19 @@ function pintarEnsinarV2() {
       h.querySelector(':scope > img.bolinha-img')?.remove();
       delete h.__bolinha;
     }
-    escreve(a, 'dialogo-titulo', tr('Ensinar {x}', { x: nomeGolpe(M) }), d);
+    escreve(a, 'dialogo-titulo', tr('Teach {x}', { x: nomeGolpe(M) }), d);
     const j = escreve(
       a,
       'dialogo-dica',
       E.esperando
-        ? tr('ensinando…')
+        ? tr('teaching…')
         : E.aviso
           ? E.aviso
           : !e.length
-            ? tr('Sem Pokémon no time.')
+            ? tr('No Pokémon in the party.')
             : E.tutor
-              ? tr('Quem aprende? O tutor cobra {x} ₽.', { x: reais(precoTutor()) })
-              : tr('Quem aprende? A TM some depois de ensinar.'),
+              ? tr('Who learns it? The tutor charges {x} ₽.', { x: reais(precoTutor()) })
+              : tr('Who learns it? The TM is consumed after teaching.'),
       d,
     );
     cor(j, E.esperando ? COR_BOM : E.aviso ? COR_FALTA : null);
@@ -1532,17 +1528,17 @@ function pintarEnsinarV2() {
       if (n) n.style.display = f[i - 1].pode && String(t.uid) === String(E.uid) ? 'block' : 'none';
       c.style.cursor = f[i - 1].pode ? 'pointer' : 'default';
     }
-    Popup.botao(a, 'ensinar', E.uid != null && !E.esperando, 'Ensinar');
+    Popup.botao(a, 'ensinar', E.uid != null && !E.esperando, 'Teach');
   }
   const q = Popup.extra(a, 'dialogo-esquecer');
   if (q && E.esq) {
     const t = e.find((x) => String(x.uid) === String(E.uid));
     if (!t) return;
-    escreve(a, 'dialogo-titulo', tr('{x} já sabe 4 golpes', { x: t.nome || '#' + t.dex }), q);
+    escreve(a, 'dialogo-titulo', tr('{x} already knows 4 moves', { x: t.nome || '#' + t.dex }), q);
     pintarTipo(no(q, 'fx/topo-cor'), tipoDe(M));
     const o = q.querySelector('[data-fig="golpe-novo"]');
     if (o) {
-      Popup.texto(a, 'novo', 'NOVO', o);
+      Popup.texto(a, 'novo', 'NEW', o);
       escreve(a, 'golpe-nome', nomeGolpe(M), o);
       tipoEm(a, o, tipoDe(M));
       pintarTipo(no(o, 'fx/faixa-tipo'), tipoDe(M));
@@ -1551,7 +1547,7 @@ function pintarEnsinarV2() {
       escreve(
         a,
         'dialogo-dica',
-        E.esperando ? tr('ensinando…') : E.aviso || tr('Qual esquecer? Esse não volta sozinho.'),
+        E.esperando ? tr('teaching…') : E.aviso || tr("Forget which? It won't come back on its own."),
         q,
       ),
       E.esperando ? COR_BOM : E.aviso ? COR_FALTA : null,
@@ -1580,7 +1576,7 @@ function pintarEnsinarV2() {
       b = Popup.botao(a, 'esquecer-e-aprender', !!s && !E.esperando);
     const u = b?.querySelector('.pf-rotulo, [data-txt]');
     if (u) {
-      u.textContent = s ? tr('Esquecer {x}', { x: ctx.golpe?.(s.id)?.nome || s.id }) : tr('Escolha o golpe');
+      u.textContent = s ? tr('Forget {x}', { x: ctx.golpe?.(s.id)?.nome || s.id }) : tr('Choose the move');
       if (u.dataset.fs0 == null) u.dataset.fs0 = String(parseFloat(u.style.fontSize) || 17);
       u.style.fontSize = u.dataset.fs0 + 'px';
       for (let k = 0; k < 8 && u.scrollWidth > u.clientWidth + 0.5; k++)

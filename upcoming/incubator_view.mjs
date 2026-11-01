@@ -49,7 +49,7 @@ export const dobro = (a) => (a ? a.replace(/\.png$/, '@2x.png') : a);
 export function duracaoCurta(a, b = {}) {
   const c = b.tr || semTr,
     m = Math.ceil(Math.max(0, num(a)) / MIN);
-  if (m < 1) return c('menos de 1 min');
+  if (m < 1) return c('under 1 min');
   const h = Math.floor(m / 60),
     r = m % 60;
   return h ? h + ' h' + (r ? ' ' + r + ' min' : '') : r + ' min';
@@ -62,9 +62,9 @@ export function quando(b, c, e = {}) {
     g = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   const i = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const j = Math.round((i(d) - i(a)) / 86400e3);
-  if (j === 0) return f('hoje, {h}', { h: g });
-  if (j === 1) return f('amanhã, {h}', { h: g });
-  if (j === -1) return f('ontem, {h}', { h: g });
+  if (j === 0) return f('today, {h}', { h: g });
+  if (j === 1) return f('tomorrow, {h}', { h: g });
+  if (j === -1) return f('yesterday, {h}', { h: g });
   return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + ', ' + g;
 }
 const regras = (v) => ({
@@ -119,8 +119,8 @@ export function vistaIncubadora(c, e = {}) {
       ovo: o,
       dex: c,
       tipo: d,
-      especie: b === 'vazia' ? f('Vazia') : c ? especieDe(c, e) : f('Ovo'),
-      tempo: b === 'vazia' ? f('Pôr um ovo') : b === 'pronto' ? f('Pronto!') : duracaoCurta(h, e),
+      especie: b === 'vazia' ? f('Empty') : c ? especieDe(c, e) : f('Egg'),
+      tempo: b === 'vazia' ? f('Add an egg') : b === 'pronto' ? f('Ready!') : duracaoCurta(h, e),
       progresso: b === 'pronto' ? 1 : b === 'vazia' ? 0 : Math.max(0, Math.min(1, 1 - h / k)),
       falta: h,
       img: b === 'vazia' ? null : arteIncubadora(d),
@@ -137,53 +137,51 @@ export function vistaIncubadora(c, e = {}) {
     s = j.filter((o) => !o.incubadora);
   const u = { estado: r };
   if (!m.length) {
-    u.titulo = f('Nenhuma incubadora');
-    u.dica = f('Coloque uma no Arrumar terreno');
+    u.titulo = f('No incubator');
+    u.dica = f('Place one via Arrange land');
   } else if (r === 'vazia') {
-    u.titulo = f('Incubadora vazia');
-    u.dica = s.length ? f('Escolha um ovo guardado, ao lado') : f('Crie um ovo na creche da Rota 5');
+    u.titulo = f('Empty incubator');
+    u.dica = s.length ? f('Pick a stored egg on the side') : f('Make an egg at the Route 5 Daycare');
   } else {
-    u.especie = p.dex ? f('Ovo de {especie}', { especie: especieDe(p.dex, e) }) : f('Ovo');
+    u.especie = p.dex ? f('{especie} Egg', { especie: especieDe(p.dex, e) }) : f('Egg');
     u.progresso = p.progresso;
     u.tempo =
-      r === 'pronto'
-        ? f('Pronto pra chocar!')
-        : f('faltam {x} de {h} h', { x: duracaoCurta(p.falta, e), h: R.eclosaoH });
+      r === 'pronto' ? f('Ready to hatch!') : f('{x} of {h} h left', { x: duracaoCurta(p.falta, e), h: R.eclosaoH });
     u.img = arteIncubadora(p.tipo, true);
     u.ovinho = arteOvo(p.tipo, '86');
   }
   const n = Math.max(0, Math.floor(num(E.tickets))),
     v = !!q && num(q.tickets) >= R.ticket.maxPorOvo && R.ticket.maxPorOvo > 0;
   const w = v
-    ? { estado: 'usado', info: f('Já usado neste ovo (1 por ovo)'), botao: f('Usado'), ligado: false }
+    ? { estado: 'usado', info: f('Already used on this egg (1 per egg)'), botao: f('Used'), ligado: false }
     : n <= 0
-      ? { estado: 'sem-ticket', info: f('Você não tem nenhum'), botao: f('Loja'), ligado: true }
+      ? { estado: 'sem-ticket', info: f("You don't have any"), botao: f('Shop'), ligado: true }
       : {
           estado: 'normal',
-          info: f('Tira {h} h · você tem {n}', { h: R.ticket.reduzH, n }),
-          botao: f('Usar'),
+          info: f('Cuts {h} h · you have {n}', { h: R.ticket.reduzH, n }),
+          botao: f('Use'),
           ligado: r === 'chocando' && !E.esperando,
         };
-  w.nome = f('Ticket de eclosão');
+  w.nome = f('Hatch Ticket');
   w.img = ARTE.ticket;
   const y = {
     pais: q ? textoPais(q, e) : '—',
-    shiny: f('1 em {n}', { n: Math.round(num(E.shiny, PADRAO.shiny)).toLocaleString(e.local || 'pt-BR') }),
+    shiny: f('1 in {n}', { n: Math.round(num(E.shiny, PADRAO.shiny)).toLocaleString(e.local || 'pt-BR') }),
     entrou: q ? quando(q.inicio, g, e) : '—',
-    choca: r === 'pronto' ? f('já pode') : q ? quando(q.prontoEm ?? g + p.falta, g, e) : '—',
+    choca: r === 'pronto' ? f('now') : q ? quando(q.prontoEm ?? g + p.falta, g, e) : '—',
   };
   const z = { ligado: r === 'pronto' && !E.esperando };
   const _ = E.esperando
-    ? { texto: f('um instante…'), cor: 'bom' }
+    ? { texto: f('one moment…'), cor: 'bom' }
     : E.aviso?.texto
       ? { texto: E.aviso.texto, cor: E.aviso.bom ? 'bom' : 'ruim' }
       : {
           texto:
             r === 'pronto'
-              ? f('O ovo está pronto!')
+              ? f('The egg is ready!')
               : r === 'vazia'
-                ? f('Ponha um ovo na incubadora')
-                : f('Disponível quando o ovo estiver pronto'),
+                ? f('Put an egg in the incubator')
+                : f('Available when the egg is ready'),
           cor: null,
         };
   const $ =
@@ -192,18 +190,18 @@ export function vistaIncubadora(c, e = {}) {
       : {
           ovos: s.map((o) => {
             const d = especieDoOvo(o);
-            return { id: String(o.id), nome: d ? especieDe(d, e) : f('Ovo'), img: arteOvo(tipoDoOvo(d, e.tipos)) };
+            return { id: String(o.id), nome: d ? especieDe(d, e) : f('Egg'), img: arteOvo(tipoDoOvo(d, e.tipos)) };
           }),
-          vazio: s.length ? null : f('Nenhum ovo guardado'),
+          vazio: s.length ? null : f('No stored eggs'),
           dica: !m.length
-            ? f('Coloque uma incubadora no terreno pelo Arrumar terreno. Os ovos vêm da Creche da Hideko, na Rota 5.')
+            ? f("Place an incubator on your land via Arrange land. Eggs come from Hideko's Daycare on Route 5.")
             : s.length
-              ? f('Toque num ovo pra pôr nesta incubadora.')
-              : f('Os ovos vêm da Creche da Hideko, na Rota 5.'),
+              ? f('Tap an egg to put it in this incubator.')
+              : f("Eggs come from Hideko's Daycare on Route 5."),
         };
   if ($ && E.aviso?.texto) $.dica = E.aviso.texto;
   return {
-    contagem: f('{a} de {b} ocupadas', { a: m.filter((x) => x.estado !== 'vazia').length, b: m.length }),
+    contagem: f('{a} of {b} occupied', { a: m.filter((x) => x.estado !== 'vazia').length, b: m.length }),
     incubadoras: m.map(({ ovo: a, falta: b, ...x }) => x),
     incubadora: p ? p.id : null,
     ovo: q ? String(q.id) : null,
@@ -212,7 +210,7 @@ export function vistaIncubadora(c, e = {}) {
     ticket: w,
     detalhes: y,
     regras: f(
-      'O ovo choca em {h} h; o Ticket de eclosão tira {t} h e vale um por ovo. Quando estiver pronto, toque em Chocar: o Pokémon vai pro seu time (ou pra Caixa, se o time estiver cheio).',
+      "The egg hatches in {h} h; a Hatch Ticket cuts {t} h, one per egg. When it's ready, tap Hatch: the Pokémon joins your team (or the Box, if your team is full).",
       { h: R.eclosaoH, t: R.ticket.reduzH },
     ),
     chocar: z,
@@ -232,17 +230,19 @@ export function vistaNasceu(r, b = {}) {
   const k = String(f.natureza || '');
   const l =
     j === 'mae'
-      ? c('da mãe, pela Pedra Eterna')
+      ? c('from the mother, via Everstone')
       : j === 'pai'
-        ? c('do pai, pela Pedra Eterna')
+        ? c('from the father, via Everstone')
         : j
-          ? c('pela Pedra Eterna')
+          ? c('via Everstone')
           : c('sorteada');
   const m = STATS.map((a, i) => {
     const h = H[i] || {},
       b = Math.max(-31, Math.min(31, Math.floor(num(h.delta)))),
       d = h.de === 'mae' ? 'mae' : h.de === 'pai' ? 'pai' : null;
-    const e = d ? c(d === 'mae' ? 'da mãe' : 'do pai') + (b < 0 ? ' −' + Math.abs(b) : b > 0 ? ' +' + b : '') : '';
+    const e = d
+      ? c(d === 'mae' ? 'from the mother' : 'from the father') + (b < 0 ? ' −' + Math.abs(b) : b > 0 ? ' +' + b : '')
+      : '';
     return {
       rotulo: c(a),
       valor: String(Math.max(0, Math.min(31, Math.floor(num(f.ivs?.[i]))))),
@@ -251,12 +251,12 @@ export function vistaNasceu(r, b = {}) {
     };
   });
   return {
-    titulo: c('Nasceu!'),
+    titulo: c('Hatched!'),
     img: cabeca(d),
     shiny: !!f.shiny,
     nome: e + (simbolo(f.sexo) ? ' ' + simbolo(f.sexo) : '') + ' · Lv ' + Math.max(1, Math.floor(num(f.lv, 1))),
     natureza: k ? k + ' · ' + l : l,
-    rotuloIvs: c('De onde veio cada IV'),
+    rotuloIvs: c('Where each IV came from'),
     ivs: m,
   };
 }

@@ -18,7 +18,7 @@ export function chaveSemana(a, b = -180) {
 const TETO = 'teto:raras';
 export function lvMeuMaxDe(a) {
   const b = Object.entries(a && typeof a === 'object' ? a : {});
-  if (!b.length) throw new Error('niveis_area.json vazio: sem selvagem não há teto do lvMeu');
+  if (!b.length) throw new Error('niveis_area.json empty: no wild Pokémon means no lvMeu cap');
   let c = 0;
   for (const [d, f] of b) {
     if (
@@ -27,7 +27,7 @@ export function lvMeuMaxDe(a) {
       !f.every((v) => Number.isInteger(v) && v >= 1 && v <= 100) ||
       f[0] > f[1]
     )
-      throw new Error('niveis_area.json: faixa quebrada na área ' + d + ': ' + JSON.stringify(f));
+      throw new Error('niveis_area.json: broken range in area ' + d + ': ' + JSON.stringify(f));
     if (f[1] > c) c = f[1];
   }
   return c;
@@ -60,14 +60,13 @@ export function presoDoItem(a, b) {
 export function conferirPreso(a, b) {
   const c = mapaDoRegistro(b),
     d = [];
-  if (!c)
-    return ['sem o registro dos itens novos (data/itens_novos.json): o preso dos itens não tem com o que conferir'];
+  if (!c) return ['missing the new-items registry (data/itens_novos.json): item binding has nothing to check against'];
   for (const [e, f] of Object.entries(ehMapa(a?.fontes) ? a.fontes : {}))
     for (const r of Array.isArray(f) ? f : []) {
       if (!ehMapa(r) || !Object.hasOwn(r, 'preso')) continue;
       const g = e + ':' + r.id;
       if (typeof r.preso !== 'boolean') {
-        d.push(g + ': "preso" tem de ser true ou false (veio ' + JSON.stringify(r.preso) + ')');
+        d.push(g + ': "preso" must be true or false (got ' + JSON.stringify(r.preso) + ')');
         continue;
       }
       if (r.preso === false)
@@ -75,11 +74,11 @@ export function conferirPreso(a, b) {
           if (prendeNoRegistro(c, h))
             d.push(
               g +
-                ': solta o item ' +
+                ': unbinds item ' +
                 h +
                 (ehMedalhaoNoRegistro(c, h)
-                  ? ', o Medalhão: o que cai é prêmio e sai preso (só o da loja de Diamantes é negociável — a regra "Diamante é Diamante", 11/10)'
-                  : ', que o registro dos itens novos prende (soltar é decisão do registro, não da regra de drop)'),
+                  ? ', the Medallion: drops are rewards and come out bound (only the Diamond shop one is tradable — the "a Diamond is a Diamond" rule, 11/10)'
+                  : ", which the new-items registry binds (unbinding is the registry's call, not the drop rule's)"),
             );
     }
   return d;
@@ -96,13 +95,13 @@ export function koValido({
   folgaNivel: i = 10,
   nivel: j = true,
 } = {}) {
-  if (c >= h) return { ok: false, motivo: 'mais de ' + h + ' contas' };
-  if (j === false) return a >= g || b ? { ok: true } : { ok: false, motivo: 'sua parte: ' + Math.round(a * 100) + '%' };
+  if (c >= h) return { ok: false, motivo: 'more than ' + h + ' contas' };
+  if (j === false)
+    return a >= g || b ? { ok: true } : { ok: false, motivo: 'your share: ' + Math.round(a * 100) + '%' };
   const k = tetoLvMeu(f),
     l = k == null ? num(e) : Math.min(num(e), k);
-  if (num(d) < l - i)
-    return { ok: false, motivo: 'selvagem fraco demais (Lv ' + d + ' < ' + (l - i) + ')', piso: l - i };
-  if (!(a >= g || b)) return { ok: false, motivo: 'sua parte: ' + Math.round(a * 100) + '%' };
+  if (num(d) < l - i) return { ok: false, motivo: 'wild too weak (Lv ' + d + ' < ' + (l - i) + ')', piso: l - i };
+  if (!(a >= g || b)) return { ok: false, motivo: 'your share: ' + Math.round(a * 100) + '%' };
   return { ok: true };
 }
 export class Drop {
@@ -166,13 +165,13 @@ export class Drop {
       d = '';
     if (r.cotaSemana) {
       c = Math.max(0, r.cotaSemana - num(e.semana.gasto[a]));
-      d = 'cota da semana';
+      d = 'weekly quota';
     }
     if (this.contaNoTeto(r, b)) {
       const t = Math.max(0, num(this.T.tetoRaras.porSemana) - num(e.semana.gasto[TETO]));
       if (t < c) {
         c = t;
-        d = 'teto das raras da semana';
+        d = 'weekly rare cap';
       }
     }
     return { resta: c, motivo: d };
@@ -218,12 +217,12 @@ export class Drop {
       if (r.umaVez) {
         const u = r.umaVez + ':' + (b.chave ?? b.id ?? '');
         if (e.marcas[u]) {
-          h.push({ regra: r.id, motivo: 'já pago' });
+          h.push({ regra: r.id, motivo: 'already paid' });
           continue;
         }
       }
       if (r.cotaDia && this.saldoDe(e, m, r) <= 0) {
-        h.push({ regra: r.id, motivo: 'cota do dia' });
+        h.push({ regra: r.id, motivo: 'daily quota' });
         continue;
       }
       const o = this.restaSemana(e, m, r, n);

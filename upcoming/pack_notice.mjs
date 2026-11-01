@@ -70,12 +70,12 @@ export function instalar(a = {}, { espera: b = ESPERA_MS, repete: c = REPETE_MS,
     E.fim = a;
     clearTimeout(E.timer);
     E.timer = 0;
-    i('janela da abóbora: ' + a);
+    i('pumpkin window: ' + a);
   };
   const k = () => {
     if (E.fim) return;
     if (++E.n >= f) {
-      j('desistiu (ocupado a sessão inteira)');
+      j('gave up (busy the whole session)');
       return;
     }
     E.timer = setTimeout(l, c);
@@ -114,13 +114,13 @@ export function instalar(a = {}, { espera: b = ESPERA_MS, repete: c = REPETE_MS,
         E.abriu = true;
         E.memoria = b;
         gravarDia(b, h);
-        j('abriu (' + b + ')');
+        j('opened (' + b + ')');
         return;
       }
       if (d.depois) k();
       else j(d.motivo);
     } catch (e) {
-      console.warn('janela da abóbora:', e);
+      console.warn('pumpkin window:', e);
       k();
     }
   }

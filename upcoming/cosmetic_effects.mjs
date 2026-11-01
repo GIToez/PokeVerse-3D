@@ -1179,7 +1179,7 @@ export function catalogo() {
     .then(a)
     .then((a) => (indice = indiceDoCatalogo(a)))
     .catch((e) => {
-      console.warn('efeitos: o catálogo não carregou', e);
+      console.warn('effects: the catalog failed to load', e);
       indiceP = null;
       return new Map();
     });
@@ -1193,7 +1193,7 @@ export function recarregarCatalogo() {
       if (s.id == null || s.e) continue;
       const b = s.id;
       s.id = null;
-      trocar(r, a, b).catch((e) => console.warn('efeitos: de novo', e));
+      trocar(r, a, b).catch((e) => console.warn('effects: retry', e));
     }
 }
 export async function entrada(a, b) {
@@ -1255,7 +1255,7 @@ async function trocar(r, a, b) {
   try {
     g = await ctx.Part.carregar(f.efeito);
   } catch (e) {
-    console.warn('efeitos: ' + f.efeito + ' não carregou', e);
+    console.warn('efeitos: ' + f.efeito + ' failed to load', e);
     deNovoDepois(r, a, b, d, e);
     return;
   }
@@ -1290,7 +1290,7 @@ function deNovoDepois(r, a, b, c, d) {
   const t = setTimeout(() => {
     if (f.pedido !== c || f.id !== b || f.e || REG.get(r.corpo) !== r) return;
     f.id = null;
-    trocar(r, a, b).catch((e) => console.warn('efeitos: de novo', e));
+    trocar(r, a, b).catch((e) => console.warn('effects: retry', e));
   }, h);
   t?.unref?.();
 }

@@ -34,7 +34,7 @@ async function buscar(a = false) {
       };
       versaoServidor = cache.v;
     } catch (e) {
-      cache = { ...cache, em: Date.now(), erro: 'Sem conexão com o servidor: a agenda não carregou.' };
+      cache = { ...cache, em: Date.now(), erro: "No connection to the server: the schedule didn't load." };
     }
     buscando = null;
     return cache;
@@ -78,7 +78,7 @@ const horaBrt = (a) => {
   const p = partesBrt(a);
   return p2(p.h) + 'h' + (p.mi ? p2(p.mi) : '');
 };
-const rotuloFuso = (a) => tr(new Date(a).getTimezoneOffset() === 180 ? 'Brasília' : 'seu horário');
+const rotuloFuso = (a) => tr(new Date(a).getTimezoneOffset() === 180 ? 'Brasília' : 'your time');
 const DIAS = {
   pt: ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'],
   en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -113,14 +113,14 @@ function quando(o) {
   if (o.estado === 'encerrado') return tr('encerrado') + ' · ' + diaMes(o.oc);
   const b = meiaNoite(a),
     c = meiaNoite(o.oc);
-  return (c === b ? tr('hoje') : c === diaMais(a, 1) ? tr('amanhã') : diaCurto(o.oc)) + ' · ' + horaDe(o.oc);
+  return (c === b ? tr('hoje') : c === diaMais(a, 1) ? tr('tomorrow') : diaCurto(o.oc)) + ' · ' + horaDe(o.oc);
 }
 const outroDia = (o) => o.fim - o.oc > MIN && meiaNoite(o.fim) !== meiaNoite(o.oc);
 function periodo(o) {
   const a = outroDia(o)
     ? ' ' + tr('até') + ' ' + diaCurto(o.fim) + ' · ' + horaDe(o.fim)
     : o.fim - o.oc > MIN
-      ? ' ' + tr('às') + ' ' + horaDe(o.fim)
+      ? ' ' + tr('at') + ' ' + horaDe(o.fim)
       : '';
   const b = repete(o) ? repeticaoLocal(o) : diaCurto(o.oc) + ' · ' + horaDe(o.oc) + a;
   return b + ' (' + rotuloFuso(o.oc) + ')';
@@ -159,7 +159,7 @@ function horasLocais(o, r, l) {
 function traduzRepete(s) {
   if (lng() === 'pt') return s;
   const [a, h] = String(s).split(' · '),
-    b = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+    b = ['domingo', 'segunda', 'Tuesday', 'quarta', 'quinta', 'sexta', 'Saturday'];
   const c = b.map((n, i) => (a.includes(n) ? i : -1)).filter((i) => i >= 0);
   const d = (h || '').replace(/^(\d\d)h(\d\d)?$/, (_, x, y) => x + ':' + (y || '00'));
   const e = {
@@ -180,21 +180,21 @@ function contagem(o) {
     return d ? d + 'd ' + p2(h) + 'h ' + p2(m) + 'm' : h ? h + 'h ' + p2(m) + 'm' : p2(m) + 'm ' + p2(b) + 's';
   };
   if (a < o.oc) return { rotulo: tr('começa em'), texto: b(o.oc - a) };
-  if (a < o.fim && o.fim - o.oc > MIN) return { rotulo: tr('termina em'), texto: b(o.fim - a) };
+  if (a < o.fim && o.fim - o.oc > MIN) return { rotulo: tr('ends in'), texto: b(o.fim - a) };
   return { rotulo: tr('encerrado'), texto: diaMes(o.oc) };
 }
 const tituloDe = (o) => (lng() !== 'pt' && o.tr?.[lng()]?.titulo) || I18n.tExato(o.titulo);
 const descDe = (o) => (lng() !== 'pt' && o.tr?.[lng()]?.descricao) || I18n.tExato(o.descricao || '');
 const ROTULO_TIPO = {
   raid: 'RAID',
-  invasao: 'INVASÃO',
-  bonus: 'BÔNUS',
+  invasao: 'INVASION',
+  bonus: 'BONUS',
   festival: 'FESTIVAL',
-  torneio: 'TORNEIO',
-  outro: 'EVENTO',
-  reinicio: 'MANUTENÇÃO',
+  torneio: 'TOURNAMENT',
+  outro: 'EVENT',
+  reinicio: 'MAINTENANCE',
 };
-const ESTADO_TXT = { agora: 'AGORA', breve: 'EM BREVE', encerrado: 'ENCERRADO' };
+const ESTADO_TXT = { agora: 'AGORA', breve: 'COMING SOON', encerrado: 'ENDED' };
 const COR_TIPO = {
   bonus: '#7ee8a6',
   festival: '#7fd6ff',
@@ -302,37 +302,37 @@ function passosDe(o) {
   switch (o.tipo) {
     case 'raid':
       return [
-        'A fila abre ' +
+        'The queue opens ' +
           (o.raid?.filaMin || 15) +
-          ' min antes, às ' +
+          ' min early, at ' +
           horaDe(o.raid?.filaEm || o.oc) +
-          ': entre pelo botão da raid.',
-        'Quem estiver na fila no horário vai junto pra arena.',
-        'Prêmio: quem der ≥ 1/4 do dano médio. 1 por chefe ao dia.',
+          ': join via the raid button.',
+        'Everyone in the queue at start time goes to the arena together.',
+        'Reward: anyone dealing ≥ 1/4 of average damage. 1 per boss per day.',
       ];
     case 'invasao':
       return [
-        'Vá até ' + (o.invasao?.lugar || 'o lugar do evento') + ' no horário.',
-        'Só existe um: quem chegar primeiro enfrenta e tenta capturar.',
-        'Ele fica ' + (o.invasao?.janelaMin || 25) + ' min no mapa.',
+        'Go to ' + (o.invasao?.lugar || 'the event location') + ' on time.',
+        'There is only one: first to arrive battles it and tries to catch it.',
+        'It stays ' + (o.invasao?.janelaMin || 25) + ' min on the map.',
       ];
     case 'bonus':
       return [
-        'Cace selvagens enquanto o bônus durar.',
-        'Todo XP de selvagem vale ×' + String(o.bonus?.xp || 2).replace('.', ',') + '.',
-        'Vale pra todo mundo que estiver jogando.',
+        'Hunt wild Pokémon while the bonus lasts.',
+        'All wild XP is worth ×' + String(o.bonus?.xp || 2).replace('.', ',') + '.',
+        'Applies to everyone who is playing.',
       ];
     case 'reinicio':
       return [
-        'O servidor fica fora por alguns minutos.',
-        'Termine batalhas, trocas e a corrida da Elite antes do horário.',
-        'Depois o jogo reconecta sozinho (ou recarregue a página).',
+        'The server will be down for a few minutes.',
+        'Finish battles, trades and the Elite Four run before then.',
+        'The game will reconnect on its own afterward (or reload the page).',
       ];
     default:
       return [
-        'Fique de olho no chat do jogo e no Discord.',
-        'A equipe conduz o evento na hora marcada.',
-        'Chame os amigos!',
+        'Keep an eye on the in-game chat and Discord.',
+        'The team runs the event at the scheduled time.',
+        'Call your friends!',
       ];
   }
 }
@@ -342,9 +342,9 @@ function recompensasDe(o) {
     const f = FRAGMENTO_DO[+(o.raid?.dex || 151)];
     return [
       ...(f ? [{ img: './ui/itens/ic_' + f + '.png', qtd: 'Fragmento' }] : []),
-      { img: './ui/itens/ic_1.png', qtd: 'até 3.000' },
-      { img: './ui/itens/ic_1003.png', qtd: 'até x5' },
-      { img: './ui/itens/ic_2003.png', qtd: 'até x3' },
+      { img: './ui/itens/ic_1.png', qtd: 'up to 3,000' },
+      { img: './ui/itens/ic_1003.png', qtd: 'up to x5' },
+      { img: './ui/itens/ic_2003.png', qtd: 'up to x3' },
     ];
   }
   if (o.tipo === 'invasao' && o.invasao?.dex) return [{ img: iconeMon(o.invasao.dex), qtd: 'x1' }];
@@ -508,19 +508,19 @@ function pintarDestaque() {
   }
   if (b) {
     pintarArte(pop, 'banner', g, null);
-    Popup.texto(pop, 'evento-nome', cache.erro ? tr('Agenda indisponível') : tr('Nenhum evento marcado'), g);
+    Popup.texto(pop, 'evento-nome', cache.erro ? tr('Schedule unavailable') : tr('No events scheduled'), g);
     Popup.texto(
       pop,
       'evento-desc',
-      cache.erro ? tr(cache.erro) : tr('Quando a equipe marcar um evento, ele aparece aqui.'),
+      cache.erro ? tr(cache.erro) : tr('When the team schedules an event, it shows up here.'),
       g,
     );
     return;
   }
   g.__oc = o;
   pintarArte(pop, 'banner', g, arteDe(o, 'destaque'));
-  Popup.texto(pop, 'destaque', o.estado === 'agora' ? 'AO VIVO' : 'EM DESTAQUE', g);
-  Popup.texto(pop, 'evento-tipo', tr(ROTULO_TIPO[o.tipo] || 'EVENTO'), g);
+  Popup.texto(pop, 'destaque', o.estado === 'agora' ? 'LIVE' : 'FEATURED', g);
+  Popup.texto(pop, 'evento-tipo', tr(ROTULO_TIPO[o.tipo] || 'EVENT'), g);
   Popup.textoCru(pop, 'evento-nome', tituloDe(o), g);
   if (descDe(o)) Popup.textoCru(pop, 'evento-desc', descDe(o), g);
   else Popup.texto(pop, 'evento-desc', repete(o) ? repeticaoLocal(o) : quando(o), g);
@@ -562,7 +562,7 @@ function pintarLista() {
     h.push(o);
   }
   const n = h.length;
-  Popup.texto(pop, 'eventos-contagem', n === 1 ? tr('1 evento') : n + ' ' + tr('eventos'));
+  Popup.texto(pop, 'eventos-contagem', n === 1 ? tr('1 event') : n + ' ' + tr('eventos'));
   const g = pop.querySelector('[data-fig="lista-eventos"]');
   if (!g) return;
   if (!g.__linha) {
@@ -584,7 +584,7 @@ function pintarLista() {
     Popup.estadoRef(pop, c, 'evento', o.estado);
     pintarArte(pop, 'evento-miniatura', c, arteDe(o, 'miniatura'));
     Popup.texto(pop, 'estado', tr(ESTADO_TXT[o.estado]), c);
-    Popup.texto(pop, 'evento-tipo', tr(ROTULO_TIPO[o.tipo] || 'EVENTO'), c);
+    Popup.texto(pop, 'evento-tipo', tr(ROTULO_TIPO[o.tipo] || 'EVENT'), c);
     Popup.textoCru(pop, 'evento-nome', tituloDe(o), c);
     Popup.texto(pop, 'evento-quando', repete(o) && o.estado === 'breve' ? repeticaoLocal(o) : quando(o), c);
     for (const m of c.querySelectorAll(':scope > [data-sobre]'))
@@ -601,10 +601,10 @@ function pintarLista() {
       }
       s.textContent = tr(
         filtro === 'agora'
-          ? 'Nada acontecendo agora.'
+          ? 'Nothing happening right now.'
           : filtro === 'breve'
-            ? 'Nada marcado por enquanto.'
-            : 'Nenhum evento marcado.',
+            ? 'Nothing scheduled yet.'
+            : 'No events scheduled.',
       );
     } else if (s) s.remove();
   }
@@ -621,7 +621,7 @@ function pintarAgenda() {
     'semana',
     lng() === 'pt'
       ? h.m === j.m
-        ? 'Semana de ' +
+        ? 'Week of ' +
           h.d +
           ' a ' +
           j.d +
@@ -640,7 +640,7 @@ function pintarAgenda() {
             'novembro',
             'dezembro',
           ][j.m - 1]
-        : 'Semana de ' + diaMes(f) + ' a ' + diaMes(g)
+        : 'Week of ' + diaMes(f) + ' a ' + diaMes(g)
       : (lng() === 'en' ? 'Week of ' : 'Semana del ') + diaMes(f) + ' – ' + diaMes(g),
     e,
   );
@@ -794,10 +794,10 @@ function abrirDetalhe(o) {
   }
   ocDet = { ...o, estado: estadoAgora(o) };
   pintarArte(popDet, 'banner', null, arteDe(o, 'detalhe'));
-  Popup.texto(popDet, 'evento-tipo', tr(ROTULO_TIPO[o.tipo] || 'EVENTO'));
+  Popup.texto(popDet, 'evento-tipo', tr(ROTULO_TIPO[o.tipo] || 'EVENT'));
   Popup.textoCru(popDet, 'evento-nome', tituloDe(o));
   Popup.texto(popDet, 'evento-periodo', periodo(o));
-  Popup.textoCru(popDet, 'evento-texto', descDe(o) || tr('Sem descrição.'));
+  Popup.textoCru(popDet, 'evento-texto', descDe(o) || tr('No description.'));
   const d = passosDe(o),
     e = passosDaStaff(o) ? (a, b, s) => Popup.textoCru(a, b, I18n.tExato(s)) : Popup.texto;
   for (let i = 1; i <= 3; i++) {
@@ -857,17 +857,17 @@ function pintarBotoesDetalhe() {
   if (o.tipo === 'raid') {
     const g = filaDoEvento(R);
     if (g) {
-      b = R.eu ? 'Você está na fila' : 'Entrar na fila';
+      b = R.eu ? "You're in the queue" : 'Join the queue';
       c = true;
     } else if (a === 'breve') {
-      b = 'Fila abre às ' + horaDe(o.raid?.filaEm || o.oc);
+      b = 'Queue opens at ' + horaDe(o.raid?.filaEm || o.oc);
       c = false;
     } else {
-      b = a === 'agora' ? 'Raid em andamento' : 'Encerrado';
+      b = a === 'agora' ? 'Raid in progress' : 'Ended';
       c = false;
     }
   } else if (o.tipo === 'invasao' && a !== 'encerrado') {
-    b = 'Como chegar';
+    b = 'How to get there';
     c = true;
   }
   const d = popDet.querySelector('[data-tag="acao"][data-tagval="participar-evento"]');
@@ -879,7 +879,7 @@ function pintarBotoesDetalhe() {
     f = popDet.querySelector('[data-tag="acao"][data-tagval="lembrar-evento"]');
   if (f) {
     f.style.display = a === 'breve' ? '' : 'none';
-    Popup.botao(popDet, 'lembrar-evento', true, e ? 'Lembrete ligado' : 'Lembrar-me');
+    Popup.botao(popDet, 'lembrar-evento', true, e ? 'Reminder on' : 'Remind me');
   }
 }
 function participar(o) {
@@ -896,8 +896,8 @@ function participar(o) {
     Chat.sistemaCru(
       '📍 ' +
         (o.invasao?.lugar
-          ? I18n.t('A invasão é em {x}.', { x: I18n.tExato(o.invasao.lugar) })
-          : I18n.t('Procure pelo mapa: o lugar é surpresa.')),
+          ? I18n.t('The invasion is in {x}.', { x: I18n.tExato(o.invasao.lugar) })
+          : I18n.t('Search the map: the location is a surprise.')),
     );
     Popup.fechar(popDet);
   }
@@ -926,7 +926,7 @@ function lembrar(o) {
   pintarBotoesDetalhe();
   if (l[k])
     Chat.sistemaCru(
-      '⏰ ' + tr('Lembrete ligado') + ': ' + tituloDe(o) + ' — ' + diaCurto(o.oc) + ' · ' + horaDe(o.oc) + '.',
+      '⏰ ' + tr('Reminder on') + ': ' + tituloDe(o) + ' — ' + diaCurto(o.oc) + ' · ' + horaDe(o.oc) + '.',
     );
 }
 function iniciarLembretes() {
@@ -996,20 +996,20 @@ function faixa(m) {
   const c = ICONE[m.estilo] ? m.estilo : 'aviso';
   b.className = c;
   b.innerHTML =
-    '<span class="ic" aria-hidden="true"></span><span class="tx"></span><span class="rel" hidden></span><button type="button" class="ir" hidden></button><button type="button" class="x" aria-label="fechar">✕</button>';
+    '<span class="ic" aria-hidden="true"></span><span class="tx"></span><span class="rel" hidden></span><button type="button" class="ir" hidden></button><button type="button" class="x" aria-label="close">✕</button>';
   b.querySelector('.ic').textContent = ICONE[c];
   b.querySelector('.tx').textContent = a;
   const d = b.querySelector('.ir');
   if (c === 'raid') {
     d.hidden = false;
-    d.textContent = tr('Ver a raid');
+    d.textContent = tr('View raid');
     d.onclick = () => {
       dep.abrirRaid?.();
       f();
     };
   } else if (m.id && c !== 'reinicio') {
     d.hidden = false;
-    d.textContent = tr('Ver evento');
+    d.textContent = tr('View event');
     d.onclick = async () => {
       await buscar();
       const o = cache.lista.find((x) => x.id === m.id);
@@ -1093,7 +1093,7 @@ function ligarLinkPainel() {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'ev-staff';
-  b.textContent = '⚙ ' + tr('Gerenciar no painel');
+  b.textContent = '⚙ ' + tr('Manage in the panel');
   const a = pop.__def,
     c = a.filhos || [],
     d = (n) => c.find((f) => f.nome === n);

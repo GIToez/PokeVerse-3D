@@ -24,37 +24,37 @@ export const TIPOS = [
   'nada',
 ];
 export const ERROS = {
-  held_item_invalido: 'Item inválido.',
-  held_nao_e_held: 'Esse item não é um item segurado.',
-  held_fora_do_beta: 'Esse item ainda não tem efeito no jogo.',
-  held_sem_motor: 'Esse item ainda não tem efeito: falta o sistema de status.',
-  held_especie: 'Só {x} pode segurar esse item.',
-  held_ficha_invalida: 'Pokémon inválido.',
-  held_ja_segura: 'Esse Pokémon já segura um item: tire o item antes.',
-  held_vazio: 'Esse Pokémon não está segurando nada.',
-  held_pokemon_alheio: 'Esse Pokémon não é seu.',
-  held_sem_item: 'Você não tem esse item na mochila.',
-  held_sem_preso: 'Você não tem esse item preso à conta na mochila.',
-  held_sem_solto: 'Você não tem esse item negociável na mochila.',
-  held_em_luta: 'Não dá pra trocar o item no meio da luta.',
-  held_bolsa_cheia: 'A mochila está cheia: o item não coube.',
-  held_nivel: 'Item com nível ainda não sai do Pokémon.',
-  held_trava: 'O item só deixa usar {x} agora.',
-  held_colete: 'Com esse item não dá pra usar golpe de status.',
+  held_item_invalido: 'Invalid item.',
+  held_nao_e_held: "That item isn't a held item.",
+  held_fora_do_beta: 'This item has no in-game effect yet.',
+  held_sem_motor: 'This item has no effect yet: the status system is missing.',
+  held_especie: 'Only {x} can hold this item.',
+  held_ficha_invalida: 'Invalid Pokémon.',
+  held_ja_segura: 'That Pokémon already holds an item: remove it first.',
+  held_vazio: "That Pokémon isn't holding anything.",
+  held_pokemon_alheio: "That Pokémon isn't yours.",
+  held_sem_item: "You don't have that item in your Bag.",
+  held_sem_preso: "You don't have that account-bound item in your Bag.",
+  held_sem_solto: "You don't have that tradable item in your Bag.",
+  held_em_luta: "You can't change items mid-battle.",
+  held_bolsa_cheia: "The Bag is full: the item didn't fit.",
+  held_nivel: "Leveled items can't be removed from the Pokémon yet.",
+  held_trava: 'The item only lets you use {x} now.',
+  held_colete: "You can't use status moves with this item.",
 };
 export const NARRACAO = {
-  cura: '{n} recuperou HP com {i}.',
-  dano: '{n} perdeu HP por causa de {i}.',
-  reflete: '{n} se machucou em {i}.',
-  sobrevive: '{n} aguentou o golpe com {i}!',
-  curaStatus: '{n} se curou com {i}.',
-  estagio: '{n} ativou {i}!',
-  consumiu: '{i} de {n} se gastou.',
-  gema: '{i} de {n} fortaleceu o golpe e se gastou.',
-  estourou: '{i} de {n} estourou!',
-  imune: '{n} está no ar com {i}: golpe de Terra não pega!',
-  hesitar: '{i} fez {n} hesitar!',
-  trava: '{n} está preso ao golpe {g} por {i}.',
+  cura: '{n} restored HP with {i}.',
+  dano: '{n} lost HP because of {i}.',
+  reflete: '{n} was hurt by {i}.',
+  sobrevive: '{n} hung on with {i}!',
+  curaStatus: '{n} healed with {i}.',
+  estagio: '{n} activated {i}!',
+  consumiu: "{n}'s {i} was used up.",
+  gema: "{n}'s {i} boosted the move and was used up.",
+  estourou: "{n}'s {i} popped!",
+  imune: '{n} is floating with {i}: Ground moves miss!',
+  hesitar: '{i} made {n} flinch!',
+  trava: '{n} is locked into {g} by {i}.',
 };
 const STATUS_IDS = new Set(['burn', 'poison', 'bad-poison', 'paralysis', 'sleep', 'freeze', 'confusion']);
 const ATRIBUTOS = new Set([
@@ -122,8 +122,8 @@ const positivo = (v) => typeof v === 'number' && Number.isFinite(v) && v > 0;
 function numeroRuim(a) {
   const b = a.efeito;
   if (VALOR_POSITIVO.has(b.tipo) && !positivo(b.valor)) return 'valor ' + b.valor;
-  if (ATE_UM.has(b.tipo) && b.valor > 1) return 'valor acima de 1: ' + b.valor;
-  if (b.tipo === 'curaAoCair' && b.unidade !== 'hp' && b.valor > 1) return 'cura acima do HP máximo: ' + b.valor;
+  if (ATE_UM.has(b.tipo) && b.valor > 1) return 'value above 1: ' + b.valor;
+  if (b.tipo === 'curaAoCair' && b.unidade !== 'hp' && b.valor > 1) return 'heals above max HP: ' + b.valor;
   if (b.tipo === 'curaAoCair' && !(positivo(b.limiar) && b.limiar <= 1)) return 'limiar ' + b.limiar;
   if (b.tipo === 'curaFimTurno' && b.senao != null && !(b.senao < 0 && b.senao >= -1)) return 'senao ' + b.senao;
   if (b.tipo === 'multDano' && b.condicao === 'repeticao' && !(positivo(b.passo) && positivo(b.teto) && b.teto >= 1))
@@ -137,7 +137,7 @@ function numeroRuim(a) {
 }
 export class Held {
   constructor(a, b = {}) {
-    if (!a || typeof a !== 'object' || !a.itens) throw new Error('held.mjs: dados sem `itens` (data/held.json)');
+    if (!a || typeof a !== 'object' || !a.itens) throw new Error('held.mjs: data without `itens` (data/held.json)');
     this.D = a;
     this.R = a.regras || {};
     this.amb = b;
@@ -147,13 +147,13 @@ export class Held {
     this.itens = new Map();
     for (const [k, c] of Object.entries(a.itens)) {
       const d = idDeItem(k);
-      if (!d || !c || d !== c.id) throw new Error('held.mjs: item com id ruim: ' + k);
+      if (!d || !c || d !== c.id) throw new Error('held.mjs: item with bad id: ' + k);
       if (!TIPOS.includes(c.efeito?.tipo))
-        throw new Error('held.mjs: tipo fora do conjunto fechado no item ' + k + ': ' + c.efeito?.tipo);
+        throw new Error('held.mjs: type outside the closed set in item ' + k + ': ' + c.efeito?.tipo);
       if (c.efeito.tipo === 'nada' && !c.foraDoBeta)
-        throw new Error('held.mjs: item ' + k + ' é `nada` sem `foraDoBeta`');
+        throw new Error('held.mjs: item ' + k + ' is `nada` without `foraDoBeta`');
       const e = numeroRuim(c);
-      if (e) throw new Error('held.mjs: número ruim no item ' + k + ': ' + e);
+      if (e) throw new Error('held.mjs: bad number in item ' + k + ': ' + e);
       this.itens.set(d, c);
     }
     const M = a.marcas || {};

@@ -36,16 +36,16 @@ export function decidir({
   agente: e = '',
   caiu: f = false,
 }) {
-  if (!CENAS_KTX2.has(a)) return { usar: false, motivo: 'cena sem _ktx2' };
+  if (!CENAS_KTX2.has(a)) return { usar: false, motivo: 'scene without _ktx2' };
   if (b === '0') return { usar: false, motivo: '?ktx2=0' };
   const g = configDaPlaca(c, { plataforma: d, agente: e });
   const h = { etc1s: formatoEscolhido(g, 'etc1s'), uastc: formatoEscolhido(g, 'uastc') };
   if (b === '1') return { usar: true, motivo: '?ktx2=1', formatos: h };
-  if (f) return { usar: false, motivo: 'caiu nesta sessão', formatos: h };
-  if (!c) return { usar: false, motivo: 'sem WebGL 2 pra perguntar', formatos: h };
+  if (f) return { usar: false, motivo: 'failed this session', formatos: h };
+  if (!c) return { usar: false, motivo: 'no WebGL 2 to query', formatos: h };
   if (!formatoServe(h.etc1s, g) || !formatoServe(h.uastc, g))
-    return { usar: false, motivo: 'a placa não transcodifica (' + h.etc1s + '/' + h.uastc + ')', formatos: h };
-  return { usar: true, motivo: 'automático', formatos: h };
+    return { usar: false, motivo: "the GPU can't transcode (" + h.etc1s + '/' + h.uastc + ')', formatos: h };
+  return { usar: true, motivo: 'automatic', formatos: h };
 }
 const BPP = {
   36196: 0.5,
@@ -211,9 +211,9 @@ export async function carregarCena(
     return g;
   } catch (e) {
     Object.assign(E, { erro: String(e?.message || e).slice(0, 160), fase: q });
-    console.warn('ktx2: ' + a + ' caiu no PNG (' + q + ') —', e);
+    console.warn('ktx2: ' + a + ' fell back to PNG (' + q + ') —', e);
     try {
-      h?.('ktx2 caiu', { cena: a, fase: q, status: e?.status ?? null, erro: E.erro });
+      h?.('ktx2 fell back', { cena: a, fase: q, status: e?.status ?? null, erro: E.erro });
     } catch {}
     marcarCaiu(q === 'montar');
     soltar();

@@ -50,7 +50,7 @@ function folha(L) {
             typeof j?.folha?.webp === 'string' && /^[\w.-]+\.webp$/.test(j.folha.webp)
               ? j.folha.webp
               : L.nome + '-folha.webp';
-          if (!a) throw new Error('folha sem quadros');
+          if (!a) throw new Error('sheet without frames');
           if (L.animado && typeof j?.webp === 'string' && /^[\w.-]+\.webp$/.test(j.webp))
             return { quadros: a, quadroMs: b, url: versao(L.pasta + '/' + j.webp), animado: true };
           return { quadros: a, quadroMs: b, url: versao(L.pasta + '/' + c) };
@@ -195,7 +195,7 @@ export function sincronizar(a = [], b = null) {
       })
       .catch((e) => {
         if (cards.get(h) === c) {
-          console.warn('loja: o loop de ' + L.nome + ' não veio, fica a foto', e?.message || e);
+          console.warn('shop: the loop for ' + L.nome + ' did not arrive, keeping the photo', e?.message || e);
           soltar(h);
         }
       });

@@ -1,7 +1,7 @@
 import { paradasDe, porqueFechada, TEXTO_INSIGNIAS, TEXTO_CAMPEAO } from './ferry_rules.mjs';
 export const ATENDENTE_PADRAO = {
-  nome: 'Marujo Tião',
-  fala: 'Boas-vindas a bordo! A balsa faz a volta pelas Ilhas Sevii. Pra onde vai ser hoje?',
+  nome: 'Sailor Tião',
+  fala: 'Welcome aboard! The ferry loops around the Sevii Islands. Where to today?',
   falaSemParada: '',
   glb: null,
   cenas: [],
@@ -13,12 +13,12 @@ const txt = (v, a) =>
     .trim()
     .slice(0, a);
 export function porqueCurto(p) {
-  if (p?.motivo === 'campeao' || p?.texto === TEXTO_CAMPEAO) return 'depois da Elite dos Quatro';
-  if (p?.motivo === 'insignias' || p?.texto === TEXTO_INSIGNIAS) return 'precisa de 7 insígnias';
+  if (p?.motivo === 'campeao' || p?.texto === TEXTO_CAMPEAO) return 'after the Elite Four';
+  if (p?.motivo === 'insignias' || p?.texto === TEXTO_INSIGNIAS) return 'needs 7 Badges';
   return p?.texto || 'fechada';
 }
-export const TEXTO_VISITOU = 'já visitou',
-  TEXTO_PRIMEIRA = 'primeira viagem';
+export const TEXTO_VISITOU = 'already visited',
+  TEXTO_PRIMEIRA = 'first trip';
 const visitaDe = (p, a) => (p?.visitada === true ? a(TEXTO_VISITOU) : p?.visitada === false ? a(TEXTO_PRIMEIRA) : '');
 function infoDe(a, b) {
   const p = (Array.isArray(a?.paradas) ? a.paradas : []).find((x) => x && x.id === b);
@@ -94,16 +94,16 @@ export function vistaBalsa(
   const i = L.some((p) => estadoDe(p) === 'liberada');
   const j = L.some((p) => p.id === b && estadoDe(p) === 'liberada') ? b : null;
   return {
-    titulo: g('Balsa das Ilhas'),
+    titulo: g('Island Ferry'),
     dica: d
-      ? { texto: g('um instante…'), tom: 'esperando' }
+      ? { texto: g('one moment…'), tom: 'esperando' }
       : c
         ? { texto: String(c), tom: 'aviso' }
-        : { texto: g('Escolha a parada'), tom: null },
+        : { texto: g('Choose a stop'), tom: null },
     npc: {
       nome: g(h.nome),
       fala: g(!i && h.falaSemParada ? h.falaSemParada : h.fala),
-      dica: i ? g('{x} / toque: escolher').split('{x}').join(f) : '',
+      dica: i ? g('{x} / tap: choose').split('{x}').join(f) : '',
     },
     paradas: L.map((p) => {
       const a = estadoDe(p);
@@ -112,7 +112,7 @@ export function vistaBalsa(
         nome: g(p.nome),
         estado: a,
         info: a === 'bloqueada' ? g(porqueCurto(p)) : p.info ? g(p.info) : a === 'liberada' ? visitaDe(p, g) : '',
-        aqui: a === 'aqui' ? g('VOCÊ ESTÁ AQUI') : '',
+        aqui: a === 'aqui' ? g('YOU ARE HERE') : '',
         foco: a === 'liberada' && p.id === j,
         ir: a === 'liberada' ? { ligado: !d } : null,
       };

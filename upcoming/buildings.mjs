@@ -1,12 +1,12 @@
 const FAMILIAS = /^41[12]\d{4}$/;
 export const PREDIOS_GRANDES = Object.freeze({
-  2100001: 'Torre Pokémon',
+  2100001: 'Pokémon Tower',
   2100009: 'Companhia Silph',
-  2100013: 'Mansão Pokémon',
+  2100013: 'Pokémon Mansion',
   2100010: 'Edifício de Celadon',
   2100005: 'Esconderijo da Equipe Rocket',
   2100002: 'Usina Elétrica Abandonada',
-  2540002: 'Armazém da Equipe Rocket',
+  2540002: 'Team Rocket Warehouse',
 });
 const AVULSOS = new Set(['2540001', 'habitat', ...Object.keys(PREDIOS_GRANDES)]);
 export function ehPredio(a) {
