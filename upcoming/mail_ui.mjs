@@ -279,7 +279,7 @@ export function encherV2(b, d) {
       e.style.fontWeight = c.lida ? '700' : '900';
       e.style.opacity = c.resgatada ? '0.6' : '1';
     }
-    d.textoCru(b, 'carta-de', c.de || 'Poke Fable', a);
+    d.textoCru(b, 'carta-de', c.de || 'PokeVerse', a);
     d.texto(b, 'carta-data', dataCurta(c.em), a);
     const v = validade(c, false),
       f = d.texto(b, 'carta-validade', v.txt, a);
@@ -325,7 +325,7 @@ export function encherV2(b, d) {
   if (!c) return;
   emblema(d, b, 'remetente-aberta', remetenteDe(c, g), j, g);
   d.textoCru(b, 'aberta-titulo', c.titulo || tr('(sem título)'), j);
-  d.textoCru(b, 'aberta-de', tr('de {x}', { x: c.de || 'Poke Fable' }), j);
+  d.textoCru(b, 'aberta-de', tr('de {x}', { x: c.de || 'PokeVerse' }), j);
   d.texto(b, 'aberta-data', dataCurta(c.em), j);
   const v = validade(c, true),
     l = d.texto(b, 'aberta-validade', v.txt, j);
@@ -456,7 +456,7 @@ export function receber(m) {
       ctx.Som?.tocar?.('ui/sound_successful', { volume: 0.45, prio: true });
     } catch {}
     (ctx.Chat?.avisoSistema || ctx.Chat?.sistemaCru)?.(
-      '📬 ' + tr('Carta nova de {x}: {y} (o atalho Correio, no alto).', { x: m.de || 'Poke Fable', y: m.titulo || '' }),
+      '📬 ' + tr('Carta nova de {x}: {y} (o atalho Correio, no alto).', { x: m.de || 'PokeVerse', y: m.titulo || '' }),
     );
     if (cartas) listar(true);
     ctx.repintar?.();
@@ -512,7 +512,7 @@ export function encher(a, d, e, f) {
     e.textoCru(
       a,
       'ultima-mensagem',
-      (c.de || 'Poke Fable') + ' · ' + quando(c.em) + (pendente(c) ? ' · 🎁' : c.resgatada ? ' · ✔' : ''),
+      (c.de || 'PokeVerse') + ' · ' + quando(c.em) + (pendente(c) ? ' · 🎁' : c.resgatada ? ' · ✔' : ''),
       b,
     );
     e.texto(a, 'nao-lidas', c.lida ? '' : '!', b);
@@ -604,7 +604,7 @@ function conteudoDaCarta(L) {
     '<div style="color:#9fb0d0;font-size:12px;margin-top:2px">' +
     esc(tr('De')) +
     ': ' +
-    esc(c.de || 'Poke Fable') +
+    esc(c.de || 'PokeVerse') +
     ' · ' +
     esc(d) +
     esc(f) +

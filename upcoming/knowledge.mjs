@@ -4,7 +4,7 @@ const pegosSessao = new Set();
 const NIVEIS = ['desconhecido', 'Avistado', 'Registrado', 'Estudado', 'Especialista', 'Mestre'];
 const LIMIAR = [0, 1, 4, 10, 18, 28];
 export const TITULOS = [
-  { id: 'alphaTester', nome: 'Alpha Tester', cond: (r) => !!r.alfa, desc: 'jogou no alpha de Poke Fable Online' },
+  { id: 'alphaTester', nome: 'Alpha Tester', cond: (r) => !!r.alfa, desc: 'jogou no alpha de PokeVerse' },
   {
     id: 'testadorBeta',
     nome: 'Campeão do Alpha',

@@ -219,59 +219,6 @@ export function irParaEntrada() {
   }
   return true;
 }
-const URL_CLONE = 'https://pokefableonline.com/servidor/conta/clone';
-const HOSTS_OFICIAIS = ['pokefableonline.com', 'www.pokefableonline.com'],
-  TLD_DE_CASA = ['test', 'localhost', 'example', 'invalid', 'local'];
-export function hostDeCasa(h) {
-  const s = String(h ?? '')
-    .toLowerCase()
-    .replace(/\.+$/, '');
-  if (!s || HOSTS_OFICIAIS.includes(s)) return true;
-  if (s.charAt(0) === '[') {
-    const f = s.indexOf(']'),
-      x = f > 0 ? s.slice(1, f) : s.slice(1);
-    return x === '::1' || x === '::' || /^(fe[89ab]|f[cd])/.test(x);
-  }
-  const c = s.split('.');
-  if (c.length === 1 || TLD_DE_CASA.includes(c[c.length - 1])) return true;
-  if (c.length === 4 && c.every((x) => /^\d{1,3}$/.test(x))) {
-    const a = +c[0],
-      b = +c[1];
-    return (
-      a === 127 ||
-      a === 10 ||
-      a === 0 ||
-      (a === 192 && b === 168) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 169 && b === 254) ||
-      (a === 100 && b >= 64 && b <= 127)
-    );
-  }
-  return false;
-}
-let vigiouCasa = false;
-function vigiarCasa(a) {
-  try {
-    if (vigiouCasa) return;
-    vigiouCasa = true;
-    if (typeof location === 'undefined' || hostDeCasa(location.hostname)) return;
-    try {
-      const k = 'clone.' + a;
-      if (sessionStorage.getItem(k)) return;
-      sessionStorage.setItem(k, '1');
-    } catch {}
-    fetch(URL_CLONE, {
-      method: 'POST',
-      mode: 'no-cors',
-      credentials: 'omit',
-      keepalive: true,
-      cache: 'no-store',
-      referrerPolicy: 'no-referrer',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ host: String(location.host).slice(0, 200), de: a }),
-    }).catch(() => {});
-  } catch {}
-}
 async function api(a, b, c = null, d = false, f = 8000) {
   const g = new AbortController();
   const t = setTimeout(() => g.abort(), f);
@@ -570,7 +517,6 @@ export function diagnosticarRede(a = 5000) {
   return Carga.diagnosticar(base || baseHttp(new URLSearchParams(location.search)), a);
 }
 export async function garantir(c) {
-  vigiarCasa('conta');
   ctx = c;
   const p = c.params;
   base = baseHttp(p);

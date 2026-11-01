@@ -13343,7 +13343,7 @@ function rConfig(a) {
       ctx.conta?.estado?.().modo === 'conta'
         ? `<label><span>conta: <b>${esc(ctx.conta.estado().usuario)}</b> · o jogo fica salvo no servidor, não neste aparelho</span><button type="button" class="btn" id="c-sair">Sair da conta</button></label>
     <label><span>apagar o PERSONAGEM: começa do zero (Pokémon, itens, insígnias, missões); a conta continua sua</span><button type="button" class="btn" id="c-apagar-perso">Apagar personagem</button></label>
-    <div style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">apagar a CONTA inteira: só a equipe apaga — peça pelo Mandar pra equipe, no Discord ou em contato@pokefableonline.com</div>`
+    <div style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">apagar a CONTA inteira: só a equipe apaga — peça pelo Mandar pra equipe ou no Discord</div>`
         : ''
     }
     <label><span>painel de missão: arraste com o mouse ou o dedo pra mudar de lugar</span><button type="button" class="btn" id="c-missao-lugar">↺ lugar padrão</button></label>
