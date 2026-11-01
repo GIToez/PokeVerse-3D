@@ -1062,7 +1062,19 @@ function ligarIlhaUmaVez(){
 export function aplicarIlha(){
   if (typeof document === 'undefined') return;
   const mobile = document.body.classList.contains('mobile');
-  document.body.classList.add('hud-ilha', 'hud-ref');
+  /* Desktop: keep the Figma layout. The flex "reference HUD" pulled pieces out of
+     their frames (hiding .fig-img, unsitting #barra.solto) so nothing lined up. */
+  if (!mobile){
+    document.body.classList.remove('hud-ref', 'hud-ilha', 'hud-ilha-mobile');
+    const barra = document.getElementById('barra');
+    if (barra){
+      barra.classList.remove('ilha-dock');
+      barra.classList.add('solto');
+    }
+    return;
+  }
+  document.body.classList.add('hud-ilha');
+  document.body.classList.remove('hud-ref');
   document.body.classList.toggle('hud-ilha-mobile', mobile);
   ligarIlhaUmaVez();
   const barra = document.getElementById('barra');
