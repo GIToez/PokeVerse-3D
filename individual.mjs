@@ -2,7 +2,7 @@
    Fórmulas da série (as de rules.mjs são estas com IV/EV zerados e natureza neutra; o ×3 do HP é a folga do
    combate em tempo real). EV fica reservado (parâmetro `ev`, sempre 0 por enquanto — decisão no GDD §11.3).
    Sorte: hoje rola no cliente (single-player); no servidor a rolagem vai pra lá (GDD §8). Sem reroll pago. */
-export const STATS = ['HP', 'Ataque', 'Defesa', 'At. Esp.', 'Def. Esp.', 'Velocidade'];
+export const STATS = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
 export const IV_MAX = 31, IV_TOTAL = 31 * 6;
 export const HP_X = 3;                                                   // folga do tempo real (igual ao rules.mjs)
 /** [nome, stat que sobe, stat que desce] — índices em STATS (1 Atk, 2 Def, 3 SpA, 4 SpD, 5 Spe); neutra = mesmo índice. */
@@ -17,7 +17,7 @@ export const natureza = nome => NATUREZAS.find(n => n[0] === nome) || null;
 export const sortearIVs = () => Array.from({ length: 6 }, () => Math.floor(Math.random() * (IV_MAX + 1)));
 export const sortearNatureza = () => NATUREZAS[Math.floor(Math.random() * NATUREZAS.length)][0];
 export function multNatureza(nome, i){ const n = natureza(nome); if (!n || n[1] === n[2]) return 1; return i === n[1] ? 1.1 : i === n[2] ? 0.9 : 1; }
-export const descNatureza = nome => { const n = natureza(nome); return !n ? '' : n[1] === n[2] ? 'neutra' : '+' + STATS[n[1]] + ' −' + STATS[n[2]]; };
+export const descNatureza = nome => { const n = natureza(nome); return !n ? '' : n[1] === n[2] ? 'neutral' : '+' + STATS[n[1]] + ' −' + STATS[n[2]]; };
 export const somaIV = e => (e?.ivs || []).reduce((a, b) => a + b, 0);
 
 export function hp(base, lv, iv = 0, ev = 0){ return (Math.floor((2 * base + iv + Math.floor(ev / 4)) * lv / 100) + lv + 10) * HP_X; }
