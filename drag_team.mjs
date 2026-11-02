@@ -33,12 +33,12 @@ export function aplicar(de, i, para, j){
     if (j === i) return false;
     orig.splice(i, 1); orig.splice(j, 0, e);
   } else if (de === 'time'){
-    if (time.length <= 1){ avisar('é o seu único Pokémon'); return false; }
-    if (cfg.emCampo?.(e)){ avisar('troque de parceiro antes de guardar quem está em campo'); return false; }
+    if (time.length <= 1){ avisar('This is your only Pokémon'); return false; }
+    if (cfg.emCampo?.(e)){ avisar('Switch partners first before boxing the one that is following'); return false; }
     time.splice(i, 1); caixa.splice(limitar(j, 0, caixa.length), 0, e);
   } else if (time.length >= TIME_MAX){                                    // caixa → time cheio: troca com a casa de destino
     const k = limitar(j, 0, time.length - 1), sai = time[k];
-    if (cfg.emCampo?.(sai)){ avisar('troque de parceiro antes de guardar quem está em campo'); return false; }
+    if (cfg.emCampo?.(sai)){ avisar('Switch partners first before boxing the one that is following'); return false; }
     time[k] = e; caixa.splice(i, 1, sai);
   } else {
     caixa.splice(i, 1); time.splice(limitar(j, 0, time.length), 0, e);
@@ -123,6 +123,7 @@ function comecar(){
   ativo.fantasma = g; ativo.dx = ativo.x0 - r.left; ativo.dy = ativo.y0 - r.top;
   ativo.opacidade = item.style.opacity; item.style.opacity = '.35';
   ativo.arrastando = true;
+  try { ativo.reg.el.setPointerCapture?.(ativo.id); } catch {}
   document.body.style.userSelect = 'none';
   try { navigator.vibrate?.(15); } catch {}
 }
@@ -195,8 +196,7 @@ export function ligar(el, opts = {}){
     const item = ev.target.closest(reg.opts.seletor);
     if (!item || !el.contains(item) || item.dataset.arrFixo || item.classList.contains('vazia')) return;
     if (typeof reg.opts.podePegar === 'function' && !reg.opts.podePegar(item)) return;
-    ev.preventDefault();                                                  // kill native <img> drag — that cancelled the pointer and the box never moved
-    try { ev.currentTarget.setPointerCapture?.(ev.pointerId); } catch {}
+    item.querySelectorAll('img').forEach(im => { im.draggable = false; });
     const toque = ev.pointerType !== 'mouse';
     ativo = { reg, item, id: ev.pointerId, x0: ev.clientX, y0: ev.clientY, toque, arrastando: false };
     if (toque) ativo.timer = setTimeout(() => { if (ativo?.item === item && !ativo.arrastando){ comecar(); if (ativo) mover(ativo.x0, ativo.y0); } }, SEGURAR_MS);

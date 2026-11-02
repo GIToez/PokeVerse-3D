@@ -393,6 +393,29 @@ function indiceEmCampo(){
   if (k < 0) k = time.findIndex(t => t && t.glb === p.glb && t.lv === p.lv);
   return k;
 }
+/** Store one party Pokémon in the box. If it is following, switch first so the deposit is allowed. */
+async function guardarNoCaixa(e){
+  const time = ctx.jogo.time || [];
+  let k = time.findIndex(x => mesmoRegistro(x, e));
+  if (k < 0 || time.length <= 1) return false;
+  const campo = indiceEmCampo();
+  if (k === campo){
+    const outro = time.findIndex((_, i) => i !== k);
+    if (outro < 0) return false;
+    await ctx.trocarPara?.(outro);
+  }
+  const agora = ctx.jogo.time || [];
+  k = agora.findIndex(x => mesmoRegistro(x, e));
+  if (k < 0 || agora.length <= 1) return false;
+  const [saiu] = agora.splice(k, 1);
+  ctx.gravarLS('time', agora);
+  const cx = ctx.lerLS('caixa', []) || [];
+  cx.push(saiu);
+  ctx.gravarLS('caixa', cx);
+  ctx.pintarTime?.(true);
+  ctx.atualizarSeguidorPainel?.();
+  return true;
+}
 function linhaPk(e, marca, botoes, preso){
   const pct = e.maxHp ? Math.round(100 * ((e.hp == null ? e.maxHp : e.hp) / e.maxHp)) : 100;
   return `<div class="linha"${preso ? ' data-arr-preso="1"' : ''}><span class="nome"><b>${e.shiny ? '✨ ' : ''}${esc(e.nome)}${marca}</b><small>Lv ${e.lv} · Nº ${String(e.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${pct}%"></b></div></span>${botoes}</div>`;
@@ -446,7 +469,7 @@ function rPokemon(corpo){
   corpo.querySelectorAll('[data-aprender]').forEach(b => b.onclick = () => { ctx.aprenderGolpe?.(e, e.aprender[0], +b.dataset.aprender); render(); });
   ligarPkSheet(corpo);
   ligarSoltar(corpo, 'time');
-  corpo.querySelector('#p-caixa')?.addEventListener('click', () => { const t = ctx.jogo.time || []; const k = t.findIndex(x => mesmoRegistro(x, e)); if (k < 0) return; const [saiu] = t.splice(k, 1); ctx.gravarLS('time', t); const cx = ctx.lerLS('caixa', []); cx.push(saiu); ctx.gravarLS('caixa', cx); ctx.atualizarSeguidorPainel?.(); selPokemon = 0; render(); });
+  corpo.querySelector('#p-caixa')?.addEventListener('click', async () => { if (await guardarNoCaixa(e)){ selPokemon = 0; render(); } });
 }
 let escolhaEvo = null;                                                   // resposta pendente da caixa "Para qual evolução?" (null = caixa fechada); o `tecla()` lê daqui
 /* ESCOLHER PARA QUEM EVOLUIR (20/09, chaospider no #bugs "Evolução Eevee": "se eu for direto para a aba do pokémon, ele só
@@ -675,7 +698,7 @@ function encherBox(pop){
     const held = heldDe(sel);
     const naParty = bx.onde === 'time';
     const podeTrazer = !naParty && time.length < 6;
-    const podeGuardar = naParty && !sel.seguindo && time.length > 1;
+    const podeGuardar = naParty && time.length > 1;
     const podeSoltar = !(naParty && (sel.seguindo || time.length <= 1));
     const acoes = [
       btnPv('bx-perfil', 'View profile', naParty, 'Open the party sheet'),
@@ -750,7 +773,7 @@ function encherBox(pop){
   corpo.querySelectorAll('[data-bx-page]').forEach(b => b.onclick = () => { bx.page += +b.dataset.bxPage; encherBox(pop); });
   corpo.querySelectorAll('[data-pv]').forEach(b => {
     const id = b.dataset.pv;
-    b.onclick = ev => {
+    b.onclick = async ev => {
       ev.stopPropagation();
       if (id === 'bx-perfil' && bx.onde === 'time'){ selPokemon = bx.i; abrir('pokemon'); return; }
       if (id === 'bx-soltar' && sel){
@@ -760,7 +783,10 @@ function encherBox(pop){
         return;
       }
       if (id === 'bx-trazer' && bx.onde === 'caixa'){ if (Arr.aplicar('caixa', bx.i, 'time', time.length)) fim(); return; }
-      if (id === 'bx-guardar' && bx.onde === 'time'){ if (Arr.aplicar('time', bx.i, 'caixa', caixa.length)){ bx.onde = 'caixa'; bx.i = (ctx.lerLS('caixa', []) || []).length - 1; fim(); } }
+      if (id === 'bx-guardar' && bx.onde === 'time'){
+        const alvo = time[bx.i];
+        if (alvo && await guardarNoCaixa(alvo)){ bx.onde = 'caixa'; bx.i = (ctx.lerLS('caixa', []) || []).length - 1; fim(); }
+      }
     };
   });
 }
@@ -929,7 +955,7 @@ function encherPokemon(pop){
   const podeSoltar = !e.seguindo && lista.length > 1;
   const acoes = [
     btnPv('seguir', 'Follow', !e.seguindo, e.seguindo ? 'Already following' : 'Send this Pokémon into the field'),
-    btnPv('caixa', 'Send to box', !e.seguindo && lista.length > 1, e.seguindo ? 'Switch partners first' : lista.length <= 1 ? 'This is your only Pokémon' : 'Store in the PC box'),
+    btnPv('caixa', 'Send to box', lista.length > 1, lista.length <= 1 ? 'This is your only Pokémon' : 'Store in the PC box'),
     btnPv('evoluir', prontas.length > 1 ? '✦ Evolve (' + prontas.length + ')' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve', !!(pronta && e.seguindo), pronta ? (e.seguindo ? 'Evolve now' : 'Must be following') : (ops[0]?.falta || emBreve?.nome || 'Cannot evolve')),
     btnPv('soltar', confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release', podeSoltar, podeSoltar ? (confirmarSoltar === chaveDe(e) ? 'Click again to confirm' : 'Release this Pokémon') : 'Cannot release the one that is following'),
     btnPv('reanimar', rev ? '💊 Revive (' + rev.n + ')' : '💊 Revive', !!(e.hp === 0 && rev), e.hp !== 0 ? 'Only when fainted' : (rev ? rev.nome : 'Buy a Revive at the Poké Mart')),
@@ -973,10 +999,8 @@ function ligarPvAcoes(corpo, e, lista){
       ev.stopPropagation();
       if (id === 'seguir'){ await ctx.seguir?.(e); selPokemon = 0; render(); return; }
       if (id === 'caixa'){
-        const t = ctx.jogo.time || []; const k = t.findIndex(x => mesmoRegistro(x, e)); if (k < 0) return;
-        const [saiu] = t.splice(k, 1); ctx.gravarLS('time', t);
-        const cx = ctx.lerLS('caixa', []); cx.push(saiu); ctx.gravarLS('caixa', cx);
-        ctx.atualizarSeguidorPainel?.(); selPokemon = 0; render(); return;
+        if (await guardarNoCaixa(e)){ selPokemon = 0; render(); }
+        return;
       }
       if (id === 'evoluir'){ acaoPokemon('evoluir'); return; }
       if (id === 'soltar'){ acaoPokemon('soltar'); return; }
