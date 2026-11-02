@@ -128,7 +128,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 </div>
 <div id="painel-fundo" hidden></div>
 <div id="barra" class="notranslate" translate="no" hidden>
-  <div class="ficha" id="f-parceiro"><b id="f-pika-nome">Pikachu</b> <span id="f-pika-lv"></span><i><b id="f-pika-hp"></b></i></div>
+  <div class="ficha" id="f-parceiro"><b id="f-pika-nome">Pikachu</b> <span id="f-pika-lv"></span><i class="xp" title="XP"><b id="f-pika-xp"></b></i><i><b id="f-pika-hp"></b></i></div>
   <div id="skills">
     <button id="sk1" class="sk"></button><button id="sk2" class="sk"></button><button id="sk3" class="sk"></button><button id="sk4" class="sk"></button>
   </div>
@@ -215,6 +215,7 @@ import * as Ev from './ev.mjs';
 import * as Relogio from './clock.mjs';
 import * as Weather from './weather.mjs';
 import * as Luzes from './lights.mjs';
+import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
 import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolutions.json, data/exp.json)
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
@@ -1229,6 +1230,18 @@ function invalidarSombra(){ sombraQ = 1e6; }
    a cor certa. O mapa é unlit, então a luz só muda Pokémon, treinador e NPCs. ?ceu=d8cfae devolve o antigo pra comparar. */
 const CEU_HEMI = '#' + ((new URLSearchParams(location.search).get('ceu') || 'e8e8e8').replace(/^#/, ''));
 const hemi = new THREE.HemisphereLight(CEU_HEMI, '#dcecff', 1.9); cena.add(hemi);   // chão azulado embaixo, como antes
+/* DAY AND NIGHT (daynight.mjs). Outdoors only (interiors keep their RoomLight). `?dianoite=0` turns it off (fixed day).
+   NIGHT LIGHTS: a FIXED set of PointLights created here, before any material compiles — changing the scene's light count
+   recompiles EVERY shader, so they never leave nor go invisible: by day they just sit at intensity 0. Each frame each one moves
+   to one of the lit sources nearest the camera (atualizarPostes). Phone: half. `baixa` quality: glow only, no real light.
+   `?postes=N` forces the count, `?posteLuz=` the strength (candela). */
+const DN_ATIVO = !INTERIOR && params0Cedo.get('dianoite') !== '0';
+const CEU_DIA = CEU.clone();
+const POSTES_N = !DN_ATIVO ? 0 : params0Cedo.has('postes') ? Math.max(0, Math.min(16, +params0Cedo.get('postes') || 0)) : QUALIDADE === 'baixa' ? 0 : TOQUE ? 4 : 8;
+const POSTE_LUZ = Math.max(0, +(params0Cedo.get('posteLuz') || 16));
+const COR_POSTE = new THREE.Color('#ffb36a');                                // incandescent/sodium lamp, ~2700 K
+const luzesPoste = [];
+for (let i = 0; i < POSTES_N; i++){ const l = new THREE.PointLight(COR_POSTE, 0, 16, 2); l.castShadow = false; cena.add(l); luzesPoste.push(l); }
 
 /* ==================================================== atributos inúteis */
 /* `tangent` é 33% dos bytes de vértice do kanto.glb e `_toonmask` 18% dos modelos de personagem, mas NENHUM material
@@ -2292,7 +2305,7 @@ const AGUA_FS = `
 #include <fog_pars_fragment>
 uniform sampler2D tNormal, tFlow, tCaust;
 uniform float tempo, escalaNormal, opacidade, brilho, ondaAmp, cintilaK, ceuK, fresK, causticaK, cianoK;
-uniform vec3 cor, corRasa, corCiano, luzDir, camPos;
+uniform vec3 cor, corRasa, corCiano, luzDir, camPos, luzCena, luzSpec;
 varying vec3 vMundo;
 varying float vOnda;
 void main(){
@@ -2325,7 +2338,8 @@ void main(){
   float cb = texture2D(tCaust, cuv * 0.6 * 1.3 - vec2(0.013, 0.009) * tempo + 0.3).r;
   float caust = min(ca, cb) * (0.75 + 0.25 * sin(tempo * 2.0));
   c += caust * causticaK * vec3(0.45, 0.65, 0.7);
-  c += vec3(spec + cintila);
+  c *= luzCena;                                                           // day/night: the water has no scene light, the hour tints it here
+  c += (spec + cintila) * luzSpec;                                        // sun or moon glint (color and strength of the directional light)
   gl_FragColor = vec4(c, opacidade + fres * (1.0 - opacidade));
   #include <fog_fragment>
 }`;
@@ -2359,6 +2373,7 @@ async function prepararAgua(malhas){
         cor: { value: corUrl('aguaCor', 0.20, 0.35, 0.72) }, corRasa: { value: corUrl('aguaRasa', 0.27, 0.43, 0.80) },
         tCaust: { value: null }, causticaK: { value: numUrl('aguaCaustica', 0.70) }, cianoK: { value: numUrl('aguaCiano', 0.52) }, corCiano: { value: corUrl('aguaCorCiano', 0.0, 0.626, 1.0) },   // look do BDSP (caustics + cor puxada pro ciano); ?aguaCaustica=0 e ?aguaCiano=0 voltam pro nosso
         luzDir: { value: new THREE.Vector3(-3.7, 33.5, -4.8).normalize() }, camPos: { value: new THREE.Vector3() },   // mesma direção do MainLight
+        luzCena: { value: new THREE.Color(1, 1, 1) }, luzSpec: { value: new THREE.Color(1, 1, 1) },   // day/night (aplicarMundoVisual); 1 = the calibrated day
       }]),
     });
     mat.uniforms.tNormal.value = tNormal; mat.uniforms.tFlow.value = tFlow; mat.uniforms.tCaust.value = tCaust;   // fora do merge: UniformsUtils clona texturas
@@ -2432,6 +2447,64 @@ if (chao.biblioteca){
 const principal = chao.biblioteca ? instanciarBiblioteca(gltf, dados) : instanciar(gltf, dados);
 cena.add(principal.raiz);
 await prepararAgua(principal.aguas || []);
+/* NIGHT LIGHT SOURCES. Streetlights: the map's `*streetlight*` placements, at each prefab's bulb height (measured in the GLBs:
+   c_001 has the `light` dome at 1.76-2.21 m; the _g_2 variant is the same post 2 m up; t_007 has its lantern at 2.1-2.4 m).
+   Each source gets its own turn-on threshold (they don't all light up on the same second). Windows: the export's
+   "New Material" is the glass of house windows and of the c_001 lamp dome — at night it gets a warm emission. */
+const ALTURA_LAMPADA = [[/streetlight_01_g_2/, 4.0], [/sm_c_001_streetlight/, 2.0], [/streetlight/, 2.25]];
+const acaso = (i, x) => ((Math.sin(i * 12.9898 + x * 78.233) * 43758.5453) % 1 + 1) % 1;   // fixed per-source noise (thresholds don't change on reload)
+/** Night sources: { x, y, z, forca (x POSTE_LUZ), alcance (m), brilho (additive glow), limiar, aceso }. */
+const POSTES = !DN_ATIVO ? [] : [...(dados.areaEnv || []), ...(dados.ambiente || []), ...(dados.objetos || [])]
+  .filter(o => /streetlight/i.test(o.n || ''))
+  .map((o, i) => ({ x: flipX * o.x, y: (o.y || 0) + ALTURA_LAMPADA.find(([re]) => re.test(o.n.toLowerCase()))[1], z: o.z,
+    forca: 1, alcance: 18, brilho: 1, limiar: 0.15 + 0.7 * acaso(i, o.x), aceso: 0 }));
+const vidrosNoite = new Set();
+if (DN_ATIVO) principal.raiz.traverse(o => { for (const m of (Array.isArray(o.material) ? o.material : [o.material])) if (m?.emissive && /^New Material/.test(m.name || '')){ m.depthWrite = false; vidrosNoite.add(m); } });   // see-through glass that doesn't write depth: the lamp glow shows through the dome
+const COR_VIDRO = new THREE.Color('#ffa84f');
+let brilhoPostes = null, luzesNoiteProntas = false;
+/* DOOR LIGHT (wall lamp) at every street building door — only Route 17 and the Competition Center have streetlights;
+   without this Pallet, Viridian and the other towns would sit in the dark. The door is the type-6 NPC (the yellow ring); the
+   light goes 1 m OUT of the facade, on the free side (the same `livre` as collisions), 2.3 m up: it lights the house front
+   and the walk, not the inside of the wall. Built on a frame after lights.mjs answered (it knows the prop/lamppost spots). */
+function montarLuzesNoite(){
+  luzesNoiteProntas = true;
+  if (!DN_ATIVO) return;
+  for (const p of (postesNoite?.posts || [])){
+    POSTES.push({ x: p.x, y: p.y, z: p.z, forca: 1, alcance: 18, brilho: 1, limiar: 0.15 + 0.7 * acaso(POSTES.length, p.x), aceso: 0 });
+    for (const m of p.glass || []) if (m?.emissive) vidrosNoite.add(m);
+  }
+  let n = 0;
+  for (const d of (dados.npcs || [])){
+    if (PORTAS[d.cfg]?.t !== 6) continue;
+    const px = flipX * d.x, pz = d.z;
+    let melhor = null, nota = 0;
+    for (let k = 0; k < 8; k++){
+      const ang = k * Math.PI / 4, dx = Math.cos(ang), dz = Math.sin(ang);
+      const v = (livre(px + dx * 1.2, pz + dz * 1.2) ? 1 : 0) + (livre(px + dx * 2.2, pz + dz * 2.2) ? 1 : 0) + (livre(px + dx * 3.2, pz + dz * 3.2) ? 0.5 : 0);
+      if (v > nota){ nota = v; melhor = [dx, dz]; }
+    }
+    if (!melhor) continue;
+    const lx = px + melhor[0] * 1.0, lz = pz + melhor[1] * 1.0, chao = chaoEm(lx, lz) ?? 0;
+    POSTES.push({ x: lx, y: chao + 2.3, z: lz, forca: 0.42, alcance: 11, brilho: 0.6, limiar: 0.1 + 0.6 * acaso(n++, lx), aceso: 0 });
+  }
+  if (!POSTES.length) return;
+  /* Glow of ALL sources in one draw: additive points colored by how lit each one is. Far from the camera this is all you
+     see; up close the PointLight does the real work on the ground. */
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+  const g2 = cv.getContext('2d'), gr = g2.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,236,200,1)'); gr.addColorStop(0.12, 'rgba(255,200,130,0.85)'); gr.addColorStop(0.4, 'rgba(255,160,80,0.22)'); gr.addColorStop(1, 'rgba(255,140,60,0)');
+  g2.fillStyle = gr; g2.fillRect(0, 0, 64, 64);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const pos = new Float32Array(POSTES.length * 3), cor = new Float32Array(POSTES.length * 3);
+  POSTES.forEach((p, i) => { pos[i * 3] = p.x; pos[i * 3 + 1] = p.y; pos[i * 3 + 2] = p.z; });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(cor, 3));
+  geo.computeBoundingSphere();
+  brilhoPostes = new THREE.Points(geo, new THREE.PointsMaterial({ map: tex, size: 2.4, sizeAttenuation: true, vertexColors: true, transparent: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, fog: true }));
+  brilhoPostes.renderOrder = 14; brilhoPostes.frustumCulled = false; brilhoPostes.visible = false;
+  cena.add(brilhoPostes);
+}
 /* ====================================================== soltar a cena (19/09, frente memória) */
 /** Larga a imagem decodificada da textura assim que o three termina de subi-la pra GPU. */
 function soltarImagemNaGpu(t){
@@ -3371,7 +3444,7 @@ $('boot').hidden = false; $('boot').textContent = I18n.t('loading the map…'); 
    conta: `?jogar=1`, Kanto, o lote da casa, ou os modos de clipe. `?jogar=0` desliga sempre. */
 const PLAY = params0.get('jogar') === '1' || (params0.get('jogar') !== '0' && (NOME === 'kanto' || !!dados.lote || CONTA.modo === 'conta')) || DEMO || FAIRY || RAID || TORNEIO || DIRETOR || CAPTURA;   // ?raid=1 / ?torneio=1 / ?diretor=1 / ?captura=1 já ligam o jogo
 if (PLAY){
-  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio, soMons: INTERIOR }).then(L => { postesNoite = L; }).catch(e => console.warn('luzes', e));
+  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio, soMons: INTERIOR }).then(L => { postesNoite = L; }).catch(e => { console.warn('luzes', e); postesNoite = false; });   // false = failed: the night lights get built without the prop lampposts
 }
 const voltarNaCena = (() => {
   if (CONTA.modo !== 'conta') return null;
@@ -5872,6 +5945,26 @@ function guardarEstadoAtivo(){
    `_figma.faixas` do hud_layout.json): verde acima de 50 %, amarelo acima de 20 %, vermelho abaixo. */
 let FAIXAS_VIDA = [[0.5, '#4DDB63'], [0.2, '#F2C233'], [0, '#E5474D']];
 function corVida(k){ return (FAIXAS_VIDA.find(([lim]) => k > lim) || FAIXAS_VIDA[FAIXAS_VIDA.length - 1])[1]; }
+/* XP bar: fraction of the way from the current level to the next (Lv 100 = full). */
+function fracaoXp(m){
+  if (!m || (m.lv | 0) >= 100) return 1;
+  const a = Evolucao.expPara(m.dex, m.lv), b = Evolucao.expPara(m.dex, m.lv + 1), exp = m.exp ?? a;
+  return b > a ? Math.max(0, Math.min(1, (exp - a) / (b - a))) : 0;
+}
+/* With the Figma layout the HP bar is absolutely placed: in the card on PC, straight in the slot on the phone (the card is hidden there).
+   The XP bar follows the fill into whichever box holds it, copies its x/width and sits right above it. */
+function encaixarXp(cel){
+  const xp = cel.querySelector('i.tc-xp'), fil = cel.querySelector('b.tc-fill'); if (!xp) return;
+  const caixa = fil?.parentElement;
+  if (!fil || fil.style.display === 'none' || fil.style.position !== 'absolute' || !caixa || caixa.style.display === 'none'){ xp.style.display = 'none'; return; }
+  if (xp.parentElement !== caixa) caixa.appendChild(xp);
+  const tri = caixa.querySelector(':scope > i.tc-trilho'), comTri = tri && tri.style.display !== 'none' && tri.style.position === 'absolute';
+  const ref = comTri ? tri : fil;
+  const x = parseFloat(ref.style.left) || 0, w = ref === fil ? (fil.__figW ?? (parseFloat(fil.style.width) || 0)) : (parseFloat(ref.style.width) || 0);
+  const topo = Math.min(...[comTri && tri, fil].filter(Boolean).map(r => parseFloat(r.style.top) || 0));
+  const h = Math.max(2, Math.round((parseFloat(ref.style.height) || 6) * 0.45)), folga = h > 3 ? 2 : 1;
+  Object.assign(xp.style, { display: 'block', position: 'absolute', left: x + 'px', width: w + 'px', top: (topo - h - folga) + 'px', height: h + 'px', zIndex: '60' });
+}
 function pintarTime(forcar = false){
   const el = $('time-hud'); if (!el || el.hidden) return;
   const p = jogo.pika, ativo = membroAtivo(), cd = jogo.trocaCd || 0, agora = Date.now(), partes = [], vals = [];
@@ -5883,7 +5976,8 @@ function pintarTime(forcar = false){
     const ko = on ? p.hp <= 0 : koRegistro(t);
     const k = Math.max(0, Math.min(1, hp / (maxHp || 1))), cor = corVida(k);
     const frio = cd > 0 && !on, alt = frio ? Math.round(20 * cd / TROCA_CD) * 5 : 0;
-    vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt };
+    const kx = fracaoXp(on ? p : t);
+    vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt, xpPct: Math.round(kx * 100) };
     if (on && (forcar || !jogo.evoPronta || (jogo.quadroEvo = (jogo.quadroEvo || 0) + 1) % 30 === 0)) jogo.evoPronta = { v: evolucaoDe(p) };   // regras dos jogos (evolution.mjs), reavaliadas a cada 30 quadros
     const evo = on && !jogo.evoluindo && !jogo.trocandoSeguidor ? jogo.evoPronta?.v : null;   // botão ✧ no canto do slot em campo: só quando alguma regra já vale
     const teto = tetoNivel();
@@ -5892,7 +5986,7 @@ function pintarTime(forcar = false){
       : '';
     const estado = ko ? I18n.t(' · fainted: click uses a Revive from the bag') : on ? I18n.t(' · in the field') : I18n.t(' · click to switch');
     const tituloSlot = escHtml(t.nome) + ' Lv' + t.lv + dica + estado + I18n.t(' · drag (or hold on touch) to reorder · Alt+↑/↓');
-    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome notranslate" translate="no">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
+    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><i class="txp"><b style="width:${vals[i].xpPct}%"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome notranslate" translate="no">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-xp" title="XP"><b style="width:${vals[i].xpPct}%"></b></i><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
   }
   const html = partes.join('');
   /* Assinatura SEM o que muda a cada quadro (HP, cor, recarga da troca): em batalha o HP muda todo quadro e refazer o innerHTML
@@ -5902,7 +5996,9 @@ function pintarTime(forcar = false){
     for (let i = 0; i < el.children.length; i++){
       const v = vals[i]; if (!v) continue;
       const cel = el.children[i];
-      const bi = cel.querySelector('.tslot > i > b'); if (bi){ bi.style.width = v.pct + '%'; bi.style.background = v.cor; }
+      const bi = cel.querySelector('.tslot > i:not(.txp) > b'); if (bi){ bi.style.width = v.pct + '%'; bi.style.background = v.cor; }
+      for (const xb of cel.querySelectorAll('.tslot > i.txp > b, i.tc-xp > b')) xb.style.width = v.xpPct + '%';
+      if (el.__fig && cel.querySelector('i.tc-xp')?.style.display === 'none') encaixarXp(cel);   // a layout re-apply (resize) hides it again
       const b = cel.querySelector('.tc-fill'); if (b){ b.dataset.k = v.k.toFixed(3); if (el.__fig) Hud.fill(b, v.k, v.cor); else { b.style.width = v.pct + '%'; b.style.background = v.cor; } }
       const hpEl = cel.querySelector('.tc-hp'); if (hpEl){ const sHp = Math.round(v.hp) + '/' + v.maxHp; if (hpEl.textContent !== sHp) hpEl.textContent = sHp; }
       const u = cel.querySelector('.tslot > u'); if (u){ u.style.height = v.alt + '%'; if (el.__fig) Hud.estado(cel, 'cooldown', v.alt / 100); }
@@ -5918,6 +6014,7 @@ function pintarTime(forcar = false){
     const u = cel.querySelector('.tslot > u');
     Hud.estado(cel, 'cooldown', u ? (parseFloat(u.style.height) || 0) / 100 : 0);
     Hud.estado(cel, 'desmaiado', (t && cel.querySelector('.tslot.ko')) ? 1 : 0);
+    encaixarXp(cel);
   }
   el.querySelectorAll('.tslot[data-i]').forEach(b => b.onclick = () => trocarPara(+b.dataset.i));
   el.querySelectorAll('.tevo').forEach(b => b.onclick = ev => { ev.stopPropagation(); evoluirParceiro(); });
@@ -8061,7 +8158,11 @@ if (jogo.ash){
       else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvento(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).');
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
+      if (!jogo.turno || !m.fim) return;
+      for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
+      fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });
+    } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
   /* LETREIRO DE INVASÃO (15/09): alerta passante BRANCO no topo, estilo anúncio de jogo mobile. Injeta o CSS na 1ª vez, cria a
@@ -8195,6 +8296,8 @@ function pintarBarra(){
   const bm = $('monta-btn'); if (bm){ const rot = jogo.montaria ? '⬇ ' + I18n.t('Dismount') : '🐉 ' + I18n.t('Mount'); if (bm.dataset.rot !== rot){ bm.dataset.rot = rot; bm.innerHTML = rot + ' <b style="display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #79a7ff;border-radius:3px;font-family:ui-monospace,Consolas,monospace">M</b>'; } }
   const hpEl = $('f-pika-hp'), hpK = p.hp / p.maxHp;
   if (hpEl.__k !== hpK){ hpEl.__k = hpK; hpEl.style.width = (hpK * 100) + '%'; hpEl.style.background = hpK > 0.5 ? '#86ef5f' : hpK > 0.2 ? '#f4aa35' : '#e45670'; }
+  const xpEl = $('f-pika-xp'), xpK = fracaoXp(p);
+  if (xpEl && xpEl.__k !== xpK){ xpEl.__k = xpK; xpEl.style.width = (xpK * 100) + '%'; }
   setTexto($('f-pika-nome'), p.nome);
   setTexto($('f-pika-lv'), 'Lv' + p.lv + ' · ' + I18n.t(jogo.montaria ? 'in Poké Ball' : p.desmaiado > 0 ? 'fainted' : p.emBatalha ? 'in battle' : 'following'));
   for (let i = 0; i < 4; i++){
@@ -8721,6 +8824,13 @@ function criarPrecipitacao(c){
 }
 const clima = { nome: null, cfg: null, fx: null, criando: false, guarda: null, forcado: !!params0.get('clima') };
 const LUZ_DIA = { sol: sol.intensity, hemi: hemi.intensity };
+const FILTRO_DIA = 'saturate(1.15) brightness(1.14)';                    // the calibrated day look; night is real scene light now, not a CSS darkening
+/* Per frame (quadro, before the sun is placed): the hour gives the base light (daynight.mjs) and weather/boss only multiply it.
+   Sky and fog: the weather's (or the boss's) sky darkens in the same ratio the hour darkens the usual sky, so rain at night
+   is a dark blue-grey, not a daytime grey. */
+const _dnCeu = new THREE.Color(), _dnBase = new THREE.Color(), CEU_CHEFE = new THREE.Color('#5f6f78');
+const dnDir = new THREE.Vector3(-3.7, 33.5, -4.8).normalize();
+let dnNoite = 0, dnPostes = -1;
 function aplicarMundoVisual(){
   if (INTERIOR){
     sol.intensity = LUZ_DIA.sol;
@@ -8728,23 +8838,82 @@ function aplicarMundoVisual(){
     sol.color.set('#ffffff');
     clima.solAgora = sol.intensity;
     tela.style.filter = '';
+    dnNoite = 0;
     return;
   }
-  const ceu = PLAY ? Relogio.ceu() : { brilho: 1, sat: 1, sol: 1, hemi: 1, corSol: '#ffffff' };
-  const w = clima.cfg;
-  sol.intensity = LUZ_DIA.sol * ceu.sol * (w?.sol ?? 1);
-  hemi.intensity = LUZ_DIA.hemi * ceu.hemi * (w?.hemi ?? 1);
-  sol.color.set(ceu.corSol || '#ffffff');
+  const w = clima.cfg, chefe = !!(jogo.chefe && jogo.luzNormal);
+  tela.style.filter = ((w?.filtro || '') + ' ' + FILTRO_DIA).trim();
+  const fSol = (w?.sol ?? 1) * (chefe ? 0.71 : 1), fHemi = w?.hemi ?? 1;
+  if (!DN_ATIVO){                                                         // ?dianoite=0: fixed day, as before
+    sol.intensity = LUZ_DIA.sol * fSol; hemi.intensity = LUZ_DIA.hemi * fHemi; sol.color.set('#ffffff');
+    clima.solAgora = sol.intensity;
+    if (w?.ceu){ cena.background = new THREE.Color(w.ceu); cena.fog.color.set(w.ceu); }
+    else if (clima.guarda){ cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
+    return;
+  }
+  const e = DiaNoite.estado(PLAY || Relogio.forcada() != null ? Relogio.hora() : 12);   // map viewer: noon unless ?time= forces an hour
+  sol.color.copy(e.luzCor); sol.intensity = e.luzInt * fSol; sol.shadow.intensity = e.sombra;
+  hemi.color.copy(e.hemiCeu); hemi.groundColor.copy(e.hemiChao); hemi.intensity = e.hemiInt * fHemi;
   clima.solAgora = sol.intensity;
-  const noite = Math.max(0, 1 - ceu.brilho);
-  if (w?.ceu){
-    const tom = Relogio.misturar(w.ceu, ceu.tom || '#02040e', noite * 0.85);
-    cena.background = new THREE.Color(tom);
-    cena.fog.color.set(tom);
-  } else if (clima.guarda){ cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
-  const contraste = (1 + noite * 0.38).toFixed(3);
-  tela.style.filter = ((w?.filtro || '') + ' saturate(' + (ceu.sat * 1.15).toFixed(3) + ') contrast(' + contraste + ') brightness(' + (ceu.brilho * 1.14).toFixed(3) + ')').trim();
+  if (chefe || w?.ceu){
+    _dnBase.set(chefe ? CEU_CHEFE : w.ceu);
+    _dnCeu.setRGB(_dnBase.r * Math.min(1.6, e.ceu.r / CEU_DIA.r), _dnBase.g * Math.min(1.6, e.ceu.g / CEU_DIA.g), _dnBase.b * Math.min(1.6, e.ceu.b / CEU_DIA.b));
+  } else _dnCeu.copy(e.ceu);
+  if (cena.background?.isColor) cena.background.copy(_dnCeu);
+  cena.fog.color.copy(_dnCeu);
+  dnDir.copy(e.dir); dnNoite = e.noite;
+  for (const m of materiaisAgua){
+    if (!m.uniforms.luzCena) continue;
+    m.uniforms.luzCena.value.copy(e.agua);
+    m.uniforms.luzSpec.value.copy(e.luzCor).multiplyScalar(e.luzInt / 1.55 * fSol);
+    m.uniforms.luzDir.value.copy(e.dir);
+  }
+  atualizarPostes(e.postes);
 }
+/* Each source lights up when the hour passes its threshold (0.15..0.85 of the dusk ramp), over ~0.1 of the ramp. The glow
+   (points) shows them all; the PointLights go to the POSTES_N lit sources nearest the camera. So a light can change source
+   without flicker, its strength falls with the gap to the first source left OUT: at the swap both are at the same distance
+   and the light is already at zero — the on/off can't be seen. */
+const _dnPerto = [];
+function atualizarPostes(on){
+  if (!luzesNoiteProntas){
+    if (PLAY && postesNoite === null) return;                             // lights.mjs still loading the prop lamppost: wait for its spots
+    montarLuzesNoite(); dnPostes = -1;
+  }
+  if (!POSTES.length) return;
+  const mudou = on !== dnPostes; dnPostes = on;
+  if (mudou){
+    for (const p of POSTES) p.aceso = Math.min(1, Math.max(0, (on - p.limiar) / 0.1 + 0.5));
+    for (const m of vidrosNoite){ m.emissive.copy(COR_VIDRO); m.emissiveIntensity = on * 1.5; }
+    if (brilhoPostes){
+      const cor = brilhoPostes.geometry.attributes.color;
+      POSTES.forEach((p, i) => { const b = p.aceso * p.brilho; cor.setXYZ(i, b, b * 0.92, b * 0.8); });
+      cor.needsUpdate = true; brilhoPostes.visible = on > 0.001;
+    }
+  }
+  if (!luzesPoste.length) return;
+  const N = luzesPoste.length;
+  _dnPerto.length = 0;
+  if (on > 0.001){
+    for (const p of POSTES){
+      if (p.aceso <= 0) continue;
+      const d2 = (p.x - alvo.x) ** 2 + (p.z - alvo.z) ** 2;
+      if (d2 > 60 * 60) continue;
+      if (_dnPerto.length > N && d2 >= _dnPerto[N].d2) continue;
+      let k = Math.min(_dnPerto.length, N); while (k > 0 && _dnPerto[k - 1].d2 > d2) k--;
+      _dnPerto.splice(k, 0, { p, d2 }); if (_dnPerto.length > N + 1) _dnPerto.length = N + 1;
+    }
+  }
+  const fora = _dnPerto.length > N ? Math.sqrt(_dnPerto[N].d2) : 60;
+  for (let i = 0; i < N; i++){
+    const l = luzesPoste[i], q = _dnPerto[i];
+    if (!q){ l.intensity = 0; continue; }
+    const folga = Math.min(1, (fora - Math.sqrt(q.d2)) / 6);
+    l.position.set(q.p.x, q.p.y + 0.15, q.p.z); l.distance = q.p.alcance;
+    l.intensity = POSTE_LUZ * q.p.forca * q.p.aceso * folga * folga;
+  }
+}
+window.diaNoite = DiaNoite;                                                // console: diaNoite.estado(21)
 function passoClimaMundo(){
   if (!PLAY || clima.forcado || params0.get('clima')) return;
   const want = Weather.paraHora(Relogio.hora(), Relogio.agora());
@@ -8771,11 +8940,10 @@ function desligarClima(){
   aplicarMundoVisual();
 }
 function atualizarClima(dt){
-  try { passoClimaMundo(); aplicarMundoVisual(); Weather.passoTela?.(dt); } catch (e){ console.warn('clima:', e); }
+  try { passoClimaMundo(); Weather.passoTela?.(dt); } catch (e){ console.warn('clima:', e); }   // the light itself is applied every frame in quadro (aplicarMundoVisual)
   if (postesNoite){
-    const ceuLuz = INTERIOR ? { brilho: 1 } : Relogio.ceu();
     const mons = [jogo.pika, jogo.montaria, ...(jogo.selvagens || []), ...(jogo.voadores || [])];
-    postesNoite.quadro(dt, jogo.ash, ceuLuz, mons);
+    postesNoite.quadro(dt, jogo.ash, dnNoite, mons);                      // flame Pokémon light
   }
   const c = clima.cfg;
   if (!c || !jogo.ash) return;
@@ -9533,7 +9701,7 @@ function quadro(dt){
 
   // sol acompanha o alvo, senão o mapa de sombra tem que cobrir o mundo todo
   if (INTERIOR) sol.position.set(alvo.x, alvo.y + 34, alvo.z);         // RoomLight.prefab: reta pra baixo nos interiores
-  else sol.position.set(alvo.x - 3.7, 33.5, alvo.z - 4.8);             // direção do MainLight (x espelhado como o mundo)
+  else { try { aplicarMundoVisual(); } catch (e){ console.warn('dia/noite:', e); } sol.position.set(alvo.x + dnDir.x * 34, alvo.y + dnDir.y * 34, alvo.z + dnDir.z * 34); }   // MainLight direction at noon; with the hour, the sun's/moon's (daynight.mjs)
   sol.target.position.copy(alvo);
 
   /* Peças do Figma que seguem uma entidade ([segue:npc] no balão, [segue:inimigo] no status do alvo): a âncora de

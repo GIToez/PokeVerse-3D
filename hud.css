@@ -450,3 +450,10 @@ body.hud-ilha #menu-dock-aba{
 }
 body.hud-ilha #fala, body.hud-ilha #turno{ bottom:132px }
 body.hud-ilha-mobile #fala, body.hud-ilha-mobile #turno{ bottom:118px }
+/* XP bar (above the HP bar): partner card, team slot and the Figma card (placed by encaixarXp in index.html) */
+.ficha i.xp{height:3px;margin-top:4px}
+.ficha i.xp b,#time-hud i.txp b,#time-hud i.tc-xp b{background:#5fb4ff}
+#f-parceiro.kit i.xp{height:5px;border-width:1px}
+#time-hud .tslot i.txp{bottom:8px;height:2px}
+#time-hud.fig .tcel i.tc-xp,#time-hud .tcel i.tc-xp{overflow:hidden;background:#ffffff1f;box-shadow:inset 0 0 0 1px #5fb4ff59;border-radius:2px}   /* visible even at 0 XP (dark card art) */
+#time-hud i.tc-xp b{display:block;height:100%;transition:width .2s}

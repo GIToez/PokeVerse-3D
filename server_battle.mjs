@@ -13,6 +13,8 @@ import { efetividade } from './rules.mjs';
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const HP_X = Ind.HP_X;
 const STRUGGLE = { id: 'struggle', nome: 'Struggle', tipo: 'Normal', poder: 50, cat: 'fisico', pp: 1 };
+/** Idle limit per battle: no move for this long and the server ends it as a loss (`fim.tempo`). */
+export const BATALHA_TIMEOUT_MS = 180_000;
 
 const NATUREZAS = Ind.NATUREZAS.map((n) => n[0]);
 const ITENS_BATALHA = {
@@ -312,6 +314,7 @@ export function criarBatalha(ctx) {
       lances: [],
       log: ['Battle against ' + nomeInimigo + '!'],
       fim: null,
+      ultimo: Date.now(),
     };
     if (tipo === 'elite' && s.elite.corrida?.hp) {
       for (const p of bat.eu.time) {
@@ -396,6 +399,7 @@ export function criarBatalha(ctx) {
     batB.eu.field = primeiroVivo(batB.eu.time);
     batA.par = batB;
     batB.par = batA;
+    batA.ultimo = batB.ultimo = Date.now();
     lutas.set(aAcc.u, batA);
     lutas.set(b.u, batB);
     return { a: retrato(batA), b: retrato(batB) };
@@ -708,9 +712,44 @@ export function criarBatalha(ctx) {
     if (!bat) return { t: 'bat_erro', ...fail('you are not in a battle', 'dropped') };
     const r = bat.pvp ? jogarPvp(bat, acc, m) : jogarNpc(bat, acc, m);
     if (r.erro) return { t: 'bat_erro', ...r };
+    const agora = Date.now();
+    bat.ultimo = agora;
+    if (bat.par && !bat.acao) bat.par.ultimo = agora; /* PvP turn resolved: the other side's clock restarts too */
     if (r.t !== 'bat') return { t: 'bat', ...r };
     return r;
   }
+
+  /* Pushed without `abrir`/`pvp`, so network.mjs routes it to `batalhaFim` instead of reopening the panel. */
+  function avisarFim(bat) {
+    const msg = { t: 'bat', tipo: bat.tipo, id: bat.id, nomeInimigo: bat.nomeInimigo, vez: bat.vez, fim: bat.fim, log: bat.log || [] };
+    for (const w of ctx.socketsDe(bat.usuario)) ctx.enviar(w, msg);
+  }
+
+  function ocioso(bat, agora) {
+    return !bat.acao && agora - (bat.ultimo || 0) > BATALHA_TIMEOUT_MS;
+  }
+
+  /** Ends an idle battle as a loss. PvP: the idle side loses and the other wins, unless both went idle. */
+  function expirar(bat, agora = Date.now()) {
+    if (lutas.get(bat.usuario) !== bat) return;
+    const outro = bat.pvp && bat.par && lutas.get(bat.par.usuario) === bat.par ? bat.par : null;
+    const msg = 'Time is up: ' + Math.round(BATALHA_TIMEOUT_MS / 1000) + ' s without a move.';
+    bat.log = [msg];
+    bat.fim = pagar({ u: bat.usuario, c: ctx.contas[bat.usuario] }, bat, false, { tempo: true });
+    lutas.delete(bat.usuario);
+    avisarFim(bat);
+    if (outro) {
+      outro.log = [msg];
+      outro.fim = pagar({ u: outro.usuario, c: ctx.contas[outro.usuario] }, outro, !ocioso(outro, agora), { tempo: true });
+      lutas.delete(outro.usuario);
+      avisarFim(outro);
+    }
+  }
+
+  function varrerOciosas(agora = Date.now()) {
+    for (const bat of [...lutas.values()]) if (ocioso(bat, agora)) expirar(bat, agora);
+  }
+  setInterval(varrerOciosas, 5000).unref?.();
 
   function sair(ws) {
     const acc = contaDe(ws);
@@ -780,6 +819,6 @@ export function criarBatalha(ctx) {
       return { corrida: e.corrida, vencida: !!e.vencida };
     },
     /* exported for tests */
-    _test: { calcularDano, abrirNpc, ginasioPorId, treinadorPorId, elitePorOrdem, monNpc, lutas, pagar, cfgDeChave },
+    _test: { calcularDano, abrirNpc, ginasioPorId, treinadorPorId, elitePorOrdem, monNpc, lutas, pagar, cfgDeChave, varrerOciosas, expirar },
   };
 }
