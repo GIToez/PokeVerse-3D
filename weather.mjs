@@ -17,6 +17,35 @@ export const NOMES = {
 };
 export const rotulo = nome => NOMES[nome] || '';
 
+const APELIDOS = {
+  rain: 'chuva', chuva: 'chuva',
+  heavy: 'chuva_forte', storm: 'chuva_forte', downpour: 'chuva_forte', chuva_forte: 'chuva_forte',
+  sun: 'sol', sunny: 'sol', drought: 'sol', sol: 'sol',
+  sand: 'areia', sandstorm: 'areia', areia: 'areia',
+  hail: 'granizo', granizo: 'granizo',
+  snow: 'neve', neve: 'neve',
+  fog: 'nevoeiro', mist: 'nevoeiro', nevoeiro: 'nevoeiro',
+  off: null, clear: null, none: null, auto: undefined, real: undefined,
+};
+let fixa = undefined;   // undefined = follow the clock, null = force clear, string = force that weather
+
+export function lerNome(v){
+  if (v == null) return undefined;
+  const s = String(v).trim().toLowerCase().replace(/\s+/g, '_');
+  if (!s) return undefined;
+  if (Object.prototype.hasOwnProperty.call(APELIDOS, s)) return APELIDOS[s];
+  return undefined;
+}
+export function forcar(n){
+  if (typeof n === 'string') n = lerNome(n);
+  fixa = n === undefined ? undefined : n;
+  return fixa;
+}
+export const forcada = () => fixa;
+export function escolhido(hora, agoraMs = Date.now()){
+  return fixa !== undefined ? fixa : paraHora(hora, agoraMs);
+}
+
 const CHUVA = nome => nome === 'chuva' || nome === 'chuva_forte';
 
 export function poderTipo(clima, tipo){

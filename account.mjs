@@ -301,7 +301,8 @@ function tocouChave(k){
   else if (PREFS.includes(k)) pendente.prefs.add(k);
   else if (k === 'dex' || k === 'conhecimento') pendente.conhecimento = true;
   else return;                                                           // chave do servidor: o cofre é só espelho
-  sujo = true; clearTimeout(timer); timer = setTimeout(despachar, ESPERA_ENVIO);
+  sujo = true; clearTimeout(timer);
+  timer = setTimeout(despachar, k === 'time' || k === 'caixa' ? 80 : ESPERA_ENVIO);
 }
 const temPendente = () => pendente.arranjo || pendente.prefs.size || pendente.conhecimento;
 /** Manda o que está pendente. Pelo WebSocket em jogo; por HTTP (`POST /conta/estado`, keepalive) quando a página está
@@ -355,8 +356,14 @@ export function aplicarBolsa(bolsa){
   return true;
 }
 export function aplicarDoServidor(save, revNovo){
-  if (modo !== 'conta') return false;
-  aplicarSave(save || {});
+  if (modo !== 'conta' || !save || typeof save !== 'object') return false;
+  /* Mid-game updates may be a slice (time/caixa). Only overwrite keys that arrived —
+     a missing key must not wipe the rest of the vault (party vanishing on a door). */
+  for (const k of SAVE_CHAVES){
+    if (!(k in save) || save[k] === undefined) continue;
+    cofre.set(k, JSON.stringify(save[k]));
+    apagar(k);
+  }
   if (Number.isFinite(+revNovo)){ rev = +revNovo; gravar(LS.rev, String(rev)); }
   sujo = false; apagar(LS.sujo);
   return true;
