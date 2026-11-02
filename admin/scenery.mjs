@@ -40,6 +40,28 @@ const proxy = new THREE.Object3D(); scene.add(proxy);
 
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true; orbit.maxPolarAngle = Math.PI * 0.49;
+orbit.zoomToCursor = true;
+orbit.screenSpacePanning = true;
+orbit.panSpeed = 1.6;
+orbit.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+orbit.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
+orbit.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+tela.addEventListener('contextmenu', ev => ev.preventDefault());
+const pivo = (() => {
+  const g = new THREE.Group(); g.name = 'orbitPivot';
+  const eixo = new THREE.AxesHelper(1.4); eixo.renderOrder = 10; g.add(eixo);
+  const bola = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffcf3a, depthTest: false, depthWrite: false }));
+  bola.renderOrder = 11; g.add(bola);
+  const anel = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.72, 40), new THREE.MeshBasicMaterial({ color: 0xffcf3a, side: THREE.DoubleSide, depthTest: false, depthWrite: false, transparent: true, opacity: 0.9 }));
+  anel.rotation.x = -Math.PI / 2; anel.renderOrder = 11; g.add(anel);
+  scene.add(g); return g;
+})();
+function atualizarPivo() {
+  pivo.position.copy(orbit.target);
+  const dist = camera.position.distanceTo(orbit.target);
+  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.035, 0.6, 80));
+  if ($('hud-pivo')) $('hud-pivo').textContent = orbit.target.x.toFixed(1) + ', ' + orbit.target.y.toFixed(1) + ', ' + orbit.target.z.toFixed(1);
+}
 const transform = new TransformControls(camera, renderer.domElement);
 transform.addEventListener('dragging-changed', e => { orbit.enabled = !e.value; });
 transform.addEventListener('objectChange', () => {
@@ -75,7 +97,7 @@ function setPos(peca, x, y, z) {
   if (peca.node) peca.node.position.set(x, y, z);
 }
 
-(function loop() { requestAnimationFrame(loop); orbit.update(); renderer.render(scene, camera); })();
+(function loop() { requestAnimationFrame(loop); orbit.update(); atualizarPivo(); renderer.render(scene, camera); })();
 
 // ── Carregar ──────────────────────────────────────────────────────────────────
 const loader = new GLTFLoader();
@@ -220,6 +242,11 @@ renderer.domElement.addEventListener('pointerup', ev => {
   const hit = raycaster.intersectObjects(instGrupos, false)[0];
   if (hit) selecionar(hit.object.userData.membros[hit.instanceId].peca); else deselecionar();
 });
+renderer.domElement.addEventListener('dblclick', ev => {
+  if (transform.dragging) return;
+  const pt = pontoSobCursor(ev);
+  if (pt) irPivot(pt);
+});
 
 // ── Operações ──────────────────────────────────────────────────────────────────
 function criarBib(chave, ponto) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
@@ -250,9 +277,23 @@ function enquadrar() {
   for (const p of pecas) box.expandByPoint(tmp.set(fx * p.pos.x, p.pos.y, p.pos.z));
   if (box.isEmpty()) { camera.position.set(40, 40, 40); orbit.target.set(0, 0, 0); orbit.update(); return; }
   const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.z, 10);
-  orbit.target.copy(c); camera.position.set(c.x, c.y + r * 0.8, c.z + r * 0.9); orbit.update();
+  orbit.target.copy(c); camera.position.set(c.x, c.y + r * 0.8, c.z + r * 0.9); orbit.update(); atualizarPivo();
 }
-function atualizarHud() { $('hud').innerHTML = `<b>${pecas.length}</b> pieces · <b>${instGrupos.length}</b> types · <b>${modo === 'biblioteca' ? 'library' : 'assembled'}</b> · map <b>${esc(nomeMapa(mapaAtual))}</b>`; }
+function pontoSobCursor(ev) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  raycaster.setFromCamera({ x: ((ev.clientX - rect.left) / rect.width) * 2 - 1, y: -((ev.clientY - rect.top) / rect.height) * 2 + 1 }, camera);
+  const hit = raycaster.intersectObjects(instGrupos, false)[0];
+  if (hit) return hit.point.clone();
+  const pt = new THREE.Vector3();
+  return raycaster.ray.intersectPlane(planoChao, pt) ? pt : null;
+}
+function irPivot(pt) {
+  if (!pt) return;
+  orbit.target.copy(pt);
+  orbit.update();
+  atualizarPivo();
+}
+function atualizarHud() { $('hud').innerHTML = `<b>${pecas.length}</b> pieces · <b>${instGrupos.length}</b> types · <b>${modo === 'biblioteca' ? 'library' : 'assembled'}</b> · map <b>${esc(nomeMapa(mapaAtual))}</b> · pivot <b id="hud-pivo">${orbit.target.x.toFixed(1)}, ${orbit.target.y.toFixed(1)}, ${orbit.target.z.toFixed(1)}</b>`; }
 
 // ── Paleta ────────────────────────────────────────────────────────────────────
 function renderPaleta() {
@@ -327,6 +368,7 @@ addEventListener('keydown', e => {
   if (e.key === 'Delete' || e.key === 'Backspace') deletar();
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
   else if (e.key === 'f' || e.key === 'F') enquadrar();
+  else if (e.key === 'g' || e.key === 'G') { if (selPeca) irPivot(new THREE.Vector3(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z)); }
   else if (e.key === 'd' || e.key === 'D') duplicar();
 });
 addEventListener('beforeunload', e => { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
