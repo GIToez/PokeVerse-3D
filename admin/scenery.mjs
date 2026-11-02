@@ -87,6 +87,26 @@ function pivoNoChao() {
   const dy = chaoPivo - orbit.target.y;
   subirPivo(dy);
 }
+const _pivoF = new THREE.Vector3(), _pivoL = new THREE.Vector3();
+function deslocarPivo(frente, lado) {
+  if (!frente && !lado) return;
+  camera.getWorldDirection(_pivoF);
+  _pivoF.y = 0;
+  if (_pivoF.lengthSq() < 1e-6) _pivoF.set(orbit.target.x - camera.position.x, 0, orbit.target.z - camera.position.z);
+  if (_pivoF.lengthSq() < 1e-6) _pivoF.set(0, 0, -1);
+  _pivoF.normalize();
+  _pivoL.setFromMatrixColumn(camera.matrixWorld, 0);
+  _pivoL.y = 0;
+  if (_pivoL.lengthSq() < 1e-6) _pivoL.set(_pivoF.z, 0, -_pivoF.x);
+  _pivoL.normalize();
+  const s = passoPivo();
+  const dx = _pivoF.x * frente * s + _pivoL.x * lado * s;
+  const dz = _pivoF.z * frente * s + _pivoL.z * lado * s;
+  orbit.target.x += dx; orbit.target.z += dz;
+  camera.position.x += dx; camera.position.z += dz;
+  orbit.update();
+  atualizarPivo();
+}
 function atualizarPivo() {
   pivo.position.copy(orbit.target);
   const dist = camera.position.distanceTo(orbit.target);
@@ -411,10 +431,14 @@ addEventListener('keydown', e => {
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
   else if (e.key === 'f' || e.key === 'F') enquadrar();
   else if (e.key === 'g' || e.key === 'G') { if (selPeca) irPivot(new THREE.Vector3(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z)); }
-  else if (e.key === 'd' || e.key === 'D') duplicar();
+  else if ((e.key === 'd' || e.key === 'D') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); duplicar(); }
   else if (e.key === 'e' || e.key === 'E' || e.key === 'PageUp') { e.preventDefault(); subirPivo(passoPivo() * (e.shiftKey ? 0.25 : 1)); }
   else if (e.key === 'q' || e.key === 'Q' || e.key === 'PageDown') { e.preventDefault(); subirPivo(-passoPivo() * (e.shiftKey ? 0.25 : 1)); }
   else if (e.key === 'Home') { e.preventDefault(); pivoNoChao(); }
+  else if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') { e.preventDefault(); deslocarPivo(e.shiftKey ? 0.25 : 1, 0); }
+  else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') { e.preventDefault(); deslocarPivo(e.shiftKey ? -0.25 : -1, 0); }
+  else if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') { e.preventDefault(); deslocarPivo(0, e.shiftKey ? -0.25 : -1); }
+  else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') { e.preventDefault(); deslocarPivo(0, e.shiftKey ? 0.25 : 1); }
 });
 tela.addEventListener('wheel', e => {
   if (!e.shiftKey) return;
