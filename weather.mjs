@@ -123,13 +123,13 @@ export function aplicarDano({ clima, tipo, poder, golpe, typesDef, defStat, defI
 }
 
 /* Screen-space weather. The play camera is high and almost top-down, so 3D rain
-   collapses to dots. These streaks sit on the canvas and stay readable. */
+   collapses to dots. These sit on #sobre (not the WebGL canvas) and stay readable. */
 const TELA = {
-  chuva:        { n: 220, vel: 980, len: 22, larg: 1.4, vento: 90,  cor: 'rgba(186,214,236,.72)' },
-  chuva_forte:  { n: 420, vel: 1400, len: 34, larg: 1.8, vento: 220, cor: 'rgba(210,228,242,.88)' },
-  granizo:      { n: 180, vel: 1600, len: 10, larg: 2.4, vento: 40,  cor: 'rgba(236,242,248,.9)' },
-  neve:         { n: 160, vel: 90,  len: 3,  larg: 3.2, vento: 40,  cor: 'rgba(255,255,255,.85)', ponto: true },
-  areia:        { n: 200, vel: 220, len: 6,  larg: 2.2, vento: 340, cor: 'rgba(214,176,96,.55)', ponto: true },
+  chuva:       { modo: 'chuva', n: 220, vel: 980, len: 22, larg: 1.4, vento: 90,  cor: 'rgba(186,214,236,.72)' },
+  chuva_forte: { modo: 'chuva', n: 420, vel: 1400, len: 34, larg: 1.8, vento: 220, cor: 'rgba(210,228,242,.88)' },
+  granizo:     { modo: 'granizo', n: 90, vel: 820, len: 7, larg: 2.2, vento: 30, cor: 'rgba(226,236,246,.95)' },
+  neve:        { modo: 'neve', n: 140, vel: 48, len: 7, larg: 1.1, vento: 28, cor: 'rgba(255,255,255,.9)' },
+  areia:       { modo: 'areia', n: 220, vel: 18, len: 46, larg: 1.6, vento: 520, cor: 'rgba(196,150,70,.42)' },
 };
 
 let tela = null;
@@ -140,7 +140,7 @@ function garantirTela(){
   cv.id = 'clima-tela';
   cv.setAttribute('aria-hidden', 'true');
   (document.getElementById('sobre') || document.body).appendChild(cv);
-  tela = { cv, g: cv.getContext('2d'), drops: [], kind: null, w: 0, h: 0 };
+  tela = { cv, g: cv.getContext('2d'), drops: [], kind: null, w: 0, h: 0, t: 0 };
   return tela;
 }
 
@@ -150,13 +150,16 @@ function encher(kind){
   t.w = t.cv.width = innerWidth;
   t.h = t.cv.height = innerHeight;
   t.drops = [];
+  t.t = 0;
   if (!c) return;
   for (let i = 0; i < c.n; i++){
     t.drops.push({
       x: Math.random() * t.w,
       y: Math.random() * t.h,
-      v: c.vel * (0.7 + Math.random() * 0.6),
-      l: c.len * (0.6 + Math.random() * 0.7),
+      v: c.vel * (0.65 + Math.random() * 0.7),
+      l: c.len * (0.55 + Math.random() * 0.8),
+      f: Math.random() * 6.28,
+      r: Math.random() * 6.28,
     });
   }
 }
@@ -169,9 +172,37 @@ export function ligarTela(kind){
 
 export function desligarTela(){
   if (!tela) return;
-  tela.g.clearRect(0, 0, tela.cv.width, tela.cv.height);
+  try { tela.g.clearRect(0, 0, tela.cv.width, tela.cv.height); } catch {}
   tela.kind = null;
   tela.drops = [];
+}
+
+function desenharFloco(g, x, y, s, rot){
+  g.save();
+  g.translate(x, y);
+  g.rotate(rot);
+  g.beginPath();
+  for (let i = 0; i < 3; i++){
+    const a = i * 1.047;
+    g.moveTo(Math.cos(a) * -s, Math.sin(a) * -s);
+    g.lineTo(Math.cos(a) * s, Math.sin(a) * s);
+  }
+  g.stroke();
+  g.restore();
+}
+
+function desenharPedra(g, x, y, s, rot){
+  g.save();
+  g.translate(x, y);
+  g.rotate(rot);
+  g.beginPath();
+  g.moveTo(0, -s);
+  g.lineTo(s * 0.72, 0);
+  g.lineTo(0, s * 0.85);
+  g.lineTo(-s * 0.72, 0);
+  g.closePath();
+  g.fill();
+  g.restore();
 }
 
 export function passoTela(dt){
@@ -180,29 +211,53 @@ export function passoTela(dt){
   if (!c) return;
   if (tela.w !== innerWidth || tela.h !== innerHeight) encher(tela.kind);
   const g = tela.g, w = tela.w, h = tela.h;
+  tela.t += dt;
   g.clearRect(0, 0, w, h);
   g.strokeStyle = c.cor;
   g.fillStyle = c.cor;
   g.lineWidth = c.larg;
   g.lineCap = 'round';
-  const vx = c.vento * dt, fall = dt;
+  if (c.modo === 'areia'){
+    g.fillStyle = 'rgba(176,132,52,.1)';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = c.cor;
+  }
   for (const q of tela.drops){
-    q.y += q.v * fall;
-    q.x += vx;
-    if (q.y > h + 20 || q.x > w + 40){
-      q.y = -20;
-      q.x = (q.x % (w + 80)) - 40;
-      if (q.x < -40) q.x += w + 80;
-    }
-    if (c.ponto){
-      g.beginPath();
-      g.arc(q.x, q.y, q.l * 0.35, 0, 6.28);
-      g.fill();
-    } else {
+    if (c.modo === 'areia'){
+      q.x += q.v * 22 * dt + c.vento * dt;
+      q.y += Math.sin(tela.t * 2.2 + q.f) * 18 * dt;
+      if (q.x > w + 50){ q.x = -50; q.y = Math.random() * h; }
       g.beginPath();
       g.moveTo(q.x, q.y);
-      g.lineTo(q.x - c.vento * 0.02, q.y - q.l);
+      g.lineTo(q.x - q.l, q.y + Math.sin(tela.t * 3 + q.f) * 4);
       g.stroke();
+      continue;
     }
+    if (c.modo === 'neve'){
+      q.y += q.v * dt;
+      q.x += Math.sin(tela.t * 1.4 + q.f) * 26 * dt + c.vento * dt * 0.15;
+      q.r += dt * 1.2;
+      if (q.y > h + 16){ q.y = -16; q.x = Math.random() * w; }
+      desenharFloco(g, q.x, q.y, q.l, q.r);
+      continue;
+    }
+    if (c.modo === 'granizo'){
+      q.y += q.v * dt;
+      q.x += Math.sin(tela.t * 8 + q.f) * 10 * dt;
+      q.r += dt * 6;
+      if (q.y > h + 16){ q.y = -16; q.x = Math.random() * w; }
+      desenharPedra(g, q.x, q.y, q.l, q.r);
+      continue;
+    }
+    q.y += q.v * dt;
+    q.x += c.vento * dt;
+    if (q.y > h + 20 || q.x > w + 40){
+      q.y = -20;
+      q.x = ((q.x % (w + 80)) + (w + 80)) % (w + 80) - 40;
+    }
+    g.beginPath();
+    g.moveTo(q.x, q.y);
+    g.lineTo(q.x - c.vento * 0.02, q.y - q.l);
+    g.stroke();
   }
 }
