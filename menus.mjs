@@ -38,7 +38,7 @@ function pkDots(n, max, slots = 8){
   const cheios = Math.max(0, Math.min(slots, Math.round((Math.max(0, +n || 0) / max) * slots)));
   return `<span class="pk-dots">${Array.from({ length: slots }, (_, i) => `<i class="${i < cheios ? 'on' : ''}"></i>`).join('')}</span>`;
 }
-function htmlPkSheet(e, S, { movs = [], novo = null } = {}){
+function htmlPkSheet(e, S, { movs = [], novo = null, evo = '' } = {}){
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
   const nomes = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
   const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));
@@ -49,14 +49,14 @@ function htmlPkSheet(e, S, { movs = [], novo = null } = {}){
   const seta = i => !nat || nat[1] === nat[2] ? '' : i === nat[1] ? '<span class="mais">▲</span>' : i === nat[2] ? '<span class="menos">▼</span>' : '';
   const linhas = nomes.map((n, i) => {
     const iv = e.ivs ? e.ivs[i] : 0;
-    return `<div class="pk-row"><span>${n} ${seta(i)}</span><b>${stats[i]}</b><span class="pk-gen" title="IV ${iv}/31">${pkDots(iv, 31)}<em>${iv}</em></span><span class="pk-ev" title="EV ${evs[i]}/252">${pkDots(evs[i], 252)}<em>${evs[i]}</em></span></div>`;
+    return `<div class="pk-row"><span class="pk-n">${n} ${seta(i)}</span><b>${stats[i]}</b><span class="pk-gen" title="IV ${iv}/31">${pkDots(iv, 31)}<em>${iv}</em></span><span class="pk-ev" title="EV ${evs[i]}/252">${pkDots(evs[i], 252)}<em>${evs[i]}</em></span></div>`;
   }).join('');
   const golpes = [0, 1, 2, 3].map(i => {
     const g = movs[i];
-    if (!g) return `<div class="pk-move vazia"><b>—</b></div>`;
+    if (!g) return `<div class="pk-move vazia"><span class="pk-move-topo"><b>—</b></span></div>`;
     const mark = novo && confirmarAprender === i ? ' on' : '';
     const hint = novo && confirmarAprender === i
-      ? '✔ ' + tr('click again: forget') + ' ' + g.nome + ' · ' + tr('learn') + ' ' + (novo.nome || '')
+      ? '✔ click again to forget ' + g.nome + ' and learn ' + (novo.nome || '')
       : infoGolpe(g);
     return `<div class="pk-move${mark}${novo ? ' clicavel' : ''}" data-pk-golpe="${i}"><span class="pk-move-topo">${tipoHtml(g.tipo)}<b>${esc(g.nome)}</b></span><small>${esc(hint)}</small></div>`;
   }).join('');
@@ -64,17 +64,18 @@ function htmlPkSheet(e, S, { movs = [], novo = null } = {}){
   const listaReHtml = reaprenderAberto && listaRe.length
     ? `<div class="pk-re-lista">${listaRe.map(g => `<button type="button" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join('')}</div>`
     : '';
-  return `<div class="pk-sheet">
+  return `<div class="pk-sheet notranslate" translate="no" lang="en">
     <section class="pk-stats">
-      <header><span>${esc(tr('Stats'))}</span><span>${esc(tr('Genetics'))}</span><span>${esc(tr('EVs'))}</span></header>
-      ${linhas}
-      <div class="pk-row tot"><span>${esc(tr('Base total'))}</span><b>${S.bst || bs.reduce((a, b) => a + b, 0)}</b><span class="pk-gen"><em>${ivTot}/${ctx.Ind?.IV_TOTAL || 186}</em></span><span class="pk-ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}"><em>${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</em></span></div>
-      <div class="pk-nat">${esc(tr('Nature'))} <b>${esc(e.natureza || '—')}</b> <small>${esc(e.natureza ? tr(ctx.Ind?.descNatureza(e.natureza) || '') : '')}</small></div>
+      <header><span class="pk-h-stat">Stats</span><span class="pk-h-gen">Genetics</span><span class="pk-h-ev">EVs</span></header>
+      <div class="pk-rows">${linhas}</div>
+      <div class="pk-row tot"><span class="pk-n">Base total</span><b>${S.bst || bs.reduce((a, b) => a + b, 0)}</b><span class="pk-gen"><em>${ivTot}/${ctx.Ind?.IV_TOTAL || 186}</em></span><span class="pk-ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}"><em>${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</em></span></div>
+      <div class="pk-nat">Nature <b>${esc(e.natureza || '—')}</b> <small>${esc(e.natureza ? (ctx.Ind?.descNatureza(e.natureza) || '') : '')}</small></div>
     </section>
     <section class="pk-moves">
-      <header><span>${esc(tr('Moves'))}</span>${listaRe.length ? `<button type="button" class="pk-reaprender${reaprenderAberto ? ' on' : ''}" data-reaprender="1">↻ ${esc(tr('Relearn'))} (${listaRe.length})</button>` : ''}</header>
-      ${listaReHtml || golpes}
+      <header><span>Moves</span>${listaRe.length ? `<button type="button" class="pk-reaprender${reaprenderAberto ? ' on' : ''}" data-reaprender="1">↻ Relearn (${listaRe.length})</button>` : ''}</header>
+      <div class="pk-move-list">${listaReHtml || golpes}</div>
     </section>
+    ${evo ? `<p class="pk-evo${novo ? ' clicavel' : ''}" data-pk-evo="1">${esc(evo)}</p>` : ''}
   </div>`;
 }
 function ligarPkSheet(root){
@@ -97,10 +98,23 @@ function ligarPkSheet(root){
       render();
     });
   });
+  root.querySelector('[data-pk-evo]')?.addEventListener('click', ev => {
+    ev.stopPropagation();
+    acaoPokemon('nao-aprender');
+  });
+}
+function lockTxt(el){
+  if (!el) return el;
+  el.setAttribute('translate', 'no');
+  el.classList.add('notranslate');
+  el.lang = 'en';
+  return el;
 }
 function esconderFichaFig(f, on){
   if (!f) return;
   f.classList.toggle('pk-sheet-on', !!on);
+  if (!on) return;
+  f.querySelectorAll('[data-fig^="stat-"],[data-fig*="/stat-"],[data-fig="rotulo-golpes"],[data-txt^="stat-"],[data-txt="natureza"],[data-fig="txt/natureza"],[data-txt="evolucao"],[data-fig="txt/evolucao"]').forEach(el => { el.textContent = ''; });
 }
 function posicionarPkSheet(f, sheet){
   if (!f || !sheet) return;
@@ -110,20 +124,22 @@ function posicionarPkSheet(f, sheet){
     return el ? { x: num(el.style.left), y: num(el.style.top), w: num(el.style.width), h: num(el.style.height) } : null;
   };
   const hp = elBox('[data-fig="barra-vida-trilho"]') || elBox('[data-txt="vida"]');
+  const btn = elBox('[data-fig="btn-evoluir"]');
   const evo = elBox('[data-fig="txt/evolucao"]') || elBox('[data-txt="evolucao"]');
   const fw = num(f.style.width) || f.clientWidth || 510;
   const fh = num(f.style.height) || f.clientHeight || 640;
   let left = 12, top = 8, width = fw - 24, height = fh - 16;
-  if (hp && evo && evo.y > hp.y + hp.h + 24){
-    left = hp.x || 52;
-    top = hp.y + hp.h + 8;
-    height = evo.y - top - 6;
-    width = fw - left - 10;
+  const floor = btn || evo;
+  if (hp && floor && floor.y > hp.y + hp.h + 24){
+    left = Math.min(hp.x || 52, 66);
+    top = hp.y + hp.h + 10;
+    height = floor.y - top - 10;
+    width = fw - left - 12;
   } else {
     left = Math.max(hp ? hp.x + hp.w + 12 : fw * 0.38, 220);
     top = 4;
     width = fw - left - 8;
-    height = fh - 10;
+    height = (floor ? floor.y - 8 : fh - 8) - top;
   }
   const h = Math.max(110, height), w = Math.max(200, width);
   Object.assign(sheet.style, {
@@ -139,6 +155,13 @@ const ROTULOS_FICHA = {
   'stat-total': 'Base total', 'stat-natureza': 'Nature', 'rotulo-golpes': 'Moves',
 };
 function pintarRotulosFicha(pop){
+  if (pop?.querySelector('.pk-sheet')){
+    for (const nome of Object.keys(ROTULOS_FICHA)){
+      const el = pop.querySelector('[data-fig="' + nome + '"]');
+      if (el) el.textContent = '';
+    }
+    return;
+  }
   for (const [nome, en] of Object.entries(ROTULOS_FICHA)){
     const el = pop.querySelector('[data-fig="' + nome + '"]');
     if (el) el.textContent = tr(en);
@@ -590,7 +613,8 @@ function acaoPokemon(nome){
 function encherPokemon(pop){
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
-  Popup.texto(pop, 'titulo', 'Pokémon - My team');
+  const tit = Popup.texto(pop, 'titulo', 'Pokémon');
+  if (tit){ tit.setAttribute('translate', 'no'); tit.classList.add('notranslate'); }
   pintarRotulosFicha(pop);
   Popup.texto(pop, 'contagem-time', lista.length + '/6 ' + tr('in party'));
   const pref = pop.__prefItem || 'item-time';                            // PC: item-time-N (cartão completo); celular: slot-poke-N (cabeça + tecla)
@@ -601,10 +625,10 @@ function encherPokemon(pop){
     Popup.texto(pop, 'tecla', String(i + 1), it);                        // celular: número do slot
     if (!p) continue;
     const tipo = S?.types?.[0] || null;
-    Popup.texto(pop, 'item-nome', (p.shiny ? '✨ ' : '') + p.nome, it);   // shiny (14/09)
-    Popup.texto(pop, 'item-status', p.seguindo ? 'Following' : p.hp === 0 ? 'Fainted' : '', it);
-    Popup.texto(pop, 'item-nivel', 'Lv ' + p.lv + ' · Nº ' + String(p.dex).padStart(3, '0'), it);
-    Popup.badge(pop, 'item-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), it);   // 14/09 (l.neto): os dois tipos no mesmo selo (ícone/cor do primeiro)
+    lockTxt(Popup.texto(pop, 'item-nome', (p.shiny ? '✨ ' : '') + p.nome, it));
+    lockTxt(Popup.texto(pop, 'item-status', p.seguindo ? 'Following' : p.hp === 0 ? 'Fainted' : '', it));
+    lockTxt(Popup.texto(pop, 'item-nivel', 'Lv ' + p.lv + ' · No. ' + String(p.dex).padStart(3, '0'), it));
+    lockTxt(Popup.badge(pop, 'item-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), it));
     alinharTiposDoTime(pop, it, (S?.types || []).length);                // 18/09: 1 tipo na ponta direita, 2 tipos lado a lado, em toda linha
     iconesTipo(pop, it, S?.types || []);                                 // v2 (17/09): ícone(s) do tipo no cartão do time
     Popup.imagem(pop, 'pokemon', iconeMonU(p.dex), it);
@@ -641,13 +665,13 @@ function encherFichaPokemon(pop, e, lista){
   const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));
   const prox = ctx.expPara?.(e.dex, lv + 1);
   const tipo = S.types?.[0] || null;
-  Popup.texto(pop, 'ficha-nome', (e.shiny ? '✨ ' : '') + e.nome, f);   // shiny (14/09)
-  Popup.texto(pop, 'ficha-status', e.seguindo ? 'Following' : e.hp === 0 ? 'Fainted' : lv > tetoObed() ? 'At level cap' : '', f);
-  Popup.texto(pop, 'ficha-numero', 'Nº ' + String(e.dex).padStart(3, '0') + ' · Lv ' + lv
-    + (e.exp != null && prox ? ' · XP ' + e.exp + '/' + prox : '') + (e.amizade != null ? ' · ' + tr('friendship') + ' ' + e.amizade : ''), f);
-  Popup.badge(pop, 'ficha-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), f);   // 14/09 (l.neto): os dois tipos
-  iconesTipo(pop, f, S.types || []);                                     // v2 (17/09): bolinha(s) do tipo na ficha (18/09: só a bolinha, a rodada 31 tirou o texto)
-  Popup.texto(pop, 'ficha-peso', S.kg ? S.kg + ' kg' : '', f);
+  lockTxt(Popup.texto(pop, 'ficha-nome', (e.shiny ? '✨ ' : '') + e.nome, f));
+  lockTxt(Popup.texto(pop, 'ficha-status', e.seguindo ? 'Following' : e.hp === 0 ? 'Fainted' : lv > tetoObed() ? 'At level cap' : '', f));
+  lockTxt(Popup.texto(pop, 'ficha-numero', 'No. ' + String(e.dex).padStart(3, '0') + ' · Lv ' + lv
+    + (e.exp != null && prox ? ' · XP ' + e.exp + '/' + prox : '') + (e.amizade != null ? ' · friendship ' + e.amizade : ''), f));
+  lockTxt(Popup.badge(pop, 'ficha-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), f));
+  iconesTipo(pop, f, S.types || []);
+  lockTxt(Popup.texto(pop, 'ficha-peso', S.kg ? S.kg + ' kg' : '', f));
   pesoAposTipos(f, (S.types || []).length);                              /* 18/09 (rodada 32): o peso anda colado à última bolinha visível */
   Popup.imagem(pop, 'pokemon', iconeMonU(e.dex), f);
   const hp = e.hp ?? stats[0], maxHp = e.maxHp || stats[0];
@@ -657,31 +681,28 @@ function encherFichaPokemon(pop, e, lista){
   f.querySelector('.stat-pills')?.remove();
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);
   const novoId = e.aprender?.[0] || null, novo = novoId ? (ctx.golpe?.(novoId) || { nome: String(novoId) }) : null;
-  esconderFichaFig(f, true);
-  f.querySelector('.pk-sheet')?.remove();
-  f.insertAdjacentHTML('beforeend', htmlPkSheet(e, S, { movs, novo }));
-  const sheet = f.querySelector('.pk-sheet');
-  posicionarPkSheet(f, sheet);
-  ligarPkSheet(f);
   const todasEvo = ctx.opcoesEvolucao?.(e) || [], ops = todasEvo.filter(o => o.glb);
   const pronta = ops.find(o => o.pode);
-  /* EVOLUÇÃO SEM MODELO (17/09, Fulana no feedback: "a Chikorita não pode evoluir"): a regra da série existe (Bayleef no Lv 16), mas o
-     modelo da evolução não foi exportado — o filtro por `glb` deixava a lista vazia e a ficha dizia "não evolui", que parece regra do
-     jogo. São 39 espécies com modelo sem NENHUMA evolução exportada: os 24 iniciais de fora de Kanto (Chikorita, Cyndaquil, Totodile…),
-     Golbat, Onix, Scyther, Chansey, Porygon, Magneton, Rhydon, Seadra, Electabuzz, Magmar, Lickitung, Tangela, Primeape, Shinx e Riolu. */
   const emBreve = ops.length ? null : todasEvo.find(o => !o.glb);
-  const prontas = ops.filter(o => o.pode);                               // 20/09: TODAS as que já dão, não só a primeira (Eevee)
-  const evoEl = Popup.texto(pop, 'evolucao', novo
+  const prontas = ops.filter(o => o.pode);
+  const evoTxt = novo
     ? '✧ wants to learn ' + novo.nome + ' — click the move to forget, or here to skip'
     : prontas.length > 1
       ? '→ can evolve into ' + prontas.map(o => o.nome).join(', ') + ' — click Evolve and choose'
       : ops.length
-        ? '→ ' + ops[0].nome + ': ' + textoEvo(ops[0].regra) + (pronta ? '' : ' — ' + (tr(ops[0].falta) || tr('not yet')))
-        : emBreve ? '→ ' + emBreve.nome + ': ' + textoEvo(emBreve.regra) + ' (' + tr('coming soon') + ')' : tr('does not evolve'), f);
-  if (evoEl){ evoEl.style.pointerEvents = novo ? 'auto' : ''; evoEl.style.cursor = novo ? 'pointer' : ''; }
-  Popup.botao(pop, 'evoluir', !!pronta && !!e.seguindo, prontas.length > 1 ? '✦ Evolve (' + prontas.length + ' forms)' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve');
+        ? '→ ' + ops[0].nome + ': ' + textoEvo(ops[0].regra) + (pronta ? '' : ' — ' + (ops[0].falta || 'not yet'))
+        : emBreve ? '→ ' + emBreve.nome + ': ' + textoEvo(emBreve.regra) + ' (coming soon)' : 'does not evolve';
+  esconderFichaFig(f, true);
+  f.querySelector('.pk-sheet')?.remove();
+  f.insertAdjacentHTML('beforeend', htmlPkSheet(e, S, { movs, novo, evo: evoTxt }));
+  const sheet = f.querySelector('.pk-sheet');
+  posicionarPkSheet(f, sheet);
+  ligarPkSheet(f);
+  const evoEl = Popup.texto(pop, 'evolucao', '', f);
+  if (evoEl){ evoEl.style.pointerEvents = ''; evoEl.style.cursor = ''; }
+  lockTxt(Popup.botao(pop, 'evoluir', !!pronta && !!e.seguindo, prontas.length > 1 ? '✦ Evolve (' + prontas.length + ' forms)' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve'));
   const podeSoltar = !e.seguindo && lista.length > 1;
-  Popup.botao(pop, 'soltar', podeSoltar, confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release');
+  lockTxt(Popup.botao(pop, 'soltar', podeSoltar, confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release'));
   atualizarReaprender(pop, e);                                           // 18/09: botão/lista do Reaprender pro Pokémon selecionado
 }
 
