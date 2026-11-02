@@ -223,7 +223,7 @@ import * as Dialogos from './dialogues.mjs';     // Fase 3 do painel: falas fixa
 import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atrasoDoGolpe, corrigirEfeito } from './moves.mjs';
 import * as R from './rules.mjs';              // fórmulas da série: stats, dano, tipos
 import * as I18n from './i18n.mjs';             // IDIOMA do jogador (11/09): pt (fonte), en, es
-import * as Arrastar from './drag_team.mjs';   // 20/09: arrastar pra reordenar o time (e mover entre time e caixa); o servidor já aceitava (intenção `arranjo`)
+import * as Arrastar from './drag_team.mjs';   // drag to reorder the party and move between party and box; the server accepts it as `party`
 
 /* O `?mapa=` É PORTA DOS FUNDOS (fechada em 10/09). O jogo atravessa porta recarregando a página com `?mapa=&chegada=`, e
    era isso que deixava qualquer jogador digitar `?mapa=4120017` e cair dentro de um ginásio. A diferença entre a porta e a
@@ -6021,11 +6021,10 @@ function pintarTime(forcar = false){
   el.querySelectorAll('.tcel').forEach((c, i) => { if (jogo.time[i]) c.dataset.arrI = String(i); else c.dataset.arrFixo = '1'; });   // 20/09: as casas cheias são arrastáveis; a vazia não
 }
 
-/* ===== ARRASTAR O TIME (20/09, pedido do Jaime: "re-ordenar; hoje o usuário precisa jogar todos pra dentro da caixa
-   e retirar na ordem que quer"). O servidor já aceitava a ordem nova (intenção `arranjo` → servidor/posse.mjs
-   aplicarArranjo, que recebe o TIME e a CAIXA inteiros); faltava a mão na tela. Quem grava aqui é o de sempre
-   (gravarLS('time'/'caixa')), e o account.mjs manda a intenção. Se o servidor devolver um save diferente, o
-   Conta.aoSave → recarregarDoSave repõe a ordem dele. Tudo `function` içada: o bloco de nascimento roda antes. */
+/* ===== Drag the party. The server already accepted a new order (message `party`, handled by
+   applyPartyOrder, which receives the whole party and the box). The screen had no way to do it.
+   The usual save (`time` / `caixa`) still writes it, and account.mjs sends the message. If the
+   server sends back a different save, Conta.aoSave reloads that order. */
 /** Por que o arrasto NÃO pode começar agora (ou null). É consultado no toque e de novo na hora de gravar. */
 function motivoArrastarTime(){
   if (jogo.turno) return 'You cannot rearrange the party during a battle';

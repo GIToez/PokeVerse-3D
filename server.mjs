@@ -1,12 +1,12 @@
 /**
- * Servidor de desenvolvimento — Pokemon 3D Base
- * HTTP + WebSocket na porta 5190
+ * Development server — Pokemon 3D Base
+ * HTTP + WebSocket on port 5190
  *
- * Uso: node server.mjs
+ * Run: node server.mjs
  *
- * Persistência em server/data/contas.json (criado automaticamente).
- * Suporta login, cadastro, save/load, multiplayer básico (posições, chat,
- * captura de Pokémon, cura no Centro Pokémon).
+ * Accounts persist in server/data/contas.json (created automatically).
+ * Login, signup, save/load, basic multiplayer (positions, chat,
+ * catching Pokémon, healing at a Pokémon Center).
  */
 
 import http from 'node:http';
@@ -313,86 +313,88 @@ function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
   for (const k of Object.keys(prefs)) if (PREFS_OK.has(k)) c.save[k] = prefs[k];   // chave fora da lista (dinheiro, bolas…) é IGNORADA
 }
-/* Wild battles run on the client (`soloWilds`). The party sync used to keep the server's
-   Pokémon record as-is, so experience gained in the field never landed in the account and a
-   refresh put the bar back to the start of the level. Species, IVs, nature and shiny stay
-   the server's. Experience only moves forward; the level is whatever that total means on
-   the species curve, so a stale client cannot roll a server battle's XP backwards. */
-const EXP_TETO = 20000000;
-let expTabCache = null;
-function expTabela() {
-  if (expTabCache) return expTabCache;
-  try { expTabCache = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/data/exp.json'), 'utf8')); }
-  catch { expTabCache = { curvas: {}, especies: {} }; }
-  return expTabCache;
+/* Wild battles run on the client. The party sync used to keep the server's Pokémon record
+   as-is, so experience gained in the field never landed in the account and a refresh put
+   the bar back to the start of the level. Species, IVs, nature and shiny stay the server's.
+   Experience only moves forward; the level is whatever that total means on the species curve,
+   so a stale client cannot roll a server battle's experience backwards.
+   exp.json still labels its tables `curvas` (curves) and `especies` (species). */
+const EXP_CAP = 20000000;
+let expTableCache = null;
+function expTable() {
+  if (expTableCache) return expTableCache;
+  try { expTableCache = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/data/exp.json'), 'utf8')); }
+  catch { expTableCache = { curvas: {}, especies: {} }; }
+  return expTableCache;
 }
-function curvaExp(dex) {
-  const t = expTabela();
-  const nome = t.especies?.[dex]?.c || t.especies?.[String(dex)]?.c || 'medium';
-  return t.curvas?.[nome] || [];
+function expCurve(dex) {
+  const table = expTable();
+  const name = table.especies?.[dex]?.c || table.especies?.[String(dex)]?.c || 'medium';
+  return table.curvas?.[name] || [];
 }
-function expNoNivel(dex, lv) {
-  const c = curvaExp(dex);
-  return c[Math.max(1, Math.min(100, lv | 0))] || 0;
+function expAtLevel(dex, level) {
+  const curve = expCurve(dex);
+  return curve[Math.max(1, Math.min(100, level | 0))] || 0;
 }
-function nivelDaExp(dex, exp) {
-  const c = curvaExp(dex);
-  let lv = 1;
-  const x = Math.max(0, exp | 0);
-  while (lv < 100 && (c[lv + 1] ?? Infinity) <= x) lv++;
-  return lv;
+function levelFromExp(dex, exp) {
+  const curve = expCurve(dex);
+  let level = 1;
+  const total = Math.max(0, exp | 0);
+  while (level < 100 && (curve[level + 1] ?? Infinity) <= total) level++;
+  return level;
 }
-function fundirProgresso(reg, item) {
-  if (!reg || !item || typeof item !== 'object') return;
-  const base = Number.isInteger(reg.exp) ? reg.exp : expNoNivel(reg.dex, reg.lv || 1);
+function mergeProgress(record, item) {
+  if (!record || !item || typeof item !== 'object') return;
+  const base = Number.isInteger(record.exp) ? record.exp : expAtLevel(record.dex, record.lv || 1);
   const exp = Math.round(Number(item.exp));
-  let expAgora = base;
-  if (Number.isInteger(exp) && exp >= base && exp <= EXP_TETO) {
-    reg.exp = exp;
-    expAgora = exp;
-    const lv = nivelDaExp(reg.dex, exp);
-    if (lv >= (reg.lv || 1) && lv <= 100) reg.lv = lv;
+  let expNow = base;
+  if (Number.isInteger(exp) && exp >= base && exp <= EXP_CAP) {
+    record.exp = exp;
+    expNow = exp;
+    const level = levelFromExp(record.dex, exp);
+    if (level >= (record.lv || 1) && level <= 100) record.lv = level;
   }
-  const reserva = Math.round(Number(item.expReserva));
-  if (Number.isInteger(reserva) && reserva >= 0 && reserva <= EXP_TETO) {
-    const tinha = Math.round(Number(reg.expReserva) || 0);
-    if (reserva >= tinha) reg.expReserva = reserva;
-    else if (expAgora + 1 >= base + (tinha - reserva)) reg.expReserva = reserva;   // the bank was poured into the bar
+  const bank = Math.round(Number(item.expReserva));
+  if (Number.isInteger(bank) && bank >= 0 && bank <= EXP_CAP) {
+    const had = Math.round(Number(record.expReserva) || 0);
+    if (bank >= had) record.expReserva = bank;
+    else if (expNow + 1 >= base + (had - bank)) record.expReserva = bank;   // the bank was poured into the bar
   }
-  const ami = Math.round(Number(item.amizade));
-  if (Number.isInteger(ami) && ami >= 0 && ami <= 255) reg.amizade = ami;
+  const friendship = Math.round(Number(item.amizade));   // stored field `amizade` is friendship
+  if (Number.isInteger(friendship) && friendship >= 0 && friendship <= 255) record.amizade = friendship;
 }
-/* `arranjo` reorders the Pokémon the account already has, matched by uid. It is accepted only
-   when the set of uids is unchanged (nothing created, duplicated or deleted). Progress is
-   merged onto the server record after that check, so a rejected reorder does not write XP. */
-function aplicarArranjo(c, arranjo) {
-  if (!arranjo || typeof arranjo !== 'object' || !c.save) return false;
-  const porUid = new Map();
-  for (const p of [...(c.save.time || []), ...(c.save.caixa || [])]) if (p && p.uid != null) porUid.set(String(p.uid), p);
-  if (!porUid.size) return false;
-  const reordenar = (lista, max) => {
-    if (!Array.isArray(lista)) return null;
-    const vistos = new Set(), nova = [];
-    for (const item of lista) {
+/* Applies a party reorder. The account already owns every Pokémon; this only accepts the same
+   set of ids (nothing created, duplicated, or deleted). Experience is copied onto the server
+   record after that check, so a rejected reorder does not write experience.
+   Saved fields stay `time` (party) and `caixa` (box) so existing accounts still load. */
+function applyPartyOrder(account, order) {
+  if (!order || typeof order !== 'object' || !account.save) return false;
+  const byUid = new Map();
+  for (const mon of [...(account.save.time || []), ...(account.save.caixa || [])]) if (mon && mon.uid != null) byUid.set(String(mon.uid), mon);
+  if (!byUid.size) return false;
+  const reorder = (list, max) => {
+    if (!Array.isArray(list)) return null;
+    const seen = new Set(), next = [];
+    for (const item of list) {
       const uid = String(item && typeof item === 'object' ? item.uid : item);
-      const reg = porUid.get(uid);
-      if (reg && !vistos.has(uid)) { nova.push(reg); vistos.add(uid); }
+      const record = byUid.get(uid);
+      if (record && !seen.has(uid)) { next.push(record); seen.add(uid); }
     }
-    return max ? nova.slice(0, max) : nova;
+    return max ? next.slice(0, max) : next;
   };
-  const time = reordenar(arranjo.time, 6), caixa = reordenar(arranjo.caixa, 0);
-  if (!time || !caixa || !time.length) return false;
-  const usados = new Set([...time, ...caixa].map(p => String(p.uid)));
-  const resto = [...porUid.values()].filter(p => !usados.has(String(p.uid)));
-  if (time.length + caixa.length + resto.length !== porUid.size) return false;
-  const doCliente = new Map();
-  for (const lista of [arranjo.time, arranjo.caixa]) {
-    if (!Array.isArray(lista)) continue;
-    for (const item of lista) if (item && typeof item === 'object' && item.uid != null) doCliente.set(String(item.uid), item);
+  const party = reorder(order.time, 6), box = reorder(order.caixa, 0);
+  if (!party || !box || !party.length) return false;
+  const used = new Set([...party, ...box].map(mon => String(mon.uid)));
+  const rest = [...byUid.values()].filter(mon => !used.has(String(mon.uid)));
+  if (party.length + box.length + rest.length !== byUid.size) return false;
+  const fromClient = new Map();
+  for (const list of [order.time, order.caixa]) {
+    if (!Array.isArray(list)) continue;
+    for (const item of list) if (item && typeof item === 'object' && item.uid != null) fromClient.set(String(item.uid), item);
   }
-  for (const [uid, reg] of porUid) fundirProgresso(reg, doCliente.get(uid));
-  c.save.time = time;
-  c.save.caixa = [...caixa, ...resto];
+  for (const [uid, record] of byUid) mergeProgress(record, fromClient.get(uid));
+  account.save.time = party;
+  account.save.caixa = [...box, ...rest];
   return true;
 }
 /* dex (Pokédex) e conhecimento: o cliente NÃO sobrescreve o objeto inteiro — só ACRESCENTA (merge monotônico), senão dava
@@ -904,7 +906,7 @@ const httpServer = http.createServer((req, res) => {
       if (u && contas[u]) {
         const c = contas[u];
         if (!c.save) c.save = {};
-        if (d.arranjo) aplicarArranjo(c, d.arranjo);   // só reordena os Pokémon que a conta já tem
+        if (d.party || d.arranjo) applyPartyOrder(c, d.party || d.arranjo);   // party order plus field experience; `arranjo` is the old message name
         aplicarPrefs(c, d.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
         if (d.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, d.conhecimento);   // nº15: só soma, não sobrescreve
         if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
@@ -1385,20 +1387,21 @@ wss.on('connection', ws => {
         const texto = String(m.texto ?? '').slice(0, 240);                // corta no servidor (o cliente dizia 240, mas por WS dava pra furar)
         if (!texto.trim()) break;
         const c = contas[ws._usuario];                                    // conta logada (Visitante não tem)
-        if (c?.mudoAte > Date.now()) { enviar(ws, { t: 'sistema', texto: '🔇 Você está silenciado até ' + new Date(c.mudoAte).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '.' }); break; }   // painel → Jogadores
-        const nome = c?.save?.nome || ws._usuario || 'Jogador';           // nome do personagem (não o login)
+        if (c?.mudoAte > Date.now()) { enviar(ws, { t: 'sistema', texto: '🔇 You are muted until ' + new Date(c.mudoAte).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + '.' }); break; }
+        const nome = c?.save?.nome || ws._usuario || 'Player';           // character name, not the login
         const cargo = c?.cargo || null;                                   // [STAFF]/[MOD] pros outros verem
         broadcast(ws, { t: 'chat', canal: m.canal || 'local', texto, de: { nome, cargo } }, m.canal === 'local');
         // sem "echo pra mim": o cliente já mostra a própria mensagem (publicar em chat.mjs) — reenviar duplicava
         break;
       }
 
+      case 'party':
       case 'arranjo': {
         const uArr = sessoes.get(ws._info?.token) || ws._usuario;
         const cArr = uArr && contas[uArr];
         if (cArr) {
           if (!cArr.save) cArr.save = {};
-          if (aplicarArranjo(cArr, m)) {
+          if (applyPartyOrder(cArr, m)) {
             marcarPegoDoTime(cArr);
             cArr.rev = (cArr.rev || 0) + 1;
             salvarContas();
@@ -1407,13 +1410,13 @@ wss.on('connection', ws => {
         break;
       }
 
-      // Save de intenções do cliente (arranjo/prefs/conhecimento)
+      // Client intents: party order, preferences, knowledge
       case 'save': {
         const u = (sessoes.get(ws._info?.token) || null);
         if (u && contas[u]) {
           const c = contas[u];
           if (!c.save) c.save = {};
-          if (m.arranjo) aplicarArranjo(c, m.arranjo);   // só reordena os Pokémon que a conta já tem
+          if (m.party || m.arranjo) applyPartyOrder(c, m.party || m.arranjo);   // party order plus field experience; `arranjo` is the old message name
           aplicarPrefs(c, m.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
           if (m.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, m.conhecimento);   // nº15: só soma
           if (m.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'

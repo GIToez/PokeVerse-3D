@@ -1,14 +1,17 @@
-/* Conta do jogador — FASE 2 da rede (05/09/2026): login por usuário + senha e o SAVE guardado na conta (servidor/contas.mjs).
- * Com o servidor no ar, o jogo só começa depois do login (telas do Figma da Amanda, screens.mjs) e o progresso vem da conta.
- * PASSO 6 (11/09): o cliente NÃO sobe save. O que o jogo grava (gravarLS do index) fica num cofre em memória e vira uma
- * INTENÇÃO pelo WebSocket 2,5 s depois — `arranjo` (ordem do time/caixa, apelido, golpes), `pref` (preferências do personagem,
- * lista fechada) e `conhecimento` (Pokédex de conhecimento); o resto (itens, dinheiro, insígnias, missões, nome, esperas de
- * ginásio, treinadores vencidos) é do servidor e o cofre só espelha o que ele manda. Ao fechar/sair, o que ficou pendente vai
- * por HTTP com keepalive (`POST /conta/estado`). Sem servidor no ar, ou com ?rede=0 / ?conta=0, tudo fica no localStorage.
- *   Conta.garantir({ params, layoutHudP })  → { modo: 'conta' | 'sem-servidor' | 'offline', usuario }  (o index espera isto antes de ler o save)
- *   Conta.tocou(chave)                       → o index chama a cada gravarLS
- *   Conta.sair() / Conta.zerarSave()         → Configurações
- * Chaves que SÃO save: SAVE_CHAVES. Preferências do aparelho (hud.*, chat.*, volume, tamanhos, pele, dev, popup.escala…) nunca sobem.
+/* Player account. Login is a username and password, and the save lives on the account.
+ * With the server up, the game starts after login and progress comes from the account.
+ * The client does not upload a whole save. Each key the game writes becomes a WebSocket
+ * message about 2.5 s later: party and box (`time` / `caixa`) go out as `party` (order,
+ * nickname, moves — the server still owns which Pokémon exist), character preferences go
+ * out as `pref`, and the knowledge Pokédex goes out as `conhecimento`. Items, money,
+ * badges, missions, the name, gym cooldowns and beaten trainers belong to the server; the
+ * local copy only mirrors what the server sends. On close, anything still pending goes out
+ * over HTTP (`POST /conta/estado`). With no server, or with ?rede=0 / ?conta=0, everything
+ * stays in localStorage.
+ *   Conta.garantir({ params, layoutHudP })  → { modo: 'conta' | 'sem-servidor' | 'offline', usuario }
+ *   Conta.tocou(chave)                       → the game calls this on every save write
+ *   Conta.sair() / Conta.zerarSave()         → Settings
+ * SAVE_CHAVES are the saved keys. Device preferences (hud.*, chat.*, volume, sizes, skin, dev) never upload.
  */
 import * as I18n from './i18n.mjs';                                      // IDIOMA (11/09): a conta lembra a escolha
 import { COOKIE as COOKIE_PASSE, CENAS_LIVRES, VALIDADE_S, FOLGA_S, lerPasse, stemPermitido } from './pass_rules.mjs';   // PASSE DE PROGRESSO (fase 2, 19/09)
@@ -231,7 +234,7 @@ export async function garantir(c){
        Com o servidor dono de Pokémon, bolsa, nível e missões isso protegia pouco e atrapalhava muito (ressuscitava estado
        velho). Agora quem manda é sempre o servidor; o preço é perder os últimos segundos de uma sessão que caiu. */
     apagar(LS.sujo);
-    await flushArranjoPend();                                            // F5 in the Center: apply the box move before GET /save
+    await flushPendingParty();                                           // F5 in the Center: apply the box move before GET /save
     const r = await api('GET', '/save');
     if (r.ok && r.dados && 'save' in r.dados){ gravarPasse(r.dados); modo = 'conta'; rev = r.dados.rev || 0; gravar(LS.rev, String(rev)); aplicarConta(r.dados); aplicarSave(r.dados.save); ligarSync(); return { modo, usuario, gm }; }
     if (r.status === 401) limparSessao();                                  // sessão venceu: login de novo
@@ -285,71 +288,70 @@ export async function criar(u, email, senha, chave = null){   // guarda o códig
   aplicarSave(null);                                                      // 08/09: conta nova nasce VAZIA (era aqui que o personagem velho do aparelho ressuscitava)
   return { ok: true, usuario };
 }
-/* ---------------------------------------------------------------- sincronia (PASSO 6, 11/09): o cliente NÃO sobe save.
-   Cada chave de jogo que ele grava vira uma INTENÇÃO pelo WebSocket: `time`/`caixa` → `arranjo` (ordem, apelido e golpes —
-   quem é seu é o servidor), preferências do personagem → `pref` (lista fechada), Pokédex de conhecimento → `conhecimento`.
-   O que é do servidor (itens, dinheiro, insígnias, missões, nome, espera de ginásio, treinadores vencidos) fica no cofre só
-   como espelho até o servidor mandar o dele. Sem mundo ainda (antes do `bemvindo`), fica pendente e sobe na hora. */
+/* The client does not upload a whole save. A party or box write becomes a `party` message
+   (order, nickname, moves — the server still owns which Pokémon exist). Character
+   preferences become `pref`. The knowledge Pokédex becomes `conhecimento`. Items, money,
+   badges, missions, the name, gym cooldowns and beaten trainers stay a local mirror until
+   the server sends its copy. Before the world is up, the message waits and goes out on connect. */
 const PREFS = ['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'introVista', 'ultimoCentro', 'tempo', 'inicial'];
 let enviarRede = null;
-const pendente = { arranjo: false, prefs: new Set(), conhecimento: false };
-const SS_ARRANJO = 'conta.arranjoPend';   // survives F5: pagehide POST can lose the race to GET /save
-function snapshotArranjo(){
+const pendente = { party: false, prefs: new Set(), conhecimento: false };
+const SS_PARTY = 'conta.arranjoPend';   // old key on purpose: a refresh during deploy still finds the pending party
+function snapshotParty(){
   try {
-    sessionStorage.setItem(SS_ARRANJO, JSON.stringify({ time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }));
+    sessionStorage.setItem(SS_PARTY, JSON.stringify({ time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }));
   } catch {}
 }
-function lerArranjoPend(){
+function readPendingParty(){
   try {
-    const o = JSON.parse(sessionStorage.getItem(SS_ARRANJO) || 'null');
+    const o = JSON.parse(sessionStorage.getItem(SS_PARTY) || 'null');
     if (!o || !Array.isArray(o.time) || !Array.isArray(o.caixa)) return null;
     return o;
   } catch { return null; }
 }
-function limparArranjoPend(){ try { sessionStorage.removeItem(SS_ARRANJO); } catch {} }
-async function flushArranjoPend(){
-  const arr = lerArranjoPend();
-  if (!arr || !token) return;
-  const r = await api('POST', '/conta/estado', { arranjo: arr }, true);
-  if (r.ok) limparArranjoPend();
+function clearPendingParty(){ try { sessionStorage.removeItem(SS_PARTY); } catch {} }
+async function flushPendingParty(){
+  const order = readPendingParty();
+  if (!order || !token) return;
+  const r = await api('POST', '/conta/estado', { party: order }, true);
+  if (r.ok) clearPendingParty();
 }
-/** O index liga o WebSocket aqui (Rede.enviar) assim que ele existe; o que estava pendente sobe. */
+/** The game connects the WebSocket here; anything still pending goes out. */
 export function ligarRede(fn){ enviarRede = fn; despachar(); }
 const lerCofre = k => { try { return JSON.parse(cofre.get(k) ?? 'null'); } catch { return null; } };
 function tocouChave(k){
   if (modo !== 'conta') return;
-  if (k === 'time' || k === 'caixa'){ pendente.arranjo = true; snapshotArranjo(); }
+  if (k === 'time' || k === 'caixa'){ pendente.party = true; snapshotParty(); }
   else if (PREFS.includes(k)) pendente.prefs.add(k);
   else if (k === 'dex' || k === 'conhecimento') pendente.conhecimento = true;
-  else return;                                                           // chave do servidor: o cofre é só espelho
+  else return;                                                           // server-owned key: the local copy is only a mirror
   sujo = true; clearTimeout(timer);
   timer = setTimeout(despachar, k === 'time' || k === 'caixa' ? 80 : ESPERA_ENVIO);
 }
-const temPendente = () => pendente.arranjo || pendente.prefs.size || pendente.conhecimento;
-/** Manda o que está pendente. Pelo WebSocket em jogo; por HTTP (`POST /conta/estado`, keepalive) quando a página está
-    fechando ou ao sair — o WebSocket pode não despejar o que ficou na fila. O que não foi continua pendente. */
+const temPendente = () => pendente.party || pendente.prefs.size || pendente.conhecimento;
+/** Sends whatever is still pending. Over the WebSocket while playing; over HTTP (`POST /conta/estado`, keepalive) when the page is closing, because the socket may not flush its queue. Anything that did not go out stays pending. */
 function despachar(viaHttp = false){
   clearTimeout(timer);
   if (modo !== 'conta' || travado || (!temPendente() && !posPend)) return null;
   if (viaHttp){
     const corpo = {};
-    if (pendente.arranjo){ corpo.arranjo = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }; snapshotArranjo(); }
+    if (pendente.party){ corpo.party = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }; snapshotParty(); }
     if (pendente.prefs.size){ corpo.prefs = {}; for (const k of pendente.prefs) corpo.prefs[k] = lerCofre(k); }
     if (pendente.conhecimento) corpo.conhecimento = { dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') };
     if (posPend) corpo.pos = posPend;
-    pendente.arranjo = false; pendente.prefs.clear(); pendente.conhecimento = false; sujo = false; apagar(LS.sujo);
+    pendente.party = false; pendente.prefs.clear(); pendente.conhecimento = false; sujo = false; apagar(LS.sujo);
     return api('POST', '/conta/estado', corpo, true).then(r => {
-      if (r.ok && corpo.arranjo) limparArranjoPend();
+      if (r.ok && corpo.party) clearPendingParty();
       if (r.status === 409 && r.dados?.outroAparelho) pararSync();
       return r.ok;
     });
   }
-  if (!enviarRede || !noMundo) return null;                              // sem mundo ainda: o bemvindo chama de novo
-  if (pendente.arranjo && enviarRede({ t: 'arranjo', time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] })) pendente.arranjo = false;
+  if (!enviarRede || !noMundo) return null;                              // world not up yet: the welcome message tries again
+  if (pendente.party && enviarRede({ t: 'party', time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] })) pendente.party = false;
   for (const k of [...pendente.prefs]) if (enviarRede({ t: 'pref', chave: k, valor: lerCofre(k) })) pendente.prefs.delete(k);
   if (pendente.conhecimento && enviarRede({ t: 'conhecimento', dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') })) pendente.conhecimento = false;
   if (!temPendente()){ sujo = false; apagar(LS.sujo); }
-  else { timer = setTimeout(despachar, ESPERA_ERRO); }                    // o WebSocket caiu: tenta de novo (e o bemvindo da volta também chama)
+  else { timer = setTimeout(despachar, ESPERA_ERRO); }                    // the socket dropped: try again
   return null;
 }
 function ligarSync(){
@@ -357,11 +359,11 @@ function ligarSync(){
   addEventListener('pagehide', () => despachar(true));
   addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') despachar(true); });
 }
-/** O index chama a cada gravarLS(chave, valor); character.mjs (que grava direto) chama por window.__contaTocou. */
+/** The game calls this on every save write. */
 export function tocou(chave){ if (modo === 'conta' && SAVE_CHAVES.includes(chave)) tocouChave(chave); }
 if (typeof window !== 'undefined'){ window.__contaTocou = tocou; window.__contaLer = lerBruto; window.__contaGravar = gravarBruto; }   // character.mjs grava sem importar
-function marcarSujo(){ sujo = true; }                                       // (compatibilidade: quem chamava isto agora passa por tocouChave)
-/** O servidor montou o save de novo (arranjo corrigido, troca): vale o dele, e o jogo relê. */
+function marcarSujo(){ sujo = true; }                                       // kept for old callers; new writes go through tocouChave
+/** The server rebuilt the save (party order corrected, or a trade): its copy wins, and the game reloads it. */
 export function saveDoServidor(save, revNovo){ aplicarDoServidor(save, revNovo); try { avisarSaveNovo?.(); } catch (e){ console.warn('save do servidor:', e); } }
 /** O SERVIDOR mexeu no save (troca de Pokémon): vira o localStorage aqui e o `rev` acompanha, sem marcar sujo (senão o
     aparelho subiria por cima o save velho que ainda estava na memória dele). */

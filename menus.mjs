@@ -375,14 +375,12 @@ function fichaHtml(e){
     ${aprender}
     <div style="margin-top:8px;font-size:12px">${evo}</div></div>`;
 }
-/* ------------------------------------------------------------------ Caixa: arrastar entre o time e a caixa (20/09)
-   Pedido do Jaime: "o cara poder arrastar e trocar o time (quando não está em batalha), tipo re-ordenar. Hoje o
-   usuário precisa fazer gambiarra e jogar todos pra dentro da caixa e retirar na ordem que quer."
-   O servidor já aceitava a ordem nova (intenção `arranjo` → servidor/posse.mjs aplicarArranjo, que recebe o TIME e
-   a CAIXA inteiros); faltava a mão. As duas listas ficam lado a lado — arrastar dentro do time reordena, arrastar
-   de um lado pro outro move, e com o time cheio a casa escolhida TROCA com quem vem da caixa.
-   O caminho antigo continua de pé: "Trazer para o time" aqui e "Enviar para a caixa" na aba Time. As setas ↑ ↓ e o
-   botão "→ caixa" fazem o mesmo sem arrastar (teclado e mouse), que é o caminho de quem não consegue arrastar. */
+/* ------------------------------------------------------------------ Box: drag between the party and the box.
+   The server already accepted a new order (message `party`, handled by applyPartyOrder, which
+   receives the whole party and the box). The two lists sit side by side: dragging inside the
+   party reorders, dragging across moves, and a full party swaps with the Pokémon coming from
+   the box. "Bring to party" and "Send to box" still work, and so do the arrows and the box
+   button, for anyone who cannot drag. */
 /** Qual casa do time está em campo (a mesma conta do timeAtual, pelo uid primeiro). */
 function indiceEmCampo(){
   const p = ctx.jogo.semParceiro ? null : ctx.jogo.pika;
