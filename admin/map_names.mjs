@@ -6,6 +6,8 @@ const FIXOS = {
   kanto: 'Kanto',
   pallet_route1: 'Pallet Town & Route 1',
   pallet_rota1: 'Pallet Town & Route 1',
+  2000001: 'Johto',
+  johto: 'Johto',
 };
 
 const TOKENS = {
