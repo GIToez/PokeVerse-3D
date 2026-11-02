@@ -8134,7 +8134,11 @@ if (jogo.ash){
       else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvento(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).');
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
+      if (!jogo.turno || !m.fim) return;
+      for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
+      fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });
+    } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
   /* LETREIRO DE INVASÃO (15/09): alerta passante BRANCO no topo, estilo anúncio de jogo mobile. Injeta o CSS na 1ª vez, cria a

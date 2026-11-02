@@ -59,6 +59,18 @@ batalha.receber(ws, { t: 'bat_sair' });
 const quit = last();
 if (!quit.fim?.desistiu) throw new Error('forfeit should set desistiu');
 
+/* idle timeout: no move for BATALHA_TIMEOUT_MS ends the battle as a loss, pushed without `abrir` */
+batalha.receber(ws, { t: 'bat_desafiar', tipo: 'treinador', id: '4120102@1,1' });
+const idle = batalha._test.lutas.get('ash');
+batalha._test.varrerOciosas(idle.ultimo + 60_000);
+if (!batalha._test.lutas.has('ash')) throw new Error('battle should survive 60 s idle');
+const coinsBefore = contas.ash.save.dinheiro;
+batalha._test.varrerOciosas(idle.ultimo + 181_000);
+const timedOut = last();
+if (batalha._test.lutas.has('ash')) throw new Error('idle battle should be closed');
+if (!timedOut.fim?.tempo || timedOut.fim.venceu || timedOut.abrir) throw new Error('bad timeout push: ' + JSON.stringify(timedOut));
+if (!(contas.ash.save.dinheiro < coinsBefore)) throw new Error('timeout should cost coins like a loss');
+
 batalha.receber(ws, { t: 'bat_desafiar', tipo: 'ginasio', id: 101 });
 const gym = last();
 if (gym.t !== 'bat' || gym.nomeInimigo !== 'Brock') throw new Error('gym failed: ' + JSON.stringify(gym));
