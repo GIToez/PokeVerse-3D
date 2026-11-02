@@ -731,9 +731,21 @@ function remapearInteriorCompartilhado(){
     if (dados.npcs.some(q => q.cfg === +ch[0])){ if ((dados.areas || []).length <= 1) areaInteriorVisitada = +(ch[2] + ch[3]); return; }
     let n = 0;
     for (const q of dados.npcs){ const m = String(q.cfg).match(/^(\d)(14|15)(\d\d)(\d\d)$/); if (m && m[2] === ch[2] && m[3] !== ch[3]){ q.cfg = +(m[1] + m[2] + ch[3] + m[4]); n++; } }
-    if (n) console.log('interior compartilhado: elenco remapeado pra cidade ' + ch[3] + ' (' + n + ' pontos)');
+    if (n) console.log('shared interior: roster remapped to city ' + ch[3] + ' (' + n + ' points)');
     areaInteriorVisitada = +(ch[2] + ch[3]);
   }
+}
+/** Shared Center/shop: Cerulean arrival 7140301 is the same map point as Pewter 7140201 (same slot, other city digits). */
+function acharChegadaNoMapa(id){
+  const npcs = dados.npcs || [];
+  const hit = npcs.find(n => n.cfg === id);
+  if (hit) return hit;
+  const m = String(id || '').match(/^(\d)(14|15)(\d\d)(\d\d)$/);
+  if (!m) return null;
+  return npcs.find(n => {
+    const q = String(n.cfg).match(/^(\d)(14|15)(\d\d)(\d\d)$/);
+    return q && q[1] === m[1] && q[2] === m[2] && q[4] === m[4];
+  }) || null;
 }
 document.title = 'Pokemon 3D Base';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
 $('titulo').textContent = cenaAtual ? I18n.rotuloLugar(cenaAtual.nome) + ' · ' + I18n.rotuloLugar(NOME)
@@ -2785,8 +2797,8 @@ async function montarPersonagemBoot(arq, alturaAlvo, giroBase = 0){
         throw e;
       }
       if (!e?.url || /HTTP 404/.test(String(e.message))) throw e;
-      console.error('personagem do boot não baixou:', e);
-      __boot.falha('sem personagens: ' + String(e.message || e).slice(0, 220));   // o beacon continua avisando, agora com QUAL arquivo morreu
+      console.error('boot character failed to download:', e);
+      __boot.falha('no characters: ' + String(e.message || e).slice(0, 220));   // o beacon continua avisando, agora com QUAL arquivo morreu
       await bootErroCarga(e, "Your trainer or Pokémon didn't finish downloading. Tap Try again: loading resumes where it left off.", true);   // acima da HUD
       const b = $('boot'); if (b){ if (bootAcabou) b.hidden = true; else b.textContent = I18n.t('loading the map…'); }
     }
@@ -3690,7 +3702,7 @@ if (PLAY){
     const chegada = Fairy ? Fairy.pontoNascimento() : (chegadaFresca || chegadaReserva || 7110199);
     const casa = (!Fairy && porPorta) ? casaCompartilhada() : null;       // 13/09: casa que usa o interior de outra (Brock em Pewter → 4110008): nasce no ponto equivalente da casa dona
     if (casa) areaInteriorVisitada = casa.area;                            // …e o "Você chegou em" diz a casa visitada, não a dona
-    const born = (dados.npcs || []).find(n => n.cfg === chegada) || casa?.nasce || null;
+    const born = acharChegadaNoMapa(chegada) || casa?.nasce || null;
     let cx0 = dados.lote ? { x: dados.lote.casa.x + 5, z: dados.lote.casa.z - 6 }      // na frente da casa do lote
       : born ? { x: born.x, z: born.z }
       : (!Fairy && porPorta && (pisoChao || dados.bbox)) ? (() => {         // cena sem dados de NPC (casa do Gary): 1,6 m antes da saída sintética
@@ -3703,22 +3715,24 @@ if (PLAY){
           const pc = pisoChao ? { x: flipX * (pisoChao.x0 + pisoChao.x1) / 2, z0: pisoChao.z0, z1: pisoChao.z1 } : { x: centroBbox.x, z0: dados.bbox.z0, z1: dados.bbox.z1 };
           return { x: pc.x, z: atras ? pc.z0 + 2.4 : pc.z1 - 2.4 }; })()
       : (dados.caixas.find(c => c.a === 1101) || dados.caixas[0] || centroBbox);
-    /* Chegou por uma porta: o ponto do jogo fica em cima da soleira (no anel). Nasce 1,3 m além do
-       anel — pra DENTRO do cômodo ao entrar (o ponto de chegada dos interiores fica do lado de fora
-       da parede), e mais longe da porta ao sair pra rua. Sem isso parecia atravessar a porta. */
+    /* Door warp: stand ON the arrival you placed in the editor. Old interiors put the marker on
+       the threshold, so if it still sits on the exit (< 1.2 m) we step 1.6 m into the room.
+       Do not snap every nearby arrival to the doormat — that ignored the Center marker you moved. */
     if (!Fairy && born && porPorta){
       const portas = (dados.npcs || []).filter(n => PORTAS[n.cfg]?.t === 6).map(n => ({ x: n.x, z: n.z, d: Math.hypot(n.x - cx0.x, n.z - cx0.z) })).sort((a, b) => a.d - b.d);
       const pt = portas[0];
-      if (pt && pt.d > 0.05 && pt.d < 2.5){
-        const ux = (cx0.x - pt.x) / pt.d, uz = (cx0.z - pt.z) / pt.d;                      // porta → chegada (unity)
-        if (INTERIOR) cx0 = { x: pt.x - ux * 1.3, z: pt.z - uz * 1.3 };                    // dentro: o lado oposto ao ponto de chegada (que fica fora da parede)
-        else {
-          /* rua: o ponto de chegada do jogo fica na soleira, às vezes já dentro da casa — escolhe,
-             entre os dois lados da porta, o que tem mais chão livre em volta (3×3 células) */
-          const abertura = c => { let n = 0; for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) if (livre(flipX * c.x + dx, c.z + dz)) n++; return n; };
-          const c1 = { x: pt.x + ux * 1.8, z: pt.z + uz * 1.8 }, c2 = { x: pt.x - ux * 1.8, z: pt.z - uz * 1.8 };
-          cx0 = abertura(c2) > abertura(c1) ? c2 : c1;
+      if (INTERIOR){
+        if (pt && pt.d < 1.2){
+          const mx = pisoChao ? flipX * (pisoChao.x0 + pisoChao.x1) / 2 : cx0.x;
+          const mz = pisoChao ? (pisoChao.z0 + pisoChao.z1) / 2 : cx0.z;
+          const L = Math.hypot(mx - pt.x, mz - pt.z) || 1;
+          cx0 = { x: pt.x + (mx - pt.x) / L * 1.6, z: pt.z + (mz - pt.z) / L * 1.6 };
         }
+      } else if (pt && pt.d > 0.05 && pt.d < 2.5){
+        const ux = (cx0.x - pt.x) / pt.d, uz = (cx0.z - pt.z) / pt.d;
+        const abertura = c => { let n = 0; for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) if (livre(flipX * c.x + dx, c.z + dz)) n++; return n; };
+        const c1 = { x: pt.x + ux * 1.8, z: pt.z + uz * 1.8 }, c2 = { x: pt.x - ux * 1.8, z: pt.z - uz * 1.8 };
+        cx0 = abertura(c2) > abertura(c1) ? c2 : c1;
       }
     }
     /* ONDE PAROU (08/09): com conta, recarregar (trocar a qualidade, F5, queda) volta pro MESMO ponto, não pro nascimento
