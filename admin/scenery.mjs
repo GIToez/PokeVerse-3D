@@ -41,25 +41,41 @@ const proxy = new THREE.Object3D(); scene.add(proxy);
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true; orbit.maxPolarAngle = Math.PI * 0.49;
 orbit.zoomToCursor = true;
-orbit.screenSpacePanning = true;
+orbit.screenSpacePanning = false;                                         // keep the pivot on the ground plane — screen-space zoom left it hanging in the air
 orbit.panSpeed = 1.6;
+let chaoPivo = 0;                                                         // y of the map floor; Frame / pieces set this, orbit must not climb
 orbit.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
 orbit.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
 orbit.mouseButtons.RIGHT = THREE.MOUSE.PAN;
 tela.addEventListener('contextmenu', ev => ev.preventDefault());
 const pivo = (() => {
   const g = new THREE.Group(); g.name = 'orbitPivot';
-  const eixo = new THREE.AxesHelper(1.4); eixo.renderOrder = 10; g.add(eixo);
-  const bola = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffcf3a, depthTest: false, depthWrite: false }));
+  const bola = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffcf3a, depthTest: false, depthWrite: false }));
   bola.renderOrder = 11; g.add(bola);
-  const anel = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.72, 40), new THREE.MeshBasicMaterial({ color: 0xffcf3a, side: THREE.DoubleSide, depthTest: false, depthWrite: false, transparent: true, opacity: 0.9 }));
+  const anel = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.68, 40), new THREE.MeshBasicMaterial({ color: 0xffcf3a, side: THREE.DoubleSide, depthTest: false, depthWrite: false, transparent: true, opacity: 0.95 }));
   anel.rotation.x = -Math.PI / 2; anel.renderOrder = 11; g.add(anel);
+  const cruz = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-1.1, 0.02, 0), new THREE.Vector3(1.1, 0.02, 0),
+    new THREE.Vector3(0, 0.02, -1.1), new THREE.Vector3(0, 0.02, 1.1),
+  ]);
+  const eixos = new THREE.LineSegments(cruz, new THREE.LineBasicMaterial({ color: 0xffcf3a, depthTest: false }));
+  eixos.renderOrder = 11; g.add(eixos);
   scene.add(g); return g;
 })();
+function chaoDoMapa() {
+  let y = 0, n = 0;
+  for (const p of pecas){ y += p.pos.y; n++; }
+  return n ? y / n : 0;                                                   // typical piece origin sits on the floor; bbox center was halfway up the map
+}
+function prenderPivoNoChao() {
+  orbit.target.y = chaoPivo;
+  planoChao.constant = -chaoPivo;
+}
 function atualizarPivo() {
+  prenderPivoNoChao();
   pivo.position.copy(orbit.target);
   const dist = camera.position.distanceTo(orbit.target);
-  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.035, 0.6, 80));
+  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.014, 0.5, 18));     // flat on the ground — the old 3-axis helper grew tens of meters straight up
   if ($('hud-pivo')) $('hud-pivo').textContent = orbit.target.x.toFixed(1) + ', ' + orbit.target.y.toFixed(1) + ', ' + orbit.target.z.toFixed(1);
 }
 const transform = new TransformControls(camera, renderer.domElement);
@@ -275,9 +291,12 @@ function deletar() {
 function enquadrar() {
   const box = new THREE.Box3(), tmp = new THREE.Vector3();
   for (const p of pecas) box.expandByPoint(tmp.set(fx * p.pos.x, p.pos.y, p.pos.z));
-  if (box.isEmpty()) { camera.position.set(40, 40, 40); orbit.target.set(0, 0, 0); orbit.update(); return; }
+  if (box.isEmpty()) { chaoPivo = 0; camera.position.set(40, 40, 40); orbit.target.set(0, 0, 0); orbit.update(); atualizarPivo(); return; }
   const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.z, 10);
-  orbit.target.copy(c); camera.position.set(c.x, c.y + r * 0.8, c.z + r * 0.9); orbit.update(); atualizarPivo();
+  chaoPivo = Number.isFinite(box.min.y) ? box.min.y : chaoDoMapa();      // floor, not the vertical middle of buildings
+  orbit.target.set(c.x, chaoPivo, c.z);
+  camera.position.set(c.x, chaoPivo + r * 0.8, c.z + r * 0.9);
+  orbit.update(); atualizarPivo();
 }
 function pontoSobCursor(ev) {
   const rect = renderer.domElement.getBoundingClientRect();
@@ -289,7 +308,7 @@ function pontoSobCursor(ev) {
 }
 function irPivot(pt) {
   if (!pt) return;
-  orbit.target.copy(pt);
+  orbit.target.set(pt.x, chaoPivo, pt.z);                                 // click sets where, not how high
   orbit.update();
   atualizarPivo();
 }
