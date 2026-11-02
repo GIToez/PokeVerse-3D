@@ -519,20 +519,11 @@ function popupPk(){
   Object.assign(popPk.style, { position: 'fixed', left: '50%', top: '50%', display: 'none', zIndex: '60' });
   popPk.innerHTML = `<header class="pv-head">
     <h2>Pokémon</h2>
-    <nav class="pv-tabs">
-      <button type="button" data-pv-aba="time">Party</button>
-      <button type="button" data-pv-aba="caixa">Box</button>
-    </nav>
     <span class="pv-count" data-pv="contagem"></span>
     <button type="button" class="pv-x" aria-label="Close" title="Close"></button>
   </header>
   <div class="pv-body" data-pv-corpo></div>`;
   popPk.querySelector('.pv-x').onclick = ev => { ev.stopPropagation(); fechar(); };
-  popPk.querySelectorAll('[data-pv-aba]').forEach(b => b.onclick = () => {
-    abaAtual = b.dataset.pvAba;
-    confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; heldPicker = false;
-    render();
-  });
   document.body.appendChild(popPk);
   return popPk;
 }
@@ -643,7 +634,8 @@ function iconeHeld(id){
 }
 function nomeHeld(id){ return D?.itens?.[id]?.n || ('Item ' + id); }
 function btnPv(id, label, on, title = ''){
-  return `<button type="button" class="pv-btn${on ? '' : ' off'}" data-pv="${id}" ${on ? '' : 'disabled'} title="${esc(title)}">${label}</button>`;
+  if (!on) return '';
+  return `<button type="button" class="pv-btn" data-pv="${id}" title="${esc(title)}">${label}</button>`;
 }
 
 /** Fills the 9-slice party window (not the Figma maquette). */
@@ -651,13 +643,9 @@ function encherPokemon(pop){
   if (!pop?.classList?.contains('pv-win')) return;
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
-  const aba = abaAtual === 'caixa' ? 'caixa' : 'time';
-  pop.querySelectorAll('[data-pv-aba]').forEach(b => b.classList.toggle('on', b.dataset.pvAba === aba));
-  const cx = ctx.lerLS('caixa', []) || [];
   const cont = pop.querySelector('[data-pv="contagem"]');
-  if (cont) cont.textContent = aba === 'caixa' ? cx.length + ' in box' : lista.length + '/6 in party';
+  if (cont) cont.textContent = lista.length + '/6 in party';
   const corpo = pop.querySelector('[data-pv-corpo]'); if (!corpo) return;
-  if (aba === 'caixa'){ encherCaixaPv(corpo); return; }
   if (!lista.length){
     corpo.innerHTML = '<div class="pv-grid"><div class="pv-list"></div><div class="pv-sheet"><p>No Pokémon yet — pick a starter in Oak\'s lab.</p></div></div>';
     return;
@@ -775,16 +763,6 @@ function ligarPvAcoes(corpo, e, lista){
     gravarHeld(e, { id });
     heldPicker = false; render();
   });
-}
-function encherCaixaPv(corpo){
-  const time = ctx.jogo.time || [], caixa = ctx.lerLS('caixa', []) || [], emCampo = indiceEmCampo();
-  const linha = (p, extra) => `<div class="pv-slot"><img src="${iconeMonU(p.dex)}" alt=""><span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv} · No. ${String(p.dex).padStart(3, '0')}</small></span>${extra}</div>`;
-  const timeHtml = time.map((p, i) => linha(p, i === emCampo ? '<small>in field</small>' : `<button type="button" class="pv-btn" data-guardar="${i}">→ Box</button>`)).join('') || '<div class="pv-slot vazia">Empty party</div>';
-  const caixaHtml = caixa.map((p, i) => linha(p, `<button type="button" class="pv-btn gold" data-trazer="${i}" ${time.length >= 6 ? 'disabled' : ''}>Bring</button>`)).join('') || '<div class="pv-slot vazia">Box is empty</div>';
-  corpo.innerHTML = `<div class="pv-box"><div class="col"><h3>Party ${time.length}/6</h3>${timeHtml}</div><div class="col"><h3>Box ${caixa.length}</h3>${caixaHtml}</div></div>`;
-  const fim = () => { selPokemon = 0; ctx.atualizarSeguidorPainel?.(); render(); };
-  corpo.querySelectorAll('[data-guardar]').forEach(b => b.onclick = () => { if (Arr.aplicar('time', +b.dataset.guardar, 'caixa', caixa.length)) fim(); });
-  corpo.querySelectorAll('[data-trazer]').forEach(b => b.onclick = () => { if (Arr.aplicar('caixa', +b.dataset.trazer, 'time', time.length)) fim(); });
 }
 /** Cores da barra: as mesmas faixas da Amanda que o conversor colheu (card-vida [estado:100|40|10]). */
 function corDaVida(k){
