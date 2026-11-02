@@ -2,8 +2,9 @@
 """Build public/data/2000001.json from the HGSS Town Map silhouette.
 
 Land, water, forest and paths are sampled from the Johto half of the
-official HGSS world map. Towns are stamped Kanto city clips so streets
-are real layouts, not a 1 m grass carpet.
+official HGSS world map. Towns are HGSS layouts (Elm's lab + windmills,
+Azalea well, Goldenrod streets, Olivine lighthouse) built from Kanto
+prefabs — not pasted Pallet/Viridian/Pewter cities.
 """
 from __future__ import annotations
 
@@ -32,17 +33,17 @@ MAP_URL = (
 CUT_X = 6400
 PPM = 8.0          # map pixels per world metre
 STEP = 24          # sample every 24 px → 3 m tiles
-NB_PX, NB_PY = 5550.0, 5720.0  # New Bark on the map
+NB_PX, NB_PY = 6050.0, 5750.0  # New Bark on the map
 
-# HGSS town / landmark pixel centers (image x east, y south).
+# HGSS overworld stitch (image x east, y south).
 TOWNS_PX = {
-    2101: (5550, 5720, 'New Bark Town'),
-    2102: (4976, 5248, 'Cherrygrove City'),
+    2101: (6050, 5750, 'New Bark Town'),
+    2102: (5750, 5320, 'Cherrygrove City'),
     2103: (5292, 2724, 'Violet City'),
-    2104: (4648, 4532, 'Azalea Town'),
-    2105: (4852, 3652, 'Goldenrod City'),
-    2106: (4328, 2168, 'Ecruteak City'),
-    2107: (3372, 2124, 'Olivine City'),
+    2104: (5550, 5670, 'Azalea Town'),
+    2105: (4750, 4400, 'Goldenrod City'),
+    2106: (5200, 2280, 'Ecruteak City'),
+    2107: (3300, 3100, 'Olivine City'),
     2108: (400, 4300, 'Cianwood City'),
     2109: (5524, 1512, 'Mahogany Town'),
     2110: (6000, 2400, 'Blackthorn City'),
@@ -68,22 +69,185 @@ TOWNS_PX = {
     2130: (350, 4500, 'Embedded Tower'),
 }
 
-CLIP_OF = {
-    2101: (1101, None),
-    2102: (1102, None),
-    2103: (1103, None),
-    2104: (1106, None),
-    2105: (1107, None),
-    2106: (1103, None),
-    2107: (1105, None),
-    2108: (1110, None),
-    2109: (1101, None),
-    2110: (1103, None),
-    2111: (1191, (52, 44)),
-    2112: (1106, None),
-    2113: (1110, (40, 36)),
-    2114: (1110, (40, 36)),
-    2115: (1192, (56, 44)),
+# HGSS town layouts. dx west, dz south, from town center.
+# Only Johto arrangements — no Pallet/Viridian/Pewter stamps.
+LAYOUTS = {
+    2101: {  # New Bark: Elm's lab NW, player + friend east, windmills
+        'sx': 38, 'sz': 30,
+        'blds': [
+            ('sm_c_yjs_house', -12, -8),
+            ('sm_t_001_house_01_red', 10, -4),
+            ('sm_c_001_house_02_blue', 10, 10),
+            ('sm_t_001_house_01', -10, 10),
+        ],
+        'extra': [
+            ('sm_d_040_windmill_01_01_h', -18, -14),
+            ('sm_d_040_windmill_01_01_h', 16, -14),
+            ('sm_d_040_windmill_01_01_h', 16, 14),
+            ('sm_d_040_windmill_01_01_h', -18, 14),
+            ('sm_c_001_signboard_01', 2, 2),
+        ],
+    },
+    2102: {  # Cherrygrove: Center + Mart east, houses west, beach south
+        'sx': 42, 'sz': 32,
+        'blds': [
+            ('sm_c_001_pokecen_01', 8, -8),
+            ('sm_c_001_shop_01', 18, -8),
+            ('sm_c_001_house_02_blue', -12, -8),
+            ('sm_t_007_house_01', -12, 8),
+            ('sm_t_001_house_01', 6, 10),
+        ],
+        'extra': [
+            ('sm_c_001_guide_03', 0, 2),
+            ('sm_c_001_streetlight_01', -4, 0),
+            ('sm_c_001_streetlight_01', 12, 0),
+            ('sm_c_001_signboard_01', 2, 6),
+        ],
+    },
+    2103: {  # Violet: Sprout Tower north, school, gym west, Center/Mart
+        'sx': 48, 'sz': 42,
+        'blds': [
+            ('sm_r_209_losttower_01', 0, -16),
+            ('sm_c_001_gym_01', -16, -4),
+            ('sm_c_001_pokecen_01', 14, -6),
+            ('sm_c_001_shop_01', 14, 6),
+            ('sm_t_003_trainersschool_01', -8, 12),
+            ('sm_t_007_house_01', 6, 14),
+            ('sm_t_009_house_01', -16, 12),
+        ],
+        'extra': [
+            ('sm_c_001_streetlight_01', -4, 0),
+            ('sm_c_001_streetlight_01', 8, 0),
+            ('sm_c_001_signboard_01', 0, 4),
+        ],
+    },
+    2104: {  # Azalea: Slowpoke Well, Kurt, Center, Mart, gym, charcoal
+        'sx': 42, 'sz': 34,
+        'blds': [
+            ('sm_t_011_house_02', -16, -10),
+            ('sm_t_011_house_02_1', -8, -6),
+            ('sm_c_001_pokecen_01', 4, -8),
+            ('sm_c_001_shop_01', 16, -8),
+            ('sm_c_001_gym_02', -10, 10),
+            ('sm_t_011_house_02_2', 12, 10),
+        ],
+        'extra': [
+            ('sm_c_001_signboard_01', 2, 2),
+            ('tree', -18, 0),
+            ('tree', 18, 4),
+        ],
+    },
+    2105: {  # Goldenrod: dept store, radio/bike, gym, Game Corner, Center, yellow houses
+        'sx': 56, 'sz': 48,
+        'blds': [
+            ('sm_t_003_pokecompany_01_1', -18, -4),
+            ('sm_c_001_gym_02', 0, -18),
+            ('sm_t_006_bicycleshop_01', 14, -8),
+            ('sm_c_001_shop_01', -10, 8),
+            ('sm_c_001_pokecen_01', -6, 16),
+            ('sm_t_007_house_01_1_yellow', 12, 6),
+            ('sm_t_007_house_01_2_1yellow', 20, 6),
+            ('sm_t_007_house_01_1_1yellow_w', 12, 16),
+            ('sm_t_009_house_01_1_1yellow', 20, 16),
+            ('sm_t_007_house_01_3', -18, 16),
+        ],
+        'extra': [
+            ('sm_c_001_streetlight_01', -8, 0),
+            ('sm_c_001_streetlight_01', 8, 0),
+            ('sm_c_001_streetlight_01', -8, 12),
+            ('sm_c_001_streetlight_01', 8, 12),
+            ('sm_c_001_signboard_01', 4, 2),
+        ],
+        'plaza': 'floor_1',
+    },
+    2106: {  # Ecruteak: Bell Tower, Burned Tower, gym, Center, Mart, traditional houses
+        'sx': 50, 'sz': 42,
+        'blds': [
+            ('sm_d_011_batower_01_1', 8, -16),
+            ('sm_r_209_losttower_01', -16, -16),
+            ('sm_c_001_gym_01', -14, 0),
+            ('sm_c_001_pokecen_01', 10, 0),
+            ('sm_c_001_shop_01', 10, 10),
+            ('sm_t_009_house_01', -12, 12),
+            ('sm_t_009_house_01_1', 0, 12),
+        ],
+        'extra': [
+            ('sm_c_001_streetlight_01', -4, 4),
+            ('sm_c_001_streetlight_01', 6, 4),
+            ('sm_c_001_signboard_01', 0, 4),
+        ],
+        'plaza': 'floor_1',
+    },
+    2107: {  # Olivine: lighthouse on the sand, blue-roof houses, gym, Center, port
+        'sx': 48, 'sz': 40,
+        'blds': [
+            ('sm_d_011_batower_01_1', -18, 8),
+            ('sm_c_001_gym_02', 4, -12),
+            ('sm_c_001_pokecen_01', 4, 0),
+            ('sm_c_001_shop_01', 16, 0),
+            ('sm_c_001_house_02_blue', 16, -12),
+            ('sm_c_001_house_02_blue', 16, 12),
+            ('sm_t_007_house_01', -4, 12),
+        ],
+        'extra': [
+            ('sm_c_001_streetlight_01', -6, 2),
+            ('sm_c_001_streetlight_01', 10, 2),
+            ('sm_c_001_signboard_01', 0, 6),
+        ],
+        'plaza': 'floor_1',
+        'sand': True,
+    },
+    2108: {  # Cianwood: cliff island, gym, Center, pharmacy
+        'sx': 40, 'sz': 34,
+        'blds': [
+            ('sm_c_001_gym_01', 10, -8),
+            ('sm_c_001_pokecen_01', -8, -8),
+            ('sm_c_001_shop_01', -8, 8),
+            ('sm_c_001_house_02_purple', 10, 8),
+            ('sm_t_005_house_01_1', 0, 10),
+        ],
+        'extra': [
+            ('floor_cliff_obj', -16, 0),
+            ('floor_cliff_obj', 16, -12),
+            ('sm_c_001_signboard_01', 2, 0),
+        ],
+    },
+    2109: {  # Mahogany: small, gym, shop (Rocket), Center
+        'sx': 36, 'sz': 30,
+        'blds': [
+            ('sm_c_001_gym_02', 10, -8),
+            ('sm_c_001_pokecen_01', -10, -8),
+            ('sm_c_001_shop_01', 0, 8),
+            ('sm_t_005_house_01_1', -10, 8),
+        ],
+        'extra': [
+            ('sm_c_001_signboard_01', 2, 0),
+            ('tree', -16, 0),
+            ('tree', 16, 10),
+        ],
+    },
+    2110: {  # Blackthorn: dragon gym, Center, Mart, ice-path north
+        'sx': 44, 'sz': 36,
+        'blds': [
+            ('sm_c_001_gym_01', 12, -8),
+            ('sm_c_001_pokecen_01', -12, -8),
+            ('sm_c_001_shop_01', 0, -8),
+            ('sm_t_011_house_02_1', -12, 10),
+            ('sm_t_011_house_02', 12, 10),
+        ],
+        'extra': [
+            ('floor_cliff_obj', 0, -16),
+            ('sm_c_001_signboard_01', 4, 2),
+        ],
+    },
+    2114: {  # Mt. Silver: Center + cabin
+        'sx': 32, 'sz': 26,
+        'blds': [
+            ('sm_c_001_pokecen_01', -8, 0),
+            ('sm_t_011_house_02', 8, 0),
+        ],
+        'extra': [('floor_cliff_obj', 0, -10)],
+    },
 }
 
 GRASS = ['ground_plane005', 'ground_plane006', 'ground_plane007',
@@ -96,27 +260,6 @@ DIRT = ['ground_plane003', 'ground_plane004', 'ground_plane014']
 
 def world(px: float, py: float) -> tuple[float, float]:
     return (-(px - NB_PX) / PPM, (py - NB_PY) / PPM)
-
-
-def clip_area(kanto, area_id, crop=None):
-    box = next(c for c in kanto['caixas'] if c['a'] == area_id)
-    hw = (crop[0] if crop else box['sx']) / 2
-    hh = (crop[1] if crop else box['sz']) / 2
-    objs = []
-    for o in kanto['objetos']:
-        if abs(o['x'] - box['x']) <= hw and abs(o['z'] - box['z']) <= hh:
-            objs.append({
-                'n': o['n'],
-                'dx': o['x'] - box['x'],
-                'dz': o['z'] - box['z'],
-                'y': o.get('y') or 0,
-                'a': o.get('a') or 0,
-            })
-    return {
-        'sx': crop[0] if crop else box['sx'],
-        'sz': crop[1] if crop else box['sz'],
-        'objs': objs,
-    }
 
 
 def classify(r, g, b, a) -> str:
@@ -144,7 +287,6 @@ def classify(r, g, b, a) -> str:
 def main():
     doors = json.loads((ROOT / 'public/data/doors.json').read_text())
     scenes = json.loads((ROOT / 'public/data/scenes.json').read_text())
-    kanto = json.loads((ROOT / 'public/data/kanto.json').read_text())
     johto = next(c for c in scenes['cenas'] if c['id'] == 2000001)
     nomes = {a['id']: a['nome'] for a in johto['areas']}
     areas = [a['id'] for a in johto['areas']]
@@ -161,27 +303,20 @@ def main():
     h, w = arr.shape[:2]
     x1 = min(CUT_X, w)
 
-    clips = {}
     town_world = {}
-    for jid, spec in CLIP_OF.items():
-        kid, crop = spec
-        clips[jid] = clip_area(kanto, kid, crop)
-        px, py, _ = TOWNS_PX[jid]
+    for jid, (px, py, name) in TOWNS_PX.items():
         wx, wz = world(px, py)
+        L = LAYOUTS.get(jid, {})
         town_world[jid] = {
             'x': wx, 'z': wz,
-            'sx': clips[jid]['sx'], 'sz': clips[jid]['sz'],
-            'name': TOWNS_PX[jid][2],
+            'sx': L.get('sx', 36), 'sz': L.get('sz', 28),
+            'name': name,
         }
-    for jid, (px, py, name) in TOWNS_PX.items():
-        if jid not in town_world:
-            wx, wz = world(px, py)
-            town_world[jid] = {'x': wx, 'z': wz, 'sx': 36, 'sz': 28, 'name': name}
 
     town_block = []
     for jid, T in town_world.items():
-        if jid in CLIP_OF:
-            town_block.append((T['x'], T['z'], T['sx'] / 2 - 2, T['sz'] / 2 - 2))
+        if jid in LAYOUTS:
+            town_block.append((T['x'], T['z'], T['sx'] / 2 - 1, T['sz'] / 2 - 1))
 
     def inside_town(x, z):
         for cx, cz, hx, hz in town_block:
@@ -202,10 +337,22 @@ def main():
             o['a'] = round(a, 3)
         objetos.append(o)
 
-    for jid, clip in clips.items():
+    for jid, L in LAYOUTS.items():
         T = town_world[jid]
-        for o in clip['objs']:
-            add(o['n'], T['x'] + o['dx'], T['z'] + o['dz'], o['a'], o['y'])
+        plaza = L.get('plaza', 'ground_plane007')
+        sand = L.get('sand')
+        x0 = T['x'] - T['sx'] / 2
+        z0 = T['z'] - T['sz'] / 2
+        for x in range(int(x0), int(x0 + T['sx']) + 1, 2):
+            for z in range(int(z0), int(z0 + T['sz']) + 1, 2):
+                add('sink_sand_1_sink_h_1' if sand and z > T['z'] + 4 else plaza, x, z)
+        for n, dx, dz in L.get('blds', []):
+            add(n, T['x'] + dx, T['z'] + dz)
+        for n, dx, dz in L.get('extra', []):
+            add(n, T['x'] + dx, T['z'] + dz)
+        for x in range(int(x0), int(x0 + T['sx']), 2):
+            add('sm_001_fence_02_z 1', x, z0)
+            add('sm_001_fence_02_z 1', x, z0 + T['sz'])
 
     agua = []
     grama = []
@@ -350,23 +497,16 @@ def main():
             'x': round(x, 2), 'y': 0, 'z': round(z, 2), 'a': a,
         })
 
-    BUILDING = ('house', 'pokecen', 'shop', 'gym', 'lab', 'school',
-                'bicycl', 'pokecompany', 'guide_03', 'sm_c_yjs')
-
-    for jid, clip in clips.items():
+    for jid, L in LAYOUTS.items():
         T = town_world[jid]
         doors_t = sorted((p for p in by_area[jid] if p['t'] == 6), key=lambda p: p['cfg'])
         arrs = sorted((p for p in by_area[jid] if p['t'] == 7), key=lambda p: p['cfg'])
-        blds = [o for o in clip['objs']
-                if any(k in o['n'].lower() for k in BUILDING)
-                and not any(k in o['n'].lower() for k in ('fence', 'grass', 'flower', 'tree', 'lamp', 'sign'))]
-        blds.sort(key=lambda o: (o['dx'], o['dz']))
+        blds = L.get('blds', [])
         n = min(len(blds), len(doors_t), len(arrs))
         for i in range(n):
-            x = T['x'] + blds[i]['dx']
-            z = T['z'] + blds[i]['dz']
-            put(doors_t[i]['cfg'], 162, x, z + 5.2, jid)
-            put(arrs[i]['cfg'], 171, x, z + 6.5, jid)
+            _n, dx, dz = blds[i]
+            put(doors_t[i]['cfg'], 162, T['x'] + dx, T['z'] + dz + 5.2, jid)
+            put(arrs[i]['cfg'], 171, T['x'] + dx, T['z'] + dz + 6.5, jid)
         for p in arrs:
             if str(p['cfg']).endswith('99'):
                 put(p['cfg'], 171, T['x'], T['z'] + T['sz'] / 2 - 4, jid)
@@ -427,7 +567,7 @@ def main():
     for jid in (2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110):
         T = town_world[jid]
         print(jid, T['name'], 'x', round(T['x']), 'z', round(T['z']),
-              'clip', len(clips.get(jid, {}).get('objs', [])))
+              'blds', len(LAYOUTS.get(jid, {}).get('blds', [])))
 
 
 if __name__ == '__main__':
