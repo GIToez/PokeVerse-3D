@@ -539,7 +539,7 @@ function popupPk(){
   popPk.setAttribute('translate', 'no');
   popPk.lang = 'en';
   popPk.__skipEscala = true;
-  popPk.__def = { nome: 'pokemon', w: 1180, h: 780 };
+  popPk.__def = { nome: 'pokemon', w: 1080, h: 620 };
   popPk.__cb = {
     acao: nome => acaoPokemon(nome),
     fechar: () => { if (aberta === 'pokemon') aberta = null; confirmarAprender = null; heldPicker = false; },
