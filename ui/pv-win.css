@@ -9,9 +9,12 @@
   padding:18px 22px 20px;
   color:var(--pv-ink);
   font:13px/1.25 "Nunito Sans",system-ui,sans-serif;
+  background-color:#0d1730;
+  background-image:url("./figma/backgrounds/popup-pokemon.png");
+  background-size:100% 100%;
+  background-repeat:no-repeat;
   border:64px solid transparent;
-  border-image:url("./ui/figma/backgrounds/popup-pokemon.png") 180 fill / 64px / 0 round;
-  background:none;
+  border-image:url("./figma/backgrounds/popup-pokemon.png") 180 fill / 64px / 0 stretch;
   user-select:none;
 }
 .pv-win *,.pv-win *::before,.pv-win *::after{box-sizing:border-box}
@@ -26,7 +29,7 @@
 .pv-tabs button.on,.pv-btn.gold{border-color:#f2c23d;background:linear-gradient(#3a2a14,#141820);color:#ffe6b0}
 .pv-count{margin-left:auto;color:var(--pv-mute);font-weight:700}
 .pv-x{
-  width:36px;height:36px;border:0;padding:0;cursor:pointer;background:url("./ui/figma/botoes/btn-fechar.png") center/contain no-repeat;
+  width:36px;height:36px;border:0;padding:0;cursor:pointer;background:url("./figma/botoes/btn-fechar.png") center/contain no-repeat;
 }
 .pv-body{height:calc(100% - 42px);min-height:0;overflow:hidden}
 .pv-grid{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(0,1.35fr);gap:14px;height:100%;min-height:0}
@@ -35,9 +38,9 @@
   display:grid;grid-template-columns:28px 52px 1fr auto;align-items:center;gap:8px;
   min-height:62px;padding:6px 12px 6px 8px;cursor:pointer;color:var(--pv-ink);
   border:14px solid transparent;
-  border-image:url("./ui/figma/backgrounds/card-time.png") 90 fill / 14px / 0 stretch;
+  border-image:url("./figma/backgrounds/card-time.png") 90 fill / 14px / 0 stretch;
 }
-.pv-slot.on{border-image-source:url("./ui/figma/backgrounds/card-time-selecionado.png")}
+.pv-slot.on{border-image-source:url("./figma/backgrounds/card-time-selecionado.png")}
 .pv-slot.vazia{opacity:.35;cursor:default}
 .pv-slot .n{color:var(--pv-mute);font-weight:800;text-align:center}
 .pv-slot img{width:48px;height:48px;object-fit:contain}
@@ -46,7 +49,7 @@
 .pv-slot .hp{height:7px;margin-top:4px;border-radius:99px;background:#1e2740;overflow:hidden}
 .pv-slot .hp>i{display:block;height:100%;background:#2fae47}
 .pv-sheet{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;overflow:auto;padding:10px 12px 8px;
-  border:18px solid transparent;border-image:url("./ui/figma/backgrounds/card-ficha.png") 80 fill / 18px / 0 stretch}
+  border:18px solid transparent;border-image:url("./figma/backgrounds/card-ficha.png") 80 fill / 18px / 0 stretch}
 .pv-id{display:grid;grid-template-columns:96px 1fr 120px;gap:10px 14px;align-items:center}
 .pv-id .spr{width:96px;height:96px;object-fit:contain}
 .pv-id h3{margin:0;font-size:22px}
@@ -91,13 +94,71 @@
 .pv-win .pk-sheet .tipo,.pv-win .tipo{display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:800;color:#fff}
 .pv-win .pk-evo{grid-column:1/-1;margin:0;color:#f2c23d;font-size:12px;font-weight:700}
 .pv-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:6px}
-.pv-btn.off,.pv-btn:disabled{opacity:.42;cursor:default;filter:grayscale(.15)}
+.pv-btn.off,.pv-btn:disabled{display:none}
 .pv-eggs{color:var(--pv-mute);font-size:12px;padding:4px 2px}
 .pv-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:100%}
 .pv-box .col{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px}
 .pv-box h3{margin:0;font-size:14px;color:#ffe07a}
+
+#pf-box.pv-win{width:min(1240px,96vw);height:min(760px,92vh)}
+.bx-head{justify-content:center;position:relative;margin-bottom:4px}
+.bx-head h2{letter-spacing:2px}
+.bx-head .pv-x{position:absolute;right:0;top:0}
+.bx-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 4px 10px}
+.bx-tools input,.bx-tools select{background:#0f1628;border:1px solid #c9a22755;border-radius:8px;color:#e8eef8;padding:6px 8px;font:700 12px/1.2 inherit}
+.bx-tools input[type=search]{flex:1;min-width:140px}
+.bx-tools .rng{display:flex;align-items:center;gap:4px;color:#9eabc4;font-size:11px;font-weight:700}
+.bx-tools .rng input{width:52px}
+.bx-tools label.chk{display:inline-flex;align-items:center;gap:5px;color:#e8eef8;font-weight:700;font-size:12px}
+.bx-body{display:grid;grid-template-columns:minmax(240px,.95fr) minmax(320px,1.15fr) minmax(220px,.85fr);gap:12px;height:calc(100% - 86px);min-height:0}
+.bx-col{min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px}
+.bx-col-h{display:flex;align-items:center;gap:8px;color:#ffe07a;font-weight:800;font-size:13px}
+.bx-col-h small{margin-left:auto;color:#9eabc4;font-weight:700}
+.bx-party{display:flex;flex-direction:column;gap:6px;min-height:0;overflow:auto;padding-right:2px}
+.bx-party-row{
+  display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;
+  min-height:56px;padding:4px 10px 4px 6px;cursor:pointer;color:#e8eef8;
+  border:12px solid transparent;border-image:url("./figma/backgrounds/card-time.png") 90 fill / 12px / 0 stretch;
+}
+.bx-party-row.on{border-image-source:url("./figma/backgrounds/card-time-selecionado.png")}
+.bx-party-row.vazia{opacity:.28;cursor:default}
+.bx-party-row img{width:40px;height:40px;object-fit:contain}
+.bx-party-row b{display:block;font-size:13px}
+.bx-party-row small{color:#9eabc4}
+.bx-party-row .hp{height:6px;margin-top:3px;border-radius:99px;background:#1e2740;overflow:hidden}
+.bx-party-row .hp>i{display:block;height:100%}
+.bx-nav{display:flex;align-items:center;gap:8px}
+.bx-nav button{width:28px;height:28px;border:1px solid #c9a22766;border-radius:8px;background:#12192c;color:#ffe6b0;cursor:pointer;font-weight:800}
+.bx-cells{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:minmax(52px,1fr);gap:6px;flex:1;min-height:0}
+.bx-cell{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:52px;border-radius:10px;background:#0f1628;border:1px solid #c9a22733;cursor:pointer;
+}
+.bx-cell.vazia{cursor:default;opacity:.45}
+.bx-cell.on{border-color:#f2c23d;box-shadow:0 0 0 1px #f2c23d88}
+.bx-cell.off{opacity:.22}
+.bx-cell img{width:40px;height:40px;object-fit:contain}
+.bx-cell em{position:absolute;left:4px;bottom:2px;font:800 10px/1 inherit;color:#fff;text-shadow:0 1px 2px #000}
+.bx-float{
+  position:absolute;z-index:5;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);
+  min-width:160px;padding:6px 10px;border-radius:10px;background:#12192cf2;border:1px solid #c9a22766;
+  color:#e8eef8;pointer-events:none;white-space:nowrap;
+}
+.bx-hint{color:#9eabc4;font-size:11px;font-weight:600;padding:2px 2px 0}
+.bx-sheet{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:0;overflow:auto;padding:12px 10px;
+  border:16px solid transparent;border-image:url("./figma/backgrounds/card-ficha.png") 80 fill / 16px / 0 stretch}
+.bx-sheet .spr{width:96px;height:96px;object-fit:contain}
+.bx-sheet h3{margin:0;font-size:22px;text-align:center}
+.bx-sheet .hpbar{width:100%;height:14px;border-radius:99px;background:#1e2740;overflow:hidden;position:relative}
+.bx-sheet .hpbar>i{display:block;height:100%}
+.bx-sheet .hpbar>em{position:absolute;inset:0;display:grid;place-items:center;font:800 10px/1 inherit;color:#fff}
+.bx-meta{width:100%;display:grid;gap:6px;font-size:13px;color:#c5d0e6}
+.bx-meta b{color:#fff}
+.bx-sheet .pv-actions{width:100%;justify-content:center}
+.bx-sheet .pv-btn.gold{min-width:70%}
 @media (max-width:900px){
   .pv-win{width:96vw;height:92vh;border-width:36px;padding:10px 12px}
-  .pv-grid,.pv-id,.pv-box{grid-template-columns:1fr}
+  .pv-grid,.pv-id,.pv-box,.bx-body{grid-template-columns:1fr}
   .pv-held{grid-column:1;grid-row:auto;flex-direction:row}
+  .bx-cells{grid-template-columns:repeat(5,minmax(0,1fr))}
 }

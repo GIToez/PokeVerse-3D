@@ -219,14 +219,14 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); }
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if ((nome === 'loja' || nome === 'batalha') && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
   fecharGrade(); aberta = nome; abaAtual = aba; avisarRaid();
   if (nome === 'pokemon'){ reaprenderAberto = false; try { ctx.recuperarGolpes?.(); } catch (e){ console.warn('golpes perdidos:', e); } }   // 18/09: abrir a janela Pokémon confere os golpes do learnset até o nível (o que ficou pra trás entra ou vira pendência)
-  const pop = nome === 'pokemon' ? (aba === 'caixa' ? null : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSo() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : null;
-  for (const q of [popPk, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q && q !== pop && Popup.aberto(q)) Popup.fechar(q);   // um pop-up de cada vez (P e depois I empilhava os dois)
+  const pop = nome === 'pokemon' ? (aba === 'caixa' ? popupBx() : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSo() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : null;
+  for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q && q !== pop && Popup.aberto(q)) Popup.fechar(q);   // um pop-up de cada vez (P e depois I empilhava os dois)
   if (pop){                                                              // maquete do Figma no lugar da janela antiga
     $('janela').hidden = true;
     Popup.abrir(pop);
@@ -267,6 +267,7 @@ function abas(lista){
 function render(){
   if (!aberta) return;
   if (!D){ dados().then(repintar); return; }                             /* 19/09 (#relatos, Firefox): clique numa aba ou capítulo do pop-up enquanto o menu_data.json ainda baixava (a 1ª janela aberta na sessão) chegava aqui com D null e quebrava em D.itens; espera a tabela e pinta de novo */
+  if (aberta === 'pokemon' && abaAtual === 'caixa' && popBx && Popup.aberto(popBx)){ encherBox(popBx); return; }
   if (aberta === 'pokemon' && popPk && Popup.aberto(popPk)){ encherPokemon(popPk); return; }
   if (aberta === 'mochila' && popMo && Popup.aberto(popMo)){ encherMochila(popMo); return; }
   if (aberta === 'missoes' && popMi && Popup.aberto(popMi) && abaAtual !== 'laterais'){ encherMissoes(popMi); return; }
@@ -425,8 +426,12 @@ function rCaixa(corpo){
 }
 
 function rPokemon(corpo){
-  const aba = abas([{ id: 'time', nome: tr('Party') }, { id: 'caixa', nome: tr('Box') }]);
-  if (aba === 'caixa'){ rCaixa(corpo); return; }
+  if (abaAtual === 'caixa'){
+    const pop = popupBx();
+    if (pop){ $('janela').hidden = true; Popup.abrir(pop); encherBox(pop); return; }
+    rCaixa(corpo); return;
+  }
+  abas([{ id: 'time', nome: tr('Party') }]);
   const lista = timeAtual();
   if (!lista.length){ corpo.innerHTML = '<div class="vazio">' + esc(tr('No Pokémon yet — pick a starter in Oak\'s lab.')) + '</div>'; return; }
   if (selPokemon >= lista.length) selPokemon = 0;
@@ -519,22 +524,205 @@ function popupPk(){
   Object.assign(popPk.style, { position: 'fixed', left: '50%', top: '50%', display: 'none', zIndex: '60' });
   popPk.innerHTML = `<header class="pv-head">
     <h2>Pokémon</h2>
-    <nav class="pv-tabs">
-      <button type="button" data-pv-aba="time">Party</button>
-      <button type="button" data-pv-aba="caixa">Box</button>
-    </nav>
     <span class="pv-count" data-pv="contagem"></span>
     <button type="button" class="pv-x" aria-label="Close" title="Close"></button>
   </header>
   <div class="pv-body" data-pv-corpo></div>`;
   popPk.querySelector('.pv-x').onclick = ev => { ev.stopPropagation(); fechar(); };
-  popPk.querySelectorAll('[data-pv-aba]').forEach(b => b.onclick = () => {
-    abaAtual = b.dataset.pvAba;
-    confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; heldPicker = false;
-    render();
-  });
   document.body.appendChild(popPk);
   return popPk;
+}
+
+const BX_SIZE = 30, BX_MAX = 30;
+const TIPOS_BX = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'];
+let popBx = null;
+const bx = { page: 0, onde: 'caixa', i: 0, busca: '', tipo: '', lvMin: '', lvMax: '', ivMin: '', ivMax: '', shiny: false, ordem: 'box', hover: -1 };
+function popupBx(){
+  if (popBx) return popBx;
+  if (new URLSearchParams(location.search).get('popup') === '0') return null;
+  popBx = document.createElement('div');
+  popBx.id = 'pf-box';
+  popBx.className = 'pf pv-win notranslate';
+  popBx.setAttribute('translate', 'no');
+  popBx.lang = 'en';
+  popBx.__skipEscala = true;
+  popBx.__def = { nome: 'caixa', w: 1240, h: 760 };
+  popBx.__cb = { fechar: () => { if (aberta === 'pokemon' && abaAtual === 'caixa') aberta = null; } };
+  Object.assign(popBx.style, { position: 'fixed', left: '50%', top: '50%', display: 'none', zIndex: '60' });
+  popBx.innerHTML = `<header class="pv-head bx-head">
+    <h2>Box</h2>
+    <button type="button" class="pv-x" aria-label="Close" title="Close"></button>
+  </header>
+  <div class="bx-tools">
+    <input type="search" data-bx="busca" placeholder="search…">
+    <select data-bx="tipo"><option value="">Type</option>${TIPOS_BX.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
+    <span class="rng">Lv <input type="number" data-bx="lvMin" min="1" max="100" placeholder="1">–<input type="number" data-bx="lvMax" min="1" max="100" placeholder="100"></span>
+    <span class="rng">IV <input type="number" data-bx="ivMin" min="0" max="186" placeholder="0">–<input type="number" data-bx="ivMax" min="0" max="186" placeholder="186"></span>
+    <label class="chk"><input type="checkbox" data-bx="shiny"> Shiny</label>
+  </div>
+  <div class="bx-body" data-bx-corpo></div>`;
+  popBx.querySelector('.pv-x').onclick = ev => { ev.stopPropagation(); fechar(); };
+  const bind = (k, ev = 'input') => popBx.querySelector('[data-bx="' + k + '"]').addEventListener(ev, e => {
+    bx[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    if (k === 'busca' || k === 'tipo' || k === 'shiny' || k === 'lvMin' || k === 'lvMax' || k === 'ivMin' || k === 'ivMax') bx.page = 0;
+    encherBox(popBx);
+  });
+  ['busca', 'lvMin', 'lvMax', 'ivMin', 'ivMax'].forEach(k => bind(k));
+  bind('tipo', 'change'); bind('shiny', 'change');
+  document.body.appendChild(popBx);
+  return popBx;
+}
+function ivSoma(e){ return e?.ivs && ctx.Ind ? ctx.Ind.somaIV(e) : 0; }
+function passaFiltroBx(e){
+  if (!e) return false;
+  if (bx.shiny && !e.shiny) return false;
+  const lv = +e.lv || 0;
+  if (bx.lvMin !== '' && lv < +bx.lvMin) return false;
+  if (bx.lvMax !== '' && lv > +bx.lvMax) return false;
+  const iv = ivSoma(e);
+  if (bx.ivMin !== '' && iv < +bx.ivMin) return false;
+  if (bx.ivMax !== '' && iv > +bx.ivMax) return false;
+  const S = ctx.porDex.get(e.dex);
+  if (bx.tipo && !(S?.types || []).includes(bx.tipo)) return false;
+  const q = String(bx.busca || '').trim().toLowerCase();
+  if (q && ![e.nome, S?.name, String(e.dex)].some(n => String(n || '').toLowerCase().includes(q))) return false;
+  return true;
+}
+function ordemBx(lista){
+  const out = lista.map((e, i) => ({ e, i }));
+  if (bx.ordem === 'name') out.sort((a, b) => String(a.e.nome || '').localeCompare(String(b.e.nome || '')));
+  else if (bx.ordem === 'lv') out.sort((a, b) => (b.e.lv || 0) - (a.e.lv || 0) || a.i - b.i);
+  else if (bx.ordem === 'dex') out.sort((a, b) => (a.e.dex || 0) - (b.e.dex || 0) || a.i - b.i);
+  else if (bx.ordem === 'iv') out.sort((a, b) => ivSoma(b.e) - ivSoma(a.e) || a.i - b.i);
+  return out;
+}
+function encherBox(pop){
+  if (!pop) return;
+  const time = ctx.jogo.time || [], caixa = ctx.lerLS('caixa', []) || [], emCampo = indiceEmCampo();
+  const filtrada = ordemBx(caixa).filter(x => passaFiltroBx(x.e));
+  const pages = Math.max(1, Math.min(BX_MAX, Math.ceil(filtrada.length / BX_SIZE) || 1));
+  if (bx.page >= pages) bx.page = pages - 1;
+  const fatia = filtrada.slice(bx.page * BX_SIZE, bx.page * BX_SIZE + BX_SIZE);
+  const noBox = fatia.length;
+  if (bx.onde === 'caixa' && (bx.i < 0 || !caixa[bx.i] || !passaFiltroBx(caixa[bx.i]))){
+    bx.i = fatia[0]?.i ?? -1;
+    if (bx.i < 0 && time.length){ bx.onde = 'time'; bx.i = 0; }
+  }
+  const sel = bx.onde === 'time' ? time[bx.i] : caixa[bx.i];
+  const corpo = pop.querySelector('[data-bx-corpo]'); if (!corpo) return;
+  const party = [0, 1, 2, 3, 4, 5].map(i => {
+    const p = time[i];
+    if (!p) return `<div class="bx-party-row vazia"><span></span><span><b>—</b></span></div>`;
+    const pct = p.maxHp ? Math.round(100 * ((p.hp == null ? p.maxHp : p.hp) / p.maxHp)) : 100;
+    const preso = i === emCampo || time.length <= 1;
+    return `<div class="bx-party-row${bx.onde === 'time' && bx.i === i ? ' on' : ''}" data-arr-i="${i}" data-bx-time="${i}"${preso ? ' data-arr-preso="1"' : ''}>
+      <img src="${iconeMonU(p.dex)}" alt="">
+      <span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}${i === emCampo ? ' · Following' : ''}</small>
+      <div class="hp"><i style="width:${pct}%;background:${corDaVida(pct / 100)}"></i></div></span>
+      <small>${p.hp == null ? '' : Math.round(p.hp ?? p.maxHp)}/${p.maxHp || ''}</small></div>`;
+  }).join('');
+  const cells = Array.from({ length: BX_SIZE }, (_, slot) => {
+    const item = fatia[slot];
+    if (!item) return `<div class="bx-cell vazia"></div>`;
+    const on = bx.onde === 'caixa' && bx.i === item.i;
+    return `<div class="bx-cell${on ? ' on' : ''}" data-arr-i="${item.i}" data-bx-cx="${item.i}">
+      <img src="${iconeMonU(item.e.dex)}" alt="">
+      <em>Lv ${item.e.lv}</em></div>`;
+  }).join('');
+  const S = sel && ctx.porDex.get(sel.dex);
+  let sheet = '<div class="bx-sheet"><p class="fraco">Select a Pokémon.</p></div>';
+  if (sel && S){
+    const lv = sel.lv || 5;
+    const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...sel, lv }) : null;
+    const hp = sel.hp ?? stats?.[0] ?? sel.maxHp, maxHp = sel.maxHp || stats?.[0] || hp || 1;
+    const k = maxHp ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
+    const held = heldDe(sel);
+    const naParty = bx.onde === 'time';
+    const podeTrazer = !naParty && time.length < 6;
+    const podeGuardar = naParty && !sel.seguindo && time.length > 1;
+    const podeSoltar = !(naParty && (sel.seguindo || time.length <= 1));
+    const acoes = [
+      btnPv('bx-perfil', 'View profile', naParty, 'Open the party sheet'),
+      btnPv('bx-soltar', confirmarSoltar === chaveDe(sel) ? '✔ Release for good' : 'Release', podeSoltar, podeSoltar ? 'Release this Pokémon' : 'Cannot release'),
+      btnPv('bx-trazer', 'Bring to the party', podeTrazer, time.length >= 6 ? 'Party is full' : 'Move into the party'),
+      btnPv('bx-guardar', 'Send to box', podeGuardar, sel.seguindo ? 'Switch partners first' : 'Store in the box'),
+    ].join('');
+    sheet = `<div class="bx-sheet">
+      <img class="spr" src="${iconeMonU(sel.dex)}" alt="">
+      <h3>${sel.shiny ? '✨ ' : ''}${esc(sel.nome)}</h3>
+      <div class="st">${esc(sel.seguindo ? 'Following' : sel.hp === 0 ? 'Fainted' : '')}</div>
+      <small>Lv ${lv} · Nº ${String(sel.dex).padStart(3, '0')}</small>
+      <div class="hpbar"><i style="width:${Math.round(k * 100)}%;background:${corDaVida(k)}"></i><em>${Math.round(hp)}/${maxHp}</em></div>
+      <div class="bx-meta">
+        <div>IV <b>${ivSoma(sel)}/${ctx.Ind?.IV_TOTAL || 186}</b></div>
+        <div>Nature <b>${esc(sel.natureza || '—')}</b></div>
+        <div>Held <b>${held ? esc(nomeHeld(held.id)) : '—'}</b></div>
+      </div>
+      <div class="pv-actions">${acoes}</div>
+    </div>`;
+  }
+  corpo.innerHTML = `
+    <div class="bx-col">
+      <div class="bx-col-h">My party <small>${time.length}/6 in the party</small></div>
+      <div class="bx-party" id="bx-time">${party}</div>
+    </div>
+    <div class="bx-col">
+      <div class="bx-col-h bx-nav">
+        <button type="button" data-bx-page="-1" ${bx.page <= 0 ? 'disabled' : ''}>‹</button>
+        <span>Box ${bx.page + 1}</span>
+        <small>${noBox}/${BX_SIZE}</small>
+        <button type="button" data-bx-page="1" ${bx.page >= pages - 1 ? 'disabled' : ''}>›</button>
+        <select data-bx="ordem" style="margin-left:auto">
+          <option value="box"${bx.ordem === 'box' ? ' selected' : ''}>Box order</option>
+          <option value="name"${bx.ordem === 'name' ? ' selected' : ''}>Name</option>
+          <option value="lv"${bx.ordem === 'lv' ? ' selected' : ''}>Level</option>
+          <option value="dex"${bx.ordem === 'dex' ? ' selected' : ''}>Dex</option>
+          <option value="iv"${bx.ordem === 'iv' ? ' selected' : ''}>IV</option>
+        </select>
+      </div>
+      <div class="bx-cells" id="bx-caixa">${cells}</div>
+      <div class="bx-hint">Hold and drag to move between the party and the box.</div>
+    </div>
+    ${sheet}`;
+  const cT = corpo.querySelector('#bx-time'), cC = corpo.querySelector('#bx-caixa');
+  cT.querySelectorAll('[data-bx-time]').forEach((n, i) => { n.__arrItem = time[+n.dataset.bxTime]; });
+  cC.querySelectorAll('[data-bx-cx]').forEach(n => { n.__arrItem = caixa[+n.dataset.bxCx]; });
+  const fim = () => { ctx.atualizarSeguidorPainel?.(); render(); };
+  if (Arr.ligado()){
+    Arr.ligar(cT, { lista: 'time', grupo: 'janela-box', seletor: '.bx-party-row[data-bx-time]', previa: 'mover', rolavel: cT, aoFim: fim });
+    Arr.ligar(cC, { lista: 'caixa', grupo: 'janela-box', seletor: '.bx-cell[data-bx-cx]', previa: 'mover', rolavel: cC, aoFim: fim });
+  }
+  corpo.querySelectorAll('[data-bx-time]').forEach(el => el.onclick = () => { bx.onde = 'time'; bx.i = +el.dataset.bxTime; confirmarSoltar = null; encherBox(pop); });
+  corpo.querySelectorAll('[data-bx-cx]').forEach(el => {
+    el.onclick = () => { bx.onde = 'caixa'; bx.i = +el.dataset.bxCx; confirmarSoltar = null; encherBox(pop); };
+    el.onmouseenter = () => {
+      const e = caixa[+el.dataset.bxCx]; if (!e) return;
+      el.querySelector('.bx-float')?.remove();
+      const tip = document.createElement('div'); tip.className = 'bx-float';
+      const pct = e.maxHp ? Math.round(100 * ((e.hp == null ? e.maxHp : e.hp) / e.maxHp)) : 100;
+      tip.innerHTML = `<b>${e.shiny ? '✨ ' : ''}${esc(e.nome)}</b><br><small>Lv ${e.lv} · Nº ${String(e.dex).padStart(3, '0')}</small>
+        <div class="hp"><i style="width:${pct}%;height:6px;display:block;background:${corDaVida(pct / 100)};border-radius:99px"></i></div>`;
+      el.appendChild(tip);
+    };
+    el.onmouseleave = () => el.querySelector('.bx-float')?.remove();
+  });
+  corpo.querySelector('[data-bx="ordem"]')?.addEventListener('change', e => { bx.ordem = e.target.value; encherBox(pop); });
+  corpo.querySelectorAll('[data-bx-page]').forEach(b => b.onclick = () => { bx.page += +b.dataset.bxPage; encherBox(pop); });
+  corpo.querySelectorAll('[data-pv]').forEach(b => {
+    const id = b.dataset.pv;
+    b.onclick = ev => {
+      ev.stopPropagation();
+      if (id === 'bx-perfil' && bx.onde === 'time'){ selPokemon = bx.i; abrir('pokemon'); return; }
+      if (id === 'bx-soltar' && sel){
+        const chave = chaveDe(sel);
+        if (confirmarSoltar === chave) soltar(chave, bx.onde);
+        else { confirmarSoltar = chave; encherBox(pop); }
+        return;
+      }
+      if (id === 'bx-trazer' && bx.onde === 'caixa'){ if (Arr.aplicar('caixa', bx.i, 'time', time.length)) fim(); return; }
+      if (id === 'bx-guardar' && bx.onde === 'time'){ if (Arr.aplicar('time', bx.i, 'caixa', caixa.length)){ bx.onde = 'caixa'; bx.i = (ctx.lerLS('caixa', []) || []).length - 1; fim(); } }
+    };
+  });
 }
 /** Nome pt do tipo (a tabela de cores do Figma usa os mesmos nomes de ui/tipo/). */
 const TIPO_FIG = { Normal: 'normal', Fire: 'fogo', Water: 'agua', Grass: 'planta', Electric: 'eletrico', Ice: 'gelo',
@@ -643,7 +831,8 @@ function iconeHeld(id){
 }
 function nomeHeld(id){ return D?.itens?.[id]?.n || ('Item ' + id); }
 function btnPv(id, label, on, title = ''){
-  return `<button type="button" class="pv-btn${on ? '' : ' off'}" data-pv="${id}" ${on ? '' : 'disabled'} title="${esc(title)}">${label}</button>`;
+  if (!on) return '';
+  return `<button type="button" class="pv-btn" data-pv="${id}" title="${esc(title)}">${label}</button>`;
 }
 
 /** Fills the 9-slice party window (not the Figma maquette). */
@@ -651,13 +840,9 @@ function encherPokemon(pop){
   if (!pop?.classList?.contains('pv-win')) return;
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
-  const aba = abaAtual === 'caixa' ? 'caixa' : 'time';
-  pop.querySelectorAll('[data-pv-aba]').forEach(b => b.classList.toggle('on', b.dataset.pvAba === aba));
-  const cx = ctx.lerLS('caixa', []) || [];
   const cont = pop.querySelector('[data-pv="contagem"]');
-  if (cont) cont.textContent = aba === 'caixa' ? cx.length + ' in box' : lista.length + '/6 in party';
+  if (cont) cont.textContent = lista.length + '/6 in party';
   const corpo = pop.querySelector('[data-pv-corpo]'); if (!corpo) return;
-  if (aba === 'caixa'){ encherCaixaPv(corpo); return; }
   if (!lista.length){
     corpo.innerHTML = '<div class="pv-grid"><div class="pv-list"></div><div class="pv-sheet"><p>No Pokémon yet — pick a starter in Oak\'s lab.</p></div></div>';
     return;
@@ -775,16 +960,6 @@ function ligarPvAcoes(corpo, e, lista){
     gravarHeld(e, { id });
     heldPicker = false; render();
   });
-}
-function encherCaixaPv(corpo){
-  const time = ctx.jogo.time || [], caixa = ctx.lerLS('caixa', []) || [], emCampo = indiceEmCampo();
-  const linha = (p, extra) => `<div class="pv-slot"><img src="${iconeMonU(p.dex)}" alt=""><span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv} · No. ${String(p.dex).padStart(3, '0')}</small></span>${extra}</div>`;
-  const timeHtml = time.map((p, i) => linha(p, i === emCampo ? '<small>in field</small>' : `<button type="button" class="pv-btn" data-guardar="${i}">→ Box</button>`)).join('') || '<div class="pv-slot vazia">Empty party</div>';
-  const caixaHtml = caixa.map((p, i) => linha(p, `<button type="button" class="pv-btn gold" data-trazer="${i}" ${time.length >= 6 ? 'disabled' : ''}>Bring</button>`)).join('') || '<div class="pv-slot vazia">Box is empty</div>';
-  corpo.innerHTML = `<div class="pv-box"><div class="col"><h3>Party ${time.length}/6</h3>${timeHtml}</div><div class="col"><h3>Box ${caixa.length}</h3>${caixaHtml}</div></div>`;
-  const fim = () => { selPokemon = 0; ctx.atualizarSeguidorPainel?.(); render(); };
-  corpo.querySelectorAll('[data-guardar]').forEach(b => b.onclick = () => { if (Arr.aplicar('time', +b.dataset.guardar, 'caixa', caixa.length)) fim(); });
-  corpo.querySelectorAll('[data-trazer]').forEach(b => b.onclick = () => { if (Arr.aplicar('caixa', +b.dataset.trazer, 'time', time.length)) fim(); });
 }
 /** Cores da barra: as mesmas faixas da Amanda que o conversor colheu (card-vida [estado:100|40|10]). */
 function corDaVida(k){
