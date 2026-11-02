@@ -3731,8 +3731,11 @@ if (PLAY){
       if (pika.shiny){ const veste = () => (window.__dbg ? aplicarShinyCampo(pika.pivo, true) : setTimeout(veste, 30)); veste(); }   // só depois do módulo inteiro avaliado: no boot este bloco roda ANTES das consts do shiny (mapaNormalDe/texShinyCampo → TDZ, o jogo nem nascia)
       pika.dex = dex; pika.nome = S.name; pika.lv = +params0.get('lv') || (reg?.lv > 0 ? reg.lv : (FAIRY ? 5 : DEMO ? 14 : dex === 25 ? 12 : 40));   // na demo o parceiro começa baixo, pra briga durar
       Ind.garantir(pika); if (reg){ if (Array.isArray(reg.ivs) && reg.ivs.length === 6) pika.ivs = reg.ivs; if (reg.natureza) pika.natureza = reg.natureza; }
-      pika.maxHp = Ind.hpDe(S, pika); pika.hp = pika.maxHp; pika.recargas = {};
-      pika.exp = Evolucao.expPara(dex, pika.lv); pika.amizade = Evolucao.amizadeBase(dex);   // XP/amizade de quem nasce agora; o registro do time sobrepõe (boot, trocas)
+      pika.maxHp = Ind.hpDe(S, pika); pika.recargas = {};
+      pika.hp = reg && reg.hp != null && reg.hp >= 0 ? Math.min(reg.hp, pika.maxHp) : pika.maxHp;
+      pika.exp = reg && reg.exp != null ? reg.exp : Evolucao.expPara(dex, pika.lv);
+      pika.amizade = reg && reg.amizade != null ? reg.amizade : Evolucao.amizadeBase(dex);
+      pika.expReserva = reg?.expReserva || 0;
       jogo.quatroGolpes = quatroGolpes;
       if (reg && Array.isArray(reg.movs) && reg.movs.length){ Ind.garantir(reg); Ind.garantirMovs(reg, quatroGolpes(dex)); pika.movs = reg.movs.map(m => ({ ...m })); }   // os golpes do registro (cópia; o amarrarParceiro amarra no array de verdade)
       else Ind.garantirMovs(pika, quatroGolpes(dex));
@@ -5232,6 +5235,7 @@ function golpear(atacante, defensor, golpe){
   const base = Math.floor(((2 * atacante.lv / 5 + 2) * poder * a / d) / 50 + 2);
   const dano = eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * climaMul * (0.85 + Math.random() * 0.15)));
   defensor.hp = Math.max(0, defensor.hp - dano);
+  if (defensor === jogo.pika) guardarEstadoAtivo();
   aplicarGolpe(atacante, defensor, golpe, dano, eff);
   return dano;
 }
@@ -5972,8 +5976,35 @@ function fracaoXp(m){
   return b > a ? Math.max(0, Math.min(1, (exp - a) / (b - a))) : 0;
 }
 /* With the Figma layout the HP bar is absolutely placed: in the card on PC, straight in the slot on the phone (the card is hidden there).
-   The XP bar follows the fill into whichever box holds it, copies its x/width and sits right above it. */
-function encaixarXp(cel){ Hud.encaixarXp(cel); }
+   The XP bar follows the fill into whichever box holds it, copies its x/width and sits right above it.
+   This stays in the page on purpose. A cached hud.mjs from before the export made `Hud.encaixarXp` throw
+   every frame, and the party paint stopped before it could draw HP or experience. */
+function encaixarXp(cel){
+  if (!cel) return;
+  if (typeof Hud.encaixarXp === 'function'){ Hud.encaixarXp(cel); return; }
+  const xp = cel.querySelector('i.tc-xp');
+  const slotXp = cel.querySelector('.tslot > i.txp');
+  if (!xp) return;
+  const fil = cel.querySelector('b.tc-fill');
+  let caixa = fil?.parentElement;
+  if (caixa?.matches?.('i.tc-trilho')) caixa = caixa.parentElement;
+  const aberto = el => !!el && el.style.display !== 'none';
+  if (!fil || !aberto(fil) || fil.style.position !== 'absolute' || !caixa || !aberto(caixa)){
+    xp.style.display = 'none';
+    if (slotXp) slotXp.style.display = 'block';
+    return;
+  }
+  if (slotXp) slotXp.style.display = 'none';
+  if (xp.parentElement !== caixa) caixa.appendChild(xp);
+  const tri = caixa.querySelector(':scope > i.tc-trilho');
+  const comTri = tri && aberto(tri) && tri.style.position === 'absolute';
+  const ref = comTri ? tri : fil;
+  const x = parseFloat(ref.style.left) || 0;
+  const w = ref === fil ? (fil.__figW ?? (parseFloat(fil.style.width) || 0)) : (parseFloat(ref.style.width) || 0);
+  const topo = Math.min(...[comTri && tri, fil].filter(Boolean).map(r => parseFloat(r.style.top) || 0));
+  const h = Math.max(2, Math.round((parseFloat(ref.style.height) || 6) * 0.45)), folga = h > 3 ? 2 : 1;
+  Object.assign(xp.style, { display: 'block', position: 'absolute', left: x + 'px', width: Math.max(w, 0) + 'px', top: (topo - h - folga) + 'px', height: h + 'px', zIndex: '60' });
+}
 function pintarTime(forcar = false){
   const el = $('time-hud'); if (!el || el.hidden) return;
   const p = jogo.pika, ativo = membroAtivo(), cd = jogo.trocaCd || 0, agora = Date.now(), partes = [], vals = [];
@@ -8160,6 +8191,7 @@ if (jogo.ash){
       if (m.uid != null && String(m.uid) !== String(uidParceiro())){ __boot.aviso('pdano de outro uid', { uid: m.uid, emCampo: uidParceiro(), hp: m.hp, dano: m.dano }); return; }
       const g = GOLPES[m.golpe] || STRUGGLE;
       p.hp = m.hp != null ? m.hp : Math.max(0, p.hp - (m.dano || 0));       // passo 3: o HP que vale é o do servidor
+      try { guardarEstadoAtivo(); } catch {}
       if (p.hp <= 0) __boot.aviso('pdano zerou o parceiro', { hp: m.hp, dano: m.dano, uid: m.uid, emTurno: !!p.emTurno });
       aplicarGolpe(s, p, g, m.dano, m.eff);
     },
@@ -8200,8 +8232,8 @@ if (jogo.ash){
     nomeItem: id => ITENS_NOME[id] || BOLAS[id]?.[0] || null });
   __boot.marcar('rede');                                                 // diagnóstico do boot: vai conectar
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
-  addEventListener('pagehide', () => gravarParada(), true);
-  addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') gravarParada(); }, true);
+  addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
+  addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
