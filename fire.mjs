@@ -156,6 +156,10 @@ export function aplicarFogo(corpo, modelo = ''){
       const novo = materialFogo(nome, modelo);
       if (Array.isArray(o.material)) o.material[i] = novo; else o.material = novo;
       o.castShadow = false; n++;
+      if (!o.userData.fogoMaior){
+        o.userData.fogoMaior = true;
+        o.scale.multiplyScalar(1.55);
+      }
       if (nomeNo) o.renderOrder = /Sten/i.test(nome) ? 2 : 1;      // casca depois do núcleo (fila 3001 do jogo); nas malhas mescladas a ordem dos grupos já faz isso
     });
   });

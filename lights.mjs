@@ -21,22 +21,22 @@ export function fatorNoite(ceu){
 
 /** Species that throw their own light (flame tail, lava body, etc.). */
 export const LUZ_MON = {
-  4: { cor: 0xff6a1c, i: 3.6, r: 5.2, y: 0.52 },
-  5: { cor: 0xff7024, i: 4.4, r: 6.2, y: 0.72 },
-  6: { cor: 0xff7a30, i: 5.6, r: 7.8, y: 1.05 },
-  37: { cor: 0xff8a28, i: 2.8, r: 4.4, y: 0.4 },
-  38: { cor: 0xffb040, i: 4.2, r: 6.4, y: 0.55 },
-  58: { cor: 0xff8020, i: 3.2, r: 5.0, y: 0.45 },
-  59: { cor: 0xff9028, i: 4.8, r: 7.0, y: 0.7 },
-  77: { cor: 0xff8822, i: 3.8, r: 5.6, y: 0.7 },
-  78: { cor: 0xff9028, i: 4.8, r: 6.8, y: 0.9 },
-  126: { cor: 0xff5010, i: 4.6, r: 6.4, y: 0.75 },
-  136: { cor: 0xff7018, i: 3.4, r: 5.0, y: 0.45 },
-  146: { cor: 0xffb030, i: 6.2, r: 9.0, y: 1.2 },
-  155: { cor: 0xff7a22, i: 3.2, r: 4.8, y: 0.38 },
-  156: { cor: 0xff8028, i: 4.0, r: 6.0, y: 0.55 },
-  157: { cor: 0xff8a30, i: 5.2, r: 7.4, y: 0.85 },
-  244: { cor: 0xff6a18, i: 5.8, r: 8.2, y: 0.95 },
+  4: { cor: 0xff6a1c, i: 5.4, r: 6.6, y: 0.52, h: 2.1 },
+  5: { cor: 0xff7024, i: 6.2, r: 7.4, y: 0.72, h: 2.5 },
+  6: { cor: 0xff7a30, i: 7.2, r: 8.8, y: 1.05, h: 3.2 },
+  37: { cor: 0xff8a28, i: 2.8, r: 4.4, y: 0.4, h: 1.6 },
+  38: { cor: 0xffb040, i: 4.2, r: 6.4, y: 0.55, h: 2.2 },
+  58: { cor: 0xff8020, i: 3.2, r: 5.0, y: 0.45, h: 1.7 },
+  59: { cor: 0xff9028, i: 4.8, r: 7.0, y: 0.7, h: 2.4 },
+  77: { cor: 0xff8822, i: 3.8, r: 5.6, y: 0.7, h: 2.0 },
+  78: { cor: 0xff9028, i: 4.8, r: 6.8, y: 0.9, h: 2.4 },
+  126: { cor: 0xff5010, i: 4.6, r: 6.4, y: 0.75, h: 2.2 },
+  136: { cor: 0xff7018, i: 3.4, r: 5.0, y: 0.45, h: 1.7 },
+  146: { cor: 0xffb030, i: 6.2, r: 9.0, y: 1.2, h: 3.4 },
+  155: { cor: 0xff7a22, i: 3.2, r: 4.8, y: 0.38, h: 1.7 },
+  156: { cor: 0xff8028, i: 4.0, r: 6.0, y: 0.55, h: 2.1 },
+  157: { cor: 0xff8a30, i: 5.2, r: 7.4, y: 0.85, h: 2.6 },
+  244: { cor: 0xff6a18, i: 5.8, r: 8.2, y: 0.95, h: 2.8 },
 };
 
 function dexDe(e){
@@ -72,13 +72,13 @@ function acharFogo(e){
   return e._luzFogo;
 }
 
-function glowTex(){
+function glowTex(core = 'rgba(255,244,208,.95)', mid = 'rgba(255,220,140,.45)', edge = 'rgba(255,200,100,0)'){
   const cv = document.createElement('canvas'); cv.width = cv.height = 64;
   const g = cv.getContext('2d');
   const grd = g.createRadialGradient(32, 32, 2, 32, 32, 30);
-  grd.addColorStop(0, 'rgba(255,244,208,.95)');
-  grd.addColorStop(0.35, 'rgba(255,220,140,.45)');
-  grd.addColorStop(1, 'rgba(255,200,100,0)');
+  grd.addColorStop(0, core);
+  grd.addColorStop(0.35, mid);
+  grd.addColorStop(1, edge);
   g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -122,6 +122,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
     proto = (await new GLTFLoader().loadAsync('./scenery/prop/lamppost.glb')).scene;
   } catch (e){ console.warn('lamppost glb:', e); }
   const tex = glowTex();
+  const texFogo = glowTex('rgba(255,220,120,.98)', 'rgba(255,110,24,.55)', 'rgba(255,60,0,0)');
   const posts = [];
   const jaTem = (x, z) => posts.some(p => (p.x - x) ** 2 + (p.z - z) ** 2 < 2.2);
   const addGlow = (x, y, z, glass) => {
@@ -212,11 +213,22 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
     cabecas.push(H);
   }
   const monLuz = [];
+  const monHalo = [];
+  const monBrasa = [];
   for (let i = 0; i < 8; i++){
-    const M = new THREE.PointLight(0xff6a1c, 0, 5.2, 1.35);
+    const M = new THREE.PointLight(0xff6a1c, 0, 5.2, 1.25);
     M.castShadow = false;
+    const S = new THREE.Sprite(haloMat(texFogo));
+    S.scale.set(2.1, 2.1, 1);
+    S.visible = false;
+    const B = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), lampadaMat());
+    B.material.color.setHex(0xffc060);
+    B.visible = false;
+    grupo.add(S, B);
     cena.add(M);
     monLuz.push(M);
+    monHalo.push(S);
+    monBrasa.push(B);
   }
   return {
     n: posts.length,
@@ -252,19 +264,33 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         return { e, p, d: (p.x - ax) ** 2 + (p.z - az) ** 2 };
       }).sort((a, b) => a.d - b.d).slice(0, monLuz.length);
       for (let i = 0; i < monLuz.length; i++){
-        const L = monLuz[i], hit = ranked[i];
-        if (!hit){ L.intensity = 0; continue; }
+        const L = monLuz[i], S = monHalo[i], B = monBrasa[i], hit = ranked[i];
+        if (!hit){
+          L.intensity = 0;
+          if (S) S.visible = false;
+          if (B) B.visible = false;
+          continue;
+        }
         const cfg = LUZ_MON[dexDe(hit.e)];
         const fogo = acharFogo(hit.e);
+        if (fogo) fogo.getWorldPosition(_fogoP);
+        else _fogoP.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
         L.color.setHex(cfg.cor);
         L.distance = cfg.r;
-        if (fogo){
-          fogo.getWorldPosition(_fogoP);
-          L.position.copy(_fogoP);
-        } else {
-          L.position.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
+        L.position.copy(_fogoP);
+        L.intensity = cfg.i * (0.55 + n * 0.7);
+        const hs = cfg.h || 1.8;
+        if (S){
+          S.visible = true;
+          S.position.copy(_fogoP);
+          S.scale.set(hs, hs, 1);
+          S.material.opacity = 0.62 + n * 0.28;
         }
-        L.intensity = cfg.i * (0.42 + n * 0.7);
+        if (B){
+          B.visible = true;
+          B.position.copy(_fogoP);
+          B.material.opacity = 0.88;
+        }
       }
     },
   };
