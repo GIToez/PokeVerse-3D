@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.28;
+const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.26;
 const MAX_LUZ = 16;
 const EH_POSTE = /streetlight|lamppost/i;
 const CABECA = {
