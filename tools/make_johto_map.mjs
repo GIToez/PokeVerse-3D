@@ -178,72 +178,67 @@ roadNS(-280, TOWN[2101].z, -40);
 roadEW(-280, TOWN[2114].x, TOWN[2114].z);
 roadEW(TOWN[2108].x, TOWN[2115].x, TOWN[2108].z);
 
+/* One street per town. Buildings sit 12 m north or south of the road, 16 m apart. */
 const BLD = {
-  2101: [
-    { n: 'sm_t_001_house_01', dx: -8, dz: 4, door: 6210101, arrive: 7210101 },
-    { n: 'sm_t_001_house_01_red', dx: 8, dz: 4, door: 6210102, arrive: 7210102 },
-    { n: 'sm_t_011_house_02', dx: 0, dz: -8, door: 6210103, arrive: 7210103 },
-    { n: 'sm_t_007_house_01', dx: 10, dz: -8, door: 6210104, arrive: 7210104 },
+  2101: [ // New Bark: two houses south, lab north
+    { n: 'sm_t_001_house_01', dx: -10, dz: 12, door: 6210101, arrive: 7210101 },
+    { n: 'sm_t_001_house_01_red', dx: 10, dz: 12, door: 6210102, arrive: 7210102 },
+    { n: 'sm_t_011_house_02', dx: 0, dz: -12, door: 6210103, arrive: 7210103 },
   ],
-  2102: [
-    { n: 'sm_c_001_pokecen_01', dx: -10, dz: -6, door: 6210204, arrive: 7210204 },
-    { n: 'sm_c_001_shop_01', dx: 10, dz: -6, door: 6210205, arrive: 7210205 },
-    { n: 'sm_c_001_house_02_blue', dx: -8, dz: 8, door: 6210201, arrive: 7210201 },
-    { n: 'sm_t_007_house_01', dx: 8, dz: 8, door: 6210202, arrive: 7210202 },
+  2102: [ // Cherrygrove: Center / mart north, two houses south
+    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -12, door: 6210204, arrive: 7210204 },
+    { n: 'sm_c_001_shop_01', dx: 12, dz: -12, door: 6210205, arrive: 7210205 },
+    { n: 'sm_c_001_house_02_blue', dx: -12, dz: 12, door: 6210201, arrive: 7210201 },
+    { n: 'sm_t_007_house_01', dx: 12, dz: 12, door: 6210202, arrive: 7210202 },
   ],
   2103: [
-    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -8, door: 6210307, arrive: 7210307 },
-    { n: 'sm_c_001_shop_01', dx: -4, dz: -8, door: 6210306, arrive: 7210306 },
-    { n: 'sm_c_001_gym_01', dx: 14, dz: -6, door: 6210304, arrive: 7210304 },
-    { n: 'sm_t_011_house_02', dx: 0, dz: 10, door: 6210305, arrive: 7210305 },
-    { n: 'sm_t_007_house_01', dx: -14, dz: 10, door: 6210301, arrive: 7210301 },
+    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -12, door: 6210307, arrive: 7210307 },
+    { n: 'sm_c_001_shop_01', dx: 0, dz: -12, door: 6210306, arrive: 7210306 },
+    { n: 'sm_c_001_gym_01', dx: 16, dz: -12, door: 6210304, arrive: 7210304 },
+    { n: 'sm_t_007_house_01', dx: -12, dz: 12, door: 6210301, arrive: 7210301 },
   ],
   2104: [
-    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -6, door: 6210405, arrive: 7210405 },
-    { n: 'sm_c_001_shop_01', dx: 0, dz: -6, door: 6210404, arrive: 7210404 },
-    { n: 'sm_c_001_gym_02', dx: 12, dz: -6, door: 6210403, arrive: 7210403 },
-    { n: 'sm_t_005_house_01_1', dx: -8, dz: 8, door: 6210401, arrive: 7210401 },
+    { n: 'sm_c_001_pokecen_01', dx: -14, dz: -12, door: 6210405, arrive: 7210405 },
+    { n: 'sm_c_001_shop_01', dx: 14, dz: -12, door: 6210404, arrive: 7210404 },
+    { n: 'sm_c_001_gym_02', dx: 0, dz: 12, door: 6210403, arrive: 7210403 },
   ],
   2105: [
-    { n: 'sm_c_001_pokecen_01', dx: -22, dz: -10, door: 6210510, arrive: 7210510 },
-    { n: 'sm_c_001_shop_01', dx: -6, dz: -12, door: 6210509, arrive: 7210509 },
-    { n: 'sm_c_001_gym_01', dx: 18, dz: -8, door: 6210511, arrive: 7210511 },
-    { n: 'sm_t_006_bicycleshop_01', dx: 8, dz: 10, door: 6210502, arrive: 7210502 },
-    { n: 'sm_t_007_house_01_2', dx: -16, dz: 12, door: 6210501, arrive: 7210501 },
+    { n: 'sm_c_001_pokecen_01', dx: -22, dz: -14, door: 6210510, arrive: 7210510 },
+    { n: 'sm_c_001_shop_01', dx: 0, dz: -14, door: 6210509, arrive: 7210509 },
+    { n: 'sm_c_001_gym_01', dx: 22, dz: -14, door: 6210511, arrive: 7210511 },
+    { n: 'sm_t_006_bicycleshop_01', dx: -16, dz: 14, door: 6210502, arrive: 7210502 },
+    { n: 'sm_t_007_house_01_2', dx: 16, dz: 14, door: 6210501, arrive: 7210501 },
   ],
   2106: [
-    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -8, door: 6210604, arrive: 7210604 },
-    { n: 'sm_c_001_shop_01', dx: -4, dz: -8, door: 6210605, arrive: 7210605 },
-    { n: 'sm_c_001_gym_01', dx: 14, dz: -6, door: 6210606, arrive: 7210606 },
-    { n: 'sm_t_009_house_01', dx: -10, dz: 12, door: 6210601, arrive: 7210601 },
-    { n: 'sm_t_011_house_02', dx: 10, dz: 12, door: 6210602, arrive: 7210602 },
+    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -12, door: 6210604, arrive: 7210604 },
+    { n: 'sm_c_001_shop_01', dx: 0, dz: -12, door: 6210605, arrive: 7210605 },
+    { n: 'sm_c_001_gym_01', dx: 16, dz: -12, door: 6210606, arrive: 7210606 },
+    { n: 'sm_t_009_house_01', dx: 0, dz: 12, door: 6210601, arrive: 7210601 },
   ],
   2107: [
-    { n: 'sm_c_001_pokecen_01', dx: -14, dz: -8, door: 6210706, arrive: 7210706 },
-    { n: 'sm_c_001_shop_01', dx: -2, dz: -8, door: 6210707, arrive: 7210707 },
-    { n: 'sm_c_001_gym_02', dx: 14, dz: -6, door: 6210708, arrive: 7210708 },
-    { n: 'sm_t_007_house_01_3', dx: -8, dz: 10, door: 6210701, arrive: 7210701 },
+    { n: 'sm_c_001_pokecen_01', dx: -14, dz: -12, door: 6210706, arrive: 7210706 },
+    { n: 'sm_c_001_shop_01', dx: 14, dz: -12, door: 6210707, arrive: 7210707 },
+    { n: 'sm_c_001_gym_02', dx: 0, dz: 12, door: 6210708, arrive: 7210708 },
   ],
   2108: [
-    { n: 'sm_c_001_pokecen_01', dx: -10, dz: -6, door: 6210805, arrive: 7210805 },
-    { n: 'sm_c_001_shop_01', dx: 2, dz: -6, door: 6210806, arrive: 7210806 },
-    { n: 'sm_c_001_gym_01', dx: 14, dz: 8, door: 6210807, arrive: 7210807 },
-    { n: 'sm_c_001_house_02_purple', dx: -8, dz: 10, door: 6210801, arrive: 7210801 },
+    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -12, door: 6210805, arrive: 7210805 },
+    { n: 'sm_c_001_gym_01', dx: 12, dz: -12, door: 6210807, arrive: 7210807 },
+    { n: 'sm_c_001_house_02_purple', dx: 0, dz: 12, door: 6210801, arrive: 7210801 },
   ],
   2109: [
-    { n: 'sm_c_001_pokecen_01', dx: -10, dz: -6, door: 6210902, arrive: 7210902 },
-    { n: 'sm_c_001_gym_02', dx: 10, dz: -6, door: 6210903, arrive: 7210903 },
-    { n: 'sm_t_005_house_01_1', dx: 0, dz: 8, door: 6210901, arrive: 7210901 },
+    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -12, door: 6210902, arrive: 7210902 },
+    { n: 'sm_c_001_gym_02', dx: 12, dz: -12, door: 6210903, arrive: 7210903 },
+    { n: 'sm_t_005_house_01_1', dx: 0, dz: 12, door: 6210901, arrive: 7210901 },
   ],
   2110: [
-    { n: 'sm_c_001_pokecen_01', dx: -14, dz: -8, door: 6211005, arrive: 7211005 },
-    { n: 'sm_c_001_shop_01', dx: -2, dz: -8, door: 6211004, arrive: 7211004 },
-    { n: 'sm_c_001_gym_01', dx: 14, dz: -6, door: 6211008, arrive: 7211008 },
+    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -12, door: 6211005, arrive: 7211005 },
+    { n: 'sm_c_001_shop_01', dx: 0, dz: -12, door: 6211004, arrive: 7211004 },
+    { n: 'sm_c_001_gym_01', dx: 16, dz: -12, door: 6211008, arrive: 7211008 },
     { n: 'sm_t_011_house_02_1', dx: 0, dz: 12, door: 6211001, arrive: 7211001 },
   ],
   2114: [
-    { n: 'sm_c_001_pokecen_01', dx: -8, dz: 0, door: 6211402, arrive: 7211402 },
-    { n: 'sm_t_011_house_02', dx: 8, dz: 0, door: 6211401, arrive: 7211401 },
+    { n: 'sm_c_001_pokecen_01', dx: -12, dz: 0, door: 6211402, arrive: 7211402 },
+    { n: 'sm_t_011_house_02', dx: 12, dz: 0, door: 6211401, arrive: 7211401 },
   ],
 };
 
@@ -260,66 +255,34 @@ for (const [id, list] of Object.entries(BLD)) {
   if (!T) continue;
   for (const b of list) {
     add(b.n, T.x + b.dx, T.z + b.dz);
-    putNpc(b.door, 162, T.x + b.dx, T.z + b.dz + 5.2, +id);
-    putNpc(b.arrive, 171, T.x + b.dx, T.z + b.dz + 6.6, +id);
+    const face = b.dz < 0 ? 5.2 : -5.2; // door on the street side
+    putNpc(b.door, 162, T.x + b.dx, T.z + b.dz + face, +id);
+    putNpc(b.arrive, 171, T.x + b.dx, T.z + b.dz + face * 1.25, +id);
   }
 }
 
-const HOUSES = [
-  'sm_t_001_house_01', 'sm_t_001_house_01_red', 'sm_c_001_house_02_blue',
-  'sm_c_001_house_02_purple', 'sm_t_007_house_01', 'sm_t_007_house_01_2',
-  'sm_t_007_house_01_3', 'sm_t_009_house_01', 'sm_t_011_house_02',
-  'sm_t_005_house_01_1', 'sm_c_yjs_house', 'sm_c_der_house2',
-];
-
-/* Kanto-style wall kit: z-run is east-west, c_1 is north-south. Open a road gap. */
-function wallRun(x0, z0, x1, z1, gap) {
-  const xA = Math.min(x0, x1), xB = Math.max(x0, x1);
-  const zA = Math.min(z0, z1), zB = Math.max(z0, z1);
-  const open = (x, z) => {
-    if (gap === 'ew' && Math.abs(z - (zA + zB) / 2) < 4 && (x < xA + 2 || x > xB - 2)) return true;
-    if (gap === 'ns' && Math.abs(x - (xA + xB) / 2) < 4 && (z < zA + 2 || z > zB - 2)) return true;
-    return false;
-  };
-  for (let x = xA; x <= xB; x += 1) {
-    if (!open(x, zA)) add('sm_001_fence_02_z 1', x, zA);
-    if (!open(x, zB)) add('sm_001_fence_02_z 1', x, zB);
-  }
-  for (let z = zA; z <= zB; z += 1) {
-    if (!open(xA, z)) add('sm_001_fence_02_c_1', xA, z);
-    if (!open(xB, z)) add('sm_001_fence_02_c_2', xB, z);
-  }
-  add('sm_c_001_fence_04_f', xA, zA);
-  add('sm_c_001_fence_04_f', xB, zA);
-  add('sm_c_001_fence_04_c_1', xA, zB);
-  add('sm_c_001_fence_04_c_2', xB, zB);
-}
-
-function yard(cx, cz, sx = 10, sz = 8) {
-  wallRun(cx - sx / 2, cz - sz / 2, cx + sx / 2, cz + sz / 2, 'ns');
-}
-
+/* Short Pallet-style fence behind the north row only. No town boxes, no yards. */
 for (const [id, list] of Object.entries(BLD)) {
   const T = TOWN[+id];
   if (!T) continue;
-  const gap = (id === '2101' || id === '2102' || id === '2105' || id === '2107') ? 'ew' : 'ns';
-  wallRun(T.x - T.sx / 2 + 3, T.z - T.sz / 2 + 3, T.x + T.sx / 2 - 3, T.z + T.sz / 2 - 3, gap);
-  for (const b of list) yard(T.x + b.dx, T.z + b.dz + 1, 9, 7);
+  const north = list.filter(b => b.dz < 0);
+  if (!north.length) continue;
+  const xs = north.map(b => T.x + b.dx);
+  const z = T.z + Math.min(...north.map(b => b.dz)) - 6;
+  for (let x = Math.min(...xs) - 4; x <= Math.max(...xs) + 4; x += 2)
+    add('sm_001_fence_02_z 1', x, z);
 }
 
 for (const box of caixas) {
-  if (box.a < 2101 || box.a > 2130 || SEA.has(box.a)) continue;
-  const ring = box.a >= 2226 ? 6 : 14;
-  for (let i = 0; i < ring; i++) {
-    const ang = (i / ring) * Math.PI * 2;
-    add('tree', box.x + Math.cos(ang) * (box.sx / 2 - 3), box.z + Math.sin(ang) * (box.sz / 2 - 3));
-  }
-  if (box.a >= 2101 && box.a <= 2110) {
-    add('sm_c_001_streetlight_01', box.x - 6, box.z);
-    add('sm_c_001_streetlight_01', box.x + 6, box.z);
-    add('sm_c_001_signboard_01', box.x, box.z + box.sz / 2 - 3);
-    add('sm_c_001_outerimplant_01', box.x - 4, box.z - 2);
-    add('sm_c_001_outerimplant_01', box.x + 4, box.z - 2);
+  if (box.a < 2101 || box.a > 2116 || SEA.has(box.a)) continue;
+  add('tree', box.x - box.sx / 2 + 4, box.z - box.sz / 2 + 4);
+  add('tree', box.x + box.sx / 2 - 4, box.z - box.sz / 2 + 4);
+  add('tree', box.x - box.sx / 2 + 4, box.z + box.sz / 2 - 4);
+  add('tree', box.x + box.sx / 2 - 4, box.z + box.sz / 2 - 4);
+  if (box.a <= 2110) {
+    add('sm_c_001_streetlight_01', box.x - 8, box.z);
+    add('sm_c_001_streetlight_01', box.x + 8, box.z);
+    add('sm_c_001_signboard_01', box.x + 4, box.z + 2);
   }
 }
 
@@ -361,14 +324,6 @@ for (const box of caixas) {
     const x = box.x - Math.min(14, box.sx / 2 - 4) + col * 4;
     const z = box.z + Math.min(10, box.sz / 2 - 4) - row * 4;
     putNpc(pt.cfg, pt.t === 6 ? 162 : 171, x, z, box.a);
-    if (pt.t !== 6 || box.a < 2101 || box.a > 2116) return;
-    const dest = String(pt.n || '');
-    let prop = HOUSES[i % HOUSES.length];
-    if (dest.startsWith('724')) prop = 'sm_c_001_pokecen_01';
-    else if (dest.startsWith('725')) prop = 'sm_c_001_shop_01';
-    else if (dest.startsWith('726')) prop = 'sm_c_001_gym_01';
-    add(prop, x, z - 5);
-    yard(x, z - 4, 8, 6);
   });
 }
 
