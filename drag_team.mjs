@@ -68,11 +68,19 @@ function indiceReal(reg, item){
 }
 /** Onde o dedo está: { reg, item } (item null = no vazio da lista → vai pro fim). */
 function alvoEm(x, y, grupo){
-  const sob = document.elementFromPoint(x, y); if (!sob) return null;
-  for (const reg of vivos(grupo)){
-    if (!reg.el.contains(sob)) continue;
-    const item = sob.closest(reg.opts.seletor);
-    return { reg, item: item && reg.el.contains(item) && !item.dataset.arrFixo ? item : null };
+  const sob = document.elementFromPoint(x, y);
+  const regs = vivos(grupo);
+  const ok = item => item && !item.dataset.arrFixo && !item.classList.contains('vazia');
+  if (sob){
+    for (const reg of regs){
+      if (!reg.el.contains(sob)) continue;
+      const item = sob.closest(reg.opts.seletor);
+      return { reg, item: item && reg.el.contains(item) && ok(item) ? item : null };
+    }
+  }
+  for (const reg of regs){
+    const r = reg.el.getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return { reg, item: null };
   }
   return null;
 }
@@ -88,9 +96,13 @@ function comecar(){
   const { item } = ativo;
   const motivo = cfg?.motivo?.(); if (motivo){ avisar(motivo); soltar(false); return; }
   const r = item.getBoundingClientRect();
-  const g = item.cloneNode(true);
-  Object.assign(g.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px',
-    margin: '0', pointerEvents: 'none', opacity: '.85', zIndex: '99999', transform: 'scale(1.04)', boxShadow: '0 6px 18px rgba(0,0,0,.45)' });
+  const feito = typeof ativo.reg.opts.fantasma === 'function' ? ativo.reg.opts.fantasma(item) : null;
+  const g = feito || item.cloneNode(true);
+  Object.assign(g.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px',
+    width: feito ? (g.style.width || '220px') : r.width + 'px',
+    height: feito ? (g.style.height || 'auto') : r.height + 'px',
+    margin: '0', pointerEvents: 'none', opacity: '.92', zIndex: '99999', transform: 'scale(1.04)' });
+  if (!feito) g.style.boxShadow = '0 6px 18px rgba(0,0,0,.45)';
   document.body.appendChild(g);
   ativo.fantasma = g; ativo.dx = ativo.x0 - r.left; ativo.dy = ativo.y0 - r.top;
   ativo.opacidade = item.style.opacity; item.style.opacity = '.35';
@@ -165,7 +177,8 @@ export function ligar(el, opts = {}){
     if (ev.pointerType === 'mouse' && ev.button !== 0) return;
     if (ev.target.closest('[data-arr-nao], input, select, textarea')) return;
     const item = ev.target.closest(reg.opts.seletor);
-    if (!item || !el.contains(item) || item.dataset.arrFixo) return;
+    if (!item || !el.contains(item) || item.dataset.arrFixo || item.classList.contains('vazia')) return;
+    if (typeof reg.opts.podePegar === 'function' && !reg.opts.podePegar(item)) return;
     const toque = ev.pointerType !== 'mouse';
     ativo = { reg, item, id: ev.pointerId, x0: ev.clientX, y0: ev.clientY, toque, arrastando: false };
     if (toque) ativo.timer = setTimeout(() => { if (ativo?.item === item && !ativo.arrastando){ comecar(); if (ativo) mover(ativo.x0, ativo.y0); } }, SEGURAR_MS);

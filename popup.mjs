@@ -57,18 +57,20 @@ const CSS = `
 .pf .pk-sheet{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(168px,1fr);grid-template-rows:minmax(0,1fr) auto;gap:10px 16px;min-height:0;height:100%;color:#e8eef8;font:13px/1.25 "Nunito Sans",system-ui,sans-serif}
 .pf .pk-stats{min-width:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:2px}
 .pf .pk-moves{min-width:0;display:flex;flex-direction:column;gap:8px}
-.pf .pk-stats header,.pf .pk-row{display:grid;grid-template-columns:minmax(72px,1.15fr) 44px 108px 52px;align-items:center;gap:6px}
+.pf .pk-stats header,.pf .pk-row{display:grid;grid-template-columns:minmax(96px,1fr) 56px minmax(132px,1.3fr);align-items:center;gap:8px}
 .pf .pk-stats header{color:#9eabc4;font-size:11px;font-weight:800;letter-spacing:.02em;padding:0 2px 6px;border-bottom:1px solid #c9a22744}
 .pf .pk-h-stat{grid-column:1/3}
-.pf .pk-h-gen,.pf .pk-h-ev{text-align:center}
-.pf .pk-rows{display:flex;flex-direction:column;min-height:0}
-.pf .pk-rows .pk-row{flex:1;min-height:26px}
-.pf .pk-n{color:#d5deef;font-weight:700}
-.pf .pk-row b{font-weight:800;color:#fff;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
-.pf .pk-row .mais{color:#86ef5f;font-size:10px}
-.pf .pk-row .menos{color:#f58e8e;font-size:10px}
-.pf .pk-gen,.pf .pk-ev{display:flex;align-items:center;justify-content:flex-end;gap:5px}
-.pf .pk-gen em,.pf .pk-ev em{font-style:normal;font-size:11px;color:#b8c2d9;min-width:18px;text-align:right;font-variant-numeric:tabular-nums}
+.pf .pk-h-bars{text-align:right}
+.pf .pk-rows{display:flex;flex-direction:column;min-height:0;gap:6px}
+.pf .pk-rows .pk-row{flex:1;min-height:36px;align-items:start}
+.pf .pk-n{color:#d5deef;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.pf .pk-row b{font-weight:800;color:#fff;text-align:right;font-variant-numeric:tabular-nums;font-size:16px}
+.pf .pk-row .mais{color:#86ef5f;font-size:12px}
+.pf .pk-row .menos{color:#f58e8e;font-size:12px}
+.pf .pk-bars{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pf .pk-gen,.pf .pk-ev{display:grid;grid-template-columns:22px 1fr 28px;align-items:center;gap:6px;min-width:0}
+.pf .pk-gen small,.pf .pk-ev small{color:#7f8aa3;font-size:9px;font-weight:800}
+.pf .pk-gen em,.pf .pk-ev em{font-style:normal;font-size:12px;color:#e8eef8;min-width:18px;text-align:right;font-variant-numeric:tabular-nums}
 .pf .pk-dots{display:inline-flex;gap:3px}
 .pf .pk-dots i{width:8px;height:8px;border-radius:50%;background:#2a3550;box-shadow:inset 0 0 0 1px #3d4a6a}
 .pf .pk-gen .pk-dots i.on{background:#8b6cff;box-shadow:none}
@@ -93,7 +95,7 @@ const CSS = `
 .pf .pk-re-lista button{padding:4px 8px;border:1px solid #c9a22766;border-radius:8px;background:#12192ce6;color:#fff;font:700 11px/1.2 "Nunito Sans",system-ui,sans-serif;cursor:pointer}
 .pf .pk-evo{grid-column:1/-1;margin:0;color:#f2c23d;font-size:12px;font-weight:700;line-height:1.35}
 .pf .pk-sheet.pk-compact{gap:8px;font-size:11px;grid-template-columns:minmax(0,1.4fr) minmax(140px,.9fr)}
-.pf .pk-sheet.pk-compact .pk-stats header,.pf .pk-sheet.pk-compact .pk-row{grid-template-columns:minmax(60px,1.1fr) 36px 88px 44px;gap:4px}
+.pf .pk-sheet.pk-compact .pk-stats header,.pf .pk-sheet.pk-compact .pk-row{grid-template-columns:minmax(80px,1fr) 40px minmax(110px,1.2fr);gap:4px}
 .pf .pk-sheet.pk-compact .pk-move{min-height:36px;padding:5px 7px}
 .pf .pk-sheet.pk-compact .pk-dots i{width:6px;height:6px}
 .pf *{box-sizing:border-box}
