@@ -67,15 +67,33 @@ function chaoDoMapa() {
   for (const p of pecas){ y += p.pos.y; n++; }
   return n ? y / n : 0;                                                   // typical piece origin sits on the floor; bbox center was halfway up the map
 }
-function prenderPivoNoChao() {
-  orbit.target.y = chaoPivo;
-  planoChao.constant = -chaoPivo;
+const hastePivo = (() => {
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)]);
+  const ln = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xffcf3a, depthTest: false, transparent: true, opacity: 0.75 }));
+  ln.renderOrder = 10; scene.add(ln); return ln;
+})();
+function passoPivo() {
+  const dist = camera.position.distanceTo(orbit.target);
+  return THREE.MathUtils.clamp(dist * 0.04, 0.25, 12);
+}
+function subirPivo(dy) {
+  if (!dy) return;
+  orbit.target.y += dy;
+  camera.position.y += dy;                                                // truck with the pivot so the view does not jump
+  orbit.update();
+  atualizarPivo();
+}
+function pivoNoChao() {
+  const dy = chaoPivo - orbit.target.y;
+  subirPivo(dy);
 }
 function atualizarPivo() {
-  prenderPivoNoChao();
   pivo.position.copy(orbit.target);
   const dist = camera.position.distanceTo(orbit.target);
-  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.014, 0.5, 18));     // flat on the ground — the old 3-axis helper grew tens of meters straight up
+  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.014, 0.5, 18));
+  hastePivo.position.set(orbit.target.x, chaoPivo, orbit.target.z);
+  hastePivo.scale.y = orbit.target.y - chaoPivo;
+  hastePivo.visible = Math.abs(orbit.target.y - chaoPivo) > 0.05;
   if ($('hud-pivo')) $('hud-pivo').textContent = orbit.target.x.toFixed(1) + ', ' + orbit.target.y.toFixed(1) + ', ' + orbit.target.z.toFixed(1);
 }
 const transform = new TransformControls(camera, renderer.domElement);
@@ -308,7 +326,9 @@ function pontoSobCursor(ev) {
 }
 function irPivot(pt) {
   if (!pt) return;
-  orbit.target.set(pt.x, chaoPivo, pt.z);                                 // click sets where, not how high
+  const dy = pt.y - orbit.target.y;
+  orbit.target.set(pt.x, pt.y, pt.z);                                     // double-click: sit on the surface you hit (roof or floor)
+  camera.position.y += dy;
   orbit.update();
   atualizarPivo();
 }
@@ -373,6 +393,9 @@ async function salvar() {
 $('t-sel').onclick = () => usarFerramenta('sel');
 $('t-add').onclick = () => { if (!addTipo) toast('Pick a piece from the palette first.'); usarFerramenta('add'); };
 $('t-foco').onclick = enquadrar;
+$('t-pivo-up').onclick = () => subirPivo(passoPivo());
+$('t-pivo-down').onclick = () => subirPivo(-passoPivo());
+$('t-pivo-chao').onclick = pivoNoChao;
 $('t-snap').onchange = e => { snap = e.target.checked; };
 $('s-var').onclick = () => toast('Rotation is baked into the piece itself: use the palette to place the variant you want.');
 $('s-dup').onclick = duplicar;
@@ -389,7 +412,17 @@ addEventListener('keydown', e => {
   else if (e.key === 'f' || e.key === 'F') enquadrar();
   else if (e.key === 'g' || e.key === 'G') { if (selPeca) irPivot(new THREE.Vector3(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z)); }
   else if (e.key === 'd' || e.key === 'D') duplicar();
+  else if (e.key === 'e' || e.key === 'E' || e.key === 'PageUp') { e.preventDefault(); subirPivo(passoPivo() * (e.shiftKey ? 0.25 : 1)); }
+  else if (e.key === 'q' || e.key === 'Q' || e.key === 'PageDown') { e.preventDefault(); subirPivo(-passoPivo() * (e.shiftKey ? 0.25 : 1)); }
+  else if (e.key === 'Home') { e.preventDefault(); pivoNoChao(); }
 });
+tela.addEventListener('wheel', e => {
+  if (!e.shiftKey) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  const dir = e.deltaY > 0 ? -1 : 1;
+  subirPivo(dir * passoPivo() * (e.altKey ? 0.25 : 1));
+}, { passive: false, capture: true });
 addEventListener('beforeunload', e => { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
 
 listarMapas();
