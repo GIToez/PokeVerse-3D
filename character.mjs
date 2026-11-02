@@ -49,7 +49,7 @@ try {
     fetch('./data/color_recipes.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),   // receitas das roupas do dump (abaixo)
   ]);
   for (const s of roupas) if (s.glbOk && s.prefab !== 'Boy_001' && !SKINS.some(k => k.glb === s.prefab))
-    SKINS_EXTRA.push({ id: s.prefab.toLowerCase(), sexo: s.sexo, nome: s.nome, glb: s.prefab, desc: 'Fashion ' + s.id + (s.inicial ? ' · inicial do jogo' : ''), extra: true });
+    SKINS_EXTRA.push({ id: s.prefab.toLowerCase(), sexo: s.sexo, nome: s.nome, glb: s.prefab, desc: 'Fashion ' + s.id + (s.inicial ? ' · original starter' : ''), extra: true });
 } catch (e){ console.warn('skins do dump:', e); }
 export const PADRAO = {
   heroi:   { pele: '#ffcbaa', cabelo: '#322527', roupa: '#f83537', roupa2: '#ffffff', olhos: '#ffffff' },
@@ -58,9 +58,9 @@ export const PADRAO = {
 };
 /* o que cada canal da máscara pinta (sonda de cor de 30/08): branco = fica como a textura */
 export const ROTULOS = {
-  heroi:   { pele: 'pele', cabelo: 'cabelo', roupa: 'boné e camisa', roupa2: 'jaqueta e calça (tom)', olhos: 'olhos' },
-  heroina: { pele: 'pele', cabelo: 'cabelo', roupa: 'vestido', roupa2: 'chapéu (tom)', olhos: 'olhos' },
-  misty:   { cabelo: 'cabelo', olhos: 'olhos' },
+  heroi:   { pele: 'skin', cabelo: 'hair', roupa: 'cap and shirt', roupa2: 'jacket and pants (tint)', olhos: 'eyes' },
+  heroina: { pele: 'skin', cabelo: 'hair', roupa: 'dress', roupa2: 'hat (tint)', olhos: 'eyes' },
+  misty:   { cabelo: 'hair', olhos: 'eyes' },
 };
 export const CANAIS = {
   heroi:   { 'fc0001_00_hero_body_col': { R: 'pele', G: 'roupa', B: 'cabelo', K: 'roupa2', mask: 'fc0001_00_hero_body_msk.png' },
@@ -94,7 +94,7 @@ for (const r of Array.isArray(roupas) ? roupas : []){
   const t = pedida !== 'fixo' && CANAIS[pedida] ? pedida : null;
   for (const s of [...SKINS, ...SKINS_EXTRA]) if (s.glb === r.prefab && (s.tinta || null) !== t){
     if (t) s.tinta = t; else delete s.tinta;
-    s.desc = t ? 'cores livres: ' + Object.values(ROTULOS[t]).join(', ') : 'visual fixo';
+    s.desc = t ? 'free colors: ' + Object.values(ROTULOS[t]).join(', ') : 'fixed look';
   }
 }
 /* QUEM APARECE NA TELA DE CRIAÇÃO (27/10, painel admin → Skins de treinador, "Aparece na criação" = `criacao` no
