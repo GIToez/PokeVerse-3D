@@ -3424,7 +3424,10 @@ const CENAS_EXPORTADAS = new Set((await fetch('./data/interior_maps.txt').then(r
 const NPCS_GLB = await fetch('./data/npcs_glb.json').then(r => r.json()).catch(() => ({}));
 Ind.carregarLearnset(await fetch('./data/learnset.json').then(r => r.json()).then(L => { for (const [id, g] of Object.entries(GOLPES)) if (Number.isInteger(g.pp) && g.pp > 0) (L.pp ||= {})[id] = g.pp; return L; }).catch(() => null));   // golpes por nível (Sword/Shield) + PP (Fase 2: o PP de cada golpe vem do data/moves.json, que o painel edita)
 Ev.carregar().catch(() => {});
-if (params0.get('hora') != null) Relogio.forcar(params0.get('hora'));
+{
+  const horaUrl = params0.get('time') ?? params0.get('hour') ?? params0.get('hora');
+  if (horaUrl != null) Relogio.forcar(horaUrl);
+}
 const ITENS_NOME = await fetch('./data/menu_data.json').then(r => r.json()).then(d => Object.fromEntries(Object.entries(d.itens || {}).map(([id, it]) => [id, it.n]))).catch(() => ({}));   // nomes pros avisos de missão
 await Evolucao.carregar();                                                 // regras de evolução + curvas de XP (antes do nascimento: o parceiro nasce com exp)
 let DEX_EXTRA = null; fetch('./data/dex_extra.json').then(r => r.json()).then(j => { DEX_EXTRA = j; }).catch(() => {});   // golpes por nível (regras "conhecendo X"); pode chegar depois
@@ -7810,6 +7813,17 @@ if (jogo.ash){
   const areaAtual = () => { const a = jogo.ash; if (!a) return null; const c = (dados.caixas || []).find(c => c.sx > 0 && Math.abs(a.x - flipX * c.x) <= c.sx / 2 && Math.abs(a.z - c.z) <= c.sz / 2); return c ? c.a : (cenaAtual?.areas?.[0]?.id ?? null); };
   const nomeAreaAtual = () => { const a = areaInteriorVisitada ?? areaAtual(); return rotuloLugar((a != null && (nomeAreaCena(a) || dados.nomes?.[a] || NOMES_AREA[a])) || cenaAtual?.nome || NOME); };
   Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
+    hora: resto => {
+      const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
+      const uso = 'Use: /time night | day | dawn | dusk | 21 | 21:30 | off';
+      if (!resto){ Chat.sistema('Time is ' + Relogio.texto() + ' (' + (PER[Relogio.periodo()] || Relogio.periodo()) + '). ' + uso); return; }
+      const h = Relogio.lerHora(resto);
+      if (h === undefined){ Chat.sistema(uso); return; }
+      Relogio.forcar(h);
+      Chat.sistema(h == null
+        ? 'Time follows the real clock again (' + Relogio.texto() + ').'
+        : 'Time set to ' + Relogio.texto() + ' (' + (PER[Relogio.periodo()] || Relogio.periodo()) + ').');
+    },
     moderar: (op, resto) => {                                             // MODERAÇÃO (08/09): o servidor confere a marca de GM
       const [a, b, ...c] = resto.split(/\s+/);
       const msg = op === 'online' ? { t: 'mod_online' }

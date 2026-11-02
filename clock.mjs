@@ -9,7 +9,19 @@ export function acertar(a, b = Date.now()) {
 }
 export const desvioAtual = () => desvio;
 export const agora = () => Date.now() + desvio;
+export function lerHora(v) {
+  if (v == null) return null;
+  const s = String(v).trim().toLowerCase();
+  if (!s || s === 'off' || s === 'real' || s === 'clear' || s === 'auto') return null;
+  const nomes = { night: 21, dark: 21, day: 12, noon: 12, dawn: 6.5, morning: 8, dusk: 17.5, evening: 17.5, midnight: 0 };
+  if (Object.prototype.hasOwnProperty.call(nomes, s)) return nomes[s];
+  const hm = /^(\d{1,2})(?::(\d{2}))?$/.exec(s);
+  if (hm) return (((+hm[1] % 24) + 24) % 24) + (+hm[2] || 0) / 60;
+  const n = +s;
+  return Number.isFinite(n) ? ((n % 24) + 24) % 24 : undefined;
+}
 export function forcar(h) {
+  if (typeof h === 'string') h = lerHora(h);
   fixa = h == null || h === '' || !Number.isFinite(+h) ? null : ((+h % 24) + 24) % 24;
   return fixa;
 }
@@ -196,6 +208,7 @@ export default {
   acertar,
   desvioAtual,
   agora,
+  lerHora,
   forcar,
   forcada,
   horaEm,
