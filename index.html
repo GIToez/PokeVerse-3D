@@ -301,9 +301,12 @@ const __boot = (() => {
     falha(msg){ erro(msg, { tratado: true }); } };                          // erro TRATADO por um catch mas grave (ex.: o jogador não nasceu): vai como erro, de qualquer aparelho
 })();
 try { const m = sessionStorage.getItem('recargaModulo'); if (m){ sessionStorage.removeItem('recargaModulo'); __boot.falha('recarregou: módulo desencontrado (cache velho) · ' + m); } } catch {}   /* 19/09: a recarga do <head> diz no beacon quantas vezes salvou alguém */
-const NOME = ((id) => id === 'pallet_rota1' ? 'pallet_route1' : id)(new URLSearchParams(location.search).get('mapa')
+const NOME = ((id) => id === 'pallet_rota1' ? 'pallet_route1' : id === 'johto' ? '2000001' : id)(new URLSearchParams(location.search).get('mapa')
   || (() => { try { const v = localStorage.getItem('ultimaCena'); return v && /^[\w-]{1,40}$/.test(v) ? v : null; } catch { return null; } })()
   || 'kanto');   // default: all of Kanto; ?mapa=pallet_route1 is the light slice
+const GLB_CENA = +NOME === 2000001 ? 'kanto' : NOME;   // Johto uses the same prefab library as Kanto until a Johto GLB ships
+function ehMundoRua(n = NOME){ return n === 'kanto' || n === 'pallet_route1' || +n === 1000001 || +n === 2000001 || +n === 2500001; }
+function idMundo(c){ return c === 1000001 || c === 2000001 || c === 2500001 ? c : null; }
 const NOMES_AREA = { 1101: 'Pallet Town', 1201: 'Route 1', 1102: 'Viridian City', 1202: 'Route 2', 1221: 'Route 21', 1222: 'Route 22' };
 const $ = id => document.getElementById(id);
 /* ======================================================== demo pública */
@@ -662,9 +665,9 @@ for (;;){                                                                // laç
 try {
   bootProgresso(0, I18n.t('downloading the map…'));
   [gltf, chao, dados, indice] = await Promise.all([
-    baixarBin('./scenery/' + NOME + '.glb', (f, n) => bootProgresso(f, I18n.t('downloading the map…'), n))
+    baixarBin('./scenery/' + GLB_CENA + '.glb', (f, n) => bootProgresso(f, I18n.t('downloading the map…'), n))
       .then(buf => new GLTFLoader().parseAsync(buf, './scenery/')),      // os nossos .glb são fechados (não puxam .bin nem textura solta)
-    baixarJson('./scenery/' + NOME + '_chao.json'),
+    baixarJson('./scenery/' + GLB_CENA + '_chao.json'),
     baixarJson('./data/' + NOME + '.json'),
     baixarJson('./data/scenes.json', true),                               // índice das cenas, se existir
   ]);
@@ -959,7 +962,7 @@ function jingle(caminho, seg, depois = null){
   musicaTravada = performance.now() + seg * 1000;
   Som.musica(caminho, { loop: false, duracaoMax: seg, fade: 0.4, depois: () => { musicaTravada = 0; try { depois?.(); } catch {} atualizarMusica(); } });
 }
-const INTERIOR = !!cenaAtual && cenaAtual.id !== 1000001 && (cenaAtual.areas || []).length > 0 && cenaAtual.areas.every(a => a.tipo !== 1);
+const INTERIOR = !!cenaAtual && cenaAtual.id !== 1000001 && cenaAtual.id !== 2000001 && cenaAtual.id !== 2500001 && (cenaAtual.areas || []).length > 0 && cenaAtual.areas.every(a => a.tipo !== 1);
 if (INTERIOR){ cena.background = new THREE.Color('#15171d'); cena.fog = new THREE.Fog(cena.background, 30, 110); }
 
 // Lente do Fairy (Bundles/Conmon/MainCamera.prefab): FOV 20°, câmera a (0, 18.8, 23.5)
@@ -1037,7 +1040,7 @@ let mapaMundoRT = null;
 let mapaMundoCam = null;
 let mapaMundoPx = null;
 let mapaMundoArranque = 0;
-function naRuaKanto(){ return !INTERIOR && (NOME === 'kanto' || NOME === 'pallet_route1' || +NOME === 1000001); }
+function naRuaKanto(){ return !INTERIOR && ehMundoRua(); }
 function cenaKantoRev(){
   const d = typeof dados !== 'undefined' ? dados : {};
   return [principal?.nInst | 0, Math.round(principal?.nTris || 0), principal?.prefabs | 0,
@@ -5326,7 +5329,7 @@ function aposDesmaio(){
   p.hp = p.maxHp; p.desmaiado = 0;                                                                     // em memória também: qualquer gravação no unload sai curada
   portaOcupado = true;
   telaEscura(9000, (noCentro ? 'Centro Pokémon' : 'Laboratório') + '…');
-  if (NOME === 'kanto' || NOME === 'pallet_route1') sessionStorage.setItem('mundo', NOME);            // sair de lá volta pro mundo certo
+  if (ehMundoRua()) sessionStorage.setItem('mundo', NOME);            // sair de lá volta pro mundo certo
   const u = new URL(location.href); u.searchParams.set('mapa', alvo.mapa); u.searchParams.set('chegada', String(alvo.chegada)); u.searchParams.set('jogar', '1'); u.searchParams.delete('personagem');   // `jogar=1` explícito (12/09): com o storage bloqueado a tranca não consegue pôr
   setTimeout(() => { try { sessionStorage.setItem('porta.ok', '1'); } catch {} descarregarCena(); location.replace(u.toString()); }, 900);
 }
@@ -6408,8 +6411,8 @@ function prepararPortas(){
     if (p.t === 6 && !INTERIOR && !portaoDeRota) abrirCorredor(flipX * n.x, n.z);   // porta funda na caixa do prédio (ginásio de Pewter): liga a célula da porta ao ar livre — ANTES do vão
     abrirVao(flipX * n.x, n.z, portaoDeRota ? 1.4 : 0.6);   // a casca de parede bloqueia a linha inteira: abre só o vão da porta/chegada
     if (p.t === 6){
-      const dest = PORTAS[p.n], cenaDest = dest ? (dest.c === 1000001 ? 1000001 : (cenaDaArea(dest.a) || dest.c)) : null;
-      if (cenaDest !== 1000001 && String(cenaDest) !== NOME && !CENAS_EXPORTADAS.has(+cenaDest)){ semCena++; continue; }   // interior sem GLB ainda: sem anel (senão o boot cai num 404)
+      const dest = PORTAS[p.n], cenaDest = dest ? (idMundo(dest.c) || (cenaDaArea(dest.a) || dest.c)) : null;
+      if (!idMundo(cenaDest) && String(cenaDest) !== NOME && !CENAS_EXPORTADAS.has(+cenaDest)){ semCena++; continue; }   // interior sem GLB ainda: sem anel (senão o boot cai num 404)
       const destino = (casa && casa.volta && dest?.c === 1000001) ? casa.volta : p.n;   // casa compartilhada: a porta da rua devolve pra rua de onde vim
       portasCena.push({ id: n.cfg, x: flipX * n.x, z: n.z, destino });
     }
@@ -6484,7 +6487,7 @@ async function atravessar(p){
   if (jogo.turno) return;
   const { ash, pika } = jogo;
   Som.tocar('ui/sound_exitdoor', { volume: 0.5 });
-  const cenaDest = dest.c === 1000001 ? 1000001 : (cenaDaArea(dest.a) || dest.c);
+  const cenaDest = idMundo(dest.c) || (cenaDaArea(dest.a) || dest.c);
   /* CENA FECHADA (15/09): caverna sem Pokémon, sem item e com saída que não devolve — o DEREMIKA ficou preso nas Ilhas Seafoam
      DUAS vezes no mesmo dia (relatos 13:17 e 13:31) e o único jeito de sair era o botão "Estou preso". Enquanto não entra na
      rodada de conteúdo/colisão, a entrada fica trancada. Só barra QUEM ENTRA: se a cena fechada é a de agora (NOME), a porta
@@ -6494,7 +6497,7 @@ async function atravessar(p){
     for (const q of portasCena) if (distPorta(q, ash.x, ash.z) < 1.9) emPorta.add(q);   // rearma: não fica repetindo a cada quadro parado na porta
     return;
   }
-  if (String(cenaDest) === NOME || (dest.c === 1000001 && (NOME === 'kanto' || NOME === 'pallet_route1'))){
+  if (String(cenaDest) === NOME || (dest.c === 1000001 && (NOME === 'kanto' || NOME === 'pallet_route1')) || (dest.c === 2000001 && +NOME === 2000001)){
     const pt = (dados.npcs || []).find(n => n.cfg === p.destino); if (!pt) return;   // escada: mesmo GLB, outro andar
     portaOcupado = true;
     await telaEscura(350, nomeAreaCena(dest.a));
@@ -6524,8 +6527,8 @@ async function atravessar(p){
     $('boot').hidden = true; portaOcupado = false; return;
   }
   portaOcupado = true;
-  if (NOME === 'kanto' || NOME === 'pallet_route1') sessionStorage.setItem('mundo', NOME);
-  const mapa = dest.c === 1000001 ? (sessionStorage.getItem('mundo') || 'kanto') : String(cenaDest);
+  if (ehMundoRua()) sessionStorage.setItem('mundo', NOME);
+  const mapa = dest.c === 1000001 ? (sessionStorage.getItem('mundo') || 'kanto') : dest.c === 2000001 ? '2000001' : String(cenaDest);
   if (Math.floor((dest.a || 0) / 100) === 14) gravarLS('ultimoCentro', { mapa, chegada: p.destino, quando: Date.now() });   // Centro Pokémon = áreas 1401–1411: morte → acorda aqui (aposDesmaio)
   telaEscura(9000, (nomeAreaCena(dest.a) || mapa) + '…');
   const u = new URL(location.href); u.searchParams.set('mapa', mapa); u.searchParams.set('chegada', String(p.destino)); u.searchParams.set('jogar', '1');   // `jogar=1` explícito (12/09): com o storage bloqueado a tranca não consegue pôr
@@ -6550,7 +6553,7 @@ async function irParaCena({ mapa = null, chegada = null, texto = '', raid = null
   try { Menus.fechar(); } catch {}
   try { if (Troca.aberta()) Chat.sistema('The trade table closed: you were taken somewhere else.'); } catch {}   // o servidor cancela a troca quando a conexão cai na recarga
   try { if (jogo.turno){ if (jogo.turno.serv) Rede.pedirBatalha('sair').catch(() => {}); fimTurno(false, { desistiu: true }); } } catch (e){ console.warn('irParaCena: turno', e); }
-  try { if (NOME === 'kanto' || NOME === 'pallet_route1') sessionStorage.setItem('mundo', NOME); } catch {}   // sair do interior depois volta pro mundo certo
+  try { if (ehMundoRua()) sessionStorage.setItem('mundo', NOME); } catch {}   // sair do interior depois volta pro mundo certo
   if (raid != null){ Raid.carimbar(raid); Raid.marcarIda(raid); try { if (mapa) sessionStorage.removeItem('chegada.' + mapa); } catch {} }   // arena: a reserva de uma porta antiga não pode vencer a posição que o servidor deu
   else Raid.apagarCarimbo();
   telaEscura(9000, texto || '…');
@@ -7129,7 +7132,7 @@ function verificarPortas(dt){
 /* NPCs com modelo exportado (mãe, Oak, assistentes, Mimey…): parados em Idle, nome em cima;
    Z perto (ou toque neles) mostra as falas em pt do jogo numa caixa embaixo. */
 async function montarNpcs(){
-  const cenaId = +NOME || (NOME === 'kanto' || NOME === 'pallet_route1' ? 1000001 : 0);
+  const cenaId = +NOME || (NOME === 'kanto' || NOME === 'pallet_route1' ? 1000001 : 0) || (+NOME === 2000001 ? 2000001 : 0);
   /* Interiores: célula sem piso registrado (atrás do balcão do Centro) faz o chaoEm devolver a laje de baixo (−1,4 m) e o NPC
      nasce enterrado — só o nome aparece. Referência = o piso onde o jogador está: ninguém nasce abaixo dele. */
   const chaoRef = jogo.ash ? (chaoEm(jogo.ash.x, jogo.ash.z) ?? 0) : 0;
