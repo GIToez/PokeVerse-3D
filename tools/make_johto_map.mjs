@@ -265,6 +265,48 @@ for (const [id, list] of Object.entries(BLD)) {
   }
 }
 
+const HOUSES = [
+  'sm_t_001_house_01', 'sm_t_001_house_01_red', 'sm_c_001_house_02_blue',
+  'sm_c_001_house_02_purple', 'sm_t_007_house_01', 'sm_t_007_house_01_2',
+  'sm_t_007_house_01_3', 'sm_t_009_house_01', 'sm_t_011_house_02',
+  'sm_t_005_house_01_1', 'sm_c_yjs_house', 'sm_c_der_house2',
+];
+
+/* Kanto-style wall kit: z-run is east-west, c_1 is north-south. Open a road gap. */
+function wallRun(x0, z0, x1, z1, gap) {
+  const xA = Math.min(x0, x1), xB = Math.max(x0, x1);
+  const zA = Math.min(z0, z1), zB = Math.max(z0, z1);
+  const open = (x, z) => {
+    if (gap === 'ew' && Math.abs(z - (zA + zB) / 2) < 4 && (x < xA + 2 || x > xB - 2)) return true;
+    if (gap === 'ns' && Math.abs(x - (xA + xB) / 2) < 4 && (z < zA + 2 || z > zB - 2)) return true;
+    return false;
+  };
+  for (let x = xA; x <= xB; x += 1) {
+    if (!open(x, zA)) add('sm_001_fence_02_z 1', x, zA);
+    if (!open(x, zB)) add('sm_001_fence_02_z 1', x, zB);
+  }
+  for (let z = zA; z <= zB; z += 1) {
+    if (!open(xA, z)) add('sm_001_fence_02_c_1', xA, z);
+    if (!open(xB, z)) add('sm_001_fence_02_c_2', xB, z);
+  }
+  add('sm_c_001_fence_04_f', xA, zA);
+  add('sm_c_001_fence_04_f', xB, zA);
+  add('sm_c_001_fence_04_c_1', xA, zB);
+  add('sm_c_001_fence_04_c_2', xB, zB);
+}
+
+function yard(cx, cz, sx = 10, sz = 8) {
+  wallRun(cx - sx / 2, cz - sz / 2, cx + sx / 2, cz + sz / 2, 'ns');
+}
+
+for (const [id, list] of Object.entries(BLD)) {
+  const T = TOWN[+id];
+  if (!T) continue;
+  const gap = (id === '2101' || id === '2102' || id === '2105' || id === '2107') ? 'ew' : 'ns';
+  wallRun(T.x - T.sx / 2 + 3, T.z - T.sz / 2 + 3, T.x + T.sx / 2 - 3, T.z + T.sz / 2 - 3, gap);
+  for (const b of list) yard(T.x + b.dx, T.z + b.dz + 1, 9, 7);
+}
+
 for (const box of caixas) {
   if (box.a < 2101 || box.a > 2130 || SEA.has(box.a)) continue;
   const ring = box.a >= 2226 ? 6 : 14;
@@ -276,12 +318,8 @@ for (const box of caixas) {
     add('sm_c_001_streetlight_01', box.x - 6, box.z);
     add('sm_c_001_streetlight_01', box.x + 6, box.z);
     add('sm_c_001_signboard_01', box.x, box.z + box.sz / 2 - 3);
-    const x0 = box.x - box.sx / 2 + 2, x1 = box.x + box.sx / 2 - 2;
-    const z0 = box.z - box.sz / 2 + 2, z1 = box.z + box.sz / 2 - 2;
-    for (let x = x0; x <= x1; x += 4) {
-      add('sm_001_fence_02_z 1', x, z0);
-      add('sm_001_fence_02_z 1', x, z1);
-    }
+    add('sm_c_001_outerimplant_01', box.x - 4, box.z - 2);
+    add('sm_c_001_outerimplant_01', box.x + 4, box.z - 2);
   }
 }
 
@@ -320,9 +358,17 @@ for (const box of caixas) {
   const cols = Math.max(3, Math.ceil(Math.sqrt(leftover.length || 1)));
   leftover.forEach((pt, i) => {
     const col = i % cols, row = Math.floor(i / cols);
-    const x = box.x - Math.min(14, box.sx / 2 - 4) + col * 3.5;
-    const z = box.z + Math.min(10, box.sz / 2 - 4) - row * 3;
+    const x = box.x - Math.min(14, box.sx / 2 - 4) + col * 4;
+    const z = box.z + Math.min(10, box.sz / 2 - 4) - row * 4;
     putNpc(pt.cfg, pt.t === 6 ? 162 : 171, x, z, box.a);
+    if (pt.t !== 6 || box.a < 2101 || box.a > 2116) return;
+    const dest = String(pt.n || '');
+    let prop = HOUSES[i % HOUSES.length];
+    if (dest.startsWith('724')) prop = 'sm_c_001_pokecen_01';
+    else if (dest.startsWith('725')) prop = 'sm_c_001_shop_01';
+    else if (dest.startsWith('726')) prop = 'sm_c_001_gym_01';
+    add(prop, x, z - 5);
+    yard(x, z - 4, 8, 6);
   });
 }
 
