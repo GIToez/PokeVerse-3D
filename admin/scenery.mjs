@@ -124,19 +124,28 @@ async function montarBiblioteca(nome) {
   tipos = [...partes.keys()].sort().map(k => ({ id: k, nome: nomeDoPrefab.get(k) || k, criar: pos => criarBib(k, pos) }));
 }
 async function extraLamppost() {
-  if (modo !== 'biblioteca') return;
   const k = chaveNome('prop/lamppost');
-  if (partes.has(k) && partes.get(k).length) return;
   try {
-    const g = await loader.loadAsync('/scenery/prop/lamppost.glb');
-    g.scene.updateMatrixWorld(true);
-    const lista = [];
-    g.scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
-    if (!lista.length) return;
-    partes.set(k, lista);
+    if (!(partes.get(k) || []).length) {
+      const g = await loader.loadAsync('/scenery/prop/lamppost.glb');
+      g.scene.updateMatrixWorld(true);
+      const lista = [];
+      g.scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
+      if (!lista.length) return;
+      partes.set(k, lista);
+    }
+    const lista = partes.get(k);
     nomeDoPrefab.set(k, 'prop/lamppost');
     for (const p of pecas) if (chaveNome(p.nome) === k) p.mats = lista;
-    tipos = [{ id: k, nome: 'prop/lamppost', criar: pos => criarBib(k, pos) }, ...tipos.filter(t => t.id !== k)];
+    if (modo === 'montado') {
+      const r = await api('/admin/mapa-objetos?mapa=' + encodeURIComponent(mapaAtual));
+      for (const o of (r.objetos || [])) {
+        if (!/lamppost/i.test(o.n || '')) continue;
+        const obj = { n: 'prop/lamppost', x: +o.x || 0, y: +o.y || 0, z: +o.z || 0 };
+        pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: lista, inst: [], obj, lista: 'objetos' });
+      }
+    }
+    tipos = [{ id: k, nome: 'lamppost', criar: pos => criarBib(k, pos) }, ...tipos.filter(t => t.id !== k)];
   } catch (e) { console.warn('lamppost palette:', e); }
 }
 function montarMontado() {
@@ -288,6 +297,12 @@ async function salvar() {
       const r = await fetch(BASE + '/admin/mapa-glb?mapa=' + encodeURIComponent(mapaAtual), { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/octet-stream' }, body: buf });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { toast(d.erro || 'Failed to save the GLB.', true); return; }
+      const cur = await api('/admin/mapa-objetos?mapa=' + encodeURIComponent(mapaAtual));
+      if (cur && (cur.objetos || cur.ambiente || cur.areaEnv)) {
+        const objetos = (cur.objetos || []).filter(o => !/lamppost/i.test(o.n || ''));
+        for (const p of pecas) if (p.obj && /lamppost/i.test(p.obj.n)) objetos.push(p.obj);
+        await api('/admin/mapa-objetos', 'POST', { mapa: mapaAtual, objetos, ambiente: cur.ambiente || [], areaEnv: cur.areaEnv || [] });
+      }
       sujo = false; $('sujo').hidden = true; toast('Scenery saved (' + (d.bytes / 1048576).toFixed(1) + ' MB). Ctrl+Shift+R in the game.'); avisarJogo();
     }
   } catch (e) { toast('Error saving: ' + e.message, true); }
