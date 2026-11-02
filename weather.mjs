@@ -17,6 +17,40 @@ export const NOMES = {
 };
 export const rotulo = nome => NOMES[nome] || '';
 
+const ALIAS = {
+  rain: 'chuva',
+  chuva: 'chuva',
+  shower: 'chuva',
+  storm: 'chuva_forte',
+  heavy: 'chuva_forte',
+  heavyrain: 'chuva_forte',
+  'heavy rain': 'chuva_forte',
+  'chuva forte': 'chuva_forte',
+  chuva_forte: 'chuva_forte',
+  sun: 'sol',
+  sunny: 'sol',
+  sunlight: 'sol',
+  sol: 'sol',
+  sand: 'areia',
+  sandstorm: 'areia',
+  areia: 'areia',
+  hail: 'granizo',
+  granizo: 'granizo',
+  snow: 'neve',
+  neve: 'neve',
+  fog: 'nevoeiro',
+  mist: 'nevoeiro',
+  nevoeiro: 'nevoeiro',
+};
+
+/** Chat / URL alias → internal weather id. `off`/`clear` → null. Unknown → undefined. */
+export function ler(v){
+  if (v == null) return undefined;
+  const s = String(v).trim().toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+  if (!s || s === 'off' || s === 'clear' || s === 'none' || s === 'auto' || s === 'real') return null;
+  return Object.prototype.hasOwnProperty.call(ALIAS, s) ? ALIAS[s] : undefined;
+}
+
 const CHUVA = nome => nome === 'chuva' || nome === 'chuva_forte';
 
 export function poderTipo(clima, tipo){

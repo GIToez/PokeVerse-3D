@@ -7825,6 +7825,18 @@ if (jogo.ash){
         ? 'Time follows the real clock again (' + Relogio.texto() + ').'
         : 'Time set to ' + Relogio.texto() + ' (' + (PER[Relogio.periodo()] || Relogio.periodo()) + ').');
     },
+    clima: resto => {
+      const uso = 'Use: /weather rain | storm | sun | sand | hail | snow | fog | off';
+      if (!resto){
+        Chat.sistema((Weather.rotulo(clima.nome) || 'Clear') + '. ' + uso);
+        return;
+      }
+      const n = Weather.ler(resto);
+      if (n === undefined){ Chat.sistema(uso); return; }
+      clima.forcado = !!n;
+      if (!n){ desligarClima(); Chat.sistema('Weather follows the clock again.'); return; }
+      if (!ligarClima(n)) Chat.sistema(uso);
+    },
     moderar: (op, resto) => {                                             // MODERAÇÃO (08/09): o servidor confere a marca de GM
       const [a, b, ...c] = resto.split(/\s+/);
       const msg = op === 'online' ? { t: 'mod_online' }
@@ -8508,6 +8520,7 @@ const CLIMAS = {   /* precipitação NOSSA (linhas/pontos): o Element_Rain do jo
   granizo:     { tipo: 'linhas', n: 260, vel: 26, len: 0.45, cor: '#dfe9f2', op: 0.6, vento: 0.5, sol: 0.6, hemi: 0.7, ceu: '#7c8894', nevoa: [0.5, 0.5], filtro: 'brightness(0.8) saturate(0.85)' },
   nevoeiro:    { tipo: null, sol: 0.75, hemi: 0.85, ceu: '#9aa4ad', nevoa: [0.2, 0.28], filtro: 'brightness(0.92) saturate(0.65) contrast(0.92)' },
   areia:       { tipo: 'pontos', n: 380, vel: 2.5, size: 0.12, cor: '#d8b56a', op: 0.8, deriva: 9, sol: 0.85, hemi: 0.8, ceu: '#c2a879', nevoa: [0.3, 0.35], filtro: 'brightness(0.9) sepia(0.3)' },
+  sol:         { tipo: null, sol: 1.18, hemi: 1.08, ceu: '#ffd089', nevoa: [0.72, 0.78], filtro: 'brightness(1.08) saturate(1.18) sepia(0.14)' },
 };
 /* Cilindro de precipitação ao redor do jogador (raio ~18 m, teto +14): gota que chega ao chão renasce
    no topo JÁ na posição atual do Ash — a chuva anda com você sem mover a malha. */
@@ -8594,23 +8607,26 @@ function criarPrecipitacao(c){
   };
   return { raiz, atualizar, descartar(){ malha.geometry.dispose(); malha.material.dispose(); if (splMalha){ splMalha.geometry.dispose(); splMalha.material.dispose(); } } };
 }
-const clima = { nome: null, cfg: null, fx: null, criando: false, guarda: null };
+const clima = { nome: null, cfg: null, fx: null, criando: false, guarda: null, forcado: !!params0.get('clima') };
 const LUZ_DIA = { sol: sol.intensity, hemi: hemi.intensity };
 function aplicarMundoVisual(){
-  const ceu = (!INTERIOR && PLAY) ? Relogio.ceu() : { brilho: 1, sat: 1, sol: 1, hemi: 1, corSol: '#ffffff' };
+  const ceu = PLAY ? Relogio.ceu() : { brilho: 1, sat: 1, sol: 1, hemi: 1, corSol: '#ffffff' };
   const w = clima.cfg;
   sol.intensity = LUZ_DIA.sol * ceu.sol * (w?.sol ?? 1);
   hemi.intensity = LUZ_DIA.hemi * ceu.hemi * (w?.hemi ?? 1);
   sol.color.set(ceu.corSol || '#ffffff');
   clima.solAgora = sol.intensity;
-  if (INTERIOR){ tela.style.filter = ''; return; }
+  if (INTERIOR && !w){
+    if (PLAY) tela.style.filter = 'saturate(' + (ceu.sat * 1.06).toFixed(3) + ') brightness(' + Math.max(0.36, ceu.brilho * 1.12).toFixed(3) + ')';
+    else tela.style.filter = '';
+    return;
+  }
   if (w?.ceu){ cena.background = new THREE.Color(w.ceu); cena.fog.color.set(w.ceu); }
   else if (clima.guarda){ cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
   tela.style.filter = ((w?.filtro || '') + ' saturate(' + (ceu.sat * 1.12).toFixed(3) + ') brightness(' + (ceu.brilho * 1.04).toFixed(3) + ')').trim();
 }
 function passoClimaMundo(){
-  if (!PLAY || params0.get('clima')) return;
-  if (INTERIOR){ if (clima.nome) desligarClima(); return; }
+  if (!PLAY || clima.forcado || params0.get('clima')) return;
   const want = Weather.paraHora(Relogio.hora(), Relogio.agora());
   if (want === (clima.nome || null)) return;
   if (!want) desligarClima();
@@ -8618,7 +8634,7 @@ function passoClimaMundo(){
 }
 function ligarClima(nome, { silencioso = false } = {}){
   const c = CLIMAS[nome];
-  if (!c || INTERIOR) return false;
+  if (!c) return false;
   if (!clima.guarda) clima.guarda = { ceu: cena.background, nevoa: cena.fog.color.clone() };
   if (clima.fx && clima.nome !== nome){ clima.fx.descartar(); cena.remove(clima.fx.raiz); clima.fx = null; }
   clima.nome = nome; clima.cfg = c; jogo.clima = clima;

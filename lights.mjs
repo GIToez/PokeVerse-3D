@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.48;
+const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.3;
 const MAX_LUZ = 16;
 const EH_POSTE = /streetlight|lamppost/i;
 const CABECA = {
@@ -82,7 +82,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       if (bloqueio) bloqueio.add(Math.floor(x) + ',' + Math.floor(z));
     }
     const spr = new THREE.Sprite(haloM.clone());
-    spr.scale.set(4.2, 4.2, 1);
+    spr.scale.set(7.2, 7.2, 1);
     spr.position.set(x, y + cabeca, z);
     spr.visible = false;
     grupo.add(spr);
@@ -104,7 +104,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   cena.add(grupo);
   const luzes = [];
   for (let i = 0; i < MAX_LUZ; i++){
-    const L = new THREE.PointLight(0xfff4d0, 0, 26, 1.35);
+    const L = new THREE.PointLight(0xfff6d8, 0, 44, 1.05);
     L.castShadow = false;
     cena.add(L);
     luzes.push(L);
@@ -115,9 +115,9 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       const n = fatorNoite(ceu);
       const aceso = n > 0.04;
       for (const p of posts){
-        for (const m of p.glass){ m.emissiveIntensity = 0.12 + n * 3.4; m.needsUpdate = true; }
+        for (const m of p.glass){ m.emissiveIntensity = 0.2 + n * 6.2; m.needsUpdate = true; }
         p.halo.visible = aceso;
-        p.halo.material.opacity = 0.55 * n;
+        p.halo.material.opacity = 0.95 * n;
       }
       const ax = ash?.x ?? ash?.vx ?? 0, az = ash?.z ?? ash?.vz ?? 0;
       const near = posts.length <= MAX_LUZ ? posts
@@ -126,7 +126,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         const p = near[i], L = luzes[i];
         if (!p || !aceso){ L.intensity = 0; continue; }
         L.position.set(p.x, p.y, p.z);
-        L.intensity = 6.4 * n;
+        L.intensity = 16 * n;
       }
     },
   };

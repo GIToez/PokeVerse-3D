@@ -32,5 +32,11 @@ assert.equal(Weather.poderTipo('sol', 'Fire'), 1.5);
 assert.equal(Weather.poderGolpe('areia', { id: 'solarbeam' }, 120), 60);
 assert.equal(Weather.precisao('chuva', { id: 'thunder' }), 1);
 assert.equal(Weather.defesa('areia', ['Rock'], 4, 100), 150);
+assert.equal(Weather.ler('rain'), 'chuva');
+assert.equal(Weather.ler('storm'), 'chuva_forte');
+assert.equal(Weather.ler('sun'), 'sol');
+assert.equal(Weather.ler('fog'), 'nevoeiro');
+assert.equal(Weather.ler('off'), null);
+assert.equal(Weather.ler('xyz'), undefined);
 
 console.log('ok stats + weather');
