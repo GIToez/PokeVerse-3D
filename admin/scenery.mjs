@@ -139,7 +139,7 @@ let pecas = [];             // lista unificada: { pos:Vector3, nome, mats:[{geo,
 let tipos = [];             // paleta: { id, nome, criar(pos)→peça }
 let instGrupos = [];
 let selPeca = null, boxHelper = null;
-let sujo = false, mapaAtual = null, mapaRotulo = '', mapasDisponiveis = [], ferramenta = 'sel', addTipo = null, snap = false;
+let sujo = false, mapaAtual = null, mapaRotulo = '', mapasDisponiveis = [], glbDoMapa = {}, ferramenta = 'sel', addTipo = null, snap = false;
 const raycaster = new THREE.Raycaster();
 const planoChao = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const _m4 = new THREE.Matrix4(), _T = new THREE.Matrix4();
@@ -183,6 +183,7 @@ async function listarMapas() {
   await carregarNomes();
   const r = await api('/admin/mapas-glb');
   mapasDisponiveis = r.mapas || [];
+  glbDoMapa = r.glb || {};
   montarOpcoesMapa();
   if (!mapasDisponiveis.length) { $('carregando').textContent = 'No maps with a local GLB.'; return; }
   await carregarMapa(mapasDisponiveis.includes('pallet_route1') ? 'pallet_route1' : mapasDisponiveis[0]);
@@ -200,7 +201,7 @@ async function carregarMapa(nome, rotulo) {
   for (const g of instGrupos) { raizInst.remove(g); g.dispose?.(); }
   instGrupos = []; pecas = []; partes = new Map(); nomeDoPrefab = new Map(); sceneGLB = null; mapaNode = null;
   let g;
-  try { g = await loader.loadAsync('/scenery/' + nome + '.glb'); }
+  try { g = await loader.loadAsync('/scenery/' + (glbDoMapa[nome] || nome) + '.glb'); }
   catch (e) { $('carregando').textContent = 'could not load the GLB for ' + nome; return; }
   sceneGLB = g.scene; sceneGLB.updateMatrixWorld(true);
   mapaNode = g.scene.getObjectByName('Mapa') || g.scene;

@@ -485,9 +485,12 @@ function caminhoGlb(m) {
   if (fs.existsSync(raiz)) return raiz;
   return pub;   // mapa novo: grava em public (ganha no Vite)
 }
+// Maps with no GLB of their own that build from another map's prefab library (same rule as GLB_CENA in index.html).
+const GLB_EMPRESTADO = { 2000001: 'kanto' };
 function mapasComGlb() {                                                   // nomes de mapa com .glb (os dois lugares), que também têm <mapa>.json
   const nomes = new Set();
   for (const d of [CENARIO_PUB, CENARIO_RAIZ]) { try { for (const f of fs.readdirSync(d)) if (f.endsWith('.glb')) nomes.add(f.slice(0, -4)); } catch {} }
+  for (const [m, lib] of Object.entries(GLB_EMPRESTADO)) if (nomes.has(lib)) nomes.add(m);
   return [...nomes].filter(m => fs.existsSync(nodePath.join(DADOS_PUB, m + '.json'))).sort();
 }
 const ZONAS_ARQ = nodePath.join(DADOS_PUB, 'zonas_spawn.json');
@@ -946,7 +949,9 @@ const httpServer = http.createServer((req, res) => {
       }
       // ── Editor de Cenário 3D: objetos (prefabs colocados) do mapa ──
       if (rota === '/admin/mapas-glb' && req.method === 'GET') {           // mapas com .glb (public/scenery/ + scenery/ raiz) que têm <mapa>.json
-        return json(200, { ok: true, mapas: mapasComGlb() });
+        const mapas = mapasComGlb();
+        const glb = Object.fromEntries(Object.entries(GLB_EMPRESTADO).filter(([m]) => mapas.includes(m)));
+        return json(200, { ok: true, mapas, glb });
       }
       if (rota === '/admin/mapa-objetos' && req.method === 'GET') {
         const m = String(url.searchParams.get('mapa') || '');
