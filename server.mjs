@@ -313,9 +313,58 @@ function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
   for (const k of Object.keys(prefs)) if (PREFS_OK.has(k)) c.save[k] = prefs[k];   // chave fora da lista (dinheiro, bolas…) é IGNORADA
 }
-/* `arranjo` só REORDENA (e move entre time/caixa) os Pokémon que a conta JÁ tem, casando por uid: o registro de cada
-   um continua sendo o do servidor, então o cliente não inventa espécie/nível/shiny nem edita stats por aqui. Só aceita
-   se o conjunto de uids continuar o mesmo (nada criado, duplicado ou sumido). */
+/* Wild battles run on the client (`soloWilds`). The party sync used to keep the server's
+   Pokémon record as-is, so experience gained in the field never landed in the account and a
+   refresh put the bar back to the start of the level. Species, IVs, nature and shiny stay
+   the server's. Experience only moves forward; the level is whatever that total means on
+   the species curve, so a stale client cannot roll a server battle's XP backwards. */
+const EXP_TETO = 20000000;
+let expTabCache = null;
+function expTabela() {
+  if (expTabCache) return expTabCache;
+  try { expTabCache = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/data/exp.json'), 'utf8')); }
+  catch { expTabCache = { curvas: {}, especies: {} }; }
+  return expTabCache;
+}
+function curvaExp(dex) {
+  const t = expTabela();
+  const nome = t.especies?.[dex]?.c || t.especies?.[String(dex)]?.c || 'medium';
+  return t.curvas?.[nome] || [];
+}
+function expNoNivel(dex, lv) {
+  const c = curvaExp(dex);
+  return c[Math.max(1, Math.min(100, lv | 0))] || 0;
+}
+function nivelDaExp(dex, exp) {
+  const c = curvaExp(dex);
+  let lv = 1;
+  const x = Math.max(0, exp | 0);
+  while (lv < 100 && (c[lv + 1] ?? Infinity) <= x) lv++;
+  return lv;
+}
+function fundirProgresso(reg, item) {
+  if (!reg || !item || typeof item !== 'object') return;
+  const base = Number.isInteger(reg.exp) ? reg.exp : expNoNivel(reg.dex, reg.lv || 1);
+  const exp = Math.round(Number(item.exp));
+  let expAgora = base;
+  if (Number.isInteger(exp) && exp >= base && exp <= EXP_TETO) {
+    reg.exp = exp;
+    expAgora = exp;
+    const lv = nivelDaExp(reg.dex, exp);
+    if (lv >= (reg.lv || 1) && lv <= 100) reg.lv = lv;
+  }
+  const reserva = Math.round(Number(item.expReserva));
+  if (Number.isInteger(reserva) && reserva >= 0 && reserva <= EXP_TETO) {
+    const tinha = Math.round(Number(reg.expReserva) || 0);
+    if (reserva >= tinha) reg.expReserva = reserva;
+    else if (expAgora + 1 >= base + (tinha - reserva)) reg.expReserva = reserva;   // the bank was poured into the bar
+  }
+  const ami = Math.round(Number(item.amizade));
+  if (Number.isInteger(ami) && ami >= 0 && ami <= 255) reg.amizade = ami;
+}
+/* `arranjo` reorders the Pokémon the account already has, matched by uid. It is accepted only
+   when the set of uids is unchanged (nothing created, duplicated or deleted). Progress is
+   merged onto the server record after that check, so a rejected reorder does not write XP. */
 function aplicarArranjo(c, arranjo) {
   if (!arranjo || typeof arranjo !== 'object' || !c.save) return false;
   const porUid = new Map();
@@ -336,6 +385,12 @@ function aplicarArranjo(c, arranjo) {
   const usados = new Set([...time, ...caixa].map(p => String(p.uid)));
   const resto = [...porUid.values()].filter(p => !usados.has(String(p.uid)));
   if (time.length + caixa.length + resto.length !== porUid.size) return false;
+  const doCliente = new Map();
+  for (const lista of [arranjo.time, arranjo.caixa]) {
+    if (!Array.isArray(lista)) continue;
+    for (const item of lista) if (item && typeof item === 'object' && item.uid != null) doCliente.set(String(item.uid), item);
+  }
+  for (const [uid, reg] of porUid) fundirProgresso(reg, doCliente.get(uid));
   c.save.time = time;
   c.save.caixa = [...caixa, ...resto];
   return true;
