@@ -31,7 +31,7 @@ function glowTex(){
 }
 
 function haloMat(tex){
-  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: 0 });
+  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, opacity: 0 });
 }
 
 function chaoMat(tex){
@@ -67,12 +67,12 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   const jaTem = (x, z) => posts.some(p => (p.x - x) ** 2 + (p.z - z) ** 2 < 2.2);
   const addGlow = (x, y, z, glass) => {
     const halo = new THREE.Sprite(haloMat(tex));
-    halo.scale.set(14, 14, 1);
+    halo.scale.set(4.6, 4.6, 1);
     halo.position.set(x, y + 0.15, z);
     halo.visible = false;
     const chao = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), chaoMat(tex));
     chao.rotation.x = -Math.PI / 2;
-    chao.scale.set(22, 22, 1);
+    chao.scale.set(7, 7, 1);
     chao.position.set(x, (chaoEm?.(x, z) ?? (y - 3.1)) + 0.05, z);
     chao.visible = false;
     grupo.add(halo, chao);
@@ -135,7 +135,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   cena.add(grupo);
   const luzes = [];
   for (let i = 0; i < MAX_LUZ; i++){
-    const L = new THREE.PointLight(0xfff6d8, 0, 44, 1.05);
+    const L = new THREE.PointLight(0xfff6d8, 0, 18, 1.4);
     L.castShadow = false;
     cena.add(L);
     luzes.push(L);
@@ -146,10 +146,10 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       const n = fatorNoite(ceu);
       const aceso = n > 0.04;
       for (const p of posts){
-        for (const m of p.glass){ m.emissiveIntensity = 0.25 + n * 7.5; m.needsUpdate = true; }
+        for (const m of p.glass){ m.emissiveIntensity = 0.15 + n * 1.8; m.needsUpdate = true; }
         p.halo.visible = aceso;
-        p.halo.material.opacity = 1.6 * n;
-        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 1.15 * n; }
+        p.halo.material.opacity = 0.42 * n;
+        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 0.28 * n; }
       }
       const ax = ash?.x ?? ash?.vx ?? 0, az = ash?.z ?? ash?.vz ?? 0;
       const near = posts.length <= MAX_LUZ ? posts
@@ -158,7 +158,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         const p = near[i], L = luzes[i];
         if (!p || !aceso){ L.intensity = 0; continue; }
         L.position.set(p.x, p.y, p.z);
-        L.intensity = 26 * n;
+        L.intensity = 5.5 * n;
       }
     },
   };
