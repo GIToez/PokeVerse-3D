@@ -227,13 +227,13 @@ function escolherCards(){
 const escolhaDemo = DEMO ? escolherCards() : null;   // os cards aparecem já, enquanto o mapa carrega
 /* Tela de criação de personagem (character.mjs): na primeira vez (sem `personagem` salvo) ou com ?personagem=1. Abre já,
    por cima do boot, enquanto o mapa carrega (quando dá pra saber que vai jogar: ?jogar=1 ou mapa=kanto); o nascimento
-   (bloco JOGAR) espera a escolha — e abre lá, se ainda não abriu (?mapa=casa). Não existe na demo nem no Fairy. */
+   (PLAY block) espera a escolha — e abre lá, se ainda não abriu (?mapa=casa). Não existe na demo nem no Fairy. */
 const FORCAR_CRIACAO = new URLSearchParams(location.search).get('personagem') === '1';
-const JOGAR_CEDO = new URLSearchParams(location.search).get('jogar') === '1' || (new URLSearchParams(location.search).get('jogar') !== '0' && NOME === 'kanto');
+const PLAY_EARLY = new URLSearchParams(location.search).get('jogar') === '1' || (new URLSearchParams(location.search).get('jogar') !== '0' && NOME === 'kanto');
 const CLIPE_CEDO = /[?&](raid|torneio|diretor)=1/.test(location.search);   // clipes/diretor nunca abrem o criador (as const ficam lá embaixo — TDZ aqui)
-const SEM_CONTA_CEDO = /[?&](rede|conta)=0(&|$)/.test(location.search) || /[?&]figmateste=1(&|$)/.test(location.search);   // fase 2: com conta possível, o criador só abre DEPOIS do login (o save da conta pode já ter personagem); abre lá no bloco JOGAR
+const SEM_CONTA_CEDO = /[?&](rede|conta)=0(&|$)/.test(location.search) || /[?&]figmateste=1(&|$)/.test(location.search);   // fase 2: com conta possível, o criador só abre DEPOIS do login (o save da conta pode já ter personagem); abre lá no PLAY block
 /* ROD. 23 (09/09): a criação do treinador virou as telas do Figma (escolher + personalizar), e elas precisam do LAYOUT —
-   que só existe a partir da linha ~1502. Por isso a criação acontece agora SEMPRE no bloco JOGAR, um pouco mais tarde:
+   que só existe a partir da linha ~1502. Por isso a criação acontece agora SEMPRE no PLAY block, um pouco mais tarde:
    adiantá-la aqui seria mexer no `layoutHudP` antes de ele existir (TDZ, a pegadinha nº 1 deste arquivo). */
 let criacao = null;
 
@@ -2921,7 +2921,7 @@ addEventListener('keydown', ev => { if (ev.code === 'F8' && !ev.repeat && GM){ c
 document.body.classList.add('hud-esperando');
 const layoutHudP = layoutHudCedoP;                                       // já pedido lá em cima, junto com o login
 /* Quem cria o treinador: as telas do Figma (rodada 23) quando a maquete as tem, senão o criador antigo do character.mjs
-   (demo pública com pacote velho). `function` de propósito: é chamada no bloco JOGAR e no ctx dos menus. */
+   (demo pública com pacote velho). `function` de propósito: é chamada no PLAY block e no ctx dos menus. */
 async function abrirCriador(opc = {}){
   try {
     const L = await layoutHudP;
@@ -2951,9 +2951,8 @@ const INTRO_CENA = { mapa: 4120013, chegada: 7170501 };                   // Qua
 if (params0.has('raf')) window.requestAnimationFrame = cb => setTimeout(() => cb(performance.now()), 16);   // ?raf=1: teste em aba escondida (rAF vira timer)
 /* Com CONTA a página está sempre jogando (12/09): vale pro `?mapa=` de staff e pra ÚLTIMA CENA guardada no aparelho. "Tem conta"
    aqui é o token de sessão no aparelho — o `CONTA` de verdade só existe mais abaixo (`await contaP`), usá-lo aqui era TDZ. */
-/* 12/09 (revisão): o `JOGAR` é decidido DEPOIS do login (logo abaixo do `const CONTA`), porque decidir pelo token no localStorage
-   errava quando ele ainda não existia — tester que clicou "Sair" dentro de um interior, ou 2º tester no mesmo PC: a cena carregava
-   como visualizador (sem jogador, sem HUD, sem rede). Nada entre aqui e o `CONTA` usa `JOGAR`. */
+/* PLAY is decided after login (just below const CONTA). Reading a leftover token in localStorage
+   used to load the scene as a viewer (no player, HUD, or net). Nothing between here and CONTA reads PLAY. */
 const jogo = { ativo: false, ash: null, pika: null, trabalhadores: [] };
 /* RAID AO VIVO (14/09): MODO RAID = a arena (4120009) carregada por uma ida da raid — o carimbo `sessionStorage['raid.ativa']` que o
    `irParaCena` grava junto do `porta.ok` (e que sobrevive ao F5 dentro da arena). Nesse modo a sala não monta portas, NPCs,
@@ -2988,7 +2987,7 @@ $('boot').hidden = false; $('boot').textContent = I18n.t('carregando o mapa…')
    então isto não repete. Só vale quando ninguém pediu um lugar (`?mapa=`/`?chegada=`) e fora dos modos de clipe. */
 /* Esta página é o JOGO (nasce o jogador, HUD do Figma, rede) ou só o VISUALIZADOR da cena? Com conta é sempre o jogo (12/09); sem
    conta: `?jogar=1`, Kanto, o lote da casa, ou os modos de clipe. `?jogar=0` desliga sempre. */
-const JOGAR = params0.get('jogar') === '1' || (params0.get('jogar') !== '0' && (NOME === 'kanto' || !!dados.lote || CONTA.modo === 'conta')) || DEMO || FAIRY || RAID || TORNEIO || DIRETOR || CAPTURA;   // ?raid=1 / ?torneio=1 / ?diretor=1 / ?captura=1 já ligam o jogo
+const PLAY = params0.get('jogar') === '1' || (params0.get('jogar') !== '0' && (NOME === 'kanto' || !!dados.lote || CONTA.modo === 'conta')) || DEMO || FAIRY || RAID || TORNEIO || DIRETOR || CAPTURA;   // ?raid=1 / ?torneio=1 / ?diretor=1 / ?captura=1 já ligam o jogo
 const voltarNaCena = (() => {
   if (CONTA.modo !== 'conta') return null;
   for (const k of ['mapa', 'chegada', 'intro', 'raid', 'torneio', 'diretor', 'captura', 'tela', 'personagem', 'voltou']) if (params0.has(k)) return null;   // `voltou`: trava na PRÓPRIA URL, pra não depender só do sessionStorage
@@ -3195,7 +3194,7 @@ function definirTamanhos(modo){
   for (const e of [jogo.pika, ...(jogo.selvagens || []), ...(jogo.trabalhadores || []), ...(jogo.voadores || [])]) aplicarTamanho(e);
   const sel = document.getElementById('tam-modo'); if (sel) sel.value = jogo.tamanhos;
 }
-if (JOGAR){
+if (PLAY){
   try {
     if (escolhaDemo){ const e = await escolhaDemo; params0.set('seguidor', e.seguidor); jogo.montariaDemo = e.montaria; }
     if (Fairy?.estado().inicial) params0.set('seguidor', Fairy.estado().inicial);
@@ -3679,7 +3678,7 @@ Conhecimento.instalar({ lerLS, gravarLS, porDex, sexos: SEXOS, avisar: txt => Ch
    Conhecimento devolve título vazio, e só refazia quando um título NOVO era conquistado (por isso "apareceu 1 vez e sumiu" no F5).
    Os outros viam, porque a rede manda o tituloAtual() depois. Refaz o rótulo agora que o título existe. */
 if (Conhecimento.tituloAtual?.()) rotularJogador();
-const habitats = JOGAR && params0.get('selvagens') !== '0' && !dados.lote        // no lote os "tiles de grama" são a grade de construção
+const habitats = PLAY && params0.get('selvagens') !== '0' && !dados.lote        // no lote os "tiles de grama" são a grade de construção
   ? await fetch('./data/habitats.json').then(r => r.ok ? r.json() : null).catch(() => null) : null;
 /* ZONAS DO EDITOR DE MAPA (admin, /admin): data/zonas_spawn.json. Cada zona nasce as espécies escolhidas num RAIO, somando ao
    habitat da área. O painel (outra aba) avisa 'zonas-mudaram' pra recarregar na hora, responde 'onde' com a posição do Ash e
@@ -4254,8 +4253,8 @@ function atualizarChefe(dt){
     }
   }
 }
-if (params0.get('chefe') && JOGAR) setTimeout(() => chegarChefe(params0.get('chefe')), (+params0.get('chefeEm') || 3) * 1000);   // ?chefeEm=8 → segundos até ele chegar
-if ((params0.get('montaria') || ADM) && JOGAR) setTimeout(() => montar(params0.get('montaria') || 'pm0249_00'), (+params0.get('montariaEm') || 1.5) * 1000);   // ?montaria=pm0249_00 → já sai montado
+if (params0.get('chefe') && PLAY) setTimeout(() => chegarChefe(params0.get('chefe')), (+params0.get('chefeEm') || 3) * 1000);   // ?chefeEm=8 → segundos até ele chegar
+if ((params0.get('montaria') || ADM) && PLAY) setTimeout(() => montar(params0.get('montaria') || 'pm0249_00'), (+params0.get('montariaEm') || 1.5) * 1000);   // ?montaria=pm0249_00 → já sai montado
 
 /* ------------------------------------------------------- trabalhadores */
 // Ciclo de rega: `indo` até a beira do canteiro → `regando` (Cast + jato d'água
@@ -7906,7 +7905,7 @@ const alvo = params.has('cx') ? mundo(+params.get('cx'), 0, +(params.get('cz') |
    aproximar seguem livres. ?adm=1 e o visualizador de mapa (sem jogar) ficam com o teto de dev,
    que e o que as ferramentas de print e o ?zoom=45 usam. As cinematicas escrevem `zoom` direto
    (max 1,5), entao nao passam por este clamp. */
-const ZOOM_TETO = (ADM || !JOGAR) ? ZOOM_MAX : (INTERIOR ? 1.0 : 2.5);   // INTERIOR (13/09): afastar demais via a parede mostrava o cômodo ao lado (tester no Firefox); teto menor dentro de casa (padrão é 0,7)
+const ZOOM_TETO = (ADM || !PLAY) ? ZOOM_MAX : (INTERIOR ? 1.0 : 2.5);   // INTERIOR (13/09): afastar demais via a parede mostrava o cômodo ao lado (tester no Firefox); teto menor dentro de casa (padrão é 0,7)
 let zoom = THREE.MathUtils.clamp(+(params.get('zoom') || (jogo.ativo ? (INTERIOR ? (jogo.raidArena ? 1.0 : 0.7) : 1.0) : inicio ? 1.6 : 1.0)), 0.35, ZOOM_TETO), giro = 0;   // RAID AO VIVO (14/09): na arena a câmera abre no teto do interior — com 0,7 o Mew (2,5 m, pairando) saía do quadro
 
 // trocar de cena (overworld, dungeons, interiores) — recarrega com ?mapa=<id>
@@ -8159,7 +8158,7 @@ function ligarClima(nome){
 function desligarClima(){
   if (clima.fx){ clima.fx.descartar(); cena.remove(clima.fx.raiz); }
   if (clima.guarda){ sol.intensity = clima.guarda.sol; hemi.intensity = clima.guarda.hemi; cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
-  tela.style.filter = (JOGAR && !INTERIOR) ? FILTRO_BASE : '';
+  tela.style.filter = (PLAY && !INTERIOR) ? FILTRO_BASE : '';
   clima.nome = clima.cfg = clima.fx = null;
 }
 function atualizarClima(dt){
@@ -8190,8 +8189,8 @@ function atualizarClima(dt){
   } else fx.atualizar(dt);
 }
 const FILTRO_BASE = 'saturate(1.12) brightness(1.04)';                   // A/B com o cliente real (LDPlayer): o Fairy é mais claro e mais saturado
-if (JOGAR && !INTERIOR) tela.style.filter = FILTRO_BASE;
-if (JOGAR && params0.get('clima')) ligarClima(params0.get('clima'));
+if (PLAY && !INTERIOR) tela.style.filter = FILTRO_BASE;
+if (PLAY && params0.get('clima')) ligarClima(params0.get('clima'));
 
 /* ============================================================== batalha por turno (treinadores)
    Como combinado: selvagens continuam em tempo real; TREINADORES (e depois ginásios) lutam por turnos.
@@ -8223,7 +8222,7 @@ async function bolaLancada(de, x, z){
 /** Liga o povoador de treinadores (uma vez por página): no boot normal, ou quando a arena sai do modo raid (`desativarArenaRaid`). */
 function ligarTreinadores(){ if (jogo.treinadoresLigados) return; jogo.treinadoresLigados = true; setInterval(povoarTreinadores, 2500); }
 async function povoarTreinadores(){
-  if (povoandoT || !JOGAR || Fairy || !jogo.ash || jogo.raidArena || !(dados.treinadores || []).length) return;
+  if (povoandoT || !PLAY || Fairy || !jogo.ash || jogo.raidArena || !(dados.treinadores || []).length) return;
   povoandoT = true;
   try {
     if (!dadosTreinadores) dadosTreinadores = await fetch('./data/trainers.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
