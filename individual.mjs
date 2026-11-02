@@ -1,9 +1,9 @@
-/* Indivíduo: IV (0–31 por stat) e natureza (25, +10 %/−10 %) — o que faz cada Pokémon ser único.
-   Fórmulas da série (as de rules.mjs são estas com IV/EV zerados e natureza neutra; o ×3 do HP é a folga do
-   combate em tempo real). EV fica reservado (parâmetro `ev`, sempre 0 por enquanto — decisão no GDD §11.3).
-   Sorte: hoje rola no cliente (single-player); no servidor a rolagem vai pra lá (GDD §8). Sem reroll pago. */
+/* Indivíduo: IV (0–31 por stat), EV (0–252 / 510 total) e natureza (25, +10 %/−10 %).
+   Fórmulas da série (Bulbapedia / PokéAPI): floor((2·base + IV + floor(EV/4)) · lv / 100) …
+   HP is then ×3 for real-time fights (same as rules.mjs). */
 export const STATS = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
 export const IV_MAX = 31, IV_TOTAL = 31 * 6;
+export const EV_STAT_MAX = 252, EV_TOTAL_MAX = 510;
 export const HP_X = 3;                                                   // folga do tempo real (igual ao rules.mjs)
 /** [nome, stat que sobe, stat que desce] — índices em STATS (1 Atk, 2 Def, 3 SpA, 4 SpD, 5 Spe); neutra = mesmo índice. */
 export const NATUREZAS = [
@@ -19,6 +19,18 @@ export const sortearNatureza = () => NATUREZAS[Math.floor(Math.random() * NATURE
 export function multNatureza(nome, i){ const n = natureza(nome); if (!n || n[1] === n[2]) return 1; return i === n[1] ? 1.1 : i === n[2] ? 0.9 : 1; }
 export const descNatureza = nome => { const n = natureza(nome); return !n ? '' : n[1] === n[2] ? 'neutral' : '+' + STATS[n[1]] + ' −' + STATS[n[2]]; };
 export const somaIV = e => (e?.ivs || []).reduce((a, b) => a + b, 0);
+export function evsDe(e){
+  const z = [0, 0, 0, 0, 0, 0];
+  const src = Array.isArray(e?.evs) ? e.evs : z;
+  const out = z.map((_, i) => Math.max(0, Math.min(EV_STAT_MAX, Math.floor(+src[i] || 0))));
+  let extra = out.reduce((a, b) => a + b, 0) - EV_TOTAL_MAX;
+  for (let i = 5; i >= 0 && extra > 0; i--){
+    const t = Math.min(out[i], extra);
+    out[i] -= t; extra -= t;
+  }
+  return out;
+}
+export const somaEV = e => evsDe(e).reduce((a, b) => a + b, 0);
 
 export function hp(base, lv, iv = 0, ev = 0){ return (Math.floor((2 * base + iv + Math.floor(ev / 4)) * lv / 100) + lv + 10) * HP_X; }
 export function stat(base, lv, iv = 0, ev = 0, nat = null, i = 1){ return Math.floor((Math.floor((2 * base + iv + Math.floor(ev / 4)) * lv / 100) + 5) * multNatureza(nat, i)); }
@@ -27,10 +39,11 @@ export function garantir(e){
   if (!e) return e;
   if (!Array.isArray(e.ivs) || e.ivs.length !== 6) e.ivs = sortearIVs();
   if (!natureza(e.natureza)) e.natureza = sortearNatureza();
+  e.evs = evsDe(e);
   return e;
 }
-export const hpDe = (S, e) => hp(S.bs[0], e.lv || 1, e.ivs?.[0] || 0);
-export const statDe = (S, e, i) => stat(S.bs[i], e.lv || 1, e.ivs?.[i] || 0, 0, e.natureza, i);
+export const hpDe = (S, e) => hp(S.bs[0], e.lv || 1, e.ivs?.[0] || 0, evsDe(e)[0]);
+export const statDe = (S, e, i) => stat(S.bs[i], e.lv || 1, e.ivs?.[i] || 0, evsDe(e)[i], e.natureza, i);
 /* ------------------------------------------------------------ golpes por indivíduo (learnset) e PP
    `movs` = [{ id, pp, ppMax }] até 4, no registro do time e na entidade; `golpesIds` do index é derivado daqui.
    Learnset (data/learnset.json, tools/learnset.mjs): golpes de dano com efeito, por nível (Sword/Shield). */
@@ -78,6 +91,6 @@ export const semPP = e => !!(e?.movs?.length) && e.movs.every(m => m.pp <= 0);
 
 /** Os 6 stats do indivíduo (bs da espécie + IV + natureza). */
 export function statsDe(S, e){
-  const bs = S?.bs || [45, 45, 45, 45, 45, 45], lv = e?.lv || 5, iv = e?.ivs || [0, 0, 0, 0, 0, 0];
-  return bs.map((b, i) => i === 0 ? hp(b, lv, iv[0]) : stat(b, lv, iv[i], 0, e?.natureza, i));
+  const bs = S?.bs || [45, 45, 45, 45, 45, 45], lv = e?.lv || 5, iv = e?.ivs || [0, 0, 0, 0, 0, 0], ev = evsDe(e);
+  return bs.map((b, i) => i === 0 ? hp(b, lv, iv[0], ev[0]) : stat(b, lv, iv[i], ev[i], e?.natureza, i));
 }

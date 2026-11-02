@@ -43,6 +43,11 @@ export function definirEscalaPopup(f){ try { localStorage.setItem('popup.escala'
 const CSS = `
 .pf{transform-origin:50% 50%;color:#fff;font:12px/1.05 "Nunito Sans",system-ui,sans-serif;user-select:none}
 #pf-popup-pokemon [data-fig="stat-hp"],#pf-popup-pokemon [data-fig="stat-ataque"],#pf-popup-pokemon [data-fig="stat-defesa"],#pf-popup-pokemon [data-fig="stat-at-esp"],#pf-popup-pokemon [data-fig="stat-def-esp"],#pf-popup-pokemon [data-fig="stat-velocidade"],#pf-popup-pokemon [data-fig="stat-total"],#pf-popup-pokemon [data-fig="stat-natureza"],#pf-popup-pokemon [data-fig="rotulo-golpes"]{background:#12192c}
+.pf .stat-pills.pf-pills{display:flex;flex-wrap:wrap;gap:5px}
+.pf .stat-pills .pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid #c9a227;background:#12192ce6;color:#f3e6b0;font-size:10px;font-weight:700;line-height:1.2}
+.pf .stat-pills .pill.iv{border-color:#6ea8ff;color:#cfe2ff}
+.pf .stat-pills .pill.ev{border-color:#e08a2a;color:#ffd19a}
+.pf .stat-pills .pill.ev.cheio{border-color:#5ee0c4;color:#c5fff0}
 .pf *{box-sizing:border-box}
 .pf .pf-grupo,.pf .pf-img,.pf .pf-var,.pf .pf-ret,.pf .pf-fill,.pf .pf-txt,.pf .pf-rotulo{position:absolute;pointer-events:none}
 .pf [data-tag],.pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"]{pointer-events:auto}

@@ -231,7 +231,7 @@ function timeAtual(){
   let k = -1;
   if (p){ if (p.uid != null) k = time.findIndex(t => t && String(t.uid) === String(p.uid)); if (k < 0) k = time.findIndex(t => t && t.glb === p.glb && t.lv === p.lv); }
   const reg = k >= 0 ? time[k] : null;
-  if (p) lista.push({ seguindo: true, uid: p.uid ?? reg?.uid ?? null, shiny: !!(reg ? reg.shiny : p.shiny), sexo: reg?.sexo, dex: p.dex || ctx.dexDoGlb(p.glb), glb: p.glb, nome: p.nome, lv: p.lv, hp: p.hp, maxHp: p.maxHp, exp: p.exp, amizade: p.amizade, ivs: p.ivs, natureza: p.natureza, movs: p.movs, aprender: p.aprender });
+  if (p) lista.push({ seguindo: true, uid: p.uid ?? reg?.uid ?? null, shiny: !!(reg ? reg.shiny : p.shiny), sexo: reg?.sexo, dex: p.dex || ctx.dexDoGlb(p.glb), glb: p.glb, nome: p.nome, lv: p.lv, hp: p.hp, maxHp: p.maxHp, exp: p.exp, amizade: p.amizade, ivs: p.ivs, evs: p.evs || reg?.evs, natureza: p.natureza, movs: p.movs, aprender: p.aprender });
   time.forEach((t, i) => { if (t && i !== k) lista.push({ ...t }); });
   return lista;
 }
@@ -239,8 +239,16 @@ function fichaHtml(e){
   const S = ctx.porDex.get(e.dex); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>${esc(tr('no Pokédex data'))}</small></div>`;
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
   const nomes = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
-  const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));   // IV + natureza do indivíduo
+  const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));   // IV + EV + natureza
+  const evs = ctx.Ind?.evsDe?.(e) || [0, 0, 0, 0, 0, 0];
+  const evTot = evs.reduce((a, b) => a + b, 0);
   const nat = ctx.Ind?.natureza(e.natureza), seta = i => !nat || nat[1] === nat[2] ? '' : i === nat[1] ? ' <span class="mais">▲</span>' : i === nat[2] ? ' <span class="menos">▼</span>' : '';
+  const pills = `<div class="stat-pills">${e.natureza ? `<span class="pill nat">${esc(e.natureza)}${ctx.Ind?.descNatureza(e.natureza) ? ' · ' + esc(tr(ctx.Ind.descNatureza(e.natureza))) : ''}</span>` : ''}${e.ivs ? `<span class="pill iv">${esc(tr('IVs'))} ${ctx.Ind.somaIV(e)}/${ctx.Ind.IV_TOTAL}</span>` : ''}<span class="pill ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}">${esc(tr('EVs'))} ${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</span></div>`;
+  const barraStat = i => {
+    const iv = e.ivs ? e.ivs[i] : 0, ev = evs[i];
+    const ivPct = Math.round(100 * iv / 31), evPct = Math.round(100 * ev / 252);
+    return `<td class="stat-ev"><div class="stat-bars"><b class="iv" title="IV ${iv}/31"><i style="width:${ivPct}%"></i></b><b class="ev" title="EV ${ev}/252"><i style="width:${evPct}%"></i></b></div><small>IV ${iv} · EV ${ev}</small></td>`;
+  };
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);   // golpes do indivíduo (PP) ou, sem registro, os da espécie
   const golpes = movs.map(g => `<div class="linha" style="cursor:default"><span class="nome"><b>${esc(g.nome)}</b><small>${esc(infoGolpe(g))}</small></span>${tipoHtml(g.tipo)}</div>`).join('');
   const novo = e.aprender?.[0] ? (ctx.golpe?.(e.aprender[0]) || null) : null;
@@ -252,7 +260,8 @@ function fichaHtml(e){
   return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${lv}${lv > tetoObed() ? ' <span class="falta" title="' + esc(tr('above the level cap: will not obey until the next Badge')) + '">🔒 ' + esc(tr('cap')) + ' ' + tetoObed() + '</span>' : lv >= tetoObed() ? ' <span class="falta" title="' + esc(tr('at the level cap: XP is banked until the next Badge')) + '">🔒 ' + esc(tr('at cap')) + '</span>' : ''}${xp ? ' · ' + xp : ''}${e.amizade != null ? ' · ' + esc(tr('friendship')) + ' ' + e.amizade : ''}${e.seguindo ? ' · ' + esc(tr('following')) : ''}</small></h3>
     <div>${(S.types || []).map(tipoHtml).join('')} <small style="color:var(--muted)">${S.kg ? S.kg + ' kg' : ''}</small></div>
     <div class="hp"><b style="width:${Math.round(100 * (e.hp ?? stats[0]) / (e.maxHp || stats[0]))}%"></b></div>
-    <table class="stats">${stats.map((v, i) => `<tr><td>${nomes[i]}${seta(i)}</td><td>${v}</td><td class="iv">${e.ivs ? 'IV ' + e.ivs[i] : ''}</td></tr>`).join('')}<tr><td>${esc(tr('Base total'))}</td><td>${S.bst || bs.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''}</td></tr>${e.natureza ? `<tr><td>${esc(tr('Nature'))}</td><td colspan="2"><b>${esc(e.natureza)}</b> <small style="color:var(--muted)">${esc(tr(ctx.Ind.descNatureza(e.natureza)))}</small></td></tr>` : ''}</table>
+    ${pills}
+    <table class="stats">${stats.map((v, i) => `<tr><td>${nomes[i]}${seta(i)}</td><td>${v}</td>${barraStat(i)}</tr>`).join('')}<tr><td>${esc(tr('Base total'))}</td><td>${S.bst || bs.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''} · EV ${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</td></tr></table>
     <div class="k" style="margin-top:8px;color:var(--muted);font-size:11px">${esc(tr('Moves'))}</div><div class="lista">${golpes || '<small>—</small>'}</div>${aprender}${reaprenderHtml(e)}
     <div style="margin-top:8px;font-size:12px">${evo}</div></div>`;
 }
@@ -531,6 +540,7 @@ function encherFichaPokemon(pop, e, lista){
   const nada = (id, dentro) => Popup.texto(pop, id, '', dentro);
   if (!e || !S){
     for (const id of ['ficha-nome', 'ficha-status', 'ficha-numero', 'ficha-peso', 'natureza', 'evolucao', 'vida']) nada(id, f);
+    f.querySelector('.stat-pills')?.remove();
     Popup.badge(pop, 'ficha-tipo', null, null, f);
     Popup.imagem(pop, 'pokemon', null, f);
     for (let i = 0; i < 4; i++){ Popup.golpeVazio(pop, i, true); const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (no){ no.style.pointerEvents = ''; no.style.cursor = ''; } }
@@ -557,14 +567,27 @@ function encherFichaPokemon(pop, e, lista){
   Popup.texto(pop, 'vida', Math.round(hp) + '/' + maxHp, f);
   const IDS = ['hp', 'ataque', 'defesa', 'at-esp', 'def-esp', 'velocidade'];
   const nat = ctx.Ind?.natureza(e.natureza);
+  const evs = ctx.Ind?.evsDe?.(e) || [0, 0, 0, 0, 0, 0];
+  const evTot = evs.reduce((a, b) => a + b, 0);
   const seta = i => (!nat || nat[1] === nat[2]) ? '' : i === nat[1] ? ' ▲' : i === nat[2] ? ' ▼' : '';
   IDS.forEach((id, i) => {
     Popup.texto(pop, 'stat-' + id + '-valor', stats[i] + seta(i), f);
-    Popup.texto(pop, 'stat-' + id + '-iv', e.ivs ? 'IV ' + e.ivs[i] : '', f);
+    Popup.texto(pop, 'stat-' + id + '-iv', (e.ivs ? 'IV ' + e.ivs[i] : 'IV —') + ' · EV ' + evs[i], f);
   });
   Popup.texto(pop, 'stat-total-valor', S.bst || bs.reduce((a, b) => a + b, 0), f);
-  Popup.texto(pop, 'stat-total-iv', e.ivs && ctx.Ind ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : '', f);
+  Popup.texto(pop, 'stat-total-iv', (e.ivs && ctx.Ind ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : '') + ' · EV ' + evTot + '/' + (ctx.Ind?.EV_TOTAL_MAX || 510), f);
   Popup.texto(pop, 'natureza', e.natureza ? e.natureza + '  ' + (ctx.Ind?.descNatureza(e.natureza) || '') : '', f);
+  let pills = f.querySelector('.stat-pills');
+  if (!pills){ pills = document.createElement('div'); pills.className = 'stat-pills pf-pills'; f.appendChild(pills); }
+  const natEl = f.querySelector('[data-fig="natureza"], [data-fig="stat-natureza"]');
+  if (natEl){
+    pills.style.left = (natEl.offsetLeft || parseFloat(natEl.style.left) || 8) + 'px';
+    pills.style.top = ((natEl.offsetTop || parseFloat(natEl.style.top) || 0) + (natEl.offsetHeight || parseFloat(natEl.style.height) || 18) + 4) + 'px';
+    pills.style.width = (natEl.offsetWidth || parseFloat(natEl.style.width) || 220) + 'px';
+  }
+  pills.innerHTML = (e.natureza ? `<span class="pill nat">${esc(e.natureza)}</span>` : '') +
+    (e.ivs ? `<span class="pill iv">IVs ${ctx.Ind.somaIV(e)}/${ctx.Ind.IV_TOTAL}</span>` : '') +
+    `<span class="pill ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}">EVs ${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</span>`;
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);
   for (let i = 0; i < 4; i++){
     const g = movs[i], no = Popup.grupo(pop, 'golpe-' + (i + 1));

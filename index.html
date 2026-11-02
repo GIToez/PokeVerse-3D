@@ -208,7 +208,10 @@ import * as PartyHud from './hud_party3d.mjs';  // party slots: 3D models instea
 import * as Menus from './menus.mjs';           // menu ☰/Esc e as janelas (Pokémon, mochila, missões, mapa…)
 import * as Chat from './chat.mjs';             // chat com abas Local/Global/Trade/Help (peça #chat da HUD)
 import * as Missoes from './missions.mjs';        // missões principais de Kanto (caps 1–20): passos verificados por eventos do jogo
-import * as Ind from './individual.mjs';         // IV + natureza por indivíduo (fórmulas completas da série)
+import * as Ind from './individual.mjs';         // IV + EV + natureza por indivíduo (fórmulas da série)
+import * as Ev from './ev.mjs';
+import * as Relogio from './clock.mjs';
+import * as Weather from './weather.mjs';
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
 import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolutions.json, data/exp.json)
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
@@ -3401,6 +3404,8 @@ function ginasioEspera(g){ const cd = ginasioCd()[g.numero]; if (!cd) return 0; 
 const CENAS_EXPORTADAS = new Set((await fetch('./data/interior_maps.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split(/\s+/).filter(Boolean).map(Number));   // interiores com GLB: porta só pra esses (Kanto tem portas pra cenas ainda não exportadas)
 const NPCS_GLB = await fetch('./data/npcs_glb.json').then(r => r.json()).catch(() => ({}));
 Ind.carregarLearnset(await fetch('./data/learnset.json').then(r => r.json()).then(L => { for (const [id, g] of Object.entries(GOLPES)) if (Number.isInteger(g.pp) && g.pp > 0) (L.pp ||= {})[id] = g.pp; return L; }).catch(() => null));   // golpes por nível (Sword/Shield) + PP (Fase 2: o PP de cada golpe vem do data/moves.json, que o painel edita)
+Ev.carregar().catch(() => {});
+if (params0.get('hora') != null) Relogio.forcar(params0.get('hora'));
 const ITENS_NOME = await fetch('./data/menu_data.json').then(r => r.json()).then(d => Object.fromEntries(Object.entries(d.itens || {}).map(([id, it]) => [id, it.n]))).catch(() => ({}));   // nomes pros avisos de missão
 await Evolucao.carregar();                                                 // regras de evolução + curvas de XP (antes do nascimento: o parceiro nasce com exp)
 let DEX_EXTRA = null; fetch('./data/dex_extra.json').then(r => r.json()).then(j => { DEX_EXTRA = j; }).catch(() => {});   // golpes por nível (regras "conhecendo X"); pode chegar depois
@@ -4993,11 +4998,17 @@ function golpear(atacante, defensor, golpe){
   if (atacante.rede && defensor === jogo.pika && Mundo.estaAtivo()){ Mundo.atacarParceiro(atacante, golpe, defensor); return 0; }   // fase 3c: selvagem da rede batendo no MEU parceiro — o servidor calcula e devolve (pdano → golpeNoParceiro)
   const A = porDex.get(atacante.dex), D = porDex.get(defensor.dex);
   const fisico = golpe.cat === 'fisico';
-  const a = Ind.statDe(A, atacante, fisico ? 1 : 3), d = Ind.statDe(D, defensor, fisico ? 2 : 4);   // IV + natureza entram aqui
-  const eff = R.efetividade(DB.chart, golpe.tipo, D.types);
-  const stab = A.types.includes(golpe.tipo) ? 1.5 : 1;
-  const base = Math.floor(((2 * atacante.lv / 5 + 2) * golpe.poder * a / d) / 50 + 2);
-  const dano = eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * (0.85 + Math.random() * 0.15)));
+  const climaNome = clima.nome;
+  const a = Ind.statDe(A, atacante, fisico ? 1 : 3);
+  let d = Ind.statDe(D, defensor, fisico ? 2 : 4);
+  d = Weather.defesa(climaNome, D.types, fisico ? 2 : 4, d) || d;
+  const tipo = Weather.tipoGolpe(climaNome, golpe);
+  const poder = Weather.poderGolpe(climaNome, golpe, golpe.poder);
+  const climaMul = Weather.poderTipo(climaNome, tipo);
+  const eff = R.efetividade(DB.chart, tipo, D.types);
+  const stab = A.types.includes(tipo) ? 1.5 : 1;
+  const base = Math.floor(((2 * atacante.lv / 5 + 2) * poder * a / d) / 50 + 2);
+  const dano = eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * climaMul * (0.85 + Math.random() * 0.15)));
   defensor.hp = Math.max(0, defensor.hp - dano);
   aplicarGolpe(atacante, defensor, golpe, dano, eff);
   return dano;
@@ -5312,6 +5323,23 @@ function usarItem(id, nome = '', aviso = null){
     pintarTime?.(); passarTurno();
     return true;
   }
+  const evItem = Ev.itemDe(+id);
+  if (evItem){
+    const alvo = p;
+    Ind.garantir(alvo);
+    const r = Ev.usarItem(alvo, +id);
+    if (!r.ok) return recusa(r.motivo === 'nothing to remove' ? alvo.nome + ' has no EVs to lower there' : alvo.nome + ' cannot gain more EVs there', alvo);
+    const S = porDex.get(alvo.dex);
+    if (S){ const novoMax = Ind.hpDe(S, alvo); alvo.hp = Math.min(novoMax, (alvo.hp || 0) + Math.max(0, novoMax - (alvo.maxHp || 0))); alvo.maxHp = novoMax; }
+    const tr = registroDoTime(alvo); if (tr){ tr.evs = alvo.evs; if (S) tr.maxHp = alvo.maxHp; }
+    bolsaOp('usar', { item: +id, uid: uidParceiro() });
+    it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it); gravarLS('time', jogo.time);
+    flutuar(alvo, Ev.textoGanho(r.ganhou) || (evItem.delta > 0 ? '+EV' : '−EV'), '#ffd19a');
+    Som.tocar('ui/sound_pkmnhealing', { volume: .5 });
+    aviso?.((evItem.nome || 'Item') + ': ' + (Ev.textoGanho(r.ganhou) || ''), true);
+    guardarEstadoAtivo(); pintarTime?.(true); passarTurno();
+    return true;
+  }
   if (p.hp <= 0 || p.desmaiado > 0) return recusa(aviso ? p.nome + ' is fainted: use a Revive or go to a Pokémon Center' : p.nome + ' is fainted', p, '#f58e8e');
   if (p.hp >= p.maxHp) return recusa(aviso ? p.nome + ' já está com o HP cheio. Pra curar outro, chame ele pela barra do time' : 'HP já está cheio', p);   // a poção vai no Pokémon EM CAMPO
   const cura = /Total|total/.test(nome) ? 1e9 : /Super/.test(nome) ? 60 : /Hiper|Máx/.test(nome) ? 200 : 20;
@@ -5569,7 +5597,7 @@ async function jogarBola(){
       Som.tocar('ui/sound_pkmnget', { volume: .8, prio: true });
       Ind.garantir(s);
       flutuar(ash, 'caught ' + s.nome + '!', '#8ef58e'); Chat.sistema('Caught ' + s.nome + ' Lv' + s.lv + ' with ' + I18n.t(BOLAS[id]?.[0] || 'ball') + '! Nature ' + s.natureza + ' (' + Ind.descNatureza(s.natureza) + '), IV ' + Ind.somaIV(s) + '/' + Ind.IV_TOTAL + '.');
-      let registro = { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv, sexo: s.sexo || undefined, shiny: s.shiny || undefined, exp: Evolucao.expPara(s.dex, s.lv), amizade: Evolucao.amizadeBase(s.dex), ivs: s.ivs, natureza: s.natureza, movs: Ind.idsDe(s).map(Ind.novoGolpe), quando: Date.now() };
+      let registro = { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv, sexo: s.sexo || undefined, shiny: s.shiny || undefined, exp: Evolucao.expPara(s.dex, s.lv), amizade: Evolucao.amizadeBase(s.dex), ivs: s.ivs, evs: [0, 0, 0, 0, 0, 0], natureza: s.natureza, movs: Ind.idsDe(s).map(Ind.novoGolpe), quando: Date.now() };
       /* POSSE (06/09): com conta, quem cria o Pokémon é o SERVIDOR — ele manda o registro com `uid` junto do `scapt`, e é esse
          que entra no time (o `PUT /save` recusa Pokémon sem uid dele). Sem conta (jogo local) segue como sempre. */
       if (comConta()){
@@ -5921,10 +5949,19 @@ function ganharExp(p, d, ganhoFixo = null){                               // gan
   flutuar(p, '+' + ganho + ' XP', '#8ec5ff');
   const guardou = guardarReserva(p, ganho);                              // teto duro (GDD §7.4)
   const S = porDex.get(p.dex); let subiu = 0;
+  const evR = Ev.ganharPorKo(p, d.dex);
+  if (evR.ganhou?.some(n => n)){
+    const tr = registroDoTime(p); if (tr) tr.evs = p.evs;
+    flutuar(p, Ev.textoGanho(evR.ganhou), '#ffd19a');
+  }
   while (p.lv < 100 && p.exp >= Evolucao.expPara(p.dex, p.lv + 1)){
     p.lv++; subiu++; aprenderNoNivel(p);
     const novoMax = S ? Ind.hpDe(S, p) : p.maxHp; p.hp = Math.min(novoMax, p.hp + Math.max(0, novoMax - p.maxHp)); p.maxHp = novoMax;
     p.amizade = Math.min(255, (p.amizade ?? Evolucao.amizadeBase(p.dex)) + 2);
+  }
+  if (!subiu && evR.ganhou?.some(n => n) && S){
+    const tr = registroDoTime(p);
+    const novoMax = Ind.hpDe(S, p); p.hp = Math.min(novoMax, (p.hp || 0) + Math.max(0, novoMax - (p.maxHp || 0))); p.maxHp = novoMax; if (tr) tr.maxHp = p.maxHp;
   }
   if (subiu){
     flutuar(p, 'Lv ' + p.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' grew to Lv ' + p.lv + '!');
@@ -7938,7 +7975,7 @@ if (jogo.ash){
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)
-  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA) mmA.textContent = I18n.t(nomeAreaAtual()); const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema(I18n.t('You arrived in {x}.', { x: I18n.t(nomeAreaAtual()) })); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
+  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA){ const w = Weather.rotulo(clima.nome); mmA.textContent = I18n.t(nomeAreaAtual()) + ' · ' + Relogio.texto() + (w ? ' · ' + w : ''); } const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema(I18n.t('You arrived in {x}.', { x: I18n.t(nomeAreaAtual()) })); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
     const aS = a + '@' + Rede.estadoRede().id;                              // com conta quem marca o passo 'ir' é o servidor: o `pos` só leva o NOME da área, a missão usa o número.
     if (a != null && comConta() && aS !== areaNoServidor){ areaNoServidor = aS; Rede.enviar({ t: 'missao_area', area: a }); }   // fora do "mudou de área": no load a conexão ainda não estava pronta e o aviso se perdia
   }, 700);
@@ -8522,28 +8559,48 @@ function criarPrecipitacao(c){
   return { raiz, atualizar, descartar(){ malha.geometry.dispose(); malha.material.dispose(); if (splMalha){ splMalha.geometry.dispose(); splMalha.material.dispose(); } } };
 }
 const clima = { nome: null, cfg: null, fx: null, criando: false, guarda: null };
-function ligarClima(nome){
+const LUZ_DIA = { sol: sol.intensity, hemi: hemi.intensity };
+function aplicarMundoVisual(){
+  const ceu = (!INTERIOR && JOGAR) ? Relogio.ceu() : { brilho: 1, sat: 1, sol: 1, hemi: 1, corSol: '#ffffff' };
+  const w = clima.cfg;
+  sol.intensity = LUZ_DIA.sol * ceu.sol * (w?.sol ?? 1);
+  hemi.intensity = LUZ_DIA.hemi * ceu.hemi * (w?.hemi ?? 1);
+  sol.color.set(ceu.corSol || '#ffffff');
+  clima.solAgora = sol.intensity;
+  if (INTERIOR){ tela.style.filter = ''; return; }
+  if (w?.ceu){ cena.background = new THREE.Color(w.ceu); cena.fog.color.set(w.ceu); }
+  else if (clima.guarda){ cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
+  tela.style.filter = ((w?.filtro || '') + ' saturate(' + (ceu.sat * 1.12).toFixed(3) + ') brightness(' + (ceu.brilho * 1.04).toFixed(3) + ')').trim();
+}
+function passoClimaMundo(){
+  if (!JOGAR || params0.get('clima')) return;
+  if (INTERIOR){ if (clima.nome) desligarClima(); return; }
+  const want = Weather.paraHora(Relogio.hora(), Relogio.agora());
+  if (want === (clima.nome || null)) return;
+  if (!want) desligarClima();
+  else ligarClima(want, { silencioso: true });
+}
+function ligarClima(nome, { silencioso = false } = {}){
   const c = CLIMAS[nome];
   if (!c || INTERIOR) return false;
-  if (!clima.guarda) clima.guarda = { sol: sol.intensity, hemi: hemi.intensity, ceu: cena.background, nevoa: cena.fog.color.clone() };
+  if (!clima.guarda) clima.guarda = { ceu: cena.background, nevoa: cena.fog.color.clone() };
+  if (clima.fx && clima.nome !== nome){ clima.fx.descartar(); cena.remove(clima.fx.raiz); clima.fx = null; }
   clima.nome = nome; clima.cfg = c; jogo.clima = clima;
-  sol.intensity = clima.guarda.sol * c.sol; hemi.intensity = clima.guarda.hemi * c.hemi;
-  cena.background = new THREE.Color(c.ceu); cena.fog.color.set(c.ceu);
-  tela.style.filter = ((c.filtro || '') + ' ' + FILTRO_BASE).trim();      // o filtro do clima compõe com o base (o mapa é unlit)
-  Chat.sistema('Clima: ' + nome.replace('_', ' ') + '.');
+  aplicarMundoVisual();
+  if (!silencioso) Chat.sistema('Weather: ' + (Weather.rotulo(nome) || nome.replace('_', ' ')) + '.');
   return true;
 }
 function desligarClima(){
   if (clima.fx){ clima.fx.descartar(); cena.remove(clima.fx.raiz); }
-  if (clima.guarda){ sol.intensity = clima.guarda.sol; hemi.intensity = clima.guarda.hemi; cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
-  tela.style.filter = (JOGAR && !INTERIOR) ? FILTRO_BASE : '';
+  if (clima.guarda){ cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
   clima.nome = clima.cfg = clima.fx = null;
+  aplicarMundoVisual();
 }
 function atualizarClima(dt){
+  passoClimaMundo();
+  aplicarMundoVisual();
   const c = clima.cfg;
   if (!c || !jogo.ash) return;
-  if (clima.guarda){ sol.intensity = clima.guarda.sol * c.sol; hemi.intensity = clima.guarda.hemi * c.hemi; }   // por quadro: ninguém "desliga" o tempo fechado por engano
-  clima.solAgora = sol.intensity;
   if (!clima.fx && !clima.criando){
     if (c.fx){                                                           // efeito ORIGINAL do jogo (Element_Rain com os SubEmitters de splash)
       clima.criando = true;
@@ -8567,7 +8624,7 @@ function atualizarClima(dt){
   } else fx.atualizar(dt);
 }
 const FILTRO_BASE = 'saturate(1.12) brightness(1.04)';                   // A/B com o cliente real (LDPlayer): o Fairy é mais claro e mais saturado
-if (JOGAR && !INTERIOR) tela.style.filter = FILTRO_BASE;
+if (JOGAR) aplicarMundoVisual();
 if (JOGAR && params0.get('clima')) ligarClima(params0.get('clima'));
 
 /* ============================================================== batalha por turno (treinadores)

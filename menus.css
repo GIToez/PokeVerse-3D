@@ -147,6 +147,19 @@ body.mobile .janela .dex-dois{grid-template-columns:1fr}
 .btn.perigo:hover{background:#9a3333}
 .premium-cab{margin-bottom:10px}.premium-cab>b{display:block;font-size:15px;color:#ffe07a}.premium-cab small{display:block;margin-top:3px;color:var(--muted);line-height:1.35}.premium-cab small b{color:#ffe07a}
 .janela .stats td.iv{color:var(--muted);font-size:11px;text-align:right;padding-left:10px}.janela .stats .mais{color:#8ef58e}.janela .stats .menos{color:#f58e8e}
+.janela .stat-pills,.pf .stat-pills{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+.pf .stat-pills.pf-pills{position:absolute;z-index:40;margin:0;pointer-events:none}
+.janela .stat-pills .pill,.pf .stat-pills .pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid #c9a227;background:#12192ce6;color:#f3e6b0;font-size:10px;font-weight:700;letter-spacing:.02em;line-height:1.2}
+.janela .stat-pills .pill.iv,.pf .stat-pills .pill.iv{border-color:#6ea8ff;color:#cfe2ff}
+.janela .stat-pills .pill.ev,.pf .stat-pills .pill.ev{border-color:#e08a2a;color:#ffd19a}
+.janela .stat-pills .pill.ev.cheio,.pf .stat-pills .pill.ev.cheio{border-color:#5ee0c4;color:#c5fff0}
+.janela table.stats td.stat-ev{text-align:right;min-width:92px}
+.janela .stat-bars{display:flex;flex-direction:column;gap:3px;align-items:stretch}
+.janela .stat-bars b{display:block;height:4px;border-radius:99px;background:#1e2740;overflow:hidden}
+.janela .stat-bars b>i{display:block;height:100%;border-radius:99px}
+.janela .stat-bars b.iv>i{background:#6ea8ff}
+.janela .stat-bars b.ev>i{background:#e08a2a}
+.janela .stat-bars small,.janela table.stats td.stat-ev small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
 .janela .m-grade,.mapa-dir .m-grade,.pf-mapa .m-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px}.janela .m-poke,.mapa-dir .m-poke,.pf-mapa .m-poke{text-align:center;font-size:11px;color:var(--muted)}.janela .m-poke img,.mapa-dir .m-poke img,.pf-mapa .m-poke img{width:52px;height:52px;image-rendering:pixelated}.janela .m-poke.sombra img,.mapa-dir .m-poke.sombra img,.pf-mapa .m-poke.sombra img{filter:brightness(0)}.janela .m-poke b,.mapa-dir .m-poke b,.pf-mapa .m-poke b{display:block;color:#dfe6f0;font-size:11px;font-weight:600}.janela .m-poke .pego,.mapa-dir .m-poke .pego,.pf-mapa .m-poke .pego{color:#8ef58e;display:block}
 /* Near-fullscreen map popup (same family as other .pf windows, not a true fullscreen takeover). */
 .pf-mapa-fundo{position:fixed;inset:0;z-index:59;background:#0008}

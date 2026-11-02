@@ -395,7 +395,7 @@ const taxaShiny = () => { const t = cfgJogo().taxaShiny; return Math.max(1, (Num
 function individuoServidor(base) {
   const lv = Math.max(1, Math.min(100, Math.round(+base?.lv || 5)));
   const ivs = ivsNovos();
-  return { dex: base?.dex, nome: base?.nome, glb: base?.glb, lv, ivs, natureza: NATUREZAS[Math.floor(Math.random() * NATUREZAS.length)], shiny: Math.random() < 1 / taxaShiny(), uid: novoUid() };
+  return { dex: base?.dex, nome: base?.nome, glb: base?.glb, lv, ivs, evs: [0, 0, 0, 0, 0, 0], natureza: NATUREZAS[Math.floor(Math.random() * NATUREZAS.length)], shiny: Math.random() < 1 / taxaShiny(), uid: novoUid() };
 }
 /* Iniciais permitidos (Fase 2): os de data/starters.json — o MESMO arquivo que o laboratório do jogo oferece (o painel edita),
    relido quando muda. Sem o arquivo (ou quebrado) vale a lista antiga: os starters de cada geração. */
@@ -1418,7 +1418,7 @@ wss.on('connection', ws => {
               const naturezas = ['Hardy','Lonely','Brave','Adamant','Naughty','Bold','Docile','Relaxed','Impish','Lax','Timid','Hasty','Serious','Jolly','Naive','Modest','Mild','Quiet','Bashful','Rash','Calm','Gentle','Sassy','Careful','Quirky'];
               const natureza = naturezas[Math.floor(Math.random() * naturezas.length)];
               const shiny = Math.random() < 1 / taxaShiny();
-              const pk = { ...m.mon, uid, lv: 5, ivs, natureza, shiny, inicial: true };
+              const pk = { ...m.mon, uid, lv: 5, ivs, evs: [0, 0, 0, 0, 0, 0], natureza, shiny, inicial: true };
               c.save.time.unshift(pk);
               c.save.inicial = { dex: m.mon.dex, glb: m.mon.glb, nome: m.mon.nome, i: m.i ?? 0 };
               marcarPego(c, pk.dex);                    // nº15: inicial marca 'pego' na Pokédex (servidor)

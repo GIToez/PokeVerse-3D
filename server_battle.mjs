@@ -6,6 +6,8 @@ import fs from 'node:fs';
 import nodePath from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as Ind from './individual.mjs';
+import * as Ev from './ev.mjs';
+import * as Weather from './weather.mjs';
 import { efetividade } from './rules.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -52,6 +54,7 @@ export function criarBatalha(ctx) {
   const porDex = new Map((pdx.species || []).map((s) => [+s.n, s]));
   const golpes = lerJson('public/data/moves.json', {});
   const learn = lerJson('public/data/learnset.json', { learnset: {}, pp: {} });
+  Ev.usarYields(lerJson('public/data/ev_yields.json', { rende: {} }));
   Ind.carregarLearnset(learn);
   const expTab = lerJson('public/data/exp.json', { curvas: {}, especies: {} });
   const ginasios = lerJson('public/data/gyms.json', {});
@@ -144,17 +147,22 @@ export function criarBatalha(ctx) {
     return golpeDe(ids[Math.floor(Math.random() * ids.length)]) || STRUGGLE;
   }
 
-  function calcularDano(at, def, g, rng = Math.random) {
+  function calcularDano(at, def, g, rng = Math.random, clima = null) {
     const A = especie(at.dex),
       D = especie(def.dex);
     const fisico = (g.cat || 'fisico') === 'fisico';
     const a = Ind.statDe(A, at, fisico ? 1 : 3);
-    const d = Math.max(1, Ind.statDe(D, def, fisico ? 2 : 4));
-    const poder = Math.max(1, +g.poder || 40);
-    const eff = efetividade(chart, g.tipo || 'Normal', D.types || ['Normal']);
-    const stab = (A.types || []).includes(g.tipo) ? 1.5 : 1;
+    const defI = fisico ? 2 : 4;
+    const d = Math.max(1, Weather.defesa(clima, D.types, defI, Ind.statDe(D, def, defI)));
+    const tipo = Weather.tipoGolpe(clima, g);
+    const poder = Math.max(1, Weather.poderGolpe(clima, g, +g.poder || 40));
+    const climaMul = Weather.poderTipo(clima, tipo);
+    const acc = Weather.precisao(clima, g);
+    if (acc != null && acc < 1 && rng() > acc) return { dano: 0, eff: 1, errou: true };
+    const eff = efetividade(chart, tipo || 'Normal', D.types || ['Normal']);
+    const stab = (A.types || []).includes(tipo) ? 1.5 : 1;
     const base = Math.floor(((2 * (at.lv || 1) / 5 + 2) * poder * a) / d / 50 + 2);
-    const dano = eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * (0.85 + rng() * 0.15)));
+    const dano = eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * climaMul * (0.85 + rng() * 0.15)));
     return { dano, eff };
   }
 
@@ -488,8 +496,10 @@ export function criarBatalha(ctx) {
       const ganhador = bat.eu.field;
       if (ganhador && ganhador.hp > 0) {
         const xp = expGanha(ganhador.lv, ele.dex, ele.lv);
+        const evR = Ev.ganharPorKo(ganhador, ele.dex);
         aplicarExp(ganhador, xp);
         log.push(ganhador.nome + ' gained ' + xp + ' EXP.');
+        if (evR.ganhou?.some((n) => n)) log.push(ganhador.nome + ' gained ' + Ev.textoGanho(evR.ganhou) + ' EVs.');
       }
       if (!bat.dele.some((p) => p.hp > 0)) return 'vitoria';
     }
