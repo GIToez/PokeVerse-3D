@@ -108,29 +108,50 @@ const caixas = johto.areas.map(a => {
 
 const objetos = [];
 function add(n, x, z, a = 0) {
-  objetos.push({ n, x: +x.toFixed(1), y: 0, z: +z.toFixed(1), a });
+  objetos.push({ n, x: +(+x).toFixed(1), y: 0, z: +(+z).toFixed(1), a });
 }
 
-function fillGrass(box, step, tile) {
-  const x0 = box.x - box.sx / 2 + 3, x1 = box.x + box.sx / 2 - 3;
-  const z0 = box.z - box.sz / 2 + 3, z1 = box.z + box.sz / 2 - 3;
-  for (let x = x0; x <= x1 + 0.01; x += step)
-    for (let z = z0; z <= z1 + 0.01; z += step) add(tile, x, z);
+const SEA = new Set([2240, 2241, 2122, 2113]);
+const landAt = new Set();
+function stamp(n, x, z) {
+  const k = Math.round(x) + ',' + Math.round(z);
+  if (landAt.has(k)) return;
+  landAt.add(k);
+  add(n, Math.round(x) + 0.0, Math.round(z) + 0.0);
 }
 
-function roadEW(x0, x1, z, step = 6) {
+/* Solid 1 m floor like kanto.json — this is the walkable land. */
+const grama = [];
+const agua = [];
+for (const box of caixas) {
+  const x0 = Math.floor(box.x - box.sx / 2) + 1;
+  const x1 = Math.ceil(box.x + box.sx / 2) - 1;
+  const z0 = Math.floor(box.z - box.sz / 2) + 1;
+  const z1 = Math.ceil(box.z + box.sz / 2) - 1;
+  const sea = SEA.has(box.a);
+  const town = box.a >= 2101 && box.a <= 2116;
+  for (let x = x0; x <= x1; x++) {
+    for (let z = z0; z <= z1; z++) {
+      if (sea) {
+        agua.push({ tipo: 33, x: x + 0.5, y: 0, z: z + 0.5, a: box.a });
+        if ((x + z) % 3 === 0) add('sea_rock', x, z);
+      } else {
+        stamp(town ? 'ground_plane007' : 'floor_grass2', x, z);
+        if (!town && box.a >= 2226 && (x + z * 3) % 7 === 0) {
+          grama.push({ cfg: box.a * 100 + ((x + z * 13) % 97), tipo: 41, x: x + 0.5, y: 0, z: z + 0.5, a: box.a });
+        }
+      }
+    }
+  }
+}
+
+function roadEW(x0, x1, z, step = 2) {
   const a = Math.min(x0, x1), b = Math.max(x0, x1);
   for (let x = a; x <= b + 0.01; x += step) add('grass_road_h_1', x, z);
 }
-function roadNS(x, z0, z1, step = 6) {
+function roadNS(x, z0, z1, step = 2) {
   const a = Math.min(z0, z1), b = Math.max(z0, z1);
   for (let z = a; z <= b + 0.01; z += step) add('grass_road_n', x, z);
-}
-
-for (const box of caixas) {
-  const sea = box.a === 2240 || box.a === 2241;
-  const route = box.a >= 2226;
-  fillGrass(box, route ? 10 : 8, sea ? 'floor_w' : route ? 'floor_grass2' : 'sm_c_001_comgrass_01_1');
 }
 
 /* HGSS road spine. */
@@ -245,13 +266,22 @@ for (const [id, list] of Object.entries(BLD)) {
 }
 
 for (const box of caixas) {
-  if (box.a < 2101 || box.a > 2130 || box.a === 2122) continue;
-  const ring = box.a >= 2226 ? 0 : 10;
+  if (box.a < 2101 || box.a > 2130 || SEA.has(box.a)) continue;
+  const ring = box.a >= 2226 ? 6 : 14;
   for (let i = 0; i < ring; i++) {
     const ang = (i / ring) * Math.PI * 2;
-    const x = box.x + Math.cos(ang) * (box.sx / 2 - 4);
-    const z = box.z + Math.sin(ang) * (box.sz / 2 - 4);
-    add('tree', x, z);
+    add('tree', box.x + Math.cos(ang) * (box.sx / 2 - 3), box.z + Math.sin(ang) * (box.sz / 2 - 3));
+  }
+  if (box.a >= 2101 && box.a <= 2110) {
+    add('sm_c_001_streetlight_01', box.x - 6, box.z);
+    add('sm_c_001_streetlight_01', box.x + 6, box.z);
+    add('sm_c_001_signboard_01', box.x, box.z + box.sz / 2 - 3);
+    const x0 = box.x - box.sx / 2 + 2, x1 = box.x + box.sx / 2 - 2;
+    const z0 = box.z - box.sz / 2 + 2, z1 = box.z + box.sz / 2 - 2;
+    for (let x = x0; x <= x1; x += 4) {
+      add('sm_001_fence_02_z 1', x, z0);
+      add('sm_001_fence_02_z 1', x, z1);
+    }
   }
 }
 
@@ -282,6 +312,7 @@ putNpc(6222603, 162, r26.x, r26.z - r26.sz / 2 + 6, 2226);
 putNpc(7222699, 171, r26.x, r26.z - r26.sz / 2 + 8, 2226);
 putNpc(6222801, 162, r28.x - r28.sx / 2 + 8, r28.z, 2228);
 putNpc(7222801, 171, r28.x - r28.sx / 2 + 10, r28.z, 2228);
+putNpc(7210199, 171, TOWN[2101].x, TOWN[2101].z + 8, 2101);
 
 for (const box of caixas) {
   const list = (byArea.get(box.a) || []).sort((u, v) => u.cfg - v.cfg);
@@ -312,8 +343,8 @@ const out = {
   objetos,
   ambiente: [],
   areaEnv: [],
-  grama: [],
-  agua: caixas.filter(c => c.a === 2240 || c.a === 2241 || c.a === 2122).map(c => ({ a: c.a, x: c.x, z: c.z, sx: c.sx, sz: c.sz })),
+  grama,
+  agua,
   portas: [],
   treinadores: [],
   historias: [],
