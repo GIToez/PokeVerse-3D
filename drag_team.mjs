@@ -66,16 +66,32 @@ function indiceReal(reg, item){
   if (String(lst[i]?.uid) === String(pint.uid)) return i;
   return lst.findIndex(x => String(x?.uid) === String(pint.uid));
 }
+/** Empty slots are valid DROP targets (they have data-arr-i) but not pick-up. */
+function soltaEm(item){
+  if (!item || item.dataset.arrFixo) return false;
+  if (item.dataset.arrI != null) return true;
+  return !item.classList.contains('vazia');
+}
 /** Onde o dedo está: { reg, item } (item null = no vazio da lista → vai pro fim). */
 function alvoEm(x, y, grupo){
-  const sob = document.elementFromPoint(x, y);
   const regs = vivos(grupo);
-  const ok = item => item && !item.dataset.arrFixo && !item.classList.contains('vazia');
+  let melhor = null, melhorD = Infinity;
+  for (const reg of regs){
+    for (const item of reg.el.querySelectorAll(reg.opts.seletor)){
+      if (!soltaEm(item)) continue;
+      const r = item.getBoundingClientRect();
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+      const d = Math.hypot(x - (r.left + r.right) / 2, y - (r.top + r.bottom) / 2);
+      if (d < melhorD){ melhorD = d; melhor = { reg, item }; }
+    }
+  }
+  if (melhor) return melhor;
+  const sob = document.elementFromPoint(x, y);
   if (sob){
     for (const reg of regs){
       if (!reg.el.contains(sob)) continue;
       const item = sob.closest(reg.opts.seletor);
-      return { reg, item: item && reg.el.contains(item) && ok(item) ? item : null };
+      return { reg, item: item && soltaEm(item) ? item : null };
     }
   }
   for (const reg of regs){
@@ -179,6 +195,8 @@ export function ligar(el, opts = {}){
     const item = ev.target.closest(reg.opts.seletor);
     if (!item || !el.contains(item) || item.dataset.arrFixo || item.classList.contains('vazia')) return;
     if (typeof reg.opts.podePegar === 'function' && !reg.opts.podePegar(item)) return;
+    ev.preventDefault();                                                  // kill native <img> drag — that cancelled the pointer and the box never moved
+    try { ev.currentTarget.setPointerCapture?.(ev.pointerId); } catch {}
     const toque = ev.pointerType !== 'mouse';
     ativo = { reg, item, id: ev.pointerId, x0: ev.clientX, y0: ev.clientY, toque, arrastando: false };
     if (toque) ativo.timer = setTimeout(() => { if (ativo?.item === item && !ativo.arrastando){ comecar(); if (ativo) mover(ativo.x0, ativo.y0); } }, SEGURAR_MS);

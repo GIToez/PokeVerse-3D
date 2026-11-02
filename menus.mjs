@@ -566,16 +566,16 @@ function popupBx(){
   <div class="bx-tools">
     <input type="search" class="bx-pill" data-bx="busca" placeholder="search…">
     <button type="button" class="bx-pill" data-bx-painel="tipo">Type</button>
-    <input type="number" class="bx-pill bx-num" data-bx="lvMin" min="1" max="100" placeholder="Lv" title="Lowest level to show">
-    <input type="number" class="bx-pill bx-num" data-bx="ivMin" min="0" max="186" placeholder="IV" title="Lowest total IV to show">
+    <input type="text" inputmode="numeric" pattern="[0-9]*" class="bx-pill bx-num" data-bx="lvMin" placeholder="Lv" title="Lowest level to show" autocomplete="off">
+    <input type="text" inputmode="numeric" pattern="[0-9]*" class="bx-pill bx-num" data-bx="ivMin" placeholder="IV" title="Lowest total IV to show" autocomplete="off">
     <button type="button" class="bx-pill" data-bx="shiny" aria-pressed="false">★ Shiny</button>
     <span class="bx-count" data-bx-count></span>
   </div>
   <div class="bx-body" data-bx-corpo></div>`;
   popBx.querySelector('.pv-x').onclick = ev => { ev.stopPropagation(); fechar(); };
   popBx.querySelector('[data-bx="busca"]').addEventListener('input', e => { bx.busca = e.target.value; bx.page = 0; encherBox(popBx); });
-  popBx.querySelector('[data-bx="lvMin"]').addEventListener('input', e => { bx.lvMin = e.target.value; bx.page = 0; encherBox(popBx); });
-  popBx.querySelector('[data-bx="ivMin"]').addEventListener('input', e => { bx.ivMin = e.target.value; bx.page = 0; encherBox(popBx); });
+  popBx.querySelector('[data-bx="lvMin"]').addEventListener('input', e => { bx.lvMin = String(e.target.value || '').replace(/\D/g, ''); e.target.value = bx.lvMin; bx.page = 0; encherBox(popBx); });
+  popBx.querySelector('[data-bx="ivMin"]').addEventListener('input', e => { bx.ivMin = String(e.target.value || '').replace(/\D/g, ''); e.target.value = bx.ivMin; bx.page = 0; encherBox(popBx); });
   popBx.querySelector('[data-bx="shiny"]').addEventListener('click', e => {
     bx.shiny = !bx.shiny; e.currentTarget.setAttribute('aria-pressed', bx.shiny ? 'true' : 'false');
     e.currentTarget.classList.toggle('on', bx.shiny); bx.page = 0; encherBox(popBx);
@@ -639,11 +639,11 @@ function encherBox(pop){
   if (tipoBtn){ tipoBtn.classList.toggle('on', !!(bx.tipo || bx.painel === 'tipo')); tipoBtn.textContent = bx.tipo || 'Type'; }
   const party = [0, 1, 2, 3, 4, 5].map(i => {
     const p = time[i];
-    if (!p) return `<div class="bx-party-row vazia" data-arr-fixo="1"><span></span><span><b>—</b></span></div>`;
+    if (!p) return `<div class="bx-party-row vazia" data-arr-i="${i}"><span></span><span><b>—</b></span></div>`;
     const pct = p.maxHp ? Math.round(100 * ((p.hp == null ? p.maxHp : p.hp) / p.maxHp)) : 100;
     const tipo = (ctx.porDex.get(p.dex)?.types || [])[0];
     return `<div class="bx-party-row${bx.onde === 'time' && bx.i === i ? ' on' : ''}" data-arr-i="${i}" data-bx-time="${i}">
-      <img src="${iconeMonU(p.dex)}" alt="">
+      <img src="${iconeMonU(p.dex)}" alt="" draggable="false">
       <span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}${i === emCampo ? ' · Following' : ''}</small>
       <div class="hp"><i style="width:${pct}%;background:${corDaVida(pct / 100)}"></i></div></span>
       <span class="hpn">${p.hp == null ? '' : Math.round(p.hp ?? p.maxHp) + '/' + (p.maxHp || '')}</span>
@@ -651,10 +651,10 @@ function encherBox(pop){
   }).join('');
   const cells = Array.from({ length: BX_SIZE }, (_, slot) => {
     const item = fatia[slot];
-    if (!item) return `<div class="bx-cell vazia" data-arr-fixo="1"></div>`;
+    if (!item) return `<div class="bx-cell vazia" data-arr-i="${caixa.length}"></div>`;
     const on = bx.onde === 'caixa' && bx.i === item.i;
     return `<div class="bx-cell${on ? ' on' : ''}" data-arr-i="${item.i}" data-bx-cx="${item.i}">
-      <img src="${iconeMonU(item.e.dex)}" alt="">
+      <img src="${iconeMonU(item.e.dex)}" alt="" draggable="false">
       <em>Lv ${item.e.lv}</em></div>`;
   }).join('');
   const overlay = bx.painel === 'tipo'
@@ -723,10 +723,12 @@ function encherBox(pop){
   cC.querySelectorAll('[data-bx-cx]').forEach(n => { n.__arrItem = caixa[+n.dataset.bxCx]; });
   const fim = () => { ctx.atualizarSeguidorPainel?.(); render(); };
   if (Arr.ligado()){
+    Arr.ligar(cT, { lista: 'time', grupo: 'janela-box', seletor: '.bx-party-row', previa: 'mover', rolavel: cT, fantasma: linhaArrastoBx, aoFim: fim });
+    Arr.ligar(cC, { lista: 'caixa', grupo: 'janela-box', seletor: '.bx-cell', previa: 'mover', rolavel: cC, fantasma: linhaArrastoBx, aoFim: fim });
     Arr.ligar(colT, { lista: 'time', grupo: 'janela-box', seletor: '.bx-party-row', previa: 'mover', rolavel: cT, fantasma: linhaArrastoBx, aoFim: fim });
     Arr.ligar(colC, { lista: 'caixa', grupo: 'janela-box', seletor: '.bx-cell', previa: 'mover', rolavel: cC, fantasma: linhaArrastoBx, aoFim: fim });
     const sheetEl = corpo.querySelector('.bx-sheet');
-    if (sheetEl) Arr.ligar(sheetEl, { lista: 'time', grupo: 'janela-box', seletor: '.bx-no-pick', fantasma: linhaArrastoBx, aoFim: fim });
+    if (sheetEl) Arr.ligar(sheetEl, { lista: 'time', grupo: 'janela-box', seletor: '.bx-party-row', fantasma: linhaArrastoBx, aoFim: fim });
   }
   corpo.querySelectorAll('[data-bx-time]').forEach(el => el.onclick = () => { bx.onde = 'time'; bx.i = +el.dataset.bxTime; confirmarSoltar = null; encherBox(pop); });
   corpo.querySelectorAll('[data-bx-cx]').forEach(el => {
