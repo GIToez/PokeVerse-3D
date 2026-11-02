@@ -95,6 +95,7 @@ ROUTES = {
 # Routes 27 / 26 / 28 and holds the Connection Center doors.
 EAST_STRIP = (641, 305, 659, 317)
 EAST_CARVE = (632, 306, 641, 310)
+MOUNT_MIN = 13
 
 # ground_plane* are alpha-masked edge decals and floor_y / floor_z cover 3/4 of their
 # square (the sea plane shows through); these are the tiles that fill theirs.
@@ -139,6 +140,11 @@ def load_grid():
     g[y0 + 3:y1 - 3, x0:x1] = 'D'
     cx0, cy0, cx1, cy1 = EAST_CARVE
     g[cy0:cy1, cx0:cx1] = 'D'
+    # Ledges and cliff lips are thin mountain lines across grass: flat ground. Only
+    # mountain tiles with at least MOUNT_MIN mountain tiles in their 5x5 become rock.
+    mount = np.pad((g == 'M').astype(np.int32), 2)
+    dense = sum(np.roll(np.roll(mount, dy, 0), dx, 1) for dy in range(-2, 3) for dx in range(-2, 3))[2:-2, 2:-2]
+    g[(g == 'M') & (dense < MOUNT_MIN)] = 'G'
     return g
 
 
