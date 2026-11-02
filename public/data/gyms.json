@@ -56,7 +56,7 @@
   "cenaComPorta": true,
   "cfgLider": 4160299,
   "cfgGuia": 4160299,
-  "glb": "pc/Girl_012",
+  "glb": "npc/NPC1017",
   "modeloDump": "npc1017",
   "insignia": {
    "id": 102,
