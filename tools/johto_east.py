@@ -23,7 +23,10 @@ import numpy as np
 WIDTH = 812
 
 CENTER = 'sm_c_001_pokecen_01'
-GATE = 'sm_r_206_barriergate_01'
+# Der House 2 and 3 are Kanto's halves of this gate. 4 and 5 are those meshes
+# turned 180° (see tools/make_der_house_gates.py): 4 opens west, 5 opens south.
+HOUSE4 = 'sm_c_der_house4'
+HOUSE5 = 'sm_c_der_house5'
 SIGN = 'sm_c_001_signboard_01'
 
 # Same shape as TOWNS in johto_hgss_towns.py: (prefab, west x, east x, front y, door cfg).
@@ -31,16 +34,18 @@ EAST_BUILDINGS = {
     2227: [('sm_t_007_house_01', 720, 724, 299, 6222701)],              # friendship-check woman
     2226: [('sm_t_009_house_01_1', 770, 774, 205, 6222602),             # Day-of-Week siblings
            ('sm_c_001_house_01_red', 782, 786, 240, 6222601),           # healing house
-           (GATE, 776, 786, 159, None)],                                # Connection Center
-    2228: [('sm_c_001_house_02_blue', 740, 744, 147, 6222802)],         # Celebrity's house
+           (HOUSE5, 779, 781, 168, 6222603)],                           # Connection Center, south door
+    # House 4's 6th field is the facing: its opening is the west face, on the
+    # Route 28 path (tile 774), centered on row 151. It sits north of House 5.
+    2228: [('sm_c_001_house_02_blue', 740, 744, 147, 6222802),          # Celebrity's house
+           (HOUSE4, 774, 151, 151, 6222801, 'w')],
     2114: [(CENTER, 684, 689, 157, 6211402)],
 }
 
 # (cfg, model, x, y): door points (162) and arrivals (171) not tied to a building front.
 # Each Tohjo Falls pair is a cave passage: entering one side sends you to the other.
 EAST_POINTS = [
-    (6222603, 162, 781.0, 158.4), (7222699, 171, 781.0, 160.2), (7222603, 171, 782.5, 160.2),
-    (6222801, 162, 776.6, 153.5), (7222801, 171, 774.5, 153.5),
+    (7222699, 171, 780.5, 169.5),
     (3222771, 162, 699.6, 300.5), (7222771, 171, 697.5, 300.5),
     (3222772, 162, 716.4, 300.5), (7222772, 171, 718.5, 300.5),
     (6222702, 162, 699.6, 308.5), (7222702, 171, 697.5, 308.5),
@@ -63,7 +68,7 @@ PEAKS = {(646, 94, 698, 150): 9, (756, 120, 812, 150): 6}
 # Route 28 and Mt. Silver: reached through the Connection Center, not by land.
 DOOR_ONLY = (641, 90, 776, 158)
 CHECKS = {'Route 27': (690, 307), 'Tohjo Falls ledge': (706, 325), 'Route 27 east': (740, 304),
-          'Route 26': (779, 230), 'Connection Center step': (781, 160)}
+          'Route 26': (779, 230), 'Connection Center step': (780, 170)}
 DOOR_CHECKS = {'Route 28': (760, 151), 'Mt. Silver': (670, 152)}
 
 

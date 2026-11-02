@@ -1968,7 +1968,9 @@ function instanciarBiblioteca(g, dados){
       // 13/09: os PORTÕES de rota (sm_r_206_barriergate…, o túnel entre a Rota 2 e a Floresta) também são casca — a caixa
       // cheia fechava o túnel: quem chegava da floresta nascia dentro e não conseguia sair pra Rota 2 (rukintk); a frente
       // abre pelo vão largo das portas Kanto↔Kanto no prepararPortas.
-      const oco = /wall|barriergate/.test(nome) && (x1 - x0) >= 4 && (z1 - z0) >= 4;
+      // Der House 4 and 5 are the Johto halves of the Connection Center gate (House 2 and 3 turned
+      // 180°). The arch is the entrance; a solid box would wall it shut.
+      const oco = /wall|barriergate|der_house[45]/.test(nome) && (x1 - x0) >= 4 && (z1 - z0) >= 4;
       /* PONTA DE CAIXA SEM PAREDE (20/09, diego5itu8334 no #bugs: "na cidade de Fuchsia, ainda há um bug do lado esquerdo e
          direito, que dá pra entrada do Safari Zone"; um segundo tester relatou o mesmo). A caixa do portão do Safári
          (`sm_c_001_barriergate_01`, em mundo 169 · 82) vai 1,3 m mais ao sul do que a geometria dele, e como a peça é casca
@@ -2416,6 +2418,16 @@ async function prepararAgua(malhas){
     materiaisAgua.push(mat);
   }
   // console.log('água:', materiaisAgua.length, 'malha(s) com o shader do jogo');
+}
+if (chao.biblioteca){
+  /* Prefabs that kanto.glb does not carry (Der House 4 and 5, the turned Connection Center
+     gates). Same "lib:" nodes under Mapa, merged in before the library is instanced. */
+  try {
+    const extra = await new GLTFLoader().loadAsync('./scenery/prop/library_extra.glb');
+    const mapa = gltf.scene.getObjectByName('Mapa') || gltf.scene;
+    const mais = extra.scene.getObjectByName('Mapa') || extra.scene;
+    for (const child of [...mais.children]) mapa.add(child);
+  } catch (e) { console.warn('library extra:', e); }
 }
 const principal = chao.biblioteca ? instanciarBiblioteca(gltf, dados) : instanciar(gltf, dados);
 cena.add(principal.raiz);

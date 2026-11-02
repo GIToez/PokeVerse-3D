@@ -32,7 +32,10 @@ from johto_east import (CHECKS, DOOR_CHECKS, DOOR_ONLY, EAST_BUILDINGS, EAST_LAN
                         EAST_PROPS, EAST_ROUTES, PEAKS, WIDTH, draw_east)
 from johto_hgss_towns import GYMS, SIZES, STATUE, TOWNS
 
-SIZES = {**SIZES, 'sm_r_206_barriergate_01': (-4.9, -4.21, 4.9, 4.21)}
+# Local bounds of the turned gatehouses (tools/make_der_house_gates.py).
+SIZES = {**SIZES,
+         'sm_c_der_house4': (-8.377, -3.706, 3.600, 3.594),
+         'sm_c_der_house5': (-3.706, -3.600, 3.594, 8.377)}
 
 ROOT = Path(__file__).resolve().parents[1]
 TILES = ROOT / 'tools/johto_hgss_tiles.txt'
@@ -300,26 +303,41 @@ def main():
     h, w = g.shape
 
     # Buildings: centred between their x edges, front face on the front edge.
+    # face 'w' (Der House 4) opens on its west side instead: ex0 is that edge's
+    # tile and ex1 is the row the opening is centred on.
     blds = []
     sites = [(tid, T['buildings']) for tid, T in TOWNS.items()] + list(EAST_BUILDINGS.items())
     for tid, buildings in sites:
-        for n, ex0, ex1, front, door in buildings:
-            bx, fz = world((ex0 + ex1) / 2, front)
+        for spec in buildings:
+            n, ex0, ex1, front, door = spec[:5]
+            face = spec[5] if len(spec) > 5 else 's'
             x0, z0, x1, z1 = SIZES[n]
-            ox, oz = bx + (x0 + x1) / 2, fz - z1 - 0.05
+            if face == 'w':
+                ox = x0 - (ex0 - OX)
+                oz = (ex1 - OY) - (z0 + z1) / 2
+                bx, fz = ox - (x0 + x1) / 2, oz + (z0 + z1) / 2
+            else:
+                bx, fz = world((ex0 + ex1) / 2, front)
+                ox, oz = bx + (x0 + x1) / 2, fz - z1 - 0.05
             rect = (ox - x1, oz + z0, ox - x0, oz + z1)
             # HGSS draws some blocks overlapping in 2.5D; keep the first of any pair that collides.
             if any(r[0] < rect[2] - 0.5 and rect[0] < r[2] - 0.5 and r[1] < rect[3] - 0.5 and rect[1] < r[3] - 0.5
                    for r in (b['rect'] for b in blds)):
+                print('skipped overlapping building', n, 'at', (ex0, front))
                 continue
-            blds.append({'tid': tid, 'n': n, 'door': door, 'x': ox, 'z': oz, 'dx': bx, 'fz': fz, 'rect': rect})
+            blds.append({'tid': tid, 'n': n, 'door': door, 'face': face, 'x': ox, 'z': oz,
+                         'dx': bx, 'fz': fz, 'rect': rect, 'x0': x0, 'z0': z0, 'z1': z1})
 
-    # Footprints and a 2 m apron at each door must be open floor.
+    # Footprints and a 2 m apron outside each door must be open floor.
     occupied = np.zeros((h, w), bool)
     for b in blds:
         rx0, rz0, rx1, rz1 = b['rect']
+        if b['face'] == 'w':
+            rx1 += 2
+        else:
+            rz1 += 2
         tx0, ty0 = to_tile(rx1, rz0)
-        tx1, ty1 = to_tile(rx0, rz1 + 2)
+        tx1, ty1 = to_tile(rx0, rz1)
         for ty in range(int(math.floor(ty0)), int(math.ceil(ty1))):
             for tx in range(int(math.floor(tx0)), int(math.ceil(tx1))):
                 if 0 <= tx < w and 0 <= ty < h:
@@ -522,9 +540,16 @@ def main():
         npcs.append({'cfg': cfg, 'modelo': modelo, 'face': 0,
                      'x': round(x, 2), 'y': 0, 'z': round(z, 2), 'a': a})
 
-    # Door just inside the front wall (as Kanto sets them), arrival on the step outside.
+    # Door just inside the opening, arrival on the step outside.
     for b in blds:
-        if b['door']:
+        if not b['door']:
+            continue
+        if b['face'] == 'w':
+            midz = (b['z0'] + b['z1']) / 2
+            put(b['door'], 162, b['x'] - (b['x0'] + 1.3), b['z'] + midz, b['tid'])
+            if b['door'] + 1000000 in known:
+                put(b['door'] + 1000000, 171, b['x'] - (b['x0'] - 1.6), b['z'] + midz, b['tid'])
+        else:
             put(b['door'], 162, b['dx'], b['fz'] - 0.6, b['tid'])
             if b['door'] + 1000000 in known:
                 put(b['door'] + 1000000, 171, b['dx'], b['fz'] + 1.2, b['tid'])
@@ -576,7 +601,7 @@ def main():
               'of', len(T['buildings']), 'walkable from New Bark' if linked else 'NOT LINKED')
     for name, (tx, ty) in CHECKS.items():
         print(name, 'walkable from New Bark' if comp[ty, tx] == home else 'NOT LINKED')
-    gate = comp[153, 774]
+    gate = comp[151, 760]
     for name, (tx, ty) in DOOR_CHECKS.items():
         print(name, 'walkable from the Connection Center west door' if comp[ty, tx] == gate >= 0 else 'NOT LINKED',
               '(and not by land)' if comp[ty, tx] != home else 'LEAKS TO NEW BARK BY LAND')

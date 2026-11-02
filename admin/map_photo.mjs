@@ -68,6 +68,15 @@ async function fotografar(nome, dados) {
       const l = []; prefab.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) l.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
       if (l.length) partes.set(chaveNome(prefab.name), l);
     }
+    try {
+      const extra = await new GLTFLoader().loadAsync('/scenery/prop/library_extra.glb');
+      extra.scene.updateMatrixWorld(true);
+      const mais = extra.scene.getObjectByName('Mapa') || extra.scene;
+      for (const prefab of mais.children) {
+        const l = []; prefab.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) l.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
+        if (l.length) partes.set(chaveNome(prefab.name), l);
+      }
+    } catch (e) { console.warn('library extra:', e); }
     const grupos = new Map(), T = new THREE.Matrix4();
     for (const o of [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]) {
       const l = partes.get(chaveNome(String(o.n || ''))); if (!l) continue;

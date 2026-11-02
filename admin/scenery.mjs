@@ -229,6 +229,20 @@ async function montarBiblioteca(nome) {
     const k = chaveNome(obj.n); if (!nomeDoPrefab.has(k)) nomeDoPrefab.set(k, obj.n);
     pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(k) || [], inst: [], obj, lista: nomeL });
   }
+  try {
+    const extra = await loader.loadAsync('/scenery/prop/library_extra.glb');
+    extra.scene.updateMatrixWorld(true);
+    const mais = extra.scene.getObjectByName('Mapa') || extra.scene;
+    for (const prefab of mais.children) {
+      const lista = [];
+      prefab.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
+      if (!lista.length) continue;
+      const k = chaveNome(prefab.name);
+      partes.set(k, lista);
+      nomeDoPrefab.set(k, prefab.name.replace(/^lib:?/i, ''));
+      for (const p of pecas) if (chaveNome(p.nome) === k) p.mats = lista;
+    }
+  } catch (e) { console.warn('library extra:', e); }
   tipos = [...partes.keys()].sort().map(k => ({ id: k, nome: nomeDoPrefab.get(k) || k, criar: pos => criarBib(k, pos) }));
 }
 async function extraLamppost() {
