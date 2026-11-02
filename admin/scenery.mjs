@@ -102,6 +102,7 @@ async function carregarMapa(nome) {
   modo = amostra.filter(nm => /^lib/i.test(nm)).length > amostra.length / 2 ? 'biblioteca' : 'montado';
   fx = modo === 'biblioteca' ? -1 : 1;
   if (modo === 'biblioteca') await montarBiblioteca(nome); else montarMontado();
+  await extraLamppost();
   rebuildInstancias(); enquadrar(); renderPaleta();
   sujo = false; $('sujo').hidden = true; $('carregando').hidden = true; atualizarHud();
 }
@@ -121,6 +122,22 @@ async function montarBiblioteca(nome) {
     pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(k) || [], inst: [], obj, lista: nomeL });
   }
   tipos = [...partes.keys()].sort().map(k => ({ id: k, nome: nomeDoPrefab.get(k) || k, criar: pos => criarBib(k, pos) }));
+}
+async function extraLamppost() {
+  if (modo !== 'biblioteca') return;
+  const k = chaveNome('prop/lamppost');
+  if (partes.has(k) && partes.get(k).length) return;
+  try {
+    const g = await loader.loadAsync('/scenery/prop/lamppost.glb');
+    g.scene.updateMatrixWorld(true);
+    const lista = [];
+    g.scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
+    if (!lista.length) return;
+    partes.set(k, lista);
+    nomeDoPrefab.set(k, 'prop/lamppost');
+    for (const p of pecas) if (chaveNome(p.nome) === k) p.mats = lista;
+    tipos = [{ id: k, nome: 'prop/lamppost', criar: pos => criarBib(k, pos) }, ...tipos.filter(t => t.id !== k)];
+  } catch (e) { console.warn('lamppost palette:', e); }
 }
 function montarMontado() {
   const vistosTipo = new Map();

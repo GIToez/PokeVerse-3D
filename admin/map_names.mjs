@@ -43,6 +43,8 @@ const TOKENS = {
   table: 'table',
   bed: 'bed',
   lamp: 'lamp',
+  lamppost: 'lamppost',
+  streetlight: 'streetlight',
   stair: 'stair',
   stairs: 'stairs',
   step: 'step',

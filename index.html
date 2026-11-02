@@ -213,6 +213,7 @@ import * as Ind from './individual.mjs';         // IV + EV + natureza por indiv
 import * as Ev from './ev.mjs';
 import * as Relogio from './clock.mjs';
 import * as Weather from './weather.mjs';
+import * as Luzes from './lights.mjs';
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
 import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolutions.json, data/exp.json)
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
@@ -2729,6 +2730,11 @@ function livre(x, z){
     if (bloqueio.has(Math.floor(x + dx) + ',' + Math.floor(z + dz))) return false;
   const c = chaoEm(x, z);
   return c !== null && !naAgua(x, z, c);                                 // água de verdade não se atravessa a pé (o fundo do mar é piso, mas está 1 m abaixo da superfície)
+}
+
+let postesNoite = null;
+if (JOGAR && !INTERIOR){
+  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio }).then(L => { postesNoite = L; }).catch(e => console.warn('luzes', e));
 }
 
 /* UM PARSE POR ARQUIVO (12/09): Kanto monta ~1.580 NPCs (1.305 do mapa + 275 extras) com só 40 GLBs distintos, e cada um era um
@@ -8600,6 +8606,7 @@ function desligarClima(){
 function atualizarClima(dt){
   passoClimaMundo();
   aplicarMundoVisual();
+  if (postesNoite) postesNoite.quadro(dt, jogo.ash, Relogio.ceu());
   const c = clima.cfg;
   if (!c || !jogo.ash) return;
   if (!clima.fx && !clima.criando){
