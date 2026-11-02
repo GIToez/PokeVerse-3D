@@ -1,4 +1,4 @@
-/* Pallet-style streetlight GLB: dark metal post + lantern glass. */
+/* BDSP-style streetlight: gray tapered post, open 4-pane lantern, hipped roof. */
 import fs from 'node:fs';
 import path from 'node:path';
 import * as THREE from 'three';
@@ -16,11 +16,19 @@ if (typeof FileReader === 'undefined'){
 }
 
 const metal = () => new THREE.MeshStandardMaterial({
-  name: 'post', color: 0x2a2e36, metalness: 0.72, roughness: 0.38,
+  name: 'post', color: 0x4a4e56, metalness: 0.42, roughness: 0.48,
 });
 const glassMat = () => new THREE.MeshStandardMaterial({
-  name: 'glass', color: 0xdce6f2, emissive: 0xfff4d0, emissiveIntensity: 0,
-  transparent: true, opacity: 0.78, roughness: 0.12, metalness: 0.05,
+  name: 'glass',
+  color: 0xc5d0b4,
+  emissive: 0xffe7a0,
+  emissiveIntensity: 0.08,
+  transparent: true,
+  opacity: 0.58,
+  roughness: 0.16,
+  metalness: 0,
+  depthWrite: false,
+  side: THREE.DoubleSide,
 });
 
 function box(mat, w, h, d, x, y, z, name){
@@ -37,21 +45,47 @@ const root = new THREE.Group();
 root.name = 'lamppost';
 const postM = metal(), glassM = glassMat();
 
-root.add(box(postM, 0.34, 0.16, 0.34, 0, 0.08, 0, 'post_base'));
-root.add(box(postM, 0.22, 0.10, 0.22, 0, 0.20, 0, 'post_plinth'));
-root.add(cyl(postM, 0.048, 0.055, 3.05, 1.78, 10, 'post_pole'));
-root.add(box(postM, 0.16, 0.06, 0.16, 0, 3.34, 0, 'post_collar'));
+root.add(box(postM, 0.38, 0.09, 0.38, 0, 0.045, 0, 'post_base'));
+root.add(cyl(postM, 0.055, 0.07, 0.12, 0.14, 12, 'post_neck'));
+root.add(cyl(postM, 0.034, 0.042, 2.52, 1.46, 12, 'post_pole'));
+root.add(cyl(postM, 0.055, 0.05, 0.07, 2.755, 12, 'post_collar'));
 
-const frame = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.42, 6, 1, true), postM);
-frame.position.y = 3.62; frame.name = 'post_lantern';
-root.add(frame);
-root.add(box(postM, 0.36, 0.05, 0.36, 0, 3.40, 0, 'post_lantern_floor'));
-root.add(box(postM, 0.34, 0.06, 0.34, 0, 3.84, 0, 'post_lantern_cap'));
-root.add(cyl(postM, 0.01, 0.045, 0.22, 4.00, 6, 'post_spike'));
+const floorY = 2.82;
+root.add(box(postM, 0.44, 0.045, 0.44, 0, floorY, 0, 'post_lantern_floor'));
 
-const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.145, 0.36, 6), glassM);
-glass.position.y = 3.62; glass.name = 'glass';
-root.add(glass);
+const paneH = 0.48, paneY = floorY + 0.022 + paneH / 2, half = 0.175;
+for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]){
+  root.add(box(postM, 0.038, paneH + 0.02, 0.038, sx * half, paneY, sz * half, 'post_corner'));
+}
+root.add(box(postM, 0.39, 0.03, 0.03, 0, paneY + paneH / 2 - 0.01, half, 'post_rail'));
+root.add(box(postM, 0.39, 0.03, 0.03, 0, paneY + paneH / 2 - 0.01, -half, 'post_rail'));
+root.add(box(postM, 0.03, 0.03, 0.39, half, paneY + paneH / 2 - 0.01, 0, 'post_rail'));
+root.add(box(postM, 0.03, 0.03, 0.39, -half, paneY + paneH / 2 - 0.01, 0, 'post_rail'));
+
+root.add(box(glassM, 0.31, paneH - 0.04, 0.016, 0, paneY, half - 0.01, 'glass'));
+root.add(box(glassM, 0.31, paneH - 0.04, 0.016, 0, paneY, -(half - 0.01), 'glass'));
+root.add(box(glassM, 0.016, paneH - 0.04, 0.31, half - 0.01, paneY, 0, 'glass'));
+root.add(box(glassM, 0.016, paneH - 0.04, 0.31, -(half - 0.01), paneY, 0, 'glass'));
+
+const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), glassM);
+bulb.position.y = paneY;
+bulb.name = 'glass_bulb';
+root.add(bulb);
+
+const capY = paneY + paneH / 2 + 0.022;
+root.add(box(postM, 0.46, 0.04, 0.46, 0, capY, 0, 'post_lantern_cap'));
+
+const roof = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.30, 4), postM);
+roof.rotation.y = Math.PI / 4;
+roof.position.y = capY + 0.17;
+roof.name = 'post_roof';
+root.add(roof);
+
+const knob = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 6), postM);
+knob.position.y = capY + 0.34;
+knob.name = 'post_finial_knob';
+root.add(knob);
+root.add(cyl(postM, 0.006, 0.016, 0.22, capY + 0.46, 8, 'post_spike'));
 
 scene.add(root);
 

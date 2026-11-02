@@ -6,7 +6,7 @@ const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.66;
 const MAX_LUZ = 16;
 const EH_POSTE = /streetlight|lamppost/i;
 const CABECA = {
-  'prop/lamppost': 3.62,
+  'prop/lamppost': 3.13,
   'sm_t_007_streetlight_01': 4.15,
   'sm_c_001_streetlight_01': 3.95,
   'sm_c_001_streetlight_01_g_2': 3.95,
@@ -30,6 +30,22 @@ function haloMat(){
   return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0 });
 }
 
+function ehVidro(mesh, mat){
+  return /glass/i.test(mesh.name || '') || /glass/i.test(mat.name || '');
+}
+
+function prepararVidro(mat){
+  mat.transparent = true;
+  mat.opacity = mat.opacity > 0 && mat.opacity < 1 ? mat.opacity : 0.58;
+  mat.depthWrite = false;
+  mat.side = THREE.DoubleSide;
+  if (!mat.emissive) mat.emissive = new THREE.Color(0xffe7a0);
+  else if (mat.emissive.getHex() === 0) mat.emissive.setHex(0xffe7a0);
+  if (!(mat.emissiveIntensity > 0)) mat.emissiveIntensity = 0.08;
+  mat.needsUpdate = true;
+  return mat;
+}
+
 export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio = null }){
   const list = [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]
     .filter(o => EH_POSTE.test(o.n || ''));
@@ -40,20 +56,26 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   } catch (e){ console.warn('lamppost glb:', e); }
   const haloM = haloMat();
   const posts = [];
+  const jaDesenhou = new Set();
+  cena.traverse(o => {
+    if (!o.isMesh && !o.isInstancedMesh && !o.isBatchedMesh) return;
+    if (/lamppost/i.test(o.name || '')) jaDesenhou.add(o);
+  });
+  const bibJaTem = jaDesenhou.size > 0;
   for (const o of list){
     const x = flipX * o.x, z = o.z;
     const yChao = chaoEm?.(x, z);
     const y = yChao != null ? yChao : (+o.y || 0);
     const cabeca = CABECA[o.n] || 3.9;
     const glass = [];
-    if (/lamppost/i.test(o.n) && proto){
+    if (/lamppost/i.test(o.n) && proto && !bibJaTem){
       const clone = proto.clone(true);
       clone.position.set(x, y, z);
       clone.traverse(m => {
         if (!m.isMesh) return;
         m.material = Array.isArray(m.material) ? m.material.map(x => x.clone()) : m.material.clone();
         const mats = Array.isArray(m.material) ? m.material : [m.material];
-        if (/glass/i.test(m.name) || mats.some(k => /glass/i.test(k.name || ''))) glass.push(...mats);
+        for (const k of mats) if (ehVidro(m, k)) glass.push(prepararVidro(k));
         m.castShadow = /post/i.test(m.name);
       });
       grupo.add(clone);
@@ -65,6 +87,19 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
     spr.visible = false;
     grupo.add(spr);
     posts.push({ x, y: y + cabeca, z, glass, halo: spr });
+  }
+  if (bibJaTem){
+    const seen = new Set();
+    cena.traverse(o => {
+      if (!o.isMesh && !o.isInstancedMesh && !o.isBatchedMesh) return;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      for (const k of mats){
+        if (!k || seen.has(k) || !ehVidro(o, k)) continue;
+        seen.add(k);
+        prepararVidro(k);
+        for (const p of posts) p.glass.push(k);
+      }
+    });
   }
   cena.add(grupo);
   const luzes = [];
@@ -80,7 +115,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       const n = fatorNoite(ceu);
       const aceso = n > 0.04;
       for (const p of posts){
-        for (const m of p.glass){ m.emissiveIntensity = n * 2.1; m.needsUpdate = true; }
+        for (const m of p.glass){ m.emissiveIntensity = 0.08 + n * 2.1; m.needsUpdate = true; }
         p.halo.visible = aceso;
         p.halo.material.opacity = 0.32 * n;
       }
