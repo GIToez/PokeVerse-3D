@@ -42,6 +42,9 @@ if (contas.tester.save.time[0].exp !== before + pay.gained && pay.banked === 0) 
   throw new Error('saved exp ' + contas.tester.save.time[0].exp + ' != ' + before + ' + ' + pay.gained);
 }
 if (pay.exp !== contas.tester.save.time[0].exp) throw new Error('message exp does not match the save');
+const fought = contas.tester.save.time[0];
+if (fought.lv === 5 && fought.hp !== 40) throw new Error('the wild fight changed HP from 40 to ' + fought.hp);
+if (fought.maxHp && fought.hp > fought.maxHp) throw new Error('HP above max after the fight');
 
 const after = contas.tester.save.time[0].exp;
 wilds.defeat(ws, { id: spawn.id });

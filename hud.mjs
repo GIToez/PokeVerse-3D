@@ -593,6 +593,34 @@ function recolherMenu(e, on){
   else if (!on && e.dataset.rightBase != null) e.style.right = e.dataset.rightBase;
   e.dataset.menuRecolhido = on ? '1' : '0';
 }
+/* The Figma pass hides every party node it does not bind, and the experience bar is one of
+   those. Place it just above the HP fill after that pass. The thin track clips anything
+   drawn above it, so the bar hangs off the card (or the slot, on the phone) instead. */
+export function encaixarXp(cel){
+  if (!cel) return;
+  const xp = cel.querySelector('i.tc-xp');
+  const slotXp = cel.querySelector('.tslot > i.txp');
+  if (!xp) return;
+  const fil = cel.querySelector('b.tc-fill');
+  let caixa = fil?.parentElement;
+  if (caixa?.matches?.('i.tc-trilho')) caixa = caixa.parentElement;
+  const aberto = el => !!el && el.style.display !== 'none';
+  if (!fil || !aberto(fil) || fil.style.position !== 'absolute' || !caixa || !aberto(caixa)){
+    xp.style.display = 'none';
+    if (slotXp) slotXp.style.display = 'block';
+    return;
+  }
+  if (slotXp) slotXp.style.display = 'none';
+  if (xp.parentElement !== caixa) caixa.appendChild(xp);
+  const tri = caixa.querySelector(':scope > i.tc-trilho');
+  const comTri = tri && aberto(tri) && tri.style.position === 'absolute';
+  const ref = comTri ? tri : fil;
+  const x = parseFloat(ref.style.left) || 0;
+  const w = ref === fil ? (fil.__figW ?? (parseFloat(fil.style.width) || 0)) : (parseFloat(ref.style.width) || 0);
+  const topo = Math.min(...[comTri && tri, fil].filter(Boolean).map(r => parseFloat(r.style.top) || 0));
+  const h = Math.max(2, Math.round((parseFloat(ref.style.height) || 6) * 0.45)), folga = h > 3 ? 2 : 1;
+  Object.assign(xp.style, { display: 'block', position: 'absolute', left: x + 'px', width: Math.max(w, 0) + 'px', top: (topo - h - folga) + 'px', height: h + 'px', zIndex: '60' });
+}
 /** Remonta a árvore do Figma numa peça já posicionada (o jogo chama quando recria o miolo de um botão). */
 export function remontar(e){
   if (!e || !e.__figmaP) return;
@@ -762,6 +790,7 @@ function montarFigma(e, F, abs){
     } else if (r.img) g.style.backgroundImage = 'url(' + r.img + ')';
     for (const b of g.querySelectorAll('[data-fig="badge-novidades"],[data-fig="selo-promo"]')) b.style.display = 'none';
   }
+  if (e.id === 'time-hud') for (const cel of e.querySelectorAll('.tcel')) encaixarXp(cel);
 }
 /* ÍCONE COLADO AO TÍTULO (18/09, teste local da Amanda com a rodada 31 — "ícone da missão do topo longe do título e os dois descentralizados"):
    na maquete img/icone-missao + txt/titulo-missao são UM bloco — o ícone a 11,9 px (PC; 5,1 no celular) do começo do título, e o título de

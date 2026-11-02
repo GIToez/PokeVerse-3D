@@ -219,7 +219,7 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); }
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if ((nome === 'loja' || nome === 'batalha') && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia

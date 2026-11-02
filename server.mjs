@@ -22,6 +22,7 @@ import { criarRecursos } from './server_resources.mjs';             // Fase 3: l
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
 import { criarBatalha } from './server_battle.mjs';
 import { criarWilds } from './server_wild.mjs';
+import { mergeHp, healMon } from './server_hp.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta } from './server_pos.mjs';
 
@@ -29,7 +30,7 @@ const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
 
-const VERSAO_REDE = 20;   // 20: the server rolls wild Pokémon and awards their experience
+const VERSAO_REDE = 21;   // 21: party HP is stored on the account, so a refresh does not heal
 
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao (main story)
@@ -314,14 +315,16 @@ function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
   for (const k of Object.keys(prefs)) if (PREFS_OK.has(k)) c.save[k] = prefs[k];   // chave fora da lista (dinheiro, bolas…) é IGNORADA
 }
-/* Party sync may reorder Pokémon and may update friendship (`amizade`). Experience, level,
-   and banked experience are ignored: a wild defeat is awarded by server_wild.mjs, and a
-   trainer battle is awarded by server_battle.mjs. Saved fields stay `time` (party) and
-   `caixa` (box) so existing accounts still load. */
+/* Party sync may reorder Pokémon, update friendship (`amizade`), and report a lower HP.
+   Experience, level, and banked experience are ignored: a wild defeat is awarded by
+   server_wild.mjs, and a trainer battle is awarded by server_battle.mjs. HP cannot go
+   up through this message — a Pokémon Center heal is the message that fills it.
+   Saved fields stay `time` (party) and `caixa` (box) so existing accounts still load. */
 function mergeProgress(record, item) {
   if (!record || !item || typeof item !== 'object') return;
   const friendship = Math.round(Number(item.amizade));
   if (Number.isInteger(friendship) && friendship >= 0 && friendship <= 255) record.amizade = friendship;
+  mergeHp(record, item);
 }
 /* Applies a party reorder. The account already owns every Pokémon; this only accepts the same
    set of ids (nothing created, duplicated, or deleted). */
@@ -1557,8 +1560,8 @@ wss.on('connection', ws => {
           const c = u ? contas[u] : null;
           let vidas = null;
           if (c?.save?.time) {
-            vidas = c.save.time.map(p => ({ ...p, hp: p.hpMax || p.stats?.hp || 100, status: null }));
-            c.save.time = vidas;
+            for (const p of c.save.time) healMon(p);
+            vidas = c.save.time;
             c.rev = (c.rev || 0) + 1;
             salvarContas();
           }

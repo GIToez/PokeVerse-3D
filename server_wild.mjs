@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import nodePath from 'node:path';
 import * as Ev from './ev.mjs';
+import { grantLevelHp } from './server_hp.mjs';
 
 const FLIP_X = -1;
 const LIVE_CAP = 48;
@@ -219,6 +220,7 @@ export function criarWilds(ctx) {
       mon.amizade = Math.min(255, (Number.isInteger(mon.amizade) ? mon.amizade : baseFriend) + 2 * levels);
     }
     const ev = Ev.ganharPorKo(mon, foeDex);
+    grantLevelHp(mon, levels);
     return { gained, banked, levels, ev: ev.ganhou };
   }
 

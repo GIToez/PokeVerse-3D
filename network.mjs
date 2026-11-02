@@ -14,7 +14,7 @@ let ping = { enviado: 0, ms: null };
 let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null, tAparencia = 0, ultimaMont = null;   // ultimaMont (14/09): a montaria que a sala já sabe   // ultimoUid: qual Pokémon está em campo (passo 3: o XP e o dano caem nele); ultimoTitulo: o título sob o nome (12/09)
 import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
 import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
-export const VERSAO_REDE = 20;                                            // 20: the server rolls wild Pokémon and awards their experience
+export const VERSAO_REDE = 21;                                            // 21: party HP is stored on the account, so a refresh does not heal
 
 export function instalar(c){
   ctx = c;
