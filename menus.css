@@ -153,6 +153,32 @@ body.mobile .janela .dex-dois{grid-template-columns:1fr}
 .janela .stat-pills .pill.iv,.pf .stat-pills .pill.iv{border-color:#6ea8ff;color:#cfe2ff}
 .janela .stat-pills .pill.ev,.pf .stat-pills .pill.ev{border-color:#e08a2a;color:#ffd19a}
 .janela .stat-pills .pill.ev.cheio,.pf .stat-pills .pill.ev.cheio{border-color:#5ee0c4;color:#c5fff0}
+.janela .ficha .pk-sheet{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin:10px 0 8px;color:var(--text)}
+.janela .pk-stats,.janela .pk-moves{min-width:0;display:flex;flex-direction:column;gap:3px}
+.janela .pk-stats header{display:grid;grid-template-columns:1fr 78px 70px;gap:6px;color:var(--muted);font-size:11px;font-weight:700;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.janela .pk-stats header span:nth-child(2),.janela .pk-stats header span:nth-child(3){text-align:center}
+.janela .pk-row{display:grid;grid-template-columns:1fr 36px 78px 70px;align-items:center;gap:4px;min-height:22px;font-size:12px}
+.janela .pk-row b{text-align:right;font-variant-numeric:tabular-nums}
+.janela .pk-row .mais{color:#8ef58e}.janela .pk-row .menos{color:#f58e8e}
+.janela .pk-gen,.janela .pk-ev{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.janela .pk-gen em,.janela .pk-ev em{font-style:normal;font-size:11px;color:var(--muted);min-width:18px;text-align:right;font-variant-numeric:tabular-nums}
+.janela .pk-dots{display:inline-flex;gap:2px}
+.janela .pk-dots i{width:7px;height:7px;border-radius:50%;background:#2a3550}
+.janela .pk-gen .pk-dots i.on{background:#8b6cff}
+.janela .pk-ev .pk-dots i.on{background:#e08a2a}
+.janela .pk-row.tot{border-top:1px solid var(--line);margin-top:2px;padding-top:4px;color:var(--muted)}
+.janela .pk-ev.cheio em{color:#5ee0c4}
+.janela .pk-nat{margin-top:6px;font-size:12px;color:var(--muted)}
+.janela .pk-nat b{color:#ffe07a}
+.janela .pk-moves header{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;font-weight:700;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.janela .pk-reaprender{margin:0;padding:3px 8px;border:1px solid var(--line);border-radius:999px;background:#0b1020;color:#ffe6b0;font:inherit;font-size:11px;cursor:pointer}
+.janela .pk-reaprender.on,.janela .pk-move.on{border-color:#ffd23a}
+.janela .pk-move{background:#0b1020;border:1px solid var(--line);border-radius:10px;padding:7px 9px;min-height:46px}
+.janela .pk-move.clicavel{cursor:pointer}
+.janela .pk-move.vazia{opacity:.4}
+.janela .pk-move-topo{display:flex;align-items:center;gap:6px}
+.janela .pk-move small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.janela .pk-re-lista{display:flex;flex-wrap:wrap;gap:6px;padding-top:6px}
 .janela table.stats td.stat-ev{text-align:right;min-width:92px}
 .janela .stat-bars{display:flex;flex-direction:column;gap:3px;align-items:stretch}
 .janela .stat-bars b{display:block;height:4px;border-radius:99px;background:#1e2740;overflow:hidden}

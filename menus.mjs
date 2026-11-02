@@ -34,6 +34,105 @@ const infoGolpe = g => {
   if (!g) return '';
   return tr('power') + ' ' + (g.poder ?? '—') + ' · ' + tr('cooldown') + ' ' + (g.recarga ?? '—') + 's' + (g.ppMax != null ? ' · PP ' + g.pp + '/' + g.ppMax : '');
 };
+function pkDots(n, max, slots = 8){
+  const cheios = Math.max(0, Math.min(slots, Math.round((Math.max(0, +n || 0) / max) * slots)));
+  return `<span class="pk-dots">${Array.from({ length: slots }, (_, i) => `<i class="${i < cheios ? 'on' : ''}"></i>`).join('')}</span>`;
+}
+function htmlPkSheet(e, S, { movs = [], novo = null } = {}){
+  const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
+  const nomes = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
+  const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));
+  const evs = ctx.Ind?.evsDe?.(e) || [0, 0, 0, 0, 0, 0];
+  const evTot = evs.reduce((a, b) => a + b, 0);
+  const ivTot = e.ivs && ctx.Ind ? ctx.Ind.somaIV(e) : 0;
+  const nat = ctx.Ind?.natureza(e.natureza);
+  const seta = i => !nat || nat[1] === nat[2] ? '' : i === nat[1] ? '<span class="mais">▲</span>' : i === nat[2] ? '<span class="menos">▼</span>' : '';
+  const linhas = nomes.map((n, i) => {
+    const iv = e.ivs ? e.ivs[i] : 0;
+    return `<div class="pk-row"><span>${n} ${seta(i)}</span><b>${stats[i]}</b><span class="pk-gen" title="IV ${iv}/31">${pkDots(iv, 31)}<em>${iv}</em></span><span class="pk-ev" title="EV ${evs[i]}/252">${pkDots(evs[i], 252)}<em>${evs[i]}</em></span></div>`;
+  }).join('');
+  const golpes = [0, 1, 2, 3].map(i => {
+    const g = movs[i];
+    if (!g) return `<div class="pk-move vazia"><b>—</b></div>`;
+    const mark = novo && confirmarAprender === i ? ' on' : '';
+    const hint = novo && confirmarAprender === i
+      ? '✔ ' + tr('click again: forget') + ' ' + g.nome + ' · ' + tr('learn') + ' ' + (novo.nome || '')
+      : infoGolpe(g);
+    return `<div class="pk-move${mark}${novo ? ' clicavel' : ''}" data-pk-golpe="${i}"><span class="pk-move-topo">${tipoHtml(g.tipo)}<b>${esc(g.nome)}</b></span><small>${esc(hint)}</small></div>`;
+  }).join('');
+  const listaRe = ctx.golpesReaprender?.(e) || [];
+  const listaReHtml = reaprenderAberto && listaRe.length
+    ? `<div class="pk-re-lista">${listaRe.map(g => `<button type="button" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join('')}</div>`
+    : '';
+  return `<div class="pk-sheet">
+    <section class="pk-stats">
+      <header><span>${esc(tr('Stats'))}</span><span>${esc(tr('Genetics'))}</span><span>${esc(tr('EVs'))}</span></header>
+      ${linhas}
+      <div class="pk-row tot"><span>${esc(tr('Base total'))}</span><b>${S.bst || bs.reduce((a, b) => a + b, 0)}</b><span class="pk-gen"><em>${ivTot}/${ctx.Ind?.IV_TOTAL || 186}</em></span><span class="pk-ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}"><em>${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</em></span></div>
+      <div class="pk-nat">${esc(tr('Nature'))} <b>${esc(e.natureza || '—')}</b> <small>${esc(e.natureza ? tr(ctx.Ind?.descNatureza(e.natureza) || '') : '')}</small></div>
+    </section>
+    <section class="pk-moves">
+      <header><span>${esc(tr('Moves'))}</span>${listaRe.length ? `<button type="button" class="pk-reaprender${reaprenderAberto ? ' on' : ''}" data-reaprender="1">↻ ${esc(tr('Relearn'))} (${listaRe.length})</button>` : ''}</header>
+      ${listaReHtml || golpes}
+    </section>
+  </div>`;
+}
+function ligarPkSheet(root){
+  if (!root) return;
+  root.querySelectorAll('[data-pk-golpe]').forEach(el => {
+    el.addEventListener('click', ev => { ev.stopPropagation(); acaoPokemon('golpe-' + (+el.dataset.pkGolpe + 1)); });
+  });
+  root.querySelector('.pk-reaprender')?.addEventListener('click', ev => {
+    ev.stopPropagation();
+    reaprenderAberto = !reaprenderAberto;
+    render();
+  });
+  root.querySelectorAll('[data-reaprender-id]').forEach(b => {
+    b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const mon = timeAtual()[selPokemon];
+      reaprenderAberto = false;
+      confirmarAprender = null;
+      if (mon) ctx.reaprender?.(mon, b.dataset.reaprenderId);
+      render();
+    });
+  });
+}
+function esconderFichaFig(f, on){
+  if (!f) return;
+  f.classList.toggle('pk-sheet-on', !!on);
+}
+function posicionarPkSheet(f, sheet){
+  if (!f || !sheet) return;
+  const num = n => parseFloat(n) || 0;
+  const elBox = sel => {
+    const el = f.querySelector(sel);
+    return el ? { x: num(el.style.left), y: num(el.style.top), w: num(el.style.width), h: num(el.style.height) } : null;
+  };
+  const hp = elBox('[data-fig="barra-vida-trilho"]') || elBox('[data-txt="vida"]');
+  const evo = elBox('[data-fig="txt/evolucao"]') || elBox('[data-txt="evolucao"]');
+  const fw = num(f.style.width) || f.clientWidth || 510;
+  const fh = num(f.style.height) || f.clientHeight || 640;
+  let left = 12, top = 8, width = fw - 24, height = fh - 16;
+  if (hp && evo && evo.y > hp.y + hp.h + 24){
+    left = hp.x || 52;
+    top = hp.y + hp.h + 8;
+    height = evo.y - top - 6;
+    width = fw - left - 10;
+  } else {
+    left = Math.max(hp ? hp.x + hp.w + 12 : fw * 0.38, 220);
+    top = 4;
+    width = fw - left - 8;
+    height = fh - 10;
+  }
+  const h = Math.max(110, height), w = Math.max(200, width);
+  Object.assign(sheet.style, {
+    position: 'absolute', left: left + 'px', top: top + 'px',
+    width: w + 'px', height: h + 'px',
+    zIndex: '800', pointerEvents: 'auto',
+  });
+  sheet.classList.toggle('pk-compact', h < 220);
+}
 const ROTULOS_FICHA = {
   'stat-hp': 'HP', 'stat-ataque': 'Attack', 'stat-defesa': 'Defense',
   'stat-at-esp': 'Sp. Atk', 'stat-def-esp': 'Sp. Def', 'stat-velocidade': 'Speed',
@@ -238,31 +337,18 @@ function timeAtual(){
 function fichaHtml(e){
   const S = ctx.porDex.get(e.dex); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>${esc(tr('no Pokédex data'))}</small></div>`;
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
-  const nomes = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
-  const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));   // IV + EV + natureza
-  const evs = ctx.Ind?.evsDe?.(e) || [0, 0, 0, 0, 0, 0];
-  const evTot = evs.reduce((a, b) => a + b, 0);
-  const nat = ctx.Ind?.natureza(e.natureza), seta = i => !nat || nat[1] === nat[2] ? '' : i === nat[1] ? ' <span class="mais">▲</span>' : i === nat[2] ? ' <span class="menos">▼</span>' : '';
-  const pills = `<div class="stat-pills">${e.natureza ? `<span class="pill nat">${esc(e.natureza)}${ctx.Ind?.descNatureza(e.natureza) ? ' · ' + esc(tr(ctx.Ind.descNatureza(e.natureza))) : ''}</span>` : ''}${e.ivs ? `<span class="pill iv">${esc(tr('IVs'))} ${ctx.Ind.somaIV(e)}/${ctx.Ind.IV_TOTAL}</span>` : ''}<span class="pill ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}">${esc(tr('EVs'))} ${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</span></div>`;
-  const barraStat = i => {
-    const iv = e.ivs ? e.ivs[i] : 0, ev = evs[i];
-    const ivPct = Math.round(100 * iv / 31), evPct = Math.round(100 * ev / 252);
-    return `<td class="stat-ev"><div class="stat-bars"><b class="iv" title="IV ${iv}/31"><i style="width:${ivPct}%"></i></b><b class="ev" title="EV ${ev}/252"><i style="width:${evPct}%"></i></b></div><small>IV ${iv} · EV ${ev}</small></td>`;
-  };
-  const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);   // golpes do indivíduo (PP) ou, sem registro, os da espécie
-  const golpes = movs.map(g => `<div class="linha" style="cursor:default"><span class="nome"><b>${esc(g.nome)}</b><small>${esc(infoGolpe(g))}</small></span>${tipoHtml(g.tipo)}</div>`).join('');
+  const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));
+  const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);
   const novo = e.aprender?.[0] ? (ctx.golpe?.(e.aprender[0]) || null) : null;
   const aprender = novo ? `<div class="evo-linha" style="margin-top:6px"><b>✧ wants to learn ${esc(novo.nome)}</b> <small>${esc(novo.tipo || '')} · ${esc(tr('power'))} ${novo.poder ?? '—'} · PP ${ctx.Ind?.ppDe?.(novo.id) ?? '?'}</small><div style="margin-top:4px;font-size:12px">${esc(tr('forget'))}: ${movs.map((g, i) => `<button type="button" class="btn" data-aprender="${i}">${esc(g.nome)}</button>`).join(' ')} <button type="button" class="btn" data-aprender="-1">${esc(tr('do not learn'))}</button></div></div>` : '';
-  // regras dos jogos originais (evolution.mjs): cada evolução com o que falta / ✔ pronto
   const ops = ctx.opcoesEvolucao?.(e) || [];
   const evo = ops.length ? ops.map(o => `<div class="evo-linha"><b>→ ${esc(o.nome)}</b> <small>${esc(textoEvo(o.regra))}</small><br>${!o.glb ? '<span class="falta">' + esc(tr('coming soon')) + '</span>' : o.pode ? '<span class="ok">✔ ' + esc(tr('ready')) + (o.itemNome ? ' (' + esc(tr('uses {item}', { item: tr(o.itemNome) })) + ')' : '') + '</span>' : '<span class="falta">' + esc(tr(o.falta)) + '</span>'}</div>`).join('') : tr('does not evolve');
   const prox = ctx.expPara?.(e.dex, lv + 1), xp = (e.exp != null && prox ? `XP ${e.exp}/${prox}` : '') + (e.expReserva > 0 ? ' · ' + e.expReserva + ' ' + tr('banked XP') : '');
   return `<div class="ficha"><div class="mini"><img src="./ui/mon/pm${String(e.dex).padStart(4, '0')}.png" alt=""></div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)} <small style="color:var(--muted)">Nº ${String(e.dex).padStart(3, '0')} · Lv ${lv}${lv > tetoObed() ? ' <span class="falta" title="' + esc(tr('above the level cap: will not obey until the next Badge')) + '">🔒 ' + esc(tr('cap')) + ' ' + tetoObed() + '</span>' : lv >= tetoObed() ? ' <span class="falta" title="' + esc(tr('at the level cap: XP is banked until the next Badge')) + '">🔒 ' + esc(tr('at cap')) + '</span>' : ''}${xp ? ' · ' + xp : ''}${e.amizade != null ? ' · ' + esc(tr('friendship')) + ' ' + e.amizade : ''}${e.seguindo ? ' · ' + esc(tr('following')) : ''}</small></h3>
     <div>${(S.types || []).map(tipoHtml).join('')} <small style="color:var(--muted)">${S.kg ? S.kg + ' kg' : ''}</small></div>
     <div class="hp"><b style="width:${Math.round(100 * (e.hp ?? stats[0]) / (e.maxHp || stats[0]))}%"></b></div>
-    ${pills}
-    <table class="stats">${stats.map((v, i) => `<tr><td>${nomes[i]}${seta(i)}</td><td>${v}</td>${barraStat(i)}</tr>`).join('')}<tr><td>${esc(tr('Base total'))}</td><td>${S.bst || bs.reduce((a, b) => a + b, 0)}</td><td class="iv">${e.ivs ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : ''} · EV ${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</td></tr></table>
-    <div class="k" style="margin-top:8px;color:var(--muted);font-size:11px">${esc(tr('Moves'))}</div><div class="lista">${golpes || '<small>—</small>'}</div>${aprender}${reaprenderHtml(e)}
+    ${htmlPkSheet(e, S, { movs, novo })}
+    ${aprender}
     <div style="margin-top:8px;font-size:12px">${evo}</div></div>`;
 }
 /* ------------------------------------------------------------------ Caixa: arrastar entre o time e a caixa (20/09)
@@ -330,7 +416,7 @@ function rPokemon(corpo){
   corpo.querySelectorAll('[data-i]').forEach(l => l.onclick = () => { selPokemon = +l.dataset.i; render(); });
   corpo.querySelector('#p-seguir')?.addEventListener('click', async () => { await ctx.seguir?.(e); selPokemon = 0; render(); });
   corpo.querySelectorAll('[data-aprender]').forEach(b => b.onclick = () => { ctx.aprenderGolpe?.(e, e.aprender[0], +b.dataset.aprender); render(); });
-  corpo.querySelectorAll('[data-reaprender-id]').forEach(b => b.onclick = () => { ctx.reaprender?.(e, b.dataset.reaprenderId); render(); });   // 18/09: Reaprender na janela antiga
+  ligarPkSheet(corpo);
   ligarSoltar(corpo, 'time');
   corpo.querySelector('#p-caixa')?.addEventListener('click', () => { const t = ctx.jogo.time || []; const k = t.findIndex(x => mesmoRegistro(x, e)); if (k < 0) return; const [saiu] = t.splice(k, 1); ctx.gravarLS('time', t); const cx = ctx.lerLS('caixa', []); cx.push(saiu); ctx.gravarLS('caixa', cx); ctx.atualizarSeguidorPainel?.(); selPokemon = 0; render(); });
 }
@@ -456,6 +542,7 @@ function montarReaprender(pop){
 }
 function atualizarReaprender(pop, e){
   const b = pop.querySelector('.gp-reaprender-btn'), l = pop.querySelector('.gp-reaprender-lista'); if (!b || !l) return;
+  if (pop.querySelector('.pk-sheet')){ b.style.display = 'none'; l.style.display = 'none'; return; }
   const lista = e ? (ctx.golpesReaprender?.(e) || []) : [];
   if (!lista.length) reaprenderAberto = false;
   b.style.display = lista.length ? 'block' : 'none';
@@ -541,6 +628,8 @@ function encherFichaPokemon(pop, e, lista){
   if (!e || !S){
     for (const id of ['ficha-nome', 'ficha-status', 'ficha-numero', 'ficha-peso', 'natureza', 'evolucao', 'vida']) nada(id, f);
     f.querySelector('.stat-pills')?.remove();
+    f.querySelector('.pk-sheet')?.remove();
+    esconderFichaFig(f, false);
     Popup.badge(pop, 'ficha-tipo', null, null, f);
     Popup.imagem(pop, 'pokemon', null, f);
     for (let i = 0; i < 4; i++){ Popup.golpeVazio(pop, i, true); const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (no){ no.style.pointerEvents = ''; no.style.cursor = ''; } }
@@ -565,46 +654,15 @@ function encherFichaPokemon(pop, e, lista){
   const k = maxHp ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
   Popup.barra(pop, 'vida', k, corDaVida(k), f);
   Popup.texto(pop, 'vida', Math.round(hp) + '/' + maxHp, f);
-  const IDS = ['hp', 'ataque', 'defesa', 'at-esp', 'def-esp', 'velocidade'];
-  const nat = ctx.Ind?.natureza(e.natureza);
-  const evs = ctx.Ind?.evsDe?.(e) || [0, 0, 0, 0, 0, 0];
-  const evTot = evs.reduce((a, b) => a + b, 0);
-  const seta = i => (!nat || nat[1] === nat[2]) ? '' : i === nat[1] ? ' ▲' : i === nat[2] ? ' ▼' : '';
-  IDS.forEach((id, i) => {
-    Popup.texto(pop, 'stat-' + id + '-valor', stats[i] + seta(i), f);
-    Popup.texto(pop, 'stat-' + id + '-iv', (e.ivs ? 'IV ' + e.ivs[i] : 'IV —') + ' · EV ' + evs[i], f);
-  });
-  Popup.texto(pop, 'stat-total-valor', S.bst || bs.reduce((a, b) => a + b, 0), f);
-  Popup.texto(pop, 'stat-total-iv', (e.ivs && ctx.Ind ? 'IV ' + ctx.Ind.somaIV(e) + '/' + ctx.Ind.IV_TOTAL : '') + ' · EV ' + evTot + '/' + (ctx.Ind?.EV_TOTAL_MAX || 510), f);
-  Popup.texto(pop, 'natureza', e.natureza ? e.natureza + '  ' + (ctx.Ind?.descNatureza(e.natureza) || '') : '', f);
-  let pills = f.querySelector('.stat-pills');
-  if (!pills){ pills = document.createElement('div'); pills.className = 'stat-pills pf-pills'; f.appendChild(pills); }
-  const natEl = f.querySelector('[data-fig="natureza"], [data-fig="stat-natureza"]');
-  if (natEl){
-    pills.style.left = (natEl.offsetLeft || parseFloat(natEl.style.left) || 8) + 'px';
-    pills.style.top = ((natEl.offsetTop || parseFloat(natEl.style.top) || 0) + (natEl.offsetHeight || parseFloat(natEl.style.height) || 18) + 4) + 'px';
-    pills.style.width = (natEl.offsetWidth || parseFloat(natEl.style.width) || 220) + 'px';
-  }
-  pills.innerHTML = (e.natureza ? `<span class="pill nat">${esc(e.natureza)}</span>` : '') +
-    (e.ivs ? `<span class="pill iv">IVs ${ctx.Ind.somaIV(e)}/${ctx.Ind.IV_TOTAL}</span>` : '') +
-    `<span class="pill ev${evTot >= (ctx.Ind?.EV_TOTAL_MAX || 510) ? ' cheio' : ''}">EVs ${evTot}/${ctx.Ind?.EV_TOTAL_MAX || 510}</span>`;
+  f.querySelector('.stat-pills')?.remove();
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);
-  for (let i = 0; i < 4; i++){
-    const g = movs[i], no = Popup.grupo(pop, 'golpe-' + (i + 1));
-    Popup.golpeVazio(pop, i, !g);
-    iconesTipo(pop, no, g?.tipo ? [g.tipo] : []);                         // v2 (17/09): ícone do tipo do golpe (card vazio: esconde o encaixe)
-    if (!g || !no) continue;
-    Popup.texto(pop, 'golpe-nome', g.nome, no);
-    Popup.texto(pop, 'golpe-info', infoGolpe(g), no);
-    Popup.badge(pop, 'golpe-tipo', g.tipo && TIPO_FIG[g.tipo], g.tipo || null, no);
-  }
   const novoId = e.aprender?.[0] || null, novo = novoId ? (ctx.golpe?.(novoId) || { nome: String(novoId) }) : null;
-  for (let i = 0; i < 4; i++){                                           // golpe na fila: os 4 cards viram botões ("clique pra esquecer este")
-    const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (!no) continue;
-    const clicavel = !!novo && !!movs[i];
-    no.style.pointerEvents = clicavel ? 'auto' : ''; no.style.cursor = clicavel ? 'pointer' : '';
-    if (clicavel && confirmarAprender === i) Popup.texto(pop, 'golpe-info', '✔ click again: forget ' + movs[i].nome + ' and learn ' + novo.nome, no);
-  }
+  esconderFichaFig(f, true);
+  f.querySelector('.pk-sheet')?.remove();
+  f.insertAdjacentHTML('beforeend', htmlPkSheet(e, S, { movs, novo }));
+  const sheet = f.querySelector('.pk-sheet');
+  posicionarPkSheet(f, sheet);
+  ligarPkSheet(f);
   const todasEvo = ctx.opcoesEvolucao?.(e) || [], ops = todasEvo.filter(o => o.glb);
   const pronta = ops.find(o => o.pode);
   /* EVOLUÇÃO SEM MODELO (17/09, Fulana no feedback: "a Chikorita não pode evoluir"): a regra da série existe (Bayleef no Lv 16), mas o

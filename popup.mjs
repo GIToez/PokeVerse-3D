@@ -43,11 +43,50 @@ export function definirEscalaPopup(f){ try { localStorage.setItem('popup.escala'
 const CSS = `
 .pf{transform-origin:50% 50%;color:#fff;font:12px/1.05 "Nunito Sans",system-ui,sans-serif;user-select:none}
 #pf-popup-pokemon [data-fig="stat-hp"],#pf-popup-pokemon [data-fig="stat-ataque"],#pf-popup-pokemon [data-fig="stat-defesa"],#pf-popup-pokemon [data-fig="stat-at-esp"],#pf-popup-pokemon [data-fig="stat-def-esp"],#pf-popup-pokemon [data-fig="stat-velocidade"],#pf-popup-pokemon [data-fig="stat-total"],#pf-popup-pokemon [data-fig="stat-natureza"],#pf-popup-pokemon [data-fig="rotulo-golpes"]{background:#12192c}
-.pf .stat-pills.pf-pills{display:flex;flex-wrap:wrap;gap:5px}
-.pf .stat-pills .pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;border:1px solid #c9a227;background:#12192ce6;color:#f3e6b0;font-size:10px;font-weight:700;line-height:1.2}
-.pf .stat-pills .pill.iv{border-color:#6ea8ff;color:#cfe2ff}
-.pf .stat-pills .pill.ev{border-color:#e08a2a;color:#ffd19a}
-.pf .stat-pills .pill.ev.cheio{border-color:#5ee0c4;color:#c5fff0}
+.pf [data-fig="ficha"].pk-sheet-on [data-fig^="stat-"],
+.pf [data-fig="ficha"].pk-sheet-on [data-fig*="/stat-"],
+.pf [data-fig="ficha"].pk-sheet-on [data-fig="rotulo-golpes"],
+.pf [data-fig="ficha"].pk-sheet-on [data-fig^="golpe-"],
+.pf [data-fig="ficha"].pk-sheet-on [data-fig="txt/natureza"],
+.pf [data-fig="ficha"].pk-sheet-on .stat-pills,
+.pf [data-fig="ficha"].pk-sheet-on .gp-reaprender-btn,
+.pf [data-fig="ficha"].pk-sheet-on .gp-reaprender-lista{display:none!important}
+.pf [data-fig="ficha"]>.pk-sheet{z-index:800;pointer-events:auto;overflow:hidden}
+.pf .pk-sheet{display:grid;grid-template-columns:1.4fr .95fr;gap:10px;min-height:0;height:100%;color:#e8eef8;font:11px/1.2 "Nunito Sans",system-ui,sans-serif}
+.pf .pk-stats,.pf .pk-moves{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:auto}
+.pf .pk-stats header{display:grid;grid-template-columns:1fr 72px 64px;gap:4px;color:#b8c2d9;font-size:10px;font-weight:800;padding:0 2px 5px;border-bottom:1px solid #c9a22744}
+.pf .pk-stats header span:nth-child(2),.pf .pk-stats header span:nth-child(3){text-align:center}
+.pf .pk-row{display:grid;grid-template-columns:1fr 34px 72px 64px;align-items:center;gap:3px;min-height:22px}
+.pf .pk-row>span:first-child{color:#d5deef}
+.pf .pk-row b{font-weight:800;color:#fff;text-align:right;font-variant-numeric:tabular-nums}
+.pf .pk-row .mais{color:#86ef5f;font-size:9px}
+.pf .pk-row .menos{color:#f58e8e;font-size:9px}
+.pf .pk-gen,.pf .pk-ev{display:flex;align-items:center;justify-content:flex-end;gap:3px}
+.pf .pk-gen em,.pf .pk-ev em{font-style:normal;font-size:10px;color:#b8c2d9;min-width:16px;text-align:right;font-variant-numeric:tabular-nums}
+.pf .pk-dots{display:inline-flex;gap:2px}
+.pf .pk-dots i{width:6px;height:6px;border-radius:50%;background:#2a3550}
+.pf .pk-gen .pk-dots i.on{background:#8b6cff}
+.pf .pk-ev .pk-dots i.on{background:#e08a2a}
+.pf .pk-row.tot{border-top:1px solid #c9a22733;margin-top:2px;padding-top:4px;color:#b8c2d9}
+.pf .pk-ev.cheio em{color:#5ee0c4}
+.pf .pk-nat{margin-top:6px;font-size:11px;color:#b8c2d9}
+.pf .pk-nat b{color:#ffe07a}
+.pf .pk-nat small{color:#8fa0c0}
+.pf .pk-moves header{display:flex;justify-content:space-between;align-items:center;color:#b8c2d9;font-size:10px;font-weight:800;padding-bottom:5px;border-bottom:1px solid #c9a22744}
+.pf .pk-reaprender{margin:0;padding:2px 8px;border:1px solid #c9a22788;border-radius:999px;background:#12192ce6;color:#f3e6b0;font:800 10px/1.2 "Nunito Sans",system-ui,sans-serif;cursor:pointer;pointer-events:auto}
+.pf .pk-reaprender.on,.pf .pk-move.on{border-color:#f2c23d;box-shadow:0 0 0 1px #f2c23d}
+.pf .pk-move{background:#12192ce6;border:1px solid #c9a22744;border-radius:8px;padding:6px 8px;min-height:48px;pointer-events:auto}
+.pf .pk-move.clicavel{cursor:pointer}
+.pf .pk-move.vazia{opacity:.35}
+.pf .pk-move-topo{display:flex;align-items:center;gap:6px}
+.pf .pk-move-topo b{font-size:12px;font-weight:800}
+.pf .pk-move small{display:block;color:#b8c2d9;font-size:9px;margin-top:3px}
+.pf .pk-sheet .tipo{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:800;color:#fff}
+.pf .pk-re-lista{display:flex;flex-wrap:wrap;gap:5px;padding-top:6px}
+.pf .pk-re-lista button{padding:4px 8px;border:1px solid #c9a22766;border-radius:8px;background:#12192ce6;color:#fff;font:700 11px/1.2 "Nunito Sans",system-ui,sans-serif;cursor:pointer}
+.pf .pk-sheet.pk-compact{gap:8px;font-size:10px}
+.pf .pk-sheet.pk-compact .pk-row{min-height:18px}
+.pf .pk-sheet.pk-compact .pk-move{min-height:36px;padding:4px 6px}
 .pf *{box-sizing:border-box}
 .pf .pf-grupo,.pf .pf-img,.pf .pf-var,.pf .pf-ret,.pf .pf-fill,.pf .pf-txt,.pf .pf-rotulo{position:absolute;pointer-events:none}
 .pf [data-tag],.pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"]{pointer-events:auto}
