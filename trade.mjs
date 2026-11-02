@@ -49,7 +49,7 @@ function estilo(){
 /** /trocar <nome>: acha quem está por perto com esse nome e convida. */
 export function convidar(nome){
   const alvo = (ctx.outros?.() || []).find(o => (o.nome || '').toLowerCase() === String(nome || '').toLowerCase().trim());
-  if (!alvo){ ctx.Chat?.sistema('Ninguém por perto com o nome "' + nome + '". Fique na mesma área e tente de novo.'); return false; }
+  if (!alvo){ ctx.Chat?.sistema('Nobody nearby named "' + nome + '". Stay in the same area and try again.'); return false; }
   ctx.enviar({ t: 'troca_convidar', para: alvo.id });
   return true;
 }
@@ -58,7 +58,7 @@ function mostrarConvite(m){
   ctx?.Som?.tocar?.('ui/sound_successful', { volume: .5, prio: true });   // toque do convite (11/09)
   estilo();
   convite = document.createElement('div'); convite.id = 'troca-convite';
-  convite.innerHTML = `<span><b>${esc(m.nome)}</b> quer trocar Pokémon</span><button class="btn ouro" id="tr-sim">Aceitar</button><button class="btn" id="tr-nao">Recusar</button>`;
+  convite.innerHTML = `<span><b>${esc(m.nome)}</b> wants to trade Pokémon</span><button class="btn ouro" id="tr-sim">Accept</button><button class="btn" id="tr-nao">Decline</button>`;
   document.body.appendChild(convite);
   const responde = ok => { ctx.enviar({ t: 'troca_responder', de: m.de, ok }); fecharConvite(); };
   $('tr-sim').onclick = () => responde(true);
@@ -80,13 +80,13 @@ function abrirMesa(m){
   meus = meusPokemon(); escolhidos = []; estadoAtual = null;
   const t = document.createElement('div'); t.id = 'troca-tela';
   t.innerHTML = `<div class="tr-caixa">
-    <header><span>Troca com <b>${esc(m.com.nome)}</b></span><button class="x" id="tr-x" title="sair da troca">✕</button></header>
+    <header><span>Trade with <b>${esc(m.com.nome)}</b></span><button class="x" id="tr-x" title="leave the trade">✕</button></header>
     <div class="tr-mesa">
-      <section><h3>Você oferece <small id="tr-conta"></small></h3><div class="tr-lista" id="tr-meus"></div></section>
-      <section><h3>${esc(m.com.nome)} oferece</h3><div class="tr-lista" id="tr-dele"></div></section>
+      <section><h3>You offer <small id="tr-conta"></small></h3><div class="tr-lista" id="tr-meus"></div></section>
+      <section><h3>${esc(m.com.nome)} offers</h3><div class="tr-lista" id="tr-dele"></div></section>
     </div>
-    <div class="tr-pe"><span id="tr-status">Escolha até ${sessao.maxItens} e confirme. Os dois precisam confirmar.</span>
-      <button class="btn ouro" id="tr-ok">Confirmar</button></div></div>`;
+    <div class="tr-pe"><span id="tr-status">Pick up to ${sessao.maxItens} and confirm. Both players must confirm.</span>
+      <button class="btn ouro" id="tr-ok">Confirm</button></div></div>`;
   document.body.appendChild(t);
   $('tr-x').onclick = () => { ctx.enviar({ t: 'troca_sair' }); fecharMesa(); };
   $('tr-ok').onclick = () => { if (sessao.fase !== 'montando') return; ctx.enviar({ t: 'troca_confirmar', ok: !sessao.confirmei }); };
@@ -95,19 +95,19 @@ function abrirMesa(m){
 function fecharMesa(){ sessao = null; escolhidos = []; estadoAtual = null; $('troca-tela')?.remove(); }
 function cartao(p, sel, botao){
   const ic = ctx.iconeMon?.(p.glb) || '';
-  const dentro = `${ic ? `<img src="${ic}" alt="">` : ''}<span class="n"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv || 1}${p.onde === 'caixa' ? ' · caixa' : ''}</small></span>`;
+  const dentro = `${ic ? `<img src="${ic}" alt="">` : ''}<span class="n"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv || 1}${p.onde === 'caixa' ? ' · Box' : ''}</small></span>`;
   return botao ? `<button type="button" class="tr-mon${sel ? ' sel' : ''}" data-k="${p.onde}:${p.i}">${dentro}</button>`
                : `<div class="tr-mon${sel ? ' sel' : ''}">${dentro}</div>`;
 }
 function pintarMeus(){
   const el = $('tr-meus'); if (!el) return;
-  el.innerHTML = meus.length ? meus.map(p => cartao(p, escolhidos.includes(chave(p)), true)).join('') : '<div class="tr-vazio">você não tem Pokémon pra trocar</div>';
+  el.innerHTML = meus.length ? meus.map(p => cartao(p, escolhidos.includes(chave(p)), true)).join('') : '<div class="tr-vazio">you have no Pokémon to trade</div>';
   $('tr-conta').textContent = escolhidos.length ? '(' + escolhidos.length + '/' + sessao.maxItens + ')' : '';
   for (const b of el.querySelectorAll('button.tr-mon')) b.onclick = () => alternar(b.dataset.k);
 }
 function pintarDele(lista){
   const el = $('tr-dele'); if (!el) return;
-  el.innerHTML = lista?.length ? lista.map(p => cartao(p, false, false)).join('') : '<div class="tr-vazio">nada ainda</div>';
+  el.innerHTML = lista?.length ? lista.map(p => cartao(p, false, false)).join('') : '<div class="tr-vazio">nothing yet</div>';
 }
 function alternar(k){
   if (!sessao || sessao.fase !== 'montando') return;
@@ -122,35 +122,35 @@ function pintarEstado(m){
   estadoAtual = m; sessao.confirmei = !!m.confirmei; sessao.fase = m.fase || 'montando';
   pintarDele(m.dele);
   const ok = $('tr-ok'), st = $('tr-status'); if (!ok || !st) return;
-  ok.textContent = m.confirmei ? '✓ Confirmado' : 'Confirmar';
+  ok.textContent = m.confirmei ? '✓ Confirmed' : 'Confirm';
   ok.classList.toggle('ouro', !m.confirmei);
   st.className = '';
-  if (m.confirmei && m.confirmou) st.textContent = 'Fechando a troca…';
-  else if (m.confirmei) st.textContent = 'Esperando ' + (m.com?.nome || 'o outro') + ' confirmar.';
-  else if (m.confirmou) st.textContent = (m.com?.nome || 'O outro') + ' já confirmou. Falta você.';
-  else st.textContent = 'Escolha até ' + sessao.maxItens + ' e confirme. Mexer na mesa derruba as confirmações.';
+  if (m.confirmei && m.confirmou) st.textContent = 'Closing the trade…';
+  else if (m.confirmei) st.textContent = 'Waiting for ' + (m.com?.nome || 'the other player') + ' to confirm.';
+  else if (m.confirmou) st.textContent = (m.com?.nome || 'The other player') + ' already confirmed. Waiting on you.';
+  else st.textContent = 'Pick up to ' + sessao.maxItens + ' and confirm. Changing the table resets confirmations.';
 }
 
 /* ------------------------------------------------------------------ mensagens do servidor */
 export function receber(m){
   switch (m.t){
     case 'troca_convite': mostrarConvite(m); return;
-    case 'troca_convidou': ctx.Chat?.sistema('Convite de troca enviado pra ' + m.nome + '.'); return;
-    case 'troca_recusou': ctx.Chat?.sistema(m.nome + ' recusou a troca.'); return;
+    case 'troca_convidou': ctx.Chat?.sistema('Trade invite sent to ' + m.nome + '.'); return;
+    case 'troca_recusou': ctx.Chat?.sistema(m.nome + ' declined the trade.'); return;
     case 'troca_abriu': abrirMesa(m); return;
     case 'troca_estado': pintarEstado(m); return;
     case 'troca_salvar':                                                   // o servidor vai executar: sobe o save deste aparelho antes
       Promise.resolve(ctx.Conta?.enviarAgora?.()).finally(() => ctx.enviar({ t: 'troca_pronto' }));
-      if (sessao){ sessao.fase = 'salvando'; const st = $('tr-status'); if (st) st.textContent = 'Salvando o progresso dos dois…'; }
+      if (sessao){ sessao.fase = 'salvando'; const st = $('tr-status'); if (st) st.textContent = 'Saving both players\' progress…'; }
       return;
     case 'troca_feita': {
-      const nomes = l => (l || []).map(p => (p.shiny ? '✨ ' : '') + p.nome + ' Lv' + p.lv).join(', ') || 'nada';
+      const nomes = l => (l || []).map(p => (p.shiny ? '✨ ' : '') + p.nome + ' Lv' + p.lv).join(', ') || 'nothing';
       ctx.aplicarSave?.(m.save, m.rev);
       ctx.possuirLista?.(m.recebi);
       fecharMesa();
-      ctx.Chat?.sistema('Troca com ' + m.com + ' feita: você deu ' + nomes(m.dei) + ' e recebeu ' + nomes(m.recebi) + '.');
+      ctx.Chat?.sistema('Trade with ' + m.com + ' done: you gave ' + nomes(m.dei) + ' and received ' + nomes(m.recebi) + '.');
       return;
     }
-    case 'troca_cancelou': ctx.Chat?.sistema('Troca cancelada: ' + (m.motivo || 'sem motivo') + '.'); fecharMesa(); fecharConvite(); return;
+    case 'troca_cancelou': ctx.Chat?.sistema('Trade cancelled: ' + (m.motivo || 'no reason') + '.'); fecharMesa(); fecharConvite(); return;
   }
 }

@@ -4051,7 +4051,7 @@ const habitats = PLAY && params0.get('selvagens') !== '0' && !dados.lote        
 if (habitats) try { ZONAS = await fetch('./data/zonas_spawn.json').then(r => r.ok ? r.json() : null).then(z => z?.zonas || []).catch(() => []); } catch {}
 try {
   const canalAdmin = new BroadcastChannel('p3d-admin');
-  const recarregarZonas = () => fetch('./data/zonas_spawn.json?t=' + Date.now()).then(r => r.json()).then(z => { ZONAS = z?.zonas || []; Chat.sistema('Spawn zones reloaded (' + ZONAS.filter(x => x.mapa === NOME).length + ' neste mapa).'); }).catch(() => {});
+  const recarregarZonas = () => fetch('./data/zonas_spawn.json?t=' + Date.now()).then(r => r.json()).then(z => { ZONAS = z?.zonas || []; Chat.sistema('Spawn zones reloaded (' + ZONAS.filter(x => x.mapa === NOME).length + ' on this map).'); }).catch(() => {});
   canalAdmin.onmessage = ev => {
     const m = ev.data || {};
     if (m.t === 'onde'){ if (jogo.ash) canalAdmin.postMessage({ t: 'pos', x: +jogo.ash.x.toFixed(2), z: +jogo.ash.z.toFixed(2), mapa: NOME }); }
@@ -4074,7 +4074,7 @@ try {
         for (const k of Object.keys(NPCS_GLB)) if (!(k in j)) delete NPCS_GLB[k];
         Object.assign(NPCS_GLB, j); let n = 0;
         for (const e of jogo.npcs || []){ const i = NPCS_GLB[e.cfg]; if (i && !e.treino){ e.falas = i.falas || []; n++; } }   // treinador/líder fala o do arquivo dele
-        Chat.sistema('NPC lines reloaded (' + n + ' neste mapa).');
+        Chat.sistema('NPC lines reloaded (' + n + ' on this map).');
       }).catch(() => {});
       else if (m.cenario){ if (arq === NOME) Chat.sistema('The panel changed this map (scenery/areas) — reload the game (Ctrl+Shift+R) to see it.'); }
       else if (/^[\w-]{1,40}$/.test(arq)) Chat.sistema('The panel changed "' + arq + '" — reload the game (Ctrl+Shift+R) to apply it.');
@@ -6971,7 +6971,7 @@ function aprenderNoNivel(p){
   for (const id of Ind.aprendeEm(p.dex, p.lv)){
     if (!GOLPES[id] || p.movs.some(m => m.id === id) || (p.aprender || []).includes(id)) continue;
     if (p.movs.length < 4){ p.movs.push(Ind.novoGolpe(id)); Chat.sistema(p.nome + ' aprendeu ' + GOLPES[id].nome + '!'); flutuar(p, 'aprendeu ' + GOLPES[id].nome + '!', '#8ef58e'); }
-    else { p.aprender = [...(p.aprender || []), id]; Chat.sistema('✧ ' + p.nome + ' wants to learn ' + GOLPES[id].nome + ' — pick which move to forget in the Pokémon window.'); flutuar(p, 'quer aprender ' + GOLPES[id].nome + '!', '#ffe07a'); }
+    else { p.aprender = [...(p.aprender || []), id]; Chat.sistema('✧ ' + p.nome + ' wants to learn ' + GOLPES[id].nome + ' — pick which move to forget in the Pokémon window.'); flutuar(p, 'wants to learn ' + GOLPES[id].nome + '!', '#ffe07a'); }
   }
   p.golpesIds = Ind.idsDe(p);
 }
@@ -7292,7 +7292,7 @@ async function falarCom(n){
     if (n.coletado) return; n.coletado = true; n.pivo.visible = false; setTimeout(() => { n.coletado = false; n.pivo.visible = true; }, 120000);
     if (comConta()) bolsaOp('coleta', { ponto: n.cfg + '@' + Math.round(n.x) + ',' + Math.round(n.z) });   // o servidor dá o cristal (com espera por ponto)
     else { const it = lerLS('itens', {}); it[50112] = (it[50112] || 0) + 1; gravarLS('itens', it); }   // 50112 = Fragmento de Teracristal Normal (ItemConfig)
-    Som.tocar('ui/sound_click', { volume: 0.6 }); flutuar(a, 'pegou Fragmento de Teracristal', '#c9b6ff'); Chat.sistema('Pegou um Fragmento de Teracristal Normal (o cristal volta em 2 min).');
+    Som.tocar('ui/sound_click', { volume: 0.6 }); flutuar(a, 'got a Tera Shard', '#c9b6ff'); Chat.sistema('Got a Normal Tera Shard (the crystal comes back in 2 min).');
     return;
   }
   if (!n.placa) n.pivo.rotation.y = Math.atan2(a.x - n.x, a.z - n.z);
@@ -7554,7 +7554,7 @@ async function receberInicial(o, i){
     if (p){ p.lv = 5; p.ivs = jogo.time[0].ivs; p.natureza = jogo.time[0].natureza; p.movs = jogo.time[0].movs; p.golpesIds = Ind.idsDe(p); if (S?.bs){ p.maxHp = Ind.hpDe(S, p); p.hp = p.maxHp; } }
   } catch (e){ console.warn('inicial:', e); }
   document.getElementById('segue-ctl')?.__encher?.();
-  flutuar(jogo.ash, 'recebeu ' + o.nome + '!', '#8ef58e'); Chat.sistema('Recebeu ' + o.nome + ' do Professor Oak!');
+  flutuar(jogo.ash, 'received ' + o.nome + '!', '#8ef58e'); Chat.sistema('Received ' + o.nome + ' from Professor Oak!');
   atualizarMissao();
   mostrarFala(Dialogos.texto('oakNome'), Dialogos.falas('oakEntrega', { nome: o.nome }));   // Fase 3: data/dialogues.json
 }
@@ -7633,7 +7633,7 @@ function guardarReserva(p, ganho){
 let avisoReservaEm = 0;
 function avisarReserva(p, n){
   flutuar(p, '🔒 cap Lv ' + tetoNivel() + ' · ' + n + ' XP stored', '#ffd23a');
-  if (Date.now() - avisoReservaEm > 60000){ avisoReservaEm = Date.now(); Chat.sistema('🔒 ' + p.nome + ' hit the Lv ' + tetoNivel() + ' cap' + ': a XP fica guardada (' + (p.expReserva || 0) + ') e sai ao ' + proximoTeto() + '.'); }
+  if (Date.now() - avisoReservaEm > 60000){ avisoReservaEm = Date.now(); Chat.sistema('🔒 ' + p.nome + ' hit the Lv ' + tetoNivel() + ' cap' + ': XP is stored (' + (p.expReserva || 0) + ') and releases at ' + proximoTeto() + '.'); }
 }
 /** Membro na bola (registro do time, sem modelo): sobe nível com a XP dada, respeitando o teto. */
 function subirRegistro(tr, n){
@@ -7645,7 +7645,7 @@ function subirRegistro(tr, n){
     tr.lv++; subiu++; aprenderNoNivel(tr);
     const novoMax = S ? Ind.hpDe(S, tr) : tr.maxHp; if (tr.hp > 0) tr.hp = Math.min(novoMax, (tr.hp || 0) + Math.max(0, novoMax - (tr.maxHp || 0))); tr.maxHp = novoMax;
   }
-  if (subiu) Chat.sistema(tr.nome + ' subiu pro Lv ' + tr.lv + '!');
+  if (subiu) Chat.sistema(tr.nome + ' grew to Lv ' + tr.lv + '!');
   return subiu;
 }
 /** Insígnia nova: a XP guardada de todo o time sai (até o novo teto; o que sobrar continua guardado). */
@@ -7899,7 +7899,7 @@ if (jogo.ash){
     },
     xp: m => {                                                           // fase 3c: XP contado pelo servidor; passo 3: o NÍVEL também é dele
       const p = jogo.pika; if (!p || jogo.semParceiro || !(m.n > 0)) return;
-      if (m.vida){ flutuar(p, '+' + m.n + ' XP', '#8ec5ff'); if (m.vida.subiu){ flutuar(p, 'Lv ' + m.vida.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' subiu pro Lv ' + m.vida.lv + '!'); if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: m.vida.lv }); } return; }
+      if (m.vida){ flutuar(p, '+' + m.n + ' XP', '#8ec5ff'); if (m.vida.subiu){ flutuar(p, 'Lv ' + m.vida.lv + '!', '#ffe07a'); Som.tocar('ui/sound_successful', { volume: .55, prio: true }); Chat.sistema(p.nome + ' grew to Lv ' + m.vida.lv + '!'); if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: m.vida.lv }); } return; }
       ganharExp(p, { dex: m.dex, lv: m.lv }, m.n);                        // servidor antigo (sem `vida`): conta aqui como antes
     },
     golpeRemoto: (s, m) => {                                             // fase 3b: o dano veio do servidor; quem bateu fui eu (parceiro) ou outro jogador (o parceiro dele, se está na cena)

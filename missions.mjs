@@ -174,7 +174,7 @@ function mostrarOferta(m){
 function concluirPasso(){
   const m = ativa(); if (!m) return;
   const p = m.passos[estado.passo];
-  ctx.aviso?.('✔ ' + (p?.texto || 'passo concluído'));
+  ctx.aviso?.('✔ ' + (p?.texto || 'step complete'));
   estado.passo++;
   if (estado.passo >= m.passos.length) concluirMissao(m);
   else { gravar(); checarImediatos(); }
@@ -186,9 +186,9 @@ function concluirMissao(m){
   estado.atual = prox ? prox.id : null; estado.passo = 0;
   gravar();
   ctx.recompensa?.(m.recompensa || {}, m);
-  ctx.aviso?.('🏁 Missão concluída: ' + m.nome, { destaque: true });
-  if (prox) ctx.aviso?.('📜 Nova missão: ' + prox.nome);
-  else ctx.aviso?.('Você concluiu tudo o que existe por enquanto — mais capítulos vêm com as próximas versões.');
+  ctx.aviso?.('🏁 Mission complete: ' + m.nome, { destaque: true });
+  if (prox) ctx.aviso?.('📜 New mission: ' + prox.nome);
+  else ctx.aviso?.('You finished everything available for now — more chapters come in later versions.');
   checarImediatos();
 }
 /** Passos que já podem estar satisfeitos na hora em que ficam ativos (área atual, nível, inicial, item, insígnia). */
@@ -246,7 +246,7 @@ function aplicarEventoPrincipal(ev){
     case 'entregar':
       if (ev.tipo === 'falar' && cfgOk(p.cfg, ev.cfg)){
         const it = ctx.lerLS('itens', {}); const n = p.n || 1;
-        if ((it[p.item] || 0) < n){ ctx.aviso?.('Você ainda não tem ' + (ctx.nomeItem?.(p.item) || 'o item') + ' ×' + n + '.'); return false; }
+        if ((it[p.item] || 0) < n){ ctx.aviso?.('You do not have ' + (ctx.nomeItem?.(p.item) || 'the item') + ' ×' + n + ' yet.'); return false; }
         if (!ctx.usarItem?.(p.item, n)){ it[p.item] -= n; if (it[p.item] <= 0) delete it[p.item]; ctx.gravarLS('itens', it); }   // com conta quem tira o item é o SERVIDOR (senão o portão devolvia)
         concluirPasso(); return true;
       }

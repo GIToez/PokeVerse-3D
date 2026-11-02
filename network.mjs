@@ -48,8 +48,8 @@ function conectar(){
        (em vez de tomar a vaga do primeiro), uma vaga presa TRANCA a batalha. A jogada que estava no ar quando a conexão caiu
        nunca é respondida, e a vaga só se soltava sozinha 12 s depois: nesse meio-tempo o jogo já reconectou, o jogador volta
        no treinador e o `bat_desafiar` leva "espere a resposta da jogada anterior" — a luta simplesmente não abre. */
-    largarBatalha('a conexão caiu no meio da jogada');
-    if (estava) ctx.Chat?.sistema('A conexão com o servidor caiu. Tentando de novo…');
+    largarBatalha('connection dropped mid-turn');
+    if (estava) ctx.Chat?.sistema('Lost connection to the server. Retrying…');
     agendar();
   };
 }
@@ -92,7 +92,7 @@ function receber(m){
            NÃO recarrega — senão recarregaria pra sempre, que é justamente o "problema repetidamente" do celular. */
         let jaTentou = true;
         try { jaTentou = sessionStorage.getItem('versao.tentou') === String(m.versao); sessionStorage.setItem('versao.tentou', String(m.versao)); } catch { jaTentou = true; }
-        if (jaTentou) ctx.Chat?.sistema('⚠ O jogo foi atualizado no servidor. Feche e abra a página pra pegar a versão nova.');
+        if (jaTentou) ctx.Chat?.sistema('⚠ The game was updated on the server. Close and reopen the page to get the new version.');
         else { desligado = true; clearTimeout(timer); import('./screens.mjs').then(T => T.atualizando()).catch(() => {}); setTimeout(() => { try { window.__telaCheia?.lembrar(); } catch {} location.reload(); }, 1400); }
       }
       return;
@@ -105,7 +105,7 @@ function receber(m){
     case 'saia': {                                                       // a conta entrou de outro lugar: este aqui acabou
       desligado = true; clearTimeout(timer);
       ctx.conta?.pararSync?.();                                          // para de gravar, calado (quem explica é a tela)
-      import('./screens.mjs').then(T => T.derrubado(m.texto)).catch(() => alert(m.texto || 'Você entrou de outro lugar.'));
+      import('./screens.mjs').then(T => T.derrubado(m.texto)).catch(() => alert(m.texto || 'You logged in from somewhere else.'));
       try { ws?.close(); } catch {}
       return;
     }
@@ -128,27 +128,27 @@ function receber(m){
     case 'posse': case 'posse_erro': {                                   // posse dos Pokémon: resposta do servidor a um pedirPosse
       const pend = posseEsperando.get(m.op); if (!pend) return;
       posseEsperando.delete(m.op); clearTimeout(pend.timer);
-      pend.resolve(m.t === 'posse' ? m : { erro: m.erro || 'recusado' });
+      pend.resolve(m.t === 'posse' ? m : { erro: m.erro || 'refused' });
       return;
     }
     case 'mod': case 'mod_erro': {                                       // moderação (08/09): a resposta vai pro chat de Sistema
       const C = ctx.Chat;
-      if (m.t === 'mod_erro') return C?.sistema('⚠ ' + (m.erro || 'não deu') + '.');
+      if (m.t === 'mod_erro') return C?.sistema('⚠ ' + (m.erro || 'failed') + '.');
       if (m.op === 'online'){
         const l = m.lista || [];
-        C?.sistema('👥 ' + l.length + ' online: ' + (l.map(x => x.nome + (x.conta ? ' (' + x.conta + ')' : ' [visitante]') + (x.gm ? ' ★' : '') + (x.mudo ? ' 🔇' : '') + ' · ' + (x.area || x.mapa)).join(' | ') || 'ninguém'));
+        C?.sistema('👥 ' + l.length + ' online: ' + (l.map(x => x.nome + (x.conta ? ' (' + x.conta + ')' : ' [guest]') + (x.gm ? ' ★' : '') + (x.mudo ? ' 🔇' : '') + ' · ' + (x.area || x.mapa)).join(' | ') || 'nobody'));
       } else if (m.op === 'ver'){
-        const q = m.banidoAte === -1 ? 'banido pra sempre' : m.banidoAte ? 'banido até ' + new Date(m.banidoAte).toLocaleString('pt-BR') : (m.mudoAte ? 'de mudo até ' + new Date(m.mudoAte).toLocaleTimeString('pt-BR') : 'sem nada');
+        const q = m.banidoAte === -1 ? 'banned forever' : m.banidoAte ? 'banned until ' + new Date(m.banidoAte).toLocaleString('en-US') : (m.mudoAte ? 'muted until ' + new Date(m.mudoAte).toLocaleTimeString('en-US') : 'clean');
         C?.sistema('🔎 ' + m.usuario + (m.gm ? ' ★GM' : '') + ': ' + q + (m.motivo ? ' — ' + m.motivo : ''));
-      } else if (m.op === 'aviso') C?.sistema('📢 aviso enviado.');
-      else if (m.op === 'mudo') C?.sistema('🔇 ' + m.usuario + ' silenciado por ' + m.minutos + ' min.');
-      else if (m.op === 'kick') C?.sistema('⛔ ' + m.usuario + ' foi tirado (' + (m.derrubou || 0) + ' conexão).');
-      else if (m.op === 'banir') C?.sistema('⛔ ' + m.usuario + ' banido ' + (m.ate === -1 ? 'pra sempre' : 'até ' + new Date(m.ate).toLocaleString('pt-BR')) + '.');
-      else if (m.op === 'perdoar') C?.sistema('✅ ' + m.usuario + ' liberado.');
-      else if (m.op === 'tp') C?.sistema('🧭 ' + m.usuario + ' levado pra ' + (m.nome || m.mapa) + ' (' + m.x + ', ' + m.z + ')' + (m.derrubou ? ' — a cena dele já está recarregando lá.' : ' — nasce lá na próxima entrada.'));
-      else if (m.op === 'puxar') C?.sistema('🧲 ' + m.usuario + ' puxado até você' + (m.derrubou ? ' — a cena dele já está recarregando aqui.' : ' — está offline: nasce do seu lado na próxima entrada.'));
+      } else if (m.op === 'aviso') C?.sistema('📢 notice sent.');
+      else if (m.op === 'mudo') C?.sistema('🔇 ' + m.usuario + ' muted for ' + m.minutos + ' min.');
+      else if (m.op === 'kick') C?.sistema('⛔ ' + m.usuario + ' was kicked (' + (m.derrubou || 0) + ' connection).');
+      else if (m.op === 'banir') C?.sistema('⛔ ' + m.usuario + ' banned ' + (m.ate === -1 ? 'forever' : 'until ' + new Date(m.ate).toLocaleString('en-US')) + '.');
+      else if (m.op === 'perdoar') C?.sistema('✅ ' + m.usuario + ' pardoned.');
+      else if (m.op === 'tp') C?.sistema('🧭 ' + m.usuario + ' sent to ' + (m.nome || m.mapa) + ' (' + m.x + ', ' + m.z + ')' + (m.derrubou ? ' — their scene is already reloading there.' : ' — they spawn there on next login.'));
+      else if (m.op === 'puxar') C?.sistema('🧲 ' + m.usuario + ' pulled to you' + (m.derrubou ? ' — their scene is already reloading here.' : ' — they are offline: they spawn next to you on next login.'));
       else if (m.op === 'ir'){                                           // Fase 3: /ir nome — no mesmo mapa, teleporta; noutro, o servidor manda `volta` (recarrega lá)
-        C?.sistema('🧭 Indo até ' + m.usuario + ' (' + m.mapa + ', ' + m.x + ', ' + m.z + ').');
+        C?.sistema('🧭 Going to ' + m.usuario + ' (' + m.mapa + ', ' + m.x + ', ' + m.z + ').');
         if (m.mesmoMapa) ctx.teleportar?.(+m.x, +m.z);
       }
       return;
@@ -192,10 +192,10 @@ function receber(m){
    6 s sem resposta devolve `{ erro }` e o jogo avisa em vez de inventar Pokémon que o servidor não conhece. */
 const posseEsperando = new Map();                                        // op → { resolve, timer }
 export function pedirPosse(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   const antigo = posseEsperando.get(op); if (antigo){ clearTimeout(antigo.timer); antigo.resolve({ erro: 'pedido repetido' }); posseEsperando.delete(op); }
   return new Promise(resolve => {
-    const timer = setTimeout(() => { posseEsperando.delete(op); resolve({ erro: 'o servidor não respondeu' }); }, 6000);
+    const timer = setTimeout(() => { posseEsperando.delete(op); resolve({ erro: 'the server did not answer' }); }, 6000);
     posseEsperando.set(op, { resolve, timer });
     enviar({ t: 'posse_' + op, ...dados });
   });
@@ -204,10 +204,10 @@ export function pedirPosse(op, dados = {}){
    retrato inteiro da bolsa, que o `account.mjs` escreve no aparelho. */
 const bolsaEsperando = new Map();
 export function pedirBolsa(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   const antigo = bolsaEsperando.get(op); if (antigo){ clearTimeout(antigo.timer); antigo.resolve({ erro: 'pedido repetido' }); bolsaEsperando.delete(op); }
   return new Promise(resolve => {
-    const timer = setTimeout(() => { bolsaEsperando.delete(op); resolve({ erro: 'o servidor não respondeu' }); }, 6000);
+    const timer = setTimeout(() => { bolsaEsperando.delete(op); resolve({ erro: 'the server did not answer' }); }, 6000);
     bolsaEsperando.set(op, { resolve, timer });
     enviar({ t: 'bolsa_' + op, ...dados });
   });
@@ -215,10 +215,10 @@ export function pedirBolsa(op, dados = {}){
 /* VIDA (passo 3): a cura completa é pedida ao servidor, que confere se você está no Centro Pokémon (ou se o time todo caiu). */
 let vidaEsperando = null;
 export function pedirVida(op = 'curar'){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   if (vidaEsperando){ clearTimeout(vidaEsperando.timer); vidaEsperando.resolve({ erro: 'pedido repetido' }); vidaEsperando = null; }
   return new Promise(resolve => {
-    const timer = setTimeout(() => { vidaEsperando = null; resolve({ erro: 'o servidor não respondeu' }); }, 6000);
+    const timer = setTimeout(() => { vidaEsperando = null; resolve({ erro: 'the server did not answer' }); }, 6000);
     vidaEsperando = { resolve, timer };
     enviar({ t: 'vida_' + op });
   });
@@ -232,7 +232,7 @@ function largarBatalha(motivo){
   pend.resolve({ erro: motivo || 'no connection to the server', error: motivo || 'no connection to the server', code: 'dropped' });
 }
 export function pedirBatalha(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
   /* UM PEDIDO DE CADA VEZ (20/09, chaospider "A ganância do homem quebra o jogo"): quando chegava um pedido novo com outro no
      ar, o antigo era respondido com "pedido repetido" e o NOVO ia pro servidor assim mesmo — as duas mensagens chegavam lá,
      duas rodadas aconteciam e as respostas passavam a casar com o pedido errado (só existe uma vaga de espera). A partir daqui
@@ -240,7 +240,7 @@ export function pedirBatalha(op, dados = {}){
   if (batEsperando && op !== 'sair') return Promise.resolve({ erro: 'wait for the response to your previous move', error: 'wait for the response to your previous move', code: 'busy' });
   if (batEsperando){ clearTimeout(batEsperando.timer); batEsperando.resolve({ erro: 'pedido repetido' }); batEsperando = null; }
   return new Promise(resolve => {
-    const timer = setTimeout(() => { batEsperando = null; resolve({ erro: 'o servidor não respondeu' }); }, 12000);
+    const timer = setTimeout(() => { batEsperando = null; resolve({ erro: 'the server did not answer' }); }, 12000);
     batEsperando = { resolve, timer };
     enviar({ t: 'bat_' + op, ...dados });
   });

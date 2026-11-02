@@ -125,7 +125,7 @@ function aoEstado(m){
     clearTimeout(timerFim); timerFim = null;
     carimbar(snap.id);
     if (!ctx.emArena()) ctx.ativarArena?.(snap.id);                      // entrou na arena sem o carimbo (F5 com o storage limpo, volta pela conta): liga o modo aqui
-    if (snap.fase === 'luta' && antes !== 'luta') avisar(antes && antes !== 'nenhuma' ? 'A raid começa!' : 'A raid já começou: ataque o ' + nomeChefe() + '!');
+    if (snap.fase === 'luta' && antes !== 'luta') avisar(antes && antes !== 'nenhuma' ? 'The raid begins!' : 'The raid already started: attack ' + nomeChefe() + '!');
     if (!temRegistro && snap.fase === 'luta' && snap.hp != null && snap.maxHp) chefe({ nome: snap.nome, lv: null, hp: snap.hp, maxHp: snap.maxHp });   // a barra aparece antes do corpo do Mew chegar
     return;
   }
@@ -140,8 +140,8 @@ function aoEstado(m){
       timerFim = null;
       if (!ctx.emArena() || ctx.navegando?.() || (snap.eu && FASES_DENTRO.has(snap.fase))) return;
       apagarCarimbo(); chefe(null);
-      if (ctx.sairDaArena) ctx.sairDaArena('A raid acabou. Voltando…');
-      else ctx.irParaCena?.({ mapa: null, texto: 'A raid acabou. Voltando…' });
+      if (ctx.sairDaArena) ctx.sairDaArena('The raid ended. Returning…');
+      else ctx.irParaCena?.({ mapa: null, texto: 'The raid ended. Returning…' });
     }, 4000);
     return;
   }
@@ -152,7 +152,7 @@ function aoEstado(m){
     timerIda = setTimeout(() => {
       timerIda = null;
       if (ctx.navegando?.() || !snap.eu || !FASES_IR.has(snap.fase) || jaFoi(snap.id)) return;
-      ctx.irParaCena?.({ mapa: snap.mapa, texto: 'Indo pra raid do ' + nomeChefe() + '…', raid: snap.id });
+      ctx.irParaCena?.({ mapa: snap.mapa, texto: 'Going to the raid of ' + nomeChefe() + '…', raid: snap.id });
     }, 2500);
     return;
   }
@@ -166,7 +166,7 @@ function aoIr(m){
   carimbar(m.id);
   clearTimeout(timerIda); timerIda = null;
   if (String(ctx.mapa) === mapa && ctx.emArena()){ marcarIda(m.id); return; }   // já está na arena em modo raid (F5 no meio): nada a fazer
-  ctx.irParaCena?.({ mapa, texto: 'Indo pra raid do ' + nomeChefe() + '…', raid: m.id });
+  ctx.irParaCena?.({ mapa, texto: 'Going to the raid of ' + nomeChefe() + '…', raid: m.id });
 }
 
 /* Fim: o servidor devolveu a posição de antes. Quem está na arena recarrega pra lá; quem nunca chegou nela fica onde está. */
@@ -175,7 +175,7 @@ function aoVoltar(m){
   clearTimeout(timerFim); timerFim = null; clearTimeout(timerIda); timerIda = null;
   chefe(null);
   if (!ctx.emArena() && String(ctx.mapa) !== ARENA) return;
-  ctx.irParaCena?.({ mapa: m.mapa || null, texto: 'Voltando pra onde você estava…' });
+  ctx.irParaCena?.({ mapa: m.mapa || null, texto: 'Returning to where you were…' });
 }
 
 /* Resultado: a bolsa, as vidas e o save já foram aplicados pelo network.mjs (como em toda mensagem do servidor); aqui é o aviso. */
@@ -187,15 +187,15 @@ function aoFim(m){
     if (p.mew) partes.push((p.mew.shiny ? '✨ ' : '') + (p.mew.nome || nomeChefe()) + (p.mew.lv ? ' Lv ' + p.mew.lv : ''));
     if (p.dinheiro) partes.push(p.dinheiro + ' ' + I18n.t('Moedas'));
     for (const [id, n] of Object.entries(p.itens || {})) if (n > 0) partes.push(I18n.t(ctx.nomeItem?.(id) || ('item ' + id)) + ' ×' + n);
-    texto = nomeChefe() + ' derrotado! Prêmio: ' + partes.join(', ') + '.';
+    texto = nomeChefe() + ' defeated! Prize: ' + partes.join(', ') + '.';
     try { ctx.Som?.tocar?.('ui/sound_pkmnget', { volume: 0.8, prio: true }); } catch {}
   } else if (m.venceu){
-    texto = nomeChefe() + ' derrotado! Você não causou dano: sem prêmio desta vez.';
+    texto = nomeChefe() + ' defeated! You dealt no damage: no prize this time.';
   } else {
-    texto = 'A raid acabou: o ' + nomeChefe() + ' escapou.';
+    texto = 'The raid ended: ' + nomeChefe() + ' escaped.';
   }
   avisar(texto);
-  if (m.venceu && p?.mew?.shiny) ctx.Chat?.sistema?.('✨ O seu ' + (p.mew.nome || nomeChefe()) + ' é SHINY!');
-  if (p?.mew) ctx.Chat?.sistema?.('O ' + (p.mew.nome || nomeChefe()) + ' entrou no seu time (ou na caixa, se o time estiver cheio).');
-  if (ctx.emArena()) ctx.Chat?.sistema?.('Em instantes você volta pra onde estava.');
+  if (m.venceu && p?.mew?.shiny) ctx.Chat?.sistema?.('✨ Your ' + (p.mew.nome || nomeChefe()) + ' is SHINY!');
+  if (p?.mew) ctx.Chat?.sistema?.('The ' + (p.mew.nome || nomeChefe()) + ' joined your party (or the Box, if the party is full).');
+  if (ctx.emArena()) ctx.Chat?.sistema?.('You will return to where you were in a moment.');
 }

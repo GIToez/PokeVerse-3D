@@ -187,7 +187,7 @@ const ORDEM = Object.keys(JANELAS);
 export function instalar(c){
   ctx = c;
   const g = document.createElement('div'); g.id = 'menu-grade'; g.hidden = true;
-  g.innerHTML = `<div class="caixa"><h2>Menu <small>Esc fecha · ${ORDEM.filter(k => JANELAS[k].tecla).map(k => JANELAS[k].tecla.slice(3) + ' ' + tr(JANELAS[k].titulo).toLowerCase()).join(' · ')}</small></h2><div class="itens">${ORDEM.filter(k => !JANELAS[k].oculto).map(k => `<button type="button" data-j="${k}" class="${JANELAS[k].breve ? 'breve' : ''}"><i class="ic ic-${JANELAS[k].icone}"></i><b>${tr(JANELAS[k].titulo)}</b><small>${tr(JANELAS[k].sub)}</small></button>`).join('')}</div></div>`;
+  g.innerHTML = `<div class="caixa"><h2>Menu <small>Esc closes · ${ORDEM.filter(k => JANELAS[k].tecla).map(k => JANELAS[k].tecla.slice(3) + ' ' + tr(JANELAS[k].titulo).toLowerCase()).join(' · ')}</small></h2><div class="itens">${ORDEM.filter(k => !JANELAS[k].oculto).map(k => `<button type="button" data-j="${k}" class="${JANELAS[k].breve ? 'breve' : ''}"><i class="ic ic-${JANELAS[k].icone}"></i><b>${tr(JANELAS[k].titulo)}</b><small>${tr(JANELAS[k].sub)}</small></button>`).join('')}</div></div>`;
   g.addEventListener('click', ev => { const b = ev.target.closest('[data-j]'); if (b) abrir(b.dataset.j); else if (ev.target === g) fecharGrade(); });
   document.body.appendChild(g);
   const j = document.createElement('div'); j.id = 'janela'; j.className = 'janela'; j.hidden = true;
@@ -332,7 +332,7 @@ async function soltar(chave, origem){
   const k = lista.findIndex(x => chaveDe(x) === chave); if (k < 0){ render(); return; }
   /* POSSE (06/09): com conta, quem tira o Pokémon da conta é o SERVIDOR — só depois do OK dele o cliente tira da lista. */
   const ok = await ctx.soltarNoServidor?.(lista[k]);
-  if (ok && ok.ok === false){ Chat.sistema('Soltar: ' + (ok.erro || 'o servidor recusou') + '.'); render(); return; }
+  if (ok && ok.ok === false){ Chat.sistema('Release: ' + (ok.erro || 'the server refused') + '.'); render(); return; }
   const [foi] = lista.splice(k, 1);
   if (origem === 'caixa') ctx.gravarLS('caixa', lista);
   else { ctx.gravarLS('time', lista); ctx.pintarTime?.(true); ctx.atualizarSeguidorPainel?.(); }
@@ -399,17 +399,17 @@ function linhaPk(e, marca, botoes, preso){
 }
 function rCaixa(corpo){
   const time = ctx.jogo.time || [], caixa = ctx.lerLS('caixa', []) || [], emCampo = indiceEmCampo();
-  const setas = (i, preso) => `<span class="arr-mini"><button type="button" class="btn" data-arr-nao="1" data-sobe="${i}" title="${esc(tr('sobe um lugar'))}">↑</button><button type="button" class="btn" data-arr-nao="1" data-desce="${i}" title="${esc(tr('desce um lugar'))}">↓</button><button type="button" class="btn" data-arr-nao="1" ${preso ? `disabled title="${esc(tr(i === emCampo ? 'troque de parceiro antes' : 'é o seu único Pokémon'))}"` : `data-guardar="${i}" title="${esc(tr('manda pra caixa'))}"`}>→ ${esc(tr('caixa'))}</button></span>`;
+  const setas = (i, preso) => `<span class="arr-mini"><button type="button" class="btn" data-arr-nao="1" data-sobe="${i}" title="${esc(tr('Move up'))}">↑</button><button type="button" class="btn" data-arr-nao="1" data-desce="${i}" title="${esc(tr('Move down'))}">↓</button><button type="button" class="btn" data-arr-nao="1" ${preso ? `disabled title="${esc(tr(i === emCampo ? 'Switch partners first' : 'This is your only Pokémon'))}"` : `data-guardar="${i}" title="${esc(tr('Send to box'))}"`}>→ ${esc(tr('Box'))}</button></span>`;
   const linhasT = time.map((e, i) => { const preso = i === emCampo || time.length <= 1;
-    return linhaPk(e, i === emCampo ? ' <small>· ' + esc(tr('em campo')) + '</small>' : (e.hp === 0 ? ' <small style="color:#f58e8e">· ' + esc(tr('desmaiado')) + '</small>' : ''), setas(i, preso), preso); }).join('');
-  const linhasC = caixa.map((e, i) => linhaPk(e, '', `<button type="button" class="btn" data-arr-nao="1" data-trazer="${i}" ${time.length >= 6 ? `disabled title="${esc(tr('o time está cheio — arraste pra cima de um do time pra trocar'))}"` : ''}>${esc(tr('Trazer para o time'))}</button>${botaoSoltar(chaveDe(e), 2, false)}`, false)).join('');
+    return linhaPk(e, i === emCampo ? ' <small>· ' + esc(tr('in the field')) + '</small>' : (e.hp === 0 ? ' <small style="color:#f58e8e">· ' + esc(tr('fainted')) + '</small>' : ''), setas(i, preso), preso); }).join('');
+  const linhasC = caixa.map((e, i) => linhaPk(e, '', `<button type="button" class="btn" data-arr-nao="1" data-trazer="${i}" ${time.length >= 6 ? `disabled title="${esc(tr('Party is full — drag onto a party Pokémon to swap'))}"` : ''}>${esc(tr('Bring to party'))}</button>${botaoSoltar(chaveDe(e), 2, false)}`, false)).join('');
   corpo.innerHTML = `<div class="dois arr-dois">
     <div class="arr-col"><div class="arr-titulo">${esc(tr('Time'))} <small>${time.length}/6</small></div>
-      <div class="arr-dica">${esc(tr('arraste pra mudar a ordem — no celular, segure o dedo pra pegar'))}</div>
-      <div class="lista" id="arr-time">${linhasT || `<div class="vazio">${esc(tr('Sem Pokémon no time.'))}</div>`}</div></div>
-    <div class="arr-col"><div class="arr-titulo">${esc(tr('Caixa'))} <small>${caixa.length}</small></div>
-      <div class="arr-dica">${esc(tr('arraste um daqui pro time (time cheio = troca com a casa onde soltar)'))}</div>
-      <div class="lista" id="arr-caixa">${linhasC || `<div class="vazio">${esc(tr('A caixa está vazia. "Enviar para a caixa", na aba Time, guarda um Pokémon aqui.'))}</div>`}</div></div></div>`;
+      <div class="arr-dica">${esc(tr('Drag to change order — on phone, hold to pick up'))}</div>
+      <div class="lista" id="arr-time">${linhasT || `<div class="vazio">${esc(tr('No Pokémon in the party.'))}</div>`}</div></div>
+    <div class="arr-col"><div class="arr-titulo">${esc(tr('Box'))} <small>${caixa.length}</small></div>
+      <div class="arr-dica">${esc(tr('Drag one onto the party (full party = swap with the slot you drop on)'))}</div>
+      <div class="lista" id="arr-caixa">${linhasC || `<div class="vazio">${esc(tr('The Box is empty. "Send to box" on the Party tab stores a Pokémon here.'))}</div>`}</div></div></div>`;
   const cT = corpo.querySelector('#arr-time'), cC = corpo.querySelector('#arr-caixa');
   cT.querySelectorAll('.linha').forEach((n, i) => { n.__arrItem = time[i]; });
   cC.querySelectorAll('.linha').forEach((n, i) => { n.__arrItem = caixa[i]; });
@@ -473,21 +473,21 @@ export function escolherEvolucao(e, ops){
     fundo.appendChild(d);
     const tit = document.createElement('div');
     Object.assign(tit.style, { font: '800 18px \'Baloo 2\', system-ui', color: '#F8C237', textAlign: 'center' });
-    tit.textContent = tr('Para qual evolução?');
+    tit.textContent = tr('Which evolution?');
     const sub = document.createElement('div');
     Object.assign(sub.style, { textAlign: 'center', lineHeight: '1.3' });
-    sub.textContent = (e?.nome || 'Este Pokémon') + ' ' + tr('pode evoluir de mais de um jeito. Escolha:');
+    sub.textContent = (e?.nome || 'This Pokémon') + ' ' + tr('can evolve more than one way. Choose:');
     d.append(tit, sub);
     const fim = op => { escolhaEvo = null; fundo.remove(); DIALOGOS.delete(fundo); resolve(op || null); };
     for (const t of ['pointerdown', 'pointerup', 'click', 'wheel', 'touchstart']) fundo.addEventListener(t, ev => ev.stopPropagation());   // nada do que acontece aqui chega no jogo nem na HUD atrás
     for (const o of ops){
       const b = document.createElement('button'); b.type = 'button';
       Object.assign(b.style, { background: '#13254A', border: '1px solid #F8C237', borderRadius: '10px', padding: '9px', color: '#F8C237', font: 'inherit', cursor: 'pointer', textAlign: 'left' });
-      b.textContent = '✦ ' + o.nome + (o.itemNome ? ' — ' + tr('usa') + ' ' + o.itemNome : ' — ' + tr(o.regra?.texto || ''));
+      b.textContent = '✦ ' + o.nome + (o.itemNome ? ' — ' + tr('uses') + ' ' + o.itemNome : ' — ' + tr(o.regra?.texto || ''));
       b.onclick = () => fim(o);
       d.appendChild(b);
     }
-    const nao = document.createElement('button'); nao.type = 'button'; nao.textContent = tr('Agora não');
+    const nao = document.createElement('button'); nao.type = 'button'; nao.textContent = tr('Not now');
     Object.assign(nao.style, { background: '#0B1220', border: '1px solid rgba(248,194,55,.4)', borderRadius: '10px', padding: '9px', color: '#B8C2D9', font: 'inherit', cursor: 'pointer' });
     nao.onclick = () => fim(null);
     d.appendChild(nao);
@@ -1436,8 +1436,8 @@ function encherTreinador(pop){
   /* 17/09 (auditoria dos placeholders): "ranking chega com o servidor" é texto fixo da maquete e já não é verdade (o ranking existe: /ranking no chat,
      posição na Pokédex). Fica a regra do shiny e, com conta, a posição de verdade. */
   const notaRk = pop.querySelector('[data-fig="nota-ranking"]');
-  if (notaRk){ notaRk.textContent = tr('shiny 1/4.096 pra todos'); minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = tr(p.especies.pos + 'º de ' + p.total + ' no ranking · shiny 1/4.096 pra todos'); /* 17/09: a frase inteira no tr() (padrão no ui_en/ui_es) */ }); }
-  Popup.texto(pop, 'obedecem', 'Obedecem até Lv ' + teto + ' · acima disso não obedecem golpes; cada insígnia sobe o teto (' + TETO_OBED.slice(0, 8).join('/') + ', Elite 100)');
+  if (notaRk){ notaRk.textContent = tr('shiny 1/4,096 for everyone'); minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = tr('#' + p.especies.pos + ' of ' + p.total + ' in the ranking · shiny 1/4,096 for everyone'); }); }
+  Popup.texto(pop, 'obedecem', 'Obey up to Lv ' + teto + ' · above that they ignore moves; each badge raises the cap (' + TETO_OBED.slice(0, 8).join('/') + ', Elite 100)');
   // colecionador
   const K = ctx.conhecimento;
   if (K){
@@ -1540,7 +1540,7 @@ async function encherMapa(pop){
 /* ---------------------------------------------------------------- Social (fase 2b, 06/09: amigos e mensagens diretas pela conta) */
 let abaSo = 'amigos', soDados = null, soBusca = '', soConversa = null, soMsgs = [], soAmigoMenu = null, soCarregando = false;
 const soLigado = () => ctx.conta?.estado?.().modo === 'conta';
-const soChamar = (metodo, caminho, corpo) => soLigado() ? ctx.conta.chamar(metodo, caminho, corpo) : Promise.resolve({ ok: false, erro: 'Entre com uma conta pra ter amigos e mensagens.' });
+const soChamar = (metodo, caminho, corpo) => soLigado() ? ctx.conta.chamar(metodo, caminho, corpo) : Promise.resolve({ ok: false, erro: 'Sign in with an account to have friends and messages.' });
 const tempoAtras = ms => { const s = Math.max(0, (Date.now() - ms) / 1000); return s < 90 ? 'now' : s < 3600 ? Math.round(s / 60) + 'min' : s < 86400 ? Math.round(s / 3600) + 'h' : Math.round(s / 86400) + 'd'; };
 const retrato = dex => dex ? './ui/mon/pm' + String(dex).padStart(4, '0') + '.png' : null;
 async function soCarregar(){
@@ -1584,14 +1584,14 @@ async function soAcao(nome, el){
   const pop = popSo;
   if (nome === 'enviar-convite'){
     const inp = soInput(pop, 'dialogo-convite', 'campo-nome'); const para = (inp?.value || '').trim();
-    if (!para){ Chat.sistema('Digite o nome exato do treinador.'); return; }
+    if (!para){ Chat.sistema('Type the trainer\'s exact name.'); return; }
     const r = await soChamar('POST', '/social/pedido', { para });
-    if (r.ok){ Chat.sistema(r.dados.amigos ? '🤝 Você e ' + r.dados.nick + ' agora são amigos.' : '📨 Convite enviado pra ' + r.dados.nick + '.'); if (inp) inp.value = ''; Popup.mostrarExtra(pop, 'dialogo-convite', false); soCarregar(); }
+    if (r.ok){ Chat.sistema(r.dados.amigos ? '🤝 You and ' + r.dados.nick + ' are now friends.' : '📨 Invite sent to ' + r.dados.nick + '.'); if (inp) inp.value = ''; Popup.mostrarExtra(pop, 'dialogo-convite', false); soCarregar(); }
     else Chat.sistema('Convite: ' + r.erro);
   } else if (nome === 'aceitar' || nome === 'recusar'){
     const de = el?.closest?.('[data-fig^="solicitacao-"]')?.__de; if (!de) return;
     const r = await soChamar('POST', '/social/' + nome, { de });
-    if (r.ok) Chat.sistema(nome === 'aceitar' ? '🤝 Você e ' + (r.dados.nick || de) + ' agora são amigos.' : 'Convite recusado.'); else Chat.sistema('Social: ' + r.erro);
+    if (r.ok) Chat.sistema(nome === 'aceitar' ? '🤝 You and ' + (r.dados.nick || de) + ' are now friends.' : 'Invite declined.'); else Chat.sistema('Social: ' + r.erro);
     await soCarregar(); encherSolicitacoes(pop);
   } else if (nome === 'mensagem'){
     Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (soAmigoMenu) soAbrirConversa(soAmigoMenu.usuario);
@@ -1603,14 +1603,14 @@ async function soAcao(nome, el){
   } else if (nome === 'desfazer-amizade'){
     Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (!soAmigoMenu) return;
     const r = await soChamar('POST', '/social/remover', { usuario: soAmigoMenu.usuario });
-    if (r.ok) Chat.sistema(soAmigoMenu.nick + ' saiu da sua lista de amigos.'); else Chat.sistema('Social: ' + r.erro);
+    if (r.ok) Chat.sistema(soAmigoMenu.nick + ' was removed from your friends list.'); else Chat.sistema('Social: ' + r.erro);
     soCarregar();
   } else if (nome === 'enviar'){
     const inp = soInput(pop, 'conteudo-mensagens', 'campo-mensagem'); const texto = (inp?.value || '').trim();
-    if (!soConversa){ Chat.sistema('Escolha uma conversa ou abra pelo menu do amigo.'); return; }
+    if (!soConversa){ Chat.sistema('Pick a conversation or open it from a friend\'s menu.'); return; }
     if (!texto) return;
     const r = await soChamar('POST', '/social/mensagem', { para: soConversa, texto });
-    if (r.ok){ if (inp) inp.value = ''; soMsgs.push({ de: soDados?.eu?.usuario, texto, hora: r.dados.hora, lida: true }); const nick = soDados?.amigos.find(a => a.usuario === soConversa)?.nick || soConversa; Chat.publicar('pm', texto, 'você → ' + nick); encherSocial(pop); soCarregar(); }
+    if (r.ok){ if (inp) inp.value = ''; soMsgs.push({ de: soDados?.eu?.usuario, texto, hora: r.dados.hora, lida: true }); const nick = soDados?.amigos.find(a => a.usuario === soConversa)?.nick || soConversa; Chat.publicar('pm', texto, 'you → ' + nick); encherSocial(pop); soCarregar(); }
     else Chat.sistema('Mensagem: ' + r.erro);
   }
 }
@@ -1624,13 +1624,13 @@ export function socialEvento(m){
   } else if (m.t === 'social'){
     const n = m.nick || m.de;
     if (m.tipo === 'pedido' || m.tipo === 'aceito') ctx.Som?.tocar?.('ui/sound_click', { volume: .5, prio: true });
-    Chat.sistema(m.tipo === 'pedido' ? '🤝 ' + n + ' quer ser seu amigo: Social → Solicitações.' : m.tipo === 'aceito' ? '🤝 ' + n + ' aceitou seu convite.' : n + ' desfez a amizade.');
+    Chat.sistema(m.tipo === 'pedido' ? '🤝 ' + n + ' wants to be your friend: Social → Requests.' : m.tipo === 'aceito' ? '🤝 ' + n + ' accepted your invite.' : n + ' unfriended you.');
     soCarregar();
   }
 }
 /* ---------------------------------------------------------------- Ranking de colecionador (servidor/ranking.mjs) */
 let rankingEu = null, rankingEuEm = 0;
-const NOMES_RANKING = { especies: 'espécies de Kanto', shinies: 'shinies', conhecimento: 'pontos de conhecimento' };
+const NOMES_RANKING = { especies: 'Kanto species', shinies: 'shinies', conhecimento: 'knowledge points' };
 async function pegarRanking(caminho, comToken = false){
   const base = ctx.conta?.baseUrl?.(); if (!base) return null;
   if (comToken) { const r = await ctx.conta.chamar('GET', caminho); return r.ok ? r.dados : null; }
@@ -1639,11 +1639,11 @@ async function pegarRanking(caminho, comToken = false){
 /** /ranking no chat: top 5 de cada lista. */
 export async function mostrarRanking(){
   const R = await pegarRanking('/ranking');
-  if (!R){ Chat.sistema('Ranking: sem servidor no ar.'); return false; }
-  Chat.sistema('🏆 Ranking de colecionadores (' + R.total + ' treinador' + (R.total === 1 ? '' : 'es') + '):');
+  if (!R){ Chat.sistema('Ranking: no server online.'); return false; }
+  Chat.sistema('🏆 Collector ranking (' + R.total + ' trainer' + (R.total === 1 ? '' : 's') + '):');
   for (const [chave, nome] of Object.entries(NOMES_RANKING)){
     const l = (R.listas?.[chave] || []).slice(0, 5);
-    Chat.sistema('• ' + nome + ': ' + (l.length ? l.map(x => x.pos + 'º ' + x.nick + ' (' + x.valor + ')').join(' · ') : 'ninguém ainda'));
+    Chat.sistema('• ' + nome + ': ' + (l.length ? l.map(x => '#' + x.pos + ' ' + x.nick + ' (' + x.valor + ')').join(' · ') : 'nobody yet'));
   }
   return true;
 }
@@ -1656,12 +1656,12 @@ async function minhaPosicao(){
 }
 /** /w nome texto no chat: mensagem direta pra um amigo (pelo nick ou usuário). */
 export async function enviarDm(nome, texto){
-  if (!soLigado()){ Chat.sistema('Mensagem direta precisa de conta no servidor.'); return false; }
+  if (!soLigado()){ Chat.sistema('Direct messages need an account on the server.'); return false; }
   if (!soDados){ const r = await soChamar('GET', '/social'); if (r.ok) soDados = r.dados; }
   const v = String(nome || '').toLowerCase(); const a = (soDados?.amigos || []).find(x => x.usuario === v || x.nick.toLowerCase() === v);
-  if (!a){ Chat.sistema('Não achei "' + nome + '" na sua lista de amigos (mensagem direta é só entre amigos).'); return false; }
+  if (!a){ Chat.sistema('Could not find "' + nome + '" on your friends list (direct messages are friends only).'); return false; }
   const r = await soChamar('POST', '/social/mensagem', { para: a.usuario, texto });
-  if (r.ok){ Chat.publicar('pm', texto, 'você → ' + a.nick); if (soConversa === a.usuario) soMsgs.push({ de: soDados.eu.usuario, texto, hora: r.dados.hora }); return true; }
+  if (r.ok){ Chat.publicar('pm', texto, 'you → ' + a.nick); if (soConversa === a.usuario) soMsgs.push({ de: soDados.eu.usuario, texto, hora: r.dados.hora }); return true; }
   Chat.sistema('Mensagem: ' + r.erro); return false;
 }
 function encherSolicitacoes(pop){
@@ -1677,7 +1677,7 @@ function encherSolicitacoes(pop){
   });
   let nota = sol.querySelector(':scope > .pf-nota');
   if (!nota){ nota = document.createElement('div'); nota.className = 'pf-nota'; Object.assign(nota.style, { position: 'absolute', left: '0', right: '0', top: '45%', textAlign: 'center', color: '#B8C2D9', font: '13px "Nunito Sans", system-ui, sans-serif', pointerEvents: 'none' }); sol.appendChild(nota); }
-  nota.textContent = P.length ? '' : 'Nenhum convite pendente.';
+  nota.textContent = P.length ? '' : 'No pending invites.';
 }
 function encherMensagens(pop, mens){
   const D = soDados; const conv = D?.conversas || [];
@@ -1695,14 +1695,14 @@ function encherMensagens(pop, mens){
     let caixa = log.querySelector(':scope > .pf-dm-log');
     if (!caixa){ caixa = document.createElement('div'); caixa.className = 'pf-dm-log'; Object.assign(caixa.style, { position: 'absolute', inset: '0', overflowY: 'auto', padding: '10px 12px', color: '#E6ECFF', font: '13px/1.45 "Nunito Sans", system-ui, sans-serif', pointerEvents: 'auto', userSelect: 'text' }); log.appendChild(caixa); log.style.pointerEvents = 'auto'; }
     const eu = D?.eu?.usuario, nick = D?.amigos.find(a => a.usuario === soConversa)?.nick || conv.find(x => x.com === soConversa)?.nick || soConversa;
-    if (!soConversa) caixa.innerHTML = '<div style="color:#B8C2D9;text-align:center;margin-top:40%">Escolha uma conversa ao lado, ou clique num amigo e peça "mensagem".</div>';
-    else caixa.innerHTML = soMsgs.length ? soMsgs.map(m => '<div><b style="color:' + (m.de === eu ? '#8ef58e' : '#F8C237') + '">' + esc(m.de === eu ? 'Você' : nick) + '</b> <small style="color:#7f8db0">' + new Date(m.hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</small><br>' + esc(m.texto) + '</div>').join('') : '<div style="color:#B8C2D9;text-align:center;margin-top:40%">Sem mensagens ainda. Diga oi pra ' + esc(nick) + '.</div>';
+    if (!soConversa) caixa.innerHTML = '<div style="color:#B8C2D9;text-align:center;margin-top:40%">Pick a conversation on the side, or click a friend and choose "message".</div>';
+    else caixa.innerHTML = soMsgs.length ? soMsgs.map(m => '<div><b style="color:' + (m.de === eu ? '#8ef58e' : '#F8C237') + '">' + esc(m.de === eu ? 'You' : nick) + '</b> <small style="color:#7f8db0">' + new Date(m.hora).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + '</small><br>' + esc(m.texto) + '</div>').join('') : '<div style="color:#B8C2D9;text-align:center;margin-top:40%">No messages yet. Say hi to ' + esc(nick) + '.</div>';
     caixa.scrollTop = caixa.scrollHeight;
   }
   const inp = soInput(pop, 'conteudo-mensagens', 'campo-mensagem');
   if (inp){
     const nick = D?.amigos.find(a => a.usuario === soConversa)?.nick || conv.find(x => x.com === soConversa)?.nick;
-    inp.placeholder = soConversa ? 'mensagem pra ' + nick + '…' : 'escolha uma conversa';
+    inp.placeholder = soConversa ? 'message to ' + nick + '…' : 'choose a conversation';
     if (!inp.__enter){ inp.__enter = true; inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); soAcao('enviar').catch(() => {}); } }); }
   }
 }
@@ -1739,23 +1739,23 @@ function encherSocial(pop){
   // amigos
   const D = soDados;
   const cels0 = () => pop.querySelectorAll('[data-fig="lista-amigos"] > [data-fig^="amigo-"]');
-  if (!soLigado()){ Popup.texto(pop, 'amigos-contagem', 'entre com uma conta pra ter amigos'); for (const c of cels0()) c.style.display = 'none'; Popup.texto(pop, 'solicitacoes-qtd', ''); bolinhaPedidos(pop, 0); return; }
-  if (!D){ Popup.texto(pop, 'amigos-contagem', 'carregando…'); for (const c of cels0()) c.style.display = 'none'; bolinhaPedidos(pop, 0); soCarregar(); return; }
+  if (!soLigado()){ Popup.texto(pop, 'amigos-contagem', 'sign in to have friends'); for (const c of cels0()) c.style.display = 'none'; Popup.texto(pop, 'solicitacoes-qtd', ''); bolinhaPedidos(pop, 0); return; }
+  if (!D){ Popup.texto(pop, 'amigos-contagem', 'loading…'); for (const c of cels0()) c.style.display = 'none'; bolinhaPedidos(pop, 0); soCarregar(); return; }
   const amigos = D.amigos.filter(a => !soBusca || a.nick.toLowerCase().includes(soBusca) || a.usuario.includes(soBusca));
-  Popup.texto(pop, 'amigos-contagem', D.amigos.length + (D.amigos.length === 1 ? ' amigo' : ' amigos') + ' · ' + D.amigos.filter(a => a.online).length + ' online');
+  Popup.texto(pop, 'amigos-contagem', D.amigos.length + (D.amigos.length === 1 ? ' friend' : ' friends') + ' · ' + D.amigos.filter(a => a.online).length + ' online');
   const cels = Popup.celulas(pop, 'lista-amigos', Math.max(amigos.length, 1), 'amigo');
   cels.forEach((c, i) => {
     const a = amigos[i]; c.style.display = a ? 'block' : 'none'; if (!a) return;
     c.__amigo = a; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
     Popup.texto(pop, 'amigo-nome', a.nick, c);
-    Popup.texto(pop, 'amigo-info', a.online ? 'Lv ' + (a.lv || 0) + (a.area ? ' · ' + a.area : ' · online') : 'offline' + (a.vistoEm ? ' há ' + tempoAtras(a.vistoEm) : ''), c);
+    Popup.texto(pop, 'amigo-info', a.online ? 'Lv ' + (a.lv || 0) + (a.area ? ' · ' + a.area : ' · online') : 'offline' + (a.vistoEm ? ' · ' + tempoAtras(a.vistoEm) : ''), c);
     Popup.imagem(pop, 'retrato', retrato(a.dex), c);
     const dot = c.querySelector('[data-fig="estado-online"]'); if (dot) dot.style.display = a.online ? 'block' : 'none';   // o quadradinho verde da maquete é "online"
   });
   if (!amigos.length && lista){
     let vazio = lista.querySelector(':scope > .pf-nota');
     if (!vazio){ vazio = document.createElement('div'); vazio.className = 'pf-nota'; Object.assign(vazio.style, { position: 'absolute', left: '0', right: '0', top: '40%', textAlign: 'center', color: '#B8C2D9', font: '13px "Nunito Sans", system-ui, sans-serif', pointerEvents: 'none' }); lista.appendChild(vazio); }
-    vazio.textContent = D.amigos.length ? 'Ninguém com esse nome.' : 'Sem amigos ainda. "Adicionar amigo" pede o nome exato do treinador.'; vazio.style.display = 'block';
+    vazio.textContent = D.amigos.length ? 'No one with that name.' : 'No friends yet. "Add friend" needs the trainer\'s exact name.'; vazio.style.display = 'block';
   } else { const vazio = lista?.querySelector(':scope > .pf-nota'); if (vazio) vazio.style.display = 'none'; }
   // solicitações (contador no botão; o diálogo é preenchido quando abre)
   const n = D.pedidos.length;
@@ -3066,7 +3066,7 @@ function popupRd(){
 function encherRaid(pop){ try { raidApi?.encher?.(pop); } catch (e){ console.warn('raid:', e); } }
 function rRaid(corpo){
   try { if (raidApi?.simples?.(corpo)) return; } catch (e){ console.warn('raid:', e); }
-  corpo.innerHTML = '<div class="vazio">' + esc(tr('Nenhuma raid anunciada agora.')) + '</div>';
+  corpo.innerHTML = '<div class="vazio">' + esc(tr('No raid announced right now.')) + '</div>';
 }
 
 /* ------------------------------------------------------------------ Configurações */
@@ -3081,12 +3081,12 @@ let popCf = null, abaCf = 'geral';
    em parada e mostra o NOME da opção. (Tamanho dos Pokémon e densidade de selvagens também vieram na maquete como
    deslizantes, mas são coisa de ADM, não do jogador — Jaime, 11/09: ficam escondidos, ver `encherConfig`.) */
 const PARADAS = {
-  'tamanho-interface':   { ops: ['pequena', 'normal', 'grande'],    rot: ['Menor', 'Normal', 'Maior'] },   // a caixa do `txt/valor` é `max:5` (feita pra "60%"): "Pequena" não cabia e o P sumia atrás do trilho (Jaime, 11/09)
+  'tamanho-interface':   { ops: ['pequena', 'normal', 'grande'],    rot: ['Smaller', 'Normal', 'Larger'] },   // a caixa do `txt/valor` é `max:5` (feita pra "60%"): "Pequena" não cabia e o P sumia atrás do trilho (Jaime, 11/09)
 };
 /* ADM, não jogador (Jaime, 11/09): as duas linhas da maquete que o jogo esconde. O bastidor continua com o `tam-modo` do
    painel de diagnóstico (?dev=1) e com `?tamanhos=` / `?densidade=` na URL. Pedido pra Amanda tirá-las na rodada 25. */
 const CF_ADM = ['ajuste-tamanho-pokemon', 'ajuste-densidade-selvagens'];
-const QUALIDADES = { ops: ['baixa', 'alta'], rot: ['Baixa', 'Alta'] };
+const QUALIDADES = { ops: ['baixa', 'alta'], rot: ['Low', 'High'] };
 /* Os volumes são CONTÍNUOS de verdade (0 a 100%), ao contrário das paradas acima. `canal` é o campo do `Som.ajustar`. */
 const CF_VOLUMES = { 'vol-musica': 'mus', 'vol-efeitos': 'sfx', 'vol-interface': 'ui' };
 /* Chaves liga/desliga que o jogo cumpre. As outras estão no CF_FALTA. */
@@ -3193,7 +3193,7 @@ function cfAcao(nome, el){
     return;
   }
   if (nome === 'resetar-painel-missao'){ Hud.zerarMover(); return; }
-  if (nome === 'resetar-paineis'){ Hud.zerarMover(); Chat.sistema('Painéis de volta ao lugar padrão.'); return; }
+  if (nome === 'resetar-paineis'){ Hud.zerarMover(); Chat.sistema('Panels are back to the default place.'); return; }
   /* ---- aba Conta */
   if (nome === 'logout'){ Popup.botao(popCf, 'logout', false, 'Signing out…'); ctx.conta?.sair?.(); return; }
   if (nome === 'trocar-senha'){ cfDialogoSenha(); return; }
@@ -3203,18 +3203,18 @@ function cfAcao(nome, el){
   if (CF_FALTA[nome]) return;                                              // apagado: não faz nada mesmo
 }
 /** Diagnóstico do aparelho em texto, o mesmo que a tela antiga mostrava. */
-const cfDiagTexto = () => { const d = ctx.diagnostico?.(); return d ? Object.entries(d).map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v)).join('\n') : 'indisponível'; };
+const cfDiagTexto = () => { const d = ctx.diagnostico?.(); return d ? Object.entries(d).map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v)).join('\n') : 'unavailable'; };
 async function cfCopiarDiag(){
   const tx = cfDiagTexto();
   try { await navigator.clipboard.writeText(tx); Popup.botao(popCf, 'copiar-diagnostico', true, 'Copied!'); setTimeout(() => Popup.botao(popCf, 'copiar-diagnostico', true, 'Copy'), 2000); }
-  catch { Chat.sistema('Não deu pra copiar sozinho — o texto está aí na caixa, dá pra selecionar.'); }
+  catch { Chat.sistema('Could not copy automatically — the text is in the box, you can select it.'); }
 }
 /** Apagar progresso: com conta, é o personagem que some (a conta fica); sem conta, é o `apagarTudo` de sempre. */
 async function cfApagarProgresso(){
   Popup.mostrarExtra(popCf, 'dialogo-apagar', false);
   if (ctx.conta?.estado?.().modo === 'conta'){
     const r = await ctx.conta.apagarPersonagem();
-    if (r && !r.ok){ Chat.sistema('Não deu pra apagar: ' + r.erro); return; }
+    if (r && !r.ok){ Chat.sistema('Could not delete: ' + r.erro); return; }
     location.reload();
     return;
   }
@@ -3248,34 +3248,34 @@ function cfDialogoRelato(){
   Object.assign(d.style, { position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'min(480px, 92%)',
     background: '#0F1A2E', border: '2px solid #F8C237', borderRadius: '16px', padding: '18px', zIndex: '600',
     font: '700 13px "Nunito Sans", system-ui, sans-serif', color: '#B8C2D9', display: 'grid', gap: '8px' });
-  d.innerHTML = '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Mandar pra equipe</div>'
-    + '<div style="text-align:center">Conte o que aconteceu. O diagnóstico do aparelho vai junto.</div>'
-    + '<textarea rows="4" maxlength="1000" placeholder="o que aconteceu?"></textarea>'
+  d.innerHTML = '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Send to the team</div>'
+    + '<div style="text-align:center">Describe what happened. Device diagnostics go with it.</div>'
+    + '<textarea rows="4" maxlength="1000" placeholder="what happened?"></textarea>'
     + '<div class="cf-relato-av" style="min-height:16px;color:#f58e8e;text-align:center"></div>'
-    + '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Enviar</button>'
-    + '<button type="button" class="nao" style="flex:1">Cancelar</button></div>';
+    + '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Send</button>'
+    + '<button type="button" class="nao" style="flex:1">Cancel</button></div>';
   const ta = d.querySelector('textarea');
   Object.assign(ta.style, { background: '#0B1220', border: '1px solid rgba(248,194,55,.4)', borderRadius: '8px', padding: '8px 10px', color: '#fff', font: 'inherit', resize: 'vertical' });
   for (const b of d.querySelectorAll('button'))
     Object.assign(b.style, { background: '#13254A', border: '1px solid #F8C237', borderRadius: '10px', padding: '9px', color: '#F8C237', font: 'inherit', cursor: 'pointer' });
-  d.innerHTML = tHtml(d.innerHTML); d.querySelector('textarea').placeholder = tr('o que aconteceu?');   // idioma
+  d.innerHTML = tHtml(d.innerHTML); d.querySelector('textarea').placeholder = tr('what happened?');
   document.body.appendChild(d); DIALOGOS.add(d);
   const area = d.querySelector('textarea'), av = d.querySelector('.cf-relato-av');
   area.addEventListener('keydown', e => e.stopPropagation());               // as teclas do jogo (I, K, M…) não podem agir enquanto escreve
   setTimeout(() => area.focus(), 50);
   d.querySelector('.nao').onclick = () => d.remove();
   d.querySelector('.ok').onclick = async () => {
-    const texto = area.value.trim(); if (!texto){ av.textContent = tr('Conte o que aconteceu antes de mandar.'); return; }
+    const texto = area.value.trim(); if (!texto){ av.textContent = tr('Describe what happened before sending.'); return; }
     const diag = ctx.diagnostico?.() || {}, contexto = ctx.contexto?.() || {};
     if (!comConta){
       const tx = texto + '\n\n' + Object.entries({ ...contexto, ...diag }).map(([k, v]) => k + ': ' + (Array.isArray(v) ? v.join(' | ') : v)).join('\n');
       try { await navigator.clipboard.writeText(tx); } catch {}
-      d.remove(); Chat.sistema('Você está jogando sem conta: o relato foi copiado — cole no Discord da equipe.'); return;
+      d.remove(); Chat.sistema('You are playing without an account: the report was copied — paste it in the team Discord.'); return;
     }
     av.style.color = '#B8C2D9'; av.textContent = tr('enviando…');
     const r = await ctx.conta.chamar('POST', '/conta/relato', { texto, diag, contexto });
-    if (!r.ok){ av.style.color = '#f58e8e'; av.textContent = tr(r.erro || 'não foi'); return; }
-    d.remove(); Chat.sistema('Relato enviado pra equipe. Obrigado!');
+    if (!r.ok){ av.style.color = '#f58e8e'; av.textContent = tr(r.erro || 'failed'); return; }
+    d.remove(); Chat.sistema('Report sent to the team. Thanks!');
   };
 }
 /* ESTOU PRESO (15/09, alfa): quem travou em parede/escada/caverna ESCREVE o relato antes (≥ 50 caracteres, ≥ 5 palavras, sem enchimento —
@@ -3305,15 +3305,15 @@ export function estouPreso(){
     padding: baixa ? '10px 14px' : '18px', zIndex: '600', font: '700 ' + (baixa ? 12 : 13) + 'px "Nunito Sans", system-ui, sans-serif', color: '#B8C2D9',
     display: 'grid', gap: baixa ? '5px' : '8px' });
   const el = (tag, css = {}, texto = null) => { const e = document.createElement(tag); Object.assign(e.style, css); if (texto != null) e.textContent = tr(texto); d.appendChild(e); return e; };
-  el('div', { font: '800 ' + (baixa ? 16 : 18) + 'px \'Baloo 2\', system-ui', color: '#F8C237', textAlign: 'center' }, 'Estou preso');
+  el('div', { font: '800 ' + (baixa ? 16 : 18) + 'px \'Baloo 2\', system-ui', color: '#F8C237', textAlign: 'center' }, 'I\'m stuck');
   el('div', { textAlign: 'center', lineHeight: '1.3' }, centro
-    ? 'Conte o que você estava fazendo e onde tentou ir quando travou. Sua posição e o diagnóstico vão juntos pra equipe. Depois de enviar, você volta pro último Centro Pokémon.'
-    : 'Conte o que você estava fazendo e onde tentou ir quando travou. Sua posição e o diagnóstico vão juntos pra equipe. Depois de enviar, você volta pro laboratório do Professor Oak.');
+    ? 'Describe what you were doing and where you tried to go when you got stuck. Your position and diagnostics go to the team. After sending, you return to the last Pokémon Center.'
+    : 'Describe what you were doing and where you tried to go when you got stuck. Your position and diagnostics go to the team. After sending, you return to Professor Oak\'s lab.');
   el('div', { textAlign: 'center', lineHeight: '1.3', color: '#FFB3B6', background: 'rgba(229,71,77,.12)', border: '1px solid rgba(229,71,77,.55)', borderRadius: '8px', padding: baixa ? '4px 8px' : '6px 10px' },
-    'Use só se estiver preso de verdade: uso falso ou pra atalho tira o acesso ao alfa.');
+    'Use this only if you are really stuck: fake use or using it as a shortcut can cost your alpha access.');
   const area = el('textarea', { background: '#0B1220', border: '1px solid rgba(248,194,55,.4)', borderRadius: '8px', padding: '8px 10px', color: '#fff', font: 'inherit', resize: 'vertical', minHeight: baixa ? '64px' : '96px' });
   area.rows = baixa ? 3 : 4; area.maxLength = 1000;
-  area.placeholder = tr('Ex.: estava descendo a escada da caverna do Monte Lua, virei pra esquerda e fiquei travado entre a pedra e a parede; não consigo andar pra lado nenhum.');
+  area.placeholder = tr('Ex.: I was going down the stairs in Mt. Moon, turned left and got stuck between a rock and the wall; I cannot walk anywhere.');
   const linha = el('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px' });
   const dica = document.createElement('span'), cont = document.createElement('span');
   Object.assign(dica.style, { lineHeight: '1.25', fontWeight: '600' }); Object.assign(cont.style, { font: '800 12px ui-monospace, monospace', whiteSpace: 'nowrap' });
@@ -3329,18 +3329,18 @@ export function estouPreso(){
   /** O que impede de usar agora (mensagem) ou '' — o servidor confere de novo. */
   const bloqueio = () => {
     const j = ctx.jogo || {};
-    if (j.turno) return tr('Você está numa batalha por turno: termine a batalha antes de usar o "Estou preso".');
-    if (j.raidArena) return tr('Você está na arena da raid: quando a raid acabar, você volta sozinho pra onde estava.');
-    if (ctx.conta?.estado?.().modo !== 'conta') return tr('Você está jogando sem conta: o "Estou preso" precisa de uma conta, porque o relato tem de chegar na equipe antes de você ser levado. Entre com a sua conta do alfa e tente de novo.');
+    if (j.turno) return tr('You are in a turn battle: finish the battle before using "I\'m stuck".');
+    if (j.raidArena) return tr('You are in the raid arena: when the raid ends, you return on your own.');
+    if (ctx.conta?.estado?.().modo !== 'conta') return tr('You are playing without an account: "I\'m stuck" needs an account so the report reaches the team before you are moved. Sign in with your alpha account and try again.');
     return '';
   };
-  const DICAS = { curto: null, palavras: 'Escreva pelo menos 5 palavras: o que você estava fazendo e onde tentou ir quando travou.',
-    enchimento: 'Isso parece enchimento (letra repetida ou quase nenhum caractere diferente). Conte de verdade o que aconteceu.' };
+  const DICAS = { curto: null, palavras: 'Write at least 5 words: what you were doing and where you tried to go when you got stuck.',
+    enchimento: 'That looks like filler (repeated letter or almost no different characters). Describe what actually happened.' };
   const atualizar = () => {
     const R = regrasPreso(area.value), b = bloqueio();
     cont.textContent = Math.min(R.n, 9999) + '/' + PRESO.minimo; cont.style.color = R.n >= PRESO.minimo ? '#8fe08f' : '#f58e8e';
     const falta = PRESO.minimo - R.n;
-    dica.textContent = R.ok ? tr('Pronto pra enviar.') : R.motivo === 'curto' ? (R.n ? tr('Faltam {n} caracteres.', { n: falta }) : '') : tr(DICAS[R.motivo]);
+    dica.textContent = R.ok ? tr('Ready to send.') : R.motivo === 'curto' ? (R.n ? tr('{n} characters left.', { n: falta }) : '') : tr(DICAS[R.motivo]);
     dica.style.color = R.ok ? '#8fe08f' : '#B8C2D9';
     if (!enviando){ av.style.color = '#f58e8e'; av.textContent = b || erroServ; }
     const pode = R.ok && !b && !enviando && !semSuporte;
@@ -3368,9 +3368,9 @@ export function estouPreso(){
       let msg = tr(r.erro || 'não foi');
       if (!I18n.ehPt() && msg === r.erro){                                  // o texto do servidor ainda não tem tradução: diz o essencial no idioma do jogador
         const min = /(\d+)\s*min/.exec(r.erro || '')?.[1];
-        if (r.status === 429 && min) msg = tr('Você usou o "Estou preso" há pouco. Espere {n} min antes de usar de novo.', { n: min });
-        else if (r.status === 400) msg = tr('O relato não passou nas regras: pelo menos 50 caracteres e 5 palavras, sem enchimento.');
-        else if (r.status === 409) msg = tr('Agora não dá: você está numa batalha ou na luta da raid.');
+        if (r.status === 429 && min) msg = tr('You used "I\'m stuck" recently. Wait {n} min before using it again.', { n: min });
+        else if (r.status === 400) msg = tr('The report did not pass the rules: at least 50 characters and 5 words, no filler.');
+        else if (r.status === 409) msg = tr('Not now: you are in a battle or the raid fight.');
       }
       erroServ = msg; atualizar(); return;
     }
@@ -3379,16 +3379,16 @@ export function estouPreso(){
        recusa em batalha/raid. Sem `preso.usos24h` na resposta ninguém é levado: o relato chegou, o teleporte espera o servidor novo. */
     if (!Number.isFinite(r.dados?.preso?.usos24h)){
       semSuporte = true;
-      erroServ = tr('O servidor ainda não conhece o "Estou preso": o seu relato chegou na equipe, mas você não foi levado. Recarregue a página daqui a pouco e tente de novo.');
+      erroServ = tr('The server does not know "I\'m stuck" yet: your report reached the team, but you were not moved. Reload the page in a bit and try again.');
       atualizar(); return;
     }
     fecharDlg();
-    Chat.sistema(centro ? 'Relato enviado pra equipe. Levando você pro último Centro Pokémon…' : 'Relato enviado pra equipe. Levando você pro laboratório do Professor Oak…');
+    Chat.sistema(centro ? 'Report sent to the team. Taking you to the last Pokémon Center…' : 'Report sent to the team. Taking you to Professor Oak\'s lab…');
     const n = +r.dados?.preso?.usos24h || 0;
-    if (n >= 3) Chat.sistema(tr('Você já usou o "Estou preso" {n} vezes nas últimas 24 h.', { n }));
+    if (n >= 3) Chat.sistema(tr('You already used "I\'m stuck" {n} times in the last 24 h.', { n }));
     fechar();
     const foi = await ctx.irDestinoPreso?.();
-    if (foi === false) Chat.sistema('O jogo já estava trocando de lugar. Se continuar preso, recarregue a página.');
+    if (foi === false) Chat.sistema('The game was already changing maps. If you are still stuck, reload the page.');
   };
   atualizar();
   setTimeout(() => area.focus(), 50);
@@ -3397,18 +3397,18 @@ export function estouPreso(){
    Este aqui é DOM simples com a paleta dela — pedido de arte pra rodada 25 anotado no figma-desvios.md. */
 function cfDialogoSenha(){
   if (!popCf || document.querySelector('.cf-senha')) return;
-  if (ctx.conta?.estado?.().modo !== 'conta'){ Chat.sistema('Você está jogando sem conta: não há senha pra trocar.'); return; }
+  if (ctx.conta?.estado?.().modo !== 'conta'){ Chat.sistema('You are playing without an account: there is no password to change.'); return; }
   const d = document.createElement('div'); d.className = 'cf-senha';
   Object.assign(d.style, { position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '420px',
     background: '#0F1A2E', border: '2px solid #F8C237', borderRadius: '16px', padding: '18px', zIndex: '600',
     font: '700 13px "Nunito Sans", system-ui, sans-serif', color: '#B8C2D9', display: 'grid', gap: '8px' });
-  d.innerHTML = '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Trocar senha</div>'
-    + '<input type="password" autocomplete="current-password" placeholder="senha de agora">'
-    + '<input type="password" autocomplete="new-password" placeholder="senha nova (6 a 64)">'
-    + '<input type="password" autocomplete="new-password" placeholder="repita a senha nova">'
+  d.innerHTML = '<div style="font:800 18px \'Baloo 2\', system-ui;color:#F8C237;text-align:center">Change password</div>'
+    + '<input type="password" autocomplete="current-password" placeholder="current password">'
+    + '<input type="password" autocomplete="new-password" placeholder="new password (6 to 64)">'
+    + '<input type="password" autocomplete="new-password" placeholder="repeat the new password">'
     + '<div class="cf-senha-av" style="min-height:16px;color:#f58e8e;text-align:center"></div>'
-    + '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Trocar</button>'
-    + '<button type="button" class="nao" style="flex:1">Cancelar</button></div>';
+    + '<div style="display:flex;gap:10px"><button type="button" class="ok" style="flex:1">Change</button>'
+    + '<button type="button" class="nao" style="flex:1">Cancel</button></div>';
   for (const i of d.querySelectorAll('input'))
     Object.assign(i.style, { background: '#0B1220', border: '1px solid rgba(248,194,55,.4)', borderRadius: '8px', padding: '8px 10px', color: '#fff', font: 'inherit' });
   for (const b of d.querySelectorAll('button'))
@@ -3418,9 +3418,9 @@ function cfDialogoSenha(){
   const [atual, nova, rep] = d.querySelectorAll('input'), av = d.querySelector('.cf-senha-av');
   d.querySelector('.nao').onclick = () => d.remove();
   d.querySelector('.ok').onclick = async () => {
-    if (nova.value !== rep.value){ av.textContent = tr('as duas senhas novas têm de ser iguais.'); return; }
-    if (nova.value.length < 6){ av.textContent = tr('a senha nova precisa de 6 caracteres ou mais.'); return; }
-    av.style.color = '#B8C2D9'; av.textContent = tr('trocando…');
+    if (nova.value !== rep.value){ av.textContent = tr('the two new passwords must match.'); return; }
+    if (nova.value.length < 6){ av.textContent = tr('the new password needs 6 characters or more.'); return; }
+    av.style.color = '#B8C2D9'; av.textContent = tr('changing…');
     const r = await ctx.conta.trocarSenha(atual.value, nova.value);
     if (!r.ok){ av.style.color = '#f58e8e'; av.textContent = tr(r.erro); return; }
     d.remove();
@@ -3521,7 +3521,7 @@ function abrirPrevia(nome){
   fechar(); fecharGrade(); fecharPrevia();
   let pop = popsPrevia[nome];
   if (!pop){
-    pop = popsPrevia[nome] = Popup.montar(def, { fechar: () => { if (popPrevia === pop) popPrevia = null; }, acao: a => Chat.sistema('Prévia: a ação "' + a + '" ainda não tem função.') });
+    pop = popsPrevia[nome] = Popup.montar(def, { fechar: () => { if (popPrevia === pop) popPrevia = null; }, acao: a => Chat.sistema('Preview: the action "' + a + '" has no function yet.') });
     Popup.encherExemplo(pop);
   }
   popPrevia = pop; Popup.abrir(pop); ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 });
@@ -3534,7 +3534,7 @@ export function previa(on = null){
   if (on === false) return false;
   const ori = ctx.MOBILE ? (Hud.presetAtual() === 'celular_deitado' ? 'deitado' : null) : 'pc';
   const ps = ori && ctx.jogo?.hudLayout?.popups?.[ori];
-  if (!ps || !ehV2()){ Chat.sistema('Prévia: ligue o visual novo (Configurações → Geral → Visual novo, ou ?hud=v2)' + (ctx.MOBILE ? ' e deite o celular' : '') + '.'); return false; }
+  if (!ps || !ehV2()){ Chat.sistema('Preview: turn on the new UI (Settings → General → New UI, or ?hud=v2)' + (ctx.MOBILE ? ' and turn the phone sideways' : '') + '.'); return false; }
   const nomes = Object.keys(ps), maquete = ORDEM_PREVIA.filter(n => nomes.includes(n)), janelas = nomes.filter(n => !maquete.includes(n) && JANELAS[n]);
   const p = document.createElement('div'); p.id = 'previa';
   p.innerHTML = '<b>Prévia das telas (adm)</b><span class="fecha" title="fechar (F7)">×</span>'
@@ -3577,7 +3577,7 @@ async function abrirPreviaMochila(){
         .filter(e => (!tipos || tipos.includes(e.it.t)) && (!b || (e.it.n || '').toLowerCase().includes(b)))
         .sort((x, y) => (x.it.t - y.it.t) || String(x.it.n).localeCompare(String(y.it.n), 'en'));
     };
-    const avisa = a => Chat.sistema('Prévia: "' + a + '" não mexe no inventário (mochila de exemplo).');
+    const avisa = a => Chat.sistema('Preview: "' + a + '" does not change the inventory (sample bag).');
     const encher = () => {
       const L = lista(); if (st.sel >= L.length) st.sel = 0;
       Popup.trocarAba(pop, st.cat); Popup.rotulo(pop, 'titulo');
@@ -3662,12 +3662,12 @@ function cfLinhaVisual(pop){
   Object.assign(linha.style, { position: 'absolute', left: V.left, top: V.top + 'px', width: V.width, height: V.height + 'px', pointerEvents: 'auto', zIndex: '5' });
   const fonte = (rotulo?.style.fontWeight || '700') + ' ' + (rotulo?.style.fontSize || '14.5px') + ' "Nunito Sans", system-ui, sans-serif';
   linha.innerHTML = '';
-  const lab = document.createElement('span'); lab.textContent = tr('Visual novo (beta)');
+  const lab = document.createElement('span'); lab.textContent = tr('New UI (beta)');
   Object.assign(lab.style, { position: 'absolute', left: '0', top: '0', height: '100%', display: 'flex', alignItems: 'center', font: fonte, color: '#fff' });
   linha.appendChild(lab);
   const { bx, bw, bh, by } = V;
   const on = ehV2();
-  const b = document.createElement('button'); b.type = 'button'; b.textContent = on ? tr('Voltar pro visual atual') : tr('Ligar');
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = on ? tr('Back to current UI') : tr('Turn on');
   Object.assign(b.style, { position: 'absolute', left: bx + 'px', top: by + 'px', width: bw + 'px', height: bh + 'px', borderRadius: (bh / 2) + 'px',
     border: '1px solid rgba(248,194,55,1)', background: on ? 'rgba(11,18,32,.9)' : '#F8C237', color: on ? '#F8C237' : '#1A1A1A', font: fonte, cursor: 'pointer', padding: '0' });
   b.onclick = () => { try { localStorage.setItem('hud.v2', on ? '0' : '1'); } catch {} cfRecarregar('hud', null); };
@@ -3682,7 +3682,7 @@ function cfLinhaIdioma(pop){
   Object.assign(linha.style, { position: 'absolute', left: V.left, top: V.top + 'px', width: V.width, height: V.height + 'px', pointerEvents: 'auto', zIndex: '5' });
   const fonte = (rotulo?.style.fontWeight || '700') + ' ' + (rotulo?.style.fontSize || '14.5px') + ' "Nunito Sans", system-ui, sans-serif';
   linha.innerHTML = '';
-  const lab = document.createElement('span'); lab.textContent = tr('Idioma');
+  const lab = document.createElement('span'); lab.textContent = tr('Language');
   Object.assign(lab.style, { position: 'absolute', left: '0', top: '0', height: '100%', display: 'flex', alignItems: 'center', font: fonte, color: '#fff' });
   linha.appendChild(lab);
   const { bx, bw, bh, by } = V;
@@ -3807,7 +3807,7 @@ function cfBotaoPreso(pop){
     blc.appendChild(cx);
   }
   const rot = mandar.querySelector('.pf-rotulo, [data-txt]');
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'cf-preso-btn'; b.textContent = tr('Estou preso');
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'cf-preso-btn'; b.textContent = tr('I\'m stuck');
   b.title = tr('Travou em parede, escada ou caverna? Conte o que aconteceu e volte pro último Centro Pokémon.');
   Object.assign(b.style, { position: 'absolute', left: x0 + 'px', top: topo + 'px', width: (px(mandar.style.left) + px(mandar.style.width) - x0) + 'px', height: h + 'px',
     boxSizing: 'border-box', margin: '0', padding: '0', borderRadius: (h / 2) + 'px', border: '1.5px solid #F8C237', background: '#F8C237', color: '#1A1A1A',
@@ -3863,23 +3863,23 @@ function rConfig(corpo){
     ${Hud.temGuardado() ? `<label><span>a HUD veio com uma maquete nova; o layout que você montou no editor ficou guardado</span><button type="button" class="btn" id="c-hud-meu">↺ usar o meu de novo</button></label>` : ''}
     <label><span>densidade de selvagens</span><select id="c-dens"><option value="">normal</option><option value="0.5">pouca</option><option value="1.5">muita</option><option value="3">lotado</option></select></label>
     ${ctx.gm?.() ? `<label><span>painéis de depuração (hud, chefe, montaria, seguidor)</span><input type="checkbox" id="c-dbg"></label>` : ''}
-    <div class="acoes" style="margin-top:12px"><button type="button" class="btn ouro" id="c-perso">✎ Personagem</button>${ctx.gm?.() ? `<button type="button" class="btn ouro" id="c-hud">🧩 Montar a HUD</button><button type="button" class="btn" id="c-galeria">Galeria da UI do Fairy</button><button type="button" class="btn" id="c-bancada">Bancada de habilidades</button>` : ''}<button type="button" class="btn ouro" id="c-preso">Estou preso</button><button type="button" class="btn" id="c-apagar">Apagar progresso (reinicia tudo)</button></div>
+    <div class="acoes" style="margin-top:12px"><button type="button" class="btn ouro" id="c-perso">✎ Personagem</button>${ctx.gm?.() ? `<button type="button" class="btn ouro" id="c-hud">🧩 Montar a HUD</button><button type="button" class="btn" id="c-galeria">Galeria da UI do Fairy</button><button type="button" class="btn" id="c-bancada">Bancada de habilidades</button>` : ''}<button type="button" class="btn ouro" id="c-preso">I'm stuck</button><button type="button" class="btn" id="c-apagar">Delete progress (restart everything)</button></div>
     <div style="color:var(--muted);font-size:11px;margin-top:8px">qualidade e densidade recarregam a cena.</div>
     <details style="margin-top:10px"><summary style="cursor:pointer;color:#ffe07a">Diagnóstico do aparelho — abra e copie quando algo ficar preto ou errado</summary><pre id="c-diag" style="white-space:pre-wrap;font-size:11px;color:var(--muted);max-height:260px;overflow:auto;background:#0b1020;padding:8px;border-radius:8px;margin:6px 0"></pre><button type="button" class="btn" id="c-diag-copiar">copiar</button> <button type="button" class="btn" id="c-diag-chat">mandar pro chat</button></details></div>`;
-  const diag = () => { const d = ctx.diagnostico?.(); return d ? Object.entries(d).map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v)).join('\n') : 'indisponível'; };
+  const diag = () => { const d = ctx.diagnostico?.(); return d ? Object.entries(d).map(([k, v]) => k + ': ' + (Array.isArray(v) ? '\n  ' + v.join('\n  ') : v)).join('\n') : 'unavailable'; };
   const preDiag = corpo.querySelector('#c-diag'); preDiag.textContent = diag();
-  corpo.querySelector('#c-diag-copiar').onclick = async () => { const tx = diag(); preDiag.textContent = tx; try { await navigator.clipboard.writeText(tx); corpo.querySelector('#c-diag-copiar').textContent = 'copiado!'; } catch { const r = document.createRange(); r.selectNodeContents(preDiag); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } };
+  corpo.querySelector('#c-diag-copiar').onclick = async () => { const tx = diag(); preDiag.textContent = tx; try { await navigator.clipboard.writeText(tx); corpo.querySelector('#c-diag-copiar').textContent = 'copied!'; } catch { const r = document.createRange(); r.selectNodeContents(preDiag); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } };
   corpo.querySelector('#c-preso').onclick = () => estouPreso();           // ESTOU PRESO (15/09): o mesmo diálogo da aba Conta do pop-up
   corpo.querySelector('#c-diag-chat').onclick = () => { const d = ctx.diagnostico?.(); if (d) Chat.sistema('diag: ' + [d.gpu, 'webgl2 ' + d.webgl2, d.qualidade, d.tela, 'tex ' + d.maxTextura, 'highp ' + d.highpFrag, 'erros ' + d.erros.join(' ; ')].join(' · ')); };
   corpo.querySelector('#c-qual').value = p.get('qualidade') || ''; corpo.querySelector('#c-tam').value = ctx.jogo.tamanhos || 'proporcional'; corpo.querySelector('#c-dens').value = p.get('densidade') || '';
   const cDbg = corpo.querySelector('#c-dbg'); if (cDbg) cDbg.checked = !!ctx.depuracao?.();   // 08/09: só existe pra GM — sem este guarda, ABRIR as Configurações quebrava pro jogador comum
   corpo.querySelector('#c-nome').onchange = async ev => {                 // nome único (08/09): quem decide é o servidor
     const campo = ev.target, av = corpo.querySelector('#c-nome-aviso');
-    campo.disabled = true; av.textContent = 'conferindo…'; av.style.color = '#98a4c0';
+    campo.disabled = true; av.textContent = 'checking…'; av.style.color = '#98a4c0';
     const r = await ctx.renomear?.(campo.value);
     campo.disabled = false; campo.value = ctx.nome;
     if (r && !r.ok){ av.textContent = r.erro; av.style.color = '#f58e8e'; }
-    else { av.textContent = 'pronto — você agora é ' + ctx.nome + '.'; av.style.color = '#8fe08f'; }
+    else { av.textContent = 'done — you are now ' + ctx.nome + '.'; av.style.color = '#8fe08f'; }
   };
   corpo.querySelector('#c-vol').oninput = ev => { const v = +ev.target.value; corpo.querySelector('#c-volv').textContent = v + '%'; ctx.gravarLS('volume', v); ctx.Som?.ajustar?.({ sfx: v / 100, mus: v / 100 }); };
   const recarregar = (chave, valor) => { const u = new URL(location.href); if (valor) u.searchParams.set(chave, valor); else u.searchParams.delete(chave); location.href = u.toString(); };
@@ -3892,16 +3892,16 @@ function rConfig(corpo){
   cUi.onchange = ev => { Hud.definirTamanho(ev.target.value); dicaUi(); };
   corpo.querySelector('#c-missao-lugar').onclick = () => Hud.zerarMover();   // painel de missão de volta ao lugar da maquete
   const meuHud = corpo.querySelector('#c-hud-meu');                      // §7 item 14: maquete nova entrou; o layout do editor está guardado
-  if (meuHud) meuHud.onclick = () => { meuHud.textContent = Hud.restaurarGuardado() ? 'pronto — recarregue a página' : 'não deu pra restaurar'; meuHud.disabled = true; };
-  const sairBtn = corpo.querySelector('#c-sair'); if (sairBtn) sairBtn.onclick = () => { sairBtn.textContent = 'Saindo…'; ctx.conta.sair(); };   // fase 2: volta pra tela de login sem o progresso deste aparelho
+  if (meuHud) meuHud.onclick = () => { meuHud.textContent = Hud.restaurarGuardado() ? 'done — reload the page' : 'could not restore'; meuHud.disabled = true; };
+  const sairBtn = corpo.querySelector('#c-sair'); if (sairBtn) sairBtn.onclick = () => { sairBtn.textContent = 'Signing out…'; ctx.conta.sair(); };
   /* APAGAR PERSONAGEM / APAGAR CONTA (08/09): quem apaga é o SERVIDOR. Dois cliques no botão pra confirmar; a conta ainda
      pede a senha, porque é pra sempre. */
   const avConta = corpo.querySelector('#c-conta-aviso');
   const doisCliques = (btn, rotulo, acao) => {
     if (!btn) return; let armado = false;
     btn.onclick = async () => {
-      if (!armado){ armado = true; btn.textContent = 'Tem certeza? Clique de novo'; setTimeout(() => { if (armado){ armado = false; btn.textContent = rotulo; } }, 5000); return; }
-      armado = false; btn.disabled = true; btn.textContent = 'apagando…';
+      if (!armado){ armado = true; btn.textContent = 'Are you sure? Click again'; setTimeout(() => { if (armado){ armado = false; btn.textContent = rotulo; } }, 5000); return; }
+      armado = false; btn.disabled = true; btn.textContent = 'deleting…';
       const r = await acao();
       btn.disabled = false; btn.textContent = rotulo;
       if (r && !r.ok){ avConta.textContent = r.erro; avConta.style.color = '#f58e8e'; }

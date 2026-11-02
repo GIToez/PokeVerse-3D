@@ -112,7 +112,7 @@ export function instalar({ Hud = null, Popup = null, Menus = null, I18n = null, 
     noFila = criar('raid-fila');
     noFila.addEventListener('click', ev => { ev.stopPropagation(); ev.preventDefault(); abrirBanner(); });   // tocar na placa também reabre o banner
   }
-  noBtn.setAttribute('aria-label', T('Raid ao vivo'));
+  noBtn.setAttribute('aria-label', T('Live raid'));
   try { menus = M?.ligarRaid?.({ encher: encherBanner, acao: acaoBanner, simples: bannerSimples, mudou: bannerMudou, def: () => defRaid() }) || null; } catch (e){ console.warn('raid_ui:', e); menus = null; }
   if (!instalar.__ouvindo){
     instalar.__ouvindo = true;
@@ -298,8 +298,8 @@ function pintarFila(){
   }
   escrever(noDe(noFila, 'txt/fila'), Math.min(snap.n, snap.vagas) + '/' + snap.vagas);
   const cont = noDe(noFila, 'txt/contagem');
-  if (cheia) escrever(cont, T('Começa em ' + segundosFaltando() + 's'));
-  else escreverCabe(cont, T('esperando jogadores'), T('esperando…'));
+  if (cheia) escrever(cont, T('Starts in ' + segundosFaltando() + 's'));
+  else escreverCabe(cont, T('waiting for players'), T('waiting…'));
 }
 /* ===== v2 (rodada 29): o card `alerta-raid` da maquete substitui o botão "!" e a placa da fila. O hud.mjs desenha a peça (oculta); aqui ela
    ganha vida: arte por TIPO do chefe (ref `alerta-raid [tipo:x]`), "AO VIVO"/"NA FILA", n/vagas, contagem, retrato do chefe e o pisca. */
@@ -311,7 +311,7 @@ function pintarAlerta(el){
   if (ref?.img && el.dataset.tipoArte !== tipo){ el.style.backgroundImage = 'url(' + ref.img + ')'; el.dataset.tipoArte = tipo; }
   const cheia = snap.fase === 'contagem';
   escrever(noDe(el, 'txt/raid-nome'), 'Raid: ' + String(snap.nome || CFG.chefeNome));
-  escrever(noDe(el, 'txt/raid-estado'), snap.eu ? T('NA FILA') : T('AO VIVO'));
+  escrever(noDe(el, 'txt/raid-estado'), snap.eu ? T('IN QUEUE') : T('LIVE'));
   escrever(noDe(el, 'txt/raid-fila'), Math.min(snap.n, snap.vagas) + '/' + snap.vagas);
   escrever(noDe(el, 'txt/raid-tempo'), cheia ? mmss(segundosFaltando()) : '');
   const boss = el.querySelector('[data-var="boss"]');

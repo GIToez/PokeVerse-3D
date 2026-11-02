@@ -33,12 +33,12 @@ export function aplicar(de, i, para, j){
     if (j === i) return false;
     orig.splice(i, 1); orig.splice(j, 0, e);
   } else if (de === 'time'){
-    if (time.length <= 1){ avisar('é o seu único Pokémon'); return false; }
-    if (cfg.emCampo?.(e)){ avisar('troque de parceiro antes de guardar quem está em campo'); return false; }
+    if (time.length <= 1){ avisar('This is your only Pokémon'); return false; }
+    if (cfg.emCampo?.(e)){ avisar('Switch partners before boxing the Pokémon that is out'); return false; }
     time.splice(i, 1); caixa.splice(limitar(j, 0, caixa.length), 0, e);
   } else if (time.length >= TIME_MAX){                                    // caixa → time cheio: troca com a casa de destino
     const k = limitar(j, 0, time.length - 1), sai = time[k];
-    if (cfg.emCampo?.(sai)){ avisar('troque de parceiro antes de guardar quem está em campo'); return false; }
+    if (cfg.emCampo?.(sai)){ avisar('Switch partners before boxing the Pokémon that is out'); return false; }
     time[k] = e; caixa.splice(i, 1, sai);
   } else {
     caixa.splice(i, 1); time.splice(limitar(j, 0, time.length), 0, e);

@@ -23,9 +23,33 @@ let ctx = null, msgs = [];
 const montagens = new Set();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+const LINHAS_PT = [
+  ['troque de parceiro antes de guardar quem está em campo', 'Switch partners before boxing the Pokémon that is out'],
+  ['é o seu único Pokémon', 'This is your only Pokémon'],
+  ['o servidor recusou', 'the server refused'],
+  ['Digite o nome exato do treinador.', 'Type the trainer\'s exact name.'],
+  ['Convite recusado.', 'Invite declined.'],
+  ['Escolha uma conversa ou abra pelo menu do amigo.', 'Pick a conversation or open it from a friend\'s menu.'],
+  ['Ranking: sem servidor no ar.', 'Ranking: no server online.'],
+  ['ninguém ainda', 'nobody yet'],
+  ['Mensagem direta precisa de conta no servidor.', 'Direct messages need an account on the server.'],
+  ['Painéis de volta ao lugar padrão.', 'Panels are back to the default place.'],
+  ['Relato enviado pra equipe. Obrigado!', 'Report sent to the team. Thanks!'],
+  ['A conexão com o servidor caiu. Tentando de novo…', 'Lost connection to the server. Retrying…'],
+  ['passo concluído', 'step complete'],
+  ['Missão concluída:', 'Mission complete:'],
+  ['Nova missão:', 'New mission:'],
+  ['A raid começa!', 'The raid begins!'],
+  ['Convite de troca enviado pra', 'Trade invite sent to'],
+  ['recusou a troca.', 'declined the trade.'],
+  ['Troca cancelada:', 'Trade cancelled:'],
+  ['sem motivo', 'no reason'],
+  ['Enviar', 'Send'],
+];
 function inglesarLinha(s){
   if (typeof s !== 'string' || !s) return s;
   let x = tr(s);
+  for (const [pt, en] of LINHAS_PT) if (x.includes(pt)) x = x.split(pt).join(en);
   x = x
     .replace(/^Você chegou n[ao]s?\s+/i, 'You arrived in ')
     .replace(/^Você chegou em\s+/i, 'You arrived in ')
@@ -34,6 +58,39 @@ function inglesarLinha(s){
     .replace(/^Conectado ao servidor/i, 'Connected to the server')
     .replace(/\bneste mapa\b/gi, 'on this map')
     .replace(/\bcomo\s+(?=\S)/i, 'as ')
+    .replace(/^Soltar:\s*/i, 'Release: ')
+    .replace(/saiu da sua lista de amigos\./i, 'was removed from your friends list.')
+    .replace(/agora são amigos\./i, 'are now friends.')
+    .replace(/^Convite enviado pra\s+/i, 'Invite sent to ')
+    .replace(/quer ser seu amigo: Social → Solicitações\./i, 'wants to be your friend: Social → Requests.')
+    .replace(/aceitou seu convite\./i, 'accepted your invite.')
+    .replace(/desfez a amizade\./i, 'unfriended you.')
+    .replace(/Ranking de colecionadores/i, 'Collector ranking')
+    .replace(/\btreinadores?\b/gi, 'trainer(s)')
+    .replace(/Não achei "([^"]+)" na sua lista de amigos \(mensagem direta é só entre amigos\)\./i, 'Could not find "$1" on your friends list (direct messages are friends only).')
+    .replace(/Você está jogando sem conta: o relato foi copiado — cole no Discord da equipe\./i, 'You are playing without an account: the report was copied — paste it in the team Discord.')
+    .replace(/Relato enviado pra equipe\. Levando você pro último Centro Pokémon…/i, 'Report sent to the team. Taking you to the last Pokémon Center…')
+    .replace(/Relato enviado pra equipe\. Levando você pro laboratório do Professor Oak…/i, 'Report sent to the team. Taking you to Professor Oak\'s lab…')
+    .replace(/O jogo já estava trocando de lugar\. Se continuar preso, recarregue a página\./i, 'The game was already changing maps. If you are still stuck, reload the page.')
+    .replace(/Você está jogando sem conta: não há senha pra trocar\./i, 'You are playing without an account: there is no password to change.')
+    .replace(/Não deu pra copiar sozinho — o texto está aí na caixa, dá pra selecionar\./i, 'Could not copy automatically — the text is in the box, you can select it.')
+    .replace(/^Não deu pra apagar:\s*/i, 'Could not delete: ')
+    .replace(/Ninguém por perto com o nome "([^"]+)"\. Fique na mesma área e tente de novo\./i, 'Nobody nearby named "$1". Stay in the same area and try again.')
+    .replace(/Troca com (.+) feita: você deu (.+) e recebeu (.+)\./i, 'Trade with $1 done: you gave $2 and received $3.')
+    .replace(/Você ainda não tem /i, 'You do not have ')
+    .replace(/Você concluiu tudo o que existe por enquanto — mais capítulos vêm com as próximas versões\./i, 'You finished everything available for now — more chapters come in later versions.')
+    .replace(/A raid já começou: ataque o /i, 'The raid already started: attack ')
+    .replace(/ derrotado! Prêmio: /i, ' defeated! Prize: ')
+    .replace(/ derrotado! Você não causou dano: sem prêmio desta vez\./i, ' defeated! You dealt no damage: no prize this time.')
+    .replace(/A raid acabou: o (.+) escapou\./i, 'The raid ended: $1 escaped.')
+    .replace(/O seu (.+) é SHINY!/i, 'Your $1 is SHINY!')
+    .replace(/O (.+) entrou no seu time \(ou na caixa, se o time estiver cheio\)\./i, '$1 joined your party (or the Box, if the party is full).')
+    .replace(/Em instantes você volta pra onde estava\./i, 'You will return to where you were in a moment.')
+    .replace(/A raid acabou\. Voltando…/i, 'The raid ended. Returning…')
+    .replace(/Indo pra raid do /i, 'Going to the raid of ')
+    .replace(/Voltando pra onde você estava…/i, 'Returning to where you were…')
+    .replace(/⚠ O jogo foi atualizado no servidor\. Feche e abra a página pra pegar a versão nova\./i, '⚠ The game was updated on the server. Close and reopen the page to get the new version.')
+    .replace(/Você entrou de outro lugar\./i, 'You logged in from somewhere else.')
     .replace(/\bEnviar\b/g, 'Send');
   return x;
 }
