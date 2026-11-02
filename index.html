@@ -4424,8 +4424,23 @@ async function povoar(){
         Mundo.propor({ area: a, dex: esp.dex, glb: esp.glb, nome: esp.nome, lv: nivelDoHabitat(esp, a), x: flipX * t.x, z: t.z, casa: t, aquatico: !!esp.agua, generico: !habitats.areas[String(a)], pertoDeGrama: !t.livre && tiles.some(c => Math.hypot(c.x - t.x, c.z - t.z) <= 7) });
         continue;
       }
-      const s = await criarSelvagem(esp, flipX * t.x, t.z, { area: a, generico: !habitats.areas[String(a)], casa: t, lv: nivelDoHabitat(esp, a) });
-      if (esp.agua){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; }   // nada no nível do mar; não persegue ninguém em terra
+      let espSpawn = esp, lvSpawn = nivelDoHabitat(esp, a), wildId = null;
+      if (Conta.estado().modo === 'conta' && !Mundo.estaAtivo()){
+        if (!comConta()) continue;                                          // the socket is not up yet: wait, so the first wilds are ones the server rolled
+        const rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora());
+        if (!rolled?.id) continue;
+        if (glbNegados.has(rolled.glb) || !quentes.has(rolled.glb)){
+          if (!quentes.has(rolled.glb)) aquecer(rolled.glb);
+          Rede.enviar({ t: 'wild_drop', id: rolled.id });
+          continue;
+        }
+        espSpawn = { dex: rolled.dex, glb: rolled.glb, nome: rolled.nome, agua: rolled.agua ? 1 : 0 };
+        lvSpawn = rolled.lv;
+        wildId = rolled.id;
+      }
+      const s = await criarSelvagem(espSpawn, flipX * t.x, t.z, { area: a, generico: !habitats.areas[String(a)], casa: t, lv: lvSpawn });
+      s.wildId = wildId;
+      if (espSpawn.agua){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; }   // nada no nível do mar; não persegue ninguém em terra
       s.pertoDeGrama = !t.livre && tiles.some(c => Math.hypot(c.x - t.x, c.z - t.z) <= 7);   // quem nasce no chão livre vaga por pontos, não por tiles
       jogo.selvagens.push(s);
     }
@@ -4611,7 +4626,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
     s.pivo.traverse(o => { if (o.isMesh) o.castShadow = false; });
   }
   s.area = area; s.especie = esp; s.generico = generico; s.casa = casa || { x: flipX * x, z };
-  s.id = null; s.rede = false; s.remoto = false; s.__animRede = null;   // corpo do pool pode ter sido da rede
+  s.id = null; s.wildId = null; s.rede = false; s.remoto = false; s.__animRede = null;   // corpo do pool pode ter sido da rede
   s.raid = null; s.flutua = 0; s.rotuloAlto = null;                     // …ou o chefe de uma raid (14/09): tamanho/altura de chefe não passam pro próximo
   /* …ou um PEIXE (20/09). `aquatico` só era ligado (no `povoar` e no `Mundo.criar`), nunca desligado, e o corpo volta
      pelo pool por espécie: o Cloyster que nasceu na água do piso 4 das Ilhas Seaform renascia como Cloyster de TERRA
@@ -5246,7 +5261,12 @@ function aplicarGolpe(atacante, defensor, golpe, dano, eff){
     const res = R.somDaEficacia(eff);
     if (res) setTimeout(() => Som.tocar('skill/' + res, { volume: vol }), 150);
   }
-  if (defensor.hp <= 0 && atacante === jogo.pika && defensor !== jogo.pika && !(defensor.rede && Mundo.estaAtivo()) && !jogo.turno?.serv) ganharExp(atacante, defensor);   // batalha do servidor: o XP vem dele   // (selvagem da rede: o XP vem do servidor, pra todo mundo que lutou — 3c)   // XP como nos jogos: quem derruba ganha
+  if (defensor.hp <= 0 && atacante === jogo.pika && defensor !== jogo.pika && !jogo.turno?.serv){
+    if (defensor.rede && Mundo.estaAtivo()){ /* the shared world pays this defeat */ }
+    else if (comConta()){
+      if (defensor.wildId){ const id = defensor.wildId; defensor.wildId = null; Rede.enviar({ t: 'wild_defeat', id }); }
+    } else ganharExp(atacante, defensor);
+  }
   if (defensor.hp > 0){
     tocarUma(defensor, 'Wound');
     const eraArisco = ehArisco(defensor.perfil) || defensor.estado === 'fugindo';
@@ -6203,6 +6223,49 @@ function ganharExp(p, d, ganhoFixo = null){                               // gan
   if (guardou) avisarReserva(p, guardou);
   guardarEstadoAtivo(); pintarTime(true);
   return ganho;
+}
+/** Experience for a wild the server rolled. The number is the server's; this only shows it. */
+function aplicarWildExp(m){
+  if (!m || m.uid == null || !(m.gained > 0)) return;
+  const time = jogo.time || [];
+  const reg = time.find(t => String(t?.uid) === String(m.uid));
+  const antes = (reg?.lv | 0) || (jogo.pika && String(uidParceiro()) === String(m.uid) ? jogo.pika.lv | 0 : 0);
+  aplicarVidas([{ uid: m.uid, lv: m.lv, exp: m.exp, expReserva: m.expReserva }]);
+  const noCampo = jogo.pika && String(uidParceiro()) === String(m.uid) ? jogo.pika : null;
+  const alvo = noCampo || reg;
+  if (reg){
+    if (m.amizade != null) reg.amizade = m.amizade;
+    if (Array.isArray(m.evs)) reg.evs = m.evs;
+  }
+  if (!alvo) return;
+  if (m.amizade != null) alvo.amizade = m.amizade;
+  if (Array.isArray(m.evs) && alvo !== reg) alvo.evs = m.evs;
+  const S = porDex.get(alvo.dex);
+  if (S && m.lv > antes){
+    const oldMax = alvo.maxHp || Ind.hpDe(S, { ...alvo, lv: antes || 1 });
+    const novoMax = Ind.hpDe(S, alvo);
+    alvo.hp = Math.min(novoMax, (alvo.hp || 0) + Math.max(0, novoMax - oldMax));
+    alvo.maxHp = novoMax;
+    if (reg && reg !== alvo){
+      reg.maxHp = novoMax;
+      if (reg.hp > 0) reg.hp = Math.min(novoMax, (reg.hp || 0) + Math.max(0, novoMax - oldMax));
+    }
+  }
+  flutuar(alvo, '+' + m.gained + ' XP', '#8ec5ff');
+  if (m.evText) flutuar(alvo, m.evText, '#ffd19a');
+  if (m.lv > antes){
+    flutuar(alvo, 'Lv ' + alvo.lv + '!', '#ffe07a');
+    Som.tocar('ui/sound_successful', { volume: .55, prio: true });
+    Chat.sistema(alvo.nome + ' grew to Lv ' + alvo.lv + '!');
+    if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: alvo.lv });
+    if (noCampo){
+      const prontas = opcoesEvolucao(alvo).filter(o => o.pode && o.glb);
+      if (prontas.length === 1) Chat.sistema('✧ ' + alvo.nome + ' can now evolve into ' + prontas[0].nome + (prontas[0].itemNome ? ' (use ' + prontas[0].itemNome + ')' : '') + '!');
+      else if (prontas.length > 1) Chat.sistema('✧ ' + alvo.nome + ' can now evolve into ' + prontas.map(o => o.nome).join(', ') + ' — pick on the ✧ in the grid.');
+    }
+  }
+  if (m.banked > 0) avisarReserva(alvo, m.banked);
+  guardarEstadoAtivo(); pintarTime(true);
 }
 function clonarEmissivos(raiz){
   const mats = [];
@@ -8150,7 +8213,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => gravarParada(), true);
   addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');

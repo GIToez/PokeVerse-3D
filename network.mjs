@@ -14,7 +14,7 @@ let ping = { enviado: 0, ms: null };
 let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null, tAparencia = 0, ultimaMont = null;   // ultimaMont (14/09): a montaria que a sala já sabe   // ultimoUid: qual Pokémon está em campo (passo 3: o XP e o dano caem nele); ultimoTitulo: o título sob o nome (12/09)
 import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
 import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
-export const VERSAO_REDE = 19;                                            // 19: server-run trainer/gym/E4 + PvP invites (bat_convite / bat.abrir)
+export const VERSAO_REDE = 20;                                            // 20: the server rolls wild Pokémon and awards their experience
 
 export function instalar(c){
   ctx = c;
@@ -59,6 +59,15 @@ function agendar(){ if (desligado) return; clearTimeout(timer); const espera = M
 let desligado = false;
 export const foiDesligado = () => desligado;
 export function enviar(obj){ if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(obj)); return true; } catch {} } return false; }   // devolve se FOI (passo 6: a conta segura o que não foi)   // exportado: o mundo compartilhado (world.mjs) manda por aqui
+let wildRollWait = null;
+/** Ask the server to roll one wild in this area. Resolves to the spawn, or null. */
+export function pedirWild(area, water, hour){
+  if (wildRollWait || !enviar({ t: 'wild_roll', area, water: !!water, hour })) return Promise.resolve(null);
+  return new Promise(resolve => {
+    const timer = setTimeout(() => { if (wildRollWait?.resolve === resolve) wildRollWait = null; resolve(null); }, 2500);
+    wildRollWait = { resolve, timer };
+  });
+}
 function entrar(){
   const a = ctx.jogo?.ash;
   if (!a){ setTimeout(entrar, 500); return; }
@@ -120,6 +129,12 @@ function receber(m){
     case 'porta_ok': { const e = portaEsperando; if (e && (e.chegada == null || +m.chegada === +e.chegada)){ portaEsperando = null; clearTimeout(e.timer); e.resolve(!!m.ok); } return; }   // resposta à intenção `porta` (passe da cena de destino)
     case 'dm': case 'social': ctx.social?.(m); return;                   // fase 2b: mensagem direta / convite de amizade (menus.mjs)
     case 'selvagem': case 'spos': case 'shp': case 'dono': case 'sestado': case 'scapt': case 'sumiu': case 'pdano': case 'xp': ctx.mundo?.receber(m); return;
+    case 'wild_spawn': {
+      const wait = wildRollWait; wildRollWait = null;
+      if (wait) { clearTimeout(wait.timer); wait.resolve(m.ok ? m : null); }
+      return;
+    }
+    case 'wild_exp': ctx.wildExp?.(m); return;
     case 'raid': case 'raid_ir': case 'raid_voltar': case 'raid_fim':        // RAID AO VIVO (14/09, protocolo 15): estado da fila/luta, ida e volta da arena, prêmio (raid.mjs)
       if (m.t === 'raid_fim' && m.save) ctx.conta?.saveDoServidor?.(m.save, m.rev);   // o Mew do prêmio entra no time pelo save montado no servidor (bolsa e vidas já foram aplicadas no topo)
       ctx.raid?.receber?.(m); return;

@@ -21,6 +21,7 @@ import { criarEventos } from './server_events.mjs';               // Fase 3: eve
 import { criarRecursos } from './server_resources.mjs';             // Fase 3: listas de faixas/máscaras/modelos pras prévias do painel
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
 import { criarBatalha } from './server_battle.mjs';
+import { criarWilds } from './server_wild.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta } from './server_pos.mjs';
 
@@ -28,7 +29,7 @@ const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
 
-const VERSAO_REDE = 19;   // deve bater com network.mjs (18+ understands bat_*; 19 adds PvP invites)
+const VERSAO_REDE = 20;   // 20: the server rolls wild Pokémon and awards their experience
 
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao (main story)
@@ -313,60 +314,17 @@ function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
   for (const k of Object.keys(prefs)) if (PREFS_OK.has(k)) c.save[k] = prefs[k];   // chave fora da lista (dinheiro, bolas…) é IGNORADA
 }
-/* Wild battles run on the client. The party sync used to keep the server's Pokémon record
-   as-is, so experience gained in the field never landed in the account and a refresh put
-   the bar back to the start of the level. Species, IVs, nature and shiny stay the server's.
-   Experience only moves forward; the level is whatever that total means on the species curve,
-   so a stale client cannot roll a server battle's experience backwards.
-   exp.json still labels its tables `curvas` (curves) and `especies` (species). */
-const EXP_CAP = 20000000;
-let expTableCache = null;
-function expTable() {
-  if (expTableCache) return expTableCache;
-  try { expTableCache = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/data/exp.json'), 'utf8')); }
-  catch { expTableCache = { curvas: {}, especies: {} }; }
-  return expTableCache;
-}
-function expCurve(dex) {
-  const table = expTable();
-  const name = table.especies?.[dex]?.c || table.especies?.[String(dex)]?.c || 'medium';
-  return table.curvas?.[name] || [];
-}
-function expAtLevel(dex, level) {
-  const curve = expCurve(dex);
-  return curve[Math.max(1, Math.min(100, level | 0))] || 0;
-}
-function levelFromExp(dex, exp) {
-  const curve = expCurve(dex);
-  let level = 1;
-  const total = Math.max(0, exp | 0);
-  while (level < 100 && (curve[level + 1] ?? Infinity) <= total) level++;
-  return level;
-}
+/* Party sync may reorder Pokémon and may update friendship (`amizade`). Experience, level,
+   and banked experience are ignored: a wild defeat is awarded by server_wild.mjs, and a
+   trainer battle is awarded by server_battle.mjs. Saved fields stay `time` (party) and
+   `caixa` (box) so existing accounts still load. */
 function mergeProgress(record, item) {
   if (!record || !item || typeof item !== 'object') return;
-  const base = Number.isInteger(record.exp) ? record.exp : expAtLevel(record.dex, record.lv || 1);
-  const exp = Math.round(Number(item.exp));
-  let expNow = base;
-  if (Number.isInteger(exp) && exp >= base && exp <= EXP_CAP) {
-    record.exp = exp;
-    expNow = exp;
-    const level = levelFromExp(record.dex, exp);
-    if (level >= (record.lv || 1) && level <= 100) record.lv = level;
-  }
-  const bank = Math.round(Number(item.expReserva));
-  if (Number.isInteger(bank) && bank >= 0 && bank <= EXP_CAP) {
-    const had = Math.round(Number(record.expReserva) || 0);
-    if (bank >= had) record.expReserva = bank;
-    else if (expNow + 1 >= base + (had - bank)) record.expReserva = bank;   // the bank was poured into the bar
-  }
-  const friendship = Math.round(Number(item.amizade));   // stored field `amizade` is friendship
+  const friendship = Math.round(Number(item.amizade));
   if (Number.isInteger(friendship) && friendship >= 0 && friendship <= 255) record.amizade = friendship;
 }
 /* Applies a party reorder. The account already owns every Pokémon; this only accepts the same
-   set of ids (nothing created, duplicated, or deleted). Experience is copied onto the server
-   record after that check, so a rejected reorder does not write experience.
-   Saved fields stay `time` (party) and `caixa` (box) so existing accounts still load. */
+   set of ids (nothing created, duplicated, or deleted). */
 function applyPartyOrder(account, order) {
   if (!order || typeof order !== 'object' || !account.save) return false;
   const byUid = new Map();
@@ -1278,6 +1236,10 @@ const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet') });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao });
+const wilds = criarWilds({
+  dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,
+  expMult: () => eventos.efetivo().expMult,
+});
 
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
@@ -1352,6 +1314,18 @@ wss.on('connection', ws => {
 
       case 'ping':
         enviar(ws, { t: 'pong', hora: m.hora });
+        break;
+
+      case 'wild_roll':
+        wilds.roll(ws, m);
+        break;
+
+      case 'wild_drop':
+        wilds.drop(ws, m);
+        break;
+
+      case 'wild_defeat':
+        wilds.defeat(ws, m);
         break;
 
       case 'pos':
