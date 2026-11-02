@@ -1,8 +1,10 @@
 /* Night-only lamp glow: placeable prop/lamppost plus the existing Kanto streetlights. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EH_FOGO, EH_MALHA_FOGO } from './fire.mjs';
 
-const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.26;
+const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.4;
+const _fogoP = new THREE.Vector3();
 const MAX_LUZ = 16;
 const EH_POSTE = /streetlight|lamppost/i;
 const CABECA = {
@@ -50,6 +52,24 @@ function posMon(e){
     y: e?.vy ?? e?.y ?? p?.y ?? 0,
     z: e?.vz ?? e?.z ?? p?.z ?? 0,
   };
+}
+
+function acharFogo(e){
+  if (e._luzFogo && e._luzFogo.parent) return e._luzFogo;
+  const raiz = e.pivo || e.corpo;
+  if (!raiz?.traverse) return null;
+  let core = null, any = null;
+  raiz.traverse(o => {
+    if (!o.isMesh || (core && any)) return;
+    const nome = o.name || '';
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    const fogo = EH_MALHA_FOGO.test(nome) || mats.some(m => EH_FOGO.test(m?.name || ''));
+    if (!fogo) return;
+    if (!any) any = o;
+    if (/core/i.test(nome) || mats.some(m => /core/i.test(m?.name || ''))) core = o;
+  });
+  e._luzFogo = core || any || null;
+  return e._luzFogo;
 }
 
 function glowTex(){
@@ -235,9 +255,15 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         const L = monLuz[i], hit = ranked[i];
         if (!hit){ L.intensity = 0; continue; }
         const cfg = LUZ_MON[dexDe(hit.e)];
+        const fogo = acharFogo(hit.e);
         L.color.setHex(cfg.cor);
         L.distance = cfg.r;
-        L.position.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
+        if (fogo){
+          fogo.getWorldPosition(_fogoP);
+          L.position.copy(_fogoP);
+        } else {
+          L.position.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
+        }
         L.intensity = cfg.i * (0.42 + n * 0.7);
       }
     },
