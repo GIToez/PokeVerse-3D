@@ -28,7 +28,11 @@ from pathlib import Path
 
 import numpy as np
 
+from johto_east import (CHECKS, DOOR_CHECKS, DOOR_ONLY, EAST_BUILDINGS, EAST_LANDMARKS, EAST_POINTS,
+                        EAST_PROPS, EAST_ROUTES, PEAKS, WIDTH, draw_east)
 from johto_hgss_towns import GYMS, SIZES, STATUE, TOWNS
+
+SIZES = {**SIZES, 'sm_r_206_barriergate_01': (-4.9, -4.21, 4.9, 4.21)}
 
 ROOT = Path(__file__).resolve().parents[1]
 TILES = ROOT / 'tools/johto_hgss_tiles.txt'
@@ -46,7 +50,7 @@ LANDMARKS = {
     2111: ('National Park', (286, 150, 322, 190)),
     2112: ('Ruins of Alph', (370, 222, 386, 240)),
     2113: ('Lake of Rage', (420, 16, 503, 76)),
-    2114: ('Mt. Silver', (656, 300, 660, 322)),
+    2114: ('Mt. Silver', EAST_LANDMARKS[2114]),
     2115: ('Johto Safari Zone', (0, 296, 12, 330)),
     2116: ('Battle Frontier', (166, 194, 186, 214)),
     2117: ('Ilex Forest', (286, 336, 322, 378)),
@@ -55,7 +59,7 @@ LANDMARKS = {
     2120: ('Mt. Mortar', (396, 120, 420, 136)),
     2121: ('Ice Path', (560, 104, 580, 120)),
     2122: ('Whirl Islands', (120, 256, 180, 296)),
-    2123: ('Tohjo Falls', (648, 300, 651, 322)),
+    2123: ('Tohjo Falls', EAST_LANDMARKS[2123]),
     2124: ('Safari Zone Gate', (0, 286, 10, 296)),
     2125: ('Frontier Access', (186, 204, 196, 214)),
     2126: ('Pokéathlon Dome', (300, 190, 316, 198)),
@@ -65,9 +69,7 @@ LANDMARKS = {
     2130: ('Embedded Tower', (0, 330, 12, 340)),
 }
 ROUTES = {
-    2226: (651, 300, 656, 322),
-    2227: (641, 300, 648, 322),
-    2228: (655, 300, 656, 322),
+    **EAST_ROUTES,
     2229: (512, 290, 600, 330),
     2230: (474, 212, 516, 294),
     2231: (445, 194, 516, 212),
@@ -90,10 +92,7 @@ ROUTES = {
     2248: (0, 160, 30, 220),
 }
 
-# Kanto is only reachable through the Connection Center, which HGSS draws past
-# Route 27's east end, off this stitch: a strip east of New Bark stands in for
-# Routes 27 / 26 / 28 and holds the Connection Center doors.
-EAST_STRIP = (641, 305, 659, 317)
+# New Bark's east path, through the trees to Route 27's boardwalk (tools/johto_east.py).
 EAST_CARVE = (632, 306, 641, 310)
 MOUNT_MIN = 13
 
@@ -135,9 +134,6 @@ def load_grid():
     g[(near < 16) | ((near < 23) & np.isin(g, ['M', 'D']))] = '.'
     comp, sizes = label(g != '.')
     g[(comp >= 0) & (sizes[comp] < 60)] = '.'
-    x0, y0, x1, y1 = EAST_STRIP
-    g[y0:y1, x0:x1] = 'G'
-    g[y0 + 3:y1 - 3, x0:x1] = 'D'
     cx0, cy0, cx1, cy1 = EAST_CARVE
     g[cy0:cy1, cx0:cx1] = 'D'
     # Ledges and cliff lips are thin mountain lines across grass: flat ground. Only
@@ -145,7 +141,8 @@ def load_grid():
     mount = np.pad((g == 'M').astype(np.int32), 2)
     dense = sum(np.roll(np.roll(mount, dy, 0), dx, 1) for dy in range(-2, 3) for dx in range(-2, 3))[2:-2, 2:-2]
     g[(g == 'M') & (dense < MOUNT_MIN)] = 'G'
-    return g
+    # The east areas are drawn, not classified: their cliffs are meant as drawn.
+    return draw_east(np.pad(g, ((0, 0), (0, WIDTH - g.shape[1])), constant_values='.'))
 
 
 def label(mask):
@@ -217,6 +214,12 @@ def solids(g, occupied, carved):
     return rocks, rock_tile, trees, tree_tile
 
 
+def door_only(comp):
+    """Regions reached only through a door (Route 28 and Mt. Silver), which no path joins."""
+    x0, y0, x1, y1 = DOOR_ONLY
+    return set(np.unique(comp[y0:y1, x0:x1])) - {-1}
+
+
 def link_regions(g, bld_mask, solid, min_size=200):
     """Carve 2 m paths so every walkable region of min_size tiles is reachable from New Bark.
 
@@ -236,7 +239,7 @@ def link_regions(g, bld_mask, solid, min_size=200):
         walk = np.isin(g, list('GTDCNOKBX')) & ~bld_mask & ~(solid & ~carved)
         comp, sizes = label(walk)
         home = comp[312, 624]
-        targets = {i for i, s in enumerate(sizes[:-1]) if s >= min_size and i != home}
+        targets = {i for i, s in enumerate(sizes[:-1]) if s >= min_size and i != home} - door_only(comp)
         if not targets:
             return carved
         dist = np.full((h, w), np.inf)
@@ -298,8 +301,9 @@ def main():
 
     # Buildings: centred between their x edges, front face on the front edge.
     blds = []
-    for tid, T in TOWNS.items():
-        for n, ex0, ex1, front, door in T['buildings']:
+    sites = [(tid, T['buildings']) for tid, T in TOWNS.items()] + list(EAST_BUILDINGS.items())
+    for tid, buildings in sites:
+        for n, ex0, ex1, front, door in buildings:
             bx, fz = world((ex0 + ex1) / 2, front)
             x0, z0, x1, z1 = SIZES[n]
             ox, oz = bx + (x0 + x1) / 2, fz - z1 - 0.05
@@ -358,13 +362,25 @@ def main():
         walk = (np.isin(g, list(FLOOR_CLS)) | (g == 'M')) & ~tree_tile & ~rock_tile & ~bld_mask
         comp, sizes_arr = label(walk)
         home = comp[312, 624]
-        if not any(s >= 200 and i != home for i, s in enumerate(sizes_arr[:-1])):
+        skip = door_only(comp)
+        if not any(s >= 200 and i != home and i not in skip for i, s in enumerate(sizes_arr[:-1])):
             break
         solid = tree_tile | rock_tile
 
+    depth_of = {(bx, by): d for bx, by, d in rocks}
     for bx, by, depth in rocks:
         x, z = world(bx * 2 + 1, by * 2 + 1)
-        for k in range(min(4, depth)):
+        peak = next((m for (x0, y0, x1, y1), m in PEAKS.items()
+                     if x0 <= bx * 2 < x1 and y0 <= by * 2 < y1), None)
+        if peak is None:
+            for k in range(min(4, depth)):
+                add(ROCK_BLOCK, x, z, y=k * ROCK_H)
+            continue
+        # A peak stacks higher; a layer every neighbour stands taller than is buried, so skip it.
+        top = min(peak, depth)
+        low = min(min(min(peak, depth_of.get((bx + dx, by + dy), 0))
+                      for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))), top - 1)
+        for k in range(low, top):
             add(ROCK_BLOCK, x, z, y=k * ROCK_H)
     # Loose mountain tiles (ledges, cliff lips) stay walkable dirt.
     g[(g == 'M') & ~rock_tile] = 'D'
@@ -409,6 +425,8 @@ def main():
     for T in TOWNS.values():
         for n, tx, ty in T.get('props', []):
             add(n, *world(tx, ty))
+    for n, tx, ty in EAST_PROPS:
+        add(n, *world(tx, ty))
 
     # Area boxes in tiles: towns, landmarks, then routes grown over every land tile.
     route_rect = {rid: list(r) for rid, r in ROUTES.items()}
@@ -419,7 +437,10 @@ def main():
     grown = 0
     for ty, tx in zip(*np.nonzero((g != '.') & ~covered)):
         best, bid = 1e18, None
+        east = tx >= EAST_CARVE[2]
         for rid, (x0, y0, x1, y1) in route_rect.items():
+            if (rid in EAST_ROUTES) != east:
+                continue
             dx = max(x0 - tx, 0, tx - (x1 - 1))
             dy = max(y0 - ty, 0, ty - (y1 - 1))
             if dx * dx + dy * dy < best:
@@ -442,7 +463,7 @@ def main():
             caixas.append(box_of(town_box[aid], aid))
         elif aid in LANDMARKS:
             caixas.append(box_of(LANDMARKS[aid][1], aid))
-    for aid in areas:
+    for aid in sorted(areas, key=lambda a: list(EAST_ROUTES).index(a) if a in EAST_ROUTES else len(EAST_ROUTES)):
         if aid in route_rect:
             caixas.append(box_of(route_rect[aid], aid))
     box_by_id = {c['a']: c for c in caixas}
@@ -515,11 +536,8 @@ def main():
                 c = box_by_id[tid]
                 put(p['cfg'], 171, c['x'], c['z'], tid, snap=True)
 
-    # Connection Center: Route 26 (toward Kanto) and Route 28 at the strip's east end.
-    put(6222603, 162, *world(653.5, 310.5), 2226)
-    put(7222699, 171, *world(651.5, 310.5), 2226)
-    put(6222801, 162, *world(657.5, 310.5), 2228)
-    put(7222801, 171, *world(657.5, 312.5), 2228)
+    for cfg, modelo, tx, ty in EAST_POINTS:
+        put(cfg, modelo, *world(tx, ty), doors[str(cfg)]['a'])
 
     for box in caixas:
         leftover = [p for p in by_area[box['a']] if p['cfg'] not in used]
@@ -556,6 +574,12 @@ def main():
         linked = bool((comp[y0:y1, x0:x1] == home).any())
         print(tid, T['name'], 'buildings', sum(1 for b in blds if b['tid'] == tid),
               'of', len(T['buildings']), 'walkable from New Bark' if linked else 'NOT LINKED')
+    for name, (tx, ty) in CHECKS.items():
+        print(name, 'walkable from New Bark' if comp[ty, tx] == home else 'NOT LINKED')
+    gate = comp[153, 774]
+    for name, (tx, ty) in DOOR_CHECKS.items():
+        print(name, 'walkable from the Connection Center west door' if comp[ty, tx] == gate >= 0 else 'NOT LINKED',
+              '(and not by land)' if comp[ty, tx] != home else 'LEAKS TO NEW BARK BY LAND')
 
 
 if __name__ == '__main__':
