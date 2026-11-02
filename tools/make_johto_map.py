@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""Build public/data/2000001.json as the HGSS Johto Town Map.
+"""Build public/data/2000001.json from the Johto blueprint PNG.
 
-Axis matches Kanto: +Z south, −Z north, +X west, −X east.
-Town Map (east right, north up) → x = −east, z = −north.
-
-Land is the official shape: south coast New Bark–Cherrygrove, Route 32's
-U, Goldenrod on the west bay, Olivine/Cianwood on the sea, Ecruteak north,
-Lake of Rage, Blackthorn east. Towns use HGSS building layouts, not
-stamped Kanto cities.
+tools/johto_blueprint.png is the GSC-style Johto map the user sent
+(downsampled). Every non-black pixel becomes land, water, path, or forest.
+Town pins match the labeled HGSS Town Map (New Bark SE, Route 32 U,
+Goldenrod on the west bay, Cianwood in the sea).
 """
 from __future__ import annotations
 
@@ -16,46 +13,50 @@ import math
 from collections import defaultdict
 from pathlib import Path
 
+from PIL import Image
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
+BP = ROOT / 'tools/johto_blueprint.png'
 OUT = ROOT / 'public/data/2000001.json'
 
-G = lambda east, north: {'x': -east, 'z': -north}
+M = 1.25  # metres per blueprint pixel
+NB_PX, NB_PY = 357.0, 225.0  # New Bark on the blueprint
 
-# HGSS Town Map centers (east, north metres). Distances like Kanto towns.
-TOWN = {
-    2101: {**G(210, -90), 'sx': 38, 'sz': 30, 'name': 'New Bark Town'},
-    2102: {**G(90, -90), 'sx': 42, 'sz': 32, 'name': 'Cherrygrove City'},
-    2103: {**G(30, 85), 'sx': 48, 'sz': 42, 'name': 'Violet City'},
-    2104: {**G(-70, -80), 'sx': 42, 'sz': 34, 'name': 'Azalea Town'},
-    2105: {**G(-160, 15), 'sx': 56, 'sz': 48, 'name': 'Goldenrod City'},
-    2106: {**G(-30, 170), 'sx': 50, 'sz': 42, 'name': 'Ecruteak City'},
-    2107: {**G(-210, 145), 'sx': 48, 'sz': 40, 'name': 'Olivine City'},
-    2108: {**G(-260, 15), 'sx': 40, 'sz': 34, 'name': 'Cianwood City'},
-    2109: {**G(50, 200), 'sx': 36, 'sz': 30, 'name': 'Mahogany Town'},
-    2110: {**G(155, 160), 'sx': 44, 'sz': 36, 'name': 'Blackthorn City'},
-    2111: {**G(-95, 95), 'sx': 52, 'sz': 40, 'name': 'National Park'},
-    2112: {**G(10, 20), 'sx': 36, 'sz': 28, 'name': 'Ruins of Alph'},
-    2113: {**G(50, 270), 'sx': 44, 'sz': 40, 'name': 'Lake of Rage'},
-    2114: {**G(210, 80), 'sx': 32, 'sz': 26, 'name': 'Mt. Silver'},
-    2115: {**G(-320, 30), 'sx': 48, 'sz': 36, 'name': 'Johto Safari Zone'},
-    2116: {**G(-280, 170), 'sx': 40, 'sz': 32, 'name': 'Battle Frontier'},
-    2117: {**G(-20, -80), 'sx': 40, 'sz': 36, 'name': 'Ilex Forest'},
-    2118: {**G(-30, -50), 'sx': 28, 'sz': 24, 'name': 'Union Cave'},
-    2119: {**G(90, 40), 'sx': 28, 'sz': 24, 'name': 'Dark Cave'},
-    2120: {**G(10, 185), 'sx': 32, 'sz': 28, 'name': 'Mt. Mortar'},
-    2121: {**G(100, 180), 'sx': 28, 'sz': 24, 'name': 'Ice Path'},
-    2122: {**G(-235, 70), 'sx': 36, 'sz': 28, 'name': 'Whirl Islands'},
-    2123: {**G(250, -90), 'sx': 28, 'sz': 24, 'name': 'Tohjo Falls'},
-    2124: {**G(-290, 20), 'sx': 24, 'sz': 20, 'name': 'Safari Zone Gate'},
-    2125: {**G(-255, 170), 'sx': 24, 'sz': 20, 'name': 'Frontier Access'},
-    2126: {**G(-140, 55), 'sx': 28, 'sz': 24, 'name': 'Pokéathlon Dome'},
-    2127: {**G(-275, 15), 'sx': 24, 'sz': 20, 'name': 'Cliff Cave'},
-    2128: {**G(-265, 15), 'sx': 22, 'sz': 18, 'name': 'Cliff Edge Gate'},
-    2129: {**G(-20, 190), 'sx': 22, 'sz': 18, 'name': 'Bellchime Trail'},
-    2130: {**G(-280, -10), 'sx': 22, 'sz': 18, 'name': 'Embedded Tower'},
+# Blueprint pixel (east, south) for each Johto area.
+TOWN_PX = {
+    2101: (357, 225, 38, 30, 'New Bark Town'),
+    2102: (276, 223, 42, 32, 'Cherrygrove City'),
+    2103: (216, 143, 48, 42, 'Violet City'),
+    2104: (174, 263, 42, 34, 'Azalea Town'),
+    2105: (150, 197, 56, 48, 'Goldenrod City'),
+    2106: (166, 92, 50, 42, 'Ecruteak City'),
+    2107: (102, 115, 48, 40, 'Olivine City'),
+    2108: (66, 213, 40, 34, 'Cianwood City'),
+    2109: (273, 100, 36, 30, 'Mahogany Town'),
+    2110: (346, 101, 44, 36, 'Blackthorn City'),
+    2111: (148, 125, 52, 40, 'National Park'),
+    2112: (200, 155, 36, 28, 'Ruins of Alph'),
+    2113: (280, 28, 44, 40, 'Lake of Rage'),
+    2114: (455, 155, 32, 26, 'Mt. Silver'),
+    2115: (14, 207, 48, 36, 'Johto Safari Zone'),
+    2116: (85, 75, 40, 32, 'Battle Frontier'),
+    2117: (155, 235, 40, 36, 'Ilex Forest'),
+    2118: (190, 250, 28, 24, 'Union Cave'),
+    2119: (250, 130, 28, 24, 'Dark Cave'),
+    2120: (240, 90, 32, 28, 'Mt. Mortar'),
+    2121: (310, 95, 28, 24, 'Ice Path'),
+    2122: (80, 175, 36, 28, 'Whirl Islands'),
+    2123: (448, 223, 28, 24, 'Tohjo Falls'),
+    2124: (30, 200, 24, 20, 'Safari Zone Gate'),
+    2125: (90, 80, 24, 20, 'Frontier Access'),
+    2126: (145, 150, 28, 24, 'Pokéathlon Dome'),
+    2127: (50, 210, 24, 20, 'Cliff Cave'),
+    2128: (55, 208, 22, 18, 'Cliff Edge Gate'),
+    2129: (160, 75, 22, 18, 'Bellchime Trail'),
+    2130: (45, 230, 22, 18, 'Embedded Tower'),
 }
 
-# HGSS building layouts (dx west, dz south).
 LAYOUTS = {
     2101: {
         'blds': [
@@ -213,37 +214,29 @@ GRASS = ['ground_plane005', 'ground_plane006', 'ground_plane007',
 PATH = ['floor_1', 'floor_y', 'ground_plane007']
 SAND = ['sink_sand_1_sink_h_1', 'sink_sand_1_sink_h_2', 'sink_sand_1_sink_h_3']
 
-STEP = 2  # metres
-RW = 16   # half-width of a route corridor (~32 m, like the Town Map)
+
+def world(px, py):
+    return (-(px - NB_PX) * M, (py - NB_PY) * M)
 
 
-def q(v):
-    return int(round(v / STEP) * STEP)
-
-
-def add_rect(land, x, z, sx, sz, kind='grass'):
-    x0, x1 = x - sx / 2, x + sx / 2
-    z0, z1 = z - sz / 2, z + sz / 2
-    xx = q(x0)
-    while xx <= x1:
-        zz = q(z0)
-        while zz <= z1:
-            land[(xx, zz)] = kind
-            zz += STEP
-        xx += STEP
-
-
-def add_capsule(land, x0, z0, x1, z1, half=RW, kind='grass'):
-    dx, dz = x1 - x0, z1 - z0
-    length = math.hypot(dx, dz) or 1
-    n = max(1, int(length / STEP))
-    for i in range(n + 1):
-        t = i / n
-        add_rect(land, x0 + dx * t, z0 + dz * t, half * 2, half * 2, kind)
-
-
-def T(i):
-    return TOWN[i]
+def classify(r, g, b):
+    if r < 14 and g < 14 and b < 14:
+        return 'empty'
+    if b > 170 and b > g + 25 and b > r + 25:
+        return 'water'
+    if r > 210 and g > 190 and b > 190:
+        return 'town'
+    if r > 170 and g > 120 and b < 110 and r > b + 40:
+        return 'path'
+    if r > 140 and g > 90 and b < 80 and g < 160:
+        return 'dirt'
+    if g > 140 and r < 130 and b < 80:
+        return 'grass'
+    if g > r + 15 and g > b + 10 and g > 70:
+        return 'forest' if g < 130 else 'grass'
+    if r > 80 and g > 70 and b < 90:
+        return 'dirt'
+    return 'grass'
 
 
 def main():
@@ -253,231 +246,156 @@ def main():
     nomes = {a['id']: a['nome'] for a in johto['areas']}
     areas = [a['id'] for a in johto['areas']]
 
-    land = {}
-    water = {}
+    town_world = {}
+    for tid, (px, py, sx, sz, name) in TOWN_PX.items():
+        wx, wz = world(px, py)
+        town_world[tid] = {'x': wx, 'z': wz, 'sx': sx, 'sz': sz, 'name': name}
 
-    # Town pads
-    for tid, t in TOWN.items():
-        kind = 'plaza' if tid in LAYOUTS else 'grass'
-        add_rect(land, t['x'], t['z'], t['sx'] + 8, t['sz'] + 8, kind)
-
-    # HGSS corridors (fat, connected — the Town Map silhouette)
-    C = [
-        # 29 New Bark — Cherrygrove (south coast)
-        (T(2101)['x'], T(2101)['z'], T(2102)['x'], T(2102)['z'], 14, 'path'),
-        # 30 Cherrygrove north toward Violet
-        (T(2102)['x'], T(2102)['z'], T(2102)['x'], T(2103)['z'] + 30, 14, 'grass'),
-        # 31 into Violet
-        (T(2102)['x'], T(2103)['z'] + 30, T(2103)['x'], T(2103)['z'], 14, 'grass'),
-        # 32 U: Violet south, then west to Azalea (the Johto C)
-        (T(2103)['x'] + 8, T(2103)['z'], T(2103)['x'] + 8, T(2104)['z'] + 10, 14, 'grass'),
-        (T(2103)['x'] + 8, T(2104)['z'] + 10, T(2104)['x'], T(2104)['z'], 14, 'grass'),
-        # 33/Ilex Azalea — Ilex — Goldenrod south
-        (T(2104)['x'], T(2104)['z'], T(2117)['x'], T(2117)['z'], 16, 'forest'),
-        (T(2117)['x'], T(2117)['z'], T(2105)['x'], T(2104)['z'], 14, 'forest'),
-        (T(2105)['x'], T(2104)['z'], T(2105)['x'], T(2105)['z'], 14, 'path'),
-        # 35/36 Goldenrod — National Park — Violet / Ecruteak
-        (T(2105)['x'], T(2105)['z'], T(2111)['x'], T(2111)['z'], 16, 'grass'),
-        (T(2111)['x'], T(2111)['z'], T(2103)['x'], T(2103)['z'], 14, 'grass'),
-        (T(2111)['x'], T(2111)['z'], T(2106)['x'], T(2106)['z'], 14, 'grass'),
-        # 37 Violet — Ecruteak
-        (T(2103)['x'], T(2103)['z'], T(2106)['x'], T(2106)['z'], 14, 'grass'),
-        # 38/39 Ecruteak — Olivine
-        (T(2106)['x'], T(2106)['z'], T(2107)['x'], T(2106)['z'], 14, 'path'),
-        (T(2107)['x'], T(2106)['z'], T(2107)['x'], T(2107)['z'], 14, 'path'),
-        # 42 Ecruteak — Mahogany
-        (T(2106)['x'], T(2106)['z'], T(2109)['x'], T(2106)['z'], 14, 'dirt'),
-        (T(2109)['x'], T(2106)['z'], T(2109)['x'], T(2109)['z'], 14, 'dirt'),
-        # 43 Mahogany — Lake of Rage
-        (T(2109)['x'], T(2109)['z'], T(2113)['x'], T(2113)['z'], 14, 'grass'),
-        # 44 Mahogany — Blackthorn
-        (T(2109)['x'], T(2109)['z'], T(2110)['x'], T(2110)['z'], 14, 'dirt'),
-        # 45 Blackthorn south toward Route 29
-        (T(2110)['x'], T(2110)['z'], T(2110)['x'], T(2101)['z'] - 20, 12, 'dirt'),
-        # 46 down to Route 29
-        (T(2110)['x'], T(2101)['z'] - 20, (T(2101)['x'] + T(2102)['x']) / 2, T(2101)['z'], 12, 'grass'),
-        ((T(2101)['x'] + T(2102)['x']) / 2, T(2101)['z'] - 20, (T(2101)['x'] + T(2102)['x']) / 2, T(2110)['z'] + 20, 12, 'grass'),
-        # 27/26/28 New Bark east to Tohjo / Mt Silver
-        (T(2101)['x'], T(2101)['z'], T(2123)['x'], T(2123)['z'], 12, 'path'),
-        (T(2123)['x'], T(2123)['z'], T(2123)['x'], T(2114)['z'], 12, 'dirt'),
-        (T(2123)['x'], T(2114)['z'], T(2114)['x'], T(2114)['z'], 12, 'dirt'),
-        # 47/48 Cianwood — Safari
-        (T(2108)['x'], T(2108)['z'], T(2115)['x'], T(2108)['z'], 12, 'sand'),
-        (T(2115)['x'], T(2108)['z'], T(2115)['x'], T(2115)['z'], 14, 'grass'),
-        # Ruins of Alph off Violet
-        (T(2103)['x'], T(2103)['z'], T(2112)['x'], T(2112)['z'], 12, 'dirt'),
-    ]
-    for x0, z0, x1, z1, half, kind in C:
-        add_capsule(land, x0, z0, x1, z1, half, kind)
-
-    # Ilex Forest dense pad
-    add_rect(land, T(2117)['x'], T(2117)['z'], 44, 40, 'forest')
-    add_rect(land, T(2111)['x'], T(2111)['z'], 56, 44, 'grass')
-
-    # West sea: Olivine south to Cianwood (Route 40/41) + Whirl Islands
-    add_capsule(water, T(2107)['x'], T(2107)['z'] + 24, T(2107)['x'],
-                (T(2107)['z'] + T(2108)['z']) / 2, 18, 'water')
-    add_capsule(water, T(2107)['x'], (T(2107)['z'] + T(2108)['z']) / 2,
-                T(2108)['x'], T(2108)['z'], 18, 'water')
-    add_rect(water, T(2122)['x'], T(2122)['z'], 40, 32, 'water')
-    # Goldenrod west bay
-    add_rect(water, T(2105)['x'] + 40, T(2105)['z'], 28, 36, 'water')
-    # South coast ocean
-    add_rect(water, (T(2101)['x'] + T(2102)['x']) / 2, T(2101)['z'] + 28, 140, 16, 'water')
-    # Lake of Rage
-    add_rect(water, T(2113)['x'], T(2113)['z'], 24, 20, 'water')
-    # Keep shore land around the lake
-    add_rect(land, T(2113)['x'], T(2113)['z'], 44, 40, 'grass')
-    for k in list(water):
-        if k in land and land[k] == 'plaza':
-            del water[k]
-
-    # Don't paint water over town plazas
-    for tid, t in TOWN.items():
-        if tid not in LAYOUTS:
-            continue
-        add_rect(land, t['x'], t['z'], t['sx'], t['sz'], 'plaza')
+    im = Image.open(BP).convert('RGB')
+    arr = np.asarray(im)
+    h, w = arr.shape[:2]
 
     objetos = []
     seen = set()
 
     def add(n, x, z, a=0, y=0):
-        key = (n, round(x * 2), round(z * 2))
-        if key in seen:
+        k = (n, round(x * 2), round(z * 2))
+        if k in seen:
             return
-        seen.add(key)
+        seen.add(k)
         o = {'n': n, 'x': round(float(x), 1), 'y': round(float(y), 2), 'z': round(float(z), 1)}
         if a:
             o['a'] = round(a, 3)
         objetos.append(o)
 
     def inside_town(x, z):
-        for tid, t in TOWN.items():
+        for tid, t in town_world.items():
             if tid not in LAYOUTS:
                 continue
             if abs(x - t['x']) <= t['sx'] / 2 and abs(z - t['z']) <= t['sz'] / 2:
                 return tid
         return None
 
-    # Ground
-    for (x, z), kind in land.items():
-        if (x, z) in water and kind != 'plaza':
-            continue
-        tid = inside_town(x, z)
-        if tid:
-            L = LAYOUTS[tid]
-            tile = L.get('plaza', 'ground_plane007')
-            if L.get('sand') and z > TOWN[tid]['z'] + 4:
-                tile = SAND[(x + z) % len(SAND)]
-            add(tile, x, z)
-            continue
-        if kind == 'path':
-            add(PATH[(x + z) % len(PATH)], x, z)
-        elif kind == 'forest':
-            add('rock_grass_4x4', x, z)
-        elif kind == 'sand':
-            add(SAND[(x + z) % len(SAND)], x, z)
-        elif kind == 'dirt':
-            add('ground_plane003', x, z)
-        else:
-            add(GRASS[(x + 3 * z) % len(GRASS)], x, z)
-
-    # Tree wall on land edges + Ilex fill (Town Map dark-green outline)
-    neigh = ((STEP, 0), (-STEP, 0), (0, STEP), (0, -STEP))
-    for (x, z), kind in land.items():
-        if inside_town(x, z) or (x, z) in water:
-            continue
-        edge = any((x + dx, z + dz) not in land for dx, dz in neigh)
-        if kind == 'forest' or edge:
-            if (x + z) % 4 == 0:
-                add('tree', x, z)
-
     agua = []
-    for (x, z) in water:
-        if inside_town(x, z):
+    grama = []
+    land_cells = []
+
+    for py in range(h):
+        row = arr[py]
+        for px in range(w):
+            r, g, b = (int(v) for v in row[px])
+            kind = classify(r, g, b)
+            if kind == 'empty':
+                continue
+            wx, wz = world(px + 0.5, py + 0.5)
+            land_cells.append((wx, wz, kind, px, py))
+            tid = inside_town(wx, wz)
+            if kind == 'water':
+                if tid:
+                    continue
+                agua.append({'tipo': 33, 'x': round(wx, 1), 'y': 0, 'z': round(wz, 1), 'a': 2241})
+                if (px + py) % 11 == 0:
+                    add('sea_rock', wx, wz)
+                continue
+            if tid:
+                L = LAYOUTS[tid]
+                tile = L.get('plaza', 'ground_plane007')
+                if L.get('sand') and wz > town_world[tid]['z'] + 4:
+                    tile = SAND[(px + py) % len(SAND)]
+                add(tile, wx, wz)
+                continue
+            if kind == 'path' or kind == 'town':
+                add(PATH[(px + py) % len(PATH)], wx, wz)
+            elif kind == 'dirt':
+                add('ground_plane003', wx, wz)
+            elif kind == 'forest':
+                add('rock_grass_4x4', wx, wz)
+                if (px + py) % 2 == 0:
+                    add('tree', wx, wz)
+            else:
+                add(GRASS[(px + 3 * py) % len(GRASS)], wx, wz)
+                if (px + py) % 7 == 0:
+                    add('tree', wx, wz)
+
+    for i, (wx, wz, kind, px, py) in enumerate(land_cells):
+        if kind not in ('grass', 'forest') or inside_town(wx, wz) or i % 8:
             continue
-        agua.append({'tipo': 33, 'x': x + 0.5, 'y': 0, 'z': z + 0.5, 'a': 2241})
-        if (x + z) % 14 == 0:
-            add('sea_rock', x, z)
+        grama.append({
+            'cfg': 2229 * 100 + (i % 97), 'tipo': 41,
+            'x': round(wx, 1), 'y': 0, 'z': round(wz, 1), 'a': 2229,
+        })
 
-    # Landmarks
-    add('floor_cliff_obj', T(2118)['x'], T(2118)['z'])
-    add('floor_cliff_obj', T(2119)['x'], T(2119)['z'])
-    add('floor_cliff_obj', T(2120)['x'], T(2120)['z'])
-    add('floor_cliff_obj', T(2121)['x'], T(2121)['z'])
-    add('floor_cliff_obj', T(2123)['x'], T(2123)['z'])
-    add('sm_t_003_pokecompany_01_1', T(2126)['x'], T(2126)['z'])
-    for i in range(24):
-        add('tree', T(2117)['x'] + (i % 6 - 2.5) * 5, T(2117)['z'] + (i // 6 - 1.5) * 5)
-
-    # Town buildings + north fence
     for tid, L in LAYOUTS.items():
-        t = TOWN[tid]
+        t = town_world[tid]
         for n, dx, dz in L.get('blds', []):
             add(n, t['x'] + dx, t['z'] + dz)
         for n, dx, dz in L.get('extra', []):
             add(n, t['x'] + dx, t['z'] + dz)
         zf = t['z'] - t['sz'] / 2
-        x0 = t['x'] - t['sx'] / 2
-        x = x0
+        x = t['x'] - t['sx'] / 2
         while x <= t['x'] + t['sx'] / 2:
             add('sm_001_fence_02_z 1', x, zf)
             x += 2
 
-    # Route caixas along the same corridors
-    def box_between(a, b, sx=32, sz=32):
-        A, B = T(a), T(b)
-        return {
-            'x': (A['x'] + B['x']) / 2, 'z': (A['z'] + B['z']) / 2,
-            'sx': max(sx, abs(B['x'] - A['x']) + 20),
-            'sz': max(sz, abs(B['z'] - A['z']) + 20),
-        }
+    add('floor_cliff_obj', town_world[2118]['x'], town_world[2118]['z'])
+    add('floor_cliff_obj', town_world[2119]['x'], town_world[2119]['z'])
+    add('floor_cliff_obj', town_world[2120]['x'], town_world[2120]['z'])
+    add('floor_cliff_obj', town_world[2121]['x'], town_world[2121]['z'])
+    add('floor_cliff_obj', town_world[2123]['x'], town_world[2123]['z'])
+    for i in range(20):
+        add('tree', town_world[2117]['x'] + (i % 5 - 2) * 5,
+            town_world[2117]['z'] + (i // 5 - 1.5) * 5)
 
-    RTE = {
-        2229: box_between(2101, 2102, 28, 28),
-        2230: box_between(2102, 2103, 32, 32),
-        2231: {'x': (T(2102)['x'] + T(2103)['x']) / 2, 'z': T(2103)['z'] + 24, 'sx': 40, 'sz': 28},
-        2232: box_between(2103, 2104, 36, 36),
-        2233: box_between(2104, 2117, 28, 28),
-        2234: box_between(2105, 2104, 32, 32),
-        2235: box_between(2105, 2111, 32, 32),
-        2236: box_between(2111, 2103, 32, 28),
-        2237: box_between(2103, 2106, 32, 32),
-        2238: box_between(2106, 2107, 32, 28),
-        2239: {'x': T(2107)['x'], 'z': (T(2106)['z'] + T(2107)['z']) / 2, 'sx': 28, 'sz': 36},
-        2240: {'x': T(2107)['x'], 'z': (T(2107)['z'] + T(2108)['z']) / 2, 'sx': 28, 'sz': 40},
-        2241: box_between(2107, 2108, 36, 36),
-        2242: box_between(2106, 2109, 32, 28),
-        2243: box_between(2109, 2113, 28, 32),
-        2244: box_between(2109, 2110, 32, 28),
-        2245: box_between(2110, 2101, 28, 36),
-        2246: {'x': (T(2101)['x'] + T(2102)['x']) / 2, 'z': (T(2101)['z'] + T(2110)['z']) / 2, 'sx': 28, 'sz': 80},
-        2247: box_between(2108, 2115, 32, 24),
-        2248: box_between(2115, 2108, 28, 32),
-        2227: box_between(2101, 2123, 28, 24),
-        2226: box_between(2123, 2114, 28, 36),
-        2228: box_between(2123, 2114, 36, 24),
-    }
-    LAY = {**{k: {'x': v['x'], 'z': v['z'], 'sx': v['sx'], 'sz': v['sz']} for k, v in TOWN.items()}, **RTE}
+    # Area boxes: town pads + route bbox from land nearest to a seed pair.
+    seeds = [(tid, t['x'], t['z']) for tid, t in town_world.items()]
+    pairs = [
+        (2229, 2101, 2102), (2230, 2102, 2103), (2231, 2103, 2102),
+        (2232, 2103, 2104), (2233, 2104, 2117), (2234, 2105, 2104),
+        (2235, 2105, 2111), (2236, 2111, 2103), (2237, 2103, 2106),
+        (2238, 2106, 2107), (2239, 2107, 2106), (2240, 2107, 2108),
+        (2241, 2108, 2122), (2242, 2106, 2109), (2243, 2109, 2113),
+        (2244, 2109, 2110), (2245, 2110, 2101), (2246, 2101, 2110),
+        (2247, 2108, 2115), (2248, 2115, 2108), (2227, 2101, 2123),
+        (2226, 2123, 2114), (2228, 2114, 2123),
+    ]
+    for rid, a, b in pairs:
+        A, B = town_world[a], town_world[b]
+        seeds.append((rid, (A['x'] + B['x']) / 2, (A['z'] + B['z']) / 2))
+
+    bins = defaultdict(list)
+    for wx, wz, kind, px, py in land_cells:
+        best, bid = 1e18, 2101
+        for sid, sx, sz in seeds:
+            d = (wx - sx) ** 2 + (wz - sz) ** 2
+            if d < best:
+                best, bid = d, sid
+        bins[bid].append((wx, wz))
 
     caixas = []
     for aid in areas:
-        L = LAY.get(aid, {'x': 0, 'z': 0, 'sx': 28, 'sz': 24})
-        caixas.append({
-            'a': aid, 'x': round(L['x'], 1), 'y': 0, 'z': round(L['z'], 1),
-            'sx': round(L['sx'], 1), 'sy': 8, 'sz': round(L['sz'], 1),
-        })
-
-    grama = []
-    for i, (x, z) in enumerate(land):
-        if land[(x, z)] not in ('grass', 'forest'):
-            continue
-        if inside_town(x, z) or i % 6:
-            continue
-        grama.append({
-            'cfg': 2229 * 100 + (i % 97), 'tipo': 41,
-            'x': x + 0.5, 'y': 0, 'z': z + 0.5, 'a': 2229,
-        })
+        t = town_world.get(aid)
+        pts = bins.get(aid, [])
+        if t and aid < 2200:
+            caixas.append({
+                'a': aid, 'x': round(t['x'], 1), 'y': 0, 'z': round(t['z'], 1),
+                'sx': float(t['sx']), 'sy': 8, 'sz': float(t['sz']),
+            })
+        elif pts:
+            xs = [p[0] for p in pts]
+            zs = [p[1] for p in pts]
+            caixas.append({
+                'a': aid, 'x': round((min(xs) + max(xs)) / 2, 1), 'y': 0,
+                'z': round((min(zs) + max(zs)) / 2, 1),
+                'sx': round(max(16, max(xs) - min(xs) + 8), 1), 'sy': 8,
+                'sz': round(max(16, max(zs) - min(zs) + 8), 1),
+            })
+        elif t:
+            caixas.append({
+                'a': aid, 'x': round(t['x'], 1), 'y': 0, 'z': round(t['z'], 1),
+                'sx': 28, 'sy': 8, 'sz': 24,
+            })
+        else:
+            caixas.append({'a': aid, 'x': 0, 'y': 0, 'z': 0, 'sx': 24, 'sy': 8, 'sz': 24})
 
     by_area = defaultdict(list)
     for cid, p in doors.items():
@@ -498,7 +416,7 @@ def main():
         })
 
     for tid, L in LAYOUTS.items():
-        t = TOWN[tid]
+        t = town_world[tid]
         doors_t = sorted((p for p in by_area[tid] if p['t'] == 6), key=lambda p: p['cfg'])
         arrs = sorted((p for p in by_area[tid] if p['t'] == 7), key=lambda p: p['cfg'])
         blds = L.get('blds', [])
@@ -511,11 +429,11 @@ def main():
             if str(p['cfg']).endswith('99'):
                 put(p['cfg'], 171, t['x'], t['z'] + t['sz'] / 2 - 4, tid)
 
-    put(6222603, 162, T(2123)['x'], T(2123)['z'] - 6, 2226)
-    put(7222699, 171, T(2123)['x'], T(2123)['z'] - 8, 2226)
-    put(6222801, 162, T(2114)['x'] + 8, T(2114)['z'], 2228)
-    put(7222801, 171, T(2114)['x'] + 10, T(2114)['z'], 2228)
-    put(7210199, 171, T(2101)['x'], T(2101)['z'] + 8, 2101)
+    put(6222603, 162, town_world[2123]['x'], town_world[2123]['z'] - 6, 2226)
+    put(7222699, 171, town_world[2123]['x'], town_world[2123]['z'] - 8, 2226)
+    put(6222801, 162, town_world[2114]['x'] + 8, town_world[2114]['z'], 2228)
+    put(7222801, 171, town_world[2114]['x'] + 10, town_world[2114]['z'], 2228)
+    put(7210199, 171, town_world[2101]['x'], town_world[2101]['z'] + 8, 2101)
 
     for box in caixas:
         leftover = [p for p in by_area[box['a']] if p['cfg'] not in used]
@@ -546,10 +464,10 @@ def main():
         },
     }
     OUT.write_text(json.dumps(out, separators=(',', ':')))
-    print('Johto', len(objetos), 'pieces', len(npcs), 'npcs', len(agua), 'water')
+    print('Johto', len(objetos), 'pieces', len(agua), 'water', 'from', BP.name, im.size)
     print('bbox', out['bbox'])
     for i in (2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110):
-        t = TOWN[i]
+        t = town_world[i]
         print(i, t['name'], 'x', round(t['x']), 'z', round(t['z']))
 
 
