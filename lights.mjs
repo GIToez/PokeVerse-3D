@@ -135,9 +135,14 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   cena.add(grupo);
   const luzes = [];
   for (let i = 0; i < MAX_LUZ; i++){
-    const L = new THREE.PointLight(0xfff6d8, 0, 18, 1.4);
+    const L = new THREE.SpotLight(0xfff1c4, 0, 16, 0.72, 0.42, 1.15);
     L.castShadow = false;
-    cena.add(L);
+    L.shadow.mapSize.set(512, 512);
+    L.shadow.camera.near = 0.35;
+    L.shadow.camera.far = 16;
+    L.shadow.bias = -0.0009;
+    L.shadow.normalBias = 0.035;
+    cena.add(L, L.target);
     luzes.push(L);
   }
   return {
@@ -148,17 +153,20 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       for (const p of posts){
         for (const m of p.glass){ m.emissiveIntensity = 0.15 + n * 1.8; m.needsUpdate = true; }
         p.halo.visible = aceso;
-        p.halo.material.opacity = 0.42 * n;
-        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 0.28 * n; }
+        p.halo.material.opacity = 0.38 * n;
+        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 0.22 * n; }
       }
       const ax = ash?.x ?? ash?.vx ?? 0, az = ash?.z ?? ash?.vz ?? 0;
       const near = posts.length <= MAX_LUZ ? posts
         : posts.map(p => ({ p, d: (p.x - ax) ** 2 + (p.z - az) ** 2 })).sort((a, b) => a.d - b.d).slice(0, MAX_LUZ).map(x => x.p);
       for (let i = 0; i < luzes.length; i++){
         const p = near[i], L = luzes[i];
-        if (!p || !aceso){ L.intensity = 0; continue; }
+        if (!p || !aceso){ L.intensity = 0; L.castShadow = false; continue; }
         L.position.set(p.x, p.y, p.z);
-        L.intensity = 5.5 * n;
+        L.target.position.set(p.x, p.y - 3.3, p.z);
+        L.target.updateMatrixWorld();
+        L.intensity = 8.5 * n;
+        L.castShadow = i === 0;
       }
     },
   };
