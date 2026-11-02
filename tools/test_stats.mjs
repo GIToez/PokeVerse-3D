@@ -39,4 +39,14 @@ assert.equal(Weather.ler('fog'), 'nevoeiro');
 assert.equal(Weather.ler('off'), null);
 assert.equal(Weather.ler('xyz'), undefined);
 
+globalThis.innerWidth = 640;
+globalThis.innerHeight = 360;
+const cv = { id: '', width: 0, height: 0, isConnected: true, setAttribute(){}, getContext(){ return { clearRect(){}, beginPath(){}, moveTo(){}, lineTo(){}, stroke(){}, arc(){}, fill(){} }; } };
+globalThis.document = { createElement: () => cv, getElementById: () => ({ appendChild(){} }), body: { appendChild(){} } };
+Weather.ligarTela('chuva');
+Weather.passoTela(0.016);
+Weather.ligarTela('chuva_forte');
+Weather.passoTela(0.016);
+Weather.desligarTela();
+
 console.log('ok stats + weather');

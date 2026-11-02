@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.3;
+const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.36;
 const MAX_LUZ = 16;
 const EH_POSTE = /streetlight|lamppost/i;
 const CABECA = {
@@ -17,17 +17,25 @@ export function fatorNoite(ceu){
   return Math.max(0, Math.min(1, (BRILHO_ACENDE - b) / (BRILHO_ACENDE - BRILHO_NOITE)));
 }
 
-function haloMat(){
+function glowTex(){
   const cv = document.createElement('canvas'); cv.width = cv.height = 64;
   const g = cv.getContext('2d');
   const grd = g.createRadialGradient(32, 32, 2, 32, 32, 30);
   grd.addColorStop(0, 'rgba(255,244,208,.95)');
-  grd.addColorStop(0.35, 'rgba(255,220,140,.35)');
+  grd.addColorStop(0.35, 'rgba(255,220,140,.45)');
   grd.addColorStop(1, 'rgba(255,200,100,0)');
   g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
-  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0 });
+  return tex;
+}
+
+function haloMat(tex){
+  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: 0 });
+}
+
+function chaoMat(tex){
+  return new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, opacity: 0 });
 }
 
 function ehVidro(mesh, mat){
@@ -54,8 +62,22 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   try {
     proto = (await new GLTFLoader().loadAsync('./scenery/prop/lamppost.glb')).scene;
   } catch (e){ console.warn('lamppost glb:', e); }
-  const haloM = haloMat();
+  const tex = glowTex();
   const posts = [];
+  const jaTem = (x, z) => posts.some(p => (p.x - x) ** 2 + (p.z - z) ** 2 < 2.2);
+  const addGlow = (x, y, z, glass) => {
+    const halo = new THREE.Sprite(haloMat(tex));
+    halo.scale.set(11, 11, 1);
+    halo.position.set(x, y + 0.15, z);
+    halo.visible = false;
+    const chao = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), chaoMat(tex));
+    chao.rotation.x = -Math.PI / 2;
+    chao.scale.set(16, 16, 1);
+    chao.position.set(x, (chaoEm?.(x, z) ?? (y - 3.1)) + 0.05, z);
+    chao.visible = false;
+    grupo.add(halo, chao);
+    posts.push({ x, y, z, glass, halo, chao });
+  };
   const jaDesenhou = new Set();
   cena.traverse(o => {
     if (!o.isMesh && !o.isInstancedMesh && !o.isBatchedMesh) return;
@@ -81,13 +103,22 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       grupo.add(clone);
       if (bloqueio) bloqueio.add(Math.floor(x) + ',' + Math.floor(z));
     }
-    const spr = new THREE.Sprite(haloM.clone());
-    spr.scale.set(7.2, 7.2, 1);
-    spr.position.set(x, y + cabeca, z);
-    spr.visible = false;
-    grupo.add(spr);
-    posts.push({ x, y: y + cabeca, z, glass, halo: spr });
+    addGlow(x, y + cabeca, z, glass);
   }
+  cena.traverse(o => {
+    if (!/lamppost/i.test(o.name || '')) return;
+    if (o.parent && /lamppost/i.test(o.parent.name || '')) return;
+    const wp = new THREE.Vector3();
+    o.getWorldPosition(wp);
+    if (jaTem(wp.x, wp.z)) return;
+    const glass = [];
+    o.traverse(m => {
+      if (!m.isMesh) return;
+      const mats = Array.isArray(m.material) ? m.material : [m.material];
+      for (const k of mats) if (k && ehVidro(m, k)) glass.push(prepararVidro(k));
+    });
+    addGlow(wp.x, wp.y + 3.13, wp.z, glass);
+  });
   if (bibJaTem){
     const seen = new Set();
     cena.traverse(o => {
@@ -115,9 +146,10 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
       const n = fatorNoite(ceu);
       const aceso = n > 0.04;
       for (const p of posts){
-        for (const m of p.glass){ m.emissiveIntensity = 0.2 + n * 6.2; m.needsUpdate = true; }
+        for (const m of p.glass){ m.emissiveIntensity = 0.25 + n * 7.5; m.needsUpdate = true; }
         p.halo.visible = aceso;
-        p.halo.material.opacity = 0.95 * n;
+        p.halo.material.opacity = 1.15 * n;
+        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 0.85 * n; }
       }
       const ax = ash?.x ?? ash?.vx ?? 0, az = ash?.z ?? ash?.vz ?? 0;
       const near = posts.length <= MAX_LUZ ? posts
@@ -126,7 +158,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         const p = near[i], L = luzes[i];
         if (!p || !aceso){ L.intensity = 0; continue; }
         L.position.set(p.x, p.y, p.z);
-        L.intensity = 16 * n;
+        L.intensity = 18 * n;
       }
     },
   };
