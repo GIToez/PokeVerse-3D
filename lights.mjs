@@ -123,7 +123,6 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
     proto = (await new GLTFLoader().loadAsync('./scenery/prop/lamppost.glb')).scene;
   } catch (e){ console.warn('lamppost glb:', e); }
   const tex = glowTex();
-  const texFogo = glowTex('rgba(255,220,120,.98)', 'rgba(255,110,24,.55)', 'rgba(255,60,0,0)');
   const posts = [];
   const jaTem = (x, z) => posts.some(p => (p.x - x) ** 2 + (p.z - z) ** 2 < 2.2);
   const addGlow = (x, y, z, glass) => {
@@ -214,22 +213,11 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
     cabecas.push(H);
   }
   const monLuz = [];
-  const monHalo = [];
-  const monBrasa = [];
   for (let i = 0; i < 3; i++){
     const M = new THREE.PointLight(0xff6a1c, 0, 5.2, 1.25);
     M.castShadow = false;
-    const S = new THREE.Sprite(haloMat(texFogo));
-    S.scale.set(2.1, 2.1, 1);
-    S.visible = false;
-    const B = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), lampadaMat());
-    B.material.color.setHex(0xffc060);
-    B.visible = false;
-    grupo.add(S, B);
     cena.add(M);
     monLuz.push(M);
-    monHalo.push(S);
-    monBrasa.push(B);
   }
   return {
     n: posts.length,
@@ -265,13 +253,8 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         return { e, p, d: (p.x - ax) ** 2 + (p.z - az) ** 2 };
       }).sort((a, b) => a.d - b.d).slice(0, monLuz.length);
       for (let i = 0; i < monLuz.length; i++){
-        const L = monLuz[i], S = monHalo[i], B = monBrasa[i], hit = ranked[i];
-        if (!hit){
-          L.intensity = 0;
-          if (S) S.visible = false;
-          if (B) B.visible = false;
-          continue;
-        }
+        const L = monLuz[i], hit = ranked[i];
+        if (!hit){ L.intensity = 0; continue; }
         const cfg = LUZ_MON[dexDe(hit.e)];
         const fogo = acharFogo(hit.e);
         if (fogo){
@@ -284,18 +267,6 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         L.distance = cfg.r;
         L.position.copy(_fogoP);
         L.intensity = cfg.i * (0.55 + n * 0.7);
-        const hs = cfg.h || 1.8;
-        if (S){
-          S.visible = true;
-          S.position.copy(_fogoP);
-          S.scale.set(hs, hs, 1);
-          S.material.opacity = 0.62 + n * 0.28;
-        }
-        if (B){
-          B.visible = true;
-          B.position.copy(_fogoP);
-          B.material.opacity = 0.88;
-        }
       }
     },
   };

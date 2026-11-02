@@ -3505,6 +3505,8 @@ const AJUSTE_PROPORCIONAL = await fetch('./data/species.json').then(r => r.ok ? 
 const AVES_ASA = new Set([16, 17, 18, 21, 22]);   // 15/09: aves cuja Idle abre ou levanta as asas — tamanho pelo maior lado do corpo parado (aplicarTamanho)
 const alturaProporcional = (real, papel) => THREE.MathUtils.clamp(1.3 * Math.pow(real, 0.55), ALT_MIN, papel === 'seguidor' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM);
 const dexDoGlb = glb => +((glb || '').match(/pm(\d{4})/)?.[1] || 0);
+const stemGlb = g => String(g || '').replace(/\.glb$/i, '');
+const mesmoGlb = (a, b) => { const x = stemGlb(a), y = stemGlb(b); return !!x && x === y; };
 // ponto de sela (eMount) de cada prefab do jogo, já no eixo do GLB: o exportador zerou
 // a transformação desse nó (tools/… gera data/saddles.json a partir dos prefabs)
 const SELAS = await fetch('./data/saddles.json').then(r => r.json()).catch(() => ({}));
@@ -3623,7 +3625,7 @@ if (PLAY){
          este glb, nasce direto com o nível, golpes, IVs e natureza do registro. */
       const glbLimpo = (seguidorNome || 'pm0025_00').replace(/\.glb$/, '');
       let reg = null; try { const lista = jogo.time || lerLS('time', []) || []; const uidPref = parceiroUid ?? lerLS('seguidorUid', null);   // duas da mesma espécie (14/09, milihe): primeiro o uid que está em campo
-        reg = (uidPref != null && lista.find(x => x && String(x.uid) === String(uidPref) && x.glb === glbLimpo)) || lista.find(x => x && x.glb === glbLimpo) || null; } catch {}
+        reg = (uidPref != null && lista.find(x => x && String(x.uid) === String(uidPref) && mesmoGlb(x.glb, glbLimpo))) || lista.find(x => x && mesmoGlb(x.glb, glbLimpo)) || null; } catch {}
       pika.uid = reg?.uid ?? null;                                       // 14/09: a entidade em campo sabe QUEM ela é (uid da posse) — duas da mesma espécie não se confundem
       pika.shiny = !!reg?.shiny;                                        // 14/09 (Syvel, Pidgey shiny "virou normal"): o seguidor veste a textura shiny do registro — só selvagem e montaria vestiam
       if (pika.shiny){ const veste = () => (window.__dbg ? aplicarShinyCampo(pika.pivo, true) : setTimeout(veste, 30)); veste(); }   // só depois do módulo inteiro avaliado: no boot este bloco roda ANTES das consts do shiny (mapaNormalDe/texShinyCampo → TDZ, o jogo nem nascia)
@@ -3635,7 +3637,7 @@ if (PLAY){
       if (reg && Array.isArray(reg.movs) && reg.movs.length){ Ind.garantir(reg); Ind.garantirMovs(reg, quatroGolpes(dex)); pika.movs = reg.movs.map(m => ({ ...m })); }   // os golpes do registro (cópia; o amarrarParceiro amarra no array de verdade)
       else Ind.garantirMovs(pika, quatroGolpes(dex));
       pika.golpesIds = Ind.idsDe(pika);   // learnset do nível (o registro do time sobrepõe)
-      pika.glb = seguidorNome || 'pm0025_00'; aplicarTamanho(pika);   // o papel 'seguidor' é passado por quem chama pro PARCEIRO (boot/trocarSeguidor): esta função também monta atores de cena (sonho, clipe da raid, torneio, diretor), que ficam na régua de selvagem
+      pika.glb = reg?.glb || glbLimpo; aplicarTamanho(pika);   // o papel 'seguidor' é passado por quem chama pro PARCEIRO (boot/trocarSeguidor): esta função também monta atores de cena (sonho, clipe da raid, torneio, diretor), que ficam na régua de selvagem
     };
     configurarSeguidor(pika, params0.get('seguidor')); if (!FAIRY) aplicarTamanho(pika, 'seguidor');   // 14/09: jogo.pika ainda não existe aqui — sem o papel o parceiro do boot caía na régua de selvagem
     // Fairy: o inicial escolhido no laboratório vira o seguidor (troca o modelo no lugar)
@@ -3647,7 +3649,13 @@ if (PLAY){
       const novo = await (doBoot ? montarPersonagemBoot : montarPersonagem)('./scenery/mon/' + glbNome.replace(/\.glb$/, '') + '.glb', FAIRY ? alt : null, 0);
       novo.vel = 4.2; configurarSeguidor(novo, glbNome);
       if (FAIRY){ novo.pivo.scale.setScalar(1); novo.fatorTam = 1; novo.altura = novo.alturaBase = alt; }   // no Fairy o inicial fica em escala de série
-      else { jogo.pika = novo; aplicarTamanho(novo); gravarLS('seguidor', glbNome.replace(/\.glb$/, '')); Rede.parceiroAgora?.(); }   // no mundo: mesma régua do mato; lembra pra próxima cena; a sala sabe da troca no próximo quadro (13/09)
+      else {
+        jogo.pika = novo; aplicarTamanho(novo);
+        gravarLS('seguidor', stemGlb(glbNome));
+        const iTime = (jogo.time || []).findIndex(t => mesmoGlb(t.glb, glbNome));
+        if (iTime >= 0) definirParceiro(iTime);
+        Rede.parceiroAgora?.();
+      }   // no mundo: mesma régua do mato; lembra pra próxima cena; a sala sabe da troca no próximo quadro (13/09)
       novo.x = velho.x; novo.z = velho.z; novo.y = velho.y; novo.vx = novo.x; novo.vz = novo.z; novo.vy = novo.y;
       novo.pivo.position.set(novo.x, novo.y, novo.z); tocarAnim(novo, 'Idle');
       cena.remove(velho.pivo); jogo.pika = novo;
@@ -3759,7 +3767,15 @@ if (PLAY){
     /* 13/09: o seguidor salvo tem de ser do TIME. Depois de evoluir/soltar/mandar pra caixa a preferência podia apontar pra um glb
        que já não está no time, e o amarrarParceiro criava um membro FANTASMA sem uid (o servidor recusava no arranjo: "1 fora")
        que não ganhava XP nem levava dano de verdade. Sem ele no time, o 1º do time assume. */
-    { const timeBoot = lerLS('time', []) || []; if (segSalvo && timeBoot.length && !timeBoot.some(t => t && t.glb === segSalvo)){ console.warn('seguidor salvo ' + segSalvo + ' não está no time: entra ' + timeBoot[0].glb); segSalvo = timeBoot[0].glb; } }
+    { const timeBoot = lerLS('time', []) || [];
+      const uidSalvo = lerLS('seguidorUid', null);
+      const peloUid = uidSalvo != null ? timeBoot.find(t => t && String(t.uid) === String(uidSalvo)) : null;
+      if (peloUid) segSalvo = stemGlb(peloUid.glb);
+      else if (segSalvo && timeBoot.length && !timeBoot.some(t => t && mesmoGlb(t.glb, segSalvo))){
+        console.warn('seguidor salvo ' + segSalvo + ' não está no time: entra ' + timeBoot[0].glb);
+        segSalvo = timeBoot[0].glb;
+      }
+    }
     if (segSalvo && segSalvo !== 'pm0025_00'){
       jogo.trocaPendente = segSalvo;                                     // o boot NÃO amarra o Pikachu provisório (senão ele entra no time e o salvo nasce lv 40 — bug do lab, 31/08)
       /* 12/09: o salvo pode chegar KO (hp 0 do registro). O `conferirParceiroDesmaiado` usa `pendentes` (const lá embaixo): este .then
@@ -5222,13 +5238,13 @@ function curarTime(n){
 function amarrarParceiro(){
   const p = jogo.pika; if (!p || jogo.semParceiro) return;                // jogo novo: o Pikachu provisório NÃO entra no time
   if (!jogo.time) jogo.time = lerLS('time', []);                          // o seguidor salvo pode carregar (do cache) antes de `jogo.time = lerLS(...)` lá embaixo — dava TypeError e o parceiro ficava fora do time
-  if (jogo.trocaPendente && p.glb !== jogo.trocaPendente) return;
-  if (parceiroUid == null){ const uidSalvo = lerLS('seguidorUid', null); if (uidSalvo != null && jogo.time.some(t => String(t?.uid) === String(uidSalvo) && t.glb === p.glb)) parceiroUid = uidSalvo; }   // 12/09: restaura QUAL do time é o parceiro (duas da mesma espécie)
-  if (!jogo.time.some(t => t.glb === p.glb)){
+  if (jogo.trocaPendente && !mesmoGlb(p.glb, jogo.trocaPendente)) return;
+  if (parceiroUid == null){ const uidSalvo = lerLS('seguidorUid', null); if (uidSalvo != null && jogo.time.some(t => String(t?.uid) === String(uidSalvo) && mesmoGlb(t.glb, p.glb))) parceiroUid = uidSalvo; }   // 12/09: restaura QUAL do time é o parceiro (duas da mesma espécie)
+  if (!jogo.time.some(t => mesmoGlb(t.glb, p.glb))){
     if (Conta.estado().modo === 'conta' && jogo.time.length){           // 13/09: com conta NÃO existe membro fantasma — o 1º do time assume o campo
       __boot.aviso('parceiro fora do time', { glb: p.glb, time: jogo.time.map(t => t.glb) }); trocarPara(0, { forcado: true }).catch(e => console.warn('parceiro fora do time:', e)); return; }
     Ind.garantir(p); jogo.time.push({ dex: p.dex, glb: p.glb, nome: p.nome, lv: p.lv, exp: p.exp, amizade: p.amizade, ivs: p.ivs, natureza: p.natureza, movs: p.movs, aprender: p.aprender, quando: Date.now() }); gravarLS('time', jogo.time); }
-  else if (!params0.get('lv')){ const t = (parceiroUid != null && jogo.time.find(x => String(x?.uid) === String(parceiroUid) && x.glb === p.glb)) || jogo.time.find(t => t.glb === p.glb); const S = porDex.get(t?.dex);   // 14/09: com duas da mesma espécie, amarra no uid em campo, não no primeiro glb
+  else if (!params0.get('lv')){ const t = (parceiroUid != null && jogo.time.find(x => String(x?.uid) === String(parceiroUid) && mesmoGlb(x.glb, p.glb))) || jogo.time.find(t => mesmoGlb(t.glb, p.glb)); const S = porDex.get(t?.dex);   // 14/09: com duas da mesma espécie, amarra no uid em campo, não no primeiro glb
     if (t?.lv && S){ Ind.garantir(t); p.uid = t.uid ?? null; p.lv = t.lv; p.expReserva = t.expReserva || 0; p.ivs = t.ivs; p.natureza = t.natureza; p.maxHp = Ind.hpDe(S, p); Ind.garantirMovs(t, fallbackGolpes(t.dex)); p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); p.hp = t.hp != null && t.hp > 0 ? Math.min(t.hp, p.maxHp) : (t.hp === 0 && (t.koAte > Date.now() || Conta.estado().modo === 'conta') ? 0 : p.maxHp);   /* com CONTA o HP é do servidor: 0 é 0 até a cura (12/09: o Bulbasaur KO "ressuscitava" no login porque o koAte já tinha passado) */ p.exp = t.exp ?? Evolucao.expPara(t.dex, t.lv); p.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex); } }
   try { pintarTime(true); } catch (e){ console.warn('pintarTime:', e); }
 }
@@ -5743,11 +5759,11 @@ Conta.aoBolsa(() => {                                                     // o s
    primeiro — o XP/dano ia pro indivíduo errado e o "seguidor" salvo sempre resolvia pro 1º. `parceiroUid` é lembrado nas trocas e
    restaurado no boot pela pref `seguidorUid`; o `glb` continua de reserva (parceiro provisório sem uid, clipes). */
 function membroAtivo(){ const p = jogo.pika; if (!p) return -1;
-  if (p.uid != null){ const iu = jogo.time.findIndex(t => String(t?.uid) === String(p.uid)); if (iu >= 0 && jogo.time[iu].glb === p.glb) return iu; }   // 14/09: pelo uid da entidade (duas da mesma espécie)
-  if (parceiroUid != null){ const i = jogo.time.findIndex(t => String(t?.uid) === String(parceiroUid)); if (i >= 0 && jogo.time[i].glb === p.glb) return i; }
-  if (indiceTime >= 0 && jogo.time[indiceTime]?.glb === p.glb) return indiceTime;
-  return jogo.time.findIndex(t => t.glb === p.glb); }
-function definirParceiro(i){ indiceTime = i; parceiroUid = jogo.time?.[i]?.uid ?? null; if (parceiroUid != null) gravarLS('seguidorUid', parceiroUid); }   // troca de membro/seguidor: fixa quem está em campo pelo uid
+  if (p.uid != null){ const iu = jogo.time.findIndex(t => String(t?.uid) === String(p.uid)); if (iu >= 0 && mesmoGlb(jogo.time[iu].glb, p.glb)) return iu; }   // 14/09: pelo uid da entidade (duas da mesma espécie)
+  if (parceiroUid != null){ const i = jogo.time.findIndex(t => String(t?.uid) === String(parceiroUid)); if (i >= 0 && mesmoGlb(jogo.time[i].glb, p.glb)) return i; }
+  if (indiceTime >= 0 && mesmoGlb(jogo.time[indiceTime]?.glb, p.glb)) return indiceTime;
+  return jogo.time.findIndex(t => mesmoGlb(t.glb, p.glb)); }
+function definirParceiro(i){ indiceTime = i; parceiroUid = jogo.time?.[i]?.uid ?? null; if (parceiroUid != null) gravarLS('seguidorUid', parceiroUid); if (jogo.time?.[i]?.glb) gravarLS('seguidor', stemGlb(jogo.time[i].glb)); }   // troca de membro/seguidor: fixa quem está em campo pelo uid
 /** Guarda no registro do time o estado do parceiro em campo (nível, HP, desmaio) — chamado antes de trocar. */
 function guardarEstadoAtivo(){
   const p = jogo.pika, i = membroAtivo(); if (!p || i < 0) return;
