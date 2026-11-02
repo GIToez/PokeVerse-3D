@@ -1,64 +1,108 @@
 /* Build public/data/2000001.json — one Johto overworld like kanto.json.
-   Prefabs come from scenery/kanto.glb. Layout matches the HGSS Town Map.
-   Zones checked against Bulbapedia (Johto settlements + landmarks) and
-   PokéAPI region/2 (https://pokeapi.co/api/v2/region/2/). Interiors
-   (towers, wells, HQ, S.S. Aqua) stay as door targets, not street boxes.
+   Prefabs come from scenery/kanto.glb. Land follows the HGSS Town Map
+   (New Bark SE, corridors between towns, water on the west). Towns are
+   stamped clips of real Kanto cities — not a 1 m grass carpet.
 
-   Same axis as Kanto: +Z south, −Z north, +X west, −X east (the scene flips X).
-   Town Map (east right, north up) is converted with x = −east, z = −north. */
+   Axis: +Z south, −Z north, +X west, −X east (scene flipX = −1).
+   Town Map (east right, north up) → x = −east, z = −north. */
 import fs from 'node:fs';
 
 const doors = JSON.parse(fs.readFileSync('public/data/doors.json', 'utf8'));
 const scenes = JSON.parse(fs.readFileSync('public/data/scenes.json', 'utf8'));
+const kanto = JSON.parse(fs.readFileSync('public/data/kanto.json', 'utf8'));
 const johto = scenes.cenas.find(c => c.id === 2000001);
 if (!johto) throw new Error('scenes.json is missing Johto 2000001');
 
 const G = (east, north) => ({ x: -east, z: -north });
 
-/* HGSS Town Map centers, east/north in meters (Kanto-sized). */
+/* HGSS Town Map centers. Box size comes from the stamped Kanto clip. */
 const TOWN = {
-  2101: { ...G(210, -95), sx: 44, sz: 32, name: 'New Bark Town' },
-  2102: { ...G(85, -95), sx: 48, sz: 36, name: 'Cherrygrove City' },
-  2103: { ...G(25, 85), sx: 54, sz: 48, name: 'Violet City' },
-  2104: { ...G(-70, -85), sx: 46, sz: 36, name: 'Azalea Town' },
-  2105: { ...G(-155, 15), sx: 68, sz: 56, name: 'Goldenrod City' },
-  2106: { ...G(-35, 165), sx: 54, sz: 48, name: 'Ecruteak City' },
-  2107: { ...G(-200, 145), sx: 50, sz: 44, name: 'Olivine City' },
-  2108: { ...G(-245, 15), sx: 44, sz: 40, name: 'Cianwood City' },
-  2109: { ...G(45, 195), sx: 42, sz: 36, name: 'Mahogany Town' },
-  2110: { ...G(150, 155), sx: 50, sz: 44, name: 'Blackthorn City' },
-  2111: { ...G(-95, 95), sx: 56, sz: 40, name: 'National Park' },
-  2112: { ...G(5, 15), sx: 40, sz: 32, name: 'Ruins of Alph' },
-  2113: { ...G(45, 265), sx: 48, sz: 40, name: 'Lake of Rage' },
-  2114: { ...G(200, 75), sx: 52, sz: 48, name: 'Mt. Silver' },
-  2115: { ...G(-305, 25), sx: 56, sz: 44, name: 'Johto Safari Zone' },
-  2116: { ...G(-265, 165), sx: 52, sz: 40, name: 'Battle Frontier' },
-  /* HGSS / PokéAPI outdoor landmarks, in world coords, overlapping the routes they sit on. */
-  2117: { x: 140, z: 68, sx: 52, sz: 52, name: 'Ilex Forest' },
-  2118: { x: 30, z: 70, sx: 44, sz: 36, name: 'Union Cave' },
-  2119: { x: -50, z: -45, sx: 40, sz: 48, name: 'Dark Cave' },
-  2120: { x: -5, z: -175, sx: 40, sz: 36, name: 'Mt. Mortar' },
-  2121: { x: -95, z: -170, sx: 40, sz: 32, name: 'Ice Path' },
-  2122: { x: 222, z: -80, sx: 44, sz: 40, name: 'Whirl Islands' },
-  2123: { x: -250, z: 95, sx: 36, sz: 28, name: 'Tohjo Falls' },
-  2124: { x: 286, z: -20, sx: 36, sz: 28, name: 'Safari Zone Gate' },
-  2125: { x: 242, z: -165, sx: 36, sz: 28, name: 'Frontier Access' },
-  2126: { x: 155, z: -55, sx: 36, sz: 28, name: 'Pokéathlon Dome' },
-  2127: { x: 275, z: -15, sx: 32, sz: 28, name: 'Cliff Cave' },
-  2128: { x: 262, z: -15, sx: 28, sz: 24, name: 'Cliff Edge Gate' },
-  2129: { x: 20, z: -175, sx: 28, sz: 24, name: 'Bellchime Trail' },
-  2130: { x: 280, z: 8, sx: 28, sz: 24, name: 'Embedded Tower' },
+  2101: { ...G(210, -95), name: 'New Bark Town' },
+  2102: { ...G(85, -95), name: 'Cherrygrove City' },
+  2103: { ...G(20, 90), name: 'Violet City' },
+  2104: { ...G(-75, -85), name: 'Azalea Town' },
+  2105: { ...G(-160, 20), name: 'Goldenrod City' },
+  2106: { ...G(-35, 175), name: 'Ecruteak City' },
+  2107: { ...G(-210, 155), name: 'Olivine City' },
+  2108: { ...G(-255, 20), name: 'Cianwood City' },
+  2109: { ...G(50, 205), name: 'Mahogany Town' },
+  2110: { ...G(155, 165), name: 'Blackthorn City' },
+  2111: { ...G(-95, 100), name: 'National Park' },
+  2112: { ...G(5, 20), name: 'Ruins of Alph' },
+  2113: { ...G(50, 275), name: 'Lake of Rage' },
+  2114: { ...G(210, 80), name: 'Mt. Silver' },
+  2115: { ...G(-315, 30), name: 'Johto Safari Zone' },
+  2116: { ...G(-275, 170), name: 'Battle Frontier' },
+  2117: { ...G(70, -70), name: 'Ilex Forest' },
+  2118: { ...G(-30, -70), name: 'Union Cave' },
+  2119: { ...G(-50, 45), name: 'Dark Cave' },
+  2120: { ...G(-5, 185), name: 'Mt. Mortar' },
+  2121: { ...G(-100, 175), name: 'Ice Path' },
+  2122: { ...G(230, -70), name: 'Whirl Islands' },
+  2123: { ...G(250, -95), name: 'Tohjo Falls' },
+  2124: { ...G(-290, 20), name: 'Safari Zone Gate' },
+  2125: { ...G(-250, 170), name: 'Frontier Access' },
+  2126: { ...G(-140, 55), name: 'Pokéathlon Dome' },
+  2127: { ...G(-275, 15), name: 'Cliff Cave' },
+  2128: { ...G(-265, 15), name: 'Cliff Edge Gate' },
+  2129: { ...G(-20, 185), name: 'Bellchime Trail' },
+  2130: { ...G(-280, -5), name: 'Embedded Tower' },
 };
 
-function ew(a, b, z, sz = 28) {
-  const x0 = Math.min(a, b), x1 = Math.max(a, b);
-  return { x: (x0 + x1) / 2, z, sx: x1 - x0, sz };
+/* Kanto area id stamped at each Johto town. */
+const CLIP_OF = {
+  2101: 1101, // Pallet
+  2102: 1102, // Viridian
+  2103: 1103, // Pewter
+  2104: 1106, // Lavender
+  2105: 1107, // Celadon
+  2106: 1103, // Pewter
+  2107: 1105, // Vermilion
+  2108: 1110, // Cinnabar
+  2109: 1101, // Pallet
+  2110: 1103, // Pewter
+  2111: 1191, // Viridian Forest (center crop)
+  2112: 1106, // Lavender
+  2113: 1110, // Cinnabar (lake island)
+  2114: 1110, // Cinnabar / mountain island
+  2115: 1192, // Safari (center crop)
+  2116: 1108, // Saffron
+};
+
+function inBox(o, box, pad = 0) {
+  return o.x >= box.x - box.sx / 2 - pad && o.x <= box.x + box.sx / 2 + pad
+    && o.z >= box.z - box.sz / 2 - pad && o.z <= box.z + box.sz / 2 + pad;
 }
-function ns(x, a, b, sx = 32) {
-  const z0 = Math.min(a, b), z1 = Math.max(a, b);
-  return { x, z: (z0 + z1) / 2, sx, sz: z1 - z0 };
+
+function clipArea(id, maxW = Infinity, maxH = Infinity) {
+  const box = kanto.caixas.find(c => c.a === id);
+  if (!box) throw new Error('missing Kanto area ' + id);
+  const hw = Math.min(box.sx, maxW) / 2;
+  const hh = Math.min(box.sz, maxH) / 2;
+  const objs = kanto.objetos.filter(o =>
+    Math.abs(o.x - box.x) <= hw && Math.abs(o.z - box.z) <= hh);
+  return {
+    sx: Math.min(box.sx, maxW),
+    sz: Math.min(box.sz, maxH),
+    objs: objs.map(o => ({
+      n: o.n, dx: o.x - box.x, dz: o.z - box.z, y: o.y || 0, a: o.a || 0,
+    })),
+  };
 }
-function edge(id, dir, pad = -6) {
+
+const clips = {};
+for (const [jid, kid] of Object.entries(CLIP_OF)) {
+  const crop = +jid === 2111 ? [52, 44] : +jid === 2115 ? [56, 44] : [Infinity, Infinity];
+  clips[+jid] = clipArea(kid, crop[0], crop[1]);
+  TOWN[+jid].sx = clips[+jid].sx;
+  TOWN[+jid].sz = clips[+jid].sz;
+}
+
+for (const id of Object.keys(TOWN)) {
+  if (!TOWN[id].sx) { TOWN[id].sx = 36; TOWN[id].sz = 28; }
+}
+
+function edge(id, dir, pad = 2) {
   const t = TOWN[id];
   if (dir === 'e') return t.x - t.sx / 2 - pad;
   if (dir === 'w') return t.x + t.sx / 2 + pad;
@@ -66,35 +110,39 @@ function edge(id, dir, pad = -6) {
   return t.z + t.sz / 2 + pad;
 }
 
-/* Route AABBs overlap the towns they connect (HGSS Town Map). */
+const W = 16; // corridor width — matches a Kanto route lane, not a continent
+function ew(x0, x1, z, sz = W) {
+  return { x: (x0 + x1) / 2, z, sx: Math.abs(x1 - x0), sz };
+}
+function ns(x, z0, z1, sx = W) {
+  return { x, z: (z0 + z1) / 2, sx, sz: Math.abs(z1 - z0) };
+}
+
+/* Narrow HGSS corridors. Extra L-arms are stamped but the caixa is the main lane. */
 const RTE = {
-  2229: ew(edge(2101, 'w'), edge(2102, 'e'), TOWN[2101].z, 30),
-  2230: ns(TOWN[2102].x, edge(2102, 'n'), edge(2103, 's'), 34),
-  2231: ew(TOWN[2102].x, TOWN[2103].x, edge(2103, 's'), 32),
-  2232: { x: (TOWN[2103].x + TOWN[2104].x) / 2, z: (edge(2103, 's') + edge(2104, 'n')) / 2,
-    sx: Math.abs(TOWN[2104].x - TOWN[2103].x) + 24, sz: Math.abs(edge(2104, 'n') - edge(2103, 's')) + 8 },
-  2233: ew(edge(2104, 'w'), edge(2105, 'e'), TOWN[2104].z, 30),
-  2234: ns(TOWN[2105].x, edge(2104, 'n'), edge(2105, 's'), 34),
-  2235: ns((TOWN[2105].x + TOWN[2111].x) / 2, edge(2105, 'n'), edge(2111, 's'), 48),
-  2236: ew(edge(2111, 'e'), edge(2103, 'w'), TOWN[2111].z, 30),
-  2237: ns((TOWN[2103].x + TOWN[2106].x) / 2, edge(2103, 'n'), edge(2106, 's'), 40),
-  2238: ew(edge(2106, 'w'), edge(2107, 'e'), TOWN[2106].z, 30),
-  2239: ns(TOWN[2107].x, TOWN[2106].z, edge(2107, 'n'), 30),
-  2240: ns(TOWN[2107].x, edge(2107, 's'), edge(2108, 'n'), 40),
-  2241: { x: (TOWN[2107].x + TOWN[2108].x) / 2, z: (TOWN[2107].z + TOWN[2108].z) / 2,
-    sx: Math.abs(TOWN[2108].x - TOWN[2107].x) + 16, sz: Math.abs(TOWN[2108].z - TOWN[2107].z) + 16 },
-  2242: { x: (TOWN[2106].x + TOWN[2109].x) / 2, z: (TOWN[2106].z + TOWN[2109].z) / 2,
-    sx: Math.abs(TOWN[2109].x - TOWN[2106].x) + 20, sz: Math.abs(TOWN[2109].z - TOWN[2106].z) + 20 },
-  2243: ns(TOWN[2109].x, edge(2109, 'n'), edge(2113, 's'), 30),
-  2244: { x: (TOWN[2109].x + TOWN[2110].x) / 2, z: (TOWN[2109].z + TOWN[2110].z) / 2,
-    sx: Math.abs(TOWN[2110].x - TOWN[2109].x) + 20, sz: Math.abs(TOWN[2110].z - TOWN[2109].z) + 20 },
-  2245: ns(TOWN[2110].x, edge(2110, 's'), TOWN[2101].z - 8, 30),
-  2246: ns((TOWN[2101].x + TOWN[2102].x) / 2, edge(2101, 'n'), TOWN[2110].z + 20, 30),
-  2247: ew(edge(2108, 'w'), edge(2115, 'e'), TOWN[2108].z, 30),
-  2248: ns(TOWN[2115].x, edge(2115, 's'), TOWN[2108].z, 30),
-  2227: ew(edge(2101, 'e'), -280, TOWN[2101].z, 30),
-  2226: ns(-280, TOWN[2101].z, TOWN[2114].z, 40),
-  2228: ew(-280, TOWN[2114].x + 10, TOWN[2114].z, 30),
+  2229: ew(edge(2101, 'w'), edge(2102, 'e'), TOWN[2101].z),           // 29
+  2230: ns(TOWN[2102].x, edge(2102, 'n'), edge(2103, 's') + 24),      // 30
+  2231: ew(TOWN[2102].x - 8, edge(2103, 'e'), edge(2103, 's')),       // 31
+  2232: ns(TOWN[2103].x + 10, edge(2103, 's'), edge(2104, 'n') - 8),  // 32
+  2233: ew(edge(2104, 'w'), edge(2105, 'e') + 20, TOWN[2104].z),      // 33
+  2234: ns(TOWN[2105].x, edge(2104, 'n') + 8, edge(2105, 's')),       // 34
+  2235: ns(TOWN[2105].x + 8, edge(2105, 'n'), edge(2111, 's')),       // 35
+  2236: ew(edge(2111, 'e'), edge(2103, 'w'), TOWN[2111].z),           // 36
+  2237: ns((TOWN[2103].x + TOWN[2106].x) / 2, edge(2103, 'n'), edge(2106, 's')), // 37
+  2238: ew(edge(2106, 'w'), edge(2107, 'e'), TOWN[2106].z),           // 38
+  2239: ns(TOWN[2107].x, TOWN[2106].z, edge(2107, 'n')),              // 39
+  2240: ns(TOWN[2107].x, edge(2107, 's'), (TOWN[2107].z + TOWN[2108].z) / 2, 22), // 40
+  2241: ew(TOWN[2107].x, TOWN[2108].x, (TOWN[2107].z + TOWN[2108].z) / 2, 22), // 41
+  2242: ew(edge(2106, 'e'), edge(2109, 'w'), TOWN[2106].z),           // 42
+  2243: ns(TOWN[2109].x, edge(2109, 'n'), edge(2113, 's')),           // 43
+  2244: ew(edge(2109, 'e'), edge(2110, 'w'), TOWN[2110].z),           // 44
+  2245: ns(TOWN[2110].x, edge(2110, 's'), TOWN[2101].z - 10),         // 45
+  2246: ns((TOWN[2101].x + TOWN[2102].x) / 2, TOWN[2101].z, TOWN[2110].z + 16), // 46
+  2247: ew(edge(2108, 'w'), edge(2115, 'e'), TOWN[2108].z),           // 47
+  2248: ns(TOWN[2115].x, edge(2115, 's'), TOWN[2108].z),              // 48
+  2227: ew(edge(2101, 'e'), TOWN[2123].x, TOWN[2101].z),              // 27
+  2226: ns(TOWN[2123].x, TOWN[2101].z, TOWN[2114].z),                 // 26
+  2228: ew(TOWN[2123].x, edge(2114, 'e'), TOWN[2114].z),              // 28
 };
 
 const LAY = { ...TOWN, ...RTE };
@@ -102,196 +150,81 @@ const LAY = { ...TOWN, ...RTE };
 const nomes = Object.fromEntries(johto.areas.map(a => [a.id, a.nome]));
 const areas = johto.areas.map(a => a.id);
 const caixas = johto.areas.map(a => {
-  const L = LAY[a.id] || { x: 0, z: 0, sx: 40, sz: 40 };
-  return { a: a.id, x: +L.x.toFixed(1), y: 0, z: +L.z.toFixed(1), sx: +L.sx.toFixed(1), sy: 8, sz: +L.sz.toFixed(1) };
+  const L = LAY[a.id] || { x: 0, z: 0, sx: 32, sz: 24 };
+  return {
+    a: a.id, x: +L.x.toFixed(1), y: 0, z: +L.z.toFixed(1),
+    sx: +(+L.sx || 32).toFixed(1), sy: 8, sz: +(+L.sz || 24).toFixed(1),
+  };
 });
 
 const objetos = [];
-function add(n, x, z, a = 0) {
-  objetos.push({ n, x: +(+x).toFixed(1), y: 0, z: +(+z).toFixed(1), a });
-}
-
-const SEA = new Set([2240, 2241, 2122, 2113]);
 const landAt = new Set();
-function stamp(n, x, z) {
-  const k = Math.round(x) + ',' + Math.round(z);
+function add(n, x, z, a = 0, y = 0) {
+  const k = n + '|' + Math.round(x * 2) + '|' + Math.round(z * 2);
   if (landAt.has(k)) return;
   landAt.add(k);
-  add(n, Math.round(x) + 0.0, Math.round(z) + 0.0);
+  const o = { n, x: +(+x).toFixed(1), y: +(+y).toFixed(2), z: +(+z).toFixed(1) };
+  if (a) o.a = +(+a).toFixed(3);
+  objetos.push(o);
 }
 
-/* Solid 1 m floor like kanto.json — this is the walkable land. */
-const grama = [];
-const agua = [];
-for (const box of caixas) {
-  const x0 = Math.floor(box.x - box.sx / 2) + 1;
-  const x1 = Math.ceil(box.x + box.sx / 2) - 1;
-  const z0 = Math.floor(box.z - box.sz / 2) + 1;
-  const z1 = Math.ceil(box.z + box.sz / 2) - 1;
-  const sea = SEA.has(box.a);
-  const town = box.a >= 2101 && box.a <= 2116;
-  for (let x = x0; x <= x1; x++) {
-    for (let z = z0; z <= z1; z++) {
-      if (sea) {
-        agua.push({ tipo: 33, x: x + 0.5, y: 0, z: z + 0.5, a: box.a });
-        if ((x + z) % 3 === 0) add('sea_rock', x, z);
-      } else {
-        stamp(town ? 'ground_plane007' : 'floor_grass2', x, z);
-        if (!town && box.a >= 2226 && (x + z * 3) % 7 === 0) {
-          grama.push({ cfg: box.a * 100 + ((x + z * 13) % 97), tipo: 41, x: x + 0.5, y: 0, z: z + 0.5, a: box.a });
-        }
-      }
+function stampClip(clip, cx, cz) {
+  for (const o of clip.objs) add(o.n, cx + o.dx, cz + o.dz, o.a, o.y);
+}
+
+/* Repeating 16 m slices of Route 1 (NS) and Route 3 (EW). */
+function sliceNS(areaId, halfW = 8, len = 16) {
+  const box = kanto.caixas.find(c => c.a === areaId);
+  return kanto.objetos
+    .filter(o => Math.abs(o.x - box.x) <= halfW
+      && o.z >= box.z - len / 2 && o.z <= box.z + len / 2)
+    .map(o => ({ n: o.n, dx: o.x - box.x, dz: o.z - box.z, y: o.y || 0, a: o.a || 0 }));
+}
+function sliceEW(areaId, halfH = 8, len = 16) {
+  const box = kanto.caixas.find(c => c.a === areaId);
+  return kanto.objetos
+    .filter(o => Math.abs(o.z - box.z) <= halfH
+      && o.x >= box.x - len / 2 && o.x <= box.x + len / 2)
+    .map(o => ({ n: o.n, dx: o.x - box.x, dz: o.z - box.z, y: o.y || 0, a: o.a || 0 }));
+}
+
+const TILE_NS = sliceNS(1201, 8, 18);
+const TILE_EW = sliceEW(1203, 8, 18);
+const TILE_LEN = 18;
+
+function stampNS(x, z0, z1, tile = TILE_NS) {
+  const a = Math.min(z0, z1), b = Math.max(z0, z1);
+  for (let z = a; z < b - 0.5; z += TILE_LEN) {
+    for (const o of tile) {
+      const zz = z + TILE_LEN / 2 + o.dz;
+      if (zz >= a - 1 && zz <= b + 1) add(o.n, x + o.dx, zz, o.a, o.y);
+    }
+  }
+}
+function stampEW(x0, x1, z, tile = TILE_EW) {
+  const a = Math.min(x0, x1), b = Math.max(x0, x1);
+  for (let x = a; x < b - 0.5; x += TILE_LEN) {
+    for (const o of tile) {
+      const xx = x + TILE_LEN / 2 + o.dx;
+      if (xx >= a - 1 && xx <= b + 1) add(o.n, xx, z + o.dz, o.a, o.y);
     }
   }
 }
 
-function roadEW(x0, x1, z, step = 2) {
-  const a = Math.min(x0, x1), b = Math.max(x0, x1);
-  for (let x = a; x <= b + 0.01; x += step) add('grass_road_h_1', x, z);
-}
-function roadNS(x, z0, z1, step = 2) {
-  const a = Math.min(z0, z1), b = Math.max(z0, z1);
-  for (let z = a; z <= b + 0.01; z += step) add('grass_road_n', x, z);
-}
-
-/* HGSS road spine. */
-roadEW(TOWN[2101].x, TOWN[2102].x, TOWN[2101].z);
-roadNS(TOWN[2102].x, TOWN[2102].z, TOWN[2103].z + 20);
-roadEW(TOWN[2102].x, TOWN[2103].x, (TOWN[2102].z + TOWN[2103].z) / 2 + 20);
-roadNS(TOWN[2103].x + 8, TOWN[2103].z, TOWN[2104].z);
-roadEW(TOWN[2104].x, TOWN[2105].x, TOWN[2104].z);
-roadNS(TOWN[2105].x, TOWN[2104].z, TOWN[2105].z);
-roadNS(TOWN[2105].x, TOWN[2105].z, TOWN[2111].z);
-roadEW(TOWN[2111].x, TOWN[2103].x, TOWN[2111].z);
-roadNS(TOWN[2106].x, TOWN[2103].z, TOWN[2106].z);
-roadEW(TOWN[2106].x, TOWN[2107].x, TOWN[2106].z);
-roadNS(TOWN[2107].x, TOWN[2106].z, TOWN[2107].z);
-roadNS(TOWN[2107].x, TOWN[2107].z, TOWN[2108].z);
-roadEW(TOWN[2107].x, TOWN[2108].x, (TOWN[2107].z + TOWN[2108].z) / 2);
-roadEW(TOWN[2106].x, TOWN[2109].x, TOWN[2106].z);
-roadNS(TOWN[2109].x, TOWN[2109].z, TOWN[2113].z);
-roadEW(TOWN[2109].x, TOWN[2110].x, TOWN[2110].z);
-roadNS(TOWN[2110].x, TOWN[2110].z, TOWN[2101].z - 20);
-roadNS((TOWN[2101].x + TOWN[2102].x) / 2, TOWN[2101].z, TOWN[2110].z + 40);
-roadEW(TOWN[2101].x, -280, TOWN[2101].z);
-roadNS(-280, TOWN[2101].z, -40);
-roadEW(-280, TOWN[2114].x, TOWN[2114].z);
-roadEW(TOWN[2108].x, TOWN[2115].x, TOWN[2108].z);
-
-/* One street per town. Buildings sit 12 m north or south of the road, 16 m apart. */
-const BLD = {
-  2101: [ // New Bark: two houses south, lab north
-    { n: 'sm_t_001_house_01', dx: -10, dz: 12, door: 6210101, arrive: 7210101 },
-    { n: 'sm_t_001_house_01_red', dx: 10, dz: 12, door: 6210102, arrive: 7210102 },
-    { n: 'sm_t_011_house_02', dx: 0, dz: -12, door: 6210103, arrive: 7210103 },
-  ],
-  2102: [ // Cherrygrove: Center / mart north, two houses south
-    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -12, door: 6210204, arrive: 7210204 },
-    { n: 'sm_c_001_shop_01', dx: 12, dz: -12, door: 6210205, arrive: 7210205 },
-    { n: 'sm_c_001_house_02_blue', dx: -12, dz: 12, door: 6210201, arrive: 7210201 },
-    { n: 'sm_t_007_house_01', dx: 12, dz: 12, door: 6210202, arrive: 7210202 },
-  ],
-  2103: [
-    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -12, door: 6210307, arrive: 7210307 },
-    { n: 'sm_c_001_shop_01', dx: 0, dz: -12, door: 6210306, arrive: 7210306 },
-    { n: 'sm_c_001_gym_01', dx: 16, dz: -12, door: 6210304, arrive: 7210304 },
-    { n: 'sm_t_007_house_01', dx: -12, dz: 12, door: 6210301, arrive: 7210301 },
-  ],
-  2104: [
-    { n: 'sm_c_001_pokecen_01', dx: -14, dz: -12, door: 6210405, arrive: 7210405 },
-    { n: 'sm_c_001_shop_01', dx: 14, dz: -12, door: 6210404, arrive: 7210404 },
-    { n: 'sm_c_001_gym_02', dx: 0, dz: 12, door: 6210403, arrive: 7210403 },
-  ],
-  2105: [
-    { n: 'sm_c_001_pokecen_01', dx: -22, dz: -14, door: 6210510, arrive: 7210510 },
-    { n: 'sm_c_001_shop_01', dx: 0, dz: -14, door: 6210509, arrive: 7210509 },
-    { n: 'sm_c_001_gym_01', dx: 22, dz: -14, door: 6210511, arrive: 7210511 },
-    { n: 'sm_t_006_bicycleshop_01', dx: -16, dz: 14, door: 6210502, arrive: 7210502 },
-    { n: 'sm_t_007_house_01_2', dx: 16, dz: 14, door: 6210501, arrive: 7210501 },
-  ],
-  2106: [
-    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -12, door: 6210604, arrive: 7210604 },
-    { n: 'sm_c_001_shop_01', dx: 0, dz: -12, door: 6210605, arrive: 7210605 },
-    { n: 'sm_c_001_gym_01', dx: 16, dz: -12, door: 6210606, arrive: 7210606 },
-    { n: 'sm_t_009_house_01', dx: 0, dz: 12, door: 6210601, arrive: 7210601 },
-  ],
-  2107: [
-    { n: 'sm_c_001_pokecen_01', dx: -14, dz: -12, door: 6210706, arrive: 7210706 },
-    { n: 'sm_c_001_shop_01', dx: 14, dz: -12, door: 6210707, arrive: 7210707 },
-    { n: 'sm_c_001_gym_02', dx: 0, dz: 12, door: 6210708, arrive: 7210708 },
-  ],
-  2108: [
-    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -12, door: 6210805, arrive: 7210805 },
-    { n: 'sm_c_001_gym_01', dx: 12, dz: -12, door: 6210807, arrive: 7210807 },
-    { n: 'sm_c_001_house_02_purple', dx: 0, dz: 12, door: 6210801, arrive: 7210801 },
-  ],
-  2109: [
-    { n: 'sm_c_001_pokecen_01', dx: -12, dz: -12, door: 6210902, arrive: 7210902 },
-    { n: 'sm_c_001_gym_02', dx: 12, dz: -12, door: 6210903, arrive: 7210903 },
-    { n: 'sm_t_005_house_01_1', dx: 0, dz: 12, door: 6210901, arrive: 7210901 },
-  ],
-  2110: [
-    { n: 'sm_c_001_pokecen_01', dx: -16, dz: -12, door: 6211005, arrive: 7211005 },
-    { n: 'sm_c_001_shop_01', dx: 0, dz: -12, door: 6211004, arrive: 7211004 },
-    { n: 'sm_c_001_gym_01', dx: 16, dz: -12, door: 6211008, arrive: 7211008 },
-    { n: 'sm_t_011_house_02_1', dx: 0, dz: 12, door: 6211001, arrive: 7211001 },
-  ],
-  2114: [
-    { n: 'sm_c_001_pokecen_01', dx: -12, dz: 0, door: 6211402, arrive: 7211402 },
-    { n: 'sm_t_011_house_02', dx: 12, dz: 0, door: 6211401, arrive: 7211401 },
-  ],
-};
-
-const used = new Set();
-const npcs = [];
-function putNpc(cfg, modelo, x, z, a) {
-  if (!cfg) return;
-  npcs.push({ cfg, modelo, face: 0, x: +x.toFixed(2), y: 0, z: +z.toFixed(2), a });
-  used.add(cfg);
-}
-
-for (const [id, list] of Object.entries(BLD)) {
+/* Town clips first so they win the landAt lock against route tiles. */
+for (const [id, clip] of Object.entries(clips)) {
   const T = TOWN[+id];
-  if (!T) continue;
-  for (const b of list) {
-    add(b.n, T.x + b.dx, T.z + b.dz);
-    const face = b.dz < 0 ? 5.2 : -5.2; // door on the street side
-    putNpc(b.door, 162, T.x + b.dx, T.z + b.dz + face, +id);
-    putNpc(b.arrive, 171, T.x + b.dx, T.z + b.dz + face * 1.25, +id);
+  if (T) stampClip(clip, T.x, T.z);
+}
+
+/* Landmark props (no full-box fill). */
+function grove(cx, cz, n = 16, step = 5) {
+  for (let i = 0; i < n; i++) {
+    const col = i % 4, row = Math.floor(i / 4);
+    add('tree', cx + (col - 1.5) * step, cz + (row - 1.5) * step);
   }
 }
-
-/* Short Pallet-style fence behind the north row only. No town boxes, no yards. */
-for (const [id, list] of Object.entries(BLD)) {
-  const T = TOWN[+id];
-  if (!T) continue;
-  const north = list.filter(b => b.dz < 0);
-  if (!north.length) continue;
-  const xs = north.map(b => T.x + b.dx);
-  const z = T.z + Math.min(...north.map(b => b.dz)) - 6;
-  for (let x = Math.min(...xs) - 4; x <= Math.max(...xs) + 4; x += 2)
-    add('sm_001_fence_02_z 1', x, z);
-}
-
-for (const box of caixas) {
-  if (box.a < 2101 || box.a > 2116 || SEA.has(box.a)) continue;
-  add('tree', box.x - box.sx / 2 + 4, box.z - box.sz / 2 + 4);
-  add('tree', box.x + box.sx / 2 - 4, box.z - box.sz / 2 + 4);
-  add('tree', box.x - box.sx / 2 + 4, box.z + box.sz / 2 - 4);
-  add('tree', box.x + box.sx / 2 - 4, box.z + box.sz / 2 - 4);
-  if (box.a <= 2110) {
-    add('sm_c_001_streetlight_01', box.x - 8, box.z);
-    add('sm_c_001_streetlight_01', box.x + 8, box.z);
-    add('sm_c_001_signboard_01', box.x + 4, box.z + 2);
-  }
-}
-
-for (let i = 0; i < 18; i++) {
-  const T = TOWN[2117];
-  add('tree', T.x + ((i % 6) - 2.5) * 6, T.z + (Math.floor(i / 6) - 1) * 6);
-}
-add('sea_rock', TOWN[2122].x, TOWN[2122].z);
-add('sea_rock', TOWN[2122].x + 8, TOWN[2122].z - 6);
+grove(TOWN[2117].x, TOWN[2117].z, 20, 5);
 add('floor_cliff_obj', TOWN[2118].x, TOWN[2118].z);
 add('floor_cliff_obj', TOWN[2119].x, TOWN[2119].z);
 add('floor_cliff_obj', TOWN[2120].x, TOWN[2120].z);
@@ -299,6 +232,95 @@ add('floor_cliff_obj', TOWN[2121].x, TOWN[2121].z);
 add('floor_cliff_obj', TOWN[2123].x, TOWN[2123].z);
 add('floor_cliff_obj', TOWN[2127].x, TOWN[2127].z);
 add('sm_t_003_pokecompany_01_1', TOWN[2126].x, TOWN[2126].z);
+add('sea_rock', TOWN[2122].x, TOWN[2122].z);
+add('sea_rock', TOWN[2122].x + 8, TOWN[2122].z - 6);
+add('sea_rock', TOWN[2122].x - 6, TOWN[2122].z + 5);
+
+/* HGSS road spine — Route 1 / Route 3 slices, not a grass carpet. */
+stampEW(TOWN[2101].x, TOWN[2102].x, TOWN[2101].z);
+stampNS(TOWN[2102].x, TOWN[2102].z, TOWN[2103].z + 16);
+stampEW(TOWN[2102].x, TOWN[2103].x, edge(2103, 's'));
+stampNS(TOWN[2103].x + 10, TOWN[2103].z, TOWN[2104].z);
+stampEW(TOWN[2104].x, TOWN[2105].x, TOWN[2104].z);
+stampNS(TOWN[2105].x, TOWN[2104].z, TOWN[2105].z);
+stampNS(TOWN[2105].x + 8, TOWN[2105].z, TOWN[2111].z);
+stampEW(TOWN[2111].x, TOWN[2103].x, TOWN[2111].z);
+stampNS((TOWN[2103].x + TOWN[2106].x) / 2, TOWN[2103].z, TOWN[2106].z);
+stampEW(TOWN[2106].x, TOWN[2107].x, TOWN[2106].z);
+stampNS(TOWN[2107].x, TOWN[2106].z, TOWN[2107].z);
+stampNS(TOWN[2107].x, TOWN[2107].z, (TOWN[2107].z + TOWN[2108].z) / 2);
+stampEW(TOWN[2107].x, TOWN[2108].x, (TOWN[2107].z + TOWN[2108].z) / 2);
+stampEW(TOWN[2106].x, TOWN[2109].x, TOWN[2106].z);
+stampNS(TOWN[2109].x, TOWN[2109].z, TOWN[2113].z);
+stampEW(TOWN[2109].x, TOWN[2110].x, TOWN[2110].z);
+stampNS(TOWN[2110].x, TOWN[2110].z, TOWN[2101].z - 8);
+stampNS((TOWN[2101].x + TOWN[2102].x) / 2, TOWN[2101].z, TOWN[2110].z + 12);
+stampEW(TOWN[2101].x, TOWN[2123].x, TOWN[2101].z);
+stampNS(TOWN[2123].x, TOWN[2101].z, TOWN[2114].z);
+stampEW(TOWN[2123].x, TOWN[2114].x, TOWN[2114].z);
+stampEW(TOWN[2108].x, TOWN[2115].x, TOWN[2108].z);
+stampNS(TOWN[2115].x, TOWN[2115].z, TOWN[2108].z);
+stampEW(TOWN[2107].x, TOWN[2116].x, TOWN[2116].z);
+
+const SEA = new Set([2240, 2241, 2122, 2113]);
+const grama = [];
+const agua = [];
+
+function waterBand(x0, x1, z0, z1, area) {
+  const ax = Math.min(x0, x1), bx = Math.max(x0, x1);
+  const az = Math.min(z0, z1), bz = Math.max(z0, z1);
+  for (let x = Math.round(ax); x <= Math.round(bx); x += 2) {
+    for (let z = Math.round(az); z <= Math.round(bz); z += 2) {
+      agua.push({ tipo: 33, x: x + 0.5, y: 0, z: z + 0.5, a: area });
+    }
+  }
+}
+waterBand(TOWN[2107].x - 10, TOWN[2107].x + 10,
+  TOWN[2107].z + 20, (TOWN[2107].z + TOWN[2108].z) / 2, 2240);
+waterBand(TOWN[2107].x, TOWN[2108].x,
+  (TOWN[2107].z + TOWN[2108].z) / 2 - 10, (TOWN[2107].z + TOWN[2108].z) / 2 + 10, 2241);
+waterBand(TOWN[2122].x - 16, TOWN[2122].x + 16, TOWN[2122].z - 12, TOWN[2122].z + 12, 2122);
+waterBand(TOWN[2113].x - 14, TOWN[2113].x + 14, TOWN[2113].z - 10, TOWN[2113].z + 10, 2113);
+
+/* Encounter grass only on the stamped route lanes, not a field. */
+function grassLane(x0, z0, x1, z1, area) {
+  const steps = Math.max(4, Math.round(Math.hypot(x1 - x0, z1 - z0) / 4));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const x = x0 + (x1 - x0) * t;
+    const z = z0 + (z1 - z0) * t;
+    grama.push({
+      cfg: area * 100 + (i % 97), tipo: 41,
+      x: +(x + 1.5).toFixed(1), y: 0, z: +z.toFixed(1), a: area,
+    });
+  }
+}
+const lanes = [
+  [2229, TOWN[2101].x, TOWN[2101].z, TOWN[2102].x, TOWN[2102].z],
+  [2230, TOWN[2102].x, TOWN[2102].z, TOWN[2102].x, TOWN[2103].z],
+  [2232, TOWN[2103].x + 10, TOWN[2103].z, TOWN[2104].x, TOWN[2104].z],
+  [2234, TOWN[2105].x, TOWN[2104].z, TOWN[2105].x, TOWN[2105].z],
+  [2237, TOWN[2103].x, TOWN[2103].z, TOWN[2106].x, TOWN[2106].z],
+  [2245, TOWN[2110].x, TOWN[2110].z, TOWN[2110].x, TOWN[2101].z],
+  [2226, TOWN[2123].x, TOWN[2101].z, TOWN[2123].x, TOWN[2114].z],
+];
+for (const [a, x0, z0, x1, z1] of lanes) grassLane(x0, z0, x1, z1, a);
+
+const used = new Set();
+const npcs = [];
+function putNpc(cfg, modelo, x, z, a) {
+  if (!cfg || used.has(cfg)) return;
+  used.add(cfg);
+  npcs.push({ cfg, modelo, face: 0, x: +x.toFixed(2), y: 0, z: +z.toFixed(2), a });
+}
+
+const BUILDING = /house|pokecen|shop|gym|lab|school|bicycl|pokecompany|guide_03|sm_c_yjs/i;
+function buildingsOf(clip, cx, cz) {
+  return clip.objs
+    .filter(o => BUILDING.test(o.n) && !/fence|grass|flower|tree|lamp|sign|outer/i.test(o.n))
+    .map(o => ({ n: o.n, x: cx + o.dx, z: cz + o.dz }))
+    .sort((u, v) => u.x - v.x || u.z - v.z);
+}
 
 const byArea = new Map();
 for (const [id, p] of Object.entries(doors)) {
@@ -307,32 +329,38 @@ for (const [id, p] of Object.entries(doors)) {
   byArea.get(p.a).push({ cfg: +id, t: p.t, n: p.n });
 }
 
-/* Connection Center landings on the HGSS Reception Gate sides. */
-const r26 = LAY[2226], r28 = LAY[2228];
-putNpc(6222603, 162, r26.x, r26.z - r26.sz / 2 + 6, 2226);
-putNpc(7222699, 171, r26.x, r26.z - r26.sz / 2 + 8, 2226);
-putNpc(6222801, 162, r28.x - r28.sx / 2 + 8, r28.z, 2228);
-putNpc(7222801, 171, r28.x - r28.sx / 2 + 10, r28.z, 2228);
-putNpc(7210199, 171, TOWN[2101].x, TOWN[2101].z + 8, 2101);
-
-for (const box of caixas) {
-  const list = (byArea.get(box.a) || []).sort((u, v) => u.cfg - v.cfg);
-  const leftover = list.filter(p => !used.has(p.cfg));
-  const cols = Math.max(3, Math.ceil(Math.sqrt(leftover.length || 1)));
-  leftover.forEach((pt, i) => {
-    const col = i % cols, row = Math.floor(i / cols);
-    const x = box.x - Math.min(14, box.sx / 2 - 4) + col * 4;
-    const z = box.z + Math.min(10, box.sz / 2 - 4) - row * 4;
-    putNpc(pt.cfg, pt.t === 6 ? 162 : 171, x, z, box.a);
-  });
+for (const [id, clip] of Object.entries(clips)) {
+  const T = TOWN[+id];
+  if (!T) continue;
+  const list = (byArea.get(+id) || []).sort((u, v) => u.cfg - v.cfg);
+  const doorIds = list.filter(p => p.t === 6);
+  const arriveIds = list.filter(p => p.t === 7);
+  const blds = buildingsOf(clip, T.x, T.z);
+  const n = Math.min(blds.length, doorIds.length, arriveIds.length);
+  for (let i = 0; i < n; i++) {
+    const b = blds[i];
+    putNpc(doorIds[i].cfg, 162, b.x, b.z + 5.2, +id);
+    putNpc(arriveIds[i].cfg, 171, b.x, b.z + 6.5, +id);
+  }
+  const extraA = arriveIds.find(p => !used.has(p.cfg) && String(p.cfg).endsWith('99'));
+  if (extraA) putNpc(extraA.cfg, 171, T.x, T.z + T.sz / 2 - 4, +id);
 }
 
-const seen = new Set();
-const npcsU = [];
-for (const n of npcs) {
-  if (seen.has(n.cfg)) continue;
-  seen.add(n.cfg);
-  npcsU.push(n);
+/* Connection Center landings on Route 26 (south) and Route 28 (west). */
+putNpc(6222603, 162, TOWN[2123].x, TOWN[2101].z - 8, 2226);
+putNpc(7222699, 171, TOWN[2123].x, TOWN[2101].z - 10, 2226);
+putNpc(6222801, 162, TOWN[2114].x + 8, TOWN[2114].z, 2228);
+putNpc(7222801, 171, TOWN[2114].x + 10, TOWN[2114].z, 2228);
+putNpc(7210199, 171, TOWN[2101].x, TOWN[2101].z + 8, 2101);
+
+/* Leftover doors sit next to a building, never a town-wide grid. */
+for (const box of caixas) {
+  const leftover = (byArea.get(box.a) || []).filter(p => !used.has(p.cfg));
+  leftover.forEach((pt, i) => {
+    const ang = (i / Math.max(1, leftover.length)) * Math.PI * 2;
+    putNpc(pt.cfg, pt.t === 6 ? 162 : 171,
+      box.x + Math.cos(ang) * 6, box.z + Math.sin(ang) * 6, box.a);
+  });
 }
 
 const out = {
@@ -349,7 +377,7 @@ const out = {
   portas: [],
   treinadores: [],
   historias: [],
-  npcs: npcsU,
+  npcs,
   nav: [],
   prefabs: [...new Set(objetos.map(o => o.n))],
   bbox: {
@@ -361,10 +389,11 @@ const out = {
 };
 
 fs.writeFileSync('public/data/2000001.json', JSON.stringify(out));
-const order = [2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110, 2114];
-console.log('Johto', out.objetos.length, 'pieces', out.npcs.length, 'points');
+console.log('Johto', out.objetos.length, 'pieces', out.npcs.length, 'points', 'prefabs', out.prefabs.length);
 console.log('bbox', out.bbox);
-for (const id of order) {
+for (const id of [2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110, 2114]) {
   const t = TOWN[id];
-  console.log(String(id), nomes[id], 'x', t.x.toFixed(0), 'z', t.z.toFixed(0));
+  const c = clips[id];
+  console.log(id, nomes[id], 'x', t.x.toFixed(0), 'z', t.z.toFixed(0),
+    (c?.objs.length || 0) + ' clip');
 }
