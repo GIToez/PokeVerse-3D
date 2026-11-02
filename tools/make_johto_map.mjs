@@ -1,5 +1,8 @@
 /* Build public/data/2000001.json — one Johto overworld like kanto.json.
    Prefabs come from scenery/kanto.glb. Layout matches the HGSS Town Map.
+   Zones checked against Bulbapedia (Johto settlements + landmarks) and
+   PokéAPI region/2 (https://pokeapi.co/api/v2/region/2/). Interiors
+   (towers, wells, HQ, S.S. Aqua) stay as door targets, not street boxes.
 
    Same axis as Kanto: +Z south, −Z north, +X west, −X east (the scene flips X).
    Town Map (east right, north up) is converted with x = −east, z = −north. */
@@ -30,6 +33,21 @@ const TOWN = {
   2114: { ...G(200, 75), sx: 52, sz: 48, name: 'Mt. Silver' },
   2115: { ...G(-305, 25), sx: 56, sz: 44, name: 'Johto Safari Zone' },
   2116: { ...G(-265, 165), sx: 52, sz: 40, name: 'Battle Frontier' },
+  /* HGSS / PokéAPI outdoor landmarks, in world coords, overlapping the routes they sit on. */
+  2117: { x: 140, z: 68, sx: 52, sz: 52, name: 'Ilex Forest' },
+  2118: { x: 30, z: 70, sx: 44, sz: 36, name: 'Union Cave' },
+  2119: { x: -50, z: -45, sx: 40, sz: 48, name: 'Dark Cave' },
+  2120: { x: -5, z: -175, sx: 40, sz: 36, name: 'Mt. Mortar' },
+  2121: { x: -95, z: -170, sx: 40, sz: 32, name: 'Ice Path' },
+  2122: { x: 222, z: -80, sx: 44, sz: 40, name: 'Whirl Islands' },
+  2123: { x: -250, z: 95, sx: 36, sz: 28, name: 'Tohjo Falls' },
+  2124: { x: 286, z: -20, sx: 36, sz: 28, name: 'Safari Zone Gate' },
+  2125: { x: 242, z: -165, sx: 36, sz: 28, name: 'Frontier Access' },
+  2126: { x: 155, z: -55, sx: 36, sz: 28, name: 'Pokéathlon Dome' },
+  2127: { x: 275, z: -15, sx: 32, sz: 28, name: 'Cliff Cave' },
+  2128: { x: 262, z: -15, sx: 28, sz: 24, name: 'Cliff Edge Gate' },
+  2129: { x: 20, z: -175, sx: 28, sz: 24, name: 'Bellchime Trail' },
+  2130: { x: 280, z: 8, sx: 28, sz: 24, name: 'Embedded Tower' },
 };
 
 function ew(a, b, z, sz = 28) {
@@ -227,7 +245,7 @@ for (const [id, list] of Object.entries(BLD)) {
 }
 
 for (const box of caixas) {
-  if (box.a < 2101 || box.a > 2116) continue;
+  if (box.a < 2101 || box.a > 2130 || box.a === 2122) continue;
   const ring = box.a >= 2226 ? 0 : 10;
   for (let i = 0; i < ring; i++) {
     const ang = (i / ring) * Math.PI * 2;
@@ -237,12 +255,19 @@ for (const box of caixas) {
   }
 }
 
-/* Ilex Forest sits on Route 34, west of Azalea. */
-for (let i = 0; i < 14; i++) {
-  const x = TOWN[2105].x + ((i % 5) - 2) * 6;
-  const z = (TOWN[2104].z + TOWN[2105].z) / 2 + Math.floor(i / 5) * 6 - 6;
-  add('tree', x, z);
+for (let i = 0; i < 18; i++) {
+  const T = TOWN[2117];
+  add('tree', T.x + ((i % 6) - 2.5) * 6, T.z + (Math.floor(i / 6) - 1) * 6);
 }
+add('sea_rock', TOWN[2122].x, TOWN[2122].z);
+add('sea_rock', TOWN[2122].x + 8, TOWN[2122].z - 6);
+add('floor_cliff_obj', TOWN[2118].x, TOWN[2118].z);
+add('floor_cliff_obj', TOWN[2119].x, TOWN[2119].z);
+add('floor_cliff_obj', TOWN[2120].x, TOWN[2120].z);
+add('floor_cliff_obj', TOWN[2121].x, TOWN[2121].z);
+add('floor_cliff_obj', TOWN[2123].x, TOWN[2123].z);
+add('floor_cliff_obj', TOWN[2127].x, TOWN[2127].z);
+add('sm_t_003_pokecompany_01_1', TOWN[2126].x, TOWN[2126].z);
 
 const byArea = new Map();
 for (const [id, p] of Object.entries(doors)) {
@@ -288,7 +313,7 @@ const out = {
   ambiente: [],
   areaEnv: [],
   grama: [],
-  agua: caixas.filter(c => c.a === 2240 || c.a === 2241).map(c => ({ a: c.a, x: c.x, z: c.z, sx: c.sx, sz: c.sz })),
+  agua: caixas.filter(c => c.a === 2240 || c.a === 2241 || c.a === 2122).map(c => ({ a: c.a, x: c.x, z: c.z, sx: c.sx, sz: c.sz })),
   portas: [],
   treinadores: [],
   historias: [],
