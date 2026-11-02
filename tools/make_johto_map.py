@@ -26,6 +26,8 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 
+from johto_towns import SIZES, TOWNS, GYMS, STATUE
+
 ROOT = Path(__file__).resolve().parents[1]
 BP = ROOT / 'tools/johto_blueprint.png'
 OUT = ROOT / 'public/data/2000001.json'
@@ -94,157 +96,6 @@ ROUTE_PX = {
     2248: (0, 196, 6, 230),
 }
 
-LAYOUTS = {
-    2101: {
-        'blds': [
-            ('sm_c_yjs_house', -12, -8),
-            ('sm_t_001_house_01_red', 10, -4),
-            ('sm_c_001_house_02_blue', 10, 10),
-            ('sm_t_001_house_01', -10, 10),
-        ],
-        'extra': [
-            ('sm_d_040_windmill_01_01_h', -18, -14),
-            ('sm_d_040_windmill_01_01_h', 16, -14),
-            ('sm_d_040_windmill_01_01_h', 16, 14),
-            ('sm_d_040_windmill_01_01_h', -18, 14),
-            ('sm_c_001_signboard_01', 2, 2),
-        ],
-    },
-    2102: {
-        'blds': [
-            ('sm_c_001_pokecen_01', 8, -8),
-            ('sm_c_001_shop_01', 18, -8),
-            ('sm_c_001_house_02_blue', -12, -8),
-            ('sm_t_007_house_01', -12, 8),
-            ('sm_t_001_house_01', 6, 10),
-        ],
-        'extra': [
-            ('sm_c_001_guide_03', 0, 2),
-            ('sm_c_001_streetlight_01', -4, 0),
-            ('sm_c_001_streetlight_01', 12, 0),
-            ('sm_c_001_signboard_01', 2, 6),
-        ],
-    },
-    2103: {
-        'blds': [
-            ('sm_r_209_losttower_01', 0, -16),
-            ('sm_c_001_gym_01', -16, -4),
-            ('sm_c_001_pokecen_01', 14, -6),
-            ('sm_c_001_shop_01', 14, 6),
-            ('sm_t_003_trainersschool_01', -8, 12),
-            ('sm_t_007_house_01', 6, 14),
-            ('sm_t_009_house_01', -16, 12),
-        ],
-        'extra': [
-            ('sm_c_001_streetlight_01', -4, 0),
-            ('sm_c_001_streetlight_01', 8, 0),
-            ('sm_c_001_signboard_01', 0, 4),
-        ],
-    },
-    2104: {
-        'blds': [
-            ('sm_t_011_house_02', -16, -10),
-            ('sm_t_011_house_02_1', -8, -6),
-            ('sm_c_001_pokecen_01', 4, -8),
-            ('sm_c_001_shop_01', 16, -8),
-            ('sm_c_001_gym_02', -10, 10),
-            ('sm_t_011_house_02_2', 12, 10),
-        ],
-        'extra': [('sm_c_001_signboard_01', 2, 2), ('tree', -18, 0), ('tree', 18, 4)],
-    },
-    2105: {
-        'blds': [
-            ('sm_t_003_pokecompany_01_1', -18, -4),
-            ('sm_c_001_gym_02', 0, -18),
-            ('sm_t_006_bicycleshop_01', 14, -8),
-            ('sm_c_001_shop_01', -10, 8),
-            ('sm_c_001_pokecen_01', -6, 16),
-            ('sm_t_007_house_01_1_yellow', 12, 6),
-            ('sm_t_007_house_01_2_1yellow', 20, 6),
-            ('sm_t_007_house_01_1_1yellow_w', 12, 16),
-            ('sm_t_009_house_01_1_1yellow', 20, 16),
-            ('sm_t_007_house_01_3', -18, 16),
-        ],
-        'extra': [
-            ('sm_c_001_streetlight_01', -8, 0), ('sm_c_001_streetlight_01', 8, 0),
-            ('sm_c_001_streetlight_01', -8, 12), ('sm_c_001_streetlight_01', 8, 12),
-            ('sm_c_001_signboard_01', 4, 2),
-        ],
-        'plaza': True,
-    },
-    2106: {
-        'blds': [
-            ('sm_d_011_batower_01_1', 8, -16),
-            ('sm_r_209_losttower_01', -16, -16),
-            ('sm_c_001_gym_01', -14, 0),
-            ('sm_c_001_pokecen_01', 10, 0),
-            ('sm_c_001_shop_01', 10, 10),
-            ('sm_t_009_house_01', -12, 12),
-            ('sm_t_009_house_01_1', 0, 12),
-        ],
-        'extra': [
-            ('sm_c_001_streetlight_01', -4, 4), ('sm_c_001_streetlight_01', 6, 4),
-            ('sm_c_001_signboard_01', 0, 4),
-        ],
-        'plaza': True,
-    },
-    2107: {
-        'blds': [
-            ('sm_d_011_batower_01_1', -18, 8),
-            ('sm_c_001_gym_02', 4, -12),
-            ('sm_c_001_pokecen_01', 4, 0),
-            ('sm_c_001_shop_01', 16, 0),
-            ('sm_c_001_house_02_blue', 16, -12),
-            ('sm_c_001_house_02_blue', 16, 12),
-            ('sm_t_007_house_01', -4, 12),
-        ],
-        'extra': [
-            ('sm_c_001_streetlight_01', -6, 2), ('sm_c_001_streetlight_01', 10, 2),
-            ('sm_c_001_signboard_01', 0, 6),
-        ],
-        'plaza': True,
-    },
-    2108: {
-        'blds': [
-            ('sm_c_001_gym_01', 10, -8),
-            ('sm_c_001_pokecen_01', -8, -8),
-            ('sm_c_001_shop_01', -8, 8),
-            ('sm_c_001_house_02_purple', 10, 8),
-            ('sm_t_005_house_01_1', 0, 10),
-        ],
-        'extra': [
-            ('floor_cliff_obj', -16, 0), ('floor_cliff_obj', 16, -12),
-            ('sm_c_001_signboard_01', 2, 0),
-        ],
-    },
-    2109: {
-        'blds': [
-            ('sm_c_001_gym_02', 10, -8),
-            ('sm_c_001_pokecen_01', -10, -8),
-            ('sm_c_001_shop_01', 0, 8),
-            ('sm_t_005_house_01_1', -10, 8),
-        ],
-        'extra': [('sm_c_001_signboard_01', 2, 0), ('tree', -16, 0), ('tree', 16, 10)],
-    },
-    2110: {
-        'blds': [
-            ('sm_c_001_gym_01', 12, -8),
-            ('sm_c_001_pokecen_01', -12, -8),
-            ('sm_c_001_shop_01', 0, -8),
-            ('sm_t_011_house_02_1', -12, 10),
-            ('sm_t_011_house_02', 12, 10),
-        ],
-        'extra': [('floor_cliff_obj', 0, -16), ('sm_c_001_signboard_01', 4, 2)],
-    },
-    2114: {
-        'blds': [
-            ('sm_c_001_pokecen_01', -8, 0),
-            ('sm_t_011_house_02', 8, 0),
-        ],
-        'extra': [('floor_cliff_obj', 0, -10)],
-    },
-}
-
 # Same tile family Kanto paints its grass with (weights ~ Kanto's own mix).
 GRASS_MIX = (['floor_grass2'] * 4
              + ['ground_plane005', 'ground_plane006', 'ground_plane007', 'ground_plane008',
@@ -268,8 +119,7 @@ CARVE = [
 VOID, WATER, ROCK, PATH, TALL, GRASS, FOREST, MOUNT, OTHER = range(9)
 CLASS_NAMES = ['void', 'water', 'searock', 'path', 'tall', 'grass', 'forest', 'mount', 'other']
 
-# Half-size (metres) that covers every town building prefab (largest is 9.2 x 8.5 m).
-BLD_HALF = 5.0
+SIGN = 'sm_c_001_signboard_01'
 
 
 def world(px, py):
@@ -346,32 +196,42 @@ def main():
     def pad_of(px, py):
         """Town (with buildings) whose pad holds this pixel centre."""
         wx, wz = world(px + 0.5, py + 0.5)
-        for tid in LAYOUTS:
+        for tid in TOWNS:
             t = town_world[tid]
             if abs(wx - t['x']) <= t['sx'] / 2 and abs(wz - t['z']) <= t['sz'] / 2:
                 return tid
         return None
 
-    # Town pads: clear trees and tall grass, keep the blueprint's water and void.
     pad = np.zeros((h, w), np.int32)
     for py in range(h):
         for px in range(w):
-            tid = pad_of(px, py)
-            if tid:
-                pad[py, px] = tid
-                if cls[py, px] in (FOREST, TALL):
-                    cls[py, px] = GRASS
-    # Building footprints must stand on floor.
-    for tid, L in LAYOUTS.items():
-        t = town_world[tid]
-        for n, dx, dz in L.get('blds', []):
-            bx, bz = t['x'] + dx, t['z'] + dz
-            p0x, p0y = to_px(bx + BLD_HALF, bz - BLD_HALF)
-            p1x, p1y = to_px(bx - BLD_HALF, bz + BLD_HALF + 3)
-            for py in range(int(math.floor(p0y)), int(math.ceil(p1y))):
-                for px in range(int(math.floor(p0x)), int(math.ceil(p1x))):
-                    if 0 <= px < w and 0 <= py < h and cls[py, px] in (VOID, WATER, ROCK, FOREST, MOUNT, TALL):
-                        cls[py, px] = PATH
+            pad[py, px] = pad_of(px, py) or 0
+
+    # Every building on its blueprint spot: centred on the spot's column, front
+    # face on the edge under the wall row (doors face south, +z).
+    blds = []
+    for tid, T in TOWNS.items():
+        for n, cx, front, door in T['buildings']:
+            bx, fz = world(cx, front)
+            if n is None:
+                blds.append({'tid': tid, 'n': None, 'door': door, 'dx': bx, 'fz': fz})
+                continue
+            x0, z0, x1, z1 = SIZES[n]
+            ox, oz = bx + (x0 + x1) / 2, fz - z1 - 0.05
+            # stored x is west, the prefab's local +x is east
+            blds.append({'tid': tid, 'n': n, 'door': door, 'x': ox, 'z': oz, 'dx': bx, 'fz': fz,
+                         'rect': (ox - x1, oz + z0, ox - x0, oz + z1)})
+    # Building footprints, plus a 2 m apron at the door, must stand on floor.
+    for b in blds:
+        if not b['n']:
+            continue
+        rx0, rz0, rx1, rz1 = b['rect']
+        p0x, p0y = to_px(rx1, rz0)
+        p1x, p1y = to_px(rx0, rz1 + 2)
+        for py in range(int(math.floor(p0y)), int(math.ceil(p1y))):
+            for px in range(int(math.floor(p0x)), int(math.ceil(p1x))):
+                if 0 <= px < w and 0 <= py < h and cls[py, px] in (VOID, WATER, ROCK, FOREST, MOUNT, TALL):
+                    cls[py, px] = PATH
 
     water_like = (cls == WATER) | (cls == ROCK)
     near_water = np.zeros_like(water_like)
@@ -445,12 +305,34 @@ def main():
             elif c == GRASS and not in_pad and hsh(px, py, 3) % 9 == 0:
                 add(GRASS_DECO[hsh(px, py, 4) % len(GRASS_DECO)], cx + 0.5, cz + 0.5)
 
-    for tid, L in LAYOUTS.items():
-        t = town_world[tid]
-        for n, dx, dz in L.get('blds', []):
-            add(n, t['x'] + dx, t['z'] + dz)
-        for n, dx, dz in L.get('extra', []):
-            add(n, t['x'] + dx, t['z'] + dz)
+    def in_building(x, z, pad_m=0.6):
+        for b in blds:
+            if b['n']:
+                rx0, rz0, rx1, rz1 = b['rect']
+                if rx0 - pad_m <= x <= rx1 + pad_m and rz0 - pad_m <= z <= rz1 + 1.5:
+                    return True
+        return False
+
+    for b in blds:
+        if not b['n']:
+            continue
+        add(b['n'], b['x'], b['z'])
+        if b['n'] in GYMS:
+            rx0, _, rx1, _ = b['rect']
+            for sx in (rx0 - 0.7, rx1 + 0.7):
+                add(STATUE, sx, b['fz'] + 0.8)
+    for tid, T in TOWNS.items():
+        for p in T['props']:
+            x, z = world(p[1], p[2])
+            if not in_building(x, z, 0.3):
+                add(p[0], x, z, a=p[3] if len(p) > 3 else 0)
+    # A signboard on every sign pixel the blueprint draws in a town.
+    r_, g_, b_ = (arr[..., i].astype(int) for i in range(3))
+    sign_px = (r_ >= 98) & (r_ <= 118) & (g_ >= 110) & (g_ <= 128) & (b_ >= 98) & (b_ <= 118)
+    for py, px in zip(*np.nonzero(sign_px & (pad > 0))):
+        x, z = world(px + 0.5, py + 0.5)
+        if not in_building(x, z):
+            add(SIGN, x, z)
 
     # Area boxes: towns/landmarks first (the game takes the first box that holds a point).
     caixas = []
@@ -517,11 +399,11 @@ def main():
 
     # Open floor (no tree, boulder or building on it) for placing door points.
     walk_px = np.isin(cls, (PATH, GRASS, TALL)) & ~boulder
-    for tid, L in LAYOUTS.items():
-        t = town_world[tid]
-        for _n, dx, dz in L.get('blds', []):
-            p0x, p0y = to_px(t['x'] + dx + BLD_HALF, t['z'] + dz - BLD_HALF)
-            p1x, p1y = to_px(t['x'] + dx - BLD_HALF, t['z'] + dz + BLD_HALF - 1)
+    for b in blds:
+        if b['n']:
+            rx0, rz0, rx1, rz1 = b['rect']
+            p0x, p0y = to_px(rx1, rz0)
+            p1x, p1y = to_px(rx0, rz1)
             walk_px[max(0, int(p0y)):int(math.ceil(p1y)), max(0, int(p0x)):int(math.ceil(p1x))] = False
     # Only big connected regions: a door point in a 3-pixel clearing between trees is a trap.
     moves = np.isin(cls, (PATH, GRASS, TALL, MOUNT)) & ~boulder
@@ -582,16 +464,16 @@ def main():
             'x': round(x, 2), 'y': 0, 'z': round(z, 2), 'a': a,
         })
 
-    for tid, L in LAYOUTS.items():
+    # Door just inside the front wall (as Kanto sets them), arrival on the step outside.
+    known = {int(k) for k in doors}
+    for b in blds:
+        if b['door']:
+            put(b['door'], 162, b['dx'], b['fz'] - 0.6, b['tid'])
+            if b['door'] + 1000000 in known:
+                put(b['door'] + 1000000, 171, b['dx'], b['fz'] + 1.2, b['tid'])
+    for tid in TOWNS:
         t = town_world[tid]
-        doors_t = sorted((p for p in by_area[tid] if p['t'] == 6), key=lambda p: p['cfg'])
-        arrs = sorted((p for p in by_area[tid] if p['t'] == 7), key=lambda p: p['cfg'])
-        blds = L.get('blds', [])
-        n = min(len(blds), len(doors_t), len(arrs))
-        for i in range(n):
-            _n, dx, dz = blds[i]
-            put(doors_t[i]['cfg'], 162, t['x'] + dx, t['z'] + dz + 5.2, tid)
-            put(arrs[i]['cfg'], 171, t['x'] + dx, t['z'] + dz + 6.5, tid)
+        arrs = [p for p in by_area[tid] if p['t'] == 7]
         for p in arrs:
             if str(p['cfg']).endswith('99'):
                 put(p['cfg'], 171, t['x'], t['z'] + t['sz'] / 2 - 4, tid, snap=True)
@@ -638,9 +520,10 @@ def main():
     print('top prefabs', names.most_common(12))
     print('route boxes grown for', grown, 'pixels')
     print('bbox', bbox, 'size', round(OUT.stat().st_size / 1e6, 2), 'MB')
-    for i in sorted(LAYOUTS):
+    for i in sorted(TOWNS):
         t = town_world[i]
-        print(i, t['name'], 'px', TOWN_PX[i][:2], 'x', round(t['x']), 'z', round(t['z']))
+        print(i, t['name'], 'px', TOWN_PX[i][:2], 'x', round(t['x']), 'z', round(t['z']),
+              'buildings', sum(1 for b in blds if b['tid'] == i and b['n']))
 
 
 if __name__ == '__main__':
