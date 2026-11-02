@@ -9,7 +9,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
-import { carregar as carregarNomes, nomeMapa, nomeMapaComId, rotuloPrefab } from '/admin/map_names.mjs';
+import { carregar as carregarNomes, nomeMapa, nomeMapaComId, apelidosMapa, opcoesMapa, rotuloPrefab } from '/admin/map_names.mjs';
 
 const BASE = location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190';
 const $ = id => document.getElementById(id);
@@ -139,7 +139,7 @@ let pecas = [];             // lista unificada: { pos:Vector3, nome, mats:[{geo,
 let tipos = [];             // paleta: { id, nome, criar(pos)→peça }
 let instGrupos = [];
 let selPeca = null, boxHelper = null;
-let sujo = false, mapaAtual = null, ferramenta = 'sel', addTipo = null, snap = false;
+let sujo = false, mapaAtual = null, mapaRotulo = '', mapasDisponiveis = [], ferramenta = 'sel', addTipo = null, snap = false;
 const raycaster = new THREE.Raycaster();
 const planoChao = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const _m4 = new THREE.Matrix4(), _T = new THREE.Matrix4();
@@ -155,17 +155,48 @@ function setPos(peca, x, y, z) {
 
 // ── Carregar ──────────────────────────────────────────────────────────────────
 const loader = new GLTFLoader();
+function aplicarSelecaoMapa() {
+  const sel = $('sel-mapa');
+  if (!sel) return;
+  if (mapaRotulo) {
+    const hit = [...sel.options].find(o => o.value === mapaAtual && o.textContent === mapaRotulo);
+    if (hit) { hit.selected = true; return; }
+  }
+  sel.value = mapaAtual;
+}
+
+function montarOpcoesMapa() {
+  const q = ($('mapa-busca')?.value || '').trim().toLowerCase();
+  const opts = [];
+  for (const m of mapasDisponiveis) opts.push(...opcoesMapa(m));
+  opts.sort((a, b) => a.label.localeCompare(b.label, 'en'));
+  let vis = q ? opts.filter(o => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)) : opts;
+  if (mapaAtual && !vis.some(o => o.value === mapaAtual && (!mapaRotulo || o.label === mapaRotulo))) {
+    const keep = opts.find(o => o.value === mapaAtual && o.label === mapaRotulo) || opts.find(o => o.value === mapaAtual);
+    if (keep) vis = [keep, ...vis];
+  }
+  $('sel-mapa').innerHTML = vis.map(o => `<option value="${esc(o.value)}" title="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+  aplicarSelecaoMapa();
+}
+
 async function listarMapas() {
   await carregarNomes();
   const r = await api('/admin/mapas-glb');
-  const mapas = r.mapas || [];
-  $('sel-mapa').innerHTML = mapas.map(m => `<option value="${esc(m)}" title="${esc(m)}">${esc(nomeMapaComId(m))}</option>`).join('');
-  if (!mapas.length) { $('carregando').textContent = 'No maps with a local GLB.'; return; }
-  await carregarMapa(mapas.includes('pallet_route1') ? 'pallet_route1' : mapas[0]);
+  mapasDisponiveis = r.mapas || [];
+  montarOpcoesMapa();
+  if (!mapasDisponiveis.length) { $('carregando').textContent = 'No maps with a local GLB.'; return; }
+  await carregarMapa(mapasDisponiveis.includes('pallet_route1') ? 'pallet_route1' : mapasDisponiveis[0]);
 }
-async function carregarMapa(nome) {
-  $('carregando').hidden = false; $('carregando').textContent = 'loading ' + nomeMapa(nome) + '…';
-  mapaAtual = nome; $('sel-mapa').value = nome; deselecionar();
+async function carregarMapa(nome, rotulo) {
+  $('carregando').hidden = false; $('carregando').textContent = 'loading ' + (rotulo || nomeMapa(nome)) + '…';
+  mapaAtual = nome;
+  if (rotulo) mapaRotulo = rotulo;
+  else {
+    const first = opcoesMapa(nome)[0];
+    mapaRotulo = first?.label || nomeMapaComId(nome);
+  }
+  aplicarSelecaoMapa();
+  deselecionar();
   for (const g of instGrupos) { raizInst.remove(g); g.dispose?.(); }
   instGrupos = []; pecas = []; partes = new Map(); nomeDoPrefab = new Map(); sceneGLB = null; mapaNode = null;
   let g;
@@ -352,7 +383,11 @@ function irPivot(pt) {
   orbit.update();
   atualizarPivo();
 }
-function atualizarHud() { $('hud').innerHTML = `<b>${pecas.length}</b> pieces · <b>${instGrupos.length}</b> types · <b>${modo === 'biblioteca' ? 'library' : 'assembled'}</b> · map <b>${esc(nomeMapa(mapaAtual))}</b> · pivot <b id="hud-pivo">${orbit.target.x.toFixed(1)}, ${orbit.target.y.toFixed(1)}, ${orbit.target.z.toFixed(1)}</b>`; }
+function atualizarHud() {
+  const aliases = apelidosMapa(mapaAtual);
+  const shared = aliases.length > 1 ? ` · shared interior (${aliases.length} towns)` : '';
+  $('hud').innerHTML = `<b>${pecas.length}</b> pieces · <b>${instGrupos.length}</b> types · <b>${modo === 'biblioteca' ? 'library' : 'assembled'}</b> · map <b title="${esc(aliases.join(', '))}">${esc(mapaRotulo || nomeMapa(mapaAtual))}</b>${shared} · pivot <b id="hud-pivo">${orbit.target.x.toFixed(1)}, ${orbit.target.y.toFixed(1)}, ${orbit.target.z.toFixed(1)}</b>`;
+}
 
 // ── Paleta ────────────────────────────────────────────────────────────────────
 function renderPaleta() {
@@ -423,8 +458,13 @@ $('s-del').onclick = deletar;
 for (const k of ['x', 'y', 'z']) $('s-' + k).addEventListener('input', () => { if (!selPeca) return; const p = selPeca.pos; setPos(selPeca, k === 'x' ? (+$('s-x').value || 0) : p.x, k === 'y' ? (+$('s-y').value || 0) : p.y, k === 'z' ? (+$('s-z').value || 0) : p.z); proxy.position.set(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
 $('pal-busca').addEventListener('input', renderPaleta);
 $('b-salvar').onclick = salvar;
-$('b-recarregar').onclick = async () => { if (sujo && !confirm('Discard unsaved changes?')) return; await carregarMapa(mapaAtual); };
-$('sel-mapa').onchange = async e => { if (sujo && !confirm('Switching maps discards unsaved changes. Continue?')) { e.target.value = mapaAtual; return; } await carregarMapa(e.target.value); };
+$('b-recarregar').onclick = async () => { if (sujo && !confirm('Discard unsaved changes?')) return; await carregarMapa(mapaAtual, mapaRotulo); };
+$('mapa-busca').addEventListener('input', montarOpcoesMapa);
+$('sel-mapa').onchange = async e => {
+  const opt = e.target.selectedOptions[0];
+  if (sujo && !confirm('Switching maps discards unsaved changes. Continue?')) { aplicarSelecaoMapa(); return; }
+  await carregarMapa(e.target.value, opt?.textContent || '');
+};
 addEventListener('keydown', e => {
   if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.key === 'Delete' || e.key === 'Backspace') deletar();

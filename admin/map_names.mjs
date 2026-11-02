@@ -68,6 +68,21 @@ let pronto = false;
 let exatas = new Map();
 let padroes = [];
 const cenasPorId = Object.create(null);
+const apelidosPorId = Object.create(null);
+
+function nomesUnicos(lista) {
+  const visto = new Set();
+  const out = [];
+  for (const raw of lista) {
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    const n = traduzNome(raw.trim());
+    const k = n.toLowerCase();
+    if (visto.has(k)) continue;
+    visto.add(k);
+    out.push(n);
+  }
+  return out;
+}
 
 function compilar(chave, valor) {
   const partes = chave.split(/(\{\w+\})/);
@@ -129,6 +144,20 @@ export function nomeMapaComId(id) {
   return n + ' (' + k + ')';
 }
 
+/** Every English place name that uses this map file (shared interiors list each city). */
+export function apelidosMapa(id) {
+  const k = String(id ?? '');
+  return apelidosPorId[k] ? apelidosPorId[k].slice() : [];
+}
+
+/** Dropdown rows for one GLB: one option per city/area that shares the room. */
+export function opcoesMapa(id) {
+  const k = String(id ?? '');
+  const nomes = apelidosMapa(k);
+  if (nomes.length) return nomes.map(n => ({ value: k, label: n + ' (' + k + ')' }));
+  return [{ value: k, label: nomeMapaComId(k) }];
+}
+
 /** Human English for dump node names like `sm_c_001_comgrass_01_1`. */
 export function rotuloPrefab(raw) {
   let s = String(raw || '').replace(/^lib:?/i, '').trim();
@@ -152,7 +181,11 @@ export async function carregar() {
     fetch('/data/scenes.json').then(r => r.ok ? r.json() : null).catch(() => null),
     fetch('/data/locale/names_en.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
   ]);
-  for (const c of ce?.cenas || []) cenasPorId[String(c.id)] = c.nome;
   montar(nomes);
+  for (const c of ce?.cenas || []) {
+    const id = String(c.id);
+    cenasPorId[id] = c.nome;
+    apelidosPorId[id] = nomesUnicos([c.nome, ...(c.areas || []).map(a => a?.nome)]);
+  }
   pronto = true;
 }

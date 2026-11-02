@@ -28,6 +28,8 @@ a{ color:var(--azul); text-decoration:none; }
 
 #app{ display:grid; grid-template-rows:48px 1fr; height:100%; }
 header{ display:flex; align-items:center; gap:14px; padding:0 16px; background:var(--painel); border-bottom:1px solid var(--borda); z-index:2; }
+header .busca-mapa{ width:160px; background:#0f131b; border:1px solid var(--borda); border-radius:6px; padding:5px 7px; }
+#sel-mapa{ max-width:min(420px, 42vw); }
 header .marca{ font-weight:700; color:var(--acento); }
 header .dir{ margin-left:auto; display:flex; gap:10px; align-items:center; }
 header .sujo{ color:var(--acento); font-size:13px; }
@@ -61,7 +63,7 @@ header .sujo{ color:var(--acento); font-size:13px; }
 <div id="app">
   <header>
     <span class="marca">Pokemon 3D Base</span><span class="fraco">3D Scenery Editor</span>
-    <label class="fraco">Map <select id="sel-mapa" style="width:auto"></select></label>
+    <label class="fraco">Map <input id="mapa-busca" class="busca-mapa" type="search" placeholder="find map…" autocomplete="off"> <select id="sel-mapa" style="width:auto"></select></label>
     <div class="dir">
       <a href="/admin">← Panel</a>
       <span class="sujo" id="sujo" hidden>● unsaved</span>
