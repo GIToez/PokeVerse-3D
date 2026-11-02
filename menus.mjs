@@ -353,7 +353,7 @@ function timeAtual(){
   let k = -1;
   if (p){ if (p.uid != null) k = time.findIndex(t => t && String(t.uid) === String(p.uid)); if (k < 0) k = time.findIndex(t => t && t.glb === p.glb && t.lv === p.lv); }
   const reg = k >= 0 ? time[k] : null;
-  if (p) lista.push({ seguindo: true, uid: p.uid ?? reg?.uid ?? null, shiny: !!(reg ? reg.shiny : p.shiny), sexo: reg?.sexo, dex: p.dex || ctx.dexDoGlb(p.glb), glb: p.glb, nome: p.nome, lv: p.lv, hp: p.hp, maxHp: p.maxHp, exp: p.exp, amizade: p.amizade, ivs: p.ivs, evs: p.evs || reg?.evs, natureza: p.natureza, movs: p.movs, aprender: p.aprender });
+  if (p) lista.push({ seguindo: true, uid: p.uid ?? reg?.uid ?? null, shiny: !!(reg ? reg.shiny : p.shiny), sexo: reg?.sexo, dex: p.dex || ctx.dexDoGlb(p.glb), glb: p.glb, nome: p.nome, lv: p.lv, hp: p.hp, maxHp: p.maxHp, exp: p.exp, amizade: p.amizade, ivs: p.ivs, evs: p.evs || reg?.evs, natureza: p.natureza, movs: p.movs, aprender: p.aprender, held: p.held || reg?.held || null });
   time.forEach((t, i) => { if (t && i !== k) lista.push({ ...t }); });
   return lista;
 }
@@ -504,23 +504,36 @@ function defPopup(nome){
 }
 function popupPk(){
   if (popPk) return popPk;
-  const def = defPopup('pokemon');
-  if (new URLSearchParams(location.search).get('popup') === '0') return null;   // ?popup=0 volta pra janela antiga (e é por onde se chega na Caixa)
-  if (!def) return null;                                                 // sem maquete (celular em pé): janela antiga
-  popPk = Popup.montar(def, {
-    item: i => { selPokemon = i; confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; render(); },
+  if (new URLSearchParams(location.search).get('popup') === '0') return null;
+  popPk = document.createElement('div');
+  popPk.id = 'pf-pokemon';
+  popPk.className = 'pf pv-win notranslate';
+  popPk.setAttribute('translate', 'no');
+  popPk.lang = 'en';
+  popPk.__skipEscala = true;
+  popPk.__def = { nome: 'pokemon', w: 1180, h: 780 };
+  popPk.__cb = {
     acao: nome => acaoPokemon(nome),
-    fechar: () => { if (aberta === 'pokemon') aberta = null; confirmarAprender = null; },
+    fechar: () => { if (aberta === 'pokemon') aberta = null; confirmarAprender = null; heldPicker = false; },
+  };
+  Object.assign(popPk.style, { position: 'fixed', left: '50%', top: '50%', display: 'none', zIndex: '60' });
+  popPk.innerHTML = `<header class="pv-head">
+    <h2>Pokémon</h2>
+    <nav class="pv-tabs">
+      <button type="button" data-pv-aba="time">Party</button>
+      <button type="button" data-pv-aba="caixa">Box</button>
+    </nav>
+    <span class="pv-count" data-pv="contagem"></span>
+    <button type="button" class="pv-x" aria-label="Close" title="Close"></button>
+  </header>
+  <div class="pv-body" data-pv-corpo></div>`;
+  popPk.querySelector('.pv-x').onclick = ev => { ev.stopPropagation(); fechar(); };
+  popPk.querySelectorAll('[data-pv-aba]').forEach(b => b.onclick = () => {
+    abaAtual = b.dataset.pvAba;
+    confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; heldPicker = false;
+    render();
   });
-  /* Golpe novo na fila (subiu de nível com 4 golpes): a maquete não tem lugar pra isso, então os 4 cards viram botões
-     ("clique no golpe que vai esquecer", 2 cliques) e a linha da evolução vira o "não aprender". Está no relatório pra Amanda. */
-  for (let i = 1; i <= 4; i++){
-    const g = Popup.grupo(popPk, 'golpe-' + i);
-    if (g) g.addEventListener('click', ev => { ev.stopPropagation(); acaoPokemon('golpe-' + i); });
-  }
-  const evoEl = popPk.querySelector('[data-fig="ficha"] [data-txt="evolucao"]');
-  if (evoEl) evoEl.addEventListener('click', ev => { ev.stopPropagation(); acaoPokemon('nao-aprender'); });
-  montarReaprender(popPk);                                                // 18/09: botão "↻ Reaprender" + lista (nós sintéticos por cima dos cards de golpe)
+  document.body.appendChild(popPk);
   return popPk;
 }
 /** Nome pt do tipo (a tabela de cores do Figma usa os mesmos nomes de ui/tipo/). */
@@ -535,6 +548,7 @@ const iconeMonU = dex => './ui/mon/pm' + String(dex).padStart(4, '0') + '.png';
    linha "✧ quer aprender X — clique no golpe que vai esquecer" (com vaga livre entra na hora). Vale pro PC e pro celular deitado, padrão
    e v2 (as caixas são lidas dos nós da maquete); a janela antiga (?popup=0, celular em pé) tem o bloco "↻ Reaprender golpe" na ficha. */
 let reaprenderAberto = false;
+let heldPicker = false;
 function reaprenderHtml(e){                                              // janela antiga
   const lista = ctx.golpesReaprender?.(e) || []; if (!lista.length) return '';
   return `<details class="reaprender" style="margin-top:6px"><summary data-reaprender="1" style="cursor:pointer;font-size:12px">↻ ${esc(tr('Relearn move'))} (${lista.length})</summary><div style="margin-top:4px;font-size:12px">${lista.map(g => `<button type="button" class="btn" data-reaprender-id="${esc(g.id)}" title="Lv ${g.lv} · ${esc(g.tipo || '')} · ${esc(tr('power'))} ${g.poder ?? '—'}">${esc(g.nome)} <small>Lv ${g.lv}</small></button>`).join(' ')}</div></details>`;
@@ -609,36 +623,168 @@ function acaoPokemon(nome){
     else { confirmarSoltar = chave; render(); }                          // 1º clique: pede confirmação
   }
 }
-/** Escreve os dados de verdade nas áreas da maquete (os ids são os do Figma). */
+function heldDe(e){ return e?.held && e.held.id != null ? e.held : null; }
+function heldNaMochila(){
+  const q = itensLS();
+  return Object.entries(q).filter(([id, n]) => n > 0 && String(D?.itens?.[id]?.t) === '14').map(([id, n]) => ({ id, n, it: D.itens[id] }));
+}
+function gravarHeld(e, held){
+  if (!e) return;
+  e.held = held || null;
+  if (e.seguindo && ctx.jogo?.pika) ctx.jogo.pika.held = e.held;
+  const time = ctx.jogo.time || [];
+  const k = time.findIndex(x => mesmoRegistro(x, e));
+  if (k >= 0) time[k].held = e.held;
+  ctx.gravarLS('time', time);
+}
+function iconeHeld(id){
+  const it = D?.itens?.[id];
+  return it?.i ? './ui/itens/' + it.i + '.png' : (id ? './ui/itens/ic_' + id + '.png' : '');
+}
+function nomeHeld(id){ return D?.itens?.[id]?.n || ('Item ' + id); }
+function btnPv(id, label, on, title = ''){
+  return `<button type="button" class="pv-btn${on ? '' : ' off'}" data-pv="${id}" ${on ? '' : 'disabled'} title="${esc(title)}">${label}</button>`;
+}
+
+/** Fills the 9-slice party window (not the Figma maquette). */
 function encherPokemon(pop){
+  if (!pop?.classList?.contains('pv-win')) return;
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
-  const tit = Popup.texto(pop, 'titulo', 'Pokémon');
-  if (tit){ tit.setAttribute('translate', 'no'); tit.classList.add('notranslate'); }
-  pintarRotulosFicha(pop);
-  Popup.texto(pop, 'contagem-time', lista.length + '/6 ' + tr('in party'));
-  const pref = pop.__prefItem || 'item-time';                            // PC: item-time-N (cartão completo); celular: slot-poke-N (cabeça + tecla)
-  for (let i = 0; i < 6; i++){
-    const it = Popup.item(pop, i, pref); if (!it) continue;
-    const p = lista[i], S = p && ctx.porDex.get(p.dex);
-    Popup.itemVazio(pop, i, !p, pref);                                   // slot sem Pokémon: só o cartão
-    Popup.texto(pop, 'tecla', String(i + 1), it);                        // celular: número do slot
-    if (!p) continue;
-    const tipo = S?.types?.[0] || null;
-    lockTxt(Popup.texto(pop, 'item-nome', (p.shiny ? '✨ ' : '') + p.nome, it));
-    lockTxt(Popup.texto(pop, 'item-status', p.seguindo ? 'Following' : p.hp === 0 ? 'Fainted' : '', it));
-    lockTxt(Popup.texto(pop, 'item-nivel', 'Lv ' + p.lv + ' · No. ' + String(p.dex).padStart(3, '0'), it));
-    lockTxt(Popup.badge(pop, 'item-tipo', tipo && TIPO_FIG[tipo], tipo && (S.types.length > 1 ? S.types.join(' · ') : tipo), it));
-    alinharTiposDoTime(pop, it, (S?.types || []).length);                // 18/09: 1 tipo na ponta direita, 2 tipos lado a lado, em toda linha
-    iconesTipo(pop, it, S?.types || []);                                 // v2 (17/09): ícone(s) do tipo no cartão do time
-    Popup.imagem(pop, 'pokemon', iconeMonU(p.dex), it);
-    const hpI = p.hp ?? p.maxHp ?? 0;                                      // 17/09 (auditoria): registro sem `hp` (captura/inicial sem conta) = HP cheio, como o HUD do time (`t.hp ?? t.maxHp`); aqui saía "0/189" com a barra vazia
-    const k = p.maxHp ? Math.max(0, Math.min(1, hpI / p.maxHp)) : 0;
-    Popup.barra(pop, 'vida', k, corDaVida(k), it);
-    Popup.texto(pop, 'vida', Math.round(hpI) + '/' + (p.maxHp ?? 0), it);
+  const aba = abaAtual === 'caixa' ? 'caixa' : 'time';
+  pop.querySelectorAll('[data-pv-aba]').forEach(b => b.classList.toggle('on', b.dataset.pvAba === aba));
+  const cx = ctx.lerLS('caixa', []) || [];
+  const cont = pop.querySelector('[data-pv="contagem"]');
+  if (cont) cont.textContent = aba === 'caixa' ? cx.length + ' in box' : lista.length + '/6 in party';
+  const corpo = pop.querySelector('[data-pv-corpo]'); if (!corpo) return;
+  if (aba === 'caixa'){ encherCaixaPv(corpo); return; }
+  if (!lista.length){
+    corpo.innerHTML = '<div class="pv-grid"><div class="pv-list"></div><div class="pv-sheet"><p>No Pokémon yet — pick a starter in Oak\'s lab.</p></div></div>';
+    return;
   }
-  Popup.selecionar(pop, selPokemon + 1, pref, pref);
-  encherFichaPokemon(pop, lista[selPokemon], lista);
+  const e = lista[selPokemon], S = e && ctx.porDex.get(e.dex);
+  const slots = [0, 1, 2, 3, 4, 5].map(i => {
+    const p = lista[i];
+    if (!p) return `<div class="pv-slot vazia"><span class="n">${i + 1}</span><span></span><span><b>—</b></span></div>`;
+    const pct = p.maxHp ? Math.round(100 * ((p.hp == null ? p.maxHp : p.hp) / p.maxHp)) : 100;
+    const sexo = p.sexo === 'm' ? ' ♂' : p.sexo === 'f' ? ' ♀' : '';
+    return `<div class="pv-slot${i === selPokemon ? ' on' : ''}" data-i="${i}"><span class="n">${i + 1}</span><img src="${iconeMonU(p.dex)}" alt="">
+      <span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${sexo}</b><small>Lv ${p.lv} · No. ${String(p.dex).padStart(3, '0')}${p.seguindo ? ' · Following' : p.hp === 0 ? ' · Fainted' : ''}</small>
+      <div class="hp"><i style="width:${pct}%;background:${corDaVida(pct / 100)}"></i></div></span>
+      <span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</span></div>`;
+  }).join('');
+  if (!e || !S){ corpo.innerHTML = `<div class="pv-grid"><div class="pv-list">${slots}</div><div class="pv-sheet"></div></div>`; ligarPvLista(corpo); return; }
+  const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
+  const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));
+  const prox = ctx.expPara?.(e.dex, lv + 1);
+  const hp = e.hp ?? stats[0], maxHp = e.maxHp || stats[0];
+  const k = maxHp ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
+  const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex) || []);
+  const novoId = e.aprender?.[0] || null, novo = novoId ? (ctx.golpe?.(novoId) || { nome: String(novoId) }) : null;
+  const todasEvo = ctx.opcoesEvolucao?.(e) || [], ops = todasEvo.filter(o => o.glb);
+  const pronta = ops.find(o => o.pode), prontas = ops.filter(o => o.pode);
+  const emBreve = ops.length ? null : todasEvo.find(o => !o.glb);
+  const evoTxt = novo
+    ? '✧ wants to learn ' + novo.nome + ' — click a move to forget, or Skip learn'
+    : prontas.length > 1
+      ? '→ can evolve into ' + prontas.map(o => o.nome).join(', ')
+      : ops.length
+        ? '→ ' + ops[0].nome + ': ' + textoEvo(ops[0].regra) + (pronta ? '' : ' — ' + (ops[0].falta || 'not yet'))
+        : emBreve ? '→ ' + emBreve.nome + ': ' + textoEvo(emBreve.regra) + ' (coming soon)' : 'does not evolve';
+  const held = heldDe(e), bagHeld = heldNaMochila();
+  const heldNome = held ? nomeHeld(held.id) : 'No held item';
+  const pick = heldPicker ? `<div class="pv-held-pick">${bagHeld.length ? bagHeld.map(x => `<button type="button" data-pv-give="${esc(x.id)}">${esc(x.it?.n || x.id)} ×${x.n}</button>`).join('') : '<small>No held items in the Bag</small>'}</div>` : '';
+  const tipos = (S.types || []).map(tipoHtml).join('') + (S.kg ? `<small>${S.kg} kg</small>` : '');
+  const status = e.seguindo ? 'Following' : e.hp === 0 ? 'Fainted' : lv > tetoObed() ? 'At level cap' : '';
+  const meta = 'No. ' + String(e.dex).padStart(3, '0') + ' · Lv ' + lv
+    + (e.exp != null && prox ? ' · XP ' + e.exp + '/' + prox : '')
+    + (e.amizade != null ? ' · friendship ' + e.amizade : '');
+  const rev = ctx.reanimadorNaMochila?.();
+  const reList = ctx.golpesReaprender?.(e) || [];
+  const podeSoltar = !e.seguindo && lista.length > 1;
+  const acoes = [
+    btnPv('seguir', 'Follow', !e.seguindo, e.seguindo ? 'Already following' : 'Send this Pokémon into the field'),
+    btnPv('caixa', 'Send to box', !e.seguindo && lista.length > 1, e.seguindo ? 'Switch partners first' : lista.length <= 1 ? 'This is your only Pokémon' : 'Store in the PC box'),
+    btnPv('evoluir', prontas.length > 1 ? '✦ Evolve (' + prontas.length + ')' : pronta ? '✦ Evolve → ' + pronta.nome : '✦ Evolve', !!(pronta && e.seguindo), pronta ? (e.seguindo ? 'Evolve now' : 'Must be following') : (ops[0]?.falta || emBreve?.nome || 'Cannot evolve')),
+    btnPv('soltar', confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release', podeSoltar, podeSoltar ? (confirmarSoltar === chaveDe(e) ? 'Click again to confirm' : 'Release this Pokémon') : 'Cannot release the one that is following'),
+    btnPv('reanimar', rev ? '💊 Revive (' + rev.n + ')' : '💊 Revive', !!(e.hp === 0 && rev), e.hp !== 0 ? 'Only when fainted' : (rev ? rev.nome : 'Buy a Revive at the Poké Mart')),
+    btnPv('reaprender', '↻ Relearn' + (reList.length ? ' (' + reList.length + ')' : ''), reList.length > 0, reList.length ? 'Moves it learns by this level that it does not have' : 'Nothing to relearn'),
+    btnPv('nao-aprender', 'Skip learn', !!novo, novo ? 'Do not learn ' + novo.nome : 'No move waiting'),
+    btnPv('give', 'Give item', !held && bagHeld.length > 0, held ? 'Already holding an item' : bagHeld.length ? 'Give a held item from the Bag' : 'No held items in the Bag'),
+    btnPv('take', 'Take item', !!(held && !held.preso), held?.preso ? 'Bound to this Pokémon' : held ? 'Return to the Bag' : 'Not holding anything'),
+  ].join('');
+  corpo.innerHTML = `<div class="pv-grid">
+    <div class="pv-list">${slots}<div class="pv-eggs">Eggs — none</div></div>
+    <div class="pv-sheet">
+      <div class="pv-id">
+        <img class="spr" src="${iconeMonU(e.dex)}" alt="">
+        <div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)}</h3><div class="st">${esc(status)}</div><div class="meta">${esc(meta)}</div><div class="pv-tipos">${tipos}</div></div>
+        <div class="pv-held">
+          <div class="ico${held ? '' : ' vazio'}" style="${held ? 'background-image:url(' + iconeHeld(held.id) + ')' : ''}"></div>
+          <b>${esc(heldNome)}${held?.preso ? ' 🔒' : ''}</b>
+          <small>Held item</small>
+          ${pick}
+        </div>
+        <div class="hpbar"><i style="width:${Math.round(k * 100)}%;background:${corDaVida(k)}"></i><em>${Math.round(hp)}/${maxHp}</em></div>
+      </div>
+      ${htmlPkSheet(e, S, { movs, novo, evo: evoTxt })}
+      <div class="pv-actions">${acoes}</div>
+    </div>
+  </div>`;
+  ligarPvLista(corpo);
+  ligarPkSheet(corpo);
+  ligarPvAcoes(corpo, e, lista);
+}
+function ligarPvLista(corpo){
+  corpo.querySelectorAll('[data-i]').forEach(el => el.onclick = () => {
+    selPokemon = +el.dataset.i; confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; heldPicker = false; render();
+  });
+}
+function ligarPvAcoes(corpo, e, lista){
+  corpo.querySelectorAll('[data-pv]').forEach(b => {
+    const id = b.dataset.pv;
+    if (!id || b.disabled) return;
+    b.onclick = async ev => {
+      ev.stopPropagation();
+      if (id === 'seguir'){ await ctx.seguir?.(e); selPokemon = 0; render(); return; }
+      if (id === 'caixa'){
+        const t = ctx.jogo.time || []; const k = t.findIndex(x => mesmoRegistro(x, e)); if (k < 0) return;
+        const [saiu] = t.splice(k, 1); ctx.gravarLS('time', t);
+        const cx = ctx.lerLS('caixa', []); cx.push(saiu); ctx.gravarLS('caixa', cx);
+        ctx.atualizarSeguidorPainel?.(); selPokemon = 0; render(); return;
+      }
+      if (id === 'evoluir'){ acaoPokemon('evoluir'); return; }
+      if (id === 'soltar'){ acaoPokemon('soltar'); return; }
+      if (id === 'reanimar'){ ctx.reanimarMembro?.(e); render(); return; }
+      if (id === 'reaprender'){ reaprenderAberto = !reaprenderAberto; render(); return; }
+      if (id === 'nao-aprender'){ acaoPokemon('nao-aprender'); return; }
+      if (id === 'give'){ heldPicker = !heldPicker; render(); return; }
+      if (id === 'take'){
+        const h = heldDe(e); if (!h || h.preso) return;
+        const q = itensLS(); q[h.id] = (q[h.id] || 0) + 1; ctx.gravarLS('itens', q);
+        gravarHeld(e, null); heldPicker = false; render();
+      }
+    };
+  });
+  corpo.querySelectorAll('[data-pv-give]').forEach(b => b.onclick = ev => {
+    ev.stopPropagation();
+    const id = b.dataset.pvGive, q = itensLS();
+    if (!(q[id] > 0) || heldDe(e)) return;
+    q[id]--; if (!q[id]) delete q[id];
+    ctx.gravarLS('itens', q);
+    gravarHeld(e, { id });
+    heldPicker = false; render();
+  });
+}
+function encherCaixaPv(corpo){
+  const time = ctx.jogo.time || [], caixa = ctx.lerLS('caixa', []) || [], emCampo = indiceEmCampo();
+  const linha = (p, extra) => `<div class="pv-slot"><img src="${iconeMonU(p.dex)}" alt=""><span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv} · No. ${String(p.dex).padStart(3, '0')}</small></span>${extra}</div>`;
+  const timeHtml = time.map((p, i) => linha(p, i === emCampo ? '<small>in field</small>' : `<button type="button" class="pv-btn" data-guardar="${i}">→ Box</button>`)).join('') || '<div class="pv-slot vazia">Empty party</div>';
+  const caixaHtml = caixa.map((p, i) => linha(p, `<button type="button" class="pv-btn gold" data-trazer="${i}" ${time.length >= 6 ? 'disabled' : ''}>Bring</button>`)).join('') || '<div class="pv-slot vazia">Box is empty</div>';
+  corpo.innerHTML = `<div class="pv-box"><div class="col"><h3>Party ${time.length}/6</h3>${timeHtml}</div><div class="col"><h3>Box ${caixa.length}</h3>${caixaHtml}</div></div>`;
+  const fim = () => { selPokemon = 0; ctx.atualizarSeguidorPainel?.(); render(); };
+  corpo.querySelectorAll('[data-guardar]').forEach(b => b.onclick = () => { if (Arr.aplicar('time', +b.dataset.guardar, 'caixa', caixa.length)) fim(); });
+  corpo.querySelectorAll('[data-trazer]').forEach(b => b.onclick = () => { if (Arr.aplicar('caixa', +b.dataset.trazer, 'time', time.length)) fim(); });
 }
 /** Cores da barra: as mesmas faixas da Amanda que o conversor colheu (card-vida [estado:100|40|10]). */
 function corDaVida(k){

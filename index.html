@@ -66,6 +66,7 @@ window.__telaCheia = (() => {
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">   <!-- fontes do HUD da Amanda (Figma). 16/09: media=print + onload = NÃO bloqueia o boot. Com o host do Google PENDURADO (sem responder) esta linha segurava a página inteira: o #boot nem existia, o girador não aparecia e nenhuma linha [boot] chegava ao servidor — tela preta pura e invisível no log. Agora a fonte entra quando chegar; sem ela o texto sai na fonte de reserva. -->
 <link rel="stylesheet" href="./menus.css">
+<link rel="stylesheet" href="./ui/pv-win.css">
 <style>
 :root{ --panel:#101624f2; --line:#314361; --text:#d6e2ff; --muted:#8c9ab7; --gold:#f4aa35; --green:#86ef5f; }
 *{box-sizing:border-box}
