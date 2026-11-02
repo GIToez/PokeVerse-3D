@@ -8030,11 +8030,13 @@ if (jogo.ash){
     fotoMapaMundo, aoFotoMapaMundo,
     golpesDe: dex => (jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
     atualizarSeguidorPainel: () => document.getElementById('segue-ctl')?.__encher?.(),
-    seguir: async e => {                                              // como o Shift+Z: troca o seguidor pelo do time, com o nível de quando foi pego
-      if (!e?.glb || jogo.trocandoSeguidor) return; jogo.trocandoSeguidor = true;
-      try { const novo = await jogo.trocarSeguidor(e.glb); novo.uid = e.uid ?? null; const S = porDex.get(e.dex); if (S && e.lv){ novo.lv = e.lv; novo.exp = e.exp ?? Evolucao.expPara(e.dex, e.lv); novo.amizade = e.amizade ?? Evolucao.amizadeBase(e.dex); Ind.garantir(e); novo.ivs = e.ivs; novo.natureza = e.natureza; novo.maxHp = Ind.hpDe(S, novo); const tE = registroDoTime(e) || e; Ind.garantirMovs(tE, fallbackGolpes(tE.dex)); novo.movs = tE.movs; novo.aprender = tE.aprender; novo.golpesIds = Ind.idsDe(novo); novo.hp = e.hp ?? novo.maxHp; } }
-      finally { jogo.trocandoSeguidor = false; }
+    seguir: async e => {
+      const time = jogo.time || [];
+      let i = e?.uid != null ? time.findIndex(t => t && String(t.uid) === String(e.uid)) : -1;
+      if (i < 0 && e?.glb) i = time.findIndex(t => t && t.glb === e.glb);
+      if (i >= 0) await trocarPara(i);
     },
+    trocarPara,
   });
   // layout montado pelo jogador (editor de HUD → localStorage hud.layout, ou ui/hud_layout.json)
   const layoutHud = await layoutHudP;                                    // ?hud=padrao: ignora o layout salvo e usa ui/hud_layout.json (o que o conversor do Figma gera); a busca começou no topo do módulo
