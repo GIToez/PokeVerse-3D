@@ -5,7 +5,7 @@ import { EH_FOGO, EH_MALHA_FOGO } from './fire.mjs';
 
 const BRILHO_ACENDE = 0.9, BRILHO_NOITE = 0.4;
 const _fogoP = new THREE.Vector3();
-const MAX_LUZ = 16;
+const MAX_LUZ = 6;
 const EH_POSTE = /streetlight|lamppost/i;
 const CABECA = {
   'prop/lamppost': 3.13,
@@ -58,17 +58,18 @@ function acharFogo(e){
   if (e._luzFogo && e._luzFogo.parent) return e._luzFogo;
   const raiz = e.pivo || e.corpo;
   if (!raiz?.traverse) return null;
-  let core = null, any = null;
+  let ponta = null, core = null, any = null;
   raiz.traverse(o => {
-    if (!o.isMesh || (core && any)) return;
     const nome = o.name || '';
+    if (/^Tail/i.test(nome) && !o.children.some(c => /^Tail/i.test(c.name || ''))) ponta = o;
+    if (!o.isMesh) return;
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     const fogo = EH_MALHA_FOGO.test(nome) || mats.some(m => EH_FOGO.test(m?.name || ''));
     if (!fogo) return;
     if (!any) any = o;
     if (/core/i.test(nome) || mats.some(m => /core/i.test(m?.name || ''))) core = o;
   });
-  e._luzFogo = core || any || null;
+  e._luzFogo = ponta || core || any || null;
   return e._luzFogo;
 }
 
@@ -215,7 +216,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   const monLuz = [];
   const monHalo = [];
   const monBrasa = [];
-  for (let i = 0; i < 8; i++){
+  for (let i = 0; i < 3; i++){
     const M = new THREE.PointLight(0xff6a1c, 0, 5.2, 1.25);
     M.castShadow = false;
     const S = new THREE.Sprite(haloMat(texFogo));
@@ -273,8 +274,12 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
         }
         const cfg = LUZ_MON[dexDe(hit.e)];
         const fogo = acharFogo(hit.e);
-        if (fogo) fogo.getWorldPosition(_fogoP);
-        else _fogoP.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
+        if (fogo){
+          fogo.getWorldPosition(_fogoP);
+          _fogoP.y += 0.07;
+        } else {
+          _fogoP.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
+        }
         L.color.setHex(cfg.cor);
         L.distance = cfg.r;
         L.position.copy(_fogoP);
