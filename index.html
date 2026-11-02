@@ -2733,9 +2733,6 @@ function livre(x, z){
 }
 
 let postesNoite = null;
-if (JOGAR && !INTERIOR){
-  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio }).then(L => { postesNoite = L; }).catch(e => console.warn('luzes', e));
-}
 
 /* UM PARSE POR ARQUIVO (12/09): Kanto monta ~1.580 NPCs (1.305 do mapa + 275 extras) com só 40 GLBs distintos, e cada um era um
    `loadAsync` novo — geometria e texturas DUPLICADAS por NPC. Medido no PC: a cena saía de 290 MB (textura + geometria) pra
@@ -3333,6 +3330,9 @@ $('boot').hidden = false; $('boot').textContent = I18n.t('carregando o mapa…')
 /* Esta página é o JOGO (nasce o jogador, HUD do Figma, rede) ou só o VISUALIZADOR da cena? Com conta é sempre o jogo (12/09); sem
    conta: `?jogar=1`, Kanto, o lote da casa, ou os modos de clipe. `?jogar=0` desliga sempre. */
 const JOGAR = params0.get('jogar') === '1' || (params0.get('jogar') !== '0' && (NOME === 'kanto' || !!dados.lote || CONTA.modo === 'conta')) || DEMO || FAIRY || RAID || TORNEIO || DIRETOR || CAPTURA;   // ?raid=1 / ?torneio=1 / ?diretor=1 / ?captura=1 já ligam o jogo
+if (JOGAR && !INTERIOR){
+  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio }).then(L => { postesNoite = L; }).catch(e => console.warn('luzes', e));
+}
 const voltarNaCena = (() => {
   if (CONTA.modo !== 'conta') return null;
   for (const k of ['mapa', 'chegada', 'intro', 'raid', 'torneio', 'diretor', 'captura', 'tela', 'personagem', 'voltou']) if (params0.has(k)) return null;   // `voltou`: trava na PRÓPRIA URL, pra não depender só do sessionStorage
