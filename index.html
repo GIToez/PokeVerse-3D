@@ -513,7 +513,7 @@ function bootProgresso(frac, rotulo, bytes = 0){
     `acima` (17/09): a caixa dos personagens pode abrir com a HUD já montada (o parceiro salvo carrega junto com o fim do boot) — no
     celular com a HUD v2 o chat ficava por cima do botão e o toque não chegava nele. Sobe pra 400: acima da HUD, dos menus e do
     letreiro (300), abaixo do "vire o celular" (500). A caixa do mapa fica como era (9), por causa da tela de login. */
-function bootErroCarga(e, texto = 'O mapa não terminou de baixar. Toque em Tentar de novo: a carga continua de onde parou.', acima = false, titulo = 'A conexão caiu durante a carga.'){   // titulo (19/09): o 403 do passe não é queda de conexão
+function bootErroCarga(e, texto = "The map didn't finish downloading. Tap Try again: loading resumes where it left off.", acima = false, titulo = 'The connection dropped during the download.'){   // titulo (19/09): o 403 do passe não é queda de conexão
   if (bootErroEspera) return bootErroEspera;
   const b = $('boot'); if (!b) return Promise.resolve();
   return bootErroEspera = new Promise(resolve => {
@@ -526,7 +526,7 @@ function bootErroCarga(e, texto = 'O mapa não terminou de baixar. Toque em Tent
   t2.textContent = I18n.t(texto);
   const bt = document.createElement('button'); bt.type = 'button';
   bt.style.cssText = 'padding:9px 22px;border:1px solid var(--gold);border-radius:8px;background:linear-gradient(#5a3d12,#1a1206);color:#ffe6b0;font:700 14px/1.2 "Segoe UI",Arial,sans-serif;cursor:pointer';
-  bt.textContent = I18n.t('Tentar de novo');
+  bt.textContent = I18n.t('Try again');
   bt.addEventListener('click', () => { bt.disabled = true; bootErroNaTela = false; bootErroEspera = null; bootCaixa = null; b.textContent = ''; b.style.zIndex = ''; resolve(); }, { once: true });
   const det = document.createElement('div'); det.style.cssText = 'margin-top:12px;font-size:10px;color:#4c566e;word-break:break-all';
   const feito = e?.recebido && e?.total ? ' · ' + (e.recebido / 1048576).toFixed(1) + '/' + (e.total / 1048576).toFixed(1) + ' MB já baixados' : '';
@@ -580,7 +580,7 @@ async function baixarBin(url, aoProgresso, tentativas = CARGA.tentativas){   // 
     } finally { clearInterval(vigia); }
   }
   cargaParcial.set(url, { partes, recebido, total });                        // guarda o que veio: o "Tentar de novo" continua daqui
-  const err = new Error('não baixou ' + url + ' em ' + tentativas + ' tentativas (' + recebido + '/' + (total || '?') + ' bytes): ' + (ultimo?.message || ultimo));
+  const err = new Error('failed to download ' + url + ' after ' + tentativas + ' tries (' + recebido + '/' + (total || '?') + ' bytes): ' + (ultimo?.message || ultimo));
   err.url = url; err.recebido = recebido; err.total = total; throw err;
 }
 /** JSON com tentativa nova. `opcional`: 404/falha vira null (é o caso do scenes.json). */
@@ -603,7 +603,7 @@ async function baixarJson(url, opcional = false){
     } finally { clearTimeout(vigia); }
   }
   if (opcional){ console.warn('carga: ' + url + ' (opcional) falhou:', ultimo?.message || ultimo); return null; }
-  const err = new Error('não baixou ' + url + ': ' + (ultimo?.message || ultimo)); err.url = url; throw err;
+  const err = new Error('failed to download ' + url + ': ' + (ultimo?.message || ultimo)); err.url = url; throw err;
 }
 const contaP = Conta.garantir({ params: params0Cedo, layoutHudP: layoutHudCedoP, aoTela: () => { bootLoginNaFrente = true; if (!bootErroNaTela) $('boot').hidden = true; } });   // aoTela: some o "carregando" quando o login entra na frente — mas NUNCA por cima da tela de erro (rede ruim + sessão vencida inverte a ordem e o botão "Tentar de novo" sumia)
 contaP.catch(() => {});
@@ -660,9 +660,9 @@ await passeBootP;
 let passe403 = 0;                                                        // quantas vezes a borda negou a cena nesta carga
 for (;;){                                                                // laço: cada "Tentar de novo" repete daqui, aproveitando o que já baixou
 try {
-  bootProgresso(0, I18n.t('baixando o mapa…'));
+  bootProgresso(0, I18n.t('downloading the map…'));
   [gltf, chao, dados, indice] = await Promise.all([
-    baixarBin('./scenery/' + NOME + '.glb', (f, n) => bootProgresso(f, I18n.t('baixando o mapa…'), n))
+    baixarBin('./scenery/' + NOME + '.glb', (f, n) => bootProgresso(f, I18n.t('downloading the map…'), n))
       .then(buf => new GLTFLoader().parseAsync(buf, './scenery/')),      // os nossos .glb são fechados (não puxam .bin nem textura solta)
     baixarJson('./scenery/' + NOME + '_chao.json'),
     baixarJson('./data/' + NOME + '.json'),
@@ -670,7 +670,7 @@ try {
   ]);
   try { if (!/[?&]intro=1(&|$)/.test(location.search)) localStorage.setItem('ultimaCena', NOME); } catch {}   // próxima carga começa por aqui (palpite; o servidor corrige). Na INTRO não: fechar a aba no sonho da Liga reabria na arena como cena normal (12/09)
   __boot.cena(NOME);                                                    // diagnóstico do boot: a cena de verdade, não a da URL
-  bootProgresso(1, I18n.t('carregando o mapa…'));
+  bootProgresso(1, I18n.t('loading the map…'));
   DB = R.indexar(await baixarJson('./pokedex.json'));
   break;                                                                // deu certo: sai do laço
 } catch (e){
@@ -697,7 +697,7 @@ try {
     }
     __boot.falha('passe 403 sem saída: ' + e.url);
     const logado = Conta.estado().modo === 'conta' || Conta.temSessaoSalva();
-    await bootErroCarga(e, logado ? 'Não deu pra liberar este mapa pra sua conta. Toque em Tentar de novo.' : 'Entre com a sua conta pra jogar. Toque em Tentar de novo.', false, logado ? 'Este mapa ainda não foi liberado.' : 'É preciso entrar com a sua conta.');
+    await bootErroCarga(e, logado ? "Couldn't unlock this map for your account. Tap Try again." : 'Sign in to play. Tap Try again.', false, logado ? 'This map is not unlocked yet.' : 'You need to sign in.');
     passe403 = 0;                                                        // o clique recomeça o ciclo (pede o passe de novo)
     continue;
   }
@@ -871,7 +871,7 @@ tela.addEventListener('webglcontextrestored', () => {
   try { if (jogo.descarregando) return; } catch {}
   let n = 0; try { n = (+sessionStorage.getItem('webgl.voltou') || 0) + 1; sessionStorage.setItem('webgl.voltou', String(n)); } catch {}
   try { __boot.aviso('contexto webgl restaurado', { cena: String(NOME), n }, true); } catch {}
-  console.warn('contexto WebGL restaurado: recarregando a cena sem a memória enxuta (as texturas não têm mais cópia na CPU)');
+  console.warn('WebGL context restored: reloading the scene without the slim memory path (textures no longer have a CPU copy)');
   let carimbou = false;
   try { sessionStorage.setItem('memoria.off', '1'); sessionStorage.setItem('porta.ok', '1'); carimbou = sessionStorage.getItem('memoria.off') === '1'; } catch {}
   /* Aba sem sessionStorage (janela privada, cookies de terceiros barrados): sem o carimbo a recarga voltaria com a
@@ -881,7 +881,7 @@ tela.addEventListener('webglcontextrestored', () => {
   catch { location.reload(); }
 });
 const DIAG = { erros: [] };
-const anotarErro = (msg, avisar = true) => { DIAG.erros.push(msg); if (DIAG.erros.length > 30) DIAG.erros.shift(); console.error(msg); if (avisar && DIAG.erros.length <= 6 && !/isReady|program is undefined/.test(msg)){ try { Chat.sistema('[erro] ' + msg.slice(0, 180)); } catch {} } };   // 13/09: o erro do compileAsync do THREE no Firefox (material que sumiu antes de compilar) fica no diagnóstico, mas não no chat do jogador
+const anotarErro = (msg, avisar = true) => { DIAG.erros.push(msg); if (DIAG.erros.length > 30) DIAG.erros.shift(); console.error(msg); if (avisar && DIAG.erros.length <= 6 && !/isReady|program is undefined/.test(msg)){ try { Chat.sistema('[error] ' + msg.slice(0, 180)); } catch {} } };   // 13/09: o erro do compileAsync do THREE no Firefox (material que sumiu antes de compilar) fica no diagnóstico, mas não no chat do jogador
 ren.debug.onShaderError = (gl, programa, vs, fs) => anotarErro('shader: ' + (gl.getProgramInfoLog(programa) || '').slice(0, 240) + ' | frag: ' + (gl.getShaderInfoLog(fs) || '').slice(0, 240) + ' | vert: ' + (gl.getShaderInfoLog(vs) || '').slice(0, 160));
 addEventListener('error', e => anotarErro('js: ' + String(e.message)));
 addEventListener('unhandledrejection', e => { const r = e.reason; const onde = r?.stack ? ' @ ' + String(r.stack).split(String.fromCharCode(10)).slice(1, 3).map(s => s.trim().replace('at ', '').replace(location.origin, '')).join(' <- ') : (r?.filename ? ' @ ' + String(r.filename).replace(location.origin, '') + ':' + r.lineno + ':' + r.colno : ''); anotarErro('promessa: ' + String(r?.message || r) + onde + ' [' + (r?.constructor?.name || typeof r) + ']'); });   // com o lugar (arquivo:linha): o Diagnóstico do aparelho fica útil de verdade
@@ -2787,8 +2787,8 @@ async function montarPersonagemBoot(arq, alturaAlvo, giroBase = 0){
       if (!e?.url || /HTTP 404/.test(String(e.message))) throw e;
       console.error('personagem do boot não baixou:', e);
       __boot.falha('sem personagens: ' + String(e.message || e).slice(0, 220));   // o beacon continua avisando, agora com QUAL arquivo morreu
-      await bootErroCarga(e, 'O seu treinador ou o seu Pokémon não terminou de baixar. Toque em Tentar de novo: a carga continua de onde parou.', true);   // acima da HUD
-      const b = $('boot'); if (b){ if (bootAcabou) b.hidden = true; else b.textContent = I18n.t('carregando o mapa…'); }
+      await bootErroCarga(e, "Your trainer or Pokémon didn't finish downloading. Tap Try again: loading resumes where it left off.", true);   // acima da HUD
+      const b = $('boot'); if (b){ if (bootAcabou) b.hidden = true; else b.textContent = I18n.t('loading the map…'); }
     }
   }
 }
@@ -3335,7 +3335,7 @@ function gravarParada(){
   Conta.lembrarPos?.(p);
 }
 remapearInteriorCompartilhado();                                                                   // loja/Centro compartilhados: elenco e saída da cidade certa (precisa do login: a chegada pode vir da conta)
-$('boot').hidden = false; $('boot').textContent = I18n.t('carregando o mapa…');   // AGORA sim é o mapa montando (antes do login o #boot fica vazio, Jaime 12/09)
+$('boot').hidden = false; $('boot').textContent = I18n.t('loading the map…');   // AGORA sim é o mapa montando (antes do login o #boot fica vazio, Jaime 12/09)
 /* VOLTAR ONDE PAROU, INCLUSIVE DENTRO DE UM INTERIOR (10/09): a cena é escolhida lá em cima (`const NOME`), antes do login.
    Se o servidor disser que a conta parou em outra cena, o jogo vai pra lá como se atravessasse uma porta — que é como ele
    troca de cena de qualquer jeito. O carimbo `porta.ok` faz passar pela tranca do `?mapa=`; na volta a URL já tem `mapa`,
@@ -3352,7 +3352,7 @@ const voltarNaCena = (() => {
   const pos = Conta.posSalva?.();
   if (pos?.mapa && String(pos.mapa) === String(INTRO_CENA.mapa) && !GM) return null;   // 12/09: a arena do sonho da Liga não é lugar de "voltar" (quem fechou a aba na intro reabria lá como cena normal)
   if (pos?.mapa && pos.mapa !== NOME && !Conta.cobreCena(String(pos.mapa))){   // passe de progresso (19/09): o login já traz o passe com a cena onde a conta parou
-    __boot.aviso('cena sem passe', { mapa: pos.mapa, via: 'voltarNaCena' }, true);
+    __boot.aviso('scene not on pass', { mapa: pos.mapa, via: 'voltarNaCena' }, true);
     if (passeCaiuAgora()) return null;                                   // acabou de cair pra Kanto por 403: fica aqui (sem laço)
   }
   return (pos?.mapa && pos.mapa !== NOME) ? pos.mapa : null;
@@ -3599,7 +3599,7 @@ if (PLAY){
     const perso = (FAIRY || DEMO) ? null : Personagem.ler();      // skin escolhida; Fairy e demo ficam com o Ash
     const [ash, pika] = await Promise.all([
       montarPersonagemBoot('./scenery/pc/' + Personagem.glbDe(perso) + '.glb', +params0.get('ash') || null, (+(params0.get('ashgiro') || 0)) * Math.PI / 180)
-        .catch(e => { console.warn('skin do treinador:', e); return montarPersonagemBoot('./scenery/pc/Male_XiaoZhi.glb', +params0.get('ash') || null, 0); }),   // GLB da skin faltando: cai no Ash (17/09: queda de rede não chega aqui, fica na caixa "Tentar de novo" do montarPersonagemBoot)
+        .catch(e => { console.warn('trainer skin:', e); return montarPersonagemBoot('./scenery/pc/Male_XiaoZhi.glb', +params0.get('ash') || null, 0); }),   // GLB da skin faltando: cai no Ash (17/09: queda de rede não chega aqui, fica na caixa "Tentar de novo" do montarPersonagemBoot)
       montarPersonagemBoot('./scenery/mon/' + (params0.get('seguidor') || 'pm0025_00').replace(/\.glb$/, '') + '.glb', +params0.get('pika') || null, (+(params0.get('pikagiro') || 0)) * Math.PI / 180)
         .catch(e => { if (e?.status === 403 && params0.get('seguidor')){ console.warn('seguidor pedido na URL negado pela borda: entra o Pikachu', e); params0.delete('seguidor'); return montarPersonagemBoot('./scenery/mon/pm0025_00.glb', +params0.get('pika') || null, 0); } throw e; }),   // passe de progresso: o Pikachu do boot está no passe de toda conta
     ]);
@@ -3772,7 +3772,7 @@ if (PLAY){
       const peloUid = uidSalvo != null ? timeBoot.find(t => t && String(t.uid) === String(uidSalvo)) : null;
       if (peloUid) segSalvo = stemGlb(peloUid.glb);
       else if (segSalvo && timeBoot.length && !timeBoot.some(t => t && mesmoGlb(t.glb, segSalvo))){
-        console.warn('seguidor salvo ' + segSalvo + ' não está no time: entra ' + timeBoot[0].glb);
+        console.warn('saved follower ' + segSalvo + ' is not on the party: sending out ' + timeBoot[0].glb);
         segSalvo = timeBoot[0].glb;
       }
     }
@@ -3782,7 +3782,7 @@ if (PLAY){
          dispara no meio da avaliação do módulo (num `await` qualquer) e pegava a const na zona morta — o erro sumia no .catch. Espera
          o módulo inteiro (`window.__dbg` é a última linha), como a intro faz. */
       jogo.trocarSeguidor(segSalvo, true).then(() => { jogo.trocaPendente = null; amarrarParceiro(); const f = () => (window.__dbg ? conferirParceiroDesmaiado() : setTimeout(f, 30)); f(); })
-        .catch(e => { console.warn('seguidor salvo:', e); jogo.trocaPendente = null; amarrarParceiro(); });
+        .catch(e => { console.warn('saved follower:', e); jogo.trocaPendente = null; amarrarParceiro(); });
     }
     if (!Fairy && !INTRO && !RAID && !TORNEIO && !DIRETOR){
       if (!jogo.raidArena){ prepararPortas(); montarNpcs(); }            // RAID AO VIVO: a arena não tem portas nem NPCs (a Lorelei e as saídas pro Bruno/Centro de Indigo ficam de fora)
@@ -5242,7 +5242,7 @@ function amarrarParceiro(){
   if (parceiroUid == null){ const uidSalvo = lerLS('seguidorUid', null); if (uidSalvo != null && jogo.time.some(t => String(t?.uid) === String(uidSalvo) && mesmoGlb(t.glb, p.glb))) parceiroUid = uidSalvo; }   // 12/09: restaura QUAL do time é o parceiro (duas da mesma espécie)
   if (!jogo.time.some(t => mesmoGlb(t.glb, p.glb))){
     if (Conta.estado().modo === 'conta' && jogo.time.length){           // 13/09: com conta NÃO existe membro fantasma — o 1º do time assume o campo
-      __boot.aviso('parceiro fora do time', { glb: p.glb, time: jogo.time.map(t => t.glb) }); trocarPara(0, { forcado: true }).catch(e => console.warn('parceiro fora do time:', e)); return; }
+      __boot.aviso('follower not on the party', { glb: p.glb, time: jogo.time.map(t => t.glb) }); trocarPara(0, { forcado: true }).catch(e => console.warn('follower not on the party:', e)); return; }
     Ind.garantir(p); jogo.time.push({ dex: p.dex, glb: p.glb, nome: p.nome, lv: p.lv, exp: p.exp, amizade: p.amizade, ivs: p.ivs, natureza: p.natureza, movs: p.movs, aprender: p.aprender, quando: Date.now() }); gravarLS('time', jogo.time); }
   else if (!params0.get('lv')){ const t = (parceiroUid != null && jogo.time.find(x => String(x?.uid) === String(parceiroUid) && mesmoGlb(x.glb, p.glb))) || jogo.time.find(t => mesmoGlb(t.glb, p.glb)); const S = porDex.get(t?.dex);   // 14/09: com duas da mesma espécie, amarra no uid em campo, não no primeiro glb
     if (t?.lv && S){ Ind.garantir(t); p.uid = t.uid ?? null; p.lv = t.lv; p.expReserva = t.expReserva || 0; p.ivs = t.ivs; p.natureza = t.natureza; p.maxHp = Ind.hpDe(S, p); Ind.garantirMovs(t, fallbackGolpes(t.dex)); p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); p.hp = t.hp != null && t.hp > 0 ? Math.min(t.hp, p.maxHp) : (t.hp === 0 && (t.koAte > Date.now() || Conta.estado().modo === 'conta') ? 0 : p.maxHp);   /* com CONTA o HP é do servidor: 0 é 0 até a cura (12/09: o Bulbasaur KO "ressuscitava" no login porque o koAte já tinha passado) */ p.exp = t.exp ?? Evolucao.expPara(t.dex, t.lv); p.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex); } }
@@ -5906,7 +5906,7 @@ async function soltarDaBola(glb, { recolher = true } = {}){
     catch (e){                                                               // 14/09 (l.neto, Pidgeotto com o GLB de nome errado → 404): o antigo ficava invisível e encolhido na bola, sem ninguém em campo
       if (velho?.pivo){ velho.pivo.visible = true; velho.pivo.scale.setScalar(esc0); }
       if (jogo.ash) flutuar(jogo.ash, 'could not switch: the model did not load', '#f58e8e');
-      __boot.aviso('troca falhou', { glb, erro: String(e?.message || e).slice(0, 120) });
+      __boot.aviso('switch failed', { glb, erro: String(e?.message || e).slice(0, 120) });
       throw e;
     }
     novo.pivo.visible = false;                                               // só aparece quando a bola abrir
@@ -6540,7 +6540,7 @@ async function irParaCena({ mapa = null, chegada = null, texto = '', raid = null
   if (raid != null){ Raid.carimbar(raid); Raid.marcarIda(raid); try { if (mapa) sessionStorage.removeItem('chegada.' + mapa); } catch {} }   // arena: a reserva de uma porta antiga não pode vencer a posição que o servidor deu
   else Raid.apagarCarimbo();
   telaEscura(9000, texto || '…');
-  if (mapa && Conta.estado().modo === 'conta' && !Conta.cobreCena(String(mapa))) __boot.aviso('cena sem passe', { mapa, via: 'irParaCena' }, true);   // passe de progresso: quem libera é o servidor (antes de mandar); o boot trata
+  if (mapa && Conta.estado().modo === 'conta' && !Conta.cobreCena(String(mapa))) __boot.aviso('scene not on pass', { mapa, via: 'irParaCena' }, true);   // passe de progresso: quem libera é o servidor (antes de mandar); o boot trata
   try { await Promise.race([Conta.enviarAgora(), dorme(2500)]); } catch {}   // o que estiver pendente sobe antes da recarga (como o terminarIntro), sem ficar preso numa rede ruim
   const u = new URL(location.href);
   if (mapa) u.searchParams.set('mapa', String(mapa)); else u.searchParams.delete('mapa');

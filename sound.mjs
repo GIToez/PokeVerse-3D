@@ -113,10 +113,10 @@ export function musica(caminho, { fade = 1.5, loop = true, duracaoMax = 0, depoi
   src.connect(g); g.connect(canalMus);
   const m = { el, src, ganho: g, nome: caminho, fim: !loop, depois };
   musAtual = m; musNome = caminho;
-  const terminou = () => { if (musAtual !== m) return; acabar(m, 0.4); musAtual = null; musNome = null; try { m.depois?.(); } catch (e){ console.warn('música:', e); } };
+  const terminou = () => { if (musAtual !== m) return; acabar(m, 0.4); musAtual = null; musNome = null; try { m.depois?.(); } catch (e){ console.warn('music:', e); } };
   if (!loop) el.addEventListener('ended', terminou, { once: true });
   if (duracaoMax > 0) setTimeout(terminou, duracaoMax * 1000);
-  el.addEventListener('error', () => { console.warn('música ausente:', caminho); if (musAtual === m){ musAtual = null; musNome = null; } }, { once: true });
+  el.addEventListener('error', () => { console.warn('missing music:', caminho); if (musAtual === m){ musAtual = null; musNome = null; } }, { once: true });
   const soltar = () => el.play().then(() => { if (musAtual === m) g.gain.setTargetAtTime(1, ctx.currentTime, fade / 3); }).catch(() => {});   // sem gesto ainda: destravar() tenta de novo
   soltar(); m.soltar = soltar;
 }
