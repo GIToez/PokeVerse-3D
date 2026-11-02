@@ -204,6 +204,208 @@
    "objeto": true
   },
   {
+   "id": 2000001,
+   "nome": "Johto",
+   "areas": [
+    {
+     "id": 2101,
+     "nome": "New Bark Town",
+     "tipo": 1
+    },
+    {
+     "id": 2102,
+     "nome": "Cherrygrove City",
+     "tipo": 1
+    },
+    {
+     "id": 2103,
+     "nome": "Violet City",
+     "tipo": 1
+    },
+    {
+     "id": 2104,
+     "nome": "Azalea Town",
+     "tipo": 1
+    },
+    {
+     "id": 2105,
+     "nome": "Goldenrod City",
+     "tipo": 1
+    },
+    {
+     "id": 2106,
+     "nome": "Ecruteak City",
+     "tipo": 1
+    },
+    {
+     "id": 2107,
+     "nome": "Olivine City",
+     "tipo": 1
+    },
+    {
+     "id": 2108,
+     "nome": "Cianwood City",
+     "tipo": 1
+    },
+    {
+     "id": 2109,
+     "nome": "Mahogany Town",
+     "tipo": 1
+    },
+    {
+     "id": 2110,
+     "nome": "Blackthorn City",
+     "tipo": 1
+    },
+    {
+     "id": 2111,
+     "nome": "National Park",
+     "tipo": 1
+    },
+    {
+     "id": 2112,
+     "nome": "Ruins of Alph",
+     "tipo": 1
+    },
+    {
+     "id": 2113,
+     "nome": "Lake of Rage",
+     "tipo": 1
+    },
+    {
+     "id": 2114,
+     "nome": "Mt. Silver",
+     "tipo": 1
+    },
+    {
+     "id": 2115,
+     "nome": "Johto Safari Zone",
+     "tipo": 1
+    },
+    {
+     "id": 2116,
+     "nome": "Battle Frontier",
+     "tipo": 1
+    },
+    {
+     "id": 2226,
+     "nome": "Route 26",
+     "tipo": 1
+    },
+    {
+     "id": 2227,
+     "nome": "Route 27",
+     "tipo": 1
+    },
+    {
+     "id": 2228,
+     "nome": "Route 28",
+     "tipo": 1
+    },
+    {
+     "id": 2229,
+     "nome": "Route 29",
+     "tipo": 1
+    },
+    {
+     "id": 2230,
+     "nome": "Route 30",
+     "tipo": 1
+    },
+    {
+     "id": 2231,
+     "nome": "Route 31",
+     "tipo": 1
+    },
+    {
+     "id": 2232,
+     "nome": "Route 32",
+     "tipo": 1
+    },
+    {
+     "id": 2233,
+     "nome": "Route 33",
+     "tipo": 1
+    },
+    {
+     "id": 2234,
+     "nome": "Route 34",
+     "tipo": 1
+    },
+    {
+     "id": 2235,
+     "nome": "Route 35",
+     "tipo": 1
+    },
+    {
+     "id": 2236,
+     "nome": "Route 36",
+     "tipo": 1
+    },
+    {
+     "id": 2237,
+     "nome": "Route 37",
+     "tipo": 1
+    },
+    {
+     "id": 2238,
+     "nome": "Route 38",
+     "tipo": 1
+    },
+    {
+     "id": 2239,
+     "nome": "Route 39",
+     "tipo": 1
+    },
+    {
+     "id": 2240,
+     "nome": "Route 40",
+     "tipo": 1
+    },
+    {
+     "id": 2241,
+     "nome": "Route 41",
+     "tipo": 1
+    },
+    {
+     "id": 2242,
+     "nome": "Route 42",
+     "tipo": 1
+    },
+    {
+     "id": 2243,
+     "nome": "Route 43",
+     "tipo": 1
+    },
+    {
+     "id": 2244,
+     "nome": "Route 44",
+     "tipo": 1
+    },
+    {
+     "id": 2245,
+     "nome": "Route 45",
+     "tipo": 1
+    },
+    {
+     "id": 2246,
+     "nome": "Route 46",
+     "tipo": 1
+    },
+    {
+     "id": 2247,
+     "nome": "Route 47",
+     "tipo": 1
+    },
+    {
+     "id": 2248,
+     "nome": "Route 48",
+     "tipo": 1
+    }
+   ],
+   "objeto": true
+  },
+  {
    "id": 1000002,
    "nome": "Habitat",
    "areas": [
