@@ -8631,8 +8631,8 @@ function aplicarMundoVisual(){
     cena.background = new THREE.Color(tom);
     cena.fog.color.set(tom);
   } else if (clima.guarda){ cena.background = clima.guarda.ceu; cena.fog.color.copy(clima.guarda.nevoa); }
-  const contraste = (1 + noite * 0.28).toFixed(3);
-  tela.style.filter = ((w?.filtro || '') + ' saturate(' + (ceu.sat * 1.14).toFixed(3) + ') contrast(' + contraste + ') brightness(' + (ceu.brilho * 1.02).toFixed(3) + ')').trim();
+  const contraste = (1 + noite * 0.62).toFixed(3);
+  tela.style.filter = ((w?.filtro || '') + ' saturate(' + (ceu.sat * 1.2).toFixed(3) + ') contrast(' + contraste + ') brightness(' + (ceu.brilho * 1.08).toFixed(3) + ')').trim();
 }
 function passoClimaMundo(){
   if (!PLAY || clima.forcado || params0.get('clima')) return;
