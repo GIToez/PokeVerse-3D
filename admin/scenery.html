@@ -39,7 +39,7 @@ header .sujo{ color:var(--acento); font-size:13px; }
 .hud{ position:absolute; left:12px; bottom:12px; background:rgba(10,13,18,.82); border:1px solid var(--borda); border-radius:6px; padding:6px 10px; font-size:12px; pointer-events:none; }
 .hud b{ color:var(--acento); }
 .ferramentas{ position:absolute; left:12px; top:12px; display:flex; gap:6px; flex-wrap:wrap; max-width:calc(100% - 24px); }
-.dica-cam{ position:absolute; left:12px; top:50px; background:rgba(10,13,18,.82); border:1px solid var(--borda); border-radius:6px; padding:5px 9px; font-size:12px; color:var(--fraco); pointer-events:none; max-width:min(520px, calc(100% - 24px)); }
+.dica-cam{ position:absolute; left:12px; top:88px; background:rgba(10,13,18,.82); border:1px solid var(--borda); border-radius:6px; padding:5px 9px; font-size:12px; color:var(--fraco); pointer-events:none; max-width:min(560px, calc(100% - 24px)); }
 .lado{ background:var(--painel); border-left:1px solid var(--borda); overflow:auto; padding:12px; display:grid; gap:14px; align-content:start; }
 .caixa{ background:var(--painel2); border:1px solid var(--borda); border-radius:10px; padding:12px; }
 .caixa h3{ margin:0 0 10px; font-size:14px; }
@@ -75,9 +75,12 @@ header .sujo{ color:var(--acento); font-size:13px; }
         <button id="t-sel" class="on" title="Select/move (S)">🖱️ Select</button>
         <button id="t-add" title="Place piece (A): pick from the palette and click the ground">➕ Place</button>
         <button id="t-foco" title="Frame everything and reset the pivot to the map center (F)">🎯 Frame</button>
+        <button id="t-pivo-down" title="Lower the orbit pivot (Q / Page Down)">↓ Pivot</button>
+        <button id="t-pivo-up" title="Raise the orbit pivot (E / Page Up)">↑ Pivot</button>
+        <button id="t-pivo-chao" title="Drop the pivot back to the floor (Home)">Floor</button>
         <label class="chk" style="display:flex;align-items:center;gap:5px;background:rgba(10,13,18,.82);border:1px solid var(--borda);border-radius:6px;padding:0 8px"><input type="checkbox" id="t-snap"> snap 0.5m</label>
       </div>
-      <div class="dica-cam" id="dica-cam">Gold cross = orbit pivot · right/middle-drag pans it · wheel zooms to cursor · double-click sets the pivot</div>
+      <div class="dica-cam" id="dica-cam">WASD / arrows slide the pivot (W forward, no need to orbit first) · Q/E height · right-drag also pans · Home = floor · Ctrl+D duplicates</div>
       <div class="hud" id="hud">—</div>
       <div id="carregando">loading the scenery…</div>
     </div>

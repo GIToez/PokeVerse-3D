@@ -41,25 +41,79 @@ const proxy = new THREE.Object3D(); scene.add(proxy);
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true; orbit.maxPolarAngle = Math.PI * 0.49;
 orbit.zoomToCursor = true;
-orbit.screenSpacePanning = true;
+orbit.screenSpacePanning = false;                                         // keep the pivot on the ground plane — screen-space zoom left it hanging in the air
 orbit.panSpeed = 1.6;
+let chaoPivo = 0;                                                         // y of the map floor; Frame / pieces set this, orbit must not climb
 orbit.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
 orbit.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
 orbit.mouseButtons.RIGHT = THREE.MOUSE.PAN;
 tela.addEventListener('contextmenu', ev => ev.preventDefault());
 const pivo = (() => {
   const g = new THREE.Group(); g.name = 'orbitPivot';
-  const eixo = new THREE.AxesHelper(1.4); eixo.renderOrder = 10; g.add(eixo);
-  const bola = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffcf3a, depthTest: false, depthWrite: false }));
+  const bola = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffcf3a, depthTest: false, depthWrite: false }));
   bola.renderOrder = 11; g.add(bola);
-  const anel = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.72, 40), new THREE.MeshBasicMaterial({ color: 0xffcf3a, side: THREE.DoubleSide, depthTest: false, depthWrite: false, transparent: true, opacity: 0.9 }));
+  const anel = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.68, 40), new THREE.MeshBasicMaterial({ color: 0xffcf3a, side: THREE.DoubleSide, depthTest: false, depthWrite: false, transparent: true, opacity: 0.95 }));
   anel.rotation.x = -Math.PI / 2; anel.renderOrder = 11; g.add(anel);
+  const cruz = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-1.1, 0.02, 0), new THREE.Vector3(1.1, 0.02, 0),
+    new THREE.Vector3(0, 0.02, -1.1), new THREE.Vector3(0, 0.02, 1.1),
+  ]);
+  const eixos = new THREE.LineSegments(cruz, new THREE.LineBasicMaterial({ color: 0xffcf3a, depthTest: false }));
+  eixos.renderOrder = 11; g.add(eixos);
   scene.add(g); return g;
 })();
+function chaoDoMapa() {
+  let y = 0, n = 0;
+  for (const p of pecas){ y += p.pos.y; n++; }
+  return n ? y / n : 0;                                                   // typical piece origin sits on the floor; bbox center was halfway up the map
+}
+const hastePivo = (() => {
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)]);
+  const ln = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xffcf3a, depthTest: false, transparent: true, opacity: 0.75 }));
+  ln.renderOrder = 10; scene.add(ln); return ln;
+})();
+function passoPivo() {
+  const dist = camera.position.distanceTo(orbit.target);
+  return THREE.MathUtils.clamp(dist * 0.04, 0.25, 12);
+}
+function subirPivo(dy) {
+  if (!dy) return;
+  orbit.target.y += dy;
+  camera.position.y += dy;                                                // truck with the pivot so the view does not jump
+  orbit.update();
+  atualizarPivo();
+}
+function pivoNoChao() {
+  const dy = chaoPivo - orbit.target.y;
+  subirPivo(dy);
+}
+const _pivoF = new THREE.Vector3(), _pivoL = new THREE.Vector3();
+function deslocarPivo(frente, lado) {
+  if (!frente && !lado) return;
+  camera.getWorldDirection(_pivoF);
+  _pivoF.y = 0;
+  if (_pivoF.lengthSq() < 1e-6) _pivoF.set(orbit.target.x - camera.position.x, 0, orbit.target.z - camera.position.z);
+  if (_pivoF.lengthSq() < 1e-6) _pivoF.set(0, 0, -1);
+  _pivoF.normalize();
+  _pivoL.setFromMatrixColumn(camera.matrixWorld, 0);
+  _pivoL.y = 0;
+  if (_pivoL.lengthSq() < 1e-6) _pivoL.set(_pivoF.z, 0, -_pivoF.x);
+  _pivoL.normalize();
+  const s = passoPivo();
+  const dx = _pivoF.x * frente * s + _pivoL.x * lado * s;
+  const dz = _pivoF.z * frente * s + _pivoL.z * lado * s;
+  orbit.target.x += dx; orbit.target.z += dz;
+  camera.position.x += dx; camera.position.z += dz;
+  orbit.update();
+  atualizarPivo();
+}
 function atualizarPivo() {
   pivo.position.copy(orbit.target);
   const dist = camera.position.distanceTo(orbit.target);
-  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.035, 0.6, 80));
+  pivo.scale.setScalar(THREE.MathUtils.clamp(dist * 0.014, 0.5, 18));
+  hastePivo.position.set(orbit.target.x, chaoPivo, orbit.target.z);
+  hastePivo.scale.y = orbit.target.y - chaoPivo;
+  hastePivo.visible = Math.abs(orbit.target.y - chaoPivo) > 0.05;
   if ($('hud-pivo')) $('hud-pivo').textContent = orbit.target.x.toFixed(1) + ', ' + orbit.target.y.toFixed(1) + ', ' + orbit.target.z.toFixed(1);
 }
 const transform = new TransformControls(camera, renderer.domElement);
@@ -275,9 +329,12 @@ function deletar() {
 function enquadrar() {
   const box = new THREE.Box3(), tmp = new THREE.Vector3();
   for (const p of pecas) box.expandByPoint(tmp.set(fx * p.pos.x, p.pos.y, p.pos.z));
-  if (box.isEmpty()) { camera.position.set(40, 40, 40); orbit.target.set(0, 0, 0); orbit.update(); return; }
+  if (box.isEmpty()) { chaoPivo = 0; camera.position.set(40, 40, 40); orbit.target.set(0, 0, 0); orbit.update(); atualizarPivo(); return; }
   const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.z, 10);
-  orbit.target.copy(c); camera.position.set(c.x, c.y + r * 0.8, c.z + r * 0.9); orbit.update(); atualizarPivo();
+  chaoPivo = Number.isFinite(box.min.y) ? box.min.y : chaoDoMapa();      // floor, not the vertical middle of buildings
+  orbit.target.set(c.x, chaoPivo, c.z);
+  camera.position.set(c.x, chaoPivo + r * 0.8, c.z + r * 0.9);
+  orbit.update(); atualizarPivo();
 }
 function pontoSobCursor(ev) {
   const rect = renderer.domElement.getBoundingClientRect();
@@ -289,7 +346,9 @@ function pontoSobCursor(ev) {
 }
 function irPivot(pt) {
   if (!pt) return;
-  orbit.target.copy(pt);
+  const dy = pt.y - orbit.target.y;
+  orbit.target.set(pt.x, pt.y, pt.z);                                     // double-click: sit on the surface you hit (roof or floor)
+  camera.position.y += dy;
   orbit.update();
   atualizarPivo();
 }
@@ -354,6 +413,9 @@ async function salvar() {
 $('t-sel').onclick = () => usarFerramenta('sel');
 $('t-add').onclick = () => { if (!addTipo) toast('Pick a piece from the palette first.'); usarFerramenta('add'); };
 $('t-foco').onclick = enquadrar;
+$('t-pivo-up').onclick = () => subirPivo(passoPivo());
+$('t-pivo-down').onclick = () => subirPivo(-passoPivo());
+$('t-pivo-chao').onclick = pivoNoChao;
 $('t-snap').onchange = e => { snap = e.target.checked; };
 $('s-var').onclick = () => toast('Rotation is baked into the piece itself: use the palette to place the variant you want.');
 $('s-dup').onclick = duplicar;
@@ -369,8 +431,22 @@ addEventListener('keydown', e => {
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
   else if (e.key === 'f' || e.key === 'F') enquadrar();
   else if (e.key === 'g' || e.key === 'G') { if (selPeca) irPivot(new THREE.Vector3(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z)); }
-  else if (e.key === 'd' || e.key === 'D') duplicar();
+  else if ((e.key === 'd' || e.key === 'D') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); duplicar(); }
+  else if (e.key === 'e' || e.key === 'E' || e.key === 'PageUp') { e.preventDefault(); subirPivo(passoPivo() * (e.shiftKey ? 0.25 : 1)); }
+  else if (e.key === 'q' || e.key === 'Q' || e.key === 'PageDown') { e.preventDefault(); subirPivo(-passoPivo() * (e.shiftKey ? 0.25 : 1)); }
+  else if (e.key === 'Home') { e.preventDefault(); pivoNoChao(); }
+  else if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') { e.preventDefault(); deslocarPivo(e.shiftKey ? 0.25 : 1, 0); }
+  else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') { e.preventDefault(); deslocarPivo(e.shiftKey ? -0.25 : -1, 0); }
+  else if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') { e.preventDefault(); deslocarPivo(0, e.shiftKey ? -0.25 : -1); }
+  else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') { e.preventDefault(); deslocarPivo(0, e.shiftKey ? 0.25 : 1); }
 });
+tela.addEventListener('wheel', e => {
+  if (!e.shiftKey) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  const dir = e.deltaY > 0 ? -1 : 1;
+  subirPivo(dir * passoPivo() * (e.altKey ? 0.25 : 1));
+}, { passive: false, capture: true });
 addEventListener('beforeunload', e => { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
 
 listarMapas();
