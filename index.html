@@ -5819,10 +5819,10 @@ function pintarTime(forcar = false){
    Conta.aoSave → recarregarDoSave repõe a ordem dele. Tudo `function` içada: o bloco de nascimento roda antes. */
 /** Por que o arrasto NÃO pode começar agora (ou null). É consultado no toque e de novo na hora de gravar. */
 function motivoArrastarTime(){
-  if (jogo.turno) return 'não dá pra mexer na ordem do time durante a batalha';
-  try { if (Troca.aberta()) return 'não dá pra mexer na ordem do time durante a troca'; } catch {}
-  if (jogo.raidArena) return 'não dá pra mexer na ordem do time na raid';
-  if (jogo.evoluindo || jogo.trocandoSeguidor) return 'espere a evolução terminar';
+  if (jogo.turno) return 'You cannot rearrange the party during a battle';
+  try { if (Troca.aberta()) return 'You cannot rearrange the party during a trade'; } catch {}
+  if (jogo.raidArena) return 'You cannot rearrange the party in a raid';
+  if (jogo.evoluindo || jogo.trocandoSeguidor) return 'Wait for the evolution to finish';
   return null;
 }
 /** A ordem nova (time e caixa) entra no jogo e é gravada — o resto do caminho já existia. */
@@ -6505,6 +6505,7 @@ async function atravessar(p){
   const esperaPasse = (Conta.estado().modo === 'conta' && !Conta.cobreCena(mapa)) ? Rede.pedirPorta(p.id, p.destino, mapa, 1500).catch(() => false) : null;
   await Promise.all([dorme(550), esperaPasse]);
   if (esperaPasse && !Conta.cobreCena(mapa)) __boot.aviso('porta sem passe', { mapa, porta: p.id, chegada: p.destino }, true);
+  try { await Conta.enviarAgora(); } catch {}
   try { sessionStorage.setItem('porta.ok', '1'); } catch {} descarregarCena(); location.replace(u.toString());
 }
 /* LEVAR O JOGADOR PRA OUTRA CENA A MANDO DO SERVIDOR (14/09, raid ao vivo: `raid_ir` e `raid_voltar`). É o `atravessar` sem porta: o

@@ -231,6 +231,7 @@ export async function garantir(c){
        Com o servidor dono de Pokémon, bolsa, nível e missões isso protegia pouco e atrapalhava muito (ressuscitava estado
        velho). Agora quem manda é sempre o servidor; o preço é perder os últimos segundos de uma sessão que caiu. */
     apagar(LS.sujo);
+    await flushArranjoPend();                                            // F5 in the Center: apply the box move before GET /save
     const r = await api('GET', '/save');
     if (r.ok && r.dados && 'save' in r.dados){ gravarPasse(r.dados); modo = 'conta'; rev = r.dados.rev || 0; gravar(LS.rev, String(rev)); aplicarConta(r.dados); aplicarSave(r.dados.save); ligarSync(); return { modo, usuario, gm }; }
     if (r.status === 401) limparSessao();                                  // sessão venceu: login de novo
@@ -292,16 +293,37 @@ export async function criar(u, email, senha, chave = null){   // guarda o códig
 const PREFS = ['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'introVista', 'ultimoCentro', 'tempo', 'inicial'];
 let enviarRede = null;
 const pendente = { arranjo: false, prefs: new Set(), conhecimento: false };
+const SS_ARRANJO = 'conta.arranjoPend';   // survives F5: pagehide POST can lose the race to GET /save
+function snapshotArranjo(){
+  try {
+    sessionStorage.setItem(SS_ARRANJO, JSON.stringify({ time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }));
+  } catch {}
+}
+function lerArranjoPend(){
+  try {
+    const o = JSON.parse(sessionStorage.getItem(SS_ARRANJO) || 'null');
+    if (!o || !Array.isArray(o.time) || !Array.isArray(o.caixa)) return null;
+    return o;
+  } catch { return null; }
+}
+function limparArranjoPend(){ try { sessionStorage.removeItem(SS_ARRANJO); } catch {} }
+async function flushArranjoPend(){
+  const arr = lerArranjoPend();
+  if (!arr || !token) return;
+  const r = await api('POST', '/conta/estado', { arranjo: arr }, true);
+  if (r.ok) limparArranjoPend();
+}
 /** O index liga o WebSocket aqui (Rede.enviar) assim que ele existe; o que estava pendente sobe. */
 export function ligarRede(fn){ enviarRede = fn; despachar(); }
 const lerCofre = k => { try { return JSON.parse(cofre.get(k) ?? 'null'); } catch { return null; } };
 function tocouChave(k){
   if (modo !== 'conta') return;
-  if (k === 'time' || k === 'caixa') pendente.arranjo = true;
+  if (k === 'time' || k === 'caixa'){ pendente.arranjo = true; snapshotArranjo(); }
   else if (PREFS.includes(k)) pendente.prefs.add(k);
   else if (k === 'dex' || k === 'conhecimento') pendente.conhecimento = true;
   else return;                                                           // chave do servidor: o cofre é só espelho
-  sujo = true; clearTimeout(timer); timer = setTimeout(despachar, ESPERA_ENVIO);
+  sujo = true; clearTimeout(timer);
+  timer = setTimeout(despachar, k === 'time' || k === 'caixa' ? 80 : ESPERA_ENVIO);
 }
 const temPendente = () => pendente.arranjo || pendente.prefs.size || pendente.conhecimento;
 /** Manda o que está pendente. Pelo WebSocket em jogo; por HTTP (`POST /conta/estado`, keepalive) quando a página está
@@ -311,12 +333,16 @@ function despachar(viaHttp = false){
   if (modo !== 'conta' || travado || (!temPendente() && !posPend)) return null;
   if (viaHttp){
     const corpo = {};
-    if (pendente.arranjo) corpo.arranjo = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] };
+    if (pendente.arranjo){ corpo.arranjo = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }; snapshotArranjo(); }
     if (pendente.prefs.size){ corpo.prefs = {}; for (const k of pendente.prefs) corpo.prefs[k] = lerCofre(k); }
     if (pendente.conhecimento) corpo.conhecimento = { dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') };
     if (posPend) corpo.pos = posPend;
     pendente.arranjo = false; pendente.prefs.clear(); pendente.conhecimento = false; sujo = false; apagar(LS.sujo);
-    return api('POST', '/conta/estado', corpo, true).then(r => { if (r.status === 409 && r.dados?.outroAparelho) pararSync(); return r.ok; });
+    return api('POST', '/conta/estado', corpo, true).then(r => {
+      if (r.ok && corpo.arranjo) limparArranjoPend();
+      if (r.status === 409 && r.dados?.outroAparelho) pararSync();
+      return r.ok;
+    });
   }
   if (!enviarRede || !noMundo) return null;                              // sem mundo ainda: o bemvindo chama de novo
   if (pendente.arranjo && enviarRede({ t: 'arranjo', time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] })) pendente.arranjo = false;
@@ -355,8 +381,14 @@ export function aplicarBolsa(bolsa){
   return true;
 }
 export function aplicarDoServidor(save, revNovo){
-  if (modo !== 'conta') return false;
-  aplicarSave(save || {});
+  if (modo !== 'conta' || !save || typeof save !== 'object') return false;
+  /* Mid-game updates may be a slice (time/caixa). Only overwrite keys that arrived —
+     a missing key must not wipe the rest of the vault (party vanishing on a door). */
+  for (const k of SAVE_CHAVES){
+    if (!(k in save) || save[k] === undefined) continue;
+    cofre.set(k, JSON.stringify(save[k]));
+    apagar(k);
+  }
   if (Number.isFinite(+revNovo)){ rev = +revNovo; gravar(LS.rev, String(rev)); }
   sujo = false; apagar(LS.sujo);
   return true;

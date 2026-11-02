@@ -317,9 +317,10 @@ function aplicarPrefs(c, prefs) {
    um continua sendo o do servidor, então o cliente não inventa espécie/nível/shiny nem edita stats por aqui. Só aceita
    se o conjunto de uids continuar o mesmo (nada criado, duplicado ou sumido). */
 function aplicarArranjo(c, arranjo) {
-  if (!arranjo || typeof arranjo !== 'object') return;
+  if (!arranjo || typeof arranjo !== 'object' || !c.save) return false;
   const porUid = new Map();
   for (const p of [...(c.save.time || []), ...(c.save.caixa || [])]) if (p && p.uid != null) porUid.set(String(p.uid), p);
+  if (!porUid.size) return false;
   const reordenar = (lista, max) => {
     if (!Array.isArray(lista)) return null;
     const vistos = new Set(), nova = [];
@@ -331,7 +332,13 @@ function aplicarArranjo(c, arranjo) {
     return max ? nova.slice(0, max) : nova;
   };
   const time = reordenar(arranjo.time, 6), caixa = reordenar(arranjo.caixa, 0);
-  if (time && caixa && time.length + caixa.length === porUid.size) { c.save.time = time; c.save.caixa = caixa; }
+  if (!time || !caixa || !time.length) return false;
+  const usados = new Set([...time, ...caixa].map(p => String(p.uid)));
+  const resto = [...porUid.values()].filter(p => !usados.has(String(p.uid)));
+  if (time.length + caixa.length + resto.length !== porUid.size) return false;
+  c.save.time = time;
+  c.save.caixa = [...caixa, ...resto];
+  return true;
 }
 /* dex (Pokédex) e conhecimento: o cliente NÃO sobrescreve o objeto inteiro — só ACRESCENTA (merge monotônico), senão dava
    pra mandar a Pokédex 100%/conhecimento no talo. dex = { nºdex: 'visto'|'pego' }: o cliente só marca 'visto'; o 'pego' quem
@@ -1319,6 +1326,20 @@ wss.on('connection', ws => {
         const cargo = c?.cargo || null;                                   // [STAFF]/[MOD] pros outros verem
         broadcast(ws, { t: 'chat', canal: m.canal || 'local', texto, de: { nome, cargo } }, m.canal === 'local');
         // sem "echo pra mim": o cliente já mostra a própria mensagem (publicar em chat.mjs) — reenviar duplicava
+        break;
+      }
+
+      case 'arranjo': {
+        const uArr = sessoes.get(ws._info?.token) || ws._usuario;
+        const cArr = uArr && contas[uArr];
+        if (cArr) {
+          if (!cArr.save) cArr.save = {};
+          if (aplicarArranjo(cArr, m)) {
+            marcarPegoDoTime(cArr);
+            cArr.rev = (cArr.rev || 0) + 1;
+            salvarContas();
+          }
+        }
         break;
       }
 
