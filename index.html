@@ -5951,16 +5951,19 @@ function fracaoXp(m){
   const a = Evolucao.expPara(m.dex, m.lv), b = Evolucao.expPara(m.dex, m.lv + 1), exp = m.exp ?? a;
   return b > a ? Math.max(0, Math.min(1, (exp - a) / (b - a))) : 0;
 }
-/* With the Figma layout the card's children are absolutely placed: the XP bar copies the HP bar's x/width and sits right above it. */
+/* With the Figma layout the HP bar is absolutely placed: in the card on PC, straight in the slot on the phone (the card is hidden there).
+   The XP bar follows the fill into whichever box holds it, copies its x/width and sits right above it. */
 function encaixarXp(cel){
-  const xp = cel.querySelector('.tcard > i.tc-xp'), card = cel.querySelector('.tcard'); if (!xp || !card) return;
-  const tri = card.querySelector(':scope > i.tc-trilho'), fil = card.querySelector(':scope > b.tc-fill');   // the Figma mount moves the fill up into the card
-  const ref = [tri, fil].find(r => r && r.style.display !== 'none' && r.style.position === 'absolute');
-  if (!ref || card.style.display === 'none'){ xp.style.display = 'none'; return; }
-  const x = parseFloat(ref.style.left) || 0, w = (ref === fil && fil.__figW != null) ? fil.__figW : (parseFloat(ref.style.width) || 0);
-  const tops = [tri, fil].filter(r => r && r.style.display !== 'none').map(r => parseFloat(r.style.top) || 0);
-  const hHp = parseFloat(ref.style.height) || 6, h = Math.max(3, Math.round(hHp * 0.45));
-  Object.assign(xp.style, { display: 'block', position: 'absolute', left: x + 'px', width: w + 'px', top: (Math.min(...tops) - h - 2) + 'px', height: h + 'px', zIndex: '60' });
+  const xp = cel.querySelector('i.tc-xp'), fil = cel.querySelector('b.tc-fill'); if (!xp) return;
+  const caixa = fil?.parentElement;
+  if (!fil || fil.style.display === 'none' || fil.style.position !== 'absolute' || !caixa || caixa.style.display === 'none'){ xp.style.display = 'none'; return; }
+  if (xp.parentElement !== caixa) caixa.appendChild(xp);
+  const tri = caixa.querySelector(':scope > i.tc-trilho'), comTri = tri && tri.style.display !== 'none' && tri.style.position === 'absolute';
+  const ref = comTri ? tri : fil;
+  const x = parseFloat(ref.style.left) || 0, w = ref === fil ? (fil.__figW ?? (parseFloat(fil.style.width) || 0)) : (parseFloat(ref.style.width) || 0);
+  const topo = Math.min(...[comTri && tri, fil].filter(Boolean).map(r => parseFloat(r.style.top) || 0));
+  const h = Math.max(2, Math.round((parseFloat(ref.style.height) || 6) * 0.45)), folga = h > 3 ? 2 : 1;
+  Object.assign(xp.style, { display: 'block', position: 'absolute', left: x + 'px', width: w + 'px', top: (topo - h - folga) + 'px', height: h + 'px', zIndex: '60' });
 }
 function pintarTime(forcar = false){
   const el = $('time-hud'); if (!el || el.hidden) return;
@@ -5994,8 +5997,8 @@ function pintarTime(forcar = false){
       const v = vals[i]; if (!v) continue;
       const cel = el.children[i];
       const bi = cel.querySelector('.tslot > i:not(.txp) > b'); if (bi){ bi.style.width = v.pct + '%'; bi.style.background = v.cor; }
-      for (const xb of cel.querySelectorAll('.tslot > i.txp > b, .tcard > i.tc-xp > b')) xb.style.width = v.xpPct + '%';
-      if (el.__fig && cel.querySelector('.tcard > i.tc-xp')?.style.display === 'none') encaixarXp(cel);   // a layout re-apply (resize) hides it again
+      for (const xb of cel.querySelectorAll('.tslot > i.txp > b, i.tc-xp > b')) xb.style.width = v.xpPct + '%';
+      if (el.__fig && cel.querySelector('i.tc-xp')?.style.display === 'none') encaixarXp(cel);   // a layout re-apply (resize) hides it again
       const b = cel.querySelector('.tc-fill'); if (b){ b.dataset.k = v.k.toFixed(3); if (el.__fig) Hud.fill(b, v.k, v.cor); else { b.style.width = v.pct + '%'; b.style.background = v.cor; } }
       const hpEl = cel.querySelector('.tc-hp'); if (hpEl){ const sHp = Math.round(v.hp) + '/' + v.maxHp; if (hpEl.textContent !== sHp) hpEl.textContent = sHp; }
       const u = cel.querySelector('.tslot > u'); if (u){ u.style.height = v.alt + '%'; if (el.__fig) Hud.estado(cel, 'cooldown', v.alt / 100); }
