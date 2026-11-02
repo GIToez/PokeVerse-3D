@@ -1269,6 +1269,11 @@ const EH_PLANTA = /grass|flower|tree|leaf|plant|yun|bush|implant|shu\b|hua\b|cao
    cruza a célula (nunca abre buraco onde há chão). Chave numérica: (x+50000)*100000 + (z+50000). */
 const chaveCel = (x, z) => (Math.floor(x) + 50000) * 100000 + (Math.floor(z) + 50000);
 const _cv = new THREE.Vector3(), _cM = new THREE.Matrix4(), _cT = new THREE.Matrix4();
+function ehAguaParte(pt){
+  if (/shui|water|sea_floor|^sea$/.test((pt.nome || '').toLowerCase())) return true;
+  const mats = Array.isArray(pt.mat) ? pt.mat : [pt.mat];
+  return mats.some(m => /water|shui/i.test(m?.name || ''));
+}
 function contornoPiso(lista, ox, oy, oz){
   const cel = new Set();
   _cT.makeTranslation(ox, oy, oz);
@@ -1277,7 +1282,7 @@ function contornoPiso(lista, ox, oy, oz){
   const cruza = (p1x, p1z, p2x, p2z, q1x, q1z, q2x, q2z) => Math.sign(lado(p1x, p1z, p2x, p2z, q1x, q1z)) !== Math.sign(lado(p1x, p1z, p2x, p2z, q2x, q2z)) && Math.sign(lado(q1x, q1z, q2x, q2z, p1x, p1z)) !== Math.sign(lado(q1x, q1z, q2x, q2z, p2x, p2z));
   const arestaNaCelula = (p1x, p1z, p2x, p2z, x, z) => cruza(p1x, p1z, p2x, p2z, x, z, x + 1, z) || cruza(p1x, p1z, p2x, p2z, x + 1, z, x + 1, z + 1) || cruza(p1x, p1z, p2x, p2z, x + 1, z + 1, x, z + 1) || cruza(p1x, p1z, p2x, p2z, x, z + 1, x, z);
   for (const pt of lista){
-    if (pt.porta || !pt.geo?.attributes?.position) continue;
+    if (pt.porta || pt.agua || !pt.geo?.attributes?.position) continue;
     _cM.multiplyMatrices(_cT, pt.local);
     const pos = pt.geo.attributes.position, idx = pt.geo.index, n = idx ? idx.count : pos.count;
     const Pp = new Float32Array(pos.count * 2);
@@ -1316,7 +1321,7 @@ function paredesPorFace(lista, ox, oy, oz, y0 = 0.3, y1 = 1.8, vaoMin = 0, compM
   const cel = new Set(), vao = vaoMin > 0 || compMin > 0 ? new Map() : null;
   _cT.makeTranslation(ox, oy, oz);
   for (const pt of lista){
-    if (pt.porta || !pt.geo?.attributes?.position) continue;
+    if (pt.porta || pt.agua || !pt.geo?.attributes?.position) continue;
     _cM.multiplyMatrices(_cT, pt.local);
     const pos = pt.geo.attributes.position, idx = pt.geo.index, n = idx ? idx.count : pos.count;
     const P = new Float32Array(pos.count * 3);
@@ -1357,7 +1362,7 @@ function topoDaFace(lista, ox, oy, oz, x0, x1, z0, z1){
   _cT.makeTranslation(ox, oy, oz);
   const lado = (ax, az, bx, bz, px, pz) => (bx - ax) * (pz - az) - (bz - az) * (px - ax);
   for (const pt of lista){
-    if (pt.porta || !pt.geo?.attributes?.position) continue;
+    if (pt.porta || pt.agua || !pt.geo?.attributes?.position) continue;
     _cM.multiplyMatrices(_cT, pt.local);
     const pos = pt.geo.attributes.position, idx = pt.geo.index, n = idx ? idx.count : pos.count;
     const P = new Float32Array(pos.count * 3);
@@ -1389,7 +1394,7 @@ function alturasEscada(lista, ox, oy, oz, passo = PASSO_ESCADA, chave = chaveEsc
   _cT.makeTranslation(ox, oy, oz);
   const lado = (ax, az, bx, bz, px, pz) => (bx - ax) * (pz - az) - (bz - az) * (px - ax);
   for (const pt of lista){
-    if (pt.porta || !pt.geo?.attributes?.position) continue;
+    if (pt.porta || pt.agua || !pt.geo?.attributes?.position) continue;
     _cM.multiplyMatrices(_cT, pt.local);
     const pos = pt.geo.attributes.position, idx = pt.geo.index, n = idx ? idx.count : pos.count;
     const P = new Float32Array(pos.count * 3);
@@ -1447,7 +1452,7 @@ function niveisDoPiso(lista, ox, oy, oz, yBase, yTopo){
   const meio = yBase + (yTopo - yBase) / 2, area = new Map();            // y arredondado a 5 cm -> área horizontal
   _cT.makeTranslation(ox, oy, oz);
   for (const pt of lista){
-    if (pt.porta || !pt.geo?.attributes?.position) continue;
+    if (pt.porta || pt.agua || !pt.geo?.attributes?.position) continue;
     _cM.multiplyMatrices(_cT, pt.local);
     const pos = pt.geo.attributes.position, idx = pt.geo.index, n2 = idx ? idx.count : pos.count;
     const P = new Float32Array(pos.count * 3);
@@ -1485,7 +1490,7 @@ function tetoDoPisoGrosso(lista, ox, oy, oz){
   const area = new Map();                                               // altura (dm) -> m² horizontais
   _cT.makeTranslation(ox, oy, oz);
   for (const pt of lista){
-    if (pt.porta || !pt.geo?.attributes?.position) continue;
+    if (pt.porta || pt.agua || !pt.geo?.attributes?.position) continue;
     _cM.multiplyMatrices(_cT, pt.local);
     const pos = pt.geo.attributes.position, idx = pt.geo.index, n = idx ? idx.count : pos.count;
     const P = new Float32Array(pos.count * 3);
@@ -1711,7 +1716,9 @@ function instanciarBiblioteca(g, dados){
         if (/head/i.test(nm)) break;                                      // "sm_t_door head" = moldura decorativa, fica estática
         if (/^(door|men)\d*/i.test(nm) || /Door/.test(nm)){ porta = nm; break; }
       }
-      lista.push({ geo: o.geometry, mat: o.material, porta, nome: o.name, chave: o.geometry.uuid + '|' + mats.map(m => m.uuid).join(','), local: o.matrixWorld.clone() });
+      const pt = { geo: o.geometry, mat: o.material, porta, nome: o.name, chave: o.geometry.uuid + '|' + mats.map(m => m.uuid).join(','), local: o.matrixWorld.clone() };
+      pt.agua = ehAguaParte(pt);
+      lista.push(pt);
     });
     partes.set(chaveNome(p.name), lista);
   }
@@ -1773,7 +1780,12 @@ function instanciarBiblioteca(g, dados){
   for (const [nome, lista] of partes){
     const cx = new THREE.Box3();
     const tmp = new THREE.Box3();
-    for (const pt of lista){
+    /* SampleWater no mesmo prefab de piso (Ginásio de Cerulean, `sm_ro_1091_floor_01`): a água
+       fica ~0,7 m ACIMA do fundo. Se entrar na caixa, o interior usa o TOPO como chão e dá pra
+       andar em cima da piscina. A caixa de colisão fica com as partes secas; a água vai pra
+       `principal.aguas` e o `naAgua` barra o pé. */
+    const secasCx = lista.filter(pt => !pt.agua);
+    for (const pt of (secasCx.length ? secasCx : lista)){
       pt.geo.computeBoundingBox();
       tmp.copy(pt.geo.boundingBox).applyMatrix4(pt.local);
       cx.union(tmp);
@@ -1809,9 +1821,10 @@ function instanciarBiblioteca(g, dados){
       if (pt.porta) continue;                                             // folhas de porta viram malhas vivas na 2ª passada
       const k = pt.chave + '|' + bl;
       let gr = grupos.get(k);
-      if (!gr){ gr = { geo: pt.geo, mat: pt.mat, n: 0, i: 0, im: null, nomes: new Set() }; grupos.set(k, gr); }
+      if (!gr){ gr = { geo: pt.geo, mat: pt.mat, n: 0, i: 0, im: null, nomes: new Set(), aguaParte: !!pt.agua }; grupos.set(k, gr); }
       gr.n++;
       gr.nomes.add(nome);
+      if (pt.agua) gr.aguaParte = true;
     }
     const cx = caixaDe.get(nome);
     const alto = cx.max.y - cx.min.y;
@@ -1824,7 +1837,7 @@ function instanciarBiblioteca(g, dados){
          de piso do index que lia a malha CRUA, sem tirar a água: dentro do `shengteannuhao_3f_0` há uma malha `shui`
          de 3.166 m² em y 0 que virava 3.065 células de chão — e que o `aguaEm` nem enxerga, porque o `gr.agua` testa
          o nome do PREFAB e não o da MALHA. Dava pra sair andando em cima do mar num retângulo de 83 × 38 m. */
-      const secas = lista.filter(pt => !EH_AGUA.test((pt.nome || '').toLowerCase()));
+      const secas = lista.filter(pt => !pt.agua);
       const r = { x0: flipX * o.x + cx.min.x, x1: flipX * o.x + cx.max.x, z0: o.z + cx.min.z, z1: o.z + cx.max.z, y: o.y + cx.min.y, nome };
       /* TETO ANCORADO NO PISO DA PEÇA, não na base da CAIXA (16/09). O conserto de 14/09 pôs o teto em "base + 1,3"
          pra pegar as passarelas laterais a 1,06 m. Só que a caixa do `shengteannuhao_3f_ship_0` vai da QUILHA ao
@@ -2083,7 +2096,7 @@ function instanciarBiblioteca(g, dados){
     gr.sombra = alto > 0.6;
     nTris += (gr.geo.index ? gr.geo.index.count : gr.geo.attributes.position.count) / 3 * gr.n;
     const nomes = [...gr.nomes];
-    gr.agua = nomes.some(n => EH_AGUA.test(n));
+    gr.agua = !!gr.aguaParte || nomes.some(n => EH_AGUA.test(n));
     gr.piso = !gr.agua && nomes.some(n => ehPiso(n));
     // props (Pokemon/Build no Fairy = iluminado): fator de luz no material compartilhado, uma vez só
     if (!gr.agua && !gr.piso && LUZ_PROPS !== 1){
