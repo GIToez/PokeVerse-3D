@@ -624,6 +624,10 @@ function limparEspecie(e, exigirModelo) {
   if (e.skittishHp === 0 || e.skittishHp === '0') o.skittishHp = 0;
   else { const hp = Math.round(Number(e.skittishHp)); if (Number.isInteger(hp) && hp >= 1 && hp <= 100) o.skittishHp = hp; }
   if (typeof e.fonte === 'string' && e.fonte) o.fonte = e.fonte.slice(0, 20);
+  const lvA = Math.round(Number(e.lvMin)), lvB = Math.round(Number(e.lvMax));
+  if (Number.isInteger(lvA) && Number.isInteger(lvB) && lvA >= 1 && lvB <= 100 && lvA <= lvB){ o.lvMin = lvA; o.lvMax = lvB; }
+  const horas = (Array.isArray(e.hora) ? e.hora : (e.hora ? [e.hora] : [])).filter(h => h === 'manha' || h === 'dia' || h === 'noite');
+  if (horas.length && horas.length < 3) o.hora = [...new Set(horas)];
   return o;
 }
 /* Objeto de cenário: uma peça (prefab `n`) colocada em x/y/z. O `a` do dump é sempre 0 (não é rotação — a orientação está no prefab);

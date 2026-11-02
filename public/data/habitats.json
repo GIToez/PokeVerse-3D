@@ -3325,6 +3325,3558 @@
     "fonte": "jogo",
     "peso": 1100
    }
+  ],
+  "2101": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2102": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2103": [
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2106": [
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2107": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2108": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2110": [
+   {
+    "dex": 129,
+    "glb": "pm0129_00.glb",
+    "nome": "Magikarp",
+    "fonte": "hgss",
+    "peso": 100,
+    "lvMin": 2,
+    "lvMax": 20,
+    "agua": 1
+   }
+  ],
+  "2111": [
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 100,
+    "lvMin": 10,
+    "lvMax": 14,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 10,
+    "lvMax": 12,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 10,
+    "lvMax": 12,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 191,
+    "glb": "pm0191_00.glb",
+    "nome": "Sunkern",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 10,
+    "lvMax": 12,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 10,
+    "lvMax": 14,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 10,
+    "lvMax": 10,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 11,
+    "glb": "pm0011_00.glb",
+    "nome": "Metapod",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 10,
+    "lvMax": 10,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 10,
+    "lvMax": 10,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 10,
+    "lvMax": 10,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 12,
+    "lvMax": 14,
+    "hora": [
+     "dia"
+    ]
+   }
+  ],
+  "2112": [
+   {
+    "dex": 177,
+    "glb": "pm0177_00.glb",
+    "nome": "Natu",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 18,
+    "lvMax": 24
+   },
+   {
+    "dex": 235,
+    "glb": "pm0235_00.glb",
+    "nome": "Smeargle",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 20,
+    "lvMax": 22
+   },
+   {
+    "dex": 194,
+    "glb": "pm0194_00.glb",
+    "nome": "Wooper",
+    "fonte": "hgss",
+    "peso": 60,
+    "lvMin": 10,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2113": [
+   {
+    "dex": 129,
+    "glb": "pm0129_00.glb",
+    "nome": "Magikarp",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 5,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 130,
+    "glb": "pm0130_00.glb",
+    "nome": "Gyarados",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 10,
+    "lvMax": 20,
+    "agua": 1
+   }
+  ],
+  "2114": [
+   {
+    "dex": 77,
+    "glb": "pm0077_00.glb",
+    "nome": "Ponyta",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 42,
+    "lvMax": 42
+   },
+   {
+    "dex": 114,
+    "glb": "pm0114_00.glb",
+    "nome": "Tangela",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 41,
+    "lvMax": 41
+   },
+   {
+    "dex": 78,
+    "glb": "pm0078_00.glb",
+    "nome": "Rapidash",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 44,
+    "lvMax": 44
+   },
+   {
+    "dex": 215,
+    "glb": "pm0215_00.glb",
+    "nome": "Sneasel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 41,
+    "lvMax": 43,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 217,
+    "glb": "pm0217_00.glb",
+    "nome": "Ursaring",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 42,
+    "lvMax": 42
+   },
+   {
+    "dex": 232,
+    "glb": "pm0232_00.glb",
+    "nome": "Donphan",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 42,
+    "lvMax": 42
+   },
+   {
+    "dex": 84,
+    "glb": "pm0084_00.glb",
+    "nome": "Doduo",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 41,
+    "lvMax": 41,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 85,
+    "glb": "pm0085_00.glb",
+    "nome": "Dodrio",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 43,
+    "lvMax": 43,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 30,
+    "lvMax": 48,
+    "agua": 1
+   },
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 30,
+    "lvMax": 40,
+    "agua": 1
+   }
+  ],
+  "2117": [
+   {
+    "dex": 43,
+    "glb": "pm0043_00.glb",
+    "nome": "Oddish",
+    "fonte": "hgss",
+    "peso": 60,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 11,
+    "glb": "pm0011_00.glb",
+    "nome": "Metapod",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 11,
+    "glb": "pm0011_00.glb",
+    "nome": "Metapod",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 46,
+    "glb": "pm0046_00.glb",
+    "nome": "Paras",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 5,
+    "lvMax": 6,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 5,
+    "lvMax": 5,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 46,
+    "glb": "pm0046_00.glb",
+    "nome": "Paras",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 54,
+    "glb": "pm0054.glb",
+    "nome": "Psyduck",
+    "fonte": "hgss",
+    "peso": 270,
+    "lvMin": 5,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 55,
+    "glb": "pm0055_00.glb",
+    "nome": "Golduck",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 10,
+    "lvMax": 20,
+    "agua": 1
+   }
+  ],
+  "2118": [
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 6,
+    "lvMax": 6
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 4,
+    "lvMax": 6
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 5,
+    "lvMax": 7
+   },
+   {
+    "dex": 27,
+    "glb": "pm0027_00.glb",
+    "nome": "Sandshrew",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 6,
+    "lvMax": 6
+   },
+   {
+    "dex": 95,
+    "glb": "pm0095_00.glb",
+    "nome": "Onix",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 6,
+    "lvMax": 6
+   },
+   {
+    "dex": 194,
+    "glb": "pm0194_00.glb",
+    "nome": "Wooper",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 60,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2119": [
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 60,
+    "lvMin": 2,
+    "lvMax": 4
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 39,
+    "lvMin": 2,
+    "lvMax": 4
+   },
+   {
+    "dex": 206,
+    "glb": "pm0206_00.glb",
+    "nome": "Dunsparce",
+    "fonte": "hgss",
+    "peso": 1,
+    "lvMin": 4,
+    "lvMax": 4
+   },
+   {
+    "dex": 129,
+    "glb": "pm0129_00.glb",
+    "nome": "Magikarp",
+    "fonte": "hgss",
+    "peso": 100,
+    "lvMin": 2,
+    "lvMax": 20,
+    "agua": 1
+   }
+  ],
+  "2120": [
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 60,
+    "lvMin": 13,
+    "lvMax": 15
+   },
+   {
+    "dex": 66,
+    "glb": "pm0066_00.glb",
+    "nome": "Machop",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 14,
+    "lvMax": 14
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 14,
+    "lvMin": 14,
+    "lvMax": 16
+   },
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 14,
+    "lvMax": 14
+   },
+   {
+    "dex": 183,
+    "glb": "pm0183_00.glb",
+    "nome": "Marill",
+    "fonte": "hgss",
+    "peso": 1,
+    "lvMin": 15,
+    "lvMax": 15
+   },
+   {
+    "dex": 118,
+    "glb": "pm0118_00.glb",
+    "nome": "Goldeen",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 119,
+    "glb": "pm0119_00.glb",
+    "nome": "Seaking",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2121": [
+   {
+    "dex": 220,
+    "glb": "pm0220_00.glb",
+    "nome": "Swinub",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 21,
+    "lvMax": 23
+   },
+   {
+    "dex": 42,
+    "glb": "pm0042_00.glb",
+    "nome": "Golbat",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 22,
+    "lvMax": 22,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 22,
+    "lvMax": 22,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 124,
+    "glb": "pm0124_00.glb",
+    "nome": "Jynx",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 22,
+    "lvMax": 22,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 225,
+    "glb": "pm0225_00.glb",
+    "nome": "Delibird",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 124,
+    "glb": "pm0124_00.glb",
+    "nome": "Jynx",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 22,
+    "lvMax": 22,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   }
+  ],
+  "2122": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 75,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 226,
+    "glb": "pm0226_00.glb",
+    "nome": "Mantine",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2123": [
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 42,
+    "glb": "pm0042_00.glb",
+    "nome": "Golbat",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 79,
+    "glb": "pm0079_00.glb",
+    "nome": "Slowpoke",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 21,
+    "lvMax": 23
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 118,
+    "glb": "pm0118_00.glb",
+    "nome": "Goldeen",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 20,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 79,
+    "glb": "pm0079_00.glb",
+    "nome": "Slowpoke",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 20,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 119,
+    "glb": "pm0119_00.glb",
+    "nome": "Seaking",
+    "fonte": "hgss",
+    "peso": 7,
+    "lvMin": 20,
+    "lvMax": 20,
+    "agua": 1
+   }
+  ],
+  "2226": [
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 50,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 84,
+    "glb": "pm0084_00.glb",
+    "nome": "Doduo",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 77,
+    "glb": "pm0077_00.glb",
+    "nome": "Ponyta",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 32,
+    "lvMax": 32
+   },
+   {
+    "dex": 28,
+    "glb": "pm0028_00.glb",
+    "nome": "Sandslash",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 28,
+    "lvMax": 28
+   },
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 30,
+    "lvMax": 30,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 84,
+    "glb": "pm0084_00.glb",
+    "nome": "Doduo",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 30,
+    "lvMax": 30,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 24,
+    "glb": "pm0024_00.glb",
+    "nome": "Arbok",
+    "fonte": "hgss",
+    "peso": 2,
+    "lvMin": 30,
+    "lvMax": 30
+   },
+   {
+    "dex": 85,
+    "glb": "pm0085_00.glb",
+    "nome": "Dodrio",
+    "fonte": "hgss",
+    "peso": 2,
+    "lvMin": 30,
+    "lvMax": 30,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 25,
+    "lvMax": 30,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 30,
+    "lvMax": 30,
+    "agua": 1
+   }
+  ],
+  "2227": [
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 52,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 84,
+    "glb": "pm0084_00.glb",
+    "nome": "Doduo",
+    "fonte": "hgss",
+    "peso": 45,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 28,
+    "lvMax": 30,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 24,
+    "glb": "pm0024_00.glb",
+    "nome": "Arbok",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 28,
+    "lvMax": 28
+   },
+   {
+    "dex": 77,
+    "glb": "pm0077_00.glb",
+    "nome": "Ponyta",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 32,
+    "lvMax": 32
+   },
+   {
+    "dex": 28,
+    "glb": "pm0028_00.glb",
+    "nome": "Sandslash",
+    "fonte": "hgss",
+    "peso": 2,
+    "lvMin": 30,
+    "lvMax": 30
+   },
+   {
+    "dex": 85,
+    "glb": "pm0085_00.glb",
+    "nome": "Dodrio",
+    "fonte": "hgss",
+    "peso": 2,
+    "lvMin": 30,
+    "lvMax": 30,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 15,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 20,
+    "lvMax": 20,
+    "agua": 1
+   }
+  ],
+  "2228": [
+   {
+    "dex": 77,
+    "glb": "pm0077_00.glb",
+    "nome": "Ponyta",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 40,
+    "lvMax": 40
+   },
+   {
+    "dex": 114,
+    "glb": "pm0114_00.glb",
+    "nome": "Tangela",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 39,
+    "lvMax": 39
+   },
+   {
+    "dex": 78,
+    "glb": "pm0078_00.glb",
+    "nome": "Rapidash",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 41,
+    "lvMax": 43,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 78,
+    "glb": "pm0078_00.glb",
+    "nome": "Rapidash",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 42,
+    "lvMax": 42,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 215,
+    "glb": "pm0215_00.glb",
+    "nome": "Sneasel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 42,
+    "lvMax": 42,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 217,
+    "glb": "pm0217_00.glb",
+    "nome": "Ursaring",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 40,
+    "lvMax": 40
+   },
+   {
+    "dex": 232,
+    "glb": "pm0232_00.glb",
+    "nome": "Donphan",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 40,
+    "lvMax": 40
+   },
+   {
+    "dex": 84,
+    "glb": "pm0084_00.glb",
+    "nome": "Doduo",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 41,
+    "lvMax": 41,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 85,
+    "glb": "pm0085_00.glb",
+    "nome": "Dodrio",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 43,
+    "lvMax": 43,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 35,
+    "lvMax": 40,
+    "agua": 1
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 40,
+    "lvMax": 40,
+    "agua": 1
+   }
+  ],
+  "2229": [
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 85,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 55,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 161,
+    "glb": "pm0161_00.glb",
+    "nome": "Sentret",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 2,
+    "lvMax": 3,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 161,
+    "glb": "pm0161_00.glb",
+    "nome": "Sentret",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   }
+  ],
+  "2230": [
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 50,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 45,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 18,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 18,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 165,
+    "glb": "pm0165_00.glb",
+    "nome": "Ledyba",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 3,
+    "lvMax": 3,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 167,
+    "glb": "pm0167_00.glb",
+    "nome": "Spinarak",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 2,
+    "lvMax": 2,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 11,
+    "glb": "pm0011_00.glb",
+    "nome": "Metapod",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 11,
+    "glb": "pm0011_00.glb",
+    "nome": "Metapod",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 54,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 6,
+    "lvMin": 15,
+    "lvMax": 32,
+    "agua": 1
+   }
+  ],
+  "2231": [
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 4,
+    "lvMax": 5,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 3,
+    "lvMax": 4,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 4,
+    "lvMax": 5,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 3,
+    "lvMax": 5,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 69,
+    "glb": "pm0069_00.glb",
+    "nome": "Bellsprout",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 3,
+    "lvMax": 3
+   },
+   {
+    "dex": 10,
+    "glb": "pm0010_00.glb",
+    "nome": "Caterpie",
+    "fonte": "hgss",
+    "peso": 18,
+    "lvMin": 4,
+    "lvMax": 5,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 18,
+    "lvMin": 4,
+    "lvMax": 5,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 13,
+    "glb": "pm0013_00.glb",
+    "nome": "Weedle",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 165,
+    "glb": "pm0165_00.glb",
+    "nome": "Ledyba",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 167,
+    "glb": "pm0167_00.glb",
+    "nome": "Spinarak",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 3,
+    "lvMax": 3,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 11,
+    "glb": "pm0011_00.glb",
+    "nome": "Metapod",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 5,
+    "lvMax": 5,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 5,
+    "lvMax": 5,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 14,
+    "glb": "pm0014_00.glb",
+    "nome": "Kakuna",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 5,
+    "lvMax": 5,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 54,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 6,
+    "lvMin": 15,
+    "lvMax": 32,
+    "agua": 1
+   }
+  ],
+  "2232": [
+   {
+    "dex": 194,
+    "glb": "pm0194_00.glb",
+    "nome": "Wooper",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 69,
+    "glb": "pm0069_00.glb",
+    "nome": "Bellsprout",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 4,
+    "lvMax": 6,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 4,
+    "lvMax": 6,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 69,
+    "glb": "pm0069_00.glb",
+    "nome": "Bellsprout",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 179,
+    "glb": "pm0179_00.glb",
+    "nome": "Mareep",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 23,
+    "glb": "pm0023_00.glb",
+    "nome": "Ekans",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 4,
+    "lvMax": 4
+   },
+   {
+    "dex": 179,
+    "glb": "pm0179_00.glb",
+    "nome": "Mareep",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 187,
+    "glb": "pm0187_00.glb",
+    "nome": "Hoppip",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 10,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 18,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 6,
+    "lvMin": 15,
+    "lvMax": 36,
+    "agua": 1
+   }
+  ],
+  "2233": [
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 45,
+    "lvMin": 6,
+    "lvMax": 7,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 4,
+    "lvMax": 8,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 187,
+    "glb": "pm0187_00.glb",
+    "nome": "Hoppip",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 6,
+    "lvMax": 8,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 4,
+    "lvMax": 7,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 6,
+    "lvMax": 7,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 21,
+    "glb": "pm0021_00.glb",
+    "nome": "Spearow",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 6,
+    "lvMax": 6,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 23,
+    "glb": "pm0023_00.glb",
+    "nome": "Ekans",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 7,
+    "lvMax": 7
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 4,
+    "lvMax": 4,
+    "hora": [
+     "manha"
+    ]
+   }
+  ],
+  "2234": [
+   {
+    "dex": 96,
+    "glb": "pm0096_00.glb",
+    "nome": "Drowzee",
+    "fonte": "hgss",
+    "peso": 50,
+    "lvMin": 10,
+    "lvMax": 12
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 11,
+    "lvMax": 13
+   },
+   {
+    "dex": 63,
+    "glb": "pm0063_00.glb",
+    "nome": "Abra",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 10,
+    "lvMax": 10
+   },
+   {
+    "dex": 132,
+    "glb": "pm0132_00.glb",
+    "nome": "Ditto",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 10,
+    "lvMax": 10
+   },
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 54,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 6,
+    "lvMin": 15,
+    "lvMax": 29,
+    "agua": 1
+   }
+  ],
+  "2235": [
+   {
+    "dex": 29,
+    "glb": "pm0029_00.glb",
+    "nome": "Nidoran♀",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 12,
+    "lvMax": 12
+   },
+   {
+    "dex": 32,
+    "glb": "pm0032_00.glb",
+    "nome": "Nidoran♂",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 12,
+    "lvMax": 12
+   },
+   {
+    "dex": 96,
+    "glb": "pm0096_00.glb",
+    "nome": "Drowzee",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 14,
+    "lvMax": 14
+   },
+   {
+    "dex": 63,
+    "glb": "pm0063_00.glb",
+    "nome": "Abra",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 10,
+    "lvMax": 10
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 14,
+    "lvMax": 14,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 14,
+    "lvMax": 14,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 132,
+    "glb": "pm0132_00.glb",
+    "nome": "Ditto",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 10,
+    "lvMax": 10
+   },
+   {
+    "dex": 193,
+    "glb": "pm0193_00.glb",
+    "nome": "Yanma",
+    "fonte": "hgss",
+    "peso": 1,
+    "lvMin": 12,
+    "lvMax": 12
+   },
+   {
+    "dex": 54,
+    "glb": "pm0054.glb",
+    "nome": "Psyduck",
+    "fonte": "hgss",
+    "peso": 54,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 55,
+    "glb": "pm0055_00.glb",
+    "nome": "Golduck",
+    "fonte": "hgss",
+    "peso": 6,
+    "lvMin": 15,
+    "lvMax": 31,
+    "agua": 1
+   }
+  ],
+  "2236": [
+   {
+    "dex": 29,
+    "glb": "pm0029_00.glb",
+    "nome": "Nidoran♀",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 12,
+    "lvMax": 12,
+    "hora": [
+     "dia",
+     "noite"
+    ]
+   },
+   {
+    "dex": 29,
+    "glb": "pm0029_00.glb",
+    "nome": "Nidoran♀",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 12,
+    "lvMax": 13,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 32,
+    "glb": "pm0032_00.glb",
+    "nome": "Nidoran♂",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 12,
+    "lvMax": 12,
+    "hora": [
+     "dia",
+     "noite"
+    ]
+   },
+   {
+    "dex": 32,
+    "glb": "pm0032_00.glb",
+    "nome": "Nidoran♂",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 12,
+    "lvMax": 13,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 12,
+    "lvMax": 15,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 13,
+    "lvMax": 13,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 37,
+    "glb": "pm0037_00.glb",
+    "nome": "Vulpix",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 58,
+    "glb": "pm0058_00.glb",
+    "nome": "Growlithe",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 37,
+    "glb": "pm0037_00.glb",
+    "nome": "Vulpix",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 13,
+    "lvMax": 13,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 58,
+    "glb": "pm0058_00.glb",
+    "nome": "Growlithe",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 13,
+    "lvMax": 13,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 234,
+    "glb": "pm0234_00.glb",
+    "nome": "Stantler",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 13,
+    "lvMax": 13
+   }
+  ],
+  "2237": [
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 50,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 16,
+    "glb": "pm0016_00.glb",
+    "nome": "Pidgey",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 163,
+    "glb": "pm0163_00.glb",
+    "nome": "Hoothoot",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 234,
+    "glb": "pm0234_00.glb",
+    "nome": "Stantler",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 15,
+    "lvMax": 15
+   },
+   {
+    "dex": 165,
+    "glb": "pm0165_00.glb",
+    "nome": "Ledyba",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 167,
+    "glb": "pm0167_00.glb",
+    "nome": "Spinarak",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 13,
+    "lvMax": 15,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 37,
+    "glb": "pm0037_00.glb",
+    "nome": "Vulpix",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 14,
+    "lvMax": 15,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 58,
+    "glb": "pm0058_00.glb",
+    "nome": "Growlithe",
+    "fonte": "hgss",
+    "peso": 8,
+    "lvMin": 14,
+    "lvMax": 15,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 17,
+    "glb": "pm0017_00.glb",
+    "nome": "Pidgeotto",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 15,
+    "lvMax": 15,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 37,
+    "glb": "pm0037_00.glb",
+    "nome": "Vulpix",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 14,
+    "lvMax": 14,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 58,
+    "glb": "pm0058_00.glb",
+    "nome": "Growlithe",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 14,
+    "lvMax": 14,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   }
+  ],
+  "2238": [
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 16,
+    "lvMax": 16
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 52,
+    "glb": "pm0052_00.glb",
+    "nome": "Meowth",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 81,
+    "glb": "pm0081_00.glb",
+    "nome": "Magnemite",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 16,
+    "lvMax": 16
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 52,
+    "glb": "pm0052_00.glb",
+    "nome": "Meowth",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 83,
+    "glb": "pm0083_00.glb",
+    "nome": "Farfetch’d",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 241,
+    "glb": "pm0241_00.glb",
+    "nome": "Miltank",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 13,
+    "lvMax": 13
+   },
+   {
+    "dex": 128,
+    "glb": "pm0128_00.glb",
+    "nome": "Tauros",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 13,
+    "lvMax": 13
+   },
+   {
+    "dex": 209,
+    "glb": "pm0209_00.glb",
+    "nome": "Snubbull",
+    "fonte": "hgss",
+    "peso": 1,
+    "lvMin": 13,
+    "lvMax": 13
+   }
+  ],
+  "2239": [
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 17,
+    "lvMax": 17
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 52,
+    "glb": "pm0052_00.glb",
+    "nome": "Meowth",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 81,
+    "glb": "pm0081_00.glb",
+    "nome": "Magnemite",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 16,
+    "lvMax": 16
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 52,
+    "glb": "pm0052_00.glb",
+    "nome": "Meowth",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 83,
+    "glb": "pm0083_00.glb",
+    "nome": "Farfetch’d",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 128,
+    "glb": "pm0128_00.glb",
+    "nome": "Tauros",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 15,
+    "lvMax": 15
+   },
+   {
+    "dex": 241,
+    "glb": "pm0241_00.glb",
+    "nome": "Miltank",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 15,
+    "lvMax": 15
+   }
+  ],
+  "2240": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2241": [
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 75,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 73,
+    "glb": "pm0073_00.glb",
+    "nome": "Tentacruel",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 226,
+    "glb": "pm0226_00.glb",
+    "nome": "Mantine",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2242": [
+   {
+    "dex": 179,
+    "glb": "pm0179_00.glb",
+    "nome": "Mareep",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 13,
+    "lvMax": 15
+   },
+   {
+    "dex": 21,
+    "glb": "pm0021_00.glb",
+    "nome": "Spearow",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 14,
+    "lvMax": 16,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 14,
+    "lvMax": 16,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 56,
+    "glb": "pm0056_00.glb",
+    "nome": "Mankey",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 15,
+    "lvMax": 15
+   },
+   {
+    "dex": 180,
+    "glb": "pm0180_00.glb",
+    "nome": "Flaaffy",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 17
+   },
+   {
+    "dex": 118,
+    "glb": "pm0118_00.glb",
+    "nome": "Goldeen",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 10,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 119,
+    "glb": "pm0119_00.glb",
+    "nome": "Seaking",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2243": [
+   {
+    "dex": 180,
+    "glb": "pm0180_00.glb",
+    "nome": "Flaaffy",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 15,
+    "lvMax": 17,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 180,
+    "glb": "pm0180_00.glb",
+    "nome": "Flaaffy",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 15,
+    "lvMax": 15,
+    "hora": [
+     "manha",
+     "noite"
+    ]
+   },
+   {
+    "dex": 203,
+    "glb": "pm0203_00.glb",
+    "nome": "Girafarig",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 15,
+    "lvMax": 15
+   },
+   {
+    "dex": 17,
+    "glb": "pm0017_00.glb",
+    "nome": "Pidgeotto",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 17,
+    "lvMax": 17,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 17,
+    "glb": "pm0017_00.glb",
+    "nome": "Pidgeotto",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 17,
+    "lvMax": 17,
+    "hora": [
+     "dia"
+    ]
+   },
+   {
+    "dex": 164,
+    "glb": "pm0164_00.glb",
+    "nome": "Noctowl",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 17,
+    "lvMax": 17,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 48,
+    "glb": "pm0048_00.glb",
+    "nome": "Venonat",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 15,
+    "lvMax": 17,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 179,
+    "glb": "pm0179_00.glb",
+    "nome": "Mareep",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 15,
+    "lvMax": 15,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 48,
+    "glb": "pm0048_00.glb",
+    "nome": "Venonat",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "manha"
+    ]
+   },
+   {
+    "dex": 179,
+    "glb": "pm0179_00.glb",
+    "nome": "Mareep",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 16,
+    "lvMax": 16,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 129,
+    "glb": "pm0129_00.glb",
+    "nome": "Magikarp",
+    "fonte": "hgss",
+    "peso": 50,
+    "lvMin": 5,
+    "lvMax": 50,
+    "agua": 1
+   }
+  ],
+  "2244": [
+   {
+    "dex": 70,
+    "glb": "pm0070_00.glb",
+    "nome": "Weepinbell",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 22,
+    "lvMax": 24
+   },
+   {
+    "dex": 114,
+    "glb": "pm0114_00.glb",
+    "nome": "Tangela",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 23,
+    "lvMax": 23
+   },
+   {
+    "dex": 69,
+    "glb": "pm0069_00.glb",
+    "nome": "Bellsprout",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 108,
+    "glb": "pm0108_00.glb",
+    "nome": "Lickitung",
+    "fonte": "hgss",
+    "peso": 15,
+    "lvMin": 24,
+    "lvMax": 26
+   },
+   {
+    "dex": 60,
+    "glb": "pm0060_00.glb",
+    "nome": "Poliwag",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 15,
+    "lvMax": 30,
+    "agua": 1
+   },
+   {
+    "dex": 61,
+    "glb": "pm0061_00.glb",
+    "nome": "Poliwhirl",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 20,
+    "lvMax": 30,
+    "agua": 1
+   }
+  ],
+  "2245": [
+   {
+    "dex": 75,
+    "glb": "pm0075_00.glb",
+    "nome": "Graveler",
+    "fonte": "hgss",
+    "peso": 48,
+    "lvMin": 23,
+    "lvMax": 27
+   },
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 30,
+    "lvMin": 23,
+    "lvMax": 23
+   },
+   {
+    "dex": 207,
+    "glb": "pm0207_00.glb",
+    "nome": "Gligar",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 24,
+    "lvMax": 24
+   },
+   {
+    "dex": 216,
+    "glb": "pm0216_00.glb",
+    "nome": "Teddiursa",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 231,
+    "glb": "pm0231_00.glb",
+    "nome": "Phanpy",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 227,
+    "glb": "pm0227_00.glb",
+    "nome": "Skarmory",
+    "fonte": "hgss",
+    "peso": 2,
+    "lvMin": 27,
+    "lvMax": 27
+   },
+   {
+    "dex": 129,
+    "glb": "pm0129_00.glb",
+    "nome": "Magikarp",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 2,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2246": [
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 55,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 45,
+    "lvMin": 2,
+    "lvMax": 3,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 40,
+    "lvMin": 2,
+    "lvMax": 3,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 21,
+    "glb": "pm0021_00.glb",
+    "nome": "Spearow",
+    "fonte": "hgss",
+    "peso": 35,
+    "lvMin": 2,
+    "lvMax": 3,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 19,
+    "glb": "pm0019_00.glb",
+    "nome": "Rattata",
+    "fonte": "hgss",
+    "peso": 25,
+    "lvMin": 2,
+    "lvMax": 4,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   }
+  ],
+  "2247": [
+   {
+    "dex": 132,
+    "glb": "pm0132_00.glb",
+    "nome": "Ditto",
+    "fonte": "hgss",
+    "peso": 41,
+    "lvMin": 31,
+    "lvMax": 40
+   },
+   {
+    "dex": 83,
+    "glb": "pm0083_00.glb",
+    "nome": "Farfetch’d",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 35,
+    "lvMax": 35,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 164,
+    "glb": "pm0164_00.glb",
+    "nome": "Noctowl",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 35,
+    "lvMax": 35,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 241,
+    "glb": "pm0241_00.glb",
+    "nome": "Miltank",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 35,
+    "lvMax": 35
+   },
+   {
+    "dex": 20,
+    "glb": "pm0020_00.glb",
+    "nome": "Raticate",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 31,
+    "lvMax": 33
+   },
+   {
+    "dex": 21,
+    "glb": "pm0021_00.glb",
+    "nome": "Spearow",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 31,
+    "lvMax": 31
+   },
+   {
+    "dex": 44,
+    "glb": "pm0044_00.glb",
+    "nome": "Gloom",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 32,
+    "lvMax": 32
+   },
+   {
+    "dex": 22,
+    "glb": "pm0022_00.glb",
+    "nome": "Fearow",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 34,
+    "lvMax": 34
+   },
+   {
+    "dex": 72,
+    "glb": "pm0072_00.glb",
+    "nome": "Tentacool",
+    "fonte": "hgss",
+    "peso": 36,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   },
+   {
+    "dex": 86,
+    "glb": "pm0086_00.glb",
+    "nome": "Seel",
+    "fonte": "hgss",
+    "peso": 18,
+    "lvMin": 10,
+    "lvMax": 20,
+    "agua": 1
+   },
+   {
+    "dex": 120,
+    "glb": "pm0120_00.glb",
+    "nome": "Staryu",
+    "fonte": "hgss",
+    "peso": 6,
+    "lvMin": 15,
+    "lvMax": 25,
+    "agua": 1
+   }
+  ],
+  "2248": [
+   {
+    "dex": 128,
+    "glb": "pm0128_00.glb",
+    "nome": "Tauros",
+    "fonte": "hgss",
+    "peso": 21,
+    "lvMin": 20,
+    "lvMax": 24
+   },
+   {
+    "dex": 44,
+    "glb": "pm0044_00.glb",
+    "nome": "Gloom",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 22,
+    "lvMax": 24
+   },
+   {
+    "dex": 83,
+    "glb": "pm0083_00.glb",
+    "nome": "Farfetch’d",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 24,
+    "lvMax": 25,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 37,
+    "glb": "pm0037_00.glb",
+    "nome": "Vulpix",
+    "fonte": "hgss",
+    "peso": 14,
+    "lvMin": 21,
+    "lvMax": 24,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 58,
+    "glb": "pm0058_00.glb",
+    "nome": "Growlithe",
+    "fonte": "hgss",
+    "peso": 14,
+    "lvMin": 21,
+    "lvMax": 25,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 187,
+    "glb": "pm0187_00.glb",
+    "nome": "Hoppip",
+    "fonte": "hgss",
+    "peso": 11,
+    "lvMin": 20,
+    "lvMax": 22
+   },
+   {
+    "dex": 22,
+    "glb": "pm0022_00.glb",
+    "nome": "Fearow",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 21,
+    "lvMax": 21
+   },
+   {
+    "dex": 203,
+    "glb": "pm0203_00.glb",
+    "nome": "Girafarig",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 37,
+    "glb": "pm0037_00.glb",
+    "nome": "Vulpix",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 21,
+    "lvMax": 22,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 50,
+    "glb": "pm0050_00.glb",
+    "nome": "Diglett",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 58,
+    "glb": "pm0058_00.glb",
+    "nome": "Growlithe",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 21,
+    "lvMax": 22,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   }
+  ],
+  "2127": [
+   {
+    "dex": 42,
+    "glb": "pm0042_00.glb",
+    "nome": "Golbat",
+    "fonte": "hgss",
+    "peso": 24,
+    "lvMin": 20,
+    "lvMax": 22,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 42,
+    "glb": "pm0042_00.glb",
+    "nome": "Golbat",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 22,
+    "lvMax": 22,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 74,
+    "glb": "pm0074_00.glb",
+    "nome": "Geodude",
+    "fonte": "hgss",
+    "peso": 20,
+    "lvMin": 19,
+    "lvMax": 19
+   },
+   {
+    "dex": 66,
+    "glb": "pm0066_00.glb",
+    "nome": "Machop",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 19,
+    "lvMax": 19
+   },
+   {
+    "dex": 95,
+    "glb": "pm0095_00.glb",
+    "nome": "Onix",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 98,
+    "glb": "pm0098_00.glb",
+    "nome": "Krabby",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 20,
+    "lvMax": 20
+   },
+   {
+    "dex": 99,
+    "glb": "pm0099_00.glb",
+    "nome": "Kingler",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 41,
+    "glb": "pm0041_00.glb",
+    "nome": "Zubat",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 18,
+    "lvMax": 18,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 194,
+    "glb": "pm0194_00.glb",
+    "nome": "Wooper",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 18,
+    "lvMax": 18,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 20,
+    "lvMax": 20,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 200,
+    "glb": "pm0200_00.glb",
+    "nome": "Misdreavus",
+    "fonte": "hgss",
+    "peso": 5,
+    "lvMin": 20,
+    "lvMax": 20,
+    "hora": [
+     "noite"
+    ]
+   },
+   {
+    "dex": 67,
+    "glb": "pm0067_00.glb",
+    "nome": "Machoke",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 22,
+    "lvMax": 22
+   },
+   {
+    "dex": 75,
+    "glb": "pm0075_00.glb",
+    "nome": "Graveler",
+    "fonte": "hgss",
+    "peso": 4,
+    "lvMin": 20,
+    "lvMax": 20,
+    "hora": [
+     "manha",
+     "dia"
+    ]
+   },
+   {
+    "dex": 208,
+    "glb": "pm0208_00.glb",
+    "nome": "Steelix",
+    "fonte": "hgss",
+    "peso": 2,
+    "lvMin": 23,
+    "lvMax": 23
+   }
+  ],
+  "2128": [
+   {
+    "dex": 194,
+    "glb": "pm0194_00.glb",
+    "nome": "Wooper",
+    "fonte": "hgss",
+    "peso": 90,
+    "lvMin": 20,
+    "lvMax": 30,
+    "agua": 1
+   },
+   {
+    "dex": 195,
+    "glb": "pm0195_00.glb",
+    "nome": "Quagsire",
+    "fonte": "hgss",
+    "peso": 10,
+    "lvMin": 30,
+    "lvMax": 40,
+    "agua": 1
+   }
   ]
  },
  "generico": [
