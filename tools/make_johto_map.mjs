@@ -121,11 +121,10 @@ for (const box of caixas) {
   });
 }
 
-/* Hub landings: south Connection Center → New Bark; west → Mt. Silver. */
+/* Extra markers on New Bark / Mt. Silver. Connection Center itself
+   lands on Routes 26 (south) and 28 (west), matching HGSS. */
 putNpc(7210199, 171, LAY[2101].x, LAY[2101].z + 10, 2101);
-putNpc(6210198, 162, LAY[2101].x, LAY[2101].z + 12, 2101);
 putNpc(7211499, 171, LAY[2114].x, LAY[2114].z + 10, 2114);
-putNpc(6211498, 162, LAY[2114].x, LAY[2114].z + 12, 2114);
 
 const seen = new Set();
 const npcsU = [];
