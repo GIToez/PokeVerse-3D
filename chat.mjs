@@ -5,7 +5,7 @@ import * as Conta from './account.mjs';                                     // c
  *   Global — todo mundo · Trade — comércio · Help — ajuda (cada aba só com o seu canal)
  *   Sistema — eventos do jogo (área, capturas, inicial…), aparece no Local
  * Comandos na caixa: /g texto (global), /t (trade), /h (help), /l (local), /w nome texto (mensagem direta a um amigo), /ranking,
- * /trocar nome (convite de troca de Pokémon), /preso (relato obrigatório e volta pro último Centro). GM: /online, /aviso texto, /mudo nome min, /kick nome, /banir nome horas,
+ * /trocar nome (convite de troca de Pokémon), /preso (relato obrigatório e volta pro último Centro), /time night|day|21 (force the clock). GM: /online, /aviso texto, /mudo nome min, /kick nome, /banir nome horas,
  * /perdoar nome, /ver nome. Staff: /chaves, /alfa, /relatos, /raid (raid ao vivo). Enter foca a caixa.
  * Com o servidor (servidor/server.mjs) as mensagens vão pros outros (network.mjs); sem ele só você vê. Histórico (200 msgs) em localStorage 'chat'. Mesmo módulo alimenta a
  * peça #chat da HUD e a aba Chat da janela Social (Chat.montar num contêiner qualquer).
@@ -63,6 +63,8 @@ export function enviar(aba, texto){
   if (w){ ctx?.dm?.(w[1], w[2].trim()); return 'pm'; }
   if (/^\/ranking\b/i.test(t)){ ctx?.ranking?.(); return 'sistema'; }   // /ranking → top de colecionadores (menus.mjs mostrarRanking)
   if (/^\/(preso|stuck)\b/i.test(t)){ ctx?.preso?.(); return 'sistema'; }   // /preso (15/09, alfa): abre o diálogo "Estou preso" (relato obrigatório → último Centro); /stuck pros testers em inglês
+  const tm = t.match(/^\/(time|hour|hora)\b\s*(.*)$/i);
+  if (tm){ ctx?.hora?.(tm[2].trim()); return 'sistema'; }
   /* MODERAÇÃO (08/09): comandos de GM. O servidor recusa quem não tem a marca — aqui é só o atalho de digitação. */
   /* ALPHA KEYS (11/09): atalhos de staff. /chaves [N] [nota] gera (ou lista, sem N) · /alfa on|off fecha/abre o cadastro. */
   /* RAID AO VIVO (14/09): /raid anunciar | comecar | cancelar | hp N | dano F | shiny N | premio mew|sem-mew | status (o servidor confere o cargo staff). */
