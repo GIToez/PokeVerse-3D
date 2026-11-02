@@ -17,6 +17,41 @@ export function fatorNoite(ceu){
   return Math.max(0, Math.min(1, (BRILHO_ACENDE - b) / (BRILHO_ACENDE - BRILHO_NOITE)));
 }
 
+/** Species that throw their own light (flame tail, lava body, etc.). */
+export const LUZ_MON = {
+  4: { cor: 0xff6a1c, i: 3.6, r: 5.2, y: 0.52 },
+  5: { cor: 0xff7024, i: 4.4, r: 6.2, y: 0.72 },
+  6: { cor: 0xff7a30, i: 5.6, r: 7.8, y: 1.05 },
+  37: { cor: 0xff8a28, i: 2.8, r: 4.4, y: 0.4 },
+  38: { cor: 0xffb040, i: 4.2, r: 6.4, y: 0.55 },
+  58: { cor: 0xff8020, i: 3.2, r: 5.0, y: 0.45 },
+  59: { cor: 0xff9028, i: 4.8, r: 7.0, y: 0.7 },
+  77: { cor: 0xff8822, i: 3.8, r: 5.6, y: 0.7 },
+  78: { cor: 0xff9028, i: 4.8, r: 6.8, y: 0.9 },
+  126: { cor: 0xff5010, i: 4.6, r: 6.4, y: 0.75 },
+  136: { cor: 0xff7018, i: 3.4, r: 5.0, y: 0.45 },
+  146: { cor: 0xffb030, i: 6.2, r: 9.0, y: 1.2 },
+  155: { cor: 0xff7a22, i: 3.2, r: 4.8, y: 0.38 },
+  156: { cor: 0xff8028, i: 4.0, r: 6.0, y: 0.55 },
+  157: { cor: 0xff8a30, i: 5.2, r: 7.4, y: 0.85 },
+  244: { cor: 0xff6a18, i: 5.8, r: 8.2, y: 0.95 },
+};
+
+function dexDe(e){
+  if (e?.dex) return e.dex;
+  const m = String(e?.glb || '').match(/pm(\d{4})/);
+  return m ? +m[1] : 0;
+}
+
+function posMon(e){
+  const p = e?.pivo?.position;
+  return {
+    x: e?.vx ?? e?.x ?? p?.x ?? 0,
+    y: e?.vy ?? e?.y ?? p?.y ?? 0,
+    z: e?.vz ?? e?.z ?? p?.z ?? 0,
+  };
+}
+
 function glowTex(){
   const cv = document.createElement('canvas'); cv.width = cv.height = 64;
   const g = cv.getContext('2d');
@@ -31,7 +66,11 @@ function glowTex(){
 }
 
 function haloMat(tex){
-  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, opacity: 0 });
+  return new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: 0 });
+}
+
+function lampadaMat(){
+  return new THREE.MeshBasicMaterial({ color: 0xffe29a, transparent: true, opacity: 0, depthWrite: false });
 }
 
 function chaoMat(tex){
@@ -54,12 +93,12 @@ function prepararVidro(mat){
   return mat;
 }
 
-export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio = null }){
-  const list = [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]
+export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio = null, soMons = false }){
+  const list = soMons ? [] : [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]
     .filter(o => EH_POSTE.test(o.n || ''));
   const grupo = new THREE.Group(); grupo.name = 'luzes-postes';
   let proto = null;
-  try {
+  if (!soMons) try {
     proto = (await new GLTFLoader().loadAsync('./scenery/prop/lamppost.glb')).scene;
   } catch (e){ console.warn('lamppost glb:', e); }
   const tex = glowTex();
@@ -67,19 +106,22 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   const jaTem = (x, z) => posts.some(p => (p.x - x) ** 2 + (p.z - z) ** 2 < 2.2);
   const addGlow = (x, y, z, glass) => {
     const halo = new THREE.Sprite(haloMat(tex));
-    halo.scale.set(4.6, 4.6, 1);
-    halo.position.set(x, y + 0.15, z);
+    halo.scale.set(3.4, 3.4, 1);
+    halo.position.set(x, y + 0.08, z);
     halo.visible = false;
+    const lampada = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), lampadaMat());
+    lampada.position.set(x, y, z);
+    lampada.visible = false;
     const chao = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), chaoMat(tex));
     chao.rotation.x = -Math.PI / 2;
-    chao.scale.set(7, 7, 1);
+    chao.scale.set(5.6, 5.6, 1);
     chao.position.set(x, (chaoEm?.(x, z) ?? (y - 3.1)) + 0.05, z);
     chao.visible = false;
-    grupo.add(halo, chao);
-    posts.push({ x, y, z, glass, halo, chao });
+    grupo.add(halo, lampada, chao);
+    posts.push({ x, y, z, glass, halo, lampada, chao });
   };
   const jaDesenhou = new Set();
-  cena.traverse(o => {
+  if (!soMons) cena.traverse(o => {
     if (!o.isMesh && !o.isInstancedMesh && !o.isBatchedMesh) return;
     if (/lamppost/i.test(o.name || '')) jaDesenhou.add(o);
   });
@@ -105,7 +147,7 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
     }
     addGlow(x, y + cabeca, z, glass);
   }
-  cena.traverse(o => {
+  if (!soMons) cena.traverse(o => {
     if (!/lamppost/i.test(o.name || '')) return;
     if (o.parent && /lamppost/i.test(o.parent.name || '')) return;
     const wp = new THREE.Vector3();
@@ -134,39 +176,69 @@ export async function ligar({ cena, dados, flipX = -1, chaoEm = null, bloqueio =
   }
   cena.add(grupo);
   const luzes = [];
-  for (let i = 0; i < MAX_LUZ; i++){
-    const L = new THREE.SpotLight(0xfff1c4, 0, 16, 0.72, 0.42, 1.15);
+  const cabecas = [];
+  if (!soMons) for (let i = 0; i < MAX_LUZ; i++){
+    const L = new THREE.SpotLight(0xfff1c4, 0, 26, 1.22, 0.62, 1.05);
     L.castShadow = false;
     L.shadow.mapSize.set(512, 512);
     L.shadow.camera.near = 0.35;
-    L.shadow.camera.far = 16;
+    L.shadow.camera.far = 24;
     L.shadow.bias = -0.0009;
     L.shadow.normalBias = 0.035;
-    cena.add(L, L.target);
+    const H = new THREE.PointLight(0xffe7a8, 0, 3.4, 1.6);
+    H.castShadow = false;
+    cena.add(L, L.target, H);
     luzes.push(L);
+    cabecas.push(H);
+  }
+  const monLuz = [];
+  for (let i = 0; i < 8; i++){
+    const M = new THREE.PointLight(0xff6a1c, 0, 5.2, 1.35);
+    M.castShadow = false;
+    cena.add(M);
+    monLuz.push(M);
   }
   return {
     n: posts.length,
-    quadro(_dt, ash, ceu){
+    quadro(_dt, ash, ceu, mons = []){
       const n = fatorNoite(ceu);
       const aceso = n > 0.04;
       for (const p of posts){
-        for (const m of p.glass){ m.emissiveIntensity = 0.15 + n * 1.8; m.needsUpdate = true; }
+        for (const m of p.glass){ m.emissiveIntensity = 0.35 + n * 4.2; m.needsUpdate = true; }
         p.halo.visible = aceso;
-        p.halo.material.opacity = 0.38 * n;
-        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 0.22 * n; }
+        p.halo.material.opacity = 0.82 * n;
+        if (p.lampada){
+          p.lampada.visible = aceso;
+          p.lampada.material.opacity = 0.92 * n;
+        }
+        if (p.chao){ p.chao.visible = aceso; p.chao.material.opacity = 0.16 * n; }
       }
-      const ax = ash?.x ?? ash?.vx ?? 0, az = ash?.z ?? ash?.vz ?? 0;
+      const ax = ash?.vx ?? ash?.x ?? 0, az = ash?.vz ?? ash?.z ?? 0;
       const near = posts.length <= MAX_LUZ ? posts
         : posts.map(p => ({ p, d: (p.x - ax) ** 2 + (p.z - az) ** 2 })).sort((a, b) => a.d - b.d).slice(0, MAX_LUZ).map(x => x.p);
       for (let i = 0; i < luzes.length; i++){
-        const p = near[i], L = luzes[i];
-        if (!p || !aceso){ L.intensity = 0; L.castShadow = false; continue; }
-        L.position.set(p.x, p.y, p.z);
-        L.target.position.set(p.x, p.y - 3.3, p.z);
+        const p = near[i], L = luzes[i], H = cabecas[i];
+        if (!p || !aceso){ L.intensity = 0; L.castShadow = false; if (H) H.intensity = 0; continue; }
+        L.position.set(p.x, p.y - 0.15, p.z);
+        L.target.position.set(p.x, p.y - 3.5, p.z);
         L.target.updateMatrixWorld();
-        L.intensity = 8.5 * n;
+        L.intensity = 6.6 * n;
         L.castShadow = i === 0;
+        if (H){ H.position.set(p.x, p.y, p.z); H.intensity = 2.8 * n; }
+      }
+      const vivos = (mons || []).filter(e => e && (e.pivo || e.x != null) && LUZ_MON[dexDe(e)]);
+      const ranked = vivos.map(e => {
+        const p = posMon(e);
+        return { e, p, d: (p.x - ax) ** 2 + (p.z - az) ** 2 };
+      }).sort((a, b) => a.d - b.d).slice(0, monLuz.length);
+      for (let i = 0; i < monLuz.length; i++){
+        const L = monLuz[i], hit = ranked[i];
+        if (!hit){ L.intensity = 0; continue; }
+        const cfg = LUZ_MON[dexDe(hit.e)];
+        L.color.setHex(cfg.cor);
+        L.distance = cfg.r;
+        L.position.set(hit.p.x, hit.p.y + (cfg.y || 0.5), hit.p.z);
+        L.intensity = cfg.i * (0.42 + n * 0.7);
       }
     },
   };

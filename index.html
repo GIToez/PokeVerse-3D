@@ -3343,8 +3343,8 @@ $('boot').hidden = false; $('boot').textContent = I18n.t('carregando o mapa…')
 /* Esta página é o JOGO (nasce o jogador, HUD do Figma, rede) ou só o VISUALIZADOR da cena? Com conta é sempre o jogo (12/09); sem
    conta: `?jogar=1`, Kanto, o lote da casa, ou os modos de clipe. `?jogar=0` desliga sempre. */
 const PLAY = params0.get('jogar') === '1' || (params0.get('jogar') !== '0' && (NOME === 'kanto' || !!dados.lote || CONTA.modo === 'conta')) || DEMO || FAIRY || RAID || TORNEIO || DIRETOR || CAPTURA;   // ?raid=1 / ?torneio=1 / ?diretor=1 / ?captura=1 já ligam o jogo
-if (PLAY && !INTERIOR){
-  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio }).then(L => { postesNoite = L; }).catch(e => console.warn('luzes', e));
+if (PLAY){
+  Luzes.ligar({ cena, dados, flipX, chaoEm, bloqueio, soMons: INTERIOR }).then(L => { postesNoite = L; }).catch(e => console.warn('luzes', e));
 }
 const voltarNaCena = (() => {
   if (CONTA.modo !== 'conta') return null;
@@ -8661,7 +8661,11 @@ function desligarClima(){
 }
 function atualizarClima(dt){
   try { passoClimaMundo(); aplicarMundoVisual(); Weather.passoTela?.(dt); } catch (e){ console.warn('clima:', e); }
-  if (postesNoite) postesNoite.quadro(dt, jogo.ash, INTERIOR ? { brilho: 1 } : Relogio.ceu());
+  if (postesNoite){
+    const ceuLuz = INTERIOR ? { brilho: 1 } : Relogio.ceu();
+    const mons = [jogo.pika, jogo.montaria, ...(jogo.selvagens || []), ...(jogo.voadores || [])];
+    postesNoite.quadro(dt, jogo.ash, ceuLuz, mons);
+  }
   const c = clima.cfg;
   if (!c || !jogo.ash) return;
   if (!clima.fx && !clima.criando){
