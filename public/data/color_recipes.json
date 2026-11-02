@@ -30,10 +30,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo e blusa",
-   "roupa": "estampa",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair and blouse",
+   "roupa": "print",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -69,11 +69,11 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo e jaqueta",
-   "roupa": "boina",
-   "roupa2": "calça",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair and jacket",
+   "roupa": "beret",
+   "roupa2": "pants",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -114,10 +114,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo/macacão",
-   "roupa": "remendos",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair / overalls",
+   "roupa": "patches",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -157,10 +157,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "roupa": "calça e listras",
-   "roupa2": "tênis",
-   "olhos": "olhos"
+   "pele": "skin",
+   "roupa": "pants and stripes",
+   "roupa2": "sneakers",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -200,10 +200,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "roupa": "detalhes",
-   "roupa2": "jaqueta e calça",
-   "olhos": "olhos"
+   "pele": "skin",
+   "roupa": "details",
+   "roupa2": "jacket and pants",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -243,10 +243,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "camiseta",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "T-shirt",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -282,11 +282,11 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "roupa": "gorro",
-   "roupa2": "cachecol",
-   "roupa3": "jaqueta",
-   "olhos": "olhos"
+   "pele": "skin",
+   "roupa": "beanie",
+   "roupa2": "scarf",
+   "roupa3": "jacket",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -331,9 +331,9 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -372,10 +372,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo e jaqueta",
-   "roupa": "boné e calça",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair and jacket",
+   "roupa": "cap and pants",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -415,10 +415,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo e jaqueta",
-   "roupa": "tênis",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair and jacket",
+   "roupa": "sneakers",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -458,10 +458,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "laços",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "bows",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -501,10 +501,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "estampa",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "print",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -544,10 +544,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "gorro",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "beanie",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -587,10 +587,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "acessório",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "accessory",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -634,9 +634,9 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -679,9 +679,9 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -720,10 +720,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "tênis",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "sneakers",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -763,10 +763,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "gorro",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "beanie",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -806,10 +806,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "boina",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "beret",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -849,10 +849,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "boné",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "cap",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",
@@ -892,10 +892,10 @@
    }
   },
   "rotulos": {
-   "pele": "pele",
-   "cabelo": "cabelo",
-   "roupa": "tênis",
-   "olhos": "olhos"
+   "pele": "skin",
+   "cabelo": "hair",
+   "roupa": "sneakers",
+   "olhos": "eyes"
   },
   "padrao": {
    "pele": "#ffcbaa",

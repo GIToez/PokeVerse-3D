@@ -2,7 +2,7 @@
  {
   "id": 54001,
   "glb": "Bag001",
-  "nome": "mochila 1",
+  "nome": "Backpack 1",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54001",
@@ -11,7 +11,7 @@
  {
   "id": 54002,
   "glb": "Bag012",
-  "nome": "mochila 2",
+  "nome": "Backpack 2",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54002",
@@ -20,7 +20,7 @@
  {
   "id": 54003,
   "glb": "Bag014",
-  "nome": "mochila 3",
+  "nome": "Backpack 3",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54003",
@@ -29,7 +29,7 @@
  {
   "id": 54004,
   "glb": "Bag015",
-  "nome": "mochila 4",
+  "nome": "Backpack 4",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54004",
@@ -38,7 +38,7 @@
  {
   "id": 54005,
   "glb": "Bag016",
-  "nome": "mochila 5",
+  "nome": "Backpack 5",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54005",
@@ -47,7 +47,7 @@
  {
   "id": 54006,
   "glb": "Bag017",
-  "nome": "mochila 6",
+  "nome": "Backpack 6",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54006",
@@ -56,7 +56,7 @@
  {
   "id": 54007,
   "glb": "Bag018",
-  "nome": "mochila 7",
+  "nome": "Backpack 7",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54007",
@@ -65,7 +65,7 @@
  {
   "id": 54008,
   "glb": "Bag019",
-  "nome": "mochila 8",
+  "nome": "Backpack 8",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54008",
@@ -74,7 +74,7 @@
  {
   "id": 54009,
   "glb": "Bag020",
-  "nome": "mochila 9",
+  "nome": "Backpack 9",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54009",
@@ -83,7 +83,7 @@
  {
   "id": 54010,
   "glb": "Bag021",
-  "nome": "mochila 10",
+  "nome": "Backpack 10",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54010",
@@ -92,7 +92,7 @@
  {
   "id": 54011,
   "glb": "Bag022",
-  "nome": "mochila 11",
+  "nome": "Backpack 11",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54011",
@@ -101,7 +101,7 @@
  {
   "id": 54012,
   "glb": "Bag023",
-  "nome": "Mochila Asas de Dragão",
+  "nome": "Dragon Wing Backpack",
   "qualidade": 3,
   "sexo": 1,
   "icone": "fa_54012",
@@ -110,7 +110,7 @@
  {
   "id": 54013,
   "glb": "Bag024",
-  "nome": "Mochila Sino",
+  "nome": "Bell Backpack",
   "qualidade": 3,
   "sexo": 1,
   "icone": "fa_54013",
@@ -119,7 +119,7 @@
  {
   "id": 54014,
   "glb": "Bag023_1",
-  "nome": "Mochila Asas de Dragão",
+  "nome": "Dragon Wing Backpack",
   "qualidade": 3,
   "sexo": 2,
   "icone": "fa_54014",
@@ -128,7 +128,7 @@
  {
   "id": 54015,
   "glb": "Bag024",
-  "nome": "Mochila Sino",
+  "nome": "Bell Backpack",
   "qualidade": 3,
   "sexo": 2,
   "icone": "fa_54015",
@@ -137,7 +137,7 @@
  {
   "id": 54016,
   "glb": "Bag025",
-  "nome": "Coração de Ouro e Alma de Prata",
+  "nome": "HeartGold & SoulSilver",
   "qualidade": 1,
   "sexo": 1,
   "icone": "fa_54016",
@@ -146,7 +146,7 @@
  {
   "id": 54017,
   "glb": "Bag025_1",
-  "nome": "Coração de Ouro e Alma de Prata",
+  "nome": "HeartGold & SoulSilver",
   "qualidade": 1,
   "sexo": 2,
   "icone": "fa_54017",
@@ -155,7 +155,7 @@
  {
   "id": 54018,
   "glb": "Bag027",
-  "nome": "Mochila da Gardevoir",
+  "nome": "Gardevoir Backpack",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54018",
@@ -164,7 +164,7 @@
  {
   "id": 54019,
   "glb": "Bag030",
-  "nome": "Troféu de Campeão da Liga",
+  "nome": "League Champion Trophy",
   "qualidade": 4,
   "sexo": 0,
   "icone": "fa_54019",
@@ -173,7 +173,7 @@
  {
   "id": 54020,
   "glb": "Bag028",
-  "nome": "Cenoura",
+  "nome": "Carrot",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54020",
@@ -182,7 +182,7 @@
  {
   "id": 54021,
   "glb": "Bag031",
-  "nome": "Coxa de Frango",
+  "nome": "Chicken Drumstick",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54021",
@@ -191,7 +191,7 @@
  {
   "id": 54022,
   "glb": "Bag036",
-  "nome": "Bolsa de Sorte de Qixi",
+  "nome": "Qixi Lucky Bag",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54022",
@@ -200,7 +200,7 @@
  {
   "id": 54023,
   "glb": "Bag033",
-  "nome": "Verão Refrescante",
+  "nome": "Cool Summer",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54023",
@@ -209,7 +209,7 @@
  {
   "id": 54024,
   "glb": "Bag039",
-  "nome": "Lua Cheia",
+  "nome": "Full Moon",
   "qualidade": 3,
   "sexo": 1,
   "icone": "fa_54024",
@@ -218,7 +218,7 @@
  {
   "id": 54025,
   "glb": "Bag039_1",
-  "nome": "Lua Cheia",
+  "nome": "Full Moon",
   "qualidade": 3,
   "sexo": 2,
   "icone": "fa_54025",
@@ -227,7 +227,7 @@
  {
   "id": 54026,
   "glb": "Bag044",
-  "nome": "ceu de ardente",
+  "nome": "Burning Sky",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54026",
@@ -236,7 +236,7 @@
  {
   "id": 54027,
   "glb": "Bag045",
-  "nome": "Mochila Coração",
+  "nome": "Heart Backpack",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54027",
@@ -245,7 +245,7 @@
  {
   "id": 54028,
   "glb": "Bag046",
-  "nome": "Mochila floral",
+  "nome": "Floral Backpack",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54028",
@@ -254,7 +254,7 @@
  {
   "id": 54029,
   "glb": "Bag047",
-  "nome": "Halo das Asas Sagradas",
+  "nome": "Sacred Wing Halo",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54029",
@@ -263,7 +263,7 @@
  {
   "id": 54030,
   "glb": "Bag050",
-  "nome": "Mochila Campeã",
+  "nome": "Champion Backpack",
   "qualidade": 4,
   "sexo": 0,
   "icone": "fa_54030",
@@ -272,7 +272,7 @@
  {
   "id": 54031,
   "glb": "Bag049",
-  "nome": "Mochila Top 10",
+  "nome": "Top 10 Backpack",
   "qualidade": 3,
   "sexo": 0,
   "icone": "fa_54031",
@@ -281,7 +281,7 @@
  {
   "id": 54032,
   "glb": "Bag048",
-  "nome": "Mochila do Rei",
+  "nome": "King Backpack",
   "qualidade": 2,
   "sexo": 0,
   "icone": "fa_54032",

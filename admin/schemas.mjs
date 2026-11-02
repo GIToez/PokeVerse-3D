@@ -250,7 +250,7 @@ export const ESQUEMAS = {
     campos: [
       { k: 'modelo', rotulo: 'Model (prefab)', tipo: 'texto', max: 60, col: true, obrigatorio: true },
       { k: 'rotulos', rotulo: 'Parts (name the player sees)', tipo: 'json', col: true, obrigatorio: true, validar: nomesDasPartes, resumo: v => Object.values(v).join(', '),
-        ajuda: '{ "key": "name" } — the order here is the order on the creation screen, which fits about 15 characters per name. The keys cabelo, pele, olhos, roupa and roupa2 get the game\'s ready-made palette.' },
+        ajuda: '{ "key": "name" } — the order here is the order on the creation screen, which fits about 15 characters per name. The keys pele, cabelo, olhos, roupa and roupa2 (skin, hair, eyes, clothes) get the game\'s ready-made palette.' },
       { k: 'padrao', rotulo: 'Default color of each part', tipo: 'json', obrigatorio: true, validar: coresDasPartes, ajuda: '{ "key": "#rrggbb" } — the color the outfit starts with (the original game\'s factory color).' },
       { k: 'texturas', rotulo: 'Mask channels (advanced)', tipo: 'json', obrigatorio: true, validar: canaisDaMascara,
         ajuda: 'Per model material: R/G/B/K = the key of the part that channel paints, [r, g, b] (0–1) for a fixed color, or null (keeps the texture). mask = file in scenery/npc/mask.' },

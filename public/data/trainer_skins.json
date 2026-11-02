@@ -2,7 +2,7 @@
  {
   "id": 52001,
   "sexo": "menino",
-  "nome": "Conjunto Ash",
+  "nome": "Ash Outfit",
   "prefab": "Boy_001",
   "ok": true,
   "inicial": true,
@@ -13,7 +13,7 @@
  {
   "id": 52002,
   "sexo": "menino",
-  "nome": "Herói",
+  "nome": "Hero",
   "prefab": "Boy_002",
   "ok": true,
   "inicial": true,
@@ -24,7 +24,7 @@
  {
   "id": 52003,
   "sexo": "menino",
-  "nome": "Conjunto Elegante",
+  "nome": "Elegant Outfit",
   "prefab": "Boy_010",
   "ok": true,
   "inicial": false,
@@ -35,7 +35,7 @@
  {
   "id": 52004,
   "sexo": "menino",
-  "nome": "Casaco do Pikachu",
+  "nome": "Pikachu Jacket",
   "prefab": "Boy_012",
   "ok": true,
   "inicial": true,
@@ -46,7 +46,7 @@
  {
   "id": 52005,
   "sexo": "menino",
-  "nome": "Conjunto Platina",
+  "nome": "Platinum Outfit",
   "prefab": "Boy_013",
   "ok": true,
   "inicial": false,
@@ -57,7 +57,7 @@
  {
   "id": 52006,
   "sexo": "menino",
-  "nome": "Macacão",
+  "nome": "Overalls",
   "prefab": "Boy_014",
   "ok": true,
   "inicial": false,
@@ -68,7 +68,7 @@
  {
   "id": 52007,
   "sexo": "menino",
-  "nome": "Jaqueta Bordada do Eevee",
+  "nome": "Eevee Embroidered Jacket",
   "prefab": "Boy_015",
   "ok": true,
   "inicial": false,
@@ -79,7 +79,7 @@
  {
   "id": 52008,
   "sexo": "menino",
-  "nome": "Conjunto Cibernético",
+  "nome": "Cyber Outfit",
   "prefab": "Boy_016",
   "ok": true,
   "inicial": false,
@@ -90,7 +90,7 @@
  {
   "id": 52009,
   "sexo": "menino",
-  "nome": "Conjunto de Verão",
+  "nome": "Summer Outfit",
   "prefab": "Boy_017",
   "ok": true,
   "inicial": false,
@@ -101,7 +101,7 @@
  {
   "id": 52010,
   "sexo": "menino",
-  "nome": "Conjunto de Inverno",
+  "nome": "Winter Outfit",
   "prefab": "Boy_018",
   "ok": true,
   "inicial": false,
@@ -112,7 +112,7 @@
  {
   "id": 52011,
   "sexo": "menino",
-  "nome": "Conjunto de Primavera",
+  "nome": "Spring Outfit",
   "prefab": "Boy_019",
   "ok": true,
   "inicial": false,
@@ -123,7 +123,7 @@
  {
   "id": 52012,
   "sexo": "menino",
-  "nome": "Conjunto Esportivo",
+  "nome": "Sport Outfit",
   "prefab": "Boy_020",
   "ok": true,
   "inicial": false,
@@ -134,7 +134,7 @@
  {
   "id": 52013,
   "sexo": "menino",
-  "nome": "Conjunto de Jaqueta de Couro",
+  "nome": "Leather Jacket Outfit",
   "prefab": "Boy_021",
   "ok": true,
   "inicial": false,
@@ -145,7 +145,7 @@
  {
   "id": 52014,
   "sexo": "menino",
-  "nome": "Jaqueta Bordada do Gengar",
+  "nome": "Gengar Embroidered Jacket",
   "prefab": "Boy_022",
   "ok": true,
   "inicial": false,
@@ -156,7 +156,7 @@
  {
   "id": 52015,
   "sexo": "menino",
-  "nome": "Conjunto Charizard",
+  "nome": "Charizard Outfit",
   "prefab": "Boy_023",
   "ok": true,
   "inicial": false,
@@ -167,7 +167,7 @@
  {
   "id": 52016,
   "sexo": "menino",
-  "nome": "Conjunto de Natal",
+  "nome": "Christmas Outfit",
   "prefab": "Boy_024",
   "ok": true,
   "inicial": false,
@@ -178,7 +178,7 @@
  {
   "id": 52017,
   "sexo": "menino",
-  "nome": "Conjunto Coração de Ouro e Alma de Prata",
+  "nome": "HeartGold & SoulSilver Outfit",
   "prefab": "Boy_025",
   "ok": true,
   "inicial": true,
@@ -189,7 +189,7 @@
  {
   "id": 52018,
   "sexo": "menino",
-  "nome": "Conjunto Gardevoir",
+  "nome": "Gardevoir Outfit",
   "prefab": "Boy_027",
   "ok": true,
   "inicial": false,
@@ -200,7 +200,7 @@
  {
   "id": 52019,
   "sexo": "menino",
-  "nome": "Conjunto de Campeão da Liga",
+  "nome": "League Champion Outfit",
   "prefab": "Boy_029",
   "ok": true,
   "inicial": false,
@@ -211,7 +211,7 @@
  {
   "id": 52020,
   "sexo": "menino",
-  "nome": "Conjunto Lopunny",
+  "nome": "Lopunny Outfit",
   "prefab": "Boy_028",
   "ok": true,
   "inicial": false,
@@ -222,7 +222,7 @@
  {
   "id": 52021,
   "sexo": "menino",
-  "nome": "Conjunto de Chapéu de Palha",
+  "nome": "Straw Hat Outfit",
   "prefab": "Boy_030",
   "ok": true,
   "inicial": false,
@@ -233,7 +233,7 @@
  {
   "id": 52022,
   "sexo": "menino",
-  "nome": "Conjunto de Qixi",
+  "nome": "Qixi Outfit",
   "prefab": "Boy_035",
   "ok": true,
   "inicial": false,
@@ -244,7 +244,7 @@
  {
   "id": 52023,
   "sexo": "menino",
-  "nome": "Conjunto Refrescante",
+  "nome": "Cooling Outfit",
   "prefab": "Boy_032",
   "ok": true,
   "inicial": false,
@@ -255,7 +255,7 @@
  {
   "id": 52024,
   "sexo": "menino",
-  "nome": "Conjunto de Luz Lunar",
+  "nome": "Moonlight Outfit",
   "prefab": "Boy_038",
   "ok": true,
   "inicial": false,
@@ -266,7 +266,7 @@
  {
   "id": 52025,
   "sexo": "menino",
-  "nome": "Roupa Bordado Elegante",
+  "nome": "Elegant Embroidery Outfit",
   "prefab": "Boy_040",
   "ok": true,
   "inicial": false,
@@ -277,7 +277,7 @@
  {
   "id": 52026,
   "sexo": "menino",
-  "nome": "Elfo Divino",
+  "nome": "Divine Elf",
   "prefab": "Boy_042",
   "ok": true,
   "inicial": false,
@@ -288,7 +288,7 @@
  {
   "id": 52027,
   "sexo": "menino",
-  "nome": "Sombras de Abóbora",
+  "nome": "Pumpkin Shadows",
   "prefab": "Boy_043",
   "ok": true,
   "inicial": false,
@@ -310,7 +310,7 @@
  {
   "id": 52029,
   "sexo": "menino",
-  "nome": "coroa eterno",
+  "nome": "Eternal Crown",
   "prefab": "Boy_049",
   "ok": true,
   "inicial": false,
@@ -321,7 +321,7 @@
  {
   "id": 52030,
   "sexo": "menino",
-  "nome": "terno de ceu de ardente",
+  "nome": "Burning Sky Suit",
   "prefab": "Boy_050",
   "ok": true,
   "inicial": false,
@@ -332,7 +332,7 @@
  {
   "id": 52031,
   "sexo": "menino",
-  "nome": "Conjunto do Dia dos Namorados",
+  "nome": "Valentine Outfit",
   "prefab": "Boy_051",
   "ok": true,
   "inicial": false,
@@ -343,7 +343,7 @@
  {
   "id": 52032,
   "sexo": "menino",
-  "nome": "Um passeio tranquilo na primavera",
+  "nome": "A Quiet Spring Stroll",
   "prefab": "Boy_052",
   "ok": true,
   "inicial": false,
@@ -354,7 +354,7 @@
  {
   "id": 52033,
   "sexo": "menino",
-  "nome": "Názhà",
+  "nome": "Nezha",
   "prefab": "Boy_053",
   "ok": true,
   "inicial": false,
@@ -365,7 +365,7 @@
  {
   "id": 52034,
   "sexo": "menino",
-  "nome": "Chamado da Fênix para o Sol Nascente",
+  "nome": "Phoenix Call to the Rising Sun",
   "prefab": "Boy_054",
   "ok": true,
   "inicial": false,
@@ -376,7 +376,7 @@
  {
   "id": 52035,
   "sexo": "menino",
-  "nome": "Caminho do Campeão - Campeão",
+  "nome": "Champion Path — Champion",
   "prefab": "Boy_057",
   "ok": true,
   "inicial": false,
@@ -387,7 +387,7 @@
  {
   "id": 52036,
   "sexo": "menino",
-  "nome": "Caminho do Campeão - Top 10",
+  "nome": "Champion Path — Top 10",
   "prefab": "Boy_056",
   "ok": true,
   "inicial": false,
@@ -398,7 +398,7 @@
  {
   "id": 52037,
   "sexo": "menino",
-  "nome": "Caminho do Campeão - Rei",
+  "nome": "Champion Path — King",
   "prefab": "Boy_055",
   "ok": true,
   "inicial": false,
@@ -409,7 +409,7 @@
  {
   "id": 52038,
   "sexo": "menino",
-  "nome": "Alto Comando",
+  "nome": "Elite Four",
   "prefab": "Boy_058",
   "ok": true,
   "inicial": false,
@@ -420,7 +420,7 @@
  {
   "id": 52039,
   "sexo": "menino",
-  "nome": "Estandarte do Ritmo de Pequim",
+  "nome": "Beijing Rhythm Banner",
   "prefab": "Boy_059",
   "ok": true,
   "inicial": false,
@@ -431,7 +431,7 @@
  {
   "id": 53001,
   "sexo": "menina",
-  "nome": "Conjunto Misty",
+  "nome": "Misty Outfit",
   "prefab": "Girl_001",
   "ok": true,
   "inicial": true,
@@ -442,7 +442,7 @@
  {
   "id": 53002,
   "sexo": "menina",
-  "nome": "Heroína",
+  "nome": "Heroine",
   "prefab": "Girl_002",
   "ok": true,
   "inicial": true,
@@ -453,7 +453,7 @@
  {
   "id": 53003,
   "sexo": "menina",
-  "nome": "Conjunto Elegante",
+  "nome": "Elegant Outfit",
   "prefab": "Girl_010",
   "ok": true,
   "inicial": false,
@@ -464,7 +464,7 @@
  {
   "id": 53004,
   "sexo": "menina",
-  "nome": "Casaco do Pikachu",
+  "nome": "Pikachu Jacket",
   "prefab": "Girl_012",
   "ok": true,
   "inicial": true,
@@ -475,7 +475,7 @@
  {
   "id": 53005,
   "sexo": "menina",
-  "nome": "Conjunto Platina",
+  "nome": "Platinum Outfit",
   "prefab": "Girl_013",
   "ok": true,
   "inicial": false,
@@ -486,7 +486,7 @@
  {
   "id": 53006,
   "sexo": "menina",
-  "nome": "Macacão",
+  "nome": "Overalls",
   "prefab": "Girl_014",
   "ok": true,
   "inicial": false,
@@ -497,7 +497,7 @@
  {
   "id": 53007,
   "sexo": "menina",
-  "nome": "Jaqueta Bordada do Eevee",
+  "nome": "Eevee Embroidered Jacket",
   "prefab": "Girl_015",
   "ok": true,
   "inicial": false,
@@ -508,7 +508,7 @@
  {
   "id": 53008,
   "sexo": "menina",
-  "nome": "Conjunto Cibernético",
+  "nome": "Cyber Outfit",
   "prefab": "Girl_016",
   "ok": true,
   "inicial": false,
@@ -519,7 +519,7 @@
  {
   "id": 53009,
   "sexo": "menina",
-  "nome": "Conjunto de Verão",
+  "nome": "Summer Outfit",
   "prefab": "Girl_017",
   "ok": true,
   "inicial": false,
@@ -530,7 +530,7 @@
  {
   "id": 53010,
   "sexo": "menina",
-  "nome": "Conjunto de Inverno",
+  "nome": "Winter Outfit",
   "prefab": "Girl_018",
   "ok": true,
   "inicial": false,
@@ -541,7 +541,7 @@
  {
   "id": 53011,
   "sexo": "menina",
-  "nome": "Conjunto de Primavera",
+  "nome": "Spring Outfit",
   "prefab": "Girl_019",
   "ok": true,
   "inicial": false,
@@ -552,7 +552,7 @@
  {
   "id": 53012,
   "sexo": "menina",
-  "nome": "Conjunto Esportivo",
+  "nome": "Sport Outfit",
   "prefab": "Girl_020",
   "ok": true,
   "inicial": false,
@@ -563,7 +563,7 @@
  {
   "id": 53013,
   "sexo": "menina",
-  "nome": "Conjunto de Jaqueta de Couro",
+  "nome": "Leather Jacket Outfit",
   "prefab": "Girl_021",
   "ok": true,
   "inicial": false,
@@ -574,7 +574,7 @@
  {
   "id": 53014,
   "sexo": "menina",
-  "nome": "Jaqueta Bordada do Gengar",
+  "nome": "Gengar Embroidered Jacket",
   "prefab": "Girl_022",
   "ok": true,
   "inicial": false,
@@ -585,7 +585,7 @@
  {
   "id": 53015,
   "sexo": "menina",
-  "nome": "Conjunto Charizard",
+  "nome": "Charizard Outfit",
   "prefab": "Girl_023",
   "ok": true,
   "inicial": false,
@@ -596,7 +596,7 @@
  {
   "id": 53016,
   "sexo": "menina",
-  "nome": "Conjunto de Natal",
+  "nome": "Christmas Outfit",
   "prefab": "Girl_024",
   "ok": true,
   "inicial": false,
@@ -607,7 +607,7 @@
  {
   "id": 53017,
   "sexo": "menina",
-  "nome": "Conjunto Coração de Ouro e Alma de Prata",
+  "nome": "HeartGold & SoulSilver Outfit",
   "prefab": "Girl_025",
   "ok": true,
   "inicial": true,
@@ -618,7 +618,7 @@
  {
   "id": 53018,
   "sexo": "menina",
-  "nome": "Conjunto Gardevoir",
+  "nome": "Gardevoir Outfit",
   "prefab": "Girl_027",
   "ok": true,
   "inicial": false,
@@ -629,7 +629,7 @@
  {
   "id": 53019,
   "sexo": "menina",
-  "nome": "Conjunto de Campeão da Liga",
+  "nome": "League Champion Outfit",
   "prefab": "Girl_027",
   "ok": true,
   "inicial": false,
@@ -640,7 +640,7 @@
  {
   "id": 53020,
   "sexo": "menina",
-  "nome": "Conjunto Lopunny",
+  "nome": "Lopunny Outfit",
   "prefab": "Girl_028",
   "ok": true,
   "inicial": false,
@@ -651,7 +651,7 @@
  {
   "id": 53021,
   "sexo": "menina",
-  "nome": "Conjunto de Chapéu de Palha",
+  "nome": "Straw Hat Outfit",
   "prefab": "Girl_030",
   "ok": true,
   "inicial": false,
@@ -662,7 +662,7 @@
  {
   "id": 53022,
   "sexo": "menina",
-  "nome": "Conjunto de Qixi",
+  "nome": "Qixi Outfit",
   "prefab": "Girl_035",
   "ok": true,
   "inicial": false,
@@ -673,7 +673,7 @@
  {
   "id": 53023,
   "sexo": "menina",
-  "nome": "Conjunto Refrescante",
+  "nome": "Cooling Outfit",
   "prefab": "Girl_032",
   "ok": true,
   "inicial": false,
@@ -684,7 +684,7 @@
  {
   "id": 53024,
   "sexo": "menina",
-  "nome": "Conjunto de Luz Lunar",
+  "nome": "Moonlight Outfit",
   "prefab": "Girl_038",
   "ok": true,
   "inicial": false,
@@ -695,7 +695,7 @@
  {
   "id": 53025,
   "sexo": "menina",
-  "nome": "Roupa Bordado Elegante",
+  "nome": "Elegant Embroidery Outfit",
   "prefab": "Girl_040",
   "ok": true,
   "inicial": false,
@@ -706,7 +706,7 @@
  {
   "id": 53026,
   "sexo": "menina",
-  "nome": "Elfo Divino",
+  "nome": "Divine Elf",
   "prefab": "Girl_042",
   "ok": true,
   "inicial": false,
@@ -717,7 +717,7 @@
  {
   "id": 53027,
   "sexo": "menina",
-  "nome": "Sombras de Abóbora",
+  "nome": "Pumpkin Shadows",
   "prefab": "Girl_043",
   "ok": true,
   "inicial": false,
@@ -739,7 +739,7 @@
  {
   "id": 53029,
   "sexo": "menina",
-  "nome": "coroa eterno",
+  "nome": "Eternal Crown",
   "prefab": "Girl_049",
   "ok": true,
   "inicial": false,
@@ -750,7 +750,7 @@
  {
   "id": 53030,
   "sexo": "menina",
-  "nome": "terno de ceu de ardente",
+  "nome": "Burning Sky Suit",
   "prefab": "Girl_050",
   "ok": true,
   "inicial": false,
@@ -761,7 +761,7 @@
  {
   "id": 53031,
   "sexo": "menina",
-  "nome": "Conjunto do Dia dos Namorados",
+  "nome": "Valentine Outfit",
   "prefab": "Girl_051",
   "ok": true,
   "inicial": false,
@@ -772,7 +772,7 @@
  {
   "id": 53032,
   "sexo": "menina",
-  "nome": "Um passeio tranquilo na primavera",
+  "nome": "A Quiet Spring Stroll",
   "prefab": "Girl_052",
   "ok": true,
   "inicial": false,
@@ -783,7 +783,7 @@
  {
   "id": 53033,
   "sexo": "menina",
-  "nome": "Názhà",
+  "nome": "Nezha",
   "prefab": "Girl_053",
   "ok": true,
   "inicial": false,
@@ -794,7 +794,7 @@
  {
   "id": 53034,
   "sexo": "menina",
-  "nome": "Chamado da Fênix para o Sol Nascente",
+  "nome": "Phoenix Call to the Rising Sun",
   "prefab": "Girl_054",
   "ok": true,
   "inicial": false,
@@ -805,7 +805,7 @@
  {
   "id": 53035,
   "sexo": "menina",
-  "nome": "Caminho do Campeão - Campeão",
+  "nome": "Champion Path — Champion",
   "prefab": "Girl_057",
   "ok": true,
   "inicial": false,
@@ -816,7 +816,7 @@
  {
   "id": 53036,
   "sexo": "menina",
-  "nome": "Caminho do Campeão - Top 10",
+  "nome": "Champion Path — Top 10",
   "prefab": "Girl_056",
   "ok": true,
   "inicial": false,
@@ -827,7 +827,7 @@
  {
   "id": 53037,
   "sexo": "menina",
-  "nome": "Caminho do Campeão - Rei",
+  "nome": "Champion Path — King",
   "prefab": "Girl_055",
   "ok": true,
   "inicial": false,
@@ -838,7 +838,7 @@
  {
   "id": 53038,
   "sexo": "menina",
-  "nome": "Alto Comando",
+  "nome": "Elite Four",
   "prefab": "Girl_058",
   "ok": true,
   "inicial": false,
@@ -849,7 +849,7 @@
  {
   "id": 53039,
   "sexo": "menina",
-  "nome": "Estandarte do Ritmo de Pequim",
+  "nome": "Beijing Rhythm Banner",
   "prefab": "Girl_059",
   "ok": true,
   "inicial": false,
