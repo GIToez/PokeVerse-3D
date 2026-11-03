@@ -3790,16 +3790,11 @@ if (PLAY){
     if (perso) await Personagem.aplicar(ash.pivo, perso);          // cores dos heróis tintáveis (nas skins fixas não faz nada)
     ash.vel = 3.6; pika.vel = 4.2;                 // um pouco mais devagar: o clipe de corrida toca a 1× e escorrega menos
     // quem segue o Ash: Pikachu por padrão, ou ?seguidor=pm0244_00 (Entei) etc.
-    /* 4 golpes: os da espécie (tabela) e, pra completar, golpes de dano com efeito, do tipo do
-       Pokémon primeiro, do mais fraco pro mais forte — até a tabela de aprendizado por nível entrar. */
-    const quatroGolpes = dex => {
-      const S = porDex.get(dex);
-      const base = [...(dex === 25 ? GOLPES_PIKA : (GOLPES_ESPECIE[dex] || ['tackle']))];
-      const tipos = S?.types || [], usados = new Set(base);
-      const cands = Object.values(GOLPES).filter(g => g && g.id && g.efeito && g.cat !== 'status' && g.poder >= 30 && g.poder <= 95 && !usados.has(g.id))
-        .sort((a, b) => (tipos.includes(b.tipo) - tipos.includes(a.tipo)) || a.poder - b.poder);
-      for (const g of cands){ if (base.length >= 4) break; base.push(g.id); usados.add(g.id); }
-      return base.slice(0, 4);
+    /* The four moves this species knows at this level: the latest ones on its learnset.
+       A short list is padded from the old species table, never from unrelated moves of the same type. */
+    const quatroGolpes = (dex, lv = 5) => {
+      const ids = Ind.golpesIniciais(+dex, lv, (dex === 25 ? GOLPES_PIKA : GOLPES_ESPECIE[+dex]) || ['tackle']).filter(id => GOLPES[id]);
+      return (ids.length ? ids : ['tackle']).slice(0, 4);
     };
     const configurarSeguidor = (pika, seguidorNome) => {
       const dex = +((seguidorNome || 'pm0025_00').match(/pm(\d{4})/)?.[1] || 25);
@@ -4946,7 +4941,8 @@ async function chegarChefe(glb = 'pm0249_00'){
   Ind.garantir(c); c.maxHp = Math.round(Ind.hpDe(S, c) * 2.5); c.hp = c.maxHp;
   c.perfil = 'agressivo'; c.chefe = true; c.flutua = /pm0249|pm0250|pm0144|pm0145|pm0146|pm0384|pm0487|pm0493|pm0150/.test(glb) ? 2.2 : 0;
   c.vel = 3.0; c.estado = 'chegando'; c.recarga = 0; c.paciencia = 99; c.assustado = false; c.area = null; c.casa = null; c.t = 0;
-  c.golpes = (GOLPES_ESPECIE[dex] || ['gust']).map(id => GOLPES[id]).filter(Boolean); c.proximoGolpe = c.golpes[0];
+  c.movs = Ind.golpesPara(dex, c.lv, GOLPES_ESPECIE[dex] || ['gust']);
+  c.golpes = c.movs.map(m => GOLPES[m.id]).filter(Boolean); if (!c.golpes.length) c.golpes = [GOLPES.gust || GOLPES.tackle]; c.proximoGolpe = c.golpes[0];
   const ash = jogo.ash;
   // no lote de casa ele pousa no descampado acima (norte) da casa, longe da horta;
   // em outro mapa, um pouco à frente do Ash
@@ -5632,7 +5628,7 @@ function abrirSeletorAtalho(i){ Som.destravar(); Menus.abrirAtalho?.(i); }
 /* ===== Desmaio e Reanimador (como nos jogos): quem desmaia FICA desmaiado até um Reanimador (metade do HP; Máximo: tudo) — depois o
    Centro Pokémon fará isso de graça. Parceiro em campo cai → passada a animação, o próximo do time em condições entra sozinho; se
    não há nenhum, "apagão": sem Centro ainda, o time acorda curado ali mesmo em 3 s (mercy; com o Centro vira teleporte + cura). */
-const REANIMADORES = { 2012: 'Revive', 2013: 'Max Revive' };
+const REANIMADORES = { 2012: 'Revive', 2013: 'Max Revive', 2021: 'Revival Herb', 2038: 'Max Honey' };
 /* ===== HELD ITEMS (Nov 2): held.mjs + data/held.json. The partner in the field can hold one item (Bag → Give); its icon sits on
    the partner frame and a click takes it back. Only the partner holds items — wild Pokémon never do. Effects in the real-time
    battle: damage multipliers and recoil/healing per hit (golpear), Leftovers/Black Sludge every few seconds while in battle,
@@ -5758,6 +5754,34 @@ const koRegistro = t => !!t && t.hp === 0 && (contaManda() || t.koAte > Date.now
 const estaKO = (t, i) => i === membroAtivo() ? !!jogo.pika && jogo.pika.hp <= 0 : koRegistro(t);
 /** O Reanimador que estiver na mochila: { id, nome, n } ou null (o comum antes do Máximo). */
 function reanimadorNaMochila(){ const it = lerLS('itens', {}); for (const id of Object.keys(REANIMADORES)) if (it[id] > 0) return { id: +id, nome: REANIMADORES[id], n: it[id] }; return null; }
+function amizadeDoItem(alvo, id){
+  const d = RegrasItem.amizadeDe(id);
+  if (!d || !alvo) return;
+  alvo.amizade = Math.max(0, Math.min(255, (alvo.amizade ?? 70) + d));
+}
+/** Sacred Ash: every fainted Pokémon in the party, full HP. */
+function reanimarTime(id, nome = 'Sacred Ash'){
+  if (eliteEstado.corrida){ flutuar(jogo.ash, 'no healing in the Elite Four: the five fights are one run', '#ffd23a'); return false; }
+  const it = lerLS('itens', {});
+  if (!(it[id] > 0)) return false;
+  const caidos = [];
+  (jogo.time || []).forEach((t, i) => { if (estaKO(t, i)) caidos.push(i); });
+  if (!caidos.length){ flutuar(jogo.ash, 'nobody is fainted', '#ffd23a'); return false; }
+  bolsaOp('usar', { item: +id });
+  it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);
+  for (const i of caidos){
+    const t = jogo.time[i];
+    if (i === membroAtivo() && jogo.pika){
+      const p = jogo.pika; p.hp = p.maxHp; p.desmaiado = 0; p.travaAnim = 0; p.anim = null; tocarAnim(p, 'Idle');
+      amizadeDoItem(p, id);
+      if (p.recolhido){ p.recolhido = false; p.pivo.visible = true; const a = jogo.ash; teleportar(p, livre(a.x - 1.2, a.z + 0.8) ? a.x - 1.2 : a.x, livre(a.x - 1.2, a.z + 0.8) ? a.z + 0.8 : a.z); tocarUma(p, 'Appear'); efeito('Pokeball_Go', p.peito, 0.6); }
+    } else { t.hp = t.maxHp || 1; t.koAte = 0; amizadeDoItem(t, id); }
+  }
+  guardarEstadoAtivo();
+  Som.tocar('ui/sound_pkmnhealing', { volume: .6 });
+  Chat.sistema(nome + ' revived the party.');
+  pintarTime(true); pintarAtalhos(true); return true;
+}
 /** Reanimador no membro i do time (em campo ou não). Devolve true se usou. */
 function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
   const uidAlvo = jogo.time?.[i]?.uid ?? null;                            // passo 3: o servidor reanima ESTE Pokémon (pode não ser o de campo)
@@ -5773,9 +5797,10 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
   it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
   if (i === membroAtivo()){
     const p = jogo.pika; p.hp = cheio ? p.maxHp : Math.ceil(p.maxHp / 2); p.desmaiado = 0; p.travaAnim = 0; p.anim = null; tocarAnim(p, 'Idle');
+    amizadeDoItem(p, +id);
     if (p.recolhido){ p.recolhido = false; p.pivo.visible = true; const a = jogo.ash; teleportar(p, livre(a.x - 1.2, a.z + 0.8) ? a.x - 1.2 : a.x, livre(a.x - 1.2, a.z + 0.8) ? a.z + 0.8 : a.z); tocarUma(p, 'Appear'); efeito('Pokeball_Go', p.peito, 0.6); }
     guardarEstadoAtivo();
-  } else { t.hp = cheio ? (t.maxHp || 1) : Math.ceil((t.maxHp || 1) / 2); t.koAte = 0; gravarLS('time', jogo.time); }
+  } else { t.hp = cheio ? (t.maxHp || 1) : Math.ceil((t.maxHp || 1) / 2); t.koAte = 0; amizadeDoItem(t, +id); gravarLS('time', jogo.time); }
   Som.tocar('ui/sound_pkmnhealing', { volume: .6 }); flutuar(jogo.ash, nome + ' → ' + t.nome, '#8ef58e'); Chat.sistema(nome + ' used on ' + t.nome + (cheio ? ' (HP full).' : ' (half HP).'));
   pintarTime(true); pintarAtalhos(true); return true;
 }
@@ -5928,7 +5953,12 @@ function usarItem(id, nome = '', aviso = null){
   const passarTurno = () => { if (emTurnoServ){ T.fase = 'usando'; pintarTurno(); rodadaDoServidor(T, { tipo: 'item', item: +id }); } };
   /* ELITE FOUR (20/09): com a corrida aberta o servidor recusa todo remédio. O cliente nem tenta — senão a barra de vida subia
      aqui, o servidor mantinha o dano e, dentro da batalha, o turno ia embora por um item que nunca saiu da mochila. */
-  if (eliteEstado.corrida) return recusa('na Elite Four não tem cura: as cinco lutas são uma corrida só', null, '#ffd23a');
+  if (eliteEstado.corrida) return recusa('no healing in the Elite Four: the five fights are one run', null, '#ffd23a');
+  if (RegrasItem.ehReanimaTime(id)){
+    const ok = reanimarTime(+id, nome || 'Sacred Ash');
+    if (ok){ passarTurno(); aviso?.(nome || 'Sacred Ash', true); }
+    return ok;
+  }
   if (ehReanimador(nome || REANIMADORES[id], id)){                                                       // Reanimador: no parceiro em campo se ele caiu, senão no primeiro KO do time
     const agora = Date.now(); let i = jogo.pika && jogo.pika.hp <= 0 ? membroAtivo() : jogo.time.findIndex(t => koRegistro(t));
     if (i < 0) return recusa('nobody is fainted');
@@ -5983,6 +6013,7 @@ function usarItem(id, nome = '', aviso = null){
   const cura = RegrasItem.CURA[+id];                                      // by id (item_rules.mjs): Hyper/Max Potion matched no Portuguese name and healed 20
   const hpAntes = p.hp || 0;
   p.hp = Math.min(p.maxHp || p.hp, (p.hp || 0) + cura);
+  amizadeDoItem(p, +id);
   bolsaOp('usar', { item: +id, uid: uidParceiro() });                     // com conta, quem desconta e quem cura de verdade é o SERVIDOR
   it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
   flutuar(p, 'restored ' + Math.min(cura, 999) + ' HP', '#8ef58e'); Som.tocar('ui/sound_pkmnhealing', { volume: .6 });
@@ -6351,6 +6382,7 @@ function aplicarVidas(lista){
       if (v.lv != null && v.lv > (e.lv || 0)){ for (let L = (e.lv || 0) + 1; L <= v.lv; L++){ e.lv = L; try { aprenderNoNivel(e); } catch (x){ console.warn('aprender:', x); } } }   // 12/09: nível do servidor também ensina os golpes do nível (com conta ninguém aprendia golpe novo)
       if (v.lv != null) e.lv = v.lv; if (v.exp != null) e.exp = v.exp;
       if (v.hp != null) e.hp = v.hp; if (v.maxHp != null) e.maxHp = v.maxHp;
+      if (v.amizade != null) e.amizade = v.amizade;
       if (v.expReserva != null) e.expReserva = v.expReserva;               // XP guardada pelo teto de nível: agora é do servidor (12/09)
       if ('held' in v){ e.held = v.held || null; mexeuHeld = true; }          // held item (server_bag.mjs: segurar / tirar / consumir)
       e.koAte = v.hp === 0 ? Math.max(e.koAte || 0, Date.now() + 1e12) : 0;   // KO dito pelo servidor dura até a cura dele (12/09): com `Date.now()` o KO "vencia" na hora e o Pokémon voltava inteiro sozinho
@@ -6360,6 +6392,7 @@ function aplicarVidas(lista){
     if (p && String(uidParceiro()) === String(v.uid)){
       if (v.lv != null) p.lv = v.lv; if (v.exp != null) p.exp = v.exp;
       if (v.maxHp != null) p.maxHp = v.maxHp; if (v.hp != null) p.hp = v.hp;
+      if (v.amizade != null) p.amizade = v.amizade;
       if (v.expReserva != null) p.expReserva = v.expReserva;
       if (v.lv != null){                                                   // golpe aprendido no nível (acima, no REGISTRO do time) entra na barra
         /* 18/09 (xkuuhaaku 1550202960695267328, dv_dasmerces, silikgnt: "quer aprender X" no chat e NADA na janela Pokémon): com os
@@ -7732,7 +7765,7 @@ function vigiarPortaoPallet(dt){
   }
 }
 /* ===== Golpes por indivíduo (individual.mjs): `movs` = [{ id, pp, ppMax }]; o learnset diz o que entra em cada nível.
-   Sem PP em tudo, sobra o Struggle. Fallback por tipo (quatroGolpes) garante pelo menos 2 golpes a qualquer espécie. */
+   Sem PP em tudo, sobra o Struggle. Fallback (quatroGolpes) são os golpes do learnset da espécie naquele nível. */
 const STRUGGLE = { ...GOLPES.tackle, id: 'struggle', nome: 'Struggle', poder: 50, tipo: 'Normal' };
 function fallbackGolpes(dex){ return jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle']); }
 function aprenderNoNivel(p){
@@ -8911,7 +8944,7 @@ if (jogo.ash){
     nomeArea: a => nomeAreaCena(a) || rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || '') || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
     get dados(){ return dados; }, flipX: () => flipX,
     fotoMapaMundo, aoFotoMapaMundo,
-    golpesDe: dex => (jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
+    golpesDe: (dex, lv) => (jogo.quatroGolpes ? jogo.quatroGolpes(dex, lv || 5) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
     atualizarSeguidorPainel: () => document.getElementById('segue-ctl')?.__encher?.(),
     seguir: async e => {
       const time = jogo.time || [];
@@ -9944,7 +9977,7 @@ async function proximoInimigoTurno(){
   const s = await criarSelvagem({ glb: m.glb + '.glb', nome: S?.name || ('nº ' + m.dex), dex: m.dex },
                                 q.x, q.z, { lv: m.lv, perfil: 'treinado' });
   s.emTurno = true; s.rival = jogo.pika; s.estado = 'turno';
-  s.golpes = (jogo.quatroGolpes ? jogo.quatroGolpes(m.dex) : (GOLPES_ESPECIE[m.dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean);
+  s.golpes = (jogo.quatroGolpes ? jogo.quatroGolpes(m.dex, m.lv) : (GOLPES_ESPECIE[m.dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean);
   s.pivo.visible = false;                                                // na bola até ela chegar
   tocarUma(n, 'Attack');                                                 // o rival arremessa
   await bolaLancada(n, q.x, q.z);

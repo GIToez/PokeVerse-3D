@@ -20,7 +20,7 @@ const extras = (o, conhecidas) => Object.fromEntries(Object.entries(o).filter(([
 
 export const TIPOS = { Normal: 'Normal', Fighting: 'Fighting', Flying: 'Flying', Poison: 'Poison', Ground: 'Ground', Rock: 'Rock', Bug: 'Bug',
   Ghost: 'Ghost', Steel: 'Steel', Fire: 'Fire', Water: 'Water', Grass: 'Grass', Electric: 'Electric', Psychic: 'Psychic', Ice: 'Ice',
-  Dragon: 'Dragon', Dark: 'Dark', Fairy: 'Fairy' };
+  Dragon: 'Dragon', Dark: 'Dark', Fairy: 'Fairy', Shadow: 'Shadow' };
 const OPC_TIPOS = Object.entries(TIPOS).map(([v, rotulo]) => ({ v, rotulo }));
 export const CURVAS = { slow: 'Slow', medium: 'Medium', fast: 'Fast', 'medium-slow': 'Medium-slow', 'slow-then-very-fast': 'Erratic', 'fast-then-very-slow': 'Fluctuating' };
 
@@ -235,7 +235,7 @@ export const ESQUEMAS_F2 = {
   },
   golpes: {
     titulo: 'Moves', arquivo: 'moves', forma: 'mapa', idValido: RE_GOLPE, idAjuda: 'lowercase letters and numbers, e.g. thunderbolt',
-    descricao: 'Moves with 3D effects: power, type, PP, range, cooldown and the effect/sound/animation. The learnset (who learns what) is on the Learnset screen.',
+    descricao: 'Official moves from PokéAPI. Ones that already had a 3D effect keep it; the rest use a plain animation until a particle exists. Who learns what is on the Learnset screen.',
     campos: [
       { k: 'nome', rotulo: 'Name (English)', tipo: 'texto', max: 40, col: true, obrigatorio: true },
       { k: 'nomePt', rotulo: 'Portuguese name', tipo: 'texto', max: 60, col: true },

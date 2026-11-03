@@ -46,7 +46,7 @@ export const hpDe = (S, e) => hp(S.bs[0], e.lv || 1, e.ivs?.[0] || 0, evsDe(e)[0
 export const statDe = (S, e, i) => stat(S.bs[i], e.lv || 1, e.ivs?.[i] || 0, evsDe(e)[i], e.natureza, i);
 /* ------------------------------------------------------------ golpes por indivíduo (learnset) e PP
    `movs` = [{ id, pp, ppMax }] até 4, no registro do time e na entidade; `golpesIds` do index é derivado daqui.
-   Learnset (data/learnset.json, tools/learnset.mjs): golpes de dano com efeito, por nível (Sword/Shield). */
+   Learnset (data/learnset.json, tools/pokeapi_moves.py): Scarlet/Violet level-up from PokéAPI. */
 let LEARN = null;
 export function carregarLearnset(d){ LEARN = d || null; }
 export const ppDe = id => LEARN?.pp?.[id] ?? 20;
