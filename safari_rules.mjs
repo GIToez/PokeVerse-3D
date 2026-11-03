@@ -124,6 +124,14 @@ export function encerrar(bolas, sessao) {
   return { bolas: b, tirou: tira, sessao: null };
 }
 
+export const AVISO_BOLA = 'Your Pokémon stay in their Balls in the Safari Zone.';
+
+/** The paid grass is catch-only. A party Pokémon, a mount, and a summoned boss stay out. */
+export function podeSoltar({ naZona } = {}) {
+  if (naZona) return { ok: false, erro: AVISO_BOLA };
+  return { ok: true };
+}
+
 export function podeJogar({ sessao, naZona, bola, estado }) {
   const safari = +bola === BOLA;
   const visita = vivo(sessao);
