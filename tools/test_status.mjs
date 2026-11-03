@@ -132,4 +132,17 @@ assert(Status.doGolpe({ hp: 40, maxHp: 40 }, moves.poisonpowder, ['Steel'], () =
   assert(Status.mulAtaque(burned, true) === 0.5 && Status.mulAtaque(burned, false) === 1, 'burn halves physical attack');
 }
 
+{
+  // real time: sleep wears off by the clock (SONO_TURNO_S per turn), and an attempt does not spend a turn
+  const m = { hp: 10, maxHp: 10, status: { id: 'sleep', n: 3 } };
+  for (let i = 0; i < 5; i++) assert(!Status.podeAgir(m, Math.random, { relogio: true }).age, 'asleep cannot act');
+  assert(m.status.n === 3, 'a real-time attempt spent a sleep turn');
+  let acordou = false, t = 0;
+  while (!acordou && t < 30) { acordou = Status.sonoRelogio(m, 0.1); t += 0.1; }
+  assert(acordou && !m.status, 'sleep did not wear off');
+  assert(Math.abs(t - 3 * Status.SONO_TURNO_S) < 0.15, 'sleep of 3 turns lasted ' + t.toFixed(2) + ' s');
+  const turno = { hp: 10, maxHp: 10, status: { id: 'sleep', n: 2 } };
+  Status.podeAgir(turno);
+  assert(turno.status.n === 1, 'turn battles still count turns');
+}
 console.log('status ok');

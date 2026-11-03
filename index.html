@@ -5185,6 +5185,7 @@ function atualizarSelvagens(dt){
     s.travaAnim = Math.max(0, s.travaAnim - dt);
     s.recarga = Math.max(0, s.recarga - dt);
     tiqueVolatil(s, dt, s.estado === 'atacando' || s.estado === 'fugindo' || (jogo.alvo === s && pika.emBatalha));
+    tiqueSono(s, dt);
     if (s.estado === 'morto'){ s.mix.update(dt); continue; }
     if (s.estado === 'capturando'){ s.mix.update(dt); continue; }   // dentro/à mercê da bola: fica parado, sem IA
     if (s.emTurno){                                                     // Pokémon de treinador (batalha por turno): o motor conduz — aqui só encara o rival e anima
@@ -5325,7 +5326,7 @@ function atualizarSelvagens(dt){
       } else {
         const g = s.proximoGolpe;
         s.giro = Math.atan2(dx, dz); s.pivo.rotation.y = s.giro;
-        if (impedido(s)){ s.recarga = Math.min(g.recarga || 1.2, 1.6); s.proximoGolpe = s.golpes[Math.floor(Math.random() * s.golpes.length)]; }
+        if (impedido(s)){ s.recarga = Math.min(g.recarga || 1.2, s.status?.id === 'sleep' ? 1.0 : 1.6); s.proximoGolpe = s.golpes[Math.floor(Math.random() * s.golpes.length)]; }   // dormindo: tenta de novo logo (o sono passa pelo relógio, não pela tentativa)
         else { tocarUma(s, g.anim);
         if (g.contato){
           // corpo a corpo: investida curta até encostar, golpe no fim
@@ -5589,12 +5590,20 @@ function tiqueVolatil(e, dt, luta){
 }
 /** Sleep, freeze, and paralysis can cancel the action that was about to land. */
 function impedido(e){
-  const r = Status.podeAgir(e);
+  const r = Status.podeAgir(e, Math.random, { relogio: !jogo.turno });   // tempo real: o sono passa pelo relógio (tiqueSono), não por tentativa
   if (r.acordou) flutuar(e, 'woke up', Status.cor('sleep'));
   if (r.descongelou) flutuar(e, 'thawed', Status.cor('freeze'));
   if (!r.age) flutuar(e, Status.aviso(r.porque), Status.cor(e.status?.id) || '#9ab');
   if (e === jogo.pika && (r.acordou || r.descongelou || !r.age)) guardarEstadoAtivo();
   return !r.age;
+}
+/** Real time: sleep wears off by the clock (Status.SONO_TURNO_S per turn), in or out of the fight. Turn battles count turns. */
+function tiqueSono(e, dt){
+  if (!e || jogo.turno || e.rede || e.raid || !(e.hp > 0)) return;
+  if (!Status.sonoRelogio(e, dt)) return;
+  flutuar(e, 'woke up', Status.cor('sleep'));
+  if (e.rotulo){ e.rotMarca = undefined; pintarRotuloSelvagem(e); }
+  if (e === jogo.pika) guardarEstadoAtivo();
 }
 /** Burn, poison, and bad poison tick while a real-time fight is going. Turn battles tick on the server. */
 function tiqueStatus(e, dt, luta){
@@ -9632,6 +9641,7 @@ function atualizarParceiro(dt){
   const { ash, pika } = jogo;
   if (pika.recolhidoSafari){
     for (const k in pika.recargas) pika.recargas[k] = Math.max(0, pika.recargas[k] - dt);
+    tiqueSono(pika, dt);
     quadroHeld(dt); Pesca.quadro(dt);
     if (jogo.trocaCd > 0) jogo.trocaCd = Math.max(0, jogo.trocaCd - dt);
     pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.destino = null;
@@ -9651,6 +9661,7 @@ function atualizarParceiro(dt){
   const hostil = jogo.selvagens.find(s => s.estado === 'atacando' && Math.hypot(s.x - pika.x, s.z - pika.z) < 12);
   tiqueStatus(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   tiqueVolatil(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
+  tiqueSono(pika, dt);
   if (jogo.turno || jogo.ordem){ pika.emBatalha = true; pika.calma = 0; }   // aggro de selvagem NÃO congela o parceiro: ele segue você e só briga quando VOCÊ manda (ou no turno)
   else if (pika.emBatalha){ pika.calma = (pika.calma || 0) + dt; if (pika.calma > 3) pika.emBatalha = false; }
   const dA = Math.hypot(ash.x - pika.x, ash.z - pika.z);

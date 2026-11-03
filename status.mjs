@@ -122,13 +122,33 @@ export function descongelar(mon) {
   return true;
 }
 
+/** Real time: one sleep turn is this many seconds of clock (Sing's 2–4 turns = 3–6 s). */
+export const SONO_TURNO_S = 1.5;
+
+/**
+ * Real time: sleep wears off by the clock, in the fight or out of it, whether the Pokémon tries to act or not.
+ * Returns true on the tick it wakes up.
+ */
+export function sonoRelogio(mon, dt) {
+  const s = limpo(mon?.status);
+  if (s?.id !== 'sleep') { if (mon) mon.sonoT = 0; return false; }
+  mon.sonoT = (mon.sonoT || 0) + dt;
+  if (mon.sonoT < SONO_TURNO_S) return false;
+  mon.sonoT -= SONO_TURNO_S;
+  if (s.n <= 1) { mon.status = null; mon.sonoT = 0; return true; }
+  mon.status = { id: 'sleep', n: s.n - 1 };
+  return false;
+}
+
 /**
  * Before an action. Sleep and freeze skip it. Paralysis skips 1 in 4.
  * The turn they wake up, or thaw, they do get to act.
+ * `relogio`: real time, where sleep runs on `sonoRelogio` and an attempt does not spend a turn.
  */
-export function podeAgir(mon, rng = Math.random) {
+export function podeAgir(mon, rng = Math.random, { relogio = false } = {}) {
   const s = limpo(mon?.status);
   if (!s) return { age: true };
+  if (s.id === 'sleep' && relogio) return { age: false, porque: 'asleep' };
   if (s.id === 'sleep') {
     const left = s.n - 1;
     if (left <= 0) mon.status = null;
