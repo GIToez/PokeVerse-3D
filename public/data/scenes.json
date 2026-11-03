@@ -1126,6 +1126,56 @@
      "id": 2295,
      "nome": "Seven Island Pokémon Center",
      "tipo": 2
+    },
+    {
+     "id": 1421,
+     "nome": "Cherrygrove Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1422,
+     "nome": "Violet Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1423,
+     "nome": "Azalea Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1424,
+     "nome": "Goldenrod Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1425,
+     "nome": "Ecruteak Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1426,
+     "nome": "Olivine Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1427,
+     "nome": "Cianwood Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1428,
+     "nome": "Mahogany Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1429,
+     "nome": "Blackthorn Pokémon Center",
+     "tipo": 2
+    },
+    {
+     "id": 1430,
+     "nome": "Mt. Silver Pokémon Center",
+     "tipo": 2
     }
    ],
    "objeto": true
@@ -1240,6 +1290,36 @@
     {
      "id": 2299,
      "nome": "Seven Island Friendship Shop",
+     "tipo": 2
+    },
+    {
+     "id": 1521,
+     "nome": "Cherrygrove Mart",
+     "tipo": 2
+    },
+    {
+     "id": 1522,
+     "nome": "Violet Mart",
+     "tipo": 2
+    },
+    {
+     "id": 1523,
+     "nome": "Azalea Mart",
+     "tipo": 2
+    },
+    {
+     "id": 1525,
+     "nome": "Ecruteak Mart",
+     "tipo": 2
+    },
+    {
+     "id": 1526,
+     "nome": "Olivine Mart",
+     "tipo": 2
+    },
+    {
+     "id": 1529,
+     "nome": "Blackthorn Mart",
      "tipo": 2
     }
    ],

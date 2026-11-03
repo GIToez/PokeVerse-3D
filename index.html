@@ -222,6 +222,7 @@ import * as Qualidade from './quality.mjs';      // low / medium / high (medium:
 import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: other players' names, floating damage
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
+import { ehChegadaCentroJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; a wipe there wakes at a Johto Center
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
@@ -5800,19 +5801,50 @@ function amarrarParceiro(){
   try { pintarTime(true); } catch (e){ console.warn('pintarTime:', e); }
 }
 const RESPAWN_PADRAO = { mapa: '4110002', chegada: 7180101, nome: 'Laboratório do Professor Oak' };   // sem Centro visitado ainda (Pallet): acorda no lab, como "voltar pra casa" nos jogos
+/** Where a wipe or "I'm stuck" wakes you. A Johto Center you already entered wins. On the Johto
+ *  street, a Kanto Center (or none) is replaced by the nearest Johto Center, so a faint there does
+ *  not dump you in Kanto. Inside a Johto Center or Mart, that city's Center is the one. */
+function alvoRespawn(){
+  const salvo = lerLS('ultimoCentro', null);
+  const tem = !!(salvo?.mapa && salvo.chegada);
+  if (ehChegadaCentroJohto(salvo?.chegada)) return salvo;
+  if (+NOME === 2000001){
+    const perto = centroJohtoMaisPerto(jogo?.ash?.x, jogo?.ash?.z, dados?.npcs, flipX);
+    if (perto) return perto;
+  }
+  if (NOME === '4110001' || NOME === '4110007'){
+    const daSala = centroPelaChegadaJohto(chegadaPedida());
+    if (daSala) return daSala;
+  }
+  if (tem) return salvo;
+  return RESPAWN_PADRAO;
+}
+function gravarCentroVisitado(alvo){
+  const chegada = +alvo?.chegada;
+  const a = +(alvo?.a ?? PORTAS[chegada]?.a ?? 0);
+  if (!(chegada > 0) || Math.floor(a / 100) !== 14) return;
+  const rec = { mapa: String(alvo.mapa), chegada, quando: Date.now() };
+  gravarLS('ultimoCentro', rec);
+  const vis = lerLS('centrosVisitados', {}) || {};
+  let nome = null; try { nome = nomeAreaCena(a) || alvo.nome || null; } catch { nome = alvo.nome || null; }
+  vis[chegada] = { mapa: rec.mapa, chegada, a, nome, quando: rec.quando };
+  gravarLS('centrosVisitados', vis);
+}
 /** ESTOU PRESO (15/09): pra onde o jogador vai depois do relato — o último Centro Pokémon (LS `ultimoCentro`, o mesmo do desmaio) ou,
- *  sem Centro ainda, o laboratório do Oak. `function` (içada): o contexto do relato chama. */
+ *  sem Centro ainda, o laboratório do Oak. No Johto, o Centro mais perto. `function` (içada): o contexto do relato chama. */
 function destinoPreso(){
-  const c = lerLS('ultimoCentro', null);
-  if (!(c?.mapa && c.chegada)) return { mapa: String(RESPAWN_PADRAO.mapa), chegada: RESPAWN_PADRAO.chegada, nome: RESPAWN_PADRAO.nome, centro: false };
-  let nome = null; try { nome = nomeAreaCena(PORTAS[c.chegada]?.a) || null; } catch {}
-  return { mapa: String(c.mapa), chegada: +c.chegada, nome: nome || 'Centro Pokémon', centro: true };
+  const alvo = alvoRespawn();
+  if (alvo === RESPAWN_PADRAO) return { mapa: String(RESPAWN_PADRAO.mapa), chegada: RESPAWN_PADRAO.chegada, nome: RESPAWN_PADRAO.nome, centro: false };
+  const a = +(alvo.a ?? PORTAS[alvo.chegada]?.a ?? 0);
+  let nome = null; try { nome = nomeAreaCena(a) || alvo.nome || null; } catch { nome = alvo.nome || null; }
+  return { mapa: String(alvo.mapa), chegada: +alvo.chegada, a, nome: nome || 'Pokémon Center', centro: true };
 }
 /** Leva pro destino do "Estou preso" pelo mesmo caminho do respawn da raid (irParaCena com `chegada` e porta.ok carimbado). NÃO cura o time. */
 function irDestinoPreso(){
   const d = destinoPreso();
+  if (d.centro) gravarCentroVisitado(d);
   __boot.aviso('estou preso: indo', { de: NOME, pos: jogo.ash ? Math.round(jogo.ash.x) + ',' + Math.round(jogo.ash.z) : null, mapa: d.mapa, chegada: d.chegada });
-  return irParaCena({ mapa: d.mapa, chegada: d.chegada, texto: (d.centro ? 'Centro Pokémon' : 'Laboratório') + '…' });
+  return irParaCena({ mapa: d.mapa, chegada: d.chegada, texto: (d.nome || (d.centro ? 'Pokémon Center' : 'Laboratório')) + '…' });
 }
 /* PARCEIRO JÁ DESMAIADO AO ENTRAR (12/09): o registro do time diz hp 0 (o servidor guardou o KO) — deita e chama a aposDesmaio
    (troca sozinho / apagão → laboratório ou Centro). Era um bloco só do boot; virou função porque o seguidor SALVO chega depois,
@@ -5850,19 +5882,20 @@ function aposDesmaio(){
   }
   if (!p.recolhido){ p.recolhido = true; p.pivo.visible = false; }                                    // sozinho: volta pra bola até o apagão passar
   flutuar(jogo.ash, 'wiped out!', '#e45670');
-  const centro = lerLS('ultimoCentro', null);                                                          // gravado no atravessar ao entrar num Centro (áreas 1401–1411)
-  const alvo = (centro?.mapa && centro.chegada) ? centro : RESPAWN_PADRAO;                             // sem Centro ainda: laboratório do Oak
-  const noCentro = alvo === centro;
-  if (alvo.mapa === NOME){                                                                             // apagou DENTRO do lugar de respawn: cura ali mesmo
+  const alvo = alvoRespawn();                                                                          // Johto: o Centro mais perto (ou o último de Johto). Kanto: o último Centro, senão o lab do Oak
+  const noCentro = alvo !== RESPAWN_PADRAO;
+  if (noCentro) gravarCentroVisitado(alvo);
+  if (String(alvo.mapa) === String(NOME)){                                                             // apagou DENTRO do lugar de respawn: cura ali mesmo
     Chat.sistema('All your Pokémon fainted! ' + (noCentro ? 'Joy' : 'Professor Oak') + ' is looking after your party.');
     pendentes.push({ t: 1.5, fn: () => curarTime(noCentro ? null : { nome: 'Professor Oak' }) }); return;
   }
-  Chat.sistema('All your Pokémon fainted! You wake up ' + (noCentro ? 'at the last Pokémon Center…' : 'in Professor Oak\'s lab…'));
+  Chat.sistema('All your Pokémon fainted! You wake up ' + (noCentro ? 'at a Pokémon Center…' : 'in Professor Oak\'s lab…'));
   for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; Ind.restaurarPP(t); } gravarLS('time', jogo.time);   // guardarEstadoAtivo já rodou no topo: XP do ativo preservado
   if (comConta()) Rede.pedirVida('curar').then(r => { if (r?.erro){ console.warn('curar no respawn recusado:', r.erro); __boot.aviso('curar no respawn recusado', { erro: r.erro }); } }).catch(e => console.warn('curar no respawn:', e));                                               // 12/09: o HP é do servidor — sem isto a página seguinte lia hp 0 dele e desmaiava de novo (ele aceita a cura com o time todo KO)
   p.hp = p.maxHp; p.desmaiado = 0;                                                                     // em memória também: qualquer gravação no unload sai curada
   portaOcupado = true;
-  telaEscura(9000, (noCentro ? 'Centro Pokémon' : 'Laboratório') + '…');
+  const rotuloRespawn = noCentro ? (nomeAreaCena(alvo.a || PORTAS[alvo.chegada]?.a) || 'Pokémon Center') : 'Laboratório';
+  telaEscura(9000, rotuloRespawn + '…');
   if (ehMundoRua()) sessionStorage.setItem('mundo', NOME);            // sair de lá volta pro mundo certo
   const u = new URL(location.href); u.searchParams.set('mapa', alvo.mapa); u.searchParams.set('chegada', String(alvo.chegada)); u.searchParams.set('jogar', '1'); u.searchParams.delete('personagem');   // `jogar=1` explícito (12/09): com o storage bloqueado a tranca não consegue pôr
   setTimeout(() => { try { sessionStorage.setItem('porta.ok', '1'); } catch {} descarregarCena(); location.replace(u.toString()); }, 900);
