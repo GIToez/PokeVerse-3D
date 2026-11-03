@@ -4707,6 +4707,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   s.area = area; s.especie = esp; s.generico = generico; s.casa = casa || { x: flipX * x, z };
   s.id = null; s.wildId = null; s.rede = false; s.remoto = false; s.__animRede = null;   // corpo do pool pode ter sido da rede
   s.raid = null; s.flutua = 0; s.rotuloAlto = null;                     // …ou o chefe de uma raid (14/09): tamanho/altura de chefe não passam pro próximo
+  s.evs = undefined; s.gmSpawn = false;                                  // …ou um /pokespawn (02/11): os EVs escolhidos não passam pro próximo selvagem da espécie
   /* …ou um PEIXE (20/09). `aquatico` só era ligado (no `povoar` e no `Mundo.criar`), nunca desligado, e o corpo volta
      pelo pool por espécie: o Cloyster que nasceu na água do piso 4 das Ilhas Seaform renascia como Cloyster de TERRA
      no piso 5 ainda marcado como aquático — e aí ele afunda 22 cm no chão, balança como se estivesse boiando e não
@@ -4759,6 +4760,82 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   return s;
 }
 jogo.criarSelvagem = async (esp, x, z, o) => { const s = await criarSelvagem(esp, x, z, o); jogo.selvagens.push(s); return s; };
+/* /POKESPAWN (02/11, só GM): nasce um selvagem 3 m à frente do GM, com o que o comando pedir — o resto sai sorteado como em
+   qualquer selvagem. Só espécies com modelo (data/cast.json). Argumentos em qualquer ordem depois da espécie:
+     nome | nº da dex | random | r      s = shiny      lv:N      l = só lendário · !l = nada de lendário
+     ivhp|ivatk|ivdef|ivspa|ivspd|ivspe:0-31      evhp…evspe:0-252 (total ≤ 510)      type:fire (type:fire,flying = os dois)
+     n:adamant (natureza)
+   O selvagem é do APARELHO (não passa pelo servidor). No jogo local a captura leva o indivíduo exatamente como saiu daqui; com
+   conta a captura é registrada pelo servidor, que sorteia IVs/natureza/shiny de novo (posse_capturar) — pra entregar um
+   Pokémon pronto a uma conta, o caminho é o "Give Pokémon" do painel. */
+const LENDARIOS_DEX = new Set([144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, ...Array.from({ length: 10 }, (_, i) => 377 + i),
+  ...Array.from({ length: 15 }, (_, i) => 480 + i), ...Array.from({ length: 12 }, (_, i) => 638 + i), ...Array.from({ length: 6 }, (_, i) => 716 + i),
+  772, 773, 785, 786, 787, 788, 789, 790, 791, 792, 800, 801, 802, 807, 808, 809, ...Array.from({ length: 11 }, (_, i) => 888 + i), 905,
+  1001, 1002, 1003, 1004, 1007, 1008, 1014, 1015, 1016, 1017, 1024, 1025]);   // lendários + míticos (sem as Ultra Beasts)
+const TIPO_ALIAS = { normal: 'Normal', fire: 'Fire', fogo: 'Fire', water: 'Water', agua: 'Water', grass: 'Grass', plant: 'Grass', planta: 'Grass', grama: 'Grass',
+  electric: 'Electric', eletrico: 'Electric', ice: 'Ice', gelo: 'Ice', fighting: 'Fighting', lutador: 'Fighting', luta: 'Fighting', poison: 'Poison', veneno: 'Poison',
+  ground: 'Ground', terra: 'Ground', chao: 'Ground', flying: 'Flying', voador: 'Flying', psychic: 'Psychic', psiquico: 'Psychic', bug: 'Bug', inseto: 'Bug',
+  rock: 'Rock', pedra: 'Rock', rocha: 'Rock', ghost: 'Ghost', fantasma: 'Ghost', dragon: 'Dragon', dragao: 'Dragon', dark: 'Dark', sombrio: 'Dark', noturno: 'Dark',
+  steel: 'Steel', aco: 'Steel', metal: 'Steel', fairy: 'Fairy', fada: 'Fairy' };
+const STAT_ALIAS = { hp: 0, atk: 1, def: 2, spa: 3, spd: 4, spe: 5 };
+const USO_POKESPAWN = 'Use: /pokespawn name|nº|random|r [s] [lv:N] [ivatk:0-31 …] [evatk:0-252 …] [l|!l] [type:fire] [n:adamant] — stats: hp atk def spa spd spe.';
+async function pokespawn(resto){
+  if (!GM_REAL){ Chat.sistema('/pokespawn is GM only.'); return; }
+  const ash = jogo.ash; if (!ash) return;
+  const sem = v => String(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const [alvo, ...args] = resto.split(/\s+/).filter(Boolean);
+  if (!alvo){ Chat.sistema(USO_POKESPAWN); return; }
+  let shiny = null, lv = null, lend = null, natureza = null;
+  const tipos = [], ivs = Ind.sortearIVs(), evs = [0, 0, 0, 0, 0, 0];
+  for (const a0 of args){
+    const a = sem(a0); let m;
+    if (a === 's') shiny = true;
+    else if (a === 'l') lend = true;
+    else if (a === '!l') lend = false;
+    else if ((m = /^lv:(\d+)$/.exec(a))){ lv = +m[1]; if (lv < 1 || lv > 100){ Chat.sistema('lv: 1 to 100.'); return; } }
+    else if ((m = /^(iv|ev)(hp|atk|def|spa|spd|spe):(\d+)$/.exec(a))){
+      const n = +m[3], max = m[1] === 'iv' ? Ind.IV_MAX : Ind.EV_STAT_MAX;
+      if (n > max){ Chat.sistema(m[1] + m[2] + ': 0 to ' + max + '.'); return; }
+      (m[1] === 'iv' ? ivs : evs)[STAT_ALIAS[m[2]]] = n;
+    }
+    else if ((m = /^type:(.+)$/.exec(a))){
+      for (const t of m[1].split(',')){ const T = TIPO_ALIAS[t]; if (!T){ Chat.sistema('Unknown type: ' + t + '.'); return; } tipos.push(T); }
+    }
+    else if ((m = /^n:(.+)$/.exec(a))){
+      const nat = Ind.NATUREZAS.find(x => x[0].toLowerCase() === m[1]);
+      if (!nat){ Chat.sistema('Unknown nature: ' + m[1] + '. Options: ' + Ind.NATUREZAS.map(x => x[0]).join(', ') + '.'); return; }
+      natureza = nat[0];
+    }
+    else { Chat.sistema('Unknown argument: ' + a0 + '. ' + USO_POKESPAWN); return; }
+  }
+  if (evs.reduce((x, y) => x + y, 0) > Ind.EV_TOTAL_MAX){ Chat.sistema('EVs add up to more than ' + Ind.EV_TOTAL_MAX + '.'); return; }
+  // espécies com modelo; a forma _00 primeiro (variante só se a espécie não tiver a _00)
+  const porEspecie = new Map();
+  for (const e of ELENCO_JOGO){ if (!porDex.has(e.n)) continue; const j = porEspecie.get(e.n); if (!j || (/_00$/.test(e.glb) && !/_00$/.test(j.glb))) porEspecie.set(e.n, e); }
+  const passa = e => { const S = porDex.get(e.n); return (lend == null || LENDARIOS_DEX.has(e.n) === lend) && tipos.every(T => S.types?.includes(T)); };
+  let e;
+  if (/^(random|r)$/i.test(alvo)){
+    const lista = [...porEspecie.values()].filter(passa);
+    if (!lista.length){ Chat.sistema('No species with a model matches those filters.'); return; }
+    e = lista[Math.floor(Math.random() * lista.length)];
+  } else {
+    const nome = sem(alvo).replace(/[^a-z0-9]/g, '');
+    e = /^\d+$/.test(alvo) ? porEspecie.get(+alvo) : [...porEspecie.values()].find(x => sem(x.nome).replace(/[^a-z0-9]/g, '') === nome);
+    if (!e){ Chat.sistema('No Pokémon with a model called "' + alvo + '".'); return; }
+    if (!passa(e)){ Chat.sistema(e.nome + ' does not match the filters (legendary/type).'); return; }
+  }
+  // 3 m à frente do GM; se o ponto estiver bloqueado, tenta em volta
+  let x = ash.x, z = ash.z;
+  for (let i = 0; i < 8; i++){
+    const g = (ash.giro || 0) + i * Math.PI / 4, px = ash.x + Math.sin(g) * 3, pz = ash.z + Math.cos(g) * 3;
+    if (livre(px, pz)){ x = px; z = pz; break; }
+  }
+  const s = await jogo.criarSelvagem({ dex: e.n, glb: e.glb + '.glb', nome: e.nome }, x, z, { area: 0, lv, shiny, ivs, natureza: natureza || null });
+  const S = porDex.get(s.dex) || porDex.get(19);
+  s.evs = evs; s.maxHp = Ind.hpDe(S, s); s.hp = s.maxHp;                // os EVs entram no HP também
+  s.gmSpawn = true;
+  Chat.sistema('✨ /pokespawn: ' + s.nome + (s.shiny ? ' ✨' : '') + ' Lv ' + s.lv + ' · ' + s.natureza + ' · IV ' + s.ivs.join('/') + ' · EV ' + evs.join('/') + (Conta.estado().modo === 'conta' ? ' (with an account, catching it re-rolls IVs/nature/shiny on the server)' : '') + '.');
+}
 /* -------------------------------------------------------------- chefão */
 // Aparição de chefe (?chefe=pm0249_00 ou tecla B): o Pokémon desce do céu num arco
 // com a câmera nele, pousa com clarão, tremor e rochas, ruge (Buff) com a onda
@@ -5904,7 +5981,7 @@ async function jogarBola(){
       Som.tocar('ui/sound_pkmnget', { volume: .8, prio: true });
       Ind.garantir(s);
       flutuar(ash, 'caught ' + s.nome + '!', '#8ef58e'); Chat.sistema('Caught ' + s.nome + ' Lv' + s.lv + ' with ' + I18n.t(BOLAS[id]?.[0] || 'ball') + '! Nature ' + s.natureza + ' (' + Ind.descNatureza(s.natureza) + '), IV ' + Ind.somaIV(s) + '/' + Ind.IV_TOTAL + '.');
-      let registro = { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv, sexo: s.sexo || undefined, shiny: s.shiny || undefined, exp: Evolucao.expPara(s.dex, s.lv), amizade: Evolucao.amizadeBase(s.dex), ivs: s.ivs, evs: [0, 0, 0, 0, 0, 0], natureza: s.natureza, movs: Ind.idsDe(s).map(Ind.novoGolpe), quando: Date.now() };
+      let registro = { dex: s.dex, glb: s.glb, nome: s.nome, lv: s.lv, sexo: s.sexo || undefined, shiny: s.shiny || undefined, exp: Evolucao.expPara(s.dex, s.lv), amizade: Evolucao.amizadeBase(s.dex), ivs: s.ivs, evs: s.evs ? [...s.evs] : [0, 0, 0, 0, 0, 0], natureza: s.natureza, movs: Ind.idsDe(s).map(Ind.novoGolpe), quando: Date.now() };
       /* POSSE (06/09): com conta, quem cria o Pokémon é o SERVIDOR — ele manda o registro com `uid` junto do `scapt`, e é esse
          que entra no time (o `PUT /save` recusa Pokémon sem uid dele). Sem conta (jogo local) segue como sempre. */
       if (comConta()){
@@ -8180,7 +8257,7 @@ if (jogo.ash){
   const depuracao = on => { if (on === undefined) return MOBILE ? document.body.classList.contains('menu-aberto') : !document.body.classList.contains('sem-dbg'); document.body.classList.toggle('menu-aberto', !!on); document.body.classList.toggle('sem-dbg', !on); };
   const areaAtual = () => { const a = jogo.ash; if (!a) return null; const c = (dados.caixas || []).find(c => c.sx > 0 && Math.abs(a.x - flipX * c.x) <= c.sx / 2 && Math.abs(a.z - c.z) <= c.sz / 2); return c ? c.a : (cenaAtual?.areas?.[0]?.id ?? null); };
   const nomeAreaAtual = () => { const a = areaInteriorVisitada ?? areaAtual(); return rotuloLugar((a != null && (nomeAreaCena(a) || dados.nomes?.[a] || NOMES_AREA[a])) || cenaAtual?.nome || NOME); };
-  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
+  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     hora: resto => {
       const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
       const uso = 'Use: /time night | day | dawn | dusk | 21 | 21:30 | off';
