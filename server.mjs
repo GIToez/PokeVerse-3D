@@ -26,6 +26,7 @@ import { mergeHp, healMon } from './server_hp.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta } from './server_pos.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
+import { criarBolsa } from './server_bag.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
@@ -444,6 +445,59 @@ try {
   console.log('Valid species:', ESPECIES_OK.size);
 } catch (e) { console.warn('pokedex.json not loaded (species validation off):', e.message); }
 function especieValida(dex) { return !ESPECIES_OK || ESPECIES_OK.has(+dex); }   // sem o arquivo, não bloqueia (fail-open no dev)
+/* EVOLUÇÃO (posse_evoluir): o servidor confere a regra oficial (data/evolutions.json — a mesma do evolution.mjs) com o nível e a
+   amizade do SAVE, desconta a pedra/cabo/item segurado da bolsa e troca a espécie no registro. Horário e golpe conhecido ficam
+   com o cliente (o servidor não sabe o fuso do aparelho nem tem a tabela de golpes). Arquivos relidos quando mudam. */
+const evoCache = { mtime: -1, evo: null, cast: [], exp: null, nomes: new Map() };
+function dadosEvolucao() {
+  try {
+    const arq = nodePath.join(DADOS_PUB, 'evolutions.json'), mt = fs.statSync(arq).mtimeMs;
+    if (mt !== evoCache.mtime) {
+      evoCache.mtime = mt;
+      evoCache.evo = lerJson(arq, { por: {} });
+      evoCache.cast = lerJson(nodePath.join(DADOS_PUB, 'cast.json'), []);
+      evoCache.exp = lerJson(nodePath.join(DADOS_PUB, 'exp.json'), { especies: {} });
+      const pdx = lerJson(nodePath.join(__dir, 'public/pokedex.json'), { species: [] });
+      evoCache.nomes = new Map();
+      for (const s of pdx.species || []) if (!evoCache.nomes.has(+s.n)) evoCache.nomes.set(+s.n, s.name);   // a 1ª é a forma base (Raichu, não Raichu-Alola)
+    }
+  } catch {}
+  return evoCache;
+}
+function evoluirNoServidor(c, uid, item) {
+  const pk = (c.save?.time || []).find(p => String(p?.uid) === String(uid));
+  if (!pk) return { erro: 'that Pokémon is not in your party' };
+  const D = dadosEvolucao(), regras = D.evo?.por?.[pk.dex] || [];
+  if (!regras.length) return { erro: 'does not evolve' };
+  const tem = id => (c.save.itens?.[id] || 0) > 0;
+  const amizade = pk.amizade ?? D.exp?.especies?.[pk.dex]?.a ?? 70;
+  let falta = 'cannot evolve yet';
+  for (const r of regras) {
+    if (r.gatilho === 'outro' || r.gatilho === 'muda' || r.local || r.chuva || r.beleza) continue;
+    let consome = null;
+    if (r.gatilho === 'item' || r.gatilho === 'troca') {
+      if (!r.item || String(r.item) !== String(item)) continue;
+      if (!tem(r.item)) { falta = 'no item in the bag'; continue; }
+      consome = r.item;
+    } else {
+      if (r.nivel && (pk.lv || 1) < r.nivel) { falta = 'needs Lv ' + r.nivel; continue; }
+      if (r.amizade && amizade < r.amizade) { falta = 'needs higher friendship'; continue; }
+      if ('segurando' in r) {
+        if (!r.segurando || String(r.segurando) !== String(item) || !tem(r.segurando)) { falta = 'needs the held item'; continue; }
+        consome = r.segurando;
+      } else if (item != null) continue;                          // pediu com item, mas esta regra é só de nível
+      if (r.noTime && !(c.save.time || []).some(t => +t.dex === +r.noTime)) { falta = 'needs a specific Pokémon in the party'; continue; }
+    }
+    const nome = D.nomes.get(+r.para) || r.nome;
+    const alvo = D.cast.find(x => x.n === +r.para && /_00$/.test(x.glb)) || D.cast.find(x => x.n === +r.para);
+    if (!alvo) { falta = nome + ' has no model yet'; continue; }
+    if (consome != null) { c.save.itens[consome]--; if (c.save.itens[consome] <= 0) delete c.save.itens[consome]; }
+    pk.dex = +r.para; pk.nome = nome; pk.glb = alvo.glb;
+    marcarPego(c, pk.dex);
+    return { pk, consumiu: consome != null };
+  }
+  return { erro: falta };
+}
 // Rate-limit simples por IP (em memória; zera ao reiniciar).
 /* Behind a reverse proxy on the same machine (nginx → 127.0.0.1:5190) every request comes from loopback, so the real client
    IP is taken from X-Forwarded-For — but only when the connection itself is local, so remote clients can't spoof it. */
@@ -1240,6 +1294,7 @@ const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet') });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao });
+const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u) });   // comprar / usar / descartar / held items (server_bag.mjs)
 const wilds = criarWilds({
   dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,
   expMult: () => eventos.efetivo().expMult,
@@ -1517,8 +1572,15 @@ wss.on('connection', ws => {
             c.rev = (c.rev || 0) + 1;
             salvarContas();
             enviar(ws, { t: 'posse', op, uid: m.uid, vidas: c.save.time });
+          } else if (op === 'evoluir' && m.uid != null && c?.save) {
+            const r = evoluirNoServidor(c, m.uid, m.item ?? null);
+            if (r.erro) { enviar(ws, { t: 'posse_erro', op, erro: r.erro }); return; }
+            c.rev = (c.rev || 0) + 1;
+            salvarContas();
+            enviar(ws, { t: 'posse', op, uid: r.pk.uid, dex: r.pk.dex, glb: r.pk.glb, nome: r.pk.nome,
+              ...(r.consumiu ? { bolsa: { dinheiro: c.save.dinheiro ?? 0, itens: c.save.itens, bolas: c.save.bolas } } : {}) });
           } else {
-            enviar(ws, { t: 'posse', op, ...m });
+            enviar(ws, { ...m, t: 'posse', op });                 // eco: o `t` vem DEPOIS do ...m (antes o 'posse_<op>' do pedido sobrescrevia e o cliente esperava até o timeout)
           }
         }
 
@@ -1547,6 +1609,9 @@ wss.on('connection', ws => {
               salvarContas();
             }
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
+          } else if (c && bolsaServ.tratar(c, op, m, u)) {
+            const r = bolsaServ.tratar.ultimo;
+            if (r.erro) enviar(ws, { t: 'bolsa_erro', op, ...r }); else enviar(ws, { t: 'bolsa', op, ...r });
           } else {
             const extra = c && batalha.bolsa(ws, op, m);
             if (extra) enviar(ws, { t: 'bolsa', op, ...extra });

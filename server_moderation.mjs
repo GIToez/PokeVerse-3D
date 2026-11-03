@@ -200,7 +200,12 @@ export function criarModeracao(h) {
   /** `entrar` no WS: a conta chegou no mapa do posGm → ele já foi usado (senão ela nasceria ali pra sempre). */
   function aoEntrar(ws, u) {
     const p = contas[u]?.posGm;
-    if (p && String(p.mapa) === String(ws._mapa)) { delete contas[u].posGm; salvarContasJa(); }
+    if (p && String(p.mapa) === String(ws._mapa)) {
+      /* o destino vira a última posição: sem isso o `entrar` logo depois era recusado como salto sem porta (aceitarPos, > 40 m ou
+         outro mapa) e o `pos` ficava no lugar antigo — o próximo F5/login devolvia a conta pra onde estava presa */
+      contas[u].pos = { mapa: String(p.mapa), x: +p.x, y: 0, z: +p.z, giro: +p.giro || 0, em: Date.now() };
+      delete contas[u].posGm; salvarContasJa();
+    }
   }
 
   return { moderar, comando, aoEntrar, acharConta, cidade };
