@@ -1,0 +1,1943 @@
+{
+ "versao": 1,
+ "fonte": "cenario/kanto.glb (biblioteca: modelos e altura) + data/kanto.json (postes, portas, cidades) + data/portas.json + MapAreaConfig/LanguageConfig_pt (nome do interior); cor e alcance da luz são NOSSOS — o dump não tem luz no mundo",
+ "flipX": -1,
+ "modelos": [
+  {
+   "id": "sm_c_001_streetlight_01",
+   "nome": "Lampião da praça",
+   "cor": "#ffd49a",
+   "raio": 7.5,
+   "forca": 1,
+   "altura": 3,
+   "cabeca": 1.99,
+   "vidro": true,
+   "base": [
+    0.87,
+    0.87
+   ]
+  },
+  {
+   "id": "sm_c_001_streetlight_01_g_2",
+   "nome": "Lampião alto (2 m acima)",
+   "cor": "#ffd49a",
+   "raio": 8.5,
+   "forca": 1,
+   "altura": 5,
+   "cabeca": 3.99,
+   "vidro": true,
+   "base": [
+    0.87,
+    0.87
+   ]
+  },
+  {
+   "id": "sm_t_007_streetlight_01",
+   "nome": "Poste da Ciclovia",
+   "cor": "#fff1d6",
+   "raio": 9,
+   "forca": 1.1,
+   "emissao": "ui/luz/T_T_007_StreetLight_01_E.png",
+   "altura": 2.55,
+   "cabeca": 2.19,
+   "vidro": false,
+   "base": [
+    0.66,
+    0.66
+   ]
+  }
+ ],
+ "postesDoDump": [
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 101.5,
+   "z": -74.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -74.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 50.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 55.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 60.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 50.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 55.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 60.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 30.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 45.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 40.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 35.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 30.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 35.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 40.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 45.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 10.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 15.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 20.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 25.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 10.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 15.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 20.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 25.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 0.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": 5.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -4.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -9.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 0.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -9.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -4.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": 5.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -29.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -19.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -24.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -14.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -29.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -24.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -19.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -14.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -49.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -44.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -39.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -34.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -49.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -39.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -44.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -34.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 101.5,
+   "z": -69.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -54.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -64.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 108.5,
+   "z": -59.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -69.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -64.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -59.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 87.5,
+   "z": -54.5,
+   "area": "Rota 17"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -230.5,
+   "z": 37.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -205.5,
+   "z": 37.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -212.5,
+   "z": 40.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -223.5,
+   "z": 40.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -221.5,
+   "z": 46.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -214.5,
+   "z": 46.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -250.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -254.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -257.5,
+   "z": -40.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -257.5,
+   "z": -36.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -257.5,
+   "z": -32.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -256.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -252.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -252.5,
+   "z": -2.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -252.5,
+   "z": -9.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -252.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -256.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -264.5,
+   "z": 19.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -230.5,
+   "z": 28.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -230.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -235.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -240.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -244.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -248.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -239.5,
+   "z": 19.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -228.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -211.5,
+   "z": -18.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -224.5,
+   "z": -18.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -224.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -211.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -224.5,
+   "z": 6.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -211.5,
+   "z": 6.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -224.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -211.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -187.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -183.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -179.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -171.5,
+   "z": 19.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -205.5,
+   "z": 28.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -208.5,
+   "z": 25.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -205.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -200.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -195.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -191.5,
+   "z": 13.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -208.5,
+   "z": 16.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -196.5,
+   "z": 19.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -225.5,
+   "z": -30.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -210.5,
+   "z": -30.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -224.5,
+   "z": -48.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -224.5,
+   "z": -39.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -211.5,
+   "z": -39.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01_g_2",
+   "x": -211.5,
+   "z": -48.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -242.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -249.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -248.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -244.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -240.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -236.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -232.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -230.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -207.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -203.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -199.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -195.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -191.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -193.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -205.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -187.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -183.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -179.5,
+   "z": -27.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -186.5,
+   "z": -12.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -227.5,
+   "z": 25.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -227.5,
+   "z": 16.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -205.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -196.5,
+   "z": -9.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -196.5,
+   "z": -2.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -193.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -230.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -249.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -242.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -239.5,
+   "z": -2.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -239.5,
+   "z": -9.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -186.5,
+   "z": 0.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -183.5,
+   "z": -2.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -183.5,
+   "z": -9.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -230.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -234.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -238.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -242.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -246.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -189.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -185.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -181.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -178.5,
+   "z": -40.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -178.5,
+   "z": -36.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -178.5,
+   "z": -32.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -205.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -201.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -197.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -193.5,
+   "z": -43.5,
+   "area": "Centro de Competição"
+  }
+ ],
+ "cidades": [
+  {
+   "a": 1101,
+   "nome": "Cidade Pallet",
+   "x0": -20.5,
+   "x1": 20.5,
+   "z0": 45,
+   "z1": 71
+  },
+  {
+   "a": 1102,
+   "nome": "Cidade Viridian",
+   "x0": -23,
+   "x1": 23.5,
+   "z0": -60,
+   "z1": -18
+  },
+  {
+   "a": 1103,
+   "nome": "Cidade Pewter",
+   "x0": -31,
+   "x1": 23,
+   "z0": -194.1,
+   "z1": -144
+  },
+  {
+   "a": 1104,
+   "nome": "Cidade Cerulean",
+   "x0": 211.3,
+   "x1": 272,
+   "z0": -218.2,
+   "z1": -180
+  },
+  {
+   "a": 1105,
+   "nome": "Cidade Vermilion",
+   "x0": 218.7,
+   "x1": 272,
+   "z0": -34.1,
+   "z1": 25.9
+  },
+  {
+   "a": 1106,
+   "nome": "Cidade Lavender",
+   "x0": 345.3,
+   "x1": 387.3,
+   "z0": -107.1,
+   "z1": -75.1
+  },
+  {
+   "a": 1107,
+   "nome": "Cidade Celadon",
+   "x0": 134,
+   "x1": 193.6,
+   "z0": -124.5,
+   "z1": -59.5
+  },
+  {
+   "a": 1108,
+   "nome": "Cidade Saffron",
+   "x0": 218.1,
+   "x1": 267.1,
+   "z0": -119.5,
+   "z1": -70.5
+  },
+  {
+   "a": 1109,
+   "nome": "Cidade Fuchsia",
+   "x0": 136,
+   "x1": 203.9,
+   "z0": 81.2,
+   "z1": 127
+  },
+  {
+   "a": 1110,
+   "nome": "Ilha Cinnabar",
+   "x0": -21.4,
+   "x1": 16,
+   "z0": 181,
+   "z1": 226.7
+  }
+ ],
+ "portas": [
+  {
+   "id": 6110101,
+   "x": -5.5,
+   "z": 52.3,
+   "tipo": "casa",
+   "nome": "A casa do personagem principal Piso 1",
+   "cidade": "Cidade Pallet"
+  },
+  {
+   "id": 6110102,
+   "x": 3.5,
+   "z": 52.3,
+   "tipo": "casa",
+   "nome": "Cidade Pallet-Casa do Gary Oak",
+   "cidade": "Cidade Pallet"
+  },
+  {
+   "id": 6110103,
+   "x": 4,
+   "z": 64.7,
+   "tipo": "outro",
+   "nome": "Laboratório do Professor Oak",
+   "cidade": "Cidade Pallet"
+  },
+  {
+   "id": 6110201,
+   "x": 2.5,
+   "z": -30.2,
+   "tipo": "centro",
+   "nome": "Viridian-Centro de Pokémon",
+   "cidade": "Cidade Viridian"
+  },
+  {
+   "id": 6110202,
+   "x": 11.4,
+   "z": -37.3,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Viridian",
+   "cidade": "Cidade Viridian"
+  },
+  {
+   "id": 6110203,
+   "x": 6.5,
+   "z": -37.5,
+   "tipo": "outro",
+   "nome": "Escola de Treinadores",
+   "cidade": "Cidade Viridian"
+  },
+  {
+   "id": 6110204,
+   "x": 1.5,
+   "z": -48.5,
+   "tipo": "casa",
+   "nome": "Viridian-Casa da Velha",
+   "cidade": "Cidade Viridian"
+  },
+  {
+   "id": 6110205,
+   "x": 11.5,
+   "z": -50.5,
+   "tipo": "ginasio",
+   "nome": "Viridian-Ginásio",
+   "cidade": "Cidade Viridian"
+  },
+  {
+   "id": 6110301,
+   "x": -6.5,
+   "z": -159.7,
+   "tipo": "centro",
+   "nome": "Pewter-Centro de Pokémon",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110302,
+   "x": -15.5,
+   "z": -154.4,
+   "tipo": "casa",
+   "nome": "Pewter-Casa do Ata",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110303,
+   "x": 5.5,
+   "z": -166.5,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Pewter",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110304,
+   "x": 10.5,
+   "z": -174.4,
+   "tipo": "casa",
+   "nome": "Pewter-Casa do Brock",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110305,
+   "x": -2.5,
+   "z": -181.4,
+   "tipo": "outro",
+   "nome": "Pewter-Museu de Ciências Piso 1",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110306,
+   "x": -8.4,
+   "z": -180.2,
+   "tipo": "outro",
+   "nome": "Pewter-Museu de Ciências Piso 1",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110307,
+   "x": -9.5,
+   "z": -168.8,
+   "tipo": "ginasio",
+   "nome": "Ginásio-Pewter",
+   "cidade": "Cidade Pewter"
+  },
+  {
+   "id": 6110401,
+   "x": 240.5,
+   "z": -196.7,
+   "tipo": "centro",
+   "nome": "Celeste-Centro de Pokémon",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110402,
+   "x": 227.5,
+   "z": -207.2,
+   "tipo": "outro",
+   "nome": "Celeste-Tio de medalhas",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110403,
+   "x": 234.5,
+   "z": -207.5,
+   "tipo": "casa",
+   "nome": "Celeste-Casa do Professor",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110404,
+   "x": 248.5,
+   "z": -207.5,
+   "tipo": "casa",
+   "nome": "Celeste-Casa Roubada",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110405,
+   "x": 248.3,
+   "z": -211,
+   "tipo": "casa",
+   "nome": "Celeste-Casa Roubada",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110406,
+   "x": 234.5,
+   "z": -199.5,
+   "tipo": "casa",
+   "nome": "Celeste-Casa da Jenny",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110407,
+   "x": 231.5,
+   "z": -185.5,
+   "tipo": "outro",
+   "nome": "Bicicleta milagrosa",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110408,
+   "x": 242.5,
+   "z": -185.5,
+   "tipo": "outro",
+   "nome": "Celeste-Quarto pequeno comum",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110409,
+   "x": 247.4,
+   "z": -185.3,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Celeste",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110410,
+   "x": 248.5,
+   "z": -193.4,
+   "tipo": "ginasio",
+   "nome": "Ginásio - Celeste",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110411,
+   "x": 227.4,
+   "z": -210.2,
+   "tipo": "outro",
+   "nome": "Celeste-Tio de medalhas",
+   "cidade": "Cidade Cerulean"
+  },
+  {
+   "id": 6110501,
+   "x": 232.5,
+   "z": -24.5,
+   "tipo": "centro",
+   "nome": "Vermilion-Centro de Pokémon",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110502,
+   "x": 228,
+   "z": -9.6,
+   "tipo": "outro",
+   "nome": "Clube dos Entusiastas",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110503,
+   "x": 230.5,
+   "z": 3.1,
+   "tipo": "ginasio",
+   "nome": "Ginásio-Vermilion",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110504,
+   "x": 226,
+   "z": -25.8,
+   "tipo": "outro",
+   "nome": "Vermilion-Quarto 1",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110505,
+   "x": 246.5,
+   "z": -11.3,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Vermilion",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110506,
+   "x": 235.1,
+   "z": -11.3,
+   "tipo": "outro",
+   "nome": "Vermilion-Quarto 1",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110507,
+   "x": 247.5,
+   "z": 0.6,
+   "tipo": "outro",
+   "nome": "Vermilion-Quarto 3",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 6110601,
+   "x": 358.5,
+   "z": -96.3,
+   "tipo": "centro",
+   "nome": "Lavanda-Centro de Pokémon",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110602,
+   "x": 363.5,
+   "z": -91.2,
+   "tipo": "casa",
+   "nome": "Lavanda-Casa dos Espíritos",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110603,
+   "x": 380.5,
+   "z": -93.3,
+   "tipo": "outro",
+   "nome": "Torre de Pokémon Piso 1",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110603,
+   "x": 379.5,
+   "z": -93.3,
+   "tipo": "outro",
+   "nome": "Torre de Pokémon Piso 1",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110604,
+   "x": 378.5,
+   "z": -85.4,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Lavanda",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110605,
+   "x": 350.5,
+   "z": -86.2,
+   "tipo": "casa",
+   "nome": "Lavanda- Casa do Velho",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110606,
+   "x": 356.5,
+   "z": -86.3,
+   "tipo": "casa",
+   "nome": "Lavanda-Casa do Avaliador",
+   "cidade": "Cidade Lavender"
+  },
+  {
+   "id": 6110701,
+   "x": 182.5,
+   "z": -104.7,
+   "tipo": "centro",
+   "nome": "Celadon-Centro de Pokémon",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110702,
+   "x": 160.5,
+   "z": -104.2,
+   "tipo": "outro",
+   "nome": "Edifício de Celadon Piso 1",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110703,
+   "x": 144.4,
+   "z": -98.4,
+   "tipo": "loja",
+   "nome": "Loja de departamentos Piso 1",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110704,
+   "x": 170.5,
+   "z": -89.5,
+   "tipo": "outro",
+   "nome": "Salão de Videogames",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110705,
+   "x": 171.5,
+   "z": -77.3,
+   "tipo": "outro",
+   "nome": "Celadon-Quarto 1",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110706,
+   "x": 175.5,
+   "z": -77.3,
+   "tipo": "outro",
+   "nome": "Celadon-Quarto 2",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110707,
+   "x": 183.5,
+   "z": -77.3,
+   "tipo": "outro",
+   "nome": "Celadon-Quarto 3",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110708,
+   "x": 145,
+   "z": -77.7,
+   "tipo": "ginasio",
+   "nome": "Celadon-Ginásio",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110710,
+   "x": 149.4,
+   "z": -98.4,
+   "tipo": "loja",
+   "nome": "Loja de departamentos Piso 1",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110711,
+   "x": 168.7,
+   "z": -89.7,
+   "tipo": "outro",
+   "nome": "Salão de Videogames",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110712,
+   "x": 160.5,
+   "z": -107.6,
+   "tipo": "outro",
+   "nome": "Edifício de Celadon Piso 1",
+   "cidade": "Cidade Celadon"
+  },
+  {
+   "id": 6110801,
+   "x": 229.5,
+   "z": -81.7,
+   "tipo": "centro",
+   "nome": "Saffron-Centro de Pokémon",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110802,
+   "x": 250.5,
+   "z": -82.5,
+   "tipo": "casa",
+   "nome": "Saffron-Casa do Tio Lutador",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110803,
+   "x": 242.5,
+   "z": -92,
+   "tipo": "outro",
+   "nome": "Companhia Silph Piso 1",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110804,
+   "x": 236.5,
+   "z": -100.5,
+   "tipo": "casa",
+   "nome": "Saffron-Casa da moça Piso 1",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110805,
+   "x": 255.5,
+   "z": -111.3,
+   "tipo": "ginasio",
+   "nome": "Saffron-Ginásio",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110806,
+   "x": 249.3,
+   "z": -111.4,
+   "tipo": "ginasio",
+   "nome": "Ginásio lutador",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110811,
+   "x": 247.4,
+   "z": -100.3,
+   "tipo": "loja",
+   "nome": "Loja de da Cidade Saffron",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110812,
+   "x": 255.5,
+   "z": -100.5,
+   "tipo": "outro",
+   "nome": "Saffron-Clube de treinadores",
+   "cidade": "Cidade Saffron"
+  },
+  {
+   "id": 6110901,
+   "x": 172.5,
+   "z": 117.4,
+   "tipo": "centro",
+   "nome": "Fuchsia-Centro de Pokémon",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110902,
+   "x": 166.5,
+   "z": 116.5,
+   "tipo": "outro",
+   "nome": "Fuchsia-Quarto 1",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110903,
+   "x": 161.5,
+   "z": 116.5,
+   "tipo": "casa",
+   "nome": "Fuchsia-Quarto 2 Casa do Bill",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110904,
+   "x": 155.5,
+   "z": 117,
+   "tipo": "ginasio",
+   "nome": "Fuchsia-Ginásio",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110905,
+   "x": 157.5,
+   "z": 95.5,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Fuchsia",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110906,
+   "x": 176.5,
+   "z": 96.2,
+   "tipo": "outro",
+   "nome": "Fuchsia-Sala de descanso do Diretor",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110907,
+   "x": 187.5,
+   "z": 115.5,
+   "tipo": "casa",
+   "nome": "Fuchsia-Casa do diretor",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6110908,
+   "x": 181.5,
+   "z": 115.6,
+   "tipo": "casa",
+   "nome": "Fuchsia-Casa do Pescador",
+   "cidade": "Cidade Fuchsia"
+  },
+  {
+   "id": 6111001,
+   "x": 1,
+   "z": 210.3,
+   "tipo": "centro",
+   "nome": "Cinnabar-Centro de Pokémon",
+   "cidade": "Ilha Cinnabar"
+  },
+  {
+   "id": 6111002,
+   "x": 5.4,
+   "z": 210.6,
+   "tipo": "loja",
+   "nome": "Loja da Cidade Cinnabar",
+   "cidade": "Ilha Cinnabar"
+  },
+  {
+   "id": 6111003,
+   "x": -7,
+   "z": 208,
+   "tipo": "outro",
+   "nome": "Laboratório Cinnabar",
+   "cidade": "Ilha Cinnabar"
+  },
+  {
+   "id": 6111004,
+   "x": 10.7,
+   "z": 200.1,
+   "tipo": "ginasio",
+   "nome": "Cinnabar-Ginásio",
+   "cidade": "Ilha Cinnabar"
+  },
+  {
+   "id": 6111005,
+   "x": -5.5,
+   "z": 195,
+   "tipo": "outro",
+   "nome": "Cinnabar-Edifício Abandonado",
+   "cidade": "Ilha Cinnabar"
+  },
+  {
+   "id": 6119202,
+   "x": -282.5,
+   "z": 166.7,
+   "tipo": "casa",
+   "nome": "Campo de Safári Casa 4",
+   "cidade": null
+  },
+  {
+   "id": 6119203,
+   "x": -292.5,
+   "z": 153.5,
+   "tipo": "casa",
+   "nome": "Campo de Safári Casa 5",
+   "cidade": null
+  },
+  {
+   "id": 6119204,
+   "x": -222.5,
+   "z": 103.7,
+   "tipo": "casa",
+   "nome": "Campo de Safári Casa 3",
+   "cidade": null
+  },
+  {
+   "id": 6119205,
+   "x": -225.5,
+   "z": 186.7,
+   "tipo": "casa",
+   "nome": "Campo de Safári Casa 1",
+   "cidade": null
+  },
+  {
+   "id": 6119206,
+   "x": -157.5,
+   "z": 159.7,
+   "tipo": "casa",
+   "nome": "Campo de Safári Casa 2",
+   "cidade": null
+  },
+  {
+   "id": 6120204,
+   "x": 3.5,
+   "z": -122.3,
+   "tipo": "outro",
+   "nome": "Rota 2-Instituto de Florestas",
+   "cidade": null
+  },
+  {
+   "id": 6120206,
+   "x": 6,
+   "z": -132.2,
+   "tipo": "outro",
+   "nome": "Caverna Diglett",
+   "cidade": null
+  },
+  {
+   "id": 6120401,
+   "x": 104.4,
+   "z": -204.7,
+   "tipo": "centro",
+   "nome": "Rota 4-Centro de Pokémon",
+   "cidade": null
+  },
+  {
+   "id": 6120402,
+   "x": 113.9,
+   "z": -204.3,
+   "tipo": "outro",
+   "nome": "Monte Lua Piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6120403,
+   "x": 134,
+   "z": -204.4,
+   "tipo": "outro",
+   "nome": "Monte Lua Piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6120404,
+   "x": 210,
+   "z": -208.4,
+   "tipo": "outro",
+   "nome": "Caverna Celeste Piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6120501,
+   "x": 241.5,
+   "z": -135.2,
+   "tipo": "casa",
+   "nome": "Rota 5 - Casa central da Rota 5",
+   "cidade": null
+  },
+  {
+   "id": 6121001,
+   "x": 368.5,
+   "z": -176.7,
+   "tipo": "centro",
+   "nome": "Rota 10-Centro de Pokémon",
+   "cidade": null
+  },
+  {
+   "id": 6121002,
+   "x": 358,
+   "z": -176.4,
+   "tipo": "outro",
+   "nome": "Túnel de pedra piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6121003,
+   "x": 360,
+   "z": -148.4,
+   "tipo": "outro",
+   "nome": "Usina Elétrica Abandonada",
+   "cidade": null
+  },
+  {
+   "id": 6121004,
+   "x": 366,
+   "z": -124.4,
+   "tipo": "outro",
+   "nome": "Túnel de pedra piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6121102,
+   "x": 278,
+   "z": -12.2,
+   "tipo": "outro",
+   "nome": "Caverna Diglett",
+   "cidade": null
+  },
+  {
+   "id": 6121204,
+   "x": 362.5,
+   "z": 12.6,
+   "tipo": "casa",
+   "nome": "Rota 12-Casa",
+   "cidade": null
+  },
+  {
+   "id": 6121605,
+   "x": 96.5,
+   "z": -95.5,
+   "tipo": "casa",
+   "nome": "Rota 16-Casa",
+   "cidade": null
+  },
+  {
+   "id": 6122001,
+   "x": 98,
+   "z": 207.8,
+   "tipo": "outro",
+   "nome": "Ilhas Seaform Piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6122002,
+   "x": 110,
+   "z": 227.8,
+   "tipo": "outro",
+   "nome": "Ilhas Seaform Piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6122201,
+   "x": -77.4,
+   "z": -35.8,
+   "tipo": "outro",
+   "nome": "centro de conexões",
+   "cidade": null
+  },
+  {
+   "id": 6122202,
+   "x": -68.7,
+   "z": -59.3,
+   "tipo": "outro",
+   "nome": "centro de conexões",
+   "cidade": null
+  },
+  {
+   "id": 6122202,
+   "x": -72,
+   "z": -59.3,
+   "tipo": "outro",
+   "nome": "centro de conexões",
+   "cidade": null
+  },
+  {
+   "id": 6122202,
+   "x": -70.9,
+   "z": -59.3,
+   "tipo": "outro",
+   "nome": "centro de conexões",
+   "cidade": null
+  },
+  {
+   "id": 6122202,
+   "x": -69.8,
+   "z": -59.3,
+   "tipo": "outro",
+   "nome": "centro de conexões",
+   "cidade": null
+  },
+  {
+   "id": 6122301,
+   "x": -74,
+   "z": -204.1,
+   "tipo": "outro",
+   "nome": "Caminho dos Campeões Piso 1",
+   "cidade": null
+  },
+  {
+   "id": 6122302,
+   "x": -57.9,
+   "z": -204.2,
+   "tipo": "outro",
+   "nome": "Caminho dos Campeões Piso 2",
+   "cidade": null
+  },
+  {
+   "id": 6122303,
+   "x": -66.9,
+   "z": -260.8,
+   "tipo": "centro",
+   "nome": "Liga ÍndigoCentro de Pokémon",
+   "cidade": null
+  },
+  {
+   "id": 6122501,
+   "x": 303.1,
+   "z": -263.5,
+   "tipo": "outro",
+   "nome": "Cabana do Cabo",
+   "cidade": null
+  },
+  {
+   "id": 61105991,
+   "x": 243,
+   "z": 21.5,
+   "tipo": "outro",
+   "nome": "Santa Anne Piso 1",
+   "cidade": "Cidade Vermilion"
+  },
+  {
+   "id": 61109081,
+   "x": 182.1,
+   "z": 112.2,
+   "tipo": "casa",
+   "nome": "Fuchsia-Casa do Pescador",
+   "cidade": "Cidade Fuchsia"
+  }
+ ],
+ "outros": [
+  {
+   "prefab": "SM_T_Stonelamp_001",
+   "nome": "Lanterna de pedra",
+   "textura": "Texture2D/SM_T_Stonelamp_001.png",
+   "noDump": true,
+   "noJogo": false
+  },
+  {
+   "prefab": "SM_GeWuJiTing_lantern",
+   "nome": "Lanterna de pavilhão",
+   "textura": null,
+   "noDump": null,
+   "noJogo": false
+  },
+  {
+   "prefab": "SM_T_007_StreetLight_02",
+   "nome": "Poste da Ciclovia (outra variante)",
+   "textura": "Texture2D/T_T_007_StreetLight_01_01_C.png",
+   "emissao": "Texture2D/T_T_007_StreetLight_01_E.png",
+   "noDump": true,
+   "noJogo": false
+  },
+  {
+   "prefab": "SM_U_001_Lantern_01",
+   "nome": "Lanterna de caverna",
+   "textura": "Bundles/ArtAssets/Map/Underground/UnderWall/T_U_001_Lantern_01_C.png",
+   "emissao": "Bundles/ArtAssets/Map/Underground/UnderWall/T_U_001_Lantern_01_E.png",
+   "noDump": true,
+   "noJogo": false
+  },
+  {
+   "prefab": "SM_U_001_Lantern_02",
+   "nome": "Lanterna de caverna (2)",
+   "textura": null,
+   "noDump": null,
+   "noJogo": false
+  }
+ ]
+}

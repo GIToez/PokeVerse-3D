@@ -1,0 +1,54 @@
+{
+ "base-salao-1": {
+  "arquivo": "base-salao-1.png",
+  "nome": "Salão da guilda"
+ },
+ "base-salao-2": {
+  "arquivo": "base-salao-2.png",
+  "nome": "Salão da guilda"
+ },
+ "base-salao-3": {
+  "arquivo": "base-salao-3.png",
+  "nome": "Salão da guilda"
+ },
+ "base-salao-4": {
+  "arquivo": "base-salao-4.png",
+  "nome": "Salão da guilda"
+ },
+ "base-salao-5": {
+  "arquivo": "base-salao-5.png",
+  "nome": "Salão da guilda"
+ },
+ "base-descanso": {
+  "arquivo": "base-descanso.png",
+  "nome": "Área de descanso dos Pokémon"
+ },
+ "base-cozinha": {
+  "arquivo": "base-cozinha.png",
+  "nome": "Cozinha ao ar livre"
+ },
+ "base-bancada": {
+  "arquivo": "base-bancada.png",
+  "nome": "Bancada de síntese"
+ },
+ "base-mina": {
+  "arquivo": "base-mina.png",
+  "nome": "Mina"
+ },
+ "base-horta": {
+  "arquivo": "base-horta.png",
+  "nome": "Horta grande"
+ },
+ "base-alimentador": {
+  "arquivo": "base-alimentador.png",
+  "nome": "Alimentador automático"
+ },
+ "base-decoracao": {
+  "arquivo": "base-decoracao.png",
+  "nome": "Máquina de decoração"
+ },
+ "base-serraria": {
+  "arquivo": "base-serraria.png",
+  "nome": "Serraria"
+ }
+}

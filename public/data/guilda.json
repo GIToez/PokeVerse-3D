@@ -1,0 +1,3225 @@
+{
+ "versao": 2,
+ "fonte": "dump (GuildPowerConfig, GuildLevelConfig, GuildConditionConfig, GuildBoss* como forma, Habitat como terreno, LanguageConfig_pt) + maquete v2 da Amanda (nomes dos cargos, permissões) + o manifesto dos emblemas dela (ui/figma/ui2-v2/emblemas-guilda/emblemas.json) + regras nossas (docs/frentes/guilda.md §6 e §9)",
+ "cargos": [
+  {
+   "id": "lider",
+   "nome": "Líder",
+   "dump": "Presidente da comunidade",
+   "muda": [
+    "vice",
+    "oficial",
+    "membro",
+    "recruta"
+   ],
+   "padrao": {
+    "convidar": true,
+    "aceitar": true,
+    "expulsar": true,
+    "aviso": true,
+    "evento": true,
+    "bau": true
+   },
+   "gerencia": true,
+   "lideranca": true,
+   "destitui": false
+  },
+  {
+   "id": "vice",
+   "nome": "Vice",
+   "dump": "Vice-presidente da comunidade",
+   "muda": [
+    "oficial",
+    "membro",
+    "recruta"
+   ],
+   "padrao": {
+    "convidar": true,
+    "aceitar": true,
+    "expulsar": true,
+    "aviso": true,
+    "evento": true,
+    "bau": true
+   },
+   "gerencia": true,
+   "lideranca": false,
+   "destitui": true
+  },
+  {
+   "id": "oficial",
+   "nome": "Oficial",
+   "dump": "idosos da comunidade",
+   "muda": [],
+   "padrao": {
+    "convidar": true,
+    "aceitar": true,
+    "expulsar": false,
+    "aviso": false,
+    "evento": true,
+    "bau": true
+   },
+   "gerencia": false,
+   "lideranca": false,
+   "destitui": true
+  },
+  {
+   "id": "membro",
+   "nome": "Membro",
+   "dump": "Membro oficial",
+   "muda": [],
+   "padrao": {
+    "convidar": false,
+    "aceitar": false,
+    "expulsar": false,
+    "aviso": false,
+    "evento": false,
+    "bau": false
+   },
+   "gerencia": false,
+   "lideranca": false,
+   "destitui": true
+  },
+  {
+   "id": "recruta",
+   "nome": "Recruta",
+   "dump": "Membro estagiário",
+   "muda": [],
+   "padrao": {
+    "convidar": false,
+    "aceitar": false,
+    "expulsar": false,
+    "aviso": false,
+    "evento": false,
+    "bau": false
+   },
+   "gerencia": false,
+   "lideranca": false,
+   "destitui": true
+  }
+ ],
+ "permissoes": [
+  {
+   "id": "convidar",
+   "nome": "Convidar jogadores",
+   "dump": "Invitation"
+  },
+  {
+   "id": "aceitar",
+   "nome": "Aceitar pedidos de entrada",
+   "dump": "Review"
+  },
+  {
+   "id": "expulsar",
+   "nome": "Expulsar membros",
+   "dump": "RemoveEdit"
+  },
+  {
+   "id": "aviso",
+   "nome": "Editar o aviso do líder",
+   "dump": "DescEdit"
+  },
+  {
+   "id": "evento",
+   "nome": "Iniciar evento de guilda",
+   "dump": "GuildFightApply"
+  },
+  {
+   "id": "bau",
+   "nome": "Usar o baú da guilda",
+   "dump": null
+  }
+ ],
+ "niveis": [
+  {
+   "nivel": 1,
+   "vagas": 20,
+   "vagasDump": 30,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 15000
+  },
+  {
+   "nivel": 2,
+   "vagas": 24,
+   "vagasDump": 35,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 30000
+  },
+  {
+   "nivel": 3,
+   "vagas": 29,
+   "vagasDump": 40,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 50000
+  },
+  {
+   "nivel": 4,
+   "vagas": 33,
+   "vagasDump": 45,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 80000
+  },
+  {
+   "nivel": 5,
+   "vagas": 38,
+   "vagasDump": 50,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 120000
+  },
+  {
+   "nivel": 6,
+   "vagas": 42,
+   "vagasDump": 60,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 200000
+  },
+  {
+   "nivel": 7,
+   "vagas": 47,
+   "vagasDump": 70,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 300000
+  },
+  {
+   "nivel": 8,
+   "vagas": 51,
+   "vagasDump": 80,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 500000
+  },
+  {
+   "nivel": 9,
+   "vagas": 56,
+   "vagasDump": 90,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 800000
+  },
+  {
+   "nivel": 10,
+   "vagas": 60,
+   "vagasDump": 100,
+   "vices": 2,
+   "oficiais": 4,
+   "xpProximo": 0
+  }
+ ],
+ "nivelMinimo": [
+  0,
+  5,
+  10,
+  15,
+  20,
+  25,
+  30,
+  35,
+  40,
+  45,
+  50,
+  55,
+  60
+ ],
+ "emblema": {
+  "pasta": "./ui/figma/ui2-v2/emblemas-guilda/",
+  "base": "base/<forma>-<cor>-<ver>.png",
+  "simbolo": "simbolo/<id>-<ver>.png",
+  "pAte": 40,
+  "formaPadrao": "medalhao",
+  "v": "de8ed1b2"
+ },
+ "formas": [
+  {
+   "id": "escudo",
+   "nome": "Escudo",
+   "g": {
+    "grade": 160,
+    "simbolo": {
+     "cx": 80,
+     "cy": 70.5,
+     "lado": 72.2
+    }
+   },
+   "p": {
+    "grade": 32,
+    "simbolo": {
+     "cx": 16,
+     "cy": 14.59,
+     "lado": 15.04
+    }
+   }
+  },
+  {
+   "id": "medalhao",
+   "nome": "Medalhão",
+   "g": {
+    "grade": 160,
+    "simbolo": {
+     "cx": 80,
+     "cy": 70.5,
+     "lado": 70.3
+    }
+   },
+   "p": {
+    "grade": 32,
+    "simbolo": {
+     "cx": 16,
+     "cy": 16,
+     "lado": 16.92
+    }
+   }
+  },
+  {
+   "id": "flamula",
+   "nome": "Estandarte",
+   "g": {
+    "grade": 160,
+    "simbolo": {
+     "cx": 80,
+     "cy": 70.5,
+     "lado": 70.3
+    }
+   },
+   "p": {
+    "grade": 32,
+    "simbolo": {
+     "cx": 16,
+     "cy": 14.2,
+     "lado": 14.5
+    }
+   }
+  },
+  {
+   "id": "losango",
+   "nome": "Cristal",
+   "g": {
+    "grade": 160,
+    "simbolo": {
+     "cx": 80,
+     "cy": 80,
+     "lado": 62
+    }
+   },
+   "p": {
+    "grade": 32,
+    "simbolo": {
+     "cx": 16,
+     "cy": 16,
+     "lado": 14
+    }
+   }
+  },
+  {
+   "id": "asas",
+   "nome": "Escudo alado",
+   "g": {
+    "grade": 160,
+    "simbolo": {
+     "cx": 80,
+     "cy": 72.4,
+     "lado": 55.1
+    }
+   },
+   "p": {
+    "grade": 32,
+    "simbolo": {
+     "cx": 16,
+     "cy": 14.8,
+     "lado": 13.4
+    }
+   }
+  },
+  {
+   "id": "sol",
+   "nome": "Sol",
+   "g": {
+    "grade": 160,
+    "simbolo": {
+     "cx": 80,
+     "cy": 80,
+     "lado": 62.7
+    }
+   },
+   "p": {
+    "grade": 32,
+    "simbolo": {
+     "cx": 16,
+     "cy": 16,
+     "lado": 15.04
+    }
+   }
+  }
+ ],
+ "familias": [
+  {
+   "id": "elementos",
+   "nome": "Elementos"
+  },
+  {
+   "id": "treinador",
+   "nome": "Treinador"
+  },
+  {
+   "id": "brasao",
+   "nome": "Brasão"
+  }
+ ],
+ "simbolos": [
+  {
+   "id": "fogueira",
+   "nome": "Fogueira",
+   "familia": "elementos"
+  },
+  {
+   "id": "gota",
+   "nome": "Gota",
+   "familia": "elementos"
+  },
+  {
+   "id": "ramo",
+   "nome": "Ramo",
+   "familia": "elementos"
+  },
+  {
+   "id": "tempestade",
+   "nome": "Tempestade",
+   "familia": "elementos"
+  },
+  {
+   "id": "gelo",
+   "nome": "Gelo eterno",
+   "familia": "elementos"
+  },
+  {
+   "id": "vortice",
+   "nome": "Vórtice",
+   "familia": "elementos"
+  },
+  {
+   "id": "lua",
+   "nome": "Lua",
+   "familia": "elementos"
+  },
+  {
+   "id": "pokebola",
+   "nome": "Pokébola",
+   "familia": "treinador"
+  },
+  {
+   "id": "ovo",
+   "nome": "Ovo",
+   "familia": "treinador"
+  },
+  {
+   "id": "insignia",
+   "nome": "Insígnia",
+   "familia": "treinador"
+  },
+  {
+   "id": "baga",
+   "nome": "Baga",
+   "familia": "treinador"
+  },
+  {
+   "id": "pegada",
+   "nome": "Pegada",
+   "familia": "treinador"
+  },
+  {
+   "id": "asa",
+   "nome": "Asa",
+   "familia": "treinador"
+  },
+  {
+   "id": "trofeu",
+   "nome": "Troféu",
+   "familia": "treinador"
+  },
+  {
+   "id": "estrela",
+   "nome": "Estrela",
+   "familia": "brasao"
+  },
+  {
+   "id": "coroa",
+   "nome": "Coroa",
+   "familia": "brasao"
+  },
+  {
+   "id": "espadas",
+   "nome": "Espadas",
+   "familia": "brasao"
+  },
+  {
+   "id": "punho",
+   "nome": "Punho",
+   "familia": "brasao"
+  },
+  {
+   "id": "shuriken",
+   "nome": "Estrela ninja",
+   "familia": "brasao"
+  },
+  {
+   "id": "cristal",
+   "nome": "Cristal",
+   "familia": "brasao"
+  },
+  {
+   "id": "coracao",
+   "nome": "Coração",
+   "familia": "brasao"
+  }
+ ],
+ "cores": [
+  {
+   "id": "azul",
+   "nome": "Azul",
+   "hex": "#2f7fe0"
+  },
+  {
+   "id": "verde",
+   "nome": "Verde",
+   "hex": "#43d17c"
+  },
+  {
+   "id": "laranja",
+   "nome": "Laranja",
+   "hex": "#ff9a3c"
+  },
+  {
+   "id": "rosa",
+   "nome": "Rosa",
+   "hex": "#ff6fb5"
+  },
+  {
+   "id": "vinho",
+   "nome": "Vinho",
+   "hex": "#8e1f2e"
+  },
+  {
+   "id": "arco-iris",
+   "nome": "Arco-íris",
+   "hex": "#768ce3",
+   "gradiente": [
+    "#42d07f",
+    "#fb844d",
+    "#768ce3",
+    "#ff6fb5"
+   ]
+  },
+  {
+   "id": "roxo",
+   "nome": "Roxo",
+   "hex": "#7b4fd6"
+  },
+  {
+   "id": "amarelo",
+   "nome": "Amarelo",
+   "hex": "#f4c531"
+  },
+  {
+   "id": "grafite",
+   "nome": "Grafite",
+   "hex": "#39465c"
+  }
+ ],
+ "antigos": {
+  "bandeira-1": {
+   "forma": "asas",
+   "simbolo": "pokebola"
+  },
+  "bandeira-2": {
+   "forma": "medalhao",
+   "simbolo": "estrela"
+  },
+  "bandeira-3": {
+   "forma": "medalhao",
+   "simbolo": "estrela"
+  },
+  "bandeira-4": {
+   "forma": "medalhao",
+   "simbolo": "pokebola"
+  },
+  "bandeira-5": {
+   "forma": "escudo",
+   "simbolo": "pokebola"
+  },
+  "bandeira-6": {
+   "forma": "medalhao",
+   "simbolo": "pokebola"
+  },
+  "bandeira-7": {
+   "forma": "sol",
+   "simbolo": "estrela"
+  },
+  "bandeira-8": {
+   "forma": "asas",
+   "simbolo": "pokebola"
+  },
+  "tipo-agua": {
+   "simbolo": "gota"
+  },
+  "tipo-dragao": {
+   "simbolo": "estrela"
+  },
+  "tipo-eletrico": {
+   "simbolo": "tempestade"
+  },
+  "tipo-fada": {
+   "simbolo": "coracao"
+  },
+  "tipo-fantasma": {
+   "simbolo": "lua"
+  },
+  "tipo-fogo": {
+   "simbolo": "fogueira"
+  },
+  "tipo-gelo": {
+   "simbolo": "gelo"
+  },
+  "tipo-inseto": {
+   "simbolo": "ramo"
+  },
+  "tipo-lutador": {
+   "simbolo": "punho"
+  },
+  "tipo-metalico": {
+   "simbolo": "espadas"
+  },
+  "tipo-normal": {
+   "simbolo": "estrela"
+  },
+  "tipo-noturno": {
+   "simbolo": "lua"
+  },
+  "tipo-pedra": {
+   "simbolo": "insignia"
+  },
+  "tipo-planta": {
+   "simbolo": "ramo"
+  },
+  "tipo-psiquico": {
+   "simbolo": "vortice"
+  },
+  "tipo-terrestre": {
+   "simbolo": "pegada"
+  },
+  "tipo-venenoso": {
+   "simbolo": "gota"
+  },
+  "tipo-voador": {
+   "simbolo": "asa"
+  },
+  "bola-1001": {
+   "simbolo": "pokebola"
+  },
+  "bola-1002": {
+   "simbolo": "pokebola"
+  },
+  "bola-1003": {
+   "simbolo": "pokebola"
+  },
+  "bola-1004": {
+   "simbolo": "pokebola"
+  },
+  "bola-1005": {
+   "simbolo": "pokebola"
+  },
+  "bola-1006": {
+   "simbolo": "pokebola"
+  },
+  "bola-1007": {
+   "simbolo": "pokebola"
+  },
+  "bola-1008": {
+   "simbolo": "pokebola"
+  },
+  "bola-1009": {
+   "simbolo": "pokebola"
+  },
+  "insignia-1": {
+   "simbolo": "insignia"
+  },
+  "insignia-2": {
+   "simbolo": "gota"
+  },
+  "insignia-3": {
+   "simbolo": "tempestade"
+  },
+  "insignia-4": {
+   "simbolo": "fogueira"
+  },
+  "insignia-5": {
+   "simbolo": "ramo"
+  },
+  "insignia-6": {
+   "simbolo": "cristal"
+  },
+  "insignia-7": {
+   "simbolo": "coracao"
+  },
+  "insignia-8": {
+   "simbolo": "insignia"
+  }
+ },
+ "regras": {
+  "custo": 5000,
+  "insigniasMin": 2,
+  "nome": {
+   "min": 3,
+   "max": 24
+  },
+  "tag": {
+   "min": 3,
+   "max": 4
+  },
+  "descricaoMax": 60,
+  "avisoMax": 280,
+  "mensagemMax": 240,
+  "esperaSairHoras": 24,
+  "liderSumidoDias": 14,
+  "conviteValidadeHoras": 72,
+  "pedidosPorJogador": 5,
+  "pedidosPorGuilda": 30,
+  "atividadeGuardada": 100,
+  "chatGuardado": 100,
+  "aprovar": [
+   "custo",
+   "insigniasMin",
+   "esperaSairHoras",
+   "liderSumidoDias",
+   "conviteValidadeHoras"
+  ]
+ },
+ "fontes": [
+  {
+   "id": "raid",
+   "nome": "Raid da agenda concluída",
+   "xp": 300,
+   "pts": 60,
+   "cotaDia": 2,
+   "quem": "cada membro que bateu o bastante"
+  },
+  {
+   "id": "selvagem",
+   "nome": "Selvagem derrotado (KO válido)",
+   "xp": 5,
+   "pts": 1,
+   "cotaDia": 150
+  },
+  {
+   "id": "grupo",
+   "nome": "Selvagem derrotado com 2+ da guilda no mesmo alvo",
+   "xp": 15,
+   "pts": 3,
+   "cotaDia": 60,
+   "nota": "no lugar de \"selvagem\" na mesma queda; é o \"grupo de guilda\" do +XP"
+  },
+  {
+   "id": "captura",
+   "nome": "Captura",
+   "xp": 10,
+   "pts": 2,
+   "cotaDia": 30
+  },
+  {
+   "id": "missao",
+   "nome": "Missão da história concluída",
+   "xp": 100,
+   "pts": 20,
+   "cotaDia": 10
+  },
+  {
+   "id": "ginasio",
+   "nome": "Insígnia conquistada (1ª vitória)",
+   "xp": 300,
+   "pts": 50,
+   "cotaDia": 8
+  },
+  {
+   "id": "revanche",
+   "nome": "Revanche de ginásio vencida",
+   "xp": 50,
+   "pts": 10,
+   "cotaDia": 1
+  },
+  {
+   "id": "elite",
+   "nome": "Elite dos Quatro vencida",
+   "xp": 1000,
+   "pts": 150,
+   "cotaDia": 1
+  },
+  {
+   "id": "troca",
+   "nome": "Troca com outro jogador",
+   "xp": 20,
+   "pts": 5,
+   "cotaDia": 5
+  },
+  {
+   "id": "evolucao",
+   "nome": "Evolução",
+   "xp": 30,
+   "pts": 5,
+   "cotaDia": 10
+  },
+  {
+   "id": "chefe",
+   "nome": "Dano no chefe de guilda (por 1.000 de dano)",
+   "xp": 20,
+   "pts": 5,
+   "cotaDia": null,
+   "nota": "qtd fracionária: dano / 1000"
+  },
+  {
+   "id": "chefeMeta",
+   "nome": "Meta do dia do chefe batida (× degrau)",
+   "xp": 500,
+   "pts": 100,
+   "cotaDia": null,
+   "nota": "a guilda inteira (01/10: o chefe não morre; a soma do dia ≥ hpReferencia é a meta)"
+  },
+  {
+   "id": "doacao",
+   "nome": "Doação pro baú (por 10.000 ₽) — fase 3",
+   "xp": 50,
+   "pts": 10,
+   "cotaDia": 5
+  }
+ ],
+ "beneficios": [
+  {
+   "nivel": 1,
+   "id": "base-salao-1",
+   "texto": "Base: Salão da guilda",
+   "vaga": "salao"
+  },
+  {
+   "nivel": 1,
+   "id": "base-descanso",
+   "texto": "Base: área de descanso dos pokémon",
+   "vaga": "descanso"
+  },
+  {
+   "nivel": 2,
+   "id": "base-cozinha",
+   "texto": "Base: cozinha ao ar livre",
+   "vaga": "cozinha"
+  },
+  {
+   "nivel": 3,
+   "id": "chefe",
+   "texto": "Chefe da guilda todo dia, na base (contribuição → fragmentos → loja da guilda)"
+  },
+  {
+   "nivel": 3,
+   "id": "xp-grupo-5",
+   "texto": "+5% de XP quando 2+ da guilda batem no mesmo selvagem",
+   "xpGrupo": 0.05
+  },
+  {
+   "nivel": 3,
+   "id": "base-salao-2",
+   "texto": "Base: Salão da guilda 2",
+   "vaga": "salao"
+  },
+  {
+   "nivel": 4,
+   "id": "base-bancada",
+   "texto": "Base: bancada de síntese",
+   "vaga": "bancada"
+  },
+  {
+   "nivel": 5,
+   "id": "base-salao-3",
+   "texto": "Base: Salão da guilda 3",
+   "vaga": "salao"
+  },
+  {
+   "nivel": 5,
+   "id": "base-mina",
+   "texto": "Base: mina",
+   "vaga": "mina"
+  },
+  {
+   "nivel": 5,
+   "id": "base-horta",
+   "texto": "Base: horta grande",
+   "vaga": "horta"
+  },
+  {
+   "nivel": 6,
+   "id": "xp-grupo-10",
+   "texto": "+10% de XP em grupo de guilda",
+   "xpGrupo": 0.1
+  },
+  {
+   "nivel": 6,
+   "id": "base-alimentador",
+   "texto": "Base: alimentador automático",
+   "vaga": "alimentador"
+  },
+  {
+   "nivel": 6,
+   "id": "base-decoracao",
+   "texto": "Base: máquina de decoração",
+   "vaga": "decoracao"
+  },
+  {
+   "nivel": 7,
+   "id": "base-salao-4",
+   "texto": "Base: Salão da guilda 4",
+   "vaga": "salao"
+  },
+  {
+   "nivel": 7,
+   "id": "base-serraria",
+   "texto": "Base: serraria",
+   "vaga": "serraria"
+  },
+  {
+   "nivel": 8,
+   "id": "xp-grupo-12",
+   "texto": "+12% de XP em grupo de guilda",
+   "xpGrupo": 0.12
+  },
+  {
+   "nivel": 9,
+   "id": "base-salao-5",
+   "texto": "Base: Salão da guilda 5",
+   "vaga": "salao"
+  },
+  {
+   "nivel": 10,
+   "id": "xp-grupo-15",
+   "texto": "+15% de XP em grupo de guilda",
+   "xpGrupo": 0.15
+  },
+  {
+   "nivel": 10,
+   "id": "titulo-mestra",
+   "texto": "Título \"Guilda Mestra\" pra todos os membros",
+   "titulo": "guilda-mestra"
+  }
+ ],
+ "ranking": {
+  "titulo": {
+   "id": "guilda-da-semana",
+   "nome": "Guilda da Semana",
+   "dias": 7,
+   "quem": "todos os membros da 1ª do ranking, na virada da semana"
+  },
+  "top": 20
+ },
+ "chefe": {
+  "regras": {
+   "modelo": "contribuicao-do-dia",
+   "nivelMinimoGuilda": 3,
+   "rotacao": "diaria",
+   "entradasPorDia": 1,
+   "janelaS": 120,
+   "hpBase": 12000,
+   "hpFator": 1.2,
+   "lvBase": 30,
+   "lvPasso": 3.5,
+   "degrausPorNivel": 2,
+   "tiposMais": 1.5,
+   "tiposMenos": 0.5,
+   "golpeMs": 4000,
+   "danoMin": 0.08,
+   "danoMax": 0.14,
+   "onde": "na BASE da guilda (o platô, regiao r5) — a arena (Campo) fica aberta a todos pra eventos e chefe mundial",
+   "faixas": [
+    {
+     "nome": "participou",
+     "min": 0.0001,
+     "fragmentos": 1
+    },
+    {
+     "nome": "bronze",
+     "min": 0.02,
+     "fragmentos": 2
+    },
+    {
+     "nome": "prata",
+     "min": 0.05,
+     "fragmentos": 3
+    },
+    {
+     "nome": "ouro",
+     "min": 0.1,
+     "fragmentos": 4
+    },
+    {
+     "nome": "lenda",
+     "min": 0.2,
+     "fragmentos": 5
+    }
+   ],
+   "meta": {
+    "fracao": 1,
+    "tesouroPorDegrau": 100,
+    "nota": "se a soma do dia ≥ hpReferencia, a guilda \"venceu o dia\": XP (fonte chefeMeta) e 100 × degrau de Moeda de guilda no tesouro"
+   },
+   "premioVia": "correio",
+   "loja": {
+    "precos": {
+     "comum": 20,
+     "raro": 60
+    },
+    "porMembroPorSemana": 1,
+    "heldPorDegrau": 5,
+    "preso": true,
+    "fragmentoItem": 900040,
+    "nota": "a loja da guilda troca fragmentos por held item (PRESO à conta); expõe só os held dos chefes da semana (rotação); fragmento não vence; fase 2 do lab-held: upar o held (+1, +2) como ralo; 4 ou 5 held por degrau (g2-loja, 06/10: os 95 que saem da loja, cada exclusivo de espécie com o chefe dela; os held NOVOS — chefe.heldNovos: Mineral Evolutivo e Balão de Ar, decisão held-propostas-2 — no degrau deles)"
+   },
+   "aprovar": [
+    "nivelMinimoGuilda",
+    "janelaS",
+    "hpBase",
+    "hpFator",
+    "degrausPorNivel",
+    "faixas",
+    "meta",
+    "loja",
+    "heldNovos"
+   ]
+  },
+  "escada": [
+   {
+    "degrau": 1,
+    "dex": 15,
+    "nome": "Beedrill",
+    "glb": "pm0015_00",
+    "lv": 30,
+    "hp": 12000,
+    "tipos": {
+     "mais": [
+      "fogo",
+      "voador"
+     ],
+     "menos": [
+      "planta"
+     ]
+    },
+    "held": [
+     {
+      "id": 20001,
+      "raridade": "comum"
+     },
+     {
+      "id": 20002,
+      "raridade": "comum"
+     },
+     {
+      "id": 20004,
+      "raridade": "comum"
+     },
+     {
+      "id": 20005,
+      "raridade": "raro"
+     },
+     {
+      "id": 900110,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 2,
+    "dex": 18,
+    "nome": "Pidgeot",
+    "glb": "pm0018_00",
+    "lv": 34,
+    "hp": 14400,
+    "tipos": {
+     "mais": [
+      "eletrico",
+      "pedra"
+     ],
+     "menos": [
+      "inseto"
+     ]
+    },
+    "held": [
+     {
+      "id": 20009,
+      "raridade": "comum"
+     },
+     {
+      "id": 20010,
+      "raridade": "comum"
+     },
+     {
+      "id": 20011,
+      "raridade": "comum"
+     },
+     {
+      "id": 900111,
+      "raridade": "comum"
+     },
+     {
+      "id": 20007,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 3,
+    "dex": 34,
+    "nome": "Nidoking",
+    "glb": "pm0034_00",
+    "lv": 37,
+    "hp": 17300,
+    "tipos": {
+     "mais": [
+      "agua",
+      "psiquico"
+     ],
+     "menos": [
+      "venenoso"
+     ]
+    },
+    "held": [
+     {
+      "id": 20014,
+      "raridade": "comum"
+     },
+     {
+      "id": 20015,
+      "raridade": "comum"
+     },
+     {
+      "id": 20016,
+      "raridade": "comum"
+     },
+     {
+      "id": 20012,
+      "raridade": "raro"
+     },
+     {
+      "id": 20013,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 4,
+    "dex": 68,
+    "nome": "Machamp",
+    "glb": "pm0068_00",
+    "lv": 41,
+    "hp": 20700,
+    "tipos": {
+     "mais": [
+      "psiquico",
+      "voador"
+     ],
+     "menos": [
+      "pedra"
+     ]
+    },
+    "held": [
+     {
+      "id": 20017,
+      "raridade": "comum"
+     },
+     {
+      "id": 20020,
+      "raridade": "comum"
+     },
+     {
+      "id": 20018,
+      "raridade": "raro"
+     },
+     {
+      "id": 20019,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 5,
+    "dex": 115,
+    "nome": "Kangaskhan",
+    "glb": "pm0115_00",
+    "lv": 44,
+    "hp": 24900,
+    "tipos": {
+     "mais": [
+      "lutador",
+      "metalico"
+     ],
+     "menos": [
+      "normal"
+     ]
+    },
+    "held": [
+     {
+      "id": 20021,
+      "raridade": "comum"
+     },
+     {
+      "id": 20022,
+      "raridade": "comum"
+     },
+     {
+      "id": 20023,
+      "raridade": "comum"
+     },
+     {
+      "id": 20024,
+      "raridade": "raro"
+     },
+     {
+      "id": 20025,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 6,
+    "dex": 142,
+    "nome": "Aerodactyl",
+    "glb": "pm0142_00",
+    "lv": 48,
+    "hp": 29900,
+    "tipos": {
+     "mais": [
+      "agua",
+      "eletrico"
+     ],
+     "menos": [
+      "fogo"
+     ]
+    },
+    "held": [
+     {
+      "id": 20026,
+      "raridade": "comum"
+     },
+     {
+      "id": 20027,
+      "raridade": "comum"
+     },
+     {
+      "id": 20028,
+      "raridade": "comum"
+     },
+     {
+      "id": 20029,
+      "raridade": "comum"
+     },
+     {
+      "id": 20030,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 7,
+    "dex": 65,
+    "nome": "Alakazam",
+    "glb": "pm0065_00",
+    "lv": 51,
+    "hp": 35800,
+    "tipos": {
+     "mais": [
+      "inseto",
+      "fantasma"
+     ],
+     "menos": [
+      "lutador"
+     ]
+    },
+    "held": [
+     {
+      "id": 20033,
+      "raridade": "comum"
+     },
+     {
+      "id": 20034,
+      "raridade": "comum"
+     },
+     {
+      "id": 20035,
+      "raridade": "comum"
+     },
+     {
+      "id": 20039,
+      "raridade": "comum"
+     },
+     {
+      "id": 20040,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 8,
+    "dex": 94,
+    "nome": "Gengar",
+    "glb": "pm0094_00",
+    "lv": 55,
+    "hp": 43000,
+    "tipos": {
+     "mais": [
+      "psiquico",
+      "noturno"
+     ],
+     "menos": [
+      "venenoso"
+     ]
+    },
+    "held": [
+     {
+      "id": 20042,
+      "raridade": "comum"
+     },
+     {
+      "id": 20043,
+      "raridade": "comum"
+     },
+     {
+      "id": 20041,
+      "raridade": "raro"
+     },
+     {
+      "id": 20178,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 9,
+    "dex": 3,
+    "nome": "Venusaur",
+    "glb": "pm0003_00",
+    "lv": 58,
+    "hp": 51600,
+    "tipos": {
+     "mais": [
+      "fogo",
+      "voador"
+     ],
+     "menos": [
+      "agua"
+     ]
+    },
+    "held": [
+     {
+      "id": 20045,
+      "raridade": "comum"
+     },
+     {
+      "id": 20053,
+      "raridade": "comum"
+     },
+     {
+      "id": 20054,
+      "raridade": "comum"
+     },
+     {
+      "id": 20046,
+      "raridade": "raro"
+     },
+     {
+      "id": 20052,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 10,
+    "dex": 9,
+    "nome": "Blastoise",
+    "glb": "pm0009_00",
+    "lv": 62,
+    "hp": 61900,
+    "tipos": {
+     "mais": [
+      "eletrico",
+      "planta"
+     ],
+     "menos": [
+      "fogo"
+     ]
+    },
+    "held": [
+     {
+      "id": 20055,
+      "raridade": "comum"
+     },
+     {
+      "id": 20056,
+      "raridade": "comum"
+     },
+     {
+      "id": 20059,
+      "raridade": "comum"
+     },
+     {
+      "id": 20057,
+      "raridade": "raro"
+     },
+     {
+      "id": 20058,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 11,
+    "dex": 6,
+    "nome": "Charizard",
+    "glb": "pm0006_00",
+    "lv": 65,
+    "hp": 74300,
+    "tipos": {
+     "mais": [
+      "pedra",
+      "agua"
+     ],
+     "menos": [
+      "planta"
+     ]
+    },
+    "held": [
+     {
+      "id": 20062,
+      "raridade": "comum"
+     },
+     {
+      "id": 20065,
+      "raridade": "comum"
+     },
+     {
+      "id": 20063,
+      "raridade": "raro"
+     },
+     {
+      "id": 20064,
+      "raridade": "raro"
+     },
+     {
+      "id": 20177,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 12,
+    "dex": 130,
+    "nome": "Gyarados",
+    "glb": "pm0130_00",
+    "lv": 69,
+    "hp": 89200,
+    "tipos": {
+     "mais": [
+      "eletrico",
+      "pedra"
+     ],
+     "menos": [
+      "agua"
+     ]
+    },
+    "held": [
+     {
+      "id": 20067,
+      "raridade": "comum"
+     },
+     {
+      "id": 20072,
+      "raridade": "comum"
+     },
+     {
+      "id": 20075,
+      "raridade": "raro"
+     },
+     {
+      "id": 20179,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 13,
+    "dex": 143,
+    "nome": "Snorlax",
+    "glb": "pm0143_00",
+    "lv": 72,
+    "hp": 107000,
+    "tipos": {
+     "mais": [
+      "lutador",
+      "pedra"
+     ],
+     "menos": [
+      "normal"
+     ]
+    },
+    "held": [
+     {
+      "id": 20078,
+      "raridade": "comum"
+     },
+     {
+      "id": 20082,
+      "raridade": "comum"
+     },
+     {
+      "id": 20077,
+      "raridade": "raro"
+     },
+     {
+      "id": 20083,
+      "raridade": "raro"
+     },
+     {
+      "id": 20084,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 14,
+    "dex": 149,
+    "nome": "Dragonite",
+    "glb": "pm0149_00",
+    "lv": 76,
+    "hp": 128400,
+    "tipos": {
+     "mais": [
+      "gelo",
+      "dragao"
+     ],
+     "menos": [
+      "agua"
+     ]
+    },
+    "held": [
+     {
+      "id": 20086,
+      "raridade": "comum"
+     },
+     {
+      "id": 20087,
+      "raridade": "comum"
+     },
+     {
+      "id": 20088,
+      "raridade": "comum"
+     },
+     {
+      "id": 20089,
+      "raridade": "raro"
+     },
+     {
+      "id": 20186,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 15,
+    "dex": 144,
+    "nome": "Articuno",
+    "glb": "pm0144_00",
+    "lv": 79,
+    "hp": 154100,
+    "tipos": {
+     "mais": [
+      "pedra",
+      "fogo"
+     ],
+     "menos": [
+      "gelo"
+     ]
+    },
+    "held": [
+     {
+      "id": 20091,
+      "raridade": "comum"
+     },
+     {
+      "id": 20092,
+      "raridade": "comum"
+     },
+     {
+      "id": 20093,
+      "raridade": "comum"
+     },
+     {
+      "id": 20094,
+      "raridade": "comum"
+     },
+     {
+      "id": 20090,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 16,
+    "dex": 145,
+    "nome": "Zapdos",
+    "glb": "pm0145_00",
+    "lv": 83,
+    "hp": 184900,
+    "tipos": {
+     "mais": [
+      "pedra",
+      "gelo"
+     ],
+     "menos": [
+      "eletrico"
+     ]
+    },
+    "held": [
+     {
+      "id": 20097,
+      "raridade": "comum"
+     },
+     {
+      "id": 20098,
+      "raridade": "comum"
+     },
+     {
+      "id": 20095,
+      "raridade": "raro"
+     },
+     {
+      "id": 20096,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 17,
+    "dex": 146,
+    "nome": "Moltres",
+    "glb": "pm0146_00",
+    "lv": 86,
+    "hp": 221900,
+    "tipos": {
+     "mais": [
+      "pedra",
+      "agua"
+     ],
+     "menos": [
+      "fogo"
+     ]
+    },
+    "held": [
+     {
+      "id": 20099,
+      "raridade": "comum"
+     },
+     {
+      "id": 20100,
+      "raridade": "comum"
+     },
+     {
+      "id": 20103,
+      "raridade": "comum"
+     },
+     {
+      "id": 20101,
+      "raridade": "raro"
+     },
+     {
+      "id": 20102,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 18,
+    "dex": 249,
+    "nome": "Lugia",
+    "glb": "pm0249_00",
+    "lv": 90,
+    "hp": 266200,
+    "tipos": {
+     "mais": [
+      "eletrico",
+      "noturno"
+     ],
+     "menos": [
+      "psiquico"
+     ]
+    },
+    "held": [
+     {
+      "id": 20104,
+      "raridade": "comum"
+     },
+     {
+      "id": 20105,
+      "raridade": "comum"
+     },
+     {
+      "id": 20106,
+      "raridade": "comum"
+     },
+     {
+      "id": 20107,
+      "raridade": "raro"
+     },
+     {
+      "id": 20108,
+      "raridade": "raro"
+     }
+    ]
+   },
+   {
+    "degrau": 19,
+    "dex": 250,
+    "nome": "Ho-Oh",
+    "glb": "pm0250_00",
+    "lv": 93,
+    "hp": 319500,
+    "tipos": {
+     "mais": [
+      "pedra",
+      "agua"
+     ],
+     "menos": [
+      "fogo"
+     ]
+    },
+    "held": [
+     {
+      "id": 20109,
+      "raridade": "comum"
+     },
+     {
+      "id": 20120,
+      "raridade": "comum"
+     },
+     {
+      "id": 20127,
+      "raridade": "comum"
+     },
+     {
+      "id": 20128,
+      "raridade": "comum"
+     },
+     {
+      "id": 20129,
+      "raridade": "comum"
+     }
+    ]
+   },
+   {
+    "degrau": 20,
+    "dex": 150,
+    "nome": "Mewtwo",
+    "glb": "pm0150_00",
+    "lv": 97,
+    "hp": 383400,
+    "tipos": {
+     "mais": [
+      "inseto",
+      "fantasma"
+     ],
+     "menos": [
+      "psiquico"
+     ]
+    },
+    "held": [
+     {
+      "id": 20130,
+      "raridade": "comum"
+     },
+     {
+      "id": 20146,
+      "raridade": "comum"
+     },
+     {
+      "id": 20149,
+      "raridade": "comum"
+     },
+     {
+      "id": 20131,
+      "raridade": "raro"
+     }
+    ]
+   }
+  ],
+  "tipoNome": {
+   "normal": "normal",
+   "fogo": "fogo",
+   "agua": "água",
+   "planta": "planta",
+   "eletrico": "elétrico",
+   "gelo": "gelo",
+   "lutador": "lutador",
+   "venenoso": "venenoso",
+   "terrestre": "terrestre",
+   "voador": "voador",
+   "psiquico": "psíquico",
+   "inseto": "inseto",
+   "pedra": "pedra",
+   "fantasma": "fantasma",
+   "dragao": "dragão",
+   "noturno": "noturno",
+   "metalico": "metálico",
+   "fada": "fada"
+  },
+  "heldNomes": {
+   "20001": "Pó Brilhante",
+   "20002": "Garra Rápida",
+   "20004": "Pó de prata",
+   "20005": "Faixa Focalizadora",
+   "20007": "Lente de Alcance",
+   "20009": "Sobras",
+   "20010": "Areia macia",
+   "20011": "Pedra dura",
+   "20012": "Semente milagrosa",
+   "20013": "óculos pretos",
+   "20014": "Faixa Preta",
+   "20015": "ímanes",
+   "20016": "Gotas misteriosas",
+   "20017": "Bico Afiado",
+   "20018": "Farpa Venenosa",
+   "20019": "Gelo Eterno",
+   "20020": "Talismã de Feitiço",
+   "20021": "Colher Torta",
+   "20022": "Carvão",
+   "20023": "Presa do Dragão",
+   "20024": "Banda Rosa",
+   "20025": "Banda Polkadot",
+   "20026": "Lenço de seda",
+   "20027": "Soco da Sorte",
+   "20028": "Osso Grosso",
+   "20029": "alho-francês",
+   "20030": "Erva branca",
+   "20033": "Faixa da Escolha",
+   "20034": "Óculos de Escolha",
+   "20035": "Lenço de escolha",
+   "20039": "Sino de Concha",
+   "20040": "Incenso do mar",
+   "20041": "incenso relaxante",
+   "20042": "insenco Exótico",
+   "20043": "insenco de pedra",
+   "20045": "insenco da onda",
+   "20046": "insenco da Flor",
+   "20052": "Garra de Navalha",
+   "20053": "Presa Afiada",
+   "20054": "Lente Ampla",
+   "20055": "Faixa Musculosa",
+   "20056": "Óculos de Sabedoria",
+   "20057": "Cinto de mestre",
+   "20058": "Argila clara",
+   "20059": "Gema da vida",
+   "20062": "Cinta de Foco",
+   "20063": "Lente de Zoom",
+   "20064": "Metrónomo",
+   "20065": "Bola de ferro",
+   "20067": "Lama Negra",
+   "20072": "Garra de aperto",
+   "20075": "Raiz grande",
+   "20077": "pedra leve",
+   "20078": "Capacete de Pedra",
+   "20082": "Faixa de ligação",
+   "20083": "bulbo absorvente",
+   "20084": "bateria recarregável",
+   "20086": "Gema de Fogo",
+   "20087": "Gema da Água",
+   "20088": "Gema da Eletricidade",
+   "20089": "Gema da Planta",
+   "20090": "Gema de Gelo",
+   "20091": "Gema de Combate",
+   "20092": "Gema de Veneno",
+   "20093": "Gema da Terra",
+   "20094": "Gema de Voo",
+   "20095": "Gema dos Superpoderes",
+   "20096": "Gema de Inseto",
+   "20097": "Gema de Pedra",
+   "20098": "Gema de Fantasma",
+   "20099": "Gema do Dragão",
+   "20100": "Gema do Noturno",
+   "20101": "Gema de Aço",
+   "20102": "Gema normal",
+   "20103": "Gema da fada",
+   "20104": "Política de Fraqueza",
+   "20105": "Seguro Contra Erro",
+   "20106": "Colete de Ataque",
+   "20107": "Musgo luminoso",
+   "20108": "bola de neve",
+   "20109": "Óculos de proteção",
+   "20120": "Spray para garganta",
+   "20127": "amuleto claro",
+   "20128": "Espelho de ervas",
+   "20129": "luva de boxe",
+   "20130": "Capa Secreta",
+   "20131": "Dados carregados",
+   "20146": "Gene Berserk",
+   "20149": "Bola de luz",
+   "20177": "Pedra Secreta do Dragão Flamejante",
+   "20178": "Anel Mágico das Sombras",
+   "20179": "Amuleto da Tempestade",
+   "20186": "Asas de Dragão Celestial",
+   "900110": "Mineral Evolutivo",
+   "900111": "Balão de Ar"
+  },
+  "heldNovos": [
+   {
+    "id": 900110,
+    "nome": "Mineral Evolutivo",
+    "en": "Eviolite",
+    "icone": "ic_900110",
+    "consome": false,
+    "degrau": 1,
+    "raridade": "raro",
+    "texto": "Só em quem ainda evolui: Defesa e Defesa Especial ×1,5 (dano recebido ×0,67).",
+    "porque": "fica no Pokémon (não se gasta) e é dos held mais fortes da loja; vai com o Beedrill (Weedle → Kakuna → Beedrill), o 1º chefe da escada",
+    "img": "./ui/itens/ic_900110.png"
+   },
+   {
+    "id": 900111,
+    "nome": "Balão de Ar",
+    "en": "Air Balloon",
+    "icone": "ic_900111",
+    "consome": true,
+    "degrau": 2,
+    "raridade": "comum",
+    "texto": "Golpes do tipo Terra não acertam quem segura. Estoura no primeiro golpe recebido.",
+    "porque": "uso único: estoura no 1º golpe recebido e some; vai com o Pidgeot, a ave de Kanto (o balão dá a imunidade a Terra que o tipo Voador já tem)",
+    "img": "./ui/itens/ic_900111.png"
+   }
+  ]
+ },
+ "base": {
+  "cena": "casa",
+  "mapa": 4700001,
+  "sala": "casa#<guilda>",
+  "chefe": {
+   "x": 28,
+   "z": -28,
+   "giro": 0,
+   "regiao": "r5",
+   "nota": "o chefe DA guilda nasce no platô r5 (01/10; x do JSON: o mundo espelha); a entrada teleporta pro arco em volta"
+  },
+  "coordenadas": "as do data/casa.json: o jogo espelha o x (mundo = −x, z); o servidor converte antes de teleportar",
+  "regioes": [
+   {
+    "id": "r1",
+    "nome": "A fazenda",
+    "nivel": 1,
+    "x": [
+     -44,
+     16
+    ],
+    "z": [
+     10,
+     45
+    ],
+    "y": 0,
+    "nota": "a placa de fazenda do Habitat; o Salão, a área de descanso e a cozinha"
+   },
+   {
+    "id": "r2",
+    "nome": "A ilha do meio",
+    "nivel": 3,
+    "x": [
+     -14,
+     10
+    ],
+    "z": [
+     -42,
+     5
+    ],
+    "y": 2,
+    "nota": "bancada de síntese (a mina não cabe aqui: a ilha tem 16 a 19 m de largura)"
+   },
+   {
+    "id": "r3",
+    "nome": "A ilha leste",
+    "nivel": 5,
+    "x": [
+     21,
+     44
+    ],
+    "z": [
+     -8,
+     45
+    ],
+    "y": 2,
+    "nota": "mina (girada 90°: a única ilha onde ela cabe), horta grande, alimentador, decoração"
+   },
+   {
+    "id": "r4",
+    "nome": "O bosque",
+    "nivel": 7,
+    "x": [
+     -44,
+     -10
+    ],
+    "z": [
+     -44,
+     3
+    ],
+    "y": 0,
+    "nota": "a serraria entre as árvores"
+   },
+   {
+    "id": "r5",
+    "nome": "O platô",
+    "nivel": 9,
+    "x": [
+     16,
+     41
+    ],
+    "z": [
+     -44,
+     -13
+    ],
+    "y": 3,
+    "nota": "o mirante: estátua/monumento da guilda (fase 3)"
+   }
+  ],
+  "chegada": {
+   "chefe": [
+    {
+     "x": 25.18,
+     "z": -26.13
+    },
+    {
+     "x": 25.92,
+     "z": -26.55
+    },
+    {
+     "x": 26.73,
+     "z": -26.84
+    },
+    {
+     "x": 27.57,
+     "z": -26.98
+    },
+    {
+     "x": 28.43,
+     "z": -26.98
+    },
+    {
+     "x": 29.27,
+     "z": -26.84
+    },
+    {
+     "x": 30.08,
+     "z": -26.55
+    },
+    {
+     "x": 30.82,
+     "z": -26.13
+    }
+   ],
+   "base": [
+    {
+     "x": -18.82,
+     "z": 26.87
+    },
+    {
+     "x": -18.36,
+     "z": 26.59
+    },
+    {
+     "x": -17.86,
+     "z": 26.36
+    },
+    {
+     "x": -17.35,
+     "z": 26.18
+    },
+    {
+     "x": -16.81,
+     "z": 26.07
+    },
+    {
+     "x": -16.27,
+     "z": 26.01
+    },
+    {
+     "x": -15.73,
+     "z": 26.01
+    },
+    {
+     "x": -15.19,
+     "z": 26.07
+    },
+    {
+     "x": -14.65,
+     "z": 26.18
+    },
+    {
+     "x": -14.14,
+     "z": 26.36
+    },
+    {
+     "x": -13.64,
+     "z": 26.59
+    },
+    {
+     "x": -13.18,
+     "z": 26.87
+    }
+   ]
+  },
+  "vagas": [
+   {
+    "id": "salao",
+    "nome": "Salão da guilda",
+    "regiao": "r1",
+    "descricao": "a casa da guilda: cresce com o nível; baú e loja moram aqui (fase 3)",
+    "x": -30,
+    "z": 39,
+    "niveis": [
+     {
+      "nivel": 1,
+      "custo": 0,
+      "pecas": [
+       {
+        "n": "T_M_JY_housse01",
+        "x": -30,
+        "z": 39,
+        "tam": [
+         8,
+         7
+        ],
+        "noGlb": true
+       }
+      ]
+     },
+     {
+      "nivel": 3,
+      "custo": 400,
+      "pecas": [
+       {
+        "n": "T_M_JY_housse02",
+        "x": -30,
+        "z": 39,
+        "tam": [
+         10,
+         7
+        ],
+        "noGlb": true
+       }
+      ]
+     },
+     {
+      "nivel": 5,
+      "custo": 800,
+      "pecas": [
+       {
+        "n": "T_M_JY_housse03",
+        "x": -30,
+        "z": 39,
+        "tam": [
+         12,
+         7
+        ],
+        "noGlb": true
+       }
+      ]
+     },
+     {
+      "nivel": 7,
+      "custo": 1500,
+      "pecas": [
+       {
+        "n": "T_M_JY_housse04",
+        "x": -30,
+        "z": 39,
+        "tam": [
+         18,
+         7
+        ],
+        "noGlb": true
+       }
+      ]
+     },
+     {
+      "nivel": 9,
+      "custo": 2500,
+      "pecas": [
+       {
+        "n": "T_M_JY_housse05",
+        "x": -30,
+        "z": 39,
+        "tam": [
+         23,
+         12
+        ],
+        "noGlb": true
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "descanso",
+    "nome": "Área de descanso dos Pokémon",
+    "regiao": "r1",
+    "descricao": "onde os Pokémon emprestados pelos membros ficam à mostra (fase 3: trabalhando)",
+    "nivel": 1,
+    "custo": 0,
+    "pecas": [
+     {
+      "n": "T_M_JY_jinglingxiuxiqu",
+      "x": 4,
+      "z": 40,
+      "tam": [
+       5,
+       4
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "cozinha",
+    "nome": "Cozinha ao ar livre",
+    "regiao": "r1",
+    "descricao": "comida pros Pokémon da base (fase 3)",
+    "nivel": 2,
+    "custo": 300,
+    "pecas": [
+     {
+      "n": "T_M_JY_lutianchufang",
+      "x": -12,
+      "z": 40,
+      "tam": [
+       4,
+       2
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "bancada",
+    "nome": "Bancada de síntese",
+    "regiao": "r2",
+    "descricao": "transforma o que a base produz em itens presos à conta (fase 3)",
+    "nivel": 4,
+    "custo": 800,
+    "pecas": [
+     {
+      "n": "T_M_JY_lianjintai",
+      "x": 4,
+      "z": 1,
+      "tam": [
+       4,
+       3
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "mina",
+    "nome": "Mina",
+    "regiao": "r3",
+    "descricao": "pedra que renasce por hora; rende pelo número de membros que mineram (fase 3)",
+    "nivel": 5,
+    "custo": 600,
+    "pecas": [
+     {
+      "n": "T_M_JY_kuangchang",
+      "x": 35,
+      "z": 4,
+      "tam": [
+       25,
+       22
+      ],
+      "giro": 90,
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "horta",
+    "nome": "Horta grande",
+    "regiao": "r3",
+    "descricao": "20 canteiros; o Pokémon que rega passa pelos corredores",
+    "nivel": 5,
+    "custo": 500,
+    "pecas": [
+     {
+      "n": "T_001_Soil",
+      "x": 22,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Plant01",
+      "x": 22,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 26.4,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_002_Plant01",
+      "x": 26.4,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 30.8,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_003_Plant01",
+      "x": 30.8,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 35.2,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_004_Plant01",
+      "x": 35.2,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 39.6,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_005_Plant01",
+      "x": 39.6,
+      "z": 20,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 22,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_006_Plant01",
+      "x": 22,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 26.4,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Plant01",
+      "x": 26.4,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 30.8,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_002_Plant01",
+      "x": 30.8,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 35.2,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_003_Plant01",
+      "x": 35.2,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 39.6,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_004_Plant01",
+      "x": 39.6,
+      "z": 24.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 22,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_005_Plant01",
+      "x": 22,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 26.4,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_006_Plant01",
+      "x": 26.4,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 30.8,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Plant01",
+      "x": 30.8,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 35.2,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_002_Plant01",
+      "x": 35.2,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 39.6,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_003_Plant01",
+      "x": 39.6,
+      "z": 28.8,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 22,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_004_Plant01",
+      "x": 22,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 26.4,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_005_Plant01",
+      "x": 26.4,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 30.8,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_006_Plant01",
+      "x": 30.8,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 35.2,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Plant01",
+      "x": 35.2,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": 39.6,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_002_Plant01",
+      "x": 39.6,
+      "z": 33.2,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "alimentador",
+    "nome": "Alimentador automático",
+    "regiao": "r3",
+    "descricao": "os Pokémon da base comem sozinhos (fase 3)",
+    "nivel": 6,
+    "custo": 500,
+    "pecas": [
+     {
+      "n": "T_M_JY_zidongweishiqi",
+      "x": 30,
+      "z": 37,
+      "tam": [
+       1,
+       1
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "decoracao",
+    "nome": "Máquina de decoração",
+    "regiao": "r3",
+    "descricao": "enfeites da base (fase 3)",
+    "nivel": 6,
+    "custo": 800,
+    "pecas": [
+     {
+      "n": "T_M_JY_zhuangshizhizaoji",
+      "x": 38,
+      "z": 38,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "serraria",
+    "nome": "Serraria",
+    "regiao": "r4",
+    "descricao": "madeira que renasce por hora, entre as árvores do bosque (fase 3)",
+    "nivel": 7,
+    "custo": 800,
+    "pecas": [
+     {
+      "n": "sm_t_timber_001",
+      "x": -30,
+      "z": -20,
+      "tam": [
+       3,
+       2
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "sm_t_timber_001",
+      "x": -26,
+      "z": -24,
+      "tam": [
+       3,
+       2
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "sm_t_timber_001",
+      "x": -34,
+      "z": -26,
+      "tam": [
+       3,
+       2
+      ],
+      "noGlb": true
+     }
+    ]
+   }
+  ],
+  "tesouro": {
+   "nome": "Moeda de guilda",
+   "vem": [
+    "vitória sobre o chefe (100 × degrau)",
+    "marco de 50.000 de dano (50)",
+    "fase 3: doação pro baú"
+   ]
+  },
+  "porExportar": [],
+  "aprovar": [
+   "regiões por nível",
+   "vagas (posição e nível)",
+   "custos",
+   "chegada"
+  ]
+ },
+ "casa": {
+  "cena": "habitat",
+  "mapa": 1000002,
+  "sala": "habitat#<conta>",
+  "coordenadas": "as do data/habitat.json: o jogo espelha o x (mundo = −x, z)",
+  "moradia": {
+   "x": -13,
+   "z": -13,
+   "nota": "o prédio amarelo de 3 andares: a casa em si (entrável, fase 3)"
+  },
+  "oficina": {
+   "x": 1,
+   "z": -17,
+   "nota": "o laboratório"
+  },
+  "chegada": [
+   {
+    "x": -18.82,
+    "z": -6.13
+   },
+   {
+    "x": -18.08,
+    "z": -6.55
+   },
+   {
+    "x": -17.27,
+    "z": -6.84
+   },
+   {
+    "x": -16.43,
+    "z": -6.98
+   },
+   {
+    "x": -15.57,
+    "z": -6.98
+   },
+   {
+    "x": -14.73,
+    "z": -6.84
+   },
+   {
+    "x": -13.92,
+    "z": -6.55
+   },
+   {
+    "x": -13.18,
+    "z": -6.13
+   }
+  ],
+  "niveis": 10,
+  "nivelNota": "o nível da casa sobe com as construções e o uso (rancho do dump: XP por construção); a calibrar na frente lab-casa",
+  "vagas": [
+   {
+    "id": "ninho",
+    "nome": "Ninho dos companheiros",
+    "descricao": "onde os seus Pokémon ficam à mostra e descansam (fase 3: fadiga e humor)",
+    "nivel": 1,
+    "custo": 0,
+    "pecas": [
+     {
+      "n": "T_M_JY_jinglingxiuxiqu",
+      "x": -22,
+      "z": -4,
+      "tam": [
+       5,
+       4
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "horta",
+    "nome": "Horta de bagas",
+    "descricao": "6 canteiros: regar, capinar, colher (fase 3)",
+    "nivel": 2,
+    "custo": 5000,
+    "pecas": [
+     {
+      "n": "T_001_Soil",
+      "x": -38,
+      "z": 12,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Plant01",
+      "x": -38,
+      "z": 12,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": -33.6,
+      "z": 12,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_002_Plant01",
+      "x": -33.6,
+      "z": 12,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": -29.2,
+      "z": 12,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_003_Plant01",
+      "x": -29.2,
+      "z": 12,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": -38,
+      "z": 16.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_004_Plant01",
+      "x": -38,
+      "z": 16.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": -33.6,
+      "z": 16.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_005_Plant01",
+      "x": -33.6,
+      "z": 16.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_001_Soil",
+      "x": -29.2,
+      "z": 16.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     },
+     {
+      "n": "T_006_Plant01",
+      "x": -29.2,
+      "z": 16.4,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "cozinha",
+    "nome": "Cozinha ao ar livre",
+    "descricao": "comida pros companheiros (fase 3)",
+    "nivel": 3,
+    "custo": 8000,
+    "pecas": [
+     {
+      "n": "T_M_JY_lutianchufang",
+      "x": -4,
+      "z": -6,
+      "tam": [
+       4,
+       2
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "alimentador",
+    "nome": "Alimentador automático",
+    "descricao": "os companheiros comem sozinhos (fase 3)",
+    "nivel": 4,
+    "custo": 12000,
+    "pecas": [
+     {
+      "n": "T_M_JY_zidongweishiqi",
+      "x": -14,
+      "z": 2,
+      "tam": [
+       1,
+       1
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "decoracao",
+    "nome": "Máquina de decoração",
+    "descricao": "enfeites da casa (fase 3)",
+    "nivel": 5,
+    "custo": 15000,
+    "pecas": [
+     {
+      "n": "T_M_JY_zhuangshizhizaoji",
+      "x": -36,
+      "z": -14,
+      "tam": [
+       3,
+       3
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "alquimia",
+    "nome": "Mesa de alquimia",
+    "descricao": "síntese pessoal, na frente do laboratório (fase 3)",
+    "nivel": 6,
+    "custo": 20000,
+    "pecas": [
+     {
+      "n": "T_M_JY_lianjintai",
+      "x": 8,
+      "z": -8,
+      "tam": [
+       4,
+       3
+      ],
+      "noGlb": true
+     }
+    ]
+   },
+   {
+    "id": "incubadora",
+    "nome": "Incubadora",
+    "descricao": "item da bolsa: o jogador coloca no terreno; choca o ovo da criação (lab-ovo)",
+    "nivel": 1,
+    "custo": 0,
+    "item": {
+     "id": "incubadora",
+     "nome": "Incubadora",
+     "icone": "ic_placeholder",
+     "nota": "ícone provisório até a Amanda desenhar"
+    },
+    "colocacao": "livre",
+    "pecas": [
+     {
+      "n": "incubadora",
+      "glb": "cenario/objetos/incubadora.glb",
+      "escala": 0.5,
+      "animacao": "Abrir_cupula",
+      "x": -6,
+      "z": -9,
+      "tam": [
+       1.5,
+       1.5
+      ],
+      "noGlb": true,
+      "autoral": true
+     }
+    ]
+   }
+  ],
+  "moeda": "₽ (dinheiro do jogo)",
+  "porExportar": [],
+  "aprovar": [
+   "vagas e custos",
+   "como o nível da casa sobe",
+   "o que é da casa e o que é da guilda"
+  ]
+ },
+ "arena": {
+  "cena": "campo_guilda",
+  "mapa": 4440001,
+  "sala": "campo#<guilda>",
+  "coordenadas": "as do data/campo_guilda.json: o jogo espelha o x (mundo = −x, z)",
+  "aberta": true,
+  "nota": "Jaime (01/10): aberta a todos (não obriga guilda) — eventos, chefe mundial, Guerra de Guildas; o chefe DA guilda nasce na BASE",
+  "palco": {
+   "x": -5,
+   "z": -6,
+   "giro": 0,
+   "nota": "o centro do parque cercado: o palco dos eventos"
+  },
+  "chegada": {
+   "evento": [
+    {
+     "x": -9.52,
+     "z": -12.6
+    },
+    {
+     "x": -8.77,
+     "z": -13.06
+    },
+    {
+     "x": -7.98,
+     "z": -13.42
+    },
+    {
+     "x": -7.15,
+     "z": -13.7
+    },
+    {
+     "x": -6.3,
+     "z": -13.89
+    },
+    {
+     "x": -5.44,
+     "z": -13.99
+    },
+    {
+     "x": -4.56,
+     "z": -13.99
+    },
+    {
+     "x": -3.7,
+     "z": -13.89
+    },
+    {
+     "x": -2.85,
+     "z": -13.7
+    },
+    {
+     "x": -2.02,
+     "z": -13.42
+    },
+    {
+     "x": -1.23,
+     "z": -13.06
+    },
+    {
+     "x": -0.48,
+     "z": -12.6
+    }
+   ]
+  },
+  "nascimentos": {
+   "lado1": [
+    {
+     "x": -55,
+     "z": -20
+    },
+    {
+     "x": -55,
+     "z": -10
+    },
+    {
+     "x": -55,
+     "z": 0
+    },
+    {
+     "x": -55,
+     "z": 8
+    }
+   ],
+   "lado2": [
+    {
+     "x": 45,
+     "z": -20
+    },
+    {
+     "x": 45,
+     "z": -10
+    },
+    {
+     "x": 45,
+     "z": 0
+    },
+    {
+     "x": 45,
+     "z": 8
+    }
+   ]
+  },
+  "coletas": {
+   "lado1": [
+    {
+     "x": -45,
+     "z": -36
+    },
+    {
+     "x": -25,
+     "z": 25
+    },
+    {
+     "x": -20,
+     "z": -36
+    },
+    {
+     "x": 25,
+     "z": 25
+    },
+    {
+     "x": 5,
+     "z": -36
+    }
+   ],
+   "lado2": [
+    {
+     "x": -35,
+     "z": 25
+    },
+    {
+     "x": -10,
+     "z": -36
+    },
+    {
+     "x": 15,
+     "z": 25
+    },
+    {
+     "x": 35,
+     "z": -36
+    },
+    {
+     "x": 30,
+     "z": 25
+    }
+   ]
+  },
+  "aprovar": [
+   "o Campo é a arena",
+   "posições"
+  ]
+ }
+}

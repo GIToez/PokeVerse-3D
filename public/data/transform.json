@@ -1,0 +1,754 @@
+{
+ "versao": 1,
+ "gerado": "tools/transform.mjs (lab-ditto, 01/10/2026) — não editar à mão; rodar de novo dá o mesmo arquivo",
+ "fontes": {
+  "regras": "decisão do Jaime pk-metapod (01/10) + desenho da lab-ditto (A APROVAR, docs/frentes/ditto.md §2 e §4)",
+  "golpe": "data/SkillConfig.json (Id 10144), data/LanguageConfig_pt.json (Skill_*_10144), data/pokeapi/moves.csv (144)",
+  "aprendem": "data/pokeapi/pokemon_moves_144.csv: recorte do pokemon_moves.csv da PokéAPI (commit ca0a21b3, cópia local de 25/09) só com o golpe 144",
+  "ditto": "pokedex.json, data/EudemonConfig.json e data/EudemonSkillConfig.json (Id 10132), data/learnset.json, data/habitats.json, data/niveis_area.json",
+  "especies": "data/elenco.json (os modelos do jogo) e data/pokeapi/pokemon_species.csv (is_legendary / is_mythical)"
+ },
+ "regras": {
+  "quem": [
+   132
+  ],
+  "forcaPct": 70,
+  "statsCopiados": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "statsComPerda": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "hpCopiado": false,
+  "recargaS": 60,
+  "alcanceM": 12,
+  "alcanceServidorM": 18,
+  "coleiraM": 12,
+  "respeitoNiveis": 5,
+  "duracaoMin": 30,
+  "ppCopiado": 5,
+  "golpesMax": 4,
+  "naoCopiaGolpes": [
+   "transform",
+   "struggle"
+  ],
+  "copiaChefe": false,
+  "copiaDitto": false,
+  "copiaTransformado": false,
+  "copiaLendario": true,
+  "copiaSkin": false,
+  "shiny": "doDitto",
+  "luta": {
+   "respeito": true,
+   "alcance": false,
+   "recarga": false,
+   "cena": false,
+   "gastaPP": false,
+   "prioridade": 0
+  },
+  "desfazAo": [
+   "desmaio",
+   "troca",
+   "cena",
+   "tempo",
+   "pedido",
+   "fimDaLuta",
+   "saiuDaPosse"
+  ],
+  "varreduraS": 1,
+  "ritmoMs": 500,
+  "tetoDeNivel": true
+ },
+ "golpe": {
+  "id": "transform",
+  "nome": "Transform",
+  "nomePt": "Transformar",
+  "tipo": "Normal",
+  "cat": "status",
+  "pp": 10,
+  "prioridade": 0,
+  "alvo": "selected-pokemon",
+  "descPt": "Assume a aparência do oponente, copiando todas as habilidades.",
+  "descPtLonga": "O movimento Transformação faz o usuário se transformar, copiando parcialmente o alvo. Todos os movimentos copiados têm 5 PP. A propriedade e poder do Despertar são calculados com base nos valores individuais antes da transformação.",
+  "dump": {
+   "skill": 10144,
+   "efeitoInicio": 10144401,
+   "perform": 10144,
+   "elemento": 1,
+   "categoria": 3
+  },
+  "pokeapi": {
+   "id": 144,
+   "efeito": 58,
+   "geracao": 1
+  }
+ },
+ "aprendemNaSerie": [
+  {
+   "dex": 132,
+   "nome": "Ditto",
+   "metodo": "nivel",
+   "nivel": 1
+  },
+  {
+   "dex": 151,
+   "nome": "Mew",
+   "metodo": "nivel",
+   "nivel": 1
+  }
+ ],
+ "ditto": {
+  "dex": 132,
+  "nome": "Ditto",
+  "bs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ],
+  "tipos": [
+   "Normal"
+  ],
+  "golpesHoje": [
+   [
+    "pound",
+    1
+   ]
+  ],
+  "golpesDump": [
+   [
+    10001,
+    1
+   ]
+  ],
+  "habilidadesDump": {
+   "comuns": [
+    1007
+   ],
+   "oculta": 1150
+  },
+  "modelo": "pm0132_00",
+  "selvagem": [
+   {
+    "area": 1212,
+    "lv": [
+     22,
+     30
+    ],
+    "peso": 100
+   },
+   {
+    "area": 1213,
+    "lv": [
+     22,
+     30
+    ],
+    "peso": 100
+   },
+   {
+    "area": 1214,
+    "lv": [
+     22,
+     30
+    ],
+    "peso": 100
+   },
+   {
+    "area": 1215,
+    "lv": [
+     22,
+     30
+    ],
+    "peso": 100
+   },
+   {
+    "area": 1223,
+    "lv": [
+     42,
+     52
+    ],
+    "peso": 100
+   },
+   {
+    "area": 1319,
+    "lv": [
+     60,
+     64
+    ],
+    "peso": 80
+   },
+   {
+    "area": 1320,
+    "lv": [
+     60,
+     70
+    ],
+    "peso": 120
+   }
+  ]
+ },
+ "lendarios": [
+  144,
+  145,
+  146,
+  150,
+  151,
+  243,
+  244,
+  245,
+  249,
+  250,
+  251,
+  377,
+  378,
+  379,
+  380,
+  381,
+  382,
+  383,
+  384,
+  385,
+  386,
+  480,
+  481,
+  482,
+  483,
+  484,
+  485,
+  486,
+  487,
+  488,
+  490,
+  491,
+  492,
+  493,
+  494,
+  638,
+  639,
+  640,
+  641,
+  642,
+  643,
+  644,
+  645,
+  646,
+  647,
+  648,
+  649,
+  716,
+  717,
+  718,
+  719,
+  720,
+  721,
+  773,
+  785,
+  786,
+  787,
+  788,
+  791,
+  792,
+  800,
+  801,
+  802,
+  807,
+  888,
+  892,
+  905,
+  1014,
+  1015,
+  1016,
+  1025
+ ],
+ "erros": {
+  "semConta": {
+   "pt": "Entre com a sua conta pra transformar.",
+   "en": "Log in to your account to transform.",
+   "es": "Entra con tu cuenta para transformar."
+  },
+  "semCena": {
+   "pt": "Você ainda não está no mundo.",
+   "en": "You are not in the world yet.",
+   "es": "Todavía no estás en el mundo."
+  },
+  "emBatalha": {
+   "pt": "Na batalha por turnos, Transformar é a ação do seu turno.",
+   "en": "In a turn-based battle, Transform is your turn action.",
+   "es": "En la batalla por turnos, Transformar es la acción de tu turno."
+  },
+  "naoEDaConta": {
+   "pt": "Esse Pokémon não é seu.",
+   "en": "That Pokémon is not yours.",
+   "es": "Ese Pokémon no es tuyo."
+  },
+  "naoEstaEmCampo": {
+   "pt": "O Ditto precisa estar em campo.",
+   "en": "Ditto must be out of its Poké Ball.",
+   "es": "Ditto tiene que estar fuera de su Poké Ball."
+  },
+  "naoTransforma": {
+   "pt": "Só o Ditto sabe se transformar.",
+   "en": "Only Ditto can transform.",
+   "es": "Solo Ditto sabe transformarse."
+  },
+  "desmaiado": {
+   "pt": "{nome} está desmaiado.",
+   "en": "{nome} has fainted.",
+   "es": "{nome} está debilitado."
+  },
+  "naoObedece": {
+   "pt": "{nome} (Lv {lv}) não obedece: o teto das suas insígnias é Lv {teto}.",
+   "en": "{nome} (Lv {lv}) will not obey: your badges cap levels at {teto}.",
+   "es": "{nome} (Nv {lv}) no obedece: el tope de tus medallas es Nv {teto}."
+  },
+  "jaTransformado": {
+   "pt": "{nome} já está transformado: desfaça a cópia antes.",
+   "en": "{nome} is already transformed: undo it first.",
+   "es": "{nome} ya está transformado: deshaz la copia antes."
+  },
+  "recarga": {
+   "pt": "{nome} ainda está se refazendo da última transformação ({s} s).",
+   "en": "{nome} is still recovering from the last transformation ({s} s).",
+   "es": "{nome} todavía se está recuperando de la última transformación ({s} s)."
+  },
+  "alvoNaoExiste": {
+   "pt": "Esse Pokémon não está mais aqui.",
+   "en": "That Pokémon is not here anymore.",
+   "es": "Ese Pokémon ya no está aquí."
+  },
+  "alvoProprio": {
+   "pt": "O Ditto não pode copiar a si mesmo.",
+   "en": "Ditto cannot copy itself.",
+   "es": "Ditto no puede copiarse a sí mismo."
+  },
+  "outraCena": {
+   "pt": "Esse Pokémon está em outro lugar.",
+   "en": "That Pokémon is somewhere else.",
+   "es": "Ese Pokémon está en otro lugar."
+  },
+  "alvoChefe": {
+   "pt": "O chefe da raid não pode ser copiado.",
+   "en": "The raid boss cannot be copied.",
+   "es": "El jefe de la incursión no se puede copiar."
+  },
+  "alvoDesmaiado": {
+   "pt": "Não dá pra copiar um Pokémon desmaiado.",
+   "en": "A fainted Pokémon cannot be copied.",
+   "es": "No se puede copiar un Pokémon debilitado."
+  },
+  "alvoTransformado": {
+   "pt": "Esse Pokémon já é uma cópia.",
+   "en": "That Pokémon is already a copy.",
+   "es": "Ese Pokémon ya es una copia."
+  },
+  "alvoDitto": {
+   "pt": "Um Ditto não copia outro Ditto.",
+   "en": "A Ditto does not copy another Ditto.",
+   "es": "Un Ditto no copia a otro Ditto."
+  },
+  "alvoLendario": {
+   "pt": "Lendários não podem ser copiados.",
+   "en": "Legendary Pokémon cannot be copied.",
+   "es": "Los Pokémon legendarios no se pueden copiar."
+  },
+  "alvoSemEspecie": {
+   "pt": "Essa espécie não pode ser copiada.",
+   "en": "That species cannot be copied.",
+   "es": "Esa especie no se puede copiar."
+  },
+  "alvoSemGolpes": {
+   "pt": "Esse Pokémon não tem golpes pra copiar.",
+   "en": "That Pokémon has no moves to copy.",
+   "es": "Ese Pokémon no tiene movimientos para copiar."
+  },
+  "respeito": {
+   "pt": "{alvo} (Lv {lvAlvo}) é forte demais: {nome} copia até o Lv {max}.",
+   "en": "{alvo} (Lv {lvAlvo}) is too strong: {nome} copies up to Lv {max}.",
+   "es": "{alvo} (Nv {lvAlvo}) es demasiado fuerte: {nome} copia hasta el Nv {max}."
+  },
+  "semPosicao": {
+   "pt": "Não deu pra saber onde você está agora; ande um pouco e tente de novo.",
+   "en": "Your position could not be confirmed; walk a little and try again.",
+   "es": "No se pudo confirmar dónde estás; camina un poco e inténtalo de nuevo."
+  },
+  "alvoLonge": {
+   "pt": "Chegue mais perto de {alvo} (até {m} m).",
+   "en": "Get closer to {alvo} (up to {m} m).",
+   "es": "Acércate más a {alvo} (hasta {m} m)."
+  },
+  "naoTransformado": {
+   "pt": "{nome} não está transformado.",
+   "en": "{nome} is not transformed.",
+   "es": "{nome} no está transformado."
+  },
+  "golpeForaDaCopia": {
+   "pt": "{nome} não tem esse golpe na cópia.",
+   "en": "{nome} does not have that move in its copy.",
+   "es": "{nome} no tiene ese movimiento en la copia."
+  },
+  "semPP": {
+   "pt": "{golpe} está sem PP.",
+   "en": "{golpe} is out of PP.",
+   "es": "{golpe} no tiene PP."
+  }
+ },
+ "textos": {
+  "transformou": {
+   "pt": "{nome} se transformou em {alvo}!",
+   "en": "{nome} transformed into {alvo}!",
+   "es": "¡{nome} se transformó en {alvo}!"
+  },
+  "voltou": {
+   "pt": "{nome} voltou a ser Ditto.",
+   "en": "{nome} turned back into Ditto.",
+   "es": "{nome} volvió a ser Ditto."
+  },
+  "acabou": {
+   "pt": "A transformação de {nome} acabou.",
+   "en": "{nome}'s transformation wore off.",
+   "es": "La transformación de {nome} terminó."
+  },
+  "botao": {
+   "pt": "Transformar",
+   "en": "Transform",
+   "es": "Transformar"
+  },
+  "botaoDesfazer": {
+   "pt": "Desfazer transformação",
+   "en": "Undo transformation",
+   "es": "Deshacer transformación"
+  },
+  "emRecarga": {
+   "pt": "Transformar de novo em {s} s",
+   "en": "Transform again in {s} s",
+   "es": "Transformar de nuevo en {s} s"
+  },
+  "restante": {
+   "pt": "Cópia de {alvo} · {min} min",
+   "en": "{alvo} copy · {min} min",
+   "es": "Copia de {alvo} · {min} min"
+  }
+ },
+ "resumo": {
+  "especiesComModelo": 246,
+  "lendariosComModelo": 71,
+  "dittoSoma5": 240,
+  "copiaMelhoraODitto": 149,
+  "copiaEmpata": 0,
+  "copiaPioraODitto": 97,
+  "kanto": {
+   "especies": 151,
+   "melhora": 80,
+   "piora": 71
+  },
+  "maiores": [
+   {
+    "dex": 493,
+    "nome": "Arceus",
+    "original": 600,
+    "copia": 420
+   },
+   {
+    "dex": 484,
+    "nome": "Palkia",
+    "original": 590,
+    "copia": 413
+   },
+   {
+    "dex": 483,
+    "nome": "Dialga",
+    "original": 580,
+    "copia": 406
+   },
+   {
+    "dex": 643,
+    "nome": "Reshiram",
+    "original": 580,
+    "copia": 406
+   },
+   {
+    "dex": 644,
+    "nome": "Zekrom",
+    "original": 580,
+    "copia": 406
+   }
+  ],
+  "menores": [
+   {
+    "dex": 10,
+    "nome": "Caterpie",
+    "original": 150,
+    "copia": 104
+   },
+   {
+    "dex": 39,
+    "nome": "Jigglypuff",
+    "original": 155,
+    "copia": 107
+   },
+   {
+    "dex": 11,
+    "nome": "Metapod",
+    "original": 155,
+    "copia": 107
+   },
+   {
+    "dex": 13,
+    "nome": "Weedle",
+    "original": 155,
+    "copia": 108
+   },
+   {
+    "dex": 14,
+    "nome": "Kakuna",
+    "original": 160,
+    "copia": 110
+   }
+  ],
+  "exemplos": [
+   {
+    "ditto": {
+     "lv": 50,
+     "ivs": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31
+     ],
+     "natureza": "Hardy"
+    },
+    "alvo": {
+     "dex": 6,
+     "nome": "Charizard",
+     "bs": [
+      78,
+      84,
+      78,
+      109,
+      85,
+      100
+     ]
+    },
+    "bsCopiado": [
+     null,
+     58,
+     54,
+     76,
+     59,
+     70
+    ],
+    "antes": [
+     369,
+     68,
+     68,
+     68,
+     68,
+     68
+    ],
+    "depois": [
+     369,
+     78,
+     74,
+     96,
+     79,
+     90
+    ],
+    "alvoDeVerdade": [
+     459,
+     104,
+     98,
+     129,
+     105,
+     120
+    ]
+   },
+   {
+    "ditto": {
+     "lv": 50,
+     "ivs": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31
+     ],
+     "natureza": "Hardy"
+    },
+    "alvo": {
+     "dex": 150,
+     "nome": "Mewtwo",
+     "bs": [
+      106,
+      110,
+      90,
+      154,
+      90,
+      130
+     ]
+    },
+    "bsCopiado": [
+     null,
+     77,
+     63,
+     107,
+     63,
+     91
+    ],
+    "antes": [
+     369,
+     68,
+     68,
+     68,
+     68,
+     68
+    ],
+    "depois": [
+     369,
+     97,
+     83,
+     127,
+     83,
+     111
+    ],
+    "alvoDeVerdade": [
+     543,
+     130,
+     110,
+     174,
+     110,
+     150
+    ]
+   },
+   {
+    "ditto": {
+     "lv": 30,
+     "ivs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "natureza": "Hardy"
+    },
+    "alvo": {
+     "dex": 25,
+     "nome": "Pikachu",
+     "bs": [
+      35,
+      55,
+      40,
+      50,
+      50,
+      90
+     ]
+    },
+    "bsCopiado": [
+     null,
+     38,
+     28,
+     35,
+     35,
+     63
+    ],
+    "antes": [
+     204,
+     33,
+     33,
+     33,
+     33,
+     33
+    ],
+    "depois": [
+     204,
+     27,
+     21,
+     26,
+     26,
+     42
+    ],
+    "alvoDeVerdade": [
+     183,
+     38,
+     29,
+     35,
+     35,
+     59
+    ]
+   },
+   {
+    "ditto": {
+     "lv": 50,
+     "ivs": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31
+     ],
+     "natureza": "Modest"
+    },
+    "alvo": {
+     "dex": 150,
+     "nome": "Mewtwo",
+     "bs": [
+      106,
+      110,
+      90,
+      154,
+      90,
+      130
+     ]
+    },
+    "bsCopiado": [
+     null,
+     77,
+     63,
+     107,
+     63,
+     91
+    ],
+    "antes": [
+     369,
+     61,
+     68,
+     74,
+     68,
+     68
+    ],
+    "depois": [
+     369,
+     87,
+     83,
+     139,
+     83,
+     111
+    ],
+    "alvoDeVerdade": [
+     543,
+     117,
+     110,
+     191,
+     110,
+     150
+    ]
+   }
+  ],
+  "nota": "soma dos 5 atributos base copiados (×0,7) contra a do Ditto (5 × 48 = 240). Melhora = a cópia tem soma maior."
+ }
+}

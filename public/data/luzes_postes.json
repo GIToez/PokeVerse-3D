@@ -1,0 +1,756 @@
+{
+ "versao": 1,
+ "nota": "autoria da bancada luzes_teste.html (postes nas cidades); o dado dos modelos e das portas é o data/luzes.json",
+ "postes": [
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -16.5,
+   "z": -29.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 4.5,
+   "z": -56.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 8.5,
+   "z": 67.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -7.5,
+   "z": 48.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 7.5,
+   "z": 48.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -8.5,
+   "z": 62.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -0.5,
+   "z": -147.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 243.5,
+   "z": -11.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 270.5,
+   "z": -7.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 256.5,
+   "z": -23.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 260.5,
+   "z": -2.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 347.5,
+   "z": -76.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 146.5,
+   "z": -75.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 139.5,
+   "z": -112.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 186.5,
+   "z": -73.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 192.5,
+   "z": -97.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 175.5,
+   "z": -71.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 165.5,
+   "z": -113.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 162.5,
+   "z": -71.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 175.5,
+   "z": -95.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 155.5,
+   "z": -107.5,
+   "origem": "proposta"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -0.5,
+   "z": -50.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 18.5,
+   "z": -57.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 9.5,
+   "z": -38.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -0.5,
+   "z": -39.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 5.5,
+   "z": -32.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -17.5,
+   "z": -43.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -2.5,
+   "z": -21.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 2.5,
+   "z": -21.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 17.5,
+   "z": -25.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 11.5,
+   "z": -13.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -21.5,
+   "z": -183.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -13.5,
+   "z": -171.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 0.5,
+   "z": -182.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 5.5,
+   "z": -183.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 8.5,
+   "z": -175.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 2.5,
+   "z": -167.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -3.5,
+   "z": -158.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": -17.5,
+   "z": -155.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 15.5,
+   "z": -150.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 17.5,
+   "z": -165.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 258.5,
+   "z": -207.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 244.5,
+   "z": -207.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 244.5,
+   "z": -195.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 250.5,
+   "z": -186.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 238.5,
+   "z": -186.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 228.5,
+   "z": -185.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 230.5,
+   "z": -199.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 242.5,
+   "z": -215.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 236.5,
+   "z": -263.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 258.5,
+   "z": -257.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 270.5,
+   "z": -262.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 279.5,
+   "z": -248.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 260.5,
+   "z": -248.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 287.5,
+   "z": -258.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 243.5,
+   "z": -257.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 238.5,
+   "z": -244.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 238.5,
+   "z": -229.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 237.5,
+   "z": -35.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 229.5,
+   "z": -25.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 243.5,
+   "z": -24.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 232.5,
+   "z": -12.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 253.5,
+   "z": 1.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 246.5,
+   "z": 9.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 258.5,
+   "z": 7.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 226.5,
+   "z": 0.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 247.5,
+   "z": -57.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 240.5,
+   "z": -66.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 245.5,
+   "z": -66.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 355.5,
+   "z": -97.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 353.5,
+   "z": -87.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 376.5,
+   "z": -86.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 367.5,
+   "z": -75.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_t_007_streetlight_01",
+   "x": 312.5,
+   "z": -95.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 366.5,
+   "z": -93.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 135.5,
+   "z": -89.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 147.5,
+   "z": -97.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 146.5,
+   "z": -97.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 157.5,
+   "z": -106.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 188.5,
+   "z": -103.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 185.5,
+   "z": -90.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 157.5,
+   "z": -93.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 155.5,
+   "z": -70.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 150.5,
+   "z": -89.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 146.5,
+   "z": -89.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 172.5,
+   "z": -103.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 164.5,
+   "z": -103.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 247.5,
+   "z": -83.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 232.5,
+   "z": -81.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 223.5,
+   "z": -75.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 262.5,
+   "z": -75.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 245.5,
+   "z": -117.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 235.5,
+   "z": -107.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 227.5,
+   "z": -99.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 221.5,
+   "z": -91.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 214.5,
+   "z": -91.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 230.5,
+   "z": -93.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 245.5,
+   "z": -90.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 257.5,
+   "z": -83.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 264.5,
+   "z": -91.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 271.5,
+   "z": -91.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 259.5,
+   "z": -111.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 247.5,
+   "z": -128.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 172.5,
+   "z": 85.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 165.5,
+   "z": 85.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 155.5,
+   "z": 94.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 151.5,
+   "z": 114.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 159.5,
+   "z": 114.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 164.5,
+   "z": 114.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 169.5,
+   "z": 114.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 184.5,
+   "z": 114.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 185.5,
+   "z": 114.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 175.5,
+   "z": 123.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 193.5,
+   "z": 98.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 201.5,
+   "z": 104.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 208.5,
+   "z": 104.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 193.5,
+   "z": 85.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 172.5,
+   "z": 93.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 133.5,
+   "z": 103.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 126.5,
+   "z": 103.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 138.5,
+   "z": 96.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 107.5,
+   "z": -84.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 107.5,
+   "z": -91.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 114.5,
+   "z": -84.5,
+   "origem": "mao"
+  },
+  {
+   "m": "sm_c_001_streetlight_01",
+   "x": 114.5,
+   "z": -96.5,
+   "origem": "mao"
+  }
+ ]
+}
