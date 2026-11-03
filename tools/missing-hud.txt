@@ -1,0 +1,10 @@
+Missing HUD images after the 10 Drive parts (10,000 files).
+The situation panels in the layout are all in those parts.
+These 6 PC HUD images are still absent:
+
+https://pokefableonline.com/ui/figma_webp/ui2-v2/pc-refs/missao-atual/missao-atual/missao-header.webp
+https://pokefableonline.com/ui/figma_webp/ui2-v2/pc-refs/skill-completa-ball/skill-completa-ball/fx/escurecer.webp
+https://pokefableonline.com/ui/figma_webp/ui2-v2/pc-refs/slot-poke/slot-poke/fx/escurecer-2.webp
+https://pokefableonline.com/ui/figma_webp/ui2-v2/pc-refs/slot-poke/slot-poke/fx/escurecer.webp
+https://pokefableonline.com/ui/figma_webp/ui2-v2/pc-refs/slot-skill/slot-skill/bg-encaixe.webp
+https://pokefableonline.com/ui/figma_webp/ui2-v2/pc-refs/slot-skill/slot-skill/fx/escurecer.webp
