@@ -3198,7 +3198,7 @@ async function montar(glb, { trocar = false } = {}){
     ash.alvoX = null; ash.travaAnim = 0;
     tocarAnim(ash, m.poseIdle); soEsta(ash, m.poseIdle); tocarAnim(m, 'Idle');
     // o seguidor volta pra Pokébola enquanto o treinador está montado; quem o caçava desiste
-    pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null;
+    pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.destino = null;
     for (const s of jogo.selvagens || []) if (s.estado === 'atacando' && !s.chefe){ s.estado = 'vagando'; s.pausa = 1; s.investida = null; }
     jogo.montaria = m; semCorte(m);                                      // a montaria carrega o jogador: nunca cortada
     /* Montaria SHINY: mesma malha, textura `_1.png` de scenery/mon/shiny — a mesma regra dos
@@ -3264,10 +3264,10 @@ function alternarSurf(m, ligar){
     pika.vx = pika.x; pika.vz = pika.z; pika.y = pika.vy = apoioDe(pika) ?? ash.y;
     pika.pivo.position.set(pika.vx, pika.vy, pika.vz); pika.pivo.visible = true;
     pika.travaAnim = 0; tocarUma(pika, 'Appear'); soEsta(pika, 'Appear');
-    pika.emBatalha = false; jogo.ordem = null;
+    pika.emBatalha = false; jogo.ordem = null; pika.destino = null;
     flutuar(pika, pika.nome + ' is swimming beside you', '#8be9fd');
   } else {
-    pika.meio = undefined; pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.alvoX = null;
+    pika.meio = undefined; pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.destino = null; pika.alvoX = null;
   }
 }
 /** Voando não há obstáculo: só o limite do mapa. */
@@ -8513,7 +8513,7 @@ function puxarParceiro(texto){
   }
   pika.x = px; pika.z = pz;
   pika.vx = pika.x; pika.vz = pika.z; pika.y = pika.vy = apoioDe(pika) ?? ash.y;
-  pika.emBatalha = false; jogo.ordem = null;
+  pika.emBatalha = false; jogo.ordem = null; pika.destino = null;
   for (const s of jogo.selvagens) if (s.estado === 'atacando'){ s.estado = 'vagando'; s.pausa = 1; s.investida = null; }
   tocarUma(pika, 'Appear');
   efeito('00016_Hit', pika.peito, pika.altura);
@@ -8543,9 +8543,11 @@ function atualizarParceiro(dt){
   }
   let tentou = false;                                    // tentou andar neste quadro? (13/09: parceiro preso num canto — ver o fim da função)
   if (pika.desmaiado > 0){
+    pika.destino = null;
     pika.desmaiado -= dt;
     if (pika.desmaiado <= 0){ pika.hp = pika.maxHp; pika.travaAnim = 0; pika.anim = null; tocarAnim(pika, 'Idle'); flutuar(pika, 'back!', '#86ef5f'); }
   } else if (jogo.ordem){
+    pika.destino = null;                                                 // golpe ordenado manda mais que o Ctrl+clique
     const { golpe, alvo } = jogo.ordem;
     const dx = alvo.x - pika.x, dz = alvo.z - pika.z, dT = Math.hypot(dx, dz);
     /* 20/09 (billzerax): o alvo caiu no caminho (outro golpe, outro jogador) — a ordem morre aqui,
@@ -8570,6 +8572,15 @@ function atualizarParceiro(dt){
       }
       jogo.ordem = null;
     }
+  } else if (pika.destino && !jogo.turno){                               // Ctrl+clique (comandarParceiro): anda até o ponto e fica lá (a calma de 3 s vale depois de chegar)
+    const dx = pika.destino.x - pika.x, dz = pika.destino.z - pika.z, d = Math.hypot(dx, dz);
+    pika.emBatalha = true; pika.calma = 0;
+    if (d > 0.08){
+      const p = Math.min(d, pika.vel * dt);
+      tentou = true; moveuP = deslocar(pika, dx / d * p, dz / d * p);
+      pika.giro = Math.atan2(dx, dz);
+      if (!moveuP) pika.destino = null;                                  // bateu: desiste do destino, como o clique do Ash
+    } else pika.destino = null;
   } else if (pika.emBatalha){
     // parado, de frente para quem está atacando (ou para o alvo)
     const inimigo = hostil || (jogo.alvo && !['morto', 'capturando', 'desmaiado'].includes(jogo.alvo.estado) ? jogo.alvo : null);
@@ -8780,6 +8791,30 @@ function irPara(ev){
   const p = new THREE.Vector3();
   if (raio.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -jogo.ash.y), p)){ jogo.ash.alvoX = p.x; jogo.ash.alvoZ = p.z; }
 }
+/* CONTROLE DIRETO DO PARCEIRO: Ctrl + clique manda o parceiro (não o Ash) até o ponto; segurando, ele segue o cursor. Só na luta
+   em tempo real — batalha por turno (treinador, ginásio, Elite Four, PvP) continua no painel. As regras de sempre valem: desmaiado
+   ou na bola não anda, acima do teto de nível não obedece, montado ele está na bola, o destino para antes da coleira de 12 m do
+   treinador, e o caminho é o mesmo `deslocar` (colisão, água) com o destravar do atualizarParceiro. Golpe ordenado cancela o destino. */
+const COLEIRA_COMANDO = 11;                                                // 1 m antes da coleira (12 m): o comando não dispara o puxão
+function comandarParceiro(ev, aviso = true){
+  const { ash, pika } = jogo;
+  if (!ash || !pika || jogo.turno) return false;
+  if (jogo.semParceiro){ if (aviso) flutuar(ash, 'you do not have a Pokémon yet: talk to Professor Oak', '#ffd23a'); return false; }
+  if (jogo.montaria){ if (aviso) flutuar(ash, 'dismount (M) to command your Pokémon', '#ffd23a'); return false; }
+  if (pika.recolhido || pika.desmaiado > 0 || pika.hp <= 0){ if (aviso) flutuar(ash, pika.nome + ' fainted', '#f58e8e'); return false; }
+  const des = desobedece(pika); if (des){ if (aviso) avisarTeto(pika, des); return false; }
+  const r = tela.getBoundingClientRect();
+  ponteiro.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  raio.setFromCamera(ponteiro, cam);
+  const p = new THREE.Vector3();
+  if (!raio.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -pika.y), p)) return false;
+  let dx = p.x - ash.x, dz = p.z - ash.z; const d = Math.hypot(dx, dz);
+  if (d > COLEIRA_COMANDO){ dx *= COLEIRA_COMANDO / d; dz *= COLEIRA_COMANDO / d; }
+  pika.destino = { x: ash.x + dx, z: ash.z + dz };
+  jogo.ordem = null; ash.alvoX = null;                                     // o Ash para onde está: quem anda agora é o parceiro
+  return true;
+}
+let comandando = false;
 tela.addEventListener('pointerdown', ev => {
   if (Fairy?.bloqueiaClique(ev)) return;
   if (Menus.aberto() || Troca.aberta()) return;              // menu/janela/troca aberta: o chão não recebe o toque
@@ -8793,6 +8828,7 @@ tela.addEventListener('pointerdown', ev => {
   }
   if (jogo.ativo && ev.button === 0){
     if (falando){ pularFala?.(); return; }            // 13/09: com diálogo aberto, o clique AVANÇA a fala — não manda o Ash andar (o tester andava e a fala fechava)
+    if (ev.ctrlKey && !jogo.turno){ comandando = comandarParceiro(ev); return; }   // Ctrl + clique: o PARCEIRO vai até o ponto (segurando, segue o cursor)
     const s = selvagemSobCursor(ev);                  // clicou num selvagem: vira alvo, não anda
     if (s){ jogo.alvo = s; return; }
     const np = npcSobCursor(ev);                      // clicou num NPC ao alcance: conversa
@@ -8802,7 +8838,7 @@ tela.addEventListener('pointerdown', ev => {
   }
   const p = noChao(ev); if (p) arrasto = { p, alvo: alvo.clone() };
 });
-const soltar = () => { arrasto = null; clicando = false; };
+const soltar = () => { arrasto = null; clicando = false; comandando = false; };
 for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) tela.addEventListener(ev, soltar);
 addEventListener('blur', () => { soltar(); teclas.clear(); });   // pointerup/keyup perdidos ao trocar de janela
 tela.addEventListener('pointermove', ev => {
@@ -8813,6 +8849,8 @@ tela.addEventListener('pointermove', ev => {
   if (clicando && !(ev.buttons & 1)) clicando = false;
   if (arrasto && !(ev.buttons & 3)) arrasto = null;
   if (clicando) irPara(ev);
+  if (comandando && (!(ev.buttons & 1) || !ev.ctrlKey)) comandando = false;   // soltou o botão ou o Ctrl: o parceiro termina o último destino
+  if (comandando) comandando = comandarParceiro(ev, false);
   if (arrasto){ alvo.copy(arrasto.alvo).add(arrasto.p.clone().sub(p)); arrasto.alvo.copy(alvo); arrasto.p.copy(noChao(ev) || p); }
 });
 
@@ -9274,6 +9312,7 @@ async function iniciarTurno(n, servPronto = null){
     serv = r;
   }
   jogo.turno = { npc: n, info: n.treino, idx: -1, rodada: 0, fase: 'posiciona', caiu: false, inimigo: null, serv };
+  if (jogo.pika) jogo.pika.destino = null;                               // Ctrl+clique pendente não vale no turno
   atualizarMusica();                                                      // música de batalha (treinador / ginásio / elite)
   if (serv) jogo.turno.info = { ...n.treino, nome: serv.nomeInimigo || n.treino?.nome, time: serv.dele.map(x => ({ dex: x.dex, lv: x.lv, glb: 'pm' + String(x.dex).padStart(4, '0') + '_00' })) };
   for (const s of jogo.selvagens) if (s.estado === 'atacando'){ s.estado = 'vagando'; s.pausa = 2; s.investida = null; }   // selvagem desiste: a batalha é só de vocês
