@@ -506,6 +506,9 @@ export function criarBatalha(ctx) {
         if (evR.ganhou?.some((n) => n)) log.push(ganhador.nome + ' gained ' + Ev.textoGanho(evR.ganhou) + ' EVs.');
       }
       if (!bat.dele.some((p) => p.hp > 0)) return 'vitoria';
+      /* o próximo do treinador entra AQUI: com o índice parado no desmaiado, todo golpe seguinte caía nele (HP 0), dava EXP/EV
+         de novo e o cliente "matava" o Onix do Brock a cada hit, num ciclo sem fim */
+      bat.eleIdx = bat.dele.findIndex((p) => p.hp > 0);
     }
     if (bat.eu.field && bat.eu.field.hp <= 0) {
       const prox = primeiroVivo(bat.eu.time);
@@ -565,8 +568,6 @@ export function criarBatalha(ctx) {
       const lance = aplicarLance('ele', ele, bat.eu.field, gI);
       if (lance) bat.lances.push(lance);
       fim = depoisDoLance(bat, acc, bat.log);
-    } else if (!fim && ele.hp <= 0 && bat.dele.some((p) => p.hp > 0)) {
-      /* client advances the next enemy visually; keep eleIdx on the fainted mon */
     }
 
     if (fim === 'vitoria' || fim === 'derrota') {

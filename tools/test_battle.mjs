@@ -115,4 +115,18 @@ const again = last();
 if (again.code !== 'beaten') throw new Error('already-beaten trainer must use English code beaten, not vencido: ' + JSON.stringify(again));
 if (again.codigo) throw new Error('protocol field is code, not codigo: ' + JSON.stringify(again));
 
+/* Brock tem 2 Pokémon: depois do 1º desmaiar, o servidor tem que mirar o 2º (antes ficava no desmaiado e a luta nunca acabava) */
+const xpLines = [];
+batalha.receber(ws, { t: 'bat_desafiar', tipo: 'ginasio', id: 101 });
+let gymEnd = null, gymRounds = 0;
+while (gymRounds++ < 60) {
+  batalha.receber(ws, { t: 'bat_acao', acao: 'golpe', golpe: 'thunderbolt', vez: last().vez });
+  gymEnd = last();
+  if (gymEnd.t === 'bat_erro') throw new Error('gym action failed: ' + JSON.stringify(gymEnd));
+  xpLines.push(...(gymEnd.log || []).filter((l) => /EXP/.test(l)));
+  if (gymEnd.fim) break;
+}
+if (!gymEnd?.fim?.venceu) throw new Error('Brock battle never ended (stuck on fainted mon?): ' + JSON.stringify(gymEnd));
+if (xpLines.length !== gymEnd.dele.length) throw new Error('EXP should be given once per enemy KO: ' + JSON.stringify(xpLines));
+
 console.log('battle tests ok', { trainer: open.nomeInimigo, gym: gym.nomeInimigo, e4: e4.nomeInimigo, thunderbolt: dano, eff, winRounds: rounds });

@@ -9596,12 +9596,13 @@ async function rodadaDoServidor(T, acao){
     Som.tocar('ui/sound_successful', { volume: .55, prio: true });
     if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: v.lv });
   }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o network.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
-  if (T.inimigo && r.ele) T.inimigo.hp = r.ele.hp;
+  if (T.inimigo && r.ele && !T.caiu) T.inimigo.hp = r.ele.hp;            // desmaiou: o `ele` já é o próximo, o HP dele vai pro que entra (abaixo)
   if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))) jogo.pika.hp = r.eu.hp;   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
   if (T.caiu && !r.fim){                                                  // caiu o do inimigo e vem outro: o servidor já disse qual
     await esperarSeg(1.3);
     T.idx = Math.max(0, (r.dele || []).findIndex(x => x.hp > 0) - 1);
     await proximoInimigoTurno();
+    if (T.inimigo && r.ele){ T.inimigo.hp = r.ele.hp; if (r.ele.maxHp) T.inimigo.maxHp = r.ele.maxHp; }
   }
   if (r.fim){ fimTurno(!!r.fim.venceu, { desistiu: !!r.fim.desistiu, servidor: r.fim }); return; }
   T.rodada = r.vez || (T.rodada + 1); T.fase = 'escolha'; pintarTurno();
