@@ -8289,6 +8289,7 @@ if (jogo.ash){
       if (n === undefined){ Chat.sistema(uso); return; }
       clima.forcado = !!n;
       if (!n){ desligarClima(); Chat.sistema('Weather follows the clock again.'); return; }
+      if (INTERIOR){ Chat.sistema('No weather indoors.'); return; }
       if (!ligarClima(n)) Chat.sistema(uso);
     },
     moderar: (op, resto) => {                                             // MODERAÇÃO (08/09): o servidor confere a marca de GM
@@ -9013,8 +9014,8 @@ tela.addEventListener('pointermove', ev => {
    `?clima=chuva|chuva_forte|neve|granizo|nevoeiro|areia`. Etapa 2 (por área/hora, MapWeather) vem depois. */
 const CLIMAS = {   /* Screen overlay + 3D streaks. Element_Rain has vy=0 in this engine so it never falls.
      Weather CSS is tint only — clock owns brightness so night + storm do not stack to black. */
-  chuva:       { tipo: 'linhas', n: 520, vel: 20, len: 1.8, cor: '#9ec0d8', op: 0.7, vento: 2.4, sol: 0.7, hemi: 0.75, ceu: '#5c6c7e', nevoa: [0.55, 0.55], filtro: 'saturate(0.86)' },
-  chuva_forte: { tipo: 'linhas', n: 860, vel: 28, len: 2.6, cor: '#c5d8e8', op: 0.82, vento: 4.5, sol: 0.55, hemi: 0.62, ceu: '#46545f', nevoa: [0.4, 0.45], filtro: 'saturate(0.78)' },
+  chuva:       { tipo: 'linhas', n: 520, vel: 20, len: 1.8, cor: '#9ec0d8', op: 0.7, vento: 2.4, sol: 0.64, hemi: 0.71, postes: 0.9, ceu: '#5c6c7e', nevoa: [0.55, 0.55], filtro: 'saturate(0.86)' },   // postes: lampposts/windows light up even by day (0..1, same scale as the dusk ramp)
+  chuva_forte: { tipo: 'linhas', n: 860, vel: 28, len: 2.6, cor: '#c5d8e8', op: 0.82, vento: 4.5, sol: 0.5, hemi: 0.58, postes: 1, ceu: '#46545f', nevoa: [0.4, 0.45], filtro: 'saturate(0.78)' },
   neve:        { tipo: 'pontos', n: 280, vel: 0.7, size: 0.22, cor: '#f4f8fc', op: 0.9, deriva: 2.4, sol: 0.85, hemi: 0.95, ceu: '#c8d2dc', nevoa: [0.85, 0.9], filtro: 'saturate(0.72)' },
   granizo:     { tipo: 'pontos', n: 220, vel: 16, size: 0.2, cor: '#d7e6f2', op: 0.95, deriva: 0.4, sol: 0.7, hemi: 0.75, ceu: '#4a5560', nevoa: [0.8, 0.88], filtro: 'saturate(0.7)' },
   nevoeiro:    { tipo: null, sol: 0.75, hemi: 0.85, ceu: '#9aa4ad', nevoa: [0.2, 0.28], filtro: 'saturate(0.65) contrast(0.92)' },
@@ -9114,7 +9115,7 @@ const FILTRO_DIA = 'saturate(1.15) brightness(1.14)';                    // the 
    is a dark blue-grey, not a daytime grey. */
 const _dnCeu = new THREE.Color(), _dnBase = new THREE.Color(), CEU_CHEFE = new THREE.Color('#5f6f78');
 const dnDir = new THREE.Vector3(-3.7, 33.5, -4.8).normalize();
-let dnNoite = 0, dnPostes = -1;
+let dnNoite = 0, dnPostes = -1, dnPostesClima = 0;
 function aplicarMundoVisual(){
   if (INTERIOR){
     sol.intensity = LUZ_DIA.sol;
@@ -9152,7 +9153,10 @@ function aplicarMundoVisual(){
     m.uniforms.luzSpec.value.copy(e.luzCor).multiplyScalar(e.luzInt / 1.55 * fSol);
     m.uniforms.luzDir.value.copy(e.dir);
   }
-  atualizarPostes(e.postes);
+  const alvoChuva = w?.postes || 0;                                       // rain turns the lights on; eased so they fade in/out over ~1-2 s, not snap
+  dnPostesClima += (alvoChuva - dnPostesClima) * 0.04;
+  if (Math.abs(alvoChuva - dnPostesClima) < 0.002) dnPostesClima = alvoChuva;
+  atualizarPostes(Math.max(e.postes, dnPostesClima));
 }
 /* Each source lights up when the hour passes its threshold (0.15..0.85 of the dusk ramp), over ~0.1 of the ramp. The glow
    (points) shows them all; the PointLights go to the POSTES_N lit sources nearest the camera. So a light can change source
@@ -9199,6 +9203,7 @@ function atualizarPostes(on){
 }
 window.diaNoite = DiaNoite;                                                // console: diaNoite.estado(21)
 function passoClimaMundo(){
+  if (INTERIOR){ if (clima.nome) desligarClima(); return; }               // indoors (labs, houses, caves): no rain/snow and no screen overlay
   if (!PLAY || clima.forcado || params0.get('clima')) return;
   const want = Weather.paraHora(Relogio.hora(), Relogio.agora());
   if (want === (clima.nome || null)) return;
@@ -9207,7 +9212,7 @@ function passoClimaMundo(){
 }
 function ligarClima(nome, { silencioso = false } = {}){
   const c = CLIMAS[nome];
-  if (!c) return false;
+  if (!c || INTERIOR) return false;
   if (!clima.guarda) clima.guarda = { ceu: cena.background, nevoa: cena.fog.color.clone() };
   if (clima.fx && clima.nome !== nome){ clima.fx.descartar(); cena.remove(clima.fx.raiz); clima.fx = null; }
   clima.nome = nome; clima.cfg = c; jogo.clima = clima;
