@@ -222,6 +222,7 @@ import * as Qualidade from './quality.mjs';      // low / medium / high (medium:
 import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: other players' names, floating damage
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
+import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
@@ -4124,11 +4125,12 @@ function iconeSelvagem(s){
   return ehAgressivo(s.perfil) ? '⚔' : '🏃';
 }
 function htmlRotuloSelvagem(s){
-  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}</span><i><b></b></i>`;
+  const st = Status.sigla(Status.limpo(s.status)?.id);
+  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}${st ? ' ' + st : ''}</span><i><b></b></i>`;
 }
 function pintarRotuloSelvagem(s){
   if (!s?.rotulo) return;
-  const marca = (s.shiny ? '1' : '0') + '|' + s.nome + '|' + s.lv + '|' + iconeSelvagem(s);
+  const marca = (s.shiny ? '1' : '0') + '|' + s.nome + '|' + s.lv + '|' + iconeSelvagem(s) + '|' + (Status.limpo(s.status)?.id || '');
   if (s.rotMarca === marca) return;
   s.rotulo.innerHTML = htmlRotuloSelvagem(s);
   const b = s.rotulo.querySelector('i b');
@@ -4291,11 +4293,9 @@ if (DEMO && habitats){                              // demo: a Rota 1 cheia e va
     { dex: 1, glb: 'pm0001_00.glb', nome: 'Bulbasaur' }, { dex: 25, glb: 'pm0025_00.glb', nome: 'Pikachu' },
   ];
 }
-/* ÁREA "(pesca)" (18/09 — chaospider no #bugs: "em Vermilion o mapa indica Shellder, rodei 30 min andando, montado e nadando, nada"):
-   o dump não tem tile de água (waterList) em Vermilion, Viridian e Fuchsia — no original o Shellder/Poliwag de lá são de PESCA, que o
-   jogo não tem — e o povoador só percorria área com tile de grama ou de água: a área nem entrava no laço. Área com espécie de água no
-   habitat, caixa no mapa e nenhum tile ganha o centro pela caixa e entra no laço; o peixe nasce num ponto navegável da caixa
-   (`pontoAgua`), capturável de montaria aquática. Sem água navegável na caixa, continua sem nascer (não inventa ponto). */
+/* ROD-ONLY WATER (the old "(pesca)" areas). Those species are not overworld spawns: fishing was the encounter,
+   and without a rod they had been placed on the water instead. The rod table is data/pesca.json, built from each
+   area's water habitat. This set is only the areas that have water species and no grass tile, so the center still exists. */
 const areasSoPesca = new Set();
 for (const [a, lista] of Object.entries(habitats?.areas || {})){
   const c = caixaArea.get(+a);
@@ -4452,7 +4452,7 @@ function noQuadro(x, z, yPadrao){
 const wildsEsperando = new Map(), WILD_ESPERA_MS = 8 * 60 * 1000, WILD_ESPERA_MAX = 2;
 let povoando = false;
 /** Teto de selvagens da área (o mesmo número de sempre do `povoar`). */
-const tetoArea = (a, DENS) => THREE.MathUtils.clamp(Math.round(((gramaPorArea.get(a)?.length || 0) + (aguaPorArea.get(a)?.length || 0) / 3) / (DEMO ? 14 : 18) * DENS), Math.max(3, Math.round(5 * DENS)), Math.round((DEMO ? 20 : 16) * DENS));
+const tetoArea = (a, DENS) => THREE.MathUtils.clamp(Math.round(((gramaPorArea.get(a)?.length || 0) / 3) / (DEMO ? 14 : 18) * DENS), Math.max(3, Math.round(5 * DENS)), Math.round((DEMO ? 20 : 16) * DENS));
 const populacaoArea = a => Math.max(jogo.selvagens.filter(s => s.area === a).length, Mundo.estaAtivo() ? Mundo.contar(a) : 0);
 /** Faz nascer `esp` no tile `t` da área `a` (mundo compartilhado, conta com sorteio no servidor, ou solo). Verdadeiro se nasceu/foi proposto. */
 async function nascerNoBerco(a, esp, t, tiles){
@@ -4558,20 +4558,20 @@ async function povoar(){
       if (s.rede) continue;                                              // selvagem da rede: o Mundo guarda/recria o corpo pela distância
       if (Math.hypot(s.x - ash.x, s.z - ash.z) > 110) guardarSelvagem(s);
     }
-    for (const a of new Set([...gramaPorArea.keys(), ...aguaPorArea.keys(), ...areasSoPesca])){   // 18/09: + áreas "(pesca)" sem tile (Vermilion)
+    for (const a of gramaPorArea.keys()){   // water species are the rod's catch, not a body on the tile
       const tiles = gramaPorArea.get(a) || [];
       const c = centroArea.get(a);
       if (Math.hypot(c.cx - ash.x, c.cz - ash.z) - c.r > 70) continue;
       if (populacaoArea(a) >= tetoArea(a, DENS)) continue;               // na rede conta o registro da sala (com ou sem corpo aqui)
       if (Date.now() < (areaRespawn.get(a) || 0) && jogo.selvagens.filter(s => s.area === a).length >= 3) continue;   // a área respira depois de morte/captura
-      const especies = especiesAgora(habitats.areas[String(a)] || habitats.generico).filter(e => !glbNegados.has(e.glb));
+      const especies = especiesAgora(habitats.areas[String(a)] || habitats.generico).filter(e => !e.agua && !glbNegados.has(e.glb));
       if (!especies.length) continue;
       const prontas = especies.filter(e => quentes.has(e.glb));
       // espécie fria: manda aquecer (uma por vez, fora do quadro) e nasce noutro tique.
       // A missing model is refused and the next tick draws from whoever is left, at the HGSS weights.
       if (!prontas.length){ aquecer(escolherEspecie(especies).glb); frios++; continue; }
       const esp = escolherEspecie(prontas);
-      if (!esp.agua && !tiles.length) continue;                          // área só de água não recebe Pokémon de terra
+      if (esp.agua || !tiles.length) continue;                           // fish wait on the rod; a lake with no grass stays empty
       /* Sorteia o berço várias vezes (ver ZONA MORTA DO SPAWN, acima): fica com o primeiro ponto longe ou fora do
          quadro e, se nenhum servir, com o mais distante que apareceu — a área nunca mais seca por causa do raio. */
       let t = null, reserva = null, distReserva = -1;
@@ -5253,6 +5253,7 @@ function atualizarSelvagens(dt){
         else { const p = Math.min(d, s.vel * 2.3 * dt); moveu = s.aquatico ? (navegavel(s.x + dx / d * p, s.z + dz / d * p) ? (s.x += dx / d * p, s.z += dz / d * p, true) : false) : (chaoEm(s.x + dx / d * p, s.z + dz / d * p) !== null && deslocar(s, dx / d * p, dz / d * p)); s.giro = Math.atan2(dx, dz); if (!moveu) s.alvoX = null; }   // fugir também exige CHÃO (arisco corria mar adentro)
       }
     } else if (s.estado === 'atacando'){
+      tiqueStatus(s, dt, true);
       s.paciencia -= dt;
       const dx = pika.x - s.x, dz = pika.z - s.z, d = Math.hypot(dx, dz) || 0.001;
       if (pika.hp <= 0 || d > (s.chefe ? 45 : 14) || s.paciencia <= 0){ s.estado = 'vagando'; s.pausa = 1; s.investida = null; }
@@ -5278,7 +5279,8 @@ function atualizarSelvagens(dt){
       } else {
         const g = s.proximoGolpe;
         s.giro = Math.atan2(dx, dz); s.pivo.rotation.y = s.giro;
-        tocarUma(s, g.anim);
+        if (impedido(s)){ s.recarga = Math.min(g.recarga || 1.2, 1.6); s.proximoGolpe = s.golpes[Math.floor(Math.random() * s.golpes.length)]; }
+        else { tocarUma(s, g.anim);
         if (g.contato){
           // corpo a corpo: investida curta até encostar, golpe no fim
           const alc = Math.max(0.4, d - 0.45), ix1 = s.x + dx / d * alc, iz1 = s.z + dz / d * alc;
@@ -5289,6 +5291,7 @@ function atualizarSelvagens(dt){
         } else lancarGolpe(s, pika, g);          // à distância: fases do efeito + acerto agendado
         s.recarga = g.recarga;
         s.proximoGolpe = s.golpes[Math.floor(Math.random() * s.golpes.length)];
+        }
       }
     } else if (s.alvoX === null){
       s.pausa -= dt;
@@ -5454,6 +5457,55 @@ function flutuar(e, texto, cor){ texto = I18n.t(texto);
   $('sobre').appendChild(el);
   flutuantes.push({ el, e, t: 0 });
 }
+/** The move's PokéAPI ailment (`status` / `statusChance` on the catalog). One major status at a time. */
+function infligirStatus(atacante, defensor, golpe, eff){
+  const emSi = golpe.statusEm === 'eu';
+  if (!emSi && eff === 0) return;
+  const quem = emSi ? atacante : defensor;
+  if (!quem || !(quem.hp > 0)) return;
+  const tipos = porDex.get(quem.dex)?.types || [];
+  if (!emSi && golpe.tipo === 'Fire' && Status.descongelar(quem)) flutuar(quem, 'thawed', Status.cor('freeze'));
+  if (golpe.statusCura === 'cheio'){
+    if (Status.limpo(quem.status)){ if (golpe.cat === 'status') flutuar(quem, 'it failed', '#9ab'); return; }
+    quem.hp = quem.maxHp || quem.hp;
+    flutuar(quem, 'HP restored', '#8ef58e');
+  }
+  if (!(golpe.status || golpe.statusPool)) return;
+  const novo = Status.doGolpe(quem, golpe, tipos);
+  if (novo){
+    flutuar(quem, Status.nome(novo.id) + '!', Status.cor(novo.id));
+    if (quem.rotulo){ quem.rotMarca = undefined; pintarRotuloSelvagem(quem); }
+    if (quem === jogo.pika) guardarEstadoAtivo();
+  } else if (golpe.cat === 'status') flutuar(quem, 'it failed', '#9ab');
+}
+/** Sleep, freeze, and paralysis can cancel the action that was about to land. */
+function impedido(e){
+  const r = Status.podeAgir(e);
+  if (r.acordou) flutuar(e, 'woke up', Status.cor('sleep'));
+  if (r.descongelou) flutuar(e, 'thawed', Status.cor('freeze'));
+  if (!r.age) flutuar(e, Status.aviso(r.porque), Status.cor(e.status?.id) || '#9ab');
+  if (e === jogo.pika && (r.acordou || r.descongelou || !r.age)) guardarEstadoAtivo();
+  return !r.age;
+}
+/** Burn, poison, and bad poison tick while a real-time fight is going. Turn battles tick on the server. */
+function tiqueStatus(e, dt, luta){
+  if (!e || jogo.turno || !luta) return;
+  if (!Status.limpo(e.status) || !(e.hp > 0)) { e.statusRelogio = 0; return; }
+  e.statusRelogio = (e.statusRelogio || 0) + dt;
+  if (e.statusRelogio < 4) return;
+  e.statusRelogio -= 4;
+  const id = e.status.id;
+  const d = Status.residual(e);
+  if (!(d > 0)) return;
+  e.hp = Math.max(0, e.hp - d);
+  flutuar(e, '−' + d, Status.cor(id));
+  if (e === jogo.pika) guardarEstadoAtivo();
+  if (e.hp <= 0){
+    e.status = null;
+    if (e === jogo.pika){ guardarEstadoAtivo(); morrer(e); }
+    else if (e.estado !== 'desmaiado' && e.estado !== 'morto') desmaiar(e, true);
+  }
+}
 function golpear(atacante, defensor, golpe){
   if (defensor.estado === 'desmaiado' || defensor.estado === 'capturando' || defensor.estado === 'koTurno') return 0;   // caído/na bola: não apanha mais
   if (jogo.turno && !atacante.emTurno && atacante !== jogo.pika && (defensor === jogo.pika || defensor.emTurno)) return 0;   // batalha por turno: quem está nela é invulnerável pra quem está FORA
@@ -5465,9 +5517,10 @@ function golpear(atacante, defensor, golpe){
   if (defensor.rede && Mundo.estaAtivo()){ Mundo.atacar(defensor, golpe, atacante); return 0; }   // fase 3b: selvagem da rede — o SERVIDOR calcula e devolve (shp → aplicarGolpe)
   if (atacante.rede && defensor === jogo.pika && Mundo.estaAtivo()){ Mundo.atacarParceiro(atacante, golpe, defensor); return 0; }   // fase 3c: selvagem da rede batendo no MEU parceiro — o servidor calcula e devolve (pdano → golpeNoParceiro)
   const A = porDex.get(atacante.dex), D = porDex.get(defensor.dex);
+  const statusMove = golpe.cat === 'status';
   const fisico = golpe.cat === 'fisico';
   const climaNome = clima.nome;
-  const a = Ind.statDe(A, atacante, fisico ? 1 : 3);
+  const a = Ind.statDe(A, atacante, fisico ? 1 : 3) * (statusMove ? 1 : Status.mulAtaque(atacante, fisico));
   let d = Ind.statDe(D, defensor, fisico ? 2 : 4);
   d = Weather.defesa(climaNome, D.types, fisico ? 2 : 4, d) || d;
   const tipo = Weather.tipoGolpe(climaNome, golpe);
@@ -5476,13 +5529,15 @@ function golpear(atacante, defensor, golpe){
   const eff = R.efetividade(DB.chart, tipo, D.types);
   const stab = A.types.includes(tipo) ? 1.5 : 1;
   const base = Math.floor(((2 * atacante.lv / 5 + 2) * poder * a / d) / 50 + 2);
-  let dano = eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * climaMul * (0.85 + Math.random() * 0.15)));
+  let dano = statusMove || eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * climaMul * (0.85 + Math.random() * 0.15)));
   /* HELD ITEM of the partner (attacking or hit): type boosters, Life Orb, Choice, Expert Belt, Assault Vest, Focus Band/Sash… */
   const fA = fichaHeld(atacante), fD = fichaHeld(defensor);
   const hr = (fA || fD) && dano > 0 ? HELD.aplicarGolpe({ atacante: fA, defensor: fD, golpe, dano, eff, tipos: tipo, categoria: golpe.cat }) : null;
   if (hr) dano = hr.dano;
   defensor.hp = Math.max(0, defensor.hp - dano);
-  if (defensor === jogo.pika) guardarEstadoAtivo();
+  if (defensor.hp <= 0) defensor.status = null;
+  else infligirStatus(atacante, defensor, golpe, eff);
+  if (defensor === jogo.pika || atacante === jogo.pika) guardarEstadoAtivo();
   aplicarGolpe(atacante, defensor, golpe, dano, eff);
   if (hr){
     if (hr.recuo) heldMudaHp(atacante, -hr.recuo, '#f58e8e');            // Life Orb
@@ -5508,7 +5563,8 @@ function volumeDaDistancia(e, base = 1){
   return base * (1 - (d - SOM_PERTO) / (SOM_LONGE - SOM_PERTO));
 }
 function aplicarGolpe(atacante, defensor, golpe, dano, eff){
-  if (PrefAparelho.ler('danoFlutuante') !== false) flutuar(defensor, eff === 0 ? 'immune' : '−' + dano, eff > 1 ? '#86ef5f' : eff < 1 ? '#8c9ab7' : '#ffffff');
+  const silencio = golpe.cat === 'status' && eff !== 0 && !(dano > 0);
+  if (!silencio && PrefAparelho.ler('danoFlutuante') !== false) flutuar(defensor, eff === 0 ? 'immune' : '−' + dano, eff > 1 ? '#86ef5f' : eff < 1 ? '#8c9ab7' : '#ffffff');
   efeito(golpe.efeito + '_Hit', defensor.peito, defensor.altura, atacante?.peito ? { olhar: atacante.peito } : {});   // rotação do alvo: de frente pro atacante
   /* A SUA batalha nunca abaixa: o que entra na régua é o golpe dos outros e o dos selvagens longe. */
   const meu = atacante === jogo.pika || defensor === jogo.pika || atacante === jogo.ash || defensor === jogo.ash;
@@ -5553,7 +5609,7 @@ function desmaiar(s, meu = true){                                      // meu (1
   }
   tocarUma(s, 'Dead');
   if (jogo.missoesOk && !s.chefe) Missoes.evento({ tipo: 'selvagem', dex: s.dex, area: areaDoPonto(s.x, s.z) });
-  s.estado = 'desmaiado'; s.desmaio = DESMAIO; s.investida = null; s.alvoX = null; s.hp = 0;
+  s.estado = 'desmaiado'; s.desmaio = DESMAIO; s.investida = null; s.alvoX = null; s.hp = 0; s.status = null;
   /* 18/09 (chaospider, xkuuhaaku: "em Kanto cheia o auto-lock sai do Pokémon sozinho; na Torre, sozinho, não"): TODO KO da sala
      passa por aqui (o golpe dos outros chega pelo shp/sestado) e `jogo.alvo = s` roubava a mira — cada Pokémon que OUTRO
      jogador derrubava por perto virava o meu alvo e o parceiro parava de bater no meu. Só toma a mira se o KO foi meu ou se
@@ -5571,7 +5627,8 @@ function desmaiar(s, meu = true){                                      // meu (1
 }
 function morrer(e){
   if (!(e.raid && e.estado === 'desmaiado')) tocarUma(e, 'Dead');         // chefe da raid já caído: não repete a queda
-  if (e === jogo.pika){ __boot.aviso('parceiro desmaiou', { hp: e.hp, time: (jogo.time || []).length, evoluindo: !!jogo.evoluindo, trocando: !!jogo.trocandoSeguidor }); e.desmaiado = 1e9; e.amizade = Math.max(0, (e.amizade ?? 70) - 1); flutuar(e, 'fainted', '#e45670'); jogo.ordem = null; pendentes.push({ t: 1.6, fn: aposDesmaio }); return; }   // fica desmaiado até um Reanimador (como nos jogos); −1 de amizade
+  if (e === jogo.pika){ __boot.aviso('parceiro desmaiou', { hp: e.hp, time: (jogo.time || []).length, evoluindo: !!jogo.evoluindo, trocando: !!jogo.trocandoSeguidor }); e.status = null; e.desmaiado = 1e9; e.amizade = Math.max(0, (e.amizade ?? 70) - 1); flutuar(e, 'fainted', '#e45670'); jogo.ordem = null; pendentes.push({ t: 1.6, fn: aposDesmaio }); return; }   // fica desmaiado até um Reanimador (como nos jogos); −1 de amizade
+  e.status = null;
   if (e.area != null) areaRespawn.set(e.area, Date.now() + 6000 + Math.random() * 4000);   // a área respira antes de repor
   e.estado = 'morto';
   if (jogo.alvo === e) jogo.alvo = null;
@@ -5796,24 +5853,24 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
   bolsaOp('usar', { item: +id, uid: uidAlvo });                           // com conta, quem desconta e quem reanima de verdade é o SERVIDOR
   it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
   if (i === membroAtivo()){
-    const p = jogo.pika; p.hp = cheio ? p.maxHp : Math.ceil(p.maxHp / 2); p.desmaiado = 0; p.travaAnim = 0; p.anim = null; tocarAnim(p, 'Idle');
+    const p = jogo.pika; p.hp = cheio ? p.maxHp : Math.ceil(p.maxHp / 2); p.desmaiado = 0; p.status = null; p.travaAnim = 0; p.anim = null; tocarAnim(p, 'Idle');
     amizadeDoItem(p, +id);
     if (p.recolhido){ p.recolhido = false; p.pivo.visible = true; const a = jogo.ash; teleportar(p, livre(a.x - 1.2, a.z + 0.8) ? a.x - 1.2 : a.x, livre(a.x - 1.2, a.z + 0.8) ? a.z + 0.8 : a.z); tocarUma(p, 'Appear'); efeito('Pokeball_Go', p.peito, 0.6); }
     guardarEstadoAtivo();
-  } else { t.hp = cheio ? (t.maxHp || 1) : Math.ceil((t.maxHp || 1) / 2); t.koAte = 0; amizadeDoItem(t, +id); gravarLS('time', jogo.time); }
+  } else { t.hp = cheio ? (t.maxHp || 1) : Math.ceil((t.maxHp || 1) / 2); t.koAte = 0; t.status = null; amizadeDoItem(t, +id); gravarLS('time', jogo.time); }
   Som.tocar('ui/sound_pkmnhealing', { volume: .6 }); flutuar(jogo.ash, nome + ' → ' + t.nome, '#8ef58e'); Chat.sistema(nome + ' used on ' + t.nome + (cheio ? ' (HP full).' : ' (half HP).'));
   pintarTime(true); pintarAtalhos(true); return true;
 }
 /** A cura da Joy (papel 'cura'): o time inteiro e o parceiro em campo voltam a 100%, desmaios removidos. */
 function curarTime(n, vidaOp = 'curar'){                                // vidaOp 'gm': o /pokeheal (o servidor cura time e caixa e confere a marca de GM)
   if (comConta()) Rede.pedirVida(vidaOp).then(r => { if (r && r.erro) Chat.sistema('⚠ ' + r.erro + '.'); });   // passo 3: a cura completa é do servidor (ele confere o Centro)
-  for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; Ind.restaurarPP(t); }
+  for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; t.status = null; Ind.restaurarPP(t); }
   gravarLS('time', jogo.time);
   const p = jogo.pika;
   if (p){
     Ind.restaurarPP(p);
     if (p.hp <= 0 || p.desmaiado > 0){ p.desmaiado = 0; p.travaAnim = 0; p.anim = null; tocarAnim(p, 'Idle'); }
-    p.hp = p.maxHp;
+    p.hp = p.maxHp; p.status = null;
     if (p.recolhido){ p.recolhido = false; p.pivo.visible = true; const a = jogo.ash; teleportar(p, a.x - 1.2, a.z + 0.8); tocarUma(p, 'Appear'); }
     efeito('MountIn', p.peito, p.altura, { vidaMax: 1.2 });
   }
@@ -5835,7 +5892,7 @@ function amarrarParceiro(){
       __boot.aviso('follower not on the party', { glb: p.glb, time: jogo.time.map(t => t.glb) }); trocarPara(0, { forcado: true }).catch(e => console.warn('follower not on the party:', e)); return; }
     Ind.garantir(p); jogo.time.push({ dex: p.dex, glb: p.glb, nome: p.nome, lv: p.lv, exp: p.exp, amizade: p.amizade, ivs: p.ivs, natureza: p.natureza, movs: p.movs, aprender: p.aprender, quando: Date.now() }); gravarLS('time', jogo.time); }
   else if (!params0.get('lv')){ const t = (parceiroUid != null && jogo.time.find(x => String(x?.uid) === String(parceiroUid) && mesmoGlb(x.glb, p.glb))) || jogo.time.find(t => mesmoGlb(t.glb, p.glb)); const S = porDex.get(t?.dex);   // 14/09: com duas da mesma espécie, amarra no uid em campo, não no primeiro glb
-    if (t?.lv && S){ Ind.garantir(t); p.uid = t.uid ?? null; p.lv = t.lv; p.expReserva = t.expReserva || 0; p.ivs = t.ivs; p.natureza = t.natureza; p.maxHp = Ind.hpDe(S, p); Ind.garantirMovs(t, fallbackGolpes(t.dex)); p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); p.hp = t.hp != null && t.hp > 0 ? Math.min(t.hp, p.maxHp) : (t.hp === 0 && (t.koAte > Date.now() || Conta.estado().modo === 'conta') ? 0 : p.maxHp);   /* com CONTA o HP é do servidor: 0 é 0 até a cura (12/09: o Bulbasaur KO "ressuscitava" no login porque o koAte já tinha passado) */ p.exp = t.exp ?? Evolucao.expPara(t.dex, t.lv); p.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex); } }
+    if (t?.lv && S){ Ind.garantir(t); p.uid = t.uid ?? null; p.lv = t.lv; p.expReserva = t.expReserva || 0; p.ivs = t.ivs; p.natureza = t.natureza; p.maxHp = Ind.hpDe(S, p); Ind.garantirMovs(t, fallbackGolpes(t.dex)); p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); p.hp = t.hp != null && t.hp > 0 ? Math.min(t.hp, p.maxHp) : (t.hp === 0 && (t.koAte > Date.now() || Conta.estado().modo === 'conta') ? 0 : p.maxHp);   /* com CONTA o HP é do servidor: 0 é 0 até a cura (12/09: o Bulbasaur KO "ressuscitava" no login porque o koAte já tinha passado) */ p.exp = t.exp ?? Evolucao.expPara(t.dex, t.lv); p.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex); p.status = Status.limpo(t.status); } }
   try { pintarTime(true); } catch (e){ console.warn('pintarTime:', e); }
 }
 const RESPAWN_PADRAO = { mapa: '4110002', chegada: 7180101, nome: 'Laboratório do Professor Oak' };   // sem Centro visitado ainda (Pallet): acorda no lab, como "voltar pra casa" nos jogos
@@ -5928,9 +5985,9 @@ function aposDesmaio(){
     pendentes.push({ t: 1.5, fn: () => curarTime(noCentro ? null : { nome: 'Professor Oak' }) }); return;
   }
   Chat.sistema('All your Pokémon fainted! You wake up ' + (noCentro ? 'at a Pokémon Center…' : 'in Professor Oak\'s lab…'));
-  for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; Ind.restaurarPP(t); } gravarLS('time', jogo.time);   // guardarEstadoAtivo já rodou no topo: XP do ativo preservado
+  for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; t.status = null; Ind.restaurarPP(t); } gravarLS('time', jogo.time);   // guardarEstadoAtivo já rodou no topo: XP do ativo preservado
   if (comConta()) Rede.pedirVida('curar').then(r => { if (r?.erro){ console.warn('curar no respawn recusado:', r.erro); __boot.aviso('curar no respawn recusado', { erro: r.erro }); } }).catch(e => console.warn('curar no respawn:', e));                                               // 12/09: o HP é do servidor — sem isto a página seguinte lia hp 0 dele e desmaiava de novo (ele aceita a cura com o time todo KO)
-  p.hp = p.maxHp; p.desmaiado = 0;                                                                     // em memória também: qualquer gravação no unload sai curada
+  p.hp = p.maxHp; p.desmaiado = 0; p.status = null;                                                    // em memória também: qualquer gravação no unload sai curada
   portaOcupado = true;
   const rotuloRespawn = noCentro ? (nomeAreaCena(alvo.a || PORTAS[alvo.chegada]?.a) || 'Pokémon Center') : 'Laboratório';
   telaEscura(9000, rotuloRespawn + '…');
@@ -6008,18 +6065,32 @@ function usarItem(id, nome = '', aviso = null){
     return true;
   }
   if (p.hp <= 0 || p.desmaiado > 0) return recusa(aviso ? p.nome + ' is fainted: use a Revive or go to a Pokémon Center' : p.nome + ' is fainted', p, '#f58e8e');
-  if (p.hp >= p.maxHp) return recusa(aviso ? p.nome + ' já está com o HP cheio. Pra curar outro, chame ele pela barra do time' : 'HP já está cheio', p);   // a poção vai no Pokémon EM CAMPO
-  if (!RegrasItem.ehCura(id)) return recusa((nome || 'This item') + ' has no effect right now');   // status heals etc.: no status conditions in the real-time battle yet (they used to heal 20 HP)
-  const cura = RegrasItem.CURA[+id];                                      // by id (item_rules.mjs): Hyper/Max Potion matched no Portuguese name and healed 20
+  const quais = RegrasItem.statusDe(+id);
+  const ehCura = RegrasItem.ehCura(id);
+  if (!ehCura && quais === undefined) return recusa((nome || 'This item') + ' has no effect right now');
+  const tinha = Status.limpo(p.status);
+  const curaEsse = !!(tinha && (quais === null || (Array.isArray(quais) && quais.includes(tinha.id))));
+  const cura = ehCura ? RegrasItem.CURA[+id] : 0;
+  const querHp = !!(cura && p.hp < p.maxHp);
+  if (!querHp && !curaEsse){
+    if (ehCura) return recusa(aviso ? p.nome + ' já está com o HP cheio. Pra curar outro, chame ele pela barra do time' : 'HP já está cheio', p);
+    if (!tinha) return recusa(p.nome + ' has no status to cure', p);
+    return recusa(p.nome + ' is ' + Status.nome(tinha.id), p);
+  }
   const hpAntes = p.hp || 0;
-  p.hp = Math.min(p.maxHp || p.hp, (p.hp || 0) + cura);
+  if (curaEsse){ Status.curar(p, quais); flutuar(p, 'cured', Status.cor(tinha.id)); }
+  if (querHp){
+    p.hp = Math.min(p.maxHp || p.hp, (p.hp || 0) + cura);
+    flutuar(p, 'restored ' + Math.min(p.hp - hpAntes, 999) + ' HP', '#8ef58e');
+  }
   amizadeDoItem(p, +id);
-  bolsaOp('usar', { item: +id, uid: uidParceiro() });                     // com conta, quem desconta e quem cura de verdade é o SERVIDOR
-  it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
-  flutuar(p, 'restored ' + Math.min(cura, 999) + ' HP', '#8ef58e'); Som.tocar('ui/sound_pkmnhealing', { volume: .6 });
-  aviso?.(p.nome + ' recuperou ' + Math.round(p.hp - hpAntes) + ' HP', true);
-  guardarEstadoAtivo(); pintarAtalhos(true);
-  passarTurno();                                                          // na batalha do servidor, o inimigo joga depois
+  if (!emTurnoServ) bolsaOp('usar', { item: +id, uid: uidParceiro() });   // in a server turn the battle action is the one consume
+  it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);
+  Som.tocar('ui/sound_pkmnhealing', { volume: .6 });
+  const ganhou = Math.round((p.hp || 0) - hpAntes);
+  aviso?.(p.nome + (ganhou > 0 ? ' recuperou ' + ganhou + ' HP' : ' was cured'), true);
+  guardarEstadoAtivo(); pintarAtalhos(true); pintarTime?.(true);
+  passarTurno();
   return true;
 }
 function usarAtalho(i){
@@ -6383,6 +6454,7 @@ function aplicarVidas(lista){
       if (v.lv != null) e.lv = v.lv; if (v.exp != null) e.exp = v.exp;
       if (v.hp != null) e.hp = v.hp; if (v.maxHp != null) e.maxHp = v.maxHp;
       if (v.amizade != null) e.amizade = v.amizade;
+      if ('status' in v) e.status = v.status || null;
       if (v.expReserva != null) e.expReserva = v.expReserva;               // XP guardada pelo teto de nível: agora é do servidor (12/09)
       if ('held' in v){ e.held = v.held || null; mexeuHeld = true; }          // held item (server_bag.mjs: segurar / tirar / consumir)
       e.koAte = v.hp === 0 ? Math.max(e.koAte || 0, Date.now() + 1e12) : 0;   // KO dito pelo servidor dura até a cura dele (12/09): com `Date.now()` o KO "vencia" na hora e o Pokémon voltava inteiro sozinho
@@ -6393,6 +6465,7 @@ function aplicarVidas(lista){
       if (v.lv != null) p.lv = v.lv; if (v.exp != null) p.exp = v.exp;
       if (v.maxHp != null) p.maxHp = v.maxHp; if (v.hp != null) p.hp = v.hp;
       if (v.amizade != null) p.amizade = v.amizade;
+      if ('status' in v) p.status = v.status || null;
       if (v.expReserva != null) p.expReserva = v.expReserva;
       if (v.lv != null){                                                   // golpe aprendido no nível (acima, no REGISTRO do time) entra na barra
         /* 18/09 (xkuuhaaku 1550202960695267328, dv_dasmerces, silikgnt: "quer aprender X" no chat e NADA na janela Pokémon): com os
@@ -6445,6 +6518,7 @@ function guardarEstadoAtivo(){
   const t = jogo.time[i]; t.lv = p.lv; t.maxHp = p.maxHp; t.hp = Math.max(0, Math.round(p.hp));
   t.exp = p.exp ?? Evolucao.expPara(p.dex, p.lv); t.amizade = p.amizade ?? Evolucao.amizadeBase(p.dex); t.expReserva = p.expReserva || 0;
   t.movs = p.movs; t.aprender = p.aprender;
+  t.status = p.hp <= 0 ? null : Status.limpo(p.status);
   t.koAte = p.hp <= 0 ? Date.now() + Math.max(0, p.desmaiado || 0) * 1000 : 0;
   gravarLS('time', jogo.time);
 }
@@ -6500,7 +6574,9 @@ function pintarTime(forcar = false){
     const k = Math.max(0, Math.min(1, hp / (maxHp || 1))), cor = corVida(k);
     const frio = cd > 0 && !on, alt = frio ? Math.round(20 * cd / TROCA_CD) * 5 : 0;
     const kx = fracaoXp(on ? p : t);
-    vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt, xpPct: Math.round(kx * 100) };
+    const stId = Status.limpo((on ? p : t).status)?.id || '';
+    const st = Status.sigla(stId);
+    vals[i] = { k, pct: Math.round(k * 100), cor, hp, maxHp, alt, xpPct: Math.round(kx * 100), st };
     if (on && (forcar || !jogo.evoPronta || (jogo.quadroEvo = (jogo.quadroEvo || 0) + 1) % 30 === 0)) jogo.evoPronta = { v: evolucaoDe(p) };   // regras dos jogos (evolution.mjs), reavaliadas a cada 30 quadros
     const evo = on && !jogo.evoluindo && !jogo.trocandoSeguidor ? jogo.evoPronta?.v : null;   // botão ✧ no canto do slot em campo: só quando alguma regra já vale
     const teto = tetoNivel();
@@ -6508,8 +6584,9 @@ function pintarTime(forcar = false){
       : t.lv >= teto ? I18n.t(' · at cap Lv {n} (banked XP{xp})', { n: teto, xp: t.expReserva > 0 ? ': ' + t.expReserva : '' })
       : '';
     const estado = ko ? I18n.t(' · fainted: click uses a Revive from the bag') : on ? I18n.t(' · in the field') : I18n.t(' · click to switch');
-    const tituloSlot = escHtml(t.nome) + ' Lv' + t.lv + dica + estado + I18n.t(' · drag (or hold on touch) to reorder · Alt+↑/↓');
-    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><i class="txp"><b style="width:${vals[i].xpPct}%"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome notranslate" translate="no">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-xp" title="XP"><b style="width:${vals[i].xpPct}%"></b></i><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp">${Math.round(hp)}/${maxHp}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
+    const ailment = st ? ' · ' + Status.nome(stId) : '';
+    const tituloSlot = escHtml(t.nome) + ' Lv' + t.lv + dica + ailment + estado + I18n.t(' · drag (or hold on touch) to reorder · Alt+↑/↓');
+    partes.push(`<div class="tcel"><button type="button" class="tslot${on ? ' on' : ''}${ko ? ' ko' : ''}${frio ? ' frio' : ''}${evo ? ' evo' : ''}" data-i="${i}" title="${tituloSlot}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><img class="tpic" src="${iconeMon(t.glb)}" alt="" draggable="false"><span class="tpalco" data-id="${escHtml(String(t.glb || '').replace(/\.glb$/i, ''))}" data-i="${i}"></span><b class="tk">${i + 1}</b><small>${t.lv}</small><i><b style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><i class="txp"><b style="width:${vals[i].xpPct}%"></b></i>${ko ? '<em>KO</em>' : ''}<u style="height:${alt}%"></u></button><div class="tcard"><b class="tc-nome notranslate" translate="no">${escHtml(t.nome)}</b><small class="tc-lv">Lv ${t.lv}</small><b class="tc-lvn">${t.lv}</b><i class="tc-xp" title="XP"><b style="width:${vals[i].xpPct}%"></b></i><i class="tc-trilho"><b class="tc-fill" data-k="${k.toFixed(3)}" style="width:${Math.round(k * 100)}%;background:${cor}"></b></i><small class="tc-hp"${st ? ` style="color:${Status.cor(stId)}"` : ''}>${Math.round(hp)}/${maxHp}${st ? ' ' + st : ''}</small></div>${evo ? `<button type="button" class="tevo" data-arr-nao="1" title="${I18n.t('evolve → {name}', { name: evo.nome })}${evo.itemNome ? I18n.t(' (uses {item})', { item: evo.itemNome }) : ''}">✧</button>` : ''}</div>`);
   }
   const html = partes.join('');
   /* Assinatura SEM o que muda a cada quadro (HP, cor, recarga da troca): em batalha o HP muda todo quadro e refazer o innerHTML
@@ -6523,7 +6600,7 @@ function pintarTime(forcar = false){
       for (const xb of cel.querySelectorAll('.tslot > i.txp > b, i.tc-xp > b')) xb.style.width = v.xpPct + '%';
       if (el.__fig) encaixarXp(cel);   // a layout re-apply (the PC, a resize) hides the bar; put it back every frame
       const b = cel.querySelector('.tc-fill'); if (b){ b.dataset.k = v.k.toFixed(3); if (el.__fig) Hud.fill(b, v.k, v.cor); else { b.style.width = v.pct + '%'; b.style.background = v.cor; } }
-      const hpEl = cel.querySelector('.tc-hp'); if (hpEl){ const sHp = Math.round(v.hp) + '/' + v.maxHp; if (hpEl.textContent !== sHp) hpEl.textContent = sHp; }
+      const hpEl = cel.querySelector('.tc-hp'); if (hpEl){ const sHp = Math.round(v.hp) + '/' + v.maxHp + (v.st ? ' ' + v.st : ''); if (hpEl.textContent !== sHp) hpEl.textContent = sHp; }
       const u = cel.querySelector('.tslot > u'); if (u){ u.style.height = v.alt + '%'; if (el.__fig) Hud.estado(cel, 'cooldown', v.alt / 100); }
     }
     return;
@@ -6836,14 +6913,15 @@ async function evoluirParceiro(opcao = null){
     await animar(4300, k => { const e = k * k; for (const m of mats) m.emissiveIntensity = e * 1.1; p.pivo.scale.setScalar(esc0 * (1 + Math.sin(k * k * 60) * 0.035 * k)); });
     flash.style.transition = 'opacity .12s'; flash.style.opacity = '1';
     await dorme(160); await carregando;
-    const lv = p.lv, hpK = Math.max(0.05, p.hp / (p.maxHp || 1)), exp = p.exp, amizade = p.amizade, dexAntes = p.dex;
+    const lv = p.lv, hpK = Math.max(0.05, p.hp / (p.maxHp || 1)), exp = p.exp, amizade = p.amizade, dexAntes = p.dex, statusAntes = Status.limpo(p.status);
     if (t){ t.dex = alvo.dex; t.nome = alvo.nome; t.glb = alvo.glb; gravarLS('time', jogo.time); }   // grava JÁ (13/09): se a troca de modelo falhar, o arranjo não leva o nome velho
     const novo = await jogo.trocarSeguidor(alvo.glb);                       // nasce no lugar do antigo
     const S = porDex.get(alvo.dex); novo.lv = lv; novo.exp = exp ?? Evolucao.expPara(alvo.dex, lv); novo.amizade = amizade ?? Evolucao.amizadeBase(alvo.dex);
     novo.ivs = p.ivs; novo.natureza = p.natureza; novo.uid = p.uid ?? null; novo.movs = p.movs; novo.aprender = p.aprender; novo.golpesIds = Ind.idsDe(novo);   // evoluiu, continua o mesmo indivíduo
     try { recuperarGolpes(novo, { desdeOInicio: true }); } catch (e){ console.warn('golpes da evolução:', e); }   // 18/09 (dv_dasmerces: "Venusaur com os golpes do Ivysaur"): TODOS os golpes da espécie NOVA até o nível entram (Petal Dance do Venusaur @1) — vaga livre na hora, senão pendência
     if (S){ novo.maxHp = Ind.hpDe(S, novo); novo.hp = Math.max(1, Math.round(novo.maxHp * hpK)); }
-    if (t){ t.lv = lv; t.maxHp = novo.maxHp; t.hp = novo.hp; t.exp = novo.exp; t.amizade = novo.amizade; t.movs = novo.movs; t.aprender = novo.aprender; gravarLS('time', jogo.time); }   // 18/09: golpes/fila da espécie nova também no registro (o arranjo leva pro servidor)
+    novo.status = statusAntes;
+    if (t){ t.lv = lv; t.maxHp = novo.maxHp; t.hp = novo.hp; t.exp = novo.exp; t.amizade = novo.amizade; t.status = statusAntes; t.movs = novo.movs; t.aprender = novo.aprender; gravarLS('time', jogo.time); }   // 18/09: golpes/fila da espécie nova também no registro (o arranjo leva pro servidor)
     const muda = comConta() ? null : Evolucao.regras(dexAntes).find(r => r.gatilho === 'muda');   // com conta o servidor ainda não registra o SEGUNDO Pokémon (Shedinja): fica pro jogo local   // Nincada → Ninjask + Shedinja na Pokébola vazia (vaga no time e uma Pokébola)
     if (muda){ const sp = porDex.get(muda.para), gm = sp && (ELENCO_JOGO.find(x => x.n === sp.n && /_00$/.test(x.glb)) || ELENCO_JOGO.find(x => x.n === sp.n));
       if (gm && jogo.time.length < 6 && (jogo.bolas[1001] || 0) > 0){ jogo.bolas[1001]--; gravarLS('bolas', jogo.bolas); jogo.time.push({ dex: sp.n, glb: gm.glb, nome: sp.name, lv, exp: Evolucao.expPara(sp.n, lv), amizade: Evolucao.amizadeBase(sp.n), hp: 1, maxHp: 1, ivs: Ind.sortearIVs(), natureza: Ind.sortearNatureza(), quando: Date.now() }); gravarLS('time', jogo.time); Chat.sistema('A ' + sp.name + ' appeared in the empty Poké Ball!'); } }
@@ -6892,6 +6970,7 @@ async function trocarPara(i, { forcado = false } = {}){
     novo.exp = t.exp ?? Evolucao.expPara(t.dex, novo.lv); novo.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex);
     Ind.garantir(t); novo.uid = t.uid ?? null; novo.ivs = t.ivs; novo.natureza = t.natureza; Ind.garantirMovs(t, fallbackGolpes(t.dex)); novo.movs = t.movs; novo.aprender = t.aprender; novo.golpesIds = Ind.idsDe(novo);
     if (S){ novo.maxHp = Ind.hpDe(S, novo); novo.hp = t.hp != null ? Math.max(0, Math.min(t.hp, novo.maxHp)) : novo.maxHp; }   // hp 0 do registro continua 0 (12/09): quem está KO não "ressuscita" ao entrar em campo
+    novo.status = Status.limpo(t.status);
     jogo.trocaCd = TROCA_CD;
     flutuar(novo, t.nome + ', go!', '#8ef58e');
     document.getElementById('segue-ctl')?.__encher?.();
@@ -6919,6 +6998,7 @@ async function proximoDoTime(){
       novo.lv = alvo.lv; novo.exp = alvo.exp ?? Evolucao.expPara(alvo.dex, novo.lv); novo.amizade = alvo.amizade ?? Evolucao.amizadeBase(alvo.dex);
       Ind.garantir(alvo); novo.uid = alvo.uid ?? null; novo.ivs = alvo.ivs; novo.natureza = alvo.natureza; Ind.garantirMovs(alvo, fallbackGolpes(alvo.dex)); novo.movs = alvo.movs; novo.aprender = alvo.aprender; novo.golpesIds = Ind.idsDe(novo);
       if (S){ novo.maxHp = Ind.hpDe(S, novo); novo.hp = alvo.hp != null && alvo.hp > 0 ? Math.min(alvo.hp, novo.maxHp) : novo.maxHp; }
+      novo.status = Status.limpo(alvo.status);
     }
     jogo.trocaCd = TROCA_CD;
     flutuar(novo, alvo.nome + ', go!', '#8ef58e');
@@ -8633,6 +8713,7 @@ if (jogo.ash){
   const glbDoDex = dex => { let e = null; for (const x of ELENCO_JOGO) if (x.n === dex && (!e || (/_00$/.test(x.glb) && !/_00$/.test(e.glb)))) e = x; return e ? e.glb + '.glb' : null; };
   async function pescaEmergiu(V){
     const a = jogo.ash; if (!a) return;
+    // The catch list is that area's water habitat. Overworld spawns do not place those species on the water.
     const area = areaAtual(), lista = (PESCA_D?.areas?.[area] || PESCA_D?.generico || []).filter(e => porDex.has(e.dex) && (e.glb || glbDoDex(e.dex)));
     const karp = V.soMagikarp || !lista.length || Math.random() < (+V.magikarp || 0);
     const e = karp ? { dex: 129, nome: 'Magikarp' } : lista[Math.floor(Math.random() * lista.length)];
@@ -9133,6 +9214,7 @@ function atualizarParceiro(dt){
   Pesca.quadro(dt);
   if (jogo.trocaCd > 0) jogo.trocaCd = Math.max(0, jogo.trocaCd - dt);
   const hostil = jogo.selvagens.find(s => s.estado === 'atacando' && Math.hypot(s.x - pika.x, s.z - pika.z) < 12);
+  tiqueStatus(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   if (jogo.turno || jogo.ordem){ pika.emBatalha = true; pika.calma = 0; }   // aggro de selvagem NÃO congela o parceiro: ele segue você e só briga quando VOCÊ manda (ou no turno)
   else if (pika.emBatalha){ pika.calma = (pika.calma || 0) + dt; if (pika.calma > 3) pika.emBatalha = false; }
   const dA = Math.hypot(ash.x - pika.x, ash.z - pika.z);
@@ -9163,6 +9245,7 @@ function atualizarParceiro(dt){
       pika.pivo.rotation.y = pika.giro;
       const des = desobedece(pika);                                       // acima do teto de nível (GDD §7.4, teto duro): não obedece
       if (des){ avisarTeto(pika, des); pika.recargas[golpe.id] = Math.min(golpe.recarga, 1.5); }
+      else if (impedido(pika)){ pika.recargas[golpe.id] = Math.min(golpe.recarga || 1.2, 1.2); }
       else {
         const g2 = golpe;
         tocarUma(pika, g2.anim);
@@ -10044,8 +10127,26 @@ async function rodadaDoServidor(T, acao){
       console.warn('batalha: lance no Pokémon errado (alvo ' + l.alvo + ', em campo ' + meuUid + ') — ignorado');
       continue;
     }
+    if (l.parado){
+      flutuar(at, Status.aviso(l.parado), Status.cor(at.status?.id) || '#9ab');
+      if (at === jogo.pika) guardarEstadoAtivo();
+      continue;
+    }
     const g = (l.golpe === 'struggle' ? STRUGGLE : GOLPES[l.golpe]) || STRUGGLE;
+    if (l.statusQuem !== 'eu' && g.tipo === 'Fire' && def.status?.id === 'freeze') flutuar(def, 'thawed', Status.cor('freeze'));
     await golpeTurno(at, def, g, { dano: l.dano, eff: l.eff, hp: l.hpAlvo });
+    if (l.curou && at){ at.hp = at.maxHp; flutuar(at, 'HP restored', '#8ef58e'); }
+    if (l.statusId){
+      const quem = l.statusQuem === 'eu' ? at : def;
+      if (quem && quem.hp > 0){
+        quem.status = { id: l.statusId, n: l.statusN | 0 };
+        flutuar(quem, Status.nome(l.statusId) + '!', Status.cor(l.statusId));
+        if (quem.rotulo){ quem.rotMarca = undefined; pintarRotuloSelvagem(quem); }
+        if (quem === jogo.pika) guardarEstadoAtivo();
+      }
+    } else if (g.cat === 'status' && !(l.dano > 0) && !l.curou){
+      flutuar(l.statusQuem === 'eu' ? at : def, 'it failed', '#9ab');
+    }
   }
   /* QUEM ESTÁ EM CAMPO QUEM DIZ É O SERVIDOR (20/09, chaospider "A ganância do homem quebra o jogo"): toda resposta traz o
      `eu.uid`. Se a tela ficou com outro (lance de troca perdido, troca que não completou, substituto escolhido pelo desmaio
@@ -10063,8 +10164,8 @@ async function rodadaDoServidor(T, acao){
     Som.tocar('ui/sound_successful', { volume: .55, prio: true });
     if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: v.lv });
   }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o network.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
-  if (T.inimigo && r.ele && !T.caiu) T.inimigo.hp = r.ele.hp;            // desmaiou: o `ele` já é o próximo, o HP dele vai pro que entra (abaixo)
-  if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))) jogo.pika.hp = r.eu.hp;   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
+  if (T.inimigo && r.ele && !T.caiu){ T.inimigo.hp = r.ele.hp; if ('status' in r.ele){ T.inimigo.status = r.ele.status || null; T.inimigo.rotMarca = undefined; } }            // desmaiou: o `ele` já é o próximo, o HP dele vai pro que entra (abaixo)
+  if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){ jogo.pika.hp = r.eu.hp; if ('status' in r.eu) jogo.pika.status = r.eu.status || null; guardarEstadoAtivo(); }   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
   if (T.caiu && !r.fim){                                                  // caiu o do inimigo e vem outro: o servidor já disse qual
     await esperarSeg(1.3);
     T.idx = Math.max(0, (r.dele || []).findIndex(x => x.hp > 0) - 1);
@@ -10138,9 +10239,10 @@ async function rodadaTurno(acao){
   if (T.serv) return rodadaDoServidor(T, acao);                           // passo 4: quem decide é o servidor; aqui é só a tela
   const s = T.inimigo, gI = s.golpes[Math.floor(Math.random() * s.golpes.length)] || GOLPES.tackle;
   const p0 = jogo.pika, A = porDex.get(p0.dex), D = porDex.get(s.dex);
-  const velP = Ind.stat(A?.bs[5] ?? 50, p0.lv, p0.ivs?.[5] || 0, 0, p0.natureza, 5), velI = Ind.stat(D?.bs[5] ?? 50, s.lv, s.ivs?.[5] || 0, 0, s.natureza, 5);
+  const velP = Ind.stat(A?.bs[5] ?? 50, p0.lv, p0.ivs?.[5] || 0, 0, p0.natureza, 5) * Status.mulVel(p0), velI = Ind.stat(D?.bs[5] ?? 50, s.lv, s.ivs?.[5] || 0, 0, s.natureza, 5) * Status.mulVel(s);
   const acoes = [{ quem: 'p' }, { quem: 'i' }];
   if (acao.tipo === 'golpe' && (velI > velP || (velI === velP && Math.random() < 0.5))) acoes.reverse();
+  let rodadaInteira = true;
   for (const ac of acoes){
     if (!jogo.turno) return;
     const p = jogo.pika;
@@ -10157,20 +10259,38 @@ async function rodadaTurno(acao){
         tocarUma(q, 'Appear'); efeito('00016_Hit', q.peito, q.altura);
       }
       else if (acao.tipo === 'desistir'){ fimTurno(false, { desistiu: true }); return; }
-      else if (p && p.hp > 0 && s.hp > 0) await golpeTurno(p, s, acao.g);
+      else if (p && p.hp > 0 && s.hp > 0){
+        if (impedido(p)) await esperarSeg(0.8);
+        else await golpeTurno(p, s, acao.g);
+      }
     } else if (s.hp > 0 && jogo.pika && jogo.pika.hp > 0){
-      await golpeTurno(s, jogo.pika, gI);
+      if (impedido(s)) await esperarSeg(0.8);
+      else await golpeTurno(s, jogo.pika, gI);
     }
     if (T.caiu){                                                         // rival caiu: próximo Pokémon ou vitória
+      rodadaInteira = false;
       await esperarSeg(1.3);
       if (!(await proximoInimigoTurno())){ fimTurno(true); return; }
       await esperarSeg(0.3);
       break;
     }
     if (jogo.pika && jogo.pika.hp <= 0){                                 // seu parceiro caiu: entra o próximo (ou derrota)
+      rodadaInteira = false;
       if (!(await esperarTrocaTurno())){ fimTurno(false); return; }
       break;
     }
+  }
+  if (rodadaInteira && jogo.turno && jogo.pika?.hp > 0 && s.hp > 0){
+    for (const e of [jogo.pika, s]){
+      const id = e.status?.id, d = Status.residual(e);
+      if (!(d > 0)) continue;
+      e.hp = Math.max(0, e.hp - d);
+      flutuar(e, '−' + d, Status.cor(id));
+      if (e.hp <= 0) e.status = null;
+    }
+    if (jogo.pika.hp <= 0){ guardarEstadoAtivo(); morrer(jogo.pika); if (!(await esperarTrocaTurno())){ fimTurno(false); return; } }
+    else if (s.hp <= 0){ koTurno(s); await esperarSeg(1.3); if (!(await proximoInimigoTurno())){ fimTurno(true); return; } }
+    else guardarEstadoAtivo();
   }
   if (!jogo.turno) return;
   T.rodada++; T.fase = 'escolha'; pintarTurno();

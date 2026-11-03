@@ -23,6 +23,7 @@ import { criarRaid } from './server_raid.mjs';                     // raid ao vi
 import { criarBatalha } from './server_battle.mjs';
 import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
+import { fundir as fundirStatus } from './status.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta } from './server_pos.mjs';
 import { chegadaConfere } from './server_doors.mjs';
@@ -333,6 +334,7 @@ function mergeProgress(record, item) {
   const friendship = Math.round(Number(item.amizade));
   if (Number.isInteger(friendship) && friendship >= 0 && friendship <= 255) record.amizade = friendship;
   mergeHp(record, item);
+  fundirStatus(record, item);
 }
 /* Applies a party reorder. The account already owns every Pokémon; this only accepts the same
    set of ids (nothing created, duplicated, or deleted). */

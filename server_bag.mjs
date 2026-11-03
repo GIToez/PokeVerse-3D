@@ -18,6 +18,7 @@ import nodePath from 'node:path';
 import { Held } from './held.mjs';
 import * as Regras from './item_rules.mjs';
 import * as Ev from './ev.mjs';
+import * as Status from './status.mjs';
 import { maxHpOf } from './server_hp.mjs';
 import { TITULOS } from './knowledge.mjs';
 
@@ -65,7 +66,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     return null;
   }
   const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [] }; };
-  const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
+  const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, status: Status.exportar(p.status), ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
   const tocarAmizade = (p, id) => {
     const d = Regras.amizadeDe(id);
     if (!d) return;
@@ -73,7 +74,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     p.amizade = Math.max(0, Math.min(255, base + d));
   };
   const maxDe = p => maxHpOf(p) || p.maxHp || 1;
-  const reviver = (p, frac) => { const max = maxDe(p); p.hp = Math.max(1, Math.ceil(max * frac)); p.maxHp = max; };
+  const reviver = (p, frac) => { const max = maxDe(p); p.hp = Math.max(1, Math.ceil(max * frac)); p.maxHp = max; p.status = null; };
   const erro = (c, texto) => ({ erro: texto, bolsa: retrato(c) });       // the snapshot undoes what the client already took off locally
   const pronto = (c, extra = {}) => { c.rev = (c.rev || 0) + 1; salvar(); return { bolsa: retrato(c), ...extra }; };
 
@@ -96,7 +97,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     if (!itemInfo(id)) return erro(c, 'unknown item');
     if (quantos(c, id) < 1) return erro(c, "you don't have that item");
     const time = Array.isArray(saveDe(c).time) ? saveDe(c).time : [];
-    if ((Regras.ehCura(id) || Regras.ehReanima(id) || Regras.ehReanimaTime(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
+    if ((Regras.ehCura(id) || Regras.curaStatus(id) || Regras.ehReanima(id) || Regras.ehReanimaTime(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
     if (Regras.ehReanimaTime(id)) {
       const caidos = time.filter(p => p && +p.hp === 0);
       if (!caidos.length) return erro(c, 'nobody is fainted');
@@ -111,10 +112,19 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     if (Regras.ehReanima(id)) {
       if (hp > 0) return erro(c, p.nome + ' is not fainted');
       reviver(p, Regras.REANIMA[id]);
-    } else if (Regras.ehCura(id)) {
+    } else if (Regras.ehCura(id) || Regras.curaStatus(id)) {
       if (hp <= 0) return erro(c, p.nome + ' is fainted: use a Revive');
-      if (hp >= max) return erro(c, p.nome + "'s HP is already full");
-      p.hp = Math.min(max, hp + Regras.CURA[id]); p.maxHp = max;
+      const quais = Regras.statusDe(id);
+      const tinha = Status.limpo(p.status);
+      const curaEsse = !!(tinha && (quais === null || (Array.isArray(quais) && quais.includes(tinha.id))));
+      const querHp = Regras.ehCura(id) && hp < max;
+      if (!querHp && !curaEsse) {
+        if (Regras.ehCura(id)) return erro(c, p.nome + "'s HP is already full");
+        if (!tinha) return erro(c, p.nome + ' has no status to cure');
+        return erro(c, p.nome + ' is ' + Status.nome(tinha.id));
+      }
+      if (querHp) { p.hp = Math.min(max, hp + Regras.CURA[id]); p.maxHp = max; }
+      if (curaEsse) Status.curar(p, quais);
     } else if (Regras.PP[id]) {
       const R = Regras.PP[id], movs = (p.movs || []).filter(x => x && x.id);
       const cheio = x => (x.pp || 0) >= (x.ppMax ?? x.pp ?? 0);

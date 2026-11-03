@@ -41,10 +41,17 @@ FILES = (
     'moves.csv',
     'move_names.csv',
     'move_effect_prose.csv',
+    'move_meta.csv',
+    'move_meta_ailment_names.csv',
     'type_names.csv',
     'pokemon.csv',
     'pokemon_moves.csv',
 )
+# PokéAPI ailment ids that are the six major statuses. Anything else (confusion,
+# trap, yawn, leech seed) is not a status the medicines cure.
+AILMENT = {1: 'paralysis', 2: 'sleep', 3: 'freeze', 4: 'burn', 5: 'poison'}
+# Targets that land on the user. Rest sleeps the user, not whoever they aimed at.
+SELF_TARGETS = {'5', '7', '13', '15'}
 # Latest Scarlet/Violet list wins when a DLC group actually has rows.
 SV_GROUPS = (27, 26, 25)          # indigo disk, teal mask, scarlet-violet
 FALLBACK_GROUPS = (30, 20)        # legends-za, then sword-shield
@@ -299,12 +306,107 @@ def build_learnset(old_learn: dict, move_by_pokeapi: dict[int, str], moves: dict
     }
 
 
+def _words(text: str) -> list[str]:
+    """Status names the PokéAPI effect prose actually uses, in inflict order."""
+    import re
+    low = text.lower()
+    if any(w in low for w in ('cleanses', 'cures the', 'wakes it', 'wakes the', 'makes contact')):
+        return []
+    found = []
+    for word, sid in (
+        ('badly poison', 'toxic'),
+        ('paralyze', 'paralysis'),
+        ('paralysis', 'paralysis'),
+        ('burn', 'burn'),
+        ('freeze', 'freeze'),
+        ('poison', 'poison'),
+        ('sleeps', 'sleep'),
+        ('sleep', 'sleep'),
+    ):
+        if sid in found or sid == 'poison' and 'toxic' in found:
+            continue
+        if re.search(r'\b' + word + r'\b', low):
+            found.append(sid)
+    return found
+
+
+def stamp_moves(moves: dict) -> int:
+    """Copy each move's ailment from PokéAPI move_meta.
+
+    `meta_ailment_id` is the status. A blank ailment chance on a status move means
+    it always lands. Toxic is ailment "poison" whose effect prose says "badly poisons"
+    (the API has no separate bad-poison id). Rest and Tri Attack have no ailment id;
+    their effect prose names the status, and that text is what gets stored.
+    """
+    import re
+    meta = {row['move_id']: row for row in read_csv('move_meta.csv')}
+    effects = {}
+    for row in read_csv('move_effect_prose.csv'):
+        if row['local_language_id'] == LANG:
+            effects[row['move_effect_id']] = row['short_effect']
+    by_slug = {}
+    for row in read_csv('moves.csv'):
+        sid = slug_of(row['identifier'])
+        info = meta.get(row['id'])
+        if not info:
+            continue
+        desc = effects.get(row['effect_id']) or ''
+        low = desc.lower()
+        ailment = AILMENT.get(int(info['meta_ailment_id'] or 0))
+        if ailment == 'poison' and 'badly poison' in low:
+            ailment = 'toxic'
+        stamped = None
+        if ailment:
+            chance = int(info['ailment_chance'] or 0)
+            if chance <= 0 and row['damage_class_id'] == '1':
+                chance = 100
+            elif chance <= 0:
+                chance = int(row['effect_chance'] or 0)
+            if chance > 0:
+                stamped = {'status': ailment, 'statusChance': chance}
+                if ailment == 'sleep' and info['min_turns'] and info['max_turns']:
+                    stamped['statusTurns'] = [int(info['min_turns']), int(info['max_turns'])]
+        elif info['meta_ailment_id'] in ('0', '-1'):
+            named = _words(desc)
+            chance = int(info['ailment_chance'] or 0) or int(row['effect_chance'] or 0)
+            if len(named) >= 2 and chance > 0:
+                stamped = {'statusPool': named, 'statusChance': chance}
+            elif len(named) == 1 and (row['damage_class_id'] == '1' or chance > 0):
+                stamped = {'status': named[0], 'statusChance': chance or 100}
+                turns = re.search(r'for (\d+|one|two|three|four|five) turns?', low)
+                if named[0] == 'sleep' and turns:
+                    n = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}.get(turns.group(1), 0) or int(turns.group(1))
+                    stamped['statusTurns'] = [n, n]
+                if 'completely healing' in low:
+                    stamped['statusCura'] = 'cheio'
+        if stamped and row['target_id'] in SELF_TARGETS:
+            stamped['statusEm'] = 'eu'
+        by_slug[sid] = stamped
+    n = 0
+    for sid, move in moves.items():
+        for key in ('status', 'statusChance', 'statusEm', 'statusTurns', 'statusCura', 'statusPool'):
+            move.pop(key, None)
+        stamped = by_slug.get(sid)
+        if not stamped:
+            continue
+        move.update(stamped)
+        n += 1
+    return n
+
+
 def main() -> None:
     download()
+    if '--status-only' in sys.argv:
+        moves = json.loads(MOVES_PATH.read_text(encoding='utf-8'))
+        n = stamp_moves(moves)
+        MOVES_PATH.write_text(json.dumps(moves, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
+        print(f'status on {n} moves')
+        return
     old = json.loads(MOVES_PATH.read_text(encoding='utf-8'))
     old_doc = json.loads(LEARN_PATH.read_text(encoding='utf-8'))
     official, by_slug = load_official()
     moves = build_moves(old, official, by_slug)
+    print(f'status on {stamp_moves(moves)} moves')
     move_by_pokeapi = {e['pokeapi_id']: e['id'] for e in official}
     learn = build_learnset(old_doc.get('learnset') or {}, move_by_pokeapi, moves)
     matched = sum(1 for sid in old if sid in by_slug)
