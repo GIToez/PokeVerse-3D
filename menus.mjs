@@ -3685,7 +3685,7 @@ export function previa(on = null){
   if (on === false) return false;
   const ori = ctx.MOBILE ? (Hud.presetAtual() === 'celular_deitado' ? 'deitado' : null) : 'pc';
   const ps = ori && ctx.jogo?.hudLayout?.popups?.[ori];
-  if (!ps || !ehV2()){ Chat.sistema('Prévia: ligue o visual novo (Configurações → Geral → Visual novo, ou ?hud=v2)' + (ctx.MOBILE ? ' e deite o celular' : '') + '.'); return false; }
+  if (!ps || !ehV2()){ Chat.sistema('Preview: switch to the new HUD (Settings → HUD)' + (ctx.MOBILE ? ' and turn the phone sideways' : '') + '.'); return false; }
   const nomes = Object.keys(ps), maquete = ORDEM_PREVIA.filter(n => nomes.includes(n)), janelas = nomes.filter(n => !maquete.includes(n) && JANELAS[n]);
   const p = document.createElement('div'); p.id = 'previa';
   p.innerHTML = '<b>Prévia das telas (adm)</b><span class="fecha" title="fechar (F7)">×</span>'
@@ -3803,7 +3803,7 @@ function cfCaber(b){
   let fs = parseFloat(b.style.fontSize) || 14;
   for (let i = 0; i < 8 && fs > 7 && b.scrollWidth > b.clientWidth + 0.5; i++){ fs -= 1; b.style.fontSize = fs + 'px'; }
 }
-/** Configurações → Geral: "Visual novo (beta)" — liga/desliga o HUD v2 da Amanda (LS hud.v2) e recarrega o jogo no mesmo lugar. */
+/** Settings → General: switch between the v2 HUD and the classic command island (LS hud.v2) and reload in place. */
 function cfLinhaVisual(pop){
   const area = pop.querySelector('[data-fig="conteudo-geral"]'); if (!area) return;
   const V = cfVaga(area, 2); if (!V) return;                               // 2ª vaga: abaixo do Idioma
@@ -3813,12 +3813,12 @@ function cfLinhaVisual(pop){
   Object.assign(linha.style, { position: 'absolute', left: V.left, top: V.top + 'px', width: V.width, height: V.height + 'px', pointerEvents: 'auto', zIndex: '5' });
   const fonte = (rotulo?.style.fontWeight || '700') + ' ' + (rotulo?.style.fontSize || '14.5px') + ' "Nunito Sans", system-ui, sans-serif';
   linha.innerHTML = '';
-  const lab = document.createElement('span'); lab.textContent = tr('Visual novo (beta)');
+  const lab = document.createElement('span'); lab.textContent = tr('HUD');
   Object.assign(lab.style, { position: 'absolute', left: '0', top: '0', height: '100%', display: 'flex', alignItems: 'center', font: fonte, color: '#fff' });
   linha.appendChild(lab);
   const { bx, bw, bh, by } = V;
   const on = ehV2();
-  const b = document.createElement('button'); b.type = 'button'; b.textContent = on ? tr('Voltar pro visual atual') : tr('Ligar');
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = on ? tr('Classic HUD') : tr('New HUD');
   Object.assign(b.style, { position: 'absolute', left: bx + 'px', top: by + 'px', width: bw + 'px', height: bh + 'px', borderRadius: (bh / 2) + 'px',
     border: '1px solid rgba(248,194,55,1)', background: on ? 'rgba(11,18,32,.9)' : '#F8C237', color: on ? '#F8C237' : '#1A1A1A', font: fonte, cursor: 'pointer', padding: '0' });
   b.onclick = () => { try { localStorage.setItem('hud.v2', on ? '0' : '1'); } catch {} cfRecarregar('hud', null); };

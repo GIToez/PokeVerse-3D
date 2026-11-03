@@ -62,10 +62,25 @@ export async function carregarPadrao(){ try { const r = await fetch('./ui/hud_la
     MAQUETE NOVA: se o `_figma.geradoEm` do arquivo é diferente do que o layout salvo traz, o arquivo passa na frente e o layout
     do jogador vai pra `hud.layout.antigo` (Configurações: "↺ usar o meu de novo"). Arquivo sem carimbo, ou carimbo igual: o
     layout salvo manda, como sempre. */
-/** ?hud=v2 (rodada 27 da Amanda, 16/09): o visual novo pra TESTE, gerado pelo tools/layout_v2_para_hud.mjs em ui/hud_layout_v2.json
-    (o layout de sempre com o HUD do PC/celular e a Mochila trocados). Sem o arquivo, cai no padrão. */
+/** v2 kit (ui/hud_layout_v2.json) is the HUD. ?hud=v1, ?hud=padrao, ?hud=antigo, or Settings → Classic HUD keeps the old one. */
 const MAQUETE = (() => { try { return new URLSearchParams(location.search).has('maquete'); } catch { return false; } })();   // rodada 29: `&maquete=1` mostra as peças v2 de situação
-export async function carregarV2(){ try { const r = await fetch('./ui/hud_layout_v2.json', { cache: 'no-store' }); const j = r.ok ? await r.json() : null; return j || carregarPadrao(); } catch { return carregarPadrao(); } }
+/** Visual novo (kit C2). O arquivo traz as peças do PC e do celular. As janelas (`popups`/`telas`) continuam as do
+    layout clássico quando o v2 não as traz — a arte daquelas telas ainda não está no jogo. */
+export async function carregarV2(){
+  try {
+    const r = await fetch('./ui/hud_layout_v2.json', { cache: 'no-store' });
+    const j = r.ok ? await r.json() : null;
+    if (!j) return carregarPadrao();
+    if (!j.popups || !j.telas){
+      const base = await carregarPadrao();
+      if (base){
+        if (!j.popups && base.popups) j.popups = base.popups;
+        if (!j.telas && base.telas) j.telas = base.telas;
+      }
+    }
+    return j;
+  } catch { return carregarPadrao(); }
+}
 export async function carregar(){
   const salvo = carregarLocal(); if (!salvo) return await carregarPadrao();
   const arq = await carregarPadrao(); if (!arq) return salvo;
@@ -1092,14 +1107,23 @@ function soltarFilhos(peca, seletor){
   for (const el of nos) Object.assign(el.style, { position: 'relative', left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', margin: '0', transform: 'none', pointerEvents: 'auto' });
   return nos;
 }
-/** Place the default Figma pieces: skills center-bottom, ball above them, hotkeys right, menu drawer under the minimap. */
+/** Place the default Figma pieces: skills center-bottom, ball above them, hotkeys right, menu drawer under the minimap.
+    The v2 kit already has those anchors (the ball sits in the move bar, the menu is a plate above the hotkeys).
+    Restacking it here covered the Figma layout, so the island only runs for the classic kit. */
 export function aplicarIlha(){
   if (typeof document === 'undefined') return;
+  ligarIlhaUmaVez();
+  const fig = layoutAtual()?._figma;
+  if (fig && (fig.v2 || fig.geradoEmV2)){
+    document.body.classList.remove('hud-ilha', 'hud-ilha-mobile');
+    document.getElementById('menu-dock-aba')?.remove();
+    for (const id of ['skills', 'bola-btn', 'atalhos', 'menu-icones']) document.getElementById(id)?.classList.remove('ilha-centro', 'ilha-bola', 'ilha-direita', 'dock-slide');
+    return;
+  }
   const mobile = document.body.classList.contains('mobile');
   document.body.classList.add('hud-ilha');
   document.body.classList.remove('hud-dock', 'hud-ref');
   document.body.classList.toggle('hud-ilha-mobile', mobile);
-  ligarIlhaUmaVez();
   const barra = document.getElementById('barra');
   if (barra){ barra.classList.add('solto'); barra.classList.remove('dock-regiao'); }
   const skills = document.getElementById('skills');
