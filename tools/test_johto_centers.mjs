@@ -7,7 +7,8 @@ import fs from 'node:fs';
 import { estoque } from '../item_rules.mjs';
 import {
   CENTROS_JOHTO, LOJAS_JOHTO, LOJA_PADRAO,
-  centroJohtoMaisPerto, centroPelaChegadaJohto, ehChegadaCentroJohto,
+  CASA_JOHTO, cenaCasaJohto, cenaSalaCompartilhada, centroJohtoMaisPerto, centroPelaChegadaJohto,
+  ehChegadaCentroJohto, ehChegadaLojaJohto,
 } from '../johto_centers.mjs';
 
 function ok(cond, msg){ if (!cond) throw new Error(msg); }
@@ -74,6 +75,10 @@ ok(cinnabar.includes(7152901) && cinnabar.includes(6152901) && cinnabar.includes
 
 ok(ehChegadaCentroJohto(7142101) && ehChegadaCentroJohto(7143001), 'Johto center arrivals');
 ok(!ehChegadaCentroJohto(7140101) && !ehChegadaCentroJohto(7152101) && !ehChegadaCentroJohto(7142001), 'Kanto and mart arrivals are not Johto centers');
+ok(ehChegadaLojaJohto(7152101) && ehChegadaLojaJohto(7152901) && !ehChegadaLojaJohto(7150101), 'Johto mart arrivals');
+ok(cenaSalaCompartilhada(1421) === 4110001 && cenaSalaCompartilhada(1430) === 4110001, 'Johto Center areas share room 4110001');
+ok(cenaSalaCompartilhada(1402) === 4110001 && cenaSalaCompartilhada(1521) === 4110007, 'Pewter Center and Cherrygrove Mart rooms');
+ok(cenaSalaCompartilhada(1506) === 0 && cenaSalaCompartilhada(2102) === 0, 'the department store and the street are not the shared rooms');
 
 for (const c of CENTROS_JOHTO){
   const de = npc.get(c.porta);
@@ -94,7 +99,42 @@ for (const c of LOJAS_JOHTO){
   const clerk = String(c.chegada - 5000000);
   ok(!lojas[clerk], `clerk ${clerk} has no stock row of its own`);
   ok(aba(clerk) === LOJA_PADRAO, `clerk ${clerk} sells the Viridian mart`);
+  ok(glb[clerk]?.papel === 'loja' && glb[clerk].falas?.[0] && !/isn't available/i.test(glb[clerk].falas[0]), `${c.nome} clerk invites you in`);
 }
 ok(estoque(lojas, LOJA_PADRAO).length > 0, 'the shared mart has stock');
 
-console.log(`test_johto_centers: ok (${CENTROS_JOHTO.length} centers, ${LOJAS_JOHTO.length} marts)`);
+/** Same order the game uses: a real room, then the shared house. */
+const exportadas = interiores;
+function resolver(id){
+  const dest = doors[String(id)];
+  if (!dest) return 0;
+  const mundo = dest.c === 1000001 || dest.c === 2000001 || dest.c === 2500001 ? dest.c : 0;
+  const daArea = scenes.cenas.find(c => c.areas?.some(ar => ar.id === dest.a))?.id || 0;
+  return mundo || daArea || cenaSalaCompartilhada(dest.a)
+    || (exportadas.has(String(dest.c)) ? dest.c : 0)
+    || cenaCasaJohto(id, doors, exportadas)
+    || dest.c;
+}
+ok(resolver(7280501) === CASA_JOHTO && resolver(7281101) === CASA_JOHTO, 'Guide Gent and the Violet Gym open the shared house');
+ok(resolver(7142101) === 4110001 && resolver(7152101) === 4110007, 'Center and Mart stay in their own rooms');
+ok(resolver(7170604) === 4120018 && cenaCasaJohto(7170604, doors, exportadas) === 0, 'the Connection Center keeps its own room');
+ok(cenaCasaJohto(7510199, doors, exportadas) === 0 && !doors['6210504'].n, 'a door with no way back stays shut');
+ok(doors['6280501'].n === 7210201 && doors['7210201'].c === 2000001, 'Guide Gent leaves onto the Cherrygrove step');
+const casa = cena(CASA_JOHTO);
+ok(casa.areas.find(a => a.id === 2805)?.nome === "Guide Gent's House", 'admin scene list names the Cherrygrove house');
+ok(casa.areas.find(a => a.id === 2801)?.nome === "Elm's Lab", "admin scene list names Elm's Lab");
+ok(casa.areas.find(a => a.id === 2811)?.nome === 'Violet Gym', 'admin scene list names the Violet Gym');
+ok(!casa.areas.some(a => a.id === 1706 || a.id === 1421 || a.id === 1521 || a.id === 5101), 'Center, Mart, and the Connection Center are not filed under the house');
+let casas = 0;
+for (const [id, p] of Object.entries(doors)){
+  if (!(p.t === 6 && p.c === 2000001 && p.n)) continue;
+  if (cenaCasaJohto(p.n, doors, exportadas) !== CASA_JOHTO) continue;
+  casas++;
+  ok(casa.areas.some(a => a.id === doors[String(p.n)].a), `area ${doors[String(p.n)].a} is on the shared house`);
+  ok(resolver(p.n) === CASA_JOHTO, `door ${id} opens the shared house`);
+  const saida = doors[String(p.n - 1000000)];
+  ok(saida?.n === +id + 1000000 && doors[String(saida.n)]?.c === 2000001, `door ${id} returns to its own step`);
+}
+ok(casas >= 90, `shared-house doors, got ${casas}`);
+
+console.log(`test_johto_centers: ok (${CENTROS_JOHTO.length} centers, ${LOJAS_JOHTO.length} marts, ${casas} houses)`);
