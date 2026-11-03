@@ -1,0 +1,46 @@
+{
+ "nome": "asas-dragao-flamejante",
+ "item": "Bag023_1",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "asas-dragao-flamejante-folha.png",
+  "webp": "asas-dragao-flamejante-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "asas-dragao-flamejante.webp",
+ "kb": {
+  "folhaPng": 972.7,
+  "folhaWebp": 231.5,
+  "webp": 245.7
+ },
+ "opcoes": {
+  "nome": "asas-dragao-flamejante",
+  "mochila": "Bag023_1",
+  "azimute": -25,
+  "elevacao": 12
+ },
+ "render": {
+  "glb": "Bag023_1",
+  "clipes": [],
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   56,
+   114,
+   527
+  ],
+  "borda": [
+   88,
+   200,
+   551,
+   555
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

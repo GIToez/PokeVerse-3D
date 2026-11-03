@@ -1,0 +1,66 @@
+{
+ "nome": "solgaleo",
+ "glb": "pm0791_00",
+ "shiny": false,
+ "voa": false,
+ "quadros": 16,
+ "lado": 210,
+ "duracaoMs": 667,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": "solgaleo-folha.png",
+  "webp": "solgaleo-folha.webp",
+  "colunas": 16,
+  "linhas": 1,
+  "largura": 3360,
+  "altura": 210
+ },
+ "webp": "solgaleo.webp",
+ "kb": {
+  "folhaPng": 416.2,
+  "folhaWebp": 106.8,
+  "webp": 112.1
+ },
+ "opcoes": {
+  "nome": "solgaleo",
+  "glb": "pm0791_00",
+  "tipo": "leon",
+  "azimute": 70,
+  "elevacao": 16
+ },
+ "render": {
+  "glb": "pm0791_00",
+  "arquivo": "./cenario/mon/pm0791_00.glb",
+  "clipes": [
+   "Appear:1.875",
+   "Attack:2.917",
+   "Buff:3.250",
+   "Cast:2.917",
+   "Dead:2.083",
+   "Idle:2.917",
+   "Run:0.667",
+   "Wound:0.833"
+  ],
+  "escala": 0.6,
+  "sela": "eMount do GLB",
+  "cavaleiro": {
+   "glb": "fc2075_00",
+   "pose": "Ride1",
+   "dur": 0.667,
+   "voltas": 1
+  },
+  "chamas": 0,
+  "run": 0.667,
+  "ciclos": 1,
+  "loop": 0.667,
+  "quadros": 16,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   10,
+   55,
+   592
+  ],
+  "aviso": "o recorte passa da foto (sobra transparente)"
+ }
+}

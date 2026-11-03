@@ -1,0 +1,59 @@
+{
+ "nome": "pokemon-charizard-abobora",
+ "glb": "pm0006_31",
+ "shiny": false,
+ "voa": false,
+ "quadros": 38,
+ "lado": 210,
+ "duracaoMs": 1600,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "pokemon-charizard-abobora-folha.webp",
+  "colunas": 38,
+  "linhas": 1,
+  "largura": 7980,
+  "altura": 210
+ },
+ "webp": "pokemon-charizard-abobora.webp",
+ "kb": {
+  "folhaWebp": 270.2,
+  "webp": 287.2
+ },
+ "opcoes": {
+  "nome": "charizard-abobora",
+  "glb": "pm0006_31",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "pm0006_31",
+  "arquivo": "./cenario/mon/pm0006_31.glb",
+  "clipes": [
+   "Appear:0.867",
+   "Attack:2.000",
+   "Buff:2.200",
+   "Cast:2.000",
+   "Dead:1.667",
+   "Idle:1.600",
+   "Run:0.800",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 1.6,
+  "ciclos": 1,
+  "loop": 1.6,
+  "quadros": 38,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   87,
+   63,
+   501
+  ]
+ }
+}

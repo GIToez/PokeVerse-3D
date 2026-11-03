@@ -1,0 +1,50 @@
+{
+ "nome": "roupa-girl_023",
+ "item": "roupa:girl_023",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": null,
+  "webp": "roupa-girl_023-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "roupa-girl_023.webp",
+ "kb": {
+  "folhaWebp": 249.5,
+  "webp": 261.7
+ },
+ "opcoes": {
+  "nome": "roupa-girl_023",
+  "tipo": "roupa",
+  "id": "roupa:girl_023",
+  "azimute": 0,
+  "elevacao": 8,
+  "lado": [
+   210,
+   328,
+   432
+  ]
+ },
+ "render": {
+  "tipo": "roupa",
+  "glb": "Girl_023",
+  "idle": {
+   "dur": 2.867,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "R": 640,
+  "recorte": [
+   45,
+   44,
+   550
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

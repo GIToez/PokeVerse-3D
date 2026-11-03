@@ -1,0 +1,63 @@
+{
+ "nome": "hoverboard-328",
+ "glb": "hoverboard",
+ "shiny": false,
+ "voa": false,
+ "quadros": 33,
+ "lado": 328,
+ "duracaoMs": 1367,
+ "quadroMs": 41,
+ "folha": {
+  "arquivo": "hoverboard-328-folha.png",
+  "webp": "hoverboard-328-folha.webp",
+  "colunas": 33,
+  "linhas": 1,
+  "largura": 10824,
+  "altura": 328
+ },
+ "webp": "hoverboard-328.webp",
+ "kb": {
+  "folhaPng": 2113.8,
+  "folhaWebp": 350.7,
+  "webp": 343
+ },
+ "opcoes": {
+  "nome": "hoverboard-328",
+  "glb": "hoverboard",
+  "tipo": "leaf",
+  "azimute": 55,
+  "elevacao": 14,
+  "pelaPose": true,
+  "lado": 328,
+  "balanco": 3
+ },
+ "render": {
+  "glb": "hoverboard",
+  "arquivo": "./cenario/pc/Balancecar.glb",
+  "clipes": [
+   "Idle:2.000",
+   "Run:0.800"
+  ],
+  "escala": 1,
+  "sela": "eMount do GLB",
+  "cavaleiro": {
+   "glb": "Girl_045",
+   "pose": "Ride6",
+   "dur": 1.367,
+   "voltas": 1
+  },
+  "chamas": 0,
+  "run": 0.8,
+  "ciclos": 1,
+  "loop": 1.367,
+  "quadros": 33,
+  "voa": false,
+  "voltasRodas": 2,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   84,
+   70,
+   511
+  ]
+ }
+}

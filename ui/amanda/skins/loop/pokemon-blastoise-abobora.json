@@ -1,0 +1,59 @@
+{
+ "nome": "pokemon-blastoise-abobora",
+ "glb": "pm0009_31",
+ "shiny": false,
+ "voa": false,
+ "quadros": 64,
+ "lado": 210,
+ "duracaoMs": 2667,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "pokemon-blastoise-abobora-folha.webp",
+  "colunas": 64,
+  "linhas": 1,
+  "largura": 13440,
+  "altura": 210
+ },
+ "webp": "pokemon-blastoise-abobora.webp",
+ "kb": {
+  "folhaWebp": 538.3,
+  "webp": 578.5
+ },
+ "opcoes": {
+  "nome": "blastoise-abobora",
+  "glb": "pm0009_31",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "pm0009_31",
+  "arquivo": "./cenario/mon/pm0009_31.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:2.133",
+   "Buff:2.000",
+   "Cast:2.000",
+   "Dead:1.667",
+   "Idle:2.667",
+   "Run:0.833",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 2.667,
+  "ciclos": 1,
+  "loop": 2.667,
+  "quadros": 64,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   39,
+   84,
+   528
+  ]
+ }
+}

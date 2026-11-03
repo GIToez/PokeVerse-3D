@@ -1,0 +1,60 @@
+{
+ "nome": "pokemon-pikachu-mimikyu",
+ "glb": "hw-pikachu-mimikyu",
+ "shiny": false,
+ "voa": false,
+ "quadros": 27,
+ "lado": 210,
+ "duracaoMs": 1133,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 27,
+  "linhas": 1,
+  "largura": 5670,
+  "altura": 210
+ },
+ "webp": "pokemon-pikachu-mimikyu.webp",
+ "kb": {
+  "folhaPng": 834.3,
+  "folhaWebp": 195,
+  "webp": 196.8
+ },
+ "opcoes": {
+  "nome": "pikachu-mimikyu",
+  "glb": "hw-pikachu-mimikyu",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "hw-pikachu-mimikyu",
+  "arquivo": "./cenario/mon/hw-pikachu-mimikyu.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:2.000",
+   "Buff:1.800",
+   "Cast:1.833",
+   "Dead:1.600",
+   "Idle:1.133",
+   "Run:0.333",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 1.133,
+  "ciclos": 1,
+  "loop": 1.133,
+  "quadros": 27,
+  "voa": false,
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "recorte": [
+   68,
+   68,
+   523
+  ]
+ }
+}

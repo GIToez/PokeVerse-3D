@@ -1,0 +1,50 @@
+{
+ "nome": "leon-328",
+ "item": "leon",
+ "quadros": 48,
+ "lado": 328,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "leon-328-folha.png",
+  "webp": "leon-328-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 15744,
+  "altura": 328
+ },
+ "webp": "leon-328.webp",
+ "kb": {
+  "folhaPng": 2778.2,
+  "folhaWebp": 400.8,
+  "webp": 416.4
+ },
+ "opcoes": {
+  "nome": "leon-328",
+  "roupa": "leon",
+  "azimute": 0,
+  "elevacao": 8,
+  "lado": 328
+ },
+ "render": {
+  "glb": "fc2075_00",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   42,
+   40,
+   555
+  ],
+  "borda": [
+   136,
+   73,
+   502,
+   560
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "nome": "fortuna-328",
+ "item": "peito:56013",
+ "quadros": 48,
+ "lado": 328,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": "fortuna-328-folha.png",
+  "webp": "fortuna-328-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 15744,
+  "altura": 328
+ },
+ "webp": "fortuna-328.webp",
+ "kb": {
+  "folhaPng": 3574.5,
+  "folhaWebp": 1486.3,
+  "webp": 1454.7
+ },
+ "opcoes": {
+  "nome": "fortuna",
+  "tipo": "efeito",
+  "id": "peito:56013",
+  "azimute": 20,
+  "elevacao": 8,
+  "lado": [
+   210,
+   328
+  ],
+  "camadas": [
+   3,
+   11,
+   23
+  ],
+  "massa": 0.01,
+  "zoom": 1.3,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "foto": "ui/amanda/skins/fortuna@2x.png"
+ },
+ "render": {
+  "tipo": "efeito",
+  "glb": "Boy_045",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   23,
+   424,
+   516
+  ],
+  "foto": "ui/amanda/skins/fortuna@2x.png",
+  "camadas": [
+   3,
+   11,
+   23
+  ],
+  "zoom": 1.3,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "quadros": 48,
+  "loop": 2
+ }
+}

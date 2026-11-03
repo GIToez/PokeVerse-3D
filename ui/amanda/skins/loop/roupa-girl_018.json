@@ -1,0 +1,49 @@
+{
+ "nome": "roupa-girl_018",
+ "item": "roupa:girl_018",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "roupa-girl_018.webp",
+ "kb": {
+  "webp": 280.5
+ },
+ "opcoes": {
+  "nome": "roupa-girl_018",
+  "id": "roupa:girl_018",
+  "azimute": 0,
+  "elevacao": 8,
+  "lado": [
+   210,
+   328,
+   432
+  ]
+ },
+ "render": {
+  "tipo": "roupa",
+  "glb": "Girl_018",
+  "clipe": "Idle",
+  "idle": {
+   "dur": 2.867,
+   "voltas": 1
+  },
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "R": 640,
+  "recorte": [
+   39,
+   39,
+   563
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

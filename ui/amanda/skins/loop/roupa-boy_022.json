@@ -1,0 +1,49 @@
+{
+ "nome": "roupa-boy_022",
+ "item": "roupa:boy_022",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "roupa-boy_022.webp",
+ "kb": {
+  "webp": 275.8
+ },
+ "opcoes": {
+  "nome": "roupa-boy_022",
+  "id": "roupa:boy_022",
+  "azimute": 0,
+  "elevacao": 8,
+  "lado": [
+   210,
+   328,
+   432
+  ]
+ },
+ "render": {
+  "tipo": "roupa",
+  "glb": "Boy_022",
+  "clipe": "Idle",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "R": 640,
+  "recorte": [
+   43,
+   50,
+   553
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "nome": "mochila-leaf",
+ "item": "Bag042_1",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "mochila-leaf-folha.png",
+  "webp": "mochila-leaf-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "mochila-leaf.webp",
+ "kb": {
+  "folhaPng": 801.8,
+  "folhaWebp": 213.6,
+  "webp": 229.2
+ },
+ "opcoes": {
+  "nome": "mochila-leaf",
+  "mochila": "Bag042_1",
+  "azimute": 155,
+  "elevacao": 12
+ },
+ "render": {
+  "glb": "Bag042_1",
+  "clipes": [],
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   56,
+   55,
+   528
+  ],
+  "borda": [
+   121,
+   87,
+   518,
+   551
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

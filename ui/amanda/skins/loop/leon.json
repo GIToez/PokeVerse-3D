@@ -1,0 +1,49 @@
+{
+ "nome": "leon",
+ "item": "leon",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "leon-folha.png",
+  "webp": "leon-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "leon.webp",
+ "kb": {
+  "folhaPng": 1334.2,
+  "folhaWebp": 249.3,
+  "webp": 263.4
+ },
+ "opcoes": {
+  "nome": "leon",
+  "roupa": "leon",
+  "azimute": 0,
+  "elevacao": 8
+ },
+ "render": {
+  "glb": "fc2075_00",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   42,
+   40,
+   555
+  ],
+  "borda": [
+   136,
+   73,
+   502,
+   560
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

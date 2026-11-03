@@ -1,0 +1,66 @@
+{
+ "nome": "peito-56004",
+ "item": "peito:56004",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "peito-56004-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "peito-56004.webp",
+ "kb": {
+  "folhaWebp": 980.1,
+  "webp": 995.3
+ },
+ "opcoes": {
+  "tipo": "efeito",
+  "azimute": 20,
+  "elevacao": 8,
+  "camadas": [
+   3,
+   11,
+   23
+  ],
+  "massa": 0.005,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "cheio": true,
+  "lado": [
+   210,
+   328,
+   432
+  ],
+  "nome": "peito-56004",
+  "id": "peito:56004"
+ },
+ "render": {
+  "tipo": "efeito",
+  "glb": "Boy_045",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   361,
+   393,
+   304
+  ],
+  "camadas": [
+   3,
+   11,
+   23
+  ],
+  "zoom": 1,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "quadros": 48,
+  "loop": 2
+ }
+}

@@ -1,0 +1,59 @@
+{
+ "nome": "pokemon-charmeleon-abobora",
+ "glb": "pm0005_31",
+ "shiny": false,
+ "voa": false,
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "pokemon-charmeleon-abobora-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "pokemon-charmeleon-abobora.webp",
+ "kb": {
+  "folhaWebp": 350.8,
+  "webp": 354.5
+ },
+ "opcoes": {
+  "nome": "charmeleon-abobora",
+  "glb": "pm0005_31",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "pm0005_31",
+  "arquivo": "./cenario/mon/pm0005_31.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:1.867",
+   "Buff:1.667",
+   "Cast:2.333",
+   "Dead:1.833",
+   "Idle:2.000",
+   "Run:0.667",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 2,
+  "ciclos": 1,
+  "loop": 2,
+  "quadros": 48,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   56,
+   57,
+   528
+  ]
+ }
+}

@@ -1,0 +1,59 @@
+{
+ "nome": "pokemon-ivysaur-abobora",
+ "glb": "pm0002_31",
+ "shiny": false,
+ "voa": false,
+ "quadros": 40,
+ "lado": 210,
+ "duracaoMs": 1667,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "pokemon-ivysaur-abobora-folha.webp",
+  "colunas": 40,
+  "linhas": 1,
+  "largura": 8400,
+  "altura": 210
+ },
+ "webp": "pokemon-ivysaur-abobora.webp",
+ "kb": {
+  "folhaWebp": 332.1,
+  "webp": 337.3
+ },
+ "opcoes": {
+  "nome": "ivysaur-abobora",
+  "glb": "pm0002_31",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "pm0002_31",
+  "arquivo": "./cenario/mon/pm0002_31.glb",
+  "clipes": [
+   "Appear:1.667",
+   "Attack:2.667",
+   "Buff:1.667",
+   "Cast:2.000",
+   "Dead:1.667",
+   "Idle:1.667",
+   "Run:0.500",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 1.667,
+  "ciclos": 1,
+  "loop": 1.667,
+  "quadros": 40,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   33,
+   45,
+   567
+  ]
+ }
+}
