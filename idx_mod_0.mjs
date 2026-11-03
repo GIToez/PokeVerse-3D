@@ -8704,7 +8704,7 @@ function fimTurno(vitoria, op = {}){
   const s = T.inimigo, n = T.npc, t = T.info;
   /* jingle de vitória/derrota (os do jogo original, 12 s / 8 s) e depois a música do lugar volta; a 1ª insígnia toca o
      `badgeget` quando o jingle acaba. Quem desistiu não ouve nada. */
-  const primeiraInsignia = vitoria && !!n.ginasio && !(lerLS('insignias', []) || []).includes(n.ginasio.insignia.id);
+  const primeiraInsignia = vitoria && !!n.ginasio && (doServidor ? !!doServidor.insignia : !(lerLS('insignias', []) || []).includes(n.ginasio.insignia.id));   // com servidor a bolsa nova já chegou: quem diz se é a 1ª é o `fim.insignia`
   if (op.desistiu) atualizarMusica();
   else jingle(vitoria ? 'ui/sound_victory' : 'ui/sound_defeat', vitoria ? 12 : 8, () => { if (primeiraInsignia) Som.tocar('ui/sound_badgeget', { volume: .8, prio: true }); });
   if (s && !['guardado', 'koTurno'].includes(s.estado)) guardarSelvagem(s);
@@ -8739,11 +8739,12 @@ function fimTurno(vitoria, op = {}){
     return;
   }
   if (vitoria && n.ginasio){                                            // GINÁSIO: insígnia (1ª vez) + dinheiro; revanche paga metade
-    const g = n.ginasio, ins = lerLS('insignias', []) || [], primeira = !ins.includes(g.insignia.id);
+    const g = n.ginasio, ins = lerLS('insignias', []) || [], primeira = doServidor ? !!doServidor.insignia : !ins.includes(g.insignia.id);
     if (doServidor){ if (doServidor.insignia) liberarReserva(); }         // a batalha correu NO servidor: ele já pagou e já deu a insígnia
     else if (comConta()) bolsaOp('ginasio', { ginasio: g.insignia.id, venceu: true }).then(r => { if (r && !r.erro && r.primeira) liberarReserva(); });   // insígnia e prêmio vêm do servidor
     else if (primeira){ ins.push(g.insignia.id); gravarLS('insignias', ins); liberarReserva(); }
-    const ganho = primeira ? g.dinheiro : Math.round(g.dinheiro / 2);
+    if (primeira && !ins.includes(g.insignia.id)) ins.push(g.insignia.id);   // contagem do aviso (com conta o espelho pode chegar depois)
+    const ganho = doServidor?.premio?.dinheiro ?? (primeira ? g.dinheiro : Math.round(g.dinheiro / 2));
     if (!comConta() && !doServidor) gravarLS('dinheiro', lerLS('dinheiro', 0) + ganho);
     const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
     n.falas = [g.vitoria[0]];

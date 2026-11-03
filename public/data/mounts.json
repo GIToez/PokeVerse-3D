@@ -218,5 +218,38 @@
   "vel": 10000,
   "meio": "agua",
   "livre": false
+ },
+ {
+  "glb": "pm0144_00",
+  "nome": "Articuno",
+  "poseIdle": "RideIdle1",
+  "poseRun": "Ride1",
+  "voa": true,
+  "escala": 1,
+  "vel": 25000,
+  "meio": "terra",
+  "livre": false
+ },
+ {
+  "glb": "pm0145_00",
+  "nome": "Zapdos",
+  "poseIdle": "RideIdle1",
+  "poseRun": "Ride1",
+  "voa": true,
+  "escala": 1,
+  "vel": 25000,
+  "meio": "terra",
+  "livre": false
+ },
+ {
+  "glb": "pm0018_00",
+  "nome": "Pidgeot",
+  "poseIdle": "RideIdle1",
+  "poseRun": "Ride1",
+  "voa": true,
+  "escala": 1.2,
+  "vel": 25000,
+  "meio": "terra",
+  "livre": false
  }
 ]

@@ -482,6 +482,7 @@ export function criarBatalha(ctx) {
     }
     gravarTime(acc, bat);
     s.bolsa = { dinheiro: s.dinheiro, itens: s.itens, bolas: s.bolas, insignias: s.insignias };
+    fim.bolsa = s.bolsa;   // the client only learns about the new badge/money through this (network.mjs applies `fim.bolsa`)
     return fim;
   }
 

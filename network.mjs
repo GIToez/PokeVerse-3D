@@ -84,7 +84,8 @@ function receber(m){
      (bemvindo, selvagem, parceiro, bat…). Grava o cookie aqui, síncrono e antes de tudo: a próxima mensagem já encontra o passe. */
   if (m.t === 'passe'){ Conta.gravarPasse(m); return; }
   if (m.bolsa) Conta.aplicarBolsa(m.bolsa);
-  if (m.pago?.bolsa) Conta.aplicarBolsa(m.pago.bolsa);                    // 12/09: a recompensa de missão (`missao` → `pago.bolsa`) vinha aninhada e nunca era aplicada — o novato terminava a 1ª missão sem as 5 Pokébolas até relogar
+  if (m.pago?.bolsa) Conta.aplicarBolsa(m.pago.bolsa);
+  if (m.fim?.bolsa) Conta.aplicarBolsa(m.fim.bolsa);                      // fim de batalha no servidor: insígnia e dinheiro do ginásio/treinador                    // 12/09: a recompensa de missão (`missao` → `pago.bolsa`) vinha aninhada e nunca era aplicada — o novato terminava a 1ª missão sem as 5 Pokébolas até relogar
   if ((m.vidas || m.vida) && m.t !== 'bat' && !(m.t === 'pdano' && m.alvo !== id)) ctx.vidas?.(m.vidas || [m.vida]);   // pdano de OUTRO jogador nunca mexe na minha ficha (13/09: uid é por conta — o "1" dele é o meu inicial)   // passo 3: nível/XP/HP que o servidor acabou de mexer. `bat` fica de fora (12/09): o HP final chegava ANTES dos lances serem animados e o meu golpe era pulado ("atacante com hp 0"); a rodada aplica no fim                              // dinheiro/itens/bolas/insígnias do servidor viajam em várias mensagens (bolsa, posse, scapt)
   switch (m.t){
     case 'bemvindo':

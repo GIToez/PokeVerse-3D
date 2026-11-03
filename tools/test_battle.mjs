@@ -127,6 +127,7 @@ while (gymRounds++ < 60) {
   if (gymEnd.fim) break;
 }
 if (!gymEnd?.fim?.venceu) throw new Error('Brock battle never ended (stuck on fainted mon?): ' + JSON.stringify(gymEnd));
+if (!gymEnd.fim.bolsa?.insignias?.includes(101)) throw new Error('gym win must send the bag (badges) back to the client: ' + JSON.stringify(gymEnd.fim));
 if (xpLines.length !== gymEnd.dele.length) throw new Error('EXP should be given once per enemy KO: ' + JSON.stringify(xpLines));
 
 console.log('battle tests ok', { trainer: open.nomeInimigo, gym: gym.nomeInimigo, e4: e4.nomeInimigo, thunderbolt: dano, eff, winRounds: rounds });
