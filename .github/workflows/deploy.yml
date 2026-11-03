@@ -1,6 +1,8 @@
 name: Deploy to OVH
 
-# SSH as pokeverse@40.160.145.24 (same box as Open Tibia) and run scripts/live/deploy.sh.
+# Save newer live admin edits onto main, then SSH as pokeverse@40.160.145.24
+# and run scripts/live/deploy.sh. The save uses the script in this commit, so
+# the reset cannot drop quests, NPCs, or maps that exist only on the server.
 # Required secret: OVH_SSH_KEY (private key that logs in as pokeverse).
 # Optional: OVH_HOST (default 40.160.145.24), OVH_USER (default pokeverse), OVH_PORT (22).
 on:
@@ -9,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: deploy-ovh
@@ -17,9 +19,30 @@ concurrency:
 
 jobs:
   deploy:
-    name: Pull and restart pokeverse-3d
+    name: Save live edits, then pull and restart
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save live edits before reset
+        env:
+          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
+          OVH_HOST: ${{ secrets.OVH_HOST }}
+          OVH_USER: ${{ secrets.OVH_USER }}
+          OVH_PORT: ${{ secrets.OVH_PORT }}
+        run: bash scripts/live/save-live-ci.sh
+
+      - name: Stop if a newer live edit is still unsaved
+        env:
+          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
+          OVH_HOST: ${{ secrets.OVH_HOST }}
+          OVH_USER: ${{ secrets.OVH_USER }}
+          OVH_PORT: ${{ secrets.OVH_PORT }}
+        run: bash scripts/live/ssh-guard.sh
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -34,7 +57,4 @@ jobs:
             export PV_SSH_USER="${{ secrets.OVH_USER || 'pokeverse' }}"
             export PV_APP_DIR="/opt/pokeverse-3d"
             cd "$PV_APP_DIR"
-            git fetch --prune origin main
-            git checkout -q main
-            git reset --hard origin/main
             bash "$PV_APP_DIR/scripts/live/deploy.sh"
