@@ -8561,6 +8561,37 @@ if (jogo.ash){
     corpoDe: id => (jogo.selvagens || []).find(s => s.pescaId === id) || null,
     mirar: s => { jogo.alvo = s; },
   });
+  /* ===== MAP → FLY (Nov 2): travel to a Pokémon Center you have already walked into (LS `centrosVisitados`, recorded at the
+     Center door). Like Fly outside battle in the main series it needs the 3rd badge; only outdoors, not in a battle or a raid,
+     once every 30 s. The trip is the same scene change as waking up after a faint (irParaCena into that Center through its
+     door), so the server accepts the new position. */
+  const VOAR_INSIGNIAS = 3, VOAR_ESPERA_S = 30;
+  const voarLista = () => {
+    const vis = { ...(lerLS('centrosVisitados', {}) || {}) }, u = lerLS('ultimoCentro', null);
+    if (u?.mapa && u.chegada && !vis[u.chegada]) vis[u.chegada] = { mapa: String(u.mapa), chegada: +u.chegada, nome: null, quando: u.quando || 0 };   // saves from before this list existed
+    return Object.values(vis).filter(c => c?.mapa && c.chegada).map(c => ({ ...c, nome: c.nome || nomeAreaCena(c.a) || I18n.t('Pokémon Center') }))
+      .sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
+  };
+  const VOAR = {
+    lista: voarLista,
+    pode(){
+      const nIns = (lerLS('insignias', []) || []).length, falta = Math.ceil(((+lerLS('voarEm', 0) || 0) + VOAR_ESPERA_S * 1000 - Date.now()) / 1000);
+      if (nIns < VOAR_INSIGNIAS) return { ok: false, motivo: I18n.t('Flying needs {n} badges (you have {x}).', { n: VOAR_INSIGNIAS, x: nIns }) };
+      if (INTERIOR) return { ok: false, motivo: I18n.t('You can only fly outdoors.') };
+      if (jogo.turno || jogo.raidArena || RAID || TORNEIO || INTRO) return { ok: false, motivo: I18n.t("You can't fly right now.") };
+      if (falta > 0) return { ok: false, motivo: I18n.t('Fly again in {s} s.', { s: falta }) };
+      if (!voarLista().length) return { ok: false, motivo: I18n.t('Walk into a Pokémon Center first: Fly takes you back to the ones you know.') };
+      return { ok: true };
+    },
+    ir(chegada){
+      const p = VOAR.pode(); if (!p.ok){ Chat.sistema(p.motivo); return false; }
+      const c = voarLista().find(x => String(x.chegada) === String(chegada)); if (!c) return false;
+      gravarLS('voarEm', Date.now());
+      Som.tocar('skill/Wind1', { volume: .6, prio: true });
+      irParaCena({ mapa: String(c.mapa), chegada: +c.chegada, texto: I18n.t('Flying to {x}…', { x: c.nome }) });
+      return true;
+    },
+  };
   Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, balao: txt => { if (jogo.ash?.pivo) Balao.mostrar(jogo.ash.pivo, (jogo.ash.altura || 1.6) + 0.45, txt); }, aoMensagem: contarNaoLida, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal, giveskates: quem => darPatins(quem),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     hora: resto => {
       const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
@@ -8787,7 +8818,7 @@ if (jogo.ash){
     gm: () => GM_REAL,                                                  // Configurações: as ferramentas de bastidor só pra GM (ou jogo local)
     trocar: nome => Troca.convidar(nome), desafiarJogador,             // Social → menu do amigo → convidar (fase 4: mesa de troca) / /batalhar
     destinoPreso, irDestinoPreso,                                      // ESTOU PRESO (15/09): pra onde vai e a ida (sem curar), depois do relato aceito
-    jogo, R, porDex, lerLS, gravarLS, Som, conta: Conta, contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
+    jogo, R, porDex, lerLS, gravarLS, Som, conta: Conta, contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, voar: VOAR, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
     criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p) return jogo.trocarJogador?.(p); }),   // Configurações → ✎ Personagem
     personagemNome: () => Personagem.nomeDe(Personagem.ler()),
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },

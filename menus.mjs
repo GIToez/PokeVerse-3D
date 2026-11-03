@@ -1513,8 +1513,21 @@ function popupMa(){
     },
   };
   Object.assign(popMa.style, { position: 'fixed', left: '50%', top: '50%', display: 'none', zIndex: '60' });
-  popMa.innerHTML = `<button type="button" class="mapa-fecha" aria-label="Close" title="Close">×</button><div class="mapa-popup-corpo"></div>`;
+  popMa.innerHTML = `<button type="button" class="mapa-fecha" aria-label="Close" title="Close">×</button><button type="button" class="mapa-voar">✈ ${esc(tr('Fly'))}</button><div class="mapa-voar-lista" hidden></div><div class="mapa-popup-corpo"></div>`;
   popMa.querySelector('.mapa-fecha').onclick = ev => { ev.stopPropagation(); fechar(); };
+  /* FLY (Nov 2): the Centers you know (index.html VOAR). Locked rows say why (badges, indoors, wait). */
+  const bV = popMa.querySelector('.mapa-voar'), lV = popMa.querySelector('.mapa-voar-lista');
+  Object.assign(bV.style, { position: 'absolute', left: '14px', top: '12px', zIndex: '5', padding: '6px 14px', borderRadius: '999px', border: '1px solid #F8C237', background: 'rgba(11,18,32,.92)', color: '#F8C237', font: '800 14px "Nunito Sans", system-ui, sans-serif', cursor: 'pointer' });
+  Object.assign(lV.style, { position: 'absolute', left: '14px', top: '50px', zIndex: '6', minWidth: '240px', maxHeight: '60%', overflow: 'auto', padding: '8px', borderRadius: '12px', border: '1px solid rgba(248,194,55,.55)', background: 'rgba(11,18,32,.96)', color: '#e8eefc', font: '600 13px "Nunito Sans", system-ui, sans-serif', boxShadow: '0 10px 28px rgba(0,0,0,.55)' });
+  bV.onclick = ev => {
+    ev.stopPropagation();
+    if (!lV.hidden){ lV.hidden = true; return; }
+    const V = ctx.voar, pode = V?.pode?.() || { ok: false, motivo: tr('Fly is not available.') }, lista = V?.lista?.() || [];
+    lV.innerHTML = (pode.ok ? '' : `<div style="padding:4px 6px 8px;color:#FFD23A">${esc(pode.motivo)}</div>`)
+      + lista.map(c => `<button type="button" data-voar="${esc(c.chegada)}" ${pode.ok ? '' : 'disabled'} style="display:block;width:100%;text-align:left;margin:2px 0;padding:7px 10px;border-radius:8px;border:1px solid rgba(248,194,55,.35);background:${pode.ok ? '#0b1020' : 'transparent'};color:${pode.ok ? '#fff' : '#7f8aa6'};font:inherit;cursor:${pode.ok ? 'pointer' : 'default'}">${esc(c.nome)}</button>`).join('');
+    lV.hidden = false;
+    lV.querySelectorAll('[data-voar]').forEach(b => b.onclick = e2 => { e2.stopPropagation(); if (V.ir(b.dataset.voar)) fechar(); });
+  };
   document.body.appendChild(popMa);
   return popMa;
 }
