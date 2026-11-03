@@ -4113,12 +4113,13 @@ function escolherEspecie(especies){
    (trilha, terra), como em Scarlet/Violet. Nunca em cidade, água ou prédio. */
 /* DENSIDADE (13/09): mesma regra da qualidade — o painel recarrega com `?densidade=X`; a escolha fica GUARDADA no aparelho e a URL
    pode ser limpa (`doJogador`). Antes só a URL carregava o valor, então ele segurava a URL suja. `?densidade=` vazio = padrão. */
+const DENS_PADRAO = 1.5;                                                 // default when the player has not picked one (was 1: wilds felt scarce)
 const DENS_JOGADOR = (() => {                                            // Fase 3: o povoar multiplica pela densidade do evento ao vivo
   let ls = null; try { ls = localStorage.getItem('densidade'); } catch {}
   let v;
   if (params0.has('densidade')){ const q = params0.get('densidade'); try { if (q) localStorage.setItem('densidade', q); else localStorage.removeItem('densidade'); } catch {} v = +q; }
   else v = +ls;
-  return Math.max(0.2, Math.min(4, v || 1));
+  return Math.max(0.2, Math.min(4, v || DENS_PADRAO));
 })();
 const caixaArea = new Map((dados.caixas || []).map(c => [c.a, c]));
 const cidades = new Set(Object.entries(dados.nomes || {}).filter(([, n]) => /^(Cidade|.*\b(City|Town|Island)\b)/.test(n)).map(([a]) => +a));
@@ -4368,6 +4369,8 @@ function noQuadro(x, z, yPadrao){
   _esfBerco.center.set(x, (chaoEm(x, z) ?? yPadrao) + 0.6, z);
   return _fBerco.intersectsSphere(_esfBerco);
 }
+/* Server rolls waiting for their model to load, per area. The server keeps a roll for 10 min; give up a little before that. */
+const wildsEsperando = new Map(), WILD_ESPERA_MS = 8 * 60 * 1000, WILD_ESPERA_MAX = 2;
 let povoando = false;
 async function povoar(){
   if (povoando || !habitats || !jogo.ash || jogo.raidArena) return;     // RAID AO VIVO: na arena só existe o chefe do servidor
@@ -4430,13 +4433,20 @@ async function povoar(){
       let espSpawn = esp, lvSpawn = nivelDoHabitat(esp, a), wildId = null;
       if (Conta.estado().modo === 'conta' && !Mundo.estaAtivo()){
         if (!comConta()) continue;                                          // the socket is not up yet: wait, so the first wilds are ones the server rolled
-        const rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora());
-        if (!rolled?.id) continue;
-        if (glbNegados.has(rolled.glb) || !quentes.has(rolled.glb)){
-          if (!quentes.has(rolled.glb)) aquecer(rolled.glb);
-          Rede.enviar({ t: 'wild_drop', id: rolled.id });
-          continue;
+        /* The server picks the species, so a roll often names a model that is not loaded yet. Dropping it threw away
+           most rolls in areas with many species (and spent the server's roll budget): keep it until its model is warm. */
+        const fila = (wildsEsperando.get(a) || []).filter(w => Date.now() - w.quando < WILD_ESPERA_MS && !glbNegados.has(w.rolled.glb));
+        let rolled = null;
+        const iq = fila.findIndex(w => quentes.has(w.rolled.glb));
+        if (iq >= 0) rolled = fila.splice(iq, 1)[0].rolled;
+        else if (fila.length >= WILD_ESPERA_MAX){ aquecer(fila[0].rolled.glb); wildsEsperando.set(a, fila); continue; }
+        else {
+          rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora());
+          if (!rolled?.id){ wildsEsperando.set(a, fila); continue; }
+          if (glbNegados.has(rolled.glb)){ Rede.enviar({ t: 'wild_drop', id: rolled.id }); wildsEsperando.set(a, fila); continue; }
+          if (!quentes.has(rolled.glb)){ fila.push({ rolled, quando: Date.now() }); wildsEsperando.set(a, fila); aquecer(rolled.glb); continue; }
         }
+        wildsEsperando.set(a, fila);
         espSpawn = { dex: rolled.dex, glb: rolled.glb, nome: rolled.nome, agua: rolled.agua ? 1 : 0 };
         lvSpawn = rolled.lv;
         wildId = rolled.id;
@@ -5319,7 +5329,7 @@ function desmaiar(s, meu = true){                                      // meu (1
 function morrer(e){
   if (!(e.raid && e.estado === 'desmaiado')) tocarUma(e, 'Dead');         // chefe da raid já caído: não repete a queda
   if (e === jogo.pika){ __boot.aviso('parceiro desmaiou', { hp: e.hp, time: (jogo.time || []).length, evoluindo: !!jogo.evoluindo, trocando: !!jogo.trocandoSeguidor }); e.desmaiado = 1e9; e.amizade = Math.max(0, (e.amizade ?? 70) - 1); flutuar(e, 'fainted', '#e45670'); jogo.ordem = null; pendentes.push({ t: 1.6, fn: aposDesmaio }); return; }   // fica desmaiado até um Reanimador (como nos jogos); −1 de amizade
-  if (e.area != null) areaRespawn.set(e.area, Date.now() + 12000 + Math.random() * 8000);   // a área respira antes de repor
+  if (e.area != null) areaRespawn.set(e.area, Date.now() + 6000 + Math.random() * 4000);   // a área respira antes de repor
   e.estado = 'morto';
   if (jogo.alvo === e) jogo.alvo = null;
   setTimeout(() => { if (e.estado === 'morto') guardarSelvagem(e); }, 1600);
@@ -5842,7 +5852,7 @@ async function jogarBola(){
       Conhecimento.evento('pego', { dex: s.dex, area: s.area ?? null, shiny: !!s.shiny, sexo: s.sexo });   // Pokédex de conhecimento
       document.getElementById('segue-ctl')?.__encher?.(); pintarTime(true);
       await dorme(2000);
-      if (s.area != null) areaRespawn.set(s.area, Date.now() + 12000 + Math.random() * 8000);   // capturou: a área respira
+      if (s.area != null) areaRespawn.set(s.area, Date.now() + 6000 + Math.random() * 4000);   // capturou: a área respira
       s.pivo.scale.setScalar(escBase); s.hp = s.maxHp;
       if (s.rede) Mundo.esquecer(s.id);
       guardarSelvagem(s);                                   // some do mundo (volta ao pool: nasce outro depois)

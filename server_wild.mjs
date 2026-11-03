@@ -15,9 +15,9 @@ import * as Ev from './ev.mjs';
 import { grantLevelHp } from './server_hp.mjs';
 
 const FLIP_X = -1;
-const LIVE_CAP = 48;
+const LIVE_CAP = 72;
 const ROLL_WINDOW_MS = 1500;
-const ROLLS_PER_WINDOW = 2;
+const ROLLS_PER_WINDOW = 4;
 const WILD_TTL_MS = 10 * 60 * 1000;
 const BOX_MARGIN = 4;
 const LEVEL_CAP = [20, 26, 32, 38, 46, 52, 58, 62, 70];
