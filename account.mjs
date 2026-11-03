@@ -337,7 +337,7 @@ function despachar(viaHttp = false){
     const corpo = {};
     if (pendente.party){ corpo.party = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }; snapshotParty(); }
     if (pendente.prefs.size){ corpo.prefs = {}; for (const k of pendente.prefs) corpo.prefs[k] = lerCofre(k); }
-    if (pendente.conhecimento) corpo.conhecimento = { dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') };
+    if (pendente.conhecimento){ corpo.dex = lerCofre('dex'); corpo.conhecimento = lerCofre('conhecimento'); }
     if (posPend) corpo.pos = posPend;
     pendente.party = false; pendente.prefs.clear(); pendente.conhecimento = false; sujo = false; apagar(LS.sujo);
     return api('POST', '/conta/estado', corpo, true).then(r => {

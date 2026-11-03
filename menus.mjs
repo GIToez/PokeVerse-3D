@@ -1851,9 +1851,10 @@ async function encherPokedex(pop){
   const sp = todos.filter(s => !q || String(s.n) === q || (d[s.n] && s.name.toLowerCase().includes(q)));
   const vistos = todos.filter(s => d[s.n]).length, pegos = todos.filter(s => d[s.n] === 'pego').length;
   if (!sp.some(s => s.n === selDex)) selDex = (sp.find(s => d[s.n]) || sp[0])?.n ?? null;
-  Popup.texto(pop, 'contadores', '👁 ' + vistos + ' · ★ ' + pegos + '/' + todos.length);
+  const resumoDx = K ? K.resumo() : null;
+  Popup.texto(pop, 'contadores', '👁 ' + vistos + ' · ★ ' + pegos + '/' + todos.length + (resumoDx && resumoDx.vistos !== vistos ? ' · ' + resumoDx.vistos + ' ' + tr('seen') : ''));
   if (K){
-    const r = K.resumo(); const base = tr('Kanto Collector') + ' · ' + r.pegosKanto + '/' + r.kantoAte + ' ' + tr('caught') + ' · ' + r.vistosKanto + ' ' + tr('seen') + ' · ' + r.shinies + ' shiny';
+    const r = resumoDx; const base = tr('Kanto Collector') + ' · ' + r.pegosKanto + '/' + r.kantoAte + ' ' + tr('caught') + ' · ' + r.vistos + ' ' + tr('seen') + ' · ' + r.shinies + ' shiny';
     Popup.texto(pop, 'colecionador', base);
     minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'pokedex' && Popup.aberto(pop)) Popup.texto(pop, 'colecionador', base + ' · ' + p.especies.pos + ' ' + tr('of') + ' ' + p.total + ' ' + tr('in the ranking')); });
   }
@@ -1863,7 +1864,9 @@ async function encherPokedex(pop){
     const s = sp[i]; c.style.display = s ? 'block' : 'none'; if (!s) return;
     const st = d[s.n], nv = K ? K.nivel(s.n) : (st === 'pego' ? 2 : st ? 1 : 0);
     c.__dex = s.n; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
-    Popup.texto(pop, 'numero', pad3(s.n), c); Popup.texto(pop, 'nome', st ? s.name : '?????', c);
+    Popup.texto(pop, 'numero', pad3(s.n), c);
+    const nomeEl = Popup.texto(pop, 'nome', st ? s.name : '?????', c);
+    if (nomeEl && st && K?.registro(s.n)?.sh && !nomeEl.textContent.startsWith('✨')) nomeEl.textContent = '✨ ' + nomeEl.textContent;
     const prog = c.querySelector('[data-fig="progresso-especie"]'); if (prog){ prog.style.display = st ? 'block' : 'none'; bolinhas(prog, nv); }
     for (const g of c.querySelectorAll(':scope > [data-fig^="tipo-"]')) g.style.display = 'none';
     if (st) pilulasTipo(pop, c, s.types || []);
@@ -2855,7 +2858,7 @@ function rMapaVivo(corpo, dd, caixas){
 
 /* ------------------------------------------------------------------ Pokédex (3D + shiny + ficha completa) */
 let selDex = null, elenco = null, dexView = null, dexExtra = null, dexBusca = '', dexShiny = false, selDexGlb = null;
-const cacheGlb = new Map(), texShiny = new Map();
+const cacheGlb = new Map(), texShiny = new Map(), shinyPorAmostrador = new Map();
 async function carregarElenco(){ if (!elenco) elenco = await fetch('./data/cast.json').then(r => r.json()).catch(() => []); return elenco; }
 async function carregarDexExtra(){ if (!dexExtra) dexExtra = await fetch('./data/dex_extra.json').then(r => r.json()).catch(() => ({ especies: {}, golpes: {} })); return dexExtra; }
 const glbDe = n => { const cands = (elenco || []).filter(e => e.n === n); return (cands.find(e => /_00$/.test(e.glb)) || cands[0])?.glb || null; };
@@ -2915,15 +2918,33 @@ function limparModeloDex(){
 /** Shiny como o jogo faz: cada textura X vira shiny/X_1.png. A textura shiny é criada do ZERO depois
     que a imagem carrega (new Texture): trocar o `source` de um clone já enviado à GPU reescreve a
     textura GL compartilhada com a normal — os dois lados viravam shiny. Devolve quantas existem. */
+/** One shiny PNG is shared by every sampler of that image. Pidgey's eye and body each have a repeat
+    sampler and a mirrored-repeat sampler; copying the first wrap onto both scrambles the shiny. */
+function shinyComoBase(t, base){
+  if (!t || !base) return t;
+  const igual = t.wrapS === base.wrapS && t.wrapT === base.wrapT && !!t.flipY === !!base.flipY && t.channel === base.channel && t.repeat.equals(base.repeat) && t.offset.equals(base.offset);
+  if (igual) return t;
+  const k = t.name + '|' + [base.wrapS, base.wrapT, base.flipY ? 1 : 0, base.channel, base.repeat.x, base.repeat.y, base.offset.x, base.offset.y].join(',');
+  let c = shinyPorAmostrador.get(k);
+  if (!c){
+    c = new THREE.Texture(t.image);
+    c.name = t.name; c.flipY = !!base.flipY; c.colorSpace = base.colorSpace;
+    c.wrapS = base.wrapS; c.wrapT = base.wrapT; c.repeat.copy(base.repeat); c.offset.copy(base.offset);
+    c.minFilter = base.minFilter; c.magFilter = base.magFilter; c.anisotropy = base.anisotropy; c.channel = base.channel;
+    c.needsUpdate = true; shinyPorAmostrador.set(k, c);
+  }
+  return c;
+}
 function texturaShiny(base){
-  const nome = base?.name || ''; if (!nome) return Promise.resolve(null);
+  const nome = base?.name || '';
+  if (!nome || /mask|msk|iris/i.test(nome)) return Promise.resolve(null);
   if (!texShiny.has(nome)) texShiny.set(nome, new Promise(res => {
     const img = new Image();
     img.onload = () => { const t = new THREE.Texture(img); t.name = nome + '_1'; t.flipY = base.flipY; t.colorSpace = base.colorSpace; t.wrapS = base.wrapS; t.wrapT = base.wrapT; t.repeat.copy(base.repeat); t.offset.copy(base.offset); t.minFilter = base.minFilter; t.magFilter = base.magFilter; t.anisotropy = base.anisotropy; t.channel = base.channel; t.needsUpdate = true; res(t); };
-    img.onerror = () => { texShiny.delete(nome); res(null); };   // passe de progresso (19/09): 403 da borda não fica guardado — a próxima ficha tenta de novo
+    img.onerror = () => { texShiny.delete(nome); for (const k of [...shinyPorAmostrador.keys()]) if (k.startsWith(nome + '_1|')) shinyPorAmostrador.delete(k); res(null); };   // passe de progresso (19/09): 403 da borda não fica guardado — a próxima ficha tenta de novo
     img.src = `./scenery/mon/shiny/${encodeURIComponent(nome)}_1.png`;
   }));
-  return texShiny.get(nome);
+  return texShiny.get(nome).then(t => shinyComoBase(t, base));
 }
 function aplicarShiny(raiz){
   const pendentes = [];
@@ -3024,8 +3045,8 @@ function rPokedex(corpo){
   const vistos = todos.filter(s => d[s.n]).length, pegos = todos.filter(s => d[s.n] === 'pego').length;
   if (!sp.some(s => s.n === selDex)) selDex = (sp.find(s => d[s.n]) || sp[0])?.n || null;
   corpo.innerHTML = `<div class="dois dex-dois"><div><div class="dex-topo"><input id="dex-busca" placeholder="${esc(tr('search by name or number…'))}" value="${esc(dexBusca)}" autocomplete="off"><span>👁 ${vistos} · ★ ${pegos} / ${todos.length}</span></div>
-    ${(() => { const K = ctx.conhecimento; if (!K) return ''; const r = K.resumo(); return `<div class="dex-colec"><b>${esc(tr('Collector'))}</b> Kanto ${r.pegosKanto}/${r.kantoAte} ${esc(tr('caught'))} (${Math.round(r.pegosKanto / r.kantoAte * 100)}%) · ${r.vistosKanto} ${esc(tr('seen'))} · ✨ ${r.shinies} shiny · 📖 ${r.mestres} ${esc(tr(r.mestres === 1 ? 'Master' : 'Masters'))}${r.tituloAtual ? ` · 🏅 ${esc(r.tituloAtual)}` : ''}</div>`; })()}
-    <div class="dex-lista">${sp.map(s => `<div class="dex ${d[s.n] === 'pego' ? 'pego' : d[s.n] ? 'visto' : ''} ${s.n === selDex ? 'on' : ''}" data-n="${s.n}"><span class="num">${String(s.n).padStart(3, '0')}</span><span class="nm">${d[s.n] ? esc(s.name) : '?????'}</span><span class="tp">${d[s.n] ? (s.types || []).map(tipoHtml).join('') : ''}</span>${(() => { const n = ctx.conhecimento?.nivel(s.n) ?? (d[s.n] === 'pego' ? 2 : d[s.n] ? 1 : 0); return n ? `<span class="pego-ic" title="${esc(tr('knowledge'))} ${n}/5">${'●'.repeat(n)}${'○'.repeat(5 - n)}</span>` : ''; })()}</div>`).join('') || '<div class="vazio">' + esc(tr('nothing with that name in this generation')) + '</div>'}</div></div><div class="ficha dex-ficha" id="dex-ficha"></div></div>`;
+    ${(() => { const K = ctx.conhecimento; if (!K) return ''; const r = K.resumo(); return `<div class="dex-colec"><b>${esc(tr('Collector'))}</b> Kanto ${r.pegosKanto}/${r.kantoAte} ${esc(tr('caught'))} (${Math.round(r.pegosKanto / r.kantoAte * 100)}%) · ${r.vistos} ${esc(tr('seen'))} · ✨ ${r.shinies} shiny · 📖 ${r.mestres} ${esc(tr(r.mestres === 1 ? 'Master' : 'Masters'))}${r.tituloAtual ? ` · 🏅 ${esc(r.tituloAtual)}` : ''}</div>`; })()}
+    <div class="dex-lista">${sp.map(s => { const brilho = d[s.n] && ctx.conhecimento?.registro(s.n)?.sh ? '✨ ' : ''; return `<div class="dex ${d[s.n] === 'pego' ? 'pego' : d[s.n] ? 'visto' : ''} ${s.n === selDex ? 'on' : ''}" data-n="${s.n}"><span class="num">${String(s.n).padStart(3, '0')}</span><span class="nm">${d[s.n] ? brilho + esc(s.name) : '?????'}</span><span class="tp">${d[s.n] ? (s.types || []).map(tipoHtml).join('') : ''}</span>${(() => { const n = ctx.conhecimento?.nivel(s.n) ?? (d[s.n] === 'pego' ? 2 : d[s.n] ? 1 : 0); return n ? `<span class="pego-ic" title="${esc(tr('knowledge'))} ${n}/5">${'●'.repeat(n)}${'○'.repeat(5 - n)}</span>` : ''; })()}</div>`; }).join('') || '<div class="vazio">' + esc(tr('nothing with that name in this generation')) + '</div>'}</div></div><div class="ficha dex-ficha" id="dex-ficha"></div></div>`;
   const busca = corpo.querySelector('#dex-busca');
   busca.addEventListener('input', () => { dexBusca = busca.value; const pos = busca.selectionStart; render(); const b2 = $('j-corpo').querySelector('#dex-busca'); b2?.focus(); try { b2?.setSelectionRange(pos, pos); } catch {} });
   corpo.querySelectorAll('.dex').forEach(el => el.onclick = () => { selDex = +el.dataset.n; corpo.querySelectorAll('.dex').forEach(x => x.classList.toggle('on', x === el)); mostrarDex(); });

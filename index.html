@@ -4144,7 +4144,7 @@ function aplicarSkittishHp(s){
   const lim = s.skittishHp === 0 ? 0 : (Number.isFinite(s.skittishHp) ? s.skittishHp : SKITTISH_HP);
   if (lim > 0 && s.maxHp > 0 && (s.hp / s.maxHp) * 100 <= lim) s.perfil = 'arisco';
 }
-const texShinyCampo = new Map();
+const texShinyCampo = new Map(), shinyCampoPorAmostrador = new Map();
 const esperandoShiny = new Map();                                       // 14/09: raízes que pediram a textura antes de ela carregar (seguidor, montaria, parceiro do outro) — reaplica no onload
 const shinyFalhou = new Set();                                          // passe de progresso (19/09): textura shiny que não veio (403/404) — o passe-novo tenta de novo
 /** Shiny de campo: troca a textura pela `X_1.png` de scenery/mon/shiny (mesma regra da bancada).
@@ -4155,6 +4155,22 @@ const shinyFalhou = new Set();                                          // passe
    antes do shiny, porque o normal gravava o mapNormal nos materiais compartilhados que o shiny depois clonava. */
 const mapaNormalDe = new WeakMap();
 const texturaNormalDe = m => mapaNormalDe.get(m) || (m.userData.mapNormal?.isTexture ? m.userData.mapNormal : m.map);
+/** The shiny PNG is one image. Each material keeps its own wrap: a mirrored atlas half must not inherit the repeat sampler. */
+function shinyCampoComoBase(t, base){
+  if (!t || !base?.repeat) return t;
+  const igual = t.wrapS === base.wrapS && t.wrapT === base.wrapT && !!t.flipY === !!base.flipY && t.channel === base.channel && t.repeat.equals(base.repeat) && t.offset.equals(base.offset);
+  if (igual) return t;
+  const k = t.name + '|' + [base.wrapS, base.wrapT, base.flipY ? 1 : 0, base.channel, base.repeat.x, base.repeat.y, base.offset.x, base.offset.y].join(',');
+  let c = shinyCampoPorAmostrador.get(k);
+  if (!c){
+    c = new THREE.Texture(t.image);
+    c.name = t.name; c.flipY = !!base.flipY; c.colorSpace = base.colorSpace;
+    c.wrapS = base.wrapS; c.wrapT = base.wrapT; c.repeat.copy(base.repeat); c.offset.copy(base.offset);
+    c.minFilter = base.minFilter; c.magFilter = base.magFilter; c.anisotropy = base.anisotropy; c.channel = base.channel;
+    c.needsUpdate = true; shinyCampoPorAmostrador.set(k, c);
+  }
+  return c;
+}
 function aplicarShinyCampo(raiz, liga){
   if (liga && !raiz.__matProprio){
     const clonar = m => { if (!m || m.uniforms) return m; const c = m.clone(); mapaNormalDe.set(c, texturaNormalDe(m)); delete c.userData.mapNormal; return c; };
@@ -4168,7 +4184,7 @@ function aplicarShinyCampo(raiz, liga){
       const base = texturaNormalDe(m); if (!base) continue; mapaNormalDe.set(m, base);
       const nome = base.name || '';
       if (!liga){ if (m.map !== base){ m.map = base; m.needsUpdate = true; } continue; }
-      if (!nome) continue;
+      if (!nome || /mask|msk|iris/i.test(nome)) continue;
       if (!texShinyCampo.has(nome)){
         texShinyCampo.set(nome, null);                                   // textura NOVA só depois do onload (trocar source de textura já na GPU corrompe a normal)
         const img = new Image();
@@ -4178,7 +4194,7 @@ function aplicarShinyCampo(raiz, liga){
       }
       const t2 = texShinyCampo.get(nome);
       if (!t2){ if (!esperandoShiny.has(nome)) esperandoShiny.set(nome, new Set()); esperandoShiny.get(nome).add(raiz); }   // ainda carregando: volta aqui no onload
-      if (t2 && m.map !== t2){ m.map = t2; m.needsUpdate = true; }
+      if (t2){ const uso = shinyCampoComoBase(t2, base); if (m.map !== uso){ m.map = uso; m.needsUpdate = true; } }
     }
   });
 }
@@ -4241,7 +4257,15 @@ Conhecimento.instalar({ lerLS, gravarLS, porDex, sexos: SEXOS, avisar: txt => Ch
   alfa: () => Conta.souAlfa?.(),                                          // Alpha Tester (12/09): a marca vem da conta (servidor)
   premiar: (id, n, titulo) => { if (comConta()){ bolsaOp('premio', { titulo }); return; }   // o prêmio do título vem do servidor (uma vez cada)
     if (id >= 1001 && id <= 1009){ jogo.bolas[id] = (jogo.bolas[id] || 0) + n; gravarLS('bolas', jogo.bolas); pintarBarra(); } },
-  titulo: () => rotularJogador() });
+  titulo: () => rotularJogador(),
+  marcarDex: (dex, st) => {                                               // a lista da Pokédex lê `dex`; o chat de conhecimento sozinho não a preenchia
+    const d = lerLS('dex', {}) || {}, k = String(+dex || '');
+    if (!/^\d+$/.test(k) || k === '0') return;
+    const prox = st === 'pego' ? 'pego' : 'visto';
+    if (d[k] === 'pego' || d[k] === prox) return;
+    d[k] = prox; gravarLS('dex', d);
+  },
+  mudou: () => { try { Menus.repintar?.(); } catch {} } });
 /* 14/09 (rukintk "Título", l.neto): o rótulo do próprio jogador é feito no nascimento, ANTES deste instalar — sem o `io` o
    Conhecimento devolve título vazio, e só refazia quando um título NOVO era conquistado (por isso "apareceu 1 vez e sumiu" no F5).
    Os outros viam, porque a rede manda o tituloAtual() depois. Refaz o rótulo agora que o título existe. */
@@ -9076,6 +9100,7 @@ if (jogo.ash){
     const p = jogo.pika, i = p ? jogo.time.findIndex(t => t.glb === p.glb) : -1;
     if (p && i < 0 && jogo.time.length) await trocarPara(0, { forcado: true });   // o parceiro foi embora na troca: sai o primeiro do time
     else { if (i >= 0) definirParceiro(i); pintarTime(true); }
+    try { Conhecimento.recarregar?.(); } catch {}                        // o save da conta pode trazer a Pokédex; o cache em memória relê o registro
     try { Menus.repintar?.(); } catch {}                                 // 20/09: a janela Pokémon aberta volta pro que o servidor disse (o arrasto mostra a ordem nova na hora, mas quem manda é ele)
     try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: o save reescrito pelo servidor (troca, prêmio) também passa pela recuperação
   }

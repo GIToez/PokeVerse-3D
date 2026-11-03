@@ -29,6 +29,7 @@ import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
 import { chegadaConfere } from './server_doors.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
+import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
@@ -370,8 +371,8 @@ function applyPartyOrder(account, order) {
 }
 /* dex (Pokédex) e conhecimento: o cliente NÃO sobrescreve o objeto inteiro — só ACRESCENTA (merge monotônico), senão dava
    pra mandar a Pokédex 100%/conhecimento no talo. dex = { nºdex: 'visto'|'pego' }: o cliente só marca 'visto'; o 'pego' quem
-   põe é o SERVIDOR (na captura/inicial), então não dá pra forjar "pego" em massa. conhecimento = { esp:{dex:nível 0-5}, titulos:[] }:
-   nível só sobe e título só soma (nunca apaga nem rebaixa). HONESTO: isto impede zerar/rebaixar e forjar "pego", mas um trapaceiro
+   põe é o SERVIDOR (na captura/inicial), então não dá pra forjar "pego" em massa. conhecimento = { esp:{dex:registro}, titulos:[] }:
+   visto/captura/áreas/golpes só sobem (união) e título só soma. Um nível numérico antigo vira registro. HONESTO: isto impede zerar/rebaixar e forjar "pego", mas um trapaceiro
    ainda infla o PRÓPRIO 'visto'/nível; o lock duro é o servidor computar isso de eventos assinados (não existe no stub local). */
 function mesclarDex(atual, novo) {
   const r = (atual && typeof atual === 'object') ? atual : {};
@@ -396,21 +397,14 @@ function marcarPegoDoTime(c) {
   }
   return n > 0;
 }
-function mesclarConhecimento(atual, novo) {
-  const base = (atual && typeof atual === 'object') ? atual : { esp: {}, titulos: [], v: 1 };
-  base.esp = (base.esp && typeof base.esp === 'object') ? base.esp : {};
-  base.titulos = Array.isArray(base.titulos) ? base.titulos : [];
-  if (novo && typeof novo === 'object') {
-    if (novo.esp && typeof novo.esp === 'object')
-      for (const k of Object.keys(novo.esp)) {
-        if (!/^\d+$/.test(k)) continue;
-        const lv = Math.max(0, Math.min(5, Math.round(+novo.esp[k] || 0)));
-        if (lv > (+base.esp[k] || 0)) base.esp[k] = lv;                                  // só sobe
-      }
-    if (Array.isArray(novo.titulos))
-      for (const t of novo.titulos) { const s = String(t).slice(0, 60); if (!base.titulos.includes(s) && base.titulos.length < 300) base.titulos.push(s); }
-  }
-  return base;
+/* conhecimento guarda o registro rico por espécie (visto, capturas, áreas, golpes, shiny). O merge é monotônico em
+   knowledge.mjs: um objeto nunca vira 0, e um nível numérico antigo (0–5) vira registro. O pagehide antigo aninhava
+   `{ dex, conhecimento }` dentro de `conhecimento`; `pacoteConhecimento` aceita os dois formatos. */
+function aplicarDexConhecimento(c, d) {
+  if (!c.save) c.save = {};
+  const pac = pacoteConhecimento(d || {});
+  if (pac.conhecimento !== undefined) c.save.conhecimento = fundirSave(c.save.conhecimento, pac.conhecimento);
+  if (pac.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, pac.dex);
 }
 const NATUREZAS = ['Hardy','Lonely','Brave','Adamant','Naughty','Bold','Docile','Relaxed','Impish','Lax','Timid','Hasty','Serious','Jolly','Naive','Modest','Mild','Quiet','Bashful','Rash','Calm','Gentle','Sassy','Careful','Quirky'];
 function novoUid() { return String(Date.now()) + String(Math.floor(Math.random() * 9999)).padStart(4, '0'); }
@@ -932,8 +926,7 @@ const httpServer = http.createServer((req, res) => {
         if (!c.save) c.save = {};
         if (d.party || d.arranjo) applyPartyOrder(c, d.party || d.arranjo);   // party order plus field experience; `arranjo` is the old message name
         aplicarPrefs(c, d.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
-        if (d.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, d.conhecimento);   // nº15: só soma, não sobrescreve
-        if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
+        aplicarDexConhecimento(c, d);                       // dex só ganha 'visto' do cliente; o registro de conhecimento só sobe
         marcarPegoDoTime(c);
         if (d.pos){
           const mesmo = c.pos && String(c.pos.mapa) === String(d.pos.mapa || '');
@@ -1474,8 +1467,7 @@ wss.on('connection', ws => {
         const cCon = uCon && contas[uCon];
         if (cCon) {
           if (!cCon.save) cCon.save = {};
-          if (m.conhecimento !== undefined) cCon.save.conhecimento = mesclarConhecimento(cCon.save.conhecimento, m.conhecimento);   // nº15: só soma
-          if (m.dex !== undefined) cCon.save.dex = mesclarDex(cCon.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'
+          aplicarDexConhecimento(cCon, m);                       // dex só ganha 'visto' do cliente; o registro de conhecimento só sobe
           cCon.rev = (cCon.rev || 0) + 1;
           salvarContas();
         }
@@ -1490,8 +1482,7 @@ wss.on('connection', ws => {
           if (!c.save) c.save = {};
           if (m.party || m.arranjo) applyPartyOrder(c, m.party || m.arranjo);   // party order plus field experience; `arranjo` is the old message name
           aplicarPrefs(c, m.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
-          if (m.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, m.conhecimento);   // nº15: só soma
-          if (m.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'
+          aplicarDexConhecimento(c, m);                       // dex só ganha 'visto' do cliente; o registro de conhecimento só sobe
           marcarPegoDoTime(c);
           c.rev = (c.rev || 0) + 1;
           salvarContas();
