@@ -1,0 +1,47 @@
+{
+ "nome": "mochila-Bag017",
+ "item": "mochila:Bag017",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "mochila-Bag017.webp",
+ "kb": {
+  "webp": 265.4
+ },
+ "opcoes": {
+  "nome": "mochila-Bag017",
+  "id": "mochila:Bag017",
+  "azimute": 155,
+  "elevacao": 12,
+  "lado": [
+   210,
+   328,
+   432
+  ],
+  "inicio": 0
+ },
+ "render": {
+  "tipo": "mochila",
+  "glb": "Bag017",
+  "clipes": [],
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "inicio": 0,
+  "R": 640,
+  "recorte": [
+   56,
+   83,
+   526
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

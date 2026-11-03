@@ -1,0 +1,61 @@
+{
+ "nome": "charizard-onix",
+ "glb": "pm0006_00",
+ "shiny": true,
+ "voa": true,
+ "quadros": 19,
+ "lado": 210,
+ "duracaoMs": 800,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": "charizard-onix-folha.png",
+  "webp": "charizard-onix-folha.webp",
+  "colunas": 19,
+  "linhas": 1,
+  "largura": 3990,
+  "altura": 210
+ },
+ "webp": "charizard-onix.webp",
+ "kb": {
+  "folhaPng": 287.3,
+  "folhaWebp": 76.5,
+  "webp": 80.2
+ },
+ "opcoes": {
+  "nome": "charizard-onix",
+  "glb": "pm0006_00",
+  "shiny": true,
+  "voa": true
+ },
+ "render": {
+  "glb": "pm0006_00",
+  "arquivo": "./cenario/mon/pm0006_00.glb",
+  "clipes": [
+   "Appear:0.867",
+   "Attack:2.000",
+   "Buff:2.200",
+   "Cast:2.000",
+   "Dead:1.667",
+   "Idle:1.600",
+   "Run:0.800",
+   "Wound:0.667"
+  ],
+  "shiny": {
+   "texturas": 7,
+   "ok": 7
+  },
+  "escala": 1.1,
+  "chamas": 2,
+  "run": 0.8,
+  "ciclos": 1,
+  "loop": 0.8,
+  "quadros": 19,
+  "voa": true,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   63,
+   146,
+   448
+  ]
+ }
+}

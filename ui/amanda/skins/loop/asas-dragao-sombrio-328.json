@@ -1,0 +1,47 @@
+{
+ "nome": "asas-dragao-sombrio-328",
+ "item": "Bag023",
+ "quadros": 48,
+ "lado": 328,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "asas-dragao-sombrio-328-folha.png",
+  "webp": "asas-dragao-sombrio-328-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 15744,
+  "altura": 328
+ },
+ "webp": "asas-dragao-sombrio-328.webp",
+ "kb": {
+  "folhaPng": 1293.6,
+  "folhaWebp": 191.6,
+  "webp": 200
+ },
+ "opcoes": {
+  "nome": "asas-dragao-sombrio-328",
+  "mochila": "Bag023",
+  "azimute": -25,
+  "elevacao": 12,
+  "lado": 328
+ },
+ "render": {
+  "glb": "Bag023",
+  "clipes": [],
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   58,
+   145,
+   525
+  ],
+  "borda": [
+   89,
+   290,
+   550,
+   524
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

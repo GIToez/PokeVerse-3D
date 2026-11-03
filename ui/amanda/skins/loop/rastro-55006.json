@@ -1,0 +1,66 @@
+{
+ "nome": "rastro-55006",
+ "item": "rastro:55006",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "rastro-55006-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "rastro-55006.webp",
+ "kb": {
+  "folhaWebp": 845.7,
+  "webp": 872.8
+ },
+ "opcoes": {
+  "tipo": "efeito",
+  "azimute": 45,
+  "elevacao": 55,
+  "camadas": [
+   3,
+   11
+  ],
+  "massa": 0.005,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "cheio": true,
+  "lado": [
+   210,
+   328,
+   432
+  ],
+  "nome": "rastro-55006",
+  "id": "rastro:55006",
+  "clipe": "Run",
+  "cauda": 3.2
+ },
+ "render": {
+  "tipo": "efeito",
+  "glb": "Boy_045",
+  "idle": {
+   "dur": 0.5,
+   "voltas": 4
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   463,
+   48,
+   575
+  ],
+  "camadas": [
+   3,
+   11
+  ],
+  "zoom": 1,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "quadros": 48,
+  "loop": 2
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "nome": "rastro-55009",
+ "item": "rastro:55009",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "rastro-55009.webp",
+ "kb": {
+  "webp": 824.9
+ },
+ "opcoes": {
+  "nome": "rastro-55009",
+  "id": "rastro:55009",
+  "lado": [
+   210,
+   328,
+   432
+  ],
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "cheio": true,
+  "massa": 0.005,
+  "azimute": 45,
+  "elevacao": 55,
+  "camadas": [
+   3,
+   11
+  ],
+  "cauda": 3.2
+ },
+ "render": {
+  "tipo": "efeito",
+  "glb": "Boy_045",
+  "clipe": "Run",
+  "idle": {
+   "dur": 0.5,
+   "voltas": 4
+  },
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "cheio": 43,
+  "recorte": [
+   282,
+   525,
+   206
+  ],
+  "camadas": [
+   3,
+   11
+  ],
+  "zoom": 1,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "quadros": 48,
+  "loop": 2
+ }
+}

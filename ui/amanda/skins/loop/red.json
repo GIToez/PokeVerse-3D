@@ -1,0 +1,49 @@
+{
+ "nome": "red",
+ "item": "red",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "red-folha.png",
+  "webp": "red-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "red.webp",
+ "kb": {
+  "folhaPng": 1185.4,
+  "folhaWebp": 234.1,
+  "webp": 246.8
+ },
+ "opcoes": {
+  "nome": "red",
+  "roupa": "red",
+  "azimute": 0,
+  "elevacao": 8
+ },
+ "render": {
+  "glb": "Boy_045",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   46,
+   49,
+   548
+  ],
+  "borda": [
+   157,
+   82,
+   481,
+   563
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

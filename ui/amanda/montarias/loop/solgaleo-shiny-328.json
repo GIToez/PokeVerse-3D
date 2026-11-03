@@ -1,0 +1,72 @@
+{
+ "nome": "solgaleo-shiny-328",
+ "glb": "pm0791_00",
+ "shiny": true,
+ "voa": false,
+ "quadros": 16,
+ "lado": 328,
+ "duracaoMs": 667,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": "solgaleo-shiny-328-folha.png",
+  "webp": "solgaleo-shiny-328-folha.webp",
+  "colunas": 16,
+  "linhas": 1,
+  "largura": 5248,
+  "altura": 328
+ },
+ "webp": "solgaleo-shiny-328.webp",
+ "kb": {
+  "folhaPng": 819.9,
+  "folhaWebp": 171.4,
+  "webp": 177.9
+ },
+ "opcoes": {
+  "nome": "solgaleo-shiny-328",
+  "glb": "pm0791_00",
+  "shiny": true,
+  "tipo": "leon",
+  "azimute": 70,
+  "elevacao": 16,
+  "lado": 328
+ },
+ "render": {
+  "glb": "pm0791_00",
+  "arquivo": "./cenario/mon/pm0791_00.glb",
+  "clipes": [
+   "Appear:1.875",
+   "Attack:2.917",
+   "Buff:3.250",
+   "Cast:2.917",
+   "Dead:2.083",
+   "Idle:2.917",
+   "Run:0.667",
+   "Wound:0.833"
+  ],
+  "shiny": {
+   "texturas": 18,
+   "ok": 18
+  },
+  "escala": 0.6,
+  "sela": "eMount do GLB",
+  "cavaleiro": {
+   "glb": "fc2075_00",
+   "pose": "Ride1",
+   "dur": 0.667,
+   "voltas": 1
+  },
+  "chamas": 0,
+  "run": 0.667,
+  "ciclos": 1,
+  "loop": 0.667,
+  "quadros": 16,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   10,
+   55,
+   592
+  ],
+  "aviso": "o recorte passa da foto (sobra transparente)"
+ }
+}

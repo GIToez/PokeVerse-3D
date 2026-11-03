@@ -1,0 +1,59 @@
+{
+ "nome": "pokemon-venusaur-abobora",
+ "glb": "pm0003_31",
+ "shiny": false,
+ "voa": false,
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": "pokemon-venusaur-abobora-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "pokemon-venusaur-abobora.webp",
+ "kb": {
+  "folhaWebp": 520.6,
+  "webp": 538
+ },
+ "opcoes": {
+  "nome": "venusaur-abobora",
+  "glb": "pm0003_31",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "pm0003_31",
+  "arquivo": "./cenario/mon/pm0003_31.glb",
+  "clipes": [
+   "Appear:1.200",
+   "Attack:2.500",
+   "Buff:2.033",
+   "Cast:2.167",
+   "Dead:1.700",
+   "Idle:2.000",
+   "Run:0.633",
+   "Wound:0.700"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 2,
+  "ciclos": 1,
+  "loop": 2,
+  "quadros": 48,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   71,
+   113,
+   490
+  ]
+ }
+}

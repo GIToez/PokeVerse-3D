@@ -1,0 +1,60 @@
+{
+ "nome": "pokemon-squirtle-abobora",
+ "glb": "hw-squirtle-abobora",
+ "shiny": false,
+ "voa": false,
+ "quadros": 24,
+ "lado": 210,
+ "duracaoMs": 1000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 24,
+  "linhas": 1,
+  "largura": 5040,
+  "altura": 210
+ },
+ "webp": "pokemon-squirtle-abobora.webp",
+ "kb": {
+  "folhaPng": 764,
+  "folhaWebp": 164.1,
+  "webp": 167.1
+ },
+ "opcoes": {
+  "nome": "squirtle-abobora",
+  "glb": "hw-squirtle-abobora",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "hw-squirtle-abobora",
+  "arquivo": "./cenario/mon/hw-squirtle-abobora.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:1.733",
+   "Buff:1.333",
+   "Cast:2.167",
+   "Dead:1.667",
+   "Idle:1.000",
+   "Run:0.667",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 1,
+  "ciclos": 1,
+  "loop": 1,
+  "quadros": 24,
+  "voa": false,
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "recorte": [
+   53,
+   97,
+   482
+  ]
+ }
+}

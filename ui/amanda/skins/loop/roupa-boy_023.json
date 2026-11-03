@@ -1,0 +1,50 @@
+{
+ "nome": "roupa-boy_023",
+ "item": "roupa:boy_023",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": null,
+  "webp": "roupa-boy_023-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "roupa-boy_023.webp",
+ "kb": {
+  "folhaWebp": 246.2,
+  "webp": 260.9
+ },
+ "opcoes": {
+  "nome": "roupa-boy_023",
+  "tipo": "roupa",
+  "id": "roupa:boy_023",
+  "azimute": 0,
+  "elevacao": 8,
+  "lado": [
+   210,
+   328,
+   432
+  ]
+ },
+ "render": {
+  "tipo": "roupa",
+  "glb": "Boy_023",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "R": 640,
+  "recorte": [
+   40,
+   38,
+   560
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

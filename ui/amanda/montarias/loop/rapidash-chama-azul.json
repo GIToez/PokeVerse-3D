@@ -1,0 +1,60 @@
+{
+ "nome": "rapidash-chama-azul",
+ "glb": "pm0078_00",
+ "shiny": true,
+ "voa": false,
+ "quadros": 13,
+ "lado": 210,
+ "duracaoMs": 533,
+ "quadroMs": 41,
+ "folha": {
+  "arquivo": "rapidash-chama-azul-folha.png",
+  "webp": "rapidash-chama-azul-folha.webp",
+  "colunas": 13,
+  "linhas": 1,
+  "largura": 2730,
+  "altura": 210
+ },
+ "webp": "rapidash-chama-azul.webp",
+ "kb": {
+  "folhaPng": 324.7,
+  "folhaWebp": 114.6,
+  "webp": 119.6
+ },
+ "opcoes": {
+  "nome": "rapidash-chama-azul",
+  "glb": "pm0078_00",
+  "shiny": true
+ },
+ "render": {
+  "glb": "pm0078_00",
+  "arquivo": "./cenario/mon/pm0078_00.glb",
+  "clipes": [
+   "Appear:1.333",
+   "Attack:2.067",
+   "Buff:2.000",
+   "Cast:2.167",
+   "Dead:2.333",
+   "Idle:2.667",
+   "Run:0.533",
+   "Wound:0.833"
+  ],
+  "shiny": {
+   "texturas": 3,
+   "ok": 3
+  },
+  "escala": 1.1,
+  "chamas": 17,
+  "run": 0.533,
+  "ciclos": 1,
+  "loop": 0.533,
+  "quadros": 13,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   72,
+   86,
+   497
+  ]
+ }
+}

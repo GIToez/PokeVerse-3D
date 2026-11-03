@@ -1,0 +1,66 @@
+{
+ "nome": "peito-56023",
+ "item": "peito:56023",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 2000,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "peito-56023.webp",
+ "kb": {
+  "webp": 1261.3
+ },
+ "opcoes": {
+  "nome": "peito-56023",
+  "id": "peito:56023",
+  "lado": [
+   210,
+   328,
+   432
+  ],
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "cheio": true,
+  "massa": 0.005,
+  "azimute": 20,
+  "elevacao": 8,
+  "camadas": [
+   3,
+   11,
+   23
+  ]
+ },
+ "render": {
+  "tipo": "efeito",
+  "glb": "Boy_045",
+  "clipe": "Idle",
+  "idle": {
+   "dur": 2.833,
+   "voltas": 1
+  },
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "cheio": 15,
+  "recorte": [
+   161,
+   262,
+   580
+  ],
+  "camadas": [
+   3,
+   11,
+   23
+  ],
+  "zoom": 1,
+  "gama": 0.6,
+  "esfuma": 0.06,
+  "quadros": 48,
+  "loop": 2
+ }
+}

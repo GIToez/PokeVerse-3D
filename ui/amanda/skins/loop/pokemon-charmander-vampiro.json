@@ -1,0 +1,61 @@
+{
+ "nome": "pokemon-charmander-vampiro",
+ "glb": "hw-charmander-vampiro",
+ "shiny": false,
+ "voa": false,
+ "quadros": 28,
+ "lado": 210,
+ "duracaoMs": 1167,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 28,
+  "linhas": 1,
+  "largura": 5880,
+  "altura": 210
+ },
+ "webp": "pokemon-charmander-vampiro.webp",
+ "kb": {
+  "folhaPng": 995.7,
+  "folhaWebp": 215.1,
+  "webp": 219.2
+ },
+ "opcoes": {
+  "nome": "charmander-vampiro",
+  "glb": "hw-charmander-vampiro",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "hw-charmander-vampiro",
+  "arquivo": "./cenario/mon/hw-charmander-vampiro.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:2.133",
+   "Attack3:2.133",
+   "Buff:2.000",
+   "Cast:2.133",
+   "Dead:1.667",
+   "Idle:1.167",
+   "Run:0.667",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 2,
+  "run": 1.167,
+  "ciclos": 1,
+  "loop": 1.167,
+  "quadros": 28,
+  "voa": false,
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "recorte": [
+   45,
+   113,
+   463
+  ]
+ }
+}

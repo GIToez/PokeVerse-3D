@@ -1,0 +1,60 @@
+{
+ "nome": "pokemon-bulbasaur-bruxinho",
+ "glb": "hw-bulbasaur-bruxinho",
+ "shiny": false,
+ "voa": false,
+ "quadros": 34,
+ "lado": 210,
+ "duracaoMs": 1400,
+ "quadroMs": 41,
+ "folha": {
+  "arquivo": null,
+  "webp": null,
+  "colunas": 34,
+  "linhas": 1,
+  "largura": 7140,
+  "altura": 210
+ },
+ "webp": "pokemon-bulbasaur-bruxinho.webp",
+ "kb": {
+  "folhaPng": 1352.2,
+  "folhaWebp": 242.2,
+  "webp": 245.7
+ },
+ "opcoes": {
+  "nome": "bulbasaur-bruxinho",
+  "glb": "hw-bulbasaur-bruxinho",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "hw-bulbasaur-bruxinho",
+  "arquivo": "./cenario/mon/hw-bulbasaur-bruxinho.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:1.667",
+   "Buff:2.333",
+   "Cast:2.167",
+   "Dead:1.667",
+   "Idle:1.400",
+   "Run:0.367",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 1.4,
+  "ciclos": 1,
+  "loop": 1.4,
+  "quadros": 34,
+  "voa": false,
+  "placa": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "recorte": [
+   56,
+   98,
+   475
+  ]
+ }
+}

@@ -1,0 +1,59 @@
+{
+ "nome": "pokemon-wartortle-abobora",
+ "glb": "pm0008_31",
+ "shiny": false,
+ "voa": false,
+ "quadros": 26,
+ "lado": 210,
+ "duracaoMs": 1067,
+ "quadroMs": 41,
+ "folha": {
+  "arquivo": null,
+  "webp": "pokemon-wartortle-abobora-folha.webp",
+  "colunas": 26,
+  "linhas": 1,
+  "largura": 5460,
+  "altura": 210
+ },
+ "webp": "pokemon-wartortle-abobora.webp",
+ "kb": {
+  "folhaWebp": 220.8,
+  "webp": 223.6
+ },
+ "opcoes": {
+  "nome": "wartortle-abobora",
+  "glb": "pm0008_31",
+  "clipe": "Idle",
+  "azimute": 25,
+  "elevacao": 10,
+  "lado": 210,
+  "escala": 1
+ },
+ "render": {
+  "glb": "pm0008_31",
+  "arquivo": "./cenario/mon/pm0008_31.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:2.000",
+   "Buff:1.133",
+   "Cast:1.800",
+   "Dead:1.667",
+   "Idle:1.067",
+   "Run:0.667",
+   "Wound:0.667"
+  ],
+  "escala": 1,
+  "chamas": 0,
+  "run": 1.067,
+  "ciclos": 1,
+  "loop": 1.067,
+  "quadros": 26,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   26,
+   83,
+   493
+  ]
+ }
+}

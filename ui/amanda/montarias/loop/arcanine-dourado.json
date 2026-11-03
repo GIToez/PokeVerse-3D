@@ -1,0 +1,60 @@
+{
+ "nome": "arcanine-dourado",
+ "glb": "pm0059_00",
+ "shiny": true,
+ "voa": false,
+ "quadros": 12,
+ "lado": 210,
+ "duracaoMs": 500,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": "arcanine-dourado-folha.png",
+  "webp": "arcanine-dourado-folha.webp",
+  "colunas": 12,
+  "linhas": 1,
+  "largura": 2520,
+  "altura": 210
+ },
+ "webp": "arcanine-dourado.webp",
+ "kb": {
+  "folhaPng": 426.2,
+  "folhaWebp": 82,
+  "webp": 85
+ },
+ "opcoes": {
+  "nome": "arcanine-dourado",
+  "glb": "pm0059_00",
+  "shiny": true
+ },
+ "render": {
+  "glb": "pm0059_00",
+  "arquivo": "./cenario/mon/pm0059_00.glb",
+  "clipes": [
+   "Appear:1.167",
+   "Attack:2.133",
+   "Buff:1.867",
+   "Cast:1.867",
+   "Dead:1.733",
+   "Idle:1.733",
+   "Run:0.500",
+   "Wound:0.667"
+  ],
+  "shiny": {
+   "texturas": 9,
+   "ok": 9
+  },
+  "escala": 0.9,
+  "chamas": 0,
+  "run": 0.5,
+  "ciclos": 1,
+  "loop": 0.5,
+  "quadros": 12,
+  "voa": false,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   58,
+   69,
+   511
+  ]
+ }
+}

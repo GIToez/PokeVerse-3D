@@ -1,0 +1,61 @@
+{
+ "nome": "skate",
+ "glb": "skate",
+ "shiny": false,
+ "voa": false,
+ "quadros": 40,
+ "lado": 210,
+ "duracaoMs": 1667,
+ "quadroMs": 42,
+ "folha": {
+  "arquivo": "skate-folha.png",
+  "webp": "skate-folha.webp",
+  "colunas": 40,
+  "linhas": 1,
+  "largura": 8400,
+  "altura": 210
+ },
+ "webp": "skate.webp",
+ "kb": {
+  "folhaPng": 889.7,
+  "folhaWebp": 246.2,
+  "webp": 279.9
+ },
+ "opcoes": {
+  "nome": "skate",
+  "glb": "skate",
+  "tipo": "red",
+  "azimute": -35,
+  "elevacao": 14,
+  "pelaPose": true
+ },
+ "render": {
+  "glb": "skate",
+  "arquivo": "./cenario/pc/Skateboard.glb",
+  "clipes": [
+   "Idle:0.800",
+   "Run:0.800"
+  ],
+  "escala": 1,
+  "sela": "eMount do GLB",
+  "cavaleiro": {
+   "glb": "Boy_045",
+   "pose": "Ride7",
+   "dur": 1.667,
+   "voltas": 1
+  },
+  "chamas": 0,
+  "run": 0.8,
+  "ciclos": 1,
+  "loop": 1.667,
+  "quadros": 40,
+  "voa": false,
+  "voltasRodas": 2,
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   86,
+   73,
+   507
+  ]
+ }
+}

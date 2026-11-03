@@ -1,0 +1,49 @@
+{
+ "nome": "leaf",
+ "item": "leaf",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "leaf-folha.png",
+  "webp": "leaf-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "leaf.webp",
+ "kb": {
+  "folhaPng": 1276.1,
+  "folhaWebp": 242,
+  "webp": 256.9
+ },
+ "opcoes": {
+  "nome": "leaf",
+  "roupa": "leaf",
+  "azimute": 0,
+  "elevacao": 8
+ },
+ "render": {
+  "glb": "Girl_045",
+  "idle": {
+   "dur": 2.867,
+   "voltas": 1
+  },
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   47,
+   52,
+   547
+  ],
+  "borda": [
+   168,
+   85,
+   471,
+   565
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}

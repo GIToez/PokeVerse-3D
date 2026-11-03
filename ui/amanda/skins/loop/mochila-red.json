@@ -1,0 +1,46 @@
+{
+ "nome": "mochila-red",
+ "item": "Bag042",
+ "quadros": 48,
+ "lado": 210,
+ "duracaoMs": 4000,
+ "quadroMs": 83,
+ "folha": {
+  "arquivo": "mochila-red-folha.png",
+  "webp": "mochila-red-folha.webp",
+  "colunas": 48,
+  "linhas": 1,
+  "largura": 10080,
+  "altura": 210
+ },
+ "webp": "mochila-red.webp",
+ "kb": {
+  "folhaPng": 1564.8,
+  "folhaWebp": 279.8,
+  "webp": 293
+ },
+ "opcoes": {
+  "nome": "mochila-red",
+  "mochila": "Bag042",
+  "azimute": 155,
+  "elevacao": 12
+ },
+ "render": {
+  "glb": "Bag042",
+  "clipes": [],
+  "placa": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+  "recorte": [
+   58,
+   70,
+   525
+  ],
+  "borda": [
+   89,
+   120,
+   550,
+   543
+  ],
+  "quadros": 48,
+  "loop": 4
+ }
+}
