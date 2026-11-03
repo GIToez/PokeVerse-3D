@@ -102,4 +102,13 @@ function conta(extra = {}) {
   assert(npcs['9002116']?.placa === true && npcs['9002116'].cena === 2000001, 'johto sign');
 }
 
+{
+  const dentro = Safari.podeSoltar({ naZona: true });
+  assert(!dentro.ok && dentro.erro === Safari.AVISO_BOLA, 'summon inside: ' + dentro.erro);
+  assert(Safari.podeSoltar({ naZona: false }).ok, 'summon outside the grass');
+  assert(Safari.podeSoltar({}).ok, 'summon with no zone');
+  assert(Safari.naZonaPaga(1192, 190) && !Safari.naZonaPaga(1192, 199.5), 'kanto gate is outside the paid grass');
+  assert(Safari.naZonaPaga(2115, 100.5), 'johto grass is the whole area');
+}
+
 console.log('safari ok');

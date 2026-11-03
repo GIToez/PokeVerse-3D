@@ -3216,6 +3216,7 @@ const podeMontar = (glb = null) => Conta.estado().modo !== 'conta' || GM_REAL ||
 async function montar(glb, { trocar = false } = {}){
   if (!jogo.ash || jogo.montando) return;
   if (jogo.turno && !jogo.montaria){ flutuar(jogo.ash, "can't mount in battle", '#f58e8e'); return; }   // 14/09 (l.neto, vídeo): o atalho 5–9 montava no meio da batalha por turno
+  if (!(jogo.montaria && (!trocar || jogo.montaria.glb === String(glb || '').replace(/\.glb$/, ''))) && !Safari.podeSoltar({ naZona: safariOnde().paga }).ok){ flutuar(jogo.ash, Safari.AVISO_BOLA, '#ffd23a'); return; }
   glb = String(glb || '').replace(/\.glb$/, '');
   if (jogo.montaria && (!trocar || jogo.montaria.glb === glb)) return desmontar();   // desmontar vem ANTES do portão (14/09): montado no Arcanine, o M com outro glb travava em cima dele
   if (!podeMontar(glb)){ if (jogo.ash) flutuar(jogo.ash, 'mounts coming soon', '#ffd23a'); return; }
@@ -4895,6 +4896,7 @@ const STAT_ALIAS = { hp: 0, atk: 1, def: 2, spa: 3, spd: 4, spe: 5 };
 const USO_POKESPAWN = 'Use: /pokespawn name|nº|random|r [s] [lv:N] [ivatk:0-31 …] [evatk:0-252 …] [l|!l] [type:fire] [n:adamant] — stats: hp atk def spa spd spe.';
 async function pokespawn(resto){
   if (!GM_REAL){ Chat.sistema('/pokespawn is GM only.'); return; }
+  if (!Safari.podeSoltar({ naZona: safariOnde().paga }).ok){ Chat.sistema(Safari.AVISO_BOLA); return; }
   const ash = jogo.ash; if (!ash) return;
   const sem = v => String(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   const [alvo, ...args] = resto.split(/\s+/).filter(Boolean);
@@ -4958,6 +4960,7 @@ async function pokespawn(resto){
 const CHEFE_LV = cfgInt('chefeLv', 70, 1, 100);
 async function chegarChefe(glb = 'pm0249_00'){
   if (jogo.chefe || !jogo.ash) return;
+  if (!Safari.podeSoltar({ naZona: safariOnde().paga }).ok){ flutuar(jogo.ash, Safari.AVISO_BOLA, '#ffd23a'); return; }
   glb = glb.replace(/\.glb$/, '');
   const g = await modeloMon(glb + '.glb');
   const c = montarCorpo(g, SkeletonUtils.clone(g.scene), null, 0, glb);
@@ -6433,8 +6436,40 @@ async function safariExpulsar(zona){
   flutuar(jogo.ash, 'Pay the warden to enter', '#ffd23a');
   Chat.sistema('The Safari Zone is fenced. Talk to the warden at the gate: 500 Coins for 30 Safari Balls and 500 steps.');
 }
+function safariRecolherParceiro(avisar){
+  const p = jogo.pika; if (!p || jogo.semParceiro) return;
+  if (jogo.montaria && jogo.ash && !naAgua(jogo.ash.x, jogo.ash.z)){
+    soltarMontaria();
+    const y = chaoEm(jogo.ash.x, jogo.ash.z);
+    if (y != null){ jogo.ash.y = jogo.ash.vy = y; jogo.ash.pivo.position.y = y; }
+  }
+  if (jogo.montaria) return;
+  const ja = !!p.recolhidoSafari;
+  p.recolhidoSafari = true;
+  p.pivo.visible = false; p.emBatalha = false; jogo.ordem = null; p.destino = null; p.alvoX = null;
+  if (jogo.ash){
+    p.x = p.vx = jogo.ash.x; p.z = p.vz = jogo.ash.z; p.y = p.vy = jogo.ash.y;
+    p.pivo.position.set(p.vx, p.vy, p.vz);
+  }
+  if (avisar && !ja){ flutuar(jogo.ash, Safari.AVISO_BOLA, '#ffd23a'); try { Rede.parceiroAgora?.(); } catch {} }
+}
+function safariDevolverParceiro(){
+  const p = jogo.pika; if (!p?.recolhidoSafari) return;
+  p.recolhidoSafari = false;
+  try { Rede.parceiroAgora?.(); } catch {}
+  if (jogo.semParceiro || jogo.montaria || !jogo.ash) return;
+  const ash = jogo.ash, lado = livre(ash.x - 1.2, ash.z + 0.8);
+  p.meio = undefined; p.x = p.vx = lado ? ash.x - 1.2 : ash.x; p.z = p.vz = lado ? ash.z + 0.8 : ash.z;
+  p.y = p.vy = chaoEm(p.x, p.z) ?? ash.y;
+  p.pivo.position.set(p.vx, p.vy, p.vz); p.pivo.visible = true;
+  p.travaAnim = 0; tocarUma(p, 'Appear'); soEsta(p, 'Appear');
+}
 function vigiarSafari(){
-  const a = jogo.ash; if (!a || jogo.safariEncerrando || jogo.safariBola || jogo.safariPassoVoo) return;
+  const a = jogo.ash; if (!a) return;
+  const pago = safariOnde().paga;
+  if (pago) safariRecolherParceiro(true);
+  else if (jogo.pika?.recolhidoSafari) safariDevolverParceiro();
+  if (jogo.safariEncerrando || jogo.safariBola || jogo.safariPassoVoo) return;
   const onde = safariOnde();
   const viva = Safari.vivo(jogo.safari);
   if (onde.paga && !viva){
@@ -7167,6 +7202,7 @@ async function evoluirParceiro(opcao = null){
 /** Troca rápida pro membro i do time (clique na grade). */
 async function trocarPara(i, { forcado = false } = {}){
   const t = jogo.time[i]; if (!t || !jogo.ash || jogo.trocandoSeguidor) return;
+  if (!forcado && !Safari.podeSoltar({ naZona: safariOnde().paga }).ok){ flutuar(jogo.ash, Safari.AVISO_BOLA, '#ffd23a'); return; }
   /* TROCA MANDADA (20/09, chaospider): a troca `forcado` vem de uma ORDEM (lance `troca` do servidor, desmaio, acerto de
      campo), não de um clique. Ela não pode cair no balcão do Reanimador por causa de um hp 0 velho no registro do aparelho,
      nem abrir a janela Pokémon — era assim que a ordem do servidor sumia em silêncio e a tela ficava com o Pokémon errado. */
@@ -7206,6 +7242,7 @@ async function trocarPara(i, { forcado = false } = {}){
 /** Z: o seguidor vira o próximo Pokémon do time. */
 async function proximoDoTime(){
   if (!jogo.ash || !jogo.time.length || jogo.trocandoSeguidor) return;
+  if (!Safari.podeSoltar({ naZona: safariOnde().paga }).ok){ flutuar(jogo.ash, Safari.AVISO_BOLA, '#ffd23a'); return; }
   if ((jogo.trocaCd || 0) > 0){ flutuar(jogo.ash, 'switch in ' + Math.ceil(jogo.trocaCd) + ' s', '#ffd23a'); return; }
   const atual = membroAtivo(); let prox = -1;
   for (let k = 1; k <= jogo.time.length; k++){ const j = (atual + k) % jogo.time.length; const c = jogo.time[j]; if (j !== atual && !koRegistro(c)){ prox = j; break; } }   // 14/09: pelo ÍNDICE, não pelo glb — com dois Pidgey o Shift+Z nunca chegava no segundo
@@ -8864,6 +8901,7 @@ if (jogo.ash){
     encher(); painel.__encher = encher;
     btn.addEventListener('click', async () => {
       Som.destravar(); btn.blur();
+      if (!Safari.podeSoltar({ naZona: safariOnde().paga }).ok){ flutuar(jogo.ash, Safari.AVISO_BOLA, '#ffd23a'); return; }
       if (jogo.trocandoSeguidor || !jogo.trocarSeguidor) return;
       const glb = sel.value; if ((jogo.pika?.glb || '').replace(/\.glb$/, '') === glb) return;
       jogo.trocandoSeguidor = true;
@@ -9307,7 +9345,7 @@ function pintarBarra(){
   const xpEl = $('f-pika-xp'), xpK = fracaoXp(p);
   if (xpEl && xpEl.__k !== xpK){ xpEl.__k = xpK; xpEl.style.width = (xpK * 100) + '%'; }
   setTexto($('f-pika-nome'), p.nome);
-  setTexto($('f-pika-lv'), 'Lv' + p.lv + ' · ' + I18n.t(jogo.montaria ? 'in Poké Ball' : p.desmaiado > 0 ? 'fainted' : p.emBatalha ? 'in battle' : 'following'));
+  setTexto($('f-pika-lv'), 'Lv' + p.lv + ' · ' + I18n.t(jogo.montaria || p.recolhidoSafari ? 'in Poké Ball' : p.desmaiado > 0 ? 'fainted' : p.emBatalha ? 'in battle' : 'following'));
   for (let i = 0; i < 4; i++){
     const id = p.golpesIds[i], g = id && GOLPES[id], el = $('sk' + (i + 1));
     if (!g){ if (!el.classList.contains('vazio')){ el.classList.add('vazio'); for (const f of [...el.children]) if (!f.dataset.fig) f.remove(); el.__pronto = false; el.__id = null; el.__ic = null; el.__txt = null; el.__pct = null; el.title = I18n.t('no move'); } continue; } else if (el.classList.contains('vazio')) el.classList.remove('vazio');
@@ -9443,6 +9481,15 @@ function puxarParceiro(texto){
 function folgaParceiro(p){ return 1.2 + Math.max((p.altura || 0) * 0.85, (p.comprimentoBase || 0) * (p.fatorTam || 1) / 2); }
 function atualizarParceiro(dt){
   const { ash, pika } = jogo;
+  if (pika.recolhidoSafari){
+    for (const k in pika.recargas) pika.recargas[k] = Math.max(0, pika.recargas[k] - dt);
+    quadroHeld(dt); Pesca.quadro(dt);
+    if (jogo.trocaCd > 0) jogo.trocaCd = Math.max(0, jogo.trocaCd - dt);
+    pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.destino = null;
+    pika.x = pika.vx = ash.x; pika.z = pika.vz = ash.z; pika.y = pika.vy = ash.y;
+    pika.pivo.position.set(pika.vx, pika.vy, pika.vz);
+    return;
+  }
   // Pikachu: em batalha ele FICA — não persegue o Ash entre um golpe e outro.
   // Entra em batalha por ordem sua ou quando um selvagem parte pra cima dele;
   // sai 3 s depois de acabar a hostilidade. Coleira: a mais de 12 m do Ash ele
