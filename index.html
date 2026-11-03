@@ -4372,6 +4372,102 @@ function noQuadro(x, z, yPadrao){
 /* Server rolls waiting for their model to load, per area. The server keeps a roll for 10 min; give up a little before that. */
 const wildsEsperando = new Map(), WILD_ESPERA_MS = 8 * 60 * 1000, WILD_ESPERA_MAX = 2;
 let povoando = false;
+/** Teto de selvagens da área (o mesmo número de sempre do `povoar`). */
+const tetoArea = (a, DENS) => THREE.MathUtils.clamp(Math.round(((gramaPorArea.get(a)?.length || 0) + (aguaPorArea.get(a)?.length || 0) / 3) / (DEMO ? 14 : 18) * DENS), Math.max(3, Math.round(5 * DENS)), Math.round((DEMO ? 20 : 16) * DENS));
+const populacaoArea = a => Math.max(jogo.selvagens.filter(s => s.area === a).length, Mundo.estaAtivo() ? Mundo.contar(a) : 0);
+/** Faz nascer `esp` no tile `t` da área `a` (mundo compartilhado, conta com sorteio no servidor, ou solo). Verdadeiro se nasceu/foi proposto. */
+async function nascerNoBerco(a, esp, t, tiles){
+  if (Mundo.estaAtivo()){                                               // mundo compartilhado: o servidor decide nível/shiny/IVs e manda pra sala inteira; o corpo nasce quando o registro volta
+    Mundo.propor({ area: a, dex: esp.dex, glb: esp.glb, nome: esp.nome, lv: nivelDoHabitat(esp, a), x: flipX * t.x, z: t.z, casa: t, aquatico: !!esp.agua, generico: !habitats.areas[String(a)], pertoDeGrama: !t.livre && tiles.some(c => Math.hypot(c.x - t.x, c.z - t.z) <= 7) });
+    return true;
+  }
+  let espSpawn = esp, lvSpawn = nivelDoHabitat(esp, a), wildId = null;
+  if (Conta.estado().modo === 'conta'){
+    if (!comConta()) return false;                                      // the socket is not up yet: wait, so the first wilds are ones the server rolled
+    /* The server picks the species, so a roll often names a model that is not loaded yet. Dropping it threw away
+       most rolls in areas with many species (and spent the server's roll budget): keep it until its model is warm. */
+    const fila = (wildsEsperando.get(a) || []).filter(w => Date.now() - w.quando < WILD_ESPERA_MS && !glbNegados.has(w.rolled.glb));
+    let rolled = null;
+    const iq = fila.findIndex(w => quentes.has(w.rolled.glb) && !!w.rolled.agua === !!esp.agua);   // peixe guardado não nasce no tile de grama (nem o contrário)
+    if (iq >= 0) rolled = fila.splice(iq, 1)[0].rolled;
+    else if (fila.length >= WILD_ESPERA_MAX){ aquecer(fila[0].rolled.glb); wildsEsperando.set(a, fila); return false; }
+    else {
+      rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora());
+      if (!rolled?.id){ wildsEsperando.set(a, fila); return false; }
+      if (glbNegados.has(rolled.glb)){ Rede.enviar({ t: 'wild_drop', id: rolled.id }); wildsEsperando.set(a, fila); return false; }
+      if (!quentes.has(rolled.glb)){ fila.push({ rolled, quando: Date.now() }); wildsEsperando.set(a, fila); aquecer(rolled.glb); return false; }
+    }
+    wildsEsperando.set(a, fila);
+    espSpawn = { dex: rolled.dex, glb: rolled.glb, nome: rolled.nome, agua: rolled.agua ? 1 : 0 };
+    lvSpawn = rolled.lv;
+    wildId = rolled.id;
+  }
+  const s = await criarSelvagem(espSpawn, flipX * t.x, t.z, { area: a, generico: !habitats.areas[String(a)], casa: t, lv: lvSpawn });
+  s.wildId = wildId;
+  if (espSpawn.agua){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; }   // nada no nível do mar; não persegue ninguém em terra
+  s.pertoDeGrama = !t.livre && tiles.some(c => Math.hypot(c.x - t.x, c.z - t.z) <= 7);   // quem nasce no chão livre vaga por pontos, não por tiles
+  jogo.selvagens.push(s);
+  return true;
+}
+/* ENCONTRO NA GRAMA (02/11): o `povoar` enche a área até o teto e para — quem fica parado (ou anda dentro de uma moita já
+   cheia) não vê nada novo até sair da rota. Agora ANDAR no mato (ou no piso de encontro da caverna) dá chance de encontro:
+   a cada PASSO_GRAMA metros andados em cima de tile de encontro sorteia CHANCE_GRAMA (× densidade); se sair, nasce um
+   selvagem da área num tile a 3–8 m, de preferência À FRENTE de quem anda. Pode passar do teto da área em até EXTRA_GRAMA
+   (é o que resolve a moita cheia) e respira RESPIRO_GRAMA_MS entre um encontro e outro. Parado não sorteia nada. */
+const PASSO_GRAMA = 5, CHANCE_GRAMA = 0.08, EXTRA_GRAMA = 3, RESPIRO_GRAMA_MS = 8000, RAIO_ENCONTRO = [3, 8];
+const gradeEncontro = new Map();                                        // "ix,iz" (coordenada gravada, grade de 1 m) → tile de encontro
+for (const tiles of gramaPorArea.values()) for (const t of tiles) gradeEncontro.set(Math.floor(t.x) + ',' + Math.floor(t.z), t);
+/** Tile de encontro debaixo do ponto (x, z) do mundo, ou null. */
+function encontroSob(x, z){
+  const gx = flipX * x, ix = Math.floor(gx), iz = Math.floor(z);
+  let melhor = null, dm = 1.01;
+  for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++){
+    const t = gradeEncontro.get((ix + dx) + ',' + (iz + dz));
+    if (!t) continue;
+    const d = Math.hypot(t.x - gx, t.z - z);
+    if (d < dm){ dm = d; melhor = t; }
+  }
+  return melhor;
+}
+let encontroUlt = null, encontroAndado = 0, encontroAte = 0;
+async function encontroNaGrama(){
+  const ash = jogo.ash;
+  if (!ash || !habitats || jogo.raidArena){ encontroUlt = null; return; }
+  const ant = encontroUlt; encontroUlt = { x: ash.x, z: ash.z };
+  if (!ant) return;
+  const dx = ash.x - ant.x, dz = ash.z - ant.z, d = Math.hypot(dx, dz);
+  if (d < 0.05 || d > 20) return;                                       // parado, ou teleporte/porta (tique de 1 s: montado anda bem mais que 6 m)
+  const sob = encontroSob(ash.x, ash.z);
+  if (!sob) return;
+  encontroAndado += d;
+  if (encontroAndado < PASSO_GRAMA || povoando || Date.now() < encontroAte) return;   // ocupado: o passo fica guardado pro próximo tique
+  encontroAndado = 0;
+  const DENS = DENS_JOGADOR * Evento.densidade();
+  if (Math.random() >= Math.min(0.5, CHANCE_GRAMA * DENS)) return;
+  const a = sob.a, tiles = gramaPorArea.get(a) || [];
+  if (populacaoArea(a) >= tetoArea(a, DENS) + EXTRA_GRAMA) return;
+  const especies = especiesAgora(habitats.areas[String(a)] || habitats.generico).filter(e => !e.agua && !glbNegados.has(e.glb));
+  if (!especies.length) return;
+  const prontas = especies.filter(e => quentes.has(e.glb));
+  if (!prontas.length){ aquecer(escolherEspecie(especies).glb); return; }
+  // berço: tile da MESMA área a 3–8 m; os que ficam à frente do passo (cone de ~120°) têm preferência
+  const gx = flipX * ash.x, ix = Math.floor(gx), iz = Math.floor(ash.z), R = RAIO_ENCONTRO[1];
+  const frente = [], resto = [];
+  for (let ox = -R; ox <= R; ox++) for (let oz = -R; oz <= R; oz++){
+    const t = gradeEncontro.get((ix + ox) + ',' + (iz + oz));
+    if (!t || t.a !== a) continue;
+    const wx = flipX * t.x - ash.x, wz = t.z - ash.z, dt = Math.hypot(wx, wz);
+    if (dt < RAIO_ENCONTRO[0] || dt > R) continue;
+    ((wx * dx + wz * dz) / (dt * d) > 0.5 ? frente : resto).push(t);
+  }
+  const lista = frente.length ? frente : resto;
+  if (!lista.length) return;
+  const t = lista[Math.floor(Math.random() * lista.length)];
+  povoando = true;                                                      // não briga com o `povoar` pelo mesmo sorteio do servidor
+  try { if (await nascerNoBerco(a, escolherEspecie(prontas), t, tiles)) encontroAte = Date.now() + RESPIRO_GRAMA_MS; }
+  catch (e){ console.warn('encontro na grama', e); }
+  finally { povoando = false; }
+}
 async function povoar(){
   if (povoando || !habitats || !jogo.ash || jogo.raidArena) return;     // RAID AO VIVO: na arena só existe o chefe do servidor
   const DENS = DENS_JOGADOR * Evento.densidade();                         // Fase 3: evento ao vivo (painel → Eventos ao vivo) multiplica o teto e o ritmo
@@ -4387,8 +4483,7 @@ async function povoar(){
       const tiles = gramaPorArea.get(a) || [];
       const c = centroArea.get(a);
       if (Math.hypot(c.cx - ash.x, c.cz - ash.z) - c.r > 70) continue;
-      const cap = THREE.MathUtils.clamp(Math.round((tiles.length + (aguaPorArea.get(a)?.length || 0) / 3) / (DEMO ? 14 : 18) * DENS), Math.max(3, Math.round(5 * DENS)), Math.round((DEMO ? 20 : 16) * DENS));
-      if (Math.max(jogo.selvagens.filter(s => s.area === a).length, Mundo.estaAtivo() ? Mundo.contar(a) : 0) >= cap) continue;   // na rede conta o registro da sala (com ou sem corpo aqui)
+      if (populacaoArea(a) >= tetoArea(a, DENS)) continue;               // na rede conta o registro da sala (com ou sem corpo aqui)
       if (Date.now() < (areaRespawn.get(a) || 0) && jogo.selvagens.filter(s => s.area === a).length >= 3) continue;   // a área respira depois de morte/captura
       const especies = especiesAgora(habitats.areas[String(a)] || habitats.generico).filter(e => !glbNegados.has(e.glb));
       if (!especies.length) continue;
@@ -4426,36 +4521,7 @@ async function povoar(){
       if (!t) continue;
       if (novos >= Math.ceil(2 * DENS)) break;
       novos++;
-      if (Mundo.estaAtivo()){                                             // mundo compartilhado: o servidor decide nível/shiny/IVs e manda pra sala inteira; o corpo nasce quando o registro volta
-        Mundo.propor({ area: a, dex: esp.dex, glb: esp.glb, nome: esp.nome, lv: nivelDoHabitat(esp, a), x: flipX * t.x, z: t.z, casa: t, aquatico: !!esp.agua, generico: !habitats.areas[String(a)], pertoDeGrama: !t.livre && tiles.some(c => Math.hypot(c.x - t.x, c.z - t.z) <= 7) });
-        continue;
-      }
-      let espSpawn = esp, lvSpawn = nivelDoHabitat(esp, a), wildId = null;
-      if (Conta.estado().modo === 'conta' && !Mundo.estaAtivo()){
-        if (!comConta()) continue;                                          // the socket is not up yet: wait, so the first wilds are ones the server rolled
-        /* The server picks the species, so a roll often names a model that is not loaded yet. Dropping it threw away
-           most rolls in areas with many species (and spent the server's roll budget): keep it until its model is warm. */
-        const fila = (wildsEsperando.get(a) || []).filter(w => Date.now() - w.quando < WILD_ESPERA_MS && !glbNegados.has(w.rolled.glb));
-        let rolled = null;
-        const iq = fila.findIndex(w => quentes.has(w.rolled.glb));
-        if (iq >= 0) rolled = fila.splice(iq, 1)[0].rolled;
-        else if (fila.length >= WILD_ESPERA_MAX){ aquecer(fila[0].rolled.glb); wildsEsperando.set(a, fila); continue; }
-        else {
-          rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora());
-          if (!rolled?.id){ wildsEsperando.set(a, fila); continue; }
-          if (glbNegados.has(rolled.glb)){ Rede.enviar({ t: 'wild_drop', id: rolled.id }); wildsEsperando.set(a, fila); continue; }
-          if (!quentes.has(rolled.glb)){ fila.push({ rolled, quando: Date.now() }); wildsEsperando.set(a, fila); aquecer(rolled.glb); continue; }
-        }
-        wildsEsperando.set(a, fila);
-        espSpawn = { dex: rolled.dex, glb: rolled.glb, nome: rolled.nome, agua: rolled.agua ? 1 : 0 };
-        lvSpawn = rolled.lv;
-        wildId = rolled.id;
-      }
-      const s = await criarSelvagem(espSpawn, flipX * t.x, t.z, { area: a, generico: !habitats.areas[String(a)], casa: t, lv: lvSpawn });
-      s.wildId = wildId;
-      if (espSpawn.agua){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; }   // nada no nível do mar; não persegue ninguém em terra
-      s.pertoDeGrama = !t.livre && tiles.some(c => Math.hypot(c.x - t.x, c.z - t.z) <= 7);   // quem nasce no chão livre vaga por pontos, não por tiles
-      jogo.selvagens.push(s);
+      await nascerNoBerco(a, esp, t, tiles);
     }
 
     // ── Zonas do editor de mapa (admin): nascem as espécies da zona dentro do raio, com a faixa de nível/shiny dela ──
@@ -5149,7 +5215,7 @@ if (habitats){
     const fila = [...new Set(perto.flatMap(a => (habitats.areas[String(a)] || habitats.generico).map(e => e.glb)))];
     for (const glb of fila){ while (aquecendo) await new Promise(r => setTimeout(r, 50)); await aquecer(glb); }
   })();
-  Promise.race([passeFrescoP, new Promise(r => setTimeout(r, 4000))]).catch(() => {}).then(() => { povoar(); setInterval(povoar, 1500); });   // o mesmo passe fresco do aquecimento acima (verificação, 19/09)
+  Promise.race([passeFrescoP, new Promise(r => setTimeout(r, 4000))]).catch(() => {}).then(() => { povoar(); setInterval(povoar, 1500); setInterval(encontroNaGrama, 1000); });   // + encontro por passo na grama (02/11)   // o mesmo passe fresco do aquecimento acima (verificação, 19/09)
 }
 if (jogo.montarTrabalhador) await jogo.montarTrabalhador();
 
