@@ -223,6 +223,7 @@ import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: oth
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
+import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, steps, bait and rock (shared with server_bag.mjs)
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
@@ -4768,7 +4769,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   let s = poolMon.get(esp.glb)?.pop();
   if (s){
     if (PERF) PERF.ultimo = 'voltou ' + esp.nome;
-    s.travaAnim = 0; s.dtAcum = 0; s.quadro = 0; s.fuga = 0; s.chefe = false; s.rotHp = s.rotAlvo = s.rotMarca = undefined;
+    s.travaAnim = 0; s.dtAcum = 0; s.quadro = 0; s.fuga = 0; s.chefe = false; s.safariMod = null; s.safariT = 0; s.safariFugiu = false; s.rotHp = s.rotAlvo = s.rotMarca = undefined;
     devolverAArvore(s);                                                  // corpo que estava guardado no pool volta pra cena
     s.pivo.visible = true;
   } else {
@@ -5211,6 +5212,16 @@ function atualizarSelvagens(dt){
     let moveu = false;
     if (s.remoto) moveu = Mundo.interpolar(s, dt);                     // selvagem simulado por OUTRO jogador: só vai até a posição que chega
     else {
+    /* Safari grass is a catch, not a fight. A wild already chasing drops it, and during a visit
+       one near the trainer may wander off on its own. */
+    if (Safari.ehZona(s.area) && !s.chefe && s.estado === 'atacando'){ s.estado = 'vagando'; s.investida = null; }
+    if (Safari.vivo(jogo.safari) && Safari.ehZona(s.area) && s.estado === 'vagando' && dAsh < 8){
+      s.safariT = (s.safariT || 0) + dt;
+      if (s.safariT >= 4){
+        s.safariT = 0;
+        if (Safari.foge(s.safariMod, Math.random)){ safariFugiu(s); continue; }
+      }
+    }
     // reação ao treinador: arisco foge, agressivo parte para cima do Pikachu
     if (s.semFuga > 0) s.semFuga -= dt;
     aplicarSkittishHp(s);
@@ -5241,7 +5252,7 @@ function atualizarSelvagens(dt){
     }
     /* 19/09 (chaospider, "Dois bugs pelo preço de um - Safari Zone"): surfando, o parceiro sai da bola e nada do lado, e o agressivo que ele
        atacava de dentro do lago ficava apático (o "!jogo.montaria" era pro Arcanine, com o parceiro guardado na bola). Com o surf, reage como a pé. */
-    if (!jogo.turno && ehAgressivo(s.perfil) && s.estado !== 'atacando' && pika.hp > 0 && (!jogo.montaria || jogo.montaria.surfando) && (dPika < 4.5 || dAsh < 4 || s.assustado)){   // em batalha por turno, os de fora não entram
+    if (!jogo.turno && !Safari.ehZona(s.area) && ehAgressivo(s.perfil) && s.estado !== 'atacando' && pika.hp > 0 && (!jogo.montaria || jogo.montaria.surfando) && (dPika < 4.5 || dAsh < 4 || s.assustado)){   // em batalha por turno, os de fora não entram; Safari grass does not fight back
       s.estado = 'atacando'; s.assustado = false; s.paciencia = 14; s.alvoX = null;
     }
     if (s.estado === 'fugindo'){
@@ -5667,6 +5678,7 @@ for (const [id, b] of Object.entries(CFG_JOGO.bolas || {})){
   if (typeof nome === 'string' && nome.trim() && taxa > 0) BOLAS[id] = [nome, taxa];
 }
 jogo.bolas = lerLS('bolas', {});
+jogo.safari = Safari.normalizar(lerLS('safari', null));
 Hud.fonteIlha(() => ({
   ids: Object.keys(BOLAS).filter(id => (jogo.bolas[id] || 0) > 0),
   sel: jogo.bolaSel,
@@ -6195,7 +6207,7 @@ function bonusBola(id, s){
     const pegos = lerLS('dex', {}) || {};
     return pegos[s?.dex] === 'pego' || pegos[s?.dex] === 'caught' ? 3 : 1;
   }
-  return base;
+  return base * (Safari.vivo(jogo.safari) && +id === Safari.BOLA ? Safari.multCaptura(s?.safariMod) : 1);
 }
 function sortearCaptura(s, bonus){
   const S = porDex.get(s.dex);
@@ -6280,16 +6292,177 @@ async function verBolaDoOutro(s, m){
     if (bola){ cena.remove(bola.grupo); for (const l of [bolasDosOutros, bolasVivas]){ const i = l.indexOf(bola); if (i >= 0) l.splice(i, 1); } }
   }
 }
+function safariOnde(){
+  const a = jogo.ash;
+  if (!a) return { area: null, paga: false };
+  const area = areaDoPonto(a.x, a.z);
+  return { area, paga: Safari.naZonaPaga(area, a.z) };
+}
+function safariPerto(excluir = null){
+  const { ash } = jogo; if (!ash) return null;
+  let melhor = null, md = RAIO_BOLA;
+  for (const s of jogo.selvagens){
+    if (s === excluir || !Safari.ehZona(s.area)) continue;
+    if (s.estado === 'morto' || s.estado === 'capturando' || s.estado === 'guardado') continue;
+    const d = Math.hypot(s.x - ash.x, s.z - ash.z);
+    if (d < md){ md = d; melhor = s; }
+  }
+  return melhor;
+}
+function safariFugiu(s){
+  if (!s || s.estado === 'morto' || s.estado === 'guardado' || s.estado === 'capturando') return;
+  flutuar(s, 'fled!', '#f58e8e');
+  Chat.sistema(s.nome + ' fled!');
+  s.safariMod = null;
+  s.estado = 'morto';
+  if (s.pivo) s.pivo.visible = false;
+  if (s.rotulo) s.rotulo.style.display = 'none';
+  if (jogo.alvo === s) jogo.alvo = null;
+  setTimeout(() => { if (s.estado === 'morto') guardarSelvagem(s); }, 400);
+}
+function safariIrAoPortao(p){
+  if (!p || !jogo.ash) return;
+  teleportar(jogo.ash, p.x, p.z);
+  if (jogo.pika && !jogo.montaria) teleportar(jogo.pika, jogo.ash.x + 0.8, jogo.ash.z);
+  try { gravarParada(); } catch {}
+}
+async function safariTerminar(motivo, pousoServidor){
+  if (jogo.safariEncerrando) return;
+  jogo.safariEncerrando = true;
+  jogo.safariDentro = false;
+  try {
+    const zona = jogo.safari?.zona;
+    let pouso = pousoServidor || null;
+    if (jogo.safari && !comConta()){
+      const fim = Safari.encerrar(jogo.bolas, jogo.safari);
+      jogo.bolas = fim.bolas; gravarLS('bolas', jogo.bolas);
+      jogo.safari = null; gravarLS('safari', null);
+      pouso = pouso || Safari.pouso(zona, jogo.ash?.x);
+    } else if (jogo.safari && comConta() && !pousoServidor){
+      const r = await bolsaOp('safari', { acao: 'sair', zona });
+      pouso = r?.pouso || Safari.pouso(zona, jogo.ash?.x);
+      jogo.bolas = lerLS('bolas', jogo.bolas);
+      jogo.safari = Safari.normalizar(lerLS('safari', null));
+    } else {
+      jogo.bolas = lerLS('bolas', jogo.bolas);
+      jogo.safari = Safari.normalizar(lerLS('safari', null));
+      pouso = pouso || Safari.pouso(zona, jogo.ash?.x);
+    }
+    const msg = motivo === 'passos' ? 'The Safari visit is over. You used all 500 steps, so the leftover Safari Balls stay at the gate.'
+      : motivo === 'bolas' ? 'The Safari visit is over. You used the last Safari Ball.'
+      : motivo === 'saiu' ? 'You left the Safari Zone. The leftover Safari Balls stay at the gate.'
+      : 'The Safari visit is over.';
+    Chat.sistema(msg);
+    if (motivo !== 'saiu') safariIrAoPortao(pouso);
+    try { pintarBarra(); } catch {}
+  } finally { jogo.safariEncerrando = false; }
+}
+async function safariPagar(zona){
+  const z = +zona;
+  if (!Safari.ehZona(z) || Safari.vivo(jogo.safari)) return;
+  if (comConta()){
+    const r = await bolsaOp('safari', { acao: 'entrar', zona: z });
+    jogo.bolas = lerLS('bolas', jogo.bolas);
+    jogo.safari = Safari.normalizar(lerLS('safari', null));
+    if (!r || r.erro || !Safari.vivo(jogo.safari)) return;
+  } else {
+    const r = Safari.entrar({ dinheiro: lerLS('dinheiro', 0), bolas: jogo.bolas, sessao: jogo.safari, zona: z });
+    if (!r.ok){ flutuar(jogo.ash, r.erro, '#f58e8e'); Chat.sistema(r.erro + '.'); return; }
+    gravarLS('dinheiro', r.dinheiro);
+    jogo.bolas = r.bolas; gravarLS('bolas', jogo.bolas);
+    jogo.safari = r.sessao; gravarLS('safari', jogo.safari);
+  }
+  jogo.bolaSel = String(Safari.BOLA); gravarLS('bolaSel', jogo.bolaSel);
+  jogo.safariDentro = false;
+  Som.tocar('ui/sound_itemget', { volume: .7, prio: true });
+  Chat.sistema('Paid 500 Coins. You have 30 Safari Balls and 500 steps. F throws, G is bait, R is a rock.');
+  flutuar(jogo.ash, '30 Safari Balls', '#8ef58e');
+  try { pintarBarra(); } catch {}
+}
+async function safariPassos(n){
+  if (!Safari.vivo(jogo.safari) || jogo.safariPassoVoo){ jogo.safariFila = (jogo.safariFila || 0) + n; return; }
+  jogo.safariPassoVoo = true;
+  try {
+    const k = Math.min(8, n + (jogo.safariFila || 0));
+    jogo.safariFila = 0;
+    if (!comConta()){
+      const r = Safari.passo(jogo.safari, k);
+      if (r.fim) await safariTerminar('passos');
+      else { jogo.safari = r.sessao; gravarLS('safari', jogo.safari); }
+    } else {
+      const r = await bolsaOp('safari', { acao: 'passo', n: k, zona: jogo.safari.zona });
+      if (r?.fim) await safariTerminar(r.fim, r.pouso);
+      else jogo.safari = Safari.normalizar(r?.safari || lerLS('safari', null));
+    }
+  } finally { jogo.safariPassoVoo = false; }
+  if ((jogo.safariFila || 0) > 0 && Safari.vivo(jogo.safari)) safariPassos(0);
+}
+async function safariExpulsar(zona){
+  if (jogo.safariExpulso) return;
+  jogo.safariExpulso = true;
+  let p = Safari.pouso(zona, jogo.ash?.x);
+  if (comConta()){
+    const r = await bolsaOp('safari', { acao: 'expulsar', zona });
+    if (r?.pouso) p = r.pouso;
+  }
+  safariIrAoPortao(p);
+  flutuar(jogo.ash, 'Pay the warden to enter', '#ffd23a');
+  Chat.sistema('The Safari Zone is fenced. Talk to the warden at the gate: 500 Coins for 30 Safari Balls and 500 steps.');
+}
+function vigiarSafari(){
+  const a = jogo.ash; if (!a || jogo.safariEncerrando || jogo.safariBola || jogo.safariPassoVoo) return;
+  const onde = safariOnde();
+  const viva = Safari.vivo(jogo.safari);
+  if (onde.paga && !viva){
+    if (!jogo.safariTrava){ jogo.safariTrava = true; safariExpulsar(onde.area); }
+    return;
+  }
+  jogo.safariTrava = false;
+  jogo.safariExpulso = false;
+  if (!viva){ jogo.safariDentro = false; jogo.safariPe = { x: a.x, z: a.z }; return; }
+  const ult = jogo.safariPe || { x: a.x, z: a.z };
+  const d = Math.hypot(a.x - ult.x, a.z - ult.z);
+  jogo.safariPe = { x: a.x, z: a.z };
+  if (onde.paga){
+    jogo.safariDentro = true;
+    if (d >= 0.02 && d < 6){
+      jogo.safariMetros = (jogo.safariMetros || 0) + d;
+      let n = 0;
+      while (jogo.safariMetros >= 1 && n < 8){ jogo.safariMetros -= 1; n++; }
+      if (n) safariPassos(n);
+    }
+  } else if (jogo.safariDentro){
+    jogo.safariDentro = false;
+    safariTerminar('saiu');
+  }
+}
+function safariAcao(tipo){
+  if (!Safari.vivo(jogo.safari)) return;
+  const s = jogo.alvo;
+  if (!s || !Safari.ehZona(s.area) || s.estado === 'morto' || s.estado === 'capturando' || s.estado === 'guardado' || s.estado === 'desmaiado'){
+    flutuar(jogo.ash, 'face a wild Pokémon', '#ffd23a'); return;
+  }
+  if (Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) > RAIO_BOLA){ flutuar(jogo.ash, 'too far', '#ffd23a'); return; }
+  s.safariMod = Safari.aplicar(tipo);
+  const nome = tipo === 'isca' ? 'bait' : 'a rock';
+  if (Safari.foge(s.safariMod, Math.random)) safariFugiu(s);
+  else { flutuar(s, tipo === 'isca' ? 'is eating' : 'is angry', '#ffd23a'); Chat.sistema('You threw ' + nome + ' at ' + s.nome + '.'); }
+}
 async function jogarBola(){
-  const { ash } = jogo, id = jogo.bolaSel;
+  const { ash } = jogo;
   if (!ash) return;
   if (jogo.turno){ flutuar(ash, "you can't catch a trainer's Pokémon!", '#f58e8e'); return; }
+  const onde = safariOnde();
+  const noSafari = !!(Safari.vivo(jogo.safari) && onde.paga);
+  let id = noSafari ? String(Safari.BOLA) : jogo.bolaSel;
   let s = jogo.alvo;
-  if (!s || s.estado !== 'desmaiado') s = desmaiadoMaisPerto() || s;   // F sem alvo caído: o caído mais perto
+  if (noSafari){ if (!s || s.estado === 'morto' || s.estado === 'guardado' || s.estado === 'capturando') s = safariPerto(); }
+  else if (!s || s.estado !== 'desmaiado') s = desmaiadoMaisPerto() || s;   // F sem alvo caído: o caído mais perto
   if (!s || s.estado === 'morto' || s.estado === 'capturando' || s.estado === 'guardado'){ flutuar(ash, 'pick a target (Tab or click)', '#ffd23a'); return; }
   if (s.raid){ flutuar(ash, 'the raid Mew cannot be caught', '#ffd23a'); Chat.sistema('The raid Mew cannot be caught: take it down with the group and the prize comes at the end.'); return; }   // RAID AO VIVO (14/09)
   if (s.chefe){ flutuar(ash, "the boss won't fit in a ball", '#f58e8e'); return; }
-  if (s.estado !== 'desmaiado'){ flutuar(ash, 'knock it out first: you only catch fainted Pokémon', '#ffd23a'); return; }
+  const regraBola = Safari.podeJogar({ sessao: jogo.safari, naZona: onde.paga, bola: id, estado: s.estado });
+  if (!regraBola.ok){ flutuar(ash, regraBola.erro, '#ffd23a'); return; }
   if ((jogo.bolas[id] || 0) <= 0){ flutuar(ash, 'no ' + (BOLAS[id]?.[0] || 'ball'), '#f58e8e'); return; }
   const dist = Math.hypot(s.x - ash.x, s.z - ash.z);
   if (dist > RAIO_BOLA){ flutuar(ash, 'too far (' + dist.toFixed(0) + ' m)', '#ffd23a'); return; }
@@ -6302,13 +6475,31 @@ async function jogarBola(){
   let g;
   try { g = await modeloBola(id); }
   catch (e){ console.warn('bola:', e); flutuar(ash, "couldn't load the ball", '#f58e8e'); return; }   // the ball stays in the bag
-  if (s.estado !== 'desmaiado' || s.emVoo){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }   // something changed while the model loaded
+  const aindaSafari = noSafari && s.estado !== 'morto' && s.estado !== 'guardado' && s.estado !== 'capturando' && !s.emVoo;
+  if (!(noSafari ? aindaSafari : (s.estado === 'desmaiado' && !s.emVoo))){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }   // something changed while the model loaded
+  let fimVisita = null;
+  const estavaAcordado = s.estado !== 'desmaiado';
   try {
+    jogo.safariBola = !!noSafari;   // the last ball ends the visit before the toss lands; don't expel mid-throw
     jogo.bolas[id]--; gravarLS('bolas', jogo.bolas);
+    if (noSafari){
+      if (comConta()){
+        const rS = await bolsaOp('safari', { acao: 'bola', zona: jogo.safari.zona });
+        jogo.bolas = lerLS('bolas', jogo.bolas);
+        if (rS?.erro) return;
+        if (rS?.safari) jogo.safari = rS.safari;
+        if (rS?.fim) fimVisita = rS.fim;
+      } else {
+        const jb = Safari.jogou(jogo.safari);
+        jogo.safari = jb.sessao;
+        gravarLS('safari', jb.fim ? null : jb.sessao);
+        if (jb.fim) fimVisita = jb.fim;
+      }
+    }
     ash.giro = Math.atan2(s.x - ash.x, s.z - ash.z); ash.alvoX = null;
     s.estado = 'capturando'; s.alvoX = null; s.investida = null; s.emVoo = true;   // emVoo (18/09): a MINHA bola está neste corpo até o finally — o world.mjs não o "desmaia" de novo no meio do voo e o F não joga outra
     const promCapt = s.rede ? Mundo.capturar(s, id) : null;              // mundo compartilhado: pede JÁ (o servidor tranca o selvagem e sorteia); o resultado entra depois do voo
-    jogo.alvo = desmaiadoMaisPerto(s) || (jogo.alvo === s ? null : jogo.alvo);   // mira já vai pro próximo caído
+    jogo.alvo = (noSafari ? safariPerto(s) : desmaiadoMaisPerto(s)) || (jogo.alvo === s ? null : jogo.alvo);   // mira já vai pro próximo caído (no Safari, o próximo acordado)
     if (s.rotulo) s.rotulo.style.display = 'none';
     const escBase = s.pivo.scale.x;
 
@@ -6412,17 +6603,27 @@ async function jogarBola(){
       else {
         s.pivo.visible = true;
         await animar(120, k => s.pivo.scale.setScalar(escBase * (0.1 + 0.9 * k)));
+        if (noSafari && estavaAcordado){
+          s.estado = 'vagando'; s.desmaio = 0; s.rotDesm = undefined;
+          if (s.rotulo) s.rotulo.style.display = '';
+          flutuar(s, 'broke free! (' + chac + ' shake' + (chac === 1 ? '' : 's') + ')', '#f58e8e');
+          Chat.sistema(s.nome + ' broke free of the Safari Ball (' + chac + ' shake' + (chac === 1 ? '' : 's') + ').');
+          if (Safari.foge(s.safariMod, Math.random)) safariFugiu(s);
+        } else {
         s.estado = 'desmaiado'; s.desmaio = Math.max(s.desmaio || 0, 4); s.rotDesm = undefined;   // escapou: segue caído, dá tempo de outra bola
         if (s.rotulo) s.rotulo.style.display = '';
         if (s.rede && rsErro === 'sumiu'){ Mundo.esquecer(s.id); s.rede = false; s.remoto = false; morrer(s); }   // o servidor diz que ele já não está mais ali. 16/09 (rukintk): SÓ nesse caso — com 'outro'/'acordado' ele continua da rede. 18/09 (katanarie): morre aqui em vez de ficar caído "local" — a bola seguinte nele caía em "sem conexão com o servidor" (o "erro de rede" do relato)
         else { flutuar(s, 'broke free! (' + chac + ' shake' + (chac === 1 ? '' : 's') + ')', '#f58e8e'); Chat.sistema(s.nome + ' broke free of the ' + I18n.t(BOLAS[id]?.[0] || 'ball') + ' (' + chac + ' shake' + (chac === 1 ? '' : 's') + ').'); }
+        }
       }
       await dorme(400);
     }
-  } catch (e){ console.warn('captura:', e); if (s && s.estado === 'capturando'){ s.estado = 'desmaiado'; s.desmaio = 4; s.pivo.visible = true; if (s.rotulo) s.rotulo.style.display = ''; } }
+  } catch (e){ console.warn('captura:', e); if (s && s.estado === 'capturando'){ s.estado = estavaAcordado ? 'vagando' : 'desmaiado'; s.desmaio = estavaAcordado ? 0 : 4; s.pivo.visible = true; if (s.rotulo) s.rotulo.style.display = ''; } }
   finally {
+    jogo.safariBola = false;
     if (s) s.emVoo = false;
     if (bola){ cena.remove(bola.grupo); const i = bolasVivas.indexOf(bola); if (i >= 0) bolasVivas.splice(i, 1); }
+    if (fimVisita){ const motivo = fimVisita; fimVisita = null; safariTerminar(motivo); }
   }
 }
 
@@ -6499,6 +6700,7 @@ async function bolsaOp(op, dados = {}){
 }
 Conta.aoBolsa(() => {                                                     // o servidor mandou números novos: relê e repinta
   jogo.bolas = lerLS('bolas', jogo.bolas || {});
+  jogo.safari = Safari.normalizar(lerLS('safari', null));
   try { pintarBarra(); } catch (e){ console.warn('pintarBarra:', e); }
   try { pintarAtalhos(true); } catch (e){ console.warn('pintarAtalhos:', e); }
   try { Menus.repintar?.(); } catch {}
@@ -8179,10 +8381,15 @@ async function falarCom(n){
   }
   if (!n.placa) n.pivo.rotation.y = Math.atan2(a.x - n.x, a.z - n.z);
   const falaMissao = jogo.missoesOk ? Missoes.falaPara(n.cfg) : null;    // passo atual aponta pra este NPC: ele fala a linha da missão
-  try { await mostrarFala(n.nome, falaMissao || (n.falas.length ? n.falas : ['…']), n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
+  const visitaSafari = n.papel === 'safari' && Safari.vivo(jogo.safari);
+  const linhasFala = visitaSafari
+    ? ['You still have ' + jogo.safari.restantes + ' Safari Balls and ' + jogo.safari.passos + ' steps.', 'Leave the Zone and the visit ends. Leftover Safari Balls stay at the gate.']
+    : (falaMissao || (n.falas.length ? n.falas : ['…']));
+  try { await mostrarFala(n.nome, linhasFala, n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
   if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });         // passo 5: quem marca o passo é o SERVIDOR (ele confere que você está do lado do NPC)
-  if (n.papel === 'cura') curarTime(n);                                    // Joy: cura o time depois da fala
+  if (n.papel === 'safari' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
+  else if (n.papel === 'cura') curarTime(n);                               // Joy: cura o time depois da fala
   else if (n.papel === 'caixa') Menus.abrir('pokemon', 'caixa');           // balcão do PC: abre a Caixa
   else if (n.papel === 'loja') Menus.abrir('mercado', String(n.cfg));         // vendedor: a loja da cidade (o cfg remapeado É o id da loja)
   else if (n.papel === 'treinador') desafiarTreinador(n);                  // ⚔: convite pra batalha por turno
@@ -8570,6 +8777,10 @@ function usarGolpe(id){
     flutuar(caido, caido.estado === 'capturando' ? caido.nome + ' is already in the ball'
                  : semBola ? caido.nome + ' already fainted'
                  : caido.nome + ' fainted — F to catch', '#ffd23a');
+    return;
+  }
+  if (Safari.vivo(jogo.safari) && Safari.ehZona(jogo.alvo.area)){
+    flutuar(jogo.ash, 'Your Pokémon stay back. F ball, G bait, R rock.', '#ffd23a');
     return;
   }
   jogo.ordem = { golpe: g, alvo: jogo.alvo };
@@ -9102,11 +9313,14 @@ function pintarBarra(){
                      : I18n.t('no target — click a wild Pokémon or ') + '<b>Tab</b>';
   if (elAlvo.__html !== htmlAlvo){ setHTML(elAlvo, htmlAlvo); Hud.remontar(elAlvo); }
   if (a) Hud.fill(elAlvo.querySelector('.alvo-fill'), a.hp / a.maxHp, corVida(a.hp / a.maxHp));
-  const sel = jogo.bolaSel, nb = jogo.bolas?.[sel] || 0;
-  setTexto($('bola-nome'), I18n.t(BOLAS[sel]?.[0] || sel)); setTexto($('bola-n'), '×' + nb);
+  const visita = Safari.vivo(jogo.safari);
+  const sel = visita ? String(Safari.BOLA) : jogo.bolaSel, nb = visita ? jogo.safari.restantes : (jogo.bolas?.[sel] || 0);
+  setTexto($('bola-nome'), visita ? 'Safari Ball' : I18n.t(BOLAS[sel]?.[0] || sel)); setTexto($('bola-n'), '×' + nb);
   const bi = $('bola-icone'); if (bi && bi.__sel !== sel){ bi.__sel = sel; bi.classList.add('real'); bi.style.backgroundImage = "url('./ui/itens/ic_" + sel + ".png')"; }   // ícone real da bola (pacote Item)
   const bb = $('bola-btn'), semBola = nb <= 0; if (bb.__frio !== semBola){ bb.classList.toggle('frio', semBola); bb.__frio = semBola; }
-  if (bb) bb.title = I18n.t('{name} ×{n} · throw with F · Shift+F switches ball', { name: I18n.t(BOLAS[sel]?.[0] || sel), n: nb });
+  if (bb) bb.title = visita
+    ? (jogo.safari.restantes + ' Safari Balls · ' + jogo.safari.passos + ' steps · F throw · G bait · R rock')
+    : I18n.t('{name} ×{n} · throw with F · Shift+F switches ball', { name: I18n.t(BOLAS[sel]?.[0] || sel), n: nb });
   pintarAtalhos();
 }
 
@@ -9441,6 +9655,7 @@ addEventListener('keydown', e => {
       montar(jogo.montaria?.glb || (esp && podeMontar(esp) ? esp : null) || (jogo.atalhos || []).find(a => a && a.tipo === 'montaria')?.glb || (podeMontar('pm0249_00') ? 'pm0249_00' : 'pm0059_00'));
     }
     if (ac === 'pokebola' && uma) jogarBola();                             // F: joga a bola no alvo
+    if ((ac === 'safari-isca' || ac === 'safari-pedra') && uma) safariAcao(ac === 'safari-isca' ? 'isca' : 'pedra');
     if (ac === 'trocar-bola' && uma) proximaBola();                        // Shift+F: troca a bola
     if (ac === 'interagir' && uma) interagir();                            // Z: fala com o NPC / interage com o parceiro
     if (ac === 'trocar-pokemon' && uma) proximoDoTime();                   // Shift+Z: próximo do time
@@ -10493,6 +10708,7 @@ function quadro(dt){
     e.vx = e.x; e.vz = e.z; e.vy = e.y; e.pivo.position.set(e.x, e.y, e.z); e.pivo.rotation.y = e.giro;
   }
   vigiarPortaoPallet(dt);
+  vigiarSafari();
   if (jogo.chefe) atualizarChefe(dt);
   if (jogo.voadores?.length) atualizarVoadores(dt);
   if (jogo.selvagens?.length) atualizarSelvagens(dt);

@@ -25,7 +25,7 @@ import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
 import { fundir as fundirStatus } from './status.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
-import { aceitarPos, posDaConta } from './server_pos.mjs';
+import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
 import { chegadaConfere } from './server_doors.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
@@ -1648,8 +1648,13 @@ wss.on('connection', ws => {
             }
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
           } else {
-            const rb = c ? bolsaServ.tratar(c, op, m, u) : null;          // comprar / usar / descartar / segurar / tirar / consumir
+            if (op === 'safari' && ws._info) { m.x = ws._info.x; m.z = ws._info.z; }   // the warden check uses the walked position, not the one in the message
+            const rb = c ? bolsaServ.tratar(c, op, m, u) : null;          // comprar / usar / descartar / segurar / tirar / consumir / safari
             const extra = rb || (c && batalha.bolsa(ws, op, m));
+            if (op === 'safari' && rb?.pouso && u && contas[u] && !contas[u].posGm && ws._mapa) {
+              const limpo = posLimpa({ mapa: ws._mapa, x: rb.pouso.x, y: ws._info?.y || 0, z: rb.pouso.z, giro: 0 }, ws._mapa);
+              if (limpo) { contas[u].pos = limpo; salvarContas(); }       // the gate is farther than a walk; no door id, so a refresh is not a door landing
+            }
             if (rb?.erro) enviar(ws, { t: 'bolsa_erro', op, ...rb });       // carries the bag snapshot: undoes what the client took off locally
             else if (extra) enviar(ws, { t: 'bolsa', op, ...extra });
             else enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 0, bolas: c.save.bolas, itens: c.save.itens, insignias: c.save.insignias } : null });
