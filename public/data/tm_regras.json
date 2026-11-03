@@ -1,0 +1,176 @@
+{
+ "versao": 2,
+ "nota": "AS TMs DO BETA (05/10/2026, beta 11 — lab-pokemon, bilhete 'TMs do beta'; decisões de 01/10 (a), (b) e (d)). MONTAR: as peças da faixa e o dinheiro, no balcão. Os números são os que a descrição das peças 900020–900022 já diz no jogo (lab-beta); a lab-pokemon propôs 10/20/30 peças da própria faixa + 1.000/3.000/10.000 — A APROVAR. ENSINAR: a trava por insígnia é no ensinar (decisão b): comum livre, forte com 3, rara com 6 (proposta da lab-pokemon) — A APROVAR. BALCÃO: a Loja de Departamentos de Celadon, Piso 2 (o vendedor 2158801, o balcão de TMs da série), com as TRÊS faixas até a Silph Co. existir no jogo (a decisão b manda forte e rara pra Silph, que não tem cena) — A APROVAR. A máquina é de uso único. TUTOR (05/10, beta 12): o mesmo vendedor do balcão ensina os golpes que não têm TM no dump (o bilhete da lab-pokemon: Aurora Veil, Embargo, Frost Breath, Heal Bell, Quash, Snatch e Volt Tackle), por dinheiro (proposta da lab: 2.000 ₽) — A APROVAR; o relembrar continua o Reaprender da janela do Pokémon, grátis (a lab propôs 500 ₽ no tutor) — A APROVAR. SÓ COM EFEITO (soComEfeito): o golpe que o motor de status ainda não executa (semEfeito, calculado pelo tools/tm_regras.mjs) não é montado nem ensinado — A APROVAR. tutor.aprende e semEfeito são CALCULADOS: node tools/tm_regras.mjs.",
+ "montar": {
+  "comum": {
+   "pecas": {
+    "900020": 10
+   },
+   "dinheiro": 1000
+  },
+  "forte": {
+   "pecas": {
+    "900020": 20,
+    "900021": 6
+   },
+   "dinheiro": 5000
+  },
+  "rara": {
+   "pecas": {
+    "900021": 6,
+    "900022": 3
+   },
+   "dinheiro": 20000
+  }
+ },
+ "trava": {
+  "comum": 0,
+  "forte": 3,
+  "rara": 6
+ },
+ "balcoes": [
+  {
+   "cfg": 2158801,
+   "cena": "4110014",
+   "faixas": [
+    "comum",
+    "forte",
+    "rara"
+   ],
+   "nome": "Loja de departamentos Piso 2"
+  }
+ ],
+ "soComEfeito": true,
+ "tutor": {
+  "golpes": [
+   "auroraveil",
+   "embargo",
+   "frostbreath",
+   "healbell",
+   "quash",
+   "snatch",
+   "volttackle"
+  ],
+  "preco": 2000,
+  "tutores": [
+   {
+    "cfg": 2158801,
+    "cena": "4110014"
+   }
+  ],
+  "aprende": {
+   "auroraveil": [
+    124,
+    144,
+    151
+   ],
+   "embargo": [
+    53,
+    63,
+    64,
+    65,
+    92,
+    93,
+    94,
+    150,
+    151
+   ],
+   "frostbreath": [
+    87,
+    91,
+    124,
+    131,
+    144,
+    151
+   ],
+   "healbell": [
+    35,
+    36,
+    39,
+    40,
+    113,
+    124,
+    131,
+    133,
+    134,
+    135,
+    136,
+    151
+   ],
+   "quash": [
+    31,
+    34,
+    99,
+    151
+   ],
+   "snatch": [
+    23,
+    24,
+    35,
+    36,
+    39,
+    40,
+    41,
+    42,
+    52,
+    53,
+    63,
+    64,
+    65,
+    92,
+    93,
+    94,
+    96,
+    97,
+    113,
+    122,
+    143,
+    150,
+    151
+   ],
+   "volttackle": [
+    25
+   ]
+  }
+ },
+ "semEfeito": {
+  "allyswitch": "dupla",
+  "attract": "outro",
+  "auroraveil": "outro",
+  "batonpass": "troca",
+  "defog": "outro",
+  "destinybond": "outro",
+  "electricterrain": "terreno",
+  "embargo": "item",
+  "grassyterrain": "terreno",
+  "gravity": "campo",
+  "healingwish": "outro",
+  "helpinghand": "dupla",
+  "imprison": "outro",
+  "magicroom": "campo",
+  "metronome": "chama-golpe",
+  "mimic": "chama-golpe",
+  "mistyterrain": "terreno",
+  "naturepower": "chama-golpe",
+  "painsplit": "outro",
+  "perishsong": "campo",
+  "psychicterrain": "terreno",
+  "quash": "dupla",
+  "recycle": "item",
+  "roar": "troca",
+  "roleplay": "habilidade",
+  "skillswap": "habilidade",
+  "sleeptalk": "chama-golpe",
+  "snatch": "outro",
+  "spikes": "entrada",
+  "spite": "outro",
+  "stealthrock": "entrada",
+  "substitute": "outro",
+  "switcheroo": "item",
+  "torment": "outro",
+  "toxicspikes": "entrada",
+  "trick": "item",
+  "trickroom": "campo",
+  "wonderroom": "campo"
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "versao": 3,
+ "nota": "regiões em produção: só o passe da staff carrega as pastas internas",
+ "regioes": {
+  "kanto": { "estado": "no_ar", "mapa": "cenario/kanto.glb", "dex": [1, 151] },
+  "johto": { "estado": "interno", "mapa": "cenario/johto/johto.glb", "chao": "cenario/johto/johto_chao.json", "dex": [152, 251],
+   "cenas": ["cenario/johto/new_bark.glb", "cenario/johto/cherrygrove.glb", "cenario/johto/violet.glb", "cenario/johto/azalea.glb", "cenario/johto/goldenrod.glb", "cenario/johto/ecruteak.glb", "cenario/johto/olivine.glb", "cenario/johto/cianwood.glb", "cenario/johto/mahogany.glb", "cenario/johto/blackthorn.glb"],
+   "mon": "cenario/johto/mon/pm{dex}_00.glb" },
+  "hoenn": { "estado": "interno", "mapa": "cenario/hoenn/hoenn.glb", "dex": [252, 386], "mon": "cenario/hoenn/mon/pm{dex}_00.glb" },
+  "sinnoh": { "estado": "planejado", "mapa": "cenario/sinnoh/sinnoh.glb", "dex": [387, 493] },
+  "unova": { "estado": "planejado", "mapa": "cenario/unova/unova.glb", "dex": [494, 649] },
+  "kalos": { "estado": "planejado", "mapa": "cenario/kalos/kalos.glb", "dex": [650, 721] },
+  "alola": { "estado": "planejado", "mapa": "cenario/alola/alola.glb", "dex": [722, 809] },
+  "galar": { "estado": "planejado", "mapa": "cenario/galar/galar.glb", "dex": [810, 898] },
+  "paldea": { "estado": "planejado", "mapa": "cenario/paldea/paldea.glb", "dex": [906, 1025] }
+ }
+}

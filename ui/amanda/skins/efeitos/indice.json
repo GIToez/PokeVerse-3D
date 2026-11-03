@@ -1,0 +1,362 @@
+[
+ {
+  "item": "rastro:55001",
+  "nome": "Emblema",
+  "nomes": {
+   "en": "Mark",
+   "es": "Marca"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55001.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55001@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55001",
+  "iconeAntigo": "ui/itens/ic_55001.png"
+ },
+ {
+  "item": "rastro:55002",
+  "nome": "Fumaça Densa",
+  "nomes": {
+   "en": "Smoke",
+   "es": "Humo"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55002.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55002@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55002",
+  "iconeAntigo": "ui/itens/ic_55002.png"
+ },
+ {
+  "item": "rastro:55003",
+  "nome": "Trilha de Neve",
+  "nomes": {
+   "en": "Snow Trail",
+   "es": "Estela de Nieve"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55003.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55003@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55003",
+  "iconeAntigo": "ui/itens/ic_55003.png"
+ },
+ {
+  "item": "rastro:55004",
+  "nome": "Relíquia de Ano Novo Azul",
+  "nomes": {
+   "en": "New Year Relic Blue",
+   "es": "Reliquia de Año Nuevo Azul"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55004.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55004@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55004",
+  "iconeAntigo": "ui/itens/ic_55004.png"
+ },
+ {
+  "item": "rastro:55005",
+  "nome": "Passeio de Primavera",
+  "nomes": {
+   "en": "Flower",
+   "es": "Primavera"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55005.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55005@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55005",
+  "iconeAntigo": "ui/itens/ic_55005.png"
+ },
+ {
+  "item": "rastro:55007",
+  "nome": "Trilha de Cenoura",
+  "nomes": {
+   "en": "Carrot Trail",
+   "es": "Estela de Zanahoria"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55007.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55007@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55007",
+  "iconeAntigo": "ui/itens/ic_55007.png"
+ },
+ {
+  "item": "rastro:55008",
+  "nome": "Trilha Imponente",
+  "nomes": {
+   "en": "Domineering Trail",
+   "es": "Estela Imponente"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55008.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55008@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55008",
+  "iconeAntigo": "ui/itens/ic_55008.png"
+ },
+ {
+  "item": "rastro:55009",
+  "nome": "Pena de Qixi",
+  "nomes": {
+   "en": "The Qixi feather",
+   "es": "Pluma de Tanabata"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55009.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55009@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55009",
+  "iconeAntigo": "ui/itens/ic_55009.png"
+ },
+ {
+  "item": "rastro:55010",
+  "nome": "Trilha Lunar",
+  "nomes": {
+   "en": "Lunar trail",
+   "es": "Huella lunar"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55010.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55010@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55010",
+  "iconeAntigo": "ui/itens/ic_55010.png"
+ },
+ {
+  "item": "rastro:55011",
+  "nome": "Lingote de Ouro",
+  "nomes": {
+   "en": "Gold ingot",
+   "es": "Lingote de oro"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55011.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55011@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55011",
+  "iconeAntigo": "ui/itens/ic_55011.png"
+ },
+ {
+  "item": "rastro:55013",
+  "nome": "Trilha Fantasma",
+  "nomes": {
+   "en": "Ghost Trail",
+   "es": "Estela Fantasma"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55013.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55013@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55013",
+  "iconeAntigo": "ui/itens/ic_55013.png"
+ },
+ {
+  "item": "rastro:55014",
+  "nome": "Chantili",
+  "nomes": {
+   "en": "Whipped Cream",
+   "es": "Chantilly"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55014.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55014@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55014",
+  "iconeAntigo": "ui/itens/ic_55014.png"
+ },
+ {
+  "item": "rastro:55015",
+  "nome": "Nuvem Voadora",
+  "nomes": {
+   "en": "Flying Cloud",
+   "es": "Nube Voladora"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55015.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55015@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55015",
+  "iconeAntigo": "ui/itens/ic_55015.png"
+ },
+ {
+  "item": "rastro:55016",
+  "nome": "Coração",
+  "nomes": {
+   "en": "Heart",
+   "es": "Corazón"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55016.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55016@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55016",
+  "iconeAntigo": "ui/itens/ic_55016.png"
+ },
+ {
+  "item": "rastro:55017",
+  "nome": "Flor verde",
+  "nomes": {
+   "en": "The Bloom of Green Rhythm",
+   "es": "Flores Verdes en Primavera"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55017.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55017@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55017",
+  "iconeAntigo": "ui/itens/ic_55017.png"
+ },
+ {
+  "item": "rastro:55204",
+  "nome": "Relíquia de Ano Novo Dourada",
+  "nomes": {
+   "en": "New Year Relic Gold",
+   "es": "Reliquia de Año Nuevo Dorada"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55204.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55204@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55204",
+  "iconeAntigo": "ui/itens/ic_55004.png"
+ },
+ {
+  "item": "peito:56006",
+  "nome": "Chama do Ano Novo Azul",
+  "nomes": {
+   "en": "New Year Flame Blue",
+   "es": "Llama de Año Nuevo Azul"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56006.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56006@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56006",
+  "iconeAntigo": "ui/itens/ic_56006.png"
+ },
+ {
+  "item": "peito:56007",
+  "nome": "Espírito Primaveril",
+  "nomes": {
+   "en": "Spring",
+   "es": "Esencia de primavera"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56007.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56007@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56007",
+  "iconeAntigo": "ui/itens/ic_56007.png"
+ },
+ {
+  "item": "peito:56008",
+  "nome": "Aura Arco-Íris",
+  "nomes": {
+   "en": "Rainbow Aura",
+   "es": "Aura Arcoíris"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56008.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56008@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56008",
+  "iconeAntigo": "ui/itens/ic_56008.png"
+ },
+ {
+  "item": "peito:56009",
+  "nome": "Aura de Cenoura",
+  "nomes": {
+   "en": "Carrot Aura",
+   "es": "Aura de Zanahoria"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56009.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56009@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56009",
+  "iconeAntigo": "ui/itens/ic_56009.png"
+ },
+ {
+  "item": "peito:56015",
+  "nome": "Possessão Fantasmagórica Laranja",
+  "nomes": {
+   "en": "Ghost Possession Orange",
+   "es": "Posesión Fantasmal Naranja"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56015.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56015@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56015",
+  "iconeAntigo": "ui/itens/ic_56015.png"
+ },
+ {
+  "item": "peito:56016",
+  "nome": "Possessão Fantasmagórica Dourada",
+  "nomes": {
+   "en": "Ghost Possession Gold",
+   "es": "Posesión Fantasmal Dorada"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56016.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56016@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56016",
+  "iconeAntigo": "ui/itens/ic_56015.png"
+ },
+ {
+  "item": "peito:56023",
+  "nome": "Sombras Verdes entre as Flores",
+  "nomes": {
+   "en": "Green Shadows Among the Flowers",
+   "es": "Sombras Verdes entre las Flores"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56023.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56023@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56023",
+  "iconeAntigo": "ui/itens/ic_56020.png"
+ },
+ {
+  "item": "peito:56206",
+  "nome": "Chama do Ano Novo Dourada",
+  "nomes": {
+   "en": "New Year Flame Gold",
+   "es": "Llama de Año Nuevo Dorada"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56206.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56206@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56206",
+  "iconeAntigo": "ui/itens/ic_56006.png"
+ },
+ {
+  "item": "peito:56003",
+  "nome": "Pétalas",
+  "nomes": {
+   "en": "Petal",
+   "es": "Pétalo"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56003.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56003@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56003",
+  "iconeAntigo": "ui/itens/ic_56003.png"
+ },
+ {
+  "item": "peito:56004",
+  "nome": "Bolhas",
+  "nomes": {
+   "en": "Bubble",
+   "es": "Burbuja"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56004.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56004@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56004",
+  "iconeAntigo": "ui/itens/ic_56004.png"
+ },
+ {
+  "item": "peito:56005",
+  "nome": "Aura de Neve",
+  "nomes": {
+   "en": "Snow Aura",
+   "es": "Aura de Nieve"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56005.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56005@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56005",
+  "iconeAntigo": "ui/itens/ic_56005.png"
+ },
+ {
+  "item": "peito:56012",
+  "nome": "Brilho da Lua",
+  "nomes": {
+   "en": "Moonlight",
+   "es": "Luz de luna"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56012.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56012@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56012",
+  "iconeAntigo": "ui/itens/ic_56012.png"
+ },
+ {
+  "item": "peito:56019",
+  "nome": "Estrelas Brilhantes",
+  "nomes": {
+   "en": "Shining Stars",
+   "es": "Estrellas Brillantes"
+  },
+  "foto": "ui/amanda/skins/efeitos/peito-56019.png",
+  "foto2x": "ui/amanda/skins/efeitos/peito-56019@2x.png",
+  "loop": "ui/amanda/skins/loop/peito-56019",
+  "iconeAntigo": "ui/itens/ic_56017.png"
+ },
+ {
+  "item": "rastro:55006",
+  "nome": "Trilha Arco-Íris",
+  "nomes": {
+   "en": "Rainbow Trail",
+   "es": "Estela Arcoíris"
+  },
+  "foto": "ui/amanda/skins/efeitos/rastro-55006.png",
+  "foto2x": "ui/amanda/skins/efeitos/rastro-55006@2x.png",
+  "loop": "ui/amanda/skins/loop/rastro-55006",
+  "iconeAntigo": "ui/itens/ic_55006.png"
+ }
+]

@@ -1,0 +1,6285 @@
+{
+ "versao": 1,
+ "nota": "Criação de ovo (lab-ovo). Gerado por tools/ovo.mjs — não editar à mão. Regras do Jaime: 27/09 (mesma espécie, ♂ + ♀, pais gastos, Pedra Eterna com chance, eclosão de 24 h) e 01/10 (Pedra Eterna a 50 %, Ditto fora, IV pela regra E: perde 50 % de 1 a 5 e nunca sobe, Ticket de eclosão uma vez por ovo e preso, Incubadora da loja negociável e incubadoras sem teto por enquanto); o que é escolha do laboratório está marcado A APROVAR no docs/frentes/ovo.md.",
+ "regras": {
+  "ondeCria": "creche",
+  "eclosaoH": 6,
+  "nivel": 1,
+  "amizade": 120,
+  "bola": 1001,
+  "shiny": 16384,
+  "iv": "F",
+  "regrasIv": {
+   "A": {
+    "nome": "nunca passa do pai no atributo",
+    "perde": 0.25,
+    "perdeMax": 4,
+    "sobe": 0,
+    "sobeMax": 0
+   },
+   "B": {
+    "nome": "sobe pouco, perde mais",
+    "perde": 0.25,
+    "perdeMax": 4,
+    "sobe": 0.06,
+    "sobeMax": 2
+   },
+   "C": {
+    "nome": "sobe tanto quanto perde",
+    "perde": 0.15,
+    "perdeMax": 3,
+    "sobe": 0.15,
+    "sobeMax": 3
+   },
+   "D": {
+    "nome": "série (sem desgaste)",
+    "perde": 0,
+    "perdeMax": 0,
+    "sobe": 0,
+    "sobeMax": 0
+   },
+   "E": {
+    "nome": "perde 50 %, de 1 a 5",
+    "perde": 0.5,
+    "perdeMax": 5,
+    "sobe": 0,
+    "sobeMax": 0
+   },
+   "F": {
+    "nome": "perde 40 %, de 1 a 3; sobe 15 %, de 1 a 3",
+    "perde": 0.4,
+    "perdeMax": 3,
+    "sobe": 0.15,
+    "sobeMax": 3
+   }
+  },
+  "pedraEterna": {
+   "item": 900010,
+   "chance": 0.5
+  },
+  "devolverSegurados": true,
+  "taxa": 1000,
+  "ovosMax": 6,
+  "incubadorasMax": null,
+  "incubadorasGratis": 2,
+  "ticket": {
+   "item": 900150,
+   "reduzH": 3,
+   "maxPorOvo": 1,
+   "diamantes": 20
+  },
+  "tiqueMin": 30,
+  "perto": {
+   "creche": 4,
+   "incubadora": 3
+  },
+  "golpesMax": 4,
+  "historico": 30
+ },
+ "motivos": {
+  "lendario": "lendário ou mítico",
+  "semGenero": "sem gênero",
+  "soMacho": "só tem macho",
+  "soFemea": "só tem fêmea",
+  "semOvo": "não põe ovo (grupo \"sem ovo\")"
+ },
+ "grupos": {
+  "1": "Monstro",
+  "2": "Água 1",
+  "3": "Inseto",
+  "4": "Voador",
+  "5": "Campo",
+  "6": "Fada",
+  "7": "Planta",
+  "8": "Humanoide",
+  "9": "Água 3",
+  "10": "Mineral",
+  "11": "Amorfo",
+  "12": "Água 2",
+  "13": "Ditto",
+  "14": "Dragão",
+  "15": "Sem ovo"
+ },
+ "creche": {
+  "rota": {
+   "area": 1205,
+   "nome": "Rota 5",
+   "cena": "kanto"
+  },
+  "predio": {
+   "prefab": "sm_t_008_breedingcenter_01",
+   "x": -241.5,
+   "z": -136.2
+  },
+  "porta": {
+   "cfg": 6120501,
+   "x": -241.5,
+   "z": -135.2,
+   "chegada": 7181301
+  },
+  "interior": {
+   "area": 1813,
+   "nome": "Rota 5 - Casa central da Rota 5",
+   "cena": 4110009
+  },
+  "npc": {
+   "cfg": 1181301,
+   "nome": "Hideko",
+   "modelo": 71049,
+   "prefab": "fc2016_00",
+   "falaDump": [
+    "Cuidar e criar Pokémon é a maior alegria da minha vida~"
+   ]
+  },
+  "coordenadas": "as do dado (data/kanto.json): o mundo espelha o x (mundo = −x)",
+  "falta": "a Hideko não está no data/npcs_glb.json: python tools/npcs_area.py 1813 (o modelo fc2016_00 já existe em cenario/npc/)"
+ },
+ "itens": {
+  "900030": {
+   "n": "Incubadora",
+   "d": "Ganha jogando: a 1ª na missão da creche da Rota 5, a 2ª ao chocar o primeiro ovo. Coloque no terreno da sua casa: choca um ovo em 6 h. Presa à conta.",
+   "t": 3,
+   "i": "ic_900030",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "colocacao": "livre",
+   "glb": "cenario/objetos/incubadora.glb",
+   "versao": "jogando",
+   "origem": "Jaime 27/09 (\"ganha as free\") + devlog 01/10 (\"se conquista jogando\")"
+  },
+  "900150": {
+   "n": "Ticket de eclosão",
+   "d": "Corta 3 horas da eclosão de um ovo que está na incubadora. Vale uma vez por ovo. Loja de Diamantes, eventos e trilha grátis do passe. Preso à conta.",
+   "t": 9,
+   "i": "ic_900150",
+   "q": 3,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "uso": {
+    "tipo": "eclosao",
+    "reduzH": 3,
+    "maxPorOvo": 1
+   },
+   "origem": "Jaime 27/09 (\"ticket premium … pra acelerar a incubadora\"); 01/10 à noite, ovo-incubadora-2 (\"só pode ser usado uma vez\"): 1 por ovo; 01/10 17h30, ovo-incubadora-3 (\"vende ticket (preso a conta)\"); o preço é A APROVAR"
+  },
+  "900151": {
+   "n": "Incubadora",
+   "d": "A mesma incubadora, vendida na loja de Diamantes. Coloque quantas couberem no terreno da sua casa: cada uma choca um ovo em 6 h. Negociável: vai pro Mercado.",
+   "t": 3,
+   "i": "ic_900151",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "colocacao": "livre",
+   "glb": "cenario/objetos/incubadora.glb",
+   "versao": "loja",
+   "origem": "Jaime 27/09 (\"ele ganha as free, pagando só vai ter mais, mas talvez a incubadora ser algo de trade\"; \"no passe de batalha fica único na conta, mas se ele compra na loja algo desse tipo, ele pode vender e trocar\") + 01/10 17h30, ovo-incubadora-3 (\"vende incubadoras (nao é preso a conta, sem limite por enquanto)\"): negociável e sem teto; o preço é da lab-passe (A APROVAR)"
+  }
+ },
+ "correcoesSexo": {
+  "106": {
+   "nome": "Hitmonlee",
+   "sexosJson": 50,
+   "pokeapi": 100
+  },
+  "114": {
+   "nome": "Tangela",
+   "sexosJson": -1,
+   "pokeapi": 50
+  },
+  "122": {
+   "nome": "Mr. Mime",
+   "sexosJson": -1,
+   "pokeapi": 50
+  },
+  "126": {
+   "nome": "Magmar",
+   "sexosJson": 50,
+   "pokeapi": 75
+  },
+  "128": {
+   "nome": "Tauros",
+   "sexosJson": -1,
+   "pokeapi": 100
+  },
+  "129": {
+   "nome": "Magikarp",
+   "sexosJson": -1,
+   "pokeapi": 50
+  },
+  "131": {
+   "nome": "Lapras",
+   "sexosJson": -1,
+   "pokeapi": 50
+  }
+ },
+ "golpesJogo": [
+  "absorb",
+  "acid",
+  "acidarmor",
+  "agility",
+  "amnesia",
+  "astralbarrage",
+  "aurorabeam",
+  "barrage",
+  "barrier",
+  "bide",
+  "bind",
+  "bite",
+  "blizzard",
+  "bodyslam",
+  "boneclub",
+  "bubble",
+  "bubblebeam",
+  "bulletseed",
+  "clamp",
+  "cometpunch",
+  "confuseray",
+  "confusion",
+  "constrict",
+  "counter",
+  "crabhammer",
+  "cut",
+  "defensecurl",
+  "dig",
+  "disable",
+  "dive",
+  "dizzypunch",
+  "doubleedge",
+  "doublekick",
+  "doubleslap",
+  "dragonascent",
+  "dragonrage",
+  "dreameater",
+  "drillpeck",
+  "earthquake",
+  "eggbomb",
+  "electricterrain",
+  "electrodrift",
+  "ember",
+  "encore",
+  "explosion",
+  "fireblast",
+  "firefang",
+  "firepunch",
+  "firespin",
+  "fissure",
+  "flamethrower",
+  "flash",
+  "flowershield",
+  "fly",
+  "focusenergy",
+  "furyattack",
+  "glaciallance",
+  "glare",
+  "grassyterrain",
+  "gravity",
+  "growl",
+  "growth",
+  "guillotine",
+  "gust",
+  "harden",
+  "haze",
+  "headbutt",
+  "highjumpkick",
+  "hornattack",
+  "horndrill",
+  "hydropump",
+  "hyperbeam",
+  "hypnosis",
+  "iceball",
+  "icebeam",
+  "icefang",
+  "icepunch",
+  "infernooverdrivespecial",
+  "iondeluge",
+  "jumpkick",
+  "karatechop",
+  "kinesis",
+  "leechlife",
+  "leechseed",
+  "leer",
+  "lick",
+  "lightscreen",
+  "lovelykiss",
+  "lowkick",
+  "maxflare",
+  "maxflutterby",
+  "maxguard",
+  "maxknuckle",
+  "maxlightning",
+  "maxstrike",
+  "meditate",
+  "megadrain",
+  "megakick",
+  "megapunch",
+  "memento",
+  "metronome",
+  "mimic",
+  "minimize",
+  "mist",
+  "mistyterrain",
+  "moongeistbeam",
+  "morningsun",
+  "nightshade",
+  "payday",
+  "peck",
+  "petaldance",
+  "pinmissile",
+  "poisonfang",
+  "poisongas",
+  "poisonpowder",
+  "poisonsting",
+  "pound",
+  "precipiceblades",
+  "present",
+  "psybeam",
+  "psychic",
+  "psywave",
+  "quickattack",
+  "rage",
+  "razorleaf",
+  "razorwind",
+  "recover",
+  "reflect",
+  "rest",
+  "roar",
+  "rockthrow",
+  "rollingkick",
+  "rollout",
+  "sandattack",
+  "sandtomb",
+  "scratch",
+  "screech",
+  "seismictoss",
+  "selfdestruct",
+  "shadowstorm",
+  "shedtail",
+  "sing",
+  "skullbash",
+  "slam",
+  "sleeppowder",
+  "sludge",
+  "smog",
+  "smokescreen",
+  "softboiled",
+  "solarbeam",
+  "sonicboom",
+  "spicyextract",
+  "spikecannon",
+  "spikes",
+  "spore",
+  "stealthrock",
+  "stomp",
+  "strength",
+  "stringshot",
+  "stunspore",
+  "submission",
+  "superfang",
+  "supersonic",
+  "surf",
+  "swift",
+  "swordsdance",
+  "tackle",
+  "tailwhip",
+  "takedown",
+  "teleport",
+  "thrash",
+  "thunder",
+  "thunderbolt",
+  "thunderfang",
+  "thunderpunch",
+  "thundershock",
+  "thunderwave",
+  "toxic",
+  "toxicspikes",
+  "trick",
+  "twineedle",
+  "vicegrip",
+  "vinewhip",
+  "waterfall",
+  "watergun",
+  "whirlpool",
+  "whirlwind",
+  "wingattack",
+  "withdraw",
+  "woodhammer",
+  "worryseed",
+  "wrap",
+  "wringout",
+  "yawn"
+ ],
+ "especies": {
+  "1": {
+   "nome": "Bulbasaur",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    1
+   ],
+   "base": 1,
+   "baseNoJogo": 1,
+   "cria": true,
+   "golpesOvo": [
+    "petaldance",
+    "sludge",
+    "skullbash",
+    "amnesia",
+    "curse",
+    "gigadrain",
+    "endure",
+    "charm",
+    "naturepower",
+    "ingrain",
+    "grasswhistle",
+    "magicalleaf",
+    "leafstorm",
+    "powerwhip",
+    "grassyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "2": {
+   "nome": "Ivysaur",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    1,
+    2
+   ],
+   "base": 1,
+   "baseNoJogo": 1,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "3": {
+   "nome": "Venusaur",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    1,
+    2,
+    3
+   ],
+   "base": 1,
+   "baseNoJogo": 1,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "4": {
+   "nome": "Charmander",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    4
+   ],
+   "base": 4,
+   "baseNoJogo": 4,
+   "cria": true,
+   "golpesOvo": [
+    "bite",
+    "counter",
+    "bellydrum",
+    "outrage",
+    "metalclaw",
+    "crunch",
+    "ancientpower",
+    "beatup",
+    "focuspunch",
+    "aircutter",
+    "dragondance",
+    "flareblitz",
+    "dragonpulse",
+    "dragonrush"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "5": {
+   "nome": "Charmeleon",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    4,
+    5
+   ],
+   "base": 4,
+   "baseNoJogo": 4,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "6": {
+   "nome": "Charizard",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    4,
+    5,
+    6
+   ],
+   "base": 4,
+   "baseNoJogo": 4,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "7": {
+   "nome": "Squirtle",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    7
+   ],
+   "base": 7,
+   "baseNoJogo": 7,
+   "cria": true,
+   "golpesOvo": [
+    "mist",
+    "haze",
+    "flail",
+    "foresight",
+    "mirrorcoat",
+    "fakeout",
+    "yawn",
+    "refresh",
+    "mudsport",
+    "waterspout",
+    "muddywater",
+    "brine",
+    "aquaring",
+    "aurasphere",
+    "dragonpulse",
+    "aquajet"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "8": {
+   "nome": "Wartortle",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    7,
+    8
+   ],
+   "base": 7,
+   "baseNoJogo": 7,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "9": {
+   "nome": "Blastoise",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    7,
+    8,
+    9
+   ],
+   "base": 7,
+   "baseNoJogo": 7,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "10": {
+   "nome": "Caterpie",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    10
+   ],
+   "base": 10,
+   "baseNoJogo": 10,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "11": {
+   "nome": "Metapod",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    10,
+    11
+   ],
+   "base": 10,
+   "baseNoJogo": 10,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "12": {
+   "nome": "Butterfree",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    10,
+    11,
+    12
+   ],
+   "base": 10,
+   "baseNoJogo": 10,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "13": {
+   "nome": "Weedle",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    13
+   ],
+   "base": 13,
+   "baseNoJogo": 13,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "14": {
+   "nome": "Kakuna",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    13,
+    14
+   ],
+   "base": 13,
+   "baseNoJogo": 13,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "15": {
+   "nome": "Beedrill",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    13,
+    14,
+    15
+   ],
+   "base": 13,
+   "baseNoJogo": 13,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "16": {
+   "nome": "Pidgey",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    16
+   ],
+   "base": 16,
+   "baseNoJogo": 16,
+   "cria": true,
+   "golpesOvo": [
+    "feintattack",
+    "foresight",
+    "steelwing",
+    "pursuit",
+    "uproar",
+    "aircutter",
+    "airslash",
+    "bravebird",
+    "defog"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "17": {
+   "nome": "Pidgeotto",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    16,
+    17
+   ],
+   "base": 16,
+   "baseNoJogo": 16,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "18": {
+   "nome": "Pidgeot",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    16,
+    17,
+    18
+   ],
+   "base": 16,
+   "baseNoJogo": 16,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "19": {
+   "nome": "Rattata",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 15,
+   "linha": [
+    19
+   ],
+   "base": 19,
+   "baseNoJogo": 19,
+   "cria": true,
+   "golpesOvo": [
+    "bite",
+    "counter",
+    "screech",
+    "furyswipes",
+    "flamewheel",
+    "reversal",
+    "uproar",
+    "revenge",
+    "mefirst",
+    "lastresort",
+    "finalgambit"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "20": {
+   "nome": "Raticate",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 15,
+   "linha": [
+    19,
+    20
+   ],
+   "base": 19,
+   "baseNoJogo": 19,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "21": {
+   "nome": "Spearow",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    21
+   ],
+   "base": 21,
+   "baseNoJogo": 21,
+   "cria": true,
+   "golpesOvo": [
+    "razorwind",
+    "whirlwind",
+    "quickattack",
+    "skyattack",
+    "triattack",
+    "scaryface",
+    "feintattack",
+    "steelwing",
+    "uproar",
+    "featherdance",
+    "astonish"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "22": {
+   "nome": "Fearow",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    21,
+    22
+   ],
+   "base": 21,
+   "baseNoJogo": 21,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "23": {
+   "nome": "Ekans",
+   "macho": 50,
+   "grupos": [
+    5,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    23
+   ],
+   "base": 23,
+   "baseNoJogo": 23,
+   "cria": true,
+   "golpesOvo": [
+    "slam",
+    "disable",
+    "spite",
+    "scaryface",
+    "pursuit",
+    "irontail",
+    "beatup",
+    "snatch",
+    "poisonfang",
+    "poisontail",
+    "suckerpunch",
+    "switcheroo"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "24": {
+   "nome": "Arbok",
+   "macho": 50,
+   "grupos": [
+    5,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    23,
+    24
+   ],
+   "base": 23,
+   "baseNoJogo": 23,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "25": {
+   "nome": "Pikachu",
+   "macho": 50,
+   "grupos": [
+    5,
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    172,
+    25
+   ],
+   "base": 172,
+   "baseNoJogo": 25,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "26": {
+   "nome": "Raichu",
+   "macho": 50,
+   "grupos": [
+    5,
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    172,
+    25,
+    26
+   ],
+   "base": 172,
+   "baseNoJogo": 25,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "27": {
+   "nome": "Sandshrew",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    27
+   ],
+   "base": 27,
+   "baseNoJogo": 27,
+   "cria": true,
+   "golpesOvo": [
+    "counter",
+    "flail",
+    "endure",
+    "rapidspin",
+    "metalclaw",
+    "crushclaw",
+    "mudshot",
+    "nightslash",
+    "rockclimb",
+    "honeclaws",
+    "chipaway",
+    "rototiller"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "28": {
+   "nome": "Sandslash",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    27,
+    28
+   ],
+   "base": 27,
+   "baseNoJogo": 27,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "29": {
+   "nome": "Nidoran-F",
+   "macho": 0,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    29
+   ],
+   "base": 29,
+   "baseNoJogo": 29,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [
+    "takedown",
+    "supersonic",
+    "disable",
+    "counter",
+    "focusenergy",
+    "skullbash",
+    "endure",
+    "charm",
+    "pursuit",
+    "irontail",
+    "beatup",
+    "poisontail",
+    "chipaway",
+    "venomdrench"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "30": {
+   "nome": "Nidorina",
+   "macho": 0,
+   "grupos": [
+    15
+   ],
+   "ciclos": 20,
+   "linha": [
+    29,
+    30
+   ],
+   "base": 29,
+   "baseNoJogo": 29,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "31": {
+   "nome": "Nidoqueen",
+   "macho": 0,
+   "grupos": [
+    15
+   ],
+   "ciclos": 20,
+   "linha": [
+    29,
+    30,
+    31
+   ],
+   "base": 29,
+   "baseNoJogo": 29,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "32": {
+   "nome": "Nidoran-M",
+   "macho": 100,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    32
+   ],
+   "base": 32,
+   "baseNoJogo": 32,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [
+    "takedown",
+    "supersonic",
+    "disable",
+    "counter",
+    "confusion",
+    "amnesia",
+    "endure",
+    "irontail",
+    "beatup",
+    "poisontail",
+    "suckerpunch",
+    "headsmash",
+    "chipaway",
+    "venomdrench"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "33": {
+   "nome": "Nidorino",
+   "macho": 100,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    32,
+    33
+   ],
+   "base": 32,
+   "baseNoJogo": 32,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "34": {
+   "nome": "Nidoking",
+   "macho": 100,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    32,
+    33,
+    34
+   ],
+   "base": 32,
+   "baseNoJogo": 32,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "35": {
+   "nome": "Clefairy",
+   "macho": 25,
+   "grupos": [
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    173,
+    35
+   ],
+   "base": 173,
+   "baseNoJogo": 35,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "36": {
+   "nome": "Clefable",
+   "macho": 25,
+   "grupos": [
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    173,
+    35,
+    36
+   ],
+   "base": 173,
+   "baseNoJogo": 35,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "37": {
+   "nome": "Vulpix",
+   "macho": 25,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    37
+   ],
+   "base": 37,
+   "baseNoJogo": 37,
+   "cria": true,
+   "golpesOvo": [
+    "disable",
+    "hypnosis",
+    "flail",
+    "spite",
+    "feintattack",
+    "heatwave",
+    "secretpower",
+    "extrasensory",
+    "howl",
+    "powerswap",
+    "flareblitz",
+    "captivate",
+    "hex",
+    "tailslap"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "38": {
+   "nome": "Ninetales",
+   "macho": 25,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    37,
+    38
+   ],
+   "base": 37,
+   "baseNoJogo": 37,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "39": {
+   "nome": "Jigglypuff",
+   "macho": 25,
+   "grupos": [
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    174,
+    39
+   ],
+   "base": 174,
+   "baseNoJogo": 39,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "40": {
+   "nome": "Wigglytuff",
+   "macho": 25,
+   "grupos": [
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    174,
+    39,
+    40
+   ],
+   "base": 174,
+   "baseNoJogo": 39,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "41": {
+   "nome": "Zubat",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    41
+   ],
+   "base": 41,
+   "baseNoJogo": 41,
+   "cria": true,
+   "golpesOvo": [
+    "gust",
+    "whirlwind",
+    "hypnosis",
+    "quickattack",
+    "curse",
+    "feintattack",
+    "gigadrain",
+    "steelwing",
+    "pursuit",
+    "bravebird",
+    "nastyplot",
+    "zenheadbutt",
+    "defog",
+    "venomdrench"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "42": {
+   "nome": "Golbat",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    41,
+    42
+   ],
+   "base": 41,
+   "baseNoJogo": 41,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "43": {
+   "nome": "Oddish",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    43
+   ],
+   "base": 43,
+   "baseNoJogo": 43,
+   "cria": true,
+   "golpesOvo": [
+    "razorleaf",
+    "flail",
+    "charm",
+    "synthesis",
+    "naturepower",
+    "ingrain",
+    "secretpower",
+    "teeterdance",
+    "tickle",
+    "afteryou",
+    "strengthsap"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "44": {
+   "nome": "Gloom",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    43,
+    44
+   ],
+   "base": 43,
+   "baseNoJogo": 43,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "45": {
+   "nome": "Vileplume",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    43,
+    44,
+    45
+   ],
+   "base": 43,
+   "baseNoJogo": 43,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "46": {
+   "nome": "Paras",
+   "macho": 50,
+   "grupos": [
+    3,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    46
+   ],
+   "base": 46,
+   "baseNoJogo": 46,
+   "cria": true,
+   "golpesOvo": [
+    "psybeam",
+    "counter",
+    "leechseed",
+    "agility",
+    "screech",
+    "flail",
+    "endure",
+    "pursuit",
+    "sweetscent",
+    "metalclaw",
+    "naturalgift",
+    "crosspoison",
+    "bugbite",
+    "wideguard",
+    "rototiller",
+    "fellstinger",
+    "grassyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "47": {
+   "nome": "Parasect",
+   "macho": 50,
+   "grupos": [
+    3,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    46,
+    47
+   ],
+   "base": 46,
+   "baseNoJogo": 46,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "48": {
+   "nome": "Venonat",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    48
+   ],
+   "base": 48,
+   "baseNoJogo": 48,
+   "cria": true,
+   "golpesOvo": [
+    "agility",
+    "screech",
+    "gigadrain",
+    "batonpass",
+    "morningsun",
+    "skillswap",
+    "secretpower",
+    "signalbeam",
+    "toxicspikes",
+    "bugbite",
+    "ragepowder"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "49": {
+   "nome": "Venomoth",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    48,
+    49
+   ],
+   "base": 48,
+   "baseNoJogo": 48,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "50": {
+   "nome": "Diglett",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    50
+   ],
+   "base": 50,
+   "baseNoJogo": 50,
+   "cria": true,
+   "golpesOvo": [
+    "headbutt",
+    "screech",
+    "reversal",
+    "feintattack",
+    "endure",
+    "pursuit",
+    "ancientpower",
+    "beatup",
+    "uproar",
+    "memento",
+    "astonish",
+    "mudbomb",
+    "finalgambit"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "51": {
+   "nome": "Dugtrio",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    50,
+    51
+   ],
+   "base": 50,
+   "baseNoJogo": 50,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "52": {
+   "nome": "Meowth",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    52
+   ],
+   "base": 52,
+   "baseNoJogo": 52,
+   "cria": true,
+   "golpesOvo": [
+    "tailwhip",
+    "hypnosis",
+    "amnesia",
+    "flail",
+    "spite",
+    "charm",
+    "irontail",
+    "assist",
+    "snatch",
+    "odorsleuth",
+    "punishment",
+    "lastresort",
+    "foulplay"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "53": {
+   "nome": "Persian",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    52,
+    53
+   ],
+   "base": 52,
+   "baseNoJogo": 52,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "54": {
+   "nome": "Psyduck",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    54
+   ],
+   "base": 54,
+   "baseNoJogo": 54,
+   "cria": true,
+   "golpesOvo": [
+    "psybeam",
+    "hypnosis",
+    "confuseray",
+    "foresight",
+    "sleeptalk",
+    "encore",
+    "crosschop",
+    "futuresight",
+    "yawn",
+    "refresh",
+    "secretpower",
+    "mudbomb",
+    "synchronoise",
+    "simplebeam",
+    "clearsmog"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "55": {
+   "nome": "Golduck",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    54,
+    55
+   ],
+   "base": 54,
+   "baseNoJogo": 54,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "56": {
+   "nome": "Mankey",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    56
+   ],
+   "base": 56,
+   "baseNoJogo": 56,
+   "cria": true,
+   "golpesOvo": [
+    "counter",
+    "meditate",
+    "reversal",
+    "foresight",
+    "sleeptalk",
+    "encore",
+    "beatup",
+    "focuspunch",
+    "smellingsalts",
+    "revenge",
+    "closecombat",
+    "nightslash",
+    "powertrip"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "57": {
+   "nome": "Primeape",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    56,
+    57
+   ],
+   "base": 56,
+   "baseNoJogo": 56,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "58": {
+   "nome": "Growlithe",
+   "macho": 75,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    58
+   ],
+   "base": 58,
+   "baseNoJogo": 58,
+   "cria": true,
+   "golpesOvo": [
+    "doublekick",
+    "bodyslam",
+    "thrash",
+    "doubleedge",
+    "firespin",
+    "irontail",
+    "morningsun",
+    "crunch",
+    "heatwave",
+    "howl",
+    "covet",
+    "closecombat",
+    "flareblitz",
+    "burnup"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "59": {
+   "nome": "Arcanine",
+   "macho": 75,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    58,
+    59
+   ],
+   "base": 58,
+   "baseNoJogo": 58,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "60": {
+   "nome": "Poliwag",
+   "macho": 50,
+   "grupos": [
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    60
+   ],
+   "base": 60,
+   "baseNoJogo": 60,
+   "cria": true,
+   "golpesOvo": [
+    "mist",
+    "bubblebeam",
+    "haze",
+    "splash",
+    "mindreader",
+    "endure",
+    "encore",
+    "endeavor",
+    "refresh",
+    "iceball",
+    "mudshot",
+    "watersport",
+    "waterpulse"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "61": {
+   "nome": "Poliwhirl",
+   "macho": 50,
+   "grupos": [
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    60,
+    61
+   ],
+   "base": 60,
+   "baseNoJogo": 60,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "62": {
+   "nome": "Poliwrath",
+   "macho": 50,
+   "grupos": [
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    60,
+    61,
+    62
+   ],
+   "base": 60,
+   "baseNoJogo": 60,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "63": {
+   "nome": "Abra",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    63
+   ],
+   "base": 63,
+   "baseNoJogo": 63,
+   "cria": true,
+   "golpesOvo": [
+    "firepunch",
+    "icepunch",
+    "thunderpunch",
+    "barrier",
+    "encore",
+    "knockoff",
+    "skillswap",
+    "psychoshift",
+    "powertrick",
+    "guardswap",
+    "guardsplit",
+    "allyswitch",
+    "psychicterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "64": {
+   "nome": "Kadabra",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    63,
+    64
+   ],
+   "base": 63,
+   "baseNoJogo": 63,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "65": {
+   "nome": "Alakazam",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    63,
+    64,
+    65
+   ],
+   "base": 63,
+   "baseNoJogo": 63,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "66": {
+   "nome": "Machop",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    66
+   ],
+   "base": 66,
+   "baseNoJogo": 66,
+   "cria": true,
+   "golpesOvo": [
+    "firepunch",
+    "icepunch",
+    "thunderpunch",
+    "rollingkick",
+    "counter",
+    "meditate",
+    "encore",
+    "smellingsalts",
+    "knockoff",
+    "tickle",
+    "closecombat",
+    "powertrick",
+    "bulletpunch",
+    "heavyslam",
+    "quickguard"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "67": {
+   "nome": "Machoke",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    66,
+    67
+   ],
+   "base": 66,
+   "baseNoJogo": 66,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "68": {
+   "nome": "Machamp",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    66,
+    67,
+    68
+   ],
+   "base": 66,
+   "baseNoJogo": 66,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "69": {
+   "nome": "Bellsprout",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    69
+   ],
+   "base": 69,
+   "baseNoJogo": 69,
+   "cria": true,
+   "golpesOvo": [
+    "leechlife",
+    "gigadrain",
+    "encore",
+    "synthesis",
+    "ingrain",
+    "weatherball",
+    "tickle",
+    "bulletseed",
+    "magicalleaf",
+    "naturalgift",
+    "worryseed",
+    "powerwhip",
+    "acidspray",
+    "clearsmog",
+    "belch",
+    "strengthsap"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "70": {
+   "nome": "Weepinbell",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    69,
+    70
+   ],
+   "base": 69,
+   "baseNoJogo": 69,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "71": {
+   "nome": "Victreebel",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    69,
+    70,
+    71
+   ],
+   "base": 69,
+   "baseNoJogo": 69,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "72": {
+   "nome": "Tentacool",
+   "macho": 50,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    72
+   ],
+   "base": 72,
+   "baseNoJogo": 72,
+   "cria": true,
+   "golpesOvo": [
+    "aurorabeam",
+    "confuseray",
+    "haze",
+    "bubble",
+    "rapidspin",
+    "mirrorcoat",
+    "knockoff",
+    "tickle",
+    "muddywater",
+    "acupressure",
+    "aquaring"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "73": {
+   "nome": "Tentacruel",
+   "macho": 50,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    72,
+    73
+   ],
+   "base": 72,
+   "baseNoJogo": 72,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "74": {
+   "nome": "Geodude",
+   "macho": 50,
+   "grupos": [
+    10
+   ],
+   "ciclos": 15,
+   "linha": [
+    74
+   ],
+   "base": 74,
+   "baseNoJogo": 74,
+   "cria": true,
+   "golpesOvo": [
+    "megapunch",
+    "curse",
+    "flail",
+    "endure",
+    "focuspunch",
+    "block",
+    "hammerarm",
+    "rockclimb",
+    "wideguard",
+    "autotomize"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "75": {
+   "nome": "Graveler",
+   "macho": 50,
+   "grupos": [
+    10
+   ],
+   "ciclos": 15,
+   "linha": [
+    74,
+    75
+   ],
+   "base": 74,
+   "baseNoJogo": 74,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "76": {
+   "nome": "Golem",
+   "macho": 50,
+   "grupos": [
+    10
+   ],
+   "ciclos": 15,
+   "linha": [
+    74,
+    75,
+    76
+   ],
+   "base": 74,
+   "baseNoJogo": 74,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "77": {
+   "nome": "Ponyta",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    77
+   ],
+   "base": 77,
+   "baseNoJogo": 77,
+   "cria": true,
+   "golpesOvo": [
+    "doublekick",
+    "horndrill",
+    "thrash",
+    "doubleedge",
+    "lowkick",
+    "hypnosis",
+    "flamewheel",
+    "charm",
+    "morningsun",
+    "captivate",
+    "allyswitch",
+    "highhorsepower"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "78": {
+   "nome": "Rapidash",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    77,
+    78
+   ],
+   "base": 77,
+   "baseNoJogo": 77,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "79": {
+   "nome": "Slowpoke",
+   "macho": 50,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    79
+   ],
+   "base": 79,
+   "baseNoJogo": 79,
+   "cria": true,
+   "golpesOvo": [
+    "stomp",
+    "snore",
+    "bellydrum",
+    "sleeptalk",
+    "futuresight",
+    "mudsport",
+    "block",
+    "mefirst",
+    "zenheadbutt",
+    "wonderroom",
+    "belch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "80": {
+   "nome": "Slowbro",
+   "macho": 50,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    79,
+    80
+   ],
+   "base": 79,
+   "baseNoJogo": 79,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "81": {
+   "nome": "Magnemite",
+   "macho": -1,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    81
+   ],
+   "base": 81,
+   "baseNoJogo": 81,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [
+    "explosion",
+    "electroweb"
+   ],
+   "vgOvo": "scarlet-violet"
+  },
+  "82": {
+   "nome": "Magneton",
+   "macho": -1,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    81,
+    82
+   ],
+   "base": 81,
+   "baseNoJogo": 81,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "83": {
+   "nome": "Farfetch’d",
+   "macho": 50,
+   "grupos": [
+    4,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    83
+   ],
+   "base": 83,
+   "baseNoJogo": 83,
+   "cria": true,
+   "golpesOvo": [
+    "gust",
+    "quickattack",
+    "mirrormove",
+    "curse",
+    "flail",
+    "mudslap",
+    "foresight",
+    "steelwing",
+    "revenge",
+    "featherdance",
+    "covet",
+    "leafblade",
+    "roost",
+    "trumpcard",
+    "nightslash",
+    "simplebeam",
+    "finalgambit",
+    "firstimpression"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "84": {
+   "nome": "Doduo",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 20,
+   "linha": [
+    84
+   ],
+   "base": 84,
+   "baseNoJogo": 84,
+   "cria": true,
+   "golpesOvo": [
+    "supersonic",
+    "quickattack",
+    "haze",
+    "mirrormove",
+    "flail",
+    "feintattack",
+    "endeavor",
+    "naturalgift",
+    "assurance",
+    "bravebird"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "85": {
+   "nome": "Dodrio",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 20,
+   "linha": [
+    84,
+    85
+   ],
+   "base": 84,
+   "baseNoJogo": 84,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "86": {
+   "nome": "Seel",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    86
+   ],
+   "base": 86,
+   "baseNoJogo": 86,
+   "cria": true,
+   "golpesOvo": [
+    "slam",
+    "horndrill",
+    "disable",
+    "lick",
+    "perishsong",
+    "sleeptalk",
+    "encore",
+    "irontail",
+    "fakeout",
+    "stockpile",
+    "spitup",
+    "swallow",
+    "signalbeam",
+    "iciclespear",
+    "waterpulse",
+    "entrainment",
+    "belch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "87": {
+   "nome": "Dewgong",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    86,
+    87
+   ],
+   "base": 86,
+   "baseNoJogo": 86,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "88": {
+   "nome": "Grimer",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    88
+   ],
+   "base": 88,
+   "baseNoJogo": 88,
+   "cria": true,
+   "golpesOvo": [
+    "haze",
+    "lick",
+    "curse",
+    "scaryface",
+    "meanlook",
+    "stockpile",
+    "spitup",
+    "swallow",
+    "imprison",
+    "shadowpunch",
+    "shadowsneak",
+    "acidspray",
+    "poweruppunch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "89": {
+   "nome": "Muk",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    88,
+    89
+   ],
+   "base": 88,
+   "baseNoJogo": 88,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "90": {
+   "nome": "Shellder",
+   "macho": 50,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    90
+   ],
+   "base": 90,
+   "baseNoJogo": 90,
+   "cria": true,
+   "golpesOvo": [
+    "takedown",
+    "twineedle",
+    "bubblebeam",
+    "screech",
+    "barrier",
+    "rapidspin",
+    "iciclespear",
+    "mudshot",
+    "rockblast",
+    "waterpulse",
+    "aquaring",
+    "avalanche"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "91": {
+   "nome": "Cloyster",
+   "macho": 50,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    90,
+    91
+   ],
+   "base": 90,
+   "baseNoJogo": 90,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "92": {
+   "nome": "Gastly",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    92
+   ],
+   "base": 92,
+   "baseNoJogo": 92,
+   "cria": true,
+   "golpesOvo": [
+    "firepunch",
+    "icepunch",
+    "thunderpunch",
+    "disable",
+    "haze",
+    "smog",
+    "psywave",
+    "scaryface",
+    "perishsong",
+    "grudge",
+    "astonish",
+    "clearsmog",
+    "reflecttype"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "93": {
+   "nome": "Haunter",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    92,
+    93
+   ],
+   "base": 92,
+   "baseNoJogo": 92,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "94": {
+   "nome": "Gengar",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    92,
+    93,
+    94
+   ],
+   "base": 92,
+   "baseNoJogo": 92,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "95": {
+   "nome": "Onix",
+   "macho": 50,
+   "grupos": [
+    10
+   ],
+   "ciclos": 25,
+   "linha": [
+    95
+   ],
+   "base": 95,
+   "baseNoJogo": 95,
+   "cria": true,
+   "golpesOvo": [
+    "defensecurl",
+    "flail",
+    "rollout",
+    "block",
+    "rockblast",
+    "rockclimb",
+    "stealthrock",
+    "wideguard",
+    "heavyslam",
+    "rototiller"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "96": {
+   "nome": "Drowzee",
+   "macho": 50,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    96
+   ],
+   "base": 96,
+   "baseNoJogo": 96,
+   "cria": true,
+   "golpesOvo": [
+    "firepunch",
+    "icepunch",
+    "thunderpunch",
+    "barrier",
+    "flatter",
+    "roleplay",
+    "assist",
+    "skillswap",
+    "secretpower",
+    "guardswap",
+    "nastyplot",
+    "psychocut",
+    "powersplit",
+    "psychicterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "97": {
+   "nome": "Hypno",
+   "macho": 50,
+   "grupos": [
+    8
+   ],
+   "ciclos": 20,
+   "linha": [
+    96,
+    97
+   ],
+   "base": 96,
+   "baseNoJogo": 96,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "98": {
+   "nome": "Krabby",
+   "macho": 50,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    98
+   ],
+   "base": 98,
+   "baseNoJogo": 98,
+   "cria": true,
+   "golpesOvo": [
+    "slam",
+    "agility",
+    "haze",
+    "bide",
+    "amnesia",
+    "flail",
+    "endure",
+    "ancientpower",
+    "knockoff",
+    "tickle",
+    "chipaway",
+    "allyswitch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "99": {
+   "nome": "Kingler",
+   "macho": 50,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    98,
+    99
+   ],
+   "base": 98,
+   "baseNoJogo": 98,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "100": {
+   "nome": "Voltorb",
+   "macho": -1,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    100
+   ],
+   "base": 100,
+   "baseNoJogo": 100,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [
+    "recycle",
+    "metalsound"
+   ],
+   "vgOvo": "scarlet-violet"
+  },
+  "101": {
+   "nome": "Electrode",
+   "macho": -1,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    100,
+    101
+   ],
+   "base": 100,
+   "baseNoJogo": 100,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "102": {
+   "nome": "Exeggcute",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    102
+   ],
+   "base": 102,
+   "baseNoJogo": 102,
+   "cria": true,
+   "golpesOvo": [
+    "curse",
+    "gigadrain",
+    "synthesis",
+    "moonlight",
+    "ancientpower",
+    "naturepower",
+    "ingrain",
+    "skillswap",
+    "block",
+    "naturalgift",
+    "luckychant",
+    "powerswap",
+    "leafstorm",
+    "grassyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "103": {
+   "nome": "Exeggutor",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    102,
+    103
+   ],
+   "base": 102,
+   "baseNoJogo": 102,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "104": {
+   "nome": "Cubone",
+   "macho": 50,
+   "grupos": [
+    1
+   ],
+   "ciclos": 20,
+   "linha": [
+    104
+   ],
+   "base": 104,
+   "baseNoJogo": 104,
+   "cria": true,
+   "golpesOvo": [
+    "doublekick",
+    "screech",
+    "skullbash",
+    "curse",
+    "bellydrum",
+    "perishsong",
+    "detect",
+    "endure",
+    "ancientpower",
+    "ironhead",
+    "chipaway"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "105": {
+   "nome": "Marowak",
+   "macho": 50,
+   "grupos": [
+    1
+   ],
+   "ciclos": 20,
+   "linha": [
+    104,
+    105
+   ],
+   "base": 104,
+   "baseNoJogo": 104,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "106": {
+   "nome": "Hitmonlee",
+   "macho": 100,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    236,
+    106
+   ],
+   "base": 236,
+   "baseNoJogo": 106,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "107": {
+   "nome": "Hitmonchan",
+   "macho": 100,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    236,
+    107
+   ],
+   "base": 236,
+   "baseNoJogo": 107,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "108": {
+   "nome": "Lickitung",
+   "macho": 50,
+   "grupos": [
+    1
+   ],
+   "ciclos": 20,
+   "linha": [
+    108
+   ],
+   "base": 108,
+   "baseNoJogo": 108,
+   "cria": true,
+   "golpesOvo": [
+    "bodyslam",
+    "thrash",
+    "amnesia",
+    "snore",
+    "curse",
+    "bellydrum",
+    "sleeptalk",
+    "magnitude",
+    "smellingsalts",
+    "muddywater",
+    "hammerarm",
+    "zenheadbutt",
+    "belch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "109": {
+   "nome": "Koffing",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    109
+   ],
+   "base": 109,
+   "baseNoJogo": 109,
+   "cria": true,
+   "golpesOvo": [
+    "psybeam",
+    "screech",
+    "psywave",
+    "curse",
+    "spite",
+    "destinybond",
+    "painsplit",
+    "stockpile",
+    "spitup",
+    "swallow",
+    "grudge",
+    "toxicspikes",
+    "venomdrench"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "110": {
+   "nome": "Weezing",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    109,
+    110
+   ],
+   "base": 109,
+   "baseNoJogo": 109,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "111": {
+   "nome": "Rhyhorn",
+   "macho": 50,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    111
+   ],
+   "base": 111,
+   "baseNoJogo": 111,
+   "cria": true,
+   "golpesOvo": [
+    "counter",
+    "skullbash",
+    "curse",
+    "reversal",
+    "magnitude",
+    "irontail",
+    "crunch",
+    "crushclaw",
+    "metalburst",
+    "dragonrush",
+    "thunderfang",
+    "icefang",
+    "firefang",
+    "rockclimb",
+    "guardsplit",
+    "rototiller"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "112": {
+   "nome": "Rhydon",
+   "macho": 50,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    111,
+    112
+   ],
+   "base": 111,
+   "baseNoJogo": 111,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "113": {
+   "nome": "Chansey",
+   "macho": 0,
+   "grupos": [
+    6
+   ],
+   "ciclos": 40,
+   "linha": [
+    113
+   ],
+   "base": 113,
+   "baseNoJogo": 113,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [
+    "counter",
+    "seismictoss",
+    "metronome",
+    "endure",
+    "healbell",
+    "present",
+    "helpinghand",
+    "aromatherapy",
+    "gravity",
+    "naturalgift",
+    "mudbomb"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "114": {
+   "nome": "Tangela",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    114
+   ],
+   "base": 114,
+   "baseNoJogo": 114,
+   "cria": true,
+   "golpesOvo": [
+    "megadrain",
+    "leechseed",
+    "confusion",
+    "amnesia",
+    "flail",
+    "gigadrain",
+    "naturepower",
+    "endeavor",
+    "wakeupslap",
+    "naturalgift",
+    "powerswap",
+    "leafstorm",
+    "ragepowder"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "115": {
+   "nome": "Kangaskhan",
+   "macho": 0,
+   "grupos": [
+    1
+   ],
+   "ciclos": 20,
+   "linha": [
+    115
+   ],
+   "base": 115,
+   "baseNoJogo": 115,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [
+    "stomp",
+    "doubleedge",
+    "disable",
+    "counter",
+    "focusenergy",
+    "foresight",
+    "uproar",
+    "focuspunch",
+    "endeavor",
+    "crushclaw",
+    "hammerarm",
+    "trumpcard",
+    "circlethrow"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "116": {
+   "nome": "Horsea",
+   "macho": 50,
+   "grupos": [
+    2,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    116
+   ],
+   "base": 116,
+   "baseNoJogo": 116,
+   "cria": true,
+   "golpesOvo": [
+    "razorwind",
+    "disable",
+    "aurorabeam",
+    "dragonrage",
+    "splash",
+    "flail",
+    "octazooka",
+    "outrage",
+    "dragonbreath",
+    "signalbeam",
+    "muddywater",
+    "waterpulse",
+    "clearsmog"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "117": {
+   "nome": "Seadra",
+   "macho": 50,
+   "grupos": [
+    2,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    116,
+    117
+   ],
+   "base": 116,
+   "baseNoJogo": 116,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "118": {
+   "nome": "Goldeen",
+   "macho": 50,
+   "grupos": [
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    118
+   ],
+   "base": 118,
+   "baseNoJogo": 118,
+   "cria": true,
+   "golpesOvo": [
+    "bodyslam",
+    "hydropump",
+    "psybeam",
+    "haze",
+    "skullbash",
+    "mudslap",
+    "sleeptalk",
+    "mudsport",
+    "signalbeam",
+    "mudshot",
+    "aquatail"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "119": {
+   "nome": "Seaking",
+   "macho": 50,
+   "grupos": [
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    118,
+    119
+   ],
+   "base": 118,
+   "baseNoJogo": 118,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "120": {
+   "nome": "Staryu",
+   "macho": -1,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    120
+   ],
+   "base": 120,
+   "baseNoJogo": 120,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [
+    "supersonic",
+    "aurorabeam",
+    "barrier"
+   ],
+   "vgOvo": "gold-silver"
+  },
+  "121": {
+   "nome": "Starmie",
+   "macho": -1,
+   "grupos": [
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    120,
+    121
+   ],
+   "base": 120,
+   "baseNoJogo": 120,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "122": {
+   "nome": "Mr. Mime",
+   "macho": 50,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    122
+   ],
+   "base": 122,
+   "baseNoJogo": 122,
+   "cria": true,
+   "golpesOvo": [
+    "hypnosis",
+    "mimic",
+    "confuseray",
+    "icywind",
+    "futuresight",
+    "fakeout",
+    "trick",
+    "teeterdance",
+    "wakeupslap",
+    "nastyplot",
+    "powersplit",
+    "magicroom",
+    "psychicterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "123": {
+   "nome": "Scyther",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 25,
+   "linha": [
+    123
+   ],
+   "base": 123,
+   "baseNoJogo": 123,
+   "cria": true,
+   "golpesOvo": [
+    "razorwind",
+    "counter",
+    "reversal",
+    "endure",
+    "steelwing",
+    "batonpass",
+    "silverwind",
+    "nightslash",
+    "bugbuzz",
+    "defog",
+    "quickguard"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "124": {
+   "nome": "Jynx",
+   "macho": 0,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    238,
+    124
+   ],
+   "base": 238,
+   "baseNoJogo": 124,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "125": {
+   "nome": "Electabuzz",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    239,
+    125
+   ],
+   "base": 239,
+   "baseNoJogo": 125,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "126": {
+   "nome": "Magmar",
+   "macho": 75,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    240,
+    126
+   ],
+   "base": 240,
+   "baseNoJogo": 126,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "127": {
+   "nome": "Pinsir",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 25,
+   "linha": [
+    127
+   ],
+   "base": 127,
+   "baseNoJogo": 127,
+   "cria": true,
+   "golpesOvo": [
+    "furyattack",
+    "quickattack",
+    "flail",
+    "feintattack",
+    "superpower",
+    "feint",
+    "closecombat",
+    "mefirst",
+    "bugbite"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "128": {
+   "nome": "Tauros",
+   "macho": 100,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    128
+   ],
+   "base": 128,
+   "baseNoJogo": 128,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [
+    "curse",
+    "endeavor"
+   ],
+   "vgOvo": "scarlet-violet"
+  },
+  "129": {
+   "nome": "Magikarp",
+   "macho": 50,
+   "grupos": [
+    12,
+    14
+   ],
+   "ciclos": 5,
+   "linha": [
+    129
+   ],
+   "base": 129,
+   "baseNoJogo": 129,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "130": {
+   "nome": "Gyarados",
+   "macho": 50,
+   "grupos": [
+    12,
+    14
+   ],
+   "ciclos": 5,
+   "linha": [
+    129,
+    130
+   ],
+   "base": 129,
+   "baseNoJogo": 129,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "131": {
+   "nome": "Lapras",
+   "macho": 50,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 40,
+   "linha": [
+    131
+   ],
+   "base": 131,
+   "baseNoJogo": 131,
+   "cria": true,
+   "golpesOvo": [
+    "horndrill",
+    "fissure",
+    "curse",
+    "foresight",
+    "sleeptalk",
+    "ancientpower",
+    "futuresight",
+    "whirlpool",
+    "refresh",
+    "tickle",
+    "dragondance",
+    "dragonpulse",
+    "avalanche",
+    "freezedry"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "132": {
+   "nome": "Ditto",
+   "macho": -1,
+   "grupos": [
+    13
+   ],
+   "ciclos": 20,
+   "linha": [
+    132
+   ],
+   "base": 132,
+   "baseNoJogo": 132,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "133": {
+   "nome": "Eevee",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 35,
+   "linha": [
+    133
+   ],
+   "base": 133,
+   "baseNoJogo": 133,
+   "cria": true,
+   "golpesOvo": [
+    "curse",
+    "flail",
+    "detect",
+    "endure",
+    "charm",
+    "wish",
+    "yawn",
+    "faketears",
+    "tickle",
+    "covet",
+    "naturalgift",
+    "captivate",
+    "synchronoise",
+    "storedpower"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "134": {
+   "nome": "Vaporeon",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 35,
+   "linha": [
+    133,
+    134
+   ],
+   "base": 133,
+   "baseNoJogo": 133,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "135": {
+   "nome": "Jolteon",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 35,
+   "linha": [
+    133,
+    135
+   ],
+   "base": 133,
+   "baseNoJogo": 133,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "136": {
+   "nome": "Flareon",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 35,
+   "linha": [
+    133,
+    136
+   ],
+   "base": 133,
+   "baseNoJogo": 133,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "137": {
+   "nome": "Porygon",
+   "macho": -1,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    137
+   ],
+   "base": 137,
+   "baseNoJogo": 137,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "138": {
+   "nome": "Omanyte",
+   "macho": 87.5,
+   "grupos": [
+    2,
+    9
+   ],
+   "ciclos": 30,
+   "linha": [
+    138
+   ],
+   "base": 138,
+   "baseNoJogo": 138,
+   "cria": true,
+   "golpesOvo": [
+    "slam",
+    "supersonic",
+    "bubblebeam",
+    "aurorabeam",
+    "haze",
+    "bide",
+    "spikes",
+    "whirlpool",
+    "knockoff",
+    "muddywater",
+    "waterpulse",
+    "wringout",
+    "toxicspikes",
+    "reflecttype"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "139": {
+   "nome": "Omastar",
+   "macho": 87.5,
+   "grupos": [
+    2,
+    9
+   ],
+   "ciclos": 30,
+   "linha": [
+    138,
+    139
+   ],
+   "base": 138,
+   "baseNoJogo": 138,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "140": {
+   "nome": "Kabuto",
+   "macho": 87.5,
+   "grupos": [
+    2,
+    9
+   ],
+   "ciclos": 30,
+   "linha": [
+    140
+   ],
+   "base": 140,
+   "baseNoJogo": 140,
+   "cria": true,
+   "golpesOvo": [
+    "takedown",
+    "bubblebeam",
+    "aurorabeam",
+    "screech",
+    "confuseray",
+    "flail",
+    "foresight",
+    "icywind",
+    "gigadrain",
+    "rapidspin",
+    "knockoff",
+    "mudshot"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "141": {
+   "nome": "Kabutops",
+   "macho": 87.5,
+   "grupos": [
+    2,
+    9
+   ],
+   "ciclos": 30,
+   "linha": [
+    140,
+    141
+   ],
+   "base": 140,
+   "baseNoJogo": 140,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "142": {
+   "nome": "Aerodactyl",
+   "macho": 87.5,
+   "grupos": [
+    4
+   ],
+   "ciclos": 35,
+   "linha": [
+    142
+   ],
+   "base": 142,
+   "baseNoJogo": 142,
+   "cria": true,
+   "golpesOvo": [
+    "whirlwind",
+    "curse",
+    "foresight",
+    "steelwing",
+    "dragonbreath",
+    "pursuit",
+    "roost",
+    "tailwind",
+    "assurance",
+    "wideguard"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "143": {
+   "nome": "Snorlax",
+   "macho": 87.5,
+   "grupos": [
+    1
+   ],
+   "ciclos": 40,
+   "linha": [
+    143
+   ],
+   "base": 143,
+   "baseNoJogo": 143,
+   "cria": true,
+   "golpesOvo": [
+    "whirlwind",
+    "doubleedge",
+    "counter",
+    "fissure",
+    "lick",
+    "curse",
+    "charm",
+    "pursuit",
+    "naturalgift",
+    "afteryou",
+    "belch",
+    "poweruppunch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "144": {
+   "nome": "Articuno",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 80,
+   "linha": [
+    144
+   ],
+   "base": 144,
+   "baseNoJogo": 144,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "145": {
+   "nome": "Zapdos",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 80,
+   "linha": [
+    145
+   ],
+   "base": 145,
+   "baseNoJogo": 145,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "146": {
+   "nome": "Moltres",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 80,
+   "linha": [
+    146
+   ],
+   "base": 146,
+   "baseNoJogo": 146,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "147": {
+   "nome": "Dratini",
+   "macho": 50,
+   "grupos": [
+    2,
+    14
+   ],
+   "ciclos": 40,
+   "linha": [
+    147
+   ],
+   "base": 147,
+   "baseNoJogo": 147,
+   "cria": true,
+   "golpesOvo": [
+    "supersonic",
+    "mist",
+    "haze",
+    "dragonbreath",
+    "irontail",
+    "extremespeed",
+    "dragondance",
+    "waterpulse",
+    "dragonpulse",
+    "dragonrush",
+    "aquajet"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "148": {
+   "nome": "Dragonair",
+   "macho": 50,
+   "grupos": [
+    2,
+    14
+   ],
+   "ciclos": 40,
+   "linha": [
+    147,
+    148
+   ],
+   "base": 147,
+   "baseNoJogo": 147,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "149": {
+   "nome": "Dragonite",
+   "macho": 50,
+   "grupos": [
+    2,
+    14
+   ],
+   "ciclos": 40,
+   "linha": [
+    147,
+    148,
+    149
+   ],
+   "base": 147,
+   "baseNoJogo": 147,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "150": {
+   "nome": "Mewtwo",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 120,
+   "linha": [
+    150
+   ],
+   "base": 150,
+   "baseNoJogo": 150,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "151": {
+   "nome": "Mew",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 120,
+   "linha": [
+    151
+   ],
+   "base": 151,
+   "baseNoJogo": 151,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "152": {
+   "nome": "Chikorita",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    152
+   ],
+   "base": 152,
+   "baseNoJogo": 152,
+   "cria": true,
+   "golpesOvo": [
+    "vinewhip",
+    "bodyslam",
+    "counter",
+    "leechseed",
+    "flail",
+    "ancientpower",
+    "naturepower",
+    "ingrain",
+    "refresh",
+    "aromatherapy",
+    "grasswhistle",
+    "wringout",
+    "leafstorm",
+    "healpulse",
+    "grassyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "153": {
+   "nome": "Bayleef",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    152,
+    153
+   ],
+   "base": 152,
+   "baseNoJogo": 152,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "154": {
+   "nome": "Meganium",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    152,
+    153,
+    154
+   ],
+   "base": 152,
+   "baseNoJogo": 152,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "155": {
+   "nome": "Cyndaquil",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    155
+   ],
+   "base": 155,
+   "baseNoJogo": 155,
+   "cria": true,
+   "golpesOvo": [
+    "doublekick",
+    "thrash",
+    "doubleedge",
+    "quickattack",
+    "furyswipes",
+    "reversal",
+    "foresight",
+    "naturepower",
+    "crushclaw",
+    "extrasensory",
+    "howl",
+    "covet",
+    "flareblitz",
+    "flameburst"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "156": {
+   "nome": "Quilava",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    155,
+    156
+   ],
+   "base": 155,
+   "baseNoJogo": 155,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "157": {
+   "nome": "Typhlosion",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    155,
+    156,
+    157
+   ],
+   "base": 155,
+   "baseNoJogo": 155,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "158": {
+   "nome": "Totodile",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    158
+   ],
+   "base": 158,
+   "baseNoJogo": 158,
+   "cria": true,
+   "golpesOvo": [
+    "icepunch",
+    "thrash",
+    "hydropump",
+    "metalclaw",
+    "crunch",
+    "ancientpower",
+    "flatter",
+    "mudsport",
+    "faketears",
+    "block",
+    "watersport",
+    "dragondance",
+    "waterpulse",
+    "aquajet"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "159": {
+   "nome": "Croconaw",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    158,
+    159
+   ],
+   "base": 158,
+   "baseNoJogo": 158,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "160": {
+   "nome": "Feraligatr",
+   "macho": 87.5,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    158,
+    159,
+    160
+   ],
+   "base": 158,
+   "baseNoJogo": 158,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "161": {
+   "nome": "Sentret",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 15,
+   "linha": [
+    161
+   ],
+   "base": 161,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doubleedge",
+    "focusenergy",
+    "slash",
+    "reversal",
+    "charm",
+    "pursuit",
+    "irontail",
+    "trick",
+    "assist",
+    "covet",
+    "naturalgift",
+    "lastresort",
+    "captivate",
+    "babydolleyes"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "162": {
+   "nome": "Furret",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 15,
+   "linha": [
+    161,
+    162
+   ],
+   "base": 161,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "163": {
+   "nome": "Hoothoot",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    163
+   ],
+   "base": 163,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "wingattack",
+    "whirlwind",
+    "supersonic",
+    "agility",
+    "nightshade",
+    "mirrormove",
+    "skyattack",
+    "feintattack",
+    "meanlook",
+    "featherdance",
+    "defog",
+    "hurricane"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "164": {
+   "nome": "Noctowl",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    163,
+    164
+   ],
+   "base": 163,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "165": {
+   "nome": "Ledyba",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    165
+   ],
+   "base": 165,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "psybeam",
+    "counter",
+    "screech",
+    "bide",
+    "dizzypunch",
+    "endure",
+    "encore",
+    "focuspunch",
+    "knockoff",
+    "silverwind",
+    "tailwind",
+    "bugbuzz",
+    "drainpunch",
+    "bugbite"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "166": {
+   "nome": "Ledian",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    165,
+    166
+   ],
+   "base": 165,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "167": {
+   "nome": "Spinarak",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    167
+   ],
+   "base": 167,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "twineedle",
+    "sonicboom",
+    "disable",
+    "psybeam",
+    "megahorn",
+    "batonpass",
+    "pursuit",
+    "signalbeam",
+    "toxicspikes",
+    "nightslash",
+    "ragepowder",
+    "electroweb",
+    "lunge"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "168": {
+   "nome": "Ariados",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 15,
+   "linha": [
+    167,
+    168
+   ],
+   "base": 167,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "169": {
+   "nome": "Crobat",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 15,
+   "linha": [
+    41,
+    42,
+    169
+   ],
+   "base": 41,
+   "baseNoJogo": 41,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "170": {
+   "nome": "Chinchou",
+   "macho": 50,
+   "grupos": [
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    170
+   ],
+   "base": 170,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "mist",
+    "psybeam",
+    "agility",
+    "screech",
+    "amnesia",
+    "flail",
+    "whirlpool",
+    "shockwave",
+    "waterpulse",
+    "brine",
+    "soak"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "171": {
+   "nome": "Lanturn",
+   "macho": 50,
+   "grupos": [
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    170,
+    171
+   ],
+   "base": 170,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "172": {
+   "nome": "Pichu",
+   "macho": 50,
+   "grupos": [
+    15
+   ],
+   "ciclos": 10,
+   "linha": [
+    172
+   ],
+   "base": 172,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semOvo",
+   "golpesOvo": [
+    "doubleslap",
+    "thunderpunch",
+    "bide",
+    "flail",
+    "reversal",
+    "endure",
+    "present",
+    "encore",
+    "fakeout",
+    "charge",
+    "wish",
+    "tickle",
+    "luckychant",
+    "bestow",
+    "disarmingvoice",
+    "electricterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "173": {
+   "nome": "Cleffa",
+   "macho": 25,
+   "grupos": [
+    15
+   ],
+   "ciclos": 10,
+   "linha": [
+    173
+   ],
+   "base": 173,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semOvo",
+   "golpesOvo": [
+    "mimic",
+    "metronome",
+    "amnesia",
+    "splash",
+    "bellydrum",
+    "present",
+    "wish",
+    "aromatherapy",
+    "faketears",
+    "tickle",
+    "covet",
+    "storedpower",
+    "healpulse",
+    "mistyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "174": {
+   "nome": "Igglybuff",
+   "macho": 25,
+   "grupos": [
+    15
+   ],
+   "ciclos": 10,
+   "linha": [
+    174
+   ],
+   "base": 174,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semOvo",
+   "golpesOvo": [
+    "feintattack",
+    "perishsong",
+    "sleeptalk",
+    "present",
+    "wish",
+    "faketears",
+    "covet",
+    "gravity",
+    "punishment",
+    "lastresort",
+    "captivate",
+    "healpulse",
+    "mistyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "175": {
+   "nome": "Togepi",
+   "macho": 87.5,
+   "grupos": [
+    15
+   ],
+   "ciclos": 10,
+   "linha": [
+    175
+   ],
+   "base": 175,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semOvo",
+   "golpesOvo": [
+    "peck",
+    "mirrormove",
+    "foresight",
+    "present",
+    "morningsun",
+    "futuresight",
+    "secretpower",
+    "extrasensory",
+    "psychoshift",
+    "luckychant",
+    "nastyplot",
+    "storedpower"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "176": {
+   "nome": "Togetic",
+   "macho": 87.5,
+   "grupos": [
+    4,
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    175,
+    176
+   ],
+   "base": 175,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "177": {
+   "nome": "Natu",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 20,
+   "linha": [
+    177
+   ],
+   "base": 177,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "drillpeck",
+    "quickattack",
+    "haze",
+    "feintattack",
+    "steelwing",
+    "skillswap",
+    "refresh",
+    "featherdance",
+    "roost",
+    "suckerpunch",
+    "zenheadbutt",
+    "synchronoise",
+    "simplebeam",
+    "allyswitch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "178": {
+   "nome": "Xatu",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 20,
+   "linha": [
+    177,
+    178
+   ],
+   "base": 177,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "179": {
+   "nome": "Mareep",
+   "macho": 50,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    179
+   ],
+   "base": 179,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "sandattack",
+    "bodyslam",
+    "takedown",
+    "agility",
+    "screech",
+    "irontail",
+    "flatter",
+    "charge",
+    "odorsleuth",
+    "afteryou",
+    "eerieimpulse",
+    "electricterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "180": {
+   "nome": "Flaaffy",
+   "macho": 50,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    179,
+    180
+   ],
+   "base": 179,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "181": {
+   "nome": "Ampharos",
+   "macho": 50,
+   "grupos": [
+    1,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    179,
+    180,
+    181
+   ],
+   "base": 179,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "182": {
+   "nome": "Bellossom",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    43,
+    44,
+    182
+   ],
+   "base": 43,
+   "baseNoJogo": 43,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "183": {
+   "nome": "Marill",
+   "macho": 50,
+   "grupos": [
+    2,
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    183
+   ],
+   "base": 183,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "bodyslam",
+    "supersonic",
+    "amnesia",
+    "bellydrum",
+    "perishsong",
+    "present",
+    "futuresight",
+    "superpower",
+    "refresh",
+    "camouflage",
+    "muddywater",
+    "watersport",
+    "aquajet"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "184": {
+   "nome": "Azumarill",
+   "macho": 50,
+   "grupos": [
+    2,
+    6
+   ],
+   "ciclos": 10,
+   "linha": [
+    183,
+    184
+   ],
+   "base": 183,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "185": {
+   "nome": "Sudowoodo",
+   "macho": 50,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    185
+   ],
+   "base": 185,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "headbutt",
+    "harden",
+    "defensecurl",
+    "selfdestruct",
+    "curse",
+    "endure",
+    "rollout",
+    "sandtomb",
+    "stealthrock"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "186": {
+   "nome": "Politoed",
+   "macho": 50,
+   "grupos": [
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    60,
+    61,
+    186
+   ],
+   "base": 60,
+   "baseNoJogo": 60,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "187": {
+   "nome": "Hoppip",
+   "macho": 50,
+   "grupos": [
+    6,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    187
+   ],
+   "base": 187,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doubleedge",
+    "confusion",
+    "amnesia",
+    "endure",
+    "encore",
+    "helpinghand",
+    "aromatherapy",
+    "worryseed",
+    "seedbomb",
+    "cottonguard",
+    "grassyterrain",
+    "strengthsap"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "188": {
+   "nome": "Skiploom",
+   "macho": 50,
+   "grupos": [
+    6,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    187,
+    188
+   ],
+   "base": 187,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "189": {
+   "nome": "Jumpluff",
+   "macho": 50,
+   "grupos": [
+    6,
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    187,
+    188,
+    189
+   ],
+   "base": 187,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "190": {
+   "nome": "Aipom",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    190
+   ],
+   "base": 190,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doubleslap",
+    "slam",
+    "counter",
+    "agility",
+    "screech",
+    "spite",
+    "pursuit",
+    "beatup",
+    "fakeout",
+    "revenge",
+    "bounce",
+    "covet",
+    "switcheroo",
+    "quickguard",
+    "tailslap"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "191": {
+   "nome": "Sunkern",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    191
+   ],
+   "base": 191,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "leechseed",
+    "bide",
+    "curse",
+    "endure",
+    "encore",
+    "sweetscent",
+    "morningsun",
+    "naturepower",
+    "helpinghand",
+    "ingrain",
+    "grasswhistle",
+    "naturalgift",
+    "grassyterrain"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "192": {
+   "nome": "Sunflora",
+   "macho": 50,
+   "grupos": [
+    7
+   ],
+   "ciclos": 20,
+   "linha": [
+    191,
+    192
+   ],
+   "base": 191,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "193": {
+   "nome": "Yanma",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    193
+   ],
+   "base": 193,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "whirlwind",
+    "doubleedge",
+    "leechlife",
+    "reversal",
+    "feintattack",
+    "pursuit",
+    "secretpower",
+    "silverwind",
+    "signalbeam",
+    "feint"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "194": {
+   "nome": "Wooper",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    194
+   ],
+   "base": 194,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doublekick",
+    "bodyslam",
+    "counter",
+    "recover",
+    "curse",
+    "sleeptalk",
+    "encore",
+    "ancientpower",
+    "stockpile",
+    "spitup",
+    "swallow",
+    "mudsport",
+    "guardswap",
+    "acidspray",
+    "afteryou",
+    "eerieimpulse",
+    "poweruppunch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "195": {
+   "nome": "Quagsire",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    194,
+    195
+   ],
+   "base": 194,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "196": {
+   "nome": "Espeon",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 35,
+   "linha": [
+    133,
+    196
+   ],
+   "base": 133,
+   "baseNoJogo": 133,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "197": {
+   "nome": "Umbreon",
+   "macho": 87.5,
+   "grupos": [
+    5
+   ],
+   "ciclos": 35,
+   "linha": [
+    133,
+    197
+   ],
+   "base": 133,
+   "baseNoJogo": 133,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "198": {
+   "nome": "Murkrow",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 20,
+   "linha": [
+    198
+   ],
+   "base": 198,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "wingattack",
+    "whirlwind",
+    "drillpeck",
+    "screech",
+    "confuseray",
+    "mirrormove",
+    "skyattack",
+    "feintattack",
+    "perishsong",
+    "flatter",
+    "featherdance",
+    "roost",
+    "assurance",
+    "psychoshift",
+    "punishment",
+    "bravebird"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "199": {
+   "nome": "Slowking",
+   "macho": 50,
+   "grupos": [
+    1,
+    2
+   ],
+   "ciclos": 20,
+   "linha": [
+    79,
+    199
+   ],
+   "base": 79,
+   "baseNoJogo": 79,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "200": {
+   "nome": "Misdreavus",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 25,
+   "linha": [
+    200
+   ],
+   "base": 200,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "screech",
+    "curse",
+    "spite",
+    "destinybond",
+    "memento",
+    "skillswap",
+    "imprison",
+    "mefirst",
+    "suckerpunch",
+    "nastyplot",
+    "shadowsneak",
+    "ominouswind",
+    "wonderroom"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "201": {
+   "nome": "Unown",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 40,
+   "linha": [
+    201
+   ],
+   "base": 201,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "202": {
+   "nome": "Wobbuffet",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    202
+   ],
+   "base": 202,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "203": {
+   "nome": "Girafarig",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    203
+   ],
+   "base": 203,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "razorwind",
+    "doublekick",
+    "takedown",
+    "amnesia",
+    "foresight",
+    "meanlook",
+    "mirrorcoat",
+    "futuresight",
+    "beatup",
+    "wish",
+    "magiccoat",
+    "skillswap",
+    "secretpower",
+    "psychicterrain",
+    "psychicfangs"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "204": {
+   "nome": "Pineco",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    204
+   ],
+   "base": 204,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doubleedge",
+    "pinmissile",
+    "counter",
+    "swift",
+    "flail",
+    "endure",
+    "revenge",
+    "sandtomb",
+    "powertrick",
+    "toxicspikes",
+    "stealthrock"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "205": {
+   "nome": "Forretress",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    204,
+    205
+   ],
+   "base": 204,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "206": {
+   "nome": "Dunsparce",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    206
+   ],
+   "base": 206,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "headbutt",
+    "bite",
+    "agility",
+    "bide",
+    "snore",
+    "curse",
+    "sleeptalk",
+    "ancientpower",
+    "magiccoat",
+    "secretpower",
+    "astonish",
+    "trumpcard",
+    "hex"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "207": {
+   "nome": "Gligar",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    207
+   ],
+   "base": 207,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "razorwind",
+    "wingattack",
+    "doubleedge",
+    "counter",
+    "agility",
+    "batonpass",
+    "metalclaw",
+    "sandtomb",
+    "poisontail",
+    "feint",
+    "powertrick",
+    "nightslash",
+    "rockclimb",
+    "crosspoison"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "208": {
+   "nome": "Steelix",
+   "macho": 50,
+   "grupos": [
+    10
+   ],
+   "ciclos": 25,
+   "linha": [
+    95,
+    208
+   ],
+   "base": 95,
+   "baseNoJogo": 95,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "209": {
+   "nome": "Snubbull",
+   "macho": 25,
+   "grupos": [
+    5,
+    6
+   ],
+   "ciclos": 20,
+   "linha": [
+    209
+   ],
+   "base": 209,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doubleedge",
+    "mimic",
+    "metronome",
+    "snore",
+    "feintattack",
+    "healbell",
+    "present",
+    "crunch",
+    "focuspunch",
+    "smellingsalts",
+    "faketears",
+    "closecombat",
+    "thunderfang",
+    "icefang",
+    "firefang"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "210": {
+   "nome": "Granbull",
+   "macho": 25,
+   "grupos": [
+    5,
+    6
+   ],
+   "ciclos": 20,
+   "linha": [
+    209,
+    210
+   ],
+   "base": 209,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "211": {
+   "nome": "Qwilfish",
+   "macho": 50,
+   "grupos": [
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    211
+   ],
+   "base": 211,
+   "baseNoJogo": 211,
+   "cria": true,
+   "golpesOvo": [
+    "supersonic",
+    "bubblebeam",
+    "haze",
+    "flail",
+    "astonish",
+    "signalbeam",
+    "waterpulse",
+    "brine",
+    "aquajet",
+    "acidspray"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "212": {
+   "nome": "Scizor",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 25,
+   "linha": [
+    123,
+    212
+   ],
+   "base": 123,
+   "baseNoJogo": 123,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "213": {
+   "nome": "Shuckle",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 20,
+   "linha": [
+    213
+   ],
+   "base": 213,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "acid",
+    "mudslap",
+    "sweetscent",
+    "helpinghand",
+    "knockoff",
+    "sandtomb",
+    "rockblast",
+    "acupressure",
+    "finalgambit"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "214": {
+   "nome": "Heracross",
+   "macho": 50,
+   "grupos": [
+    3
+   ],
+   "ciclos": 25,
+   "linha": [
+    214
+   ],
+   "base": 214,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doubleedge",
+    "seismictoss",
+    "harden",
+    "bide",
+    "flail",
+    "megahorn",
+    "pursuit",
+    "focuspunch",
+    "revenge",
+    "rockblast"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "215": {
+   "nome": "Sneasel",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    215
+   ],
+   "base": 215,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "icepunch",
+    "bite",
+    "counter",
+    "spite",
+    "foresight",
+    "pursuit",
+    "fakeout",
+    "assist",
+    "crushclaw",
+    "feint",
+    "punishment",
+    "avalanche",
+    "iceshard",
+    "doublehit",
+    "iciclecrash",
+    "throatchop"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "216": {
+   "nome": "Teddiursa",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    216
+   ],
+   "base": 216,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "takedown",
+    "doubleedge",
+    "counter",
+    "seismictoss",
+    "bellydrum",
+    "sleeptalk",
+    "metalclaw",
+    "crosschop",
+    "crunch",
+    "yawn",
+    "faketears",
+    "closecombat",
+    "nightslash",
+    "chipaway",
+    "playrough"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "217": {
+   "nome": "Ursaring",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    216,
+    217
+   ],
+   "base": 216,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "218": {
+   "nome": "Slugma",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    218
+   ],
+   "base": 218,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "smokescreen",
+    "acidarmor",
+    "curse",
+    "rollout",
+    "stockpile",
+    "spitup",
+    "swallow",
+    "heatwave",
+    "memento",
+    "guardswap",
+    "earthpower",
+    "inferno"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "219": {
+   "nome": "Magcargo",
+   "macho": 50,
+   "grupos": [
+    11
+   ],
+   "ciclos": 20,
+   "linha": [
+    218,
+    219
+   ],
+   "base": 218,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "220": {
+   "nome": "Swinub",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    220
+   ],
+   "base": 220,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "bodyslam",
+    "takedown",
+    "doubleedge",
+    "bite",
+    "fissure",
+    "curse",
+    "ancientpower",
+    "iciclespear",
+    "mudshot",
+    "avalanche",
+    "stealthrock",
+    "iciclecrash",
+    "freezedry"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "221": {
+   "nome": "Piloswine",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    220,
+    221
+   ],
+   "base": 220,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "222": {
+   "nome": "Corsola",
+   "macho": 25,
+   "grupos": [
+    2,
+    9
+   ],
+   "ciclos": 20,
+   "linha": [
+    222
+   ],
+   "base": 222,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "mist",
+    "screech",
+    "confuseray",
+    "barrier",
+    "bide",
+    "amnesia",
+    "curse",
+    "naturepower",
+    "ingrain",
+    "camouflage",
+    "iciclespear",
+    "waterpulse",
+    "aquaring",
+    "headsmash",
+    "liquidation"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "223": {
+   "nome": "Remoraid",
+   "macho": 50,
+   "grupos": [
+    2,
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    223
+   ],
+   "base": 223,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "supersonic",
+    "aurorabeam",
+    "screech",
+    "haze",
+    "swift",
+    "snore",
+    "flail",
+    "octazooka",
+    "waterspout",
+    "mudshot",
+    "rockblast",
+    "waterpulse",
+    "acidspray",
+    "entrainment"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "224": {
+   "nome": "Octillery",
+   "macho": 50,
+   "grupos": [
+    2,
+    12
+   ],
+   "ciclos": 20,
+   "linha": [
+    223,
+    224
+   ],
+   "base": 223,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "225": {
+   "nome": "Delibird",
+   "macho": 50,
+   "grupos": [
+    2,
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    225
+   ],
+   "base": 225,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "icepunch",
+    "aurorabeam",
+    "counter",
+    "quickattack",
+    "splash",
+    "spikes",
+    "destinybond",
+    "icywind",
+    "rapidspin",
+    "futuresight",
+    "fakeout",
+    "iceball",
+    "iceshard",
+    "bestow",
+    "freezedry"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "226": {
+   "nome": "Mantine",
+   "macho": 50,
+   "grupos": [
+    2
+   ],
+   "ciclos": 25,
+   "linha": [
+    226
+   ],
+   "base": 226,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "slam",
+    "hydropump",
+    "haze",
+    "amnesia",
+    "splash",
+    "twister",
+    "mirrorcoat",
+    "mudsport",
+    "watersport",
+    "wideguard"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "227": {
+   "nome": "Skarmory",
+   "macho": 50,
+   "grupos": [
+    4
+   ],
+   "ciclos": 25,
+   "linha": [
+    227
+   ],
+   "base": 227,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "whirlwind",
+    "drillpeck",
+    "skyattack",
+    "curse",
+    "endure",
+    "pursuit",
+    "assurance",
+    "guardswap",
+    "bravebird",
+    "stealthrock"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "228": {
+   "nome": "Houndour",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    228
+   ],
+   "base": 228,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "counter",
+    "firespin",
+    "rage",
+    "reversal",
+    "spite",
+    "destinybond",
+    "pursuit",
+    "beatup",
+    "feint",
+    "punishment",
+    "suckerpunch",
+    "nastyplot",
+    "thunderfang",
+    "firefang"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "229": {
+   "nome": "Houndoom",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    228,
+    229
+   ],
+   "base": 228,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "230": {
+   "nome": "Kingdra",
+   "macho": 50,
+   "grupos": [
+    2,
+    14
+   ],
+   "ciclos": 20,
+   "linha": [
+    116,
+    117,
+    230
+   ],
+   "base": 116,
+   "baseNoJogo": 116,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "231": {
+   "nome": "Phanpy",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    231
+   ],
+   "base": 231,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "bodyslam",
+    "counter",
+    "fissure",
+    "focusenergy",
+    "snore",
+    "mudslap",
+    "ancientpower",
+    "endeavor",
+    "iceshard",
+    "headsmash",
+    "heavyslam",
+    "playrough",
+    "highhorsepower"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "232": {
+   "nome": "Donphan",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    231,
+    232
+   ],
+   "base": 231,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "233": {
+   "nome": "Porygon2",
+   "macho": -1,
+   "grupos": [
+    10
+   ],
+   "ciclos": 20,
+   "linha": [
+    137,
+    233
+   ],
+   "base": 137,
+   "baseNoJogo": 137,
+   "cria": false,
+   "naoCria": "semGenero",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "234": {
+   "nome": "Stantler",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    234
+   ],
+   "base": 234,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "doublekick",
+    "thrash",
+    "bite",
+    "disable",
+    "rage",
+    "spite",
+    "megahorn",
+    "mudsport",
+    "extrasensory",
+    "mefirst",
+    "zenheadbutt"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "235": {
+   "nome": "Smeargle",
+   "macho": 50,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    235
+   ],
+   "base": 235,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "236": {
+   "nome": "Tyrogue",
+   "macho": 100,
+   "grupos": [
+    15
+   ],
+   "ciclos": 25,
+   "linha": [
+    236
+   ],
+   "base": 236,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [
+    "counter",
+    "highjumpkick",
+    "mindreader",
+    "machpunch",
+    "endure",
+    "pursuit",
+    "rapidspin",
+    "helpinghand",
+    "feint",
+    "vacuumwave",
+    "bulletpunch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "237": {
+   "nome": "Hitmontop",
+   "macho": 100,
+   "grupos": [
+    8
+   ],
+   "ciclos": 25,
+   "linha": [
+    236,
+    237
+   ],
+   "base": 236,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "soMacho",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "238": {
+   "nome": "Smoochum",
+   "macho": 0,
+   "grupos": [
+    15
+   ],
+   "ciclos": 25,
+   "linha": [
+    238
+   ],
+   "base": 238,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [
+    "icepunch",
+    "meditate",
+    "fakeout",
+    "wish",
+    "miracleeye",
+    "wakeupslap",
+    "nastyplot",
+    "captivate"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "239": {
+   "nome": "Elekid",
+   "macho": 75,
+   "grupos": [
+    15
+   ],
+   "ciclos": 25,
+   "linha": [
+    239
+   ],
+   "base": 239,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semOvo",
+   "golpesOvo": [
+    "karatechop",
+    "firepunch",
+    "icepunch",
+    "rollingkick",
+    "meditate",
+    "barrier",
+    "dynamicpunch",
+    "crosschop",
+    "focuspunch",
+    "hammerarm",
+    "feint"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "240": {
+   "nome": "Magby",
+   "macho": 75,
+   "grupos": [
+    15
+   ],
+   "ciclos": 25,
+   "linha": [
+    240
+   ],
+   "base": 240,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "semOvo",
+   "golpesOvo": [
+    "karatechop",
+    "megapunch",
+    "thunderpunch",
+    "screech",
+    "barrier",
+    "focusenergy",
+    "machpunch",
+    "bellydrum",
+    "dynamicpunch",
+    "irontail",
+    "crosschop",
+    "powerswap",
+    "flareblitz",
+    "belch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "241": {
+   "nome": "Miltank",
+   "macho": 0,
+   "grupos": [
+    5
+   ],
+   "ciclos": 20,
+   "linha": [
+    241
+   ],
+   "base": 241,
+   "baseNoJogo": null,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [
+    "doubleedge",
+    "seismictoss",
+    "dizzypunch",
+    "curse",
+    "reversal",
+    "endure",
+    "sleeptalk",
+    "present",
+    "helpinghand",
+    "hammerarm",
+    "naturalgift",
+    "punishment",
+    "heartstamp",
+    "belch"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "242": {
+   "nome": "Blissey",
+   "macho": 0,
+   "grupos": [
+    6
+   ],
+   "ciclos": 40,
+   "linha": [
+    113,
+    242
+   ],
+   "base": 113,
+   "baseNoJogo": 113,
+   "cria": false,
+   "naoCria": "soFemea",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "243": {
+   "nome": "Raikou",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 80,
+   "linha": [
+    243
+   ],
+   "base": 243,
+   "baseNoJogo": 243,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "244": {
+   "nome": "Entei",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 80,
+   "linha": [
+    244
+   ],
+   "base": 244,
+   "baseNoJogo": 244,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [
+    "sacredfire",
+    "extremespeed"
+   ],
+   "vgOvo": "scarlet-violet"
+  },
+  "245": {
+   "nome": "Suicune",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 80,
+   "linha": [
+    245
+   ],
+   "base": 245,
+   "baseNoJogo": 245,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [
+    "extremespeed",
+    "sheercold"
+   ],
+   "vgOvo": "scarlet-violet"
+  },
+  "246": {
+   "nome": "Larvitar",
+   "macho": 50,
+   "grupos": [
+    1
+   ],
+   "ciclos": 40,
+   "linha": [
+    246
+   ],
+   "base": 246,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [
+    "stomp",
+    "focusenergy",
+    "curse",
+    "outrage",
+    "pursuit",
+    "irontail",
+    "ancientpower",
+    "irondefense",
+    "dragondance",
+    "assurance",
+    "ironhead",
+    "stealthrock"
+   ],
+   "vgOvo": "ultra-sun-ultra-moon"
+  },
+  "247": {
+   "nome": "Pupitar",
+   "macho": 50,
+   "grupos": [
+    1
+   ],
+   "ciclos": 40,
+   "linha": [
+    246,
+    247
+   ],
+   "base": 246,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "248": {
+   "nome": "Tyranitar",
+   "macho": 50,
+   "grupos": [
+    1
+   ],
+   "ciclos": 40,
+   "linha": [
+    246,
+    247,
+    248
+   ],
+   "base": 246,
+   "baseNoJogo": null,
+   "cria": true,
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "249": {
+   "nome": "Lugia",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 120,
+   "linha": [
+    249
+   ],
+   "base": 249,
+   "baseNoJogo": 249,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [
+    "dragonrush"
+   ],
+   "vgOvo": "scarlet-violet"
+  },
+  "250": {
+   "nome": "Ho-Oh",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 120,
+   "linha": [
+    250
+   ],
+   "base": 250,
+   "baseNoJogo": 250,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  },
+  "251": {
+   "nome": "Celebi",
+   "macho": -1,
+   "grupos": [
+    15
+   ],
+   "ciclos": 120,
+   "linha": [
+    251
+   ],
+   "base": 251,
+   "baseNoJogo": 251,
+   "cria": false,
+   "naoCria": "lendario",
+   "golpesOvo": [],
+   "vgOvo": null
+  }
+ },
+ "fontes": [
+  {
+   "arquivo": "data/pokeapi/pokemon_species.csv",
+   "origem": "PokeAPI (CSV do repositório), cópia do 1º commit do jogo; igual à de 25/09 (ca0a21b3) nos dex 1–251",
+   "sha1": "e3614dd04af9bfe4e27a890e01eada955236bcb7"
+  },
+  {
+   "arquivo": "data/pokeapi/pokemon_egg_groups.csv",
+   "origem": "PokeAPI master, baixado com curl em 01/10/2026",
+   "sha1": "0739d471b7f47953a3af01f630acafc44ee7770a"
+  },
+  {
+   "arquivo": "data/pokeapi/egg_groups.csv",
+   "origem": "PokeAPI master, baixado com curl em 01/10/2026",
+   "sha1": "f52399eeead5fad989ede9c7495f3104f655c1a8"
+  },
+  {
+   "arquivo": "data/pokeapi/pokemon_moves_ovo.csv",
+   "origem": "recorte do pokemon_moves.csv da PokeAPI ca0a21b3 (25/09) por tools/ovo_recorte.mjs: método 2, dex 1–251",
+   "sha1": "2897a50231c5504f5fa99ea3c77cd32066483e09"
+  },
+  {
+   "arquivo": "data/pokeapi/version_groups.csv",
+   "origem": "PokeAPI ca0a21b3 (25/09), copiado em 01/10",
+   "sha1": "e3110a6518aacae0c03f8ac5cd3599e3d47cffd5"
+  },
+  {
+   "arquivo": "data/pokeapi/pokemon_move_methods.csv",
+   "origem": "PokeAPI ca0a21b3 (25/09), copiado em 01/10",
+   "sha1": "3e62cf3a8b8244ea0caf7fcf81062751ab776c0c"
+  },
+  {
+   "arquivo": "data/pokeapi/moves.csv",
+   "origem": "PokeAPI (identificador de cada golpe)",
+   "sha1": "b2b6ca5e1343a92639e3b3f25621f098d23b1826"
+  },
+  {
+   "arquivo": "data/sexos.json",
+   "origem": "o jogo (% de machos por espécie, do dex_extra)",
+   "sha1": "5dd0e2b8e9fdda2a42e8658dc61af4870b9b26f2"
+  },
+  {
+   "arquivo": "data/learnset.json",
+   "origem": "o jogo (os golpes que existem hoje: as chaves de `pp`)",
+   "sha1": "cffda181805666cfcfca9792e8e13605c29c10dc"
+  },
+  {
+   "arquivo": "data/elenco.json",
+   "origem": "o jogo (as espécies com modelo, tools/elenco.mjs)",
+   "sha1": "246296c7ed8e5c1ecdac92fef7aefa82fee8d83c"
+  },
+  {
+   "arquivo": "data/evolucoes.json",
+   "origem": "o jogo (conferência da linha de pré-evolução)",
+   "sha1": "d13a340816cabe1e9bf8c033eb9ff4bfdc9b7724"
+  },
+  {
+   "arquivo": "pokedex.json",
+   "origem": "o jogo (os nomes)",
+   "sha1": "4d26662e7d18141e837501dc4780f4a8890d3175"
+  },
+  {
+   "arquivo": "data/kanto.json",
+   "origem": "dump (o prédio e a porta da creche)",
+   "sha1": "7b4ab899bbd2602b0d97c6bbc7a0a58e1564ca21"
+  },
+  {
+   "arquivo": "data/portas.json",
+   "origem": "dump (a porta → a área 1813)",
+   "sha1": "b057cfef7ca367024395008cc6acd5d0083356e5"
+  },
+  {
+   "arquivo": "data/MapAreaConfig.json",
+   "origem": "dump (área 1813 → cena 4110009)",
+   "sha1": "1d5ba5edccaa76704ac56102bfdc1670e72c3845"
+  },
+  {
+   "arquivo": "data/NpcConfig.json",
+   "origem": "dump (a Hideko, 1181301)",
+   "sha1": "a8dd02c2acf4706665f63d17f8d3ddc3867efcd2"
+  },
+  {
+   "arquivo": "data/ModelConfig.json",
+   "origem": "dump (modelo 71049 → fc2016_00)",
+   "sha1": "132f72ab2245c39ad43623f493b4433f2428b8fa"
+  },
+  {
+   "arquivo": "data/NpcTalkConfig.json",
+   "origem": "dump (a fala da Hideko)",
+   "sha1": "55232a54d366d13eb9d0cebb79d8c1ad00d1e865"
+  },
+  {
+   "arquivo": "data/LanguageConfig_pt.json",
+   "origem": "dump (os textos em português)",
+   "sha1": "acc357872dff3c985a39a0e417e634830857d3d8"
+  },
+  {
+   "arquivo": "data/itens_novos.json",
+   "origem": "o jogo (a incubadora 900030 e a Pedra Eterna 900010)",
+   "sha1": "a47a31846dcae8d2cc2ba38f72c4bfc8ca296981"
+  }
+ ]
+}
