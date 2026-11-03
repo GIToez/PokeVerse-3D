@@ -69,7 +69,7 @@ export function lembrarPos(p){
   if (!p || !Number.isFinite(+p.x) || !Number.isFinite(+p.z)) return;
   const mapa = String(p.mapa || '');
   if (!/^[\w.-]{1,40}$/.test(mapa)) return;
-  posPend = { mapa, x: +(+p.x).toFixed(2), y: Number.isFinite(+p.y) ? +(+p.y).toFixed(2) : 0, z: +(+p.z).toFixed(2), giro: Number.isFinite(+p.giro) ? +(+p.giro).toFixed(3) : 0, ...(p.chegada ? { chegada: +p.chegada } : {}) };
+  posPend = { mapa, x: +(+p.x).toFixed(2), y: Number.isFinite(+p.y) ? +(+p.y).toFixed(2) : 0, z: +(+p.z).toFixed(2), giro: Number.isFinite(+p.giro) ? +(+p.giro).toFixed(3) : 0, ...(p.chegada ? { chegada: +p.chegada } : {}), ...(p.porta && p.chegada ? { porta: 1 } : {}) };
 }
 /** Leitura crua de uma chave (texto JSON ou null). Com conta e chave de save, vem do cofre. */
 export function lerBruto(k){ return (comConta() && CHAVES.has(k)) ? (cofre.get(k) ?? null) : ler(k); }

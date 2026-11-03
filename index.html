@@ -3484,9 +3484,23 @@ function posParada(){
   } catch {}
   return srv || null;
 }
+/* Same-map gates (a cave, a route passage) teleport farther than a walk. Keep calling it a door until the player leaves the landing, so the save — including the one on refresh — is the far side, not the entrance. */
+let portaRecente = null;
+function marcarPorta(chegada){
+  const a = jogo.ash; if (!a || !(+chegada > 0)) return;
+  portaRecente = { chegada: +chegada, x: a.x, z: a.z };
+}
+function portaAgora(){
+  const a = jogo.ash;
+  if (!a || !portaRecente) return 0;
+  if (Math.hypot(a.x - portaRecente.x, a.z - portaRecente.z) > 20){ portaRecente = null; return 0; }
+  return portaRecente.chegada;
+}
 function gravarParada(){
   const a = jogo.ash; if (!a) return;
   const p = { mapa: NOME, x: +a.x, y: +a.y || 0, z: +a.z, giro: a.giro || 0 };
+  const chegada = portaAgora();
+  if (chegada){ p.chegada = chegada; p.porta = 1; }
   try { sessionStorage.setItem('parada.' + NOME, JSON.stringify(p)); localStorage.setItem('ultimaParada', JSON.stringify(p)); } catch {}
   Conta.lembrarPos?.(p);
 }
@@ -7171,12 +7185,16 @@ async function atravessar(p){
       } }
     garantirSaida('passagem ' + p.id + '→' + p.destino);                 // 18/09 (akira, Silph piso 3): a placa deixou o jogador numa sala sem porta alcançável — vai pra célula com saída mais perta
     try { sessionStorage.setItem('chegada.' + NOME, String(p.destino)); } catch {}   // F5 depois da passagem nasce por ESTA chegada (o servidor só sabe a da última carga de página: devolvia pra outra ponta)
+    marcarPorta(p.destino); gravarParada(); try { Rede.enviarPorta(p.destino); } catch {}   // the landing can be a whole route away: tell the server it was a door, or a refresh puts them back at the entrance
     for (const q of portasCena) if (distPorta(q, ash.x, ash.z) < 1.9) emPorta.add(q);
     $('boot').hidden = true; portaOcupado = false; return;
   }
   portaOcupado = true;
   if (ehMundoRua()) sessionStorage.setItem('mundo', NOME);
-  const mapa = dest.c === 1000001 ? (sessionStorage.getItem('mundo') || 'kanto') : dest.c === 2000001 ? '2000001' : String(cenaDest);
+  /* A door onto Kanto (the west side of the Connection Center, Route 22) stays on Kanto. The tab may have last walked in Johto; that memory is only for choosing Kanto or the Route 1 slice. Johto's own doors use scene 2000001. */
+  let mundo = 'kanto'; try { mundo = sessionStorage.getItem('mundo') || 'kanto'; } catch {}
+  if (mundo !== 'kanto' && mundo !== 'pallet_route1') mundo = 'kanto';
+  const mapa = dest.c === 1000001 ? mundo : dest.c === 2000001 ? '2000001' : String(cenaDest);
   if (Math.floor((dest.a || 0) / 100) === 14){
     gravarLS('ultimoCentro', { mapa, chegada: p.destino, quando: Date.now() });   // Centro Pokémon = áreas 1401–1411: morte → acorda aqui (aposDesmaio)
     const vis = lerLS('centrosVisitados', {}) || {};                     // Map → Fly: every Center you have walked into (per device)
@@ -8727,7 +8745,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt),chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt),chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');

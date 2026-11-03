@@ -15,7 +15,7 @@ let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null,
 import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
 import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
 import * as PrefAparelho from './device_prefs.mjs';                    // Settings → "Other players' names" (per device)
-export const VERSAO_REDE = 21;                                            // 21: party HP is stored on the account, so a refresh does not heal
+export const VERSAO_REDE = 22;                                            // 22: a same-map door is stored, so a refresh stays on the far side
 
 export function instalar(c){
   ctx = c;
@@ -60,6 +60,15 @@ function agendar(){ if (desligado) return; clearTimeout(timer); const espera = M
 let desligado = false;
 export const foiDesligado = () => desligado;
 export function enviar(obj){ if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(obj)); return true; } catch {} } return false; }   // devolve se FOI (passo 6: a conta segura o que não foi)   // exportado: o mundo compartilhado (world.mjs) manda por aqui
+/** Tell the server this position is a door landing, before the next walk sample. */
+export function enviarPorta(chegada){
+  const a = ctx?.jogo?.ash;
+  if (!a || !(+chegada > 0)) return false;
+  const giro = a.giro || 0, anim = a.anim || 'Idle';
+  const foi = enviar({ t: 'pos', x: +a.x.toFixed(2), y: +(a.y || 0).toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, porta: 1, chegada: +chegada });
+  if (foi) ultimoEnvio = { ...ultimoEnvio, x: a.x, z: a.z, giro, anim, quando: performance.now() };
+  return foi;
+}
 let wildRollWait = null;
 /** Ask the server to roll one wild in this area. Resolves to the spawn, or null. */
 export function pedirWild(area, water, hour){
@@ -417,8 +426,10 @@ export function quadro(dt){
     const mudou = Math.hypot(a.x - ultimoEnvio.x, a.z - ultimoEnvio.z) > 0.02 || Math.abs(giro - ultimoEnvio.giro) > 0.005 || anim !== ultimoEnvio.anim
       || Math.hypot(px - ultimoEnvio.px, pz - ultimoEnvio.pz) > 0.05 || Math.abs(pg - ultimoEnvio.pg) > 0.02 || pa !== ultimoEnvio.pa;   // o parceiro também conta (os outros o veem onde ele está)
     const area = ctx.area?.() || null;
+    const chegadaPorta = +ctx.portaAgora?.() || 0;
     if ((mudou && agora - ultimoEnvio.quando > 90) || agora - ultimoEnvio.quando > 4000 || area !== ultimoEnvio.area){
       enviar({ t: 'pos', x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, ...(area !== ultimoEnvio.area ? { area } : {}),
+        ...(chegadaPorta ? { porta: 1, chegada: chegadaPorta } : {}),
         ...(pk ? { px: +px.toFixed(2), pz: +pz.toFixed(2), pg: +pg.toFixed(3), pa } : {}) });
       ultimoEnvio = { x: a.x, z: a.z, giro, anim, quando: agora, area, px, pz, pg, pa };
     }

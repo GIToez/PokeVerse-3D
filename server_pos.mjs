@@ -4,7 +4,8 @@
  *
  * A map change is stored only when this load came through a door (`porta`).
  * A jump of more than POS_PULO_M on the same map without a door is ignored
- * (spoofed `entrar` / `pos` / keepalive).
+ * (spoofed `entrar` / `pos` / keepalive). A door may land any distance away;
+ * the caller checks that the landing is a real arrival before passing `porta`.
  */
 export const POS_PULO_M = 40;
 

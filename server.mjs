@@ -25,6 +25,7 @@ import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta } from './server_pos.mjs';
+import { chegadaConfere } from './server_doors.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
 
@@ -32,7 +33,7 @@ const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
 
-const VERSAO_REDE = 21;   // 21: party HP is stored on the account, so a refresh does not heal
+const VERSAO_REDE = 22;   // 22: a same-map door is stored, so a refresh stays on the far side
 
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao (main story)
@@ -274,7 +275,12 @@ function salvarContas() { if (!_salvarPend) _salvarPend = setTimeout(() => { _sa
 function gravarPosConta(u, bruto, { porta = false, ja = false } = {}){
   const c = contas[u];
   if (!c || c.posGm) return;
-  const r = aceitarPos(c.pos, bruto, { porta, mapaPadrao: bruto?.mapa });
+  /* Cross-map still requires the door flag from this load. A same-map jump
+     (route gate, cave, underground) is a door only when the landing is the
+     arrival the client named — otherwise it stays inside the walk limit. */
+  const mesmoMapa = !!(c.pos && bruto && String(c.pos.mapa) === String(bruto.mapa || ''));
+  const portaOk = !!porta && !!bruto?.chegada && (!mesmoMapa || chegadaConfere(bruto.mapa, bruto.x, bruto.z, bruto.chegada));
+  const r = aceitarPos(c.pos, bruto, { porta: portaOk, mapaPadrao: bruto?.mapa });
   if (!r.mudou) return;
   c.pos = r.pos;
   (ja ? salvarContasJa : salvarContas)();
@@ -927,7 +933,10 @@ const httpServer = http.createServer((req, res) => {
         if (d.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, d.conhecimento);   // nº15: só soma, não sobrescreve
         if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
         marcarPegoDoTime(c);
-        if (d.pos) gravarPosConta(u, d.pos, { porta: false });              // F5 / tab close: last walk, same jump rules (not a door)
+        if (d.pos){
+          const mesmo = c.pos && String(c.pos.mapa) === String(d.pos.mapa || '');
+          gravarPosConta(u, d.pos, { porta: !!(mesmo && d.pos.porta && d.pos.chegada) });   // refresh keeps a same-map door landing; a tab close cannot pick another map
+        }
         c.rev = (c.rev || 0) + 1;
         salvarContas();
         if (d.outroAparelho) return json(409, { erro: 'Session conflict.', outroAparelho: true });
@@ -1391,9 +1400,10 @@ wss.on('connection', ws => {
         if (ws._info) { ws._info.x = m.x; ws._info.y = m.y; ws._info.z = m.z; ws._info.giro = m.giro; ws._info.anim = m.anim; if (m.px != null) { ws._info.px = m.px; ws._info.pz = m.pz; ws._info.pg = m.pg; ws._info.pa = m.pa; } }
         if (ws._usuario && contas[ws._usuario]){
           const agoraPos = Date.now();
-          if (!ws._posGravadaEm || agoraPos - ws._posGravadaEm > 2500){
+          const porta = !!(+m.porta && +m.chegada > 0);
+          if (porta || !ws._posGravadaEm || agoraPos - ws._posGravadaEm > 2500){
             ws._posGravadaEm = agoraPos;
-            gravarPosConta(ws._usuario, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro });
+            gravarPosConta(ws._usuario, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro, ...(porta ? { chegada: +m.chegada } : {}) }, { porta });
           }
         }
         broadcast(ws, { t: 'pos', id: ws._id, x: m.x, y: m.y, z: m.z, giro: m.giro, anim: m.anim, px: m.px, pz: m.pz, pg: m.pg, pa: m.pa });
