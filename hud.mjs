@@ -64,21 +64,12 @@ export async function carregarPadrao(){ try { const r = await fetch('./ui/hud_la
     layout salvo manda, como sempre. */
 /** v2 kit (ui/hud_layout_v2.json) is the HUD. ?hud=v1, ?hud=padrao, ?hud=antigo, or Settings → Classic HUD keeps the old one. */
 const MAQUETE = (() => { try { return new URLSearchParams(location.search).has('maquete'); } catch { return false; } })();   // rodada 29: `&maquete=1` mostra as peças v2 de situação
-/** Visual novo (kit C2). O arquivo traz as peças do PC e do celular. As janelas (`popups`/`telas`) continuam as do
-    layout clássico quando o v2 não as traz — a arte daquelas telas ainda não está no jogo. */
+/** Visual novo (kit C2). O arquivo traz as peças, as janelas e as telas. Não copia o layout clássico por cima. */
 export async function carregarV2(){
   try {
     const r = await fetch('./ui/hud_layout_v2.json', { cache: 'no-store' });
     const j = r.ok ? await r.json() : null;
-    if (!j) return carregarPadrao();
-    if (!j.popups || !j.telas){
-      const base = await carregarPadrao();
-      if (base){
-        if (!j.popups && base.popups) j.popups = base.popups;
-        if (!j.telas && base.telas) j.telas = base.telas;
-      }
-    }
-    return j;
+    return j || await carregarPadrao();
   } catch { return carregarPadrao(); }
 }
 export async function carregar(){
@@ -529,6 +520,8 @@ export function recolher(e, nome, on){
 function estaRecolhido(e, nome){
   const rec = recolhidoDe(e) || {};
   if (nome in rec) return !!rec[nome];
+  // Phone quest starts open (step + reward under the title). The mockup stores that body as a hidden layer; the arrow still collapses it.
+  if (e.id === 'missao' && nome === 'missao-corpo' && document.body.classList.contains('mobile')) return false;
   const alvo = e.querySelector('[data-fig="' + nome + '"],[data-figlig="' + nome + '"]') || e.querySelector('.' + nome);
   return !!(alvo && alvo.dataset.oculto === '1');
 }
@@ -1108,16 +1101,28 @@ function soltarFilhos(peca, seletor){
   return nos;
 }
 /** Place the default Figma pieces: skills center-bottom, ball above them, hotkeys right, menu drawer under the minimap.
-    The v2 kit already has those anchors (the ball sits in the move bar, the menu is a plate above the hotkeys).
-    Restacking it here covered the Figma layout, so the island only runs for the classic kit. */
+    Phone landscape already has its own mockup: move strip on the right edge, ball just left of it, plus buttons in a
+    diamond. Restacking that into the center cluster is the old phone HUD. The island only runs for the classic PC kit. */
 export function aplicarIlha(){
   if (typeof document === 'undefined') return;
+  if (aplicarIlha.__repondo) return;
   ligarIlhaUmaVez();
   const fig = layoutAtual()?._figma;
-  if (fig && (fig.v2 || fig.geradoEmV2)){
+  const phone = aplicar.__preset === 'celular_deitado' || (document.body.classList.contains('mobile') && innerWidth >= innerHeight);
+  if ((fig && (fig.v2 || fig.geradoEmV2)) || phone){
+    const sujou = ['skills', 'bola-btn', 'atalhos', 'menu-icones'].some(id => {
+      const el = document.getElementById(id);
+      return el && (el.classList.contains('ilha-centro') || el.classList.contains('ilha-bola') || el.classList.contains('ilha-direita') || el.classList.contains('dock-slide'));
+    });
     document.body.classList.remove('hud-ilha', 'hud-ilha-mobile');
     document.getElementById('menu-dock-aba')?.remove();
     for (const id of ['skills', 'bola-btn', 'atalhos', 'menu-icones']) document.getElementById(id)?.classList.remove('ilha-centro', 'ilha-bola', 'ilha-direita', 'dock-slide');
+    const [l, r] = aplicar.__ultimo || [];
+    if (sujou && l && r){
+      aplicarIlha.__repondo = true;
+      try { aplicar(l, aplicar.__preset || presetAtual(), r); }
+      finally { aplicarIlha.__repondo = false; }
+    }
     return;
   }
   const mobile = document.body.classList.contains('mobile');

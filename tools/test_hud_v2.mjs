@@ -1,4 +1,4 @@
-/* The v2 HUD file only ships the overworld pieces. Every image those pieces name has to be on disk. */
+/* The v2 HUD file is the whole kit: overworld pieces plus the window and screen defs. Every image it names has to be on disk. */
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -7,15 +7,29 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const layout = JSON.parse(readFileSync(join(root, 'ui/hud_layout_v2.json'), 'utf8'));
 const fig = layout._figma || {};
+const phone = layout.celular_deitado;
 
 assert.ok(fig.v2, 'v2 layout is marked');
 assert.ok(fig.geradoEmV2, 'v2 layout has a kit stamp');
-assert.equal(layout.popups, undefined, 'popup art stays on the classic layout');
-assert.equal(layout.telas, undefined, 'screen art stays on the classic layout');
-assert.ok(layout.pc?.skills?.img, 'move bar has art');
-assert.ok(layout.pc?.['bola-btn'], 'ball has a place');
-assert.ok(layout.pc?.['menu-icones'], 'menu has a place');
-assert.ok(layout.celular_deitado?.skills, 'phone landscape has the move bar');
+assert.equal(layout.popups?.pc?.mochila?.v2, true, 'bag window is the v2 def');
+assert.ok(layout.popups?.pc?.pokemon, 'party window def is in the v2 file');
+assert.ok(layout.telas?.pc?.login, 'login screen def is in the v2 file');
+assert.ok(phone?.skills, 'phone landscape has the move strip');
+assert.ok(phone?.['bola-btn'], 'phone landscape has the ball');
+assert.ok(phone?.atalhos, 'phone landscape has the plus buttons');
+assert.ok(phone?.['time-hud'], 'phone landscape has the party');
+
+/* Screenshot: move strip on the far right, ball just left of it, plus buttons further left in a diamond, party as two columns. */
+assert.equal(phone.skills.ax, 'right');
+assert.ok(phone.skills.w <= 70, 'move strip stays narrow');
+assert.equal(phone['bola-btn'].ax, 'right');
+assert.equal(phone.atalhos.ax, 'right');
+assert.ok(phone.skills.x < phone['bola-btn'].x && phone['bola-btn'].x < phone.atalhos.x, 'right inset grows from the move strip to the ball to the plus buttons');
+const slots = Object.fromEntries((phone.atalhos.figma?.filhos || []).filter(f => f.nome?.startsWith('slot-item')).map(f => [f.nome, f]));
+assert.ok(slots['slot-item-2'].x < slots['slot-item-1'].x, 'plus buttons are a diamond, not a column on the edge');
+const party = (phone['time-hud'].figma?.filhos || []).filter(f => /^slot-poke-/.test(f.nome || ''));
+assert.equal(party.length, 6);
+assert.ok(party.some(f => f.x === 0) && party.some(f => f.x > 0), 'party is two columns');
 
 const imgs = new Set();
 const ext = /\.(webp|png|jpe?g|gif)(\?.*)?$/i;
@@ -26,15 +40,15 @@ function walk(o){
   }
   for (const v of Object.values(o)) walk(v);
 }
-walk(layout.pc);
-walk(layout.celular_deitado);
-walk(layout._figma);
-assert.ok(imgs.size >= 290, 'hud pieces name their art (' + imgs.size + ')');
+walk(layout);
+assert.ok(imgs.size >= 1000, 'the full kit names its art (' + imgs.size + ')');
 const missing = [...imgs].filter(p => !existsSync(join(root, p)));
 assert.deepEqual(missing, [], 'missing hud images');
 
 const hud = readFileSync(join(root, 'hud.mjs'), 'utf8');
 assert.match(hud, /fig\.v2 \|\| fig\.geradoEmV2/, 'the command island steps aside for the v2 kit');
+assert.match(hud, /celular_deitado/, 'the command island steps aside on the phone mockup');
+assert.doesNotMatch(hud, /j\.popups = base\.popups/, 'v2 windows are not replaced with the classic ones');
 const index = readFileSync(join(root, 'index.html'), 'utf8');
 assert.match(index, /Hud\.carregarV2\(\)/, 'the page loads the v2 kit');
 assert.match(index, /hud\.v2'\) === '0'/, 'Settings can still pick the classic HUD');
