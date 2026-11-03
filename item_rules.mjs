@@ -3,15 +3,27 @@
    the old name tests ("Hiper", "Máx", "Reanimador") stopped matching — Hyper/Max Potion healed 20 HP and Revive was
    refused as "fainted". */
 
-/** HP restored by each medicine (Infinity = full). Potions keep the amounts the game always used. */
-export const CURA = { 2001: 20, 2002: 60, 2003: 200, 2004: Infinity, 2005: Infinity, 2014: 30, 2015: 50, 2035: 20 };
+/** HP restored by each medicine (Infinity = full). Potions keep the amounts the game always used.
+ *  Lemonade, Moomoo Milk, the bitter herbs, and the mixes are the catalog items that had no effect. */
+export const CURA = {
+  2001: 20, 2002: 60, 2003: 200, 2004: Infinity, 2005: Infinity,
+  2014: 30, 2015: 50, 2016: 70, 2017: 100,
+  2018: 60, 2019: 120, 2035: 20,
+  2039: 60, 2040: 100, 2041: 150,
+};
 /** Revives: fraction of max HP the fainted Pokémon comes back with. */
-export const REANIMA = { 2012: 0.5, 2013: 1 };
+export const REANIMA = { 2012: 0.5, 2013: 1, 2021: 1, 2038: 1 };
+/** Sacred Ash: the same fraction, for every fainted Pokémon in the party. */
+export const REANIMA_TIME = { 2037: 1 };
+/** Friendship change. The bitter herbs lower it (the number in the newer table is the size of the drop). */
+export const AMIZADE = { 2018: -5, 2019: -10, 2021: -15, 2039: -5, 2040: -10, 2041: -15 };
 /** PP restorers: `pp` per move (or 'cheio'), `todos` = every move instead of the emptiest one. */
 export const PP = { 2022: { pp: 10, todos: false }, 2023: { pp: 'cheio', todos: false }, 2024: { pp: 10, todos: true }, 2025: { pp: 'cheio', todos: true } };
 
 export const ehCura = id => Object.hasOwn(CURA, +id);
 export const ehReanima = id => Object.hasOwn(REANIMA, +id);
+export const ehReanimaTime = id => Object.hasOwn(REANIMA_TIME, +id);
+export const amizadeDe = id => AMIZADE[+id] || 0;
 
 /* POKÉMART: each city's mart has its own stock in the dump (menu_data.json `lojas`, 2150X01) and it already grows city by
    city — the first one sells only the Poké Ball, the next adds the Great Ball (400), and from 2150401 on there is the Ultra

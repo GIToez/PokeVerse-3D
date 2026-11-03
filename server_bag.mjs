@@ -65,7 +65,15 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     return null;
   }
   const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [] }; };
-  const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, held: p.held ?? null, ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
+  const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
+  const tocarAmizade = (p, id) => {
+    const d = Regras.amizadeDe(id);
+    if (!d) return;
+    const base = Number.isFinite(+p.amizade) ? +p.amizade : 70;
+    p.amizade = Math.max(0, Math.min(255, base + d));
+  };
+  const maxDe = p => maxHpOf(p) || p.maxHp || 1;
+  const reviver = (p, frac) => { const max = maxDe(p); p.hp = Math.max(1, Math.ceil(max * frac)); p.maxHp = max; };
   const erro = (c, texto) => ({ erro: texto, bolsa: retrato(c) });       // the snapshot undoes what the client already took off locally
   const pronto = (c, extra = {}) => { c.rev = (c.rev || 0) + 1; salvar(); return { bolsa: retrato(c), ...extra }; };
 
@@ -87,14 +95,22 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     const id = +m.item;
     if (!itemInfo(id)) return erro(c, 'unknown item');
     if (quantos(c, id) < 1) return erro(c, "you don't have that item");
-    const p = monDe(c, m.uid) || (saveDe(c).time || [])[0];
+    const time = Array.isArray(saveDe(c).time) ? saveDe(c).time : [];
+    if ((Regras.ehCura(id) || Regras.ehReanima(id) || Regras.ehReanimaTime(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
+    if (Regras.ehReanimaTime(id)) {
+      const caidos = time.filter(p => p && +p.hp === 0);
+      if (!caidos.length) return erro(c, 'nobody is fainted');
+      for (const p of caidos) { reviver(p, Regras.REANIMA_TIME[id]); tocarAmizade(p, id); }
+      tirar(c, id, 1);
+      return pronto(c, { vidas: caidos.map(vida) });
+    }
+    const p = monDe(c, m.uid) || time[0];
     if (!p) return erro(c, 'no Pokémon to use it on');
-    const max = maxHpOf(p) || p.maxHp || 1;
+    const max = maxDe(p);
     const hp = Number.isFinite(+p.hp) ? +p.hp : max;
-    if ((Regras.ehCura(id) || Regras.ehReanima(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
     if (Regras.ehReanima(id)) {
       if (hp > 0) return erro(c, p.nome + ' is not fainted');
-      p.hp = Math.max(1, Math.ceil(max * Regras.REANIMA[id])); p.maxHp = max;
+      reviver(p, Regras.REANIMA[id]);
     } else if (Regras.ehCura(id)) {
       if (hp <= 0) return erro(c, p.nome + ' is fainted: use a Revive');
       if (hp >= max) return erro(c, p.nome + "'s HP is already full");
@@ -110,6 +126,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
       if (!r.ok) return erro(c, p.nome + ': ' + r.motivo);
       const novo = maxHpOf(p); if (novo) { p.hp = Math.min(novo, hp + Math.max(0, novo - (p.maxHp || novo))); p.maxHp = novo; }
     } else return erro(c, "this item can't be used here");
+    tocarAmizade(p, id);
     tirar(c, id, 1);
     return pronto(c, { vidas: [vida(p)] });
   }
