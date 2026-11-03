@@ -279,7 +279,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Attack by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "cut": {
   "id": "cut",
@@ -554,7 +561,13 @@
   "precisao": 100,
   "inicio": true,
   "descricao": "Lowers the target’s accuracy by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ]
  },
  "headbutt": {
   "id": "headbutt",
@@ -778,7 +791,13 @@
   "precisao": 100,
   "inicio": true,
   "descricao": "Lowers the target’s Defense by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ]
  },
  "poisonsting": {
   "id": "poisonsting",
@@ -857,7 +876,13 @@
   "precisao": 100,
   "inicio": true,
   "descricao": "Lowers the target’s Defense by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ]
  },
  "bite": {
   "id": "bite",
@@ -895,7 +920,13 @@
   "precisao": 100,
   "inicio": true,
   "descricao": "Lowers the target’s Attack by one stage.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "roar": {
   "id": "roar",
@@ -1017,7 +1048,14 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "ember": {
   "id": "ember",
@@ -1223,7 +1261,14 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "aurorabeam": {
   "id": "aurorabeam",
@@ -1243,7 +1288,14 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Attack by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "hyperbeam": {
   "id": "hyperbeam",
@@ -1463,7 +1515,8 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Seeds the target, stealing HP from it every turn.",
-  "pp": 10
+  "pp": 10,
+  "semente": true
  },
  "growth": {
   "id": "growth",
@@ -1481,7 +1534,18 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Attack and Special Attack by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "spa",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "razorleaf": {
   "id": "razorleaf",
@@ -1632,7 +1696,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Lowers the target’s Speed by two stages.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "vel",
+    -2
+   ]
+  ]
  },
  "dragonrage": {
   "id": "dragonrage",
@@ -1898,7 +1968,14 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "hypnosis": {
   "id": "hypnosis",
@@ -1942,7 +2019,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Attack by one stage.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "atk",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "agility": {
   "id": "agility",
@@ -1960,7 +2044,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Speed by two stages.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "quickattack": {
   "id": "quickattack",
@@ -2078,7 +2169,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Lowers the target’s Defense by two stages.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "def",
+    -2
+   ]
+  ]
  },
  "doubleteam": {
   "id": "doubleteam",
@@ -2093,7 +2190,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s evasion by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "eva",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "recover": {
   "id": "recover",
@@ -2129,7 +2233,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Defense by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "def",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "minimize": {
   "id": "minimize",
@@ -2147,7 +2258,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s evasion by two stages.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "eva",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "smokescreen": {
   "id": "smokescreen",
@@ -2167,7 +2285,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Lowers the target’s accuracy by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ]
  },
  "confuseray": {
   "id": "confuseray",
@@ -2206,7 +2330,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Defense by one stage.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "def",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "defensecurl": {
   "id": "defensecurl",
@@ -2224,7 +2355,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises user’s Defense by one stage.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "def",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "barrier": {
   "id": "barrier",
@@ -2242,7 +2380,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Defense by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "def",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "lightscreen": {
   "id": "lightscreen",
@@ -2637,7 +2782,14 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 35
+  "pp": 35,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "amnesia": {
   "id": "amnesia",
@@ -2655,7 +2807,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Special Defense by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spd",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "kinesis": {
   "id": "kinesis",
@@ -2673,7 +2832,13 @@
   "precisao": 80,
   "inicio": true,
   "descricao": "Lowers the target’s accuracy by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ]
  },
  "softboiled": {
   "id": "softboiled",
@@ -2893,7 +3058,14 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "dizzypunch": {
   "id": "dizzypunch",
@@ -2957,7 +3129,13 @@
   "precisao": 100,
   "inicio": true,
   "descricao": "Lowers the target’s accuracy by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ]
  },
  "psywave": {
   "id": "psywave",
@@ -3011,7 +3189,14 @@
   "inicio": true,
   "proprio": true,
   "descricao": "Raises the user’s Defense by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "def",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "crabhammer": {
   "id": "crabhammer",
@@ -3166,7 +3351,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "atk",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "conversion": {
   "id": "conversion",
@@ -3496,7 +3688,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Speed by two stages.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "vel",
+    -2
+   ]
+  ]
  },
  "reversal": {
   "id": "reversal",
@@ -3602,7 +3800,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Speed by two stages.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -2
+   ]
+  ]
  },
  "feintattack": {
   "id": "feintattack",
@@ -3687,7 +3891,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ]
  },
  "octazooka": {
   "id": "octazooka",
@@ -3704,7 +3914,14 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "spikes": {
   "id": "spikes",
@@ -3802,7 +4019,13 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "detect": {
   "id": "detect",
@@ -3935,7 +4158,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Attack by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -2
+   ]
+  ]
  },
  "rollout": {
   "id": "rollout",
@@ -3991,7 +4220,13 @@
   "atraso": 0.2,
   "precisao": 85,
   "descricao": "Raises the target’s Attack by two stages and confuses the target.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    2
+   ]
+  ]
  },
  "milkdrink": {
   "id": "milkdrink",
@@ -4065,7 +4300,15 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to raise the user’s Defense by one stage.",
-  "pp": 25
+  "pp": 25,
+  "estagios": [
+   [
+    "def",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 10
  },
  "meanlook": {
   "id": "meanlook",
@@ -4382,7 +4625,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Frees the user from binding moves, removes Leech Seed, and blows away Spikes.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "sweetscent": {
   "id": "sweetscent",
@@ -4398,7 +4648,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s evasion by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "eva",
+    -2
+   ]
+  ]
  },
  "irontail": {
   "id": "irontail",
@@ -4417,7 +4673,14 @@
   "precisao": 75,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 30
  },
  "metalclaw": {
   "id": "metalclaw",
@@ -4436,7 +4699,15 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to raise the user’s Attack by one stage.",
-  "pp": 35
+  "pp": 35,
+  "estagios": [
+   [
+    "atk",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 10
  },
  "vitalthrow": {
   "id": "vitalthrow",
@@ -4605,7 +4876,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 20
  },
  "mirrorcoat": {
   "id": "mirrorcoat",
@@ -4675,7 +4953,31 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to raise all of the user’s stats by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 10
  },
  "shadowball": {
   "id": "shadowball",
@@ -4692,7 +4994,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 20
  },
  "futuresight": {
   "id": "futuresight",
@@ -4728,7 +5037,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "whirlpool": {
   "id": "whirlpool",
@@ -4818,7 +5134,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Stores energy up to three times for use with Spit Up and Swallow.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "def",
+    1
+   ],
+   [
+    "spd",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "spitup": {
   "id": "spitup",
@@ -4916,7 +5243,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Raises the target’s Special Attack by one stage and confuses the target.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "spa",
+    1
+   ]
+  ]
  },
  "willowisp": {
   "id": "willowisp",
@@ -4953,7 +5286,17 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Lowers the target’s Attack and Special Attack by two stages.  User faints.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    -2
+   ],
+   [
+    "spa",
+    -2
+   ]
+  ]
  },
  "facade": {
   "id": "facade",
@@ -5057,7 +5400,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Special Defense by one stage.  User’s Electric moves have doubled power next turn.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spd",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "taunt": {
   "id": "taunt",
@@ -5186,7 +5536,18 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the user’s Attack and Defense by one stage after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "magiccoat": {
   "id": "magiccoat",
@@ -5494,7 +5855,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Special Attack by three stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    3
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "lusterpurge": {
   "id": "lusterpurge",
@@ -5511,7 +5879,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "mistball": {
   "id": "mistball",
@@ -5528,7 +5903,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Attack by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "featherdance": {
   "id": "featherdance",
@@ -5544,7 +5926,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Attack by two stages.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    -2
+   ]
+  ]
  },
  "teeterdance": {
   "id": "teeterdance",
@@ -5708,7 +6096,14 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "blastburn": {
   "id": "blastburn",
@@ -5761,7 +6156,15 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to raise the user’s Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 20
  },
  "astonish": {
   "id": "astonish",
@@ -5828,7 +6231,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Special Defense by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spd",
+    -2
+   ]
+  ]
  },
  "aircutter": {
   "id": "aircutter",
@@ -5862,7 +6271,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers the user’s Special Attack by two stages after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "odorsleuth": {
   "id": "odorsleuth",
@@ -5896,7 +6312,13 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "silverwind": {
   "id": "silverwind",
@@ -5913,7 +6335,31 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to raise all of the user’s stats by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 10
  },
  "metalsound": {
   "id": "metalsound",
@@ -5929,7 +6375,13 @@
   "atraso": 0.2,
   "precisao": 85,
   "descricao": "Lowers the target’s Special Defense by two stages.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "spd",
+    -2
+   ]
+  ]
  },
  "grasswhistle": {
   "id": "grasswhistle",
@@ -5967,7 +6419,17 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Attack and Defense by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "def",
+    -1
+   ]
+  ]
  },
  "cosmicpower": {
   "id": "cosmicpower",
@@ -5982,7 +6444,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Defense and Special Defense by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "def",
+    1
+   ],
+   [
+    "spd",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "waterspout": {
   "id": "waterspout",
@@ -6123,7 +6596,14 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ],
+  "estagiosChance": 30
  },
  "bulletseed": {
   "id": "bulletseed",
@@ -6195,7 +6675,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Defense by two stages.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "def",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "block": {
   "id": "block",
@@ -6225,7 +6712,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack by one stage.",
-  "pp": 40
+  "pp": 40,
+  "estagios": [
+   [
+    "atk",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "dragonclaw": {
   "id": "dragonclaw",
@@ -6276,7 +6770,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack and Defense by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "bounce": {
   "id": "bounce",
@@ -6314,7 +6819,13 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "poisontail": {
   "id": "poisontail",
@@ -6421,7 +6932,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Special Attack and Special Defense by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "leafblade": {
   "id": "leafblade",
@@ -6455,7 +6977,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack and Speed by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "rockblast": {
   "id": "rockblast",
@@ -6541,7 +7074,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers the user’s Special Attack by two stages after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "roost": {
   "id": "roost",
@@ -6627,7 +7167,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers user’s Speed by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "gyroball": {
   "id": "gyroball",
@@ -6823,7 +7370,18 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the user’s Defense and Special Defense by one stage after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    -1
+   ],
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "payback": {
   "id": "payback",
@@ -7283,7 +7841,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Speed by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "poisonjab": {
   "id": "poisonjab",
@@ -7431,7 +7996,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "dragonpulse": {
   "id": "dragonpulse",
@@ -7538,7 +8110,14 @@
   "precisao": 70,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "energyball": {
   "id": "energyball",
@@ -7555,7 +8134,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "bravebird": {
   "id": "bravebird",
@@ -7591,7 +8177,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "switcheroo": {
   "id": "switcheroo",
@@ -7641,7 +8234,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Special Attack by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "bulletpunch": {
   "id": "bulletpunch",
@@ -7823,7 +8423,14 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ],
+  "estagiosChance": 30
  },
  "psychocut": {
   "id": "psychocut",
@@ -7878,7 +8485,14 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ],
+  "estagiosChance": 30
  },
  "flashcannon": {
   "id": "flashcannon",
@@ -7895,7 +8509,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "rockclimb": {
   "id": "rockclimb",
@@ -7929,7 +8550,13 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Lowers the target’s evasion by one stage.  Removes field effects from the enemy field.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "eva",
+    -1
+   ]
+  ]
  },
  "trickroom": {
   "id": "trickroom",
@@ -7962,7 +8589,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers the user’s Special Attack by two stages after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "discharge": {
   "id": "discharge",
@@ -8017,7 +8651,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers the user’s Special Attack by two stages after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "powerwhip": {
   "id": "powerwhip",
@@ -8169,7 +8810,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Special Attack by two stages if it’s the opposite gender.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ]
  },
  "stealthrock": {
   "id": "stealthrock",
@@ -8273,7 +8920,15 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to raise the user’s Special Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 70
  },
  "woodhammer": {
   "id": "woodhammer",
@@ -8348,7 +9003,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Defense and Special Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    1
+   ],
+   [
+    "spd",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "healorder": {
   "id": "healorder",
@@ -8525,7 +9191,14 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Defense by two stages.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spd",
+    -2
+   ]
+  ],
+  "estagiosChance": 40
  },
  "ominouswind": {
   "id": "ominouswind",
@@ -8542,7 +9215,31 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to raise all of the user’s stats by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 10
  },
  "shadowforce": {
   "id": "shadowforce",
@@ -8576,7 +9273,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack and accuracy by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "prec",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "wideguard": {
   "id": "wideguard",
@@ -8686,7 +9394,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Speed by two stages and halves the user’s weight.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "ragepowder": {
   "id": "ragepowder",
@@ -8821,7 +9536,22 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Special Attack, Special Defense, and Speed by one stage each.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "heavyslam": {
   "id": "heavyslam",
@@ -8909,7 +9639,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Inflicts regular damage.  Raises the user’s Speed by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "coil": {
   "id": "coil",
@@ -8924,7 +9661,22 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack, Defense, and accuracy by one stage each.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "prec",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "lowsweep": {
   "id": "lowsweep",
@@ -8943,7 +9695,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Speed by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "acidspray": {
   "id": "acidspray",
@@ -8960,7 +9718,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Special Defense by two stages.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spd",
+    -2
+   ]
+  ]
  },
  "foulplay": {
   "id": "foulplay",
@@ -9178,7 +9942,30 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises user’s Attack, Special Attack, and Speed by two stages.  Lower user’s Defense and Special Defense by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "def",
+    -1
+   ],
+   [
+    "spd",
+    -1
+   ],
+   [
+    "atk",
+    2
+   ],
+   [
+    "spa",
+    2
+   ],
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "healpulse": {
   "id": "healpulse",
@@ -9244,7 +10031,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack by one stage and its Speed by two stages.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "circlethrow": {
   "id": "circlethrow",
@@ -9486,7 +10284,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Attack by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "bulldoze": {
   "id": "bulldoze",
@@ -9505,7 +10309,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "frostbreath": {
   "id": "frostbreath",
@@ -9557,7 +10367,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Attack and Special Attack by one stage each.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "spa",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "electroweb": {
   "id": "electroweb",
@@ -9574,7 +10395,13 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Lowers the target’s Speed by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "wildcharge": {
   "id": "wildcharge",
@@ -9707,7 +10534,14 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "heatcrash": {
   "id": "heatcrash",
@@ -9743,7 +10577,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ],
+  "estagiosChance": 50
  },
  "steamroller": {
   "id": "steamroller",
@@ -9777,7 +10618,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the user’s Defense by three stages.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    3
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "nightdaze": {
   "id": "nightdaze",
@@ -9794,7 +10642,14 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s accuracy by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "prec",
+    -1
+   ]
+  ],
+  "estagiosChance": 40
  },
  "psystrike": {
   "id": "psystrike",
@@ -9978,7 +10833,13 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Lowers the target’s Speed by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "boltstrike": {
   "id": "boltstrike",
@@ -10035,7 +10896,15 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to raise the user’s Special Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    1
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 50
  },
  "freezeshock": {
   "id": "freezeshock",
@@ -10092,7 +10961,13 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Attack by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "iciclecrash": {
   "id": "iciclecrash",
@@ -10130,7 +11005,22 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Lowers the user’s Defense, Special Defense, and Speed by one stage each.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    -1
+   ],
+   [
+    "spd",
+    -1
+   ],
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "fusionflare": {
   "id": "fusionflare",
@@ -10232,7 +11122,17 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the Attack and Special Attack of all Grass Pokémon in battle.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "spa",
+    1
+   ]
+  ]
  },
  "stickyweb": {
   "id": "stickyweb",
@@ -10317,7 +11217,17 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Attack and Special Attack by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "iondeluge": {
   "id": "iondeluge",
@@ -10439,7 +11349,17 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers all targets’ Attack and Special Attack by one stage.  Makes the user switch out.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "topsyturvy": {
   "id": "topsyturvy",
@@ -10505,7 +11425,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Raises the Defense of all Grass Pokémon in battle.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    1
+   ]
+  ]
  },
  "grassyterrain": {
   "id": "grassyterrain",
@@ -10575,7 +11501,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ],
+  "estagiosChance": 10
  },
  "fairywind": {
   "id": "fairywind",
@@ -10609,7 +11542,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Attack by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ],
+  "estagiosChance": 30
  },
  "boomburst": {
   "id": "boomburst",
@@ -10672,7 +11612,13 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Lowers the target’s Attack by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "confide": {
   "id": "confide",
@@ -10687,7 +11633,13 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Lowers the target’s Special Attack by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "diamondstorm": {
   "id": "diamondstorm",
@@ -10706,7 +11658,15 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to raise the user’s Defense by two stages for each target hit.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    2
+   ]
+  ],
+  "estagiosEm": "eu",
+  "estagiosChance": 50
  },
  "steameruption": {
   "id": "steameruption",
@@ -10776,7 +11736,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "spikyshield": {
   "id": "spikyshield",
@@ -10807,7 +11773,13 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises a selected ally’s Special Defense by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "spd",
+    1
+   ]
+  ]
  },
  "eerieimpulse": {
   "id": "eerieimpulse",
@@ -10823,7 +11795,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Special Attack by two stages.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ]
  },
  "venomdrench": {
   "id": "venomdrench",
@@ -10839,7 +11817,21 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target’s Attack, Special Attack, and Speed by one stage if it is poisoned.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "spa",
+    -1
+   ],
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "powder": {
   "id": "powder",
@@ -10871,7 +11863,22 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Takes one turn to charge, then raises the user’s Special Attack, Special Defense, and Speed by two stages.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    2
+   ],
+   [
+    "spd",
+    2
+   ],
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "magneticflux": {
   "id": "magneticflux",
@@ -10886,7 +11893,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the Defense and Special Defense of all friendly Pokémon with Plus or Minus by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "def",
+    1
+   ],
+   [
+    "spd",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "happyhour": {
   "id": "happyhour",
@@ -10983,7 +12001,13 @@
   "precisao": 100,
   "prioridade": 1,
   "descricao": "Lowers the target’s Attack by one stage.",
-  "pp": 30
+  "pp": 30,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "nuzzle": {
   "id": "nuzzle",
@@ -11059,7 +12083,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Raises the user’s Attack by one stage after inflicting damage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "oblivionwing": {
   "id": "oblivionwing",
@@ -11208,7 +12239,18 @@
   "acerto": true,
   "contato": true,
   "descricao": "Lowers the user’s Defense and Special Defense by one stage after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    -1
+   ],
+   [
+    "spd",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "hyperspacefury": {
   "id": "hyperspacefury",
@@ -11226,7 +12268,14 @@
   "contato": true,
   "acerto": true,
   "descricao": "Ignores and destroys protection effects.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "breakneckblitzphysical": {
   "id": "breakneckblitzphysical",
@@ -11981,7 +13030,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers user’s Speed by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "floralhealing": {
   "id": "floralhealing",
@@ -12031,7 +13087,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Heals the user by the target’s current Attack stat and lowers the target’s Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "solarblade": {
   "id": "solarblade",
@@ -12103,7 +13165,13 @@
   "descricao": "Poisons the target and lowers its Speed by one stage.",
   "pp": 20,
   "status": "poison",
-  "statusChance": 100
+  "statusChance": 100,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "laserfocus": {
   "id": "laserfocus",
@@ -12133,7 +13201,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the Attack and Special Attack of all friendly Pokémon with Plus or Minus by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "spa",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "throatchop": {
   "id": "throatchop",
@@ -12222,7 +13301,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Attack by one stage after inflicting damage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "firelash": {
   "id": "firelash",
@@ -12241,7 +13326,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Defense by one stage after inflicting damage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ]
  },
  "powertrip": {
   "id": "powertrip",
@@ -12378,7 +13469,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Attack by one stage after inflicting damage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "instruct": {
   "id": "instruct",
@@ -12430,7 +13527,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the user’s Defense by one stage after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "dragonhammer": {
   "id": "dragonhammer",
@@ -12620,7 +13724,30 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises all of the user’s stats by two stages.",
-  "pp": 1
+  "pp": 1,
+  "estagios": [
+   [
+    "atk",
+    2
+   ],
+   [
+    "def",
+    2
+   ],
+   [
+    "spa",
+    2
+   ],
+   [
+    "spd",
+    2
+   ],
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "genesissupernova": {
   "id": "genesissupernova",
@@ -12671,7 +13798,14 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers the user’s Special Attack by two stages after inflicting damage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "psychicfangs": {
   "id": "psychicfangs",
@@ -12728,7 +13862,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 20
  },
  "accelerock": {
   "id": "accelerock",
@@ -12767,7 +13908,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Defense by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ],
+  "estagiosChance": 20
  },
  "prismaticlaser": {
   "id": "prismaticlaser",
@@ -12858,7 +14006,17 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Lowers the target’s Attack and Special Attack by one stage.",
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "zingzap": {
   "id": "zingzap",
@@ -13084,7 +14242,30 @@
   "atraso": 0.3,
   "acerto": true,
   "descricao": "Inflicts damage to all opposing Pokémon and increases the user’s Attack, Defense, Special Attack, Special Defense, and Speed by one stage each.",
-  "pp": 1
+  "pp": 1,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "zippyzap": {
   "id": "zippyzap",
@@ -13104,7 +14285,14 @@
   "acerto": true,
   "prioridade": 2,
   "descricao": "Inflicts regular damage with no additional effect.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "eva",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "splishysplash": {
   "id": "splishysplash",
@@ -13268,7 +14456,8 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Inflicts regular damage with no additional effect.",
-  "pp": 10
+  "pp": 10,
+  "semente": true
  },
  "freezyfrost": {
   "id": "freezyfrost",
@@ -13428,7 +14617,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "User consumes berry and raises its defense by 2 stages.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "noretreat": {
   "id": "noretreat",
@@ -13443,7 +14639,30 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Prevents user from switching out. Raises all of the user’s stats by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "tarshot": {
   "id": "tarshot",
@@ -13459,7 +14678,13 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Lowers the target's Speed by 1 stage. Until the target switches out, the effectiveness of Fire-type moves is doubled against it.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "magicpowder": {
   "id": "magicpowder",
@@ -13925,7 +15150,30 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "User loses 33% of its Max HP. Raises all of the user’s stats by one stage.",
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ],
+   [
+    "spa",
+    1
+   ],
+   [
+    "spd",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "bodypress": {
   "id": "bodypress",
@@ -13959,7 +15207,17 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raise the targets Attack and Special Attack by 2 stages.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    2
+   ],
+   [
+    "spa",
+    2
+   ]
+  ]
  },
  "drumbeating": {
   "id": "drumbeating",
@@ -13978,7 +15236,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Speed by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "snaptrap": {
   "id": "snaptrap",
@@ -14075,7 +15339,14 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Raises the user's Speed by 1 stage. In Full Belly Mode, this move is Electric type. In Hangry Mode, this move is Dark type.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "breakingswipe": {
   "id": "breakingswipe",
@@ -14094,7 +15365,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Attack by one stage after inflicting damage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "branchpoke": {
   "id": "branchpoke",
@@ -14147,7 +15424,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lower the targets Special Defense by 1 stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -1
+   ]
+  ]
  },
  "gravapple": {
   "id": "gravapple",
@@ -14166,7 +15449,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lower the targets Defense by 1 stage. Damage is increased by 50% during Gravitys effect.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ]
  },
  "spiritbreak": {
   "id": "spiritbreak",
@@ -14185,7 +15474,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to lower the target’s Special Attack by one stage.",
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "strangesteam": {
   "id": "strangesteam",
@@ -14485,7 +15780,13 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Lowers the target’s Special Attack by one stage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "burningjealousy": {
   "id": "burningjealousy",
@@ -14573,7 +15874,18 @@
   "anim": "Cast",
   "atraso": 0.2,
   "descricao": "Raises the target's Attack and Defense by 1 stage. Fails if there is no ally adjacent to the user.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "def",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "flipturn": {
   "id": "flipturn",
@@ -14791,7 +16103,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Lowers the target’s Defense by one stage after inflicting damage.",
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "def",
+    -1
+   ]
+  ]
  },
  "glaciallance": {
   "id": "glaciallance",
@@ -15258,7 +16576,17 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ],
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "silktrap": {
   "id": "silktrap",
@@ -15273,7 +16601,14 @@
   "anim": "Cast",
   "atraso": 0.2,
   "prioridade": 4,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "axekick": {
   "id": "axekick",
@@ -15325,7 +16660,13 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spd",
+    -2
+   ]
+  ]
  },
  "orderup": {
   "id": "orderup",
@@ -15380,7 +16721,17 @@
   "inicio": true,
   "voo": true,
   "acerto": true,
-  "pp": 15
+  "pp": 15,
+  "estagios": [
+   [
+    "atk",
+    2
+   ],
+   [
+    "def",
+    -2
+   ]
+  ]
  },
  "spinout": {
   "id": "spinout",
@@ -15398,7 +16749,13 @@
   "contato": true,
   "precisao": 100,
   "acerto": true,
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "vel",
+    -2
+   ]
+  ]
  },
  "populationbomb": {
   "id": "populationbomb",
@@ -15549,7 +16906,22 @@
   "som": "gust",
   "anim": "Cast",
   "atraso": 0.2,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    2
+   ],
+   [
+    "spa",
+    2
+   ],
+   [
+    "vel",
+    2
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "kowtowcleave": {
   "id": "kowtowcleave",
@@ -15599,7 +16971,13 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    1
+   ]
+  ]
  },
  "aquastep": {
   "id": "aquastep",
@@ -15617,7 +16995,13 @@
   "contato": true,
   "precisao": 100,
   "acerto": true,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    1
+   ]
+  ]
  },
  "ragingbull": {
   "id": "ragingbull",
@@ -15651,7 +17035,13 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "spa",
+    -1
+   ]
+  ]
  },
  "psyblade": {
   "id": "psyblade",
@@ -15784,7 +17174,18 @@
   "som": "gust",
   "anim": "Cast",
   "atraso": 0.2,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "atk",
+    1
+   ],
+   [
+    "vel",
+    1
+   ]
+  ],
+  "estagiosEm": "eu"
  },
  "snowscape": {
   "id": "snowscape",
@@ -15816,7 +17217,13 @@
   "contato": true,
   "precisao": 100,
   "acerto": true,
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "trailblaze": {
   "id": "trailblaze",
@@ -15834,7 +17241,13 @@
   "contato": true,
   "precisao": 100,
   "acerto": true,
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "vel",
+    1
+   ]
+  ]
  },
  "chillingwater": {
   "id": "chillingwater",
@@ -15850,7 +17263,13 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 20
+  "pp": 20,
+  "estagios": [
+   [
+    "atk",
+    -1
+   ]
+  ]
  },
  "hyperdrill": {
   "id": "hyperdrill",
@@ -15918,7 +17337,17 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 5
+  "pp": 5,
+  "estagios": [
+   [
+    "def",
+    -1
+   ],
+   [
+    "spd",
+    -1
+   ]
+  ]
  },
  "bitterblade": {
   "id": "bitterblade",
@@ -16146,7 +17575,13 @@
   "atraso": 0.3,
   "precisao": 85,
   "acerto": true,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "vel",
+    -1
+   ]
+  ]
  },
  "ivycudgel": {
   "id": "ivycudgel",
@@ -16180,7 +17615,13 @@
   "atraso": 0.3,
   "precisao": 100,
   "acerto": true,
-  "pp": 10
+  "pp": 10,
+  "estagios": [
+   [
+    "spa",
+    1
+   ]
+  ]
  },
  "terastarstorm": {
   "id": "terastarstorm",

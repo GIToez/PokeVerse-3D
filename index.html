@@ -223,6 +223,7 @@ import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: oth
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
+import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, steps, bait and rock (shared with server_bag.mjs)
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
@@ -4133,12 +4134,12 @@ function iconeSelvagem(s){
   return ehAgressivo(s.perfil) ? '⚔' : '🏃';
 }
 function htmlRotuloSelvagem(s){
-  const st = Status.sigla(Status.limpo(s.status)?.id);
-  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}${st ? ' ' + st : ''}</span><i><b></b></i>`;
+  const st = Status.sigla(Status.limpo(s.status)?.id), est = Stg.resumo(s.estagios);
+  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}${st ? ' ' + st : ''}${s.semente ? ' 🌱' : ''}${est ? ' <small>' + est + '</small>' : ''}</span><i><b></b></i>`;
 }
 function pintarRotuloSelvagem(s){
   if (!s?.rotulo) return;
-  const marca = (s.shiny ? '1' : '0') + '|' + s.nome + '|' + s.lv + '|' + iconeSelvagem(s) + '|' + (Status.limpo(s.status)?.id || '');
+  const marca = (s.shiny ? '1' : '0') + '|' + s.nome + '|' + s.lv + '|' + iconeSelvagem(s) + '|' + (Status.limpo(s.status)?.id || '') + '|' + Stg.resumo(s.estagios) + '|' + (s.semente ? 1 : 0);
   if (s.rotMarca === marca) return;
   s.rotulo.innerHTML = htmlRotuloSelvagem(s);
   const b = s.rotulo.querySelector('i b');
@@ -5183,6 +5184,7 @@ function atualizarSelvagens(dt){
     if (_frustum.intersectsSphere(_esfera)) devolverAArvore(s); else tirarDaArvore(s);
     s.travaAnim = Math.max(0, s.travaAnim - dt);
     s.recarga = Math.max(0, s.recarga - dt);
+    tiqueVolatil(s, dt, s.estado === 'atacando' || s.estado === 'fugindo' || (jogo.alvo === s && pika.emBatalha));
     if (s.estado === 'morto'){ s.mix.update(dt); continue; }
     if (s.estado === 'capturando'){ s.mix.update(dt); continue; }   // dentro/à mercê da bola: fica parado, sem IA
     if (s.emTurno){                                                     // Pokémon de treinador (batalha por turno): o motor conduz — aqui só encara o rival e anima
@@ -5333,7 +5335,7 @@ function atualizarSelvagens(dt){
             Som.tocar('skill/Blow5');
           } else lancarGolpe(s, pika, g);                                   // bloqueado: bate à distância mesmo
         } else lancarGolpe(s, pika, g);          // à distância: fases do efeito + acerto agendado
-        s.recarga = g.recarga;
+        s.recarga = g.recarga / Stg.mulStat(s.estagios, 5);              // Speed stages: Agility recharges faster, String Shot slower
         s.proximoGolpe = s.golpes[Math.floor(Math.random() * s.golpes.length)];
         }
       }
@@ -5489,7 +5491,8 @@ function lancarGolpe(atacante, alvo, golpe, jaDecidido = null){          // `jaD
   pendentes.push({ t: atrasoDoGolpe(golpe, d), fn: () => {
     if (alvo.estado === 'morto' || atacante.hp <= 0) return;
     if (golpe.ataque) efeito(golpe.efeito + '_Atk', atacante.peito, atacante.altura, { olhar: alvo.peito, inclinar: true });
-    if (jaDecidido){ alvo.hp = jaDecidido.hp; aplicarGolpe(atacante, alvo, golpe, jaDecidido.dano, jaDecidido.eff); }
+    if (jaDecidido?.errou){ flutuar(alvo, 'missed', '#9ab'); }
+    else if (jaDecidido){ alvo.hp = jaDecidido.hp; aplicarGolpe(atacante, alvo, golpe, jaDecidido.dano, jaDecidido.eff); }
     else golpear(atacante, alvo, golpe);
   } });
 }
@@ -5521,6 +5524,68 @@ function infligirStatus(atacante, defensor, golpe, eff){
     if (quem.rotulo){ quem.rotMarca = undefined; pintarRotuloSelvagem(quem); }
     if (quem === jogo.pika) guardarEstadoAtivo();
   } else if (golpe.cat === 'status') flutuar(quem, 'it failed', '#9ab');
+}
+/* STAT STAGES AND LEECH SEED (stages.mjs). They live on the entity in the field (`estagios`, `semente`), never in the save:
+   a switch brings a new entity, a faint or 8 s out of the fight clears them. Turn battles with an account: the server decides
+   and the `bat` reply carries them; the raid: the server too (shp/pdano). Here: the local fight (real time and local turns). */
+const estDe = e => e ? (e.estagios ||= Stg.novo()) : null;
+function limparVolatil(e){
+  if (!e || !(e.estagios || e.semente)) return;
+  e.estagios = null; e.semente = null; e.sementeRelogio = 0;
+  if (e.rotulo){ e.rotMarca = undefined; pintarRotuloSelvagem(e); }
+}
+/** `mudancas` = [{ atributo, n, real }]: soma no `estagios` de quem recebeu (o servidor já aplicou: `somar`) e mostra. */
+function mostrarEstagios(e, mudancas, somar = false){
+  if (!e || !mudancas?.length) return;
+  if (somar){ const est = estDe(e); for (const m of mudancas) if (m.atributo in est) est[m.atributo] = Math.max(-6, Math.min(6, est[m.atributo] + (m.real | 0))); }
+  for (const m of mudancas) flutuar(e, Stg.curto(m), Stg.cor(m));
+  if (e.rotulo){ e.rotMarca = undefined; pintarRotuloSelvagem(e); }
+}
+function aplicarEstagios(atacante, defensor, golpe, eff){
+  if (!golpe?.estagios) return;
+  const alvoOk = defensor && defensor.hp > 0 && (golpe.cat === 'status' || eff !== 0);   // status move: no type chart (Growl hits a Ghost)
+  const r = Stg.doGolpe(golpe, atacante?.hp > 0 ? estDe(atacante) : null, alvoOk ? estDe(defensor) : null);
+  if (r) mostrarEstagios(r.quem === 'eu' ? atacante : defensor, r.mudancas);
+}
+function semear(atacante, defensor){
+  if (!defensor || !(defensor.hp > 0)) return;
+  if (!Stg.podeSemear(porDex.get(defensor.dex)?.types)){ flutuar(defensor, 'immune', '#9ab'); return; }
+  if (defensor.semente){ flutuar(defensor, 'it failed', '#9ab'); return; }
+  defensor.semente = { de: atacante === jogo.pika ? 'parceiro' : atacante }; defensor.sementeRelogio = 0;   // 'parceiro' = whoever is in the field on my side when it drains
+  flutuar(defensor, 'seeded!', '#8ef58e');
+  if (defensor.rotulo){ defensor.rotMarca = undefined; pintarRotuloSelvagem(defensor); }
+}
+/** One Leech Seed drain: 1/8 of max HP from `e` to whoever planted it. `soDreno` = local turn battle (the round handles a KO). */
+function drenarSemente(e, soDreno = false){
+  const d = Math.min(e.hp, Stg.drenoSemente(e.maxHp));
+  if (!(d > 0)) return;
+  e.hp -= d;
+  flutuar(e, '−' + d, '#8ef58e');
+  const quem = e.semente.de === 'parceiro' ? jogo.pika : e.semente.de;
+  if (quem && quem !== e && quem.hp > 0 && !(quem.desmaiado > 0) && !['morto', 'guardado', 'desmaiado', 'koTurno'].includes(quem.estado)){
+    quem.hp = Math.min(quem.maxHp || quem.hp, quem.hp + d);
+    flutuar(quem, '+' + d, '#8ef58e');
+    if (quem === jogo.pika) guardarEstadoAtivo();
+    else if (quem.rotulo) pintarRotuloSelvagem(quem);
+  }
+  if (e === jogo.pika) guardarEstadoAtivo();
+  if (soDreno || e.hp > 0) return;
+  e.status = null; limparVolatil(e);
+  if (e === jogo.pika){ guardarEstadoAtivo(); morrer(e); }
+  else if (e.estado !== 'desmaiado' && e.estado !== 'morto') desmaiar(e, true);
+}
+/** Real time: the seed drains every 4 s of the fight; stages and the seed wear off 8 s after it. Turn battles drain per round. */
+function tiqueVolatil(e, dt, luta){
+  if (!e || !(e.estagios || e.semente)) return;
+  if (!(e.hp > 0)){ limparVolatil(e); return; }
+  if (jogo.turno || e.rede || e.raid) return;                            // turno: por rodada; selvagem da rede / chefe da raid: o servidor drena
+  if (!luta){ e.foraDaLuta = (e.foraDaLuta || 0) + dt; if (e.foraDaLuta > 8) limparVolatil(e); return; }
+  e.foraDaLuta = 0;
+  if (!e.semente) return;
+  e.sementeRelogio = (e.sementeRelogio || 0) + dt;
+  if (e.sementeRelogio < 4) return;
+  e.sementeRelogio -= 4;
+  drenarSemente(e);
 }
 /** Sleep, freeze, and paralysis can cancel the action that was about to land. */
 function impedido(e){
@@ -5560,13 +5625,15 @@ function golpear(atacante, defensor, golpe){
   }
   if (defensor.rede && Mundo.estaAtivo()){ Mundo.atacar(defensor, golpe, atacante); return 0; }   // fase 3b: selvagem da rede — o SERVIDOR calcula e devolve (shp → aplicarGolpe)
   if (atacante.rede && defensor === jogo.pika && Mundo.estaAtivo()){ Mundo.atacarParceiro(atacante, golpe, defensor); return 0; }   // fase 3c: selvagem da rede batendo no MEU parceiro — o servidor calcula e devolve (pdano → golpeNoParceiro)
+  const acerto = Stg.chance(null, golpe, atacante.estagios, defensor.estagios);   // Smokescreen / Sand Attack / Minimize
+  if (acerto < 1 && Math.random() > acerto){ flutuar(defensor, 'missed', '#9ab'); return 0; }
   const A = porDex.get(atacante.dex), D = porDex.get(defensor.dex);
   const statusMove = golpe.cat === 'status';
   const fisico = golpe.cat === 'fisico';
   const climaNome = clima.nome;
-  const a = Ind.statDe(A, atacante, fisico ? 1 : 3) * (statusMove ? 1 : Status.mulAtaque(atacante, fisico));
+  const a = Ind.statDe(A, atacante, fisico ? 1 : 3) * (statusMove ? 1 : Status.mulAtaque(atacante, fisico)) * Stg.mulStat(atacante.estagios, fisico ? 1 : 3);
   let d = Ind.statDe(D, defensor, fisico ? 2 : 4);
-  d = Weather.defesa(climaNome, D.types, fisico ? 2 : 4, d) || d;
+  d = (Weather.defesa(climaNome, D.types, fisico ? 2 : 4, d) || d) * Stg.mulStat(defensor.estagios, fisico ? 2 : 4);
   const tipo = Weather.tipoGolpe(climaNome, golpe);
   const poder = Weather.poderGolpe(climaNome, golpe, golpe.poder);
   const climaMul = Weather.poderTipo(climaNome, tipo);
@@ -5581,6 +5648,8 @@ function golpear(atacante, defensor, golpe){
   defensor.hp = Math.max(0, defensor.hp - dano);
   if (defensor.hp <= 0) defensor.status = null;
   else infligirStatus(atacante, defensor, golpe, eff);
+  aplicarEstagios(atacante, defensor, golpe, eff);
+  if (golpe.semente) semear(atacante, defensor);
   if (defensor === jogo.pika || atacante === jogo.pika) guardarEstadoAtivo();
   aplicarGolpe(atacante, defensor, golpe, dano, eff);
   if (hr){
@@ -9220,10 +9289,12 @@ if (jogo.ash){
          atualizado pelo `vida`; o parceiro em campo não sofre nada. Era assim que o substituto entrava com o HP zerado na tela. */
       if (m.uid != null && String(m.uid) !== String(uidParceiro())){ __boot.aviso('pdano de outro uid', { uid: m.uid, emCampo: uidParceiro(), hp: m.hp, dano: m.dano }); return; }
       const g = GOLPES[m.golpe] || STRUGGLE;
+      if (m.errou){ flutuar(p, 'missed', '#9ab'); return; }
       p.hp = m.hp != null ? m.hp : Math.max(0, p.hp - (m.dano || 0));       // passo 3: o HP que vale é o do servidor
       try { guardarEstadoAtivo(); } catch {}
       if (p.hp <= 0) __boot.aviso('pdano zerou o parceiro', { hp: m.hp, dano: m.dano, uid: m.uid, emTurno: !!p.emTurno });
       aplicarGolpe(s, p, g, m.dano, m.eff);
+      if (m.estagios) mostrarEstagios(m.estagios.quem === 'eu' ? s : p, m.estagios.mudancas, true);
     },
     golpeNoOutro: (s, m) => {                                            // o selvagem bateu no parceiro de OUTRO jogador: número, efeito e "Wound" em cima dele
       const par = Rede.outroPor(m.alvo)?.par; if (!par?.pivo) return;
@@ -9242,7 +9313,17 @@ if (jogo.ash){
       const atacante = m.meu ? jogo.pika : (Rede.outroPor(m.de)?.par || null);
       if (s.estado === 'desmaiado' || s.estado === 'capturando') { s.hp = m.hp; return; }
       s.hp = m.hp;
+      if (m.dreno){                                                       // Leech Seed no chefe da raid: quem plantou recebe o que foi drenado
+        flutuar(s, '−' + m.dano, '#8ef58e');
+        const p = jogo.pika;
+        if (m.meu && p && p.hp > 0 && !(p.desmaiado > 0)){ p.hp = Math.min(p.maxHp, p.hp + (m.dano || 0)); flutuar(p, '+' + m.dano, '#8ef58e'); guardarEstadoAtivo(); }
+        return;
+      }
+      if (m.errou){ flutuar(s, 'missed', '#9ab'); return; }
       aplicarGolpe(atacante, s, g, m.dano, m.eff);
+      if (m.estagios) mostrarEstagios(m.estagios.quem === 'eu' ? atacante : s, m.estagios.mudancas, true);
+      if (m.semente === true){ s.semente = { de: atacante || 'parceiro' }; flutuar(s, 'seeded!', '#8ef58e'); }
+      else if (m.semente === 'imune') flutuar(s, 'immune', '#9ab');
     },
     criar: reg => criarSelvagem({ dex: reg.dex, glb: reg.glb, nome: reg.nome, agua: reg.aquatico }, reg.x, reg.z, { area: reg.area, generico: reg.generico, casa: reg.casa, lv: reg.lv, perfil: reg.perfil, shiny: reg.shiny, ivs: reg.ivs, natureza: reg.natureza })
       .then(s => { if (reg.aquatico){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; } s.pertoDeGrama = reg.pertoDeGrama !== false; s.hp = reg.hp; s.maxHp = reg.maxHp; if (reg.raid) montarChefeRaid(s, reg); jogo.selvagens.push(s); return s; }),
@@ -9569,6 +9650,7 @@ function atualizarParceiro(dt){
   if (jogo.trocaCd > 0) jogo.trocaCd = Math.max(0, jogo.trocaCd - dt);
   const hostil = jogo.selvagens.find(s => s.estado === 'atacando' && Math.hypot(s.x - pika.x, s.z - pika.z) < 12);
   tiqueStatus(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
+  tiqueVolatil(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   if (jogo.turno || jogo.ordem){ pika.emBatalha = true; pika.calma = 0; }   // aggro de selvagem NÃO congela o parceiro: ele segue você e só briga quando VOCÊ manda (ou no turno)
   else if (pika.emBatalha){ pika.calma = (pika.calma || 0) + dt; if (pika.calma > 3) pika.emBatalha = false; }
   const dA = Math.hypot(ash.x - pika.x, ash.z - pika.z);
@@ -9604,7 +9686,7 @@ function atualizarParceiro(dt){
         const g2 = golpe;
         tocarUma(pika, g2.anim);
         Ind.gastarPP(pika, g2.id);
-        const fR = fichaHeld(pika); pika.recargas[g2.id] = g2.recarga * (fR ? HELD.recargaMult(fR) : 1);   // Quick Claw / Choice Scarf: faster recharge
+        const fR = fichaHeld(pika); pika.recargas[g2.id] = g2.recarga * (fR ? HELD.recargaMult(fR) : 1) / Stg.mulStat(pika.estagios, 5);   // Quick Claw / Choice Scarf / Speed stages: faster recharge
         lancarGolpe(pika, alvo, g2);            // fases visuais + acerto agendado em quadros
       }
       jogo.ordem = null;
@@ -10360,6 +10442,7 @@ async function iniciarTurno(n, servPronto = null){
     serv = r;
   }
   jogo.turno = { npc: n, info: n.treino, idx: -1, rodada: 0, fase: 'posiciona', caiu: false, inimigo: null, serv };
+  limparVolatil(p);                                                      // a luta por turno começa sem estágios do tempo real
   if (jogo.pika) jogo.pika.destino = null;                               // Ctrl+clique pendente não vale no turno
   atualizarMusica();                                                      // música de batalha (treinador / ginásio / elite)
   if (serv) jogo.turno.info = { ...n.treino, nome: serv.nomeInimigo || n.treino?.nome, time: serv.dele.map(x => ({ dex: x.dex, lv: x.lv, glb: 'pm' + String(x.dex).padStart(4, '0') + '_00' })) };
@@ -10489,8 +10572,11 @@ async function rodadaDoServidor(T, acao){
     }
     const g = (l.golpe === 'struggle' ? STRUGGLE : GOLPES[l.golpe]) || STRUGGLE;
     if (l.statusQuem !== 'eu' && g.tipo === 'Fire' && def.status?.id === 'freeze') flutuar(def, 'thawed', Status.cor('freeze'));
-    await golpeTurno(at, def, g, { dano: l.dano, eff: l.eff, hp: l.hpAlvo });
+    await golpeTurno(at, def, g, { dano: l.dano, eff: l.eff, hp: l.hpAlvo, errou: !!l.errou });
     if (l.curou && at){ at.hp = at.maxHp; flutuar(at, 'HP restored', '#8ef58e'); }
+    if (l.estagios) mostrarEstagios(l.estagios.quem === 'eu' ? at : def, l.estagios.mudancas, true);
+    if (l.semente === true && def){ def.semente = { de: at === jogo.pika ? 'parceiro' : at }; flutuar(def, 'seeded!', '#8ef58e'); if (def.rotulo){ def.rotMarca = undefined; pintarRotuloSelvagem(def); } }
+    else if (l.semente === 'imune' && def) flutuar(def, 'immune', '#9ab');
     if (l.statusId){
       const quem = l.statusQuem === 'eu' ? at : def;
       if (quem && quem.hp > 0){
@@ -10499,7 +10585,7 @@ async function rodadaDoServidor(T, acao){
         if (quem.rotulo){ quem.rotMarca = undefined; pintarRotuloSelvagem(quem); }
         if (quem === jogo.pika) guardarEstadoAtivo();
       }
-    } else if (g.cat === 'status' && !(l.dano > 0) && !l.curou){
+    } else if (g.cat === 'status' && !(l.dano > 0) && !l.curou && !l.errou && !l.estagios && !l.semente){
       flutuar(l.statusQuem === 'eu' ? at : def, 'it failed', '#9ab');
     }
   }
@@ -10520,6 +10606,8 @@ async function rodadaDoServidor(T, acao){
     if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: v.lv });
   }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o network.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
   if (T.inimigo && r.ele && !T.caiu){ T.inimigo.hp = r.ele.hp; if ('status' in r.ele){ T.inimigo.status = r.ele.status || null; T.inimigo.rotMarca = undefined; } }            // desmaiou: o `ele` já é o próximo, o HP dele vai pro que entra (abaixo)
+  if (T.inimigo && r.ele?.estagios && !T.caiu){ T.inimigo.estagios = { ...r.ele.estagios }; T.inimigo.semente = r.ele.semente ? (T.inimigo.semente || { de: 'parceiro' }) : null; T.inimigo.rotMarca = undefined; pintarRotuloSelvagem(T.inimigo); }   // estágios: quem vale é o servidor
+  if (jogo.pika && r.eu?.estagios && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){ jogo.pika.estagios = { ...r.eu.estagios }; jogo.pika.semente = r.eu.semente ? (jogo.pika.semente || { de: T.inimigo }) : null; }
   if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){ jogo.pika.hp = r.eu.hp; if ('status' in r.eu) jogo.pika.status = r.eu.status || null; guardarEstadoAtivo(); }   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
   if (T.caiu && !r.fim){                                                  // caiu o do inimigo e vem outro: o servidor já disse qual
     await esperarSeg(1.3);
@@ -10594,7 +10682,7 @@ async function rodadaTurno(acao){
   if (T.serv) return rodadaDoServidor(T, acao);                           // passo 4: quem decide é o servidor; aqui é só a tela
   const s = T.inimigo, gI = s.golpes[Math.floor(Math.random() * s.golpes.length)] || GOLPES.tackle;
   const p0 = jogo.pika, A = porDex.get(p0.dex), D = porDex.get(s.dex);
-  const velP = Ind.stat(A?.bs[5] ?? 50, p0.lv, p0.ivs?.[5] || 0, 0, p0.natureza, 5) * Status.mulVel(p0), velI = Ind.stat(D?.bs[5] ?? 50, s.lv, s.ivs?.[5] || 0, 0, s.natureza, 5) * Status.mulVel(s);
+  const velP = Ind.stat(A?.bs[5] ?? 50, p0.lv, p0.ivs?.[5] || 0, 0, p0.natureza, 5) * Status.mulVel(p0) * Stg.mulStat(p0.estagios, 5), velI = Ind.stat(D?.bs[5] ?? 50, s.lv, s.ivs?.[5] || 0, 0, s.natureza, 5) * Status.mulVel(s) * Stg.mulStat(s.estagios, 5);
   const acoes = [{ quem: 'p' }, { quem: 'i' }];
   if (acao.tipo === 'golpe' && (velI > velP || (velI === velP && Math.random() < 0.5))) acoes.reverse();
   let rodadaInteira = true;
@@ -10643,6 +10731,7 @@ async function rodadaTurno(acao){
       flutuar(e, '−' + d, Status.cor(id));
       if (e.hp <= 0) e.status = null;
     }
+    for (const e of [jogo.pika, s]) if (e.semente && e.hp > 0) drenarSemente(e, true);   // Leech Seed: end of the round
     if (jogo.pika.hp <= 0){ guardarEstadoAtivo(); morrer(jogo.pika); if (!(await esperarTrocaTurno())){ fimTurno(false); return; } }
     else if (s.hp <= 0){ koTurno(s); await esperarSeg(1.3); if (!(await proximoInimigoTurno())){ fimTurno(true); return; } }
     else guardarEstadoAtivo();
@@ -10654,6 +10743,7 @@ function fimTurno(vitoria, op = {}){
   const doServidor = op.servidor || null;                                 // passo 4: o servidor já pagou/cobrou e já deu o XP
   const T = jogo.turno; if (!T) return;
   jogo.turno = null;
+  limparVolatil(jogo.pika);                                              // estágios e semente acabam com a luta
   const s = T.inimigo, n = T.npc, t = T.info;
   /* jingle de vitória/derrota (os do jogo original, 12 s / 8 s) e depois a música do lugar volta; a 1ª insígnia toca o
      `badgeget` quando o jingle acaba. Quem desistiu não ouve nada. */
@@ -11131,7 +11221,7 @@ if (params0.get('figmateste') === '1'){                                  // UMA 
 if (CONTA.modo === 'conta'){ try { const u = new URL(location.href); const doJogador = ['jogar', 'mapa', 'chegada', 'voltou', 'v', 'qualidade', 'densidade'];   // qualidade/densidade (13/09): agora ficam guardadas no aparelho, então podem sair da URL
   if (u.search && [...u.searchParams.keys()].every(k => doJogador.includes(k))) history.replaceState(null, '', u.pathname); } catch {} }
 __boot.marcar('pronto', { inv: inventarioCena() });                      // o inventário da cena vai junto (o que o celular carregou de verdade)
-window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo)
+window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
 if (Fairy){
   Fairy.comecar({ jogo, cena, cam, dados, NOME, chaoEm, tocarAnim, montarPersonagem, livre, bloqueio, porDex, R, THREE, flipX: () => flipX, mundo }).catch(e => console.error('fairy:', e));
 }

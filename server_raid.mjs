@@ -27,6 +27,7 @@ import nodePath from 'node:path';
 import { hp as hpBase, stat as statBase, carregarLearnset, learnsetDe } from './individual.mjs';
 import { efetividade } from './rules.mjs';
 import { TODOS } from './moves_all.mjs';
+import * as Stg from './stages.mjs';
 
 /** O que vale sem data/raid.json (o mesmo PADRAO do raid.mjs do cliente, mais o que só o servidor usa). */
 export const PADRAO = { arena: '4120009', vagas: 10, chefeNome: 'Mew', chefeDex: 151, chefeGlb: 'pm0151_00', chefeNivel: 70, chefeHp: 0, chefeDano: 1, taxaShiny: 100, premio: 'mew' };
@@ -44,6 +45,7 @@ const OP_ALIAS = { comecar: 'comecar', iniciar: 'comecar', start: 'comecar', can
 const semAcento = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 const num = (v, min, max, pad) => { const n = Number(v); return Number.isFinite(n) && n >= min && n <= max ? n : pad; };
 const IVS_31 = [31, 31, 31, 31, 31, 31];
+const SEMENTE_MS = 4000;                                                     // Leech Seed no chefe: drena a cada 4 s (o mesmo relógio do tempo real)
 /** IVs do registro: o cliente usa lista [hp, atk, def, spa, spd, vel]; o servidor sorteia objeto { hp, atk, … } (individuoServidor). */
 const ivsDe = p => Array.isArray(p?.ivs) ? p.ivs : (p?.ivs && typeof p.ivs === 'object') ? ['hp', 'atk', 'def', 'spa', 'spd', 'vel'].map(k => +p.ivs[k] || 0) : [0, 0, 0, 0, 0, 0];
 
@@ -248,7 +250,8 @@ export function criarRaid(h) {
     if (!chegaram.length) { todos('A raid do ' + raid.cfg.chefeNome + ' acabou: ninguém chegou na arena.'); terminar(); return; }
     const maxHp = raid.sobre.hp ?? (raid.cfg.chefeHp > 0 ? raid.cfg.chefeHp : vidaAuto());
     const ch = raid.geo.chefe;
-    raid.chefe = { id: 1e9 + raid.id, hp: maxHp, maxHp, x: ch.x, z: ch.z, giro: +Math.PI.toFixed(3), proxGolpe: Date.now() + 4000 };   // giro π: de frente pro sul, onde a fila fica
+    raid.chefe = { id: 1e9 + raid.id, hp: maxHp, maxHp, x: ch.x, z: ch.z, giro: +Math.PI.toFixed(3), proxGolpe: Date.now() + 4000,   // giro π: de frente pro sul, onde a fila fica
+      est: Stg.novo(), sementes: new Map(), proxSemente: Date.now() + SEMENTE_MS };   // estágios do chefe valem pra sala inteira; sementes = conta → { dreno, de }
     raid.fase = 'luta'; raid.lutaAte = Date.now() + LUTA_MS;
     paraArena({ t: 'selvagem', s: registroChefe() });
     console.log(`[raid] #${raid.id} fight: ${raid.cfg.chefeNome} with ${maxHp} HP, ${chegaram.length} in the arena`);
@@ -409,11 +412,39 @@ export function criarRaid(h) {
     p.cd[golpe.id] = agora; p.ultimo = agora;
     const mon = monDaConta(u, m.atacante || {}); if (!mon) return;
     ws._raidMon = mon;                                                       // o chefe bate nele (pdano) até o próximo golpe dizer outro
+    const est = estDoParticipante(p, mon), ch = raid.chefe;
     const A = especie(mon.dex) || ESPECIE_VAZIA, B = especie(raid.cfg.chefeDex) || ESPECIE_VAZIA, lv = lvDe(mon), fis = golpe.cat === 'fisico';
-    const { dano, eff } = calcDano(golpe, lv, A, statMon(A, mon, fis ? 1 : 3), B, statBase(B.bs[fis ? 2 : 4], lv, 31, 0, null, fis ? 2 : 4));
-    const ch = raid.chefe;
+    if (Math.random() > Stg.chance(1, golpe, est, ch.est)) { paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano: 0, eff: 1, golpe: golpe.id, de: ws._id, errou: true }); return; }
+    const { dano, eff } = golpe.cat === 'status' ? { dano: 0, eff: 1 }
+      : calcDano(golpe, lv, A, statMon(A, mon, fis ? 1 : 3) * Stg.mulStat(est, fis ? 1 : 3), B, statBase(B.bs[fis ? 2 : 4], lv, 31, 0, null, fis ? 2 : 4) * Stg.mulStat(ch.est, fis ? 2 : 4));
     ch.hp = Math.max(0, ch.hp - dano); p.dano += dano;
-    paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano, eff, golpe: golpe.id, de: ws._id });
+    const estagios = Stg.doGolpe(golpe, est, ch.hp > 0 && (golpe.cat === 'status' || eff !== 0) ? ch.est : null);
+    let semente = null;
+    if (golpe.semente && ch.hp > 0) {
+      if (!Stg.podeSemear(B.types)) semente = 'imune';
+      else if (!ch.sementes.has(u)) { ch.sementes.set(u, { dreno: Stg.drenoSemente(hpBase(A.bs[0], lv, ivsDe(mon)[0] || 0)), de: ws._id }); semente = true; }
+    }
+    paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano, eff, golpe: golpe.id, de: ws._id, ...(estagios ? { estagios } : {}), ...(semente ? { semente } : {}) });
+    if (ch.hp <= 0) vencer();
+  }
+  /** Os estágios do Pokémon do participante: novos quando ele troca de Pokémon (outro uid). */
+  function estDoParticipante(p, mon) {
+    const uid = String(mon?.uid ?? mon?.dex ?? '');
+    if (!p.est || p.estUid !== uid) { p.est = Stg.novo(); p.estUid = uid; }
+    return p.est;
+  }
+  /** Leech Seed no chefe: cada semente drena 1/8 do HP de quem plantou (o chefe tem a vida da sala inteira) e cura o parceiro dele no cliente. */
+  function drenarSementes() {
+    const ch = raid.chefe;
+    ch.proxSemente = Date.now() + SEMENTE_MS;
+    for (const [u, s] of ch.sementes) {
+      if (ch.hp <= 0) break;
+      const p = raid.fila.get(u);
+      if (!p) { ch.sementes.delete(u); continue; }
+      const dano = Math.min(ch.hp, s.dreno);
+      ch.hp -= dano; p.dano += dano;
+      paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano, eff: 1, golpe: 'leechseed', de: s.de, dreno: true });
+    }
     if (ch.hp <= 0) vencer();
   }
   /** O chefe bate num participante da arena (sorteado): pdano pra sala, virado pro parceiro dele, com a animação do golpe. */
@@ -425,12 +456,16 @@ export function criarRaid(h) {
     const mon = w._raidMon || monDaConta(u, { uid: w._info.uid, dex: dexDoGlb(w._info.parceiro) }); if (!mon) return;
     const golpe = raid.golpesChefe[Math.floor(Math.random() * raid.golpesChefe.length)];
     const B = especie(raid.cfg.chefeDex) || ESPECIE_VAZIA, D = especie(mon.dex) || ESPECIE_VAZIA, lv = lvDe(mon), fis = golpe.cat === 'fisico';
-    const { dano, eff } = calcDano(golpe, lv, B, statBase(B.bs[fis ? 1 : 3], lv, 31, 0, null, fis ? 1 : 3), D, statMon(D, mon, fis ? 2 : 4), FORCA_CHEFE * danoRaid());
+    const p = raid.fila.get(u), est = p ? estDoParticipante(p, mon) : null;
+    const errou = Math.random() > Stg.chance(1, golpe, ch.est, est);
+    const { dano, eff } = errou ? { dano: 0, eff: 1 }
+      : calcDano(golpe, lv, B, statBase(B.bs[fis ? 1 : 3], lv, 31, 0, null, fis ? 1 : 3) * Stg.mulStat(ch.est, fis ? 1 : 3), D, statMon(D, mon, fis ? 2 : 4) * Stg.mulStat(est, fis ? 2 : 4), FORCA_CHEFE * danoRaid());
+    const estagios = errou ? null : Stg.doGolpe(golpe, ch.est, eff !== 0 ? est : null);   // o efeito secundário do golpe do chefe (Psychic −SpD, Close Combat no próprio chefe)
     const px = Number.isFinite(+w._info.px) ? +w._info.px : +w._info.x || 0, pz = Number.isFinite(+w._info.pz) ? +w._info.pz : +w._info.z || 0;
     ch.giro = +Math.atan2(px - ch.x, pz - ch.z).toFixed(3);
     const id = raid.id, deste = () => raid && raid.id === id && raid.fase === 'luta';
     paraArena({ t: 'spos', id: ch.id, x: ch.x, z: ch.z, giro: ch.giro, anim: golpe.anim || 'Attack' });
-    setTimeout(() => { if (deste()) paraArena({ t: 'pdano', id: ch.id, alvo: w._id, golpe: golpe.id, dano, eff }); }, Math.round((+golpe.atraso || 0.3) * 1000) + 250);   // sem uid/hp: vale o parceiro em campo, e o HP é do cliente
+    setTimeout(() => { if (deste()) paraArena({ t: 'pdano', id: ch.id, alvo: w._id, golpe: golpe.id, dano, eff, ...(errou ? { errou } : {}), ...(estagios ? { estagios } : {}) }); }, Math.round((+golpe.atraso || 0.3) * 1000) + 250);   // sem uid/hp: vale o parceiro em campo, e o HP é do cliente
     setTimeout(() => { if (deste()) paraArena({ t: 'spos', id: ch.id, x: ch.x, z: ch.z, giro: ch.giro, anim: 'Idle' }); }, 1400);   // Idle de novo: o próximo golpe toca a animação outra vez
   }
   function receber(ws, m) {
@@ -485,6 +520,7 @@ export function criarRaid(h) {
       else if (raid.fase === 'luta') {
         if (agora >= raid.lutaAte) perder('O ' + raid.cfg.chefeNome + ' escapou: o tempo acabou.');
         else if (agora >= raid.chefe.proxGolpe) golpeDoChefe();
+        else if (raid.chefe.sementes.size && agora >= raid.chefe.proxSemente) drenarSementes();
       }
       else if (raid.fase === 'fim' && agora >= raid.fimAte) terminar();
     } catch (e) { console.warn('[raid] tique:', e); }

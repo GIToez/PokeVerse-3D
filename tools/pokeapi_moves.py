@@ -20,6 +20,7 @@ the learnset it already had.
 Run from the repo root:
 
   python3 tools/pokeapi_moves.py
+  python3 tools/pokeapi_moves.py --status-only   # only the status, stage and Leech Seed fields
 """
 from __future__ import annotations
 
@@ -43,6 +44,7 @@ FILES = (
     'move_effect_prose.csv',
     'move_meta.csv',
     'move_meta_ailment_names.csv',
+    'move_meta_stat_changes.csv',
     'type_names.csv',
     'pokemon.csv',
     'pokemon_moves.csv',
@@ -50,6 +52,10 @@ FILES = (
 # PokéAPI ailment ids that are the six major statuses. Anything else (confusion,
 # trap, yawn, leech seed) is not a status the medicines cure.
 AILMENT = {1: 'paralysis', 2: 'sleep', 3: 'freeze', 4: 'burn', 5: 'poison'}
+# PokéAPI stat ids → the stage names the battle code uses (stages.mjs).
+STAT = {2: 'atk', 3: 'def', 4: 'spa', 5: 'spd', 6: 'vel', 7: 'prec', 8: 'eva'}
+LEECH_SEED = 18
+DAMAGE_RAISE = '7'                # damage + a stat change on the USER (Close Combat, Flame Charge, Draco Meteor)
 # Targets that land on the user. Rest sleeps the user, not whoever they aimed at.
 SELF_TARGETS = {'5', '7', '13', '15'}
 # Latest Scarlet/Violet list wins when a DLC group actually has rows.
@@ -394,11 +400,53 @@ def stamp_moves(moves: dict) -> int:
     return n
 
 
+def stamp_stages(moves: dict) -> int:
+    """Copy each move's stat-stage changes and Leech Seed from PokéAPI move_meta.
+
+    `estagios` is [[stat, n], ...] (stat = atk def spa spd vel prec eva).
+    `estagiosEm: 'eu'` when they land on the user: damage-raise moves always, status
+    moves when they target the user. `estagiosChance` (1–99) only when it is not certain.
+    `semente: true` is Leech Seed (meta ailment 18).
+    """
+    meta = {row['move_id']: row for row in read_csv('move_meta.csv')}
+    changes = defaultdict(list)
+    for row in read_csv('move_meta_stat_changes.csv'):
+        stat = STAT.get(int(row['stat_id']))
+        if stat and int(row['change']):
+            changes[row['move_id']].append([stat, int(row['change'])])
+    by_slug = {}
+    for row in read_csv('moves.csv'):
+        info = meta.get(row['id']) or {}
+        stamped = {}
+        lst = changes.get(row['id'])
+        if lst:
+            stamped['estagios'] = lst
+            if info.get('meta_category_id') == DAMAGE_RAISE or (row['damage_class_id'] == '1' and row['target_id'] in SELF_TARGETS):
+                stamped['estagiosEm'] = 'eu'
+            chance = int(info.get('stat_chance') or 0)
+            if 0 < chance < 100:
+                stamped['estagiosChance'] = chance
+        if int(info.get('meta_ailment_id') or 0) == LEECH_SEED:
+            stamped['semente'] = True
+        if stamped:
+            by_slug[slug_of(row['identifier'])] = stamped
+    n = 0
+    for sid, move in moves.items():
+        for key in ('estagios', 'estagiosEm', 'estagiosChance', 'semente'):
+            move.pop(key, None)
+        stamped = by_slug.get(sid)
+        if stamped:
+            move.update(stamped)
+            n += 1
+    return n
+
+
 def main() -> None:
     download()
     if '--status-only' in sys.argv:
         moves = json.loads(MOVES_PATH.read_text(encoding='utf-8'))
         n = stamp_moves(moves)
+        print(f'stages on {stamp_stages(moves)} moves')
         MOVES_PATH.write_text(json.dumps(moves, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
         print(f'status on {n} moves')
         return
@@ -407,6 +455,7 @@ def main() -> None:
     official, by_slug = load_official()
     moves = build_moves(old, official, by_slug)
     print(f'status on {stamp_moves(moves)} moves')
+    print(f'stages on {stamp_stages(moves)} moves')
     move_by_pokeapi = {e['pokeapi_id']: e['id'] for e in official}
     learn = build_learnset(old_doc.get('learnset') or {}, move_by_pokeapi, moves)
     matched = sum(1 for sid in old if sid in by_slug)
