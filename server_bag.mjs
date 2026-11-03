@@ -70,7 +70,6 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     for (const lista of [s.time, s.caixa]) for (const p of Array.isArray(lista) ? lista : []) if (p && String(p.uid) === String(uid)) return p;
     return null;
   }
-<<<<<<< HEAD
   const catalogo = () => lerJson('cosmeticos.json') || { roupas: [], efeitos: [] };
   const meus = c => {
     const s = saveDe(c);
@@ -78,10 +77,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     for (const k of ['roupas', 'efeitos']) if (!Array.isArray(s.cosmeticos[k])) s.cosmeticos[k] = [];
     return s.cosmeticos;
   };
-  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos] } }; };
-  const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, held: p.held ?? null, ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
-=======
-  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null }; };
+  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null, cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos] } }; };
   const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, status: Status.exportar(p.status), ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
   const tocarAmizade = (p, id) => {
     const d = Regras.amizadeDe(id);
@@ -91,7 +87,6 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
   };
   const maxDe = p => maxHpOf(p) || p.maxHp || 1;
   const reviver = (p, frac) => { const max = maxDe(p); p.hp = Math.max(1, Math.ceil(max * frac)); p.maxHp = max; p.status = null; };
->>>>>>> c3cf697b1dc6441f5e541682a054069d26225324
   const erro = (c, texto) => ({ erro: texto, bolsa: retrato(c) });       // the snapshot undoes what the client already took off locally
   const pronto = (c, extra = {}) => { c.rev = (c.rev || 0) + 1; salvar(); return { bolsa: retrato(c), ...extra }; };
 
@@ -217,7 +212,6 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return pronto(c);
   }
 
-<<<<<<< HEAD
   function cosmetico(c, m, u) {
     const tipo = m.tipo === 'efeito' ? 'efeito' : 'roupa', C = catalogo();
     const item = (tipo === 'efeito' ? C.efeitos : C.roupas).find(x => String(x.id) === String(m.id));
@@ -255,8 +249,6 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return out;
   }
 
-  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, cosmetico };
-=======
   /* Safari visit. The client cannot grant itself balls: the fee and the stack live here.
      entrar  { zona, x, z }   500 Coins, 30 Safari Balls, 500 steps, only next to that zone's warden
      passo   { n }            steps walked in the paid grass (capped)
@@ -319,8 +311,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return erro(c, 'unknown safari action');
   }
 
-  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp };
->>>>>>> c3cf697b1dc6441f5e541682a054069d26225324
+  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp, cosmetico };
   return {
     /** Handles the op, or returns null when it isn't one of these. */
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },
