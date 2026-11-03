@@ -3790,16 +3790,11 @@ if (PLAY){
     if (perso) await Personagem.aplicar(ash.pivo, perso);          // cores dos heróis tintáveis (nas skins fixas não faz nada)
     ash.vel = 3.6; pika.vel = 4.2;                 // um pouco mais devagar: o clipe de corrida toca a 1× e escorrega menos
     // quem segue o Ash: Pikachu por padrão, ou ?seguidor=pm0244_00 (Entei) etc.
-    /* 4 golpes: os da espécie (tabela) e, pra completar, golpes de dano com efeito, do tipo do
-       Pokémon primeiro, do mais fraco pro mais forte — até a tabela de aprendizado por nível entrar. */
-    const quatroGolpes = dex => {
-      const S = porDex.get(dex);
-      const base = [...(dex === 25 ? GOLPES_PIKA : (GOLPES_ESPECIE[dex] || ['tackle']))];
-      const tipos = S?.types || [], usados = new Set(base);
-      const cands = Object.values(GOLPES).filter(g => g && g.id && g.efeito && g.cat !== 'status' && g.poder >= 30 && g.poder <= 95 && !usados.has(g.id))
-        .sort((a, b) => (tipos.includes(b.tipo) - tipos.includes(a.tipo)) || a.poder - b.poder);
-      for (const g of cands){ if (base.length >= 4) break; base.push(g.id); usados.add(g.id); }
-      return base.slice(0, 4);
+    /* The four moves this species knows at this level: the latest ones on its learnset.
+       A short list is padded from the old species table, never from unrelated moves of the same type. */
+    const quatroGolpes = (dex, lv = 5) => {
+      const ids = Ind.golpesIniciais(+dex, lv, (dex === 25 ? GOLPES_PIKA : GOLPES_ESPECIE[+dex]) || ['tackle']).filter(id => GOLPES[id]);
+      return (ids.length ? ids : ['tackle']).slice(0, 4);
     };
     const configurarSeguidor = (pika, seguidorNome) => {
       const dex = +((seguidorNome || 'pm0025_00').match(/pm(\d{4})/)?.[1] || 25);
@@ -4946,7 +4941,8 @@ async function chegarChefe(glb = 'pm0249_00'){
   Ind.garantir(c); c.maxHp = Math.round(Ind.hpDe(S, c) * 2.5); c.hp = c.maxHp;
   c.perfil = 'agressivo'; c.chefe = true; c.flutua = /pm0249|pm0250|pm0144|pm0145|pm0146|pm0384|pm0487|pm0493|pm0150/.test(glb) ? 2.2 : 0;
   c.vel = 3.0; c.estado = 'chegando'; c.recarga = 0; c.paciencia = 99; c.assustado = false; c.area = null; c.casa = null; c.t = 0;
-  c.golpes = (GOLPES_ESPECIE[dex] || ['gust']).map(id => GOLPES[id]).filter(Boolean); c.proximoGolpe = c.golpes[0];
+  c.movs = Ind.golpesPara(dex, c.lv, GOLPES_ESPECIE[dex] || ['gust']);
+  c.golpes = c.movs.map(m => GOLPES[m.id]).filter(Boolean); if (!c.golpes.length) c.golpes = [GOLPES.gust || GOLPES.tackle]; c.proximoGolpe = c.golpes[0];
   const ash = jogo.ash;
   // no lote de casa ele pousa no descampado acima (norte) da casa, longe da horta;
   // em outro mapa, um pouco à frente do Ash
@@ -7769,7 +7765,7 @@ function vigiarPortaoPallet(dt){
   }
 }
 /* ===== Golpes por indivíduo (individual.mjs): `movs` = [{ id, pp, ppMax }]; o learnset diz o que entra em cada nível.
-   Sem PP em tudo, sobra o Struggle. Fallback por tipo (quatroGolpes) garante pelo menos 2 golpes a qualquer espécie. */
+   Sem PP em tudo, sobra o Struggle. Fallback (quatroGolpes) são os golpes do learnset da espécie naquele nível. */
 const STRUGGLE = { ...GOLPES.tackle, id: 'struggle', nome: 'Struggle', poder: 50, tipo: 'Normal' };
 function fallbackGolpes(dex){ return jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle']); }
 function aprenderNoNivel(p){
@@ -8948,7 +8944,7 @@ if (jogo.ash){
     nomeArea: a => nomeAreaCena(a) || rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || '') || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)
     get dados(){ return dados; }, flipX: () => flipX,
     fotoMapaMundo, aoFotoMapaMundo,
-    golpesDe: dex => (jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
+    golpesDe: (dex, lv) => (jogo.quatroGolpes ? jogo.quatroGolpes(dex, lv || 5) : (GOLPES_ESPECIE[dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean),
     atualizarSeguidorPainel: () => document.getElementById('segue-ctl')?.__encher?.(),
     seguir: async e => {
       const time = jogo.time || [];
@@ -9981,7 +9977,7 @@ async function proximoInimigoTurno(){
   const s = await criarSelvagem({ glb: m.glb + '.glb', nome: S?.name || ('nº ' + m.dex), dex: m.dex },
                                 q.x, q.z, { lv: m.lv, perfil: 'treinado' });
   s.emTurno = true; s.rival = jogo.pika; s.estado = 'turno';
-  s.golpes = (jogo.quatroGolpes ? jogo.quatroGolpes(m.dex) : (GOLPES_ESPECIE[m.dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean);
+  s.golpes = (jogo.quatroGolpes ? jogo.quatroGolpes(m.dex, m.lv) : (GOLPES_ESPECIE[m.dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean);
   s.pivo.visible = false;                                                // na bola até ela chegar
   tocarUma(n, 'Attack');                                                 // o rival arremessa
   await bolaLancada(n, q.x, q.z);

@@ -1,5 +1,6 @@
-/** The move catalog is the PokéAPI list, and the old 3D moves still look the same. */
+/** The move catalog is the PokéAPI list, and each species gets its own level-up moves. */
 import fs from 'node:fs';
+import * as Ind from '../individual.mjs';
 
 const moves = JSON.parse(fs.readFileSync('public/data/moves.json', 'utf8'));
 const learn = JSON.parse(fs.readFileSync('public/data/learnset.json', 'utf8'));
@@ -40,5 +41,16 @@ for (const [dex, rows] of Object.entries(learn.learnset)) {
 assert(empty === 0, empty + ' species have an empty learnset');
 assert(Object.keys(learn.learnset).length >= 996, 'species dropped: ' + Object.keys(learn.learnset).length);
 assert(Object.keys(learn.pp).length === ids.length, 'pp map does not cover the catalog');
+
+Ind.carregarLearnset(learn);
+const bulba5 = Ind.golpesIniciais(1, 5, ['tackle']);
+assert(bulba5.includes('tackle') && bulba5.includes('growl') && bulba5.includes('vinewhip'), 'bulbasaur lv5 ' + bulba5);
+assert(!bulba5.includes('solarbeam'), 'bulbasaur lv5 learned Solar Beam');
+const gyara = Ind.golpesIniciais(130, 70, ['tackle']);
+assert(gyara.includes('hydropump'), 'gyarados lv70 ' + gyara);
+const pika = Ind.golpesIniciais(25, 5, ['tackle']);
+assert(pika.includes('thundershock') && !pika.includes('thunder'), 'pikachu lv5 ' + pika);
+const zard = Ind.golpesIniciais(6, 36, ['tackle']);
+assert(zard.every(id => learn.learnset['6'].some(([m]) => m === id)), 'charizard got a move from another species: ' + zard);
 
 console.log('moves ok (' + ids.length + ' moves, ' + Object.keys(learn.learnset).length + ' species)');
