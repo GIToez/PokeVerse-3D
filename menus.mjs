@@ -542,6 +542,31 @@ function popupPk(){
     popPk = Popup.montar(def, {
       item: i => { selPokemon = i; confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; heldPicker = false; render(); },
       acao: nome => acaoPokemon(nome),
+      abre: nome => {
+        const e = timeAtual()[selPokemon];
+        if (nome === 'menu-item-segurado'){
+          const extra = popPk?.querySelector('.pf-extra[data-fig="menu-item-segurado"]');
+          if (extra && extra.style.display !== 'none'){
+            popPk.querySelector('.pv-held-pick')?.remove();
+            Popup.mostrarExtra(popPk, 'menu-item-segurado', false);
+            return true;
+          }
+          pintarHeldV2(popPk, e);
+          const slot = Popup.grupo(popPk, 'ficha')?.querySelector('[data-fig="item-segurado"]');
+          Popup.mostrarExtra(popPk, 'menu-item-segurado', true, slot && extra ? lugarHeld(popPk, slot, extra) : null);
+          return true;
+        }
+        if (nome === 'popup-mochila'){
+          const btn = popPk?.querySelector('.pf-extra[data-fig="menu-item-segurado"] [data-tagval="popup-mochila"]');
+          if (btn?.dataset.desligado === '1'){
+            Chat.sistema(emLutaHeld(e) ? "⚠ You can't change items mid-battle." : '⚠ No held items in the Bag.');
+            return true;
+          }
+          escolherHeld(popPk, e);
+          return true;
+        }
+        return false;
+      },
       fechar: () => { if (aberta === 'pokemon' && abaAtual !== 'caixa') aberta = null; confirmarAprender = null; heldPicker = false; },
     });
     for (let i = 1; i <= 4; i++){
@@ -1186,6 +1211,7 @@ function atualizarReaprender(pop, e){
 }
 function acaoPokemon(nome){
   const lista = timeAtual(), e = lista[selPokemon]; if (!e) return;
+  if (nome === 'tirar-item'){ mudarHeld(e, null).then(ok => { if (ok) render(); }); return; }
   const novo = e.aprender?.[0] || null;
   if (/^golpe-\d$/.test(nome)){                                          // card do golpe: 1º clique pede confirmação, 2º esquece esse e aprende o novo
     const slot = +nome.split('-')[1] - 1;
@@ -1235,12 +1261,137 @@ function iconeHeld(id){
   return it?.i ? './ui/itens/' + it.i + '.png' : (id ? './ui/itens/ic_' + id + '.png' : '');
 }
 function nomeHeld(id){ return D?.itens?.[id]?.n || ('Item ' + id); }
+function lugarHeld(pop, slot, extra){
+  const pr = pop.getBoundingClientRect(), sr = slot.getBoundingClientRect();
+  const pw = parseFloat(pop.style.width) || pr.width || 1;
+  const scale = pr.width / pw || 1;
+  const sx = (sr.left - pr.left) / scale, sy = (sr.top - pr.top) / scale, sw = sr.width / scale;
+  const ew = parseFloat(extra.style.width) || 340, eh = parseFloat(extra.style.height) || 176;
+  const ph = parseFloat(pop.style.height) || pr.height / scale || eh;
+  let x = sx + sw + 8;
+  if (x + ew > pw - 8) x = Math.max(8, sx - ew - 8);
+  const y = Math.max(8, Math.min(sy, ph - eh - 8));
+  return { x, y };
+}
+function efeitoHeld(id){
+  return ctx.nomeHeld?.(id)?.texto || D?.itens?.[id]?.d || '';
+}
+function emLutaHeld(e){ return !!(e?.seguindo && ctx.jogo?.turno); }
+async function mudarHeld(e, id){
+  if (!e) return false;
+  if (emLutaHeld(e)){ Chat.sistema("⚠ You can't change items mid-battle."); return false; }
+  if (id != null){
+    const ef = ctx.nomeHeld?.(id);
+    if (ef?.foraDoBeta){ Chat.sistema('⚠ This item has no in-game effect yet.'); return false; }
+    if (ef?.especies && !ef.especies.map(Number).includes(+e.dex)){
+      const nomes = ef.especies.map(d => ctx.porDex.get(+d)?.name || ('#' + d)).join(' or ');
+      Chat.sistema('⚠ Only ' + nomes + ' can hold this item.');
+      return false;
+    }
+  } else if ((heldDe(e)?.nivel || 0) > 0){
+    Chat.sistema("⚠ Leveled items can't be removed from the Pokémon yet.");
+    return false;
+  } else if (!heldDe(e)) return false;
+  if (ctx.comConta?.()){
+    const r = id != null
+      ? await ctx.bolsaOp('segurar', { item: +id, uid: e.uid })
+      : await ctx.bolsaOp('tirar', { uid: e.uid });
+    return !!(r && !r.erro);
+  }
+  const q = itensLS();
+  if (id != null){
+    if (!(q[id] > 0)){ Chat.sistema("⚠ You don't have that item in your Bag."); return false; }
+    const antes = heldDe(e);
+    if (antes && +antes.id === +id) return true;
+    q[id]--; if (!q[id]) delete q[id];
+    if (antes) q[antes.id] = (q[antes.id] || 0) + 1;
+    ctx.gravarLS('itens', q);
+    gravarHeld(e, { id: +id, preso: true });
+  } else {
+    const h = heldDe(e);
+    q[h.id] = (q[h.id] || 0) + 1;
+    ctx.gravarLS('itens', q);
+    gravarHeld(e, null);
+  }
+  return true;
+}
+function pintarHeldV2(pop, e){
+  const f = Popup.grupo(pop, 'ficha');
+  const held = e ? heldDe(e) : null;
+  Popup.imagem(pop, 'item-segurado', held ? iconeHeld(held.id) : null, f);
+  const slot = f?.querySelector('[data-fig="item-segurado"]');
+  if (slot){
+    slot.title = held ? (nomeHeld(held.id) + ' — ' + efeitoHeld(held.id)) : 'No held item';
+    slot.style.opacity = held ? '1' : '0.55';
+  }
+  const menu = pop?.querySelector('.pf-extra[data-fig="menu-item-segurado"]');
+  if (!menu) return;
+  Popup.imagem(pop, 'item-segurado', held ? iconeHeld(held.id) : null, menu);
+  Popup.texto(pop, 'item-nome', held ? nomeHeld(held.id) : 'No held item', menu);
+  Popup.texto(pop, 'item-efeito', held ? efeitoHeld(held.id) : 'Give a held item from the Bag.', menu);
+  Popup.botao(pop, 'tirar-item', !!(held && !(held.nivel > 0) && !emLutaHeld(e)), 'Take');
+  const troca = menu.querySelector('[data-tagval="popup-mochila"]');
+  const rot = troca?.querySelector('.pf-rotulo, [data-txt]');
+  const bag = heldNaMochila();
+  const outros = bag.filter(x => !held || +x.id !== +held.id);
+  const label = held ? 'Swap' : 'Give';
+  if (rot && rot.textContent !== label) rot.textContent = label;
+  if (troca){
+    const ok = outros.length > 0 && !emLutaHeld(e);
+    troca.dataset.desligado = ok ? '0' : '1';
+    troca.style.opacity = ok ? '1' : '0.5';
+    troca.style.cursor = ok ? 'pointer' : 'default';
+  }
+}
+function escolherHeld(pop, e){
+  pop.querySelector('.pv-held-pick')?.remove();
+  if (!e || emLutaHeld(e)) return;
+  const bag = heldNaMochila().filter(x => !heldDe(e) || +x.id !== +heldDe(e).id);
+  if (!bag.length){ Chat.sistema(heldDe(e) ? '⚠ No other held items in the Bag.' : '⚠ No held items in the Bag.'); return; }
+  const box = document.createElement('div');
+  box.className = 'pv-held-pick';
+  const extra = pop.querySelector('.pf-extra[data-fig="menu-item-segurado"]');
+  const ex = extra && extra.style.display !== 'none' ? extra : null;
+  let left = 16, top = 16;
+  if (ex){
+    const x = parseFloat(ex.style.left) || 0;
+    top = parseFloat(ex.style.top) || 16;
+    left = x >= 300 ? x - 292 : x + (parseFloat(ex.style.width) || 340) + 12;
+  }
+  Object.assign(box.style, { position: 'absolute', zIndex: '980', left: left + 'px', top: top + 'px', width: '280px', maxHeight: '260px', overflow: 'auto', background: '#0F1A2E', border: '2px solid #F8C237', borderRadius: '12px', padding: '8px', display: 'grid', gap: '4px', pointerEvents: 'auto' });
+  box.addEventListener('click', ev => ev.stopPropagation());
+  const title = document.createElement('div');
+  title.textContent = heldDe(e) ? 'Swap held item' : 'Give a held item';
+  title.style.cssText = 'color:#F8C237;font:800 14px "Baloo 2",system-ui;text-align:center';
+  box.appendChild(title);
+  for (const x of bag){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = (x.it?.n || nomeHeld(x.id)) + ' ×' + x.n;
+    b.style.cssText = 'background:#13254A;border:1px solid #F8C237;border-radius:8px;padding:6px 8px;color:#EAF6FB;font:inherit;cursor:pointer;text-align:left';
+    b.onclick = async ev => {
+      ev.stopPropagation();
+      const ok = await mudarHeld(e, x.id);
+      if (!ok) return;
+      box.remove();
+      render();
+    };
+    box.appendChild(b);
+  }
+  const close = document.createElement('button');
+  close.type = 'button'; close.textContent = 'Close';
+  close.style.cssText = 'background:#0B1220;border:1px solid rgba(248,194,55,.4);border-radius:8px;padding:6px;color:#B8C2D9;font:inherit;cursor:pointer';
+  close.onclick = ev => { ev.stopPropagation(); box.remove(); };
+  box.appendChild(close);
+  pop.appendChild(box);
+}
 function btnPv(id, label, on, title = ''){
   if (!on) return '';
   return `<button type="button" class="pv-btn" data-pv="${id}" title="${esc(title)}">${label}</button>`;
 }
 
 function encherPokemonV2(pop){
+  pop.querySelector('.pv-held-pick')?.remove();
   const lista = timeAtual();
   if (selPokemon >= lista.length) selPokemon = 0;
   Popup.rotulo(pop, 'titulo');
@@ -1325,6 +1476,7 @@ function preencherFichaV2(pop, f, e, S, stats, lista){
   const podeSoltar = !e.seguindo && lista.length > 1;
   Popup.botao(pop, 'soltar', podeSoltar, confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release');
   atualizarReaprender(pop, e);
+  pintarHeldV2(pop, e);
 }
 /** Fills the 9-slice party window. The v2 kit fills the Figma window instead. */
 function encherPokemon(pop){
@@ -1388,7 +1540,7 @@ function encherPokemon(pop){
     btnPv('reaprender', '↻ Relearn' + (reList.length ? ' (' + reList.length + ')' : ''), reList.length > 0, reList.length ? 'Moves it learns by this level that it does not have' : 'Nothing to relearn'),
     btnPv('nao-aprender', 'Skip learn', !!novo, novo ? 'Do not learn ' + novo.nome : 'No move waiting'),
     btnPv('give', 'Give item', !held && bagHeld.length > 0, held ? 'Already holding an item' : bagHeld.length ? 'Give a held item from the Bag' : 'No held items in the Bag'),
-    btnPv('take', 'Take item', !!(held && !held.preso), held?.preso ? 'Bound to this Pokémon' : held ? 'Return to the Bag' : 'Not holding anything'),
+    btnPv('take', 'Take item', !!(held && !(held.nivel > 0)), held?.nivel > 0 ? "Leveled items can't be removed yet" : held ? 'Return to the Bag' : 'Not holding anything'),
   ].join('');
   corpo.innerHTML = `<div class="pv-grid">
     <div class="pv-list">${slots}<div class="pv-eggs">Eggs — none</div></div>
@@ -1398,7 +1550,7 @@ function encherPokemon(pop){
         <div><h3>${e.shiny ? '✨ ' : ''}${esc(e.nome)}</h3><div class="st">${esc(status)}</div><div class="meta">${esc(meta)}</div><div class="pv-tipos">${tipos}</div></div>
         <div class="pv-held">
           <div class="ico${held ? '' : ' vazio'}" style="${held ? 'background-image:url(' + iconeHeld(held.id) + ')' : ''}"></div>
-          <b>${esc(heldNome)}${held?.preso ? ' 🔒' : ''}</b>
+          <b>${esc(heldNome)}${held?.nivel > 0 ? ' 🔒' : ''}</b>
           <small>Held item</small>
           ${pick}
         </div>
@@ -1435,20 +1587,16 @@ function ligarPvAcoes(corpo, e, lista){
       if (id === 'nao-aprender'){ acaoPokemon('nao-aprender'); return; }
       if (id === 'give'){ heldPicker = !heldPicker; render(); return; }
       if (id === 'take'){
-        const h = heldDe(e); if (!h || h.preso) return;
-        const q = itensLS(); q[h.id] = (q[h.id] || 0) + 1; ctx.gravarLS('itens', q);
-        gravarHeld(e, null); heldPicker = false; render();
+        const ok = await mudarHeld(e, null);
+        heldPicker = false;
+        if (ok) render();
       }
     };
   });
-  corpo.querySelectorAll('[data-pv-give]').forEach(b => b.onclick = ev => {
+  corpo.querySelectorAll('[data-pv-give]').forEach(b => b.onclick = async ev => {
     ev.stopPropagation();
-    const id = b.dataset.pvGive, q = itensLS();
-    if (!(q[id] > 0) || heldDe(e)) return;
-    q[id]--; if (!q[id]) delete q[id];
-    ctx.gravarLS('itens', q);
-    gravarHeld(e, { id });
-    heldPicker = false; render();
+    const ok = await mudarHeld(e, +b.dataset.pvGive);
+    if (ok){ heldPicker = false; render(); }
   });
 }
 /** Cores da barra: as mesmas faixas da Amanda que o conversor colheu (card-vida [estado:100|40|10]). */
@@ -1477,6 +1625,7 @@ function encherFichaPokemon(pop, e, lista){
     for (let i = 0; i < 4; i++){ Popup.golpeVazio(pop, i, true); const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (no){ no.style.pointerEvents = ''; no.style.cursor = ''; } }
     Popup.botao(pop, 'evoluir', false, '✦ Evolve'); Popup.botao(pop, 'soltar', false, 'Release');
     atualizarReaprender(pop, null);
+    if (pop.__def?.v2) pintarHeldV2(pop, null);
     return;
   }
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
