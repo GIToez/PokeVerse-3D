@@ -5908,6 +5908,7 @@ async function segurarItem(id, aviso = null){
     it[id]--; if (it[id] <= 0) delete it[id];
     if (antes) it[antes.id] = (it[antes.id] || 0) + 1;
     reg.held = { id: +id, preso: true };
+    p.held = reg.held;
     gravarLS('itens', it); gravarLS('time', jogo.time);
   }
   pintarHeld(); pintarAtalhos?.(true);
@@ -5920,7 +5921,7 @@ async function tirarHeld(){
   if (!h) return false;
   if (jogo.turno){ flutuar(jogo.ash, "you can't change items mid-battle", '#ffd23a'); return false; }
   if (comConta()){ const r = await bolsaOp('tirar', { uid: reg.uid }); if (!r || r.erro) return false; }
-  else { const it = lerLS('itens', {}); it[h.id] = (it[h.id] || 0) + 1; reg.held = null; gravarLS('itens', it); gravarLS('time', jogo.time); }
+  else { const it = lerLS('itens', {}); it[h.id] = (it[h.id] || 0) + 1; reg.held = null; p.held = null; gravarLS('itens', it); gravarLS('time', jogo.time); }
   pintarHeld();
   Chat.sistema(nomeItem(h.id) + ' went back to the Bag.');
   return true;
@@ -6810,6 +6811,7 @@ function aplicarVidas(lista){
       if (v.maxHp != null) p.maxHp = v.maxHp; if (v.hp != null) p.hp = v.hp;
       if (v.amizade != null) p.amizade = v.amizade;
       if ('status' in v) p.status = v.status || null;
+      if ('held' in v) p.held = v.held || null;                              // timeAtual reads the partner first; a stale p.held hid a server take
       if (v.expReserva != null) p.expReserva = v.expReserva;
       if (v.lv != null){                                                   // golpe aprendido no nível (acima, no REGISTRO do time) entra na barra
         /* 18/09 (xkuuhaaku 1550202960695267328, dv_dasmerces, silikgnt: "quer aprender X" no chat e NADA na janela Pokémon): com os

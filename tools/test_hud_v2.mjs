@@ -60,6 +60,22 @@ assert.match(menus, /defPopup\('caixa'\)/, 'the PC looks up the v2 box');
 assert.match(menus, /if \(def\)\{\s*popPk = Popup\.montar\(def/, 'the party opens the v2 window');
 assert.match(menus, /if \(def\)\{\s*popBx = Popup\.montar\(def/, 'the PC opens the v2 box');
 assert.match(menus, /encherPokemonV2/, 'the party fills the Figma sheet');
+assert.match(menus, /item-segurado/, 'the party paints the held-item slot');
+assert.match(menus, /tirar-item/, 'the party can take a held item');
+assert.match(menus, /function mudarHeld/, 'give and take share one path');
+const heldCat = JSON.parse(readFileSync(join(root, 'public/data/held.json'), 'utf8'));
+const menuCat = JSON.parse(readFileSync(join(root, 'public/data/menu_data.json'), 'utf8'));
+for (const [id, it] of Object.entries(heldCat.itens)){
+  assert.equal(menuCat.itens[id]?.t, 14, id + ' is a held item in the bag catalog');
+  assert.equal(menuCat.itens[id]?.d, it.texto, id + ' uses the in-game effect text');
+  assert.ok(existsSync(join(root, 'ui/itens/' + it.icone + '.png')), 'icon for ' + it.nome);
+}
+const mart = menuCat.lojas['2150101'] || [];
+for (const id of [20004, 20008, 20010, 20011, 20012, 20014, 20015, 20016, 20017, 20018, 20019, 20020, 20021, 20022, 20023, 20026]){
+  const linha = mart.find(l => +l.item === id);
+  assert.ok(linha, 'Pokémart sells item ' + id);
+  assert.equal(linha.preco, 8000);
+}
 assert.match(menus, /porPagina/, 'each box page uses the cells drawn in that layout');
 const index = readFileSync(join(root, 'index.html'), 'utf8');
 assert.match(index, /Hud\.carregarV2\(\)/, 'the page loads the v2 kit');
