@@ -315,7 +315,11 @@ for (const c of Object.values(contas)) for (const p of [...(c?.save?.time || [])
 const PREFS_OK = new Set(['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'introVista', 'ultimoCentro', 'tempo', 'inicial']);
 function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
-  for (const k of Object.keys(prefs)) if (PREFS_OK.has(k)) c.save[k] = prefs[k];   // chave fora da lista (dinheiro, bolas…) é IGNORADA
+  for (const k of Object.keys(prefs)) {
+    if (!PREFS_OK.has(k)) continue;                                       // chave fora da lista (dinheiro, bolas…) é IGNORADA
+    if (k === 'personagem') { const p = bolsaServ.validarPersonagem(c, prefs[k]); if (p === null && prefs[k] != null) continue; c.save[k] = p; continue; }   // paid outfit not owned: keeps the last valid one
+    c.save[k] = prefs[k];
+  }
 }
 /* Party sync may reorder Pokémon, update friendship (`amizade`), and report a lower HP.
    Experience, level, and banked experience are ignored: a wild defeat is awarded by
@@ -1294,7 +1298,7 @@ const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet') });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao });
-const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u) });   // comprar / usar / descartar / held items (server_bag.mjs)
+const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida });   // comprar / usar / descartar / held items (server_bag.mjs)
 const wilds = criarWilds({
   dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,
   expMult: () => eventos.efetivo().expMult,
@@ -1339,6 +1343,10 @@ wss.on('connection', ws => {
         ws._info = { ...m };
         const uTok = m.token ? sessoes.get(m.token) : null;
         if (uTok && banidoAteDe(contas[uTok])) { enviar(ws, { t: 'saia', texto: 'Sua conta está suspensa.' }); try { ws.close(); } catch {} return; }
+        if (uTok && contas[uTok] && m.personagem != null){                    // the look the others see on join: only owned outfits/effects (server_bag validarPersonagem)
+          const pv = bolsaServ.validarPersonagem(contas[uTok], m.personagem);
+          ws._info.personagem = pv === null ? (contas[uTok].save?.personagem ?? null) : pv;
+        }
         if (eventos.aoEntrar(ws, uTok)) return;                            // Fase 3: manutenção barra quem não é GM; senão manda o evento ao vivo
         moderacao.aoEntrar(ws, uTok);                                      // Fase 3: chegou onde o GM levou (posGm) → apaga
         if (uTok) for (const w of socketsDe(uTok)) {                       // sessão única, como em produção: a aba/aparelho anterior leva `saia` (não reconecta) e some do mapa dos outros — antes cada aba virava mais um boneco
@@ -1404,10 +1412,14 @@ wss.on('connection', ws => {
         broadcast(ws, { t: 'parceiro', id: ws._id, parceiro: m.parceiro, pshiny: m.pshiny, montaria: m.montaria });
         break;
 
-      case 'personagem':
-        if (ws._info) ws._info.personagem = m.personagem;
-        broadcast(ws, { t: 'personagem', id: ws._id, personagem: m.personagem });
+      case 'personagem': {
+        const cP = contas[ws._usuario];
+        const pers = cP ? bolsaServ.validarPersonagem(cP, m.personagem) : m.personagem;   // visitors have no shop: only accounts are checked
+        if (pers === null && m.personagem != null) { enviar(ws, { t: 'sistema', texto: "That outfit isn't yours yet: get it in the Wardrobe." }); break; }
+        if (ws._info) ws._info.personagem = pers;
+        broadcast(ws, { t: 'personagem', id: ws._id, personagem: pers });
         break;
+      }
 
       case 'titulo': {
         const titulo = String(m.titulo ?? '').slice(0, 40);                     // nº19: título é string livre espalhada a todos — limita o tamanho

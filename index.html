@@ -223,7 +223,8 @@ import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: oth
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import { Held, heldDe } from './held.mjs';
-import * as Pesca from './fishing_game.mjs';      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
+import * as Pesca from './fishing_game.mjs';
+import * as CosFx from './cosmetic_fx.mjs';       // auras/trails from the Wardrobe (drawn, data/cosmeticos.json)      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
@@ -3141,7 +3142,11 @@ const MERGULHO = { agua: 0.3, anfibia: 0.15 };
 // Ho-Oh: o jogo senta o treinador na base do pescoço, colado na crista; nas costas,
 // entre as asas, encaixa muito melhor.
 const AJUSTE_SELA = { pm0250_00: { osso: 'Spine1' },
-                      pm0143_00: { osso: 'Head' } };   // Snorlax: no Spine2 o raio cai dentro da barriga e o treinador some no Pokémon
+                      pm0143_00: { osso: 'Head' },     // Snorlax: no Spine2 o raio cai dentro da barriga e o treinador some no Pokémon
+                      // 02/11: nas aves novas a sela pela superfície fica alta e em cima do pescoço — `desvio` = [pra trás, pra baixo] em metros do mundo
+                      pm0144_00: { desvio: [0.5, 0.5] },   // Articuno
+                      pm0145_00: { desvio: [0.5, 0.5] },   // Zapdos
+                      pm0018_00: { desvio: [0.5, 0.5] } }; // Pidgeot
 /** A sela: o `eMount` do GLB quando veio inteiro (o Lugia tem o nó animado, certinho);
  *  senão um ponto na superfície do dorso, em cima do osso que o jogo usa
  *  (data/saddles.json), em pé e olhando pra frente. */
@@ -3155,9 +3160,9 @@ function pontoDeSela(m){
   // fica na origem do osso (dentro do corpo) e a sela vai pra superfície do dorso
   const temTranslacao = !!p && (p.position.lengthSq() > 1e-6 || [...m.acoes.values()].some(a => a.getClip().tracks.some(t => t.name === 'eMount.position')));
   if (p && temTranslacao && !aj) return p;
-  return selaNaSuperficie(m, aj?.osso || sela?.osso);
+  return selaNaSuperficie(m, aj?.osso || sela?.osso, aj?.desvio);
 }
-function selaNaSuperficie(m, nomeOsso){
+function selaNaSuperficie(m, nomeOsso, [tras, baixo] = [0, 0]){
   m.mix.update(0); m.pivo.updateMatrixWorld(true);
   const osso = (nomeOsso && m.pivo.getObjectByName(nomeOsso)) || ['Spine2', 'Spine1', 'Spine', 'Waist', 'Origin'].map(n => m.pivo.getObjectByName(n)).find(Boolean) || m.pivo;
   const b = new THREE.Vector3(); osso.getWorldPosition(b);
@@ -3168,7 +3173,7 @@ function selaNaSuperficie(m, nomeOsso){
   const topo = acima.length ? acima[0] : b.y + m.altura * 0.15;
   const ponto = new THREE.Object3D(); ponto.name = 'sela';
   osso.add(ponto);
-  ponto.position.copy(osso.worldToLocal(new THREE.Vector3(b.x, topo + 0.03, b.z)));   // a pélvis (raiz da pose de montar) fica sobre o dorso
+  ponto.position.copy(osso.worldToLocal(new THREE.Vector3(b.x, topo + 0.03 - baixo, b.z - tras)));   // a pélvis (raiz da pose de montar) fica sobre o dorso; o Pokémon ainda olha pra +z, então trás = −z
   const q = new THREE.Quaternion(); osso.getWorldQuaternion(q); ponto.quaternion.copy(q.invert());   // em pé, de frente (o pivô ainda não girou)
   return ponto;
 }
@@ -8569,6 +8574,68 @@ if (jogo.ash){
      Center door). Like Fly outside battle in the main series it needs the 3rd badge; only outdoors, not in a battle or a raid,
      once every 30 s. The trip is the same scene change as waking up after a faint (irParaCena into that Center through its
      door), so the server accepts the new position. */
+
+  /* ===== WARDROBE + COSMETICS SHOP (Nov 2). Outfits: the 28 on the creation screen are free; the other dump outfits are in
+     data/cosmeticos.json (Coins, an Elite Four reward, or an event that isn't running). Effects: an aura (`peito`) and a trail
+     (`rastro`), drawn by cosmetic_fx.mjs. What you wear rides in `personagem` (tipo + efeitos), so the room sees it; the server
+     only passes on what the account owns (server_bag.mjs). Coins only — there are no real-money payments. */
+  let COSM = { roupas: [], efeitos: [] };
+  const cosmPronto = fetch('./data/cosmeticos.json').then(r => r.ok ? r.json() : null).then(d => { if (d) COSM = d; }).catch(() => {});
+  const fxDoId = id => COSM.efeitos.find(e => e.id === +id)?.fx || null;
+  const kindsDe = pers => ({ peito: fxDoId(pers?.efeitos?.peito), rastro: fxDoId(pers?.efeitos?.rastro) });
+  CosFx.instalar({ THREE, cena, toque: MOBILE });
+  const corpoEu = { get pivo(){ return jogo.ash?.pivo || null; }, get altura(){ return jogo.ash?.altura || 1.6; }, get montado(){ return !!jogo.montaria; } };
+  const fxProprio = () => CosFx.vestir('eu', corpoEu, kindsDe(Personagem.ler()));
+  cosmPronto.then(fxProprio);
+  const meusCosm = () => { const m = lerLS('cosmeticos', null); return { roupas: Array.isArray(m?.roupas) ? m.roupas : [], efeitos: Array.isArray(m?.efeitos) ? m.efeitos : [] }; };
+  const GUARDA = {
+    pronto: cosmPronto,
+    catalogo: () => COSM,
+    meus: meusCosm,
+    elite: () => !!lerLS('eliteVencida', false),
+    dinheiro: () => +lerLS('dinheiro', 0) || 0,
+    atual: () => Personagem.ler() || {},
+    /** Outfits of the current trainer's gender: free (creation) first, then the catalog ones. */
+    roupas(){
+      const eu = Personagem.skinDe(Personagem.ler()), sexo = eu?.sexo || 'menino';
+      const gratis = Personagem.skinsDaCriacao(sexo).map(s => ({ id: s.id, nome: s.nome, glb: s.glb, skin: s, gratis: true }));
+      const loja = COSM.roupas.filter(r => r.sexo === sexo).map(r => ({ ...r, skin: Personagem.skinPorId(r.id) })).filter(r => r.skin);
+      return [...gratis, ...loja.map(r => ({ ...r, glb: r.skin.glb }))];
+    },
+    async vestirRoupa(id){
+      const s = Personagem.skinPorId(id); if (!s) return false;
+      if (jogo.montaria){ Chat.sistema('Dismount to change outfits.'); return false; }
+      const item = COSM.roupas.find(r => r.id === id);
+      if (item && !meusCosm().roupas.includes(id)) return false;
+      const p = { ...(Personagem.ler() || {}), tipo: id };
+      Personagem.gravar(p);
+      await jogo.trocarJogador?.(p);
+      fxProprio();
+      return true;
+    },
+    vestirEfeito(slot, id){
+      if (id != null && !meusCosm().efeitos.includes(+id)) return false;
+      const p = { ...(Personagem.ler() || {}) };
+      p.efeitos = { ...(p.efeitos || {}) };
+      if (id == null) delete p.efeitos[slot]; else p.efeitos[slot] = +id;
+      Personagem.gravar(p); fxProprio();
+      return true;
+    },
+    /** Buy (or claim the Elite Four reward). With an account the server decides; without one the local save pays. */
+    async comprar(tipo, id){
+      const lista = tipo === 'efeito' ? COSM.efeitos : COSM.roupas, item = lista.find(x => String(x.id) === String(id));
+      if (!item) return { erro: 'unknown cosmetic' };
+      if (comConta()){ const r = await bolsaOp('cosmetico', { tipo, id: item.id }); return r || { erro: 'no reply' }; }
+      const m = meusCosm(), chave = tipo === 'efeito' ? 'efeitos' : 'roupas';
+      if (m[chave].includes(item.id)) return { erro: 'you already have it' };
+      if (item.evento) return { erro: item.evento };
+      if (item.premio === 'elite'){ if (!GUARDA.elite()) return { erro: 'beat the Elite Four to get it' }; }
+      else { const d = GUARDA.dinheiro(); if (d < (+item.preco || 0)) return { erro: 'not enough Coins' }; gravarLS('dinheiro', d - item.preco); }
+      m[chave].push(item.id); gravarLS('cosmeticos', m);
+      Som.tocar('ui/sound_itemget', { volume: .7, prio: true });
+      return { ok: true };
+    },
+  };
   const VOAR_INSIGNIAS = 3, VOAR_ESPERA_S = 30;
   const voarLista = () => {
     const vis = { ...(lerLS('centrosVisitados', {}) || {}) }, u = lerLS('ultimoCentro', null);
@@ -8727,7 +8794,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt),chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id),chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
@@ -8822,7 +8889,7 @@ if (jogo.ash){
     gm: () => GM_REAL,                                                  // Configurações: as ferramentas de bastidor só pra GM (ou jogo local)
     trocar: nome => Troca.convidar(nome), desafiarJogador,             // Social → menu do amigo → convidar (fase 4: mesa de troca) / /batalhar
     destinoPreso, irDestinoPreso,                                      // ESTOU PRESO (15/09): pra onde vai e a ida (sem curar), depois do relato aceito
-    jogo, R, porDex, lerLS, gravarLS, Som, conta: Conta, contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, voar: VOAR, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
+    jogo, R, porDex, lerLS, gravarLS, Som, conta: Conta, contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, voar: VOAR, guarda: GUARDA, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
     criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p) return jogo.trocarJogador?.(p); }),   // Configurações → ✎ Personagem
     personagemNome: () => Personagem.nomeDe(Personagem.ler()),
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },
@@ -10273,6 +10340,7 @@ function quadro(dt){
       if (!m.vivo){ m.descartar(); cena.remove(m.raiz); magias.splice(i, 1); }
     }
     atualizarClima(dt);
+    try { CosFx.quadro(dt, cam, ren.domElement.height, k => { const o = Rede.outroPor(k.slice(1))?.ent; return o ? Math.hypot(o.x - alvo.x, o.z - alvo.z) : Infinity; }); } catch (e){ console.warn('cosmetic fx:', e); }
     // anel do alvo
     const a = jogo.alvo;
     if (a && a.estado !== 'morto'){ anelAlvo.visible = true; anelAlvo.position.set(a.vx, a.vy - (a.flutua || 0) + 0.03, a.vz); }   // quem paira (chefe da raid): o anel fica no chão

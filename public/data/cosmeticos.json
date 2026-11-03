@@ -1,0 +1,434 @@
+{
+ "_sobre": "Cosmetics (wardrobe + cosmetics shop, Coins only — no real-money payments). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); the 28 creation outfits are free. `preco` = Coins, `premio: \"elite\"` = reward for beating the Elite Four, `evento` = not obtainable now. efeitos: drawn by cosmetic_fx.mjs (the newer build's particle prefabs are not in the project); tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
+ "roupas": [
+  {
+   "id": "boy_010",
+   "nome": "Elegant Outfit",
+   "sexo": "menino",
+   "fashion": 52003,
+   "preco": 25000
+  },
+  {
+   "id": "boy_019",
+   "nome": "Spring Outfit",
+   "sexo": "menino",
+   "fashion": 52011,
+   "preco": 25000
+  },
+  {
+   "id": "boy_023",
+   "nome": "Charizard Outfit",
+   "sexo": "menino",
+   "fashion": 52015,
+   "preco": 50000
+  },
+  {
+   "id": "boy_024",
+   "nome": "Christmas Outfit",
+   "sexo": "menino",
+   "fashion": 52016,
+   "preco": 25000
+  },
+  {
+   "id": "boy_027",
+   "nome": "Gardevoir Outfit",
+   "sexo": "menino",
+   "fashion": 52018,
+   "preco": 50000
+  },
+  {
+   "id": "boy_029",
+   "nome": "League Champion Outfit",
+   "sexo": "menino",
+   "fashion": 52019,
+   "premio": "elite",
+   "dica": "Beat the Elite Four"
+  },
+  {
+   "id": "boy_028",
+   "nome": "Lopunny Outfit",
+   "sexo": "menino",
+   "fashion": 52020,
+   "preco": 50000
+  },
+  {
+   "id": "boy_035",
+   "nome": "Qixi Outfit",
+   "sexo": "menino",
+   "fashion": 52022,
+   "preco": 25000
+  },
+  {
+   "id": "boy_032",
+   "nome": "Cooling Outfit",
+   "sexo": "menino",
+   "fashion": 52023,
+   "preco": 25000
+  },
+  {
+   "id": "boy_038",
+   "nome": "Moonlight Outfit",
+   "sexo": "menino",
+   "fashion": 52024,
+   "preco": 50000
+  },
+  {
+   "id": "boy_040",
+   "nome": "Elegant Embroidery Outfit",
+   "sexo": "menino",
+   "fashion": 52025,
+   "preco": 25000
+  },
+  {
+   "id": "boy_042",
+   "nome": "Divine Elf",
+   "sexo": "menino",
+   "fashion": 52026,
+   "preco": 50000
+  },
+  {
+   "id": "boy_043",
+   "nome": "Pumpkin Shadows",
+   "sexo": "menino",
+   "fashion": 52027,
+   "preco": 50000
+  },
+  {
+   "id": "boy_047",
+   "nome": "Diana",
+   "sexo": "menino",
+   "fashion": 52028,
+   "preco": 50000
+  },
+  {
+   "id": "boy_049",
+   "nome": "Eternal Crown",
+   "sexo": "menino",
+   "fashion": 52029,
+   "preco": 50000
+  },
+  {
+   "id": "boy_050",
+   "nome": "Burning Sky Suit",
+   "sexo": "menino",
+   "fashion": 52030,
+   "preco": 50000
+  },
+  {
+   "id": "boy_051",
+   "nome": "Valentine Outfit",
+   "sexo": "menino",
+   "fashion": 52031,
+   "preco": 25000
+  },
+  {
+   "id": "boy_052",
+   "nome": "A Quiet Spring Stroll",
+   "sexo": "menino",
+   "fashion": 52032,
+   "preco": 25000
+  },
+  {
+   "id": "boy_053",
+   "nome": "Nezha",
+   "sexo": "menino",
+   "fashion": 52033,
+   "preco": 50000
+  },
+  {
+   "id": "boy_054",
+   "nome": "Phoenix Call to the Rising Sun",
+   "sexo": "menino",
+   "fashion": 52034,
+   "preco": 50000
+  },
+  {
+   "id": "boy_057",
+   "nome": "Champion Path — Champion",
+   "sexo": "menino",
+   "fashion": 52035,
+   "evento": "Champion Path ranking reward (not running)"
+  },
+  {
+   "id": "boy_056",
+   "nome": "Champion Path — Top 10",
+   "sexo": "menino",
+   "fashion": 52036,
+   "evento": "Champion Path ranking reward (not running)"
+  },
+  {
+   "id": "boy_055",
+   "nome": "Champion Path — King",
+   "sexo": "menino",
+   "fashion": 52037,
+   "evento": "Champion Path ranking reward (not running)"
+  },
+  {
+   "id": "boy_058",
+   "nome": "Elite Four",
+   "sexo": "menino",
+   "fashion": 52038,
+   "premio": "elite",
+   "dica": "Beat the Elite Four"
+  },
+  {
+   "id": "boy_059",
+   "nome": "Beijing Rhythm Banner",
+   "sexo": "menino",
+   "fashion": 52039,
+   "preco": 25000
+  },
+  {
+   "id": "girl_022",
+   "nome": "Gengar Embroidered Jacket",
+   "sexo": "menina",
+   "fashion": 53014,
+   "preco": 50000
+  },
+  {
+   "id": "girl_023",
+   "nome": "Charizard Outfit",
+   "sexo": "menina",
+   "fashion": 53015,
+   "preco": 50000
+  },
+  {
+   "id": "girl_024",
+   "nome": "Christmas Outfit",
+   "sexo": "menina",
+   "fashion": 53016,
+   "preco": 25000
+  },
+  {
+   "id": "girl_027",
+   "nome": "Gardevoir Outfit",
+   "sexo": "menina",
+   "fashion": 53018,
+   "preco": 50000
+  },
+  {
+   "id": "girl_027",
+   "nome": "League Champion Outfit",
+   "sexo": "menina",
+   "fashion": 53019,
+   "premio": "elite",
+   "dica": "Beat the Elite Four"
+  },
+  {
+   "id": "girl_028",
+   "nome": "Lopunny Outfit",
+   "sexo": "menina",
+   "fashion": 53020,
+   "preco": 50000
+  },
+  {
+   "id": "girl_035",
+   "nome": "Qixi Outfit",
+   "sexo": "menina",
+   "fashion": 53022,
+   "preco": 25000
+  },
+  {
+   "id": "girl_032",
+   "nome": "Cooling Outfit",
+   "sexo": "menina",
+   "fashion": 53023,
+   "preco": 25000
+  },
+  {
+   "id": "girl_038",
+   "nome": "Moonlight Outfit",
+   "sexo": "menina",
+   "fashion": 53024,
+   "preco": 50000
+  },
+  {
+   "id": "girl_040",
+   "nome": "Elegant Embroidery Outfit",
+   "sexo": "menina",
+   "fashion": 53025,
+   "preco": 25000
+  },
+  {
+   "id": "girl_042",
+   "nome": "Divine Elf",
+   "sexo": "menina",
+   "fashion": 53026,
+   "preco": 50000
+  },
+  {
+   "id": "girl_043",
+   "nome": "Pumpkin Shadows",
+   "sexo": "menina",
+   "fashion": 53027,
+   "preco": 50000
+  },
+  {
+   "id": "girl_047",
+   "nome": "Diana",
+   "sexo": "menina",
+   "fashion": 53028,
+   "preco": 50000
+  },
+  {
+   "id": "girl_049",
+   "nome": "Eternal Crown",
+   "sexo": "menina",
+   "fashion": 53029,
+   "preco": 50000
+  },
+  {
+   "id": "girl_050",
+   "nome": "Burning Sky Suit",
+   "sexo": "menina",
+   "fashion": 53030,
+   "preco": 50000
+  },
+  {
+   "id": "girl_051",
+   "nome": "Valentine Outfit",
+   "sexo": "menina",
+   "fashion": 53031,
+   "preco": 25000
+  },
+  {
+   "id": "girl_052",
+   "nome": "A Quiet Spring Stroll",
+   "sexo": "menina",
+   "fashion": 53032,
+   "preco": 25000
+  },
+  {
+   "id": "girl_053",
+   "nome": "Nezha",
+   "sexo": "menina",
+   "fashion": 53033,
+   "preco": 50000
+  },
+  {
+   "id": "girl_054",
+   "nome": "Phoenix Call to the Rising Sun",
+   "sexo": "menina",
+   "fashion": 53034,
+   "preco": 50000
+  },
+  {
+   "id": "girl_057",
+   "nome": "Champion Path — Champion",
+   "sexo": "menina",
+   "fashion": 53035,
+   "evento": "Champion Path ranking reward (not running)"
+  },
+  {
+   "id": "girl_056",
+   "nome": "Champion Path — Top 10",
+   "sexo": "menina",
+   "fashion": 53036,
+   "evento": "Champion Path ranking reward (not running)"
+  },
+  {
+   "id": "girl_055",
+   "nome": "Champion Path — King",
+   "sexo": "menina",
+   "fashion": 53037,
+   "evento": "Champion Path ranking reward (not running)"
+  },
+  {
+   "id": "girl_058",
+   "nome": "Elite Four",
+   "sexo": "menina",
+   "fashion": 53038,
+   "premio": "elite",
+   "dica": "Beat the Elite Four"
+  },
+  {
+   "id": "girl_059",
+   "nome": "Beijing Rhythm Banner",
+   "sexo": "menina",
+   "fashion": 53039,
+   "preco": 25000
+  }
+ ],
+ "efeitos": [
+  {
+   "id": 1,
+   "tipo": "peito",
+   "nome": "Sparkles",
+   "fx": "brilho",
+   "preco": 15000,
+   "desc": "Golden twinkles around you."
+  },
+  {
+   "id": 2,
+   "tipo": "peito",
+   "nome": "Hearts",
+   "fx": "coracoes",
+   "preco": 20000,
+   "desc": "Little pink hearts float up."
+  },
+  {
+   "id": 3,
+   "tipo": "peito",
+   "nome": "Snowfall",
+   "fx": "neve",
+   "preco": 20000,
+   "desc": "A small snowfall that follows you."
+  },
+  {
+   "id": 4,
+   "tipo": "peito",
+   "nome": "Petals",
+   "fx": "petalas",
+   "preco": 25000,
+   "desc": "Cherry petals drift around you."
+  },
+  {
+   "id": 5,
+   "tipo": "peito",
+   "nome": "Embers",
+   "fx": "brasas",
+   "preco": 30000,
+   "desc": "Sparks rise as if from a campfire."
+  },
+  {
+   "id": 6,
+   "tipo": "peito",
+   "nome": "Bubbles",
+   "fx": "bolhas",
+   "preco": 15000,
+   "desc": "Soap bubbles drift up and pop."
+  },
+  {
+   "id": 101,
+   "tipo": "rastro",
+   "nome": "Stardust Trail",
+   "fx": "poeira",
+   "preco": 20000,
+   "desc": "Leaves stardust where you walk."
+  },
+  {
+   "id": 102,
+   "tipo": "rastro",
+   "nome": "Flower Steps",
+   "fx": "flores",
+   "preco": 25000,
+   "desc": "Flowers bloom under your steps."
+  },
+  {
+   "id": 103,
+   "tipo": "rastro",
+   "nome": "Spark Trail",
+   "fx": "faiscas",
+   "preco": 30000,
+   "desc": "Electric sparks crackle behind you."
+  },
+  {
+   "id": 104,
+   "tipo": "rastro",
+   "nome": "Leaf Trail",
+   "fx": "folhas",
+   "preco": 15000,
+   "desc": "Green leaves swirl behind you."
+  }
+ ]
+}

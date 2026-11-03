@@ -17,7 +17,7 @@ import * as I18n from './i18n.mjs';                                      // IDIO
 import { COOKIE as COOKIE_PASSE, CENAS_LIVRES, VALIDADE_S, FOLGA_S, lerPasse, stemPermitido } from './pass_rules.mjs';   // PASSE DE PROGRESSO (fase 2, 19/09)
 const VALIDADE_PASSE_S = VALIDADE_S + FOLGA_S;                          // vida do cookie (a borda confere o `exp` assinado)
 export const SAVE_CHAVES = ['time', 'caixa', 'itens', 'bolas', 'bolaSel', 'atalhos', 'dinheiro', 'dex', 'conhecimento', 'insignias', 'eliteVencida',
-  'ginasioCd', 'treinadoresVencidos', 'inicial', 'introVista', 'ultimoCentro', 'seguidor', 'seguidorUid', 'nome', 'personagem', 'mochila', 'tempo', 'cristal', 'missoes'];   // seguidorUid (14/09): QUAL dos dois Pidgey segue — vai pro servidor como preferência, senão em outro aparelho o boot pegava o primeiro
+  'ginasioCd', 'treinadoresVencidos', 'inicial', 'introVista', 'ultimoCentro', 'seguidor', 'seguidorUid', 'nome', 'personagem', 'mochila', 'tempo', 'cristal', 'missoes', 'cosmeticos'];   // seguidorUid (14/09): QUAL dos dois Pidgey segue — vai pro servidor como preferência, senão em outro aparelho o boot pegava o primeiro
 const LS = { token: 'conta.token', usuario: 'conta.usuario', rev: 'conta.rev', dono: 'conta.dono', sujo: 'conta.sujo', gm: 'conta.gm' };
 const ESPERA_ENVIO = 2500, ESPERA_ERRO = 10000, VARREDURA = 20000;
 
@@ -370,7 +370,7 @@ export function saveDoServidor(save, revNovo){ aplicarDoServidor(save, revNovo);
 /* BOLSA (passo 2 do save do servidor): dinheiro, itens, Pokébolas e insígnias são do SERVIDOR. Tudo que ele manda (resposta de
    uma operação, ou o acerto que vem no `PUT /save`) é escrito aqui, sem marcar sujo — senão o aparelho subiria por cima o
    número velho que ainda está na memória dele. `aoBolsa` deixa o index reler `jogo.bolas` e repintar a HUD. */
-const BOLSA_CHAVES = ['dinheiro', 'itens', 'bolas', 'insignias'];
+const BOLSA_CHAVES = ['dinheiro', 'itens', 'bolas', 'insignias', 'cosmeticos'];   // cosmeticos: outfits/effects bought in the Wardrobe (server_bag.mjs)
 let avisarBolsa = null;
 /* O index relê o save do localStorage quando o servidor o reescreve no meio do jogo (senão a memória dele fica com o time velho). */
 let avisarSaveNovo = null;

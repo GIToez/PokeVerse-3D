@@ -12,7 +12,11 @@
    consumir { uid, item }       the battle used it up (Focus Sash, gems)
    coleta   { ponto }           a Tera crystal on the map (cfg@x,z): one Normal Tera Shard, then that spot waits 2 min
    premio   { titulo }          a knowledge title's reward (knowledge.mjs TITULOS), paid once, only if the account's own
-                                Pokédex (marked by the server on every catch) meets the title */
+                                Pokédex (marked by the server on every catch) meets the title
+   cosmetico{ tipo, id }        wardrobe / cosmetics shop (data/cosmeticos.json): buy an outfit or an effect for Coins, or
+                                claim an Elite Four outfit. Coins only — there are no real-money payments in this game.
+   validarPersonagem(c, p)      the server only stores and relays an outfit/effects the account owns (the client sent
+                                any `personagem` before and the server passed it on) */
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import { Held } from './held.mjs';
@@ -23,7 +27,7 @@ import { TITULOS } from './knowledge.mjs';
 
 const FRAGMENTO_TERA = 50112, COLETA_ESPERA_MS = 120000;                  // the same item and wait as the client (index.html falarCom, tipoNpc 9)
 
-export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
+export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, eliteVencida = () => false }) {
   const lerJson = (() => {
     const cache = new Map();
     return arq => {
@@ -64,7 +68,14 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     for (const lista of [s.time, s.caixa]) for (const p of Array.isArray(lista) ? lista : []) if (p && String(p.uid) === String(uid)) return p;
     return null;
   }
-  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [] }; };
+  const catalogo = () => lerJson('cosmeticos.json') || { roupas: [], efeitos: [] };
+  const meus = c => {
+    const s = saveDe(c);
+    if (!s.cosmeticos || typeof s.cosmeticos !== 'object' || Array.isArray(s.cosmeticos)) s.cosmeticos = {};
+    for (const k of ['roupas', 'efeitos']) if (!Array.isArray(s.cosmeticos[k])) s.cosmeticos[k] = [];
+    return s.cosmeticos;
+  };
+  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos] } }; };
   const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, held: p.held ?? null, ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
   const erro = (c, texto) => ({ erro: texto, bolsa: retrato(c) });       // the snapshot undoes what the client already took off locally
   const pronto = (c, extra = {}) => { c.rev = (c.rev || 0) + 1; salvar(); return { bolsa: retrato(c), ...extra }; };
@@ -173,10 +184,48 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     return pronto(c);
   }
 
-  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio };
+  function cosmetico(c, m, u) {
+    const tipo = m.tipo === 'efeito' ? 'efeito' : 'roupa', C = catalogo();
+    const item = (tipo === 'efeito' ? C.efeitos : C.roupas).find(x => String(x.id) === String(m.id));
+    if (!item) return erro(c, 'that cosmetic does not exist');
+    const lista = meus(c)[tipo === 'efeito' ? 'efeitos' : 'roupas'];
+    if (lista.includes(item.id)) return erro(c, 'you already have ' + item.nome);
+    if (item.evento) return erro(c, item.nome + ': ' + item.evento);
+    if (item.premio === 'elite') {
+      if (!eliteVencida(u)) return erro(c, item.nome + ': beat the Elite Four to get it');
+    } else {
+      const preco = Math.max(0, Math.floor(+item.preco || 0)), s = saveDe(c);
+      if (!(preco > 0)) return erro(c, 'that cosmetic is not for sale');
+      if ((s.dinheiro || 0) < preco) return erro(c, 'not enough Coins');
+      s.dinheiro -= preco;
+    }
+    lista.push(item.id);
+    return pronto(c);
+  }
+  /** The `personagem` the client wants to wear: null when it is a paid outfit the account doesn't own; effects it doesn't
+      own are dropped. Free outfits (the creation ones) are not in the catalog, so they always pass. */
+  function validarPersonagem(c, p) {
+    if (!p || typeof p !== 'object' || Array.isArray(p)) return p ?? null;
+    const C = catalogo(), M = meus(c);
+    if (C.roupas.some(r => r.id === p.tipo) && !M.roupas.includes(p.tipo)) return null;
+    const out = { ...p };
+    if (out.efeitos != null) {
+      const e = {};
+      for (const slot of ['peito', 'rastro']) {
+        const id = +out.efeitos?.[slot];
+        const ok = C.efeitos.find(x => x.id === id && x.tipo === slot);
+        if (ok && M.efeitos.includes(id)) e[slot] = id;
+      }
+      out.efeitos = e;
+    }
+    return out;
+  }
+
+  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, cosmetico };
   return {
     /** Handles the op, or returns null when it isn't one of these. */
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },
     motorHeld,
+    validarPersonagem,
   };
 }

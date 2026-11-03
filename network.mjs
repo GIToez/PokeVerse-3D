@@ -111,7 +111,10 @@ function receber(m){
     case 'saiu': { const o = outros.get(m.id); if (o) remover(o); return; }
     case 'pos': { const o = outros.get(m.id); if (!o) return; o.alvo = { x: m.x, y: m.y, z: m.z, giro: m.giro || 0 }; o.anim = m.anim || 'Idle'; o.quandoPos = performance.now(); if (m.px != null) o.alvoPar = { x: m.px, z: m.pz, giro: m.pg || 0, anim: m.pa || 'Idle', quando: performance.now() }; return; }
     case 'parceiro': { const o = outros.get(m.id); if (!o) return; o.parceiroGlb = m.parceiro || null; o.pshiny = !!m.pshiny; o.montaria = m.montaria || null; if (o.ent) montarParceiro(o).then(() => montarMontariaOutro(o)).catch(e => console.warn('rede: parceiro novo de ' + o.nome, e)); return; }   // ele trocou de seguidor (inicial, Shift+Z, evolução)
-    case 'personagem': { const o = outros.get(m.id); if (!o) return; const ap = o.alvoPar; const j = { id: o.id, nome: o.nome, cargo: o.cargo, titulo: o.titulo, x: o.ent?.x ?? o.alvo.x, y: o.alvo.y, z: o.ent?.z ?? o.alvo.z, giro: o.ent?.giro ?? o.alvo.giro, anim: o.anim, parceiro: o.parceiroGlb, montaria: o.montaria, personagem: m.personagem, ...(ap ? { px: o.par?.x ?? ap.x, pz: o.par?.z ?? ap.z, pg: ap.giro, pa: ap.anim } : {}) }; remover(o); adicionar(j); return; }   // trocou a roupa/skin: remonta (o parceiro fica onde estava; cargo/título seguem junto)
+    case 'personagem': { const o = outros.get(m.id); if (!o) return;
+      { const sem = q => { try { const { efeitos, ...r } = q || {}; return JSON.stringify(r); } catch { return ''; } };   // only the aura/trail changed: no rebuild of the body
+        if (o.ent && sem(o.personagem) === sem(m.personagem)){ o.personagem = m.personagem || null; ctx.cosmeticoOutro?.(o); return; } }
+      const ap = o.alvoPar; const j = { id: o.id, nome: o.nome, cargo: o.cargo, titulo: o.titulo, x: o.ent?.x ?? o.alvo.x, y: o.alvo.y, z: o.ent?.z ?? o.alvo.z, giro: o.ent?.giro ?? o.alvo.giro, anim: o.anim, parceiro: o.parceiroGlb, montaria: o.montaria, personagem: m.personagem, ...(ap ? { px: o.par?.x ?? ap.x, pz: o.par?.z ?? ap.z, pg: ap.giro, pa: ap.anim } : {}) }; remover(o); adicionar(j); return; }   // trocou a roupa/skin: remonta (o parceiro fica onde estava; cargo/título seguem junto)
     case 'titulo': { const o = outros.get(m.id); if (!o) return; o.titulo = m.titulo || ''; etiquetar(o); return; }   // mudou o título sob o nome (12/09)
     case 'saia': {                                                       // a conta entrou de outro lugar: este aqui acabou
       desligado = true; clearTimeout(timer);
@@ -304,7 +307,8 @@ async function montar(o, personagem){
   ent.x = ent.vx = o.alvo.x; ent.z = ent.vz = o.alvo.z; ent.y = ent.vy = y; ent.giro = o.alvo.giro;
   ent.pivo.position.set(ent.x, ent.y, ent.z); ent.pivo.rotation.y = ent.giro;
   ctx.tocarAnim(ent, 'Idle');
-  o.ent = ent;
+  o.ent = ent; o.personagem = personagem || null;
+  ctx.cosmeticoOutro?.(o);                                               // aura/trail they wear (personagem.efeitos, cosmetic_fx.mjs)
   etiquetar(o);                                                          // plaquinha: nome + [cargo] em cima, <título> embaixo (12/09)
   await montarParceiro(o);
   await montarMontariaOutro(o);                                          // 14/09: chegou montado
@@ -387,6 +391,7 @@ function soltarMontariaOutro(o){
 }
 function remover(o){
   o.removido = true;
+  ctx.cosmeticoSai?.(o);
   if (o.mont){ ctx.cena.remove(o.mont.pivo); o.mont = null; }              // 14/09: a montaria dele (o corpo está na sela: sai junto)
   if (o.ent){ ctx.cena.remove(o.ent.pivo); o.ent.rotulo?.material?.map?.dispose(); o.ent = null; }
   if (o.par){ ctx.cena.remove(o.par.pivo); o.par = null; }
