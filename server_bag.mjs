@@ -21,6 +21,7 @@ import * as Ev from './ev.mjs';
 import * as Status from './status.mjs';
 import { maxHpOf } from './server_hp.mjs';
 import { TITULOS } from './knowledge.mjs';
+import * as Safari from './safari_rules.mjs';
 
 const FRAGMENTO_TERA = 50112, COLETA_ESPERA_MS = 120000;                  // the same item and wait as the client (index.html falarCom, tipoNpc 9)
 
@@ -65,7 +66,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     for (const lista of [s.time, s.caixa]) for (const p of Array.isArray(lista) ? lista : []) if (p && String(p.uid) === String(uid)) return p;
     return null;
   }
-  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [] }; };
+  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null }; };
   const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, status: Status.exportar(p.status), ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
   const tocarAmizade = (p, id) => {
     const d = Regras.amizadeDe(id);
@@ -200,7 +201,69 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     return pronto(c);
   }
 
-  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio };
+  /* Safari visit. The client cannot grant itself balls: the fee and the stack live here.
+     entrar  { zona, x, z }   500 Coins, 30 Safari Balls, 500 steps, only next to that zone's warden
+     passo   { n }            steps walked in the paid grass (capped)
+     bola    {}               one Safari Ball thrown
+     sair    {}               walk out: leftover balls from this visit are removed
+     expulsar{ zona }         no visit, standing in the grass: the answer carries the gate */
+  function safariOp(c, m) {
+    const s = saveDe(c);
+    const acao = String(m.acao || '');
+    const zona = +m.zona;
+    if (acao === 'entrar') {
+      if (!Safari.perto(zona, m.x, m.z)) return erro(c, 'Talk to the warden at the gate.');
+      const r = Safari.entrar({ dinheiro: s.dinheiro || 0, bolas: s.bolas, sessao: s.safari, zona });
+      if (!r.ok) return erro(c, r.erro);
+      s.dinheiro = r.dinheiro;
+      s.bolas = r.bolas;
+      s.safari = r.sessao;
+      return pronto(c, { safari: r.sessao });
+    }
+    if (acao === 'passo') {
+      const r = Safari.passo(s.safari, m.n);
+      if (!r.sessao) return erro(c, 'You are not on a Safari visit.');
+      if (r.fim === 'passos') {
+        const zonaFim = r.sessao.zona;
+        const fim = Safari.encerrar(s.bolas, r.sessao);
+        s.bolas = fim.bolas;
+        s.safari = null;
+        return pronto(c, { fim: 'passos', pouso: Safari.pouso(zonaFim, m.x), safari: null, tirou: fim.tirou });
+      }
+      s.safari = r.sessao;
+      return pronto(c, { safari: r.sessao });
+    }
+    if (acao === 'bola') {
+      const tinha = Safari.normalizar(s.safari);
+      if (!tinha) return erro(c, 'You are not on a Safari visit.');
+      if (!tirar(c, Safari.BOLA, 1)) return erro(c, 'no Safari Ball');
+      const r = Safari.jogou(tinha);
+      if (r.fim === 'bolas') {
+        const fim = Safari.encerrar(s.bolas, r.sessao);
+        s.bolas = fim.bolas;
+        s.safari = null;
+        return pronto(c, { fim: 'bolas', pouso: Safari.pouso(tinha.zona, m.x), safari: null, tirou: fim.tirou });
+      }
+      s.safari = r.sessao;
+      return pronto(c, { safari: r.sessao });
+    }
+    if (acao === 'sair') {
+      const tinha = Safari.normalizar(s.safari);
+      if (!tinha) return erro(c, 'You are not on a Safari visit.');
+      const fim = Safari.encerrar(s.bolas, tinha);
+      s.bolas = fim.bolas;
+      s.safari = null;
+      return pronto(c, { fim: 'saiu', pouso: Safari.pouso(tinha.zona, m.x), safari: null, tirou: fim.tirou });
+    }
+    if (acao === 'expulsar') {
+      if (Safari.vivo(s.safari)) return pronto(c, { safari: Safari.normalizar(s.safari) });
+      if (!Safari.ehZona(zona)) return erro(c, 'There is no Safari Zone here.');
+      return pronto(c, { pouso: Safari.pouso(zona, m.x), safari: null });
+    }
+    return erro(c, 'unknown safari action');
+  }
+
+  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp };
   return {
     /** Handles the op, or returns null when it isn't one of these. */
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },

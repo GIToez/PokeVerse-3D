@@ -78,6 +78,14 @@ export const ACOES = [
     icone: { jogo: 'bola' },
     semTecla: 'no key: click the ball only',
   }),
+  A('combate', 'safari-isca', 'Safari bait', 'during a Safari visit, the wild eats', 'KeyG', null, {
+    icone: { glifo: 'safari-isca' },
+    semTecla: 'no key: bait has no button',
+  }),
+  A('combate', 'safari-pedra', 'Safari rock', 'during a Safari visit, the wild gets angry', 'KeyR', null, {
+    icone: { glifo: 'safari-pedra' },
+    semTecla: 'no key: the rock has no button',
+  }),
   A('combate', 'trocar-bola', 'Switch ball type', 'cycles through the balls you have', 'Shift+KeyF', null, {
     icone: { glifo: 'trocar-bola' },
     semTecla: 'no key: only via the ball ⇄',
