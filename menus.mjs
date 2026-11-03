@@ -174,7 +174,7 @@ export const JANELAS = {
   pokemon:   { titulo: 'Pokémon', icone: 'pokebola', tecla: 'KeyP', sub: 'party and box' },
   mochila:   { titulo: 'Bag', icone: 'mochila', tecla: 'KeyI', sub: 'items and balls' },
   missoes:   { titulo: 'Missions', icone: 'missoes', tecla: 'KeyJ', sub: 'the journey through Kanto' },
-  mapa:      { titulo: 'Map', icone: 'mapa', tecla: 'KeyK', sub: 'Kanto' },
+  mapa:      { titulo: 'Map', icone: 'mapa', tecla: 'KeyK', sub: 'Kanto · Johto' },
   pokedex:   { titulo: 'Pokédex', icone: 'pokedex', tecla: 'KeyX', sub: 'seen and caught' },
   treinador: { titulo: 'Trainer', icone: 'personagem', tecla: 'KeyU', sub: 'badges, money' },
   loja:      { titulo: 'Shop', icone: 'loja', sub: 'coming soon', breve: true },   // PREMIUM (GDD §7.5: doação → Medalhão trocável, cosméticos) — só "em breve" até o servidor; o Pokémart é outra janela
@@ -2248,12 +2248,58 @@ function encherSecundarias(pop, G){
 }
 
 /* ------------------------------------------------------------------ Mapa */
-let mapaRuas = null, mapaHabitats = null, mapaSel = null, kantoMundoP = null, mapaRegua = null;
+let mapaRuas = null, mapaHabitats = null, mapaSel = null, kantoMundoP = null, johtoMundoP = null, mapaRegua = null;
+const mapaReguaPor = {};
+const mapaMarksPor = {};
+const REGIAO_MAPA = {
+  kanto: { nome: 'Kanto', foto: './ui/minimapa_kanto.jpg', regua: './ui/minimapa_kanto.json', marks: './data/kanto_map_markers.json', start: 1101 },
+  johto: { nome: 'Johto', foto: './ui/minimapa_johto.jpg', regua: './ui/minimapa_johto.json', marks: './data/johto_map_markers.json', start: 2101 },
+};
+function caixasUteis(dd){ return (dd?.caixas || []).filter(c => c.sx > 0 && c.sz > 0); }
 async function mundoKanto(){
   const dd = ctx.dados;
-  if ((dd?.caixas || []).filter(c => c.sx > 0 && c.sz > 0).length > 15) return dd;
+  if (+dd?.mapa !== 2000001 && caixasUteis(dd).length > 15) return dd;
   kantoMundoP ??= fetch('./data/kanto.json').then(r => r.ok ? r.json() : dd).catch(() => dd || { caixas: [], nomes: {} });
   return kantoMundoP;
+}
+function mundoDaRegiao(id){
+  const dd = ctx.dados;
+  if (id === 'johto'){
+    if (+dd?.mapa === 2000001 && caixasUteis(dd).length > 15) return Promise.resolve(dd);
+    johtoMundoP ??= fetch('./data/2000001.json').then(r => r.ok ? r.json() : { caixas: [], nomes: {} }).catch(() => ({ caixas: [], nomes: {} }));
+    return johtoMundoP;
+  }
+  return mundoKanto();
+}
+function reguaDaRegiao(id){
+  if (id === 'kanto' && mapaRegua) return Promise.resolve(mapaRegua);
+  const spec = REGIAO_MAPA[id];
+  if (!spec) return Promise.resolve(null);
+  mapaReguaPor[id] ??= fetch(spec.regua).then(r => r.ok ? r.json() : null).catch(() => null);
+  return mapaReguaPor[id];
+}
+function marksDaRegiao(id){
+  const spec = REGIAO_MAPA[id];
+  if (!spec) return Promise.resolve({ marcadores: [] });
+  mapaMarksPor[id] ??= fetch(spec.marks).then(r => r.ok ? r.json() : { marcadores: [] }).catch(() => ({ marcadores: [] }));
+  return mapaMarksPor[id];
+}
+function regiaoMapaAtual(){
+  const mapa = +ctx.dados?.mapa;
+  if (mapa === 2000001) return 'johto';
+  if (mapa === 1000001) return 'kanto';
+  let guardado = '';
+  try { guardado = sessionStorage.getItem('mundo') || ''; } catch {}
+  if (guardado === '2000001' || guardado === 'johto') return 'johto';
+  const a = +areaDoJogador();
+  if (a >= 2100 && a <= 2499) return 'johto';
+  return 'kanto';
+}
+function areaNaRegiao(a, id){
+  const n = +a;
+  if (id === 'johto') return n >= 2100 && n <= 2499;
+  if (id === 'kanto') return n >= 1100 && n <= 1299;
+  return false;
 }
 function marcadoresMissao(){
   const M = ctx.missoes;
@@ -2283,6 +2329,7 @@ const FILTRO_ICONE = {
   rotas: './ui/icones/mapa.png',
   voce: './ui/icones/personagem.png',
   kanto: './ui/icones/mapa.png',
+  johto: './ui/icones/mapa.png',
   sevii: './ui/figma/icone/mapa.png',
 };
 const iconeFiltro = tipo => FILTRO_ICONE[tipo] || './ui/icones/mapa.png';
@@ -2340,12 +2387,14 @@ function rMapa(corpo){
 function rMapaMundo(corpo){
   const voce = areaDoJogador();
   const quests = marcadoresMissao().filter(p => p.tipo === 'quest');
+  const regioInicial = regiaoMapaAtual();
+  const specInicial = REGIAO_MAPA[regioInicial] || REGIAO_MAPA.kanto;
   const filtrosHtml = Object.entries(FILTRO_ROTULO).map(([k, nome]) =>
     `<label><input type="checkbox" data-filtro="${k}"${FILTROS_MAPA[k] ? ' checked' : ''}><i class="mapa-ico" style="background-image:url('${iconeFiltro(k)}')"></i> ${esc(nome)}</label>`).join('');
   corpo.innerHTML = `<div class="mapa-overlay notranslate" translate="no">
     <div class="mapa-palco">
       <div class="mapa-zoom">
-        <img class="mapa-foto" src="./ui/minimapa_kanto.jpg" alt="Kanto">
+        <img class="mapa-foto" src="${specInicial.foto}" alt="${esc(specInicial.nome)}">
         <canvas class="mapa-vivos"></canvas>
         <div class="mapa-sel" hidden></div>
         <div class="mapa-rotulos"></div>
@@ -2361,9 +2410,10 @@ function rMapaMundo(corpo){
         <div class="mapa-menu-lista" data-lista="marcadores" hidden>${filtrosHtml}</div>
       </div>
       <div class="mapa-menu">
-        <button type="button" class="mapa-menu-btn" data-menu="regiao" aria-expanded="false"><i class="mapa-ico" style="background-image:url('${iconeFiltro('kanto')}')"></i> <span class="mapa-regiao-nome">Kanto</span> <span class="mapa-seta">▾</span></button>
+        <button type="button" class="mapa-menu-btn" data-menu="regiao" aria-expanded="false"><i class="mapa-ico" style="background-image:url('${iconeFiltro(regioInicial)}')"></i> <span class="mapa-regiao-nome">${esc(specInicial.nome)}</span> <span class="mapa-seta">▾</span></button>
         <div class="mapa-menu-lista" data-lista="regiao" hidden>
-          <button type="button" class="on" data-regiao="kanto"><i class="mapa-ico" style="background-image:url('${iconeFiltro('kanto')}')"></i> Kanto</button>
+          <button type="button" class="${regioInicial === 'kanto' ? 'on' : ''}" data-regiao="kanto"><i class="mapa-ico" style="background-image:url('${iconeFiltro('kanto')}')"></i> Kanto</button>
+          <button type="button" class="${regioInicial === 'johto' ? 'on' : ''}" data-regiao="johto"><i class="mapa-ico" style="background-image:url('${iconeFiltro('johto')}')"></i> Johto</button>
           <button type="button" data-regiao="sevii"><i class="mapa-ico" style="background-image:url('${iconeFiltro('sevii')}')"></i> Sevii Islands</button>
         </div>
       </div>
@@ -2384,8 +2434,8 @@ function rMapaMundo(corpo){
   const cards = corpo.querySelector('#m-cards');
   const card = corpo.querySelector('#m-card');
   const lugarEl = corpo.querySelector('#m-lugar');
-  let z = 1, px = 0, py = 0, arrasto = null, mundo = ctx.dados || { caixas: [], nomes: {} }, regua = mapaRegua;
-  let regio = 'kanto', lugaresSel = [];
+  let z = 1, px = 0, py = 0, arrasto = null, mundo = ctx.dados || { caixas: [], nomes: {} }, regua = regioInicial === 'kanto' ? mapaRegua : null;
+  let regio = regioInicial, lugaresSel = [], marksAtuais = { marcadores: [] }, cargaRegiao = 0;
   const fx = ctx.flipX?.() ?? 1;
   const vista = () => {
     zoomEl.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')';
@@ -2430,7 +2480,7 @@ function rMapaMundo(corpo){
   };
   const caixasDa = a => (mundo.caixas || []).filter(c => c.a === a && c.sx > 0 && c.sz > 0);
   const caixaDe = a => caixasDa(a)[0] || null;
-  const pois = () => (mapaMarcadores?.marcadores || []);
+  const pois = () => (marksAtuais?.marcadores || []);
   const caber = () => {
     const r = palco.getBoundingClientRect();
     const iw = foto.naturalWidth || regua?.w || 3072, ih = foto.naturalHeight || regua?.h || 2304;
@@ -2473,9 +2523,9 @@ function rMapaMundo(corpo){
       if (!(b.sx > 0 && b.sz > 0)) continue;
       const n = +b.a, nome = nomeAreaMapa(n, mundo.nomes);
       if (!nome || /^area /i.test(nome)) continue;
-      const cidade = n >= 1101 && n <= 1110;
-      const extra = n >= 1191 && n <= 1199;
-      const rota = n >= 1201 && n <= 1225;
+      const cidade = (n >= 1101 && n <= 1110) || (n >= 2101 && n <= 2110);
+      const extra = (n >= 1191 && n <= 1199) || (n >= 2111 && n <= 2117);
+      const rota = (n >= 1201 && n <= 1225) || (n >= 2226 && n <= 2248);
       if (!cidade && !extra && !rota) continue;
       if (rota && !FILTROS_MAPA.rotas) continue;
       const fr = xzFrac(fx * b.x, b.z); if (!fr) continue;
@@ -2506,9 +2556,13 @@ function rMapaMundo(corpo){
     };
     const aqui = areaDoJogador();
     const ash = ctx.jogo?.ash;
-    if (ash) add('voce', 'You are here', ash.vx ?? ash.x, ash.vz ?? ash.z);
-    else if (aqui){ const b = caixaDe(aqui); if (b) add('voce', 'You are here', fx * b.x, b.z); }
+    const noMapa = a => a != null && areaNaRegiao(a, regio);
+    if (noMapa(aqui)){
+      if (ash) add('voce', 'You are here', ash.vx ?? ash.x, ash.vz ?? ash.z);
+      else { const b = caixaDe(aqui); if (b) add('voce', 'You are here', fx * b.x, b.z); }
+    }
     if (FILTROS_MAPA.quest) for (const pin of marcadoresMissao()){
+      if (pin.area != null && !noMapa(pin.area)) continue;
       if (pin.x != null && pin.z != null) add('quest', pin.texto, fx * pin.x, pin.z, { area: pin.area });
       else { const b = caixaDe(pin.area); if (b) add('quest', pin.texto, fx * b.x, b.z, { area: pin.area }); }
     }
@@ -2523,13 +2577,13 @@ function rMapaMundo(corpo){
     const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
     const aqui = areaDoJogador();
     const aquiNome = aqui ? nomeAreaMapa(aqui, mundo.nomes) : '';
-    const qs = marcadoresMissao().filter(p => p.tipo === 'quest');
+    const qs = marcadoresMissao().filter(p => p.tipo === 'quest' && (p.area == null || areaNaRegiao(p.area, regio)));
     cards.innerHTML =
       (aquiNome ? `<div class="mapa-pill"><i class="mapa-ico" style="background-image:url('${iconeFiltro('voce')}')"></i>${tr('You are in')} <b>${esc(aquiNome)}</b></div>` : '') +
       qs.map(q => `<div class="mapa-pill quest"><i class="mapa-ico" style="background-image:url('${iconeFiltro('quest')}')"></i>${esc(q.texto || 'Quest')}</div>`).join('');
     lugarEl.textContent = lugar?.nome || nome || '';
     lugaresSel = pois().filter(p => p.area === a);
-    card.hidden = regio !== 'kanto';
+    card.hidden = false;
     card.innerHTML = htmlCartaoMapa(a, lugar?.nome || nome, { live, lugares: lugaresSel });
     card.querySelectorAll('[data-lugar]').forEach(b => b.onclick = ev => {
       ev.stopPropagation();
@@ -2620,7 +2674,7 @@ function rMapaMundo(corpo){
     let pinPerto = null, pinD = pinR;
     for (const m of [...pois(), ...marcadoresMissao()]){
       if (m.tipo !== 'voce' && m.tipo !== 'quest' && !FILTROS_MAPA[m.tipo]) continue;
-      if (m.tipo === 'quest' && !FILTROS_MAPA.quest) continue;
+      if (m.tipo === 'quest' && (!FILTROS_MAPA.quest || (m.area != null && !areaNaRegiao(m.area, regio)))) continue;
       if (m.x == null || m.z == null) continue;
       const d = Math.hypot(p.wx - fx * m.x, p.wz - m.z);
       if (d < pinD){ pinD = d; pinPerto = m; }
@@ -2658,22 +2712,77 @@ function rMapaMundo(corpo){
     pintarRotulos(); pintarPins();
     if (mapaSel) rotulosEl.querySelectorAll('.mapa-rotulo').forEach(el => el.classList.toggle('on', el.dataset.a === String(mapaSel)));
   });
-  corpo.querySelectorAll('[data-regiao]').forEach(b => b.onclick = ev => {
-    ev.stopPropagation();
-    regio = b.dataset.regiao;
-    corpo.querySelectorAll('[data-regiao]').forEach(x => x.classList.toggle('on', x === b));
-    const nome = corpo.querySelector('.mapa-regiao-nome');
-    if (nome) nome.textContent = b.textContent.trim();
-    fecharMenus();
-    if (regio === 'sevii'){
+  const aplicarFotoViva = vivo => {
+    if (regio !== 'kanto' || aberta !== 'mapa' || !corpo.isConnected || !vivo?.cv) return;
+    mapaRegua = regua = { x0: vivo.x0, z0: vivo.z0, esc: vivo.esc, w: vivo.w, h: vivo.h };
+    mapaReguaPor.kanto = mapaRegua;
+    foto.src = vivo.cv.toDataURL('image/jpeg', 0.82);
+  };
+  async function usarRegiao(id){
+    const ticket = ++cargaRegiao;
+    if (id !== regio){
+      z = 1; px = 0; py = 0;
+      rotulosEl.innerHTML = '';
+      pinsEl.innerHTML = '';
+      selEl.innerHTML = '';
+      selEl.hidden = true;
+    }
+    regio = id;
+    corpo.querySelectorAll('[data-regiao]').forEach(x => x.classList.toggle('on', x.dataset.regiao === id));
+    const nomeEl = corpo.querySelector('.mapa-regiao-nome');
+    const spec = REGIAO_MAPA[id];
+    if (nomeEl) nomeEl.textContent = spec?.nome || 'Sevii Islands';
+    const ico = corpo.querySelector('[data-menu="regiao"] .mapa-ico');
+    if (ico) ico.style.backgroundImage = 'url(' + iconeFiltro(id) + ')';
+    if (id === 'sevii'){
       mapaSel = null; selEl.hidden = true; selEl.innerHTML = '';
       lugarEl.textContent = 'Sevii Islands';
       card.hidden = false;
-      card.innerHTML = '<div class="ficha mapa-card"><h3>Sevii Islands</h3><div class="mapa-dica">These islands are not on the Kanto aerial yet. Open a Sevii map in the world to inspect it up close.</div></div>';
+      card.innerHTML = '<div class="ficha mapa-card"><h3>Sevii Islands</h3><div class="mapa-dica">These islands are not on the aerial yet. Open a Sevii map in the world to inspect it up close.</div></div>';
       return;
     }
-    const start = voce || quests[0]?.area || 1101;
+    const [reg, dd, marks, hab] = await Promise.all([
+      reguaDaRegiao(id),
+      mundoDaRegiao(id),
+      marksDaRegiao(id),
+      mapaHabitats ? Promise.resolve(mapaHabitats) : fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] })),
+    ]);
+    if (aberta !== 'mapa' || !corpo.isConnected || ticket !== cargaRegiao) return;
+    if (reg){
+      regua = reg;
+      if (id === 'kanto') mapaRegua = reg;
+    }
+    if (dd) mundo = dd;
+    marksAtuais = marks || { marcadores: [] };
+    mapaMarcadores = marksAtuais;
+    mapaHabitats ??= hab;
+    const vivoKanto = ctx.fotoMapaMundo?.() || null;
+    if (!(id === 'kanto' && vivoKanto?.cv) && foto.getAttribute('src') !== spec.foto){
+      await new Promise(resolve => {
+        let acabou = false;
+        const done = () => { if (acabou) return; acabou = true; foto.removeEventListener('load', done); foto.removeEventListener('error', done); resolve(); };
+        foto.addEventListener('load', done);
+        foto.addEventListener('error', done);
+        foto.src = spec.foto;
+        if (foto.complete && foto.naturalWidth) done();
+      });
+      if (ticket !== cargaRegiao || aberta !== 'mapa') return;
+    }
+    if (id === 'kanto'){
+      aplicarFotoViva(vivoKanto);
+      ctx.aoFotoMapaMundo?.(aplicarFotoViva);
+    }
+    await ctx.missoes?.atualizarPinsMapa?.();
+    if (ticket !== cargaRegiao || aberta !== 'mapa') return;
+    pintarRotulos(); pintarPins();
+    const start = areaNaRegiao(voce, id) ? voce : (quests.find(q => areaNaRegiao(q.area, id))?.area || spec.start);
     abrirArea(start);
+    caber();
+  }
+  corpo.querySelectorAll('[data-regiao]').forEach(b => b.onclick = ev => {
+    ev.stopPropagation();
+    fecharMenus();
+    usarRegiao(b.dataset.regiao);
   });
   addEventListener('pointerdown', ev => {
     if (!corpo.contains(ev.target)) return;
@@ -2684,32 +2793,8 @@ function rMapaMundo(corpo){
   addEventListener('resize', mapaResize);
   foto.addEventListener('load', caber);
   if (foto.complete) caber();
-  (async () => {
-    const [reg, dd, hab, marks] = await Promise.all([
-      mapaRegua ? Promise.resolve(mapaRegua) : fetch('./ui/minimapa_kanto.json').then(r => r.ok ? r.json() : null).catch(() => null),
-      mundoKanto(),
-      fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] })),
-      mapaMarcadores ? Promise.resolve(mapaMarcadores) : fetch('./data/kanto_map_markers.json').then(r => r.ok ? r.json() : { marcadores: [] }).catch(() => ({ marcadores: [] })),
-    ]);
-    if (aberta !== 'mapa') return;
-    if (reg) mapaRegua = regua = reg;
-    if (dd) mundo = dd;
-    mapaHabitats ??= hab;
-    mapaMarcadores = marks;
-    const aplicarFotoViva = vivo => {
-      if (aberta !== 'mapa' || !corpo.isConnected || !vivo?.cv) return;
-      mapaRegua = regua = { x0: vivo.x0, z0: vivo.z0, esc: vivo.esc, w: vivo.w, h: vivo.h };
-      foto.src = vivo.cv.toDataURL('image/jpeg', 0.82);
-    };
-    aplicarFotoViva(ctx.fotoMapaMundo?.());
-    ctx.aoFotoMapaMundo?.(aplicarFotoViva);
-    await ctx.missoes?.atualizarPinsMapa?.();
-    pintarRotulos(); pintarPins();
-    const start = voce || quests[0]?.area || 1101;
-    abrirArea(start);
-    caber();
-    requestAnimationFrame(quadro);
-  })();
+  usarRegiao(regio);
+  requestAnimationFrame(quadro);
 }
 function rMapaVivo(corpo, dd, caixas){
   corpo.innerHTML = `<div class="mapa-mundo"><div class="mapa-palco"><canvas class="mapa" width="1280" height="960"></canvas></div><aside class="mapa-lado" id="m-card"></aside></div>`;

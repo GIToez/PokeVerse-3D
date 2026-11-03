@@ -997,7 +997,7 @@ const cam = new THREE.PerspectiveCamera(20, 1, 0.5, 4000);
 const camMM = new THREE.OrthographicCamera(-19, 19, 19, -19, 1, 200);
 camMM.up.set(0, 0, -1);
 const mm = { ativo: false, el: null, rect: null, ceu: new THREE.Color('#79b7e0'), foto: null, fotoInt: null };
-/* MINIMAPA COMUM (02/09): a rua recorta a FOTO ASSADA da câmera real (ui/minimapa_kanto.jpg, tools/minimapa_foto.py) num canvas
+/* MINIMAPA COMUM (02/09): a rua recorta a FOTO ASSADA da câmera real (ui/minimapa_kanto.jpg ou ui/minimapa_johto.jpg) num canvas
    2D e o interior tira UMA foto ao entrar — nada de renderizar a cena de novo a cada 4 quadros ("puxa muito, renderiza o jogo
    duas vezes"). `?minimapa=vivo` liga o modo antigo pra comparar; sem o jpg o jogo também cai no vivo. */
 const MM_VIVO = new URLSearchParams(location.search).get('minimapa') === 'vivo';
@@ -1063,7 +1063,7 @@ let mapaMundoRT = null;
 let mapaMundoCam = null;
 let mapaMundoPx = null;
 let mapaMundoArranque = 0;
-function naRuaKanto(){ return !INTERIOR && ehMundoRua(); }
+function naRuaKanto(){ return !INTERIOR && (NOME === 'kanto' || NOME === 'pallet_route1' || +NOME === 1000001); }
 function cenaKantoRev(){
   const d = typeof dados !== 'undefined' ? dados : {};
   return [principal?.nInst | 0, Math.round(principal?.nTris || 0), principal?.prefabs | 0,
@@ -8827,10 +8827,11 @@ if (jogo.ash){
     document.body.appendChild(el); mm.el = el; mm.jan = el.querySelector('#mm-janela'); mm.ativo = true;
     mm.tela2d = el.querySelector('#mm-tela'); mm.c2d = mm.tela2d.getContext('2d');
     mm.tiles = new Map(); mm.cdTile = 0;                                 // fog of war por sessão: ladrilhos de 32 m fotografados ao vivo, 1 vez cada, quando o jogador chega perto
-    if (!MM_VIVO && !INTERIOR){                                          // a foto assada da rua (câmera real, tools/minimapa_foto.py)
-      fetch('./ui/minimapa_kanto.json').then(r => r.ok ? r.json() : null).then(regua => {
+    if (!MM_VIVO && !INTERIOR){                                          // a foto assada da rua: Kanto ou Johto, mesma régua (x0, z0, esc)
+      const base = +NOME === 2000001 ? './ui/minimapa_johto' : './ui/minimapa_kanto';
+      fetch(base + '.json').then(r => r.ok ? r.json() : null).then(regua => {
         if (!regua || !regua.esc) return;
-        const img = new Image(); img.onload = () => { mm.foto = { img, x0: regua.x0, z0: regua.z0, esc: regua.esc }; }; img.onerror = () => console.warn('minimapa: sem ui/minimapa_kanto.jpg — modo vivo'); img.src = './ui/minimapa_kanto.jpg';
+        const img = new Image(); img.onload = () => { mm.foto = { img, x0: regua.x0, z0: regua.z0, esc: regua.esc }; }; img.onerror = () => console.warn('minimapa: sem ' + base + '.jpg — modo vivo'); img.src = base + '.jpg';
       }).catch(() => {});
     }
   }
