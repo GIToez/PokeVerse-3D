@@ -116,6 +116,8 @@ export function criarWilds(ctx) {
   }
 
   function rowsFor(area, water, hour) {
+    // Water species are a rod encounter. The overworld roll is the grass table.
+    if (water) return [];
     const table = habitats.areas?.[String(area)];
     const list = Array.isArray(table) ? table : (habitats.generico || []);
     const land = e => !!e.agua === !!water;

@@ -25,6 +25,27 @@ export const ehReanima = id => Object.hasOwn(REANIMA, +id);
 export const ehReanimaTime = id => Object.hasOwn(REANIMA_TIME, +id);
 export const amizadeDe = id => AMIZADE[+id] || 0;
 
+/** Status a medicine clears. `null` clears every major status (burn, poison, toxic, paralysis, sleep, freeze). */
+export const CURA_STATUS = {
+  2005: null,                                                             // Full Restore
+  2006: ['poison', 'toxic'],                                              // Antidote
+  2007: ['burn'],                                                         // Burn Heal
+  2008: ['freeze'],                                                       // Ice Heal
+  2009: ['sleep'],                                                        // Awakening
+  2010: ['paralysis'],                                                    // Paralyze Heal
+  2011: null,                                                             // Full Heal
+  2020: null,                                                             // Heal Powder
+  2026: null, 2027: null, 2028: null, 2029: null, 2030: null,             // local sweets: any status
+  2031: null, 2032: null, 2033: null, 2034: null,
+};
+/** `undefined` when the item is not a status cure. `null` when it clears every status. */
+export function statusDe(id) {
+  const k = +id;
+  if (!Object.hasOwn(CURA_STATUS, k)) return undefined;
+  return CURA_STATUS[k];
+}
+export const curaStatus = id => Object.hasOwn(CURA_STATUS, +id);
+
 /* POKÉMART: each city's mart has its own stock in the dump (menu_data.json `lojas`, 2150X01) and it already grows city by
    city — the first one sells only the Poké Ball, the next adds the Great Ball (400), and from 2150401 on there is the Ultra
    Ball (800). ESTOQUE_EXTRA adds entries on top of a shop, each unlocked by a number of badges. The dump's stock is kept as

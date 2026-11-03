@@ -137,7 +137,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 10
  },
  "icepunch": {
   "id": "icepunch",
@@ -157,7 +159,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to freeze the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "freeze",
+  "statusChance": 10
  },
  "thunderpunch": {
   "id": "thunderpunch",
@@ -177,7 +181,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 10
  },
  "scratch": {
   "id": "scratch",
@@ -669,7 +675,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "wrap": {
   "id": "wrap",
@@ -789,7 +797,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 35
+  "pp": 35,
+  "status": "poison",
+  "statusChance": 30
  },
  "twineedle": {
   "id": "twineedle",
@@ -808,7 +818,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Hits twice in the same turn.  Has a chance to poison the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "poison",
+  "statusChance": 20
  },
  "pinmissile": {
   "id": "pinmissile",
@@ -919,7 +931,13 @@
   "precisao": 55,
   "inicio": true,
   "descricao": "Puts the target to sleep.",
-  "pp": 15
+  "pp": 15,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "supersonic": {
   "id": "supersonic",
@@ -1020,7 +1038,9 @@
   "voo": true,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 25
+  "pp": 25,
+  "status": "burn",
+  "statusChance": 10
  },
  "flamethrower": {
   "id": "flamethrower",
@@ -1041,7 +1061,9 @@
   "voo": true,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 10
  },
  "mist": {
   "id": "mist",
@@ -1139,7 +1161,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to freeze the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "freeze",
+  "statusChance": 10
  },
  "blizzard": {
   "id": "blizzard",
@@ -1157,7 +1181,9 @@
   "precisao": 70,
   "inicio": true,
   "descricao": "Has a chance to freeze the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "freeze",
+  "statusChance": 10
  },
  "psybeam": {
   "id": "psybeam",
@@ -1515,7 +1541,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Poisons the target.",
-  "pp": 35
+  "pp": 35,
+  "status": "poison",
+  "statusChance": 100
  },
  "stunspore": {
   "id": "stunspore",
@@ -1535,7 +1563,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Paralyzes the target.",
-  "pp": 30
+  "pp": 30,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "sleeppowder": {
   "id": "sleeppowder",
@@ -1555,7 +1585,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Puts the target to sleep.",
-  "pp": 15
+  "pp": 15,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "petaldance": {
   "id": "petaldance",
@@ -1655,7 +1691,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 30
+  "pp": 30,
+  "status": "paralysis",
+  "statusChance": 10
  },
  "thunderbolt": {
   "id": "thunderbolt",
@@ -1675,7 +1713,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 10
  },
  "thunderwave": {
   "id": "thunderwave",
@@ -1695,7 +1735,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Paralyzes the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "thunder": {
   "id": "thunder",
@@ -1715,7 +1757,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "rockthrow": {
   "id": "rockthrow",
@@ -1812,7 +1856,9 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Badly poisons the target, inflicting more damage every turn.",
-  "pp": 10
+  "pp": 10,
+  "status": "toxic",
+  "statusChance": 100
  },
  "confusion": {
   "id": "confusion",
@@ -1872,7 +1918,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Puts the target to sleep.",
-  "pp": 20
+  "pp": 20,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "meditate": {
   "id": "meditate",
@@ -2377,7 +2429,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 30
+  "pp": 30,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "smog": {
   "id": "smog",
@@ -2397,7 +2451,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "poison",
+  "statusChance": 40
  },
  "sludge": {
   "id": "sludge",
@@ -2417,7 +2473,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "poison",
+  "statusChance": 30
  },
  "boneclub": {
   "id": "boneclub",
@@ -2458,7 +2516,9 @@
   "voo": true,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 10
  },
  "waterfall": {
   "id": "waterfall",
@@ -2670,7 +2730,9 @@
   "precisao": 100,
   "inicio": true,
   "descricao": "Paralyzes the target.",
-  "pp": 30
+  "pp": 30,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "dreameater": {
   "id": "dreameater",
@@ -2710,7 +2772,9 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Poisons the target.",
-  "pp": 40
+  "pp": 40,
+  "status": "poison",
+  "statusChance": 100
  },
  "barrage": {
   "id": "barrage",
@@ -2769,7 +2833,13 @@
   "precisao": 75,
   "acerto": true,
   "descricao": "Puts the target to sleep.",
-  "pp": 10
+  "pp": 10,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "skyattack": {
   "id": "skyattack",
@@ -2863,7 +2933,13 @@
   "inicio": true,
   "acerto": true,
   "descricao": "Puts the target to sleep.",
-  "pp": 15
+  "pp": 15,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "flash": {
   "id": "flash",
@@ -3029,7 +3105,15 @@
   "inicio": true,
   "proprio": true,
   "descricao": "User sleeps for two turns, completely healing itself.",
-  "pp": 5
+  "pp": 5,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   2
+  ],
+  "statusCura": "cheio",
+  "statusEm": "eu"
  },
  "rockslide": {
   "id": "rockslide",
@@ -3114,7 +3198,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to burn, freeze, or paralyze the target.",
-  "pp": 10
+  "pp": 10,
+  "statusPool": [
+   "paralysis",
+   "burn",
+   "freeze"
+  ],
+  "statusChance": 20
  },
  "superfang": {
   "id": "superfang",
@@ -3305,7 +3395,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to burn the target.  Lets frozen Pokémon thaw themselves.",
-  "pp": 25
+  "pp": 25,
+  "status": "burn",
+  "statusChance": 10
  },
  "snore": {
   "id": "snore",
@@ -3456,7 +3548,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to freeze the target.",
-  "pp": 25
+  "pp": 25,
+  "status": "freeze",
+  "statusChance": 10
  },
  "protect": {
   "id": "protect",
@@ -3574,7 +3668,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "poison",
+  "statusChance": 30
  },
  "mudslap": {
   "id": "mudslap",
@@ -3642,7 +3738,9 @@
   "precisao": 50,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "foresight": {
   "id": "foresight",
@@ -3927,7 +4025,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "furycutter": {
   "id": "furycutter",
@@ -4133,7 +4233,9 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to burn the target.  Lets frozen Pokémon thaw themselves.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 50
  },
  "magnitude": {
   "id": "magnitude",
@@ -4207,7 +4309,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "batonpass": {
   "id": "batonpass",
@@ -4763,7 +4867,9 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "burn",
+  "statusChance": 10
  },
  "hail": {
   "id": "hail",
@@ -4826,7 +4932,9 @@
   "atraso": 0.2,
   "precisao": 85,
   "descricao": "Burns the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 100
  },
  "memento": {
   "id": "memento",
@@ -5471,7 +5579,9 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has an increased chance for a critical hit and a chance to burn the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "burn",
+  "statusChance": 10
  },
  "mudsport": {
   "id": "mudsport",
@@ -5577,7 +5687,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to badly poison the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "toxic",
+  "statusChance": 50
  },
  "crushclaw": {
   "id": "crushclaw",
@@ -5833,7 +5945,13 @@
   "atraso": 0.2,
   "precisao": 55,
   "descricao": "Puts the target to sleep.",
-  "pp": 15
+  "pp": 15,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "tickle": {
   "id": "tickle",
@@ -6177,7 +6295,9 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "User bounces high into the air, dodging all attacks, and hits next turn.",
-  "pp": 5
+  "pp": 5,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "mudshot": {
   "id": "mudshot",
@@ -6213,7 +6333,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has an increased chance for a critical hit and a chance to poison the target.",
-  "pp": 25
+  "pp": 25,
+  "status": "poison",
+  "statusChance": 10
  },
  "covet": {
   "id": "covet",
@@ -6251,7 +6373,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "User takes 1/3 the damage inflicted in recoil.  Has a chance to paralyze the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 10
  },
  "magicalleaf": {
   "id": "magicalleaf",
@@ -7105,7 +7229,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "User takes 1/3 the damage inflicted in recoil.  Has a chance to burn the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 10
  },
  "forcepalm": {
   "id": "forcepalm",
@@ -7124,7 +7250,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "aurasphere": {
   "id": "aurasphere",
@@ -7174,7 +7302,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "poison",
+  "statusChance": 30
  },
  "darkpulse": {
   "id": "darkpulse",
@@ -7610,7 +7740,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to paralyze the target and a chance to make the target flinch.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 10
  },
  "icefang": {
   "id": "icefang",
@@ -7630,7 +7762,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to freeze the target and a chance to make the target flinch.",
-  "pp": 15
+  "pp": 15,
+  "status": "freeze",
+  "statusChance": 10
  },
  "firefang": {
   "id": "firefang",
@@ -7650,7 +7784,9 @@
   "acerto": true,
   "contato": true,
   "descricao": "Has a chance to burn the target and a chance to make the target flinch.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 10
  },
  "shadowsneak": {
   "id": "shadowsneak",
@@ -7843,7 +7979,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "lavaplume": {
   "id": "lavaplume",
@@ -7860,7 +7998,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 30
  },
  "leafstorm": {
   "id": "leafstorm",
@@ -7934,7 +8074,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has an increased chance for a critical hit and a chance to poison the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "poison",
+  "statusChance": 10
  },
  "gunkshot": {
   "id": "gunkshot",
@@ -7953,7 +8095,9 @@
   "precisao": 80,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "poison",
+  "statusChance": 30
  },
  "ironhead": {
   "id": "ironhead",
@@ -8358,7 +8502,13 @@
   "atraso": 0.2,
   "precisao": 50,
   "descricao": "Puts the target to sleep.",
-  "pp": 10
+  "pp": 10,
+  "status": "sleep",
+  "statusChance": 100,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "seedflare": {
   "id": "seedflare",
@@ -8654,7 +8804,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to poison the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "poison",
+  "statusChance": 10
  },
  "quiverdance": {
   "id": "quiverdance",
@@ -9009,7 +9161,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 15
+  "pp": 15,
+  "status": "burn",
+  "statusChance": 30
  },
  "shellsmash": {
   "id": "shellsmash",
@@ -9245,7 +9399,9 @@
   "precisao": 50,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 100
  },
  "waterpledge": {
   "id": "waterpledge",
@@ -9746,7 +9902,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 30
  },
  "technoblast": {
   "id": "technoblast",
@@ -9780,7 +9938,13 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to put the target to sleep.",
-  "pp": 10
+  "pp": 10,
+  "status": "sleep",
+  "statusChance": 10,
+  "statusTurns": [
+   2,
+   4
+  ]
  },
  "secretsword": {
   "id": "secretsword",
@@ -9833,7 +9997,9 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "paralysis",
+  "statusChance": 20
  },
  "blueflare": {
   "id": "blueflare",
@@ -9850,7 +10016,9 @@
   "precisao": 85,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 20
  },
  "fierydance": {
   "id": "fierydance",
@@ -9886,7 +10054,9 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Requires a turn to charge before attacking.  Has a chance to paralyze the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "iceburn": {
   "id": "iceburn",
@@ -9903,7 +10073,9 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Requires a turn to charge before attacking.  Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 30
  },
  "snarl": {
   "id": "snarl",
@@ -10233,7 +10405,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Super-effective against Water.",
-  "pp": 20
+  "pp": 20,
+  "status": "freeze",
+  "statusChance": 10
  },
  "disarmingvoice": {
   "id": "disarmingvoice",
@@ -10549,7 +10723,9 @@
   "precisao": 95,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 30
  },
  "hyperspacehole": {
   "id": "hyperspacehole",
@@ -10826,7 +11002,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 20
+  "pp": 20,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "holdback": {
   "id": "holdback",
@@ -11923,7 +12101,9 @@
   "atraso": 0.2,
   "precisao": 100,
   "descricao": "Poisons the target and lowers its Speed by one stage.",
-  "pp": 20
+  "pp": 20,
+  "status": "poison",
+  "statusChance": 100
  },
  "laserfocus": {
   "id": "laserfocus",
@@ -12405,7 +12585,9 @@
   "atraso": 0.3,
   "acerto": true,
   "descricao": "Has a chance to paralyze the target.",
-  "pp": 1
+  "pp": 1,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "pulverizingpancake": {
   "id": "pulverizingpancake",
@@ -12939,7 +13121,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Inflicts regular damage with no additional effect.",
-  "pp": 15
+  "pp": 15,
+  "status": "paralysis",
+  "statusChance": 30
  },
  "floatyfall": {
   "id": "floatyfall",
@@ -13008,7 +13192,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Inflicts regular damage with no additional effect.",
-  "pp": 20
+  "pp": 20,
+  "status": "paralysis",
+  "statusChance": 100
  },
  "sizzlyslide": {
   "id": "sizzlyslide",
@@ -13027,7 +13213,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Inflicts regular damage with no additional effect.",
-  "pp": 20
+  "pp": 20,
+  "status": "burn",
+  "statusChance": 100
  },
  "glitzyglow": {
   "id": "glitzyglow",
@@ -13828,7 +14016,9 @@
   "precisao": 90,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 10
  },
  "behemothblade": {
   "id": "behemothblade",
@@ -14204,7 +14394,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to poison the target. This switches categories between physical and special, depending on which would deal more damage to the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "poison",
+  "statusChance": 20
  },
  "mistyexplosion": {
   "id": "mistyexplosion",
@@ -14310,7 +14502,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Burns the target if it had a state stage raise this turn.",
-  "pp": 5
+  "pp": 5,
+  "status": "burn",
+  "statusChance": 100
  },
  "lashout": {
   "id": "lashout",
@@ -14453,7 +14647,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to burn the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "burn",
+  "statusChance": 30
  },
  "junglehealing": {
   "id": "junglehealing",
@@ -14557,7 +14753,9 @@
   "precisao": 100,
   "acerto": true,
   "descricao": "Has a chance to freeze the target.",
-  "pp": 10
+  "pp": 10,
+  "status": "freeze",
+  "statusChance": 10
  },
  "fierywrath": {
   "id": "fierywrath",
