@@ -1,0 +1,70 @@
+name: Game server
+
+# Start, stop, or restart pokeverse-3d on the OVH box. Does not touch Open Tibia.
+# Actions → Game server → Run workflow, and pick start, stop, restart, or status.
+# Also restarts at midnight Pacific (PST in winter, PDT in summer).
+# Restart and status work with the sudoers from bootstrap. Start and stop need one
+# command as ubuntu: bash /opt/pokeverse-3d/scripts/live/grant-service-ctl.sh
+# Required secret: OVH_SSH_KEY. Optional: OVH_HOST, OVH_USER, OVH_PORT.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do with pokeverse-3d
+        required: true
+        type: choice
+        default: restart
+        options:
+          - restart
+          - start
+          - stop
+          - status
+  schedule:
+    # GitHub cron is UTC. 07:00 UTC is midnight PDT, 08:00 UTC is midnight PST.
+    # The job restarts only when America/Los_Angeles is in the midnight hour.
+    - cron: '0 7,8 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-ovh
+  cancel-in-progress: false
+
+jobs:
+  control:
+    name: pokeverse-3d ${{ github.event_name == 'schedule' && 'midnight restart' || inputs.action }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Control the game server over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.OVH_HOST || '40.160.145.24' }}
+          username: ${{ secrets.OVH_USER || 'pokeverse' }}
+          key: ${{ secrets.OVH_SSH_KEY }}
+          port: ${{ secrets.OVH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 3m
+          script: |
+            set -euo pipefail
+            if [[ "${{ github.event_name }}" == "schedule" ]]; then
+              hour="$(TZ=America/Los_Angeles date +%H)"
+              if [[ "$hour" != "00" ]]; then
+                echo "America/Los_Angeles hour is ${hour}, not midnight. Skipping."
+                exit 0
+              fi
+              op=restart
+            else
+              op='${{ inputs.action }}'
+            fi
+            case "$op" in
+              start|stop|restart|status) ;;
+              *) echo "Refusing action: $op" >&2; exit 2 ;;
+            esac
+            if [[ -f /opt/pokeverse-3d/scripts/live/service.sh ]]; then
+              bash /opt/pokeverse-3d/scripts/live/service.sh "$op"
+            else
+              sudo -n systemctl "$op" pokeverse-3d
+              sleep 1
+              if [[ "$op" != "stop" ]]; then curl -fsS http://127.0.0.1:5190/health; echo; fi
+            fi
