@@ -179,9 +179,17 @@ Once one admin exists, **https://play.pokeverse.quest/admin** → Players also h
 
 ### Automatic (GitHub Actions)
 
-Pushes to `main` run `.github/workflows/deploy.yml`: SSH as `pokeverse@40.160.145.24` and run
-`scripts/live/deploy.sh` (reset to `origin/main`, `npm install --omit=dev`, `systemctl restart pokeverse-3d`).
+Pushes to `main` run `.github/workflows/deploy.yml`. That job first copies newer live admin
+edits onto `main`, then SSHs as `pokeverse@40.160.145.24` and runs `scripts/live/deploy.sh`
+(reset to `origin/main`, `npm install --omit=dev`, `systemctl restart pokeverse-3d`).
 Manual run: Actions → **Deploy to OVH** → Run workflow.
+
+Actions → **Save live edits** copies the same files without restarting the game. It also runs
+every day at 10:30pm Pacific Standard Time (11:30pm Pacific Daylight Time). That push does not
+start Deploy. The server keeps the working copies until the next deploy, which then resets onto
+a `main` that already has them. An edit saved in the minute the copy is running can still miss
+that snapshot; the next save picks it up. Deploy refuses to reset while a newer live edit is
+still only on the server.
 
 `OVH_USER` is not required. The workflow defaults to `pokeverse` and host `40.160.145.24`. Secrets:
 
@@ -201,6 +209,13 @@ The first clone is `scripts/live/bootstrap-ovh.sh` as **ubuntu**. After that, ev
 ssh pokeverse@40.160.145.24 'bash /opt/pokeverse-3d/scripts/live/deploy.sh'
 ```
 
-Admin-panel edits are written into `public/data/` and `public/scenery/` in this checkout. Commit or back them up before
-pulling. `deploy.sh` resets to `origin/main`, so uncommitted admin edits on the VPS are overwritten. `server/data/`
-(accounts) is gitignored and is left alone. The OT `pokeverse` unit is never restarted.
+The admin panel writes the game's content into this checkout. **Save live edits** and **Deploy**
+copy these paths back into git:
+
+| On the server | What it is |
+|---|---|
+| `public/data/**/*.json`, `**/*.txt` | Quests, NPCs, trainers, doors, gyms, dialogues, habitats, spawn zones, scenes, each map, items, shops, live events (`eventos.json`), music, raid, species, `locale/`, and `idioma/` (the species screen writes `idioma/dex_pt.json`) |
+| `scenery/<map>.glb`, `scenery/<map>_chao.json` | Map meshes and ground, including a GLB the 3D editor re-exports |
+| `public/scenery/<map>.glb`, `public/scenery/<map>.json` | The same, when the editor saved the mesh under `public/scenery/` (Vite prefers that copy) |
+
+When a file differs, the newer one wins. A panel save newer than the git commit is committed. A git commit newer than the file on disk is what deploy installs. Accounts stay in `server/data/` on the machine (saves, admin log, backups). Pokémon, trainer, and prop models (`mon`, `pc`, `prop`, `npc`, `fogo`, `agua`), `sound/`, and `ui/` stay on the machine too: the panel stores their file names inside the JSON and does not upload the bytes. A hand-run `deploy.sh` uses the same check once this copy of the script is on the server. The OT `pokeverse` unit is never restarted.

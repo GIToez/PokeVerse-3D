@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="importmap">
+{ "imports": {
+  "three": "/node_modules/three/build/three.module.js",
+  "three/addons/": "/node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const log = async (m) => { console.log(m); try { await fetch('/log', { method: 'POST', body: String(m) }); } catch {} };
+
+const MARGEM = 16, ESC = 4;
+
+function chaveNome(n){
+  return String(n || '').toLowerCase().replace(/^lib:?/, '').replace(/\s/g, '_').replace(/[\[\]\.:/]/g, '');
+}
+
+try {
+  await log('loading map');
+  const dados = await fetch('/data/2000001.json').then(r => r.json());
+  const b = dados.bbox;
+  const x0 = -b.x1 - MARGEM, x1 = -b.x0 + MARGEM, z0 = b.z0 - MARGEM, z1 = b.z1 + MARGEM;
+  const W = Math.round((x1 - x0) * ESC), H = Math.round((z1 - z0) * ESC);
+  await log('frame ' + W + 'x' + H + ' world ' + x0 + ',' + z0);
+
+  const loader = new GLTFLoader();
+  await log('loading kanto.glb');
+  const g = await loader.loadAsync('/scenery/kanto.glb');
+  g.scene.updateMatrixWorld(true);
+  const mapa = g.scene.getObjectByName('Mapa') || g.scene;
+  try {
+    const extra = await loader.loadAsync('/scenery/prop/library_extra.glb');
+    extra.scene.updateMatrixWorld(true);
+    const mais = extra.scene.getObjectByName('Mapa') || extra.scene;
+    for (const child of [...mais.children]) mapa.add(child);
+    mapa.updateMatrixWorld(true);
+  } catch (e) { await log('library extra skipped: ' + e.message); }
+
+  const partes = new Map();
+  for (const p of mapa.children){
+    const lista = [];
+    p.traverse(o => {
+      if (!o.isMesh || o.isSkinnedMesh) return;
+      lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() });
+    });
+    partes.set(chaveNome(p.name), lista);
+  }
+  await log('prefabs ' + partes.size);
+
+  const cena = new THREE.Scene();
+  cena.add(new THREE.HemisphereLight(0xffffff, 0x6a7380, 2.4));
+  const sol = new THREE.DirectionalLight(0xffffff, 1.5);
+  sol.position.set(40, 120, 20);
+  cena.add(sol);
+
+  const agua = dados.agua || [];
+  if (agua.length){
+    const geo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+    const im = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: 0x3f8ec8 }), agua.length);
+    const d = new THREE.Object3D();
+    agua.forEach((t, i) => { d.position.set(-t.x, -0.15, t.z); d.updateMatrix(); im.setMatrixAt(i, d.matrix); });
+    im.frustumCulled = false;
+    cena.add(im);
+  }
+
+  const grupos = new Map();
+  let faltou = 0;
+  for (const o of dados.objetos || []){
+    const lista = partes.get(chaveNome(o.n));
+    if (!lista){ faltou++; continue; }
+    for (const pt of lista){
+      const k = pt.geo.uuid + '|' + (Array.isArray(pt.mat) ? pt.mat.map(m => m.uuid).join() : pt.mat?.uuid);
+      let gr = grupos.get(k);
+      if (!gr){ gr = { geo: pt.geo, mat: pt.mat, ms: [] }; grupos.set(k, gr); }
+      const T = new THREE.Matrix4().makeTranslation(-o.x, o.y || 0, o.z);
+      gr.ms.push(new THREE.Matrix4().multiplyMatrices(T, pt.local));
+    }
+  }
+  let instancias = 0;
+  for (const gr of grupos.values()) instancias += gr.ms.length;
+  await log('groups ' + grupos.size + ' instances ' + instancias + ' missing placements ' + faltou);
+  for (const gr of grupos.values()){
+    const im = new THREE.InstancedMesh(gr.geo, gr.mat, gr.ms.length);
+    gr.ms.forEach((m, i) => im.setMatrixAt(i, m));
+    im.instanceMatrix.needsUpdate = true;
+    im.frustumCulled = false;
+    cena.add(im);
+  }
+
+  const ren = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, alpha: false });
+  ren.setPixelRatio(1);
+  ren.setSize(W, H, false);
+  ren.outputColorSpace = THREE.SRGBColorSpace;
+  ren.setClearColor(0x79b7e0, 1);
+  const larg = x1 - x0, alt = z1 - z0;
+  const cam = new THREE.OrthographicCamera(-larg / 2, larg / 2, alt / 2, -alt / 2, 0.1, 800);
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  cam.up.set(0, 0, -1);
+  cam.position.set(cx, 200, cz);
+  cam.lookAt(cx, 0, cz);
+  await log('rendering');
+  ren.render(cena, cam);
+  const jpeg = ren.domElement.toDataURL('image/jpeg', 0.86);
+  await log('jpeg chars ' + jpeg.length);
+  const r = await fetch('/save', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jpeg, x0, z0, esc: ESC, w: W, h: H }) });
+  await log('saved ' + r.status);
+} catch (e) {
+  await log('FAIL ' + (e?.stack || e));
+}
+</script>
+</body>
+</html>

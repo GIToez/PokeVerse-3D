@@ -15,7 +15,13 @@ let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null,
 import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
 import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
 import * as PrefAparelho from './device_prefs.mjs';                    // Settings → "Other players' names" (per device)
-export const VERSAO_REDE = 21;                                            // 21: party HP is stored on the account, so a refresh does not heal
+export const VERSAO_REDE = 22;                                            // 22: a same-map door is stored, so a refresh stays on the far side
+/** Pokémon walking beside you. The Safari grass keeps yours in the Ball, so the room does not draw one. */
+function parceiroNoMundo(){
+  const j = ctx?.jogo;
+  if (!j || j.semParceiro || j.pika?.recolhidoSafari) return null;
+  return j.pika || null;
+}
 
 export function instalar(c){
   ctx = c;
@@ -60,6 +66,15 @@ function agendar(){ if (desligado) return; clearTimeout(timer); const espera = M
 let desligado = false;
 export const foiDesligado = () => desligado;
 export function enviar(obj){ if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(obj)); return true; } catch {} } return false; }   // devolve se FOI (passo 6: a conta segura o que não foi)   // exportado: o mundo compartilhado (world.mjs) manda por aqui
+/** Tell the server this position is a door landing, before the next walk sample. */
+export function enviarPorta(chegada){
+  const a = ctx?.jogo?.ash;
+  if (!a || !(+chegada > 0)) return false;
+  const giro = a.giro || 0, anim = a.anim || 'Idle';
+  const foi = enviar({ t: 'pos', x: +a.x.toFixed(2), y: +(a.y || 0).toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, porta: 1, chegada: +chegada });
+  if (foi) ultimoEnvio = { ...ultimoEnvio, x: a.x, z: a.z, giro, anim, quando: performance.now() };
+  return foi;
+}
 let wildRollWait = null;
 /** Ask the server to roll one wild in this area. Resolves to the spawn, or null. */
 export function pedirWild(area, water, hour){
@@ -72,7 +87,7 @@ export function pedirWild(area, water, hour){
 function entrar(){
   const a = ctx.jogo?.ash;
   if (!a){ setTimeout(entrar, 500); return; }
-  const pk = ctx.jogo.semParceiro ? null : ctx.jogo.pika;              // jogo novo: sem Pokémon até o Carvalho
+  const pk = parceiroNoMundo();                                        // jogo novo, ou Safari: sem Pokémon no campo até sair da área
   enviar({ t: 'entrar', token: ctx.token?.() || null, nome: ctx.nomeJogador(), mapa: ctx.mapa, chegada: ctx.chegada?.() || null, porta: ctx.portaFresca?.() ? 1 : 0, area: ctx.area?.() || null, x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +(a.giro || 0).toFixed(3),
            anim: a.anim || 'Idle', personagem: ctx.Personagem?.ler?.() || null, parceiro: pk?.glb || null, shiny: !!pk?.shiny, uid: ctx.uidParceiro?.() ?? null, montaria: ctx.jogo?.montaria?.glb || null, titulo: ctx.tituloAtual?.() || '', versao: VERSAO_REDE,
            ...(pk ? { px: +pk.x.toFixed(2), pz: +pk.z.toFixed(2), pg: +(pk.giro || 0).toFixed(3), pa: pk.anim || 'Idle' } : {}) });   // onde o parceiro está DE VERDADE (os outros o desenhavam numa formação fixa)
@@ -408,7 +423,8 @@ export function quadro(dt){
   const a = ctx.jogo?.ash, agora = performance.now();
   if (a && estado === 'ligado' && id != null && agora - tAparencia > 1000){   // 1× por segundo: mudou de seguidor ou de roupa? avisa a sala
     tAparencia = agora;
-    const par = ctx.jogo.semParceiro ? null : (ctx.jogo.pika?.glb || null);
+    const pkVis = parceiroNoMundo();
+    const par = pkVis?.glb || null;
     const uidPar = ctx.uidParceiro?.() ?? null, mont = ctx.jogo.montaria?.glb || null, shi = !!(par && ctx.jogo.pika?.shiny);
     if (par !== ultimoPar || uidPar !== ultimoUid || mont !== ultimaMont || shi !== ultimoShiny){ if (ultimoPar !== null || par || mont) enviar({ t: 'parceiro', parceiro: par, shiny: shi, uid: uidPar, montaria: mont }); ultimoPar = par; ultimoUid = uidPar; ultimaMont = mont; ultimoShiny = shi; }   // shiny (14/09): o parceiro do outro monta com a textura shiny   // montaria (14/09): montou/desmontou → a sala sabe
     let roupa = null; try { roupa = JSON.stringify(ctx.Personagem?.ler?.() || null); } catch {}
@@ -417,13 +433,15 @@ export function quadro(dt){
     if (tit !== ultimoTitulo){ if (ultimoTitulo !== null) enviar({ t: 'titulo', titulo: tit }); ultimoTitulo = tit; }
   }
   if (a && estado === 'ligado' && id != null){
-    const anim = a.anim || 'Idle', giro = a.giro || 0, pk = ctx.jogo.semParceiro ? null : ctx.jogo.pika;
+    const anim = a.anim || 'Idle', giro = a.giro || 0, pk = parceiroNoMundo();
     const px = pk ? pk.x : 0, pz = pk ? pk.z : 0, pg = pk ? (pk.giro || 0) : 0, pa = pk ? (pk.anim || 'Idle') : '';
     const mudou = Math.hypot(a.x - ultimoEnvio.x, a.z - ultimoEnvio.z) > 0.02 || Math.abs(giro - ultimoEnvio.giro) > 0.005 || anim !== ultimoEnvio.anim
       || Math.hypot(px - ultimoEnvio.px, pz - ultimoEnvio.pz) > 0.05 || Math.abs(pg - ultimoEnvio.pg) > 0.02 || pa !== ultimoEnvio.pa;   // o parceiro também conta (os outros o veem onde ele está)
     const area = ctx.area?.() || null;
+    const chegadaPorta = +ctx.portaAgora?.() || 0;
     if ((mudou && agora - ultimoEnvio.quando > 90) || agora - ultimoEnvio.quando > 4000 || area !== ultimoEnvio.area){
       enviar({ t: 'pos', x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, ...(area !== ultimoEnvio.area ? { area } : {}),
+        ...(chegadaPorta ? { porta: 1, chegada: chegadaPorta } : {}),
         ...(pk ? { px: +px.toFixed(2), pz: +pz.toFixed(2), pg: +pg.toFixed(3), pa } : {}) });
       ultimoEnvio = { x: a.x, z: a.z, giro, anim, quando: agora, area, px, pz, pg, pa };
     }

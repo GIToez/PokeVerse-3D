@@ -40,7 +40,7 @@ That installs nginx for this hostname only, proxies `/servidor` to `127.0.0.1:51
 
 ## Later deploys
 
-GitHub Actions (push to `main`, or Actions → **Deploy to OVH**) SSHs as `pokeverse` and runs `scripts/live/deploy.sh`.
+GitHub Actions (push to `main`, or Actions → **Deploy to OVH**) copies newer live admin edits onto `main`, then SSHs as `pokeverse` and runs `scripts/live/deploy.sh`. Actions → **Save live edits** copies quests, NPCs, maps, and the rest of `public/data` without restarting. See [HOSTING.md](HOSTING.md).
 
 From your PC:
 

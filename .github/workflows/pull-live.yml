@@ -1,0 +1,39 @@
+name: Save live edits
+
+# Copy quests, NPCs, maps, and the other admin-panel files off the live
+# checkout onto main. Run it from Actions, or let the daily job do it.
+# Deploy also runs this before git reset. A push made with GITHUB_TOKEN does
+# not start Deploy, so this job does not restart the game.
+# Required secret: OVH_SSH_KEY. Optional: OVH_HOST, OVH_USER, OVH_PORT.
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub cron is UTC. 06:30 UTC is 10:30pm PST and 11:30pm PDT, before the
+    # midnight Pacific restart. The restart does not reset git; this job puts
+    # the day's panel edits on main so a later deploy still has them.
+    - cron: '30 6 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-ovh
+  cancel-in-progress: false
+
+jobs:
+  save:
+    name: Copy live admin files onto main
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save live edits
+        env:
+          OVH_SSH_KEY: ${{ secrets.OVH_SSH_KEY }}
+          OVH_HOST: ${{ secrets.OVH_HOST }}
+          OVH_USER: ${{ secrets.OVH_USER }}
+          OVH_PORT: ${{ secrets.OVH_PORT }}
+        run: bash scripts/live/save-live-ci.sh

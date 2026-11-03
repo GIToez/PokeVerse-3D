@@ -16,6 +16,13 @@ cd "$APP_DIR"
 echo "==> fetching origin/main in $APP_DIR"
 git fetch --prune origin main
 git checkout -q main
+# A newer panel edit (quests, NPCs, maps, the rest of public/data, map meshes)
+# must be on origin/main before this reset. Actions → Save live edits does that,
+# and the deploy workflow runs it first. A newer git commit of the same file may
+# replace an older copy on disk.
+if [[ -f "$APP_DIR/scripts/live/guard-live.sh" ]]; then
+  bash "$APP_DIR/scripts/live/guard-live.sh" --guard
+fi
 git reset --hard origin/main
 
 echo "==> npm install --omit=dev"

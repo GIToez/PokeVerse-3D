@@ -1,0 +1,173 @@
+{
+ "v": 1,
+ "marcadores": [
+  {
+   "tipo": "loja",
+   "nome": "Cherrygrove Mart",
+   "area": 2102,
+   "x": -163,
+   "z": 117.3
+  },
+  {
+   "tipo": "centro",
+   "nome": "Cherrygrove Pokémon Center",
+   "area": 2102,
+   "x": -170.5,
+   "z": 117.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Violet Gym",
+   "area": 2103,
+   "x": -86.5,
+   "z": 10.37
+  },
+  {
+   "tipo": "loja",
+   "nome": "Violet Mart",
+   "area": 2103,
+   "x": -77,
+   "z": 12.3
+  },
+  {
+   "tipo": "centro",
+   "nome": "Violet Pokémon Center",
+   "area": 2103,
+   "x": -105.5,
+   "z": 25.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Azalea Gym",
+   "area": 2104,
+   "x": -13.5,
+   "z": 172.52
+  },
+  {
+   "tipo": "loja",
+   "nome": "Azalea Mart",
+   "area": 2104,
+   "x": -28,
+   "z": 164.3
+  },
+  {
+   "tipo": "centro",
+   "nome": "Azalea Pokémon Center",
+   "area": 2104,
+   "x": -18.5,
+   "z": 166.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Goldenrod Gym",
+   "area": 2105,
+   "x": 26.5,
+   "z": 68.67
+  },
+  {
+   "tipo": "centro",
+   "nome": "Goldenrod Pokémon Center",
+   "area": 2105,
+   "x": 39.5,
+   "z": 96.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Ecruteak Gym",
+   "area": 2106,
+   "x": 15.5,
+   "z": -49.73
+  },
+  {
+   "tipo": "loja",
+   "nome": "Ecruteak Mart",
+   "area": 2106,
+   "x": -14,
+   "z": -55.8
+  },
+  {
+   "tipo": "centro",
+   "nome": "Ecruteak Pokémon Center",
+   "area": 2106,
+   "x": -4.5,
+   "z": -47.7
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Olivine Gym",
+   "area": 2107,
+   "x": 122.5,
+   "z": -5.73
+  },
+  {
+   "tipo": "loja",
+   "nome": "Olivine Mart",
+   "area": 2107,
+   "x": 112,
+   "z": 3.3
+  },
+  {
+   "tipo": "centro",
+   "nome": "Olivine Pokémon Center",
+   "area": 2107,
+   "x": 119.5,
+   "z": 10.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Cianwood Gym",
+   "area": 2108,
+   "x": 307,
+   "z": 36.67
+  },
+  {
+   "tipo": "centro",
+   "nome": "Cianwood Pokémon Center",
+   "area": 2108,
+   "x": 312.5,
+   "z": 45.3
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Mahogany Gym",
+   "area": 2109,
+   "x": -130.5,
+   "z": -50.63
+  },
+  {
+   "tipo": "centro",
+   "nome": "Mahogany Pokémon Center",
+   "area": 2109,
+   "x": -141.5,
+   "z": -48.7
+  },
+  {
+   "tipo": "ginasio",
+   "nome": "Blackthorn Gym",
+   "area": 2110,
+   "x": -275.5,
+   "z": -72.33
+  },
+  {
+   "tipo": "loja",
+   "nome": "Blackthorn Mart",
+   "area": 2110,
+   "x": -275,
+   "z": -51.7
+  },
+  {
+   "tipo": "centro",
+   "nome": "Blackthorn Pokémon Center",
+   "area": 2110,
+   "x": -281.5,
+   "z": -51.7
+  },
+  {
+   "tipo": "centro",
+   "nome": "Mt. Silver Pokémon Center",
+   "area": 2114,
+   "x": -356.5,
+   "z": -33.6
+  }
+ ]
+}

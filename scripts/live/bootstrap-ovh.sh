@@ -62,10 +62,14 @@ RestartSec=3
 WantedBy=multi-user.target
 EOF
 
-sudo tee /etc/sudoers.d/pokeverse-3d-deploy >/dev/null <<EOF
-${DEPLOY_USER} ALL=(root) NOPASSWD: /bin/systemctl restart ${SERVICE}, /bin/systemctl status ${SERVICE}, /bin/systemctl is-active ${SERVICE}
+if [[ -f "$APP_DIR/scripts/live/grant-service-ctl.sh" ]]; then
+  bash "$APP_DIR/scripts/live/grant-service-ctl.sh"
+else
+  sudo tee /etc/sudoers.d/pokeverse-3d-deploy >/dev/null <<EOF
+${DEPLOY_USER} ALL=(root) NOPASSWD: /bin/systemctl start ${SERVICE}, /bin/systemctl stop ${SERVICE}, /bin/systemctl restart ${SERVICE}, /bin/systemctl status ${SERVICE}, /bin/systemctl is-active ${SERVICE}
 EOF
-sudo chmod 440 /etc/sudoers.d/pokeverse-3d-deploy
+  sudo chmod 440 /etc/sudoers.d/pokeverse-3d-deploy
+fi
 
 sudo systemctl daemon-reload
 sudo systemctl enable --now "$SERVICE"

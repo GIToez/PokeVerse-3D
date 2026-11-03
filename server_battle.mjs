@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import * as Ind from './individual.mjs';
 import * as Ev from './ev.mjs';
 import * as Weather from './weather.mjs';
+import * as Status from './status.mjs';
+import * as Regras from './item_rules.mjs';
 import { efetividade } from './rules.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -135,7 +137,57 @@ export function criarBatalha(ctx) {
   }
 
   function velDe(p) {
-    return Ind.statDe(especie(p.dex), p, 5);
+    return Ind.statDe(especie(p.dex), p, 5) * Status.mulVel(p);
+  }
+
+  /** A medicine in a turn battle. Amounts already in ITENS_BATALHA stay as they are; other cures use item_rules. */
+  function usarItemNaLuta(eu, id, save) {
+    const regra = ITENS_BATALHA[id];
+    const conhecido = !!(regra || Regras.ehCura(id) || Regras.curaStatus(id) || Regras.ehReanima(id));
+    if (!conhecido || !(save.itens[id] > 0) || !eu) return false;
+    const quais = Regras.statusDe(id);
+    const tinha = Status.limpo(eu.status);
+    const curaEsse = !!(tinha && (quais === null || (Array.isArray(quais) && quais.includes(tinha.id))));
+    const max = eu.maxHp || 1;
+    if (regra?.revive || (Regras.ehReanima(id) && !regra)) {
+      if (eu.hp > 0) return false;
+      const frac = regra?.revive ?? Regras.REANIMA[id] ?? 0.5;
+      eu.hp = Math.max(1, Math.ceil(max * frac));
+      eu.status = null;
+    } else {
+      if (eu.hp <= 0) return false;
+      const querHp = (regra?.cura || Regras.ehCura(id)) && eu.hp < max;
+      if (!querHp && !curaEsse) return false;
+      if (querHp) {
+        if (regra?.cura === 'cheio' || Regras.CURA[id] === Infinity) eu.hp = max;
+        else eu.hp = Math.min(max, eu.hp + (regra?.cura || Regras.CURA[id] || 0));
+      }
+      if (curaEsse) Status.curar(eu, quais);
+    }
+    save.itens[id]--;
+    if (save.itens[id] <= 0) delete save.itens[id];
+    return true;
+  }
+
+  function anotarLance(log, lance, at, def) {
+    if (!lance || !log) return;
+    if (lance.parado) log.push((at?.nome || 'Pokémon') + ' ' + Status.aviso(lance.parado) + '!');
+    else if (lance.statusNome) {
+      const quem = lance.statusQuem === 'eu' ? at : def;
+      log.push((quem?.nome || 'Pokémon') + ' is ' + lance.statusNome + '!');
+    }
+  }
+
+  function residualTurno(mons, log) {
+    for (const mon of mons) {
+      if (!mon || mon.hp <= 0) continue;
+      const antes = Status.limpo(mon.status);
+      const d = Status.residual(mon);
+      if (!(d > 0) || !antes) continue;
+      mon.hp = Math.max(0, mon.hp - d);
+      log.push((mon.nome || 'Pokémon') + ' is hurt by being ' + Status.nome(antes.id) + '!');
+      if (mon.hp <= 0) mon.status = null;
+    }
   }
 
   function golpeDe(id) {
@@ -152,8 +204,15 @@ export function criarBatalha(ctx) {
   function calcularDano(at, def, g, rng = Math.random, clima = null) {
     const A = especie(at.dex),
       D = especie(def.dex);
+    if ((g.cat || '') === 'status') {
+      const acc = Weather.precisao(clima, g);
+      if (acc != null && acc < 1 && rng() > acc) return { dano: 0, eff: 1, errou: true };
+      const tipo = Weather.tipoGolpe(clima, g);
+      const eff = g.statusEm === 'eu' ? 1 : efetividade(chart, tipo || 'Normal', D.types || ['Normal']);
+      return { dano: 0, eff };
+    }
     const fisico = (g.cat || 'fisico') === 'fisico';
-    const a = Ind.statDe(A, at, fisico ? 1 : 3);
+    const a = Ind.statDe(A, at, fisico ? 1 : 3) * Status.mulAtaque(at, fisico);
     const defI = fisico ? 2 : 4;
     const d = Math.max(1, Weather.defesa(clima, D.types, defI, Ind.statDe(D, def, defI)));
     const tipo = Weather.tipoGolpe(clima, g);
@@ -216,8 +275,8 @@ export function criarBatalha(ctx) {
       pvp: !!bat.pvp,
       abrir: true,
       dele: bat.dele.map(snapshotMon),
-      eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv } : null,
-      ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv } : null,
+      eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, status: Status.exportar(eu.status) } : null,
+      ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, status: Status.exportar(ele.status) } : null,
       lances: bat.lances || [],
       log: bat.log || [],
       vidas: bat.eu.time.map((p) => ({
@@ -227,6 +286,7 @@ export function criarBatalha(ctx) {
         lv: p.lv,
         exp: p.exp || 0,
         movs: p.movs,
+        status: Status.exportar(p.status),
       })),
       fim: bat.fim || null,
     };
@@ -487,12 +547,38 @@ export function criarBatalha(ctx) {
   }
 
   function aplicarLance(de, at, def, g) {
+    const agir = Status.podeAgir(at);
+    if (!agir.age) {
+      return { de, golpe: g.id, dano: 0, eff: 1, hpAlvo: def.hp, alvo: def.uid ?? null, parado: agir.porque };
+    }
     if (!gastarPP(at, g.id) && g.id !== 'struggle') return null;
     if (g.id !== 'struggle' && !(at.movs || []).some((m) => m.id === g.id) && g !== STRUGGLE) return null;
-    const { dano, eff } = calcularDano(at, def, g);
-    def.hp = Math.max(0, def.hp - dano);
+    const rolado = calcularDano(at, def, g);
+    if (!rolado.errou && rolado.dano > 0) {
+      def.hp = Math.max(0, def.hp - rolado.dano);
+      if (def.hp <= 0) def.status = null;
+    }
+    const emSi = g.statusEm === 'eu';
+    let statusId = null, statusN = 0, curou = false;
+    if (!rolado.errou && (emSi || rolado.eff !== 0)) {
+      const quem = emSi ? at : def;
+      if (quem?.hp > 0) {
+        const tipo = Weather.tipoGolpe(null, g);
+        if (!emSi && tipo === 'Fire') Status.descongelar(quem);
+        if (g.statusCura === 'cheio' && !Status.limpo(quem.status)) {
+          quem.hp = quem.maxHp;
+          curou = true;
+        }
+        const novo = Status.doGolpe(quem, g, especie(quem.dex).types || []);
+        if (novo) { statusId = novo.id; statusN = novo.n; }
+      }
+    }
     if (g.id === 'struggle') at.hp = Math.max(0, at.hp - Math.max(1, Math.floor(at.maxHp / 4)));
-    return { de, golpe: g.id, dano, eff, hpAlvo: def.hp, alvo: def.uid ?? null };
+    return {
+      de, golpe: g.id, dano: rolado.dano, eff: rolado.eff, hpAlvo: def.hp, alvo: def.uid ?? null,
+      errou: !!rolado.errou,
+      statusId, statusN, statusQuem: emSi ? 'eu' : 'ele', statusNome: statusId ? Status.nome(statusId) : null, curou,
+    };
   }
 
   function depoisDoLance(bat, acc, log) {
@@ -537,14 +623,9 @@ export function criarBatalha(ctx) {
       bat.log.push('You sent out ' + (prox.nome || 'Pokémon') + '.');
     } else if (acao.acao === 'item') {
       const id = +acao.item;
-      const regra = ITENS_BATALHA[id];
       const s = saveDe(acc.c);
-      if (!regra || !(s.itens[id] > 0)) return fail('you cannot use that item here', 'item');
       if (bat.tipo === 'elite') return fail('no healing in the Elite Four', 'elite');
-      s.itens[id]--;
-      if (s.itens[id] <= 0) delete s.itens[id];
-      if (regra.cura === 'cheio') eu.hp = eu.maxHp;
-      else if (regra.cura) eu.hp = Math.min(eu.maxHp, eu.hp + regra.cura);
+      if (!usarItemNaLuta(eu, id, s)) return fail('you cannot use that item here', 'item');
       bat.log.push('You used an item.');
     } else if (acao.acao === 'fugir') {
       bat.fim = pagar(acc, bat, false, { fugiu: true });
@@ -555,10 +636,10 @@ export function criarBatalha(ctx) {
       if (g !== STRUGGLE && !(eu.movs || []).some((m) => m.id === g.id && m.pp > 0)) {
         const s = escolherGolpe(eu);
         const lance = aplicarLance('eu', eu, ele, s);
-        if (lance) bat.lances.push(lance);
+        if (lance) { bat.lances.push(lance); anotarLance(bat.log, lance, eu, ele); }
       } else {
         const lance = aplicarLance('eu', eu, ele, g.id === acao.golpe || g === STRUGGLE ? g : escolherGolpe(eu));
-        if (lance) bat.lances.push(lance);
+        if (lance) { bat.lances.push(lance); anotarLance(bat.log, lance, eu, ele); }
         else return fail('your Pokémon does not know that move', 'move', { livres: (eu.movs || []).map((m) => m.id), pp: Object.fromEntries((eu.movs || []).map((m) => [m.id, m.pp])) });
       }
     }
@@ -567,7 +648,11 @@ export function criarBatalha(ctx) {
     if (!fim && ele.hp > 0 && bat.eu.field.hp > 0) {
       const gI = escolherGolpe(ele);
       const lance = aplicarLance('ele', ele, bat.eu.field, gI);
-      if (lance) bat.lances.push(lance);
+      if (lance) { bat.lances.push(lance); anotarLance(bat.log, lance, ele, bat.eu.field); }
+      fim = depoisDoLance(bat, acc, bat.log);
+    }
+    if (!fim && ele.hp > 0 && bat.eu.field?.hp > 0) {
+      residualTurno([bat.eu.field, ele], bat.log);
       fim = depoisDoLance(bat, acc, bat.log);
     }
 
@@ -609,13 +694,8 @@ export function criarBatalha(ctx) {
       }
       if (ac.acao === 'item') {
         const id = +ac.item;
-        const regra = ITENS_BATALHA[id];
         const s = saveDe(ctx.contas[lado.usuario]);
-        if (regra && s.itens[id] > 0) {
-          s.itens[id]--;
-          if (regra.cura === 'cheio') eu.hp = eu.maxHp;
-          else if (regra.cura) eu.hp = Math.min(eu.maxHp, eu.hp + regra.cura);
-        }
+        if (s) usarItemNaLuta(eu, id, s);
         return;
       }
       if (ac.acao === 'fugir') {
@@ -624,7 +704,7 @@ export function criarBatalha(ctx) {
       }
       const g = golpeDe(ac.golpe) || escolherGolpe(eu);
       const lance = aplicarLance('eu', eu, ele, g);
-      if (lance) lado.lances.push(lance);
+      if (lance) { lado.lances.push(lance); anotarLance(lado.log, lance, eu, ele); }
     };
 
     const velA = velDe(aFirst.eu.field);
@@ -648,6 +728,13 @@ export function criarBatalha(ctx) {
       for (const l of lado.lances) {
         if (l.golpe) lado.par.lances.push({ ...l, de: 'ele', alvo: lado.par.eu.field?.uid });
       }
+    }
+
+    if (aFirst.eu.field?.hp > 0 && bFirst.eu.field?.hp > 0) {
+      const extra = [];
+      residualTurno([aFirst.eu.field, bFirst.eu.field], extra);
+      aFirst.log.push(...extra);
+      bFirst.log.push(...extra);
     }
 
     const koA = !primeiroVivo(aFirst.eu.time);

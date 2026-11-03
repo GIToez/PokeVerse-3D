@@ -23,16 +23,19 @@ import { criarRaid } from './server_raid.mjs';                     // raid ao vi
 import { criarBatalha } from './server_battle.mjs';
 import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
+import { fundir as fundirStatus } from './status.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
-import { aceitarPos, posDaConta } from './server_pos.mjs';
+import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
+import { chegadaConfere } from './server_doors.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
+import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
 
-const VERSAO_REDE = 21;   // 21: party HP is stored on the account, so a refresh does not heal
+const VERSAO_REDE = 22;   // 22: a same-map door is stored, so a refresh stays on the far side
 
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao (main story)
@@ -274,7 +277,12 @@ function salvarContas() { if (!_salvarPend) _salvarPend = setTimeout(() => { _sa
 function gravarPosConta(u, bruto, { porta = false, ja = false } = {}){
   const c = contas[u];
   if (!c || c.posGm) return;
-  const r = aceitarPos(c.pos, bruto, { porta, mapaPadrao: bruto?.mapa });
+  /* Cross-map still requires the door flag from this load. A same-map jump
+     (route gate, cave, underground) is a door only when the landing is the
+     arrival the client named — otherwise it stays inside the walk limit. */
+  const mesmoMapa = !!(c.pos && bruto && String(c.pos.mapa) === String(bruto.mapa || ''));
+  const portaOk = !!porta && !!bruto?.chegada && (!mesmoMapa || chegadaConfere(bruto.mapa, bruto.x, bruto.z, bruto.chegada));
+  const r = aceitarPos(c.pos, bruto, { porta: portaOk, mapaPadrao: bruto?.mapa });
   if (!r.mudou) return;
   c.pos = r.pos;
   (ja ? salvarContasJa : salvarContas)();
@@ -331,6 +339,7 @@ function mergeProgress(record, item) {
   const friendship = Math.round(Number(item.amizade));
   if (Number.isInteger(friendship) && friendship >= 0 && friendship <= 255) record.amizade = friendship;
   mergeHp(record, item);
+  fundirStatus(record, item);
 }
 /* Applies a party reorder. The account already owns every Pokémon; this only accepts the same
    set of ids (nothing created, duplicated, or deleted). */
@@ -366,8 +375,8 @@ function applyPartyOrder(account, order) {
 }
 /* dex (Pokédex) e conhecimento: o cliente NÃO sobrescreve o objeto inteiro — só ACRESCENTA (merge monotônico), senão dava
    pra mandar a Pokédex 100%/conhecimento no talo. dex = { nºdex: 'visto'|'pego' }: o cliente só marca 'visto'; o 'pego' quem
-   põe é o SERVIDOR (na captura/inicial), então não dá pra forjar "pego" em massa. conhecimento = { esp:{dex:nível 0-5}, titulos:[] }:
-   nível só sobe e título só soma (nunca apaga nem rebaixa). HONESTO: isto impede zerar/rebaixar e forjar "pego", mas um trapaceiro
+   põe é o SERVIDOR (na captura/inicial), então não dá pra forjar "pego" em massa. conhecimento = { esp:{dex:registro}, titulos:[] }:
+   visto/captura/áreas/golpes só sobem (união) e título só soma. Um nível numérico antigo vira registro. HONESTO: isto impede zerar/rebaixar e forjar "pego", mas um trapaceiro
    ainda infla o PRÓPRIO 'visto'/nível; o lock duro é o servidor computar isso de eventos assinados (não existe no stub local). */
 function mesclarDex(atual, novo) {
   const r = (atual && typeof atual === 'object') ? atual : {};
@@ -392,21 +401,14 @@ function marcarPegoDoTime(c) {
   }
   return n > 0;
 }
-function mesclarConhecimento(atual, novo) {
-  const base = (atual && typeof atual === 'object') ? atual : { esp: {}, titulos: [], v: 1 };
-  base.esp = (base.esp && typeof base.esp === 'object') ? base.esp : {};
-  base.titulos = Array.isArray(base.titulos) ? base.titulos : [];
-  if (novo && typeof novo === 'object') {
-    if (novo.esp && typeof novo.esp === 'object')
-      for (const k of Object.keys(novo.esp)) {
-        if (!/^\d+$/.test(k)) continue;
-        const lv = Math.max(0, Math.min(5, Math.round(+novo.esp[k] || 0)));
-        if (lv > (+base.esp[k] || 0)) base.esp[k] = lv;                                  // só sobe
-      }
-    if (Array.isArray(novo.titulos))
-      for (const t of novo.titulos) { const s = String(t).slice(0, 60); if (!base.titulos.includes(s) && base.titulos.length < 300) base.titulos.push(s); }
-  }
-  return base;
+/* conhecimento guarda o registro rico por espécie (visto, capturas, áreas, golpes, shiny). O merge é monotônico em
+   knowledge.mjs: um objeto nunca vira 0, e um nível numérico antigo (0–5) vira registro. O pagehide antigo aninhava
+   `{ dex, conhecimento }` dentro de `conhecimento`; `pacoteConhecimento` aceita os dois formatos. */
+function aplicarDexConhecimento(c, d) {
+  if (!c.save) c.save = {};
+  const pac = pacoteConhecimento(d || {});
+  if (pac.conhecimento !== undefined) c.save.conhecimento = fundirSave(c.save.conhecimento, pac.conhecimento);
+  if (pac.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, pac.dex);
 }
 const NATUREZAS = ['Hardy','Lonely','Brave','Adamant','Naughty','Bold','Docile','Relaxed','Impish','Lax','Timid','Hasty','Serious','Jolly','Naive','Modest','Mild','Quiet','Bashful','Rash','Calm','Gentle','Sassy','Careful','Quirky'];
 function novoUid() { return String(Date.now()) + String(Math.floor(Math.random() * 9999)).padStart(4, '0'); }
@@ -928,10 +930,12 @@ const httpServer = http.createServer((req, res) => {
         if (!c.save) c.save = {};
         if (d.party || d.arranjo) applyPartyOrder(c, d.party || d.arranjo);   // party order plus field experience; `arranjo` is the old message name
         aplicarPrefs(c, d.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
-        if (d.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, d.conhecimento);   // nº15: só soma, não sobrescreve
-        if (d.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, d.dex);                                                 // nº15: cliente só adiciona 'visto'
+        aplicarDexConhecimento(c, d);                       // dex só ganha 'visto' do cliente; o registro de conhecimento só sobe
         marcarPegoDoTime(c);
-        if (d.pos) gravarPosConta(u, d.pos, { porta: false });              // F5 / tab close: last walk, same jump rules (not a door)
+        if (d.pos){
+          const mesmo = c.pos && String(c.pos.mapa) === String(d.pos.mapa || '');
+          gravarPosConta(u, d.pos, { porta: !!(mesmo && d.pos.porta && d.pos.chegada) });   // refresh keeps a same-map door landing; a tab close cannot pick another map
+        }
         c.rev = (c.rev || 0) + 1;
         salvarContas();
         if (d.outroAparelho) return json(409, { erro: 'Session conflict.', outroAparelho: true });
@@ -1399,9 +1403,10 @@ wss.on('connection', ws => {
         if (ws._info) { ws._info.x = m.x; ws._info.y = m.y; ws._info.z = m.z; ws._info.giro = m.giro; ws._info.anim = m.anim; if (m.px != null) { ws._info.px = m.px; ws._info.pz = m.pz; ws._info.pg = m.pg; ws._info.pa = m.pa; } }
         if (ws._usuario && contas[ws._usuario]){
           const agoraPos = Date.now();
-          if (!ws._posGravadaEm || agoraPos - ws._posGravadaEm > 2500){
+          const porta = !!(+m.porta && +m.chegada > 0);
+          if (porta || !ws._posGravadaEm || agoraPos - ws._posGravadaEm > 2500){
             ws._posGravadaEm = agoraPos;
-            gravarPosConta(ws._usuario, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro });
+            gravarPosConta(ws._usuario, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro, ...(porta ? { chegada: +m.chegada } : {}) }, { porta });
           }
         }
         broadcast(ws, { t: 'pos', id: ws._id, x: m.x, y: m.y, z: m.z, giro: m.giro, anim: m.anim, px: m.px, pz: m.pz, pg: m.pg, pa: m.pa });
@@ -1474,8 +1479,7 @@ wss.on('connection', ws => {
         const cCon = uCon && contas[uCon];
         if (cCon) {
           if (!cCon.save) cCon.save = {};
-          if (m.conhecimento !== undefined) cCon.save.conhecimento = mesclarConhecimento(cCon.save.conhecimento, m.conhecimento);   // nº15: só soma
-          if (m.dex !== undefined) cCon.save.dex = mesclarDex(cCon.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'
+          aplicarDexConhecimento(cCon, m);                       // dex só ganha 'visto' do cliente; o registro de conhecimento só sobe
           cCon.rev = (cCon.rev || 0) + 1;
           salvarContas();
         }
@@ -1490,8 +1494,7 @@ wss.on('connection', ws => {
           if (!c.save) c.save = {};
           if (m.party || m.arranjo) applyPartyOrder(c, m.party || m.arranjo);   // party order plus field experience; `arranjo` is the old message name
           aplicarPrefs(c, m.prefs);                       // só as chaves permitidas (nunca dinheiro/itens/bolas)
-          if (m.conhecimento !== undefined) c.save.conhecimento = mesclarConhecimento(c.save.conhecimento, m.conhecimento);   // nº15: só soma
-          if (m.dex !== undefined) c.save.dex = mesclarDex(c.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'
+          aplicarDexConhecimento(c, m);                       // dex só ganha 'visto' do cliente; o registro de conhecimento só sobe
           marcarPegoDoTime(c);
           c.rev = (c.rev || 0) + 1;
           salvarContas();
@@ -1648,8 +1651,13 @@ wss.on('connection', ws => {
             }
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
           } else {
-            const rb = c ? bolsaServ.tratar(c, op, m, u) : null;          // comprar / usar / descartar / segurar / tirar / consumir
+            if (op === 'safari' && ws._info) { m.x = ws._info.x; m.z = ws._info.z; }   // the warden check uses the walked position, not the one in the message
+            const rb = c ? bolsaServ.tratar(c, op, m, u) : null;          // comprar / usar / descartar / segurar / tirar / consumir / safari
             const extra = rb || (c && batalha.bolsa(ws, op, m));
+            if (op === 'safari' && rb?.pouso && u && contas[u] && !contas[u].posGm && ws._mapa) {
+              const limpo = posLimpa({ mapa: ws._mapa, x: rb.pouso.x, y: ws._info?.y || 0, z: rb.pouso.z, giro: 0 }, ws._mapa);
+              if (limpo) { contas[u].pos = limpo; salvarContas(); }       // the gate is farther than a walk; no door id, so a refresh is not a door landing
+            }
             if (rb?.erro) enviar(ws, { t: 'bolsa_erro', op, ...rb });       // carries the bag snapshot: undoes what the client took off locally
             else if (extra) enviar(ws, { t: 'bolsa', op, ...extra });
             else enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 0, bolas: c.save.bolas, itens: c.save.itens, insignias: c.save.insignias } : null });

@@ -8,10 +8,13 @@ houses, a 5-tile Pokémon Center. Every layer is laid prefab by prefab:
 
   grass / trees / tall grass  -> floor_grass2 tiles, one tree
                                  per 2x2 tree block, gimgrass + encounter cells
-  dirt, paving, bridges       -> floor_1 / floor_w tiles over a grass or sand tile
+  dirt, paving, bridges       -> flat tiles_n path tiles over a grass or sand tile
+  cliff lips beside a rock    -> floor_1 (the cliff decal; most mountain lines are roads)
   sand, snow                  -> sink_sand_ground_001 tiles
   mountains and cliffs        -> 2x2 rock-face blocks stacked up to 4 m,
-                                 higher the further from the mountain's edge
+                                 higher the further from the mountain's edge.
+                                 The piece matches the neighbours: corner, edge,
+                                 concave notch, or a flat cap in the middle.
   water                       -> agua cells over the sea plane, sea_rock rocks
   buildings                   -> one Kanto prefab per HGSS building
                                  (tools/johto_hgss_towns.py)
@@ -31,6 +34,7 @@ import numpy as np
 from johto_east import (CHECKS, DOOR_CHECKS, DOOR_ONLY, EAST_BUILDINGS, EAST_LANDMARKS, EAST_POINTS,
                         EAST_PROPS, EAST_ROUTES, PEAKS, WIDTH, draw_east)
 from johto_hgss_towns import GYMS, SIZES, STATUE, TOWNS
+from johto_rock_prefab import CAP_LIFT, ROCK_CAP, rock_choice
 
 # Local bounds of the turned gatehouses (tools/make_der_house_gates.py).
 SIZES = {**SIZES,
@@ -44,7 +48,7 @@ OUT = ROOT / 'public/data/2000001.json'
 OX, OY = 330, 190        # tile edge that becomes world (0, 0)
 
 TREE_CLS = set('FASP')
-FLOOR_CLS = set('GTFASPDCNOKBX')
+FLOOR_CLS = set('GTFASPDCNOKBXL')
 
 # Routes and landmarks: (x0, y0, x1, y1) in tiles. Towns come from TOWNS.
 # The game takes the first box that holds a point, so landmarks go before routes;
@@ -102,14 +106,15 @@ MOUNT_MIN = 13
 # ground_plane* are alpha-masked edge decals and floor_y / floor_z cover 3/4 of their
 # square (the sea plane shows through); these are the tiles that fill theirs.
 GRASS_MIX = ['floor_grass2']
-FLOOR_OF = {'D': ['floor_1'], 'C': ['floor_w'], 'K': ['floor_1'],
+# tiles_n is the flat path. floor_1 is the cliff decal, only for a lip (L) against a rock.
+PATH = ['tiles_n_1', 'tiles_n_2', 'tiles_n_3', 'tiles_n_4']
+FLOOR_OF = {'D': PATH, 'C': PATH, 'K': PATH, 'L': ['floor_1'],
             'N': ['sink_sand_ground_001'], 'O': ['sink_sand_ground_001']}
-# floor_1 / floor_w are alpha-masked at the edges: an opaque tile underneath closes the seams.
-BASE_OF = {'D': 'floor_grass2', 'C': 'floor_grass2', 'K': 'sink_sand_ground_001'}
+# floor_1 is alpha-masked at the edges: an opaque tile underneath closes the seams.
+BASE_OF = {'D': 'floor_grass2', 'C': 'floor_grass2', 'K': 'sink_sand_ground_001', 'L': 'floor_grass2'}
 TREE_OF = {'F': ['tree', 'tree', 'sm_c_001_tree_05_reordered'], 'S': ['tree'],
            'A': ['sm_c_001_tree_05_reordered'], 'P': ['sm_c_001_tree_05_reordered']}
-ROCK_BLOCK = 'rock_face_g_1_s'      # 2 x 2 x 1.02 m
-ROCK_H = 1.02
+ROCK_H = 1.02                       # one rock-face layer; the cap sits CAP_LIFT above the base
 GRASS_DECO = ['sm_c_001_comgrass_01_1', 'sm_c_001_comgrass_01_2', 'sm_c_001_flower_04']
 
 
@@ -386,22 +391,42 @@ def main():
         solid = tree_tile | rock_tile
 
     depth_of = {(bx, by): d for bx, by, d in rocks}
+    # Which layers actually get a block. A peak skips the layers every neighbour
+    # already covers, so the neighbour test below has to use this set, not depth.
+    layers_at = {}
+    placed = []
     for bx, by, depth in rocks:
-        x, z = world(bx * 2 + 1, by * 2 + 1)
         peak = next((m for (x0, y0, x1, y1), m in PEAKS.items()
                      if x0 <= bx * 2 < x1 and y0 <= by * 2 < y1), None)
         if peak is None:
-            for k in range(min(4, depth)):
-                add(ROCK_BLOCK, x, z, y=k * ROCK_H)
-            continue
-        # A peak stacks higher; a layer every neighbour stands taller than is buried, so skip it.
-        top = min(peak, depth)
-        low = min(min(min(peak, depth_of.get((bx + dx, by + dy), 0))
-                      for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))), top - 1)
-        for k in range(low, top):
-            add(ROCK_BLOCK, x, z, y=k * ROCK_H)
-    # Loose mountain tiles (ledges, cliff lips) stay walkable dirt.
-    g[(g == 'M') & ~rock_tile] = 'D'
+            ks = range(min(4, depth))
+        else:
+            top = min(peak, depth)
+            low = min(min(min(peak, depth_of.get((bx + dx, by + dy), 0))
+                          for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))), top - 1)
+            ks = range(low, top)
+        have = layers_at.setdefault((bx, by), set())
+        for k in ks:
+            have.add(k)
+            placed.append((bx, by, k))
+    for bx, by, k in placed:
+        def on(dx, dy, k=k):
+            return k in layers_at.get((bx + dx, by + dy), ())
+        # Tile +x is world east and tile +y is south, which is the neighbour
+        # order rock_choice expects.
+        name, cap = rock_choice(on(0, -1), on(1, 0), on(0, 1), on(-1, 0),
+                                on(1, -1), on(1, 1), on(-1, 1), on(-1, -1))
+        x, z = world(bx * 2 + 1, by * 2 + 1)
+        add(name, x, z, y=k * ROCK_H)
+        if cap and (k + 1) not in layers_at.get((bx, by), ()):
+            add(ROCK_CAP, x, z, y=k * ROCK_H + CAP_LIFT)
+    # A mountain tile the rock blocks missed. One that touches a rock is the lip
+    # of that cliff. The rest was a thin ledge drawn where the path should be.
+    pad = np.pad(rock_tile, 1)
+    touch = pad[:-2, 1:-1] | pad[2:, 1:-1] | pad[1:-1, :-2] | pad[1:-1, 2:]
+    loose = (g == 'M') & ~rock_tile
+    g[loose & touch] = 'L'
+    g[loose & ~touch] = 'D'
     for tx, ty, n in trees:
         x, z = world(tx + 1, ty + 1)
         add(n, x, z - 0.1 if n != 'tree' else z)

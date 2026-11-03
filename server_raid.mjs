@@ -24,7 +24,7 @@
  * aparece na barra e o do Pokémon do prêmio. Vida automática = soma, por participante, de FATOR_HP chefes do nível do time dele. */
 import fs from 'node:fs';
 import nodePath from 'node:path';
-import { hp as hpBase, stat as statBase } from './individual.mjs';
+import { hp as hpBase, stat as statBase, carregarLearnset, learnsetDe } from './individual.mjs';
 import { efetividade } from './rules.mjs';
 import { TODOS } from './moves_all.mjs';
 
@@ -140,12 +140,14 @@ export function criarRaid(h) {
       x: ch.x, z: ch.z, giro: ch.giro, anim: 'Idle', area: null, generico: true, casa: null, perfil: 'agressivo', aquatico: false, pertoDeGrama: false,
       hp: ch.hp, maxHp: ch.maxHp, estado: ch.hp > 0 ? 'vagando' : 'desmaiado', ...(ch.hp > 0 ? {} : { ate: raid.fimAte }), dono: null, raid: raid.id, chefe: true };
   }
-  /** Os golpes do chefe: os mais fortes do tipo dele na tabela (50 a 120 de poder, com animação de golpe); sem nenhum, Tackle. */
-  function golpesDoChefe(dex) {
-    const tipos = (especie(dex) || ESPECIE_VAZIA).types;
-    const l = Object.values(golpes()).filter(g => tipos.includes(g.tipo) && g.poder >= 50 && g.poder <= 120 && (!g.anim || ['Attack', 'Cast'].includes(g.anim)));
-    l.sort((a, b) => b.poder - a.poder);
-    return l.length ? l.slice(0, 4) : [golpes().tackle || { id: 'tackle', tipo: 'Normal', poder: 40, cat: 'fisico', anim: 'Attack' }];
+  /** The boss's own level-up moves at its level. Damaging ones win, so a status-only tail does not replace Aeroblast. */
+  function golpesDoChefe(dex, lv) {
+    try { carregarLearnset(JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'learnset.json'), 'utf8'))); } catch {}
+    const tab = golpes(), nivel = lv || 70, ids = [];
+    for (const [id, n] of learnsetDe(dex)) if (n <= nivel && !ids.includes(id)) ids.push(id);
+    const damaging = ids.map(id => tab[id]).filter(g => g && g.cat !== 'status' && g.poder > 0);
+    const picked = (damaging.length ? damaging : ids.map(id => tab[id]).filter(Boolean)).slice(-4);
+    return picked.length ? picked : [tab.tackle || { id: 'tackle', tipo: 'Normal', poder: 40, cat: 'fisico', anim: 'Attack' }];
   }
 
   // ── Contas: o Pokémon de verdade (do save), a vida automática, o prêmio ───────────────────────────────────────────────────
@@ -205,7 +207,7 @@ export function criarRaid(h) {
     if (!especie(cfg.chefeDex)) return { erro: 'Species no. ' + cfg.chefeDex + ' from data/raid.json is not in pokedex.json.' };
     const geo = geometria(cfg.arena);
     raid = { id: ++seq, fase: 'anunciada', cfg, geo, sobre: { hp: null, dano: null, shiny: null, premio: null }, fila: new Map(), por: g,
-      contagemAte: 0, indoAte: 0, lutaAte: 0, fimAte: 0, chefe: null, venceu: false, golpesChefe: golpesDoChefe(cfg.chefeDex) };
+      contagemAte: 0, indoAte: 0, lutaAte: 0, fimAte: 0, chefe: null, venceu: false, golpesChefe: golpesDoChefe(cfg.chefeDex, cfg.chefeNivel) };
     console.log(`[raid] #${raid.id} announced by ${g}: ${cfg.chefeNome} Lv${cfg.chefeNivel}, ${cfg.vagas} slots, arena ${cfg.arena}`);
     todos('📢 RAID: um ' + cfg.chefeNome + ' Lv ' + cfg.chefeNivel + ' apareceu! Entre na fila pelo botão RAID (' + cfg.vagas + ' vagas).');
     difundir();

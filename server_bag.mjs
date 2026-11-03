@@ -22,8 +22,10 @@ import nodePath from 'node:path';
 import { Held } from './held.mjs';
 import * as Regras from './item_rules.mjs';
 import * as Ev from './ev.mjs';
+import * as Status from './status.mjs';
 import { maxHpOf } from './server_hp.mjs';
 import { TITULOS } from './knowledge.mjs';
+import * as Safari from './safari_rules.mjs';
 
 const FRAGMENTO_TERA = 50112, COLETA_ESPERA_MS = 120000;                  // the same item and wait as the client (index.html falarCom, tipoNpc 9)
 
@@ -68,6 +70,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     for (const lista of [s.time, s.caixa]) for (const p of Array.isArray(lista) ? lista : []) if (p && String(p.uid) === String(uid)) return p;
     return null;
   }
+<<<<<<< HEAD
   const catalogo = () => lerJson('cosmeticos.json') || { roupas: [], efeitos: [] };
   const meus = c => {
     const s = saveDe(c);
@@ -77,6 +80,18 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
   };
   const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos] } }; };
   const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, held: p.held ?? null, ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
+=======
+  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null }; };
+  const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, status: Status.exportar(p.status), ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
+  const tocarAmizade = (p, id) => {
+    const d = Regras.amizadeDe(id);
+    if (!d) return;
+    const base = Number.isFinite(+p.amizade) ? +p.amizade : 70;
+    p.amizade = Math.max(0, Math.min(255, base + d));
+  };
+  const maxDe = p => maxHpOf(p) || p.maxHp || 1;
+  const reviver = (p, frac) => { const max = maxDe(p); p.hp = Math.max(1, Math.ceil(max * frac)); p.maxHp = max; p.status = null; };
+>>>>>>> c3cf697b1dc6441f5e541682a054069d26225324
   const erro = (c, texto) => ({ erro: texto, bolsa: retrato(c) });       // the snapshot undoes what the client already took off locally
   const pronto = (c, extra = {}) => { c.rev = (c.rev || 0) + 1; salvar(); return { bolsa: retrato(c), ...extra }; };
 
@@ -98,18 +113,35 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     const id = +m.item;
     if (!itemInfo(id)) return erro(c, 'unknown item');
     if (quantos(c, id) < 1) return erro(c, "you don't have that item");
-    const p = monDe(c, m.uid) || (saveDe(c).time || [])[0];
+    const time = Array.isArray(saveDe(c).time) ? saveDe(c).time : [];
+    if ((Regras.ehCura(id) || Regras.curaStatus(id) || Regras.ehReanima(id) || Regras.ehReanimaTime(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
+    if (Regras.ehReanimaTime(id)) {
+      const caidos = time.filter(p => p && +p.hp === 0);
+      if (!caidos.length) return erro(c, 'nobody is fainted');
+      for (const p of caidos) { reviver(p, Regras.REANIMA_TIME[id]); tocarAmizade(p, id); }
+      tirar(c, id, 1);
+      return pronto(c, { vidas: caidos.map(vida) });
+    }
+    const p = monDe(c, m.uid) || time[0];
     if (!p) return erro(c, 'no Pokémon to use it on');
-    const max = maxHpOf(p) || p.maxHp || 1;
+    const max = maxDe(p);
     const hp = Number.isFinite(+p.hp) ? +p.hp : max;
-    if ((Regras.ehCura(id) || Regras.ehReanima(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
     if (Regras.ehReanima(id)) {
       if (hp > 0) return erro(c, p.nome + ' is not fainted');
-      p.hp = Math.max(1, Math.ceil(max * Regras.REANIMA[id])); p.maxHp = max;
-    } else if (Regras.ehCura(id)) {
+      reviver(p, Regras.REANIMA[id]);
+    } else if (Regras.ehCura(id) || Regras.curaStatus(id)) {
       if (hp <= 0) return erro(c, p.nome + ' is fainted: use a Revive');
-      if (hp >= max) return erro(c, p.nome + "'s HP is already full");
-      p.hp = Math.min(max, hp + Regras.CURA[id]); p.maxHp = max;
+      const quais = Regras.statusDe(id);
+      const tinha = Status.limpo(p.status);
+      const curaEsse = !!(tinha && (quais === null || (Array.isArray(quais) && quais.includes(tinha.id))));
+      const querHp = Regras.ehCura(id) && hp < max;
+      if (!querHp && !curaEsse) {
+        if (Regras.ehCura(id)) return erro(c, p.nome + "'s HP is already full");
+        if (!tinha) return erro(c, p.nome + ' has no status to cure');
+        return erro(c, p.nome + ' is ' + Status.nome(tinha.id));
+      }
+      if (querHp) { p.hp = Math.min(max, hp + Regras.CURA[id]); p.maxHp = max; }
+      if (curaEsse) Status.curar(p, quais);
     } else if (Regras.PP[id]) {
       const R = Regras.PP[id], movs = (p.movs || []).filter(x => x && x.id);
       const cheio = x => (x.pp || 0) >= (x.ppMax ?? x.pp ?? 0);
@@ -121,6 +153,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
       if (!r.ok) return erro(c, p.nome + ': ' + r.motivo);
       const novo = maxHpOf(p); if (novo) { p.hp = Math.min(novo, hp + Math.max(0, novo - (p.maxHp || novo))); p.maxHp = novo; }
     } else return erro(c, "this item can't be used here");
+    tocarAmizade(p, id);
     tirar(c, id, 1);
     return pronto(c, { vidas: [vida(p)] });
   }
@@ -184,6 +217,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return pronto(c);
   }
 
+<<<<<<< HEAD
   function cosmetico(c, m, u) {
     const tipo = m.tipo === 'efeito' ? 'efeito' : 'roupa', C = catalogo();
     const item = (tipo === 'efeito' ? C.efeitos : C.roupas).find(x => String(x.id) === String(m.id));
@@ -222,6 +256,71 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
   }
 
   const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, cosmetico };
+=======
+  /* Safari visit. The client cannot grant itself balls: the fee and the stack live here.
+     entrar  { zona, x, z }   500 Coins, 30 Safari Balls, 500 steps, only next to that zone's warden
+     passo   { n }            steps walked in the paid grass (capped)
+     bola    {}               one Safari Ball thrown
+     sair    {}               walk out: leftover balls from this visit are removed
+     expulsar{ zona }         no visit, standing in the grass: the answer carries the gate */
+  function safariOp(c, m) {
+    const s = saveDe(c);
+    const acao = String(m.acao || '');
+    const zona = +m.zona;
+    if (acao === 'entrar') {
+      if (!Safari.perto(zona, m.x, m.z)) return erro(c, 'Talk to the warden at the gate.');
+      const r = Safari.entrar({ dinheiro: s.dinheiro || 0, bolas: s.bolas, sessao: s.safari, zona });
+      if (!r.ok) return erro(c, r.erro);
+      s.dinheiro = r.dinheiro;
+      s.bolas = r.bolas;
+      s.safari = r.sessao;
+      return pronto(c, { safari: r.sessao });
+    }
+    if (acao === 'passo') {
+      const r = Safari.passo(s.safari, m.n);
+      if (!r.sessao) return erro(c, 'You are not on a Safari visit.');
+      if (r.fim === 'passos') {
+        const zonaFim = r.sessao.zona;
+        const fim = Safari.encerrar(s.bolas, r.sessao);
+        s.bolas = fim.bolas;
+        s.safari = null;
+        return pronto(c, { fim: 'passos', pouso: Safari.pouso(zonaFim, m.x), safari: null, tirou: fim.tirou });
+      }
+      s.safari = r.sessao;
+      return pronto(c, { safari: r.sessao });
+    }
+    if (acao === 'bola') {
+      const tinha = Safari.normalizar(s.safari);
+      if (!tinha) return erro(c, 'You are not on a Safari visit.');
+      if (!tirar(c, Safari.BOLA, 1)) return erro(c, 'no Safari Ball');
+      const r = Safari.jogou(tinha);
+      if (r.fim === 'bolas') {
+        const fim = Safari.encerrar(s.bolas, r.sessao);
+        s.bolas = fim.bolas;
+        s.safari = null;
+        return pronto(c, { fim: 'bolas', pouso: Safari.pouso(tinha.zona, m.x), safari: null, tirou: fim.tirou });
+      }
+      s.safari = r.sessao;
+      return pronto(c, { safari: r.sessao });
+    }
+    if (acao === 'sair') {
+      const tinha = Safari.normalizar(s.safari);
+      if (!tinha) return erro(c, 'You are not on a Safari visit.');
+      const fim = Safari.encerrar(s.bolas, tinha);
+      s.bolas = fim.bolas;
+      s.safari = null;
+      return pronto(c, { fim: 'saiu', pouso: Safari.pouso(tinha.zona, m.x), safari: null, tirou: fim.tirou });
+    }
+    if (acao === 'expulsar') {
+      if (Safari.vivo(s.safari)) return pronto(c, { safari: Safari.normalizar(s.safari) });
+      if (!Safari.ehZona(zona)) return erro(c, 'There is no Safari Zone here.');
+      return pronto(c, { pouso: Safari.pouso(zona, m.x), safari: null });
+    }
+    return erro(c, 'unknown safari action');
+  }
+
+  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp };
+>>>>>>> c3cf697b1dc6441f5e541682a054069d26225324
   return {
     /** Handles the op, or returns null when it isn't one of these. */
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },
