@@ -12,7 +12,7 @@
 let io = null, dados = null;
 const NIVEIS = ['unknown', 'Seen', 'Registered', 'Studied', 'Specialist', 'Master'];
 const LIMIAR = [0, 1, 4, 10, 18, 28];                                      // pontos mínimos de cada nível (máx. teórico 36)
-const TITULOS = [
+export const TITULOS = [                                                 // exported: server_bag.mjs checks and pays the `premio` of each title (once)
   /* Alpha Tester (12/09): não é de coleção — é a marca de quem jogou no alpha, que vem da CONTA (io.alfa). Fica em PRIMEIRO
      na lista de propósito: `tituloAtual` mostra o ÚLTIMO que a pessoa tem, então qualquer título de coleção ganho depois
      aparece no lugar dele (o Alpha Tester é a marca base, enquanto ainda não se conquistou nada). */

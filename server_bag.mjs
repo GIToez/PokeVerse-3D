@@ -9,13 +9,19 @@
    descartar{ item, n }
    segurar  { item, uid }       give a held item (held.mjs); what it held goes back to the bag
    tirar    { uid }             take the held item back
-   consumir { uid, item }       the battle used it up (Focus Sash, gems) */
+   consumir { uid, item }       the battle used it up (Focus Sash, gems)
+   coleta   { ponto }           a Tera crystal on the map (cfg@x,z): one Normal Tera Shard, then that spot waits 2 min
+   premio   { titulo }          a knowledge title's reward (knowledge.mjs TITULOS), paid once, only if the account's own
+                                Pokédex (marked by the server on every catch) meets the title */
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import { Held } from './held.mjs';
 import * as Regras from './item_rules.mjs';
 import * as Ev from './ev.mjs';
 import { maxHpOf } from './server_hp.mjs';
+import { TITULOS } from './knowledge.mjs';
+
+const FRAGMENTO_TERA = 50112, COLETA_ESPERA_MS = 120000;                  // the same item and wait as the client (index.html falarCom, tipoNpc 9)
 
 export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
   const lerJson = (() => {
@@ -138,7 +144,36 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false }) {
     return pronto(c, { vidas: [vida(p)] });
   }
 
-  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir };
+  function coleta(c, m) {
+    const ponto = String(m.ponto ?? '');
+    if (!/^\d{1,9}@-?\d{1,6},-?\d{1,6}$/.test(ponto)) return erro(c, 'invalid crystal spot');
+    const s = saveDe(c), agora = Date.now();
+    if (!s.coletas || typeof s.coletas !== 'object' || Array.isArray(s.coletas)) s.coletas = {};
+    for (const [k, ate] of Object.entries(s.coletas)) if (!(+ate > agora)) delete s.coletas[k];   // expired spots: the list stays small
+    if (+s.coletas[ponto] > agora) return erro(c, "that crystal hasn't grown back yet");
+    s.coletas[ponto] = agora + COLETA_ESPERA_MS;
+    por(c, FRAGMENTO_TERA, 1);
+    return pronto(c);
+  }
+  function premio(c, m) {
+    const t = TITULOS.find(x => x.id === String(m.titulo ?? '') && Array.isArray(x.premio));
+    if (!t) return erro(c, 'that title has no reward');
+    const s = saveDe(c);
+    if (!Array.isArray(s.titulosPagos)) s.titulosPagos = [];
+    if (s.titulosPagos.includes(t.id)) return { bolsa: retrato(c), jaPago: true };   // already paid (a reset of the device's Pokédex asks again): nothing, quietly
+    const pegos = new Set();
+    for (const [k, v] of Object.entries(s.dex && typeof s.dex === 'object' ? s.dex : {})) if (v === 'pego' || v === 'caught') pegos.add(+k);
+    for (const p of [...(s.time || []), ...(s.caixa || [])]) if (p?.dex != null) pegos.add(+p.dex);
+    const r = { pegos: pegos.size, pegosKanto: [...pegos].filter(d => d >= 1 && d <= 151).length, kantoAte: 151 };
+    if (!t.cond(r)) return erro(c, t.nome + ': not earned yet (' + t.desc + ')');
+    const [id, n] = t.premio;
+    if (!itemInfo(id)) return erro(c, 'unknown reward item');
+    por(c, id, Math.max(1, Math.floor(+n || 1)));
+    s.titulosPagos.push(t.id);
+    return pronto(c);
+  }
+
+  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio };
   return {
     /** Handles the op, or returns null when it isn't one of these. */
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },
