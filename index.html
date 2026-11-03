@@ -222,7 +222,7 @@ import * as Qualidade from './quality.mjs';      // low / medium / high (medium:
 import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: other players' names, floating damage
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
-import { ehChegadaCentroJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; a wipe there wakes at a Johto Center
+import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
@@ -609,7 +609,7 @@ async function baixarJson(url, opcional = false){
     const ctrl = new AbortController();
     const vigia = setTimeout(() => { try { ctrl.abort(); } catch {} }, CARGA.silencioMs);   // mesmo buraco do baixarBin: conexão pendurada não rejeita
     try {
-      const r = await fetch(url, { signal: ctrl.signal });
+      const r = await fetch(url, { signal: ctrl.signal, cache: 'no-cache' });   // revalidate: a phone was keeping doors.json / scenes.json from before Johto existed
       if (r.status === 404 && opcional) return null;
       if (r.status === 403){ const e403 = new Error('HTTP 403 ' + url); e403.status = 403; e403.url = url; throw e403; }   // passe de progresso: sem as tentativas (o boot trata)
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -3578,7 +3578,7 @@ const TAMANHOS = await fetch('./data/sizes.json').then(r => r.json()).catch(() =
 const ALTURAS = await fetch('./data/heights.json').then(r => r.json()).catch(() => ({}));
 /* Portas e chegadas do jogo (NpcConfig tipo 6 = porta com `n` = ponto de chegada tipo 7 em outra
    cena/andar; `c` = cena, `a` = área). NPCs com modelo exportado: nome, GLB e falas em pt. */
-const PORTAS = await fetch('./data/doors.json').then(r => r.json()).catch(() => ({}));
+const PORTAS = await fetch('./data/doors.json', { cache: 'no-cache' }).then(r => r.json()).catch(() => ({}));
 /* Ginásios de Kanto (data/gyms.json, tools/ginasios.py): líder = treinador ⚔ dentro do interior do ginásio, time do FireRed
    re-nivelado (GDD §7.4), insígnia na vitória, cooldown na derrota. Indexado pelo cfg do líder (Npc1Id do dump). */
 const GINASIOS = await fetch('./data/gyms.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
@@ -3592,8 +3592,8 @@ const eliteEstado = { corrida: null, vencida: false, proximo: 1 };         // re
 const ginasioCd = () => lerLS('ginasioCd', {});
 /** Cooldown do ginásio: { ate, n } por id; zera à meia-noite. Devolve segundos restantes (0 = livre). */
 function ginasioEspera(g){ const cd = ginasioCd()[g.numero]; if (!cd) return 0; if (new Date(cd.ate).toDateString() !== new Date().toDateString() && Date.now() > cd.ate) return 0; return Math.max(0, Math.ceil((cd.ate - Date.now()) / 1000)); }
-const CENAS_EXPORTADAS = new Set((await fetch('./data/interior_maps.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split(/\s+/).filter(Boolean).map(Number));   // interiores com GLB: porta só pra esses (Kanto tem portas pra cenas ainda não exportadas)
-const NPCS_GLB = await fetch('./data/npcs_glb.json').then(r => r.json()).catch(() => ({}));
+const CENAS_EXPORTADAS = new Set((await fetch('./data/interior_maps.txt', { cache: 'no-cache' }).then(r => r.ok ? r.text() : '').catch(() => '')).split(/\s+/).filter(Boolean).map(Number));   // interiores com GLB: porta só pra esses (Kanto tem portas pra cenas ainda não exportadas)
+const NPCS_GLB = await fetch('./data/npcs_glb.json', { cache: 'no-cache' }).then(r => r.json()).catch(() => ({}));
 Ind.carregarLearnset(await fetch('./data/learnset.json').then(r => r.json()).then(L => { for (const [id, g] of Object.entries(GOLPES)) if (Number.isInteger(g.pp) && g.pp > 0) (L.pp ||= {})[id] = g.pp; return L; }).catch(() => null));   // golpes por nível (Sword/Shield) + PP (Fase 2: o PP de cada golpe vem do data/moves.json, que o painel edita)
 Ev.carregar().catch(() => {});
 {
@@ -3653,6 +3653,19 @@ const INICIAIS = await fetch('./data/starters.json').then(r => r.ok ? r.json() :
 const MAQUINA_INICIAL = 1180102;
 let mesaInicial = null;                                                   // { x, z, y, grupo, bolas, marcador }
 const cenaDaArea = a => indice?.cenas?.find(c => c.areas?.some(ar => ar.id === a))?.id;
+/* Shared Center/Mart: the arrival stores the AREA id in `c` (7142101 → 1421). The room is
+   4110001 / 4110007. cenaDaArea finds that when scenes.json is current. A phone that still
+   has the old index would otherwise try to load scene 1421 (no such file) or skip the door. */
+function cenaDoDestino(dest, id){
+  if (!dest) return null;
+  /* A real room wins: the overworld, the area's scene, a Center/Mart, or a
+     scene id that already has a GLB. Everything else with a door chain back
+     to the Johto step uses the shared house (4110010). */
+  return idMundo(dest.c) || cenaDaArea(dest.a) || cenaSalaCompartilhada(dest.a)
+    || (CENAS_EXPORTADAS.has(+dest.c) ? +dest.c : 0)
+    || cenaCasaJohto(id, PORTAS, CENAS_EXPORTADAS)
+    || dest.c;
+}
 const rotuloLugar = s => I18n.rotuloLugar(s);
 const nomeAreaCena = a => {
   for (const c of indice?.cenas || []){ const ar = c.areas?.find(x => x.id === a); if (ar) return rotuloLugar(ar.nome); }
@@ -7001,11 +7014,14 @@ function casaCompartilhada(){
   let r = null;
   const chegada = chegadaPedida(), ch = chegada ? PORTAS[chegada] : null;
   if (ch && ch.t === 7 && INTERIOR && !(dados.npcs || []).some(n => n.cfg === chegada)){
+    const ruaDe = c => c === 1000001 || c === 2000001;
     const proprias = (dados.npcs || []).filter(n => PORTAS[n.cfg]?.t === 7 && PORTAS[n.cfg].c === +NOME).sort((a, b) => a.cfg - b.cfg);
-    const nasce = proprias.find(n => Object.values(PORTAS).some(p => p.t === 6 && p.c === 1000001 && p.n === n.cfg)) || proprias[0] || null;
-    const dentro = Object.values(PORTAS).find(p => p.t === 6 && p.c === ch.c && p.n && PORTAS[p.n]?.c === 1000001);
-    const daRua = Object.keys(PORTAS).find(id => PORTAS[id].t === 6 && PORTAS[id].c === 1000001 && PORTAS[id].n === chegada);
-    const volta = dentro ? dentro.n : (daRua && PORTAS['7' + daRua.slice(1)]?.t === 7 ? +('7' + daRua.slice(1)) : null);
+    const nasce = proprias.find(n => Object.values(PORTAS).some(p => p.t === 6 && ruaDe(p.c) && p.n === n.cfg)) || proprias[0] || null;
+    const saidaDireta = PORTAS[chegada - 1000000];
+    const voltaDireta = saidaDireta?.t === 6 && ruaDe(PORTAS[saidaDireta.n]?.c) ? saidaDireta.n : 0;
+    const dentro = Object.values(PORTAS).find(p => p.t === 6 && p.c === ch.c && p.n && ruaDe(PORTAS[p.n]?.c));
+    const daRua = Object.keys(PORTAS).find(id => PORTAS[id].t === 6 && ruaDe(PORTAS[id].c) && PORTAS[id].n === chegada);
+    const volta = voltaDireta || (dentro ? dentro.n : (daRua && PORTAS['7' + daRua.slice(1)]?.t === 7 ? +('7' + daRua.slice(1)) : null));
     if (nasce && volta) r = { chegada, nasce, volta, area: ch.a };
     /* 14/09 (milihe, "Casa da rota 2, mas está indo pra casa do Gary"): cena SEM marcador nenhum (4110009 = casa do Gary, que também é o
        Instituto de Florestas da Rota 2, a casa da Velha de Viridian, a do Professor de Celeste…). Nascimento e saída já são sintéticos
@@ -7106,10 +7122,20 @@ function prepararPortas(){
     if (p.t === 6 && !INTERIOR && !portaoDeRota) abrirCorredor(flipX * n.x, n.z);   // porta funda na caixa do prédio (ginásio de Pewter): liga a célula da porta ao ar livre — ANTES do vão
     abrirVao(flipX * n.x, n.z, portaoDeRota ? 1.4 : 0.6);   // a casca de parede bloqueia a linha inteira: abre só o vão da porta/chegada
     if (p.t === 6){
-      const dest = PORTAS[p.n], cenaDest = dest ? (idMundo(dest.c) || (cenaDaArea(dest.a) || dest.c)) : null;
+      const dest = PORTAS[p.n], cenaDest = cenaDoDestino(dest, p.n);
       if (!idMundo(cenaDest) && String(cenaDest) !== NOME && !CENAS_EXPORTADAS.has(+cenaDest)){ semCena++; continue; }   // interior sem GLB ainda: sem anel (senão o boot cai num 404)
-      const destino = (casa && casa.volta && dest?.c === 1000001) ? casa.volta : p.n;   // casa compartilhada: a porta da rua devolve pra rua de onde vim
-      portasCena.push({ id: n.cfg, x: flipX * n.x, z: n.z, destino });
+      const destino = (casa && casa.volta && (dest?.c === 1000001 || dest?.c === 2000001)) ? casa.volta : p.n;   // casa compartilhada: a porta da rua devolve pra rua de onde vim
+      /* Johto building markers sit ~0.55 m inside the south wall. The step outside
+         (landing = door + 1000000, 1.8 m south) is the mat you actually walk onto.
+         The trigger is the midpoint, on the street side of the wall. */
+      let px = flipX * n.x, pz = n.z;
+      if (+NOME === 2000001 && dest.c !== 2000001){
+        const land = (dados.npcs || []).find(q => q.cfg === n.cfg + 1000000);
+        if (land && Math.hypot(land.x - n.x, land.z - n.z) < 4){
+          px = (px + flipX * land.x) / 2; pz = (pz + land.z) / 2;
+        }
+      }
+      portasCena.push({ id: n.cfg, x: px, z: pz, destino });
     }
   }
   // if (semCena) console.log('portas pra interiores ainda não exportados (sem anel):', semCena);
@@ -7136,7 +7162,11 @@ function prepararPortas(){
     /* O PISO manda (14/09): o maior piso do interior dá o centro em x e as paredes da frente (z1) e de trás (z0); o bbox do JSON só entra
        sem piso medido (na 4110013 ele ficava 5 m fora do centro e 3 m atrás do piso — a porta de trás era inalcançável). */
     const pc = pisoChao ? { x: (pisoChao.x0 + pisoChao.x1) / 2, z0: pisoChao.z0, z1: pisoChao.z1 } : dados.bbox ? { x: flipX * centroBbox.x, z0: dados.bbox.z0, z1: dados.bbox.z1 } : null;
-    const portasArea = Object.entries(PORTAS).filter(([, p]) => p.t === 6 && ch && p.c === ch.c).sort((a, b) => +a[0] - +b[0]);
+    let portasArea = Object.entries(PORTAS).filter(([, p]) => p.t === 6 && ch && p.c === ch.c).sort((a, b) => +a[0] - +b[0]);
+    /* The shared house has no door markers. A Johto lab/gate stores every floor
+       and every other gate under one scene id; only the exit back to the step
+       we came from belongs on this floor. */
+    if (casa?.volta){ const deVolta = portasArea.filter(([, p]) => p.n === casa.volta); if (deVolta.length) portasArea = deVolta; }
     portasArea.forEach(([id, p], i) => { const atras = i > 0 && !!pc; const px = pc ? pc.x : ash.x, pz = pc ? (atras ? pc.z0 - 0.2 : pc.z1 + 0.2) : ash.z + 1.6; portasCena.push({ id: +id, x: px, z: pz, destino: p.n, sintetica: true }); abrirVao(px, pz, 0.6); });   // vão também na porta sintética (a faixa da parede de trás barrava a 1,1 m)
   }
   const porId = new Map();                                               // portões com várias células (mesmo id): o gatilho vira o segmento entre elas, esticado 1,5 m pra cada lado
@@ -7182,7 +7212,7 @@ async function atravessar(p){
   if (jogo.turno) return;
   const { ash, pika } = jogo;
   Som.tocar('ui/sound_exitdoor', { volume: 0.5 });
-  const cenaDest = idMundo(dest.c) || (cenaDaArea(dest.a) || dest.c);
+  const cenaDest = cenaDoDestino(dest, p.destino);
   /* CENA FECHADA (15/09): caverna sem Pokémon, sem item e com saída que não devolve — o DEREMIKA ficou preso nas Ilhas Seafoam
      DUAS vezes no mesmo dia (relatos 13:17 e 13:31) e o único jeito de sair era o botão "Estou preso". Enquanto não entra na
      rodada de conteúdo/colisão, a entrada fica trancada. Só barra QUEM ENTRA: se a cena fechada é a de agora (NOME), a porta

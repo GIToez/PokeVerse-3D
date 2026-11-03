@@ -1452,6 +1452,406 @@
      "id": 1830,
      "nome": "Vermilion Room 1",
      "tipo": 2
+    },
+    {
+     "id": 2301,
+     "nome": "Route 31 · Route 46",
+     "tipo": 2
+    },
+    {
+     "id": 2302,
+     "nome": "Route 45 House",
+     "tipo": 2
+    },
+    {
+     "id": 2303,
+     "nome": "Pokémon Academy",
+     "tipo": 2
+    },
+    {
+     "id": 2306,
+     "nome": "National Park · Route 32 · Route 33",
+     "tipo": 2
+    },
+    {
+     "id": 2309,
+     "nome": "Battle Frontier House",
+     "tipo": 2
+    },
+    {
+     "id": 2320,
+     "nome": "Ecruteak City House",
+     "tipo": 2
+    },
+    {
+     "id": 2321,
+     "nome": "Olivine City House",
+     "tipo": 2
+    },
+    {
+     "id": 2328,
+     "nome": "Route 42 House",
+     "tipo": 2
+    },
+    {
+     "id": 2332,
+     "nome": "Blackthorn City · Route 44",
+     "tipo": 2
+    },
+    {
+     "id": 2339,
+     "nome": "Azalea Town House",
+     "tipo": 2
+    },
+    {
+     "id": 2341,
+     "nome": "Magnet Train Station",
+     "tipo": 2
+    },
+    {
+     "id": 2343,
+     "nome": "Route 48 House",
+     "tipo": 2
+    },
+    {
+     "id": 2344,
+     "nome": "Blackthorn City House",
+     "tipo": 2
+    },
+    {
+     "id": 2362,
+     "nome": "Route 41 House",
+     "tipo": 2
+    },
+    {
+     "id": 2367,
+     "nome": "Mt. Silver Cave",
+     "tipo": 2
+    },
+    {
+     "id": 2375,
+     "nome": "National Park House",
+     "tipo": 2
+    },
+    {
+     "id": 2402,
+     "nome": "Violet City House",
+     "tipo": 2
+    },
+    {
+     "id": 2403,
+     "nome": "Azalea Town House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2404,
+     "nome": "Goldenrod Flower Shop",
+     "tipo": 2
+    },
+    {
+     "id": 2406,
+     "nome": "Olivine City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2407,
+     "nome": "Cianwood City House",
+     "tipo": 2
+    },
+    {
+     "id": 2408,
+     "nome": "Mahogany Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2409,
+     "nome": "Blackthorn City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2410,
+     "nome": "Route 32 House",
+     "tipo": 2
+    },
+    {
+     "id": 2412,
+     "nome": "Route 48 House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2502,
+     "nome": "Violet City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2504,
+     "nome": "Goldenrod Game Corner",
+     "tipo": 2
+    },
+    {
+     "id": 2506,
+     "nome": "Olivine City House 3",
+     "tipo": 2
+    },
+    {
+     "id": 2507,
+     "nome": "Cianwood City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2508,
+     "nome": "Mahogany Town House",
+     "tipo": 2
+    },
+    {
+     "id": 2509,
+     "nome": "Blackthorn City House 3",
+     "tipo": 2
+    },
+    {
+     "id": 2603,
+     "nome": "Goldenrod Bicycle Shop",
+     "tipo": 2
+    },
+    {
+     "id": 2604,
+     "nome": "Ecruteak City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2605,
+     "nome": "Cianwood City House 3",
+     "tipo": 2
+    },
+    {
+     "id": 2606,
+     "nome": "Olivine City House 4",
+     "tipo": 2
+    },
+    {
+     "id": 2608,
+     "nome": "Blackthorn City House 4",
+     "tipo": 2
+    },
+    {
+     "id": 2801,
+     "nome": "Elm's Lab",
+     "tipo": 2
+    },
+    {
+     "id": 2802,
+     "nome": "Player's House",
+     "tipo": 2
+    },
+    {
+     "id": 2803,
+     "nome": "Elm's House",
+     "tipo": 2
+    },
+    {
+     "id": 2804,
+     "nome": "New Bark Town House",
+     "tipo": 2
+    },
+    {
+     "id": 2805,
+     "nome": "Guide Gent's House",
+     "tipo": 2
+    },
+    {
+     "id": 2806,
+     "nome": "Cherrygrove City House",
+     "tipo": 2
+    },
+    {
+     "id": 2807,
+     "nome": "Cherrygrove City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2808,
+     "nome": "Route 30 House",
+     "tipo": 2
+    },
+    {
+     "id": 2809,
+     "nome": "Route 30 House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2810,
+     "nome": "Sprout Tower",
+     "tipo": 2
+    },
+    {
+     "id": 2811,
+     "nome": "Violet Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2813,
+     "nome": "Kurt's House",
+     "tipo": 2
+    },
+    {
+     "id": 2814,
+     "nome": "Azalea Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2815,
+     "nome": "Route 34 House",
+     "tipo": 2
+    },
+    {
+     "id": 2816,
+     "nome": "Goldenrod Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2818,
+     "nome": "Radio Tower",
+     "tipo": 2
+    },
+    {
+     "id": 2820,
+     "nome": "Goldenrod City House",
+     "tipo": 2
+    },
+    {
+     "id": 2821,
+     "nome": "Goldenrod City House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2822,
+     "nome": "Goldenrod City House 3",
+     "tipo": 2
+    },
+    {
+     "id": 2823,
+     "nome": "Goldenrod City House 4",
+     "tipo": 2
+    },
+    {
+     "id": 2824,
+     "nome": "Burned Tower",
+     "tipo": 2
+    },
+    {
+     "id": 2825,
+     "nome": "Dance Theater",
+     "tipo": 2
+    },
+    {
+     "id": 2826,
+     "nome": "Ecruteak Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2827,
+     "nome": "Route 39 House",
+     "tipo": 2
+    },
+    {
+     "id": 2828,
+     "nome": "Olivine Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2831,
+     "nome": "Olivine Café",
+     "tipo": 2
+    },
+    {
+     "id": 2833,
+     "nome": "Cianwood Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2835,
+     "nome": "Cianwood City House 4",
+     "tipo": 2
+    },
+    {
+     "id": 2836,
+     "nome": "Cianwood City House 5",
+     "tipo": 2
+    },
+    {
+     "id": 2837,
+     "nome": "Mahogany Souvenir Shop",
+     "tipo": 2
+    },
+    {
+     "id": 2838,
+     "nome": "Johto Safari Zone House",
+     "tipo": 2
+    },
+    {
+     "id": 2839,
+     "nome": "Johto Safari Zone House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2840,
+     "nome": "Blackthorn Gym",
+     "tipo": 2
+    },
+    {
+     "id": 2843,
+     "nome": "Route 27 House",
+     "tipo": 2
+    },
+    {
+     "id": 2844,
+     "nome": "Route 26 Healing House",
+     "tipo": 2
+    },
+    {
+     "id": 2845,
+     "nome": "Day-of-the-Week Siblings' House",
+     "tipo": 2
+    },
+    {
+     "id": 2846,
+     "nome": "Celebrity's House",
+     "tipo": 2
+    },
+    {
+     "id": 2847,
+     "nome": "Route 47 House",
+     "tipo": 2
+    },
+    {
+     "id": 2850,
+     "nome": "Global Terminal",
+     "tipo": 2
+    },
+    {
+     "id": 2855,
+     "nome": "National Park House 2",
+     "tipo": 2
+    },
+    {
+     "id": 2856,
+     "nome": "National Park House 3",
+     "tipo": 2
+    },
+    {
+     "id": 2857,
+     "nome": "National Park House 4",
+     "tipo": 2
+    },
+    {
+     "id": 2858,
+     "nome": "National Park House 5",
+     "tipo": 2
+    },
+    {
+     "id": 2859,
+     "nome": "National Park House 6",
+     "tipo": 2
     }
    ],
    "objeto": false

@@ -48,6 +48,54 @@ export function centroJohtoMaisPerto(x, z, npcs, flip = -1){
   return melhor;
 }
 
+/** Johto Mart arrival 715CC01. Goldenrod, Cianwood, and Mahogany have no Mart. */
+export function ehChegadaLojaJohto(chegada){
+  return new RegExp('^715' + CIDADE_JOHTO + '01$').test(String(chegada || ''));
+}
+
+/** Shared room for a Center or Mart area. scenes.json is optional and easy to
+ *  cache; without this, a Johto arrival (area 1421) is treated as a scene id
+ *  and the door never opens. */
+const AREAS_CENTRO = new Set([
+  1401, 1402, 1403, 1404, 1405, 1406, 1407, 1408, 1409, 1410, 1411,
+  1421, 1422, 1423, 1424, 1425, 1426, 1427, 1428, 1429, 1430,
+  2290, 2291, 2292, 2293, 2294, 2295,
+]);
+const AREAS_LOJA = new Set([
+  1501, 1502, 1503, 1504, 1505, 1507, 1508, 1509,
+  1521, 1522, 1523, 1525, 1526, 1529,
+  2296, 2297, 2298, 2299,
+]);
+export function cenaSalaCompartilhada(area){
+  const a = +area || 0;
+  if (AREAS_CENTRO.has(a)) return 4110001;
+  if (AREAS_LOJA.has(a)) return 4110007;
+  return 0;
+}
+
+/** Lavender Name Rater's House. Kanto already reuses it for several houses.
+ *  A Johto building whose own room was never exported uses it the same way. */
+export const CASA_JOHTO = 4110010;
+
+/** Street door → arrival → exit → the step outside, all in doors.json, but no
+ *  exported room. Returns 4110010 so the door still opens. A Center, a Mart,
+ *  a scene that already has a GLB, or a door with no way back to Johto stays
+ *  out of this house. */
+export function cenaCasaJohto(chegada, portas, exportadas){
+  const id = +chegada || 0;
+  const ch = portas?.[id];
+  if (!ch || ch.t !== 7) return 0;
+  if (AREAS_CENTRO.has(ch.a) || AREAS_LOJA.has(ch.a)) return 0;
+  if (ch.c === 1000001 || ch.c === 2000001 || ch.c === 2500001) return 0;
+  if (exportadas && (exportadas.has(ch.c) || exportadas.has(+ch.c) || exportadas.has(String(ch.c)))) return 0;
+  const saida = portas[id - 1000000];
+  const pouso = saida?.t === 6 ? portas[saida.n] : null;
+  if (!pouso || pouso.t !== 7 || pouso.c !== 2000001) return 0;
+  const entrada = portas[saida.n - 1000000];
+  if (!entrada || entrada.t !== 6 || entrada.c !== 2000001 || entrada.n !== id) return 0;
+  return CASA_JOHTO;
+}
+
 /** Standing in a shared Johto Center or Mart: that city's Center. */
 export function centroPelaChegadaJohto(chegada){
   const ch = String(chegada || '');
