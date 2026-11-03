@@ -13,17 +13,14 @@ export const PP = { 2022: { pp: 10, todos: false }, 2023: { pp: 'cheio', todos: 
 export const ehCura = id => Object.hasOwn(CURA, +id);
 export const ehReanima = id => Object.hasOwn(REANIMA, +id);
 
-/* POKÉMART: the shop dump (menu_data.json `lojas`) only sells the Poké Ball and a Potion in the city mart, so Great and
-   Ultra Balls could not be bought anywhere. These go on top of the dump's list, unlocked by badges the way the
-   main-series marts open up as you progress (prices in Coins, on the same scale as the dump: Poké Ball 200, Potion 2500). */
+/* POKÉMART: each city's mart has its own stock in the dump (menu_data.json `lojas`, 2150X01) and it already grows city by
+   city — the first one sells only the Poké Ball, the next adds the Great Ball (400), and from 2150401 on there is the Ultra
+   Ball (800). ESTOQUE_EXTRA adds entries on top of a shop, each unlocked by a number of badges. The dump's stock is kept as
+   it is; the only additions are the fishing rods, which the dump doesn't have (ids 3101–3103, added to menu_data.json). */
 export const ESTOQUE_EXTRA = {
-  2150101: [
-    { item: 1002, n: 1, moeda: 1, preco: 600, insignias: 1 },
-    { item: 2002, n: 1, moeda: 1, preco: 6000, insignias: 2 },
-    { item: 1003, n: 1, moeda: 1, preco: 1200, insignias: 3 },
-    { item: 2003, n: 1, moeda: 1, preco: 10000, insignias: 4 },
-    { item: 2004, n: 1, moeda: 1, preco: 20000, insignias: 6 },
-  ],
+  2150101: [{ item: 3101, n: 1, moeda: 1, preco: 1000, insignias: 0 }],      // Old Rod: from the start
+  2150401: [{ item: 3102, n: 1, moeda: 1, preco: 15000, insignias: 2 }],     // Good Rod (also needs fishing mastery 1 to use)
+  2150701: [{ item: 3103, n: 1, moeda: 1, preco: 50000, insignias: 4 }],     // Super Rod (fishing mastery 2)
 };
 
 /** The full stock of a shop: the dump's entries plus the extra ones, each with `insignias` (0 when always on sale). */
@@ -37,3 +34,8 @@ export function linhaDaLoja(lojas, loja, item, nInsignias = 0){
   const linha = estoque(lojas, loja).find(l => +l.item === +item);
   return linha ? { linha, liberado: (nInsignias || 0) >= (linha.insignias || 0) } : null;
 }
+
+/* ROLLER SKATES (Nov 2): a key item, never used up. From the Bag (or a 5–9 shortcut) it toggles skating: on foot the trainer
+   moves PATINS_VEL× faster. GMs hand it out with /giveskates [name] (server_moderation.mjs `patins`). */
+export const PATINS = 57900;
+export const PATINS_VEL = 1.6;

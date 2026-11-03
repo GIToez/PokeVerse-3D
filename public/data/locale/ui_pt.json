@@ -7127,5 +7127,13 @@
   "finish the wild battle first": "termine a briga com o selvagem primeiro",
   "Go, {name}!": "Vai, {name}!",
   " sent out ": " mandou ",
-  "dismount (M) to command your Pokémon": "desmonte (M) pra comandar seu Pokémon"
+  "dismount (M) to command your Pokémon": "desmonte (M) pra comandar seu Pokémon",
+  "Roller Skates": "Patins",
+  "Strap them on to glide around faster on foot. Use them from the Bag (or a 5–9 shortcut) to put them on or take them off.": "Calce e deslize mais rápido a pé. Use pela Mochila (ou num atalho 5–9) pra calçar ou tirar.",
+  "Put on": "Calçar",
+  "Take off": "Tirar",
+  "Roller Skates on: you move faster on foot": "Patins calçados: você anda mais rápido a pé",
+  "Roller Skates off": "Patins guardados",
+  "you don't have Roller Skates": "você não tem patins",
+  "can't put on skates in battle": "não dá pra calçar patins na batalha"
 }

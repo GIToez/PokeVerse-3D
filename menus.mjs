@@ -24,7 +24,8 @@ import * as Som from './sound.mjs';                                       // a a
 import * as Arr from './drag_team.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
 import * as Evolucao from './evolution.mjs';
 import * as Teclas from './keys.mjs';                                   // remappable keys: the window keys below come from Settings → Controls
-import * as PrefAparelho from './device_prefs.mjs';                    // per-device toggles (other players' names, floating damage)
+import * as PrefAparelho from './device_prefs.mjs';
+import * as RegrasItem from './item_rules.mjs';                          // Pokémart: the dump's stock + Great/Ultra Ball etc. unlocked by badges                    // per-device toggles (other players' names, floating damage)
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -1109,9 +1110,10 @@ function rMochila(corpo){
   const cab = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('en-US')} ${esc(tr(D.moedas?.[1] || 'Moeda'))}</div>`
     + (av ? `<div class="aviso-uso" style="margin:-2px 0 8px;font-size:13px;font-weight:700;color:${av.ok ? '#8ef58e' : '#ffd23a'}">${esc(tr(av.texto))}</div>` : '');
   if (!itens.length){ corpo.innerHTML = cab + '<div class="vazio">' + esc(tr('Nothing here yet. The town Pokémart (talk to the clerk) sells balls and medicine; mission items arrive as rewards.')) + '</div>'; return; }
-  corpo.innerHTML = cab + `<div class="grade-itens">${itens.map(([id, n]) => { const it = D.itens[id]; const bola = it.t === 7; const rem = it.t === 9; const evo = !bola && !rem && ctx.ehItemDeEvolucao?.(id); return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">×${n}</span><b>${esc(tr(it.n))}${bola && String(ctx.jogo.bolaSel) === String(id) ? ' <small style="color:#ffe07a">(F)</small>' : ''}</b><small>${esc(tr(it.d || D.tipos[it.t] || ''))}</small><div class="acoes">${bola ? `<button type="button" class="btn" data-bola="${id}">${esc(tr('Use on F'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : rem ? `<button type="button" class="btn" data-usar="${id}">${esc(tr('Use on partner'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : evo ? `<button type="button" class="btn ouro" data-evoitem="${id}" title="${esc(tr('evolves your partner if its rule uses this item'))}">✧ ${esc(tr('Use on partner'))}</button>` : ''}</div></div>`; }).join('')}</div>`;
+  corpo.innerHTML = cab + `<div class="grade-itens">${itens.map(([id, n]) => { const it = D.itens[id]; const bola = it.t === 7; const rem = it.t === 9; const evo = !bola && !rem && ctx.ehItemDeEvolucao?.(id); const held = !bola && !rem && !evo && !!ctx.ehHeld?.(id); const patins = !!ctx.ehPatins?.(id); return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">×${n}</span><b>${esc(tr(it.n))}${bola && String(ctx.jogo.bolaSel) === String(id) ? ' <small style="color:#ffe07a">(F)</small>' : ''}</b><small>${esc(tr(it.d || D.tipos[it.t] || ''))}</small><div class="acoes">${bola ? `<button type="button" class="btn" data-bola="${id}">${esc(tr('Use on F'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : rem ? `<button type="button" class="btn" data-usar="${id}">${esc(tr('Use on partner'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : patins ? `<button type="button" class="btn" data-usar="${id}">${esc(tr(ctx.patinsLigados?.() ? 'Take off' : 'Put on'))}</button><button type="button" class="btn" data-atalho="${id}" title="${esc(tr('pin to the first free shortcut (5–8)'))}">⚡ ${esc(tr('Shortcut'))}</button>` : held ? `<button type="button" class="btn ouro" data-dar="${id}" title="${esc(tr(ctx.nomeHeld?.(id)?.texto || ''))}">${esc(tr('Give to partner'))}</button>` : evo ? `<button type="button" class="btn ouro" data-evoitem="${id}" title="${esc(tr('evolves your partner if its rule uses this item'))}">✧ ${esc(tr('Use on partner'))}</button>` : ''}</div></div>`; }).join('')}</div>`;
   corpo.querySelectorAll('[data-bola]').forEach(b => b.onclick = () => { ctx.jogo.bolaSel = b.dataset.bola; ctx.gravarLS('bolaSel', ctx.jogo.bolaSel); render(); });
   corpo.querySelectorAll('[data-evoitem]').forEach(b => b.onclick = () => { fechar(); ctx.usarItemEvolucao?.(b.dataset.evoitem); });
+  corpo.querySelectorAll('[data-dar]').forEach(b => b.onclick = () => ctx.segurarItem?.(b.dataset.dar).then(() => render()));   // held item → the partner holds it
   corpo.querySelectorAll('[data-usar]').forEach(b => b.onclick = () => { const id = b.dataset.usar; ctx.usarItem?.(id, D.itens[id]?.n || '', (txt, ok) => avisarMo(id, txt, ok)); render(); });   // a cura em si vive no index (usarItem), igual à dos atalhos; o aviso volta pra janela (17/09)
   corpo.querySelectorAll('[data-atalho]').forEach(b => b.onclick = () => { const id = b.dataset.atalho, it = D.itens[id]; const slots = ctx.atalhos?.() || []; let i = slots.findIndex(s => !s); if (i < 0) i = slots.length - 1; ctx.definirAtalho?.(i, { tipo: 'item', id: +id, nome: it.n, icone: './ui/itens/' + it.i + '.png', bola: it.t === 7 }); render(); });
 }
@@ -1126,7 +1128,7 @@ const CATS_MO = { todos: null, pokebolas: [7], medicina: [9], tm: [4], chave: [3
 /* O que "Usar" faz no jogo hoje: Pokébola vira a bola escolhida, item de Recuperação (t=9: poções, Reanimador) cura, pedra
    evolui. TM, traje, montaria e item de missão NÃO têm uso pela mochila ainda — o botão fica desligado (antes o `usarItem`
    tratava tudo como poção e consumia o item). Descartar não vale pra item de missão (t=3) nem pra bola (mora em `bolas`). */
-const podeUsarMo = a => a.it.t === 7 || a.it.t === 9 || !!ctx.ehItemDeEvolucao?.(a.id);
+const podeUsarMo = a => a.it.t === 7 || a.it.t === 9 || !!ctx.ehItemDeEvolucao?.(a.id) || !!ctx.ehHeld?.(a.id) || !!ctx.ehPatins?.(a.id);   // Roller Skates: on/off (index.html alternarPatins) · held items: "Give" to the partner in the field
 /* POR QUE NÃO USOU (17/09, Marcolino no #alpha-testers: "clico e não vai" na Poção): o Usar chama o `usarItem` do index, que só cura
    o Pokémon EM CAMPO e avisava flutuando em cima dele — atrás da janela (e sem aviso nenhum quando não era a vez na batalha). Agora o
    motivo (HP cheio, desmaiado, sem Pokémon, acabou) e o resultado ("recuperou 20 HP") ficam 4 s DENTRO da Mochila: na linha de dica do
@@ -1193,6 +1195,7 @@ function acaoMochila(nome){
     confirmarDescarte = null;
     if (!podeUsarMo(alvo)){ avisarMo(alvo.id, 'esse item não se usa pela Mochila'); render(); return; }   // só chega aqui pelo toque duplo (o botão fica desligado)
     if (alvo.it.t === 7){ ctx.jogo.bolaSel = alvo.id; ctx.gravarLS('bolaSel', alvo.id); render(); return; }   // Pokébola: vira a bola escolhida
+    if (ctx.ehHeld?.(alvo.id)){ ctx.segurarItem(alvo.id, (txt, ok) => { avisarMo(alvo.id, txt, ok); render(); }); return; }   // held item: the partner holds it (index.html segurarItem)
     if (ctx.ehItemDeEvolucao?.(alvo.id)){
       if (!evoluiAgoraMo(alvo)){ avisarMo(alvo.id, (alvo.it.n || 'this item') + ' has no effect on ' + (ctx.jogo?.pika?.nome || 'your Pokémon')); render(); return; }   // revisão (17/09): o aviso fica na janela (antes ela fechava e o aviso flutuava atrás)
       fechar(); ctx.usarItemEvolucao?.(alvo.id); return;
@@ -1277,7 +1280,7 @@ function encherMochila(pop){
     Popup.imagem(pop, 'item', alvo && alvo.it.i ? './ui/itens/' + alvo.it.i + '.png' : null, det);
   } else linhaAvisoMo(pop, av || (alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Double-tap the item to use it', dica: true } : null));
   const bola = alvo && alvo.it.t === 7;
-  Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), bola ? 'Choose' : 'Use');
+  Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), bola ? 'Choose' : alvo && ctx.ehHeld?.(alvo.id) ? 'Give' : alvo && ctx.ehPatins?.(alvo.id) ? (ctx.patinsLigados?.() ? 'Take off' : 'Put on') : 'Use');
   Popup.botao(pop, 'descartar', !!alvo && podeDescartarMo(alvo));
   const lix = pop.querySelector('[data-tagval="descartar"]');
   if (lix) lix.title = alvo && confirmarDescarte === alvo.id ? 'clique de novo pra descartar de vez' : 'descartar o item escolhido';
@@ -3010,9 +3013,10 @@ function rLoja(corpo){
   const nomeLoja = id => { if (id === '2150101') return 'Pokémart'; const m = String(id).match(/^215(\d\d)01$/); const nm = m && ctx.nomeArea?.(+('15' + m[1])); return nm ? nm.replace(/^Loja (de )?da Cidade /, '').replace(/^Loja da Cidade /, '') : 'Loja ' + String(id).slice(-4); };
   const aba = (abaAtual && lojas[abaAtual]) ? abaAtual : '2150101';   // SÓ a loja deste vendedor: as abas "Loja 1107/1501/4103/4401" (outras lojas do dump) não fazem sentido no Pokémart (Jaime, 31/08)
   abas([{ id: aba, nome: nomeLoja(aba) }]);                              // uma aba só, com o nome da loja (e limpa abas da janela anterior)
-  const lista = lojas[aba] || [];
-  corpo.innerHTML = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('en-US')} ${esc(tr(D.moedas?.[1] || 'Moeda'))} · ${esc(tr('original game prices'))}</div><div class="grade-itens">${lista.map(l => { const it = D.itens[l.item]; if (!it) return ''; return `<div class="item q${it.q || 1}"><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">${l.preco.toLocaleString('en-US')}</span><b>${esc(tr(it.n))}${l.n > 1 ? ' ×' + l.n : ''}</b><small>${esc(tr(it.d || D.tipos[it.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-comprar="${l.item}" data-preco="${l.preco}" data-n="${l.n}" ${dinheiro() < l.preco ? 'disabled' : ''}>${esc(tr('Buy'))}</button></div></div>`; }).join('')}</div>`;
-  corpo.querySelectorAll('[data-comprar]').forEach(b => b.onclick = () => { const id = b.dataset.comprar, preco = +b.dataset.preco, n = +b.dataset.n || 1; if (dinheiro() < preco) return; if (ctx.comConta?.()) ctx.bolsaOp('comprar', { loja: aba, item: +id }).then(() => render()); else if (D.itens[id]?.t === 7){ ctx.jogo.bolas[id] = (ctx.jogo.bolas[id] || 0) + n; ctx.gravarLS('bolas', ctx.jogo.bolas); } else { const it = itensLS(); it[id] = (it[id] || 0) + n; ctx.gravarLS('itens', it); } if (!ctx.comConta?.()){ setDinheiro(dinheiro() - preco); ctx.Som?.tocar?.('ui/sound_itemget', { volume: .7, prio: true }); } render(); });
+  const lista = RegrasItem.estoque(lojas, aba), nIns = (ctx.lerLS('insignias', []) || []).length;   // + badge-locked stock (item_rules.mjs); the server checks the same table
+  const trava = l => (l.insignias || 0) > nIns;
+  corpo.innerHTML = `<div style="margin-bottom:8px;color:var(--muted);font-size:12px">💰 ${dinheiro().toLocaleString('en-US')} ${esc(tr(D.moedas?.[1] || 'Moeda'))} · ${esc(tr('original game prices'))}</div><div class="grade-itens">${lista.map(l => { const it = D.itens[l.item]; if (!it) return ''; const tv = trava(l); return `<div class="item q${it.q || 1}"${tv ? ' style="opacity:.55"' : ''}><i class="ic-item" style="${iconeItem(it)}"></i><span class="n">${l.preco.toLocaleString('en-US')}</span><b>${esc(tr(it.n))}${l.n > 1 ? ' ×' + l.n : ''}</b><small>${tv ? '🔒 ' + esc(tr(l.insignias === 1 ? 'Unlocks with 1 badge' : 'Unlocks with {n} badges', { n: l.insignias })) : esc(tr(it.d || D.tipos[it.t] || ''))}</small><div class="acoes"><button type="button" class="btn ouro" data-comprar="${l.item}" data-preco="${l.preco}" data-n="${l.n}" ${dinheiro() < l.preco || tv ? 'disabled' : ''}>${esc(tr(tv ? 'Locked' : 'Buy'))}</button></div></div>`; }).join('')}</div>`;
+  corpo.querySelectorAll('[data-comprar]').forEach(b => b.onclick = () => { const id = b.dataset.comprar, preco = +b.dataset.preco, n = +b.dataset.n || 1; if (dinheiro() < preco) return; const ln = lista.find(l => String(l.item) === id); if (ln && trava(ln)) return; if (ctx.comConta?.()) ctx.bolsaOp('comprar', { loja: aba, item: +id }).then(() => render()); else if (D.itens[id]?.t === 7){ ctx.jogo.bolas[id] = (ctx.jogo.bolas[id] || 0) + n; ctx.gravarLS('bolas', ctx.jogo.bolas); } else { const it = itensLS(); it[id] = (it[id] || 0) + n; ctx.gravarLS('itens', it); } if (!ctx.comConta?.()){ setDinheiro(dinheiro() - preco); ctx.Som?.tocar?.('ui/sound_itemget', { volume: .7, prio: true }); } render(); });
 }
 
 /* ------------------------------------------------------------------ Loja Premium (GDD §7.5)
@@ -3624,7 +3628,7 @@ async function abrirPreviaMochila(){
         if (alvo && podeUsarMo(alvo)) Popup.rotulo(pop, 'item-dica', det); else Popup.texto(pop, 'item-dica', '', det);
         Popup.imagem(pop, 'item', alvo && alvo.it.i ? './ui/itens/' + alvo.it.i + '.png' : null, det);
       } else linhaAvisoMo(pop, alvo && podeUsarMo(alvo) && !pop.querySelector(':scope > [data-tag="acao"][data-tagval="usar"]') ? { texto: 'Double-tap the item to use it', dica: true } : null);
-      Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), alvo && alvo.it.t === 7 ? 'Choose' : 'Use');
+      Popup.botao(pop, 'usar', !!alvo && podeUsarMo(alvo), alvo && alvo.it.t === 7 ? 'Choose' : alvo && ctx.ehHeld?.(alvo.id) ? 'Give' : 'Use');
       Popup.botao(pop, 'descartar', !!alvo && podeDescartarMo(alvo));
     };
     pop = popsPrevia['mochila-cheia'] = Popup.montar(def, {

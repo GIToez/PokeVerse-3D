@@ -4,7 +4,7 @@
  *
  * Chat (chat.mjs → index.html `moderar` → {t:'mod_<op>', …}; o network.mjs mostra a resposta {t:'mod', op, …} no chat de Sistema):
  *   /online · /ver nome · /aviso texto · /mudo nome min [motivo] (0 = tira) · /kick nome [motivo] · /banir nome horas [motivo]
- *   (-1 = pra sempre) · /perdoar nome · /tp nome cidade | /tp nome x z · /ir nome · /puxar nome
+ *   (-1 = pra sempre) · /perdoar nome · /tp nome cidade | /tp nome x z · /ir nome · /puxar nome · /giveskates [nome] (Roller Skates)
  *   `nome` = o usuário da conta ou o nome do personagem. Também aceita o formato antigo {t:'mod', op}.
  *
  * Levar (tp/puxar/ir): grava `posGm` = { mapa, x, z } na conta e manda {t:'volta', mapa} pra quem está online — o cliente
@@ -12,6 +12,7 @@
  * some quando a conta entra no mapa dele (server.mjs, `entrar`). x/z são do MUNDO (os do jogador e do Editor de Mapa). */
 import fs from 'node:fs';
 import nodePath from 'node:path';
+import { PATINS } from './item_rules.mjs';
 
 const MAX_MIN = 525600;                                                      // 1 ano: acima disso é "pra sempre" (-1)
 /* Ponto de chegada em Kanto na frente do Centro Pokémon de cada cidade (doors.json: a porta de saída do Centro, 61409xx → 711xx01);
@@ -158,6 +159,20 @@ export function criarModeracao(h) {
     if (op === 'aviso') {
       const r = avisar(g, m.texto);
       if (r.erro) erro(r.erro); else ok({ n: r.n });
+      return;
+    }
+    if (op === 'patins') {                                                    // /giveskates [name] (Nov 2): Roller Skates in that bag; no name = the GM's own
+      const u = m.usuario ? acharConta(m.usuario) : g;
+      if (!u) { erro('Account "' + String(m.usuario).slice(0, 30) + '" not found'); return; }
+      const c = contas[u]; if (!c.save) c.save = {};
+      const s = c.save; if (!s.itens || typeof s.itens !== 'object') s.itens = {};
+      if (+s.itens[PATINS] > 0) { ok({ usuario: u, ja: true }); return; }
+      s.itens[PATINS] = 1;
+      c.rev = (c.rev || 0) + 1;
+      salvarContasJa();
+      logAdmin(g, u, 'giveskates (chat)', { item: PATINS });
+      for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🛼 You got Roller Skates! Use them from the Bag (Key items) to put them on.', bolsa: { itens: s.itens } });   // aplicarBolsa writes only the keys sent
+      ok({ usuario: u });
       return;
     }
     const u = acharConta(m.usuario);

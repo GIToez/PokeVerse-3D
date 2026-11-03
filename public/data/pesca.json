@@ -1,0 +1,808 @@
+{
+ "_sobre": "Fishing (fishing_game.mjs). The catch list of an area is habitats.json areas[area] with agua:1; `generico` is used where an area has none. Levels per rod. Mastery = catches needed for each level (degraus[i]).",
+ "varas": [
+  {
+   "item": 3101,
+   "nome": "Old Rod",
+   "maestria": 0,
+   "espera": [
+    2.5,
+    6
+   ],
+   "janelaMs": 1600,
+   "nivel": [
+    5,
+    10
+   ],
+   "soMagikarp": true
+  },
+  {
+   "item": 3102,
+   "nome": "Good Rod",
+   "maestria": 1,
+   "espera": [
+    2.5,
+    6.5
+   ],
+   "janelaMs": 1300,
+   "nivel": [
+    12,
+    25
+   ],
+   "magikarp": 0.35
+  },
+  {
+   "item": 3103,
+   "nome": "Super Rod",
+   "maestria": 2,
+   "espera": [
+    3,
+    7
+   ],
+   "janelaMs": 1100,
+   "nivel": [
+    25,
+    40
+   ],
+   "magikarp": 0.1
+  }
+ ],
+ "maestria": {
+  "degraus": [
+   0,
+   10,
+   40,
+   100,
+   200
+  ],
+  "teto": 4
+ },
+ "generico": [
+  {
+   "dex": 129,
+   "nome": "Magikarp"
+  },
+  {
+   "dex": 60,
+   "nome": "Poliwag"
+  },
+  {
+   "dex": 118,
+   "nome": "Goldeen"
+  },
+  {
+   "dex": 72,
+   "nome": "Tentacool"
+  },
+  {
+   "dex": 98,
+   "nome": "Krabby"
+  },
+  {
+   "dex": 116,
+   "nome": "Horsea"
+  }
+ ],
+ "areas": {
+  "1102": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "1105": [
+   {
+    "dex": 90,
+    "nome": "Shellder",
+    "glb": "pm0090_00.glb"
+   }
+  ],
+  "1192": [
+   {
+    "dex": 91,
+    "nome": "Cloyster",
+    "glb": "pm0091_00.glb"
+   },
+   {
+    "dex": 99,
+    "nome": "Kingler",
+    "glb": "pm0099_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   },
+   {
+    "dex": 130,
+    "nome": "Gyarados",
+    "glb": "pm0130_00.glb"
+   },
+   {
+    "dex": 134,
+    "nome": "Vaporeon",
+    "glb": "pm0134_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   }
+  ],
+  "1210": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "1212": [
+   {
+    "dex": 98,
+    "nome": "Krabby",
+    "glb": "pm0098_00.glb"
+   },
+   {
+    "dex": 99,
+    "nome": "Kingler",
+    "glb": "pm0099_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   }
+  ],
+  "1219": [
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   },
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 120,
+    "nome": "Staryu",
+    "glb": "pm0120_00.glb"
+   },
+   {
+    "dex": 116,
+    "nome": "Horsea",
+    "glb": "pm0116_00.glb"
+   },
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "1220": [
+   {
+    "dex": 120,
+    "nome": "Staryu",
+    "glb": "pm0120_00.glb"
+   },
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   },
+   {
+    "dex": 116,
+    "nome": "Horsea",
+    "glb": "pm0116_00.glb"
+   },
+   {
+    "dex": 90,
+    "nome": "Shellder",
+    "glb": "pm0090_00.glb"
+   },
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   }
+  ],
+  "1221": [
+   {
+    "dex": 121,
+    "nome": "Starmie",
+    "glb": "pm0121_00.glb"
+   },
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   }
+  ],
+  "1223": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   },
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   }
+  ],
+  "1224": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   },
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   }
+  ],
+  "1299": [
+   {
+    "dex": 7,
+    "nome": "Squirtle",
+    "glb": "pm0007_00.glb"
+   },
+   {
+    "dex": 54,
+    "nome": "Psyduck",
+    "glb": "pm0054.glb"
+   },
+   {
+    "dex": 55,
+    "nome": "Golduck",
+    "glb": "pm0055_00.glb"
+   },
+   {
+    "dex": 79,
+    "nome": "Slowpoke",
+    "glb": "pm0079_00.glb"
+   },
+   {
+    "dex": 80,
+    "nome": "Slowbro",
+    "glb": "pm0080_00.glb"
+   },
+   {
+    "dex": 86,
+    "nome": "Seel",
+    "glb": "pm0086_00.glb"
+   },
+   {
+    "dex": 87,
+    "nome": "Dewgong",
+    "glb": "pm0087_00.glb"
+   },
+   {
+    "dex": 116,
+    "nome": "Horsea",
+    "glb": "pm0116_00.glb"
+   },
+   {
+    "dex": 117,
+    "nome": "Seadra",
+    "glb": "pm0117_00.glb"
+   },
+   {
+    "dex": 90,
+    "nome": "Shellder",
+    "glb": "pm0090_00.glb"
+   },
+   {
+    "dex": 120,
+    "nome": "Staryu",
+    "glb": "pm0120_00.glb"
+   },
+   {
+    "dex": 98,
+    "nome": "Krabby",
+    "glb": "pm0098_00.glb"
+   },
+   {
+    "dex": 99,
+    "nome": "Kingler",
+    "glb": "pm0099_00.glb"
+   }
+  ],
+  "1313": [
+   {
+    "dex": 90,
+    "nome": "Shellder",
+    "glb": "pm0090_00.glb"
+   },
+   {
+    "dex": 116,
+    "nome": "Horsea",
+    "glb": "pm0116_00.glb"
+   },
+   {
+    "dex": 91,
+    "nome": "Cloyster",
+    "glb": "pm0091_00.glb"
+   }
+  ],
+  "1314": [
+   {
+    "dex": 120,
+    "nome": "Staryu",
+    "glb": "pm0120_00.glb"
+   },
+   {
+    "dex": 117,
+    "nome": "Seadra",
+    "glb": "pm0117_00.glb"
+   },
+   {
+    "dex": 121,
+    "nome": "Starmie",
+    "glb": "pm0121_00.glb"
+   }
+  ],
+  "2101": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2102": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2103": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   }
+  ],
+  "2106": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   }
+  ],
+  "2107": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2108": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2110": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "2112": [
+   {
+    "dex": 194,
+    "nome": "Wooper",
+    "glb": "pm0194_00.glb"
+   },
+   {
+    "dex": 195,
+    "nome": "Quagsire",
+    "glb": "pm0195_00.glb"
+   }
+  ],
+  "2113": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   },
+   {
+    "dex": 130,
+    "nome": "Gyarados",
+    "glb": "pm0130_00.glb"
+   }
+  ],
+  "2114": [
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   },
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   }
+  ],
+  "2117": [
+   {
+    "dex": 54,
+    "nome": "Psyduck",
+    "glb": "pm0054.glb"
+   },
+   {
+    "dex": 55,
+    "nome": "Golduck",
+    "glb": "pm0055_00.glb"
+   }
+  ],
+  "2118": [
+   {
+    "dex": 194,
+    "nome": "Wooper",
+    "glb": "pm0194_00.glb"
+   },
+   {
+    "dex": 195,
+    "nome": "Quagsire",
+    "glb": "pm0195_00.glb"
+   }
+  ],
+  "2119": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "2120": [
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   }
+  ],
+  "2122": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   },
+   {
+    "dex": 226,
+    "nome": "Mantine",
+    "glb": "pm0226_00.glb"
+   }
+  ],
+  "2123": [
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 79,
+    "nome": "Slowpoke",
+    "glb": "pm0079_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   }
+  ],
+  "2128": [
+   {
+    "dex": 194,
+    "nome": "Wooper",
+    "glb": "pm0194_00.glb"
+   },
+   {
+    "dex": 195,
+    "nome": "Quagsire",
+    "glb": "pm0195_00.glb"
+   }
+  ],
+  "2226": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2227": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2228": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   }
+  ],
+  "2230": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   }
+  ],
+  "2231": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   }
+  ],
+  "2232": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 195,
+    "nome": "Quagsire",
+    "glb": "pm0195_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2234": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2235": [
+   {
+    "dex": 54,
+    "nome": "Psyduck",
+    "glb": "pm0054.glb"
+   },
+   {
+    "dex": 55,
+    "nome": "Golduck",
+    "glb": "pm0055_00.glb"
+   }
+  ],
+  "2240": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   }
+  ],
+  "2241": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 73,
+    "nome": "Tentacruel",
+    "glb": "pm0073_00.glb"
+   },
+   {
+    "dex": 226,
+    "nome": "Mantine",
+    "glb": "pm0226_00.glb"
+   }
+  ],
+  "2242": [
+   {
+    "dex": 118,
+    "nome": "Goldeen",
+    "glb": "pm0118_00.glb"
+   },
+   {
+    "dex": 119,
+    "nome": "Seaking",
+    "glb": "pm0119_00.glb"
+   }
+  ],
+  "2243": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "2244": [
+   {
+    "dex": 60,
+    "nome": "Poliwag",
+    "glb": "pm0060_00.glb"
+   },
+   {
+    "dex": 61,
+    "nome": "Poliwhirl",
+    "glb": "pm0061_00.glb"
+   }
+  ],
+  "2245": [
+   {
+    "dex": 129,
+    "nome": "Magikarp",
+    "glb": "pm0129_00.glb"
+   }
+  ],
+  "2247": [
+   {
+    "dex": 72,
+    "nome": "Tentacool",
+    "glb": "pm0072_00.glb"
+   },
+   {
+    "dex": 86,
+    "nome": "Seel",
+    "glb": "pm0086_00.glb"
+   },
+   {
+    "dex": 120,
+    "nome": "Staryu",
+    "glb": "pm0120_00.glb"
+   }
+  ]
+ }
+}
