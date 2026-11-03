@@ -1,0 +1,128 @@
+{
+ "versao": 1,
+ "gerador": "tools/fundador.mjs",
+ "descricao": "O Pacote Fundador em 3 níveis (beta 88): o que o servidor entrega (cada pagamento entrega só a DIFERENÇA entre o nível novo e o de antes) e o que o GET /loja mostra. Fora do painel da equipe: o preço muda junto com o Price da Stripe, por commit + deploy. Regras: fundador_regras.mjs; o nível, as vagas e as incubadoras da conta: servidor/fundador_conta.mjs.",
+ "origem": "pacote-fundador",
+ "titulo": "pacoteFundador",
+ "diasPorMes": 30,
+ "centavos": "brl e usd em centavos: é a unidade do amount_total da Stripe, que o webhook confere antes de entregar",
+ "decidido": {
+  "niveis": "painel Rumo ao Beta: 3 níveis e o de cima traz tudo o que o de baixo tem; o número de cada nível já é o total (fund-quantidade); o nível 1 é o Desafiante (fund-nome-treinador)",
+  "precos": "R$ 150 / 250 / 500, decididos no painel; subir de nível paga a diferença entre os preços cheios (a Amanda, ui/figma/ATUALIZACAO.md)",
+  "meses": "1 / 2 / 3 meses de Medalhão (fund-premium-meses): preso à conta, soma com o que a pessoa já tem; 1 mês = 30 dias",
+  "pecas": "Desafiante: o Red e a mochila dele (Bag042); Elite: + a Leaf e a bolsa dela (Bag042_1); Campeão: + o Leon e a Mochila Asas de Dragão nas duas cores (Bag023 e Bag023_1; beta 94, 13/10: \"As duas no Fundador\"). Nenhum rastro em nenhum nível",
+  "montarias": "Desafiante: o Skate; Elite: + o Hoverboard; Campeão: + o Solgaleo, normal e shiny (o Jaime, 17/10: \"solgaleo no último nível tanto normal quanto shiny e hoverboard e skate entre os outros níveis\"). A licença paga de terra: monta na hora; o Solgaleo shiny é só do Campeão",
+  "titulo": "pacoteFundador, o \"Fundador\" (o id fundador já é o Fundador de Guilda e o desafiante o Desafiante de Ginásio)",
+  "incubadora": "fund-incubadora-sem-ovos: fica no pacote como direito derivado do nível; quem entrega o item é a beta 89 (a criação de ovos)",
+  "termina": "sem prazo nem contagem regressiva até o Jaime marcar uma data; o prazo é do pacote inteiro (os 3 níveis acabam juntos)"
+ },
+ "aprovado": {
+  "numeros": "J2 (fund-numeros), APROVADA COMO ESTÁ pelo Jaime em 10/10/2026, 20h39: US$ 30 / 50 / 100 (a âncora R$ 5 = US$ 1); 300 / 750 / 1.500 Diamantes; +50 / +100 / +200 vagas na Caixa; 1 / 2 / 3 incubadoras; as subidas R$ 100 / 250 / 350 e US$ 20 / 50 / 70",
+  "efeitos": "J1 (fund-peito-rastro), respondida pelo Jaime em 10/10/2026, 20h39, opção (a): aparecem na beta 88, só partícula, com teto no celular; a venda só abre se a medida no celular passar; qual efeito vai em cada nível, ele escolhe pelos prints (o campo aguardando de cada nível, que é o portão da venda: com ele, as ofertas saem vazias e o checkout recusa); escolhidos: o Desafiante: peito:56013, o Elite: nenhum e o Campeão: nenhum",
+  "medida": "PASSOU em 13/10/2026, no celular emulado e no de verdade: no teto padrão (Perto), dentro do critério (no máximo 10% mais lento, com 20 jogadores). O método e os números ficam no tools/fundador.mjs."
+ },
+ "niveis": [
+  {
+   "id": "fund-desafiante",
+   "nivel": 1,
+   "nome": "Desafiante",
+   "brl": 15000,
+   "usd": 3000,
+   "pecas": [
+    "roupa:red",
+    "mochila:Bag042"
+   ],
+   "efeitos": {
+    "peito": [
+     56013
+    ],
+    "chao": []
+   },
+   "montarias": {
+    "normais": [
+     "skate"
+    ],
+    "shiny": []
+   },
+   "diamantes": 300,
+   "vagas": 50,
+   "incubadoras": 1,
+   "meses": 1,
+   "dias": 30,
+   "titulo": "pacoteFundador",
+   "termina": null
+  },
+  {
+   "id": "fund-elite",
+   "nivel": 2,
+   "nome": "Elite",
+   "brl": 25000,
+   "usd": 5000,
+   "pecas": [
+    "roupa:red",
+    "mochila:Bag042",
+    "roupa:leaf",
+    "mochila:Bag042_1"
+   ],
+   "efeitos": {
+    "peito": [
+     56013
+    ],
+    "chao": []
+   },
+   "montarias": {
+    "normais": [
+     "skate",
+     "hoverboard"
+    ],
+    "shiny": []
+   },
+   "diamantes": 750,
+   "vagas": 100,
+   "incubadoras": 2,
+   "meses": 2,
+   "dias": 60,
+   "titulo": "pacoteFundador",
+   "termina": null
+  },
+  {
+   "id": "fund-campeao",
+   "nivel": 3,
+   "nome": "Campeão",
+   "brl": 50000,
+   "usd": 10000,
+   "pecas": [
+    "roupa:red",
+    "mochila:Bag042",
+    "roupa:leaf",
+    "mochila:Bag042_1",
+    "roupa:leon",
+    "mochila:Bag023",
+    "mochila:Bag023_1"
+   ],
+   "efeitos": {
+    "peito": [
+     56013
+    ],
+    "chao": []
+   },
+   "montarias": {
+    "normais": [
+     "skate",
+     "hoverboard",
+     "pm0791"
+    ],
+    "shiny": [
+     "pm0791"
+    ]
+   },
+   "diamantes": 1500,
+   "vagas": 200,
+   "incubadoras": 3,
+   "meses": 3,
+   "dias": 90,
+   "titulo": "pacoteFundador",
+   "termina": null
+  }
+ ]
+}

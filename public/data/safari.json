@@ -1,0 +1,527 @@
+{
+ "versao": 3,
+ "geradoEm": "2026-10-02",
+ "gerador": "tools/safari.mjs",
+ "nota": "Campo de Safári (cat-safari: entrada paga; safari-conhecimento-2: com batalha — a captura é a do mundo, só com a Bola Safári; safari-cantos-areas: cada canto conta como área na Pokédex de conhecimento e o Kangaskhan nasce em 3 cantos). Números de sessão, cortes, tabelas e o que está desligado A APROVAR (docs/frentes/safari.md). Quem lê: safari.mjs (servidor) e safari_teste.html (bancada).",
+ "area": 1192,
+ "mapa": "kanto",
+ "itens": {
+  "bola": {
+   "id": 1005,
+   "nome": "Bola Safári",
+   "descricao": "uma Pokébola especial usada na Zona do Safari em Kanto e no Grande Pântano em Sinnoh.",
+   "icone": "ui/itens/ic_1005.png",
+   "modelo": "cenario/pc/1005.glb",
+   "qualidade": 5,
+   "bonus": 1.5,
+   "preso": true,
+   "naBolsa": false,
+   "nota": "id do dump (nome, ícone, modelo, BOLAS do cliente e BONUS_BOLA do servidor já existem); vive na SESSÃO (c.safari), nunca na bolsa",
+   "reservaSemUso": 900050
+  },
+  "isca": {
+   "id": 900160,
+   "nome": "Isca",
+   "ligada": false,
+   "iconeProvisorio": "ui/itens/ic__0055_5.png",
+   "skillDump": 90001,
+   "nomeDump": "Isca",
+   "textoDump": "Concentra-se em atrair a isca",
+   "naBolsa": false,
+   "nota": "ação da sessão (sem estoque); DESLIGADA desde a batalha no Safári (safari-conhecimento-2) — o id fica reservado pra ela voltar"
+  },
+  "pedra": {
+   "id": 900161,
+   "nome": "Pedra",
+   "ligada": false,
+   "iconeProvisorio": "ui/itens/ic_ball_30.png",
+   "skillDump": 90002,
+   "nomeDump": "Lama",
+   "textoDump": "Esqueceu de si mesmo devido à raiva",
+   "naBolsa": false,
+   "nota": "a \"Lama\" do dump; ação da sessão (sem estoque); DESLIGADA desde a batalha no Safári — o id fica reservado"
+  },
+  "ingressoDump": {"id":50411,"nome":"Ingresso de Caça","usado":false,"nota":"o dump pedia 1 ingresso; aqui a entrada é paga em Moedas"},
+  "faixaLivre": [900162,900169]
+ },
+ "regras": {
+  "preco": 500,
+  "moeda": "Moedas",
+  "bolasPorEntrada": 30,
+  "bola": 1005,
+  "duracaoMin": 20,
+  "duracaoMs": 1200000,
+  "cotaDia": null,
+  "cotaNota": "sem cota de entradas por dia (safari-cota, Jaime 01/10): cada entrada paga a taxa, cobrada pelo servidor",
+  "batalha": true,
+  "batalhaNota": "com batalha (safari-conhecimento-2, Jaime 01/10 17h30: \"Quero batalha no Safári (muda a escolha de 30/09)\"): o selvagem ataca e apanha como fora da zona; só luta quem tem sessão aberta (A APROVAR); a captura é a do mundo — no caído, só de quem lutou, com a prioridade de quem derrubou — e só com a Bola Safári da sessão",
+  "ligado": {
+   "isca": false,
+   "pedra": false,
+   "fuga": false,
+   "cacada": false,
+   "nota": "desligados na mesma decisão (A APROVAR): isca, pedra, a fuga a cada 5 s e a caçada de 20 s — o código segue no módulo; pra religar, true no tools/safari.mjs e rodar de novo"
+  },
+  "mundo": {
+   "prioridadeMs": 3000,
+   "bolaMaxM": 20,
+   "desmaioMs": 8000,
+   "capturaMs": 8000,
+   "bonusBolaSafari": 1.5,
+   "nota": "o espelho de servidor/mundo.mjs (OPC.prioridadeMs, OPC.bolaMax, OPC.desmaio, OPC.capturaDur, BONUS_BOLA[1005]) que o módulo repete na captura; conferido pelo gerador contra o texto do servidor"
+  },
+  "alcanceEntradaM": 12,
+  "alcanceAcaoM": 20,
+  "raioFugaM": 15,
+  "fugaCadaMs": 5000,
+  "estadoMs": 30000,
+  "acaoRitmoMs": 2000,
+  "marcaMs": 20000,
+  "foraDaZonaMs": 30000,
+  "gracaMs": 5000,
+  "historico": 20,
+  "bercoMaxM": 60,
+  "captura": {
+   "bonusBola": 1.5,
+   "noCaido": true,
+   "formula": "a do servidor (mundo.mjs sortearCaptura) com a Bola Safári: a = (3·maxHp − 2·hp) × rate × 1,5 × estado / (3·maxHp) — no caído (hp 0) a = rate × 1,5 × estado; b = 1048560 / (16711680 / a)^¼; 4 chacoalhadas de b/65536 (≈ a/255 por bola). O estado só existe com a isca/pedra ligadas",
+   "pedra": {"estagio":2,"mult":2},
+   "isca": {"estagio":-2,"mult":0.5}
+  },
+  "fuga": {
+   "base": 0.03,
+   "porVel": 0.0009,
+   "teto": 0.15,
+   "tetoComEstado": 0.5,
+   "formula": "min(teto, base + porVel × Velocidade) × estado, no máximo tetoComEstado",
+   "pedra": {"estagio":3,"mult":2.5},
+   "isca": {"estagio":-4,"mult":0.3333}
+  },
+  "shinyTaxa": 16384,
+  "shinyNota": "referência (ec-shiny): quem sorteia é o `nascer` do servidor (OPC.taxaShiny)"
+ },
+ "entrada": {
+  "porta": 6110910,
+  "ponto": {"x":169,"z":84.7},
+  "chegada": 7119201,
+  "pouso": {"x":-229,"z":190.7},
+  "atendente": {
+   "cfg": 1110920,
+   "ponto": {"x":170,"z":86.7},
+   "nota": "NPC novo (não existe no dump): o 1º ponto andável a leste da porta 6110910, 2 m pro lado da cidade — a sessão do jogo ajusta no editor"
+  }
+ },
+ "saida": {
+  "porta": 6119201,
+  "ponto": {"x":-229,"z":192.2},
+  "chegada": 7110910,
+  "pouso": {"x":169,"z":86.2},
+  "nota": "o pouso é onde gravar c.pos de quem é mandado embora sem estar conectado"
+ },
+ "zona": {
+  "poligono": [[-277.86,96.14],[-277.27,94.73],[-275.86,94.14],[-216.16,94.14],[-214.75,94.73],[-152.77,146.75],[-152.18,148.16],[-152.18,179.84],[-152.77,181.25],[-154.18,181.84],[-204.84,192.7],[-251.77,192.7],[-297.82,183.82],[-299.23,183.23],[-299.82,181.82],[-299.82,158.18]],
+  "caixa": [-299.82,94.14,-152.18,192.7],
+  "recorte": [-329.5,63.5,-130.5,216.5],
+  "areaPoligonoM2": 11623,
+  "andavelM2": 5157,
+  "polisNavmesh": 564,
+  "navmesh": {"x0":-297.82,"x1":-154.18,"z0":96.14,"z1":191.84},
+  "margemM": 2,
+  "cortadaEmZ": 192.7,
+  "nota": "casca convexa do andável do navmesh do dump na zona \"Safári\" do recorte, +2 m, cortada na fachada do portão"
+ },
+ "cortes": {"lesteX":-200,"norteZ":140,"oesteX":-258},
+ "subAreas": [
+  {
+   "id": "centro",
+   "nome": "Centro",
+   "nivel": [25,28],
+   "poligono": [[-200,191.66],[-204.84,192.7],[-251.77,192.7],[-258,191.5],[-258,140],[-200,140]],
+   "caixa": [-258,140,-200,192.7],
+   "areaPoligonoM2": 3050,
+   "andavelM2": 1385,
+   "grama": 266,
+   "gruposDeMato": [119201,119202,119203,119204,119205],
+   "pontosDump": [79119201,79119202,79119203,79119204,79119205],
+   "lagos": [
+    {"id":7119284,"x":-227.5,"z":169.5}
+   ],
+   "terra": [
+    {"dex":29,"nome":"Nidoran♀","glb":"pm0029_00.glb","peso":1000,"raridade":"comum","lv":[25,28],"agua":false,"pesoDump":1000,"chance":0.3197},
+    {"dex":32,"nome":"Nidoran♂","glb":"pm0032_00.glb","peso":1000,"raridade":"comum","lv":[25,28],"agua":false,"pesoDump":1000,"chance":0.3197},
+    {"dex":102,"nome":"Exeggcute","glb":"pm0102_00.glb","peso":250,"raridade":"incomum","lv":[25,28],"agua":false,"chance":0.0799},
+    {"dex":48,"nome":"Venonat","glb":"pm0048_00.glb","peso":250,"raridade":"incomum","lv":[25,28],"agua":false,"chance":0.0799},
+    {"dex":111,"nome":"Rhyhorn","glb":"pm0111_00.glb","peso":250,"raridade":"incomum","lv":[25,28],"agua":false,"chance":0.0799},
+    {"dex":30,"nome":"Nidorina","glb":"pm0030_00.glb","peso":125,"raridade":"incomum","lv":[25,28],"agua":false,"chance":0.04},
+    {"dex":33,"nome":"Nidorino","glb":"pm0033_00.glb","peso":125,"raridade":"incomum","lv":[25,28],"agua":false,"chance":0.04},
+    {"dex":113,"nome":"Chansey","glb":"pm0113_00.glb","peso":32,"raridade":"raro","lv":[25,28],"agua":false,"pesoDump":64,"chance":0.0102},
+    {"dex":115,"nome":"Kangaskhan","glb":"pm0115_00.glb","peso":32,"raridade":"raro","lv":[25,28],"agua":false,"chance":0.0102},
+    {"dex":123,"nome":"Scyther","glb":"pm0123_00.glb","peso":32,"raridade":"raro","lv":[25,28],"agua":false,"chance":0.0102},
+    {"dex":31,"nome":"Nidoqueen","glb":"pm0031_00.glb","peso":16,"raridade":"muito raro","lv":[25,28],"agua":false,"pesoDump":16,"chance":0.0051},
+    {"dex":34,"nome":"Nidoking","glb":"pm0034_00.glb","peso":16,"raridade":"muito raro","lv":[25,28],"agua":false,"pesoDump":16,"chance":0.0051}
+   ],
+   "agua": [
+    {"dex":54,"nome":"Psyduck","glb":"pm0054.glb","peso":1000,"raridade":"comum","lv":[25,28],"agua":true,"chance":0.5714},
+    {"dex":118,"nome":"Goldeen","glb":"pm0118_00.glb","peso":500,"raridade":"comum","lv":[25,28],"agua":true,"chance":0.2857},
+    {"dex":79,"nome":"Slowpoke","glb":"pm0079_00.glb","peso":250,"raridade":"incomum","lv":[25,28],"agua":true,"chance":0.1429}
+   ]
+  },
+  {
+   "id": "leste",
+   "nome": "Leste",
+   "nivel": [26,30],
+   "poligono": [[-200,107.11],[-152.77,146.75],[-152.18,148.16],[-152.18,179.84],[-152.77,181.25],[-154.18,181.84],[-200,191.66]],
+   "caixa": [-200,107.11,-152.18,191.66],
+   "areaPoligonoM2": 2837,
+   "andavelM2": 978,
+   "grama": 271,
+   "gruposDeMato": [119207,119208,119209,119210],
+   "pontosDump": [79119207,79119208,79119209,79119210],
+   "lagos": [
+    {"id":7119283,"x":-173.5,"z":161.5}
+   ],
+   "terra": [
+    {"dex":29,"nome":"Nidoran♀","glb":"pm0029_00.glb","peso":1000,"raridade":"comum","lv":[26,30],"agua":false,"pesoDump":1000,"chance":0.323},
+    {"dex":32,"nome":"Nidoran♂","glb":"pm0032_00.glb","peso":1000,"raridade":"comum","lv":[26,30],"agua":false,"pesoDump":1000,"chance":0.323},
+    {"dex":46,"nome":"Paras","glb":"pm0046_00.glb","peso":250,"raridade":"incomum","lv":[26,30],"agua":false,"chance":0.0807},
+    {"dex":84,"nome":"Doduo","glb":"pm0084_00.glb","peso":250,"raridade":"incomum","lv":[26,30],"agua":false,"pesoDump":250,"chance":0.0807},
+    {"dex":102,"nome":"Exeggcute","glb":"pm0102_00.glb","peso":250,"raridade":"incomum","lv":[26,30],"agua":false,"chance":0.0807},
+    {"dex":47,"nome":"Parasect","glb":"pm0047_00.glb","peso":125,"raridade":"incomum","lv":[26,30],"agua":false,"chance":0.0404},
+    {"dex":114,"nome":"Tangela","glb":"pm0114_00.glb","peso":125,"raridade":"incomum","lv":[26,30],"agua":false,"chance":0.0404},
+    {"dex":115,"nome":"Kangaskhan","glb":"pm0115_00.glb","peso":32,"raridade":"raro","lv":[26,30],"agua":false,"chance":0.0103},
+    {"dex":123,"nome":"Scyther","glb":"pm0123_00.glb","peso":32,"raridade":"raro","lv":[26,30],"agua":false,"chance":0.0103},
+    {"dex":128,"nome":"Tauros","glb":"pm0128_00.glb","peso":32,"raridade":"raro","lv":[26,30],"agua":false,"chance":0.0103}
+   ],
+   "agua": [
+    {"dex":118,"nome":"Goldeen","glb":"pm0118_00.glb","peso":1000,"raridade":"comum","lv":[26,30],"agua":true,"chance":0.6667},
+    {"dex":54,"nome":"Psyduck","glb":"pm0054.glb","peso":500,"raridade":"comum","lv":[26,30],"agua":true,"chance":0.3333}
+   ]
+  },
+  {
+   "id": "norte",
+   "nome": "Norte",
+   "nivel": [27,31],
+   "poligono": [[-275.86,94.14],[-216.16,94.14],[-214.75,94.73],[-200,107.11],[-200,140],[-293.38,140],[-277.86,96.14],[-277.27,94.73]],
+   "caixa": [-293.38,94.14,-200,140],
+   "areaPoligonoM2": 3809,
+   "andavelM2": 1889,
+   "grama": 350,
+   "gruposDeMato": [119211,119212,119213,119214,119215],
+   "pontosDump": [79119211,79119212,79119213,79119214,79119215],
+   "lagos": [
+    {"id":7119282,"x":-271.5,"z":110.5}
+   ],
+   "terra": [
+    {"dex":29,"nome":"Nidoran♀","glb":"pm0029_00.glb","peso":1000,"raridade":"comum","lv":[27,31],"agua":false,"pesoDump":1000,"chance":0.3133},
+    {"dex":32,"nome":"Nidoran♂","glb":"pm0032_00.glb","peso":1000,"raridade":"comum","lv":[27,31],"agua":false,"pesoDump":1000,"chance":0.3133},
+    {"dex":111,"nome":"Rhyhorn","glb":"pm0111_00.glb","peso":250,"raridade":"incomum","lv":[27,31],"agua":false,"chance":0.0783},
+    {"dex":48,"nome":"Venonat","glb":"pm0048_00.glb","peso":250,"raridade":"incomum","lv":[27,31],"agua":false,"chance":0.0783},
+    {"dex":102,"nome":"Exeggcute","glb":"pm0102_00.glb","peso":250,"raridade":"incomum","lv":[27,31],"agua":false,"chance":0.0783},
+    {"dex":30,"nome":"Nidorina","glb":"pm0030_00.glb","peso":125,"raridade":"incomum","lv":[27,31],"agua":false,"chance":0.0392},
+    {"dex":33,"nome":"Nidorino","glb":"pm0033_00.glb","peso":125,"raridade":"incomum","lv":[27,31],"agua":false,"chance":0.0392},
+    {"dex":49,"nome":"Venomoth","glb":"pm0049_00.glb","peso":64,"raridade":"raro","lv":[31,31],"agua":false,"chance":0.0201},
+    {"dex":113,"nome":"Chansey","glb":"pm0113_00.glb","peso":32,"raridade":"raro","lv":[27,31],"agua":false,"pesoDump":64,"chance":0.01},
+    {"dex":128,"nome":"Tauros","glb":"pm0128_00.glb","peso":32,"raridade":"raro","lv":[27,31],"agua":false,"chance":0.01},
+    {"dex":127,"nome":"Pinsir","glb":"pm0127_00.glb","peso":32,"raridade":"raro","lv":[27,31],"agua":false,"chance":0.01},
+    {"dex":31,"nome":"Nidoqueen","glb":"pm0031_00.glb","peso":16,"raridade":"muito raro","lv":[27,31],"agua":false,"pesoDump":16,"chance":0.005},
+    {"dex":34,"nome":"Nidoking","glb":"pm0034_00.glb","peso":16,"raridade":"muito raro","lv":[27,31],"agua":false,"pesoDump":16,"chance":0.005}
+   ],
+   "agua": [
+    {"dex":54,"nome":"Psyduck","glb":"pm0054.glb","peso":1000,"raridade":"comum","lv":[27,31],"agua":true,"chance":0.6667},
+    {"dex":79,"nome":"Slowpoke","glb":"pm0079_00.glb","peso":500,"raridade":"comum","lv":[27,31],"agua":true,"chance":0.3333}
+   ]
+  },
+  {
+   "id": "oeste",
+   "nome": "Oeste",
+   "nivel": [28,32],
+   "poligono": [[-258,191.5],[-297.82,183.82],[-299.23,183.23],[-299.82,181.82],[-299.82,158.18],[-293.38,140],[-258,140]],
+   "caixa": [-299.82,140,-258,191.5],
+   "areaPoligonoM2": 1926,
+   "andavelM2": 905,
+   "grama": 96,
+   "gruposDeMato": [119206],
+   "pontosDump": [79119206],
+   "lagos": [
+    {"id":7119281,"x":-292.5,"z":163.5}
+   ],
+   "terra": [
+    {"dex":29,"nome":"Nidoran♀","glb":"pm0029_00.glb","peso":1000,"raridade":"comum","lv":[28,32],"agua":false,"pesoDump":1000,"chance":0.3186},
+    {"dex":32,"nome":"Nidoran♂","glb":"pm0032_00.glb","peso":1000,"raridade":"comum","lv":[28,32],"agua":false,"pesoDump":1000,"chance":0.3186},
+    {"dex":84,"nome":"Doduo","glb":"pm0084_00.glb","peso":250,"raridade":"incomum","lv":[28,32],"agua":false,"pesoDump":250,"chance":0.0796},
+    {"dex":46,"nome":"Paras","glb":"pm0046_00.glb","peso":250,"raridade":"incomum","lv":[28,32],"agua":false,"chance":0.0796},
+    {"dex":48,"nome":"Venonat","glb":"pm0048_00.glb","peso":250,"raridade":"incomum","lv":[28,32],"agua":false,"chance":0.0796},
+    {"dex":47,"nome":"Parasect","glb":"pm0047_00.glb","peso":125,"raridade":"incomum","lv":[28,32],"agua":false,"chance":0.0398},
+    {"dex":49,"nome":"Venomoth","glb":"pm0049_00.glb","peso":64,"raridade":"raro","lv":[31,32],"agua":false,"chance":0.0204},
+    {"dex":108,"nome":"Lickitung","glb":"pm0108_00.glb","peso":64,"raridade":"raro","lv":[28,32],"agua":false,"chance":0.0204},
+    {"dex":115,"nome":"Kangaskhan","glb":"pm0115_00.glb","peso":32,"raridade":"raro","lv":[28,32],"agua":false,"chance":0.0102},
+    {"dex":128,"nome":"Tauros","glb":"pm0128_00.glb","peso":32,"raridade":"raro","lv":[28,32],"agua":false,"chance":0.0102},
+    {"dex":127,"nome":"Pinsir","glb":"pm0127_00.glb","peso":32,"raridade":"raro","lv":[28,32],"agua":false,"chance":0.0102},
+    {"dex":85,"nome":"Dodrio","glb":"pm0085_00.glb","peso":8,"raridade":"muito raro","lv":[31,32],"agua":false,"pesoDump":16,"chance":0.0025},
+    {"dex":31,"nome":"Nidoqueen","glb":"pm0031_00.glb","peso":16,"raridade":"muito raro","lv":[28,32],"agua":false,"pesoDump":16,"chance":0.0051},
+    {"dex":34,"nome":"Nidoking","glb":"pm0034_00.glb","peso":16,"raridade":"muito raro","lv":[28,32],"agua":false,"pesoDump":16,"chance":0.0051}
+   ],
+   "agua": [
+    {"dex":118,"nome":"Goldeen","glb":"pm0118_00.glb","peso":500,"raridade":"comum","lv":[28,32],"agua":true,"chance":0.3333},
+    {"dex":79,"nome":"Slowpoke","glb":"pm0079_00.glb","peso":500,"raridade":"comum","lv":[28,32],"agua":true,"chance":0.3333},
+    {"dex":54,"nome":"Psyduck","glb":"pm0054.glb","peso":500,"raridade":"comum","lv":[28,32],"agua":true,"chance":0.3333}
+   ]
+  }
+ ],
+ "pesca": {
+  "nome": "Zona Safári",
+  "area": 1192,
+  "nivel": [25,32],
+  "aguaTiles": 0,
+  "reserva": false,
+  "especies": [
+   {"dex":129,"nome":"Magikarp","glb":"pm0129_00.glb","peso":1000,"raridade":"comum","lv":[25,32],"fonte":"safari"},
+   {"dex":118,"nome":"Goldeen","glb":"pm0118_00.glb","peso":1000,"raridade":"comum","lv":[25,32],"fonte":"safari"},
+   {"dex":60,"nome":"Poliwag","glb":"pm0060_00.glb","peso":250,"raridade":"comum","lv":[25,32],"fonte":"safari"},
+   {"dex":54,"nome":"Psyduck","glb":"pm0054.glb","peso":250,"raridade":"incomum","lv":[25,32],"fonte":"safari"},
+   {"dex":79,"nome":"Slowpoke","glb":"pm0079_00.glb","peso":250,"raridade":"incomum","lv":[25,32],"fonte":"safari"},
+   {"dex":147,"nome":"Dratini","glb":"pm0147_00.glb","peso":250,"raridade":"incomum","lv":[25,32],"fonte":"safari"},
+   {"dex":130,"nome":"Gyarados","glb":"pm0130_00.glb","peso":50,"raridade":"raro","lv":[25,32],"fonte":"safari"},
+   {"dex":148,"nome":"Dragonair","glb":"pm0148_00.glb","peso":50,"raridade":"raro","lv":[30,32],"fonte":"safari"}
+  ],
+  "nota": "mesmo formato de data/pesca.json → areas[a] (lab-pesca); o nível de cada espécie é o `lv` dela (o Dragonair nunca abaixo do 30)"
+ },
+ "especies": {
+  "29": {"nome":"Nidoran♀","glb":"pm0029_00.glb","rate":235,"vel":41,"tipos":["Poison"],"pCaptura":1,"pFuga":0.0669,"exclusiva":false,"outrasAreas":[1202,1203,1204,1209,1210,1222]},
+  "30": {"nome":"Nidorina","glb":"pm0030_00.glb","rate":120,"vel":56,"tipos":["Poison"],"pCaptura":0.7058,"pFuga":0.0804,"exclusiva":false,"outrasAreas":[1209,1223]},
+  "31": {"nome":"Nidoqueen","glb":"pm0031_00.glb","rate":45,"vel":76,"tipos":["Poison","Ground"],"pCaptura":0.2647,"pFuga":0.0984,"exclusiva":true,"outrasAreas":[]},
+  "32": {"nome":"Nidoran♂","glb":"pm0032_00.glb","rate":235,"vel":50,"tipos":["Poison"],"pCaptura":1,"pFuga":0.075,"exclusiva":false,"outrasAreas":[1202,1203,1204,1209,1210,1222]},
+  "33": {"nome":"Nidorino","glb":"pm0033_00.glb","rate":120,"vel":65,"tipos":["Poison"],"pCaptura":0.7058,"pFuga":0.0885,"exclusiva":false,"outrasAreas":[1209,1223]},
+  "34": {"nome":"Nidoking","glb":"pm0034_00.glb","rate":45,"vel":85,"tipos":["Poison","Ground"],"pCaptura":0.2647,"pFuga":0.1065,"exclusiva":true,"outrasAreas":[]},
+  "46": {"nome":"Paras","glb":"pm0046_00.glb","rate":190,"vel":25,"tipos":["Bug","Grass"],"pCaptura":1,"pFuga":0.0525,"exclusiva":false,"outrasAreas":[1213,1322,1323,1324]},
+  "47": {"nome":"Parasect","glb":"pm0047_00.glb","rate":75,"vel":30,"tipos":["Bug","Grass"],"pCaptura":0.4411,"pFuga":0.057,"exclusiva":false,"outrasAreas":[1213,1318,2268,2281]},
+  "48": {"nome":"Venonat","glb":"pm0048_00.glb","rate":190,"vel":45,"tipos":["Bug","Poison"],"pCaptura":1,"pFuga":0.0705,"exclusiva":false,"outrasAreas":[1212,1213,1214,1215,1224,1225]},
+  "49": {"nome":"Venomoth","glb":"pm0049_00.glb","rate":75,"vel":90,"tipos":["Bug","Poison"],"pCaptura":0.4411,"pFuga":0.111,"exclusiva":false,"outrasAreas":[1213,1214,1215,1316,2267,2268,2281]},
+  "54": {"nome":"Psyduck","glb":"pm0054.glb","rate":190,"vel":55,"tipos":["Water"],"pCaptura":1,"pFuga":0.0795,"exclusiva":false,"outrasAreas":[1299,1310,1311]},
+  "60": {"nome":"Poliwag","glb":"pm0060_00.glb","rate":255,"vel":90,"tipos":["Water"],"pCaptura":1,"pFuga":0.111,"exclusiva":false,"outrasAreas":[1102,1210,1223,1224]},
+  "79": {"nome":"Slowpoke","glb":"pm0079_00.glb","rate":190,"vel":15,"tipos":["Water","Psychic"],"pCaptura":1,"pFuga":0.0435,"exclusiva":false,"outrasAreas":[1299,1310,1311]},
+  "84": {"nome":"Doduo","glb":"pm0084_00.glb","rate":190,"vel":75,"tipos":["Normal","Flying"],"pCaptura":1,"pFuga":0.0975,"exclusiva":false,"outrasAreas":[1216,1217,1218]},
+  "85": {"nome":"Dodrio","glb":"pm0085_00.glb","rate":45,"vel":110,"tipos":["Normal","Flying"],"pCaptura":0.2647,"pFuga":0.129,"exclusiva":false,"outrasAreas":[1318,1320,2249,2270,2275]},
+  "102": {"nome":"Exeggcute","glb":"pm0102_00.glb","rate":90,"vel":40,"tipos":["Grass","Psychic"],"pCaptura":0.5294,"pFuga":0.066,"exclusiva":false,"outrasAreas":[1215,1216,2268]},
+  "108": {"nome":"Lickitung","glb":"pm0108_00.glb","rate":45,"vel":30,"tipos":["Normal"],"pCaptura":0.2647,"pFuga":0.057,"exclusiva":false,"outrasAreas":[1218,1224]},
+  "111": {"nome":"Rhyhorn","glb":"pm0111_00.glb","rate":120,"vel":25,"tipos":["Ground","Rock"],"pCaptura":0.7058,"pFuga":0.0525,"exclusiva":false,"outrasAreas":[1317]},
+  "113": {"nome":"Chansey","glb":"pm0113_00.glb","rate":30,"vel":50,"tipos":["Normal"],"pCaptura":0.1765,"pFuga":0.075,"exclusiva":true,"outrasAreas":[]},
+  "114": {"nome":"Tangela","glb":"pm0114_00.glb","rate":45,"vel":60,"tipos":["Grass"],"pCaptura":0.2647,"pFuga":0.084,"exclusiva":false,"outrasAreas":[1221,1224,2249]},
+  "115": {"nome":"Kangaskhan","glb":"pm0115_00.glb","rate":45,"vel":90,"tipos":["Normal"],"pCaptura":0.2647,"pFuga":0.111,"exclusiva":true,"outrasAreas":[]},
+  "118": {"nome":"Goldeen","glb":"pm0118_00.glb","rate":225,"vel":63,"tipos":["Water"],"pCaptura":1,"pFuga":0.0867,"exclusiva":false,"outrasAreas":[1102,1210,1219,1220,1221,1223,1224]},
+  "123": {"nome":"Scyther","glb":"pm0123_00.glb","rate":45,"vel":105,"tipos":["Bug","Flying"],"pCaptura":0.2647,"pFuga":0.1245,"exclusiva":true,"outrasAreas":[]},
+  "127": {"nome":"Pinsir","glb":"pm0127_00.glb","rate":45,"vel":85,"tipos":["Bug"],"pCaptura":0.2647,"pFuga":0.1065,"exclusiva":true,"outrasAreas":[]},
+  "128": {"nome":"Tauros","glb":"pm0128_00.glb","rate":45,"vel":110,"tipos":["Normal"],"pCaptura":0.2647,"pFuga":0.129,"exclusiva":true,"outrasAreas":[]},
+  "129": {"nome":"Magikarp","glb":"pm0129_00.glb","rate":255,"vel":80,"tipos":["Water"],"pCaptura":1,"pFuga":0.102,"exclusiva":false,"outrasAreas":[1102,1210,1219,1220,1221,1223,1224]},
+  "130": {
+   "nome": "Gyarados",
+   "glb": "pm0130_00.glb",
+   "rate": 45,
+   "vel": 81,
+   "tipos": ["Water","Flying"],
+   "pCaptura": 0.2647,
+   "pFuga": 0.1029,
+   "exclusiva": false,
+   "outrasAreas": [2249,2250,2251,2252,2253,2255,2265,2267,2268,2270,2271,2272,2273,2275,2276,2280,2282,2285,2300]
+  },
+  "147": {"nome":"Dratini","glb":"pm0147_00.glb","rate":45,"vel":50,"tipos":["Dragon"],"pCaptura":0.2647,"pFuga":0.075,"exclusiva":true,"outrasAreas":[]},
+  "148": {"nome":"Dragonair","glb":"pm0148_00.glb","rate":45,"vel":70,"tipos":["Dragon"],"pCaptura":0.2647,"pFuga":0.093,"exclusiva":true,"outrasAreas":[]}
+ },
+ "soNoSafari": {
+  "decisao": "safari-exclusivas",
+  "resposta": "Sim (regerar o habitats.json)",
+  "especies": [
+   {"dex":113,"nome":"Chansey"},
+   {"dex":123,"nome":"Scyther"},
+   {"dex":127,"nome":"Pinsir"},
+   {"dex":128,"nome":"Tauros"}
+  ],
+  "nota": "o tools/safari.mjs tira estas espécies de toda área do data/habitats.json fora da 1192 (rode-o por último entre as ferramentas que gravam o habitat)"
+ },
+ "cantosComoAreas": {
+  "decisao": "safari-cantos-areas",
+  "resposta": "Sim: cada canto conta como área (Pinsir e Tauros chegam no Mestre), e o Kangaskhan passa a aparecer também num 3º canto (aí ele chega)",
+  "formato": "1192:<canto>",
+  "exemplo": "1192:norte",
+  "canto": "o canto em que o selvagem NASCEU (o subArea que o servidor grava no nascer; o pescado, o do lago em que foi fisgado) — A APROVAR",
+  "minimos": {"115":3,"127":2,"128":3},
+  "exclusivas": [
+   {"dex":31,"nome":"Nidoqueen","cantos":["centro","norte","oeste"]},
+   {"dex":34,"nome":"Nidoking","cantos":["centro","norte","oeste"]},
+   {"dex":113,"nome":"Chansey","cantos":["centro","norte"]},
+   {"dex":115,"nome":"Kangaskhan","cantos":["centro","leste","oeste"]},
+   {"dex":123,"nome":"Scyther","cantos":["centro","leste"]},
+   {"dex":127,"nome":"Pinsir","cantos":["norte","oeste"]},
+   {"dex":128,"nome":"Tauros","cantos":["leste","norte","oeste"]},
+   {"dex":147,"nome":"Dratini","cantos":["centro","leste","norte","oeste"]},
+   {"dex":148,"nome":"Dragonair","cantos":["centro","leste","norte","oeste"]}
+  ],
+  "nota": "quem calcula a área é o módulo (Safari.areaConhecimento), no servidor, e ela vai no scapt da captura; a pontosDe do conhecimento.mjs (e as cópias dela no servidor) conta cada valor diferente de r.ar como uma área, até 3"
+ },
+ "fora": [
+  {"dex":16,"nome":"Pidgey","fonte":"campo","motivo":"está no Safári do dump (peso 1000), mas enchimento de rota"},
+  {"dex":17,"nome":"Pidgeotto","fonte":"campo","motivo":"está no Safári do dump (peso 250), mas enchimento de rota"},
+  {"dex":18,"nome":"Pidgeot","fonte":"jogo","motivo":"evolui no Lv 36 (acima da faixa 25–32)"},
+  {"dex":19,"nome":"Rattata","fonte":"campo","motivo":"está no Safári do dump (peso 1000), mas enchimento de rota"},
+  {"dex":20,"nome":"Raticate","fonte":"campo","motivo":"está no Safári do dump (peso 64), mas enchimento de rota"},
+  {"dex":28,"nome":"Sandslash","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":36,"nome":"Clefable","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":38,"nome":"Ninetales","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":45,"nome":"Vileplume","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":55,"nome":"Golduck","fonte":"jogo","motivo":"do Safári clássico, mas evolui no Lv 33 (acima da faixa 25–32)"},
+  {"dex":59,"nome":"Arcanine","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":62,"nome":"Poliwrath","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":68,"nome":"Machamp","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":71,"nome":"Victreebel","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":78,"nome":"Rapidash","fonte":"jogo","motivo":"evolui no Lv 40 (acima da faixa 25–32)"},
+  {"dex":89,"nome":"Muk","fonte":"jogo","motivo":"evolui no Lv 38 (acima da faixa 25–32)"},
+  {"dex":91,"nome":"Cloyster","fonte":"jogo","agua":true,"motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":94,"nome":"Gengar","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":95,"nome":"Onix","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":97,"nome":"Hypno","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":99,"nome":"Kingler","fonte":"jogo","agua":true,"motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":101,"nome":"Electrode","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":103,"nome":"Exeggutor","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":105,"nome":"Marowak","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":110,"nome":"Weezing","fonte":"jogo","motivo":"evolui no Lv 35 (acima da faixa 25–32)"},
+  {"dex":119,"nome":"Seaking","fonte":"jogo","agua":true,"motivo":"evolui no Lv 33 (acima da faixa 25–32)"},
+  {"dex":125,"nome":"Electabuzz","fonte":"jogo","motivo":"está no Safári do dump (peso 64), mas é da Usina Elétrica"},
+  {"dex":126,"nome":"Magmar","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":131,"nome":"Lapras","fonte":"jogo","motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":134,"nome":"Vaporeon","fonte":"jogo","agua":true,"motivo":"veio do texto de habitat do dump (\"safári\" de outra região casou com Kanto); não é do Safári de Kanto"},
+  {"dex":376,"nome":"Metagross","fonte":"jogo","motivo":"não é de Kanto"}
+ ],
+ "dump": {
+  "campo": {
+   "caixas": 15,
+   "iguais": true,
+   "somaPeso": 5347,
+   "nivel": [40],
+   "especies": [
+    {"dex":16,"nome":"Pidgey","peso":1000,"pct":18.7,"uso":"fora","motivo":"enchimento de rota"},
+    {"dex":19,"nome":"Rattata","peso":1000,"pct":18.7,"uso":"fora","motivo":"enchimento de rota"},
+    {"dex":29,"nome":"Nidoran♀","peso":1000,"pct":18.7,"uso":"terra"},
+    {"dex":32,"nome":"Nidoran♂","peso":1000,"pct":18.7,"uso":"terra"},
+    {"dex":17,"nome":"Pidgeotto","peso":250,"pct":4.68,"uso":"fora","motivo":"enchimento de rota"},
+    {"dex":84,"nome":"Doduo","peso":250,"pct":4.68,"uso":"terra"},
+    {"dex":147,"nome":"Dratini","peso":125,"pct":2.34,"uso":"pesca"},
+    {"dex":633,"nome":"Deino","peso":125,"pct":2.34,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":999,"nome":"Gimmighoul","peso":125,"pct":2.34,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":996,"nome":"Frigibax","peso":125,"pct":2.34,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":20,"nome":"Raticate","peso":64,"pct":1.2,"uso":"fora","motivo":"enchimento de rota"},
+    {"dex":85,"nome":"Dodrio","peso":16,"pct":0.3,"uso":"terra"},
+    {"dex":148,"nome":"Dragonair","peso":32,"pct":0.6,"uso":"pesca"},
+    {"dex":634,"nome":"Zweilous","peso":32,"pct":0.6,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":997,"nome":"Arctibax","peso":32,"pct":0.6,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":113,"nome":"Chansey","peso":64,"pct":1.2,"uso":"terra"},
+    {"dex":125,"nome":"Electabuzz","peso":64,"pct":1.2,"uso":"fora","motivo":"é da Usina Elétrica"},
+    {"dex":31,"nome":"Nidoqueen","peso":16,"pct":0.3,"uso":"terra"},
+    {"dex":34,"nome":"Nidoking","peso":16,"pct":0.3,"uso":"terra"},
+    {"dex":1000,"nome":"Gholdengo","peso":8,"pct":0.15,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":149,"nome":"Dragonite","peso":1,"pct":0.02,"uso":"fora","motivo":"pseudo-lendário (evolui no 55)"},
+    {"dex":635,"nome":"Hydreigon","peso":1,"pct":0.02,"uso":"fora","motivo":"não é de Kanto"},
+    {"dex":998,"nome":"Baxcalibur","peso":1,"pct":0.02,"uso":"fora","motivo":"não é de Kanto"}
+   ]
+  },
+  "pesca": {
+   "caixas": 4,
+   "varas": [50401,50402,50403],
+   "especiesVara1": [
+    {"dex":129,"nome":"Magikarp","peso":1000},
+    {"dex":602,"nome":"Tynamo","peso":1000},
+    {"dex":60,"nome":"Poliwag","peso":250},
+    {"dex":118,"nome":"Goldeen","peso":250},
+    {"dex":594,"nome":"Alomomola","peso":64},
+    {"dex":618,"nome":"Stunfisk","peso":64},
+    {"dex":516,"nome":"Simipour","peso":16},
+    {"dex":604,"nome":"Eelektross","peso":16},
+    {"dex":91,"nome":"Cloyster","peso":16},
+    {"dex":134,"nome":"Vaporeon","peso":16}
+   ]
+  },
+  "mapa": {"id":101,"nome":"Campo de Safári de Kanto","ingresso":[50411,1],"bolas":[1005,30]},
+  "acoes": [
+   {"id":1,"nome":"mudBall","skill":90002,"item":null,"icone":"ic_ball_30"},
+   {"id":2,"nome":"bait","skill":90001,"item":null,"icone":"ic__0055_5"},
+   {"id":3,"nome":null,"skill":null,"item":1005,"icone":null}
+  ],
+  "escada": {"0":1,"-6":0.25,"-5":0.286,"-4":0.3333,"-3":0.4,"-2":0.5,"-1":0.6667,"+1":1.5,"+2":2,"+3":2.5,"+4":3,"+5":3.5,"+6":4},
+  "horarios": [
+   [[10,0],[12,0]],
+   [[20,0],[22,0]]
+  ],
+  "itensNoChao": 12,
+  "portasDentro": [6119201,6119202,6119203,6119204,6119205,6119206]
+ },
+ "textos": {
+  "sem_sessao": {"pt":"Você não está numa sessão do Safári.","en":"You are not in a Safari session.","es":"No estás en una sesión del Safari."},
+  "sessao_invalida": {"pt":"Essa sessão do Safári já terminou.","en":"That Safari session is over.","es":"Esa sesión del Safari ya terminó."},
+  "sessao_de_outra_conta": {"pt":"Essa sessão do Safári é de outra conta.","en":"That Safari session belongs to another account.","es":"Esa sesión del Safari es de otra cuenta."},
+  "ja_dentro": {"pt":"Você já está numa sessão do Safári.","en":"You are already in a Safari session.","es":"Ya estás en una sesión del Safari."},
+  "sem_dinheiro": {"pt":"A entrada custa {n} Moedas.","en":"The entry costs {n} Coins.","es":"La entrada cuesta {n} Monedas."},
+  "longe_da_entrada": {"pt":"Fale com o atendente no portão do Safári, em Fuchsia.","en":"Talk to the attendant at the Safari gate in Fuchsia.","es":"Habla con el encargado en la puerta del Safari, en Fuchsia."},
+  "fora_da_zona": {"pt":"Isso só vale dentro do Safári.","en":"That only works inside the Safari.","es":"Eso solo sirve dentro del Safari."},
+  "longe": {"pt":"Chegue mais perto do Pokémon.","en":"Get closer to the Pokémon.","es":"Acércate más al Pokémon."},
+  "bola_errada": {"pt":"No Safári só vale a Bola Safári.","en":"Only Safari Balls work in the Safari.","es":"En el Safari solo vale la Safari Ball."},
+  "bola_safari_fora": {"pt":"A Bola Safári só funciona dentro do Safári.","en":"Safari Balls only work inside the Safari.","es":"La Safari Ball solo funciona dentro del Safari."},
+  "nao_e_do_safari": {"pt":"Esse Pokémon não é do Safári.","en":"That Pokémon is not from the Safari.","es":"Ese Pokémon no es del Safari."},
+  "sem_bolas": {"pt":"Suas Bolas Safári acabaram.","en":"You are out of Safari Balls.","es":"Se acabaron tus Safari Balls."},
+  "na_bola": {"pt":"Espere a bola terminar.","en":"Wait for the ball to finish.","es":"Espera a que termine la Ball."},
+  "alheio": {"pt":"Só quem lutou com esse Pokémon pode capturá-lo.","en":"Only trainers who fought that Pokémon can catch it.","es":"Solo quien luchó con ese Pokémon puede capturarlo."},
+  "ritmo": {"pt":"Calma: espere um instante.","en":"Easy: wait a moment.","es":"Calma: espera un momento."},
+  "sumiu": {"pt":"Esse Pokémon não está mais aqui.","en":"That Pokémon is gone.","es":"Ese Pokémon ya no está."},
+  "acordado": {
+   "pt": "Derrube o Pokémon primeiro: a Bola Safári só pega o caído.",
+   "en": "Knock the Pokémon out first: the Safari Ball only catches a fainted one.",
+   "es": "Primero debilita al Pokémon: la Safari Ball solo atrapa al que está debilitado."
+  },
+  "outro": {"pt":"Já tem uma bola nesse Pokémon: espere ela terminar.","en":"There is already a ball on that Pokémon: wait for it to finish.","es":"Ya hay una Ball en ese Pokémon: espera a que termine."},
+  "prioridade": {
+   "pt": "Quem derrubou esse Pokémon tem a primeira chance: espere um instante.",
+   "en": "Whoever knocked that Pokémon out gets the first chance: wait a moment.",
+   "es": "Quien debilitó a ese Pokémon tiene la primera oportunidad: espera un momento."
+  },
+  "desligado": {
+   "pt": "No Safári se captura lutando: derrube o Pokémon e use a Bola Safári.",
+   "en": "In the Safari you catch by battling: knock the Pokémon out and use a Safari Ball.",
+   "es": "En el Safari se captura luchando: debilita al Pokémon y usa la Safari Ball."
+  },
+  "caido": {"pt":"Esse Pokémon já está caído: jogue a Bola Safári.","en":"That Pokémon has already fainted: throw a Safari Ball.","es":"Ese Pokémon ya está debilitado: lánzale una Safari Ball."},
+  "cacada": {"pt":"Outro treinador está caçando esse Pokémon.","en":"Another trainer is already after that Pokémon.","es":"Otro entrenador ya va por ese Pokémon."},
+  "entrou": {
+   "pt": "Boas-vindas à Zona Safári! Você tem {n} Bolas Safári e {m} minutos.",
+   "en": "Welcome to the Safari Zone! You have {n} Safari Balls and {m} minutes.",
+   "es": "¡Te damos la bienvenida a la Zona Safari! Tienes {n} Safari Balls y {m} minutos."
+  },
+  "fim_tempo": {"pt":"O tempo do Safári acabou! Voltando pra entrada.","en":"Safari time is up! Heading back to the gate.","es":"¡Se acabó el tiempo del Safari! Volviendo a la entrada."},
+  "fim_bolas": {"pt":"Suas Bolas Safári acabaram! Voltando pra entrada.","en":"You are out of Safari Balls! Heading back to the gate.","es":"¡Se acabaron tus Safari Balls! Volviendo a la entrada."},
+  "fim_saiu": {
+   "pt": "Você saiu do Safári. As Bolas Safári que sobraram ficaram com o atendente.",
+   "en": "You left the Safari. Your leftover Safari Balls stay with the attendant.",
+   "es": "Saliste del Safari. Las Safari Balls que sobraron se quedan con el encargado."
+  },
+  "fim_fora": {"pt":"Você saiu da área do Safári e a sessão terminou.","en":"You left the Safari area and the session ended.","es":"Saliste del área del Safari y la sesión terminó."},
+  "isca": {"pt":"{x} está comendo a isca.","en":"{x} is eating the bait.","es":"{x} está comiendo el cebo."},
+  "pedra": {"pt":"{x} ficou bravo!","en":"{x} got angry!","es":"¡{x} se enfadó!"},
+  "fugiu": {"pt":"{x} fugiu!","en":"{x} fled!","es":"¡{x} huyó!"},
+  "acao_isca": {"pt":"Isca","en":"Bait","es":"Cebo"},
+  "acao_pedra": {"pt":"Pedra","en":"Rock","es":"Roca"},
+  "acao_bola": {"pt":"Bola Safári","en":"Safari Ball","es":"Safari Ball"},
+  "painel_bolas": {"pt":"Bolas Safári: {n}","en":"Safari Balls: {n}","es":"Safari Balls: {n}"},
+  "painel_tempo": {"pt":"Tempo: {x}","en":"Time: {x}","es":"Tiempo: {x}"},
+  "atendente_nome": {"pt":"Atendente do Safári","en":"Safari Attendant","es":"Encargado del Safari"},
+  "atendente_oi": {
+   "pt": "Boas-vindas à Zona Safári! A entrada custa {n} Moedas: são {b} Bolas Safári e {m} minutos. Aqui só vale a Bola Safári: lute, derrube o Pokémon e jogue a bola nele. Quer entrar?",
+   "en": "Welcome to the Safari Zone! Entry costs {n} Coins: {b} Safari Balls and {m} minutes. Only Safari Balls work here: battle, knock the Pokémon out and throw the ball. Want to go in?",
+   "es": "¡Te damos la bienvenida a la Zona Safari! La entrada cuesta {n} Monedas: {b} Safari Balls y {m} minutos. Aquí solo vale la Safari Ball: lucha, debilita al Pokémon y lánzale la Ball. ¿Quieres entrar?"
+  }
+ },
+ "mapaBancada": {
+  "nota": "só pra desenhar (bancada); o servidor não usa",
+  "grama": [[-233.5,184.5],[-234.5,184.5],[-235.5,184.5],[-236.5,184.5],[-237.5,184.5],[-238.5,184.5],[-239.5,184.5],[-240.5,184.5],[-233.5,185.5],[-234.5,185.5],[-235.5,185.5],[-236.5,185.5],[-237.5,185.5],[-238.5,185.5],[-239.5,185.5],[-240.5,185.5],[-233.5,186.5],[-234.5,186.5],[-235.5,186.5],[-236.5,186.5],[-237.5,186.5],[-238.5,186.5],[-239.5,186.5],[-240.5,186.5],[-233.5,187.5],[-234.5,187.5],[-235.5,187.5],[-236.5,187.5],[-237.5,187.5],[-238.5,187.5],[-239.5,187.5],[-240.5,187.5],[-233.5,188.5],[-234.5,188.5],[-235.5,188.5],[-236.5,188.5],[-237.5,188.5],[-238.5,188.5],[-239.5,188.5],[-240.5,188.5],[-232.5,185.5],[-232.5,186.5],[-241.5,185.5],[-241.5,186.5],[-232.5,189.5],[-233.5,189.5],[-234.5,189.5],[-235.5,189.5],[-236.5,189.5],[-237.5,189.5],[-238.5,189.5],[-230.5,188.5],[-231.5,188.5],[-232.5,188.5],[-218.5,178.5],[-219.5,178.5],[-218.5,179.5],[-219.5,179.5],[-216.5,179.5],[-217.5,179.5],[-214.5,180.5],[-215.5,180.5],[-216.5,180.5],[-217.5,180.5],[-218.5,180.5],[-214.5,181.5],[-215.5,181.5],[-216.5,181.5],[-217.5,181.5],[-218.5,181.5],[-214.5,182.5],[-215.5,182.5],[-216.5,182.5],[-217.5,182.5],[-218.5,182.5],[-212.5,181.5],[-213.5,181.5],[-212.5,182.5],[-213.5,182.5],[-214.5,183.5],[-215.5,183.5],[-216.5,183.5],[-217.5,183.5],[-212.5,184.5],[-213.5,184.5],[-214.5,184.5],[-215.5,184.5],[-216.5,184.5],[-217.5,184.5],[-218.5,184.5],[-213.5,185.5],[-214.5,185.5],[-215.5,185.5],[-216.5,185.5],[-217.5,185.5],[-218.5,185.5],[-215.5,186.5],[-216.5,186.5],[-217.5,186.5],[-218.5,186.5],[-219.5,186.5],[-216.5,187.5],[-217.5,187.5],[-218.5,187.5],[-219.5,187.5],[-217.5,188.5],[-218.5,188.5],[-219.5,188.5],[-220.5,188.5],[-218.5,189.5],[-219.5,189.5],[-220.5,189.5],[-221.5,189.5],[-237.5,170.5],[-237.5,171.5],[-237.5,172.5],[-237.5,173.5],[-237.5,174.5],[-237.5,175.5],[-237.5,176.5],[-237.5,177.5],[-237.5,178.5],[-237.5,179.5],[-238.5,171.5],[-238.5,172.5],[-238.5,173.5],[-238.5,174.5],[-238.5,175.5],[-238.5,176.5],[-238.5,177.5],[-238.5,178.5],[-238.5,179.5],[-239.5,174.5],[-239.5,175.5],[-239.5,176.5],[-237.5,166.5],[-238.5,166.5],[-239.5,166.5],[-240.5,166.5],[-241.5,166.5],[-242.5,166.5],[-243.5,166.5],[-237.5,167.5],[-238.5,167.5],[-239.5,167.5],[-240.5,167.5],[-241.5,167.5],[-242.5,167.5],[-243.5,167.5],[-237.5,168.5],[-238.5,168.5],[-239.5,168.5],[-240.5,168.5],[-241.5,168.5],[-242.5,168.5],[-243.5,168.5],[-236.5,165.5],[-237.5,165.5],[-238.5,165.5],[-239.5,165.5],[-240.5,165.5],[-241.5,165.5],[-242.5,165.5],[-236.5,166.5],[-236.5,167.5],[-239.5,164.5],[-240.5,164.5],[-238.5,164.5],[-238.5,169.5],[-239.5,169.5],[-240.5,169.5],[-241.5,169.5],[-242.5,169.5],[-240.5,170.5],[-241.5,170.5],[-242.5,170.5],[-241.5,171.5],[-221.5,166.5],[-222.5,166.5],[-223.5,166.5],[-224.5,166.5],[-221.5,167.5],[-222.5,167.5],[-223.5,167.5],[-224.5,167.5],[-221.5,168.5],[-222.5,168.5],[-223.5,168.5],[-224.5,168.5],[-221.5,169.5],[-222.5,169.5],[-223.5,169.5],[-224.5,169.5],[-225.5,167.5],[-225.5,168.5],[-216.5,165.5],[-217.5,165.5],[-218.5,165.5],[-219.5,165.5],[-220.5,165.5],[-221.5,165.5],[-222.5,165.5],[-223.5,165.5],[-216.5,166.5],[-217.5,166.5],[-218.5,166.5],[-219.5,166.5],[-220.5,166.5],[-216.5,167.5],[-217.5,167.5],[-218.5,167.5],[-219.5,167.5],[-220.5,167.5],[-216.5,168.5],[-217.5,168.5],[-218.5,168.5],[-219.5,168.5],[-220.5,168.5],[-215.5,166.5],[-215.5,167.5],[-217.5,169.5],[-218.5,169.5],[-219.5,169.5],[-218.5,164.5],[-219.5,164.5],[-220.5,164.5],[-221.5,164.5],[-223.5,144.5],[-224.5,144.5],[-225.5,144.5],[-226.5,144.5],[-227.5,144.5],[-228.5,144.5],[-229.5,144.5],[-230.5,144.5],[-223.5,145.5],[-224.5,145.5],[-225.5,145.5],[-226.5,145.5],[-227.5,145.5],[-228.5,145.5],[-223.5,146.5],[-224.5,146.5],[-225.5,146.5],[-226.5,146.5],[-227.5,146.5],[-228.5,146.5],[-221.5,146.5],[-222.5,146.5],[-220.5,147.5],[-221.5,147.5],[-222.5,147.5],[-223.5,147.5],[-224.5,147.5],[-225.5,147.5],[-226.5,147.5],[-220.5,148.5],[-221.5,148.5],[-222.5,148.5],[-223.5,148.5],[-224.5,148.5],[-225.5,148.5],[-226.5,148.5],[-222.5,149.5],[-223.5,149.5],[-224.5,149.5],[-292.5,173.5],[-293.5,173.5],[-294.5,173.5],[-292.5,174.5],[-293.5,174.5],[-294.5,174.5],[-295.5,174.5],[-292.5,175.5],[-293.5,175.5],[-294.5,175.5],[-295.5,175.5],[-292.5,176.5],[-293.5,176.5],[-294.5,176.5],[-295.5,176.5],[-275.5,177.5],[-276.5,177.5],[-277.5,177.5],[-278.5,177.5],[-279.5,177.5],[-280.5,177.5],[-281.5,177.5],[-282.5,177.5],[-283.5,177.5],[-284.5,177.5],[-285.5,177.5],[-286.5,177.5],[-287.5,177.5],[-288.5,177.5],[-289.5,177.5],[-290.5,177.5],[-291.5,177.5],[-292.5,177.5],[-293.5,177.5],[-276.5,176.5],[-277.5,176.5],[-278.5,176.5],[-279.5,176.5],[-280.5,176.5],[-281.5,176.5],[-282.5,176.5],[-283.5,176.5],[-284.5,176.5],[-285.5,176.5],[-286.5,176.5],[-287.5,176.5],[-288.5,176.5],[-289.5,176.5],[-290.5,176.5],[-291.5,176.5],[-275.5,178.5],[-276.5,178.5],[-277.5,178.5],[-278.5,178.5],[-279.5,178.5],[-280.5,178.5],[-281.5,178.5],[-282.5,178.5],[-283.5,178.5],[-284.5,178.5],[-285.5,178.5],[-286.5,178.5],[-287.5,178.5],[-288.5,178.5],[-289.5,178.5],[-290.5,178.5],[-291.5,178.5],[-292.5,178.5],[-277.5,179.5],[-278.5,179.5],[-279.5,179.5],[-280.5,179.5],[-281.5,179.5],[-282.5,179.5],[-283.5,179.5],[-284.5,179.5],[-285.5,179.5],[-286.5,179.5],[-287.5,179.5],[-288.5,179.5],[-289.5,179.5],[-290.5,179.5],[-291.5,179.5],[-285.5,180.5],[-286.5,180.5],[-287.5,180.5],[-288.5,180.5],[-289.5,180.5],[-286.5,181.5],[-287.5,181.5],[-288.5,181.5],[-279.5,180.5],[-280.5,180.5],[-279.5,181.5],[-280.5,181.5],[-278.5,180.5],[-184.5,160.5],[-184.5,161.5],[-184.5,162.5],[-185.5,161.5],[-186.5,162.5],[-185.5,162.5],[-187.5,163.5],[-187.5,164.5],[-187.5,165.5],[-187.5,166.5],[-184.5,167.5],[-185.5,167.5],[-186.5,167.5],[-184.5,168.5],[-185.5,168.5],[-184.5,169.5],[-179.5,164.5],[-180.5,164.5],[-181.5,164.5],[-182.5,164.5],[-183.5,164.5],[-184.5,164.5],[-179.5,165.5],[-180.5,165.5],[-181.5,165.5],[-182.5,165.5],[-183.5,165.5],[-184.5,165.5],[-180.5,166.5],[-181.5,166.5],[-182.5,166.5],[-183.5,166.5],[-181.5,167.5],[-182.5,167.5],[-180.5,163.5],[-181.5,163.5],[-182.5,163.5],[-183.5,163.5],[-181.5,162.5],[-182.5,162.5],[-179.5,160.5],[-179.5,161.5],[-179.5,162.5],[-178.5,161.5],[-178.5,162.5],[-177.5,162.5],[-179.5,167.5],[-179.5,168.5],[-179.5,169.5],[-178.5,167.5],[-178.5,168.5],[-177.5,167.5],[-169.5,163.5],[-170.5,163.5],[-171.5,163.5],[-172.5,163.5],[-173.5,163.5],[-169.5,164.5],[-170.5,164.5],[-171.5,164.5],[-172.5,164.5],[-173.5,164.5],[-158.5,176.5],[-159.5,176.5],[-160.5,176.5],[-161.5,176.5],[-162.5,176.5],[-163.5,176.5],[-164.5,176.5],[-165.5,176.5],[-166.5,176.5],[-167.5,176.5],[-168.5,176.5],[-169.5,176.5],[-170.5,176.5],[-159.5,177.5],[-160.5,177.5],[-161.5,177.5],[-162.5,177.5],[-163.5,177.5],[-164.5,177.5],[-165.5,177.5],[-166.5,177.5],[-167.5,177.5],[-168.5,177.5],[-169.5,177.5],[-156.5,174.5],[-157.5,174.5],[-158.5,174.5],[-159.5,174.5],[-160.5,174.5],[-161.5,174.5],[-162.5,174.5],[-163.5,174.5],[-164.5,174.5],[-165.5,174.5],[-166.5,174.5],[-167.5,174.5],[-156.5,175.5],[-157.5,175.5],[-158.5,175.5],[-159.5,175.5],[-160.5,175.5],[-161.5,175.5],[-162.5,175.5],[-163.5,175.5],[-164.5,175.5],[-165.5,175.5],[-166.5,175.5],[-167.5,175.5],[-157.5,172.5],[-158.5,172.5],[-157.5,173.5],[-158.5,173.5],[-156.5,173.5],[-159.5,172.5],[-159.5,173.5],[-161.5,148.5],[-162.5,148.5],[-163.5,148.5],[-164.5,148.5],[-165.5,148.5],[-166.5,148.5],[-167.5,148.5],[-168.5,148.5],[-169.5,148.5],[-170.5,148.5],[-171.5,148.5],[-172.5,148.5],[-173.5,148.5],[-174.5,148.5],[-175.5,148.5],[-176.5,148.5],[-177.5,148.5],[-178.5,148.5],[-179.5,148.5],[-180.5,148.5],[-181.5,148.5],[-163.5,149.5],[-164.5,149.5],[-165.5,149.5],[-166.5,149.5],[-167.5,149.5],[-168.5,149.5],[-169.5,149.5],[-170.5,149.5],[-171.5,149.5],[-172.5,149.5],[-173.5,149.5],[-174.5,149.5],[-175.5,149.5],[-176.5,149.5],[-177.5,149.5],[-178.5,149.5],[-179.5,149.5],[-180.5,149.5],[-181.5,149.5],[-166.5,150.5],[-167.5,150.5],[-168.5,150.5],[-169.5,150.5],[-170.5,150.5],[-171.5,150.5],[-172.5,150.5],[-173.5,150.5],[-174.5,150.5],[-175.5,150.5],[-176.5,150.5],[-177.5,150.5],[-178.5,150.5],[-179.5,150.5],[-166.5,151.5],[-167.5,151.5],[-168.5,151.5],[-169.5,151.5],[-170.5,151.5],[-171.5,151.5],[-172.5,151.5],[-173.5,151.5],[-174.5,151.5],[-175.5,151.5],[-176.5,151.5],[-177.5,151.5],[-178.5,151.5],[-179.5,151.5],[-166.5,152.5],[-167.5,152.5],[-168.5,152.5],[-169.5,152.5],[-170.5,152.5],[-171.5,152.5],[-172.5,152.5],[-173.5,152.5],[-174.5,152.5],[-175.5,152.5],[-176.5,152.5],[-177.5,152.5],[-178.5,152.5],[-179.5,152.5],[-164.5,150.5],[-165.5,151.5],[-169.5,153.5],[-170.5,153.5],[-171.5,153.5],[-172.5,153.5],[-173.5,153.5],[-174.5,153.5],[-175.5,153.5],[-176.5,153.5],[-177.5,153.5],[-165.5,150.5],[-154.5,154.5],[-155.5,154.5],[-156.5,154.5],[-157.5,154.5],[-158.5,154.5],[-159.5,154.5],[-160.5,154.5],[-161.5,154.5],[-162.5,154.5],[-163.5,154.5],[-164.5,154.5],[-165.5,154.5],[-154.5,155.5],[-155.5,155.5],[-156.5,155.5],[-157.5,155.5],[-158.5,155.5],[-159.5,155.5],[-160.5,155.5],[-161.5,155.5],[-162.5,155.5],[-163.5,155.5],[-164.5,155.5],[-165.5,155.5],[-154.5,153.5],[-155.5,153.5],[-156.5,153.5],[-157.5,153.5],[-158.5,153.5],[-159.5,153.5],[-160.5,153.5],[-161.5,153.5],[-162.5,153.5],[-163.5,153.5],[-154.5,152.5],[-155.5,152.5],[-156.5,152.5],[-157.5,152.5],[-158.5,152.5],[-159.5,152.5],[-160.5,152.5],[-161.5,152.5],[-162.5,152.5],[-155.5,151.5],[-156.5,151.5],[-157.5,151.5],[-158.5,151.5],[-159.5,151.5],[-160.5,151.5],[-161.5,151.5],[-162.5,156.5],[-163.5,156.5],[-162.5,157.5],[-163.5,157.5],[-162.5,158.5],[-163.5,158.5],[-161.5,156.5],[-161.5,157.5],[-164.5,157.5],[-165.5,157.5],[-246.5,120.5],[-247.5,120.5],[-248.5,120.5],[-249.5,120.5],[-250.5,120.5],[-251.5,120.5],[-252.5,120.5],[-253.5,120.5],[-246.5,121.5],[-247.5,121.5],[-248.5,121.5],[-249.5,121.5],[-250.5,121.5],[-251.5,121.5],[-252.5,121.5],[-253.5,121.5],[-246.5,122.5],[-247.5,122.5],[-248.5,122.5],[-249.5,122.5],[-250.5,122.5],[-251.5,122.5],[-252.5,122.5],[-253.5,122.5],[-246.5,123.5],[-247.5,123.5],[-248.5,123.5],[-249.5,123.5],[-250.5,123.5],[-251.5,123.5],[-252.5,123.5],[-253.5,123.5],[-246.5,124.5],[-247.5,124.5],[-248.5,124.5],[-249.5,124.5],[-250.5,124.5],[-251.5,124.5],[-252.5,124.5],[-253.5,124.5],[-246.5,125.5],[-247.5,125.5],[-248.5,125.5],[-249.5,125.5],[-250.5,125.5],[-251.5,125.5],[-252.5,125.5],[-253.5,125.5],[-246.5,126.5],[-247.5,126.5],[-248.5,126.5],[-249.5,126.5],[-250.5,126.5],[-251.5,126.5],[-252.5,126.5],[-253.5,126.5],[-246.5,127.5],[-247.5,127.5],[-248.5,127.5],[-249.5,127.5],[-250.5,127.5],[-251.5,127.5],[-252.5,127.5],[-246.5,128.5],[-247.5,128.5],[-248.5,128.5],[-249.5,128.5],[-250.5,128.5],[-246.5,129.5],[-247.5,129.5],[-248.5,129.5],[-249.5,129.5],[-250.5,129.5],[-246.5,130.5],[-247.5,130.5],[-248.5,130.5],[-249.5,130.5],[-255.5,124.5],[-254.5,124.5],[-254.5,125.5],[-254.5,126.5],[-268.5,119.5],[-268.5,120.5],[-268.5,121.5],[-268.5,122.5],[-268.5,123.5],[-268.5,124.5],[-268.5,125.5],[-262.5,119.5],[-263.5,119.5],[-264.5,119.5],[-265.5,119.5],[-266.5,119.5],[-267.5,119.5],[-262.5,120.5],[-263.5,120.5],[-264.5,120.5],[-265.5,120.5],[-266.5,120.5],[-267.5,120.5],[-262.5,121.5],[-263.5,121.5],[-262.5,122.5],[-263.5,122.5],[-263.5,123.5],[-263.5,118.5],[-264.5,118.5],[-265.5,118.5],[-266.5,118.5],[-269.5,120.5],[-269.5,121.5],[-269.5,122.5],[-269.5,123.5],[-262.5,112.5],[-263.5,112.5],[-264.5,112.5],[-265.5,112.5],[-266.5,112.5],[-262.5,113.5],[-263.5,113.5],[-264.5,113.5],[-265.5,113.5],[-266.5,113.5],[-265.5,114.5],[-264.5,114.5],[-259.5,111.5],[-260.5,111.5],[-261.5,111.5],[-262.5,111.5],[-263.5,111.5],[-264.5,111.5],[-260.5,106.5],[-261.5,106.5],[-262.5,106.5],[-260.5,107.5],[-261.5,107.5],[-262.5,107.5],[-260.5,108.5],[-261.5,108.5],[-262.5,108.5],[-260.5,109.5],[-261.5,109.5],[-262.5,109.5],[-260.5,110.5],[-261.5,110.5],[-262.5,110.5],[-259.5,108.5],[-259.5,109.5],[-272.5,97.5],[-273.5,97.5],[-266.5,97.5],[-267.5,97.5],[-268.5,97.5],[-266.5,98.5],[-267.5,98.5],[-268.5,98.5],[-269.5,98.5],[-270.5,98.5],[-271.5,98.5],[-272.5,98.5],[-273.5,98.5],[-274.5,98.5],[-266.5,99.5],[-267.5,99.5],[-268.5,99.5],[-269.5,99.5],[-270.5,99.5],[-271.5,99.5],[-272.5,99.5],[-273.5,99.5],[-274.5,99.5],[-267.5,100.5],[-268.5,100.5],[-269.5,100.5],[-270.5,100.5],[-271.5,100.5],[-272.5,100.5],[-273.5,100.5],[-267.5,101.5],[-268.5,101.5],[-269.5,101.5],[-270.5,101.5],[-271.5,101.5],[-272.5,101.5],[-273.5,101.5],[-267.5,102.5],[-268.5,102.5],[-269.5,102.5],[-270.5,102.5],[-271.5,102.5],[-272.5,102.5],[-273.5,102.5],[-267.5,103.5],[-268.5,103.5],[-269.5,103.5],[-270.5,103.5],[-271.5,103.5],[-272.5,103.5],[-273.5,103.5],[-267.5,104.5],[-268.5,104.5],[-269.5,104.5],[-270.5,104.5],[-271.5,104.5],[-272.5,104.5],[-273.5,104.5],[-267.5,105.5],[-268.5,105.5],[-269.5,105.5],[-270.5,105.5],[-271.5,105.5],[-272.5,105.5],[-273.5,105.5],[-268.5,106.5],[-267.5,106.5],[-272.5,106.5],[-274.5,103.5],[-274.5,102.5],[-229.5,101.5],[-230.5,101.5],[-231.5,101.5],[-232.5,101.5],[-233.5,101.5],[-234.5,101.5],[-235.5,101.5],[-236.5,101.5],[-229.5,102.5],[-230.5,102.5],[-231.5,102.5],[-232.5,102.5],[-233.5,102.5],[-234.5,102.5],[-235.5,102.5],[-236.5,102.5],[-229.5,103.5],[-230.5,103.5],[-231.5,103.5],[-232.5,103.5],[-233.5,103.5],[-234.5,103.5],[-235.5,103.5],[-236.5,103.5],[-229.5,104.5],[-230.5,104.5],[-231.5,104.5],[-232.5,104.5],[-233.5,104.5],[-234.5,104.5],[-235.5,104.5],[-236.5,104.5],[-229.5,100.5],[-230.5,100.5],[-231.5,100.5],[-232.5,100.5],[-233.5,100.5],[-234.5,100.5],[-228.5,99.5],[-229.5,99.5],[-230.5,99.5],[-231.5,99.5],[-232.5,99.5],[-233.5,99.5],[-227.5,98.5],[-228.5,98.5],[-229.5,98.5],[-230.5,98.5],[-231.5,98.5],[-232.5,98.5],[-226.5,97.5],[-227.5,97.5],[-228.5,97.5],[-229.5,97.5],[-230.5,97.5],[-231.5,97.5],[-226.5,96.5],[-227.5,96.5],[-228.5,96.5],[-229.5,96.5],[-230.5,96.5],[-229.5,105.5],[-230.5,105.5],[-231.5,105.5],[-232.5,105.5],[-233.5,105.5],[-234.5,105.5],[-235.5,105.5],[-228.5,106.5],[-229.5,106.5],[-230.5,106.5],[-231.5,106.5],[-232.5,106.5],[-233.5,106.5],[-234.5,106.5],[-228.5,107.5],[-229.5,107.5],[-230.5,107.5],[-231.5,107.5],[-232.5,107.5],[-233.5,107.5],[-234.5,107.5],[-227.5,107.5],[-227.5,108.5],[-228.5,108.5],[-229.5,108.5],[-230.5,108.5],[-231.5,108.5],[-232.5,108.5],[-227.5,109.5],[-228.5,109.5],[-229.5,109.5],[-230.5,109.5],[-231.5,109.5],[-232.5,109.5],[-226.5,108.5],[-226.5,109.5],[-225.5,109.5],[-233.5,108.5],[-224.5,110.5],[-225.5,110.5],[-226.5,110.5],[-227.5,110.5],[-228.5,110.5],[-229.5,110.5],[-230.5,110.5],[-231.5,110.5],[-223.5,111.5],[-224.5,111.5],[-225.5,111.5],[-226.5,111.5],[-227.5,111.5],[-228.5,111.5],[-229.5,111.5],[-230.5,111.5],[-222.5,112.5],[-223.5,112.5],[-224.5,112.5],[-225.5,112.5],[-226.5,112.5],[-227.5,112.5],[-228.5,112.5],[-222.5,113.5],[-223.5,113.5],[-224.5,113.5],[-225.5,113.5],[-226.5,113.5],[-222.5,114.5],[-223.5,114.5],[-224.5,114.5],[-225.5,114.5],[-226.5,114.5]],
+  "pontos": [[79119201,-237.5,187.5],[79119202,-216.5,185.5],[79119203,-239.5,166.5],[79119204,-219.5,166.5],[79119205,-224.5,146.5],[79119206,-285.5,177.5],[79119207,-182.5,165.5],[79119208,-161.5,175.5],[79119209,-170.5,151.5],[79119210,-157.5,153.5],[79119211,-249.5,125.5],[79119212,-264.5,119.5],[79119213,-261.5,109.5],[79119214,-271.5,101.5],[79119215,-231.5,108.5]],
+  "lagos": [[7119281,-292.5,163.5],[7119282,-271.5,110.5],[7119283,-173.5,161.5],[7119284,-227.5,169.5]],
+  "portas": [[6119201,-229,192.2],[6119202,-282.5,166.7],[6119203,-292.5,153.5],[6119204,-222.5,103.7],[6119205,-225.5,186.7],[6119206,-157.5,159.7]],
+  "andavel": [[-266.9,104.1,-264.2,104.1,-264.2,102],[-266.9,104.1,-264.2,102,-264,101.8],[-264,101.8,-263.7,101.8,-263.7,96.1,-269.8,96.1],[-273.8,104.5,-273.8,104.8,-266.9,104.8],[-273.8,104.5,-266.9,104.8,-266.9,104.1,-273.9,104.4],[-275.9,96.1,-275.9,104.4,-273.9,104.4,-266.9,104.1,-264,101.8,-269.8,96.1],[-257.1,96.1,-263.7,96.1,-263.7,101.8,-257.1,101.8],[-250.5,101.8,-243.9,101.8,-243.9,96.1,-250.5,96.1],[-237.3,101.8,-237.3,96.1,-243.9,96.1,-243.9,101.8],[-250.5,96.1,-257.1,96.1,-257.1,101.8,-250.5,101.8],[-224,99.9,-223.5,99.9,-223.5,96.1],[-224.1,100,-224,99.9,-223.5,96.1,-230.4,96.1],[-237.3,96.1,-237.3,101.8,-237,101.8],[-237.3,96.1,-237,101.8,-236.9,102,-230.4,96.1],[-224.1,103.6,-224.1,100,-230.4,96.1,-236.9,102,-236.9,103.6],[-223.5,99.9,-220.4,99.9,-220.4,96.1,-223.5,96.1],[-219.8,100,-219.8,100.3,-216.2,100.3],[-220.4,96.1,-220.4,99.9,-219.9,99.9],[-219.9,99.9,-219.8,100,-216.2,100.3,-216.2,96.1,-220.4,96.1],[-219.8,100.3,-219.8,104.7,-216.2,104.7,-216.2,100.3],[-237,104.2,-237.3,104.2,-237.3,113.8],[-236.9,104.1,-237,104.2,-237.3,113.8,-227,113.8,-224.1,104,-224.1,103.6],[-224.1,103.6,-236.9,103.6,-236.9,104.1],[-227,113.8,-226.8,114,-224,104.2,-224.1,104],[-262,111.9,-258.2,111.9,-258.2,109.9],[-262,111.9,-258.2,109.9,-258,109.8,-257.6,104.2,-263.1,104.2,-263.1,110.8],[-258,109.8,-257.6,109.8,-257.6,104.2],[-250,109.8,-248.1,106,-248.1,104.2,-257.6,104.2,-257.6,109.8],[-246.4,106.2,-246.4,111.9,-246,111.9,-246,106.2],[-237.3,104.2,-245.9,104.2,-245.9,106],[-245.9,106,-246,106.2,-246,111.9,-245.9,112,-237.3,113.8,-237.3,104.2],[-245.9,112,-245.9,113.8,-237.3,113.8],[-227,115.2,-227.7,115.2,-227.7,117.9],[-226.8,115,-227,115.2,-227.7,117.9,-216.2,117.9],[-221.1,105,-221.1,104.2,-224,104.2],[-221,105.1,-221.1,105,-224,104.2],[-216.2,104.7,-219.8,104.7,-219.8,105],[-216.2,104.7,-219.8,105,-219.9,105.1,-216.2,111.3],[-216.2,111.3,-221,105.1,-224,104.2,-226.8,114,-226.8,115,-216.2,117.9],[-216.2,111.3,-219.9,105.1,-221,105.1],[-266.6,104.4,-266.4,104.7,-266.3,104.6],[-263.4,104.4,-266.6,104.4,-266.3,104.6,-263.7,104.6],[-266.6,110.6,-266.3,110.4,-266.4,110.3],[-263.4,104.4,-263.7,104.6,-263.6,104.7],[-263.4,110.6,-263.4,104.4,-263.6,104.7,-263.6,110.3],[-266.4,110.3,-266.4,104.7,-266.6,104.4,-266.6,110.6],[-263.4,110.6,-263.6,110.3,-263.7,110.4],[-266.6,110.6,-263.4,110.6,-263.7,110.4,-266.3,110.4],[-270.8,111.1,-267.2,111.1,-266.9,110.8,-266.9,104.8,-273.8,104.8,-273.8,108],[-266.1,104.9,-266.1,110.1,-263.9,110.1,-263.9,104.9],[-250,109.8,-249.8,110,-248,106.2,-248.1,106],[-249.8,110,-249.8,111.9,-246.4,111.9,-246.4,106.2,-248,106.2],[-273.9,108.1,-275.9,108.1,-275.9,111.4],[-273.8,108,-273.9,108.1,-275.9,111.4,-270.9,111.5,-270.9,111.1],[-270.9,111.1,-270.8,111.1,-273.8,108],[-266.9,110.9,-266.9,110.8,-267.2,111.1,-267.1,111.1],[-263.1,110.9,-266.9,110.9,-267.1,111.1,-267.1,117.4,-262.2,117.4,-262.2,112],[-262,111.9,-263.1,110.8,-263.1,110.9,-262.2,112],[-270.6,111.4,-270.4,111.7,-270.3,111.6],[-267.4,111.4,-270.6,111.4,-270.3,111.6,-267.7,111.6],[-270.6,117.6,-270.3,117.4,-270.4,117.3],[-267.4,111.4,-267.7,111.6,-267.6,111.7],[-267.4,117.6,-267.4,111.4,-267.6,111.7,-267.6,117.3],[-270.4,117.3,-270.4,111.7,-270.6,111.4,-270.6,117.6],[-267.4,117.6,-267.6,117.3,-267.7,117.4],[-270.6,117.6,-267.4,117.6,-267.7,117.4,-270.3,117.4],[-275.9,118.3,-271.2,118.3,-271.2,117.8],[-275.9,118.3,-271.2,117.8,-270.9,117.7,-270.9,111.5,-275.9,111.4],[-270.1,111.9,-270.1,117.1,-267.9,117.1,-267.9,111.9],[-255,118.9,-254.6,118.9,-254.6,115.2],[-255.2,119,-255,118.9,-254.6,115.2,-260.9,115.2,-260.9,119.3],[-260.9,119.3,-255.2,119.4,-255.2,119],[-254.6,118.9,-250.2,118.9,-250.2,115.2,-254.6,115.2],[-249.6,119,-249.6,119.5,-248.3,119.5,-248.3,119],[-250.2,115.2,-250.2,118.9,-249.7,118.9],[-249.7,118.9,-249.6,119,-248.3,119,-248.1,118.9,-247.2,115.2,-250.2,115.2],[-248.1,118.9,-247.2,118.9,-247.2,115.2],[-228,117.9,-227.7,117.9,-227.7,115.2],[-228.2,118,-228,117.9,-227.7,115.2,-235.8,115.2],[-227.7,129.9,-227.7,124.2,-228,124.2],[-227.7,129.9,-228,124.2,-228.2,124,-235.8,129.9],[-235.8,115.2,-243.8,115.2,-243.8,122.5],[-243.8,122.5,-243.8,129.9,-235.8,129.9,-228.2,124,-228.2,118,-235.8,115.2],[-264.2,121.1,-264.1,121.6,-262.2,121.6,-262.2,117.4],[-267.1,117.4,-267.1,117.8,-267,121.1,-264.2,121.1,-262.2,117.4],[-269.9,121.5,-267.9,121.5,-267.8,121.1],[-267,121.1,-267.1,117.8,-267.2,117.9,-267.8,121.1],[-267.8,121.1,-267.2,117.9,-269.9,117.9,-269.9,121.5],[-272,121.8,-271.2,121.8,-271.2,118.3],[-275.9,122.5,-272.1,122.5,-272.1,121.9],[-272.1,121.9,-272,121.8,-271.2,118.3,-275.9,118.3,-275.9,122.5],[-225.6,123.1,-225.6,123.6,-224.3,123.6,-224.3,123],[-224.1,122.8,-223.8,122.8,-223.8,119.2],[-225.6,123.1,-224.3,123,-224.1,122.8,-223.8,119.2,-226.8,119.2,-225.8,122.8],[-226.8,119.2,-226.8,122.8,-225.8,122.8],[-223.8,122.8,-221.3,122.8,-221.3,119.2,-223.8,119.2],[-220.8,123,-220.8,123.3,-217.2,123.3],[-221.3,119.2,-221.3,122.8,-221,122.8],[-221,122.8,-220.8,123,-217.2,123.3,-217.2,119.2,-221.3,119.2],[-259.8,123.5,-258.4,123.5,-258.4,123,-259.8,123],[-260.9,119.3,-260.9,122.8,-259.9,122.8],[-259.9,122.8,-259.8,123,-258.4,123,-258.3,122.8,-260.9,119.3],[-258.3,122.8,-255.2,122.8,-255.2,119.4,-260.9,119.3],[-248.3,120,-248.3,119.5,-249.6,119.5,-249.6,120],[-249.7,120.1,-253.8,120.1,-253.8,124],[-248.1,120.1,-248.3,120,-249.6,120,-249.7,120.1],[-248.1,120.1,-249.7,120.1,-253.8,124],[-250.8,127.9,-250.8,128.5,-246.2,128.5],[-253.8,124,-252,127.8,-251,127.8],[-251,127.8,-250.8,127.9,-246.2,128.5,-246.2,120.1,-248.1,120.1,-253.8,124],[-267.6,121.4,-267.4,121.7,-267.3,121.6],[-264.4,121.4,-267.6,121.4,-267.3,121.6,-264.7,121.6],[-267.6,125.6,-267.3,125.4,-267.4,125.3],[-264.4,121.4,-264.7,121.6,-264.6,121.7],[-264.4,125.6,-264.4,121.4,-264.6,121.7,-264.6,125.3],[-267.4,125.3,-267.4,121.7,-267.6,121.4,-267.6,125.6],[-264.4,125.6,-264.6,125.3,-264.7,125.4],[-267.6,125.6,-264.4,125.6,-264.7,125.4,-267.3,125.4],[-269.9,125.5,-267.9,125.5,-267.9,121.5,-269.9,121.5],[-264.1,124.6,-262.2,124.6,-262.2,121.6,-264.1,121.6],[-267.1,121.9,-267.1,125.1,-264.9,125.1,-264.9,121.9],[-274.8,130,-274.8,130.3,-271.2,130.3],[-272.1,123,-272.1,122.5,-275.9,122.5],[-275,129.9,-274.8,130,-271.2,130.3,-271.2,123.1,-272,123.1],[-272,123.1,-272.1,123,-275.9,122.5,-275.9,129.9,-275,129.9],[-220.8,123.3,-220.8,130.7,-217.2,130.8,-217.2,123.3],[-259.9,124.2,-260.9,124.2,-260.9,125.1],[-258.4,124,-258.4,123.5,-259.8,123.5,-259.8,124],[-257.1,124.2,-258.3,124.2,-261,125.2,-261.5,129.9,-257.1,129.9],[-259.9,124.2,-260.9,125.1,-261,125.2,-258.3,124.2],[-258.3,124.2,-258.4,124,-259.8,124,-259.9,124.2],[-261,125.2,-261.5,125.2,-261.5,129.9],[-224.3,124,-224.3,123.6,-225.6,123.6,-225.6,124],[-225.7,124.2,-226.1,124.2,-226,129.9],[-224.1,124.2,-224.3,124,-225.6,124,-225.7,124.2,-226,129.9],[-222.2,129.9,-222.2,124.2,-224.1,124.2,-226,129.9],[-252,129.9,-252,129.1,-252.2,129,-255.8,129.9],[-252.2,127.9,-252,127.8,-254,124.2,-255.8,124.2,-255.8,129.9],[-255.8,129.9,-252.2,129,-252.2,127.9],[-252,127.8,-253.8,124,-254,124.2],[-227.7,129.9,-226,129.9,-226.1,124.2,-227.7,124.2],[-262.2,125.1,-262.2,124.6,-264.1,124.6],[-262.2,125.1,-264.1,124.6,-264.1,125.8,-262.1,125.2],[-261.5,125.2,-262.1,125.2,-264.1,125.8,-263,129.9,-261.5,129.9],[-267.8,125.9,-267.9,125.5,-269.9,125.5],[-267,129.9,-267,125.9,-267.8,125.9],[-269.9,129.9,-267,129.9,-267.8,125.9,-269.9,125.5],[-264.2,125.9,-263.1,130,-263,129.9,-264.1,125.8],[-266.9,130.5,-263.1,130.5,-263.1,130,-266.9,130],[-267,129.9,-266.9,130,-263.1,130,-264.2,125.9,-267,125.9],[-252,129.1,-252,129.9,-251.9,130,-251,129.1],[-246.2,128.5,-250.8,128.5,-250.8,129],[-251,129.1,-251.9,130,-251.9,131.7],[-250.8,129,-251,129.1,-251.9,131.7,-246.2,131.7,-246.2,128.5],[-271.2,139.5,-271.2,130.3,-274.8,130.3,-274.8,139.5],[-274.8,139.5,-274.8,148.6,-271.2,148.6,-271.2,139.5],[-266.9,148.6,-263.1,148.6,-263.1,139.5,-266.9,139.5],[-266.9,130.5,-266.9,139.5,-263.1,139.5,-263.1,130.5],[-217.2,130.8,-220.8,130.7,-220.8,131.1],[-221,131.2,-221.3,131.2,-221.3,134.8],[-217.2,130.8,-220.8,131.1,-221,131.2,-221.3,134.8,-217.2,134.8],[-230.3,134.8,-230.2,131.2,-232.8,131.2,-232.8,134.8],[-229.8,135,-229.8,135.5,-228.4,135.5,-228.4,135],[-228.3,134.8,-227.9,134.8,-228,131.2],[-229.9,134.8,-229.8,135,-228.4,135,-228.3,134.8,-228,131.2,-230.2,131.2],[-230.2,131.2,-230.3,134.8,-229.9,134.8],[-227.9,134.8,-221.3,134.8,-221.3,131.2,-228,131.2],[-245.6,135.9,-245.6,132.1,-246,132.1],[-245.6,135.9,-246,132.1,-246.2,132,-251.9,131.7,-251.9,135.9],[-246.2,132,-246.2,131.7,-251.9,131.7],[-245.6,135.9,-240.5,135.9,-240.5,132.1,-245.6,132.1],[-239.9,136,-239.9,137.8,-238,137.8],[-240.5,132.1,-240.5,135.9,-240,135.9],[-240.5,132.1,-240,135.9,-239.9,136],[-239.9,136,-238,137.8,-234.2,136,-234.2,132.1,-240.5,132.1],[-228.4,136,-228.4,135.5,-229.8,135.5,-229.8,136],[-231.9,137.2,-233,137.2,-235.8,142],[-228.3,136.2,-228.4,136,-229.8,136,-229.9,136.2],[-233.9,145.9,-233.9,149.8,-228.9,149.8],[-229.9,136.2,-231.8,136.2,-231.8,137.1],[-229.9,136.2,-231.8,137.1,-231.9,137.2,-228.3,136.2],[-228.8,150,-228.8,150.4,-225.2,150.4,-225.2,150],[-231.9,137.2,-235.8,142,-233.9,145.9,-225,149.8,-224.5,149.8,-224.5,136.2],[-228.9,149.8,-228.8,150,-225.2,150],[-224.5,136.2,-228.3,136.2,-231.9,137.2],[-228.9,149.8,-225.2,150,-225,149.8,-233.9,145.9],[-235.8,142,-235.8,145.8,-234,145.8],[-235.8,142,-234,145.8,-233.9,145.9],[-237.8,138,-234,136.2,-234.2,136,-238,137.8],[-233.1,137.1,-233.1,136.2,-234,136.2,-237.8,138],[-237.8,138,-237.8,141.9,-236,141.9],[-237.8,138,-236,141.9,-235.8,142,-233,137.2,-233.1,137.1],[-223.8,150,-223.8,150.5,-216.2,150.5],[-224,149.8,-223.8,150,-216.2,150.5,-216.2,143.3],[-224.5,149.8,-224,149.8,-216.2,143.3,-216.2,136.2,-224.5,136.2],[-184.4,149.8,-184.4,148.2,-191.9,148.2,-191.9,149.8],[-184.4,148.2,-184.4,149.8,-183.9,149.8],[-184.4,148.2,-183.9,149.8,-183.8,150,-177.8,148.2],[-183.9,151.2,-184.3,151.2,-184.2,154.8],[-183.8,151,-183.9,151.2,-184.2,154.8,-178.2,154.8,-178.2,154],[-178.1,153.9,-177.7,153.9,-177.8,148.2],[-178.2,154,-178.1,153.9,-177.8,148.2,-183.8,150,-183.8,151],[-177.7,153.9,-166.3,153.9,-166.2,148.2,-177.8,148.2],[-165.9,158.2,-166.3,158.2,-166.2,159.1],[-165.8,158.1,-165.9,158.2,-166.2,159.1,-164.1,159.1],[-158.5,161.8,-158.5,160.2,-159,160.2],[-158.5,161.8,-159,160.2,-159.2,160,-164.1,159.1,-164.1,161.8],[-165.8,154,-165.8,158.1,-164.1,159.1,-159.2,157,-159,156.9],[-166.2,148.2,-165.9,153.9,-165.8,154,-159,156.9,-158.7,156.9,-158.7,148.2],[-166.2,148.2,-166.3,153.9,-165.9,153.9],[-164.1,159.1,-159.2,160,-159.2,157],[-154.8,157,-154.8,157.3,-154.2,157.3],[-155,156.9,-154.8,157,-154.2,157.3,-154.2,148.2],[-155,156.9,-154.2,148.2,-158.7,148.2,-158.7,156.9],[-267.8,154.3,-264.2,154.3,-264.2,154],[-263.1,149.1,-263.1,148.6,-266.9,148.6,-266.9,149.1],[-262.2,153.9,-262.2,149.2,-263,149.2,-264,153.9],[-267.8,154.3,-264.2,154,-264,153.9],[-263,149.2,-263.1,149.1,-266.9,149.1,-267,149.2,-267.8,154.3,-264,153.9],[-267,149.2,-267.8,149.2,-267.8,154.3],[-275,149.2,-275.9,149.2,-275.9,150],[-276,150.1,-276.8,150.1,-276.8,151],[-275,149.2,-275.9,150,-276,150.1,-276.8,151,-276.9,152.8,-276.8,153],[-276.9,151.2,-277.5,151.2,-277.5,152.8,-276.9,152.8],[-271.1,149.2,-271.2,149.1,-274.8,149.1],[-276.8,151,-276.9,151.2,-276.9,152.8],[-270.2,153.3,-270.2,149.2,-271.1,149.2],[-271.1,149.2,-274.8,149.1,-275,149.2,-276.8,153,-276.8,153.3,-270.2,153.3],[-271.2,149.1,-271.2,148.6,-274.8,148.6,-274.8,149.1],[-228.3,156.4,-225.6,156.4,-225.6,156,-228.3,156],[-225.5,155.8,-225.2,155.8,-225.2,150.4],[-228.5,155.8,-228.3,156,-225.6,156,-225.5,155.8,-225.2,150.4,-228.8,150.4],[-228.8,150.4,-228.8,155.8,-228.5,155.8],[-215.6,154.8,-215.6,151.2,-216,151.2,-216,154.8],[-216.2,151,-216.2,150.5,-223.8,150.5],[-216.2,154.9,-216,154.8,-216,151.2,-216.2,151,-223.8,150.5,-223.8,155.8],[-223.8,155.8,-216.2,155.8,-216.2,154.9],[-278,152.8,-277.5,152.8,-277.5,151.2],[-285.8,158.1,-286.1,158.2,-286,159.9,-277.7,159.9],[-278.1,153,-278,152.8,-277.5,151.2,-285.8,151.2],[-277.7,159.9,-277.7,154.2,-278,154.2],[-277.7,159.9,-278,154.2,-278.1,154,-285.8,151.2,-285.8,158.1],[-278.1,154,-278.1,153,-285.8,151.2],[-192.1,154.8,-184.2,154.8,-184.3,151.2,-192.2,151.2],[-207.8,154.8,-200,154.8,-200,151.2,-207.8,151.2],[-200,154.8,-192.1,154.8,-192.2,151.2,-200,151.2],[-215.6,154.8,-207.8,154.8,-207.8,151.2,-215.6,151.2],[-276.8,153.3,-276.8,153.7,-270.2,153.7,-270.2,153.3],[-275.9,160,-275.9,160.3,-270.2,160.3],[-276.9,154.2,-277.3,154.2,-277.2,159.9],[-276.9,154.2,-277.2,159.9,-276,159.9,-276.8,154],[-276,159.9,-275.9,160,-270.2,160.3,-270.2,153.7,-276.8,153.7,-276.8,154],[-293.9,157.6,-289.2,157.6,-289.2,153.8,-293.9,153.8],[-277.7,159.9,-277.2,159.9,-277.3,154.2,-277.7,154.2],[-267.8,154.3,-267.8,155.8,-267,155.8],[-267.8,154.3,-267,155.8,-266.9,156,-264.2,156.7,-264.2,154.3],[-266.9,156,-266.9,156.7,-264.2,156.7],[-175.6,157.5,-174.4,157.5,-174.4,157,-175.6,157],[-174.3,156.9,-173.8,156.9,-173.8,155.2],[-175.7,156.9,-175.6,157,-174.4,157,-174.3,156.9,-173.8,155.2,-176.9,155.2],[-176.9,155.2,-176.9,156.9,-175.7,156.9],[-173.8,156.9,-170.2,156.9,-170.2,155.2,-173.8,155.2],[-169.6,157,-169.6,157.5,-168.4,157.5,-168.4,157],[-170.2,155.2,-170.2,156.9,-169.7,156.9],[-169.7,156.9,-169.6,157,-168.4,157,-168.3,156.9,-167.1,155.2,-170.2,155.2],[-168.3,156.9,-167.1,156.9,-167.1,155.2],[-173.6,174.9,-173.6,174.1,-174,174.1],[-172.5,169.8,-172.5,168.9,-172.9,168.9,-174,169.8],[-173.6,174.9,-174,174.1,-174.2,174,-179.9,174.9],[-172.9,159.1,-172.2,159.1,-172.2,158.2,-174.3,158.2],[-174.4,158.1,-174.4,157.5,-175.6,157.5,-175.6,158.1],[-182,169.8,-174.2,169.9,-172.9,162.9,-178.1,158.2,-189.8,156.1,-189.8,163],[-174.3,158.2,-174.4,158.1,-175.6,158.1],[-174.3,158.2,-175.6,158.1,-175.7,158.2,-172.9,159.1],[-179.9,172,-179.9,174.9,-174.2,174,-174.2,169.9],[-178.2,158.1,-178.2,156.1,-189.8,156.1],[-172.9,165.1,-172.4,165.1,-172.4,162.9,-172.9,162.9],[-182,169.8,-181.8,169.9,-174.2,169.9],[-181.8,169.9,-181.8,171.9,-180,171.9],[-181.8,169.9,-180,171.9,-179.9,172,-174.2,169.9],[-189.8,163,-189.8,169.8,-182,169.8],[-174,169.8,-172.9,168.9,-172.9,165.1],[-174.2,169.9,-174,169.8,-172.9,165.1,-172.9,162.9],[-172.9,159.1,-175.7,158.2,-178.1,158.2,-172.9,162.9],[-178.1,158.2,-178.2,158.1,-189.8,156.1],[-228.3,161.6,-225.6,161.6,-225.6,156.4,-228.3,156.4],[-264.2,156.7,-266.9,156.7,-266.9,157],[-264.2,156.7,-266.9,157,-267,157.2,-267.8,163.4,-264.2,163.2],[-267,157.2,-267.8,157.2,-267.8,163.4],[-264.2,169.8,-264.2,163.2,-267.8,163.4,-267.8,169.7],[-155,161.2,-155.7,161.2,-155.7,161.8,-154.2,161.8],[-154.8,161.1,-154.2,161.8,-154.2,157.3,-154.8,157.3],[-154.8,161.1,-155,161.2,-154.2,161.8],[-286.2,160,-286,159.9,-286.1,158.2,-289.1,158.2],[-289.1,158.2,-293.9,158.1,-294,158.2,-294.3,164.1,-286.2,164.1,-286.2,160],[-289.2,158.1,-289.2,157.6,-293.9,157.6,-293.9,158.1],[-294,158.2,-294.3,158.2,-294.3,164.1],[-289.1,158.2,-289.2,158.1,-293.9,158.1],[-168,159.1,-167.9,158.2,-168.3,158.2],[-168,159.1,-168.3,158.2,-168.4,158.1,-169.7,158.2,-170.9,159.1],[-168.4,158.1,-168.4,157.5,-169.6,157.5,-169.6,158.1],[-169.7,158.2,-170.9,158.2,-170.9,159.1],[-168.4,158.1,-169.6,158.1,-169.7,158.2],[-294.3,158.2,-297.8,158.2,-297.8,164.1,-294.3,164.1],[-168,159.1,-166.2,159.1,-166.3,158.2,-167.9,158.2],[-155.7,161.8,-155.7,161.2,-156,161.2],[-155.7,161.8,-156,161.2,-156.2,161.1],[-157.2,160,-157.2,159.1,-157.8,159.1,-157.8,160],[-158,160.2,-158.5,161.8,-155.7,161.8,-156.2,161.1,-157.1,160.2,-157.8,160],[-157.1,160.2,-157.2,160,-157.8,160],[-158,160.2,-158.5,160.2,-158.5,161.8],[-156.2,161.1,-156.2,160.2,-157.1,160.2],[-164.7,161.4,-165.8,161.4,-165.8,161.6,-164.4,161.6],[-168.6,165.3,-168.7,165.4,-168.4,165.6],[-164.6,161.3,-164.7,161.4,-164.4,161.6],[-164.6,159.7,-164.6,161.3,-164.4,161.6,-164.4,159.4],[-168.7,162.6,-168.6,162.7,-168.4,162.4],[-164.7,159.6,-164.6,159.7,-164.4,159.4],[-166.4,166.3,-166.4,162.1,-166.6,162.1,-166.6,166.6],[-172.6,159.4,-172.4,159.7,-172.3,159.6],[-166.3,166.4,-166.4,166.3,-166.6,166.6],[-166.3,166.4,-166.6,166.6,-164.7,166.6,-164.4,166.4],[-168.6,162.7,-168.6,165.3,-168.4,165.6,-168.4,162.4],[-164.4,166.4,-164.7,166.6,-164.6,166.7],[-164.4,166.4,-164.6,166.7,-164.6,168.3,-164.4,168.6],[-168.7,162.6,-168.4,162.4,-172.3,162.4,-172.6,162.6],[-164.4,168.6,-164.6,168.3,-164.7,168.4],[-172.6,168.6,-164.4,168.6,-164.7,168.4,-172.3,168.4],[-164.7,159.6,-164.4,159.4,-172.6,159.4,-172.3,159.6],[-172.6,168.6,-172.3,168.4,-172.4,168.3],[-172.6,165.4,-172.6,168.6,-172.4,168.3,-172.4,165.7],[-172.6,162.6,-172.3,162.4,-172.4,162.3],[-172.6,165.4,-172.4,165.7,-172.3,165.6],[-168.7,165.4,-172.6,165.4,-172.3,165.6,-168.4,165.6],[-172.4,162.3,-172.4,159.7,-172.6,159.4,-172.6,162.6],[-168.6,162.1,-168.6,159.9,-172.1,159.9,-172.1,162.1],[-166.7,161.2,-166.4,161.2,-166.4,159.9],[-168.2,162.1,-168.1,162.6,-166.9,162.6,-166.8,161.3],[-166.8,161.3,-166.7,161.2,-166.4,159.9,-168.6,159.9,-168.6,162.1,-168.2,162.1],[-166.4,161.2,-164.9,161.1,-164.9,159.9,-166.4,159.9],[-275.9,160.3,-275.9,167.8,-270.2,167.8,-270.2,160.3],[-279.5,162.9,-279.5,161.2,-284.9,161.2,-284.9,162.9],[-278.9,163,-278.9,163.5,-277.2,163.5],[-279.5,161.2,-279.5,162.9,-279,162.9],[-279,162.9,-278.9,163,-277.2,163.5,-277.2,161.2,-279.5,161.2],[-225.6,162,-225.6,161.6,-228.3,161.6,-228.3,162],[-225.2,170.1,-225.2,162.1,-225.5,162.1],[-225.5,162.1,-225.6,162,-228.3,162,-228.5,162.1,-230.9,170.1,-225.2,170.1],[-228.5,162.1,-230.9,162.1,-230.9,170.1],[-236.9,170.2,-236.5,170.1,-236.6,162.1,-245.9,162.1,-245.9,170.5],[-245.9,170.5,-236.9,170.5,-236.9,170.2],[-236.5,170.1,-232.2,170.1,-232.2,162.1,-236.6,162.1],[-220.5,170.1,-220.5,162.1,-225.2,162.1,-225.2,170.1],[-220.5,162.1,-220.5,170.1,-220.1,170.2],[-220.1,170.2,-220.1,171.9,-210.2,171.9],[-220.1,170.2,-210.2,171.9,-210.2,162.1,-220.5,162.1],[-168.1,165.4,-166.9,165.4,-166.9,162.6,-168.1,162.6],[-172.4,165.1,-168.9,165.1,-168.9,162.9,-172.4,162.9],[-163.4,164.8,-163.4,163.2,-164.9,163.2,-164.9,164.8],[-162.8,165,-162.8,165.4,-161.1,165.4,-161.1,165],[-162.9,164.8,-162.8,165,-161.1,165,-161,164.8,-160.5,163.2,-163.4,163.2],[-161,164.8,-160.5,164.8,-160.5,163.2],[-163.4,163.2,-163.4,164.8,-162.9,164.8],[-160.5,164.8,-158.2,164.8,-158.2,163.2,-160.5,163.2],[-157.6,165,-157.6,165.5,-156.4,165.5,-156.4,165],[-158.2,163.2,-158.2,164.8,-157.7,164.8],[-157.7,164.8,-157.6,165,-156.4,165,-156.3,164.8,-155.1,163.2,-158.2,163.2],[-156.3,164.8,-155.1,164.8,-155.1,163.2],[-278.9,168.6,-277.2,168.6,-277.2,163.5,-278.9,163.5],[-284.1,164.2,-284.9,164.2,-284.9,165,-284.1,166.7],[-286.1,166.8,-284.1,166.7,-285,165.1,-286.1,165.1],[-284.1,166.7,-284.9,165,-285,165.1],[-297.6,164.4,-297.4,164.7,-297.3,164.6],[-297.4,167.3,-297.4,164.7,-297.6,164.4,-297.6,167.6],[-286.4,167.6,-286.6,167.3,-286.7,167.4],[-297.3,167.4,-297.4,167.3,-297.6,167.6],[-286.4,164.4,-297.6,164.4,-297.3,164.6,-286.7,164.6],[-286.7,167.4,-297.3,167.4,-297.6,167.6,-286.4,167.6],[-286.4,164.4,-286.7,164.6,-286.6,164.7],[-286.4,167.6,-286.4,164.4,-286.6,164.7,-286.6,167.3],[-297.1,164.9,-297.1,167.1,-286.9,167.1,-286.9,164.9],[-166.4,168.1,-166.4,166.9,-166.9,166.8],[-166.9,165.4,-168.1,165.4,-168.2,165.9,-166.9,166.8],[-166.4,168.1,-166.9,166.8,-168.2,165.9,-172.1,165.9,-172.1,168.1],[-162.8,170.5,-161.1,170.5,-161.1,165.4,-162.8,165.4],[-156.4,166,-156.4,165.5,-157.6,165.5,-157.6,166],[-154.2,173.5,-154.2,166.2,-156.3,166.2],[-156.3,166.2,-156.4,166,-157.6,166,-157.7,166.2,-159.8,173.5,-154.2,173.5],[-157.7,166.2,-159.8,166.2,-159.8,173.5],[-284.1,167.1,-284.1,166.7,-286.1,166.8],[-284.1,167.1,-286.1,166.8,-286.1,167.8,-284,167.2],[-286.1,167.8,-286.7,167.9,-286.7,171.9],[-283.5,167.2,-284,167.2,-286.1,167.8,-286.7,171.9,-283.5,171.9],[-166.4,168.1,-164.9,168.1,-164.9,166.9,-166.4,166.9],[-281.1,167.7,-281.1,167.2,-283.5,167.2],[-281,167.8,-281.1,167.7,-283.5,167.2,-283.5,171.9,-280.2,171.9],[-280.2,171.9,-280.2,167.8,-281,167.8],[-292.1,171.9,-291.6,171.9,-291.6,167.9],[-292.2,172,-292.1,171.9,-291.6,167.9,-297.8,167.9,-297.8,172.5],[-297.8,172.5,-292.2,172.5,-292.2,172],[-291.6,171.9,-286.7,171.9,-286.7,167.9,-291.6,167.9],[-278.9,171.4,-277.2,171.4,-277.2,171],[-277.1,170.8,-276.6,170.8,-276.6,169.2,-277.1,169.2],[-277.2,171,-277.1,170.8,-277.1,169.2,-277.2,169,-278.9,168.6,-278.9,171.4],[-277.2,169,-277.2,168.6,-278.9,168.6],[-164.1,169.8,-164.1,168.9,-172.5,168.9,-172.5,169.8],[-276.6,170.8,-274.2,170.8,-274.2,169.2,-276.6,169.2],[-273.6,171,-273.6,171.5,-272.5,171.5,-272.5,171],[-272.4,170.8,-271.2,170.8,-271.2,169.2],[-273.7,170.8,-273.6,171,-272.5,171,-272.4,170.8,-271.2,169.2,-274.2,169.2],[-274.2,169.2,-274.2,170.8,-273.7,170.8],[-267.9,170.2,-269.9,170.2,-269.9,172],[-269.9,172,-269,174.9,-267.9,174.9],[-264.2,169.8,-267.8,169.7,-267.8,170.1],[-267.9,174.9,-267.8,175,-264.2,175],[-264.2,169.8,-267.8,170.1,-267.9,170.2],[-267.9,170.2,-269.9,172,-267.9,174.9,-264.2,175,-264.2,169.8],[-236.6,170.4,-236.4,170.7,-236.3,170.6],[-228.5,170.4,-236.6,170.4,-236.3,170.6,-228.5,170.6],[-228.5,179.6,-228.5,179.4,-236.3,179.4,-236.6,179.6],[-228.5,170.4,-228.5,170.6,-220.7,170.6,-220.4,170.4],[-236.6,179.6,-236.3,179.4,-236.4,179.3],[-220.4,170.4,-220.7,170.6,-220.6,170.7],[-220.4,179.6,-220.4,170.4,-220.6,170.7,-220.6,179.3],[-236.6,170.4,-236.6,179.6,-236.4,179.3,-236.4,170.7],[-220.4,179.6,-220.6,179.3,-220.7,179.4],[-228.5,179.6,-220.4,179.6,-220.7,179.4,-228.5,179.4],[-245.9,174.7,-236.9,174.7,-236.9,170.5,-245.9,170.5],[-162.9,171.1,-163.4,171.1,-163.4,172.8],[-161.1,170.5,-162.8,170.5,-162.8,171],[-162.8,171,-162.9,171.1,-163.4,172.8,-161.1,172.8,-161.1,170.5],[-233.4,179.1,-233.4,177.9,-233.9,177.9,-236.1,179.1],[-233.9,172.2,-233.4,172.1,-233.4,170.9,-236.1,170.9],[-233.9,177.9,-233.9,172.2,-236.1,170.9,-236.1,179.1],[-233.4,172.1,-223.7,172.1,-223.7,170.9,-233.4,170.9],[-223.1,177.9,-223.7,177.9,-223.7,179.1,-220.9,179.1],[-223.7,170.9,-223.7,172.1,-223.1,172.2,-220.9,170.9],[-223.1,172.2,-223.1,177.9,-220.9,179.1,-220.9,170.9],[-171.6,173.1,-170.4,173.1,-170.3,172.8,-171.7,172.8],[-169.8,171.1,-172.8,171.1,-171.7,172.8,-170.3,172.8],[-170.3,172.8,-169.8,172.8,-169.8,171.1],[-172.8,171.1,-172.8,172.8,-171.7,172.8],[-169.8,172.8,-163.4,172.8,-163.4,171.1,-169.8,171.1],[-278.9,172.6,-277.2,172.6,-277.2,171.4,-278.9,171.4],[-272.5,172,-272.5,171.5,-273.6,171.5,-273.6,172],[-275.9,172.2,-275.9,174.9,-275,174.9],[-272.5,172,-273.6,172,-273.7,172.2,-273.9,175.8,-273.8,176,-272.3,172.2],[-274.8,175,-274.8,175.8,-273.9,175.8],[-275,174.9,-274.8,175,-273.9,175.8,-273.7,172.2,-275.9,172.2],[-270,172.2,-269.2,175,-269,174.9,-269.9,172],[-269.2,176,-269.2,175,-270,172.2,-272.3,172.2,-273.8,176,-273.8,176.1],[-233.6,172.4,-233.4,172.7,-233.3,172.6],[-233.4,177.3,-233.4,172.7,-233.6,172.4,-233.6,177.6],[-223.4,177.6,-223.6,177.3,-223.7,177.4],[-233.3,177.4,-233.4,177.3,-233.6,177.6],[-223.4,172.4,-233.6,172.4,-233.3,172.6,-223.7,172.6],[-223.4,177.6,-223.7,177.4,-233.3,177.4,-233.6,177.6],[-223.4,172.4,-223.7,172.6,-223.6,172.7],[-223.4,172.4,-223.6,172.7,-223.6,177.3,-223.4,177.6],[-297.8,175.6,-292.2,175.6,-292.2,172.5,-297.8,172.5],[-279,173.2,-279.5,173.2,-279.5,174.9],[-277.2,172.6,-278.9,172.6,-278.9,173.1],[-278.9,173.1,-279,173.2,-279.5,174.9,-277.2,174.9,-277.2,172.6],[-233.1,172.9,-233.1,177.1,-223.9,177.1,-223.9,172.9],[-169.2,174.9,-169.2,174.1,-170.3,174.1],[-170.4,174,-170.4,173.1,-171.6,173.1,-171.6,174],[-169.2,174.9,-170.3,174.1,-171.8,174.1,-173.6,174.9],[-170.3,174.1,-170.4,174,-171.6,174,-171.8,174.1],[-171.8,174.1,-173.6,174.1,-173.6,174.9],[-289.5,175.5,-288.5,175.5,-288.5,175,-289.5,175],[-290.9,173.2,-290.9,174.9,-289.7,174.9],[-289.7,174.9,-289.5,175,-288.5,175,-288.3,174.9,-287.9,173.2,-290.9,173.2],[-288.3,174.9,-287.9,174.9,-287.9,173.2],[-287.9,174.9,-279.5,174.9,-279.5,173.2,-287.9,173.2],[-210,176.8,-209.7,176.8,-209.7,173.2],[-210.2,177,-210,176.8,-209.7,173.2,-220.1,173.2,-220.1,179.4],[-220.1,179.4,-210.2,179.4,-210.2,177],[-201,173.2,-209.7,173.2,-209.7,176.8,-201,176.8],[-192.3,176.8,-192.3,173.2,-201,173.2,-201,176.8],[-191.9,177,-191.9,177.9,-188.4,177.9],[-192.3,173.2,-192.3,176.8,-192,176.8],[-192,176.8,-191.9,177,-188.4,177.9,-188.4,173.2,-192.3,173.2],[-182,174.9,-181.2,174.9,-181.2,173.2],[-182.1,175,-182,174.9,-181.2,173.2,-188.4,173.2,-188,177.9,-187.8,178],[-181.7,179.8,-181.7,176.2,-182,176.2],[-181.7,179.8,-182,176.2,-182.1,176.1,-187.8,178,-187.8,179.8],[-188.4,173.2,-188.4,177.9,-188,177.9],[-187.8,178,-182.1,176.1,-182.1,175],[-154.2,173.5,-159.8,173.5,-159.8,174],[-159.9,174.1,-160.3,174.1,-160.2,179.8],[-154.2,173.5,-159.8,174,-159.9,174.1,-160.2,179.8,-154.2,179.8],[-168,176.2,-168.3,176.2,-168.3,179.8],[-167.9,176.1,-168,176.2,-168.3,179.8,-160.2,179.8,-160.3,174.1],[-160.3,174.1,-167.9,174.1,-167.9,176.1],[-236.4,180.9,-236.4,179.9,-236.9,179.8,-238.1,180.9],[-236.9,174.7,-245.9,174.7,-245.9,175],[-246.4,175.2,-246.4,178.8,-246,178.8,-246,175.2],[-245.9,181.8,-238.2,181.8,-238.2,181,-245.9,178.9],[-245.9,175,-246,175.2,-246,178.8],[-245.9,175,-246,178.8,-245.9,178.9,-238.2,181,-238.1,180.9,-236.9,174.7],[-238.1,180.9,-236.9,179.8,-236.9,174.7],[-264,178.8,-263.6,178.8,-263.6,175.2,-264,175.2,-267.8,176.1,-267.9,176.2],[-264,175.2,-264.2,175,-267.8,175,-267.8,176.1],[-255,175.2,-263.6,175.2,-263.6,178.8,-255,178.8],[-255,178.8,-246.4,178.8,-246.4,175.2,-255,175.2],[-291.6,181.8,-291.6,176.2,-292.1,176.2],[-292.2,176.1,-292.2,175.6,-297.8,175.6],[-291.6,181.8,-292.1,176.2,-292.2,176.1,-297.8,175.6,-297.8,181.8],[-288.5,176.1,-288.5,175.5,-289.5,175.5,-289.5,176.1],[-289.7,176.2,-290.1,176.2,-290.1,181.8],[-288.3,176.2,-288.5,176.1,-289.5,176.1,-289.7,176.2,-290.1,181.8,-287.9,181.8],[-287.9,181.8,-287.9,176.2,-288.3,176.2],[-269.1,176.2,-269.2,176,-273.8,176.1,-273.8,181.8,-268.5,181.8],[-268.5,181.8,-268.5,176.2,-269.1,176.2],[-291.6,181.8,-290.1,181.8,-290.1,176.2,-291.6,176.2],[-275.1,181.8,-275.1,177.1,-276,177.1],[-275.1,181.8,-276,177.1,-276.2,177,-281.5,181.8],[-281.5,181.8,-276.2,177,-276.2,176.2,-287.9,176.2,-287.9,181.8],[-264.2,178.9,-264,178.8,-267.9,176.2],[-264.2,178.9,-267.9,176.2,-268.5,176.2,-268.5,181.8,-264.2,181.8],[-175,179.8,-168.3,179.8,-168.3,176.2,-175,176.2],[-181.7,176.2,-181.7,179.8,-175,179.8,-175,176.2],[-233.4,179.1,-223.7,179.1,-223.7,177.9,-233.4,177.9],[-220.1,179.8,-220.6,179.9,-220.6,180.9,-219.9,180.9],[-219.8,181,-219.8,181.3,-210.2,181.3],[-220.1,179.8,-219.9,180.9,-219.8,181,-210.2,181.3,-210.2,179.4,-220.1,179.4],[-230.2,180.9,-224,180.9,-224,179.9,-230.2,179.9],[-230.2,179.9,-236.4,179.9,-236.4,180.9,-230.2,180.9],[-221.9,181.5,-221.1,181.5,-221.1,181],[-221,180.9,-220.6,180.9,-220.6,179.9],[-221.9,181.5,-221.1,181,-221,180.9,-220.6,179.9,-221.9,179.9],[-219.8,181.3,-219.8,181.7,-210.2,181.8,-210.2,181.3],[-223.2,182.2,-223.3,182.8,-222.9,182.8],[-223.2,182.2,-222.9,182.8,-222.8,183,-222,182.2],[-221.1,182.1,-221.1,181.5,-221.9,181.5,-221.9,182.1],[-219.8,182.1,-219.9,182.2,-222.8,188.1,-216.7,191.8,-210.2,191.8,-210.2,181.8],[-221,182.2,-221.1,182.1,-221.9,182.1,-222,182.2],[-222.8,188.1,-222.9,188.2,-223.2,191.8,-216.7,191.8],[-210.2,181.8,-219.8,181.7,-219.8,182.1],[-221,182.2,-222,182.2,-222.8,183],[-219.9,182.2,-221,182.2,-222.8,183,-222.8,188.1],[-222.9,188.2,-223.3,188.2,-223.2,191.8],[-227,182.8,-226.7,182.8,-226.7,182.2],[-227.1,183,-227,182.8,-226.7,182.2],[-230,187.8,-229,187.8,-227.1,187,-227.1,183],[-231,190.8,-230.1,189,-230.1,187.9,-233,190.8],[-237.3,191.8,-233,190.8,-230.1,187.9,-237,183.1,-237.3,183.1],[-237.3,191.8,-233.1,191.8,-233.1,190.9],[-237.3,191.8,-233.1,190.9,-233,190.8],[-236.9,183,-237,183.1,-230.1,187.9],[-230.1,187.9,-230,187.8,-227.1,183,-226.7,182.2,-236.9,182.2,-236.9,183],[-226.7,182.8,-223.3,182.8,-223.2,182.2,-226.7,182.2],[-237.3,183.1,-245.9,183.1,-245.9,191.8,-237.3,191.8],[-227.1,187,-229,187.8,-228.8,187.9],[-227,187.2,-227.1,187,-228.8,187.9,-228.8,189],[-224.1,188,-224.1,187.2,-227,187.2,-228.8,189,-227,190.8,-225,190.8],[-225,190.8,-224.9,191,-224,188.2,-224.1,188],[-224.9,191,-224.9,191.8,-223.2,191.8,-223.3,188.2,-224,188.2],[-230.9,190.9,-230.9,191.8,-229.2,191.8],[-230,189.1,-230.1,189,-231,190.8],[-230,189.1,-231,190.8,-230.9,190.9,-229.2,191.8,-229.3,189.1],[-229.2,191.8,-227.1,191.8,-227.1,190.9],[-229.2,191.8,-227.1,190.9,-227,190.8,-228.9,189.1,-229.3,189.1],[-227,190.8,-228.8,189,-228.9,189.1]]
+ }
+}

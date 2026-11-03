@@ -1,0 +1,346 @@
+{
+ "versao": 1,
+ "geradoEm": "2026-10-01",
+ "faixaIds": "900001–900999 são do Poke Fable (o maior id do dump é 190036, data/ItemConfig.json com 4339 itens)",
+ "iconeProvisorio": "ui/itens_novos/ic_<id>.png (tools/itens_novos_icones.py) até a Amanda desenhar",
+ "itens": {
+  "900001": {
+   "n": "Rare Candy S",
+   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 1 ao 15.",
+   "t": 9,
+   "i": "ic_900001",
+   "q": 2,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "nivel",
+    "faixa": [
+     1,
+     15
+    ]
+   },
+   "origem": "catálogo 30/09 (criado por nós)"
+  },
+  "900002": {
+   "n": "Rare Candy M",
+   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 16 ao 25.",
+   "t": 9,
+   "i": "ic_900002",
+   "q": 2,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "nivel",
+    "faixa": [
+     16,
+     25
+    ]
+   },
+   "origem": "catálogo 30/09"
+  },
+  "900003": {
+   "n": "Rare Candy L",
+   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 26 ao 40.",
+   "t": 9,
+   "i": "ic_900003",
+   "q": 3,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "nivel",
+    "faixa": [
+     26,
+     40
+    ]
+   },
+   "origem": "catálogo 30/09"
+  },
+  "900004": {
+   "n": "Rare Candy XL",
+   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 41 ao 50.",
+   "t": 9,
+   "i": "ic_900004",
+   "q": 3,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "nivel",
+    "faixa": [
+     41,
+     50
+    ]
+   },
+   "origem": "catálogo 30/09"
+  },
+  "900005": {
+   "n": "Rare Candy XXL",
+   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 51 ao 75.",
+   "t": 9,
+   "i": "ic_900005",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "nivel",
+    "faixa": [
+     51,
+     75
+    ]
+   },
+   "origem": "catálogo 30/09"
+  },
+  "900006": {
+   "n": "Rare Candy MAX",
+   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 76 ao 100.",
+   "t": 9,
+   "i": "ic_900006",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "nivel",
+    "faixa": [
+     76,
+     100
+    ]
+   },
+   "origem": "catálogo 30/09"
+  },
+  "900010": {
+   "n": "Pedra Eterna",
+   "d": "Segurada pelo pai ou pela mãe na criação, pode passar a natureza dele pro ovo. Vem da trilha paga do passe; presa à conta.",
+   "t": 3,
+   "i": "ic_900010",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "origem": "passe T1 (trilha paga) + lab-ovo; a natureza passa COM CHANCE, nunca 100 % (Jaime, 27/09); o valor é da lab-ovo, a aprovar"
+  },
+  "900011": {
+   "n": "Cartão de Ativação de Traje",
+   "d": "Roupa do nível 45 da trilha paga da Temporada 1. Presa à conta; volta no lançamento, no Cofre.",
+   "t": 5,
+   "i": "ic_900011",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "classe": "roupa",
+   "origem": "passe T1 (não existe no dump: a Amanda desenha a roupa)"
+  },
+  "900020": {
+   "n": "Peça de TM comum",
+   "d": "10 peças comuns e 1.000 ₽ montam uma TM comum no balcão de TMs da Loja de departamentos de Celadon (Piso 2). Cai de Pokémon selvagens, treinadores e missões. Presa à conta; a TM montada pode ser negociada.",
+   "t": 8,
+   "i": "ic_900020",
+   "q": 2,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "origem": "lab-tm (peça por faixa, Jaime 01/10)"
+  },
+  "900021": {
+   "n": "Peça de TM forte",
+   "d": "6 peças fortes, 20 comuns e 5.000 ₽ montam uma TM forte no balcão de TMs da Loja de departamentos de Celadon (Piso 2). Cai de líderes de ginásio, revanches, Pokémon shiny, áreas de nível alto e da Elite Four. Presa à conta.",
+   "t": 8,
+   "i": "ic_900021",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "origem": "lab-tm"
+  },
+  "900022": {
+   "n": "Peça de TM rara",
+   "d": "3 peças raras, 6 fortes e 20.000 ₽ montam uma TM rara no balcão de TMs da Loja de departamentos de Celadon (Piso 2). Só cai de raids, da coroação na Elite Four e de títulos de colecionador (até 4 por semana). Presa à conta.",
+   "t": 8,
+   "i": "ic_900022",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "origem": "lab-tm"
+  },
+  "900030": {
+   "n": "Incubadora",
+   "d": "Ganha jogando: a 1ª na missão da creche da Rota 5, a 2ª ao chocar o primeiro ovo. Coloque no seu terreno: choca um ovo em 6 h. Presa à conta.",
+   "t": 3,
+   "i": "ic_900030",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "colocacao": "livre",
+   "glb": "cenario/objetos/incubadora.glb",
+   "origem": "Jaime 01/10 (modelo próprio); lab-ovo; beta 89: o texto do data/ovo.json, no Terreno"
+  },
+  "900040": {
+   "n": "Fragmento de guilda",
+   "d": "Prêmio da sua contribuição contra o chefe da guilda (de 1 a 5 por dia). Não vence. Troque por itens na loja da guilda. Preso à conta.",
+   "t": 8,
+   "i": "ic_900040",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "origem": "guilda fase 2 revista (Jaime 01/10)"
+  },
+  "900070": {
+   "n": "Fragmento de Articuno",
+   "d": "Prêmio das raids do Articuno. Junte 20 na Mochila pra chamar o Articuno pro seu time (Lv 50). Preso à conta: não se troca nem se vende.",
+   "t": 8,
+   "i": "ic_900070",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "lendario": "articuno",
+   "dex": 144,
+   "origem": "lab-raids (01/10): fragmento próprio; o do dump (110144) fica fora"
+  },
+  "900071": {
+   "n": "Fragmento de Zapdos",
+   "d": "Prêmio das raids do Zapdos. Junte 20 na Mochila pra chamar o Zapdos pro seu time (Lv 50). Preso à conta: não se troca nem se vende.",
+   "t": 8,
+   "i": "ic_900071",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "lendario": "zapdos",
+   "dex": 145,
+   "origem": "lab-raids (01/10): fragmento próprio; o do dump (110145) fica fora"
+  },
+  "900072": {
+   "n": "Fragmento de Moltres",
+   "d": "Prêmio das raids do Moltres. Junte 20 na Mochila pra chamar o Moltres pro seu time (Lv 50). Preso à conta: não se troca nem se vende.",
+   "t": 8,
+   "i": "ic_900072",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "lendario": "moltres",
+   "dex": 146,
+   "origem": "lab-raids (01/10): fragmento próprio; o do dump (110146) fica fora"
+  },
+  "900073": {
+   "n": "Fragmento de Mewtwo",
+   "d": "Prêmio das raids do Mewtwo. Junte 20 na Mochila pra chamar o Mewtwo pro seu time (Lv 70). Preso à conta: não se troca nem se vende.",
+   "t": 8,
+   "i": "ic_900073",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "lendario": "mewtwo",
+   "dex": 150,
+   "origem": "lab-raids (01/10): fragmento próprio; o do dump (110150) fica fora"
+  },
+  "900074": {
+   "n": "Fragmento de Mew",
+   "d": "Prêmio das raids do Mew. Junte 20 na Mochila pra chamar o Mew pro seu time (Lv 30). Preso à conta: não se troca nem se vende.",
+   "t": 8,
+   "i": "ic_900074",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "lendario": "mew",
+   "dex": 151,
+   "origem": "lab-raids (01/10): fragmento próprio; o do dump (110151) fica fora"
+  },
+  "900080": {
+   "n": "Exp. Share",
+   "d": "Os Pokémon do time que não lutam ganham parte do XP de quem luta: de 1 % a 50 %, o máximo quando o nível deles chega a 2/3 do de quem luta; a parte se divide entre eles. Preso à conta.",
+   "t": 3,
+   "i": "ic_900080",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "origem": "bal-expshare-2 + bal-expshare-quem (Jaime 01/10 noite): a conta é o xpDosTreinados da lab-balanceamento; a missão que dá o item é da lab-questline (2ª insígnia)"
+  },
+  "900150": {
+   "n": "Ticket de eclosão",
+   "d": "Corta 3 horas da eclosão de um ovo que está na incubadora. Vale uma vez por ovo. Vendido na loja de Diamantes. Preso à conta.",
+   "t": 3,
+   "i": "ic_900150",
+   "q": 3,
+   "v": null,
+   "novo": true,
+   "preso": true,
+   "uso": {
+    "tipo": "eclosao",
+    "reduzH": 3,
+    "maxPorOvo": 1
+   },
+   "origem": "lab-ovo (data/ovo.json → itens); ovo-incubadora-2 (1 por ovo) e ovo-incubadora-3 (preso); beta 89: t 3 no lugar do 9 (a Mochila trata o 9 como remédio); 20 Diamantes, de qualquer Diamante (o preço é da loja)"
+  },
+  "900151": {
+   "n": "Incubadora",
+   "d": "A mesma incubadora, vendida na loja de Diamantes. Coloque quantas couberem no seu terreno: cada uma choca um ovo em 6 h. Negociável: vai pro Mercado.",
+   "t": 3,
+   "i": "ic_900151",
+   "q": 4,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "colocacao": "livre",
+   "glb": "cenario/objetos/incubadora.glb",
+   "origem": "lab-ovo (data/ovo.json → itens); ovo-incubadora-3 (negociável, sem teto); beta 89: Diamante é Diamante (Jaime 11/10) — de qualquer Diamante, sai solta; o preço é A APROVAR (a loja de Diamantes)"
+  },
+  "900170": {
+   "n": "Medalhão · 30 dias",
+   "d": "30 dias com +20 % de XP nos seus Pokémon, +100 vagas na Caixa, +10 anúncios no Mercado, −50 % na recarga da Viagem e do Teleporte e o selo no chat. O tempo soma com o que você já tem, até 365 dias. Use ou venda no Mercado por Moedas.",
+   "t": 5,
+   "i": "ic_900170",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "medalhao",
+    "dias": 30
+   },
+   "origem": "beta 88 (plano 88, F1): ec-reprecificar (200 Diamantes, de qualquer Diamante: Diamante é Diamante, 11/10), ec-trava (negociável), medalhao-beneficios; os números da J2 (data/medalhao.json, 10/10); t 5 e q 5 A APROVAR"
+  },
+  "900171": {
+   "n": "Medalhão · 60 dias",
+   "d": "60 dias com +20 % de XP nos seus Pokémon, +100 vagas na Caixa, +10 anúncios no Mercado, −50 % na recarga da Viagem e do Teleporte e o selo no chat. O tempo soma com o que você já tem, até 365 dias. Use ou venda no Mercado por Moedas.",
+   "t": 5,
+   "i": "ic_900171",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "medalhao",
+    "dias": 60
+   },
+   "origem": "27/10 (o Kronyx: \"O certo é comprar de 30, 60 e 90 dias\"): o Medalhão de 60 dias, um item só (antes, a loja entregava 2 de 30 dias); a mesma regra do de 30"
+  },
+  "900172": {
+   "n": "Medalhão · 90 dias",
+   "d": "90 dias com +20 % de XP nos seus Pokémon, +100 vagas na Caixa, +10 anúncios no Mercado, −50 % na recarga da Viagem e do Teleporte e o selo no chat. O tempo soma com o que você já tem, até 365 dias. Use ou venda no Mercado por Moedas.",
+   "t": 5,
+   "i": "ic_900172",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "medalhao",
+    "dias": 90
+   },
+   "origem": "27/10 (o Kronyx: \"O certo é comprar de 30, 60 e 90 dias\"): o Medalhão de 90 dias, um item só (antes, a loja entregava 3 de 30 dias); a mesma regra do de 30"
+  }
+ }
+}

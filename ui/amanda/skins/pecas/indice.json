@@ -1,0 +1,1154 @@
+[
+ {
+  "item": "roupa:boy_010",
+  "nome": "Conjunto Elegante (menino)",
+  "nomes": {
+   "en": "Elegant Set (boy)",
+   "es": "Traje elegante (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_010.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_010@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_010",
+  "iconeAntigo": "ui/fashion/fa_52003.png"
+ },
+ {
+  "item": "roupa:boy_013",
+  "nome": "Conjunto Platina (menino)",
+  "nomes": {
+   "en": "Platinum Set (boy)",
+   "es": "Traje platino (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_013.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_013@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_013",
+  "iconeAntigo": "ui/fashion/fa_52005.png"
+ },
+ {
+  "item": "roupa:boy_014",
+  "nome": "Macacão (menino)",
+  "nomes": {
+   "en": "Overalls (boy)",
+   "es": "Ropa de trabajo (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_014.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_014@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_014",
+  "iconeAntigo": "ui/fashion/fa_52006.png"
+ },
+ {
+  "item": "roupa:boy_015",
+  "nome": "Jaqueta do Eevee (menino)",
+  "nomes": {
+   "en": "Eevee Jacket (boy)",
+   "es": "Chaqueta de Eevee (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_015.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_015@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_015",
+  "iconeAntigo": "ui/fashion/fa_52007.png"
+ },
+ {
+  "item": "roupa:boy_016",
+  "nome": "Conjunto Cibernético (menino)",
+  "nomes": {
+   "en": "Cyber Set (boy)",
+   "es": "Traje cibernético (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_016.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_016@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_016",
+  "iconeAntigo": "ui/fashion/fa_52008.png"
+ },
+ {
+  "item": "roupa:boy_017",
+  "nome": "Conjunto de Verão (menino)",
+  "nomes": {
+   "en": "Summer (boy)",
+   "es": "Traje de verano (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_017.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_017@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_017",
+  "iconeAntigo": "ui/fashion/fa_52009.png"
+ },
+ {
+  "item": "roupa:boy_018",
+  "nome": "Conjunto de Inverno (menino)",
+  "nomes": {
+   "en": "Winter (boy)",
+   "es": "Traje de invierno (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_018.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_018@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_018",
+  "iconeAntigo": "ui/fashion/fa_52010.png"
+ },
+ {
+  "item": "roupa:boy_019",
+  "nome": "Conjunto Primavera (menino)",
+  "nomes": {
+   "en": "Spring Set (boy)",
+   "es": "Traje de primavera (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_019.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_019@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_019",
+  "iconeAntigo": "ui/fashion/fa_52011.png"
+ },
+ {
+  "item": "roupa:boy_020",
+  "nome": "Conjunto Esportivo (menino)",
+  "nomes": {
+   "en": "Sportswear (boy)",
+   "es": "Traje deportivo (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_020.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_020@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_020",
+  "iconeAntigo": "ui/fashion/fa_52012.png"
+ },
+ {
+  "item": "roupa:boy_021",
+  "nome": "Jaqueta de Couro (menino)",
+  "nomes": {
+   "en": "Leather Jacket (boy)",
+   "es": "Chaqueta de cuero (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_021.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_021@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_021",
+  "iconeAntigo": "ui/fashion/fa_52013.png"
+ },
+ {
+  "item": "roupa:boy_022",
+  "nome": "Jaqueta do Gengar (menino)",
+  "nomes": {
+   "en": "Gengar Jacket (boy)",
+   "es": "Chaqueta de Gengar (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_022.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_022@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_022",
+  "iconeAntigo": "ui/fashion/fa_52014.png"
+ },
+ {
+  "item": "roupa:boy_024",
+  "nome": "Conjunto de Natal (menino)",
+  "nomes": {
+   "en": "Christmas (boy)",
+   "es": "Traje navideño (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_024.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_024@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_024",
+  "iconeAntigo": "ui/fashion/fa_52016.png"
+ },
+ {
+  "item": "roupa:boy_027",
+  "nome": "Conjunto Gardevoir (menino)",
+  "nomes": {
+   "en": "Gardevoir Coat (boy)",
+   "es": "Traje de Gardevoir (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_027.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_027@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_027",
+  "iconeAntigo": "ui/fashion/fa_52018.png"
+ },
+ {
+  "item": "roupa:boy_029",
+  "nome": "Conjunto da Liga",
+  "nomes": {
+   "en": "League Set",
+   "es": "Traje de la Liga"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_029.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_029@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_029",
+  "iconeAntigo": "ui/fashion/fa_52019.png"
+ },
+ {
+  "item": "roupa:boy_028",
+  "nome": "Conjunto Lopunny (menino)",
+  "nomes": {
+   "en": "Lopunny Coat (boy)",
+   "es": "Traje de Lopunny (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_028.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_028@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_028",
+  "iconeAntigo": "ui/fashion/fa_52020.png"
+ },
+ {
+  "item": "roupa:boy_030",
+  "nome": "Chapéu de Palha (menino)",
+  "nomes": {
+   "en": "Straw Hat (boy)",
+   "es": "Sombrero de Paja (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_030.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_030@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_030",
+  "iconeAntigo": "ui/fashion/fa_52021.png"
+ },
+ {
+  "item": "roupa:boy_035",
+  "nome": "Conjunto de Qixi (menino)",
+  "nomes": {
+   "en": "Qixi (boy)",
+   "es": "Traje de Tanabata (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_035.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_035@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_035",
+  "iconeAntigo": "ui/fashion/fa_52022.png"
+ },
+ {
+  "item": "roupa:boy_032",
+  "nome": "Roupa Refrescante (menino)",
+  "nomes": {
+   "en": "Breezy Outfit (boy)",
+   "es": "Traje refrescante (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_032.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_032@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_032",
+  "iconeAntigo": "ui/fashion/fa_52023.png"
+ },
+ {
+  "item": "roupa:boy_038",
+  "nome": "Conjunto Lunar (menino)",
+  "nomes": {
+   "en": "Moonlight Set (boy)",
+   "es": "Traje de luz lunar (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_038.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_038@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_038",
+  "iconeAntigo": "ui/fashion/fa_52024.png"
+ },
+ {
+  "item": "roupa:boy_040",
+  "nome": "Bordado Elegante (menino)",
+  "nomes": {
+   "en": "Elegant Embroidery (boy)",
+   "es": "Bordado elegante (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_040.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_040@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_040",
+  "iconeAntigo": "ui/fashion/fa_52025.png"
+ },
+ {
+  "item": "roupa:boy_042",
+  "nome": "Elfo Divino (menino)",
+  "nomes": {
+   "en": "Fairy Spirit (boy)",
+   "es": "Hada Celestial (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_042.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_042@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_042",
+  "iconeAntigo": "ui/fashion/fa_52026.png"
+ },
+ {
+  "item": "roupa:boy_043",
+  "nome": "Sombras de Abóbora (menino)",
+  "nomes": {
+   "en": "Pumpkin Ghost (boy)",
+   "es": "Sombra de calabaza (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_043.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_043@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_043",
+  "iconeAntigo": "ui/fashion/fa_52027.png"
+ },
+ {
+  "item": "roupa:boy_047",
+  "nome": "Diana (menino)",
+  "nomes": {
+   "en": "Diana (boy)",
+   "es": "Diana (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_047.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_047@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_047",
+  "iconeAntigo": "ui/fashion/fa_52028.png"
+ },
+ {
+  "item": "roupa:boy_050",
+  "nome": "Conjunto Rayquaza (menino)",
+  "nomes": {
+   "en": "Rayquaza Coat (boy)",
+   "es": "Traje de Rayquaza (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_050.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_050@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_050",
+  "iconeAntigo": "ui/fashion/fa_52030.png"
+ },
+ {
+  "item": "roupa:boy_051",
+  "nome": "Dia dos Namorados (menino)",
+  "nomes": {
+   "en": "Valentine's Day (boy)",
+   "es": "Día de San Valentín (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_051.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_051@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_051",
+  "iconeAntigo": "ui/fashion/fa_52031.png"
+ },
+ {
+  "item": "roupa:boy_052",
+  "nome": "Passeio de primavera (menino)",
+  "nomes": {
+   "en": "Spring Walk (boy)",
+   "es": "Paseo de primavera (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_052.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_052@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_052",
+  "iconeAntigo": "ui/fashion/fa_52032.png"
+ },
+ {
+  "item": "roupa:boy_053",
+  "nome": "Názhà (menino)",
+  "nomes": {
+   "en": "Nezha (boy)",
+   "es": "Nezha (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_053.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_053@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_053",
+  "iconeAntigo": "ui/fashion/fa_52033.png"
+ },
+ {
+  "item": "roupa:boy_054",
+  "nome": "Fênix da Alvorada (menino)",
+  "nomes": {
+   "en": "Rising Sun Phoenix (boy)",
+   "es": "Fénix del Amanecer (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_054.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_054@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_054",
+  "iconeAntigo": "ui/fashion/fa_52034.png"
+ },
+ {
+  "item": "roupa:boy_057",
+  "nome": "Conjunto Campeão (menino)",
+  "nomes": {
+   "en": "Champion's Set (boy)",
+   "es": "Traje de Campeón (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_057.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_057@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_057",
+  "iconeAntigo": "ui/fashion/fa_52035.png"
+ },
+ {
+  "item": "roupa:boy_056",
+  "nome": "Conjunto Top 10 (menino)",
+  "nomes": {
+   "en": "Top 10 Set (boy)",
+   "es": "Traje Top 10 (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_056.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_056@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_056",
+  "iconeAntigo": "ui/fashion/fa_52036.png"
+ },
+ {
+  "item": "roupa:boy_055",
+  "nome": "Conjunto do Rei (menino)",
+  "nomes": {
+   "en": "King's Set (boy)",
+   "es": "Traje del Rey (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_055.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_055@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_055",
+  "iconeAntigo": "ui/fashion/fa_52037.png"
+ },
+ {
+  "item": "roupa:boy_058",
+  "nome": "Alto Comando (menino)",
+  "nomes": {
+   "en": "Elite Four (boy)",
+   "es": "Alto Mando (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_058.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_058@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_058",
+  "iconeAntigo": "ui/fashion/fa_52038.png"
+ },
+ {
+  "item": "roupa:boy_059",
+  "nome": "Ritmo de Pequim (menino)",
+  "nomes": {
+   "en": "Beijing Rhythm (boy)",
+   "es": "Ritmo de Pekín (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_059.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_059@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_059",
+  "iconeAntigo": "ui/fashion/fa_52039.png"
+ },
+ {
+  "item": "roupa:girl_010",
+  "nome": "Conjunto Elegante (menina)",
+  "nomes": {
+   "en": "Elegant Set (girl)",
+   "es": "Traje elegante (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_010.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_010@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_010",
+  "iconeAntigo": "ui/fashion/fa_53003.png"
+ },
+ {
+  "item": "roupa:girl_013",
+  "nome": "Conjunto Platina (menina)",
+  "nomes": {
+   "en": "Platinum Set (girl)",
+   "es": "Traje platino (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_013.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_013@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_013",
+  "iconeAntigo": "ui/fashion/fa_53005.png"
+ },
+ {
+  "item": "roupa:girl_014",
+  "nome": "Macacão (menina)",
+  "nomes": {
+   "en": "Overalls (girl)",
+   "es": "Ropa de trabajo (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_014.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_014@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_014",
+  "iconeAntigo": "ui/fashion/fa_53006.png"
+ },
+ {
+  "item": "roupa:girl_015",
+  "nome": "Jaqueta do Eevee (menina)",
+  "nomes": {
+   "en": "Eevee Jacket (girl)",
+   "es": "Chaqueta de Eevee (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_015.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_015@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_015",
+  "iconeAntigo": "ui/fashion/fa_53007.png"
+ },
+ {
+  "item": "roupa:girl_016",
+  "nome": "Conjunto Cibernético (menina)",
+  "nomes": {
+   "en": "Cyber Set (girl)",
+   "es": "Traje cibernético (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_016.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_016@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_016",
+  "iconeAntigo": "ui/fashion/fa_53008.png"
+ },
+ {
+  "item": "roupa:girl_017",
+  "nome": "Conjunto de Verão (menina)",
+  "nomes": {
+   "en": "Summer (girl)",
+   "es": "Traje de verano (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_017.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_017@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_017",
+  "iconeAntigo": "ui/fashion/fa_53009.png"
+ },
+ {
+  "item": "roupa:girl_018",
+  "nome": "Conjunto de Inverno (menina)",
+  "nomes": {
+   "en": "Winter (girl)",
+   "es": "Traje de invierno (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_018.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_018@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_018",
+  "iconeAntigo": "ui/fashion/fa_53010.png"
+ },
+ {
+  "item": "roupa:girl_019",
+  "nome": "Conjunto Primavera (menina)",
+  "nomes": {
+   "en": "Spring Set (girl)",
+   "es": "Traje de primavera (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_019.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_019@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_019",
+  "iconeAntigo": "ui/fashion/fa_53011.png"
+ },
+ {
+  "item": "roupa:girl_020",
+  "nome": "Conjunto Esportivo (menina)",
+  "nomes": {
+   "en": "Sportswear (girl)",
+   "es": "Traje deportivo (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_020.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_020@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_020",
+  "iconeAntigo": "ui/fashion/fa_53012.png"
+ },
+ {
+  "item": "roupa:girl_021",
+  "nome": "Jaqueta de Couro (menina)",
+  "nomes": {
+   "en": "Leather Jacket (girl)",
+   "es": "Chaqueta de cuero (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_021.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_021@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_021",
+  "iconeAntigo": "ui/fashion/fa_53013.png"
+ },
+ {
+  "item": "roupa:girl_022",
+  "nome": "Jaqueta do Gengar (menina)",
+  "nomes": {
+   "en": "Gengar Jacket (girl)",
+   "es": "Chaqueta de Gengar (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_022.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_022@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_022",
+  "iconeAntigo": "ui/fashion/fa_53014.png"
+ },
+ {
+  "item": "roupa:girl_024",
+  "nome": "Conjunto de Natal (menina)",
+  "nomes": {
+   "en": "Christmas (girl)",
+   "es": "Traje navideño (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_024.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_024@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_024",
+  "iconeAntigo": "ui/fashion/fa_53016.png"
+ },
+ {
+  "item": "roupa:girl_027",
+  "nome": "Conjunto Gardevoir (menina)",
+  "nomes": {
+   "en": "Gardevoir Coat (girl)",
+   "es": "Traje de Gardevoir (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_027.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_027@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_027",
+  "iconeAntigo": "ui/fashion/fa_53018.png"
+ },
+ {
+  "item": "roupa:girl_028",
+  "nome": "Conjunto Lopunny (menina)",
+  "nomes": {
+   "en": "Lopunny Coat (girl)",
+   "es": "Traje de Lopunny (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_028.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_028@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_028",
+  "iconeAntigo": "ui/fashion/fa_53020.png"
+ },
+ {
+  "item": "roupa:girl_030",
+  "nome": "Chapéu de Palha (menina)",
+  "nomes": {
+   "en": "Straw Hat (girl)",
+   "es": "Sombrero de Paja (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_030.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_030@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_030",
+  "iconeAntigo": "ui/fashion/fa_53021.png"
+ },
+ {
+  "item": "roupa:girl_035",
+  "nome": "Conjunto de Qixi (menina)",
+  "nomes": {
+   "en": "Qixi (girl)",
+   "es": "Traje de Tanabata (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_035.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_035@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_035",
+  "iconeAntigo": "ui/fashion/fa_53022.png"
+ },
+ {
+  "item": "roupa:girl_032",
+  "nome": "Roupa Refrescante (menina)",
+  "nomes": {
+   "en": "Breezy Outfit (girl)",
+   "es": "Traje refrescante (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_032.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_032@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_032",
+  "iconeAntigo": "ui/fashion/fa_53023.png"
+ },
+ {
+  "item": "roupa:girl_038",
+  "nome": "Conjunto Lunar (menina)",
+  "nomes": {
+   "en": "Moonlight Set (girl)",
+   "es": "Traje de luz lunar (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_038.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_038@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_038",
+  "iconeAntigo": "ui/fashion/fa_53024.png"
+ },
+ {
+  "item": "roupa:girl_040",
+  "nome": "Bordado Elegante (menina)",
+  "nomes": {
+   "en": "Elegant Embroidery (girl)",
+   "es": "Bordado elegante (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_040.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_040@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_040",
+  "iconeAntigo": "ui/fashion/fa_53025.png"
+ },
+ {
+  "item": "roupa:girl_042",
+  "nome": "Elfo Divino (menina)",
+  "nomes": {
+   "en": "Fairy Spirit (girl)",
+   "es": "Hada Celestial (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_042.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_042@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_042",
+  "iconeAntigo": "ui/fashion/fa_53026.png"
+ },
+ {
+  "item": "roupa:girl_043",
+  "nome": "Sombras de Abóbora (menina)",
+  "nomes": {
+   "en": "Pumpkin Ghost (girl)",
+   "es": "Sombra de calabaza (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_043.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_043@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_043",
+  "iconeAntigo": "ui/fashion/fa_53027.png"
+ },
+ {
+  "item": "roupa:girl_047",
+  "nome": "Diana (menina)",
+  "nomes": {
+   "en": "Diana (girl)",
+   "es": "Diana (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_047.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_047@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_047",
+  "iconeAntigo": "ui/fashion/fa_53028.png"
+ },
+ {
+  "item": "roupa:girl_050",
+  "nome": "Conjunto Rayquaza (menina)",
+  "nomes": {
+   "en": "Rayquaza Coat (girl)",
+   "es": "Traje de Rayquaza (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_050.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_050@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_050",
+  "iconeAntigo": "ui/fashion/fa_53030.png"
+ },
+ {
+  "item": "roupa:girl_051",
+  "nome": "Dia dos Namorados (menina)",
+  "nomes": {
+   "en": "Valentine's Day (girl)",
+   "es": "Día de San Valentín (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_051.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_051@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_051",
+  "iconeAntigo": "ui/fashion/fa_53031.png"
+ },
+ {
+  "item": "roupa:girl_052",
+  "nome": "Passeio de primavera (menina)",
+  "nomes": {
+   "en": "Spring Walk (girl)",
+   "es": "Paseo de primavera (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_052.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_052@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_052",
+  "iconeAntigo": "ui/fashion/fa_53032.png"
+ },
+ {
+  "item": "roupa:girl_053",
+  "nome": "Názhà (menina)",
+  "nomes": {
+   "en": "Nezha (girl)",
+   "es": "Nezha (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_053.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_053@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_053",
+  "iconeAntigo": "ui/fashion/fa_52033.png"
+ },
+ {
+  "item": "roupa:girl_054",
+  "nome": "Fênix da Alvorada (menina)",
+  "nomes": {
+   "en": "Rising Sun Phoenix (girl)",
+   "es": "Fénix del Amanecer (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_054.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_054@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_054",
+  "iconeAntigo": "ui/fashion/fa_53034.png"
+ },
+ {
+  "item": "roupa:girl_057",
+  "nome": "Conjunto Campeão (menina)",
+  "nomes": {
+   "en": "Champion's Set (girl)",
+   "es": "Traje de Campeón (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_057.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_057@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_057",
+  "iconeAntigo": "ui/fashion/fa_53035.png"
+ },
+ {
+  "item": "roupa:girl_056",
+  "nome": "Conjunto Top 10 (menina)",
+  "nomes": {
+   "en": "Top 10 Set (girl)",
+   "es": "Traje Top 10 (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_056.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_056@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_056",
+  "iconeAntigo": "ui/fashion/fa_53036.png"
+ },
+ {
+  "item": "roupa:girl_055",
+  "nome": "Conjunto do Rei (menina)",
+  "nomes": {
+   "en": "King's Set (girl)",
+   "es": "Traje del Rey (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_055.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_055@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_055",
+  "iconeAntigo": "ui/fashion/fa_53037.png"
+ },
+ {
+  "item": "roupa:girl_058",
+  "nome": "Alto Comando (menina)",
+  "nomes": {
+   "en": "Elite Four (girl)",
+   "es": "Alto Mando (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_058.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_058@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_058",
+  "iconeAntigo": "ui/fashion/fa_53038.png"
+ },
+ {
+  "item": "roupa:girl_059",
+  "nome": "Ritmo de Pequim (menina)",
+  "nomes": {
+   "en": "Beijing Rhythm (girl)",
+   "es": "Ritmo de Pekín (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_059.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_059@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_059",
+  "iconeAntigo": "ui/fashion/fa_53039.png"
+ },
+ {
+  "item": "mochila:Bag001",
+  "nome": "Mochila Solar",
+  "nomes": {
+   "en": "Sun Backpack",
+   "es": "Mochila Solar"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag001.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag001@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag001",
+  "iconeAntigo": "ui/fashion/fa_54001.png"
+ },
+ {
+  "item": "mochila:Bag012",
+  "nome": "Mochila Clássica",
+  "nomes": {
+   "en": "Classic Backpack",
+   "es": "Mochila Clásica"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag012.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag012@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag012",
+  "iconeAntigo": "ui/fashion/fa_54002.png"
+ },
+ {
+  "item": "mochila:Bag014",
+  "nome": "Bolsa de Couro",
+  "nomes": {
+   "en": "Leather Satchel",
+   "es": "Bolso de Cuero"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag014.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag014@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag014",
+  "iconeAntigo": "ui/fashion/fa_54003.png"
+ },
+ {
+  "item": "mochila:Bag015",
+  "nome": "Pochete Esportiva",
+  "nomes": {
+   "en": "Sport Belt Bag",
+   "es": "Riñonera Deportiva"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag015.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag015@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag015",
+  "iconeAntigo": "ui/fashion/fa_54004.png"
+ },
+ {
+  "item": "mochila:Bag016",
+  "nome": "Maleta de Treino",
+  "nomes": {
+   "en": "Training Case",
+   "es": "Maletín de Entrenamiento"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag016.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag016@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag016",
+  "iconeAntigo": "ui/fashion/fa_54005.png"
+ },
+ {
+  "item": "mochila:Bag017",
+  "nome": "Mochila de Trilha",
+  "nomes": {
+   "en": "Trail Backpack",
+   "es": "Mochila de Excursión"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag017.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag017@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag017",
+  "iconeAntigo": "ui/fashion/fa_54006.png"
+ },
+ {
+  "item": "mochila:Bag018",
+  "nome": "Mochila Cáqui",
+  "nomes": {
+   "en": "Khaki Backpack",
+   "es": "Mochila Caqui"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag018.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag018@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag018",
+  "iconeAntigo": "ui/fashion/fa_54007.png"
+ },
+ {
+  "item": "mochila:Bag019",
+  "nome": "Bolsa Carteiro",
+  "nomes": {
+   "en": "Messenger Bag",
+   "es": "Bolso Bandolera"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag019.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag019@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag019",
+  "iconeAntigo": "ui/fashion/fa_54008.png"
+ },
+ {
+  "item": "mochila:Bag020",
+  "nome": "Mochila Cubo",
+  "nomes": {
+   "en": "Cube Pack",
+   "es": "Mochila Cubo"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag020.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag020@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag020",
+  "iconeAntigo": "ui/fashion/fa_54009.png"
+ },
+ {
+  "item": "mochila:Bag021",
+  "nome": "Mochila Rebelde",
+  "nomes": {
+   "en": "Rebel Backpack",
+   "es": "Mochila Rebelde"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag021.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag021@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag021",
+  "iconeAntigo": "ui/fashion/fa_54010.png"
+ },
+ {
+  "item": "mochila:Bag022",
+  "nome": "Mochila de Aventureiro",
+  "nomes": {
+   "en": "Adventurer's Backpack",
+   "es": "Mochila de Aventurero"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag022.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag022@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag022",
+  "iconeAntigo": "ui/fashion/fa_54011.png"
+ },
+ {
+  "item": "mochila:Bag024",
+  "nome": "Mochila Sino",
+  "nomes": {
+   "en": "Bell Backpack",
+   "es": "Mochila de campana"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag024.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag024@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag024",
+  "iconeAntigo": "ui/fashion/fa_54013.png"
+ },
+ {
+  "item": "mochila:Bag025",
+  "nome": "Pochete Coração de Ouro",
+  "nomes": {
+   "en": "Heart of Gold Belt Bag",
+   "es": "Riñonera Corazón de Oro"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag025.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag025@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag025",
+  "iconeAntigo": "ui/fashion/fa_54016.png"
+ },
+ {
+  "item": "mochila:Bag025_1",
+  "nome": "Bolsa Alma de Prata",
+  "nomes": {
+   "en": "Soul of Silver Bag",
+   "es": "Bolso Alma de Plata"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag025_1.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag025_1@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag025_1",
+  "iconeAntigo": "ui/fashion/fa_54017.png"
+ },
+ {
+  "item": "mochila:Bag027",
+  "nome": "Mochila da Gardevoir",
+  "nomes": {
+   "en": "Gardevoir Backpack",
+   "es": "Mochila de Gardevoir"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag027.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag027@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag027",
+  "iconeAntigo": "ui/fashion/fa_54018.png"
+ },
+ {
+  "item": "mochila:Bag030",
+  "nome": "Troféu de Campeão da Liga",
+  "nomes": {
+   "en": "League Champion Trophy",
+   "es": "Trofeo de campeón de liga"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag030.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag030@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag030",
+  "iconeAntigo": "ui/fashion/fa_54019.png"
+ },
+ {
+  "item": "mochila:Bag028",
+  "nome": "Cenoura",
+  "nomes": {
+   "en": "Carrot",
+   "es": "Zanahoria"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag028.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag028@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag028",
+  "iconeAntigo": "ui/fashion/fa_54020.png"
+ },
+ {
+  "item": "mochila:Bag031",
+  "nome": "Coxa de Frango",
+  "nomes": {
+   "en": "Chicken leg",
+   "es": "Muslo de pollo"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag031.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag031@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag031",
+  "iconeAntigo": "ui/fashion/fa_54021.png"
+ },
+ {
+  "item": "mochila:Bag036",
+  "nome": "Bolsa de Sorte de Qixi",
+  "nomes": {
+   "en": "Qixi bag",
+   "es": "Bolsa de Tanabata"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag036.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag036@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag036",
+  "iconeAntigo": "ui/fashion/fa_54022.png"
+ },
+ {
+  "item": "mochila:Bag033",
+  "nome": "Verão Refrescante",
+  "nomes": {
+   "en": "Cool bag",
+   "es": "Verano refrescante"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag033.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag033@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag033",
+  "iconeAntigo": "ui/fashion/fa_54023.png"
+ },
+ {
+  "item": "mochila:Bag039",
+  "nome": "Lua Cheia (menino)",
+  "nomes": {
+   "en": "Full Moon (boy)",
+   "es": "Luna llena (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag039.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag039@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag039",
+  "iconeAntigo": "ui/fashion/fa_54024.png"
+ },
+ {
+  "item": "mochila:Bag039_1",
+  "nome": "Lua Cheia (menina)",
+  "nomes": {
+   "en": "Full Moon (girl)",
+   "es": "Luna llena (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag039_1.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag039_1@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag039_1",
+  "iconeAntigo": "ui/fashion/fa_54025.png"
+ },
+ {
+  "item": "mochila:Bag044",
+  "nome": "Céu Ardente",
+  "nomes": {
+   "en": "Blazing Sky",
+   "es": "Cielo Ardiente"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag044.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag044@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag044",
+  "iconeAntigo": "ui/fashion/fa_54026.png"
+ },
+ {
+  "item": "mochila:Bag045",
+  "nome": "Mochila Coração",
+  "nomes": {
+   "en": "Love Heart Backpack",
+   "es": "Mochila de corazón"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag045.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag045@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag045",
+  "iconeAntigo": "ui/fashion/fa_54027.png"
+ },
+ {
+  "item": "mochila:Bag046",
+  "nome": "Mochila floral",
+  "nomes": {
+   "en": "Floral Rhythm Backpack",
+   "es": "Mochila Floral"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag046.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag046@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag046",
+  "iconeAntigo": "ui/fashion/fa_54028.png"
+ },
+ {
+  "item": "mochila:Bag047",
+  "nome": "Halo das Asas Sagradas",
+  "nomes": {
+   "en": "Halo of Sacred Wings",
+   "es": "Halo de Alas Sagradas"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag047.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag047@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag047",
+  "iconeAntigo": "ui/fashion/fa_54029.png"
+ },
+ {
+  "item": "mochila:Bag050",
+  "nome": "Mochila Campeã",
+  "nomes": {
+   "en": "Champion Backpack",
+   "es": "Mochila Campeona"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag050.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag050@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag050",
+  "iconeAntigo": "ui/fashion/fa_54030.png"
+ },
+ {
+  "item": "mochila:Bag049",
+  "nome": "Mochila Top 10",
+  "nomes": {
+   "en": "Top 10 Backpack",
+   "es": "Mochila Top 10"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag049.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag049@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag049",
+  "iconeAntigo": "ui/fashion/fa_54031.png"
+ },
+ {
+  "item": "mochila:Bag048",
+  "nome": "Mochila do Rei",
+  "nomes": {
+   "en": "King Backpack",
+   "es": "Mochila del Rey"
+  },
+  "foto": "ui/amanda/skins/pecas/mochila-Bag048.png",
+  "foto2x": "ui/amanda/skins/pecas/mochila-Bag048@2x.png",
+  "loop": "ui/amanda/skins/loop/mochila-Bag048",
+  "iconeAntigo": "ui/fashion/fa_54032.png"
+ },
+ {
+  "item": "roupa:boy_023",
+  "nome": "Conjunto Charizard (menino)",
+  "nomes": {
+   "en": "Charizard Coat (boy)",
+   "es": "Traje de Charizard (chico)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-boy_023.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-boy_023@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-boy_023",
+  "iconeAntigo": "ui/fashion/fa_52015.png"
+ },
+ {
+  "item": "roupa:girl_023",
+  "nome": "Conjunto Charizard (menina)",
+  "nomes": {
+   "en": "Charizard Coat (girl)",
+   "es": "Traje de Charizard (chica)"
+  },
+  "foto": "ui/amanda/skins/pecas/roupa-girl_023.png",
+  "foto2x": "ui/amanda/skins/pecas/roupa-girl_023@2x.png",
+  "loop": "ui/amanda/skins/loop/roupa-girl_023",
+  "iconeAntigo": "ui/fashion/fa_53015.png"
+ }
+]

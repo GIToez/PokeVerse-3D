@@ -1,0 +1,364 @@
+{
+ "versao": 1,
+ "nota": "Gerado por tools/tinta_livre.py (lab-personagem). Não editar à mão.",
+ "slots": {
+  "pele": "pele",
+  "cabelo": "cabelo",
+  "olhos": "olhos",
+  "roupa": "roupa",
+  "roupa2": "roupa 2",
+  "calcado": "calçado",
+  "acessorio": "acessório",
+  "detalhe": "detalhe"
+ },
+ "ordemSlots": [
+  "pele",
+  "cabelo",
+  "olhos",
+  "roupa",
+  "roupa2",
+  "calcado",
+  "acessorio",
+  "detalhe"
+ ],
+ "presets": {
+  "calcado": [
+   "#ffffff",
+   "#222222",
+   "#f83537",
+   "#1a4195",
+   "#2aa84a",
+   "#f2c230",
+   "#8a3fd1",
+   "#ff7a1a",
+   "#ff9bd7"
+  ],
+  "acessorio": [
+   "#222222",
+   "#ffffff",
+   "#f83537",
+   "#1a4195",
+   "#f2c230",
+   "#2aa84a",
+   "#8a3fd1",
+   "#ff9bd7"
+  ],
+  "detalhe": [
+   "#ffb84e",
+   "#f2d16b",
+   "#ffffff",
+   "#f83537",
+   "#5b8ef0",
+   "#7bd67b",
+   "#ff9bd7",
+   "#222222"
+  ]
+ },
+ "roupas": {
+  "heroi": {
+   "sexo": "menino",
+   "nome": "Herói",
+   "glb": "Boy_002",
+   "fonte": "dump",
+   "padrao": {
+    "pele": "#ffcbaa",
+    "cabelo": "#322527",
+    "roupa": "#f83537",
+    "roupa2": "#ffffff",
+    "olhos": "#ffffff"
+   },
+   "rotulos": {
+    "roupa": "boné e camisa",
+    "roupa2": "jaqueta e calça"
+   },
+   "texturas": {
+    "fc0001_00_hero_body_col": {
+     "mascara1": "cenario/npc/mask/fc0001_00_hero_body_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "roupa",
+      "B": "cabelo",
+      "K": "roupa2"
+     }
+    },
+    "fc0001_00_hero_face_col": {
+     "mascara1": "cenario/npc/mask/fc0001_00_hero_face_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "olhos"
+     }
+    }
+   }
+  },
+  "heroina": {
+   "sexo": "menina",
+   "nome": "Heroína",
+   "glb": "Girl_002",
+   "fonte": "dump",
+   "padrao": {
+    "pele": "#ffcbaa",
+    "cabelo": "#1a4195",
+    "roupa": "#ff9bd7",
+    "roupa2": "#ffffff",
+    "olhos": "#00bdff"
+   },
+   "rotulos": {
+    "roupa": "vestido",
+    "roupa2": "chapéu (tom)"
+   },
+   "texturas": {
+    "fc0002_00_heroine_body_col": {
+     "mascara1": "cenario/npc/mask/fc0002_00_heroine_body_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "cabelo",
+      "B": "roupa2",
+      "K": "roupa"
+     }
+    },
+    "fc0002_00_heroine_face_col": {
+     "mascara1": "cenario/npc/mask/fc0002_00_heroine_face_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "olhos"
+     }
+    }
+   }
+  },
+  "boy_012": {
+   "sexo": "menino",
+   "nome": "Casaco do Pikachu",
+   "glb": "Boy_012",
+   "fonte": "nova",
+   "padrao": {
+    "calcado": "#dedee7",
+    "roupa2": "#85c9d3",
+    "pele": "#ffcbaa",
+    "cabelo": "#2b0030",
+    "roupa": "#2b0030",
+    "detalhe": "#ffb84e",
+    "olhos": "#ffffff"
+   },
+   "rotulos": {
+    "roupa": "moletom",
+    "roupa2": "calça",
+    "calcado": "tênis",
+    "detalhe": "Pikachu"
+   },
+   "texturas": {
+    "fc0001_12_hero_body_col": {
+     "mascara1": "cenario/npc/mask/boy_012_msk1.png",
+     "mascara2": "cenario/npc/mask/boy_012_msk2.png",
+     "canais": {
+      "R": "pele",
+      "G": "cabelo",
+      "B": "roupa",
+      "B2": "detalhe",
+      "G2": "calcado",
+      "R2": "roupa2"
+     },
+     "neutralizar": [
+      "R2",
+      "G2"
+     ],
+     "ganho": {
+      "G2": 1.141,
+      "R2": 1.402
+     },
+     "mascaraJogo": "cenario/npc/mask/fc0001_12_hero_body_msk.png",
+     "herdado": {
+      "R": "R",
+      "G": "G",
+      "B": "G",
+      "B2": "B"
+     }
+    },
+    "fc0001_12_hero_face_col": {
+     "mascara1": "cenario/npc/mask/fc0001_00_hero_face_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "olhos"
+     }
+    }
+   }
+  },
+  "girl_012": {
+   "sexo": "menina",
+   "nome": "Casaco do Pikachu",
+   "glb": "Girl_012",
+   "fonte": "nova",
+   "padrao": {
+    "calcado": "#fe502e",
+    "roupa2": "#51516f",
+    "roupa": "#502929",
+    "pele": "#ffcbaa",
+    "cabelo": "#410028",
+    "detalhe": "#ffc12f",
+    "olhos": "#ffffff"
+   },
+   "rotulos": {
+    "roupa": "moletom",
+    "roupa2": "meia-calça",
+    "calcado": "tênis",
+    "detalhe": "Pikachu"
+   },
+   "texturas": {
+    "fc0002_12_body_col": {
+     "mascara1": "cenario/npc/mask/girl_012_msk1.png",
+     "mascara2": "cenario/npc/mask/girl_012_msk2.png",
+     "canais": {
+      "R": "pele",
+      "G": "cabelo",
+      "B2": "detalhe",
+      "G2": "calcado",
+      "R2": "roupa2",
+      "B": "roupa"
+     },
+     "neutralizar": [
+      "B",
+      "R2",
+      "G2"
+     ],
+     "ganho": {
+      "G2": 1.944,
+      "R2": 3.017,
+      "B": 4.831
+     },
+     "mascaraJogo": "cenario/npc/mask/fc0002_12_body_msk.png",
+     "herdado": {
+      "R": "R",
+      "G": "G",
+      "B2": "B"
+     }
+    },
+    "fc0002_00_heroine_face_col": {
+     "mascara1": "cenario/npc/mask/fc0002_00_heroine_face_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "olhos"
+     }
+    }
+   }
+  },
+  "boy_025": {
+   "sexo": "menino",
+   "nome": "Coração de Ouro",
+   "glb": "Boy_025",
+   "fonte": "nova",
+   "padrao": {
+    "cabelo": "#595980",
+    "acessorio": "#595959",
+    "calcado": "#b55045",
+    "roupa": "#c05541",
+    "roupa2": "#555555",
+    "pele": "#ffcbaa",
+    "olhos": "#ffffff"
+   },
+   "rotulos": {
+    "roupa": "jaqueta",
+    "roupa2": "bermuda",
+    "calcado": "tênis",
+    "acessorio": "boné"
+   },
+   "texturas": {
+    "axiang_body": {
+     "mascara1": "cenario/npc/mask/boy_025_msk1.png",
+     "mascara2": "cenario/npc/mask/boy_025_msk2.png",
+     "canais": {
+      "R": "pele",
+      "G": "cabelo",
+      "B2": "acessorio",
+      "G2": "calcado",
+      "B": "roupa",
+      "R2": "roupa2"
+     },
+     "neutralizar": [
+      "G",
+      "B",
+      "R2",
+      "G2",
+      "B2"
+     ],
+     "ganho": {
+      "G": 2.717,
+      "B2": 2.852,
+      "G2": 2.384,
+      "B": 2.228,
+      "R2": 3.01
+     },
+     "mascaraJogo": "cenario/npc/mask/axiang_body_Msk.png",
+     "herdado": {
+      "R": "R"
+     }
+    },
+    "fc0001_00_hero_face_col": {
+     "mascara1": "cenario/npc/mask/fc0001_00_hero_face_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "olhos"
+     }
+    }
+   }
+  },
+  "girl_025": {
+   "sexo": "menina",
+   "nome": "Alma de Prata",
+   "glb": "Girl_025",
+   "fonte": "nova",
+   "padrao": {
+    "cabelo": "#8a5930",
+    "acessorio": "#f6f6ff",
+    "calcado": "#f05e68",
+    "roupa2": "#3c63b0",
+    "roupa": "#eb555e",
+    "pele": "#ffcbaa",
+    "olhos": "#ffab28"
+   },
+   "rotulos": {
+    "roupa": "camiseta",
+    "roupa2": "macacão",
+    "calcado": "sapatos",
+    "acessorio": "chapéu"
+   },
+   "texturas": {
+    "qinyin_body": {
+     "mascara1": "cenario/npc/mask/girl_025_msk1.png",
+     "mascara2": "cenario/npc/mask/girl_025_msk2.png",
+     "canais": {
+      "R": "pele",
+      "G": "cabelo",
+      "B2": "acessorio",
+      "G2": "calcado",
+      "R2": "roupa2",
+      "B": "roupa"
+     },
+     "neutralizar": [
+      "G",
+      "B",
+      "R2",
+      "G2",
+      "B2"
+     ],
+     "ganho": {
+      "G": 2.593,
+      "B2": 1.033,
+      "G2": 1.837,
+      "R2": 2.654,
+      "B": 1.971
+     },
+     "mascaraJogo": "cenario/npc/mask/qinyin_body_Msk.png",
+     "herdado": {
+      "R": "R"
+     }
+    },
+    "fc0002_00_heroine_face_col": {
+     "mascara1": "cenario/npc/mask/fc0002_00_heroine_face_msk.png",
+     "canais": {
+      "R": "pele",
+      "G": "olhos"
+     }
+    }
+   }
+  }
+ }
+}

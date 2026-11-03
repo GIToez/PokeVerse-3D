@@ -1,0 +1,92 @@
+[
+ {
+  "skin": "squirtle-abobora",
+  "nome": "Squirtle Abóbora",
+  "especie": "pm0007",
+  "glb": "squirtle-abobora.glb (o do Jaime)",
+  "foto": "ui/amanda/skins/pokemon/squirtle-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/squirtle-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-squirtle-abobora"
+ },
+ {
+  "skin": "pikachu-mimikyu",
+  "nome": "Pikachu Mimikyu",
+  "especie": "pm0025",
+  "glb": "pikachu-mimikyu.glb (o do Jaime)",
+  "foto": "ui/amanda/skins/pokemon/pikachu-mimikyu.png",
+  "foto2x": "ui/amanda/skins/pokemon/pikachu-mimikyu@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-pikachu-mimikyu"
+ },
+ {
+  "skin": "charmander-vampiro",
+  "nome": "Charmander Vampiro",
+  "especie": "pm0004",
+  "glb": "charmander-vampiro.glb (o do Jaime)",
+  "foto": "ui/amanda/skins/pokemon/charmander-vampiro.png",
+  "foto2x": "ui/amanda/skins/pokemon/charmander-vampiro@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-charmander-vampiro"
+ },
+ {
+  "skin": "bulbasaur-bruxinho",
+  "nome": "Bulbasaur Bruxinho",
+  "especie": "pm0001",
+  "glb": "bulbasaur-bruxinho.glb (o do Jaime)",
+  "foto": "ui/amanda/skins/pokemon/bulbasaur-bruxinho.png",
+  "foto2x": "ui/amanda/skins/pokemon/bulbasaur-bruxinho@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-bulbasaur-bruxinho"
+ },
+ {
+  "skin": "ivysaur-abobora",
+  "nome": "Ivysaur Abóbora",
+  "especie": "pm0002",
+  "glb": "pm0002_31.glb (cenario/mon)",
+  "foto": "ui/amanda/skins/pokemon/ivysaur-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/ivysaur-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-ivysaur-abobora"
+ },
+ {
+  "skin": "venusaur-abobora",
+  "nome": "Venusaur Abóbora",
+  "especie": "pm0003",
+  "glb": "pm0003_31.glb (cenario/mon)",
+  "foto": "ui/amanda/skins/pokemon/venusaur-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/venusaur-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-venusaur-abobora"
+ },
+ {
+  "skin": "charmeleon-abobora",
+  "nome": "Charmeleon Abóbora",
+  "especie": "pm0005",
+  "glb": "pm0005_31.glb (cenario/mon)",
+  "foto": "ui/amanda/skins/pokemon/charmeleon-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/charmeleon-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-charmeleon-abobora"
+ },
+ {
+  "skin": "charizard-abobora",
+  "nome": "Charizard Abóbora",
+  "especie": "pm0006",
+  "glb": "pm0006_31.glb (cenario/mon)",
+  "foto": "ui/amanda/skins/pokemon/charizard-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/charizard-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-charizard-abobora"
+ },
+ {
+  "skin": "wartortle-abobora",
+  "nome": "Wartortle Abóbora",
+  "especie": "pm0008",
+  "glb": "pm0008_31.glb (cenario/mon)",
+  "foto": "ui/amanda/skins/pokemon/wartortle-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/wartortle-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-wartortle-abobora"
+ },
+ {
+  "skin": "blastoise-abobora",
+  "nome": "Blastoise Abóbora",
+  "especie": "pm0009",
+  "glb": "pm0009_31.glb (cenario/mon)",
+  "foto": "ui/amanda/skins/pokemon/blastoise-abobora.png",
+  "foto2x": "ui/amanda/skins/pokemon/blastoise-abobora@2x.png",
+  "loop": "ui/amanda/skins/loop/pokemon-blastoise-abobora"
+ }
+]
