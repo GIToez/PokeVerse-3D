@@ -115,9 +115,13 @@ server {
         etag on;
         add_header Cache-Control "public, max-age=0, must-revalidate";
     }
+    # Modules MUST revalidate: without Cache-Control the browser caches them heuristically, and a deploy then runs a fresh
+    # index.html against stale modules (e.g. a new chat command that the old chat.mjs sends as a plain message).
     location ~ \.mjs$ {
         default_type application/javascript;
         try_files /public$uri $uri =404;
+        etag on;
+        add_header Cache-Control "no-cache";
     }
     location / {
         try_files /public$uri $uri =404;

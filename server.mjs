@@ -1568,6 +1568,17 @@ wss.on('connection', ws => {
           enviar(ws, { t: 'vida', vidas });
         }
 
+        else if (m.t === 'vida_gm') {                                       // /pokeheal (02/11): GM cura time E caixa, em qualquer lugar
+          const u = sessoes.get(ws._info?.token) || null, c = u ? contas[u] : null;
+          if (!c?.gm) { enviar(ws, { t: 'vida_erro', erro: '/pokeheal is GM only' }); break; }
+          if (!c.save) c.save = {};
+          for (const p of [...(c.save.time || []), ...(c.save.caixa || [])]) healMon(p);
+          c.rev = (c.rev || 0) + 1;
+          salvarContas();
+          logAdmin(u, u, 'pokeheal', { time: (c.save.time || []).length, caixa: (c.save.caixa || []).length });
+          enviar(ws, { t: 'vida', vidas: c.save.time || [] });
+        }
+
         else if (m.t?.startsWith('bat_')) {
           batalha.receber(ws, m);
         }

@@ -4768,6 +4768,16 @@ jogo.criarSelvagem = async (esp, x, z, o) => { const s = await criarSelvagem(esp
    O selvagem é do APARELHO (não passa pelo servidor). No jogo local a captura leva o indivíduo exatamente como saiu daqui; com
    conta a captura é registrada pelo servidor, que sorteia IVs/natureza/shiny de novo (posse_capturar) — pra entregar um
    Pokémon pronto a uma conta, o caminho é o "Give Pokémon" do painel. */
+/* /POKEHEAL (02/11, só GM): cura o time inteiro (o mesmo efeito da Joy, em qualquer lugar) e a caixa. Com conta, o servidor faz o
+   mesmo no save (`vida_gm`, recusado pra quem não é GM). */
+function pokeheal(){
+  if (!GM_REAL){ Chat.sistema('/pokeheal is GM only.'); return; }
+  if (!jogo.ash) return;
+  const caixa = lerLS('caixa', []) || [];
+  for (const t of caixa){ if (t.maxHp) t.hp = t.maxHp; t.koAte = 0; t.status = null; Ind.restaurarPP(t); }
+  gravarLS('caixa', caixa);
+  curarTime({ nome: 'GM' }, 'gm');
+}
 const LENDARIOS_DEX = new Set([144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, ...Array.from({ length: 10 }, (_, i) => 377 + i),
   ...Array.from({ length: 15 }, (_, i) => 480 + i), ...Array.from({ length: 12 }, (_, i) => 638 + i), ...Array.from({ length: 6 }, (_, i) => 716 + i),
   772, 773, 785, 786, 787, 788, 789, 790, 791, 792, 800, 801, 802, 807, 808, 809, ...Array.from({ length: 11 }, (_, i) => 888 + i), 905,
@@ -5560,8 +5570,8 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
   pintarTime(true); pintarAtalhos(true); return true;
 }
 /** A cura da Joy (papel 'cura'): o time inteiro e o parceiro em campo voltam a 100%, desmaios removidos. */
-function curarTime(n){
-  if (comConta()) Rede.pedirVida('curar').then(r => { if (r && r.erro) Chat.sistema('⚠ ' + r.erro + '.'); });   // passo 3: a cura completa é do servidor (ele confere o Centro)
+function curarTime(n, vidaOp = 'curar'){                                // vidaOp 'gm': o /pokeheal (o servidor cura time e caixa e confere a marca de GM)
+  if (comConta()) Rede.pedirVida(vidaOp).then(r => { if (r && r.erro) Chat.sistema('⚠ ' + r.erro + '.'); });   // passo 3: a cura completa é do servidor (ele confere o Centro)
   for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; Ind.restaurarPP(t); }
   gravarLS('time', jogo.time);
   const p = jogo.pika;
@@ -8257,7 +8267,7 @@ if (jogo.ash){
   const depuracao = on => { if (on === undefined) return MOBILE ? document.body.classList.contains('menu-aberto') : !document.body.classList.contains('sem-dbg'); document.body.classList.toggle('menu-aberto', !!on); document.body.classList.toggle('sem-dbg', !on); };
   const areaAtual = () => { const a = jogo.ash; if (!a) return null; const c = (dados.caixas || []).find(c => c.sx > 0 && Math.abs(a.x - flipX * c.x) <= c.sx / 2 && Math.abs(a.z - c.z) <= c.sz / 2); return c ? c.a : (cenaAtual?.areas?.[0]?.id ?? null); };
   const nomeAreaAtual = () => { const a = areaInteriorVisitada ?? areaAtual(); return rotuloLugar((a != null && (nomeAreaCena(a) || dados.nomes?.[a] || NOMES_AREA[a])) || cenaAtual?.nome || NOME); };
-  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
+  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal,   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     hora: resto => {
       const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
       const uso = 'Use: /time night | day | dawn | dusk | 21 | 21:30 | off';
