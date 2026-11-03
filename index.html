@@ -3134,7 +3134,7 @@ const MONTARIAS_PADRAO = [
   ['pm0145_00', 'Zapdos',    'RideIdle1', 'Ride1', true,  1.0,  25000, 'terra'],
   ['pm0018_00', 'Pidgeot',   'RideIdle1', 'Ride1', true,  1.2,  25000, 'terra'],
 ];
-const MONTARIAS_ARQ = await fetch('./data/mounts.json').then(r => r.ok ? r.json() : null).then(l => Array.isArray(l) && l.length ? l : null).catch(() => null);
+const MONTARIAS_ARQ = await fetch('./data/mounts.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(l => Array.isArray(l) && l.length ? l : null).catch(() => null);
 const MONTARIAS = MONTARIAS_ARQ ? MONTARIAS_ARQ.map(d => [d.glb, d.nome, d.poseIdle, d.poseRun, !!d.voa, d.escala, d.vel, d.meio]) : MONTARIAS_PADRAO;
 /** Quanto a montaria afunda quando está n'água (a origem do modelo é o chão; na água o corpo fica meio submerso). */
 const MERGULHO = { agua: 0.3, anfibia: 0.15 };

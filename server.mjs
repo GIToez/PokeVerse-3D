@@ -1444,6 +1444,32 @@ wss.on('connection', ws => {
         break;
       }
 
+      // account.mjs manda uma pref por vez ({ t: 'pref', chave, valor }) e o conhecimento à parte; sem estes casos
+      // o switch descartava as duas e o atalho/seguidor só sobrevivia ao F5 se o envio caísse no HTTP do pagehide
+      case 'pref': {
+        const uPref = sessoes.get(ws._info?.token) || ws._usuario;
+        const cPref = uPref && contas[uPref];
+        if (cPref && typeof m.chave === 'string' && PREFS_OK.has(m.chave)) {
+          if (!cPref.save) cPref.save = {};
+          aplicarPrefs(cPref, { [m.chave]: m.valor });
+          cPref.rev = (cPref.rev || 0) + 1;
+          salvarContas();
+        }
+        break;
+      }
+      case 'conhecimento': {
+        const uCon = sessoes.get(ws._info?.token) || ws._usuario;
+        const cCon = uCon && contas[uCon];
+        if (cCon) {
+          if (!cCon.save) cCon.save = {};
+          if (m.conhecimento !== undefined) cCon.save.conhecimento = mesclarConhecimento(cCon.save.conhecimento, m.conhecimento);   // nº15: só soma
+          if (m.dex !== undefined) cCon.save.dex = mesclarDex(cCon.save.dex, m.dex);                                                 // nº15: cliente só adiciona 'visto'
+          cCon.rev = (cCon.rev || 0) + 1;
+          salvarContas();
+        }
+        break;
+      }
+
       // Client intents: party order, preferences, knowledge
       case 'save': {
         const u = (sessoes.get(ws._info?.token) || null);
