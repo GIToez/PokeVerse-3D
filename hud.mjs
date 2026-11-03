@@ -208,6 +208,9 @@ export function posicionar(e, p, abs = false){
   } else ancorar(e, p, k);
   e.style.transform = (e.__segue ? 'translate(-50%,-100%) ' : p.ax === 'center' ? 'translateX(-50%) ' : '') + 'scale(' + ((p.s || 1) * k) + ')' + (p.r ? ' rotate(' + p.r + 'deg)' : '');   // r = giro em graus (editor)
   if (e.id === 'chat'){
+    // #chat width/height are !important and read --chat-w/--chat-h. The phone dock size lives on the record.
+    if (p.w) e.style.setProperty('--chat-w', p.w + 'px'); else e.style.removeProperty('--chat-w');
+    if (p.h) e.style.setProperty('--chat-h', p.h + 'px'); else e.style.removeProperty('--chat-h');
     e.style.width = ''; e.style.height = ''; e.style.maxWidth = ''; e.style.maxHeight = '';
   } else {
     e.style.width = p.w ? p.w + 'px' : ''; e.style.height = p.h ? p.h + 'px' : '';   // qualquer peça; vazio = tamanho do CSS
@@ -994,6 +997,10 @@ export function aplicar(layout, preset = presetAtual(), raiz = document){
     }, 150); });
   }
   aplicar.__preset = preset;
+  if (raiz === document){
+    const v2 = !!(layout?._figma && (layout._figma.v2 || layout._figma.geradoEmV2));
+    document.body.classList.toggle('hud-v2', v2);
+  }
   /* O chat ainda não tem peça na maquete do PC: fica onde o CSS o põe, mas mais estreito — com 380 px entrava 89 px na barra de golpes. */
   const FB = layout?._figma
     ? { ...FALLBACK,
