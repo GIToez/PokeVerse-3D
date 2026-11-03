@@ -463,8 +463,9 @@ const params0Cedo = new URLSearchParams(location.search);
    conserta sozinha (o three refaz o upload), sem recarregar de novo nem ficar preto. O carimbo morre com a aba. */
 const MEMORIA_DESISTIU = (() => { try { return sessionStorage.getItem('memoria.off') === '1'; } catch { return false; } })();
 const MEMORIA_ENXUTA = params0Cedo.get('memoria') !== '0' && !MEMORIA_DESISTIU;
-const hudV2Salvo = (() => { try { return localStorage.getItem('hud.v2') === '1'; } catch { return false; } })();   // rodada 29: Configurações → "Visual novo (beta)"
-const layoutHudCedoP = (params0Cedo.get('hud') === 'v2' || (hudV2Salvo && !['padrao', 'antigo', 'v1'].includes(params0Cedo.get('hud') || ''))) ? Hud.carregarV2() : params0Cedo.get('hud') === 'padrao' ? Hud.carregarPadrao() : Hud.carregar();   // ?hud=v2: visual novo da Amanda pra teste (rodada 27, 16/09)
+const hudQ = params0Cedo.get('hud') || '';
+const hudClassico = ['padrao', 'antigo', 'v1'].includes(hudQ) || (hudQ !== 'v2' && (() => { try { return localStorage.getItem('hud.v2') === '0'; } catch { return false; } })());
+const layoutHudCedoP = hudClassico ? (hudQ === 'padrao' ? Hud.carregarPadrao() : Hud.carregar()) : Hud.carregarV2();   // v2 is the HUD; ?hud=v1|padrao|antigo or Settings → Classic HUD keeps the old one
 /* CELULAR EM PÉ ANTES DO LOGIN (12/09): a tela "vire o celular" (#gire) só aparecia depois de nascer; as telas de login/cadastro/criador
    montavam a maquete de PC a ~20 % (ilegível) em retrato. Enquanto o jogo não assume (`window.__dbg`), quem manda aqui é a
    orientação: toque + retrato = #gire na frente; girou = some (o pop-up se reescala no resize). */
