@@ -8,7 +8,8 @@ houses, a 5-tile Pokémon Center. Every layer is laid prefab by prefab:
 
   grass / trees / tall grass  -> floor_grass2 tiles, one tree
                                  per 2x2 tree block, gimgrass + encounter cells
-  dirt, paving, bridges       -> floor_1 / floor_w tiles over a grass or sand tile
+  dirt, paving, bridges       -> flat tiles_n path tiles over a grass or sand tile
+  cliff lips beside a rock    -> floor_1 (the cliff decal; most mountain lines are roads)
   sand, snow                  -> sink_sand_ground_001 tiles
   mountains and cliffs        -> 2x2 rock-face blocks stacked up to 4 m,
                                  higher the further from the mountain's edge.
@@ -47,7 +48,7 @@ OUT = ROOT / 'public/data/2000001.json'
 OX, OY = 330, 190        # tile edge that becomes world (0, 0)
 
 TREE_CLS = set('FASP')
-FLOOR_CLS = set('GTFASPDCNOKBX')
+FLOOR_CLS = set('GTFASPDCNOKBXL')
 
 # Routes and landmarks: (x0, y0, x1, y1) in tiles. Towns come from TOWNS.
 # The game takes the first box that holds a point, so landmarks go before routes;
@@ -105,10 +106,12 @@ MOUNT_MIN = 13
 # ground_plane* are alpha-masked edge decals and floor_y / floor_z cover 3/4 of their
 # square (the sea plane shows through); these are the tiles that fill theirs.
 GRASS_MIX = ['floor_grass2']
-FLOOR_OF = {'D': ['floor_1'], 'C': ['floor_w'], 'K': ['floor_1'],
+# tiles_n is the flat path. floor_1 is the cliff decal, only for a lip (L) against a rock.
+PATH = ['tiles_n_1', 'tiles_n_2', 'tiles_n_3', 'tiles_n_4']
+FLOOR_OF = {'D': PATH, 'C': PATH, 'K': PATH, 'L': ['floor_1'],
             'N': ['sink_sand_ground_001'], 'O': ['sink_sand_ground_001']}
-# floor_1 / floor_w are alpha-masked at the edges: an opaque tile underneath closes the seams.
-BASE_OF = {'D': 'floor_grass2', 'C': 'floor_grass2', 'K': 'sink_sand_ground_001'}
+# floor_1 is alpha-masked at the edges: an opaque tile underneath closes the seams.
+BASE_OF = {'D': 'floor_grass2', 'C': 'floor_grass2', 'K': 'sink_sand_ground_001', 'L': 'floor_grass2'}
 TREE_OF = {'F': ['tree', 'tree', 'sm_c_001_tree_05_reordered'], 'S': ['tree'],
            'A': ['sm_c_001_tree_05_reordered'], 'P': ['sm_c_001_tree_05_reordered']}
 ROCK_H = 1.02                       # one rock-face layer; the cap sits CAP_LIFT above the base
@@ -417,8 +420,13 @@ def main():
         add(name, x, z, y=k * ROCK_H)
         if cap and (k + 1) not in layers_at.get((bx, by), ()):
             add(ROCK_CAP, x, z, y=k * ROCK_H + CAP_LIFT)
-    # Loose mountain tiles (ledges, cliff lips) stay walkable dirt.
-    g[(g == 'M') & ~rock_tile] = 'D'
+    # A mountain tile the rock blocks missed. One that touches a rock is the lip
+    # of that cliff. The rest was a thin ledge drawn where the path should be.
+    pad = np.pad(rock_tile, 1)
+    touch = pad[:-2, 1:-1] | pad[2:, 1:-1] | pad[1:-1, :-2] | pad[1:-1, 2:]
+    loose = (g == 'M') & ~rock_tile
+    g[loose & touch] = 'L'
+    g[loose & ~touch] = 'D'
     for tx, ty, n in trees:
         x, z = world(tx + 1, ty + 1)
         add(n, x, z - 0.1 if n != 'tree' else z)
