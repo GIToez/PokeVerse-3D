@@ -83,8 +83,11 @@ to model files that don't exist. Level, Net, Nest and Repeat Balls behave like a
 
 ## Unreleased code in `upcoming/`
 
-`upcoming/` (originally `_novos/`, "new") holds 139 JavaScript files from a newer build of the game. **Nothing in the
-live game loads them yet.** They arrived minified; they have since been formatted (Prettier, 120 columns), renamed to
+`upcoming/` (originally `_novos/`, "new") holds 139 JavaScript files from a newer build of the game. **The live game does
+not load anything from this folder.** Nine of them were copied to the root and wired in (Nov 2): `chat_bubble`,
+`chat_links`, `rich_text`, `notices`, `sign_notice`, `keys`, `quality`, `device_prefs` and `ceiling_texture`. The
+`controls_ui` screen was not used, because its Figma layout (`lista-acoes`) isn't in `ui/hud_layout.json`; the key list
+in Settings → Controls is built in `menus.mjs` (`abrirRemap`) on top of `keys.mjs`. They arrived minified; they have since been formatted (Prettier, 120 columns), renamed to
 English, and their player-facing text rewritten in English, with the Portuguese kept in `public/data/locale/ui_pt.json`
 like the live game. Variable and function names are still Portuguese and still short where the minifier shortened them
 (see `GLOSSARY.md`). Portuguese strings that are lookup keys (state names such as `'agora'`, values compared against data

@@ -23,6 +23,8 @@ import * as Popup from './popup.mjs';                                   // pop-u
 import * as Som from './sound.mjs';                                       // a aba Som de Configurações mexe nos três canais (rodada 24)
 import * as Arr from './drag_team.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
 import * as Evolucao from './evolution.mjs';
+import * as Teclas from './keys.mjs';                                   // remappable keys: the window keys below come from Settings → Controls
+import * as PrefAparelho from './device_prefs.mjs';                    // per-device toggles (other players' names, floating damage)
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -187,7 +189,7 @@ const ORDEM = Object.keys(JANELAS);
 export function instalar(c){
   ctx = c;
   const g = document.createElement('div'); g.id = 'menu-grade'; g.hidden = true;
-  g.innerHTML = `<div class="caixa"><h2>Menu <small>Esc fecha · ${ORDEM.filter(k => JANELAS[k].tecla).map(k => JANELAS[k].tecla.slice(3) + ' ' + tr(JANELAS[k].titulo).toLowerCase()).join(' · ')}</small></h2><div class="itens">${ORDEM.filter(k => !JANELAS[k].oculto).map(k => `<button type="button" data-j="${k}" class="${JANELAS[k].breve ? 'breve' : ''}"><i class="ic ic-${JANELAS[k].icone}"></i><b>${tr(JANELAS[k].titulo)}</b><small>${tr(JANELAS[k].sub)}</small></button>`).join('')}</div></div>`;
+  g.innerHTML = `<div class="caixa"><h2>Menu <small>Esc fecha · ${ORDEM.filter(k => JANELAS[k].tecla).map(k => Teclas.rotuloAcao('janela-' + k) + ' ' + tr(JANELAS[k].titulo).toLowerCase()).join(' · ')}</small></h2><div class="itens">${ORDEM.filter(k => !JANELAS[k].oculto).map(k => `<button type="button" data-j="${k}" class="${JANELAS[k].breve ? 'breve' : ''}"><i class="ic ic-${JANELAS[k].icone}"></i><b>${tr(JANELAS[k].titulo)}</b><small>${tr(JANELAS[k].sub)}</small></button>`).join('')}</div></div>`;
   g.addEventListener('click', ev => { const b = ev.target.closest('[data-j]'); if (b) abrir(b.dataset.j); else if (ev.target === g) fecharGrade(); });
   document.body.appendChild(g);
   const j = document.createElement('div'); j.id = 'janela'; j.className = 'janela'; j.hidden = true;
@@ -287,6 +289,7 @@ function render(){
 }
 function tecla(e){
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;
+  if (Teclas.capturando() || remap?.el.isConnected) return;               // the key list (Settings → Controls) is open: it handles the keys, Esc included
   const grade = !$('menu-grade').hidden;
   if (e.code === 'Escape' && popPrevia && Popup.aberto(popPrevia)){ fecharPrevia(); e.preventDefault(); e.stopImmediatePropagation(); return; }   // pop-up da prévia do adm (rodada 30)
   if (e.code === 'F7' && !e.repeat && ctx?.gm?.()){ previa(); e.preventDefault(); return; }   // rodada 30: paleta da prévia do adm
@@ -298,7 +301,7 @@ function tecla(e){
   if (escolhaEvo){ if (e.code === 'Escape'){ escolhaEvo(null); e.preventDefault(); } e.stopImmediatePropagation(); return; }
   if (e.code === 'Escape'){ if (aberta || grade){ if (aberta) fechar(); else fecharGrade(); } else if (ctx.jogo?.alvo) return; else alternarGrade(); e.preventDefault(); e.stopImmediatePropagation(); return; }   // com alvo: o jogo limpa o alvo primeiro
   if (!e.ctrlKey && !e.altKey && !e.metaKey){
-    const alvo = ORDEM.find(k => JANELAS[k].tecla === e.code);
+    const ac = Teclas.acaoDe(e), alvo = ac && ac.startsWith('janela-') ? ORDEM.find(k => 'janela-' + k === ac && JANELAS[k].tecla) : null;   // only the windows that have a key (Shop/Social are 'coming soon')
     if (alvo && !e.repeat){ if (aberta === alvo) fechar(); else abrir(alvo); e.preventDefault(); e.stopImmediatePropagation(); return; }
   }
   if (aberta || grade || dialogoAberto()){ e.stopImmediatePropagation(); }   // janela (ou diálogo da aba Conta) aberta: o jogo não recebe teclas
@@ -1641,7 +1644,7 @@ export function socialEvento(m){
   if (!m) return;
   if (m.t === 'dm'){
     ctx.Som?.tocar?.('ui/sound_successful', { volume: .45, prio: true });   // toque de mensagem (11/09)
-    Chat.publicar('pm', m.texto, m.nick || m.de);
+    Chat.publicar('pm', m.texto, m.nick || m.de, null);                  // null: their message (no cargo tag of mine; counts as unread)
     if (popSo && Popup.aberto(popSo) && aberta === 'social' && soConversa === m.de) soAbrirConversa(m.de); else soCarregar();
   } else if (m.t === 'social'){
     const n = m.nick || m.de;
@@ -3108,13 +3111,15 @@ const PARADAS = {
 /* ADM, não jogador (Jaime, 11/09): as duas linhas da maquete que o jogo esconde. O bastidor continua com o `tam-modo` do
    painel de diagnóstico (?dev=1) e com `?tamanhos=` / `?densidade=` na URL. Pedido pra Amanda tirá-las na rodada 25. */
 const CF_ADM = ['ajuste-tamanho-pokemon', 'ajuste-densidade-selvagens'];
-const QUALIDADES = { ops: ['baixa', 'alta'], rot: ['Baixa', 'Alta'] };
+const QUALIDADES = { ops: ['baixa', 'media', 'alta'], rot: ['Baixa', 'Média', 'Alta'] };   // quality.mjs: medium = lighter pixel ratio + only my shadow
 /* Os volumes são CONTÍNUOS de verdade (0 a 100%), ao contrário das paradas acima. `canal` é o campo do `Som.ajustar`. */
 const CF_VOLUMES = { 'vol-musica': 'mus', 'vol-efeitos': 'sfx', 'vol-interface': 'ui' };
 /* Chaves liga/desliga que o jogo cumpre. As outras estão no CF_FALTA. */
 const CF_TOGGLES = {
   'mudo':               { ler: () => !!Som.estado().mudo,  por: v => Som.ajustar({ mudo: v }) },
   'som-segundo-plano':  { ler: () => !!Som.estado().fundo, por: v => Som.ajustar({ fundo: v }) },
+  'nomes-jogadores':    { ler: () => PrefAparelho.ler('nomesOutros') !== false, por: v => PrefAparelho.definir('nomesOutros', v) },     // other players' names over their heads
+  'dano-flutuante':     { ler: () => PrefAparelho.ler('danoFlutuante') !== false, por: v => PrefAparelho.definir('danoFlutuante', v) }, // the −N numbers over a hit Pokémon
 };
 /* As teclas DE VERDADE, pra aba Controles. `correr` não existe: quem corre é a montaria. */
 const CF_TECLAS = {
@@ -3131,13 +3136,10 @@ const paradaDoK = (id, k) => { const n = PARADAS[id].ops.length; return Math.max
 
 /* O que ainda não existe no jogo. Fica APAGADO e a dica diz por quê — e some daqui assim que a opção nascer de verdade. */
 const CF_FALTA = {
-  'nomes-jogadores': 'em breve', 'dano-flutuante': 'em breve', 'ocultar-lotado': 'em breve',
+  'ocultar-lotado': 'em breve',
   'confirmar-importante': 'em breve', 'reduzir-animacoes': 'em breve', 'daltonismo': 'em breve',
-  /* Controles: remapear tecla ainda não existe, e o joystick do celular não é ajustável. */
-  'remapear-mover': 'trocar a tecla ainda não dá', 'remapear-correr': 'trocar a tecla ainda não dá',
-  'remapear-interagir': 'trocar a tecla ainda não dá', 'remapear-mochila': 'trocar a tecla ainda não dá',
-  'remapear-mapa': 'trocar a tecla ainda não dá', 'remapear-chat': 'trocar a tecla ainda não dá',
-  'remapear-atalhos': 'trocar a tecla ainda não dá',
+  /* Controles: as teclas já se trocam (keys.mjs, `abrirRemap`); correr não existe (quem corre é a montaria), e o joystick do celular não é ajustável. */
+  'remapear-correr': 'o jogo não tem correr: quem anda rápido é a montaria (M)',
   'lado-joystick': 'em breve', 'tamanho-joystick': 'em breve', 'tamanho-botoes': 'em breve', 'vibracao': 'em breve',   // rodada 25: coluna Celular
   /* Social: privacidade precisa do servidor. */
   'quem-mensagem': 'precisa do servidor — em breve', 'quem-convida': 'precisa do servidor — em breve',
@@ -3214,6 +3216,7 @@ function cfAcao(nome, el){
     render();
     return;
   }
+  const rm = /^remapear-(.+)$/.exec(nome); if (rm){ if (REMAP_GRUPO[rm[1]]) abrirRemap(REMAP_GRUPO[rm[1]]); return; }   // Controls tab: the full key list
   if (nome === 'resetar-painel-missao'){ Hud.zerarMover(); return; }
   if (nome === 'resetar-paineis'){ Hud.zerarMover(); Chat.sistema('Painéis de volta ao lugar padrão.'); return; }
   /* ---- aba Conta */
@@ -3754,6 +3757,7 @@ function encherConfig(pop){
     const b = pop.querySelector('[data-tag="acao"][data-tagval="' + id + '"]');
     if (b){ b.dataset.desligado = '1'; b.style.opacity = '0.45'; b.style.cursor = 'default'; b.title = tr(dica); }
   }
+  for (const id of ['nomes-jogadores', 'dano-flutuante']) Popup.toggle(pop, 'toggle-' + id, CF_TOGGLES[id].ler());   // device_prefs.mjs
   for (const [chave, aba] of [['conteudo-som', 'som'], ['conteudo-controles', 'controles'], ['conteudo-social', 'social'], ['conteudo-conta', 'conta']]){
     cfMostrarAba(pop, chave, abaCf === aba);
   }
@@ -3850,13 +3854,118 @@ function encherCfControles(pop){
   for (const [id, tecla] of Object.entries(CF_TECLAS)){
     const g = pop.querySelector('[data-fig="tecla-' + id + '"]');
     if (!g) continue;
-    Popup.texto(pop, 'tecla', tecla, g);
+    Popup.texto(pop, 'tecla', CF_TECLA_VIVA[id]?.() || tecla, g);
     if (CF_DICA_TECLA[id]) g.title = tr(CF_DICA_TECLA[id]);
+  }
+  for (const id of Object.keys(REMAP_GRUPO)){                              // the 7 "Remap" buttons of the mock-up open the full list on their group
+    const b = pop.querySelector('[data-tag="acao"][data-tagval="remapear-' + id + '"]');
+    if (b){ delete b.dataset.desligado; b.style.opacity = ''; b.style.cursor = 'pointer'; b.title = tr('Change the keys'); }
   }
   Popup.seletor(pop, 'seletor-lado-joystick', 'Left');
   Popup.ajuste(pop, 'ajuste-tamanho-joystick', 0.5, 'Normal');
   Popup.ajuste(pop, 'ajuste-tamanho-botoes', 0.5, 'Normal');              // rodada 25: coluna Celular (ainda não ajustável)
   Popup.toggle(pop, 'toggle-vibracao', false);                             // o jogo não vibra (navigator.vibrate não é usado)
+}
+/* REMAP KEYS (keys.mjs). The mock-up has 7 fixed rows; the game has ~35 controls, so each "Remap" button opens one list with
+   every control, on that row's group. Click a key, press the new one: if another control had it, the two swap (said in the
+   footer). Esc cancels, Delete leaves the control without a key. Saved per device (LS `controles.teclas`). Controls the game
+   doesn't have yet (Ditto transform, team slots, Guild/Mail windows…) are left out of the list. */
+const REMAP_OCULTAS = /^(transformar$|time-\d|ordem-|menu-grade$|fechar$|chat-enviar$|chat-sair$)/;
+const remapVisivel = a => !REMAP_OCULTAS.test(a.id) && (!a.id.startsWith('janela-') || !!JANELAS[a.id.slice(7)]?.tecla);
+const REMAP_GRUPO = { mover: 'andar', interagir: 'conversa', mochila: 'janelas', mapa: 'janelas', chat: 'conversa', atalhos: 'combate' };
+const rotuloTecla = id => Teclas.rotuloAcao(id);
+const CF_TECLA_VIVA = {                                                    // the labels of the 7 rows follow the remapped keys
+  mover: () => ['andar-frente', 'andar-esquerda', 'andar-tras', 'andar-direita'].map(rotuloTecla).join(' '),
+  interagir: () => rotuloTecla('interagir'), mochila: () => rotuloTecla('janela-mochila'), mapa: () => rotuloTecla('janela-mapa'),
+  chat: () => rotuloTecla('chat'),
+  atalhos: () => rotuloTecla('golpe-1') + '–' + rotuloTecla('golpe-4') + ' · ' + rotuloTecla('atalho-1') + '–' + rotuloTecla('atalho-5'),
+};
+let remap = null;                                                          // { el, grupo, esperando: { id, slot } | null }
+function remapEstilo(){
+  if (document.getElementById('remap-css')) return;
+  const s = document.createElement('style'); s.id = 'remap-css';
+  s.textContent = `#remap-teclas{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(4,8,18,.62);font:500 13px/1.35 "Nunito Sans",system-ui,sans-serif;color:#e8eefc}
+#remap-teclas .rm-caixa{width:min(640px,94vw);max-height:86vh;display:flex;flex-direction:column;background:rgba(11,18,32,.97);border:1px solid rgba(248,194,55,.55);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.6)}
+#remap-teclas .rm-topo{display:flex;align-items:baseline;gap:10px;padding:14px 16px 8px}
+#remap-teclas .rm-topo b{font:800 18px "Baloo 2","Nunito Sans",sans-serif;color:#F8C237}
+#remap-teclas .rm-topo small{flex:1;color:#98a4c0;font-size:11.5px}
+#remap-teclas .rm-x{background:none;border:0;color:#98a4c0;font-size:18px;cursor:pointer}
+#remap-teclas .rm-abas{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+#remap-teclas .rm-abas button{padding:4px 12px;border-radius:999px;border:1px solid rgba(248,194,55,.4);background:transparent;color:#F8C237;font:700 12px inherit;cursor:pointer}
+#remap-teclas .rm-abas button.on{background:#F8C237;color:#1a1a1a}
+#remap-teclas .rm-lista{overflow:auto;padding:0 16px;flex:1}
+#remap-teclas .rm-linha{display:grid;grid-template-columns:1fr 104px 104px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid rgba(255,255,255,.06)}
+#remap-teclas .rm-linha span small{display:block;color:#7f8aa6;font-size:11px}
+#remap-teclas .rm-k{height:30px;border-radius:7px;border:1px solid rgba(248,194,55,.45);background:#0b1020;color:#fff;font:800 12.5px inherit;cursor:pointer}
+#remap-teclas .rm-k.vazia{color:#5d6782}
+#remap-teclas .rm-k.espera{border-color:#F8C237;background:#3a2e0c;color:#F8C237;animation:rmPulso 1s infinite}
+@keyframes rmPulso{50%{opacity:.6}}
+#remap-teclas .rm-aviso{min-height:18px;padding:6px 16px 0;color:#F8C237;font-size:12px}
+#remap-teclas .rm-pe{display:flex;justify-content:space-between;gap:8px;padding:10px 16px 14px}
+#remap-teclas .rm-pe button{padding:7px 14px;border-radius:8px;border:1px solid #F8C237;background:transparent;color:#F8C237;font:700 13px inherit;cursor:pointer}
+#remap-teclas .rm-pe .ok{background:#F8C237;color:#1a1a1a}`;
+  document.head.appendChild(s);
+}
+function abrirRemap(grupo = 'andar'){
+  remapEstilo();
+  if (!remap){
+    const el = document.createElement('div'); el.id = 'remap-teclas';
+    el.innerHTML = `<div class="rm-caixa" role="dialog" aria-modal="true"><div class="rm-topo"><b>${esc(tr('Controls'))}</b><small>${esc(tr('Click a key, then press the new one · Esc cancels · Delete clears'))}</small><button type="button" class="rm-x" aria-label="${esc(tr('Close'))}">✕</button></div><div class="rm-abas"></div><div class="rm-lista"></div><div class="rm-aviso" aria-live="polite"></div><div class="rm-pe"><button type="button" class="rm-padrao">${esc(tr('Restore defaults'))}</button><button type="button" class="ok rm-ok">${esc(tr('Done'))}</button></div></div>`;
+    el.addEventListener('click', ev => {
+      if (ev.target === el || ev.target.closest('.rm-x, .rm-ok')){ fecharRemap(); return; }
+      const aba = ev.target.closest('[data-grupo]'); if (aba){ remap.grupo = aba.dataset.grupo; remap.esperando = null; Teclas.definirCapturando(false); pintarRemap(); return; }
+      const k = ev.target.closest('[data-acao]');
+      if (k){ remap.esperando = { id: k.dataset.acao, slot: k.dataset.slot }; Teclas.definirCapturando(true); remapAviso(''); pintarRemap(); return; }
+      if (ev.target.closest('.rm-padrao')){ Teclas.restaurar(); remap.esperando = null; Teclas.definirCapturando(false); remapAviso(tr('Default keys restored.')); pintarRemap(); }
+    });
+    addEventListener('keydown', remapTecla, true);
+    remap = { el, grupo, esperando: null };
+  }
+  remap.grupo = grupo; remap.esperando = null;
+  document.body.appendChild(remap.el);
+  remapAviso('');
+  pintarRemap();
+}
+function fecharRemap(){
+  if (!remap) return;
+  remap.esperando = null; Teclas.definirCapturando(false);
+  remap.el.remove();
+  if (popCf && aberta === 'config') encherConfig(popCf);                  // the 7 rows show the new keys
+}
+const remapAviso = t => { const a = remap?.el.querySelector('.rm-aviso'); if (a) a.textContent = t; };
+function pintarRemap(){
+  const { el, grupo, esperando } = remap;
+  el.querySelector('.rm-abas').innerHTML = Teclas.GRUPOS.filter(g => Teclas.doGrupo(g.id).some(remapVisivel))
+    .map(g => `<button type="button" data-grupo="${g.id}" class="${g.id === grupo ? 'on' : ''}">${esc(tr(g.nome))}</button>`).join('');
+  const todas = Teclas.todas();
+  el.querySelector('.rm-lista').innerHTML = Teclas.doGrupo(grupo).filter(remapVisivel).map(a => {
+    const v = todas[a.id] || {};
+    const botao = slot => {
+      const espera = esperando?.id === a.id && esperando.slot === slot, combo = v[slot];
+      if (slot === 'a' && !Teclas.temAlternativa(a.id)) return '<i></i>';
+      return `<button type="button" class="rm-k${espera ? ' espera' : combo ? '' : ' vazia'}" data-acao="${a.id}" data-slot="${slot}" title="${esc(slot === 'p' ? tr('main key') : tr('second key'))}">${espera ? '…' : esc(Teclas.rotulo(combo))}</button>`;
+    };
+    return `<div class="rm-linha"><span>${esc(tr(a.nome))}${a.detalhe ? `<small>${esc(tr(a.detalhe))}</small>` : ''}</span>${botao('p')}${botao('a')}</div>`;
+  }).join('');
+}
+function remapTecla(ev){
+  if (!remap?.el.isConnected) return;
+  ev.stopImmediatePropagation();                                           // the list is on top: no key reaches the game or the window behind it
+  if (!remap.esperando){ if (ev.code === 'Escape'){ ev.preventDefault(); fecharRemap(); } return; }
+  ev.preventDefault();
+  if (ev.repeat) return;
+  const { id, slot } = remap.esperando, c = Teclas.capturar(ev);
+  if (c.tipo === 'recusa'){ remapAviso(tr(Teclas.MOTIVOS[c.motivo] || Teclas.MOTIVOS.desconhecida)); return; }   // stays waiting: pick another key
+  remap.esperando = null; Teclas.definirCapturando(false);
+  if (c.tipo === 'cancelar'){ remapAviso(''); pintarRemap(); return; }
+  if (c.tipo === 'limpar'){ Teclas.definir(id, slot, null); remapAviso(tr('{name}: no key.', { name: tr(Teclas.acao(id).nome) })); pintarRemap(); return; }
+  const cf = Teclas.conflito(id, slot, c.combo);
+  if (cf?.fixa){ remapAviso(tr(Teclas.MOTIVOS.fixa)); pintarRemap(); return; }
+  if (cf && !cf.mesma){
+    Teclas.trocarAsDuas(id, slot, c.combo);
+    remapAviso(tr('{key} was on “{other}”: the two swapped.', { key: Teclas.rotulo(c.combo), other: tr(Teclas.acao(cf.id).nome) }));
+  } else { Teclas.definir(id, slot, c.combo); remapAviso(''); }
+  pintarRemap();
 }
 /** SOCIAL: nada disto existe ainda (privacidade, status e filtro precisam do servidor) — tudo apagado, só mostra o estado de hoje. */
 function encherCfSocial(pop){
@@ -3874,7 +3983,7 @@ function rConfig(corpo){
     <label><span>seu nome (aparece em cima da cabeça e no chat)</span><input type="text" id="c-nome" maxlength="16" value="${esc(ctx.nome || 'Ash')}" style="width:160px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#0b1020;color:var(--text);font:inherit"></label>
     <div id="c-nome-aviso" style="grid-column:1/-1;margin:-6px 0 4px;color:#98a4c0;font-size:12px">o nome é único: não dá pra usar o de outro treinador</div>
     <label><span>volume</span><input type="range" id="c-vol" min="0" max="100" value="${vol}"> <span id="c-volv">${vol}%</span></label>
-    <label><span>qualidade gráfica</span><select id="c-qual"><option value="">automática (${esc(ctx.qualidade || '?')})</option><option value="alta">alta</option><option value="baixa">baixa (sem sombra, 0,75×)</option></select></label>
+    <label><span>qualidade gráfica</span><select id="c-qual"><option value="">automática (${esc(ctx.qualidade || '?')})</option><option value="alta">alta</option><option value="media">média (só a minha sombra, até 1,5×)</option><option value="baixa">baixa (sem sombra, 0,75×)</option></select></label>
     <label><span>tamanho dos Pokémon</span><select id="c-tam"><option value="proporcional">proporcional (padrão)</option><option value="jogo">como o jogo</option><option value="nativo">nativo do modelo</option></select></label>
     <label><span>tamanho da interface (HUD e janelas)</span><select id="c-ui"><option value="pequena">pequena</option><option value="normal">normal</option><option value="grande">grande</option></select><small id="c-uiv" style="color:var(--muted);font-size:11px;white-space:nowrap"></small></label>
     ${ctx.conta?.estado?.().modo === 'conta' ? `<label><span>conta: <b>${esc(ctx.conta.estado().usuario)}</b> · o jogo fica salvo no servidor, não neste aparelho</span><button type="button" class="btn" id="c-sair">Sair da conta</button></label>

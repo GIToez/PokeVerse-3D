@@ -1,5 +1,7 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 import * as Conta from './account.mjs';                                     // cargos (09/09): [STAFF]/[MOD] e a cor de cada um
+import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';         // links blocked in chat (staff/mod can post them); the server checks too
+import { textoLimpo } from './rich_text.mjs';
 /* Chat do jogo, no modelo do PRO: uma caixa no canto com abas.
  *   Local  — fala com quem está na sua área; mostra TAMBÉM os outros canais, com etiqueta [G] [T] [H] [S]
  *   Global — todo mundo · Trade — comércio · Help — ajuda (cada aba só com o seu canal)
@@ -50,6 +52,9 @@ export function publicar(canal, txt, de = ctx?.nome || 'You', cargo = undefined)
   /* CARGOS (09/09): [STAFF]/[MOD] na frente do nome, na cor do cargo. Quem fala aqui do lado de cá sou eu — o cargo vem do
      servidor (Conta); dos outros, vem junto da mensagem. */
   const q = cargo === undefined ? Conta.meuCargoAtual?.() : cargo;
+  txt = canal === 'sistema' ? String(txt) : textoLimpo(txt);              // <color>/<b>/[size] tags from the old client show as plain text
+  if (!txt) return;
+  if (canal !== 'sistema' && cargo !== undefined) ctx?.aoMensagem?.(canal, de);   // someone else's message (unread badge on the phone chat button)
   msgs.push({ c: canal, de, cg: q || null, txt: String(txt).slice(0, 240), t: Date.now(), a: canal === 'local' ? (ctx?.area?.() ?? null) : null });
   if (msgs.length > 300) msgs.splice(0, msgs.length - 300);
   guardar();
@@ -84,8 +89,10 @@ export function enviar(aba, texto){
   const m = t.match(/^\/(g|t|h|l)\s+(.*)$/i);
   if (m){ canal = { g: 'global', t: 'trade', h: 'help', l: 'local' }[m[1].toLowerCase()]; t = m[2].trim(); }
   if (!t) return null;
+  if (temLink(t) && !podeLink(Conta.meuCargoAtual?.())){ sistema(AVISO_LINK); return 'sistema'; }
   publicar(canal, t);
   ctx?.rede?.(canal, t);                                                 // com servidor no ar, os outros recebem (network.mjs)
+  if (canal === 'local') ctx?.balao?.(t);                                // speech bubble over my head (others see it over me via network.mjs)
   return canal;
 }
 export const mensagens = () => msgs;

@@ -25,6 +25,7 @@ import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta } from './server_pos.mjs';
+import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
@@ -1367,7 +1368,8 @@ wss.on('connection', ws => {
         if (c?.mudoAte > Date.now()) { enviar(ws, { t: 'sistema', texto: '🔇 You are muted until ' + new Date(c.mudoAte).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + '.' }); break; }
         const nome = c?.save?.nome || ws._usuario || 'Player';           // character name, not the login
         const cargo = c?.cargo || null;                                   // [STAFF]/[MOD] pros outros verem
-        broadcast(ws, { t: 'chat', canal: m.canal || 'local', texto, de: { nome, cargo } }, m.canal === 'local');
+        if (temLink(texto) && !podeLink(cargo)) { enviar(ws, { t: 'sistema', texto: AVISO_LINK }); break; }   // the client blocks it too; this stops a hand-made WS message
+        broadcast(ws, { t: 'chat', canal: m.canal || 'local', texto, de: { nome, cargo, id: ws._id } }, m.canal === 'local');   // id: the others draw the speech bubble over this player
         // sem "echo pra mim": o cliente já mostra a própria mensagem (publicar em chat.mjs) — reenviar duplicava
         break;
       }

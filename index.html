@@ -214,6 +214,13 @@ import * as Ind from './individual.mjs';         // IV + EV + natureza por indiv
 import * as Ev from './ev.mjs';
 import * as Relogio from './clock.mjs';
 import * as Weather from './weather.mjs';
+import * as Balao from './chat_bubble.mjs';      // speech bubble over whoever talks in Local chat
+import * as Selos from './notices.mjs';          // red unread badge (phone chat button)
+import * as AvisoPlaca from './sign_notice.mjs'; // "running without the graphics card" hint (hardware acceleration off)
+import * as Teclas from './keys.mjs';            // remappable keys (Settings → Controls); LS `controles.teclas`
+import * as Qualidade from './quality.mjs';      // low / medium / high (medium: capped pixel ratio, only my shadow)
+import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: other players' names, floating damage
+import * as TetoTextura from './ceiling_texture.mjs'; // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
@@ -224,6 +231,10 @@ import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atraso
 import * as R from './rules.mjs';              // fórmulas da série: stats, dano, tipos
 import * as I18n from './i18n.mjs';             // IDIOMA do jogador (11/09): pt (fonte), en, es
 import * as Arrastar from './drag_team.mjs';   // drag to reorder the party and move between party and box; the server accepts it as `party`
+/* Phones: textures inside the .glb files are scaled down to 512 px on load (memory: a mid phone ran out with the full 2K/4K
+   atlases). PC keeps full size. ?teto=N forces N px on any device, ?teto=0 turns it off. Installed before the first GLB. */
+TetoTextura.ligar(TetoTextura.decidir(location.search, matchMedia('(pointer: coarse)').matches));
+TetoTextura.instalar(GLTFLoader);
 
 /* O `?mapa=` É PORTA DOS FUNDOS (fechada em 10/09). O jogo atravessa porta recarregando a página com `?mapa=&chegada=`, e
    era isso que deixava qualquer jogador digitar `?mapa=4120017` e cair dentro de um ginásio. A diferença entre a porta e a
@@ -777,9 +788,14 @@ const TOQUE = matchMedia('(pointer: coarse)').matches;
    (`?qualidade=baixa&jogar=1&mapa=kanto`, print da tester). `?qualidade=` vazio = automática (esquece a escolha). */
 const QUALIDADE = (() => {
   const P = new URLSearchParams(location.search); let ls = null; try { ls = localStorage.getItem('qualidade'); } catch {}
-  if (P.has('qualidade')){ const q = P.get('qualidade'); try { if (q) localStorage.setItem('qualidade', q); else localStorage.removeItem('qualidade'); } catch {} return q || (SOFTWARE ? 'baixa' : 'alta'); }
-  return ls || (SOFTWARE ? 'baixa' : 'alta');                            // celular fica em 'alta' também (Jaime achou 'baixa' péssima no celular, 30/08)
+  /* quality.mjs: low / MEDIUM / high (medium = pixel ratio ≤ 1.5, no antialias, only my shadow). The automatic pick stays as it
+     was (phones on high too: mediaNoToque false), so nobody's game changes until they choose medium in Settings. */
+  const auto = { software: SOFTWARE, toque: TOQUE, mediaNoToque: false };
+  const e = Qualidade.escolher({ temUrl: P.has('qualidade'), url: P.get('qualidade'), guardada: ls, ...auto });
+  if (P.has('qualidade')){ try { if (e.guardar) localStorage.setItem('qualidade', e.guardar); else localStorage.removeItem('qualidade'); } catch {} }
+  return e.qualidade;                                                    // celular fica em 'alta' também (Jaime achou 'baixa' péssima no celular, 30/08)
 })();
+const AJUSTE_Q = Qualidade.ajustes(QUALIDADE, { dpr: devicePixelRatio });
 /* WEBGL QUE NÃO LIGA (17/09, boss: Firefox 156 e 157 no Windows, 18× "Error creating WebGL context" em 23 min, trocando o tamanho da
    janela). O three já tenta de novo no mesmo canvas SEM atributos — o que liga o antialias, o padrão do navegador. Antes de desistir vai
    uma 2ª tentativa, meio segundo depois, com o mais tolerante que o r185 aceita (ele não tem mais WebGL 1): powerPreference 'default'
@@ -854,7 +870,7 @@ function bootErroWebgl(){
   }, { once: true });
   raiz.append(t1, t2, t3, bt); b.appendChild(raiz);
 }
-try { ren = criarRendererTela({ antialias: QUALIDADE !== 'baixa', powerPreference: 'high-performance' }); }
+try { ren = criarRendererTela({ antialias: AJUSTE_Q.antialias, powerPreference: 'high-performance' }); }
 catch (e1){                                                                 // 13/09 (#relatos): "Error creating WebGL context" num Chrome/Windows — a página morria muda, no "carregando". Agora explica.
   console.warn('WebGL: a 1ª tentativa falhou (' + (e1?.message || e1) + (e1?.motivo ? ' · ' + e1.motivo : '') + ') — tentando de novo com opções tolerantes');
   await new Promise(r => setTimeout(r, 500));
@@ -867,11 +883,11 @@ catch (e1){                                                                 // 1
     throw new Error(String(e2?.message || e2) + ' [2 tentativas' + (m ? ' · ' + resumirMotivo(m, 200) : '') + ']');   // o beacon leva o motivo do navegador (o grep por "Error creating WebGL context" continua valendo)
   }
 }
-ren.setPixelRatio(QUALIDADE === 'baixa' ? 0.75 : Math.min(devicePixelRatio, 2));
+ren.setPixelRatio(AJUSTE_Q.pixelRatio);                                  // low 0.75 · medium ≤ 1.5 · high ≤ 2
 if (Fairy) await Fairy.preparar({ ren, som: Som, boot: $('boot') });   // login → personagem → carregando (o mapa monta atrás)
 ren.outputColorSpace = THREE.SRGBColorSpace;
 ren.toneMapping = THREE.NoToneMapping;          // o sombreado já vem assado na textura
-ren.shadowMap.enabled = QUALIDADE !== 'baixa';
+ren.shadowMap.enabled = AJUSTE_Q.sombra !== 'nenhuma';
 ren.shadowMap.type = THREE.PCFShadowMap;
 /* CONTEXTO WEBGL DE VOLTA (19/09, frente memória). Com a memória enxuta o jogo larga a imagem decodificada das texturas
    da cena assim que elas sobem pra GPU — quando a placa reinicia o contexto não há de onde redesenhá-las e o mapa
@@ -909,7 +925,7 @@ function diagnostico(){
   const ext = ['WEBGL_multi_draw', 'EXT_color_buffer_float', 'OES_texture_float_linear', 'EXT_texture_filter_anisotropic', 'WEBGL_debug_renderer_info'].map(e => e + ': ' + (gl?.getExtension(e) ? 'sim' : 'não'));
   const m = ren.info.memory;
   return { gpu: GPU, webgl2: typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext, qualidade: QUALIDADE + ((new URLSearchParams(location.search).get('qualidade') || (() => { try { return localStorage.getItem('qualidade'); } catch { return null; } })()) ? ' (forçada)' : ' (automática: ' + (SOFTWARE ? 'GPU de software' : TOQUE ? 'tela de toque' : 'PC') + ')'),   // forçada também quando a escolha está guardada no aparelho (a URL é limpa, 13/09)
-    sombras: ren.shadowMap.enabled, antialias: QUALIDADE !== 'baixa', tela: innerWidth + '×' + innerHeight + ' @' + devicePixelRatio + ' (render ' + ren.getPixelRatio() + '×)',
+    sombras: ren.shadowMap.enabled, antialias: AJUSTE_Q.antialias, sombraSo: AJUSTE_Q.sombra, tela: innerWidth + '×' + innerHeight + ' @' + devicePixelRatio + ' (render ' + ren.getPixelRatio() + '×)',
     maxTextura: par('MAX_TEXTURE_SIZE'), unidadesTextura: par('MAX_TEXTURE_IMAGE_UNITS'), varyings: par('MAX_VARYING_VECTORS'), uniformsFrag: par('MAX_FRAGMENT_UNIFORM_VECTORS'), highpFrag: prec('HIGH_FLOAT'), mediumpFrag: prec('MEDIUM_FLOAT'),
     extensoes: ext, programas: ren.info.programs?.length, geometrias: m.geometries, texturas: m.textures, navegador: navigator.userAgent, erros: DIAG.erros.length ? DIAG.erros.slice(-12) : ['nenhum'] };
 }
@@ -936,11 +952,13 @@ function contextoPreso(a){
     nadando: !!tenta(() => jogo.montaria?.surfando || (a && naAgua(a.x, a.z))), emTurno: !!tenta(() => jogo.turno), raidArena: !!tenta(() => jogo.raidArena),
     ultimoCentro: (c?.mapa && c.chegada) ? { mapa: String(c.mapa), chegada: +c.chegada } : null, destino: tenta(() => destinoPreso()) };
 }
-$('h-gpu').textContent = (SOFTWARE ? 'SOFTWARE · ' : '') + GPU.replace(/^ANGLE \((.*)\)$/, '$1').split(',').slice(0, 2).join(',').slice(0, 60) + ' · ' + I18n.t(QUALIDADE === 'baixa' ? 'low' : 'high');
+$('h-gpu').textContent = (SOFTWARE ? 'SOFTWARE · ' : '') + GPU.replace(/^ANGLE \((.*)\)$/, '$1').split(',').slice(0, 2).join(',').slice(0, 60) + ' · ' + I18n.t({ baixa: 'low', media: 'medium' }[QUALIDADE] || 'high');
 $('h-gpu').style.color = SOFTWARE ? '#ff8a5f' : '';
 
 const CEU = new THREE.Color('#a7c3ad');
 const cena = new THREE.Scene();
+/* MEDIUM quality: the shadow pass draws only what is mine (trainer, partner, mount) — the shadow of the whole map was the cost. */
+if (AJUSTE_Q.sombra === 'minha') Qualidade.instalarSombraSoMinha({ THREE, ren, cena, quem: () => [jogo.ash?.pivo, jogo.pika?.pivo, jogo.montaria?.pivo] });
 cena.background = CEU;
 cena.fog = new THREE.Fog(CEU, 70, 190);
 /* Interior (cena só de áreas tipo 2): em volta do cômodo não há mundo — fundo escuro em vez
@@ -1237,7 +1255,7 @@ const hemi = new THREE.HemisphereLight(CEU_HEMI, '#dcecff', 1.9); cena.add(hemi)
    `?postes=N` forces the count, `?posteLuz=` the strength (candela). */
 const DN_ATIVO = !INTERIOR && params0Cedo.get('dianoite') !== '0';
 const CEU_DIA = CEU.clone();
-const POSTES_N = !DN_ATIVO ? 0 : params0Cedo.has('postes') ? Math.max(0, Math.min(16, +params0Cedo.get('postes') || 0)) : QUALIDADE === 'baixa' ? 0 : TOQUE ? 4 : 8;
+const POSTES_N = !DN_ATIVO ? 0 : params0Cedo.has('postes') ? Math.max(0, Math.min(16, +params0Cedo.get('postes') || 0)) : QUALIDADE === 'baixa' ? 0 : (TOQUE || QUALIDADE === 'media') ? 4 : 8;
 const POSTE_LUZ = Math.max(0, +(params0Cedo.get('posteLuz') || 16));
 const COR_POSTE = new THREE.Color('#ffb36a');                                // incandescent/sodium lamp, ~2700 K
 const luzesPoste = [];
@@ -5418,7 +5436,7 @@ function volumeDaDistancia(e, base = 1){
   return base * (1 - (d - SOM_PERTO) / (SOM_LONGE - SOM_PERTO));
 }
 function aplicarGolpe(atacante, defensor, golpe, dano, eff){
-  flutuar(defensor, eff === 0 ? 'immune' : '−' + dano, eff > 1 ? '#86ef5f' : eff < 1 ? '#8c9ab7' : '#ffffff');
+  if (PrefAparelho.ler('danoFlutuante') !== false) flutuar(defensor, eff === 0 ? 'immune' : '−' + dano, eff > 1 ? '#86ef5f' : eff < 1 ? '#8c9ab7' : '#ffffff');
   efeito(golpe.efeito + '_Hit', defensor.peito, defensor.altura, atacante?.peito ? { olhar: atacante.peito } : {});   // rotação do alvo: de frente pro atacante
   /* A SUA batalha nunca abaixa: o que entra na régua é o golpe dos outros e o dos selvagens longe. */
   const meu = atacante === jogo.pika || defensor === jogo.pika || atacante === jogo.ash || defensor === jogo.ash;
@@ -5781,13 +5799,50 @@ const modelosBola = new Map();
    canais extras de translação (Origin/Waist/UpperParts) e a bola se mexia diferente. O esqueleto
    é o mesmo (Origin › loc_attach › Waist › LowerParts/UpperParts), então os clipes encaixam. */
 const modeloBola = id => {
+  id = String(id);
   if (!modelosBola.has(id)) modelosBola.set(id, (async () => {
-    const g = await new GLTFLoader().loadAsync('./scenery/pc/' + id + '.glb');
-    if (String(id) !== '1001'){ const base = await modeloBola('1001'); g.animations = base.animations; }
-    return g;
+    if (id === '1001') return new GLTFLoader().loadAsync('./scenery/pc/1001.glb');
+    const base = await modeloBola('1001');
+    try {
+      const g = await new GLTFLoader().loadAsync('./scenery/pc/' + id + '.glb');
+      g.animations = base.animations;
+      return g;
+    } catch {                                                              // only 1001.glb ships: the other balls are the Poké Ball with its red top repainted (the throw used to die on the 404, ball lost)
+      return { scene: bolaRepintada(base.scene, COR_BOLA[id] || '#c8c8c8'), animations: base.animations };
+    }
   })());
   return modelosBola.get(id);
 };
+const COR_BOLA = { 1002: '#3a6fd8', 1003: '#2e2e34', 1004: '#7b3fbf', 1005: '#5e8a3a', 1006: '#d9a82c', 1007: '#2aa6c4', 1008: '#8db83a', 1009: '#e0661e' };
+/** Clone of the Poké Ball scene whose texture has the red pixels (only the top half is red) swapped for `cor`, keeping the shading. */
+function bolaRepintada(cena0, cor){
+  const alvoCor = new THREE.Color(cor), feitos = new Map();
+  const copia = SkeletonUtils.clone(cena0);
+  copia.traverse(o => {
+    if (!o.isMesh) return;
+    const m0 = o.material;
+    if (!feitos.has(m0)){
+      const m = m0.clone(), img = m0.map?.image;
+      if (img){
+        const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height;
+        const g2 = cv.getContext('2d'); g2.drawImage(img, 0, 0);
+        const px = g2.getImageData(0, 0, cv.width, cv.height), d = px.data;
+        const R = alvoCor.r * 255, G = alvoCor.g * 255, B = alvoCor.b * 255;
+        for (let i = 0; i < d.length; i += 4){
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          if (r < 70 || r < g * 1.6 || r < b * 1.6) continue;              // not the red shell
+          const k = Math.min(1.25, r / 200);
+          d[i] = Math.min(255, R * k); d[i + 1] = Math.min(255, G * k); d[i + 2] = Math.min(255, B * k);
+        }
+        g2.putImageData(px, 0, 0);
+        m.map = m0.map.clone(); m.map.image = cv; m.map.needsUpdate = true;
+      }
+      feitos.set(m0, m);
+    }
+    o.material = feitos.get(m0);
+  });
+  return copia;
+}
 function proximaBola(){
   const ids = Object.keys(BOLAS).filter(id => (jogo.bolas[id] || 0) > 0);
   if (!ids.length) return;
@@ -5915,9 +5970,12 @@ async function jogarBola(){
      AQUI — "Capturou!" sem o servidor saber. Com conta, selvagem que não é de rede não recebe bola (a bola fica na bolsa). */
   if (Conta.estado().modo === 'conta' && !s.rede && !Rede.selvagensDoAparelho()){ flutuar(ash, 'no connection to the server', '#f58e8e'); Chat.sistema('⚠ No connection to the server: the ball was not thrown. Wait to reconnect and try again.'); return; }
   if (s.emVoo || (s.rede && Mundo.capturaPendente(s.id))){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }   // 18/09: UMA bola por vez no mesmo selvagem — a 2ª antes de a 1ª terminar sobrescrevia a espera por id (world.mjs) e a 1ª acabava em "o servidor não respondeu"
+  let g;
+  try { g = await modeloBola(id); }
+  catch (e){ console.warn('bola:', e); flutuar(ash, "couldn't load the ball", '#f58e8e'); return; }   // the ball stays in the bag
+  if (s.estado !== 'desmaiado' || s.emVoo){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }   // something changed while the model loaded
   try {
     jogo.bolas[id]--; gravarLS('bolas', jogo.bolas);
-    const g = await modeloBola(id);
     ash.giro = Math.atan2(s.x - ash.x, s.z - ash.z); ash.alvoX = null;
     s.estado = 'capturando'; s.alvoX = null; s.investida = null; s.emVoo = true;   // emVoo (18/09): a MINHA bola está neste corpo até o finally — o world.mjs não o "desmaia" de novo no meio do voo e o F não joga outra
     const promCapt = s.rede ? Mundo.capturar(s, id) : null;              // mundo compartilhado: pede JÁ (o servidor tranca o selvagem e sorteia); o resultado entra depois do voo
@@ -8262,12 +8320,19 @@ if (jogo.ash){
   $('menu-btn').hidden = false;                                    // ☰ em todo lugar: abre o Menu (Esc também)
   $('menu-btn').addEventListener('click', () => { Som.destravar(); Menus.alternarGrade(); });
   $('menu-icones').addEventListener('click', ev => { const b = ev.target.closest('[data-j]'); if (!b) return; Som.destravar(); Menus.abrir(b.dataset.j); });
+  /* Unread badge: on the phone the chat is a panel the 💬 button opens; messages that arrive while it is closed show a red count on
+     the button, cleared as soon as the chat is visible again. On PC the chat is always on screen, so nothing is counted. */
+  Balao.instalar(THREE);
+  const chatVisivel = () => { const c = $('chat'); return !!c && c.offsetParent !== null && !(c.dataset.abrePor && c.dataset.aberta !== '1'); };
+  let naoLidas = 0;
+  const contarNaoLida = () => { if (chatVisivel()) return; naoLidas++; Selos.marcar($('chat-btn'), naoLidas); };
+  setInterval(() => { if (naoLidas && chatVisivel()){ naoLidas = 0; Selos.marcar($('chat-btn'), 0); } }, 700);
   /* painéis de depuração (hud, chefe, montaria, seguidor): no PC ficam ligados, no celular
      desligados; a opção fica em Configurações */
   const depuracao = on => { if (on === undefined) return MOBILE ? document.body.classList.contains('menu-aberto') : !document.body.classList.contains('sem-dbg'); document.body.classList.toggle('menu-aberto', !!on); document.body.classList.toggle('sem-dbg', !on); };
   const areaAtual = () => { const a = jogo.ash; if (!a) return null; const c = (dados.caixas || []).find(c => c.sx > 0 && Math.abs(a.x - flipX * c.x) <= c.sx / 2 && Math.abs(a.z - c.z) <= c.sz / 2); return c ? c.a : (cenaAtual?.areas?.[0]?.id ?? null); };
   const nomeAreaAtual = () => { const a = areaInteriorVisitada ?? areaAtual(); return rotuloLugar((a != null && (nomeAreaCena(a) || dados.nomes?.[a] || NOMES_AREA[a])) || cenaAtual?.nome || NOME); };
-  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal,   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
+  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, balao: txt => { if (jogo.ash?.pivo) Balao.mostrar(jogo.ash.pivo, (jogo.ash.altura || 1.6) + 0.45, txt); }, aoMensagem: contarNaoLida, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.enviarDm(nome, texto), ranking: () => Menus.mostrarRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal,   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     hora: resto => {
       const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
       const uso = 'Use: /time night | day | dawn | dusk | 21 | 21:30 | off';
@@ -8362,7 +8427,7 @@ if (jogo.ash){
     golpeNoOutro: (s, m) => {                                            // o selvagem bateu no parceiro de OUTRO jogador: número, efeito e "Wound" em cima dele
       const par = Rede.outroPor(m.alvo)?.par; if (!par?.pivo) return;
       const g = GOLPES[m.golpe] || STRUGGLE;
-      flutuar(par, m.eff === 0 ? 'immune' : '−' + m.dano, m.eff > 1 ? '#86ef5f' : m.eff < 1 ? '#8c9ab7' : '#ffffff');
+      if (PrefAparelho.ler('danoFlutuante') !== false) flutuar(par, m.eff === 0 ? 'immune' : '−' + m.dano, m.eff > 1 ? '#86ef5f' : m.eff < 1 ? '#8c9ab7' : '#ffffff');
       if (par.peito) efeito(g.efeito + '_Hit', par.peito, par.altura, s?.peito ? { olhar: s.peito } : {});
       if (m.hp > 0 && par.acoes) tocarUma(par, 'Wound');
     },
@@ -8398,7 +8463,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt),chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
@@ -8890,7 +8955,11 @@ const toque = { x: 0, y: 0, ativo: false }; let girando = 0;   // joystick e câ
 addEventListener('keydown', e => {
   if (Fairy?.bloqueiaTeclas()) return;
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;      // digitando (chat, editor): o jogo não ouve
-  if (e.code === 'Enter' && !e.repeat && jogo.ativo && !Menus.aberto() && !Troca.aberta()){ if (Chat.focar()) e.preventDefault(); return; }
+  if (Teclas.capturando()) return;                                        // Settings → Controls is waiting for the new key
+  /* REMAPPABLE KEYS: the key becomes an action id (keys.mjs, saved per device). The defaults are the keys the game always had.
+     Debug keys (Shift+layer, V, L, B, F8) stay hard-wired: they are not player controls. */
+  const ac = Teclas.acaoDe(e), uma = !e.repeat;
+  if (ac === 'chat' && uma && jogo.ativo && !Menus.aberto() && !Troca.aberta()){ if (Chat.focar()) e.preventDefault(); return; }
   teclas.add(e.code);
   const k = (e.shiftKey && DEV) ? teclaCamada[e.code] : null;             // Shift+G/H/N/T/P/C = camadas de depuração: SÓ no modo dev (13/09: tester apertou Shift+T e viu os "espinhos" da camada de treinadores)
   if (k && !e.repeat){ camadas[k].visible = !camadas[k].visible; pintarToggles(); }
@@ -8898,23 +8967,23 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyL' && !e.repeat && DEV) mostrarNomes = !mostrarNomes;
   if (jogo.ash){
     Som.destravar();
-    if (e.code === 'Digit1' && !e.repeat) usarGolpe(jogo.pika.golpesIds[0]);
-    if (/^Digit[5-9]$/.test(e.code) && !e.repeat) usarAtalho(+e.code.slice(5) - 5);   // atalhos 5–9: poções, bolas, montarias
-    if (e.code === 'Digit2' && !e.repeat) usarGolpe(jogo.pika.golpesIds[1]);
-    if (e.code === 'Digit3' && !e.repeat && jogo.pika.golpesIds[2]) usarGolpe(jogo.pika.golpesIds[2]);
-    if (e.code === 'Digit4' && !e.repeat && jogo.pika.golpesIds[3]) usarGolpe(jogo.pika.golpesIds[3]);
-    if (e.code === 'KeyB' && !e.repeat && !DEMO && DEV) chegarChefe($('chefe-esp')?.value || params0.get('chefe') || 'pm0249_00');   // B: o chefão chega — SÓ com modo dev (GM); 13/09: sem o gate, qualquer tester apertava B e a Lugia Boss nascia e o matava na Rota 1
-    if (e.code === 'KeyM' && !e.repeat && !jogo.turno){                 // M: monta / desmonta. 14/09: montado, desmonta; senão a montaria dos atalhos; o select de bastidor (#monta-esp) só vale pra quem pode montar qualquer uma (pra conta comum ele apontava o Lugia e o M não fazia nada)
+    const golpe = /^golpe-([1-4])$/.exec(ac || ''), atalho = /^atalho-([1-5])$/.exec(ac || '');
+    if (golpe && uma){ const id = jogo.pika.golpesIds[+golpe[1] - 1]; if (id) usarGolpe(id); }
+    if (atalho && uma) usarAtalho(+atalho[1] - 1);                          // shortcuts 1–5 (keys 5–9 by default): potions, balls, mounts
+    if (e.code === 'KeyB' && uma && !DEMO && DEV) chegarChefe($('chefe-esp')?.value || params0.get('chefe') || 'pm0249_00');   // B: o chefão chega — SÓ com modo dev (GM); 13/09: sem o gate, qualquer tester apertava B e a Lugia Boss nascia e o matava na Rota 1
+    if (ac === 'montar' && uma && !jogo.turno){                           // M: monta / desmonta. 14/09: montado, desmonta; senão a montaria dos atalhos; o select de bastidor (#monta-esp) só vale pra quem pode montar qualquer uma (pra conta comum ele apontava o Lugia e o M não fazia nada)
       const esp = $('monta-esp')?.value || params0.get('montaria');
       montar(jogo.montaria?.glb || (esp && podeMontar(esp) ? esp : null) || (jogo.atalhos || []).find(a => a && a.tipo === 'montaria')?.glb || (podeMontar('pm0249_00') ? 'pm0249_00' : 'pm0059_00'));
     }
-    if (e.code === 'KeyF' && !e.repeat){ if (e.shiftKey) proximaBola(); else jogarBola(); }                     // F: joga a bola no alvo · Shift+F: troca a bola
-    if (e.code === 'KeyZ' && !e.repeat){ if (e.shiftKey) proximoDoTime(); else interagir(); }                  // Z: interage com o parceiro · Shift+Z: próximo do time
-    if (e.code === 'Tab'){ e.preventDefault(); if (!e.repeat) proximoAlvo(); }
+    if (ac === 'pokebola' && uma) jogarBola();                             // F: joga a bola no alvo
+    if (ac === 'trocar-bola' && uma) proximaBola();                        // Shift+F: troca a bola
+    if (ac === 'interagir' && uma) interagir();                            // Z: fala com o NPC / interage com o parceiro
+    if (ac === 'trocar-pokemon' && uma) proximoDoTime();                   // Shift+Z: próximo do time
+    if (ac === 'proximo-alvo'){ e.preventDefault(); if (uma) proximoAlvo(); }
     if (e.code === 'Escape') jogo.alvo = null;
   }
-  if (e.code === 'Equal' || e.code === 'NumpadAdd')      zoom = THREE.MathUtils.clamp(zoom / 1.25, 0.35, ZOOM_TETO);
-  if (e.code === 'Minus' || e.code === 'NumpadSubtract') zoom = THREE.MathUtils.clamp(zoom * 1.25, 0.35, ZOOM_TETO);
+  if (ac === 'zoom-mais')  zoom = THREE.MathUtils.clamp(zoom / 1.25, 0.35, ZOOM_TETO);
+  if (ac === 'zoom-menos') zoom = THREE.MathUtils.clamp(zoom * 1.25, 0.35, ZOOM_TETO);
 });
 /* TECLA PRESA ENQUANTO DIGITA (17/09, genandrade no "Estou preso" em Saffron: "Enquanto digitava, passei pelo portal e travou indo
    para cima"). O campo do chat engole o keyup (chat.mjs: stopPropagation): quem segurava W, apertava Enter e soltava o W já dentro
@@ -9261,6 +9330,7 @@ function atualizarClima(dt){
 const FILTRO_BASE = 'saturate(1.12) brightness(1.04)';                   // A/B com o cliente real (LDPlayer): o Fairy é mais claro e mais saturado
 if (PLAY) aplicarMundoVisual();
 if (PLAY && params0.get('clima')) ligarClima(params0.get('clima'));
+if (PLAY) try { AvisoPlaca.talvez({ gpu: GPU, toque: TOQUE, forcar: params0.get('placa'), t: s => I18n.t(s), I18n }); } catch (e){ console.warn('aviso placa:', e); }   // software rendering only (?placa=1 shows it, ?placa=0 hides); "don't show again" = 7 days
 
 /* ============================================================== batalha por turno (treinadores)
    Como combinado: selvagens continuam em tempo real; TREINADORES (e depois ginásios) lutam por turnos.
@@ -9900,13 +9970,13 @@ function quadro(dt){
   const lado = new THREE.Vector3(frente.z, 0, -frente.x);
   const entrada = new THREE.Vector3();
   if (!jogo.turno){                                                        // batalha por turno: os pés ficam — câmera (Q/E/roda) continua livre
-  if (teclas.has('KeyW') || teclas.has('ArrowUp'))    entrada.addScaledVector(frente, -1);
-  if (teclas.has('KeyS') || teclas.has('ArrowDown'))  entrada.addScaledVector(frente,  1);
-  if (teclas.has('KeyA') || teclas.has('ArrowLeft'))  entrada.addScaledVector(lado,   -1);
-  if (teclas.has('KeyD') || teclas.has('ArrowRight')) entrada.addScaledVector(lado,    1);
+  if (Teclas.segura('andar-frente', teclas))   entrada.addScaledVector(frente, -1);   // remappable (keys.mjs): W/↑ S/↓ A/← D/→ by default
+  if (Teclas.segura('andar-tras', teclas))     entrada.addScaledVector(frente,  1);
+  if (Teclas.segura('andar-esquerda', teclas)) entrada.addScaledVector(lado,   -1);
+  if (Teclas.segura('andar-direita', teclas))  entrada.addScaledVector(lado,    1);
   }
-  if (teclas.has('KeyQ')) giro += 1.4 * dt;
-  if (teclas.has('KeyE')) giro -= 1.4 * dt;
+  if (Teclas.segura('camera-esquerda', teclas)) giro += 1.4 * dt;
+  if (Teclas.segura('camera-direita', teclas))  giro -= 1.4 * dt;
   if (girando) giro += 1.4 * dt * girando;                                   // botões ↺ ↻ do celular
   if (toque.ativo && !jogo.turno){ entrada.addScaledVector(frente, toque.y); entrada.addScaledVector(lado, toque.x); }   // joystick: cima = frente
   if (ADM && jogo.montaria?.voa){                     // voo livre: Espaço sobe, X desce (10 m/s; 30 no turbo)

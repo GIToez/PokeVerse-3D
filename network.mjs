@@ -14,6 +14,7 @@ let ping = { enviado: 0, ms: null };
 let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null, tAparencia = 0, ultimaMont = null;   // ultimaMont (14/09): a montaria que a sala já sabe   // ultimoUid: qual Pokémon está em campo (passo 3: o XP e o dano caem nele); ultimoTitulo: o título sob o nome (12/09)
 import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
 import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
+import * as PrefAparelho from './device_prefs.mjs';                    // Settings → "Other players' names" (per device)
 export const VERSAO_REDE = 21;                                            // 21: party HP is stored on the account, so a refresh does not heal
 
 export function instalar(c){
@@ -119,7 +120,12 @@ function receber(m){
       return;
     }
     case 'save': ctx.conta?.saveDoServidor?.(m.save, m.rev); return;   // passo 6: o servidor montou o save de novo (arranjo corrigido): vale o dele
-    case 'chat': ctx.Chat?.publicar(m.canal, m.texto, m.de?.nome || '?', m.de?.cargo || null); return;
+    case 'chat': {
+      ctx.Chat?.publicar(m.canal, m.texto, m.de?.nome || '?', m.de?.cargo || null);
+      const o = m.canal === 'local' && m.de?.id != null ? outros.get(String(m.de.id)) : null;   // speech bubble over whoever said it (same map only)
+      if (o?.ent?.pivo) ctx.balao?.(o.ent, m.texto);
+      return;
+    }
     case 'sistema': ctx.Chat?.sistema(m.texto); return;
     case 'invasao': ctx.invasao?.(m.texto); return;                      // INVASÃO (15/09): letreiro passante branco no topo, além do chat
     case 'evento': { const txt = Evento.doServidor(m); if (txt) ctx.Chat?.sistema(txt); return; }   // Fase 3 do painel: EXP/shiny/densidade do evento ao vivo
@@ -308,7 +314,12 @@ function etiquetar(o){
   const eti = Conta.comCargo(o.nome, o.cargo, '#8ec5ff');                 // cargos (09/09): [STAFF]/[MOD] também na cabeça dos outros
   const rotulo = ctx.rotuloSprite(eti.texto, eti.cor, 2.0, o.titulo || '', undefined, true);
   rotulo.position.y = ent.altura + 0.35 + (o.titulo ? 0.16 : 0); ent.pivo.add(rotulo); ent.rotulo = rotulo;
+  rotulo.visible = PrefAparelho.ler('nomesOutros') !== false;
 }
+if (typeof addEventListener === 'function') addEventListener('pref-aparelho', ev => {   // toggled in Settings: every name now, no reload
+  if (ev.detail?.k !== 'nomesOutros') return;
+  for (const o of outros.values()) if (o.ent?.rotulo) o.ent.rotulo.visible = !!ev.detail.v;
+});
 /** O parceiro que anda atrás do outro jogador (monta, ou troca quando ele muda de seguidor). */
 async function montarParceiro(o){
   if (o.par){ ctx.cena.remove(o.par.pivo); o.par = null; }
