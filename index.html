@@ -220,7 +220,9 @@ import * as AvisoPlaca from './sign_notice.mjs'; // "running without the graphic
 import * as Teclas from './keys.mjs';            // remappable keys (Settings → Controls); LS `controles.teclas`
 import * as Qualidade from './quality.mjs';      // low / medium / high (medium: capped pixel ratio, only my shadow)
 import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: other players' names, floating damage
-import * as TetoTextura from './ceiling_texture.mjs'; // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
+import * as TetoTextura from './ceiling_texture.mjs';
+import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
+import { Held, heldDe } from './held.mjs';       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
@@ -4432,7 +4434,7 @@ async function nascerNoBerco(a, esp, t, tiles){
    a cada PASSO_GRAMA metros andados em cima de tile de encontro sorteia CHANCE_GRAMA (× densidade); se sair, nasce um
    selvagem da área num tile a 3–8 m, de preferência À FRENTE de quem anda. Pode passar do teto da área em até EXTRA_GRAMA
    (é o que resolve a moita cheia) e respira RESPIRO_GRAMA_MS entre um encontro e outro. Parado não sorteia nada. */
-const PASSO_GRAMA = 5, CHANCE_GRAMA = 0.08, EXTRA_GRAMA = 3, RESPIRO_GRAMA_MS = 8000, RAIO_ENCONTRO = [3, 8];
+const PASSO_GRAMA = 5, CHANCE_GRAMA = 0.10, EXTRA_GRAMA = 3, RESPIRO_GRAMA_MS = 6000, RAIO_ENCONTRO = [3, 8];
 const gradeEncontro = new Map();                                        // "ix,iz" (coordenada gravada, grade de 1 m) → tile de encontro
 for (const tiles of gramaPorArea.values()) for (const t of tiles) gradeEncontro.set(Math.floor(t.x) + ',' + Math.floor(t.z), t);
 /** Tile de encontro debaixo do ponto (x, z) do mundo, ou null. */
@@ -5556,8 +5558,8 @@ function abrirSeletorAtalho(i){ Som.destravar(); Menus.abrirAtalho?.(i); }
 /* ===== Desmaio e Reanimador (como nos jogos): quem desmaia FICA desmaiado até um Reanimador (metade do HP; Máximo: tudo) — depois o
    Centro Pokémon fará isso de graça. Parceiro em campo cai → passada a animação, o próximo do time em condições entra sozinho; se
    não há nenhum, "apagão": sem Centro ainda, o time acorda curado ali mesmo em 3 s (mercy; com o Centro vira teleporte + cura). */
-const REANIMADORES = { 2012: 'Reanimador', 2013: 'Reanimador Máximo' };
-const ehReanimador = nome => /reanimador/i.test(nome || '');
+const REANIMADORES = { 2012: 'Revive', 2013: 'Max Revive' };
+const ehReanimador = (nome, id) => RegrasItem.ehReanima(id) || /reanimador|revive/i.test(nome || '');   // by id: the names are English now ("Revive")
 /* KO DO BANCO (12/09): com conta, KO é `hp === 0` e ponto — o HP é do servidor; o `koAte` (relógio do aparelho, guardado no
    registro) só vale sem conta, onde o desmaio "vence" com o tempo. Antes o banco "ressuscitava" com HP cheio quando o koAte já
    tinha passado, e o servidor seguia com 0. */
@@ -5576,7 +5578,7 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
   if (eliteEstado.corrida){ flutuar(jogo.ash, 'no healing in the Elite Four: the five fights are one run', '#ffd23a'); return false; }
   const it = lerLS('itens', {}), t = jogo.time[i]; if (!t || !(it[id] > 0)) return false;
   if (!estaKO(t, i)){ flutuar(jogo.ash, t.nome + ' is not fainted', '#ffd23a'); return false; }
-  const cheio = /m[aá]x/i.test(nome);
+  const cheio = (RegrasItem.REANIMA[+id] ?? (/m[aá]x/i.test(nome) ? 1 : 0.5)) >= 1;
   bolsaOp('usar', { item: +id, uid: uidAlvo });                           // com conta, quem desconta e quem reanima de verdade é o SERVIDOR
   it[id]--; if (it[id] <= 0) delete it[id]; gravarLS('itens', it);        // local já, pro jogador ver na hora
   if (i === membroAtivo()){
@@ -5704,7 +5706,7 @@ function usarItem(id, nome = '', aviso = null){
   /* ELITE FOUR (20/09): com a corrida aberta o servidor recusa todo remédio. O cliente nem tenta — senão a barra de vida subia
      aqui, o servidor mantinha o dano e, dentro da batalha, o turno ia embora por um item que nunca saiu da mochila. */
   if (eliteEstado.corrida) return recusa('na Elite Four não tem cura: as cinco lutas são uma corrida só', null, '#ffd23a');
-  if (ehReanimador(nome || REANIMADORES[id])){                                                       // Reanimador: no parceiro em campo se ele caiu, senão no primeiro KO do time
+  if (ehReanimador(nome || REANIMADORES[id], id)){                                                       // Reanimador: no parceiro em campo se ele caiu, senão no primeiro KO do time
     const agora = Date.now(); let i = jogo.pika && jogo.pika.hp <= 0 ? membroAtivo() : jogo.time.findIndex(t => koRegistro(t));
     if (i < 0) return recusa('nobody is fainted');
     const ok = reanimar(i, +id, nome || REANIMADORES[id]);
@@ -5754,7 +5756,8 @@ function usarItem(id, nome = '', aviso = null){
   }
   if (p.hp <= 0 || p.desmaiado > 0) return recusa(aviso ? p.nome + ' is fainted: use a Revive or go to a Pokémon Center' : p.nome + ' is fainted', p, '#f58e8e');
   if (p.hp >= p.maxHp) return recusa(aviso ? p.nome + ' já está com o HP cheio. Pra curar outro, chame ele pela barra do time' : 'HP já está cheio', p);   // a poção vai no Pokémon EM CAMPO
-  const cura = /Total|total/.test(nome) ? 1e9 : /Super/.test(nome) ? 60 : /Hiper|Máx/.test(nome) ? 200 : 20;
+  if (!RegrasItem.ehCura(id)) return recusa((nome || 'This item') + ' has no effect right now');   // status heals etc.: no status conditions in the real-time battle yet (they used to heal 20 HP)
+  const cura = RegrasItem.CURA[+id];                                      // by id (item_rules.mjs): Hyper/Max Potion matched no Portuguese name and healed 20
   const hpAntes = p.hp || 0;
   p.hp = Math.min(p.maxHp || p.hp, (p.hp || 0) + cura);
   bolsaOp('usar', { item: +id, uid: uidParceiro() });                     // com conta, quem desconta e quem cura de verdade é o SERVIDOR
@@ -6115,7 +6118,7 @@ function uidParceiro(){ const p = jogo.pika; if (p?.uid != null && (jogo.time ||
 function aplicarVidas(lista){
   if (!Array.isArray(lista)) return;
   const time = jogo.time || lerLS('time', []) || [], caixa = lerLS('caixa', []) || [];
-  let mexeuT = false, mexeuC = false;
+  let mexeuT = false, mexeuC = false, mexeuHeld = false;
   for (const v of lista){
     if (!v || v.uid == null) continue;
     const alvos = [[time, true], [caixa, false]];
@@ -6125,6 +6128,7 @@ function aplicarVidas(lista){
       if (v.lv != null) e.lv = v.lv; if (v.exp != null) e.exp = v.exp;
       if (v.hp != null) e.hp = v.hp; if (v.maxHp != null) e.maxHp = v.maxHp;
       if (v.expReserva != null) e.expReserva = v.expReserva;               // XP guardada pelo teto de nível: agora é do servidor (12/09)
+      if ('held' in v){ e.held = v.held || null; mexeuHeld = true; }          // held item (server_bag.mjs: segurar / tirar / consumir)
       e.koAte = v.hp === 0 ? Math.max(e.koAte || 0, Date.now() + 1e12) : 0;   // KO dito pelo servidor dura até a cura dele (12/09): com `Date.now()` o KO "vencia" na hora e o Pokémon voltava inteiro sozinho
       if (ehTime) mexeuT = true; else mexeuC = true;
     }
@@ -6150,6 +6154,7 @@ function aplicarVidas(lista){
   if (mexeuC) gravarLS('caixa', caixa);
   try { pintarTime(true); } catch (e){ console.warn('pintarTime:', e); }
   try { pintarBarra(); } catch (e){ console.warn('pintarBarra:', e); }
+  if (mexeuHeld) try { pintarHeld(); } catch (e){ console.warn('pintarHeld:', e); }
 }
 /* BOLSA (passo 2 do save do servidor): com conta, quem soma e subtrai dinheiro/itens é o SERVIDOR. `bolsaOp` devolve null
    quando não há conta (aí o chamador faz local, como sempre) e `{ erro }` quando o servidor recusou. */

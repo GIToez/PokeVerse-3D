@@ -1609,12 +1609,11 @@ wss.on('connection', ws => {
               salvarContas();
             }
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
-          } else if (c && bolsaServ.tratar(c, op, m, u)) {
-            const r = bolsaServ.tratar.ultimo;
-            if (r.erro) enviar(ws, { t: 'bolsa_erro', op, ...r }); else enviar(ws, { t: 'bolsa', op, ...r });
           } else {
-            const extra = c && batalha.bolsa(ws, op, m);
-            if (extra) enviar(ws, { t: 'bolsa', op, ...extra });
+            const rb = c ? bolsaServ.tratar(c, op, m, u) : null;          // comprar / usar / descartar / segurar / tirar / consumir
+            const extra = rb || (c && batalha.bolsa(ws, op, m));
+            if (rb?.erro) enviar(ws, { t: 'bolsa_erro', op, ...rb });       // carries the bag snapshot: undoes what the client took off locally
+            else if (extra) enviar(ws, { t: 'bolsa', op, ...extra });
             else enviar(ws, { t: 'bolsa', op, bolsa: c?.save ? { dinheiro: c.save.dinheiro ?? 0, bolas: c.save.bolas, itens: c.save.itens, insignias: c.save.insignias } : null });
           }
         }
