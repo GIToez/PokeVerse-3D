@@ -84,7 +84,7 @@ function repintar() {
   const it = alvo?.it; if (!it?.pronto || !reg) return;
   if (pintando) { pendente = true; return; }
   const receita = reg.isMask ? {} : { [alvo.mat]: reg };                  // "não pinta": a textura fica crua
-  pintando = Tinta.pintar(it.obj, receita).catch(e => console.warn('prévia tinta:', e)).finally(() => { pintando = null; if (pendente) { pendente = false; repintar(); } });
+  pintando = Tinta.pintar(it.obj, receita).catch(e => console.warn('paint preview:', e)).finally(() => { pintando = null; if (pendente) { pendente = false; repintar(); } });
 }
 
 /** A máscara pintada com as 4 cores sobre branco (a fórmula do paint.mjs). Sem máscara: o canal R é o tom da peça inteira. */

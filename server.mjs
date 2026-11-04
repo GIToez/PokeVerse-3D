@@ -1,5 +1,5 @@
 /**
- * Development server — Pokemon 3D Base
+ * Development server — PokeVerse
  * HTTP + WebSocket on port 5190
  *
  * Run: node server.mjs
@@ -836,7 +836,7 @@ const httpServer = http.createServer((req, res) => {
       const depois = applyRole(contas[u], role);
       contas[u].rev = (contas[u].rev || 0) + 1;
       salvarContasJa();
-      logAdmin('local', u, 'cargo', { depois });
+      logAdmin('local', u, 'role', { depois });
       for (const w of socketsDe(u)) {
         enviar(w, { t: 'save', save: contas[u].save || null, rev: contas[u].rev, gm: !!contas[u].gm, cargo: contas[u].cargo || null });
         enviar(w, { t: 'sistema', texto: 'Your role is now ' + role + '.' });
@@ -867,7 +867,7 @@ const httpServer = http.createServer((req, res) => {
     }
 
     if (req.method === 'GET' && (rota === '/health' || rota === '/saude')) {
-      return json(200, { ok: true, game: 'Pokemon 3D Base' });
+      return json(200, { ok: true, game: 'PokeVerse' });
     }
     if (req.method === 'GET' && rota === '/alfa') return json(200, { ok: true, chaveObrigatoria: false });
     if (req.method === 'POST' && rota === '/chaves/validar') return json(200, { ok: true, chave: d.chave });
@@ -1151,9 +1151,9 @@ const httpServer = http.createServer((req, res) => {
             const out = {};
             for (const c of campos) {
               const v = o?.[c];
-              if (v === undefined || v === null) { if (c === 'x' || c === 'z') return json(400, { erro: `${k} ${i + 1}: sem posição` }); continue; }
+              if (v === undefined || v === null) { if (c === 'x' || c === 'z') return json(400, { erro: `${k} ${i + 1}: missing position` }); continue; }
               const n = Number(v);
-              if (!Number.isFinite(n) || Math.abs(n) > 1e9 || (INTEIROS.has(c) && !Number.isInteger(n))) return json(400, { erro: `${k} ${i + 1}: "${c}" inválido` });
+              if (!Number.isFinite(n) || Math.abs(n) > 1e9 || (INTEIROS.has(c) && !Number.isInteger(n))) return json(400, { erro: `${k} ${i + 1}: invalid "${c}"` });
               out[c] = (c === 'x' || c === 'y' || c === 'z' || c === 'face') ? +n.toFixed(3) : n;
             }
             lista.push(out);
@@ -1197,8 +1197,8 @@ const httpServer = http.createServer((req, res) => {
           if (r.erro) return json(400, { erro: r.erro });
           const antes = { dinheiro: c.save.dinheiro ?? null, itens: c.save.itens || {}, bolas: c.save.bolas || {}, insignias: c.save.insignias || [] };
           Object.assign(c.save, r.bolsa);
-          logAdmin(g, u, 'bolsa', { antes, depois: r.bolsa });
-          for (const w of socketsDe(u)) { enviar(w, { t: 'bolsa', op: 'painel', bolsa: r.bolsa }); enviar(w, { t: 'sistema', texto: '🎒 Um GM ajustou a sua bolsa.' }); }
+          logAdmin(g, u, 'bag', { antes, depois: r.bolsa });
+          for (const w of socketsDe(u)) { enviar(w, { t: 'bolsa', op: 'painel', bolsa: r.bolsa }); enviar(w, { t: 'sistema', texto: '🎒 A GM adjusted your bag.' }); }
           return pronto();
         }
         if (acao === 'time') {
@@ -1207,9 +1207,9 @@ const httpServer = http.createServer((req, res) => {
           const antes = { time: (c.save.time || []).map(resumoMon), caixa: (c.save.caixa || []).map(resumoMon) };
           c.save.time = r.time; c.save.caixa = r.caixa;
           marcarPegoDoTime(c);
-          logAdmin(g, u, 'time', { antes, depois: { time: r.time.map(resumoMon), caixa: r.caixa.map(resumoMon) } });
+          logAdmin(g, u, 'team', { antes, depois: { time: r.time.map(resumoMon), caixa: r.caixa.map(resumoMon) } });
           const res = pronto();
-          for (const w of socketsDe(u)) { enviar(w, { t: 'save', save: c.save, rev: c.rev }); enviar(w, { t: 'sistema', texto: '🔁 Um GM mexeu no seu time.' }); }
+          for (const w of socketsDe(u)) { enviar(w, { t: 'save', save: c.save, rev: c.rev }); enviar(w, { t: 'sistema', texto: '🔁 A GM changed your team.' }); }
           return res;
         }
         if (acao === 'pokemon') {                                            // dar um Pokémon: o servidor sorteia IVs/natureza como numa captura
@@ -1222,9 +1222,9 @@ const httpServer = http.createServer((req, res) => {
           if (!Array.isArray(c.save.caixa)) c.save.caixa = [];
           const lugar = c.save.time.length < 6 ? 'time' : 'caixa';
           c.save[lugar].push(pk); marcarPego(c, dex);
-          logAdmin(g, u, 'deu pokemon', { depois: { ...resumoMon(pk), lugar } });
+          logAdmin(g, u, 'give pokemon', { depois: { ...resumoMon(pk), lugar: lugar === 'time' ? 'team' : 'box' } });
           const res = pronto({ lugar });
-          for (const w of socketsDe(u)) { enviar(w, { t: 'save', save: c.save, rev: c.rev }); enviar(w, { t: 'sistema', texto: '🎁 Um GM te deu ' + (pk.nome || 'um Pokémon') + ' (Nv ' + pk.lv + ')' + (lugar === 'caixa' ? ' — está na caixa.' : '.') }); }
+          for (const w of socketsDe(u)) { enviar(w, { t: 'save', save: c.save, rev: c.rev }); enviar(w, { t: 'sistema', texto: '🎁 A GM gave you ' + (pk.nome || 'a Pokémon') + ' (Lv ' + pk.lv + ')' + (lugar === 'caixa' ? ' — it went to your box.' : '.') }); }
           return res;
         }
         if (acao === 'cargo') {
@@ -1232,7 +1232,7 @@ const httpServer = http.createServer((req, res) => {
           const antes = { gm: !!c.gm, cargo: c.cargo || null };
           if (gm) c.gm = true; else delete c.gm;
           c.cargo = cargo;
-          logAdmin(g, u, 'cargo', { antes, depois: { gm, cargo } });
+          logAdmin(g, u, 'role', { antes, depois: { gm, cargo } });
           return pronto();
         }
         if (acao === 'moderar') {                                            // Fase 3: as mesmas funções dos comandos de GM do chat (server_moderation.mjs)
@@ -1242,7 +1242,7 @@ const httpServer = http.createServer((req, res) => {
         }
         if (acao === 'codigo') {                                             // novo código de recuperação de senha (o antigo para de valer)
           c.codigo = crypto.randomBytes(8).toString('hex');
-          logAdmin(g, u, 'novo código de recuperação', {});
+          logAdmin(g, u, 'new recovery code', {});
           return pronto({ codigo: c.codigo });
         }
         return json(404, { erro: 'Unknown action.' });
@@ -1741,7 +1741,7 @@ wss.on('connection', ws => {
 httpServer.listen(+process.env.PORT || 5190, process.env.HOST || undefined, () => {   // HOST=127.0.0.1 behind a reverse proxy; unset = all interfaces (LAN dev)
   console.log('');
   console.log('╔═══════════════════════════════════════╗');
-  console.log('║  Pokemon 3D Base — Dev Server      ║');
+  console.log('║  PokeVerse — Dev Server            ║');
   console.log('║  HTTP + WebSocket on port 5190        ║');
   console.log('╚═══════════════════════════════════════╝');
   console.log('');

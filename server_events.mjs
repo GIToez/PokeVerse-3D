@@ -67,7 +67,7 @@ export function criarEventos(h) {
     texto = String(texto || '').trim().slice(0, 200);
     if (!texto) return { erro: 'Write the announcement.' };
     const n = todos({ t: 'invasao', texto });
-    logAdmin(g, '*', 'aviso global', { depois: { texto, jogadores: n } });
+    logAdmin(g, '*', 'global notice', { depois: { texto, jogadores: n } });
     return { n };
   }
   /** Derruba todo mundo que não é GM (manutenção). */
@@ -125,7 +125,7 @@ export function criarEventos(h) {
       const antes = ler();
       gravarComBackup(ARQ, r.v); cache.mtime = -1;
       if (!r.v.manutencao.ativa || ms(r.v.manutencao.inicio) !== ms(antes.manutencao?.inicio)) avisados = new Set();
-      logAdmin(g, '*', 'eventos', { antes, depois: r.v });
+      logAdmin(g, '*', 'events', { antes, depois: r.v });
       const e = efetivo(); ultimo = JSON.stringify(msgEvento(e));
       const n = todos(msgEvento(e));                                       // aplica na hora em quem está online
       if (e.nome && (e.expMult !== 1 || e.shinyMult !== 1 || e.densidade !== 1) && d.anunciar) todos({ t: 'invasao', texto: '🎉 Event: ' + e.nome + textoMult(e) });

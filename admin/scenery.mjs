@@ -1,4 +1,4 @@
-/* Editor de Cenário 3D — Pokemon 3D Base (jogo local). Suporta os DOIS modos de mapa:
+/* 3D Scenery Editor — PokeVerse (local game). Supports BOTH map modes:
  *  • BIBLIOTECA (kanto e +71 mapas): o GLB tem os prefabs na origem ("lib:<nome>"); o cenário são os `objetos` do JSON
  *    ({n,x,y,z}, 42k no kanto). Edito os objetos e re-instancio os prefabs nas posições (igual ao `instanciarBiblioteca` do
  *    jogo). Salva em /admin/mapa-objetos (JSON).

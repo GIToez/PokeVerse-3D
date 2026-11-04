@@ -25,8 +25,8 @@ const semAcento = s => String(s || '').toLowerCase().normalize('NFD').replace(/[
 /** h = helpers do server.mjs (os mesmos que a tela Jogadores usa). `avisar(gm, texto)` vem do server_events.mjs. */
 export function criarModeracao(h) {
   const { contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub, avisar } = h;
-  const hora = ms => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const quando = ms => ms === -1 ? 'para sempre' : 'até ' + new Date(ms).toLocaleString('pt-BR');
+  const hora = ms => new Date(ms).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const quando = ms => ms === -1 ? 'forever' : 'until ' + new Date(ms).toLocaleString('en-US');
 
   // ── Pontos das cidades (kanto.json é grande: lê na 1ª vez que alguém usa /tp cidade) ──
   let pontos = null;
@@ -68,13 +68,13 @@ export function criarModeracao(h) {
     if (!(minutos === -1 || (minutos >= 1 && minutos <= MAX_MIN))) return { erro: 'Invalid ban duration.' };
     c.banidoAte = minutos === -1 ? -1 : Date.now() + minutos * 60000; c.banMotivo = motivo;
     if (c.token) { sessoes.delete(c.token); c.token = null; }                 // a sessão cai: o próximo login esbarra no banimento
-    derrubar(u, 'Sua conta foi suspensa ' + quando(c.banidoAte) + '.' + (motivo ? ' Motivo: ' + motivo : ''));
-    logAdmin(g, u, 'banir', { depois: { banidoAte: c.banidoAte, motivo } });
+    derrubar(u, 'Your account is suspended ' + quando(c.banidoAte) + '.' + (motivo ? ' Reason: ' + motivo : ''));
+    logAdmin(g, u, 'ban', { depois: { banidoAte: c.banidoAte, motivo } });
     return { ate: c.banidoAte };
   }
   function perdoar(g, u) {
     const c = contas[u];
-    logAdmin(g, u, 'perdoar', { antes: { banidoAte: c.banidoAte || 0 } });
+    logAdmin(g, u, 'unban', { antes: { banidoAte: c.banidoAte || 0 } });
     delete c.banidoAte; delete c.banMotivo;
     return {};
   }
@@ -82,19 +82,19 @@ export function criarModeracao(h) {
     const c = contas[u];
     if (!(minutos >= 1 && minutos <= MAX_MIN)) return { erro: 'Invalid mute duration.' };
     c.mudoAte = Date.now() + minutos * 60000;
-    for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🔇 Você foi silenciado até ' + hora(c.mudoAte) + '.' + (motivo ? ' Motivo: ' + motivo : '') });
-    logAdmin(g, u, 'silenciar', { depois: { mudoAte: c.mudoAte, motivo } });
+    for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🔇 You are muted until ' + hora(c.mudoAte) + '.' + (motivo ? ' Reason: ' + motivo : '') });
+    logAdmin(g, u, 'mute', { depois: { mudoAte: c.mudoAte, motivo } });
     return { minutos };
   }
   function desmutar(g, u) {
     delete contas[u].mudoAte;
-    for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🔊 Você pode falar no chat de novo.' });
-    logAdmin(g, u, 'tirar silêncio', {});
+    for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🔊 You can talk in chat again.' });
+    logAdmin(g, u, 'unmute', {});
     return {};
   }
   function desconectar(g, u, motivo) {
-    const n = derrubar(u, 'Você foi desconectado por um GM.' + (motivo ? ' Motivo: ' + motivo : ''));
-    logAdmin(g, u, 'desconectar', { depois: { conexoes: n } });
+    const n = derrubar(u, 'A GM disconnected you.' + (motivo ? ' Reason: ' + motivo : ''));
+    logAdmin(g, u, 'kick', { depois: { conexoes: n } });
     return { derrubou: n };
   }
   function recado(g, u, texto) {
@@ -103,16 +103,16 @@ export function criarModeracao(h) {
     const n = socketsDe(u).length;
     if (!n) return { erro: 'The player is not online.' };
     for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '📩 GM: ' + texto });
-    logAdmin(g, u, 'recado', { depois: { texto } });
+    logAdmin(g, u, 'message', { depois: { texto } });
     return {};
   }
   /** Leva a conta pra `dest` = { mapa, x, z, nome }. Online: a cena recarrega agora; offline: nasce lá ao entrar. */
-  function levar(g, u, dest, acao = 'levar') {
+  function levar(g, u, dest, acao = 'teleport') {
     const pos = { mapa: String(dest.mapa), x: +dest.x, z: +dest.z, giro: 0 };
     if (!/^[\w-]{1,40}$/.test(pos.mapa) || !Number.isFinite(pos.x) || !Number.isFinite(pos.z) || Math.abs(pos.x) > 100000 || Math.abs(pos.z) > 100000) return { erro: 'Invalid destination.' };
     contas[u].posGm = pos;
     const ws = socketsDe(u);
-    for (const w of ws) enviar(w, { t: 'volta', mapa: pos.mapa, texto: '🧭 Um GM levou você' + (dest.nome ? ' para ' + dest.nome : '') + '…' });
+    for (const w of ws) enviar(w, { t: 'volta', mapa: pos.mapa, texto: '🧭 A GM moved you' + (dest.nome ? ' to ' + dest.nome : '') + '…' });
     logAdmin(g, u, acao, { depois: { ...pos, nome: dest.nome || null } });
     return { ...pos, nome: dest.nome || null, derrubou: ws.length };
   }
@@ -120,7 +120,7 @@ export function criarModeracao(h) {
   function destino(u, d) {
     if (d.cidade != null && String(d.cidade).trim()) {
       const p = cidade(d.cidade);
-      return p || { erro: `Cidade desconhecida: ${d.cidade} (use ${listaCidades()}).` };
+      return p || { erro: `Unknown city: ${d.cidade} (use ${listaCidades()}).` };
     }
     const x = Number(d.x), z = Number(d.z);
     if (!Number.isFinite(x) || !Number.isFinite(z)) return { erro: 'Missing the city or x and z.' };
@@ -237,9 +237,9 @@ export function criarModeracao(h) {
       return;
     }
     const u = acharConta(m.usuario);
-    if (!u) { erro(m.usuario ? 'Conta "' + String(m.usuario).slice(0, 30) + '" não encontrada' : 'Faltou o nome'); return; }
+    if (!u) { erro(m.usuario ? 'Account "' + String(m.usuario).slice(0, 30) + '" not found' : 'Missing the name'); return; }
     const c = contas[u];
-    if (u === g && ['mudo', 'kick', 'banir', 'perdoar'].includes(op)) { erro('Isso não pode ser feito na sua própria conta'); return; }
+    if (u === g && ['mudo', 'kick', 'banir', 'perdoar'].includes(op)) { erro("You can't do that to your own account"); return; }
     const fim = r => { if (r.erro) { erro(r.erro); return; } salvarContasJa(); ok({ usuario: u, ...r }); };
 
     if (op === 'ver') {
@@ -247,7 +247,7 @@ export function criarModeracao(h) {
       ok({ usuario: u, gm: !!c.gm, banidoAte: ban, mudoAte: c.mudoAte > Date.now() ? c.mudoAte : 0, motivo: ban ? c.banMotivo || '' : '' });
     } else if (op === 'mudo') {
       const min = Math.round(+m.minutos);
-      if (min === 0) { desmutar(g, u); salvarContasJa(); enviar(ws, { t: 'sistema', texto: '🔊 ' + u + ' pode falar de novo.' }); return; }
+      if (min === 0) { desmutar(g, u); salvarContasJa(); enviar(ws, { t: 'sistema', texto: '🔊 ' + u + ' can talk again.' }); return; }
       fim(silenciar(g, u, Number.isFinite(min) ? min : 10, String(m.motivo || '').slice(0, 120)));
     } else if (op === 'kick') fim(desconectar(g, u, String(m.motivo || '').slice(0, 120)));
     else if (op === 'banir') {
@@ -257,20 +257,20 @@ export function criarModeracao(h) {
     else if (op === 'tp') {
       const txt = String(m.destino || '').trim(), xz = txt.match(/^(-?\d+(?:\.\d+)?)[\s,;]+(-?\d+(?:\.\d+)?)$/);
       const dest = destino(u, xz ? { x: xz[1], z: xz[2] } : { cidade: txt });
-      fim(dest.erro ? dest : levar(g, u, dest, 'tp (chat)'));
+      fim(dest.erro ? dest : levar(g, u, dest, 'teleport (chat)'));
     } else if (op === 'puxar') {
       const eu = ondeEsta(g);
-      if (!eu) { erro('Não achei a sua posição (entre no mapa primeiro)'); return; }
-      fim(levar(g, u, { ...eu, nome: 'perto de ' + (contas[g]?.save?.nome || g) }, 'puxar (chat)'));
+      if (!eu) { erro("Couldn't find your position (enter the map first)"); return; }
+      fim(levar(g, u, { ...eu, nome: 'near ' + (contas[g]?.save?.nome || g) }, 'pull (chat)'));
     } else if (op === 'ir') {
       const ele = ondeEsta(u);
-      if (!ele) { erro(u + ' não está online'); return; }
-      logAdmin(g, u, 'ir até (chat)', { depois: ele });
+      if (!ele) { erro(u + ' is not online'); return; }
+      logAdmin(g, u, 'go to (chat)', { depois: ele });
       if (String(ele.mapa) === String(ws._mapa)) { ok({ usuario: u, ...ele, mesmoMapa: true }); return; }
       contas[g].posGm = { ...ele, giro: 0 }; salvarContasJa();                    // outro mapa: a minha cena recarrega lá
       ok({ usuario: u, ...ele, mesmoMapa: false });
-      enviar(ws, { t: 'volta', mapa: ele.mapa, texto: '🧭 Indo até ' + u + '…' });
-    } else erro('Comando desconhecido: /' + op);
+      enviar(ws, { t: 'volta', mapa: ele.mapa, texto: '🧭 Going to ' + u + '…' });
+    } else erro('Unknown command: /' + op);
   }
 
   /** `entrar` no WS: a conta chegou no mapa do posGm → ele já foi usado (senão ela nasceria ali pra sempre). */

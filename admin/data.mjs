@@ -14,7 +14,7 @@ const fmt = (c, v) => v === undefined || v === null ? '' : c.resumo ? String(c.r
 /* Prévia por esquema (esq.previa = caminho de um módulo com mostrar(caixa, registro) e atualizar(registro)): ex. o modelo 3D
    da skin. Carrega uma vez só; erro na prévia nunca derruba o editor. */
 const previas = new Map();
-const previaDe = caminho => { if (!previas.has(caminho)) previas.set(caminho, import(caminho).catch(e => { console.warn('prévia:', e); previas.delete(caminho); return null; })); return previas.get(caminho); };
+const previaDe = caminho => { if (!previas.has(caminho)) previas.set(caminho, import(caminho).catch(e => { console.warn('preview:', e); previas.delete(caminho); return null; })); return previas.get(caminho); };
 /* NOMES DOS ITENS (esq.usaItens): campo com `item: true` mostra o nome ao lado do número e sugere da lista (datalist); as
    colunas calculadas (esq.colunas) recebem `ctx.item(id)`. Carrega o menu_data.json do jogo uma vez, quando precisa. */
 let itensJogo = null;

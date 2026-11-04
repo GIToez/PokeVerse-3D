@@ -122,23 +122,30 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
           <div class="acoes" style="margin-top:12px"><button class="prim" id="j-time-ok">Save team</button></div>
         </div>
         <div class="caixa j-larga"><h3>Panel history</h3>
-          ${det.log.length ? `<table class="dados backups"><tbody>${det.log.map(e => `<tr><td>${esc(dataHora(e.quando))}</td><td>${esc(e.gm)}</td><td><b>${esc(e.acao)}</b> ${esc(resumoLog(e))}</td></tr>`).join('')}</tbody></table>` : '<span class="fraco">No panel actions on this account yet.</span>'}
+          ${det.log.length ? `<table class="dados backups"><tbody>${det.log.map(e => `<tr><td>${esc(dataHora(e.quando))}</td><td>${esc(e.gm)}</td><td><b>${esc(actionName(e.acao))}</b> ${esc(resumoLog(e))}</td></tr>`).join('')}</tbody></table>` : '<span class="fraco">No panel actions on this account yet.</span>'}
         </div>
       </div>`;
     renderTime(); ligarFicha();
   }
   const linhaItem = (id, q) => `<tr data-item="${esc(id)}"><td>${esc(nomeItem(id))} <span class="fraco">${esc(id)}</span></td><td><input type="number" min="0" max="999999" value="${q}"></td><td><button class="perigo rem" title="Remove">✕</button></td></tr>`;
+  /* Log entries written before Nov 4, 2026 carry Portuguese action names. */
+  const OLD_ACTION = { bolsa: 'bag', time: 'team', 'deu pokemon': 'give pokemon', cargo: 'role', banir: 'ban', perdoar: 'unban',
+    silenciar: 'mute', 'tirar silêncio': 'unmute', desconectar: 'kick', recado: 'message', levar: 'teleport', 'tp (chat)': 'teleport (chat)',
+    'puxar (chat)': 'pull (chat)', 'ir até (chat)': 'go to (chat)', 'aviso global': 'global notice', eventos: 'events',
+    'novo código de recuperação': 'new recovery code' };
+  const actionName = a => OLD_ACTION[a] || a;
+  const PLACE = { time: 'team', caixa: 'box' };
   function resumoLog(e) {
-    const d = e.depois || {};
-    if (e.acao === 'bolsa') return 'money ' + (e.antes?.dinheiro ?? '—') + ' → ' + (d.dinheiro ?? '—');
-    if (e.acao === 'time') return (e.antes?.time?.length ?? 0) + '+' + (e.antes?.caixa?.length ?? 0) + ' → ' + (d.time?.length ?? 0) + '+' + (d.caixa?.length ?? 0) + ' (team+box)';
-    if (e.acao === 'deu pokemon') return (d.nome || '#' + d.dex) + ' Lv ' + d.lv + (d.shiny ? ' ✨' : '') + ' → ' + d.lugar;
-    if (e.acao === 'cargo') return (d.gm ? 'GM' : 'no GM') + (d.cargo ? ' · ' + d.cargo : '');
-    if (e.acao === 'banir') return (d.banidoAte === -1 ? 'forever' : 'until ' + dataHora(d.banidoAte)) + (d.motivo ? ' — ' + d.motivo : '');
-    if (e.acao === 'silenciar') return 'until ' + dataHora(d.mudoAte) + (d.motivo ? ' — ' + d.motivo : '');
-    if (e.acao === 'recado') return '"' + (d.texto || '') + '"';
-    if (/^(levar|tp|puxar|ir até)/.test(e.acao)) return (d.nome ? d.nome + ' · ' : '') + d.mapa + ' (' + d.x + ', ' + d.z + ')';   // Fase 3 (também os do chat)
-    if (/^aviso/.test(e.acao)) return '"' + (d.texto || '') + '"';
+    const d = e.depois || {}, acao = actionName(e.acao);
+    if (acao === 'bag') return 'money ' + (e.antes?.dinheiro ?? '—') + ' → ' + (d.dinheiro ?? '—');
+    if (acao === 'team') return (e.antes?.time?.length ?? 0) + '+' + (e.antes?.caixa?.length ?? 0) + ' → ' + (d.time?.length ?? 0) + '+' + (d.caixa?.length ?? 0) + ' (team+box)';
+    if (acao === 'give pokemon') return (d.nome || '#' + d.dex) + ' Lv ' + d.lv + (d.shiny ? ' ✨' : '') + ' → ' + (PLACE[d.lugar] || d.lugar);
+    if (acao === 'role') return (d.gm ? 'GM' : 'no GM') + (d.cargo ? ' · ' + d.cargo : '');
+    if (acao === 'ban') return (d.banidoAte === -1 ? 'forever' : 'until ' + dataHora(d.banidoAte)) + (d.motivo ? ' — ' + d.motivo : '');
+    if (acao === 'mute') return 'until ' + dataHora(d.mudoAte) + (d.motivo ? ' — ' + d.motivo : '');
+    if (acao === 'message') return '"' + (d.texto || '') + '"';
+    if (/^(teleport|pull|go to)/.test(acao)) return (d.nome ? d.nome + ' · ' : '') + d.mapa + ' (' + d.x + ', ' + d.z + ')';   // Fase 3 (também os do chat)
+    if (acao === 'global notice') return '"' + (d.texto || '') + '"';
     return '';
   }
 

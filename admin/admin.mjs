@@ -1,4 +1,4 @@
-/* Painel Admin — Pokemon 3D Base (jogo local).
+/* Admin panel — PokeVerse (local game).
  * Editor de Mapa (zonas de spawn com raio) + Habitats por área. Fala com o servidor dev (porta 5190) nas rotas /admin/*,
  * que só respondem pra conta GM. Reaproveita o token do jogo (localStorage 'conta.token', mesma origem). */
 
