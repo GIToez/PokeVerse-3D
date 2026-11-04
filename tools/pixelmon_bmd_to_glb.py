@@ -226,7 +226,11 @@ def convert(model_path, texture_path, animations, texture_name, node_name, model
     # using the first frame of Idle (the pose the game measures).
     # Animation files often omit a bone the mesh has (Scizor's Hat). Their bone
     # ids then shift, so a channel has to be matched by name, not by id.
-    root_id = next(b['id'] for b in bones if b['parent'] < 0)
+    # Blender exports often leave more than one top-level bone (blender_implicit,
+    # a loose Hat, the real root). Every one of them has to hang off the model
+    # and get the Y-up turn, or three.js loses the bones under it.
+    root_ids = [b['id'] for b in bones if b['parent'] < 0]
+    root_id = root_ids[0]
     anim_data = []
     by_name = {b['name']: b['id'] for b in bones}
     for path, clip_name in animations:
@@ -277,7 +281,7 @@ def convert(model_path, texture_path, animations, texture_name, node_name, model
             x, y, z, rx, ry, rz = src
             translation = np.array([x, y, z]) * scale
             quat = quat_normalize(quat_from_euler(rx, ry, rz))
-            if b['id'] == root_id:
+            if b['parent'] < 0:
                 translation = rotation @ translation
                 translation = translation + np.array([0, -ground, 0])
                 quat = quat_normalize(quat_mul(q_rotation, quat))
@@ -341,6 +345,7 @@ def convert(model_path, texture_path, animations, texture_name, node_name, model
         'texture': Path(texture_path).read_bytes(),
         'bones': bones,
         'root_id': root_id,
+        'root_ids': root_ids,
         'bind': bind_baked,
         'ibm': ibm,
         'positions': np.array(positions, dtype=np.float32),
@@ -405,7 +410,7 @@ def build_glb(model):
     # nodes: 0 wrapper mesh+armature, 1 mesh, 2+ bones in id order
     bone_node = {b['id']: 2 + i for i, b in enumerate(model['bones'])}
     nodes = [
-        {'name': model['node_name'], 'children': [1, bone_node[model['root_id']]]},
+        {'name': model['node_name'], 'children': [1] + [bone_node[r] for r in model['root_ids']]},
         {'name': model['node_name'] + '_mesh', 'mesh': 0, 'skin': 0},
     ]
     for b in model['bones']:
@@ -452,7 +457,7 @@ def build_glb(model):
         'skins': [{
             'joints': [bone_node[b['id']] for b in model['bones']],
             'inverseBindMatrices': 5,
-            'skeleton': bone_node[model['root_id']],
+            **({'skeleton': bone_node[model['root_id']]} if len(model['root_ids']) == 1 else {}),
         }],
         'meshes': [{
             'name': model['node_name'],

@@ -23,6 +23,8 @@ JAR = Path(os.environ.get('PIXELMON_JAR', '/tmp/pixelmon/Pixelmon.jar'))
 MON = ROOT / 'public' / 'scenery' / 'mon'
 SHINY = MON / 'shiny'
 LOG = ROOT / 'tools' / 'pixelmon_import_log.jsonl'
+# The commit the roster import started from: its 290 models are the originals.
+BEFORE_IMPORT = '8608617e5fac301ce454a53b9ed2e1158b8ec1f1'
 
 MEGA_NAMES = {'mega', 'megax', 'megay'}
 GMAX_NAMES = {'gmax', 'gigantamax', 'eternamax'}
@@ -353,16 +355,20 @@ def tracked_suffixes(dex, tracked):
     return found
 
 
-def canonical_jobs(z, index):
+def canonical_jobs(z, index, before=None):
     """Every form we mean to ship, named as if only the original models existed.
 
     Planning against files this import already wrote makes a second run skip
-    them, and then the cast never hears about them.
+    them, and then the cast never hears about them. `before` is a commit whose
+    models count as the originals; once the import is committed, pass the
+    commit it started from (BEFORE_IMPORT).
     """
     import subprocess
+    cmd = ['git', 'ls-tree', '-r', '--name-only', before, 'public/scenery/mon'] if before \
+        else ['git', 'ls-files', 'public/scenery/mon']
     tracked = {
         Path(p).stem
-        for p in subprocess.check_output(['git', 'ls-files', 'public/scenery/mon'], text=True).split()
+        for p in subprocess.check_output(cmd, text=True, cwd=ROOT).split()
         if p.endswith('.glb')
     }
     jobs = []
@@ -527,11 +533,40 @@ def update_cast(rows):
     return added
 
 
+def rebuild(names, workers):
+    """Convert these models again in place. Shinies and cast rows stay as they are."""
+    z = zipfile.ZipFile(JAR)
+    jobs = [j for j in canonical_jobs(z, jar_index(z), BEFORE_IMPORT) if j['glb'] in names]
+    z.close()
+    unknown = sorted(set(names) - {j['glb'] for j in jobs})
+    print(f'rebuilding {len(jobs)}; not in the import plan: {len(unknown)} {unknown[:10]}', flush=True)
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    errors = []
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_worker, dict(job, measure=False)) for job in jobs]
+        for i, fut in enumerate(as_completed(futures), 1):
+            result = fut.result()
+            if result.get('error'):
+                errors.append(result['error'])
+                print('ERR', result['error'])
+            if i % 100 == 0 or i == len(jobs):
+                print(f'  {i}/{len(jobs)}', flush=True)
+    print(f'rebuilt {len(jobs) - len(errors)}; errors {len(errors)}')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--plan', action='store_true')
     parser.add_argument('--workers', type=int, default=6)
+    parser.add_argument('--rebuild', nargs='+', metavar='GLB',
+                        help='convert these models again (names like pm0202_00, or @file.json with a list)')
     args = parser.parse_args()
+    if args.rebuild:
+        names = set()
+        for item in args.rebuild:
+            names |= set(json.loads(Path(item[1:]).read_text())) if item.startswith('@') else {item}
+        rebuild(names, args.workers)
+        return
     z = zipfile.ZipFile(JAR)
     jobs, unresolved = build_plan(z)
     z.close()
