@@ -141,6 +141,42 @@ export function criarModeracao(h) {
     return { erro: 'Unknown action.' };
   }
 
+  // ── /giveitem: item names from menu_data.json, the held list from held.json (re-read when either file changes) ──
+  const MAX_STACK = 999;
+  let catalog = { key: '', items: {}, held: [] };
+  const normalize = s => semAcento(s).replace(/[^a-z0-9]+/g, '');
+  function itemCatalog() {
+    try {
+      const menuFile = nodePath.join(dadosPub, 'menu_data.json'), heldFile = nodePath.join(dadosPub, 'held.json');
+      const key = fs.statSync(menuFile).mtimeMs + ':' + (fs.existsSync(heldFile) ? fs.statSync(heldFile).mtimeMs : 0);
+      if (key !== catalog.key) {
+        const items = JSON.parse(fs.readFileSync(menuFile, 'utf8')).itens || {};
+        let held = [];
+        try { held = Object.keys(JSON.parse(fs.readFileSync(heldFile, 'utf8')).itens || {}).filter(id => items[id]); } catch {}
+        catalog = { key, items, held };
+      }
+    } catch {}
+    return catalog;
+  }
+  function parseGiveItem(text) {
+    let words = text.trim().split(/\s+/).filter(Boolean), player = null, amount = 1;
+    const at = words.findIndex(w => w.startsWith('@'));
+    if (at >= 0) { player = words[at].slice(1); words.splice(at, 1); }
+    if (words.length > 1 && /^x?\d+$/i.test(words[words.length - 1])) amount = +words.pop().replace(/^x/i, '');
+    if (!words.length) return { erro: 'Usage: /giveitem <item name or id> [amount] [@player] · /giveitem held gives every held item' };
+    if (!(amount >= 1 && amount <= MAX_STACK)) return { erro: 'Amount must be 1 to ' + MAX_STACK };
+    const { items, held } = itemCatalog(), query = words.join(' ');
+    if (/^held( items?)?$/i.test(query)) return held.length ? { ids: held, amount, player } : { erro: 'No held items are set up' };
+    if (/^\d+$/.test(query)) return items[query] ? { ids: [query], amount, player } : { erro: 'No item with id ' + query };
+    const q = normalize(query);
+    const exact = Object.keys(items).filter(id => normalize(items[id].n) === q);
+    if (exact.length) return { ids: [exact[0]], amount, player };
+    const partial = Object.keys(items).filter(id => normalize(items[id].n).includes(q));
+    if (partial.length === 1) return { ids: partial, amount, player };
+    if (!partial.length) return { erro: 'No item called "' + query.slice(0, 40) + '"' };
+    return { erro: 'Which one? ' + partial.slice(0, 6).map(id => items[id].n + ' (' + id + ')').join(', ') + (partial.length > 6 ? '…' : '') };
+  }
+
   // ── Chat: {t:'mod_<op>'} (ou {t:'mod', op}) ─────────────────────────────────────────────────────────────────────────
   function comando(ws, m) {
     const g = sessoes.get(ws._info?.token) || null;
@@ -173,6 +209,31 @@ export function criarModeracao(h) {
       logAdmin(g, u, 'giveskates (chat)', { item: PATINS });
       for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🛼 You got Roller Skates! Use them from the Bag (Key items) to put them on.', bolsa: { itens: s.itens } });   // aplicarBolsa writes only the keys sent
       ok({ usuario: u });
+      return;
+    }
+    if (op === 'item') {                                                      // /giveitem <name | id | held> [amount] [@player] (GM)
+      const r = parseGiveItem(String(m.texto || ''));
+      if (r.erro) { erro(r.erro); return; }
+      const u = r.player ? acharConta(r.player) : g;
+      if (!u) { erro('Account "' + r.player.slice(0, 30) + '" not found'); return; }
+      const c = contas[u]; if (!c.save) c.save = {};
+      const s = c.save;
+      for (const k of ['itens', 'bolas']) if (!s[k] || typeof s[k] !== 'object') s[k] = {};
+      const changed = { itens: {}, bolas: {} };
+      for (const id of r.ids) {
+        const pocket = itemCatalog().items[id]?.t === 7 ? 'bolas' : 'itens';
+        s[pocket][id] = Math.min(MAX_STACK, (+s[pocket][id] || 0) + r.amount);
+        changed[pocket][id] = s[pocket][id];
+      }
+      c.rev = (c.rev || 0) + 1;
+      salvarContasJa();
+      logAdmin(g, u, 'giveitem (chat)', { ids: r.ids, amount: r.amount });
+      const what = r.ids.length === 1 ? itemCatalog().items[r.ids[0]].n + ' ×' + r.amount : r.ids.length + ' items ×' + r.amount;
+      const bolsa = {};
+      if (Object.keys(changed.itens).length) bolsa.itens = changed.itens;
+      if (Object.keys(changed.bolas).length) bolsa.bolas = changed.bolas;
+      for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '🎁 You got ' + what + '.', bolsa });
+      ok({ usuario: u, what });
       return;
     }
     const u = acharConta(m.usuario);

@@ -186,6 +186,7 @@ function receber(m){
       else if (m.op === 'banir') C?.sistema('⛔ ' + m.usuario + ' banido ' + (m.ate === -1 ? 'pra sempre' : 'até ' + new Date(m.ate).toLocaleString('pt-BR')) + '.');
       else if (m.op === 'perdoar') C?.sistema('✅ ' + m.usuario + ' liberado.');
       else if (m.op === 'tp') C?.sistema('🧭 ' + m.usuario + ' levado pra ' + (m.nome || m.mapa) + ' (' + m.x + ', ' + m.z + ')' + (m.derrubou ? ' — a cena dele já está recarregando lá.' : ' — nasce lá na próxima entrada.'));
+      else if (m.op === 'item') C?.sistema('🎁 ' + m.usuario + ' got ' + m.what + '.');
       else if (m.op === 'patins') C?.sistema('🛼 ' + m.usuario + (m.ja ? ' already has Roller Skates.' : ' got Roller Skates.'));
       else if (m.op === 'puxar') C?.sistema('🧲 ' + m.usuario + ' puxado até você' + (m.derrubou ? ' — a cena dele já está recarregando aqui.' : ' — está offline: nasce do seu lado na próxima entrada.'));
       else if (m.op === 'ir'){                                           // Fase 3: /ir nome — no mesmo mapa, teleporta; noutro, o servidor manda `volta` (recarrega lá)
