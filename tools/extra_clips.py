@@ -2,9 +2,10 @@
 
 The import only converted idle and walk. About two hundred models also ship
 a fly cycle, a swim cycle, a floating idle for water, or a special pose in
-the jar. They become the clips Fly, Swim, SwimIdle and Special in the GLB, so
-the admin Mounts tab can pick them as riding poses and moves can ask for
-them by name.
+the jar. They become the clips Fly, Swim, SwimIdle and Special in the GLB.
+The field does not ask for them yet: a mount plays Idle and Run even in the
+air or on water, and the mount table's poses are the rider's, not the
+Pokemon's.
 
 Each model is converted again with Idle and Run plus its extra motions (so
 the extra clips are grounded on the same Idle frame), and only the new
