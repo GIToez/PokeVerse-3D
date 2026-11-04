@@ -7744,5 +7744,9 @@
   "Mochila +20 espaços": "Bag +20 slots",
   "Pedra Eterna ×3": "Eternal Stone ×3",
   "bônus": "bonus",
-  "torneio": "tournament"
+  "torneio": "tournament",
+  "IV · genética": "IV · genetics",
+  "EV · treino": "EV · training",
+  "Reaprender ({n})": "Relearn ({n})",
+  "Escolha um e depois o golpe que ele substitui.": "Pick one, then the move it replaces."
 }
