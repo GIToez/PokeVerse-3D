@@ -33,7 +33,7 @@ export function mostrar(caixa, r) {
 
 /** Um treinador desta cópia pro sexo pedido (o 1º da lista que tem o .glb; os 2 heróis de sempre vêm primeiro). */
 async function prefabDe(sexo) {
-  const [lista, { modelos = [] }] = await Promise.all([skinsDe(), recurso('modelos?pasta=pc')]);
+  const [lista, { modelos = [] }] = await Promise.all([skinsDe(), recurso('modelos?folder=pc')]);
   const ok = s => s.sexo === sexo && modelos.includes(s.prefab);
   return (lista.find(s => ok(s) && s.inicial) || lista.find(ok))?.prefab || (sexo === 'menina' ? 'Girl_002' : 'Boy_002');
 }
@@ -59,7 +59,7 @@ export async function atualizar(r, forcar = false) {
   const glb = String(reg?.glb || '').trim();
   if (glb === vestida) return;
   vestida = glb;
-  const { modelos = [] } = await recurso('modelos?pasta=pc');
+  const { modelos = [] } = await recurso('modelos?folder=pc');
   if (!glb) { tirarMochila(it.obj); info('No model — fill in "Model (glb)".', true); return; }
   if (!modelos.includes(glb)) { tirarMochila(it.obj); info(`⚠ The model <code>scenery/pc/${esc(glb)}.glb</code> does not exist in this copy — this backpack will not appear in the game (the trainer keeps the outfit\'s own).`, true); return; }
   info('equipping ' + esc(glb) + '…');

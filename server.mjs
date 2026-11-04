@@ -777,7 +777,7 @@ const httpServer = http.createServer((req, res) => {
   if (req.method === 'POST' && rota === '/admin/mapa-glb') {
     const u = usuarioDe(req);
     if (!contas[u]?.gm) return json(403, { erro: 'GM accounts only.' });
-    const m = String(url.searchParams.get('mapa') || '');
+    const m = String(url.searchParams.get('map') || url.searchParams.get('mapa') || '');
     if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
     const chunks = []; let tam = 0, grande = false;
     req.on('data', d => { if (grande) return; tam += d.length; if (tam > 150 * 1024 * 1024) { grande = true; json(413, { erro: 'GLB file is too large.' }); req.destroy(); return; } chunks.push(d); });
@@ -1039,7 +1039,7 @@ const httpServer = http.createServer((req, res) => {
         return json(200, { ok: true, mapas, glb });
       }
       if (rota === '/admin/mapa-objetos' && req.method === 'GET') {
-        const m = String(url.searchParams.get('mapa') || '');
+        const m = String(url.searchParams.get('map') || url.searchParams.get('mapa') || '');
         if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
         const d2 = lerJson(nodePath.join(DADOS_PUB, m + '.json'), null);
         if (!d2) return json(404, { erro: 'map not found' });

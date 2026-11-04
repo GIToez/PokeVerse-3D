@@ -220,7 +220,7 @@ export function derrubado(texto = 'You logged in from somewhere else.'){
      deixar a pessoa entrar de novo se quiser. Apagar a sessão local basta — no próximo boot o portão mostra o login. */
   f.querySelector('#der-voltar').onclick = () => {
     try { for (const k of ['conta.token', 'conta.usuario', 'conta.rev', 'conta.dono', 'conta.sujo', 'conta.gm']) localStorage.removeItem(k); } catch {}
-    location.replace(new URL('?jogar=1', location.href).toString());       // URL limpa: sem `mapa` de antes
+    location.replace(new URL('?play=1', location.href).toString());        // URL limpa: sem `mapa` de antes
   };
 }
 /** A maquete tem as telas do treinador? (a demo pública pode estar num pacote antigo) */

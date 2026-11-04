@@ -5180,14 +5180,14 @@ function rConfig(corpo){
   };
   doisCliques(corpo.querySelector('#c-apagar-perso'), 'Apagar personagem', async () => {
     const r = await ctx.conta.apagarPersonagem();
-    if (r.ok) location.href = new URL('?jogar=1', location.href).toString();   // volta pro começo: criação de personagem
+    if (r.ok) location.href = new URL('?play=1', location.href).toString();    // volta pro começo: criação de personagem
     return r;
   });
   doisCliques(corpo.querySelector('#c-apagar-conta'), 'Apagar conta', async () => {
     const senha = prompt('Apagar a conta é PRA SEMPRE. Digite a sua senha pra confirmar:');
     if (!senha) return { ok: false, erro: 'cancelado' };
     const r = await ctx.conta.apagarConta(senha);
-    if (r.ok) location.href = new URL('?jogar=1', location.href).toString();   // sem conta: cai na tela de login
+    if (r.ok) location.href = new URL('?play=1', location.href).toString();    // sem conta: cai na tela de login
     return r;
   });
   corpo.querySelector('#c-dbg')?.addEventListener('change', ev => ctx.depuracao?.(ev.target.checked));   // só GM (o jogador não tem a linha)

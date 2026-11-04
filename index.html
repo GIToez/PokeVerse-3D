@@ -12,6 +12,33 @@
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
 </script>
 <script>
+/* English URLs. Query keys are English in the address bar; the game code still asks for the old Portuguese names, so
+   URLSearchParams maps them both ways: reading `mapa` reads `map` (or an old `mapa` link), writing `mapa` writes `map`.
+   Old links keep working and are rewritten to English on load. Runs before any other script reads the URL. */
+(function () {
+  var EN = {
+    mapa: 'map', chegada: 'arrival', voltou: 'returned', jogar: 'play', personagem: 'character', idioma: 'language',
+    conta: 'account', rede: 'network', memoria: 'memory', qualidade: 'quality', selvagens: 'wild', insignias: 'badges',
+    seguidor: 'follower', montaria: 'mount', montariaVel: 'mountSpeed', montariaShiny: 'mountShiny', montariaEsc: 'mountScale',
+    montariaEm: 'mountAt', clima: 'weather', chefe: 'boss', chefelv: 'bossLevel', chefeEm: 'bossAt', densidade: 'density',
+    tela: 'screen', captura: 'capture', diretor: 'director', torneio: 'tournament', pele: 'skin', tamanhos: 'sizes',
+    minimapa: 'minimap', trabalhador: 'worker', placa: 'gpuNotice', faceBloqueia: 'faceBlocks', figmateste: 'figmaTest'
+  };
+  var P = URLSearchParams.prototype, get = P.get, has = P.has, set = P.set, del = P['delete'], getAll = P.getAll;
+  var own = function (k) { return typeof k === 'string' && Object.prototype.hasOwnProperty.call(EN, k); };
+  P.get = function (k) { if (!own(k)) return get.call(this, k); var v = get.call(this, EN[k]); return v != null ? v : get.call(this, k); };
+  P.has = function (k) { return own(k) ? (has.call(this, EN[k]) || has.call(this, k)) : has.call(this, k); };
+  P.getAll = function (k) { return own(k) ? getAll.call(this, EN[k]).concat(getAll.call(this, k)) : getAll.call(this, k); };
+  P.set = function (k, v) { if (own(k)) { del.call(this, k); return set.call(this, EN[k], v); } return set.call(this, k, v); };
+  P['delete'] = function (k) { if (own(k)) del.call(this, EN[k]); return del.call(this, k); };
+  try {
+    var q = new URLSearchParams(location.search), out = new URLSearchParams(), mudou = false;
+    q.forEach(function (v, k) { if (own(k)) { mudou = true; if (!has.call(q, EN[k])) set.call(out, EN[k], v); } else out.append(k, v); });
+    if (mudou) { var s = out.toString(); history.replaceState(history.state, '', location.pathname + (s ? '?' + s : '') + location.hash); }
+  } catch (e) {}
+})();
+</script>
+<script>
 /* Folder URLs under /concepts/ used to hit this page (Caddy's last try_files is /index.html).
    Send those requests to the real gallery file until Caddy serves the directory index itself. */
 (function () {

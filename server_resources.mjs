@@ -2,7 +2,7 @@
  * Só GM (o server.mjs confere antes). A Vite serve public/ e a raiz no mesmo caminho, então cada lista junta as duas pastas.
  *   /admin/recursos/faixas            → músicas no formato do music.json ("bg/sound_road1" = som/bg/sound_road1.ogg)
  *   /admin/recursos/mascaras          → PNGs de scenery/npc/mask
- *   /admin/recursos/modelos?pasta=pc  → nomes dos .glb (pasta pc | npc | mon), sem extensão
+ *   /admin/recursos/modelos?folder=pc  → nomes dos .glb (pasta pc | npc | mon), sem extensão
  *   /admin/recursos/materiais         → { material: ['npc/fc2013_00', …] } — lido do JSON dos .glb de npc/ e pc/ (pra prévia da
  *                                       tinta achar um modelo que usa o material). Cache de 60 s. */
 import fs from 'node:fs';
@@ -52,7 +52,7 @@ export function criarRecursos(raiz) {
     }
     if (rota === '/admin/recursos/mascaras') { json(200, { ok: true, mascaras: listar('scenery/npc/mask', /\.png$/i) }); return true; }
     if (rota === '/admin/recursos/modelos') {
-      const pasta = String(url.searchParams.get('pasta') || '');
+      const pasta = String(url.searchParams.get('folder') || url.searchParams.get('pasta') || '');
       if (!['pc', 'npc', 'mon'].includes(pasta)) { json(400, { erro: 'pasta: pc, npc ou mon' }); return true; }
       json(200, { ok: true, modelos: listar('scenery/' + pasta, /\.glb$/i).map(f => f.slice(0, -4)) }); return true;
     }

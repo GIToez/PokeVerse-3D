@@ -28,7 +28,7 @@ export function mostrar(caixa, r) {
 export async function atualizar(r) {
   if (!raiz) return;
   const v = k => (r?.[k] ?? '') === '' ? PADRAO[k] : r[k];
-  const [lugares, { modelos = [] }] = await Promise.all([nomesDeLugares(), recurso('modelos?pasta=mon')]);
+  const [lugares, { modelos = [] }] = await Promise.all([nomesDeLugares(), recurso('modelos?folder=mon')]);
   const arena = String(v('arena')), nomeArena = lugares.cenas[arena];
   const glb = String(v('chefeGlb'));
   const el = raiz.querySelector('.previa-info');

@@ -20,7 +20,7 @@ async function buscar(a = false) {
   if (buscando) return buscando;
   buscando = (async () => {
     const a = segundaDe(agoraServ()) - 7 * DIA;
-    const b = baseHttp() + '/eventos?de=' + dataIsoBrt(a - DIA) + '&ate=' + dataIsoBrt(a + 43 * DIA);
+    const b = baseHttp() + '/events?from=' + dataIsoBrt(a - DIA) + '&to=' + dataIsoBrt(a + 43 * DIA);
     try {
       const r = await fetch(b, { cache: 'no-store' });
       let j = null;
@@ -274,7 +274,7 @@ function arteRaid(a, b) {
   if (ARTE_RAIDS.has(a)) {
     const c = document.body.classList.contains('mobile') ? 'celular' : 'pc',
       d = b === 'miniatura' ? 'miniatura' : b === 'destaque' ? 'destaque' : 'detalhe';
-    return { url: './ui/eventos/' + a + '/' + c + '-' + d + '.webp', folga: 16 };
+    return { url: './ui/events/' + a + '/' + c + '-' + d + '.webp', folga: 16 };
   }
   if ((a || 'mew') !== 'mew') return null;
   const m = artesMaquete();

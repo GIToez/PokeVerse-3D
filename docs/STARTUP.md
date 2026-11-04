@@ -62,7 +62,7 @@ processes in their own windows, waits a few seconds, and launches your browser a
 
 Go to **http://localhost:5300/**. The UI defaults to **English**; you can switch to
 Português or Español with the **PT · EN · ES** bar on the login screen, by adding
-`?idioma=en|es|pt` to the URL, or from account settings once you are logged in.
+`?language=en|es|pt` to the URL, or from account settings once you are logged in.
 
 ## 5. Create an account
 

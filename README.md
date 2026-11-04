@@ -80,7 +80,7 @@ list and how to grant yourself GM.
 
 The game ships with Portuguese (the source language), English, and Spanish. **English
 is the default.** Players can switch languages from the PT · EN · ES bar on the login
-screen, with `?idioma=en|es|pt` in the URL, or from their account settings.
+screen, with `?language=en|es|pt` in the URL, or from their account settings.
 
 The translation engine lives in [`i18n.mjs`](i18n.mjs). English is the source language:
 text that has been rewritten in English is shown as-is in English and translated to

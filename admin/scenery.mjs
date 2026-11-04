@@ -221,7 +221,7 @@ async function montarBiblioteca(nome) {
     prefab.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
     if (lista.length) { const k = chaveNome(prefab.name); partes.set(k, lista); nomeDoPrefab.set(k, prefab.name.replace(/^lib:?/i, '')); }
   }
-  const r = await api('/admin/mapa-objetos?mapa=' + encodeURIComponent(nome));
+  const r = await api('/admin/mapa-objetos?map=' + encodeURIComponent(nome));
   // o cenário vem de 3 listas (o jogo monta na ordem areaEnv→ambiente→objetos): chão, água/céu, props
   const listas = { areaEnv: r.areaEnv || [], ambiente: r.ambiente || [], objetos: r.objetos || [] };
   for (const nomeL of ['areaEnv', 'ambiente', 'objetos']) for (const o of listas[nomeL]) {
@@ -260,7 +260,7 @@ async function extraLamppost() {
     nomeDoPrefab.set(k, 'prop/lamppost');
     for (const p of pecas) if (chaveNome(p.nome) === k) p.mats = lista;
     if (modo === 'montado') {
-      const r = await api('/admin/mapa-objetos?mapa=' + encodeURIComponent(mapaAtual));
+      const r = await api('/admin/mapa-objetos?map=' + encodeURIComponent(mapaAtual));
       for (const o of (r.objetos || [])) {
         if (!/lamppost/i.test(o.n || '')) continue;
         const obj = { n: 'prop/lamppost', x: +o.x || 0, y: +o.y || 0, z: +o.z || 0 };
@@ -444,10 +444,10 @@ async function salvar() {
     } else {
       transform.detach();
       const buf = await new Promise((res, rej) => exporter.parse(sceneGLB, res, rej, { binary: true, onlyVisible: false }));
-      const r = await fetch(BASE + '/admin/mapa-glb?mapa=' + encodeURIComponent(mapaAtual), { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/octet-stream' }, body: buf });
+      const r = await fetch(BASE + '/admin/mapa-glb?map=' + encodeURIComponent(mapaAtual), { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/octet-stream' }, body: buf });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { toast(d.erro || 'Failed to save the GLB.', true); return; }
-      const cur = await api('/admin/mapa-objetos?mapa=' + encodeURIComponent(mapaAtual));
+      const cur = await api('/admin/mapa-objetos?map=' + encodeURIComponent(mapaAtual));
       if (cur && (cur.objetos || cur.ambiente || cur.areaEnv)) {
         const objetos = (cur.objetos || []).filter(o => !/lamppost/i.test(o.n || ''));
         for (const p of pecas) if (p.obj && /lamppost/i.test(p.obj.n)) objetos.push(p.obj);
