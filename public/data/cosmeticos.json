@@ -1,5 +1,5 @@
 {
- "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); only Hero, Heroine and the HeartGold & SoulSilver outfits are free at creation. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `estacao` = sold only during that season (winter Dec–Feb, spring Mar–May, summer Jun–Aug); `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `evento` = not obtainable now; `fundador` = only in the founder packs; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
+ "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); only Hero, Heroine, the HeartGold & SoulSilver and the Platinum outfits are free at creation. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `estacao` = sold only during that season (winter Dec–Feb, spring Mar–May, summer Jun–Aug); `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `premio: \"pesca\"` = fishing quest reward; `evento` = not obtainable now; `fundador` = only in the founder packs; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
  "roupas": [
   {
    "id": "boy_012",
@@ -7,13 +7,6 @@
    "sexo": "menino",
    "fashion": 52004,
    "diamantes": 300
-  },
-  {
-   "id": "boy_013",
-   "nome": "Platinum Outfit",
-   "sexo": "menino",
-   "fashion": 52005,
-   "oculto": true
   },
   {
    "id": "boy_014",
@@ -78,7 +71,9 @@
    "nome": "Straw Hat Outfit",
    "sexo": "menino",
    "fashion": 52021,
-   "oculto": true
+   "oculto": true,
+   "premio": "pesca",
+   "dica": "Fishing quest reward (quest not built yet)"
   },
   {
    "id": "girl_010",
@@ -93,13 +88,6 @@
    "sexo": "menina",
    "fashion": 53004,
    "diamantes": 300
-  },
-  {
-   "id": "girl_013",
-   "nome": "Platinum Outfit",
-   "sexo": "menina",
-   "fashion": 53005,
-   "oculto": true
   },
   {
    "id": "girl_014",
@@ -165,7 +153,9 @@
    "nome": "Straw Hat Outfit",
    "sexo": "menina",
    "fashion": 53021,
-   "oculto": true
+   "oculto": true,
+   "premio": "pesca",
+   "dica": "Fishing quest reward (quest not built yet)"
   },
   {
    "id": "ash",
