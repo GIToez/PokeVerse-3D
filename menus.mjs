@@ -269,7 +269,15 @@ function ligarRecursos(){
     aoFecharJanela: soltarJanelaRecurso,
     emTurno: () => !!ctx.jogo?.emTurno?.(),
   });
-  FeiraUI.instalar({ defPopup, aviso: t => Chat.sistema(t), fecharMenu: () => { fechar(); fecharGrade(); }, aoFecharJanela: soltarJanelaRecurso });
+  FeiraUI.instalar({
+    defPopup, dados, iconesTipo, caberTexto, aoFecharJanela: soltarJanelaRecurso, fecharMenu: () => { fechar(); fecharGrade(); },
+    get jogo(){ return ctx.jogo; }, get porDex(){ return ctx.porDex; }, get MOBILE(){ return ctx.MOBILE; }, get Som(){ return ctx.Som; },
+    get conta(){ return ctx.conta; }, get Ind(){ return ctx.Ind; },
+    lerLS: (k, d) => ctx.lerLS(k, d), comConta: () => !!ctx.comConta?.(), golpe: id => ctx.golpe?.(id), dexDoGlb: g => ctx.dexDoGlb?.(g),
+    iconeMon: glb => { const m = /^pm(\d{4})/.exec(String(glb || '')); return m ? './ui/mon/pm' + m[1] + '.png' : ''; },
+    emTroca: () => !!ctx.emTroca?.(),
+    mercado: (op, d) => Rede.pedirMercado(op, d),
+  });
   EventosUI.instalar({
     defPopup,
     fecharGrade,
@@ -314,6 +322,7 @@ export function instalar(c){
   if (PREVIA_URL){ let n = 0; const tenta = () => { if (ctx.jogo?.hudLayout?.popups){ previa(true); return; } if (++n < 80) setTimeout(tenta, 500); }; setTimeout(tenta, 500); }   // rodada 30: ?previa=1 abre a paleta assim que o layout v2 estiver montado
   setInterval(() => { if (ctx?.jogo?.ativo) ctx.gravarLS('tempo', (ctx.lerLS('tempo', 0) || 0) + 10); }, 10000);   // tempo de jogo, em segundos
 }
+export function mercadoAviso(a){ FeiraUI.avisoDoServidor(a); }
 async function dados(){
   if (D) return D;
   if (!carregandoD) carregandoD = fetch('./data/menu_data.json').then(r => r.json()).catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] }));

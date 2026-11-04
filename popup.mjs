@@ -302,6 +302,34 @@ export function atualizarRolagem(el){
   if (!el) return;
   if (el.__sb) el.__sb.__atualizar?.(); else for (const s of el.querySelectorAll?.('.pf-sb') || []) s.__atualizar?.();
 }
+/** Wraps a layout's numbered cells (`venda-1`, `venda-2`…) in a vertical scroll group named `nome`, from the first cell's
+ *  top down to `ate` (or the parent's bottom). Returns the existing group when it was already made. */
+export function rolagemDasCelulas(pop, pai, nome, prefixo, { ate = null } = {}){
+  if (!pop || !pai) return null;
+  const ja = pai.querySelector(':scope > [data-fig="' + nome + '"]');
+  if (ja) return ja;
+  const cels = [...pai.querySelectorAll(':scope > [data-fig^="' + prefixo + '-"]')].filter(c => /^-\d+$/.test(c.dataset.fig.slice(prefixo.length)));
+  if (!cels.length) return null;
+  const px = (el, k) => parseFloat(el.style[k]) || 0;
+  const x = Math.min(...cels.map(c => px(c, 'left'))), y = Math.min(...cels.map(c => px(c, 'top')));
+  const w = Math.max(...cels.map(c => px(c, 'left') + px(c, 'width'))) - x;
+  const fundo = ate != null ? ate : (px(pai, 'height') || pai.offsetHeight || 0);
+  const f = { nome, tag: 'rola', tagVal: 'vertical', criada: true, x, y, w, h: Math.max(0, fundo - y) };
+  const g = document.createElement('div');
+  g.className = 'pf-grupo';
+  g.dataset.fig = nome;
+  caixa(g, f);
+  g.style.zIndex = cels[0].style.zIndex || '10';
+  ligarTag(g, f, pop);
+  pai.insertBefore(g, cels[0]);
+  for (const c of cels){
+    c.style.left = (px(c, 'left') - x) + 'px';
+    c.style.top = (px(c, 'top') - y) + 'px';
+    g.appendChild(c);
+  }
+  barraPropria(g, f, pai, pop);
+  return g;
+}
 
 /** Botões e abas do Figma ([aba:x], [fecha:x], [acao:x]). O módulo só avisa; quem decide é quem montou. */
 function ligarTag(el, f, pop){

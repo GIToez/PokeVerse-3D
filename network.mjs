@@ -226,6 +226,13 @@ function receber(m){
       pend.resolve(m.t === 'bolsa' ? m : { erro: m.erro || 'recusado' });
       return;
     }   // fase 3a: mundo compartilhado (world.mjs)
+    case 'mercado': case 'mercado_erro': {
+      const pend = mercadoEsperando.get(m.op); if (!pend) return;
+      mercadoEsperando.delete(m.op); clearTimeout(pend.timer);
+      pend.resolve(m.t === 'mercado' ? m : { erro: m.erro || 'refused' });
+      return;
+    }
+    case 'mercado_aviso': ctx.mercadoAviso?.(m.aviso); return;
     default: return;
   }
 }
@@ -252,6 +259,17 @@ export function pedirBolsa(op, dados = {}){
     const timer = setTimeout(() => { bolsaEsperando.delete(op); resolve({ erro: 'o servidor não respondeu' }); }, 6000);
     bolsaEsperando.set(op, { resolve, timer });
     enviar({ t: 'bolsa_' + op, ...dados });
+  });
+}
+/* Player Market (server_market.mjs): one request of each kind at a time, like the bag. */
+const mercadoEsperando = new Map();
+export function pedirMercado(op, dados = {}){
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'No connection to the server.' });
+  const antigo = mercadoEsperando.get(op); if (antigo){ clearTimeout(antigo.timer); antigo.resolve({ erro: 'pedido repetido' }); mercadoEsperando.delete(op); }
+  return new Promise(resolve => {
+    const timer = setTimeout(() => { mercadoEsperando.delete(op); resolve({ erro: "The server didn't respond." }); }, 8000);
+    mercadoEsperando.set(op, { resolve, timer });
+    enviar({ t: 'mercado_' + op, ...dados });
   });
 }
 /* VIDA (passo 3): a cura completa é pedida ao servidor, que confere se você está no Centro Pokémon (ou se o time todo caiu). */
