@@ -225,6 +225,7 @@ import * as RegrasItem from './item_rules.mjs';   // what each medicine does and
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
 import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, steps, bait and rock (shared with server_bag.mjs)
+import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';
@@ -6802,6 +6803,7 @@ function aplicarVidas(lista){
       if ('status' in v) e.status = v.status || null;
       if (v.expReserva != null) e.expReserva = v.expReserva;               // XP guardada pelo teto de nível: agora é do servidor (12/09)
       if ('held' in v){ e.held = v.held || null; mexeuHeld = true; }          // held item (server_bag.mjs: segurar / tirar / consumir)
+      if (Array.isArray(v.movs)) e.movs = v.movs.map(m => ({ id: m.id, pp: m.pp, ppMax: m.ppMax }));   // TM counter: the server taught a move
       e.koAte = v.hp === 0 ? Math.max(e.koAte || 0, Date.now() + 1e12) : 0;   // KO dito pelo servidor dura até a cura dele (12/09): com `Date.now()` o KO "vencia" na hora e o Pokémon voltava inteiro sozinho
       if (ehTime) mexeuT = true; else mexeuC = true;
     }
@@ -6812,6 +6814,10 @@ function aplicarVidas(lista){
       if (v.amizade != null) p.amizade = v.amizade;
       if ('status' in v) p.status = v.status || null;
       if ('held' in v) p.held = v.held || null;                              // timeAtual reads the partner first; a stale p.held hid a server take
+      if (Array.isArray(v.movs)){
+        const regMov = time.find(x => String(x?.uid) === String(v.uid));
+        if (regMov?.movs){ p.movs = regMov.movs; p.golpesIds = Ind.idsDe(p); }
+      }
       if (v.expReserva != null) p.expReserva = v.expReserva;
       if (v.lv != null){                                                   // golpe aprendido no nível (acima, no REGISTRO do time) entra na barra
         /* 18/09 (xkuuhaaku 1550202960695267328, dv_dasmerces, silikgnt: "quer aprender X" no chat e NADA na janela Pokémon): com os
@@ -7016,6 +7022,23 @@ function ligarArrastarTime(){
     gravar: aplicarOrdemTime,
     avisar: avisarArrasto,
     som: id => { try { Som.tocar(id, { volume: .5 }); } catch {} },
+  });
+  TmCounter.instalar({
+    time: () => jogo.time || [],
+    dinheiro: () => lerLS('dinheiro', 0) || 0,
+    gravarDinheiro: n => gravarLS('dinheiro', Math.max(0, Math.floor(+n || 0))),
+    gravarTime: t => { jogo.time = t; gravarLS('time', t); },
+    insignias: () => lerLS('insignias', []) || [],
+    comConta,
+    bolsaOp,
+    golpe: id => GOLPES[id] || null,
+    chat: t => Chat.sistema(t),
+    som: () => { try { Som.tocar('ui/sound_successful', { volume: .6, prio: true }); } catch {} },
+    pintar: () => { try { pintarTime(true); } catch {} try { Menus.repintar?.(); } catch {} },
+    aplicarNoParceiro: (uid, movs) => {
+      const p = jogo.pika;
+      if (p && String(uidParceiro()) === String(uid) && Array.isArray(movs)){ p.movs = movs; p.golpesIds = Ind.idsDe(p); }
+    },
   });
   const el = $('time-hud');
   if (el) Arrastar.ligar(el, { lista: 'time', grupo: 'hud-time', seletor: '.tcel[data-arr-i]', previa: 'pintar', teclado: true,
@@ -8536,6 +8559,7 @@ async function falarCom(n){
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
   if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });         // passo 5: quem marca o passo é o SERVIDOR (ele confere que você está do lado do NPC)
   if (n.papel === 'safari' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
+  else if (+n.cfg === 2158801) TmCounter.abrir();                          // Celadon Department Store 2F: the TM clerk
   else if (n.papel === 'cura') curarTime(n);                               // Joy: cura o time depois da fala
   else if (n.papel === 'caixa') Menus.abrir('pokemon', 'caixa');           // balcão do PC: abre a Caixa
   else if (n.papel === 'loja') Menus.abrir('mercado', String(n.cfg));         // vendedor: a loja da cidade (o cfg remapeado É o id da loja)

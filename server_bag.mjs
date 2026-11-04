@@ -26,6 +26,7 @@ import * as Status from './status.mjs';
 import { maxHpOf } from './server_hp.mjs';
 import { TITULOS } from './knowledge.mjs';
 import * as Safari from './safari_rules.mjs';
+import * as Tm from './tm.mjs';
 
 const FRAGMENTO_TERA = 50112, COLETA_ESPERA_MS = 120000;                  // the same item and wait as the client (index.html falarCom, tipoNpc 9)
 
@@ -311,7 +312,38 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return erro(c, 'unknown safari action');
   }
 
-  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp, cosmetico };
+  let tmCache = null;
+  function catalogoTm(){
+    const beta = lerJson('tm_beta.json');
+    const learn = lerJson('biblioteca/candidatos/learnset_tm_beta.json');
+    const regras = lerJson('tm_regras.json');
+    const moves = lerJson('moves.json');
+    if (tmCache && tmCache.beta === beta && tmCache.learn === learn && tmCache.regras === regras && tmCache.moves === moves) return tmCache.cat;
+    const cat = Tm.catalogo({ beta, learnset: learn, regras, golpe: id => moves?.[id] || null });
+    tmCache = { beta, learn, regras, moves, cat };
+    return cat;
+  }
+  /* Celadon Department Store 2F. Coins, badge gate, learnset. The reply's vidas carry the new moves. */
+  function tmOp(c, m){
+    const cat = catalogoTm();
+    if (!cat) return erro(c, 'The TM counter is not available.');
+    const chave = String(m.chave || '');
+    const entrada = m.tutor ? cat.tutor.get(chave) : cat.porChave.get(chave);
+    if (!entrada) return erro(c, 'That move is not taught here.');
+    const p = monDe(c, m.uid);
+    if (!p) return erro(c, 'That Pokémon is not in your party or box.');
+    const apr = Tm.podeAprender(cat, p, entrada);
+    if (!apr.ok) return erro(c, apr.erro);
+    const s = saveDe(c);
+    const cob = Tm.cobrar(entrada, { insignias: s.insignias || [], dinheiro: s.dinheiro || 0 });
+    if (!cob.ok) return erro(c, cob.erro);
+    const fez = Tm.aplicar(p, entrada, m.esquecer || null);
+    if (!fez.ok) return erro(c, fez.erro);
+    s.dinheiro = Math.max(0, (s.dinheiro || 0) - cob.preco);
+    return pronto(c, { vidas: [vida(p)], aprendeu: entrada.nome, esqueceu: fez.esqueceu || null });
+  }
+
+  const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp, cosmetico, tm: tmOp };
   return {
     /** Handles the op, or returns null when it isn't one of these. */
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },

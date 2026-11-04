@@ -77,8 +77,17 @@ for (const id of [20004, 20008, 20010, 20011, 20012, 20014, 20015, 20016, 20017,
   assert.equal(linha.preco, 8000);
 }
 assert.match(menus, /porPagina/, 'each box page uses the cells drawn in that layout');
+assert.match(menus, /rotulo-time', 'My party'/, 'the phone box says My party');
+assert.match(menus, /function toqueTimeCaixa/, 'a tap on a party Pokémon stores it');
+assert.match(menus, /function toqueCasaCaixa/, 'a tap on a box Pokémon brings it back');
+assert.match(menus, /Pokémon summary/, 'the summary sheet is in English');
+assert.match(menus, /COMING SOON/, 'the shop banner is in English');
+const popup = readFileSync(join(root, 'popup.mjs'), 'utf8');
+assert.match(popup, /data-fig\^="encaixe-"/, 'party slots in the box receive taps');
+assert.match(popup, /data-fig\^="casa-"/, 'box cells receive taps');
 const index = readFileSync(join(root, 'index.html'), 'utf8');
 assert.match(index, /Hud\.carregarV2\(\)/, 'the page loads the v2 kit');
 assert.match(index, /hud\.v2'\) === '0'/, 'Settings can still pick the classic HUD');
+assert.match(index, /TmCounter\.instalar/, 'the TM counter is installed with the party drag');
 
 console.log('hud v2 ok', imgs.size, 'images');
