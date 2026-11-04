@@ -79,6 +79,10 @@ for (const id of [20004, 20008, 20010, 20011, 20012, 20014, 20015, 20016, 20017,
 assert.match(menus, /porPagina/, 'each box page uses the cells drawn in that layout');
 assert.match(menus, /rotulo-time', 'My party'/, 'the phone box says My party');
 assert.match(menus, /function toqueTimeCaixa/, 'a tap on a party Pokémon stores it');
+assert.match(menus, /pointerup/, 'a phone tap does not wait for a click');
+assert.match(menus, /ficha-anterior/, 'the summary has a previous button');
+assert.match(menus, /Clear filters/, 'the filter sheet is in English');
+assert.match(menus, /icone-filtro/, 'a chosen type shows its icon');
 assert.match(menus, /function toqueCasaCaixa/, 'a tap on a box Pokémon brings it back');
 assert.match(menus, /Pokémon summary/, 'the summary sheet is in English');
 assert.match(menus, /COMING SOON/, 'the shop banner is in English');

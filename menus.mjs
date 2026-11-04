@@ -705,6 +705,65 @@ function figMostrar(el, on){
   if (!el) return;
   el.style.display = on ? (el.dataset.txt ? (el.dataset.display || 'flex') : 'block') : 'none';
 }
+function mostrarSetasCaixa(pop, on){
+  for (const id of ['subir', 'descer']){
+    const b = pop.querySelector('[data-tag="acao"][data-tagval="' + id + '"]');
+    if (b) b.style.display = on ? 'block' : 'none';
+  }
+}
+const NOME_ORDEM = { box: 'Box order', dex: 'Pokédex No.', lv: 'Level', iv: 'Total IVs', ev: 'Total EVs', nat: 'Nature', recent: 'Most recent' };
+function pintarFiltrosCaixa(pop){
+  for (const el of pop.querySelectorAll('[data-fig="btn-limpar-filtros"]')){
+    const t = el.querySelector('.pf-rotulo, .pf-txt, [data-txt]');
+    if (t) t.textContent = 'Clear filters';
+  }
+  rotuloCaixa(pop, 'folha-titulo', 'Filters');
+  rotuloCaixa(pop, 'rotulo-ordenar', 'Sort');
+  const nv = pop.querySelector('input[data-txt="filtro-nivel"]');
+  const iv = pop.querySelector('input[data-txt="filtro-iv"]');
+  if (nv) nv.placeholder = 'Lv 1–100';
+  if (iv) iv.placeholder = 'IV 0–186';
+  Popup.texto(pop, 'ordenar', NOME_ORDEM[bx.ordem] || 'Box order');
+  const btn = Popup.grupo(pop, 'btn-filtros');
+  if (btn){
+    let ic = btn.querySelector('[data-fig="icone-filtro"]');
+    if (!ic){
+      ic = document.createElement('div');
+      ic.dataset.fig = 'icone-filtro';
+      Object.assign(ic.style, { position: 'absolute', left: '8px', top: '6px', width: '28px', height: '28px', background: 'center / contain no-repeat', pointerEvents: 'none', zIndex: '5' });
+      btn.appendChild(ic);
+    }
+    const txt = btn.querySelector('[data-txt="filtros-qtd"]');
+    if (bx.tipo){
+      ic.style.display = 'block';
+      ic.style.backgroundImage = 'url(' + iconeTipoU(bx.tipo) + ')';
+      if (txt){ txt.textContent = bx.tipo; txt.style.left = '36px'; txt.style.width = '48px'; }
+    } else {
+      ic.style.display = 'none';
+      const n = [bx.busca, bx.lvMin !== '', bx.ivMin !== '', bx.shiny].filter(Boolean).length;
+      if (txt){ txt.textContent = n ? 'Filters · ' + n : 'Filters'; txt.style.left = '8px'; txt.style.width = '76px'; }
+    }
+    const marca = btn.querySelector('[data-fig="marca-ativa"]');
+    if (marca) marca.style.display = (bx.tipo || bx.busca || bx.lvMin !== '' || bx.ivMin !== '' || bx.shiny) ? 'block' : 'none';
+  }
+  const fig = Object.entries(TIPO_DE_FIG).find(([, en]) => en === bx.tipo)?.[0] || 'todos';
+  const folha = Popup.extra(pop, 'folha-filtros');
+  if (folha){
+    for (const el of folha.querySelectorAll('[data-tag="filtro"]')){
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+      const marca = el.querySelector('[data-fig="marca-ativa"]');
+      if (marca) marca.style.display = el.dataset.tagval === fig ? 'block' : 'none';
+    }
+  }
+  const menu = Popup.extra(pop, 'menu-ordenar');
+  if (menu){
+    for (const el of menu.querySelectorAll('[data-fig^="ordem-"]')){
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+    }
+  }
+}
 function rotuloCaixa(pop, fig, s){
   const el = pop?.querySelector('[data-fig="' + fig + '"]');
   if (!el) return;
@@ -751,7 +810,7 @@ function ligarCaixaV2(pop){
     const t = lista();
     if (!t) return;
     t.style.pointerEvents = 'auto';
-    t.style.overflowY = 'auto';
+    t.style.overflow = 'hidden';
     t.style.touchAction = 'manipulation';
   };
   marcarLista();
@@ -763,8 +822,6 @@ function ligarCaixaV2(pop){
       const v = filtro.dataset.tagval || 'todos';
       bx.tipo = v === 'todos' ? '' : (TIPO_DE_FIG[v] || '');
       bx.page = 0;
-      const dono = filtro.closest('.pf-extra');
-      Popup.mostrarExtra(pop, dono?.dataset.fig || 'menu-tipo', false);
       encherBox(pop);
       return;
     }
@@ -808,6 +865,7 @@ async function acaoCaixa(nome){
   if (nome === 'filtro-shiny'){ bx.shiny = !bx.shiny; bx.page = 0; encherBox(popBx); return; }
   if (nome === 'limpar-filtros'){ bx.busca = ''; bx.tipo = ''; bx.lvMin = ''; bx.ivMin = ''; bx.shiny = false; bx.page = 0; bx.ordem = 'box'; encherBox(popBx); return; }
   if (nome === 'inverter-ordem'){ bx.sentido = bx.sentido === 'desc' ? 'asc' : 'desc'; encherBox(popBx); return; }
+  if (nome === 'ficha-anterior' || nome === 'ficha-proxima'){ passarFicha(nome === 'ficha-proxima' ? 1 : -1); return; }
   if (nome === 'trazer' && bx.onde === 'caixa' && sel){ if (Arr.aplicar('caixa', bx.i, 'time', time.length)) fim(); return; }
   if (nome === 'guardar' && bx.onde === 'time' && sel){
     if (await guardarNoCaixa(sel)){ bx.onde = 'caixa'; bx.i = (ctx.lerLS('caixa', []) || []).length - 1; fim(); }
@@ -828,6 +886,23 @@ async function acaoCaixa(nome){
     return;
   }
   if (nome === 'vender' || nome === 'cancelar-venda' || nome === 'anunciar-varios') Chat.sistema('The market is not open yet.');
+}
+function listaFicha(){
+  const itens = [];
+  (ctx.jogo.time || []).forEach((e, i) => { if (e) itens.push({ onde: 'time', i }); });
+  ordemBx(ctx.lerLS('caixa', []) || []).filter(x => passaFiltroBx(x.e)).forEach(x => itens.push({ onde: 'caixa', i: x.i }));
+  return itens;
+}
+function passarFicha(dir){
+  const itens = listaFicha();
+  if (!itens.length) return;
+  let k = itens.findIndex(x => x.onde === bx.onde && x.i === bx.i);
+  k = k < 0 ? 0 : (k + dir + itens.length) % itens.length;
+  bx.onde = itens[k].onde;
+  bx.i = itens[k].i;
+  confirmarSoltar = null;
+  encherBox(popBx);
+  pintarFichaMonCaixa(popBx);
 }
 async function toqueTimeCaixa(pop, i){
   const time = ctx.jogo.time || [];
@@ -864,21 +939,26 @@ function toqueCasaCaixa(pop, i){
   ctx.pintarTime?.(true);
   render();
 }
-/** A short tap moves the Pokémon. A finger that slid (scrolling the list) does not. */
+/** A phone tap often never becomes a click: the list is a scroller and a finger always jitters.
+    pointerup is the tap. A drag, or a slide longer than a tap, does not move the Pokémon. */
 function ligarToqueCaixa(el, fn){
   if (!el || el.__escolheu) return;
   el.__escolheu = true;
-  el.addEventListener('pointerdown', ev => {
-    el.__toqueX = ev.clientX; el.__toqueY = ev.clientY; el.__toqueAndou = false;
-  });
-  el.addEventListener('pointermove', ev => {
-    if (el.__toqueX == null) return;
-    if (Math.hypot(ev.clientX - el.__toqueX, ev.clientY - el.__toqueY) > 10) el.__toqueAndou = true;
-  });
-  el.addEventListener('click', ev => {
-    if (el.classList.contains('vazia') || el.__toqueAndou){ el.__toqueAndou = false; return; }
-    ev.stopPropagation();
+  const soltou = ev => {
+    if (el.classList.contains('vazia') || Arr.arrastando()) return;
+    const moved = el.__toqueX == null ? 0 : Math.hypot(ev.clientX - el.__toqueX, ev.clientY - el.__toqueY);
+    el.__toqueX = null;
+    if (moved > 36) return;
+    el.__pulsa = performance.now();
     fn();
+  };
+  el.addEventListener('pointerdown', ev => { el.__toqueX = ev.clientX; el.__toqueY = ev.clientY; });
+  el.addEventListener('pointerup', soltou);
+  el.addEventListener('pointercancel', () => { el.__toqueX = null; });
+  el.addEventListener('click', ev => {
+    ev.stopPropagation();
+    if (performance.now() - (el.__pulsa || 0) < 700) return;
+    soltou(ev);
   });
 }
 function pintarEncaixeV2(pop, el, i, p, on){
@@ -945,6 +1025,7 @@ function pintarFichaRapidaV2(pop, sel){
     const btnGuardar = pop.querySelector('[data-tag="acao"][data-tagval="guardar"]');
     if (btnTrazer) btnTrazer.style.display = 'none';
     if (btnGuardar) btnGuardar.style.display = 'none';
+    mostrarSetasCaixa(pop, false);
     return;
   }
   const lv = sel.lv || 5;
@@ -971,6 +1052,7 @@ function pintarFichaRapidaV2(pop, sel){
   figMostrar(figFilho(f, 'selo-shiny'), !!sel.shiny);
   figMostrar(figFilho(f, 'selo-macho'), sel.sexo === 'm');
   figMostrar(figFilho(f, 'selo-femea'), sel.sexo === 'f');
+  iconesTipo(pop, f, S.types || []);
   const podeTrazer = !naParty && time.length < 6;
   const podeGuardar = naParty && time.length > 1;
   const podeSoltar = !(naParty && (sel.seguindo || time.length <= 1));
@@ -981,6 +1063,7 @@ function pintarFichaRapidaV2(pop, sel){
   const btnGuardar = pop.querySelector('[data-tag="acao"][data-tagval="guardar"]');
   if (btnTrazer) btnTrazer.style.display = naParty ? 'none' : '';
   if (btnGuardar) btnGuardar.style.display = naParty ? '' : 'none';
+  mostrarSetasCaixa(pop, naParty);
   Popup.botao(pop, 'subir', true, null);
   Popup.botao(pop, 'descer', true, null);
   Popup.botao(pop, 'soltar-nao', pedindo, 'Cancel');
@@ -1006,6 +1089,10 @@ function pintarFichaMonCaixa(pop){
   rotuloCaixa(d, 'rotulo-tag-ev', 'EV');
   rotuloCaixa(d, 'btn-fechar-ficha', 'Close');
   rotuloCaixa(d, 'btn-vender-ficha', 'Sell');
+  for (const fig of ['btn-ficha-anterior', 'btn-ficha-proxima']){
+    const b = d.querySelector('[data-fig="' + fig + '"]');
+    if (b){ b.style.pointerEvents = 'auto'; b.style.cursor = 'pointer'; b.style.zIndex = '40'; }
+  }
   for (const [id, nome] of Object.entries(STAT_FICHA)){
     const g = d.querySelector('[data-fig="iv-' + id + '"] .pf-rotulo');
     if (g) g.textContent = nome;
@@ -1092,17 +1179,16 @@ function encherBoxV2(pop){
       if (casa) pintarCasaV2(pop, casa, fatia[s] || null, bx.onde === 'caixa' && fatia[s] && bx.i === fatia[s].i);
     }
   });
-  const vazio = Popup.grupo(pop, 'vazio-filtro');
   const filtrando = !!(bx.busca || bx.tipo || bx.lvMin !== '' || bx.ivMin !== '' || bx.shiny);
-  if (vazio) vazio.style.display = filtrando && !filtrada.length ? 'block' : 'none';
   const aviso = Popup.grupo(pop, 'aviso-caixa'); if (aviso) aviso.style.display = 'none';
-  const vazioCx = Popup.grupo(pop, 'vazio-caixa'); if (vazioCx) vazioCx.style.display = !filtrando && !caixa.length ? 'block' : 'none';
+  const vazioCx = Popup.grupo(pop, 'vazio-caixa'); if (vazioCx) vazioCx.style.display = !caixa.length ? 'block' : 'none';
   const cont = Popup.grupo(pop, 'contador-caixa');
   if (cont){
     Popup.texto(pop, 'caixa-qtd', filtrada.length + ' / ' + caixa.length, cont);
     Popup.barra(pop, 'caixa-ocupada', caixa.length ? Math.min(1, filtrada.length / caixa.length) : 0, null, cont);
   }
   const vazioF = Popup.grupo(pop, 'vazio-filtro');
+  if (vazioF) vazioF.style.display = filtrando && caixa.length && !filtrada.length ? 'block' : 'none';
   if (vazioF && vazioF.style.display !== 'none') Popup.texto(pop, 'vazio-titulo', 'No Pokémon match.', vazioF);
   const vazioC = Popup.grupo(pop, 'vazio-caixa');
   if (vazioC && vazioC.style.display !== 'none'){
@@ -1113,10 +1199,7 @@ function encherBoxV2(pop){
   if (tipoTxt) tipoTxt.textContent = bx.tipo || 'Type';
   const shinyBtn = pop.querySelector('[data-tag="acao"][data-tagval="filtro-shiny"]');
   if (shinyBtn) shinyBtn.style.opacity = bx.shiny ? '1' : '0.55';
-  const nFiltros = [bx.busca, bx.tipo, bx.lvMin !== '', bx.ivMin !== '', bx.shiny].filter(Boolean).length;
-  Popup.texto(pop, 'filtros-qtd', nFiltros ? String(nFiltros) : '');
-  const marcaFiltro = pop.querySelector('[data-fig="btn-filtros"] [data-fig="marca-ativa"]');
-  if (marcaFiltro) marcaFiltro.style.display = nFiltros ? 'block' : 'none';
+  pintarFiltrosCaixa(pop);
   pintarFichaRapidaV2(pop, sel);
   pop.__ligarArrCaixa?.();
 }
