@@ -9,7 +9,17 @@
 <link rel="icon" href="./ui/favicon/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="./ui/favicon/favicon-32.png?v=2"><link rel="icon" type="image/png" sizes="16x16" href="./ui/favicon/favicon-16.png?v=2"><link rel="apple-touch-icon" href="./ui/favicon/apple-touch-icon.png?v=2"><link rel="manifest" href="./manifest.webmanifest?v=2"><meta name="theme-color" content="#13254A">
 <title>PokeVerse</title><meta name="application-name" content="PokeVerse"><meta name="apple-mobile-web-app-title" content="PokeVerse"><meta name="mobile-web-app-capable" content="yes">
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
+if ('serviceWorker' in navigator) {
+  /* A new worker replacing an old one at boot means this page may have loaded stale cached scripts: reload once. */
+  var hadWorker = !!navigator.serviceWorker.controller, bootAt = Date.now();
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    try {
+      if (!hadWorker || Date.now() - bootAt > 20000 || sessionStorage.getItem('swReloaded')) return;
+      sessionStorage.setItem('swReloaded', '1'); location.reload();
+    } catch (e) {}
+  });
+  navigator.serviceWorker.register('./sw.js').catch(function () {});
+}
 </script>
 <script>
 /* English URLs. Query keys are English in the address bar; the game code still asks for the old Portuguese names, so
@@ -3726,7 +3736,7 @@ const RUN_RAZAO = { 23: 6.87, 24: 2.08, 95: 1.93, 130: 2.46, 147: 2.04, 148: 2.1
 const AJUSTE_PROPORCIONAL = await fetch('./data/species.json').then(r => r.ok ? r.json() : null).then(e => e && typeof e === 'object'
   ? Object.fromEntries(Object.entries(e).filter(([, x]) => x?.escala > 0).map(([dex, x]) => [dex, x.escala])) : null).catch(() => null) || { 92: 0.7 };
 const AVES_ASA = new Set([16, 17, 18, 21, 22]);   // 15/09: aves cuja Idle abre ou levanta as asas — tamanho pelo maior lado do corpo parado (aplicarTamanho)
-const alturaProporcional = (real, papel) => THREE.MathUtils.clamp(1.3 * Math.pow(real, 0.55), ALT_MIN, papel === 'seguidor' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM);
+const alturaProporcional = (real, kind) => THREE.MathUtils.clamp(1.3 * Math.pow(real, 0.55), ALT_MIN, kind === 'follower' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM);
 const dexDoGlb = glb => +((glb || '').match(/pm(\d{4})/)?.[1] || 0);
 const stemGlb = g => String(g || '').replace(/\.glb$/i, '');
 const mesmoGlb = (a, b) => { const x = stemGlb(a), y = stemGlb(b); return !!x && x === y; };
@@ -3743,29 +3753,29 @@ function chaveTamanho(glb){
 }
 function fatorTamanho(glb){ if (jogo.tamanhos !== 'jogo') return 1; const k = chaveTamanho(glb); return (k && TAMANHOS[k]) || 1; }
 /** Aplica o modo atual a um Pokémon já montado (guarda a altura nativa na 1ª vez). */
-function aplicarTamanho(e, papel = null){                             // papel: 'seguidor' força a régua do parceiro (o parceiro dos OUTROS jogadores, network.mjs)
+function aplicarTamanho(e, kind = null){                              // kind: 'follower' forces the partner's size rule (also used for other players' partners)
   if (!e?.pivo || e.chefe) return;                                   // o chefão fica nativo de propósito
   if (e.alturaBase == null) e.alturaBase = e.altura;
   if (e.comprimentoBase == null) e.comprimentoBase = e.comprimento || 0;   // maior lado da caixa posada (14/09): cobra/peixe são compridos, não altos
   let f = fatorTamanho(e.glb);
   if (jogo.tamanhos === 'proporcional'){
     const real = ALTURAS[e.dex || dexDoGlb(e.glb)];
-    const alvo = alturaProporcional(real || e.alturaBase || 1, papel || (e === jogo.pika ? 'seguidor' : 'selvagem'));
+    const alvo = alturaProporcional(real || e.alturaBase || 1, kind || (e === jogo.pika ? 'follower' : 'wild'));
     f = e.alturaBase ? alvo / e.alturaBase : 1;
     /* Corpo ALONGADO (14/09, guts: Ekans "de uma parede à outra" na Rota 4): a "altura" da Pokédex de cobra/peixe é o COMPRIMENTO —
        a régua pela altura do modelo enrolado (0,3 m) esticava o Ekans 6×. Modelo 2× mais comprido que alto usa a régua no comprimento. */
-    const dexE = e.dex || dexDoGlb(e.glb), papelE = papel || (e === jogo.pika ? 'seguidor' : 'selvagem');
+    const dexE = e.dex || dexDoGlb(e.glb), sizeKind = kind || (e === jogo.pika ? 'follower' : 'wild');
     if (COMPRIDOS.has(dexE) && e.alturaBase > 0){
       /* 14/09, noite (brito: Ekans selvagem "enorme" correndo, Gyarados seguidor "menor que o inicial"): a régua divide pelo comprimento
          ESTICADO (RUN_RAZAO × altura da Idle) — o Ekans enrolado mede 0,45 e esticado 1,92, e dividir pela Idle deixava ele com 8 m correndo.
          Comprimento tem curva própria (^0,65, teto 4,5 seguidor / 5,5 selvagem); piso de 0,40 m de altura parado (só o Ekans enrolado bate) e
-         o teto de altura de sempre por papel (só o Onix, que na Idle fica em pé, bate). Ekans 0,64×0,40 parado e 2,75 m esticado; Arbok 2,9;
+         o teto de altura de sempre por tipo (só o Onix, que na Idle fica em pé, bate). Ekans 0,64×0,40 parado e 2,75 m esticado; Arbok 2,9;
          Gyarados 3,7×1,8 parado e 4,4 esticado; Onix 5,35 selvagem / 3,5 seguidor; Dratini 1,9; Dragonair 3,2. */
       const ref = Math.max(e.alturaBase, e.comprimentoBase || 0, (RUN_RAZAO[dexE] || 0) * e.alturaBase);
-      const alvoComp = THREE.MathUtils.clamp(1.3 * Math.pow(real || ref, 0.65), ALT_MIN, papelE === 'seguidor' ? 4.5 : 5.5);
+      const alvoComp = THREE.MathUtils.clamp(1.3 * Math.pow(real || ref, 0.65), ALT_MIN, sizeKind === 'follower' ? 4.5 : 5.5);
       f = alvoComp / ref;
       f = Math.max(f, Math.min(0.50 / e.alturaBase, 1.8 * alvoComp / ref));   // 15/09 (Syvel/l.neto: Ekans enrolado "menor que um Rattata"): piso 0,40→0,50 m e limite 1,4→1,8× — Ekans 0,80×0,50 parado, ~3,4 m esticado
-      f = Math.min(f, (papelE === 'seguidor' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM) / e.alturaBase);
+      f = Math.min(f, (sizeKind === 'follower' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM) / e.alturaBase);
     } else if (AVES_ASA.has(dexE) && (e.comprimentoBase || 0) > e.alturaBase){   // 15/09 (Syvel: Pidgeot quase do tamanho do Pidgey): a Idle do Pidgeotto abre as asas na horizontal (1,37 m de altura, 2,2 m de envergadura) e a do Pidgeot levanta as asas (altura já inclui as asas) — a régua de altura deixava o Pidgeotto maior que o Pidgeot. Nas aves das linhas Pidgey/Spearow vale o maior lado do corpo parado.
       f = alvo / Math.max(e.alturaBase, e.comprimentoBase);
     } else if (e.comprimentoBase > 2 * e.alturaBase){                   // corpo largo fora da lista (asas abertas, braços): régua de altura no maior lado (como antes)
@@ -3858,9 +3868,9 @@ if (PLAY){
       if (reg && Array.isArray(reg.movs) && reg.movs.length){ Ind.garantir(reg); Ind.garantirMovs(reg, quatroGolpes(dex)); pika.movs = reg.movs.map(m => ({ ...m })); }   // os golpes do registro (cópia; o amarrarParceiro amarra no array de verdade)
       else Ind.garantirMovs(pika, quatroGolpes(dex));
       pika.golpesIds = Ind.idsDe(pika);   // learnset do nível (o registro do time sobrepõe)
-      pika.glb = reg?.glb || glbLimpo; aplicarTamanho(pika);   // o papel 'seguidor' é passado por quem chama pro PARCEIRO (boot/trocarSeguidor): esta função também monta atores de cena (sonho, clipe da raid, torneio, diretor), que ficam na régua de selvagem
+      pika.glb = reg?.glb || glbLimpo; aplicarTamanho(pika);   // the 'follower' kind is passed por quem chama pro PARCEIRO (boot/trocarSeguidor): esta função também monta atores de cena (sonho, clipe da raid, torneio, diretor), que ficam na régua de selvagem
     };
-    configurarSeguidor(pika, params0.get('seguidor')); if (!FAIRY) aplicarTamanho(pika, 'seguidor');   // 14/09: jogo.pika ainda não existe aqui — sem o papel o parceiro do boot caía na régua de selvagem
+    configurarSeguidor(pika, params0.get('seguidor')); if (!FAIRY) aplicarTamanho(pika, 'follower');   // 14/09: jogo.pika ainda não existe aqui — sem o kind o parceiro do boot caía na régua de selvagem
     // Fairy: o inicial escolhido no laboratório vira o seguidor (troca o modelo no lugar)
     jogo.trocarSeguidor = async (glbNome, doBoot = false) => {   // doBoot (17/09): o parceiro salvo do boot baixa com tentativas e a caixa "Tentar de novo"
       const velho = jogo.pika;
@@ -6014,7 +6024,7 @@ function reanimar(i, id, nome = REANIMADORES[id] || 'Reanimador'){
   Som.tocar('ui/sound_pkmnhealing', { volume: .6 }); flutuar(jogo.ash, nome + ' → ' + t.nome, '#8ef58e'); Chat.sistema(nome + ' used on ' + t.nome + (cheio ? ' (HP full).' : ' (half HP).'));
   pintarTime(true); pintarAtalhos(true); return true;
 }
-/** A cura da Joy (papel 'cura'): o time inteiro e o parceiro em campo voltam a 100%, desmaios removidos. */
+/** Nurse Joy's heal (role 'heal'): o time inteiro e o parceiro em campo voltam a 100%, desmaios removidos. */
 function curarTime(n, vidaOp = 'curar'){                                // vidaOp 'gm': o /pokeheal (o servidor cura time e caixa e confere a marca de GM)
   if (comConta()) Rede.pedirVida(vidaOp).then(r => { if (r && r.erro) Chat.sistema('⚠ ' + r.erro + '.'); });   // passo 3: a cura completa é do servidor (ele confere o Centro)
   for (const t of jogo.time){ t.hp = t.maxHp || t.hp || 1; t.koAte = 0; t.status = null; Ind.restaurarPP(t); }
@@ -6029,7 +6039,7 @@ function curarTime(n, vidaOp = 'curar'){                                // vidaO
   }
   Som.tocar('ui/sound_pkmnhealing', { volume: .8, prio: true });
   flutuar(jogo.ash, 'party healed! ♥', '#8ef58e'); Chat.sistema((n?.nome || 'Joy') + ' healed your party!');
-  if (n?.papel === 'cura' && jogo.missoesOk) Missoes.evento({ tipo: 'cura', cfg: n.cfg, cena: NOME });   // 20/09: a cena vai junto — passo de missão que pede a Joy DE UM LUGAR só fecha naquele Centro
+  if (n?.role === 'heal' && jogo.missoesOk) Missoes.evento({ tipo: 'cura', cfg: n.cfg, cena: NOME });   // 20/09: a cena vai junto — passo de missão que pede a Joy DE UM LUGAR só fecha naquele Centro
   guardarEstadoAtivo(); pintarTime(true);
 }
 /** Parceiro em campo ↔ registro do time: membro novo entra no time; membro conhecido recebe nível/HP/XP do registro
@@ -8388,6 +8398,11 @@ function verificarPortas(dt){
 }
 /* NPCs com modelo exportado (mãe, Oak, assistentes, Mimey…): parados em Idle, nome em cima;
    Z perto (ou toque neles) mostra as falas em pt do jogo numa caixa embaixo. */
+function npcRole(info){                                                // older data still says `papel` / Portuguese values
+  const r = info?.role ?? info?.papel;
+  const en = { cura: 'heal', loja: 'shop', caixa: 'pc', creche: 'daycare', terreno: 'plot', horta: 'plot', guilda: 'guild', balsa: 'ferry', treinador: 'trainer' };
+  return r ? (en[r] || r) : undefined;
+}
 async function montarNpcs(){
   const cenaId = +NOME || (NOME === 'kanto' || NOME === 'pallet_route1' ? 1000001 : 0) || (+NOME === 2000001 ? 2000001 : 0);
   /* Interiores: célula sem piso registrado (atrás do balcão do Centro) faz o chaoEm devolver a laje de baixo (−1,4 m) e o NPC
@@ -8423,13 +8438,13 @@ async function montarNpcs(){
     if (!info) continue;
     if (info.placa){                                                     // placa: ponto invisível com texto (Z/toque perto)
       const x = flipX * n.x, z = n.z;
-      jogo.npcs.push({ nome: info.nome || 'Placa', falas: info.falas || [], npc: true, placa: true, papel: info.papel, cfg: n.cfg, x, z, y: noChaoRef(chaoEm(x, z) ?? 0), altura: 1.2, giro: 0, pivo: new THREE.Object3D() });
+      jogo.npcs.push({ nome: info.nome || 'Placa', falas: info.falas || [], npc: true, placa: true, role: npcRole(info), cfg: n.cfg, x, z, y: noChaoRef(chaoEm(x, z) ?? 0), altura: 1.2, giro: 0, pivo: new THREE.Object3D() });
       continue;
     }
     try {
       const e = await montarNpcGlb(info.glb);
       if (jogo.raidArena){ removerCorpo(e); break; }
-      e.nome = info.nome || 'NPC'; e.falas = info.falas || []; e.npc = true; e.tipoNpc = info.tipo || 1; e.papel = info.papel; e.cfg = n.cfg;
+      e.nome = info.nome || 'NPC'; e.falas = info.falas || []; e.npc = true; e.tipoNpc = info.tipo || 1; e.role = npcRole(info); e.cfg = n.cfg;
       if (info.tipo === 9) e.pivo.traverse(o => { if (o.isMesh){ const map = o.material?.map || null; o.material = new THREE.MeshStandardMaterial({ map, color: 0xb794ff, emissive: 0x6a3dff, emissiveIntensity: 0.7, roughness: 0.3, transparent: true, opacity: 0.92 }); } });   // cristal Teráxico: o shader FX do jogo não veio, vira cristal roxo brilhante
       if (info.glb.startsWith('mon/')){ e.glb = info.glb.slice(4); e.dex = dexDoGlb(e.glb); aplicarTamanho(e); }
       teleportar(e, flipX * n.x, n.z);
@@ -8459,7 +8474,7 @@ async function montarNpcGlb(glb){
 async function montarLiderGinasio(g, n){
   let e; try { e = await montarNpcGlb(g.glb); } catch { e = await montarPersonagem('./scenery/npc/fc1004_00.glb', null, 0); }
   const tem = (lerLS('insignias', []) || []).includes(g.insignia.id);
-  e.npc = true; e.papel = 'treinador'; e.cfg = n.cfg; e.ginasio = g; e.spotKey = 'ginasio:' + g.numero; e.nome = g.lider;
+  e.npc = true; e.role = 'trainer'; e.cfg = n.cfg; e.ginasio = g; e.spotKey = 'ginasio:' + g.numero; e.nome = g.lider;
   e.treino = { nome: g.lider, time: g.time, dinheiro: g.dinheiro, fala: g.fala, vitoria: g.vitoria, derrota: g.derrota };
   e.falas = tem ? [g.vitoria[0]] : g.fala;
   const chaoRef = jogo.ash ? (chaoEm(jogo.ash.x, jogo.ash.z) ?? 0) : 0;
@@ -8471,7 +8486,7 @@ async function montarLiderGinasio(g, n){
 /** Membro da ELITE FOUR no quarto dele: um treinador ⚔ como o líder de ginásio, com o time montado pelo SERVIDOR. */
 async function montarMembroElite(M, n){
   let e; try { e = await montarPersonagem('./scenery/' + M.glb + '.glb', null, 0); } catch { e = await montarPersonagem('./scenery/npc/NPC1007.glb', null, 0); }
-  e.npc = true; e.papel = 'treinador'; e.cfg = n.cfg; e.elite = M; e.spotKey = 'elite:' + M.ordem; e.nome = M.nome;
+  e.npc = true; e.role = 'trainer'; e.cfg = n.cfg; e.elite = M; e.spotKey = 'elite:' + M.ordem; e.nome = M.nome;
   e.treino = { nome: M.nome, time: M.time, dinheiro: 0, fala: M.falaAntes || [], vitoria: M.falaDerrota || [], derrota: M.falaVitoria || [] };   // `vitoria`/`derrota` do motor são vistas DO JOGADOR: quando eu venço, ele diz a falaDerrota dele
   e.falas = e.treino.fala;
   const chaoRef = jogo.ash ? (chaoEm(jogo.ash.x, jogo.ash.z) ?? 0) : 0;
@@ -8589,23 +8604,23 @@ async function falarCom(n){
   }
   if (!n.placa) n.pivo.rotation.y = Math.atan2(a.x - n.x, a.z - n.z);
   const falaMissao = jogo.missoesOk ? Missoes.falaPara(n.cfg) : null;    // passo atual aponta pra este NPC: ele fala a linha da missão
-  const visitaSafari = n.papel === 'safari' && Safari.vivo(jogo.safari);
+  const visitaSafari = n.role === 'safari' && Safari.vivo(jogo.safari);
   const linhasFala = visitaSafari
     ? ['You still have ' + jogo.safari.restantes + ' Safari Balls and ' + jogo.safari.passos + ' steps.', 'Leave the Zone and the visit ends. Leftover Safari Balls stay at the gate.']
     : (falaMissao || (n.falas.length ? n.falas : ['…']));
   try { await mostrarFala(n.nome, linhasFala, n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
   if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });         // passo 5: quem marca o passo é o SERVIDOR (ele confere que você está do lado do NPC)
-  if (n.papel === 'safari' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
+  if (n.role === 'safari' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
   else if (+n.cfg === 2158801) TmCounter.abrir();                          // Celadon Department Store 2F: the TM clerk
-  else if (n.papel === 'cura') curarTime(n);                               // Joy: cura o time depois da fala
-  else if (n.papel === 'caixa') Menus.abrir('pokemon', 'caixa');           // balcão do PC: abre a Caixa
-  else if (n.papel === 'loja') Menus.abrir('pokemart', String(n.cfg));         // v2 Pokémart; falls back to the old list when that window is missing
-  else if (n.papel === 'creche' || n.papel === 'daycare') Menus.abrir('creche');
-  else if (n.papel === 'terreno' || n.papel === 'horta') Menus.abrir('terreno');
-  else if (n.papel === 'guilda' || n.papel === 'guild') Menus.abrir('guilda');
-  else if (n.papel === 'balsa' || n.papel === 'ferry') Menus.abrir('balsa');
-  else if (n.papel === 'treinador') desafiarTreinador(n);                  // ⚔: convite pra batalha por turno
+  else if (n.role === 'heal') curarTime(n);                                // Nurse Joy heals the team after her line
+  else if (n.role === 'pc') Menus.abrir('pokemon', 'caixa');               // PC counter opens the Box
+  else if (n.role === 'shop') Menus.abrir('pokemart', String(n.cfg));      // v2 Pokémart; falls back to the old list when that window is missing
+  else if (n.role === 'daycare') Menus.abrir('creche');
+  else if (n.role === 'plot') Menus.abrir('terreno');
+  else if (n.role === 'guild') Menus.abrir('guilda');
+  else if (n.role === 'ferry') Menus.abrir('balsa');
+  else if (n.role === 'trainer') desafiarTreinador(n);                     // ⚔: turn-based battle invite
 }
 /* ---------------------------------------------------------------- mesa dos iniciais (laboratório)
    Como no cliente: três Pokébolas numa mesa no canto, "!" em cima; perto dela Z/toque abre o
@@ -8671,7 +8686,7 @@ function spriteMarca(sim, cor){
 }
 function aplicarMarcaMissao(e){
   if (!e?.pivo || e.placa) return;
-  const m = (!Fairy && !INTRO && jogo.missoesOk) ? Missoes.marcaPara?.(e.cfg, { papel: e.papel, treinador: !!e.treino }) : null;
+  const m = (!Fairy && !INTRO && jogo.missoesOk) ? Missoes.marcaPara?.(e.cfg, { role: e.role, trainer: !!e.treino }) : null;
   const chave = m ? m.sim + m.cor : '';
   if (e.marcaMissao && e.marcaMissao.userData.marca === chave){ e.marcaMissao.visible = !!m; return; }
   if (e.marcaMissao){ e.pivo.remove(e.marcaMissao); e.marcaMissao.material?.map?.dispose(); e.marcaMissao.material?.dispose(); e.marcaMissao = null; }
@@ -10351,7 +10366,7 @@ async function povoarTreinadores(){
        era a "gêmea" da Saya. O ⚔ é o dono: o NPC comum de cfg de treinador sai (varre todo tique, à prova da ordem
        de carga, porque o montarNpcs é assíncrono e pode terminar depois do primeiro tique). */
     for (const e of [...jogo.npcs]){
-      if (e.papel === 'treinador' || !dadosTreinadores[e.cfg]) continue;
+      if (e.role === 'trainer' || !dadosTreinadores[e.cfg]) continue;
       removerCorpo(e);
       const i = jogo.npcs.indexOf(e); if (i >= 0) jogo.npcs.splice(i, 1);
     }
@@ -10401,7 +10416,7 @@ async function povoarTreinadores(){
         const e = await montarPersonagem('./scenery/npc/' + info.glb + '.glb', null, 0);
         const spotKey = spot.cfg + '@' + Math.round(spot.x) + ',' + Math.round(spot.z);
         const venceu = treinadorVencido(spot.cfg, vencidos);                // 17/09: pelo cfg, não pela vaga (ver treinadorVencido)
-        e.npc = true; e.papel = 'treinador'; e.cfg = spot.cfg; e.treino = renivelarTreinador(info, spot.a); e.spotKey = spotKey; e.spot = spot;
+        e.npc = true; e.role = 'trainer'; e.cfg = spot.cfg; e.treino = renivelarTreinador(info, spot.a); e.spotKey = spotKey; e.spot = spot;
         e.nome = info.nome;
         e.falas = venceu ? [info.vitoria[0] || Dialogos.texto('jaVenceu')] : info.fala;   // vencido: ele te parabeniza (a fala de consolo é pra quando VOCÊ perde)
         teleportar(e, tx, tz);                                            // tx/tz = a vaga, já tirada da água (16/09)
@@ -10485,7 +10500,7 @@ function npcDeServidor(serv, outro){
     pivo: o.ent?.pivo || jogo.ash?.pivo, altura: o.ent?.altura || 1.6, giro: o.ent?.giro || 0,
     nome: serv.nomeInimigo || 'Trainer',
     treino: { nome: serv.nomeInimigo, time: (serv.dele || []).map(x => ({ dex: x.dex, lv: x.lv, glb: 'pm' + String(x.dex).padStart(4, '0') + '_00' })), dinheiro: 0, fala: [], vitoria: [], derrota: [] },
-    papel: 'treinador', pvp: !!serv.pvp,
+    role: 'trainer', pvp: !!serv.pvp,
   };
 }
 async function abrirTurnoServidor(serv){
