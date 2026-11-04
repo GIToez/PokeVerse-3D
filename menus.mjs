@@ -3028,13 +3028,42 @@ async function carregarEvoDx() {
       .catch(() => ({ por: {} }));
   return evoDx;
 }
+/** The layout only draws Gen 1–5 tabs. Rebuild the row from the Gen 5 tab so every entry in GENS_DX gets one,
+    spread between the counters and the close button. */
+function abasGenDx(def) {
+  const filhos = def.filhos || [];
+  const modelo = filhos.find((f) => f.nome === 'aba-gen-5') || filhos.find((f) => /^aba-gen-\d+$/.test(f.nome));
+  if (!modelo) return def;
+  const fim = (f) => (f ? f.x + f.w : 0);
+  const ini = Math.max(fim(filhos.find((f) => f.nome === 'contador-capturados')), fim(filhos.find((f) => f.nome === 'btn-ajuda-contagem'))) + (def.w > 1000 ? 22 : 6);
+  const fecha = filhos.find((f) => f.nome === 'btn-fechar');
+  const ate = fecha ? fecha.x - (def.w > 1000 ? 8 : 4) : fim(modelo);
+  const n = GENS_DX.length,
+    vao = def.w > 1000 ? 8 : 4;
+  const w = Math.min(modelo.w, (ate - ini - vao * (n - 1)) / n),
+    k = w / modelo.w;
+  const abas = GENS_DX.map(([g], i) => {
+    const a = structuredClone(modelo);
+    a.nome = 'aba-gen-' + g;
+    a.tagVal = 'gen-' + g;
+    a.x = ini + i * (w + vao);
+    a.w = w;
+    for (const f of a.filhos || []) {
+      f.x *= k;
+      f.w *= k;
+      if (f.exemplo) f.exemplo = 'Gen ' + g;
+    }
+    return a;
+  });
+  return { ...def, filhos: [...filhos.filter((f) => !/^aba-gen-\d+$/.test(f.nome)), ...abas] };
+}
 function popupDx() {
   if (popDx) return popDx;
   const b = defPopup('pokedex');
   if (new URLSearchParams(location.search).get('popup') === '0' || !b) return null;
-  popDx = Popup.montar(b, {
+  popDx = Popup.montar(abasGenDx(b), {
     aba: (a) => {
-      const m = /^gen-(\d)$/.exec(a);
+      const m = /^gen-(\d+)$/.exec(a);
       if (m && +m[1] !== genDx) {
         genDx = +m[1];
         selDex = null;
@@ -3082,28 +3111,7 @@ function irParaDex(n) {
   dexRolarAte = n;
   render();
 }
-function garantirGeracaoDx(e){
-  let sel = e.querySelector(':scope > select.dex-geracao');
-  if (!sel){
-    sel = document.createElement('select');
-    sel.className = 'dex-geracao';
-    sel.setAttribute('translate', 'no');
-    Object.assign(sel.style, {
-      position: 'absolute', top: '8px', right: '56px', zIndex: '90',
-      font: '12px sans-serif', color: '#eaf6fb', background: '#14243a',
-      border: '1px solid #3d5a73', borderRadius: '4px', padding: '2px 4px',
-    });
-    for (const [g] of GENS_DX){
-      const o = document.createElement('option');
-      o.value = String(g); o.textContent = 'Gen ' + g; sel.appendChild(o);
-    }
-    sel.addEventListener('change', () => { genDx = +sel.value; selDex = null; dexRolarAte = 0; render(); });
-    e.appendChild(sel);
-  }
-  if (sel.value !== String(genDx)) sel.value = String(genDx);
-}
 async function encherPokedex(e) {
-  garantirGeracaoDx(e);
   Popup.rotulo(e, 'titulo');
   for (const a of e.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(e, 'aba', a);
   Popup.trocarAba(e, 'gen-' + genDx);
@@ -3130,7 +3138,7 @@ async function encherPokedex(e) {
       r.kantoAte +
       ' caught · ' +
       r.vistosKanto +
-      ' vistos · ' +
+      ' seen · ' +
       r.shinies +
       ' shiny';
     Popup.texto(e, 'colecionador', _);
@@ -3515,7 +3523,7 @@ function paginaEvolucaoDx(a, d, b) {
     h.style.display = g ? 'none' : 'block';
     Popup.texto(a, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', h);
   }
-  const j = g && ctx.porDex.get(selDex) ? cadeiaEvolucao(selDex).filter(({ s }) => s.n <= 649) : [];
+  const j = g && ctx.porDex.get(selDex) ? cadeiaEvolucao(selDex) : [];
   const l = evoDx?.por || {},
     m = Popup.grupo(a, 'estagio-1')?.querySelector(':scope > [data-fig^="evo-"] > [data-fig="marca-selecionado"]');
   const o = (a, k) => parseFloat(a?.style[k]) || 0,
