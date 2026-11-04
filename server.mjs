@@ -1399,7 +1399,9 @@ wss.on('connection', ws => {
         ws._mapa = m.mapa || 'kanto';
         ws._info = { ...m };
         const uTok = m.token ? sessoes.get(m.token) : null;
-        if (uTok && banidoAteDe(contas[uTok])) { enviar(ws, { t: 'saia', texto: 'Sua conta está suspensa.' }); try { ws.close(); } catch {} return; }
+        if (uTok && banidoAteDe(contas[uTok])) { enviar(ws, { t: 'saia', texto: 'Your account is suspended.' }); try { ws.close(); } catch {} return; }
+        // A stale token must not fall through to a visitor: the visitor wears the player's look and dodges the one-session rule, so it shows up as a second copy of them.
+        if (m.token && !uTok) { enviar(ws, { t: 'saia', motivo: 'sessao', texto: 'Your session expired. Log in again.' }); try { ws.close(); } catch {} return; }
         if (uTok && contas[uTok] && m.personagem != null){                    // the look the others see on join: only owned outfits/effects (server_bag validarPersonagem)
           const pv = bolsaServ.validarPersonagem(contas[uTok], m.personagem);
           ws._info.personagem = pv === null ? (contas[uTok].save?.personagem ?? null) : pv;
@@ -1408,7 +1410,7 @@ wss.on('connection', ws => {
         moderacao.aoEntrar(ws, uTok);                                      // Fase 3: chegou onde o GM levou (posGm) → apaga
         if (uTok) for (const w of socketsDe(uTok)) {                       // sessão única, como em produção: a aba/aparelho anterior leva `saia` (não reconecta) e some do mapa dos outros — antes cada aba virava mais um boneco
           if (w === ws) continue;
-          enviar(w, { t: 'saia', texto: 'Você entrou de outro lugar.' });
+          enviar(w, { t: 'saia', texto: 'You logged in from somewhere else.' });
           conexoes.delete(w._id);
           broadcast(w, { t: 'saiu', id: w._id });
           setTimeout(() => { try { w.close(); } catch {} }, 300);

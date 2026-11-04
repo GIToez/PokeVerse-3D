@@ -1080,10 +1080,7 @@ export function receber(m) {
   if (m.t === 'evento_aviso') faixa(m);
 }
 function urlPainel() {
-  const b = baseHttp();
-  return b === location.origin + '/servidor'
-    ? '/adm#/agenda'
-    : './adm.html?api=' + encodeURIComponent(b) + '#/agenda';
+  return new URL('/admin/#/agenda', location.href).toString();
 }
 function ligarLinkPainel() {
   if (!pop || !dep.ctx().gm?.()) return;

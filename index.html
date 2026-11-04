@@ -8285,7 +8285,7 @@ function aprenderNoNivel(p){
   if (!p?.dex || !p.movs) return;
   for (const id of Ind.aprendeEm(p.dex, p.lv)){
     if (!GOLPES[id] || p.movs.some(m => m.id === id) || (p.aprender || []).includes(id)) continue;
-    if (p.movs.length < 4){ p.movs.push(Ind.novoGolpe(id)); Chat.sistema(p.nome + ' aprendeu ' + GOLPES[id].nome + '!'); flutuar(p, 'aprendeu ' + GOLPES[id].nome + '!', '#8ef58e'); }
+    if (p.movs.length < 4){ p.movs.push(Ind.novoGolpe(id)); Chat.sistema(p.nome + ' learned ' + GOLPES[id].nome + '!'); flutuar(p, 'aprendeu ' + GOLPES[id].nome + '!', '#8ef58e'); }
     else { p.aprender = [...(p.aprender || []), id]; Chat.sistema('✧ ' + p.nome + ' wants to learn ' + GOLPES[id].nome + ' — pick which move to forget in the Pokémon window.'); flutuar(p, 'quer aprender ' + GOLPES[id].nome + '!', '#ffe07a'); }
   }
   p.golpesIds = Ind.idsDe(p);
@@ -8324,7 +8324,7 @@ function recuperarGolpes(p, { quieto = false, desdeOInicio = false } = {}){
   const ids = golpesPerdidos(p, { desdeOInicio }); if (!ids.length) return 0;
   let naFila = 0;
   for (const id of ids){
-    if (p.movs.length < 4){ p.movs.push(Ind.golpeLembrado(registroDoTime(p) || p, id)); if (!quieto) Chat.sistema(p.nome + ' aprendeu ' + GOLPES[id].nome + '!'); }
+    if (p.movs.length < 4){ p.movs.push(Ind.golpeLembrado(registroDoTime(p) || p, id)); if (!quieto) Chat.sistema(p.nome + ' learned ' + GOLPES[id].nome + '!'); }
     else { p.aprender = [...(p.aprender || []), id]; naFila++; }
   }
   if (naFila && !quieto) Chat.sistema('✧ ' + p.nome + ' wants to learn ' + GOLPES[p.aprender[0]].nome + ' — pick which move to forget in the Pokémon window.');
@@ -8368,7 +8368,7 @@ function aprenderGolpe(e, id, slot){
   const reg = registroDoTime(t) || t;                                    // 18/09: as recusas ficam no REGISTRO do time (o Pokémon em campo é uma entidade à parte)
   t.aprender = (t.aprender || []).filter(x => x !== id);
   Ind.garantirMovs(t, fallbackGolpes(t.dex));
-  if (slot >= 0 && slot >= t.movs.length && t.movs.length < 4 && GOLPES[id]){ t.movs.push(Ind.golpeLembrado(reg, id)); Chat.sistema(t.nome + ' aprendeu ' + GOLPES[id].nome + '!'); }   // 18/09 (Reaprender com vaga livre): entra sem esquecer ninguém
+  if (slot >= 0 && slot >= t.movs.length && t.movs.length < 4 && GOLPES[id]){ t.movs.push(Ind.golpeLembrado(reg, id)); Chat.sistema(t.nome + ' learned ' + GOLPES[id].nome + '!'); }   // 18/09 (Reaprender com vaga livre): entra sem esquecer ninguém
   else if (slot >= 0 && slot < t.movs.length && GOLPES[id]){ const velho = t.movs[slot]; Ind.esquecerGolpe(reg, velho); t.movs[slot] = Ind.golpeLembrado(reg, id);   /* 19/09 (chaospider, PPs infinitos): o esquecido guarda o PP; o que volta, volta com ele */ Chat.sistema(t.nome + ' esqueceu ' + (GOLPES[velho?.id]?.nome || '?') + ' e aprendeu ' + GOLPES[id].nome + '!'); }
   else { Chat.sistema(t.nome + ' did not learn ' + (GOLPES[id]?.nome || id) + '.'); if (GOLPES[id]) reg.recusados = [...new Set([...(reg.recusados || []), id])].slice(-30); }   // 18/09: recusa guardada — o boot não reoferece; o Reaprender continua listando
   if (slot >= 0 && Array.isArray(reg.recusados) && reg.recusados.includes(id)) reg.recusados = reg.recusados.filter(x => x !== id);   // aprendeu de vez (pelo Reaprender): sai das recusas

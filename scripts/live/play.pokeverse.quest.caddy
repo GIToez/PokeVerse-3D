@@ -13,6 +13,10 @@ play.pokeverse.quest {
 	}
 
 	redir /admin /admin/ 308
+	# Old panel links. Without these the game's catch-all serves index.html and the link starts a second game session.
+	redir /adm /admin/ 308
+	redir /adm/ /admin/ 308
+	redir /adm.html /admin/ 308
 	handle /admin/scenery {
 		rewrite * /admin/scenery.html
 		file_server

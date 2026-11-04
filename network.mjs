@@ -134,7 +134,7 @@ function receber(m){
     case 'saia': {                                                       // a conta entrou de outro lugar: este aqui acabou
       desligado = true; clearTimeout(timer);
       ctx.conta?.pararSync?.();                                          // para de gravar, calado (quem explica é a tela)
-      import('./screens.mjs').then(T => T.derrubado(m.texto)).catch(() => alert(m.texto || 'Você entrou de outro lugar.'));
+      import('./screens.mjs').then(T => T.derrubado(m.texto, m.motivo)).catch(() => alert(m.texto || 'You logged in from somewhere else.'));
       try { ws?.close(); } catch {}
       return;
     }
