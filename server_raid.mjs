@@ -41,7 +41,7 @@ const CADA_ALVO_MS = 6000;                                                   // 
 const FLIPX = -1;                                                            // arquivo → mundo: o exportador espelha o x (o mesmo da moderação)
 const PREMIO = { dinheiro: 3000, bolas: { 1003: 5 }, itens: { 2003: 3, 2012: 2 } };   // Ultra Bola ×5, HiperPoção ×3, Reanimador ×2 (ids do menu_data.json), pra quem bateu
 const FASES_FILA = new Set(['anunciada', 'contagem']), FASES_DENTRO = new Set(['indo', 'luta', 'fim']);
-const OP_ALIAS = { comecar: 'comecar', iniciar: 'comecar', start: 'comecar', cancela: 'cancelar', parar: 'cancelar' };
+const OP_ALIAS = { comecar: 'comecar', iniciar: 'comecar', start: 'comecar', cancela: 'cancelar', parar: 'cancelar', cancel: 'cancelar', stop: 'cancelar', announce: 'anunciar', damage: 'dano', prize: 'premio' };
 const semAcento = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 const num = (v, min, max, pad) => { const n = Number(v); return Number.isFinite(n) && n >= min && n <= max ? n : pad; };
 const IVS_31 = [31, 31, 31, 31, 31, 31];
@@ -204,20 +204,20 @@ export function criarRaid(h) {
   }
 
   // ── Fases ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  function anunciar(g) {
+  function anunciar(g, titulo = '') {
     const cfg = lerCfg();
     if (!especie(cfg.chefeDex)) return { erro: 'Species no. ' + cfg.chefeDex + ' from data/raid.json is not in pokedex.json.' };
     const geo = geometria(cfg.arena);
     raid = { id: ++seq, fase: 'anunciada', cfg, geo, sobre: { hp: null, dano: null, shiny: null, premio: null }, fila: new Map(), por: g,
       contagemAte: 0, indoAte: 0, lutaAte: 0, fimAte: 0, chefe: null, venceu: false, golpesChefe: golpesDoChefe(cfg.chefeDex, cfg.chefeNivel) };
     console.log(`[raid] #${raid.id} announced by ${g}: ${cfg.chefeNome} Lv${cfg.chefeNivel}, ${cfg.vagas} slots, arena ${cfg.arena}`);
-    todos('📢 RAID: um ' + cfg.chefeNome + ' Lv ' + cfg.chefeNivel + ' apareceu! Entre na fila pelo botão RAID (' + cfg.vagas + ' vagas).');
+    todos('📢 RAID' + (titulo ? ' · ' + titulo : '') + ': a Lv ' + cfg.chefeNivel + ' ' + cfg.chefeNome + ' appeared! Join the queue with the RAID button (' + cfg.vagas + ' spots).');
     difundir();
     return {};
   }
   function contar() {
     raid.fase = 'contagem'; raid.contagemAte = Date.now() + CONTAGEM_MS;
-    for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) sistema(w, 'A raid do ' + raid.cfg.chefeNome + ' começa em ' + Math.round(CONTAGEM_MS / 1000) + ' s!');
+    for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) sistema(w, 'The ' + raid.cfg.chefeNome + ' raid starts in ' + Math.round(CONTAGEM_MS / 1000) + ' s!');
   }
   /** Leva UM participante: guarda onde estava (raidVolta), põe o posGm na arena e manda recarregar lá. */
   function fazerIda(p, ws) {
@@ -236,7 +236,7 @@ export function criarRaid(h) {
     return s ? { mapa: String(s.mapa), x: +s.x, z: +s.z, giro: 0 } : { mapa: 'kanto', x: null, z: null, giro: 0 };
   }
   function irTodos() {
-    if (!raid.fila.size) { todos('A raid do ' + raid.cfg.chefeNome + ' foi cancelada: ninguém entrou na fila.'); raid = null; difundir(); return; }
+    if (!raid.fila.size) { todos('The ' + raid.cfg.chefeNome + ' raid was canceled: nobody joined the queue.'); raid = null; difundir(); return; }
     raid.fase = 'indo'; raid.indoAte = Date.now() + INDO_MS;
     for (const p of raid.fila.values()) {
       const ws = socketsDe(p.u).filter(w => w._info).sort((a, b) => b._id - a._id)[0];   // duas abas da mesma conta: vale a que entrou por último
@@ -247,7 +247,7 @@ export function criarRaid(h) {
   }
   function lutar() {
     const chegaram = [...raid.fila.values()].filter(p => p.chegou);
-    if (!chegaram.length) { todos('A raid do ' + raid.cfg.chefeNome + ' acabou: ninguém chegou na arena.'); terminar(); return; }
+    if (!chegaram.length) { todos('The ' + raid.cfg.chefeNome + ' raid is over: nobody reached the arena.'); terminar(); return; }
     const maxHp = raid.sobre.hp ?? (raid.cfg.chefeHp > 0 ? raid.cfg.chefeHp : vidaAuto());
     const ch = raid.geo.chefe;
     raid.chefe = { id: 1e9 + raid.id, hp: maxHp, maxHp, x: ch.x, z: ch.z, giro: +Math.PI.toFixed(3), proxGolpe: Date.now() + 4000,   // giro π: de frente pro sul, onde a fila fica
@@ -312,40 +312,40 @@ export function criarRaid(h) {
   // ── Mensagens ─────────────────────────────────────────────────────────────────────────────────────────────────────────
   function comando(ws, m) {
     const g = sessoes.get(ws._info?.token) || null, cg = contas[g];
-    if (!cg?.gm && cg?.cargo !== 'staff') { sistema(ws, '⚠ Só a staff comanda a raid.'); return; }
+    if (!cg?.gm && cg?.cargo !== 'staff') { sistema(ws, '⚠ Only staff can run the raid.'); return; }
     let op = semAcento(m.op); op = OP_ALIAS[op] || op;
     const v = m.valor, txt = semAcento(v);
     const ok = (texto, extra = {}) => { sistema(ws, '🐉 ' + texto); if (op !== 'status') logAdmin(g, '*', 'raid ' + op, { depois: { id: raid?.id ?? null, ...extra } }); };
     const erro = texto => sistema(ws, '⚠ ' + texto);
     if (op === 'anunciar') {
-      if (raid) { erro('Já tem uma raid (' + raid.fase + '). Use /raid cancelar antes.'); return; }
+      if (raid) { erro('There is already a raid (' + raid.fase + '). Use /raid cancel first.'); return; }
       const r = anunciar(g); if (r.erro) { erro(r.erro); return; }
-      ok('Raid #' + raid.id + ' anunciada: ' + raid.cfg.chefeNome + ' Lv ' + raid.cfg.chefeNivel + ', ' + raid.cfg.vagas + ' vagas. /raid comecar abre a contagem.', { cfg: raid.cfg });
-      if (!fs.existsSync(nodePath.join(raiz, 'public/scenery/mon', raid.cfg.chefeGlb + '.glb'))) erro('O modelo ' + raid.cfg.chefeGlb + '.glb não existe em public/scenery/mon: o chefe vai aparecer só como barra de vida.');
+      ok('Raid #' + raid.id + ' announced: ' + raid.cfg.chefeNome + ' Lv ' + raid.cfg.chefeNivel + ', ' + raid.cfg.vagas + ' spots. /raid start opens the countdown.', { cfg: raid.cfg });
+      if (!fs.existsSync(nodePath.join(raiz, 'public/scenery/mon', raid.cfg.chefeGlb + '.glb'))) erro('The model ' + raid.cfg.chefeGlb + '.glb is not in public/scenery/mon: the boss will only show as a health bar.');
       return;
     }
     if (op === 'status') { sistema(ws, '🐉 ' + status()); return; }
-    if (!raid) { erro('Nenhuma raid agora. Use /raid anunciar primeiro.'); return; }
+    if (!raid) { erro('No raid right now. Use /raid announce first.'); return; }
     if (op === 'comecar') {
       if (raid.fase === 'anunciada') {
-        if (!raid.fila.size) { erro('Ninguém na fila ainda.'); return; }
-        contar(); difundir(); ok('Contagem aberta: a raid começa em ' + Math.round(CONTAGEM_MS / 1000) + ' s (' + raid.fila.size + ' na fila).'); return;
+        if (!raid.fila.size) { erro('Nobody in the queue yet.'); return; }
+        contar(); difundir(); ok('Countdown open: the raid starts in ' + Math.round(CONTAGEM_MS / 1000) + ' s (' + raid.fila.size + ' in the queue).'); return;
       }
-      if (raid.fase === 'contagem') { raid.contagemAte = Date.now(); ok('Contagem pulada: levando a fila pra arena.'); return; }
-      erro('A raid já passou da fila (' + raid.fase + ').'); return;
+      if (raid.fase === 'contagem') { raid.contagemAte = Date.now(); ok('Countdown skipped: taking the queue to the arena.'); return; }
+      erro('The raid is already past the queue (' + raid.fase + ').'); return;
     }
     if (op === 'cancelar') {
       const fase = raid.fase;
-      if (FASES_FILA.has(fase)) { todos('A raid do ' + raid.cfg.chefeNome + ' foi cancelada pela staff.'); raid = null; difundir(); }
-      else if (fase === 'indo') { for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) sistema(w, 'A staff cancelou a raid. Voltando…'); terminar(); }
-      else if (fase === 'luta') perder('A staff encerrou a raid.');
-      else { erro('A raid já está terminando.'); return; }
-      ok('Raid cancelada (estava em ' + fase + ').');
+      if (FASES_FILA.has(fase)) { todos('The ' + raid.cfg.chefeNome + ' raid was canceled by staff.'); raid = null; difundir(); }
+      else if (fase === 'indo') { for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) sistema(w, 'Staff canceled the raid. Heading back…'); terminar(); }
+      else if (fase === 'luta') perder('Staff ended the raid.');
+      else { erro('The raid is already ending.'); return; }
+      ok('Raid canceled (it was in ' + fase + ').');
       return;
     }
     if (op === 'hp') {
       if (txt === 'auto') raid.sobre.hp = null;
-      else { const n = Math.round(+String(v).replace(',', '.')); if (!(n >= 1 && n <= 1e7)) { erro('Use: /raid hp N (1 a 10 milhões) ou /raid hp auto.'); return; } raid.sobre.hp = n; }
+      else { const n = Math.round(+String(v).replace(',', '.')); if (!(n >= 1 && n <= 1e7)) { erro('Use: /raid hp N (1 to 10 million) or /raid hp auto.'); return; } raid.sobre.hp = n; }
       if (raid.fase === 'luta' && raid.chefe) {                           // no meio da luta: a vida MÁXIMA muda e a barra fica na mesma fração
         const ch = raid.chefe, novo = raid.sobre.hp ?? (raid.cfg.chefeHp > 0 ? raid.cfg.chefeHp : vidaAuto());
         ch.hp = Math.max(1, Math.round(novo * ch.hp / ch.maxHp)); ch.maxHp = novo;
@@ -357,41 +357,41 @@ export function criarRaid(h) {
     }
     if (op === 'dano') {
       const f = +String(v).replace(',', '.');
-      if (!(f >= 0 && f <= 10)) { erro('Use: /raid dano F (0 a 10; 1 = normal, 0 = o mínimo, 1 de dano).'); return; }
+      if (!(f >= 0 && f <= 10)) { erro('Use: /raid damage F (0 to 10; 1 = normal, 0 = the minimum, 1 damage).'); return; }
       raid.sobre.dano = f; ok('Dano do chefe ×' + f + '.', { dano: f }); return;
     }
     if (op === 'shiny') {
       const n = Math.round(+String(v).replace(',', '.'));
       if (!(n >= 1 && n <= 1e6)) { erro('Use: /raid shiny N (1 em N; 1 = sempre shiny).'); return; }
-      raid.sobre.shiny = n; ok('Shiny do prêmio: 1 em ' + n + '.', { shiny: n }); return;
+      raid.sobre.shiny = n; ok('Prize shiny odds: 1 in ' + n + '.', { shiny: n }); return;
     }
     if (op === 'premio') {
       if (txt !== 'mew' && txt !== 'sem-mew') { erro('Use: /raid premio mew | sem-mew'); return; }
-      raid.sobre.premio = txt; ok('Prêmio: ' + (txt === 'mew' ? 'o ' + raid.cfg.chefeNome + ' + itens' : 'só itens') + '.', { premio: txt }); return;
+      raid.sobre.premio = txt; ok('Prize: ' + (txt === 'mew' ? raid.cfg.chefeNome + ' + items' : 'items only') + '.', { premio: txt }); return;
     }
     erro('Use: /raid anunciar | comecar | cancelar | hp N | dano F | shiny N | premio mew|sem-mew | status');
   }
   function status() {
-    if (!raid) return 'Nenhuma raid agora (padrão do data/raid.json: ' + (c => c.chefeNome + ' Lv ' + c.chefeNivel + ', ' + c.vagas + ' vagas, arena ' + c.arena)(lerCfg()) + ').';
+    if (!raid) return 'No raid right now (data/raid.json default: ' + (c => c.chefeNome + ' Lv ' + c.chefeNivel + ', ' + c.vagas + ' spots, arena ' + c.arena)(lerCfg()) + ').';
     const r = retrato(null), ch = raid.chefe;
-    return 'Raid #' + raid.id + ' · ' + raid.fase + ' · fila ' + raid.fila.size + '/' + raid.cfg.vagas + (raid.fila.size ? ' (' + [...raid.fila.values()].map(p => p.nome + (p.dano ? ' ' + p.dano : '') + (p.chegou ? '' : p.ida ? ' a caminho' : '')).join(', ') + ')' : '')
+    return 'Raid #' + raid.id + ' · ' + raid.fase + ' · queue ' + raid.fila.size + '/' + raid.cfg.vagas + (raid.fila.size ? ' (' + [...raid.fila.values()].map(p => p.nome + (p.dano ? ' ' + p.dano : '') + (p.chegou ? '' : p.ida ? ' a caminho' : '')).join(', ') + ')' : '')
       + (ch ? ' · ' + raid.cfg.chefeNome + ' ' + ch.hp + '/' + ch.maxHp : ' · vida ' + (raid.sobre.hp ?? (raid.cfg.chefeHp || 'auto')))
-      + ' · dano ×' + danoRaid() + ' · shiny 1/' + taxaRaid() + ' · prêmio ' + premioRaid()
-      + (r.contagemMs ? ' · começa em ' + Math.ceil(r.contagemMs / 1000) + ' s' : '') + (r.fimMs ? ' · ' + Math.ceil(r.fimMs / 1000) + ' s restantes' : '');
+      + ' · damage ×' + danoRaid() + ' · shiny 1/' + taxaRaid() + ' · prize ' + premioRaid()
+      + (r.contagemMs ? ' · starts in ' + Math.ceil(r.contagemMs / 1000) + ' s' : '') + (r.fimMs ? ' · ' + Math.ceil(r.fimMs / 1000) + ' s left' : '');
   }
   function entrarFila(ws) {
     const u = contaDe(ws);
     const recusa = texto => { sistema(ws, '⚠ ' + texto); enviar(ws, retrato(u)); };   // o retrato volta sempre: o banner sai do "esperando"
     if (!u) return recusa('Entre com a sua conta pra participar da raid.');
-    if (!raid || !FASES_FILA.has(raid.fase)) return recusa('A fila da raid não está aberta.');
+    if (!raid || !FASES_FILA.has(raid.fase)) return recusa('The raid queue is not open.');
     if (raid.fila.has(u)) { enviar(ws, retrato(u)); return; }
     if (!(contas[u].save?.time || []).length) return recusa('Você precisa de pelo menos um Pokémon no time pra entrar na raid.');
-    if (String(ws._mapa) === raid.cfg.arena) return recusa('Saia desta sala pra entrar na fila da raid.');
-    if (raid.fila.size >= raid.cfg.vagas) return recusa('A fila da raid está cheia.');
+    if (String(ws._mapa) === raid.cfg.arena) return recusa('Leave this room to join the raid queue.');
+    if (raid.fila.size >= raid.cfg.vagas) return recusa('The raid queue is full.');
     raid.fila.set(u, { u, nome: nomeDe(u), ida: false, chegou: false, dano: 0, cd: {} });
     if (!raid.contados) raid.contados = new Set();
     if (!raid.contados.has(u)) { raid.contados.add(u); h.aoEntrarFila?.(u); }   // once per raid: leaving and rejoining the queue doesn't count again
-    sistema(ws, 'Você entrou na fila da raid do ' + raid.cfg.chefeNome + ' (' + raid.fila.size + '/' + raid.cfg.vagas + ').');
+    sistema(ws, 'You joined the ' + raid.cfg.chefeNome + ' raid queue (' + raid.fila.size + '/' + raid.cfg.vagas + ').');
     if (raid.fase === 'anunciada' && raid.fila.size >= raid.cfg.vagas) contar();   // fila cheia: a contagem abre sozinha
     difundir();
   }
@@ -399,7 +399,7 @@ export function criarRaid(h) {
     const u = contaDe(ws);
     if (!u || !raid || !FASES_FILA.has(raid.fase) || !raid.fila.has(u)) { enviar(ws, retrato(u)); return; }
     raid.fila.delete(u);
-    sistema(ws, 'Você saiu da fila da raid.');
+    sistema(ws, 'You left the raid queue.');
     if (raid.fase === 'contagem' && !raid.fila.size) raid.fase = 'anunciada';   // a fila esvaziou: a contagem para
     difundir();
   }
@@ -529,5 +529,17 @@ export function criarRaid(h) {
   }
   setInterval(tique, 250).unref?.();
 
-  return { receber, bemvindo, aoEntrar, estado: () => raid && { ...retrato(null), sobre: raid.sobre, chefe: raid.chefe } };
+  /* Event schedule (server_schedule.mjs): the queue opens on its own before the start, and the countdown starts on time
+     (nobody in the queue = canceled). A raid already running is left alone. */
+  function anunciarAgendada(titulo) {
+    if (raid) return { erro: 'a raid is already running' };
+    return anunciar('schedule', titulo);
+  }
+  function comecarAgendada() {
+    if (!raid || raid.por !== 'schedule' || raid.fase !== 'anunciada') return;
+    if (!raid.fila.size) { todos('The ' + raid.cfg.chefeNome + ' raid was canceled: nobody joined the queue.'); raid = null; difundir(); return; }
+    contar(); difundir();
+  }
+  const resumo = () => { const c = lerCfg(); return { chefe: c.chefeNome, dex: c.chefeDex, nivel: c.chefeNivel, vagas: c.vagas }; };
+  return { receber, bemvindo, aoEntrar, anunciarAgendada, comecarAgendada, resumo, estado: () => raid && { ...retrato(null), sobre: raid.sobre, chefe: raid.chefe } };
 }

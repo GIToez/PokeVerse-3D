@@ -17,7 +17,8 @@ import nodePath from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESQUEMAS, validarColecao } from './admin/schemas.mjs';   // editor de dados do painel: lista branca + validação (mesmo arquivo do navegador)
 import { criarModeracao } from './server_moderation.mjs';           // Fase 3: comandos de GM do chat + moderação do painel (mesmas funções)
-import { criarEventos } from './server_events.mjs';               // Fase 3: eventos ao vivo (EXP/shiny/densidade, aviso global, manutenção)
+import { criarEventos } from './server_events.mjs';
+import { criarAgenda } from './server_schedule.mjs';   // event schedule: the Events board, weekly bonuses, raids on a timer               // Fase 3: eventos ao vivo (EXP/shiny/densidade, aviso global, manutenção)
 import { criarRecursos } from './server_resources.mjs';             // Fase 3: listas de faixas/máscaras/modelos pras prévias do painel
 import { criarRaid } from './server_raid.mjs';                     // raid ao vivo: /raid da staff, fila, ida/volta da arena, o chefe e o prêmio
 import { criarBatalha } from './server_battle.mjs';
@@ -1011,6 +1012,7 @@ const httpServer = http.createServer((req, res) => {
       return json(200, { ok: true });
     }
 
+    if (req.method === 'GET' && rota === '/events') return agenda.publico(url, json);
     if (req.method === 'GET' && rota === '/loja') return json(200, loja.info());
     if (req.method === 'POST' && rota === '/loja/checkout') return json(503, { erro: 'Diamond purchases are not open yet.', codigo: 'loja-fechada' });
     if (req.method === 'GET' && (rota === '/temporada' || rota === '/conta')) {
@@ -1046,6 +1048,7 @@ const httpServer = http.createServer((req, res) => {
       }
       const g = gmDe(req);
       if (!g) return json(403, { erro: 'GM accounts only.' });
+      if (rota === '/admin/agenda' && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;   // Fase 3: eventos ao vivo (server_events.mjs)
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
       if (rota === '/admin/modelos' && req.method === 'GET')
@@ -1340,7 +1343,8 @@ const wss = new WebSocketServer({
 });
 let proxId = 1;
 // Fase 3 do painel: a lógica mora nos módulos; aqui só entram os helpers que eles reusam (os mesmos da tela Jogadores)
-const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, derrubar, logAdmin, gravarComBackup });
+const agenda = criarAgenda({ dadosPub: DADOS_PUB, conexoes, enviar, logAdmin, gravarComBackup, get raid(){ return raid; } });
+const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, derrubar, logAdmin, gravarComBackup, agendaBonus: agora => agenda.bonusAgora(agora) });
 const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n) });
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,

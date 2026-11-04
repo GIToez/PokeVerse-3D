@@ -1,0 +1,216 @@
+/* Event schedule: the Events board's calendar (events_ui.mjs) and what starts on its own. Times are Pacific (calendar.mjs).
+ *
+ * public/data/agenda.json = { v, eventos: [evento] }, written by the panel's 📅 Event schedule screen (admin/schedule.mjs):
+ *   { id, ligado, tipo: 'bonus'|'raid'|'festival'|'torneio'|'invasao'|'outro', titulo, descricao, destaque,
+ *     pt: { titulo, descricao }                         Portuguese text (English is the source)
+ *     quando: 'uma'   inicio, fim                        one time, ISO instants
+ *     quando: 'semana' dias [0 = Sunday…6], horas ['HH:MM'], duracaoMin, desde?, ate?   every week, Pacific wall clock
+ *     bonus: { xp, shiny, densidade }                    multipliers while it runs (stack with the live event)
+ *     raid:  { filaMin }                                 the raid of data/raid.json: queue opens filaMin before, fight at the start }
+ *
+ * GET /events?from=YYYY-MM-DD&to=YYYY-MM-DD → { lista: [occurrence], v, agora }, one entry per occurrence:
+ *   { id, tipo, titulo, descricao, tr, destaque, oc, fim, estado: 'agora'|'breve'|'encerrado', repete, regra, bonus, raid } */
+import fs from 'node:fs';
+import nodePath from 'node:path';
+import * as Cal from './calendar.mjs';
+
+const MIN = 60e3, DIA = 86400e3;
+const TIPOS = ['bonus', 'raid', 'festival', 'torneio', 'invasao', 'outro'];
+const MAX_EVENTOS = 100, MAX_JANELA_DIAS = 62;
+const ms = iso => { const t = iso ? Date.parse(iso) : NaN; return Number.isFinite(t) ? t : null; };
+const num = (v, min, max, pad) => { const n = Number(v); return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : pad; };
+const texto = (v, n) => String(v ?? '').trim().slice(0, n);
+
+export const PADRAO = {
+  v: 1,
+  eventos: [{
+    id: 'double-exp-weekend', ligado: true, tipo: 'bonus', destaque: true,
+    titulo: 'Double EXP Weekend', descricao: 'All wild EXP is doubled from Saturday 00:00 to Sunday 23:59 (Pacific time).',
+    pt: { titulo: 'Fim de semana de EXP em dobro', descricao: 'Toda EXP de selvagem vale o dobro de sábado 00:00 a domingo 23:59 (horário do Pacífico).' },
+    quando: 'semana', dias: [6], horas: ['00:00'], duracaoMin: 2880,
+    bonus: { xp: 2, shiny: 1, densidade: 1 },
+  }],
+};
+
+/** Validates one event from the panel. { v } or { erro }. */
+export function limparEventoAgenda(e, i = 0) {
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return { erro: `Event ${i + 1}: invalid format.` };
+  const id = texto(e.id, 40).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!id) return { erro: `Event ${i + 1}: give it an ID.` };
+  const titulo = texto(e.titulo, 60);
+  if (!titulo) return { erro: `${id}: give it a title.` };
+  const tipo = TIPOS.includes(e.tipo) ? e.tipo : 'outro';
+  const v = { id, ligado: e.ligado !== false, tipo, titulo, descricao: texto(e.descricao, 300), destaque: !!e.destaque };
+  const pt = { titulo: texto(e.pt?.titulo, 60), descricao: texto(e.pt?.descricao, 300) };
+  if (pt.titulo || pt.descricao) v.pt = pt;
+  if (e.quando === 'semana') {
+    const dias = [...new Set((Array.isArray(e.dias) ? e.dias : []).map(Number).filter(d => Number.isInteger(d) && d >= 0 && d <= 6))].sort();
+    const horas = [...new Set((Array.isArray(e.horas) ? e.horas : []).map(String).filter(h => /^([01]\d|2[0-3]):[0-5]\d$/.test(h)))].sort();
+    if (!dias.length) return { erro: `${id}: pick at least one day.` };
+    if (!horas.length) return { erro: `${id}: give a start time (HH:MM).` };
+    const dur = Math.round(num(e.duracaoMin, 1, 7 * 1440, NaN));
+    if (!Number.isFinite(dur)) return { erro: `${id}: how many minutes does it last?` };
+    Object.assign(v, { quando: 'semana', dias, horas, duracaoMin: dur });
+    for (const k of ['desde', 'ate']) if (e[k]) { const t = ms(e[k]); if (t == null) return { erro: `${id}: invalid ${k} date.` }; v[k] = new Date(t).toISOString(); }
+  } else {
+    const a = ms(e.inicio), b = ms(e.fim);
+    if (a == null) return { erro: `${id}: give a start date.` };
+    if (b == null || b <= a) return { erro: `${id}: the end must be after the start.` };
+    Object.assign(v, { quando: 'uma', inicio: new Date(a).toISOString(), fim: new Date(b).toISOString() });
+  }
+  if (tipo === 'bonus') {
+    const b = e.bonus || {};
+    v.bonus = { xp: Math.round(num(b.xp, 1, 5, 1) * 100) / 100, shiny: Math.round(num(b.shiny, 1, 20, 1) * 100) / 100, densidade: Math.round(num(b.densidade, 0.25, 3, 1) * 100) / 100 };
+    if (v.bonus.xp === 1 && v.bonus.shiny === 1 && v.bonus.densidade === 1) return { erro: `${id}: a bonus needs EXP, shiny or wild above ×1.` };
+  }
+  if (tipo === 'raid') v.raid = { filaMin: Math.round(num(e.raid?.filaMin, 1, 120, 15)) };
+  return { v };
+}
+export function limparAgenda(d) {
+  const lista = Array.isArray(d?.eventos) ? d.eventos.slice(0, MAX_EVENTOS) : null;
+  if (!lista) return { erro: 'Invalid format.' };
+  const out = [], ids = new Set();
+  for (const [i, e] of lista.entries()) {
+    const r = limparEventoAgenda(e, i); if (r.erro) return r;
+    if (ids.has(r.v.id)) return { erro: `Two events use the ID "${r.v.id}".` };
+    ids.add(r.v.id); out.push(r.v);
+  }
+  return { v: { v: 1, eventos: out } };
+}
+
+/** Every occurrence of `e` that overlaps [de, ate). */
+export function ocorrencias(e, de, ate) {
+  if (!e.ligado) return [];
+  if (e.quando !== 'semana') {
+    const a = ms(e.inicio), b = ms(e.fim);
+    return a != null && b > de && a < ate ? [{ oc: a, fim: b }] : [];
+  }
+  const out = [], dur = e.duracaoMin * MIN, desde = ms(e.desde), ateRegra = ms(e.ate);
+  const p = Cal.partesPt(de - dur - DIA);
+  for (let i = 0; ; i++) {
+    const d = new Date(Date.UTC(p.ano, p.mes - 1, p.dia + i));
+    const ano = d.getUTCFullYear(), mes = d.getUTCMonth() + 1, dia = d.getUTCDate();
+    if (Cal.instantePt(ano, mes, dia) >= ate) break;
+    if (!e.dias.includes(d.getUTCDay())) continue;
+    for (const h of e.horas) {
+      const oc = Cal.instantePt(ano, mes, dia, +h.slice(0, 2), +h.slice(3, 5));
+      const f = new Date(Date.UTC(ano, mes - 1, dia, +h.slice(0, 2), +h.slice(3, 5)) + dur);   // wall clock: "until Monday 00:00" holds across a time change
+      const fim = Cal.instantePt(f.getUTCFullYear(), f.getUTCMonth() + 1, f.getUTCDate(), f.getUTCHours(), f.getUTCMinutes());
+      if (fim <= de || oc >= ate) continue;
+      if (desde != null && oc < desde) continue;
+      if (ateRegra != null && oc >= ateRegra) continue;
+      out.push({ oc, fim });
+    }
+  }
+  return out;
+}
+
+/** h = { dadosPub, conexoes, enviar, logAdmin, gravarComBackup, raid } (server.mjs). */
+export function criarAgenda(h) {
+  const { dadosPub, conexoes, enviar, logAdmin, gravarComBackup } = h;
+  const ARQ = nodePath.join(dadosPub, 'agenda.json');
+  let cache = { mtime: -2, v: PADRAO }, versao = 1;
+  function ler() {
+    let mt = -1;
+    try { mt = fs.statSync(ARQ).mtimeMs; } catch {}
+    if (mt === cache.mtime) return cache.v;
+    let v = PADRAO;
+    if (mt >= 0) {
+      try { const r = limparAgenda(JSON.parse(fs.readFileSync(ARQ, 'utf8'))); if (r.v) v = r.v; else console.warn('[agenda] agenda.json:', r.erro); }
+      catch (e) { console.warn('[agenda] agenda.json:', e.message); }
+    }
+    cache = { mtime: mt, v }; versao++;
+    return v;
+  }
+  const estadoDe = (o, agora) => (agora >= o.fim ? 'encerrado' : agora >= o.oc ? 'agora' : 'breve');
+  function lista(de, ate, agora = Date.now()) {
+    const out = [];
+    for (const e of ler().eventos) {
+      for (const o of ocorrencias(e, de, ate)) {
+        const r = {
+          id: e.id, tipo: e.tipo, titulo: e.titulo, descricao: e.descricao, destaque: e.destaque,
+          oc: o.oc, fim: o.fim, estado: estadoDe(o, agora),
+          ...(e.pt ? { tr: { pt: e.pt } } : {}),
+        };
+        if (e.quando === 'semana') { r.repete = 'semana'; r.regra = { repete: 'semana', dias: e.dias, horas: e.horas }; }
+        if (e.bonus) r.bonus = { ...e.bonus };
+        if (e.raid) r.raid = { ...h.raid?.resumo?.(), filaMin: e.raid.filaMin, filaEm: o.oc - e.raid.filaMin * MIN };
+        out.push(r);
+      }
+    }
+    return out.sort((a, b) => a.oc - b.oc);
+  }
+  /** The scheduled bonuses running now, multiplied together ({ xp, shiny, densidade, nome, fim }), or null. */
+  function bonusAgora(agora = Date.now()) {
+    let b = null;
+    for (const o of lista(agora - 1, agora + 1, agora)) {
+      if (o.tipo !== 'bonus' || o.estado !== 'agora') continue;
+      b ||= { xp: 1, shiny: 1, densidade: 1, nome: '', fim: null };
+      b.xp *= o.bonus.xp; b.shiny *= o.bonus.shiny; b.densidade *= o.bonus.densidade;
+      b.nome = b.nome ? b.nome + ' + ' + o.titulo : o.titulo;
+      b.fim = b.fim == null ? new Date(o.fim).toISOString() : new Date(Math.min(ms(b.fim), o.fim)).toISOString();
+    }
+    return b;
+  }
+
+  // Raids on the schedule: the queue opens `filaMin` before the start, and the countdown starts on time.
+  const feitos = new Set();
+  function tique() {
+    const agora = Date.now();
+    for (const o of lista(agora - 2 * MIN, agora + 121 * MIN, agora)) {
+      if (o.tipo !== 'raid' || !h.raid) continue;
+      const k = o.id + '@' + o.oc;
+      if (agora >= o.raid.filaEm && agora < o.oc && !feitos.has(k + ':fila')) {
+        feitos.add(k + ':fila');
+        const r = h.raid.anunciarAgendada(o.titulo);
+        console.log(`[agenda] ${o.id}: raid queue ${r.erro ? 'not opened (' + r.erro + ')' : 'opened'}`);
+      }
+      if (agora >= o.oc && agora < o.oc + 2 * MIN && !feitos.has(k + ':luta')) {
+        feitos.add(k + ':luta');
+        h.raid.comecarAgendada();
+      }
+    }
+    if (feitos.size > 500) feitos.clear();
+  }
+  setInterval(tique, 10000).unref?.();
+
+  function avisarClientes() { for (const w of conexoes.values()) if (w._info) enviar(w, { t: 'eventos', v: versao }); }
+
+  /** Public schedule (the Events board). */
+  function publico(url, json) {
+    const dia = s => (/^\d{4}-\d\d-\d\d$/.test(s || '') ? Cal.instantePt(+s.slice(0, 4), +s.slice(5, 7), +s.slice(8, 10)) : null);
+    const agora = Date.now();
+    let de = dia(url.searchParams.get('from')) ?? agora - 7 * DIA, ate = dia(url.searchParams.get('to')) ?? agora + 35 * DIA;
+    ate += DIA;
+    if (ate <= de) return json(400, { erro: 'from must be before to.' });
+    if (ate - de > MAX_JANELA_DIAS * DIA) ate = de + MAX_JANELA_DIAS * DIA;
+    ler();
+    return json(200, { lista: lista(de, ate, agora), v: versao, agora });
+  }
+
+  /** Panel routes (GM only; server.mjs already checked). True when handled. */
+  function rota(r, metodo, d, g, json) {
+    if (r === '/admin/agenda' && metodo === 'GET') {
+      const agora = Date.now();
+      json(200, { ok: true, dados: ler(), proximos: lista(agora - DIA, agora + 14 * DIA, agora).filter(o => o.estado !== 'encerrado').slice(0, 30), bonus: bonusAgora(agora) });
+      return true;
+    }
+    if (r === '/admin/agenda' && metodo === 'POST') {
+      const res = limparAgenda(d.dados);
+      if (res.erro) { json(400, { erro: res.erro }); return true; }
+      const antes = ler();
+      gravarComBackup(ARQ, res.v); cache.mtime = -2;
+      ler();
+      logAdmin(g, '*', 'event schedule', { antes, depois: res.v });
+      avisarClientes();
+      h.aoMudar?.();
+      console.log(`[admin] ${g} saved the event schedule (${res.v.eventos.length} events)`);
+      const agora = Date.now();
+      json(200, { ok: true, dados: ler(), proximos: lista(agora - DIA, agora + 14 * DIA, agora).filter(o => o.estado !== 'encerrado').slice(0, 30), bonus: bonusAgora(agora) });
+      return true;
+    }
+    return false;
+  }
+
+  return { lista, bonusAgora, publico, rota, ler };
+}

@@ -38,6 +38,27 @@ export function hoje(agora = Date.now()) {
 }
 export const estacaoAgora = (agora = Date.now()) => hoje(agora).estacao;
 
+let fmtHora = null;
+try { fmtHora = new Intl.DateTimeFormat('en-US', { timeZone: FUSO, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }); } catch {}
+/** Pacific time's offset from UTC at that instant, in ms (−8 h in winter, −7 h in summer). */
+export function desvioPt(agora = Date.now()) {
+  if (!fmtHora) return -8 * 3600e3;
+  const p = Object.fromEntries(fmtHora.formatToParts(new Date(agora)).map(x => [x.type, +x.value]));
+  return Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute) - Math.floor(agora / 60000) * 60000;
+}
+/** The instant of a Pacific wall-clock time (month 1–12). */
+export function instantePt(ano, mes, dia, hora = 0, minuto = 0) {
+  const local = Date.UTC(ano, mes - 1, dia, hora, minuto);
+  let t = local - desvioPt(local);
+  t = local - desvioPt(t);
+  return t;
+}
+/** Pacific wall-clock parts of an instant: { ano, mes, dia, hora, minuto, semana }. */
+export function partesPt(agora = Date.now()) {
+  const x = new Date(agora + desvioPt(agora));
+  return { ano: x.getUTCFullYear(), mes: x.getUTCMonth() + 1, dia: x.getUTCDate(), hora: x.getUTCHours(), minuto: x.getUTCMinutes(), semana: x.getUTCDay() };
+}
+
 /** Spawn time of day for a game-clock hour, lined up with the sky (daynight.mjs: dark from 18 to 6). */
 export function periodoSpawn(hora) {
   const h = ((+hora % 24) + 24) % 24;

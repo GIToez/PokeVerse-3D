@@ -3,10 +3,10 @@ import * as Hud from './hud.mjs';
 import * as Conta from './account.mjs';
 import * as Chat from './chat.mjs';
 import * as I18n from './i18n.mjs';
+import * as Calendario from './calendar.mjs';
 const tr = (s) => I18n.t(s);
 const MIN = 60e3,
-  DIA = 86400e3,
-  FUSO = 3 * 3600e3;
+  DIA = 86400e3;
 const LS_LEMBRAR = 'eventos.lembrar';
 let dep = { defPopup: () => null, fecharGrade: () => {}, ctx: () => ({}), abrirRaid: () => {}, raidEstado: () => null };
 let cache = { lista: [], em: 0, v: -1, desvio: 0, erro: null },
@@ -20,7 +20,7 @@ async function buscar(a = false) {
   if (buscando) return buscando;
   buscando = (async () => {
     const a = segundaDe(agoraServ()) - 7 * DIA;
-    const b = baseHttp() + '/events?from=' + dataIsoBrt(a - DIA) + '&to=' + dataIsoBrt(a + 43 * DIA);
+    const b = baseHttp() + '/events?from=' + dataIsoFuso(a - DIA) + '&to=' + dataIsoFuso(a + 43 * DIA);
     try {
       const r = await fetch(b, { cache: 'no-store' });
       let j = null;
@@ -63,26 +63,19 @@ const diaMais = (b, n = 0) => {
 };
 const meiaNoite = (a) => diaMais(a, 0);
 const segundaDe = (a) => diaMais(a, -((partes(a).sem + 6) % 7));
-const partesBrt = (b) => {
-  const x = new Date(b - FUSO);
-  return {
-    a: x.getUTCFullYear(),
-    m: x.getUTCMonth() + 1,
-    d: x.getUTCDate(),
-    h: x.getUTCHours(),
-    mi: x.getUTCMinutes(),
-    sem: x.getUTCDay(),
-  };
+const partesFuso = (b) => {                                             // the schedule's clock: Pacific time (calendar.mjs)
+  const x = Calendario.partesPt(b);
+  return { a: x.ano, m: x.mes, d: x.dia, h: x.hora, mi: x.minuto, sem: x.semana };
 };
-const dataIsoBrt = (b) => {
-  const p = partesBrt(b);
+const dataIsoFuso = (b) => {
+  const p = partesFuso(b);
   return p.a + '-' + p2(p.m) + '-' + p2(p.d);
 };
-const horaBrt = (a) => {
-  const p = partesBrt(a);
+const horaFuso = (a) => {
+  const p = partesFuso(a);
   return p2(p.h) + 'h' + (p.mi ? p2(p.mi) : '');
 };
-const rotuloFuso = (a) => tr(new Date(a).getTimezoneOffset() === 180 ? 'Brasília' : 'your time');
+const rotuloFuso = () => tr('your time');
 const DIAS = {
   pt: ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'],
   en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -93,7 +86,7 @@ const MESES = {
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
 };
-const lng = () => (DIAS[I18n.idioma()] ? I18n.idioma() : 'pt');
+const lng = () => (DIAS[I18n.idioma()] ? I18n.idioma() : 'en');
 const horaDe = (a) => {
   const p = partes(a);
   return lng() === 'pt' ? p2(p.h) + 'h' + (p.mi ? p2(p.mi) : '') : p2(p.h) + ':' + p2(p.mi);
@@ -110,19 +103,19 @@ function quando(o) {
   const a = agoraServ();
   if (o.estado === 'agora')
     return (
-      tr('agora') +
+      tr('now') +
       ' · ' +
-      (o.fim - o.oc > MIN ? tr('até') + ' ' + (outroDia(o) ? diaMes(o.fim) + ' · ' : '') + horaDe(o.fim) : horaDe(o.oc))
+      (o.fim - o.oc > MIN ? tr('until') + ' ' + (outroDia(o) ? diaMes(o.fim) + ' · ' : '') + horaDe(o.fim) : horaDe(o.oc))
     );
-  if (o.estado === 'encerrado') return tr('encerrado') + ' · ' + diaMes(o.oc);
+  if (o.estado === 'encerrado') return tr('ended') + ' · ' + diaMes(o.oc);
   const b = meiaNoite(a),
     c = meiaNoite(o.oc);
-  return (c === b ? tr('hoje') : c === diaMais(a, 1) ? tr('tomorrow') : diaCurto(o.oc)) + ' · ' + horaDe(o.oc);
+  return (c === b ? tr('today') : c === diaMais(a, 1) ? tr('tomorrow') : diaCurto(o.oc)) + ' · ' + horaDe(o.oc);
 }
 const outroDia = (o) => o.fim - o.oc > MIN && meiaNoite(o.fim) !== meiaNoite(o.oc);
 function periodo(o) {
   const a = outroDia(o)
-    ? ' ' + tr('até') + ' ' + diaCurto(o.fim) + ' · ' + horaDe(o.fim)
+    ? ' ' + tr('until') + ' ' + diaCurto(o.fim) + ' · ' + horaDe(o.fim)
     : o.fim - o.oc > MIN
       ? ' ' + tr('at') + ' ' + horaDe(o.fim)
       : '';
@@ -140,7 +133,7 @@ function repeticaoLocal(o) {
   if (!r) return o.repete ? traduzRepete(o.repete) : '';
   const l = lng(),
     c = horasLocais(o, r, l),
-    e = (partes(o.oc).sem - partesBrt(o.oc).sem + 7) % 7;
+    e = (partes(o.oc).sem - partesFuso(o.oc).sem + 7) % 7;
   const f = r.repete === 'semana' ? [...new Set((r.dias || []).map((d) => (d + e) % 7))].sort((a, b) => a - b) : [];
   if (r.repete !== 'semana' || !f.length || f.length === 7)
     return { pt: 'todo dia', en: 'every day', es: 'todos los días' }[l] + ' · ' + c;
@@ -153,7 +146,7 @@ function repeticaoLocal(o) {
 function horasLocais(o, r, l) {
   const a = Array.isArray(r?.horas) && r.horas.length > 1 ? r.horas : null;
   if (!a) return horaDe(o.oc);
-  const b = partesBrt(o.oc),
+  const b = partesFuso(o.oc),
     c = b.h * 60 + b.mi;
   const d = a
     .filter((h) => /^\d\d:\d\d$/.test(String(h)))
@@ -183,12 +176,12 @@ function contagem(o) {
       b = s % 60;
     return d ? d + 'd ' + p2(h) + 'h ' + p2(m) + 'm' : h ? h + 'h ' + p2(m) + 'm' : p2(m) + 'm ' + p2(b) + 's';
   };
-  if (a < o.oc) return { rotulo: tr('começa em'), texto: b(o.oc - a) };
+  if (a < o.oc) return { rotulo: tr('starts in'), texto: b(o.oc - a) };
   if (a < o.fim && o.fim - o.oc > MIN) return { rotulo: tr('ends in'), texto: b(o.fim - a) };
-  return { rotulo: tr('encerrado'), texto: diaMes(o.oc) };
+  return { rotulo: tr('ended'), texto: diaMes(o.oc) };
 }
-const tituloDe = (o) => (lng() !== 'pt' && o.tr?.[lng()]?.titulo) || I18n.tExato(o.titulo);
-const descDe = (o) => (lng() !== 'pt' && o.tr?.[lng()]?.descricao) || I18n.tExato(o.descricao || '');
+const tituloDe = (o) => o.tr?.[lng()]?.titulo || I18n.tExato(o.titulo);   // English is the source; the schedule carries the other languages
+const descDe = (o) => o.tr?.[lng()]?.descricao || I18n.tExato(o.descricao || '');
 const ROTULO_TIPO = {
   raid: 'RAID',
   invasao: 'INVASION',
@@ -198,7 +191,7 @@ const ROTULO_TIPO = {
   outro: 'EVENT',
   reinicio: 'MAINTENANCE',
 };
-const ESTADO_TXT = { agora: 'AGORA', breve: 'COMING SOON', encerrado: 'ENDED' };
+const ESTADO_TXT = { agora: 'LIVE', breve: 'COMING SOON', encerrado: 'ENDED' };
 const COR_TIPO = {
   bonus: '#7ee8a6',
   festival: '#7fd6ff',
@@ -945,7 +938,7 @@ function iniciarLembretes() {
         faixa({
           estilo: 'lembrete',
           cru: true,
-          texto: v.t + ' ' + tr('começa em') + ' ' + Math.max(1, Math.ceil((v.oc - a) / MIN)) + ' min.',
+          texto: v.t + ' ' + tr('starts in') + ' ' + Math.max(1, Math.ceil((v.oc - a) / MIN)) + ' min.',
         });
         delete l[k];
         b = true;
@@ -983,7 +976,7 @@ let tFaixa = 0,
   tConta = 0;
 function horaLocal(a, c) {
   if (!c) return a;
-  const b = horaBrt(c),
+  const b = horaFuso(c),
     i = a.lastIndexOf(b);
   return i < 0 ? a : a.slice(0, i) + horaDe(c) + a.slice(i + b.length);
 }
@@ -1089,8 +1082,8 @@ export function receber(m) {
 function urlPainel() {
   const b = baseHttp();
   return b === location.origin + '/servidor'
-    ? '/adm#/eventos'
-    : './adm.html?api=' + encodeURIComponent(b) + '#/eventos';
+    ? '/adm#/agenda'
+    : './adm.html?api=' + encodeURIComponent(b) + '#/agenda';
 }
 function ligarLinkPainel() {
   if (!pop || !dep.ctx().gm?.()) return;

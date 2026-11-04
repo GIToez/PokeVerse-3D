@@ -1,0 +1,30 @@
+{
+  "v": 1,
+  "eventos": [
+    {
+      "id": "double-exp-weekend",
+      "ligado": true,
+      "tipo": "bonus",
+      "destaque": true,
+      "titulo": "Double EXP Weekend",
+      "descricao": "All wild EXP is doubled from Saturday 00:00 to Sunday 23:59 (Pacific time).",
+      "pt": {
+        "titulo": "Fim de semana de EXP em dobro",
+        "descricao": "Toda EXP de selvagem vale o dobro de sábado 00:00 a domingo 23:59 (horário do Pacífico)."
+      },
+      "quando": "semana",
+      "dias": [
+        6
+      ],
+      "horas": [
+        "00:00"
+      ],
+      "duracaoMin": 2880,
+      "bonus": {
+        "xp": 2,
+        "shiny": 1,
+        "densidade": 1
+      }
+    }
+  ]
+}

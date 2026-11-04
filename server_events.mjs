@@ -54,8 +54,13 @@ export function criarEventos(h) {
   function efetivo(agora = Date.now()) {
     const e = ler(), ini = ms(e.inicio), fim = ms(e.fim);
     const vale = (ini == null || agora >= ini) && (fim == null || agora < fim);
-    return vale ? { nome: e.nome, expMult: e.expMult, shinyMult: e.shinyMult, densidade: e.densidade, fim: e.fim }
+    const r = vale ? { nome: e.nome, expMult: e.expMult, shinyMult: e.shinyMult, densidade: e.densidade, fim: e.fim }
       : { nome: '', expMult: 1, shinyMult: 1, densidade: 1, fim: null, proximo: ini != null && agora < ini ? e.inicio : null };
+    const b = h.agendaBonus?.(agora);                                    // scheduled bonuses (server_schedule.mjs) stack with the live event
+    if (!b) return r;
+    const arred = n => Math.round(n * 100) / 100;
+    return { ...r, nome: [r.nome, b.nome].filter(Boolean).join(' + '), expMult: arred(r.expMult * b.xp), shinyMult: arred(r.shinyMult * b.shiny),
+      densidade: arred(Math.min(3, r.densidade * b.densidade)), fim: r.fim && ms(r.fim) < ms(b.fim) ? r.fim : b.fim, agendado: b };
   }
   const manutencaoAgora = (agora = Date.now()) => { const m = ler().manutencao; return !!m?.ativa && (ms(m.inicio) == null || agora >= ms(m.inicio)); };
   const textoManutencao = () => ler().manutencao?.texto || TEXTO_MANUTENCAO;
@@ -87,7 +92,9 @@ export function criarEventos(h) {
     const agora = Date.now(), e = efetivo(agora), s = JSON.stringify(msgEvento(e));
     if (s !== ultimo) {
       const antes = JSON.parse(ultimo); ultimo = s; todos(msgEvento(e));
-      if (antes.expMult !== 1 || antes.shinyMult !== 1 || antes.densidade !== 1) { if (e.expMult === 1 && e.shinyMult === 1 && e.densidade === 1) todos({ t: 'sistema', texto: '🎉 O evento' + (antes.nome ? ' "' + antes.nome + '"' : '') + ' acabou. Obrigado por jogar!' }); }
+      const ativo = x => x.expMult !== 1 || x.shinyMult !== 1 || x.densidade !== 1;
+      if (ativo(antes) && !ativo(e)) todos({ t: 'sistema', texto: '🎉 The event' + (antes.nome ? ' "' + antes.nome + '"' : '') + ' is over. Thanks for playing!' });
+      else if (ativo(e) && (e.nome !== antes.nome || e.expMult !== antes.expMult)) todos({ t: 'invasao', texto: '🎉 Event: ' + (e.nome || 'Bonus') + textoMult(e) });
     }
     const m = ler().manutencao, ini = ms(m?.inicio);
     if (m?.ativa && ini != null && agora < ini) {

@@ -15,8 +15,8 @@ export function doServidor(m) {
   const antes = JSON.stringify(atual);
   atual = novo;
   if (JSON.stringify(novo) === antes) return null;
-  const partes = [novo.expMult !== 1 ? 'EXP ×' + novo.expMult : '', novo.shinyMult !== 1 ? 'shiny ×' + novo.shinyMult : '', novo.densidade !== 1 ? 'selvagens ×' + novo.densidade : ''].filter(Boolean);
-  if (!partes.length) return JSON.parse(antes).nome || JSON.parse(antes).expMult !== 1 || JSON.parse(antes).shinyMult !== 1 || JSON.parse(antes).densidade !== 1 ? '🎉 Evento encerrado.' : null;
-  const ate = novo.fim ? ' — até ' + new Date(novo.fim).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-  return '🎉 ' + (novo.nome || 'Evento') + ': ' + partes.join(' · ') + ate;
+  const partes = [novo.expMult !== 1 ? 'EXP ×' + novo.expMult : '', novo.shinyMult !== 1 ? 'shiny ×' + novo.shinyMult : '', novo.densidade !== 1 ? 'wild ×' + novo.densidade : ''].filter(Boolean);
+  if (!partes.length) return JSON.parse(antes).nome || JSON.parse(antes).expMult !== 1 || JSON.parse(antes).shinyMult !== 1 || JSON.parse(antes).densidade !== 1 ? '🎉 Event over.' : null;
+  const ate = novo.fim ? ' — until ' + new Date(novo.fim).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+  return '🎉 ' + (novo.nome || 'Event') + ': ' + partes.join(' · ') + ate;
 }
