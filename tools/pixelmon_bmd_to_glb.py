@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn one Pixelmon .bmd (version 2, xz) into a skinned GLB this game can load.
+"""Turn one Pixelmon .bmd (version 1 raw or version 2 xz) into a skinned GLB this game can load.
 
 Pixelmon 9 stores the mesh and each animation as a separate .bmd next to texture.png.
 The overworld expects public/scenery/mon/pm<dex>_<form>.glb, an embedded texture whose
@@ -23,17 +23,21 @@ TICKS_PER_SECOND = 25.0
 
 def read_bmd(path, with_mesh=True):
     data = Path(path).read_bytes()
-    if not data or data[0] != 2:
-        raise SystemExit(f'{path} is not a Pixelmon BMD version 2 file')
-    # Some Pixelmon meshes are xz streams with the footer cut off. A strict
-    # decompress raises, but the bytes before the cut are a complete model.
-    dec = lzma.LZMADecompressor(format=lzma.FORMAT_XZ)
-    try:
-        raw = dec.decompress(data[1:])
-    except lzma.LZMAError:
-        raw = b''
-    if not raw:
-        raw = lzma.decompress(data[1:])
+    if not data or data[0] not in (1, 2):
+        raise SystemExit(f'{path} is not a Pixelmon BMD version 1 or 2 file')
+    if data[0] == 1:
+        # Version 1 is the same layout, uncompressed.
+        raw = data[1:]
+    else:
+        # Some Pixelmon meshes are xz streams with the footer cut off. A strict
+        # decompress raises, but the bytes before the cut are a complete model.
+        dec = lzma.LZMADecompressor(format=lzma.FORMAT_XZ)
+        try:
+            raw = dec.decompress(data[1:])
+        except lzma.LZMAError:
+            raw = b''
+        if not raw:
+            raw = lzma.decompress(data[1:])
     o = 0
 
     def u8():

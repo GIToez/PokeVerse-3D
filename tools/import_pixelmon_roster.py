@@ -121,7 +121,11 @@ def pick_model(palette):
         if not isinstance(group, dict):
             continue
         pred = (group.get('model_predicate') or {}).get('type') or 'pixelmon:always'
-        for model in group.get('models') or []:
+        models = group.get('models') or []
+        # Some species list their models by render style: {"smooth": [...]}.
+        if isinstance(models, dict):
+            models = [m for style in models.values() if isinstance(style, list) for m in style]
+        for model in models:
             if isinstance(model, dict) and str(model.get('model') or '').lower().endswith('.bmd'):
                 chosen.append((pred, model))
     if not chosen:
@@ -255,7 +259,8 @@ def plan_species(raw, existing):
         model = entry['model']
         idle = anim_ref(model, 'idle') or anim_ref(model, 'walk')
         walk = anim_ref(model, 'walk') or idle
-        if not model.get('model') or not model.get('texture') or not idle:
+        # A model with no motions still ships; default_clips gives it Idle and Run.
+        if not model.get('model') or not model.get('texture'):
             return
         glb = f'pm{dex:04d}_{suffix:02d}'
         label = nota
@@ -392,7 +397,7 @@ def canonical_jobs(z, index, before=None):
         idle = resolve(job['idle'], index)
         walk = resolve(job['walk'], index)
         shiny = resolve(job['shiny'], index) if job.get('shiny') else None
-        if not (model and texture and idle and walk):
+        if not (model and texture and (idle and walk or not job['idle'])):
             continue
         job = dict(job)
         job['model_path'] = model
@@ -441,7 +446,7 @@ def build_plan(z):
         idle = resolve(job['idle'], index)
         walk = resolve(job['walk'], index)
         shiny = resolve(job['shiny'], index) if job.get('shiny') else None
-        if not (model and texture and idle and walk):
+        if not (model and texture and (idle and walk or not job['idle'])):
             missing += 1
             continue
         job = dict(job)
@@ -471,13 +476,13 @@ def _worker(job):
             return dest
         model = dump('model', job['model_path'])
         texture = dump('texture', job['texture_path'])
-        idle = dump('idle', job['idle_path'])
-        walk = dump('walk', job['walk_path'])
         glb_name = job['glb']
+        clips = []
+        if job['idle_path']:
+            clips = [(dump('idle', job['idle_path']), 'Idle'), (dump('walk', job['walk_path']), 'Run')]
         try:
             built = convert(
-                model, texture,
-                [(idle, 'Idle'), (walk, 'Run')],
+                model, texture, clips,
                 f'{glb_name}_Body1.tga', glb_name, job['scale'],
             )
         except SystemExit as e:
@@ -568,6 +573,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--plan', action='store_true')
     parser.add_argument('--workers', type=int, default=6)
+    parser.add_argument('--only', nargs='+', metavar='GLB',
+                        help='convert just these models (names like pm0213_00)')
     parser.add_argument('--rebuild', nargs='+', metavar='GLB',
                         help='convert these models again (names like pm0202_00, or @file.json with a list)')
     args = parser.parse_args()
@@ -580,6 +587,8 @@ def main():
     z = zipfile.ZipFile(JAR)
     jobs, unresolved = build_plan(z)
     z.close()
+    if args.only:
+        jobs = [j for j in jobs if j['glb'] in set(args.only)]
     by_kind = {}
     for job in jobs:
         by_kind[job['kind']] = by_kind.get(job['kind'], 0) + 1
@@ -640,6 +649,8 @@ def main():
     z2 = zipfile.ZipFile(JAR)
     gap = []
     for job in canonical_jobs(z2, jar_index(z2)):
+        if args.only and job['glb'] not in args.only:
+            continue
         if not (MON / f"{job['glb']}.glb").exists():
             continue
         if job['glb'] in logged:
