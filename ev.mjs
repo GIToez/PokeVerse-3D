@@ -18,6 +18,8 @@ export async function carregar(url = './data/ev_yields.json'){
   return usarYields(d);
 }
 
+export const dados = () => YIELD;
+export const nomeStat = i => STATS[i] || '?';
 export const evsDe = Ind.evsDe;
 export const garantir = e => { Ind.garantir(e); return e; };
 export const soma = Ind.somaEV;

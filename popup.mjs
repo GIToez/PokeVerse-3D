@@ -331,7 +331,7 @@ function ligarTag(el, f, pop){
   }
   if (f.tag === 'recolhe'){ el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; return; }   // [recolhe:x] (capítulo das Missões): só marca; o clique SOBE pra quem montou
   if (f.tag === 'escolhe'){ el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; el.addEventListener('click', ev => { ev.stopPropagation(); pop.__cb.escolhe?.(f.tagVal, el); }); return; }   // [escolhe:x] (opções do pop-up do inicial, rodada 29 — 18/09): avisa quem montou com o valor e o nó clicado
-  if (!['fecha', 'aba', 'acao', 'abre'].includes(f.tag)) return;       // outras tags não são botão
+  if (!['fecha', 'aba', 'acao', 'abre', 'filtro'].includes(f.tag)) return;   // other tags are not buttons
   el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer';
   const disparar = ev => {
     ev.stopPropagation();
@@ -344,6 +344,7 @@ function ligarTag(el, f, pop){
       if (!tratou && pop.querySelector('.pf-extra[data-fig="' + f.tagVal + '"]')) mostrarExtra(pop, f.tagVal);
     }
     else if (f.tag === 'aba') trocarAba(pop, f.tagVal);
+    else if (f.tag === 'filtro'){ marcarFiltro(el); pop.__cb.filtro?.(f.tagVal, el); }
     else if (f.tag === 'acao'){ if (el.dataset.desligado !== '1') pop.__cb.acao?.(f.tagVal, el); }
   };
   /* A phone tap on a scaled popup often never becomes a click. pointerup is the tap. */

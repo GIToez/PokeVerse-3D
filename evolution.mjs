@@ -24,6 +24,18 @@ export async function carregar(){
 }
 export const pronto = () => !!D;
 export const regras = dex => D?.por?.[dex] || [];
+let PRE = null;
+/** The species and every earlier stage of its line, nearest first. */
+export function familiaAbaixo(dex){
+  if (!PRE && D){
+    PRE = {};
+    for (const [de, rs] of Object.entries(D.por || {})) for (const r of rs || []) if (+r?.para && !PRE[r.para]) PRE[r.para] = +de;
+  }
+  const out = [+dex];
+  let d = +dex, n = 0;
+  while (PRE && Object.hasOwn(PRE, d) && n++ < 4){ d = PRE[d]; out.push(d); }
+  return out;
+}
 export const itens = () => D?.itens || {};
 export const ehItemDeEvolucao = id => !!D?.itens?.[id];
 export const nomeItem = id => D?.itens?.[id]?.n || ('item ' + id);

@@ -95,6 +95,46 @@ export function pontos(dex){
 }
 export function nivel(dex){ const p = pontos(dex); let n = 0; for (let i = 1; i < LIMIAR.length; i++) if (p >= LIMIAR[i]) n = i; return n; }
 export const nomeNivel = n => NIVEIS[n] || NIVEIS[0];
+
+/** The Research tab checklist: each task, how much of it is done and the points it is worth. */
+export function tarefas(a) {
+  const r = carregar().esp[a] || { v: 0, p: 0, ar: [], sx: '', gl: [], ev: 0, lu: 0, sh: 0 };
+  const b = Array.isArray(r.ar) ? r.ar : [],
+    c = Array.isArray(r.gl) ? r.gl : [],
+    d = typeof r.sx === 'string' ? r.sx : '',
+    e = +r.lu || 0;
+  const f = io?.areasSelvagem?.(a) ?? null,
+    g = f == null || f > 0,
+    h = f == null ? 3 : Math.min(3, Math.max(f, b.length));
+  const i = !!io && temGenero(a) && !d.includes(SEXO_NENHUM),
+    m = io?.sexos?.[a] ?? 50,
+    j = r.p > 0;
+  const k = +io?.golpesDaEspecie?.(a) || 0,
+    l = k > 0 ? Math.min(8, k) : 8;
+  const o = Math.min(8, c.length),
+    q = Math.max(l, o);
+  return [
+    { id: 'avistar', feito: +(r.v > 0 || j), total: 1, pontos: 1 },
+    (g || j) && { id: 'capturar', feito: +j, total: 1, pontos: i ? 3 : 7 },
+    h > 1 && (g || b.length > 1) && { id: 'rotas', feito: Math.min(b.length, h), total: h, pontos: 2 * (h - 1), n: h },
+    i && m > 0 && (g || d.includes('m')) && { id: 'macho', feito: +d.includes('m'), total: 1, pontos: 2 },
+    i && m < 100 && (g || d.includes('f')) && { id: 'femea', feito: +d.includes('f'), total: 1, pontos: 2 },
+    { id: 'golpes', feito: o, total: q, pontos: q },
+    (io?.evolui?.(a) !== false || !!r.ev) && { id: 'evoluir', feito: +!!r.ev, total: 1, pontos: 4 },
+    { id: 'enfrentar', feito: Math.min(e, 15), total: 15, pontos: 5 },
+    (g || !!r.sh) && { id: 'shiny', feito: +!!r.sh, total: 1, pontos: 5 },
+  ].filter(Boolean);
+}
+export const limiares = () => LIMIAR.slice();
+const REVELA = [
+  '',
+  'Seen reveals types and where the species lives',
+  'Registered reveals stats, height, weight, evolution and weaknesses',
+  'Studied reveals catch rate and abilities',
+  'Specialist reveals gender, full learnset and hidden ability',
+  'Master: you know everything about the species',
+];
+export const revelaTexto = n => REVELA[n] || '';
 export function registro(dex){ return carregar().esp[dex] == null ? null : reg(dex); }
 /** O que a ficha pode mostrar neste nível. */
 export function revela(dex){

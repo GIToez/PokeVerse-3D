@@ -326,7 +326,7 @@ const DIALOGOS = new Set();
 function dialogoAberto(){ for (const d of DIALOGOS){ if (d.isConnected) return true; DIALOGOS.delete(d); } return false; }
 export const aberto = () => !!aberta || !$('menu-grade')?.hidden || dialogoAberto() || !!(popEb && Popup.aberto(popEb)) || !!(popIn && Popup.aberto(popIn)) || CrecheUI.aberto() || TerrenoUI.aberto() || GuildaUI.aberto() || Balsa.aberto() || FeiraUI.aberto() || EventosUI.aberto() || PokemartUI.aberto();   // 18/09: a escolha do inicial (v2) também segura o jogo
 export function alternarGrade(){ if (aberta) fechar(); else { const g = $('menu-grade'); g.hidden = !g.hidden; ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); } }
-function fecharGrade(){ $('menu-grade').hidden = true; }
+function fecharGrade(){ const g = $('menu-grade'); if (g) g.hidden = true; }
 function marcarMapaCheio(on){
   const j = $('janela');
   j.classList.toggle('mapa-cheia', on);
@@ -2881,104 +2881,735 @@ function requestsBadge(pop, n){
   t.style.display = n ? 'none' : 'block';
 }
 /* ---------------------------------------------------------------- Pokédex */
-let genDx = 1;
-const GENS_DX = [[1, 1, 151], [2, 152, 251], [3, 252, 386], [4, 387, 493], [5, 494, 649]];
-function popupDx(){
+const retratoRedondoDex = n => './ui/mon/pm' + String(n).padStart(4, '0') + '.png';
+const familiaAbaixo = dex => Evolucao.familiaAbaixo?.(dex) || [+dex];
+const minhaPosicao = () => myRankingPosition();
+function rolarSeCortado(el){ if (el) el.title = el.textContent || ''; }
+/** Shrinks the text until it fits its box, down to `min` of the design size (a fraction) or `min` px. */
+function caberTexto(el, min = 0.8){
+  if (!el) return;
+  const base = el.__fsBase ??= parseFloat(el.style.fontSize) || 12;
+  el.style.fontSize = base + 'px';
+  if (!el.clientWidth) return;
+  const piso = min < 1 ? Math.max(6, base * min) : min;
+  let fs = base;
+  while (fs > piso && (el.scrollWidth > el.clientWidth + 0.5 || el.scrollHeight > el.clientHeight + 0.5)){ fs -= 0.5; el.style.fontSize = fs + 'px'; }
+  el.title = el.textContent || '';
+}
+let pescaOnde = null;
+function ondePesca(dex){
+  if (!pescaOnde){
+    pescaOnde = new Map();
+    const pegar = u => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null);
+    Promise.all([pegar('./data/pesca.json'), pegar('./data/safari.json')]).then(([p, s]) => {
+      const por = (d, a) => { if (!(+d > 0) || !(+a > 0)) return; if (!pescaOnde.has(+d)) pescaOnde.set(+d, new Set()); pescaOnde.get(+d).add(+a); };
+      const areaSafari = s?.pesca?.especies?.length ? +(s.pesca.area ?? s.area) : 0;
+      for (const [a, v] of Object.entries(p?.areas || {})) if (+a !== areaSafari) for (const e of v?.especies || []) por(e.dex, a);
+      for (const e of s?.pesca?.especies || []) por(e.dex, s.pesca.area ?? s.area);
+      if (aberta === 'pokedex') render();
+    });
+  }
+  return [...(pescaOnde.get(+dex) || [])];
+}
+let habitatsPedidos = false;
+function habitatsDaDex(){
+  if (ctx.habitats) return ctx.habitats;
+  if (mapaHabitats) return mapaHabitats;
+  if (!habitatsPedidos){
+    habitatsPedidos = true;
+    fetch('./data/habitats.json').then(r => r.ok ? r.json() : null).catch(() => null).then(j => {
+      if (!j?.areas){ habitatsPedidos = false; return; }
+      mapaHabitats ??= j;
+      if (aberta === 'pokedex') render();
+    });
+  }
+  return null;
+}
+function areasDoMato(dex){
+  const out = [];
+  for (const [a, lista] of Object.entries(habitatsDaDex()?.areas || {})) if (lista.some(e => e.dex === dex)) out.push(ctx.nomeArea?.(+a) || ctx.dados?.nomes?.[a] || 'area ' + a);
+  return out;
+}
+let genDx = 1,
+  secaoDx = 'ficha',
+  dexRolarAte = null,
+  evoDx = null;
+const GENS_DX = [
+  [1, 1, 151],
+  [2, 152, 251],
+  [3, 252, 386],
+  [4, 387, 493],
+  [5, 494, 649],
+];
+const SECOES_DX = ['ficha', 'status', 'evolucao', 'golpes', 'pesquisa'];
+const STATS_DX = [
+  ['hp', 'HP'],
+  ['atq', 'Atk'],
+  ['def', 'Def'],
+  ['ate', 'SpA'],
+  ['dfe', 'SpD'],
+  ['vel', 'Spe'],
+];
+const CAT_DX = { 1: 'physical', 2: 'special', 3: 'status' };
+const TAREFAS_DX = {
+  avistar: 'Spot one',
+  capturar: 'Catch one',
+  rotas: 'Catch on {n} routes',
+  macho: 'Catch a male',
+  femea: 'Catch a female',
+  golpes: 'See moves in battle',
+  evoluir: 'See the species evolve',
+  enfrentar: 'Face in battle',
+  shiny: 'Find a shiny',
+};
+const SILHUETA_DX = 'brightness(0) opacity(.85)';
+const multDx = (m) => (m === 0 ? '×0' : m === 0.25 ? '×¼' : m === 0.5 ? '×½' : '×' + m);
+const seloDx = (c, a, b) => {
+  const s = c?.querySelector(':scope > [data-fig="' + a + '"]');
+  if (s) s.style.display = b ? 'block' : 'none';
+};
+async function carregarEvoDx() {
+  if (!evoDx)
+    evoDx = await fetch('./data/evolutions.json')
+      .then((r) => r.json())
+      .catch(() => ({ por: {} }));
+  return evoDx;
+}
+function popupDx() {
   if (popDx) return popDx;
-  const def = defPopup('pokedex'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
-  popDx = Popup.montar(def, {
-    aba: a => { const m = /^gen-(\d)$/.exec(a); if (m){ genDx = +m[1]; selDex = null; render(); } },
-    digita: v => { dexBusca = v; render(); },
-    fechar: () => { if (aberta === 'pokedex') aberta = null; pararDex(); },
+  const b = defPopup('pokedex');
+  if (new URLSearchParams(location.search).get('popup') === '0' || !b) return null;
+  popDx = Popup.montar(b, {
+    aba: (a) => {
+      const m = /^gen-(\d)$/.exec(a);
+      if (m && +m[1] !== genDx) {
+        genDx = +m[1];
+        selDex = null;
+        dexRolarAte = 0;
+        render();
+      }
+    },
+    filtro: (v) => {
+      if (SECOES_DX.includes(v) && v !== secaoDx) {
+        secaoDx = v;
+        render();
+      }
+    },
+    digita: (v) => {
+      dexBusca = v;
+      render();
+    },
+    fechar: () => {
+      if (aberta === 'pokedex') aberta = null;
+      pararDex();
+    },
   });
-  popDx.addEventListener('click', ev => {                                // clique na linha escolhe a espécie
-    const c = ev.target?.closest?.('[data-fig="lista-especies"] > [data-fig^="especie-"]'); if (!c || c.__dex == null) return;
-    selDex = c.__dex; render();
+  popDx.addEventListener('click', (a) => {
+    const c = a.target?.closest?.('[data-fig="lista-especies"] > [data-fig^="especie-"]');
+    if (c && c.__dex != null) {
+      selDex = c.__dex;
+      render();
+      return;
+    }
+    const e = a.target?.closest?.('[data-fig^="estagio-"] > [data-fig^="evo-"]');
+    if (e && e.__dex != null && e.__dex !== selDex) irParaDex(e.__dex);
   });
   return popDx;
 }
-async function encherPokedex(pop){
-  Popup.rotulo(pop, 'titulo'); for (const a of pop.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(pop, 'aba', a);
-  Popup.trocarAba(pop, 'gen-' + genDx);
-  const [, a, b] = GENS_DX.find(([g]) => g === genDx) || GENS_DX[0]; const d = dexEstado(), K = ctx.conhecimento;
-  const q = dexBusca.trim().toLowerCase();
-  const todos = [...ctx.porDex.values()].filter(s => s.n >= a && s.n <= b).sort((p, r) => p.n - r.n);
-  const sp = todos.filter(s => !q || String(s.n) === q || (d[s.n] && s.name.toLowerCase().includes(q)));
-  const vistos = todos.filter(s => d[s.n]).length, pegos = todos.filter(s => d[s.n] === 'pego').length;
-  if (!sp.some(s => s.n === selDex)) selDex = (sp.find(s => d[s.n]) || sp[0])?.n ?? null;
-  const resumoDx = K ? K.resumo() : null;
-  Popup.texto(pop, 'contadores', '👁 ' + vistos + ' · ★ ' + pegos + '/' + todos.length + (resumoDx && resumoDx.vistos !== vistos ? ' · ' + resumoDx.vistos + ' ' + tr('seen') : ''));
-  if (K){
-    const r = resumoDx; const base = tr('Kanto Collector') + ' · ' + r.pegosKanto + '/' + r.kantoAte + ' ' + tr('caught') + ' · ' + r.vistos + ' ' + tr('seen') + ' · ' + r.shinies + ' shiny';
-    Popup.texto(pop, 'colecionador', base);
-    myRankingPosition().then(p => { if (p && p.species?.pos && aberta === 'pokedex' && Popup.aberto(pop)) Popup.texto(pop, 'colecionador', base + ' · #' + p.species.pos + ' ' + tr('of') + ' ' + p.total + ' ' + tr('in the ranking')); });
+function irParaDex(n) {
+  const g = GENS_DX.find(([, a, b]) => n >= a && n <= b)?.[0];
+  if (!g) return;
+  genDx = g;
+  if (dexBusca) {
+    dexBusca = '';
+    const c = popDx?.querySelector('[data-fig="campo-busca"] input[data-busca]');
+    if (c) c.value = '';
   }
-  // lista
-  const cels = Popup.celulas(pop, 'lista-especies', Math.max(sp.length, 1), 'especie');
-  cels.forEach((c, i) => {
-    const s = sp[i]; c.style.display = s ? 'block' : 'none'; if (!s) return;
-    const st = d[s.n], nv = K ? K.nivel(s.n) : (st === 'pego' ? 2 : st ? 1 : 0);
-    c.__dex = s.n; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
-    Popup.texto(pop, 'numero', pad3(s.n), c);
-    const nomeEl = Popup.texto(pop, 'nome', st ? s.name : '?????', c);
-    if (nomeEl && st && K?.registro(s.n)?.sh && !nomeEl.textContent.startsWith('✨')) nomeEl.textContent = '✨ ' + nomeEl.textContent;
-    const prog = c.querySelector('[data-fig="progresso-especie"]'); if (prog){ prog.style.display = st ? 'block' : 'none'; bolinhas(prog, nv); }
-    for (const g of c.querySelectorAll(':scope > [data-fig^="tipo-"]')) g.style.display = 'none';
-    if (st) pilulasTipo(pop, c, s.types || []);
-    Popup.estadoRef(pop, c, 'especie', s.n === selDex ? 'selecionada' : st ? 'vista' : 'oculta');
-    for (const m of c.querySelectorAll(':scope > [data-sobre]')) m.style.display = s.n === selDex ? 'block' : 'none';   /* 18/09: v2 — a marca-selecionado [estado:selecionada] da linha; a maquete não tem ref 'especie', então o estadoRef acima não fazia nada e a lista não mostrava qual espécie está na ficha */
-  });
-  // ficha
-  if (selDex == null) return;
-  const S = ctx.porDex.get(selDex), st = d[selDex], conhecido = !!st;
-  await Promise.all([carregarElenco(), carregarDexExtra()]);
-  if (aberta !== 'pokedex' || !Popup.aberto(pop)) return;
-  const X = dexExtra.especies?.[selDex] || {};
-  const rv = K ? K.revela(selDex) : null, nv = rv ? rv.nivel : (st === 'pego' ? 2 : st ? 1 : 0);
-  Popup.texto(pop, 'especie-nome', nv >= 1 ? S?.name : '?????'); Popup.texto(pop, 'especie-numero', 'No. ' + pad3(selDex));
-  Popup.texto(pop, 'especie-visto', '· ' + (st === 'pego' ? tr('caught') : st ? tr('seen') : tr('unknown')));
-  bolinhas(Popup.grupo(pop, 'progresso-registro'), nv); Popup.texto(pop, 'nivel-nome', tr(NOMES_NIVEL[nv]));
-  const falta = K && nv < 5 ? K.falta(selDex).slice(0, 3) : [];
-  Popup.texto(pop, 'como-subir', nv >= 5 ? tr('Max level: you are a Master of this species.') : (rv && rv.proximo != null ? rv.pontos + '/' + rv.proximo + ' ' + tr('to') + ' ' + tr(NOMES_NIVEL[nv + 1]) + (falta.length ? ' — ' + tr('to rank up:') + ' ' + falta.map(x => tr(x)).join(', ') : '') : (st ? '' : tr('Find this Pokémon to open the entry.'))));
-  const f = Popup.grupo(pop, 'ficha-especie');
-  pilulasTipo(pop, Popup.grupo(pop, 'tipos-especie') || f, nv >= 1 ? (S?.types || []) : []);
-  // visor 3D nas duas caixas [do-jogo]
-  const modelos = Popup.grupo(pop, 'modelos'), bN = modelos?.querySelector('[data-var="modelo-normal"]'), bS = modelos?.querySelector('[data-var="modelo-shiny"]');
-  if (modelos && bN && bS){
-    const v = visorDex(); const w = parseFloat(bN.style.width) || 266, h = parseFloat(bN.style.height) || 157, x0 = parseFloat(bN.style.left) || 13, x1 = parseFloat(bS.style.left) || 327, y = parseFloat(bN.style.top) || 15;
-    v.redimensionar(Math.round(w), Math.round(h), Math.round(x1 - x0 - w));
-    if (v.canvas.parentElement !== modelos){ modelos.appendChild(v.canvas); }
-    Object.assign(v.canvas.style, { position: 'absolute', left: x0 + 'px', top: y + 'px', width: (2 * w + (x1 - x0 - w)) + 'px', height: h + 'px', pointerEvents: 'auto', zIndex: '60', cursor: 'grab' });
-    if (!v.ativo){ v.ativo = true; v.t0 = 0; requestAnimationFrame(v.quadro); }
-    const glb = glbDe(selDex); selDexGlb = glb;
-    mostrarModeloDex(glb, nv >= 1).catch(e => console.warn('pokédex 3D:', e));
-  }
-  // tabela de informações (cadeado até o nível certo)
-  const alt = ctx.alturas?.[selDex] ?? X.a, peso = S?.kg ?? X.p;
-  const linhas = [
-    ['info-altura---peso', 2, alt || peso ? (alt ? alt.toFixed(1) + ' m' : '—') + ' · ' + (peso ? peso + ' kg' : '—') : '—'],
-    ['info-habilidades', 3, X.h?.length ? X.h.join(', ') + (X.ho ? (nv >= 4 ? ' (' + tr('hidden:') + ' ' + X.ho + ')' : ' (' + tr('hidden: unlocks at level 4') + ')') : '') : '—'],
-    ['info-g-nero', 4, X.m != null ? (X.m < 0 ? tr('genderless') : '♂ ' + X.m + '% · ♀ ' + X.f + '%') : '—'],
-    ['info-taxa-de-captura', 3, (S?.rate ?? X.c ?? '—') + ' · ' + (chanceCaptura(S?.rate ?? X.c ?? 45) * 100).toFixed(1) + '% ' + tr('at full HP with a Poké Ball')],
-  ];
-  for (const g of pop.querySelectorAll('[data-fig="tabela-infos"] > [data-fig^="info-"]')){
-    const l = linhas.find(x => x[0] === g.dataset.fig) || linhas.find(x => g.dataset.fig.startsWith(x[0].slice(0, 9)));
-    Popup.rotulo(pop, 'info-rotulo', g);
-    if (!l){ continue; }
-    const aberto = nv >= l[1];
-    const cad = g.querySelector('[data-var="cadeado"]'); if (cad){ cad.style.display = aberto ? 'none' : 'block'; if (!aberto) arteExemplo(cad); }
-    const vl = Popup.texto(pop, 'info-valor', aberto ? l[2] : tr('unlocks at level {n} ({name})', { n: l[1], name: tr(NOMES_NIVEL[l[1]]) }), g);
-    if (vl) vl.style.color = aberto ? '#FFFFFF' : '#B8C2D9';
-  }
-  const noMapa = (ctx.jogo.selvagens || []).filter(s => s.dex === selDex && s.estado !== 'morto').length;
-  const onde = (() => { const hb = ctx.habitats; if (!hb) return []; const out = []; for (const [area, lista] of Object.entries(hb.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(I18n.rotuloLugar(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || (tr('area') + ' ' + area))); return out; })();
-  Popup.rotulo(pop, 'rotulo-onde');
-  Popup.texto(pop, 'onde', nv >= 1 ? ((onde.length ? onde.join(', ') : tr('does not appear in grass (trade/event only)')) + (noMapa ? ' · ' + noMapa + ' ' + tr('on this map now') : '')) : '?');
-  const avS = Popup.grupo(pop, 'aviso-stats'), avG = Popup.grupo(pop, 'aviso-golpes');
-  const cadeadoDe = g => { const c = g?.querySelector('[data-var="cadeado"]'); arteExemplo(c); if (c) c.style.display = 'block'; };
-  if (avS){ avS.style.display = nv < 2 ? 'block' : 'none'; cadeadoDe(avS); Popup.texto(pop, 'aviso', tr('stats, evolution and weaknesses unlock at level 2 (catch one)'), avS); }
-  if (avG){ const golpes = (X.g || []).length, vistosG = (K?.registro(selDex)?.gl || []).length; avG.style.display = nv < 4 && golpes ? 'block' : 'none'; cadeadoDe(avG); Popup.texto(pop, 'aviso', tr('moves unlock by watching the species battle ({seen}/{total} of the learnset seen; everything at level 4)', { seen: vistosG, total: golpes }), avG); }
+  selDex = n;
+  dexRolarAte = n;
+  render();
 }
+async function encherPokedex(e) {
+  Popup.rotulo(e, 'titulo');
+  for (const a of e.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(e, 'aba', a);
+  Popup.trocarAba(e, 'gen-' + genDx);
+  const [, a, b] = GENS_DX.find(([g]) => g === genDx) || GENS_DX[0];
+  const d = dexEstado(),
+    K = ctx.conhecimento;
+  const q = dexBusca.trim().toLowerCase();
+  const h = [...ctx.porDex.values()].filter((s) => s.n >= a && s.n <= b).sort((p, r) => p.n - r.n);
+  const j = h.filter((s) => !q || String(s.n) === q || (d[s.n] && s.name.toLowerCase().includes(q)));
+  const k = h.filter((s) => d[s.n]).length,
+    o = h.filter((s) => d[s.n] === 'pego').length;
+  if (!j.some((s) => s.n === selDex)) selDex = (j.find((s) => d[s.n]) || j[0])?.n ?? null;
+  Popup.texto(e, 'contadores', '👁 ' + k + ' · ★ ' + o + '/' + h.length);
+  Popup.textoCru(e, 'vistos', String(k));
+  Popup.textoCru(e, 'capturados', o + '/' + h.length);
+  if (K) {
+    const r = K.resumo(),
+      z = /^Kanto\b/.test(e.querySelector('[data-txt="colecionador"]')?.dataset.exemplo || '');
+    const _ =
+      (z ? '' : 'Collector ') +
+      'Kanto · ' +
+      r.pegosKanto +
+      '/' +
+      r.kantoAte +
+      ' caught · ' +
+      r.vistosKanto +
+      ' vistos · ' +
+      r.shinies +
+      ' shiny';
+    Popup.texto(e, 'colecionador', _);
+    minhaPosicao().then((p) => {
+      if (p && p.especies?.pos && aberta === 'pokedex' && Popup.aberto(e))
+        Popup.texto(e, 'colecionador', _ + ' · ' + '#' + p.especies.pos + ' of ' + p.total + ' in the ranking');
+    });
+  }
+  const t = Popup.celulas(e, 'lista-especies', Math.max(j.length, 1), 'especie');
+  t.forEach((c, i) => {
+    const s = j[i];
+    c.style.display = s ? 'block' : 'none';
+    if (!s) return;
+    const a = d[s.n],
+      b = K ? K.nivel(s.n) : a === 'pego' ? 2 : a ? 1 : 0;
+    c.__dex = s.n;
+    c.style.pointerEvents = 'auto';
+    c.style.cursor = 'pointer';
+    Popup.texto(e, 'numero', pad3(s.n), c);
+    Popup.texto(e, 'nome', a ? s.name : '?????', c);
+    const f = c.querySelector('[data-fig="progresso-especie"]');
+    if (f) {
+      f.style.display = a ? 'block' : 'none';
+      bolinhas(f, b);
+    }
+    for (const g of c.querySelectorAll(':scope > [data-fig^="tipo-"]')) g.style.display = 'none';
+    if (a) pilulasTipo(e, c, s.types || []);
+    Popup.estadoRef(e, c, 'especie', s.n === selDex ? 'selecionada' : a ? 'vista' : 'oculta');
+    for (const m of c.querySelectorAll(':scope > [data-sobre]')) m.style.display = s.n === selDex ? 'block' : 'none';
+    const h = Popup.imagem(e, 'retrato', a ? retratoRedondoDex(s.n) : null, c);
+    if (h) h.style.filter = a === 'visto' ? 'grayscale(.6) brightness(.8)' : '';
+    seloDx(c, 'selo-desconhecido', !a);
+    seloDx(c, 'selo-capturado', a === 'pego');
+    seloDx(c, 'selo-shiny', !!K?.registro(s.n)?.shp);
+  });
+  if (dexRolarAte != null) {
+    const l = Popup.grupo(e, 'lista-especies'),
+      c = t.find((x) => x.__dex === dexRolarAte);
+    dexRolarAte = null;
+    if (l)
+      l.scrollTop = c
+        ? Math.max(0, (parseFloat(c.style.top) || 0) - (l.clientHeight - (parseFloat(c.style.height) || 46)) / 2)
+        : 0;
+  }
+  const u = !!Popup.grupo(e, 'abas-secao');
+  if (u) rotulosAbasDx(e);
+  if (selDex == null) {
+    if (u) mostrarSecaoDx(e, null);
+    return;
+  }
+  const S = ctx.porDex.get(selDex),
+    v = d[selDex];
+  await Promise.all([carregarElenco(), carregarDexExtra(), u && secaoDx === 'evolucao' ? carregarEvoDx() : null]);
+  if (aberta !== 'pokedex' || !Popup.aberto(e)) return;
+  const X = dexExtra.especies?.[selDex] || {};
+  const w = K ? K.revela(selDex) : null,
+    y = w ? w.nivel : v === 'pego' ? 2 : v ? 1 : 0;
+  Popup.texto(e, 'especie-nome', y >= 1 ? S?.name : '?????');
+  Popup.texto(e, 'especie-numero', 'No. ' + pad3(selDex));
+  Popup.texto(e, 'especie-visto', '· ' + (v === 'pego' ? tr('caught') : v ? tr('seen') : tr('unknown')));
+  bolinhas(Popup.grupo(e, 'progresso-registro'), y);
+  Popup.texto(e, 'nivel-nome', tr(NOMES_NIVEL[y]));
+  if (u) {
+    abasDx(e, y, (K?.registro(selDex)?.gl || []).length);
+    mostrarSecaoDx(e, secaoDx);
+  } else {
+    const $ =
+      K && y < 5
+        ? K.falta(selDex)
+            .slice(0, 3)
+            .map((s) => tr(s))
+        : [];
+    Popup.texto(
+      e,
+      'como-subir',
+      y >= 5
+        ? "Max level: you're a Master of this species."
+        : w && w.proximo != null
+          ? w.pontos +
+            '/' +
+            w.proximo +
+            ' ' + tr('to') + ' ' +
+            tr(NOMES_NIVEL[y + 1]) +
+            ($.length ? ' — to level up: ' + $.join(', ') : '')
+          : v
+            ? ''
+            : 'Find this Pokémon to unlock its entry.',
+    );
+  }
+  const f = Popup.grupo(e, 'ficha-especie');
+  pilulasTipo(e, Popup.grupo(e, 'tipos-especie') || f, y >= 1 ? S?.types || [] : []);
+  if (!u || secaoDx === 'ficha') paginaFichaDx(e, S, X, y);
+  if (!u) {
+    const aa = Popup.grupo(e, 'aviso-stats'),
+      ba = Popup.grupo(e, 'aviso-golpes');
+    const ca = (g) => {
+      const c = g?.querySelector('[data-var="cadeado"]');
+      arteExemplo(c);
+      if (c) c.style.display = 'block';
+    };
+    if (aa) {
+      aa.style.display = y < 2 ? 'block' : 'none';
+      ca(aa);
+      Popup.texto(e, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', aa);
+    }
+    if (ba) {
+      const da = (X.g || []).length,
+        ea = (K?.registro(selDex)?.gl || []).length;
+      ba.style.display = y < 4 && da ? 'block' : 'none';
+      ca(ba);
+      Popup.texto(
+        e,
+        'aviso',
+        'moves unlock by watching the species battle (' + ea + '/' + da + ' of learnset seen; everything at level 4)',
+        ba,
+      );
+    }
+    return;
+  }
+  if (secaoDx === 'status') paginaStatusDx(e, S, y);
+  else if (secaoDx === 'evolucao') paginaEvolucaoDx(e, d, y);
+  else if (secaoDx === 'golpes') paginaGolpesDx(e, X, y, K);
+  else if (secaoDx === 'pesquisa') paginaPesquisaDx(e, K, w, y);
+}
+function abasDx(a, b, c) {
+  for (const d of SECOES_DX) {
+    const g = Popup.grupo(a, 'secao-' + d);
+    if (!g) continue;
+    const e = d === 'status' || d === 'evolucao' ? b < 2 : d === 'golpes' ? b < 4 && !c : false;
+    const f = g.querySelector(':scope > [data-fig="cadeado-secao"]');
+    if (f) f.style.display = e ? 'block' : 'none';
+  }
+  Popup.marcarFiltro(Popup.grupo(a, 'secao-' + secaoDx));
+}
+const ABA_DX_NOME = { ficha: 'Entry', status: 'Stats', evolucao: 'Evolution', golpes: 'Moves', pesquisa: 'Research' };
+function rotulosAbasDx(a) {
+  for (const b of SECOES_DX) {
+    const g = Popup.grupo(a, 'secao-' + b);
+    if (!g) continue;
+    Popup.textoCru(a, 'secao', tr(ABA_DX_NOME[b]), g);
+  }
+}
+function mostrarSecaoDx(a, b) {
+  const c = Popup.grupo(a, 'pagina-ficha'),
+    d = c?.parentElement,
+    e = (a, k) => parseFloat(a?.style[k]) || 0;
+  if (c) c.style.display = b === 'ficha' ? 'block' : 'none';
+  const f = c ? { x: e(d, 'left') + e(c, 'left'), y: e(d, 'top') + e(c, 'top') } : null;
+  for (const g of SECOES_DX.slice(1)) {
+    const h = Popup.mostrarExtra(a, 'pagina-' + g, b === g, f);
+    if (h && b === g && f) Object.assign(h.style, { left: f.x + 'px', top: f.y + 'px' });
+  }
+  if (b !== 'ficha') pararDex();
+}
+function paginaFichaDx(d, S, X, j) {
+  const k = Popup.grupo(d, 'modelos'),
+    o = k?.querySelector('[data-var="modelo-normal"]'),
+    q = k?.querySelector('[data-var="modelo-shiny"]');
+  if (k && o && q) {
+    const v = visorDex();
+    const w = parseFloat(o.style.width) || 266,
+      h = parseFloat(o.style.height) || 157,
+      x0 = parseFloat(o.style.left) || 13,
+      x1 = parseFloat(q.style.left) || 327,
+      y = parseFloat(o.style.top) || 15;
+    v.redimensionar(Math.round(w), Math.round(h), Math.round(x1 - x0 - w));
+    if (v.canvas.parentElement !== k) {
+      k.appendChild(v.canvas);
+    }
+    Object.assign(v.canvas.style, {
+      position: 'absolute',
+      left: x0 + 'px',
+      top: y + 'px',
+      width: 2 * w + (x1 - x0 - w) + 'px',
+      height: h + 'px',
+      pointerEvents: 'auto',
+      zIndex: '60',
+      cursor: 'grab',
+    });
+    if (!v.ativo) {
+      v.ativo = true;
+      v.t0 = 0;
+      requestAnimationFrame(v.quadro);
+    }
+    v.anel.visible = !d.__def?.v2;
+    const ca = glbDe(selDex);
+    selDexGlb = ca;
+    const da = k.querySelector(':scope > [data-fig="sem-3d"]'),
+      ea = Popup.grupo(d, 'dica-girar');
+    if (da) {
+      da.style.display = ca ? 'none' : 'block';
+      if (!ca) {
+        const r2 = Popup.imagem(d, 'retrato-2d', iconeMonDex(selDex), da);
+        if (r2) r2.style.filter = j >= 1 ? '' : SILHUETA_DX;
+        Popup.texto(d, 'sem-modelo', "Shiny 3D model hasn't arrived yet", da);
+      }
+    }
+    if (ea) {
+      if (ea.dataset.d0 == null) ea.dataset.d0 = ea.style.display || 'flex';
+      ea.style.display = ca || !da ? ea.dataset.d0 : 'none';
+    }
+    v.canvas.style.display = ca || !da ? 'block' : 'none';
+    mostrarModeloDex(ca, j >= 1).catch((e) => console.warn('3D pokédex:', e));
+  }
+  const r = ctx.alturas?.[selDex] ?? X.a,
+    t = S?.kg ?? X.p;
+  const u = (X.h || []).map((h) => tr(h)).join(', '),
+    z = S?.rate ?? X.c ?? '—';
+  const _ = [
+    ['info-altura---peso', 2, r || t ? (r ? r.toFixed(1) + ' m' : '—') + ' · ' + (t ? t + ' kg' : '—') : '—'],
+    [
+      'info-habilidades',
+      3,
+      u
+        ? X.ho
+          ? j >= 4
+            ? tr('{a} (hidden: {b})', { a: u, b: tr(X.ho) })
+            : tr('{a} (hidden: unlocks at level 4)', { a: u })
+          : u
+        : '—',
+    ],
+    ['info-g-nero', 4, X.m != null ? (X.m < 0 ? tr('genderless') : '♂ ' + X.m + '% · ♀ ' + X.f + '%') : '—'],
+    [
+      'info-ev',
+      2,
+      ctx.Ev?.dados()
+        ? (ctx.Ev.rendeDe(selDex) || [])
+            .map((v, i) => (v ? (v > 0 ? '+' : '') + v + ' ' + tr(ctx.Ev.nomeStat?.(i) || '') : ''))
+            .filter(Boolean)
+            .join(', ') || '—'
+        : '—',
+    ],
+    [
+      'info-taxa-de-captura',
+      3,
+      tr('{a} · {b}% (Poké Ball)', { a: z, b: (chanceCaptura(S?.rate ?? X.c ?? 45) * 100).toFixed(1) }),
+    ],
+  ];
+  for (const g of d.querySelectorAll('[data-fig="tabela-infos"] > [data-fig^="info-"], [data-fig="info-ev"]')) {
+    const l = _.find((x) => x[0] === g.dataset.fig) || _.find((x) => g.dataset.fig.startsWith(x[0].slice(0, 9)));
+    if (g.dataset.fig === 'info-ev') Popup.textoCru(d, 'info-rotulo', tr('EV yield'), g);
+    else Popup.rotulo(d, 'info-rotulo', g);
+    if (!l) {
+      continue;
+    }
+    const fa = j >= l[1],
+      ga = g.querySelector(':scope > [data-fig="trava-nivel"]');
+    const ha = g.querySelector('[data-var="cadeado"]');
+    if (ha) {
+      ha.style.display = fa ? 'none' : 'block';
+      if (!fa) arteExemplo(ha);
+    }
+    if (ga) {
+      ga.style.display = fa ? 'none' : 'block';
+      if (!fa) Popup.textoCru(d, 'trava', tr('Lv {n}', { n: l[1] }), ga);
+    }
+    const vl = Popup.textoCru(
+      d,
+      'info-valor',
+      fa ? l[2] : ga ? '' : tr('unlocks at level {n} ({x})', { n: l[1], x: tr(NOMES_NIVEL[l[1]]) }),
+      g,
+    );
+    if (vl) {
+      if (vl.dataset.cor0 == null) vl.dataset.cor0 = vl.style.color;
+      vl.style.color = fa ? (ga ? vl.dataset.cor0 : '#FFFFFF') : '#B8C2D9';
+      rolarSeCortado(vl);
+    }
+    if (l[0] === 'info-taxa-de-captura' && vl && fa) vl.title = tr('at full HP with a Poké Ball');
+  }
+  const $ = (ctx.jogo.selvagens || []).filter((s) => s.dex === selDex && s.estado !== 'morto').length;
+  const aa = (() => {
+    const a = areasDoMato(selDex);
+    for (const b of ondePesca(selDex))
+      a.push(tr('{x} (fishing)', { x: tr(ctx.nomeArea?.(b) || ctx.dados?.nomes?.[b] || 'area ' + b) }));
+    return a;
+  })();
+  Popup.rotulo(d, 'rotulo-onde');
+  const ba =
+    j >= 1
+      ? (aa.length ? aa.map((n) => tr(n)).join(', ') : tr("doesn't appear in grass or fishing (trade/event only)")) +
+        ($ ? ' · ' + tr('{x} on this map now', { x: $ }) : '')
+      : '?';
+  caberTexto(Popup.textoCru(d, 'onde', ba), 0.85);
+}
+function paginaStatusDx(a, S, b) {
+  const c = Popup.extra(a, 'pagina-status');
+  if (!c) return;
+  const d = b >= 2,
+    e = Popup.grupo(a, 'stats-base'),
+    f = Popup.grupo(a, 'fraquezas'),
+    h = Popup.grupo(a, 'aviso-stats');
+  if (e) e.style.display = d ? 'block' : 'none';
+  if (f) f.style.display = d ? 'block' : 'none';
+  if (h) {
+    h.style.display = d ? 'none' : 'block';
+    Popup.texto(a, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', h);
+  }
+  if (!d) return;
+  const j = S?.bs || [];
+  STATS_DX.forEach(([b, c], i) => {
+    const g = Popup.grupo(a, 'stat-' + b);
+    if (!g) return;
+    Popup.texto(a, 'stat-nome', c, g);
+    Popup.textoCru(a, 'stat-valor', j[i] != null ? String(j[i]) : '—', g);
+    Popup.barra(a, 'stat', Math.min(1, (j[i] || 0) / 180), null, g);
+  });
+  Popup.textoCru(a, 'stat-total', String(S?.bst || j.reduce((x, y) => x + y, 0)), c);
+  const k = fraquezas(S?.types || []);
+  tiposDx(a, 'lista-fraco', 'fraco', k.fraco);
+  tiposDx(a, 'lista-resiste', 'resiste', [...k.resiste, ...k.imune]);
+}
+function tiposDx(a, b, d, f) {
+  const L = Popup.grupo(a, b);
+  if (!L) return;
+  const g = (a, k) => parseFloat(a?.style[k]) || 0,
+    h = L.parentElement;
+  if (L.dataset.h0 == null) {
+    const v = L.querySelector(':scope > [data-fig="' + d + '-1"]'),
+      w = L.querySelector(':scope > [data-fig="' + d + '-2"]');
+    Object.assign(L.dataset, {
+      h0: String(g(L, 'height')),
+      x0: String(g(v, 'left')),
+      dx: String((w ? g(w, 'left') - g(v, 'left') : 0) || g(v, 'width') + 5),
+    });
+  }
+  const j = Popup.celulas(a, b, Math.max(f.length, 1), d);
+  if (!j.length) return;
+  const l = j[0],
+    W = Math.max(g(L, 'width'), g(h, 'width') - g(L, 'left')),
+    m = +L.dataset.dx,
+    n = g(l, 'width'),
+    o = g(l, 'height'),
+    p = o + Math.max(4, Math.round(o * 0.13));
+  const q = Math.max(1, Math.floor((W - n) / m) + 1),
+    r = Math.ceil(Math.max(f.length, 1) / q);
+  const s = [...h.children].filter((e) => e !== L && g(e, 'top') > g(L, 'top')).map((e) => g(e, 'top'));
+  const t = (s.length ? Math.min(...s) : g(h.parentElement, 'height') - g(h, 'top')) - g(L, 'top') - 4;
+  Object.assign(L.style, {
+    width: W + 'px',
+    height: Math.max(+L.dataset.h0, Math.min(r * p - (p - o), Math.max(+L.dataset.h0, t))) + 'px',
+  });
+  j.forEach((c, i) => {
+    const b = f[i];
+    c.style.display = b ? 'block' : 'none';
+    c.style.left = +L.dataset.x0 + (i % q) * m + 'px';
+    c.style.top = Math.floor(i / q) * p + 'px';
+    if (!b) return;
+    iconesTipo(a, c, [b[0]]);
+    Popup.textoCru(a, 'mult', multDx(b[1]), c);
+  });
+  const u = L.querySelector(':scope > [data-espaco]');
+  if (u) u.style.height = r * p - (p - o) + 'px';
+  Popup.atualizarRolagem?.(L);
+}
+function paginaEvolucaoDx(a, d, b) {
+  const f = Popup.extra(a, 'pagina-evolucao');
+  if (!f) return;
+  const g = b >= 2,
+    h = Popup.grupo(a, 'aviso-evolucao');
+  if (h) {
+    h.style.display = g ? 'none' : 'block';
+    Popup.texto(a, 'aviso', 'stats, evolution and weaknesses unlock at level 2 (catch one)', h);
+  }
+  const j = g && ctx.porDex.get(selDex) ? cadeiaEvolucao(selDex).filter(({ s }) => s.n <= 649) : [];
+  const l = evoDx?.por || {},
+    m = Popup.grupo(a, 'estagio-1')?.querySelector(':scope > [data-fig^="evo-"] > [data-fig="marca-selecionado"]');
+  const o = (a, k) => parseFloat(a?.style[k]) || 0,
+    p = o(f, 'height');
+  for (let k = 1; k <= 3; k++) {
+    const q = Popup.grupo(a, 'estagio-' + k);
+    if (!q) continue;
+    const r = j.filter((x) => Math.min(x.prof, 2) === k - 1);
+    q.style.display = r.length ? 'block' : 'none';
+    if (!r.length) continue;
+    const t = Popup.celulas(a, 'estagio-' + k, r.length, 'evo'),
+      u = o(t[0], 'height') || 156,
+      v = Math.max(4, Math.round(u * 0.064)),
+      w = u + v;
+    if (q.dataset.h0 == null) q.dataset.h0 = String(o(q, 'height'));
+    const y = +q.dataset.h0,
+      z = p - o(q, 'top') - 4;
+    q.style.height = (r.length > 1 ? Math.max(y, Math.min(r.length * w - v, z)) : y) + 'px';
+    t.forEach((c, i) => {
+      const { s } = r[i],
+        b = !!d[s.n];
+      c.style.top = i * w + 'px';
+      c.__dex = s.n;
+      c.style.pointerEvents = 'auto';
+      c.style.cursor = s.n === selDex ? 'default' : 'pointer';
+      if (!c.querySelector(':scope > [data-fig="marca-selecionado"]') && m) c.appendChild(m.cloneNode(true));
+      const f = c.querySelector(':scope > [data-fig="marca-selecionado"]');
+      if (f && !f.dataset.aparada) {
+        f.dataset.aparada = '1';
+        f.style.backgroundSize = f.style.width + ' ' + f.style.height;
+        f.style.backgroundPosition = '0 0';
+        f.style.height = Math.max(0, (parseFloat(f.style.height) || 0) - 13) + 'px';
+      }
+      seloDx(c, 'marca-selecionado', s.n === selDex);
+      seloDx(c, 'selo-capturado', d[s.n] === 'pego');
+      const g = Popup.imagem(a, 'retrato', retratoRedondoDex(s.n), c);
+      if (g) g.style.filter = b ? '' : SILHUETA_DX;
+      Popup.texto(a, 'evo-nome', b ? s.name : '?????', c);
+      const h = j.find((x) => (x.s.evo || []).some((e) => e.to === s.name))?.s,
+        e = h && (h.evo || []).find((x) => x.to === s.name);
+      const k = h ? (l[h.n] || []).find((x) => x.para === s.n)?.texto || (e?.lvl ? 'Lv ' + e.lvl : e?.cond || '') : '';
+      caberTexto(Popup.texto(a, 'evo-cond', k, c), 0.8);
+    });
+    const _ = q.querySelector(':scope > [data-espaco]');
+    if (_) _.style.height = r.length * w - v + 'px';
+    if (q.__sel !== selDex) {
+      q.__sel = selDex;
+      const $ = r.findIndex((x) => x.s.n === selDex);
+      q.scrollTop = $ > 0 ? Math.max(0, $ * w - (o(q, 'height') - u) / 2) : 0;
+    }
+    Popup.atualizarRolagem?.(q);
+  }
+}
+const CAT_GOLPE_DX = { fisico: 'physical', especial: 'special', status: 'status' };
+function learnsetDaLinhaDx(a) {
+  const b = new Map();
+  for (const d of familiaAbaixo(a))
+    for (const [c, e] of ctx.Ind?.learnsetDe?.(d) || []) if (!(b.get(c) <= e)) b.set(c, e);
+  return [...b];
+}
+function golpesDaEspecieDx(a, X) {
+  const L = ctx.Ind?.learnsetDe?.(a)?.length ? learnsetDaLinhaDx(a) : [];
+  if (L.length)
+    return L.filter(([a]) => ctx.golpe?.(a))
+      .map(([a, b]) => {
+        const g = ctx.golpe(a);
+        return {
+          lv: b,
+          id: a,
+          nome: g.nome,
+          tipo: g.tipo,
+          cat: CAT_GOLPE_DX[g.cat] || '—',
+          poder: g.poder || 0,
+          pp: ctx.Ind?.ppDe?.(a) || g.pp || 0,
+        };
+      })
+      .sort((p, q) => p.lv - q.lv);
+  const G = dexExtra?.golpes || {};
+  return (X?.g || [])
+    .filter(([, a]) => G[a])
+    .map(([a, b]) => {
+      const g = G[b];
+      return { lv: a, id: b, nome: g[0], tipo: g[1], cat: CAT_DX[g[2]] || '—', poder: g[3] || 0, pp: g[4] || 0 };
+    })
+    .sort((p, q) => p.lv - q.lv);
+}
+function paginaGolpesDx(a, X, b, K) {
+  const d = Popup.extra(a, 'pagina-golpes');
+  if (!d) return;
+  const e = golpesDaEspecieDx(selDex, X);
+  const f = new Set((K?.registro(selDex)?.gl || []).map(String)),
+    h = Popup.grupo(a, 'aviso-golpes'),
+    j = Popup.grupo(a, 'lista-golpes');
+  if (h) {
+    h.style.display = b < 4 && e.length ? 'block' : 'none';
+    Popup.texto(
+      a,
+      'aviso',
+      'moves unlock by watching the species battle (' +
+        new Set(e.filter((x) => f.has(String(x.id))).map((x) => x.id)).size +
+        '/' +
+        new Set(e.map((x) => x.id)).size +
+        ' of learnset seen; everything at level 4)',
+      h,
+    );
+  }
+  if (j) j.style.display = e.length ? 'block' : 'none';
+  const k = Popup.celulas(a, 'lista-golpes', Math.max(e.length, 1), 'golpe');
+  k.forEach((c, i) => {
+    const g = e[i];
+    c.style.display = g ? 'block' : 'none';
+    if (!g) return;
+    const d = b >= 4 || f.has(String(g.id));
+    Popup.estadoRef(a, c, 'golpe', d ? 'visto' : 'oculto');
+    iconesTipo(a, c, d && g.tipo ? [g.tipo] : []);
+    Popup.textoCru(a, 'golpe-nv', String(g.lv), c);
+    Popup.texto(a, 'golpe-nome', d ? g.nome : '???', c);
+    Popup.texto(a, 'golpe-cat', d ? g.cat : '—', c);
+    Popup.textoCru(a, 'golpe-poder', d && g.poder ? String(g.poder) : '—', c);
+    Popup.textoCru(a, 'golpe-pp', d && g.pp ? String(g.pp) : '—', c);
+  });
+}
+function paginaPesquisaDx(d, K, e, f) {
+  const g = Popup.extra(d, 'pagina-pesquisa');
+  if (!g || !K) return;
+  const L = K.limiares?.() || [0, 1, 4, 10, 18, 28],
+    h = e?.pontos ?? 0;
+  const k = f >= 5 ? 1 : (f - 1 + (h - L[f]) / (L[f + 1] - L[f] || 1)) / 4;
+  Popup.barra(d, 'pesquisa', Math.max(0, Math.min(1, k)), null, g);
+  for (let i = 1; i <= 5; i++) {
+    const l = g.querySelector('[data-fig="marco-' + i + '"]');
+    if (!l) continue;
+    Popup.estadoRef(d, l, 'marco', i < f ? 'alcancado' : i === f ? 'atual' : 'futuro');
+    Popup.texto(d, 'marco-nome', tr(NOMES_NIVEL[i]), l);
+  }
+  Popup.textoCru(
+    d,
+    'como-subir',
+    f >= 5
+      ? tr('Max level')
+      : tr('{a}/{b} points to {x}', { a: h, b: e?.proximo ?? L[f + 1], x: tr(NOMES_NIVEL[f + 1]) }),
+    g,
+  );
+  caberTexto(Popup.texto(d, 'proximo-revela', K.revelaTexto?.(Math.min(5, f + 1)) || '', g), 0.8);
+  const T = K.tarefas?.(selDex) || [],
+    j = Popup.celulas(d, 'lista-tarefas', Math.max(T.length, 1), 'tarefa');
+  j.forEach((c, i) => {
+    const t = T[i];
+    c.style.display = t ? 'block' : 'none';
+    if (!t) return;
+    const a = t.feito >= t.total ? 'feita' : 'pendente';
+    Popup.estadoRef(d, c, 'tarefa', a);
+    const b = c.querySelector(':scope > [data-fig="pilula-pontos"]'),
+      e = (d.__refs?.tarefa?.[a]?.filhos || []).find((x) => x.nome === 'pilula-pontos');
+    if (b && e?.img) {
+      b.style.backgroundImage = 'url(' + e.img + ')';
+      Hud.fundoComFolga(b, e.imgPad);
+    }
+    const f = c.querySelector(':scope > [data-var="tarefa-estado"]');
+    if (f) iconeTarefaDx(d, f, a);
+    caberTexto(Popup.textoCru(d, 'tarefa', tr(TAREFAS_DX[t.id] || t.id, { n: t.n || t.total }), c), 0.8);
+    Popup.textoCru(d, 'tarefa-qtd', t.total > 1 ? t.feito + '/' + t.total : '', c);
+    Popup.textoCru(d, 'tarefa-pontos', '+' + t.pontos, c);
+  });
+}
+function iconeTarefaDx(a, b, c) {
+  const d = iconeEstado(a, 'tarefa', c, 'tarefa-estado', b);
+  b.style.backgroundImage = d ? 'url(' + d + ')' : 'none';
+  b.textContent = d ? '' : c === 'feita' ? '✓' : '';
+  Object.assign(
+    b.style,
+    d
+      ? { border: '0', borderRadius: '0', backgroundColor: 'transparent' }
+      : {
+          boxSizing: 'border-box',
+          borderRadius: '50%',
+          border: c === 'feita' ? '1.5px solid #1D2B45' : '2px solid #3D7FD0',
+          backgroundColor: c === 'feita' ? '#F5B93B' : '#0B1A2E',
+          color: '#1D2B45',
+          font:
+            '900 ' + Math.round((parseFloat(b.style.height) || 24) * 0.62) + 'px "Nunito Sans", system-ui, sans-serif',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          lineHeight: '1',
+        },
+  );
+}
+
 
 /* ------------------------------------------------------------------ Missões */
 function rMissoes(corpo){
