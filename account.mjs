@@ -116,7 +116,16 @@ function colherLocal(){                                                   // o q
   for (const k of SAVE_CHAVES){ const v = lerBruto(k); if (v == null) continue; try { s[k] = JSON.parse(v); tem = true; } catch {} }
   return tem ? s : null;
 }
+/* Diamond wallet (server_shop.mjs): only the server writes it, so it lives here in memory and never in the save keys. */
+let carteira = { total: 0, bloqueada: false };
+function lembrarCarteira(save){
+  const w = save?.carteira;
+  if (w && typeof w === 'object') carteira = { total: Number.isSafeInteger(w.total) ? w.total : 0, bloqueada: !!w.bloqueada };
+  else if (save) carteira = { total: 0, bloqueada: false };
+}
+export const diamantes = () => (modo === 'conta' ? { ...carteira } : null);
 function aplicarSave(save){                                                // o save da conta vira o estado do jogo (chave ausente some)
+  lembrarCarteira(save);
   for (const k of SAVE_CHAVES){
     const tem = save && k in save && save[k] !== undefined;
     if (comConta()){                                                       // 08/09: com conta o jogo mora no cofre, e o
@@ -384,6 +393,7 @@ export function aplicarBolsa(bolsa){
 }
 export function aplicarDoServidor(save, revNovo){
   if (modo !== 'conta' || !save || typeof save !== 'object') return false;
+  if ('carteira' in save) lembrarCarteira(save);
   /* Mid-game updates may be a slice (time/caixa). Only overwrite keys that arrived —
      a missing key must not wipe the rest of the vault (party vanishing on a door). */
   for (const k of SAVE_CHAVES){

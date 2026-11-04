@@ -1,0 +1,854 @@
+import { prazo, imagemValida } from './founder_pack.mjs';
+import { retratoShiny } from './shiny_portrait.mjs';
+export const DIA_MS = 24 * 3600 * 1000;
+export const TRILHAS = ['gratis', 'paga'];
+export const ESTADOS = ['bloqueado', 'cadeado', 'jogando', 'pronto', 'pego'];
+export const TIPOS_COSMETICO = ['roupa', 'mochila', 'rastro', 'peito'];
+export const TIPO_MONTARIA = 'montaria-shiny';
+const RE_MONTARIA = /^pm\d{4}$/;
+export const ehVisual = (p) => TIPOS_COSMETICO.includes(p?.tipo) || p?.tipo === TIPO_MONTARIA;
+export const ICONE = {
+  diamante: 'ui/amanda/loja/diamante@2x.png',
+  titulo: 'ui/amanda/correio/anexo-titulo@2x.png',
+  roupa: 'ui/amanda/correio/anexo-roupa@2x.png',
+  itens: 'ui/amanda/no-lugar-de-emoji/presente-bau@2x.png',
+};
+const EMOJI = (n) => 'ui/amanda/no-lugar-de-emoji/' + n + '@2x.png';
+export const ICONE_DESAFIO = {
+  ko: EMOJI('batalha-espadas'),
+  captura: 'ui/itens/ic_1001@2x.png',
+  ginasio: EMOJI('trofeu'),
+  insignia: EMOJI('trofeu'),
+  elite: EMOJI('trofeu'),
+  treinador: EMOJI('cracha-treinador'),
+  historia: EMOJI('missao-pergaminho'),
+  evolucao: EMOJI('estrela'),
+  troca: EMOJI('presente-bau'),
+  raid: EMOJI('batalha-espadas'),
+  invasao: EMOJI('localizacao'),
+};
+export const ICONE_DESAFIO_PADRAO = EMOJI('missao-pergaminho');
+export const TEXTOS = {
+  vendaFechada: "This season's pass sales closed on day {x}.",
+  chegaJogando: 'joins by playing',
+  emBreve: 'coming soon',
+  semVaga: 'With no saved slot, dailies pause until the day resets (weeklies and season challenges continue).',
+  faltaJogando: '{x}: joins by playing',
+  faltaEmBreve: '{x}: coming soon',
+  jaNaConta: 'In your account: {x}.',
+  ultimoDia: 'last day',
+  diaAcabando: 'The day is ending: new challenges in {n}min',
+  precoMudouTitulo: 'The price changed',
+  precoMudouPasse: 'The pass now costs {n} Diamonds. Nothing was charged: review and confirm again.',
+  precoMudouNivel: 'Each level now costs {n} Diamonds. Nothing was charged: review and confirm again.',
+};
+export const FIM_DO_DIA_MS = 30 * 60e3;
+const inteiro = (v, a = 0, b = Number.MAX_SAFE_INTEGER) => Number.isSafeInteger(v) && v >= a && v <= b;
+const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
+const texto = (v) => (typeof v === 'string' ? v : '');
+export const preencher = (s, v) =>
+  String(s).replace(/\{(\w+)\}/g, (a, k) => (v && Object.hasOwn(v, k) ? String(v[k]) : a));
+const ctxPadrao = (c) => ({
+  t: preencher,
+  idioma: 'pt',
+  local: 'pt-BR',
+  agora: Date.now(),
+  lista: (l) => l.join(', '),
+  sexo: null,
+  ...(c || {}),
+});
+const fmtDe = (a) => (n) => Math.round(num(n)).toLocaleString(a || 'pt-BR');
+export const abaVisivel = (v) =>
+  !!v &&
+  typeof v === 'object' &&
+  v.fase === 'aberta' &&
+  !!v.trilhas &&
+  Array.isArray(v.trilhas.gratis) &&
+  Array.isArray(v.trilhas.paga);
+export const maxNivel = (v) =>
+  inteiro(v?.maxNivel, 1, 200)
+    ? v.maxNivel
+    : Math.max(0, (Array.isArray(v?.trilhas?.paga) ? v.trilhas.paga.length : 1) - 1);
+export const nivelDe = (v) => (inteiro(v?.nivel, 0, maxNivel(v)) ? v.nivel : 0);
+export const numeroDaTemporada = (v) => {
+  const m = /^T(\d{1,3})$/.exec(texto(v?.id));
+  return m ? +m[1] : 1;
+};
+export function nomeCurto(v) {
+  const n = texto(v?.nome);
+  const i = n.indexOf(': ');
+  return i >= 0 ? n.slice(i + 2) : n;
+}
+export function nomeDaTemporada(v, c) {
+  const { t, idioma: a } = ctxPadrao(c),
+    N = v?.nomes && typeof v.nomes === 'object' && !Array.isArray(v.nomes) ? v.nomes : null;
+  const b = N && Object.hasOwn(N, a) && texto(N[a]) ? N[a] : null;
+  return b ? nomeCurto({ nome: b }) : t(nomeCurto(v));
+}
+export const pontosPorMissao = (v) => (inteiro(v?.pontosPorMissao, 1, 10000) ? v.pontosPorMissao : 50);
+export function chancePedra(v) {
+  const c = v?.pedraEterna && typeof v.pedraEterna === 'object' ? v.pedraEterna.chance : v?.chancePedra;
+  if (!Number.isFinite(+c) || +c <= 0) return null;
+  const p = +c <= 1 ? +c * 100 : +c;
+  return p > 100 ? null : Math.round(p);
+}
+export function proximoDia(v) {
+  const a = v?.viradaDia ?? (v?.viradas && typeof v.viradas === 'object' ? v.viradas.dia : v?.proximoDia);
+  const s = inteiro(a, 1) ? a : inteiro(v?.inicio, 1) && inteiro(v?.dia, 1) ? v.inicio + v.dia * DIA_MS : null;
+  if (s === null) return null;
+  return (inteiro(v?.fim, 1) && s >= v.fim) || ultimoDia(v) ? null : s;
+}
+export const ultimoDia = (v) => inteiro(v?.dia, 1) && inteiro(v?.dias, 1) && v.dia >= v.dias;
+export function proximaSemana(v) {
+  const s = v?.viradaSemana ?? (v?.viradas && typeof v.viradas === 'object' ? v.viradas.semana : v?.proximaSemana);
+  if (inteiro(s, 1)) return inteiro(v?.fim, 1) && s >= v.fim ? null : s;
+  if (!inteiro(v?.inicio, 1) || !inteiro(v?.dia, 1)) return null;
+  const a = Math.ceil(v.dia / 7) * 7,
+    b = inteiro(v?.dias, 1) ? v.dias : 45;
+  return a >= b ? null : v.inicio + a * DIA_MS;
+}
+export function iconeDoPremio(p, a = null) {
+  if (!p || typeof p !== 'object') return null;
+  if (p.tipo === 'gold') return ICONE.diamante;
+  if (p.tipo === 'titulo') return ICONE.titulo;
+  if (TIPOS_COSMETICO.includes(p.tipo)) {
+    const b = pecaDe(p, a),
+      c = [b?.icone, p.iconePeca, p.icone].find(imagemValida);
+    return c ? c.replace(/^\.\//, '') : ICONE.roupa;
+  }
+  if (p.tipo === TIPO_MONTARIA) {
+    const d = RE_MONTARIA.test(texto(p.montaria)) ? p.montaria : null;
+    return d ? (retratoShiny(d) || 'ui/mon/' + d + '.png').replace(/^\.\//, '') : ICONE.itens;
+  }
+  if (inteiro(p.id, 1, 9999999)) return 'ui/itens/ic_' + p.id + '.png';
+  if (/^ic_\w{1,24}$/.test(texto(p.icone))) return 'ui/itens/' + p.icone + '.png';
+  return null;
+}
+function pecaDe(p, a = null) {
+  if (p?.peca && typeof p.peca === 'object') return p.peca;
+  const L = Array.isArray(p?.pecas) ? p.pecas.filter((x) => x && typeof x === 'object') : [];
+  return (a && L.find((x) => x.sexo === a)) || L[0] || null;
+}
+const SUFIXO_SEXO = /\s*\((menino|menina|boy|girl|chico|chica|niño|niña)\)\s*$/i;
+export function nomeDoPremio(p, c) {
+  const { t, idioma: a, sexo: b } = ctxPadrao(c);
+  if (!p || typeof p !== 'object') return { nome: '', cru: true };
+  if (TIPOS_COSMETICO.includes(p.tipo)) {
+    const d = pecaDe(p, b),
+      f = [p.nomes, d?.nomes].find((x) => x && typeof x === 'object' && !Array.isArray(x));
+    const g = f && Object.hasOwn(f, a) && texto(f[a]) ? f[a] : null;
+    if (p.exemplo === true && !g) return { nome: t(texto(p.nome)), cru: true };
+    return { nome: (g || texto(d?.nome) || texto(p.nome)).replace(SUFIXO_SEXO, ''), cru: true };
+  }
+  if (p.tipo === 'gold') return { nome: t('Diamonds'), cru: true };
+  if (p.tipo === TIPO_MONTARIA) {
+    const e = texto(p.especie) || texto(p.nome).replace(/\s+shiny$/i, '');
+    return { nome: e ? t('{x} Shiny', { x: e }) : t('Shiny mount'), cru: true };
+  }
+  return { nome: t(texto(p.nome)), cru: true };
+}
+export function rotuloQtd(p, c) {
+  const { t, local: a } = ctxPadrao(c),
+    b = fmtDe(a),
+    q = inteiro(p?.qtd, 1) ? p.qtd : 1;
+  if (!p) return '';
+  if (p.tipo === 'gold') return b(q);
+  if (p.tipo === 'titulo') return t('Title');
+  if (TIPOS_COSMETICO.includes(p.tipo)) return t('Outfit');
+  if (p.tipo === TIPO_MONTARIA) return t('Mount');
+  return 'x' + b(q);
+}
+export const estadoDoPremio = (p) => {
+  const e = ESTADOS.includes(p?.estado) ? p.estado : 'bloqueado';
+  return e === 'pronto' && p?.emBreve === true ? 'embreve' : e;
+};
+export function estadoDoCard(a) {
+  const b = (a || []).map(estadoDoPremio);
+  if (!b.length) return 'vazio';
+  if (b.includes('pronto')) return 'pronto';
+  if (b.every((e) => e === 'pego')) return 'pego';
+  if (b.includes('pego')) return 'parcial';
+  return b.find((e) => e !== 'pego');
+}
+export function visualDoCard(a, b, c) {
+  if (a === 'pronto') return 'disponivel';
+  if (a === 'pego' || a === 'parcial') return 'resgatado';
+  if (b === 'paga' && !c) return 'cadeado';
+  return 'bloqueado';
+}
+function rotuloCurto(p, t) {
+  if (p?.tipo === 'titulo') return t('title');
+  if (TIPOS_COSMETICO.includes(p?.tipo)) return t('outfit');
+  if (p?.tipo === TIPO_MONTARIA) return t('mount');
+  if (p?.tipo === 'gold') return t('Diamonds');
+  return t(texto(p?.nome)) || t('item');
+}
+function linhasDe(v, a) {
+  const b = maxNivel(v),
+    c = Array.from({ length: b + 1 }, () => []);
+  const L = Array.isArray(v?.trilhas?.[a]) ? v.trilhas[a] : [];
+  for (const l of L)
+    if (l && inteiro(l.nivel, 0, b) && Array.isArray(l.premios))
+      c[l.nivel] = l.premios.filter((p) => p && typeof p === 'object').slice(0, 6);
+  return c;
+}
+const ondeDoNivel = (n, a, t) =>
+  n === 0 ? (a === 'paga' ? t('On pass purchase') : t('When opening the pass')) : t('Level {n}', { n });
+function notaDoEstado(a, n, t) {
+  if (a === 'pronto') return t('Ready to claim.');
+  if (a === 'pego') return t('Already in your account.');
+  if (a === 'cadeado') return t('Requires the season pass.');
+  if (a === 'jogando') return t("Earned by playing: your mission points haven't reached this level yet.");
+  if (a === 'embreve') return t('Season titles arrive in an upcoming update: yours is saved.');
+  return t('Reached at level {n}.', { n });
+}
+export const PROVA_NO_PASSE = ['roupa', 'mochila', 'rastro', 'peito', 'titulo'];
+export function premiosQueProvam(v) {
+  const a = [],
+    G = linhasDe(v, 'gratis'),
+    P = linhasDe(v, 'paga');
+  for (let n = 0; n < G.length; n++)
+    for (const [b, L] of [
+      ['gratis', G[n]],
+      ['paga', P[n]],
+    ])
+      for (const p of L || [])
+        if (PROVA_NO_PASSE.includes(p?.tipo)) a.push({ nivel: n, trilha: b, premio: p, estado: estadoDoPremio(p) });
+  return a;
+}
+const ESTADOS_COM_FRASE = new Set(['pronto', 'pego', 'cadeado', 'jogando', 'embreve']);
+export const infoDoProvador = (n, a, b, c) => {
+  const { t } = ctxPadrao(c);
+  return n > 0 && !ESTADOS_COM_FRASE.has(b)
+    ? notaDoEstado(b, n, t)
+    : ondeDoNivel(n, a, t) + ' · ' + notaDoEstado(b, n, t);
+};
+export const pecaDoPremio = (p, a = null) => pecaDe(p, a);
+export function nomeComQtd(p, c) {
+  const C = ctxPadrao(c),
+    x = nomeDoPremio(p, C).nome,
+    f = fmtDe(C.local);
+  if (p?.tipo === 'gold') return f(inteiro(p.qtd, 1) ? p.qtd : 0) + ' ' + x;
+  return inteiro(p?.qtd, 2) ? x + ' ×' + f(p.qtd) : x;
+}
+export function card(v, a, n, b, c) {
+  const C = ctxPadrao(c),
+    { t } = C,
+    d = !!v?.passe?.pago;
+  const e = estadoDoCard(b),
+    f = visualDoCard(e, a, d);
+  const g = b[0] || null,
+    h = b[1] || null;
+  const i = b.map((p) => nomeComQtd(p, C));
+  const j = e === 'jogando',
+    k = e === 'embreve';
+  let m = j ? t(TEXTOS.chegaJogando) : k ? t(TEXTOS.emBreve) : rotuloQtd(g, C),
+    o = g ? ondeDoNivel(n, a, t) + ': ' + i.join(' + ') + '. ' + notaDoEstado(e, n, t) : '';
+  if (e === 'parcial') {
+    const q = b.find((p) => estadoDoPremio(p) !== 'pego'),
+      r = estadoDoPremio(q),
+      s = b.filter((p) => estadoDoPremio(p) === 'pego').map((p) => nomeComQtd(p, C));
+    m =
+      r === 'jogando'
+        ? t(TEXTOS.faltaJogando, { x: rotuloCurto(q, t) })
+        : r === 'embreve'
+          ? t(TEXTOS.faltaEmBreve, { x: rotuloCurto(q, t) })
+          : rotuloQtd(q, C);
+    o =
+      ondeDoNivel(n, a, t) +
+      ': ' +
+      i.join(' + ') +
+      '. ' +
+      t(TEXTOS.jaNaConta, { x: (C.lista || ((l) => l.join(', ')))(s) }) +
+      ' ' +
+      notaDoEstado(r, n, t);
+  }
+  return {
+    trilha: a,
+    nivel: n,
+    estado: e,
+    visual: f,
+    vazio: !g,
+    comPasse: a === 'gratis' || d,
+    tipo: g ? g.tipo : null,
+    icone: iconeDoPremio(g, C.sexo),
+    segundo: h ? iconeDoPremio(h, C.sexo) : null,
+    qtd: m,
+    jogando: j,
+    dica: o,
+    clicavel: e === 'pronto',
+    intencao: e === 'pronto' ? { op: 'pegar', nivel: n, trilha: a } : null,
+  };
+}
+export function colunas(v, c) {
+  const G = linhasDe(v, 'gratis'),
+    P = linhasDe(v, 'paga'),
+    a = nivelDe(v),
+    b = maxNivel(v),
+    d = [];
+  for (let n = 0; n <= b; n++)
+    d.push({
+      nivel: n,
+      texto: String(n),
+      pilula: n < a ? 'alcancado' : n === a ? 'atual' : 'futuro',
+      gratis: card(v, 'gratis', n, G[n], c),
+      paga: card(v, 'paga', n, P[n], c),
+    });
+  return d;
+}
+export const centroDaTrilha = (v) => nivelDe(v);
+export function prontos(v) {
+  if (inteiro(v?.prontos, 0)) return v.prontos;
+  let k = 0;
+  for (const a of TRILHAS) for (const l of linhasDe(v, a)) for (const p of l) if (estadoDoPremio(p) === 'pronto') k++;
+  return k;
+}
+export const precoDoPasse = (v) => (inteiro(v?.passe?.preco, 1) ? v.passe.preco : null);
+export const custoDoNivel = (v) => (inteiro(v?.nivelComprado?.custo, 1) ? v.nivelComprado.custo : null);
+export function cabecalho(v, c) {
+  const C = ctxPadrao(c),
+    { t, local: d, agora: e } = C,
+    f = fmtDe(d),
+    n = numeroDaTemporada(v),
+    g = maxNivel(v),
+    h = inteiro(v?.pontosPorNivel, 1) ? v.pontosPorNivel : 100;
+  const i = inteiro(v?.jogando, 0) && v.jogando >= g,
+    j = i ? h : Math.max(0, Math.min(h, num(v?.noNivel)));
+  const k = inteiro(v?.fim, 1) ? prazo(v.fim, e) : '';
+  const l = (Array.isArray(v?.semanais) ? v.semanais : []).find((s) => s && s.semana === v.semana);
+  const o = Array.isArray(l?.missoes) ? l.missoes : [];
+  const p = !!v?.passe?.pago,
+    q = !p && !!v?.passe?.vendaAberta,
+    r = precoDoPasse(v);
+  return {
+    pilula: t('SEASON {n}', { n }),
+    nome: nomeDaTemporada(v, C),
+    termina: v?.fase === 'aberta' ? (k ? t('ends in {x}', { x: k }) : t('ends any moment now')) : '',
+    nivel: String(nivelDe(v)),
+    mais: !!(v?.nivelComprado?.aberta && inteiro(v.nivelComprado.maxCompravel, 1)),
+    xp: t('{a} / {b} XP', { a: f(j), b: f(h) }),
+    fracao: h ? j / h : 0,
+    desafios: t('Weekly challenges: {x}/{y}', { x: o.filter((m) => m?.feita).length, y: o.length }),
+    premium: {
+      visivel: !p,
+      estado: p ? 'ativo' : q ? 'venda' : 'fechada',
+      rotulo: q ? t('PREMIUM PASS') : t('SALE CLOSED'),
+      preco: r,
+      ligado: q && r !== null,
+      dica: q || p ? '' : t(TEXTOS.vendaFechada, { x: inteiro(v?.passe?.vendaAte, 1) ? v.passe.vendaAte : '' }),
+    },
+  };
+}
+export function premioFinal(v, c) {
+  const C = ctxPadrao(c),
+    { t } = C,
+    a = maxNivel(v),
+    l = linhasDe(v, 'paga')[a] || [];
+  const p = l.find((x) => TIPOS_COSMETICO.includes(x.tipo)) || l.find((x) => x.tipo === TIPO_MONTARIA) || l[0] || null;
+  const b = p ? (ESTADOS.includes(p.estado) ? p.estado : 'bloqueado') : null,
+    d = b === 'pego';
+  return {
+    nivelN: a,
+    nivel: t('Level {n}', { n: a }),
+    nome: p ? nomeDoPremio(p, C).nome : '',
+    icone: iconeDoPremio(p, C.sexo),
+    tipo:
+      p && TIPOS_COSMETICO.includes(p.tipo)
+        ? t('Season Outfit')
+        : p && p.tipo === TIPO_MONTARIA
+          ? t('Shiny mount')
+          : p
+            ? rotuloQtd(p, C)
+            : '',
+    trilha: d ? t('ALREADY YOURS') : t('PREMIUM'),
+    estado: b,
+    jaE: d,
+  };
+}
+const TIPO_DO_DIA = /^Tipo do dia: derrote (\d+) Pokémon do tipo (.+)$/;
+export function textoDaMissao(m, c) {
+  const { t } = ctxPadrao(c),
+    s = texto(m?.texto),
+    a = TIPO_DO_DIA.exec(s);
+  if (a) {
+    const k = 'tipo ' + a[2],
+      b = t(k);
+    return t('Type of the day: defeat {n} {tipo}-type Pokémon', { n: a[1], tipo: b === k ? a[2] : b });
+  }
+  return t(s);
+}
+function linhaDesafio(m, c, { prefixo: a = null, pts: b = 50, diaria: d = false, semVaga: e = false } = {}) {
+  const { t } = ctxPadrao(c),
+    f = inteiro(m?.qtd, 1) ? m.qtd : 1,
+    g = !d && !!m?.feita,
+    n = g ? f : Math.max(0, Math.min(f, num(m?.n)));
+  const h = textoDaMissao(m, c),
+    i = texto(m?.conta),
+    j = m?.requisito ? t(texto(m.requisito)) : '';
+  const k = [j, e ? t(TEXTOS.semVaga) : ''].filter(Boolean);
+  const l = a ? t(a, { n: m?.semana ?? '', x: h }) : h,
+    o = t('+{n} XP', { n: b });
+  const p = [l, ...k, (g ? t('COMPLETE') : n + '/' + f) + ' · ' + o].join('\n');
+  return {
+    id: texto(m?.id),
+    icone: Object.hasOwn(ICONE_DESAFIO, i) ? ICONE_DESAFIO[i] : ICONE_DESAFIO_PADRAO,
+    texto: l,
+    n,
+    qtd: f,
+    fracao: n / f,
+    progresso: n + '/' + f,
+    concluido: g,
+    xp: o,
+    dica: k.join(' '),
+    requisito: j,
+    detalhe: p,
+    apagado: e,
+  };
+}
+export function desafios(v, d, c) {
+  const C = ctxPadrao(c),
+    { t, agora: e } = C,
+    f = pontosPorMissao(v);
+  if (d !== 'semanais') {
+    const g = v?.guardadas || {},
+      n = inteiro(g.n, 0) ? g.n : 0,
+      p = inteiro(g.de, 1) ? g.de : 21,
+      q = proximoDia(v),
+      r = q ? prazo(q, e) : '';
+    const u = q ? q - num(e) : null,
+      w = u != null && u > 0 && u <= FIM_DO_DIA_MS;
+    return {
+      renovam: w
+        ? t(TEXTOS.diaAcabando, { n: Math.max(1, Math.ceil(u / 60e3)) })
+        : t('saved: {x} of {y}', { x: n, y: p }) +
+          (r ? ' · ' + t('new in {t}', { t: r }) : ultimoDia(v) ? ' · ' + t(TEXTOS.ultimoDia) : ''),
+      linhas: (Array.isArray(v?.diarias) ? v.diarias : [])
+        .filter((m) => m && typeof m === 'object')
+        .map((m) => linhaDesafio({ ...m, feita: false }, C, { pts: f, diaria: true, semVaga: n === 0 })),
+    };
+  }
+  const h = inteiro(v?.semana, 0) ? v.semana : 0,
+    S = (Array.isArray(v?.semanais) ? v.semanais : []).filter(
+      (s) => s && inteiro(s.semana, 1) && Array.isArray(s.missoes),
+    );
+  const i = S.filter((s) => s.semana === h).flatMap((s) =>
+    s.missoes.filter((m) => m && typeof m === 'object').map((m) => linhaDesafio(m, C, { pts: f })),
+  );
+  const j = S.filter((s) => s.semana < h)
+    .sort((a, b) => a.semana - b.semana)
+    .flatMap((s) =>
+      s.missoes
+        .filter((m) => m && typeof m === 'object' && !m.feita)
+        .map((m) => linhaDesafio({ ...m, semana: s.semana }, C, { pts: f, prefixo: 'Week {n} · {x}' })),
+    );
+  const T = (Array.isArray(v?.temporada) ? v.temporada : []).filter((m) => m && typeof m === 'object');
+  const k = [...T.filter((m) => !m.feita), ...T.filter((m) => m.feita)].map((m) =>
+    linhaDesafio(m, C, { pts: f, prefixo: 'Season · {x}' }),
+  );
+  const l = proximaSemana(v),
+    o = l ? prazo(l, e) : '';
+  return { renovam: o ? t('new in {t}', { t: o }) : t('last week'), linhas: [...i, ...j, ...k] };
+}
+const BOLAS = (a) => a >= 1001 && a <= 1010,
+  CURAS = (a) => a >= 2001 && a <= 2013,
+  PEDRAS = (a) => a >= 50301 && a <= 50317,
+  PP = (a) => a >= 2022 && a <= 2025;
+export function listaPremium(v, c) {
+  const C = ctxPadrao(c),
+    { t, local: d, lista: e } = C,
+    f = fmtDe(d),
+    g = [];
+  const P = linhasDe(v, 'paga').flatMap((l, n) => l.map((p) => ({ ...p, nivel: n })));
+  const h = (p) => p?.emBreve === true;
+  for (const p of P.filter((x) => TIPOS_COSMETICO.includes(x.tipo)).sort((a, b) => b.nivel - a.nivel)) {
+    const z = nomeDoPremio(p, C).nome;
+    g.push({
+      icone: iconeDoPremio(p, C.sexo),
+      nome: h(p) ? t('{x} (coming soon)', { x: z }) : z,
+      desc: t(p.tipo === 'roupa' ? 'Outfit · level {n}' : 'Look · level {n}', { n: p.nivel }),
+      ...(h(p) ? { emBreve: true } : {}),
+    });
+  }
+  for (const p of P.filter((x) => x.tipo === TIPO_MONTARIA).sort((a, b) => b.nivel - a.nivel)) {
+    const _ = nomeDoPremio(p, C).nome;
+    g.push({
+      icone: iconeDoPremio(p),
+      nome: h(p) ? t('{x} (coming soon)', { x: _ }) : _,
+      desc: t('Shiny mount · level {n}', { n: p.nivel }),
+      ...(h(p) ? { emBreve: true } : {}),
+    });
+  }
+  const i = P.filter((x) => x.tipo === 'gold' && !h(x)),
+    j = i.reduce((s, x) => s + (inteiro(x.qtd, 1) ? x.qtd : 0), 0);
+  if (j)
+    g.push({
+      icone: ICONE.diamante,
+      nome: t('{n} Diamonds along the trail', { n: f(j) }),
+      desc: t('In {n} installments, to use in the beta shop', { n: i.length }),
+    });
+  const k = P.filter((x) => x.tipo === 'pedra-eterna' && !h(x)).reduce(
+      (s, x) => s + (inteiro(x.qtd, 1) ? x.qtd : 1),
+      0,
+    ),
+    m = chancePedra(v);
+  if (k)
+    g.push({
+      icone: 'ui/itens/ic_900010.png',
+      nome: t('Eternal Stone ×{n}', { n: k }),
+      desc: m ? t('{p}% chance to pass the nature to the egg', { p: m }) : t('For egg breeding'),
+    });
+  const o = P.filter((x) => x.tipo === 'titulo'),
+    q = o.filter((x) => !h(x)),
+    r = o.filter(h);
+  if (q.length)
+    g.push({
+      icone: ICONE.titulo,
+      nome: q.length === 1 ? t('1 season title') : t('{n} season titles', { n: q.length }),
+      desc: e(q.map((x) => t(texto(x.nome)))),
+    });
+  if (r.length)
+    g.push({
+      icone: ICONE.titulo,
+      nome: r.length === 1 ? t('1 season title (coming soon)') : t('{n} season titles (coming soon)', { n: r.length }),
+      desc: t('Arriving in an upcoming update and saved for you.'),
+      emBreve: true,
+    });
+  const u = P.filter((x) => (x.tipo === 'item' || x.tipo === 'peca-tm') && inteiro(x.id, 1) && !h(x));
+  if (u.length) {
+    const $ = u.reduce((s, x) => s + (inteiro(x.qtd, 1) ? x.qtd : 1), 0),
+      aa = [];
+    if (u.some((x) => BOLAS(x.id))) aa.push(t('Poké Balls'));
+    if (u.some((x) => CURAS(x.id))) aa.push(t('healing'));
+    if (u.some((x) => PEDRAS(x.id))) aa.push(t('evolution stones'));
+    if (u.some((x) => x.tipo === 'peca-tm')) aa.push(t('TM pieces'));
+    if (u.some((x) => PP(x.id))) aa.push(t('PP supplements'));
+    g.push({ icone: ICONE.itens, nome: t('{n} items to use', { n: f($) }), desc: e(aa) });
+  }
+  const F = premioFinal(v, C),
+    n = numeroDaTemporada(v),
+    w = precoDoPasse(v);
+  const y = !v?.passe?.pago && !!v?.passe?.vendaAberta && w !== null && v?.fase === 'aberta';
+  return {
+    titulo: t('Premium Pass · Season {n}', { n }),
+    vitrine: { icone: F.icone, nome: F.nome },
+    linhas: g,
+    preco: w,
+    podeComprar: y,
+    intencao: y ? { op: 'comprarPasse', preco: w } : null,
+  };
+}
+export function comprarNiveis(v, q, c) {
+  const { t, local: a } = ctxPadrao(c),
+    b = fmtDe(a),
+    N = v?.nivelComprado || {};
+  const d = inteiro(N.maxCompravel, 0, 200) ? N.maxCompravel : 0,
+    e = custoDoNivel(v);
+  const k = d ? Math.max(1, Math.min(d, inteiro(q, 1) ? q : 1)) : 0,
+    f = nivelDe(v);
+  const g = e
+    ? t(
+        "Each level costs {n} Diamonds and only grants the paid track's Diamonds and cosmetics; the rest comes from playing.",
+        { n: b(e) },
+      )
+    : '';
+  const h = inteiro(v?.comprados, 1) ? v.comprados : 0;
+  const i = h
+    ? ' ' +
+      t('Today: level {nivel} ({jogando} from playing + {comprados} bought).', {
+        nivel: f,
+        jogando: num(v?.jogando),
+        comprados: h,
+      })
+    : '';
+  const j = !!N.aberta && d > 0 && e !== null;
+  return {
+    atual: f,
+    novo: f + k,
+    q: k,
+    max: d,
+    podeMenos: k > 1,
+    podeMais: k < d,
+    custo: e,
+    total: e ? k * e : 0,
+    texto: g + i,
+    intencao: j ? { op: 'comprarNivel', n: k, custo: e } : null,
+  };
+}
+export function compraPassou(a, v) {
+  if (!a || !v || typeof v !== 'object' || v.fase !== 'aberta') return null;
+  if (a.tipo === 'passe') return !!v.passe?.pago;
+  if (a.tipo === 'niveis')
+    return inteiro(v.comprados, 0) && inteiro(a.comprados, 0) && inteiro(a.n, 1)
+      ? v.comprados >= a.comprados + a.n
+      : null;
+  return null;
+}
+export function nomesEntregues(v, a, c) {
+  const C = ctxPadrao(c),
+    b = [];
+  for (const e of (Array.isArray(a) ? a : []).slice(0, 20)) {
+    if (!e || typeof e !== 'object') continue;
+    const d = TRILHAS.includes(e.trilha) ? e.trilha : null,
+      l = d && inteiro(e.nivel, 0, maxNivel(v)) ? linhasDe(v, d)[e.nivel] : null;
+    const p = (l && inteiro(e.i, 0) ? l.find((x) => x.i === e.i) : null) || e;
+    b.push(nomeComQtd({ ...p, qtd: inteiro(e.qtd, 1) ? e.qtd : p.qtd }, C));
+  }
+  return b.filter(Boolean);
+}
+export function recusa(r, c) {
+  const { t } = ctxPadrao(c),
+    a = texto(r?.erro),
+    b = texto(r?.mensagem);
+  const d = (a) => ({ chave: a, texto: t(a) });
+  if (a === 'saldo-insuficiente')
+    return { tipo: 'diamantes', falta: inteiro(r?.falta, 1) ? r.falta : 0, ...d(b || 'Not enough Diamonds.') };
+  if (a === 'conta-bloqueada')
+    return { tipo: 'bloqueada', ...d(b || 'Your wallet is locked due to a chargeback: contact the team.') };
+  if (a === 'sem-resposta')
+    return {
+      tipo: 'sem-resposta',
+      ...d(
+        'The server didn\'t respond. If your balance dropped, the purchase went through: "Try again" checks without charging twice.',
+      ),
+    };
+  if (a === 'sem-conexao') return { tipo: 'recusado', ...d('No connection to the server.') };
+  if (a === 'preco-mudou') return { tipo: 'preco', ...d(b || 'The price changed: review and confirm again.') };
+  if (a === 'devagar') return { tipo: 'devagar', ...d(b || 'Easy: one request at a time.') };
+  return { tipo: 'recusado', ...d(b || "That didn't work.") };
+}
+const EX_GRATIS =
+  'i1001x10 i1001x30 i1001x15 i2002x5 i1001x15 i1002x5 i1001x15 i2012x2 i50308x1 i1001x15 i1002x10 i1001x15 i2002x5 i50306x1 i1001x15 i2012x2 i1001x15 i1002x10 i2024x3 i1001x15 i50304x1 i1002x10 i1001x10 i2003x5 i1003x5 i2002x5 i1001x10 i50307x1 t0 i2012x3 i1002x5 i1001x10 i1003x5 i50309x1 i1002x10 i2003x5 i1003x5 i1001x10 i2024x3 i1003x5 i50317x1 i1002x10 i1003x10 i2012x2 i1003x10 i1003x15';
+const EX_PAGA =
+  'i1003x10+i2012x2 g15 i1002x15 g15 i2012x3 g15 i1003x10 g15 i50304x1 g15 i2003x5 g15 e900010x1 g15 m900020x10 g15 i1002x15 g15 i50306x1 g15 r1 g20 i1003x20 g20 e900010x1 g20 m900020x10 g20 i2013x2 g20 t1 g20 i50309x1 g20 i1002x15 g20 e900010x1 g20 m900021x3 g20 i50308x1 i1002x15 i1003x20 i2013x3 i50317x1 r2+t2';
+const EX_NOMES = {
+  1001: 'Poké Ball',
+  1002: 'Great Ball',
+  1003: 'Ultra Ball',
+  2002: 'Super Potion',
+  2003: 'Hyper Potion',
+  2012: 'Revive',
+  2013: 'Max Revive',
+  2024: 'Small PP Supplement (all moves)',
+  50304: 'Thunder Stone',
+  50306: 'Water Stone',
+  50307: 'Leaf Stone',
+  50308: 'Moon Stone',
+  50309: 'Fire Stone',
+  50317: 'Link Cable',
+  900010: 'Eternal Stone',
+  900020: 'Common TM Piece',
+  900021: 'Strong TM Piece',
+};
+const EX_TITULOS = ['Kanto Wanderer', 'Season 1 Pathfinder', 'Track Master · S1'];
+const EX_ROUPAS = { 1: 'Season Set', 2: 'Season outfit' };
+const EX_MONTARIAS = { '0059': 'Arcanine', '0078': 'Rapidash', '0006': 'Charizard', '0149': 'Dragonite' };
+function premioDeExemplo(s, i) {
+  let m = /^([iem])(\d+)x(\d+)$/.exec(s);
+  if (m) {
+    const a = +m[2];
+    return {
+      i,
+      tipo: m[1] === 'e' ? 'pedra-eterna' : m[1] === 'm' ? 'peca-tm' : 'item',
+      id: a,
+      qtd: +m[3],
+      nome: EX_NOMES[a] || String(a),
+    };
+  }
+  if ((m = /^g(\d+)$/.exec(s))) return { i, tipo: 'gold', qtd: +m[1], nome: 'Diamonds' };
+  if ((m = /^t(\d)$/.exec(s))) return { i, tipo: 'titulo', qtd: 1, nome: EX_TITULOS[+m[1]], emBreve: true };
+  if ((m = /^s(\d{4})$/.exec(s)))
+    return {
+      i,
+      tipo: TIPO_MONTARIA,
+      qtd: 1,
+      montaria: 'pm' + m[1],
+      especie: Object.hasOwn(EX_MONTARIAS, m[1]) ? EX_MONTARIAS[m[1]] : 'pm' + m[1],
+      nome: (Object.hasOwn(EX_MONTARIAS, m[1]) ? EX_MONTARIAS[m[1]] : 'pm' + m[1]) + ' Shiny',
+    };
+  if ((m = /^r(\d)$/.exec(s)))
+    return { i, tipo: 'roupa', qtd: 1, nome: EX_ROUPAS[+m[1]], exemplo: true, icone: ICONE.roupa };
+  return { i, tipo: 'item', qtd: 1, nome: s };
+}
+const EX_DIARIAS = [
+  ['D01', 'fixa', 'Hunt: defeat 7 wild Pokémon', 7, 'ko'],
+  ['D02', 'fixa', 'Catch 4 Pokémon', 4, 'captura'],
+  ['D03', 'fixa', 'Three stops: defeat 1 wild Pokémon in 3 different areas', 3, 'ko'],
+  ['D04', 'A', 'Catch 3 different species', 3, 'captura'],
+  ['D05', 'A', 'Type of the day: defeat 6 Poison-type Pokémon', 6, 'ko'],
+  [
+    'D06',
+    'A',
+    'Win 1 Gym battle (rematches count)',
+    1,
+    'ginasio',
+    'first win and rematches count; the first leader is Brock, in Pewter',
+  ],
+  [
+    'D07',
+    'A',
+    'Relay: 3 Pokémon on your team defeat 2 wild Pokémon each (counts for the Pokémon that landed the final blow)',
+    6,
+    'ko',
+  ],
+];
+const EX_SEMANAS = {
+  1: [
+    ['S1-1', 'Catch 25 Pokémon', 25, 'captura'],
+    ['S1-2', 'Defeat 12 Rock- or Ground-type Pokémon', 12, 'ko'],
+    ['S1-3', 'Catch 5 different species', 5, 'captura'],
+    ['S1-4', 'Beat 4 route Trainers', 4, 'treinador'],
+    ['S1-5', 'Complete 3 story missions', 3, 'historia'],
+  ],
+  2: [
+    ['S2-1', 'Defeat 45 wild Pokémon', 45, 'ko'],
+    ['S2-2', 'Defeat 12 Water-type Pokémon', 12, 'ko'],
+    ['S2-3', 'Explorer: defeat wild Pokémon in 6 different areas', 6, 'ko'],
+    ['S2-4', 'Win 3 Gym battles (rematches count)', 3, 'ginasio', 'first win and rematches count'],
+    ['S2-5', 'Group hunt: defeat 25 wild Pokémon together with another player', 25, 'ko'],
+  ],
+};
+const EX_TEMPORADA = [
+  ['P1', 'First steps: catch 1 Pokémon', 1, 'captura'],
+  ['P2', 'First steps: defeat 5 wild Pokémon', 5, 'ko'],
+  ['P3', 'First steps: complete 1 story mission', 1, 'historia'],
+  ['T01', 'Catch 200 Pokémon', 200, 'captura'],
+  ['T02', 'Defeat 400 wild Pokémon', 400, 'ko'],
+  ['T03', 'Catch 35 different Kanto species', 35, 'captura'],
+  ['T04', 'Earn 4 Badges', 4, 'insignia', 'only new Badges from this season count'],
+  ['T05', 'Win 12 Gym battles (rematches count)', 12, 'ginasio', 'first win and rematches count'],
+  ['T06', 'Hunt in 20 different Kanto areas', 20, 'ko'],
+  ['T07', 'Evolve 8 Pokémon of different species', 8, 'evolucao'],
+  ['T08', 'Trade with 3 different players (receive a Pokémon they caught that was never yours)', 3, 'troca'],
+  ['T09', 'Complete 10 story missions', 10, 'historia'],
+  ['T10', 'Beat 12 route trainers', 12, 'treinador'],
+  ['T11', 'With your Guild: defeat 200 wild Pokémon together with members', 200, 'ko'],
+  ['T12', 'Defeat the Elite Four', 1, 'elite', 'requires all 8 Badges'],
+];
+const missaoDe = ([a, b, c, d, e], n = 0, f = false) => ({
+  id: 'T1-' + a,
+  texto: b,
+  qtd: c,
+  n: f ? c : Math.min(c, n),
+  feita: f,
+  conta: d,
+  ...(e ? { requisito: e } : {}),
+});
+export const EXEMPLOS = [
+  { id: 'passe-sem', nome: 'Pass · open, without the paid pass (level 12)', caso: 'sem-passe' },
+  { id: 'passe-com', nome: 'Pass · with the paid pass (level 12)', caso: 'com-passe' },
+  { id: 'passe-comprados', nome: 'Pass · 8 levels bought (earned by playing)', caso: 'comprados' },
+  { id: 'passe-fechada', nome: 'Pass · sales closed (day 38, no pass)', caso: 'venda-fechada' },
+  { id: 'passe-completo', nome: 'Pass · full track (level 45)', caso: 'completo' },
+  {
+    id: 'passe-diarios',
+    nome: 'Pass · Challenges (Daily)',
+    caso: 'com-passe',
+    dialogo: 'dialogo-desafios',
+    aba: 'diarios',
+  },
+  {
+    id: 'passe-semanais',
+    nome: 'Pass · Challenges (Weekly and season)',
+    caso: 'com-passe',
+    dialogo: 'dialogo-desafios',
+    aba: 'semanais',
+  },
+  { id: 'passe-liberar', nome: 'Pass · Unlock premium', caso: 'sem-passe', dialogo: 'dialogo-liberar-premium' },
+  { id: 'passe-niveis', nome: 'Pass · Buy levels', caso: 'com-passe', dialogo: 'dialogo-comprar-nivel' },
+  { id: 'passe-montaria', nome: 'Pass · shiny mount on the paid track (level 11, ready)', caso: 'montaria' },
+];
+export function vistaDeExemplo(a = 'sem-passe', { agora: b = Date.now() } = {}) {
+  const c = a === 'venda-fechada' ? 38 : a === 'completo' ? 40 : 9,
+    d = b - ((c - 1) * DIA_MS + 9 * 3600e3);
+  const e = a !== 'sem-passe' && a !== 'venda-fechada',
+    f = a === 'comprados' ? 8 : 0;
+  const g = a === 'completo' ? 45 : a === 'venda-fechada' ? 30 : 12,
+    h = Math.min(45, g + f),
+    l = g * 100 + (g >= 45 ? 0 : 50);
+  const o = { gratis: a === 'completo' ? 44 : g - 2, paga: a === 'completo' ? 44 : e ? g - 3 : -1 };
+  const q = (p) => p.tipo !== 'gold' && !ehVisual(p);
+  const r = (a, n, p) => {
+    if (n <= o[a] && (a === 'gratis' || e)) return 'pego';
+    if (a === 'paga' && !e) return n === 0 || n <= h ? 'cadeado' : 'bloqueado';
+    if (n === 0) return 'pronto';
+    if (n > h) return 'bloqueado';
+    if (n > g && (a === 'gratis' || q(p))) return 'jogando';
+    return 'pronto';
+  };
+  const t = (a, s) =>
+    s.split(' ').map((b, n) => ({
+      nivel: n,
+      premios: b.split('+').map((x, i) => {
+        const p = premioDeExemplo(x, i);
+        return { ...p, estado: r(a, n, p) };
+      }),
+    }));
+  const u = Math.ceil(c / 7),
+    w = [];
+  for (let k = 1; k <= u; k++) {
+    const y = EX_SEMANAS[k] || EX_SEMANAS[1 + ((k - 1) % 2)];
+    w.push({
+      semana: k,
+      tipo: '',
+      missoes: y.map((m, j) =>
+        missaoDe(
+          [m[0].replace(/^S\d+/, 'S' + k), ...m.slice(1)],
+          k < u ? m[2] : Math.floor(m[2] * (0.25 + 0.15 * j)),
+          k < u ? j < 4 : j === 2,
+        ),
+      ),
+    });
+  }
+  const v = {
+    id: 'T1',
+    nome: 'Season 1: The Badge Trail',
+    nomeTela: 'Season Pass',
+    fase: 'aberta',
+    dia: c,
+    dias: 45,
+    semana: u,
+    inicio: d,
+    fim: d + 45 * DIA_MS,
+    diasRestantes: 45 - c,
+    agora: b,
+    pontos: l,
+    nivel: h,
+    jogando: g,
+    comprados: f,
+    noNivel: g >= 45 ? 100 : l % 100,
+    pontosPorNivel: 100,
+    maxNivel: 45,
+    pontosPorMissao: 50,
+    passe: { pago: e, estornado: false, preco: 350, vendaAberta: c <= 35, vendaAte: 35 },
+    nivelComprado: { custo: 50, aberta: e && c <= 45, maxCompravel: e ? Math.max(0, 45 - g - f) : 0 },
+    guardadas: { n: 4, de: 21 },
+    tipoDoDia: 'Poison',
+    pedraEterna: { chance: 0.5 },
+    viradas: { dia: d + c * DIA_MS, semana: d + Math.min(45, u * 7) * DIA_MS },
+    diarias: EX_DIARIAS.map(([a, b, c, d, e, f], j) => ({
+      ...missaoDe([a, c, d, e, f], [3, 1, 2, 0, 4, 0, 2][j] || 0),
+      grupo: b,
+      feita: undefined,
+    })),
+    semanais: w,
+    temporada: EX_TEMPORADA.map((m, j) =>
+      missaoDe(m, [1, 5, 1, 64, 130, 14, 1, 3, 9, 2, 0, 4, 5, 22, 0][j] || 0, j < 3),
+    ),
+    extras: { teto: 2, nestaSemana: 0, missoes: [] },
+    trilhas: {
+      gratis: t('gratis', EX_GRATIS),
+      paga: t(
+        'paga',
+        a === 'montaria'
+          ? EX_PAGA.split(' ')
+              .map((x, n) => (n === 11 ? 's0059' : x))
+              .join(' ')
+          : EX_PAGA,
+      ),
+    },
+    carteira: { total: 1250 },
+    fechada: null,
+  };
+  v.prontos = prontos(v);
+  return v;
+}

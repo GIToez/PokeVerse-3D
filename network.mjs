@@ -234,6 +234,19 @@ function receber(m){
       return;
     }
     case 'mercado_aviso': ctx.mercadoAviso?.(m.aviso); return;
+    case 'loja': {
+      const pend = m.rid != null ? lojaEsperando.get(m.rid) : null; if (!pend) return;
+      lojaEsperando.delete(m.rid); clearTimeout(pend.timer); pend.resolve(m);
+      return;
+    }
+    case 'temporada': case 'temporada_erro': {
+      const pend = m.rid != null ? temporadaEsperando.get(m.rid) : null;
+      if (!pend){ if (m.t === 'temporada' && m.vista) avisarTemporada(m); return; }   // a late answer still refreshes the open pass
+      temporadaEsperando.delete(m.rid); clearTimeout(pend.timer);
+      pend.resolve(m.t === 'temporada' ? { ...m, ok: m.ok !== false } : { ...m, ok: false, erro: m.erro || 'recusado', mensagem: typeof m.mensagem === 'string' ? m.mensagem : '' });
+      return;
+    }
+    case 'temporada_evento': avisarTemporada(m); return;
     default: return;
   }
 }
@@ -273,6 +286,23 @@ export function pedirMercado(op, dados = {}){
     enviar({ t: 'mercado_' + op, ...dados });
   });
 }
+/* Diamond shop (server_shop.mjs) and Battle Pass (server_season.mjs): every request carries its own `rid`, so several can be
+   in flight; 8 s without an answer resolves `{ ok:false, erro:'sem-resposta' }`. */
+const lojaEsperando = new Map(), temporadaEsperando = new Map(), ouvintesTemporada = new Set();
+let lojaRid = 0, temporadaRid = 0;
+const SEM_CONEXAO = () => ({ ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' });
+function pedirComRid(mapa, rid, msg){
+  if (!ws || ws.readyState !== 1) return Promise.resolve(SEM_CONEXAO());
+  return new Promise(resolve => {
+    const timer = setTimeout(() => { mapa.delete(rid); resolve({ ok: false, erro: 'sem-resposta', mensagem: "The server didn't respond." }); }, 8000);
+    mapa.set(rid, { resolve, timer });
+    if (!enviar(msg)){ clearTimeout(timer); mapa.delete(rid); resolve(SEM_CONEXAO()); }
+  });
+}
+export function pedirLoja(op, dados = {}){ const rid = ++lojaRid; return pedirComRid(lojaEsperando, rid, { ...dados, t: 'loja_' + op, rid }); }
+export function pedirTemporada(op, dados = {}){ const rid = ++temporadaRid; return pedirComRid(temporadaEsperando, rid, { ...(dados && typeof dados === 'object' ? dados : {}), t: 'temporada', op, rid }); }
+export function aoTemporada(fn){ if (typeof fn !== 'function') return () => {}; ouvintesTemporada.add(fn); return () => ouvintesTemporada.delete(fn); }
+function avisarTemporada(m){ for (const fn of [...ouvintesTemporada]) try { fn(m); } catch (e) { console.warn('network: season', e); } }
 /* VIDA (passo 3): a cura completa é pedida ao servidor, que confere se você está no Centro Pokémon (ou se o time todo caiu). */
 let vidaEsperando = null;
 export function pedirVida(op = 'curar'){

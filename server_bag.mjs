@@ -71,14 +71,14 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     for (const lista of [s.time, s.caixa]) for (const p of Array.isArray(lista) ? lista : []) if (p && String(p.uid) === String(uid)) return p;
     return null;
   }
-  const catalogo = () => lerJson('cosmeticos.json') || { roupas: [], efeitos: [] };
+  const catalogo = () => lerJson('cosmeticos.json') || { roupas: [], efeitos: [], mochilas: [] };
   const meus = c => {
     const s = saveDe(c);
     if (!s.cosmeticos || typeof s.cosmeticos !== 'object' || Array.isArray(s.cosmeticos)) s.cosmeticos = {};
-    for (const k of ['roupas', 'efeitos']) if (!Array.isArray(s.cosmeticos[k])) s.cosmeticos[k] = [];
+    for (const k of ['roupas', 'efeitos', 'mochilas']) if (!Array.isArray(s.cosmeticos[k])) s.cosmeticos[k] = [];
     return s.cosmeticos;
   };
-  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null, cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos] } }; };
+  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null, cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos], mochilas: [...meus(c).mochilas] } }; };
   const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, status: Status.exportar(p.status), ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
   const tocarAmizade = (p, id) => {
     const d = Regras.amizadeDe(id);
@@ -257,6 +257,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
       }
       out.efeitos = e;
     }
+    if (out.mochila != null && !((C.mochilas || []).some(b => b.id === out.mochila) && M.mochilas.includes(out.mochila))) out.mochila = null;   // Diamond Shop backpacks only, and only owned ones
     return out;
   }
 

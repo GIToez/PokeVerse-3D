@@ -9226,7 +9226,7 @@ if (jogo.ash){
   /* ===== WARDROBE + COSMETICS SHOP (Nov 2). Outfits: the 28 on the creation screen are free; the other dump outfits are in
      data/cosmeticos.json (Coins, an Elite Four reward, or an event that isn't running). Effects: an aura (`peito`) and a trail
      (`rastro`), drawn by cosmetic_fx.mjs. What you wear rides in `personagem` (tipo + efeitos), so the room sees it; the server
-     only passes on what the account owns (server_bag.mjs). Coins only — there are no real-money payments. */
+     only passes on what the account owns (server_bag.mjs). Backpacks (`personagem.mochila`) come from the Diamond Shop (server_shop.mjs). */
   let COSM = { roupas: [], efeitos: [] };
   const cosmPronto = fetch('./data/cosmeticos.json').then(r => r.ok ? r.json() : null).then(d => { if (d) COSM = d; }).catch(() => {});
   const fxDoId = id => COSM.efeitos.find(e => e.id === +id)?.fx || null;
@@ -9235,7 +9235,7 @@ if (jogo.ash){
   const corpoEu = { get pivo(){ return jogo.ash?.pivo || null; }, get altura(){ return jogo.ash?.altura || 1.6; }, get montado(){ return !!jogo.montaria; } };
   const fxProprio = () => CosFx.vestir('eu', corpoEu, kindsDe(Personagem.ler()));
   cosmPronto.then(fxProprio);
-  const meusCosm = () => { const m = lerLS('cosmeticos', null); return { roupas: Array.isArray(m?.roupas) ? m.roupas : [], efeitos: Array.isArray(m?.efeitos) ? m.efeitos : [] }; };
+  const meusCosm = () => { const m = lerLS('cosmeticos', null); return { roupas: Array.isArray(m?.roupas) ? m.roupas : [], efeitos: Array.isArray(m?.efeitos) ? m.efeitos : [], mochilas: Array.isArray(m?.mochilas) ? m.mochilas : [] }; };
   const GUARDA = {
     pronto: cosmPronto,
     catalogo: () => COSM,
@@ -9267,6 +9267,14 @@ if (jogo.ash){
       p.efeitos = { ...(p.efeitos || {}) };
       if (id == null) delete p.efeitos[slot]; else p.efeitos[slot] = +id;
       Personagem.gravar(p); fxProprio();
+      return true;
+    },
+    /** Wear an owned Diamond Shop backpack (`glb` like 'Bag014'), or take it off with null. */
+    vestirMochila(glb){
+      if (glb != null && !meusCosm().mochilas.includes(glb)) return false;
+      Personagem.gravar({ ...(Personagem.ler() || {}), mochila: glb || null });
+      const corpo = jogo.ash?.pivo;
+      if (corpo){ if (glb) Personagem.vestirMochila(corpo, glb).catch(e => console.warn('backpack:', e)); else Personagem.tirarMochila(corpo); }
       return true;
     },
     /** Buy (or claim the Elite Four reward). With an account the server decides; without one the local save pays. */

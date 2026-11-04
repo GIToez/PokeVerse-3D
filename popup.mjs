@@ -546,6 +546,37 @@ export function estadoRef(pop, el, ref, estado){
   el.dataset.estado = estado;
   return d;
 }
+/** The art folder name a layout image belongs to (no query, no extension, `figma_webp` read as `figma`). */
+export function pastaDaArte(url){
+  return String(url || '').replace(/[?#].*$/, '').replace(/(^|\/)ui\/figma_webp\//, '$1ui/figma/').replace(/\.(png|webp)$/i, '');
+}
+/* Warm the image cache a few at a time and at low priority; `pausa()` true holds the queue (e.g. a hidden tab). */
+const aquecidas = new Set(), guardadas = [];
+export async function preaquecer(urls, { porVez = 3, pausa = null } = {}){
+  const fila = (urls || []).filter(u => typeof u === 'string' && u && !aquecidas.has(u));
+  for (let i = 0; i < fila.length; i += porVez){
+    while (typeof pausa === 'function' && pausa()) await new Promise(r => setTimeout(r, 1500));
+    await Promise.all(fila.slice(i, i + porVez).map(u => new Promise(fim => {
+      aquecidas.add(u);
+      const img = new Image(); let feito = false;
+      try { img.fetchPriority = 'low'; } catch {}
+      img.decoding = 'async';
+      const pronto = () => { if (feito) return; feito = true; img.onload = img.onerror = null; fim(); };
+      img.onload = img.onerror = pronto; setTimeout(pronto, 20000);
+      img.src = u; guardadas.push(img);
+    })));
+  }
+  return fila.length;
+}
+/** Shrink every `data-regra="encolher"` text in the pop-up that overflows its box (again once the web font loads). */
+export function caberTextos(pop){
+  if (!pop?.querySelectorAll) return;
+  for (const el of [...pop.querySelectorAll('[data-regra="encolher"]')].filter(e => e.clientWidth > 0 && (e.scrollWidth > e.clientWidth + 0.5 || e.scrollHeight > e.clientHeight + 0.5))) Hud.encolher(el);
+  if (document.fonts && document.fonts.status !== 'loaded' && !pop.__caberFonte){
+    pop.__caberFonte = true;
+    document.fonts.ready.then(() => { pop.__caberFonte = false; caberTextos(pop); });
+  }
+}
 export function aberto(pop){ return !!pop && pop.style.display !== 'none'; }
 export function abrir(pop){ if (!pop) return; escalar(pop); pop.style.display = 'block'; atualizarRolagem(pop); pop.__cb.abrir?.(); }   // rodada 30: barra de rolagem própria já certa no 1º quadro
 export function fechar(pop){ if (!pop) return; pop.style.display = 'none'; pop.__cb.fechar?.(); }

@@ -36,6 +36,7 @@ import * as Balsa from './ferry_ui.mjs';
 import * as FeiraUI from './market_ui.mjs';
 import * as EventosUI from './events_ui.mjs';
 import * as PokemartUI from './pokemart_ui.mjs';
+import * as LojaUI from './shop_ui.mjs';                                  // Diamond Shop + Battle Pass (server_shop.mjs / server_season.mjs)
 import * as Guia from './mission_guide.mjs';
 import { linhaRecompensa } from './missions.mjs';
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
@@ -189,7 +190,7 @@ export const JANELAS = {
   mapa:      { titulo: 'Map', icone: 'mapa', tecla: 'KeyK', sub: 'Kanto · Johto' },
   pokedex:   { titulo: 'Pokédex', icone: 'pokedex', tecla: 'KeyX', sub: 'seen and caught' },
   treinador: { titulo: 'Trainer', icone: 'personagem', tecla: 'KeyU', sub: 'badges, money' },
-  loja:      { titulo: 'Shop', icone: 'loja', sub: 'outfits and effects for Coins' },   // Nov 2: the cosmetics shop (abrirGuarda, tab Shop). Coins only, no real-money payments
+  loja:      { titulo: 'Shop', icone: 'loja', sub: 'Diamonds, outfits and the Season Pass' },   // the Diamond Shop (shop_ui.mjs); offline it falls back to the Wardrobe's Coin shop
   guarda:    { titulo: 'Wardrobe', icone: 'personagem', sub: 'outfits and effects' },   // PREMIUM (GDD §7.5: doação → Medalhão trocável, cosméticos) — só "em breve" até o servidor; o Pokémart é outra janela
   creche:    { titulo: 'Daycare', icone: 'pokebola', sub: 'leave a pair with Hideko' },
   terreno:   { titulo: 'Land', icone: 'mapa', sub: 'garden and eggs' },
@@ -304,6 +305,27 @@ function ligarRecursos(){
     Som: ctx.Som,
     soltar: soltarJanelaRecurso,
   });
+  LojaUI.instalar({
+    pedirLoja: (op, d) => Rede.pedirLoja(op, d),
+    pedirTemporada: (op, d) => Rede.pedirTemporada(op, d),
+    Chat,
+    Som: ctx.Som,
+    segurar: el => DIALOGOS.add(el),
+    fecharMenu: () => { fechar(); fecharGrade(); },
+    moedas: () => dinheiro(),
+    produtos: {},
+    iconeItem: id => iconeHeld(id) || null,
+    emailOk: () => false,
+    definirEmail: () => {},
+    dialogoEmail: () => Chat.sistema(tr('Real-money purchases are not open yet.')),
+    suporte: () => Chat.sistema(tr('Need help? Ask a GM in the chat or on Discord.')),
+    nick: () => ctx.nome || '',
+    qualidade: () => ctx.qualidade,
+    abrirTitulos: () => abrir('treinador'),
+    emBreve: r => abrirEmBreve(r),
+    abrirGuarda: () => { abrirGuarda('roupas'); return true; },
+  });
+  Rede.aoTemporada(m => LojaUI.temporadaEvento(m));
 }
 
 export function instalar(c){
@@ -346,6 +368,7 @@ function marcarMapaCheio(on){
 export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
+  if (nome === 'loja' && ctx.comConta?.() && LojaUI.abrir()) return;          // with an account the shop button opens the Diamond Shop; Coin outfits stay in the Wardrobe's Shop tab
   if (nome === 'loja' || nome === 'guarda'){ abrirGuarda(nome === 'loja' ? 'loja' : 'roupas'); return; }   // Wardrobe / cosmetics shop (Nov 2)
   if (nome === 'creche' || nome === 'terreno' || nome === 'guilda' || nome === 'feira' || nome === 'balsa'){ await abrirRecursoJanela(nome); return; }
   if (nome === 'eventos'){
@@ -1013,7 +1036,7 @@ function digitaCaixa(v, el){
 function abreCaixa(nome){
   if (nome === 'dialogo-ficha-mon'){ pintarFichaMonCaixa(popBx); return false; }
   if (nome === 'dialogo-vagas'){ pintarVagasCaixa(popBx); return false; }
-  if (nome === 'popup-loja'){ abrirEmBreve('loja'); return true; }
+  if (nome === 'popup-loja'){ abrir('loja'); return true; }
   return false;
 }
 async function acaoCaixa(nome){
@@ -5980,7 +6003,8 @@ function linhasGuarda(){
   const G = ctx.guarda, C = G.catalogo(), M = G.meus(), atual = G.atual(), ef = atual.efeitos || {};
   const roupas = G.roupas().map(r => ({ ...r, tipo: 'roupa', tem: !!r.gratis || M.roupas.includes(r.id), usa: atual.tipo === r.id }));
   const efeitos = (C.efeitos || []).map(e => ({ ...e, slot: e.tipo, tipo: 'efeito', tem: M.efeitos.includes(e.id), usa: ef[e.tipo] === e.id }));
-  return { roupas, efeitos };
+  const mochilas = (C.mochilas || []).filter(b => (M.mochilas || []).includes(b.id)).map(b => ({ ...b, tipo: 'mochila', tem: true, usa: atual.mochila === b.id }));
+  return { roupas, efeitos, mochilas };
 }
 function estadoLoja(x){
   if (x.evento) return { trava: x.evento };
@@ -5995,12 +6019,17 @@ function cardGuarda(x, botao){
 const botaoLoja = x => { const st = estadoLoja(x); return st.trava ? `<span class="g-tag trava">🔒 ${esc(tr(st.trava))}</span>` : `<button type="button" data-gacao="${st.acao}" data-gid="${esc(x.id)}" data-gtipo="${x.tipo}" ${st.pode === false ? 'disabled' : ''}>${esc(st.rotulo)}</button>`; };
 function pintarGuarda(){
   if (!guarda?.el.isConnected) return;
-  const G = ctx.guarda, el = guarda.el, { roupas, efeitos } = linhasGuarda();
+  const G = ctx.guarda, el = guarda.el, { roupas, efeitos, mochilas } = linhasGuarda();
   el.querySelector('.g-moedas').textContent = '💰 ' + precoTxt(G.dinheiro());
-  el.querySelector('.g-abas').innerHTML = [['roupas', 'Outfits'], ['efeitos', 'Effects'], ['loja', 'Shop']].map(([k, n]) => `<button type="button" data-gaba="${k}" class="${guarda.aba === k ? 'on' : ''}">${esc(tr(n))}</button>`).join('');
+  el.querySelector('.g-abas').innerHTML = [['roupas', 'Outfits'], ['mochilas', 'Backpacks'], ['efeitos', 'Effects'], ['loja', 'Shop']].map(([k, n]) => `<button type="button" data-gaba="${k}" class="${guarda.aba === k ? 'on' : ''}">${esc(tr(n))}</button>`).join('');
   let html = '';
   if (guarda.aba === 'roupas'){
     html = roupas.filter(r => r.tem).map(r => cardGuarda(r, r.usa ? '' : `<button type="button" data-gacao="vestir" data-gid="${esc(r.id)}" data-gtipo="roupa">${esc(tr('Wear'))}</button>`)).join('');
+  } else if (guarda.aba === 'mochilas'){
+    const algum = mochilas.some(b => b.usa);
+    html = `<div class="g-card${algum ? '' : ' sel'}"><b>${esc(tr('None'))}</b>${algum ? `<button type="button" data-gacao="tirarmochila">${esc(tr('Wear'))}</button>` : `<span class="g-tag usa">${esc(tr('Wearing'))}</span>`}</div>`;
+    html += mochilas.length ? mochilas.map(b => cardGuarda(b, b.usa ? `<button type="button" data-gacao="tirarmochila">${esc(tr('Take off'))}</button>` : `<button type="button" data-gacao="vestirmochila" data-gid="${esc(b.id)}">${esc(tr('Wear'))}</button>`)).join('')
+      : `<div class="g-card"><small>${esc(tr('None yet: get them in the Diamond Shop.'))}</small></div>`;
   } else if (guarda.aba === 'efeitos'){
     for (const [slot, nome] of [['peito', 'Auras'], ['rastro', 'Trails']]){
       const doSlot = efeitos.filter(e => e.slot === slot), meus = doSlot.filter(e => e.tem), algum = doSlot.some(e => e.usa);
@@ -6036,6 +6065,11 @@ async function acaoGuarda(acao, id, tipo, slot){
   const G = ctx.guarda;
   if (acao === 'vestir'){ avisarGuarda(tr('Changing…')); const ok = await G.vestirRoupa(id); avisarGuarda(ok ? tr('Outfit changed.') : tr("Couldn't change the outfit."), ok); pintarGuarda(); return; }
   if (acao === 'vestirfx'){ const ok = G.vestirEfeito(slot, +id); avisarGuarda(ok ? tr('Effect on.') : tr("You don't have that effect."), ok); pintarGuarda(); return; }
+  if (acao === 'vestirmochila' || acao === 'tirarmochila'){
+    if (ctx.jogo?.montaria){ avisarGuarda(tr('Dismount to change backpacks.')); return; }
+    const ok = G.vestirMochila?.(acao === 'vestirmochila' ? id : null);
+    avisarGuarda(ok ? tr(acao === 'vestirmochila' ? 'Backpack on.' : 'Backpack off.') : tr("You don't have that backpack."), ok); pintarGuarda(); return;
+  }
   if (acao === 'tirarfx'){ G.vestirEfeito(slot, null); avisarGuarda(tr('Effect off.'), true); pintarGuarda(); return; }
   if (acao === 'comprar' || acao === 'resgatar'){
     const r = await G.comprar(tipo, id);

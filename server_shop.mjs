@@ -73,7 +73,7 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
       tem: (p.tipo === 'roupa' ? M.roupas : M.mochilas).includes(p.id),
       peca: {
         tipo: p.tipo, id: p.id, nome: p.nome, nomes: { en: p.nome },
-        icone: 'ui/amanda/skins/pecas/' + p.tipo + '-' + p.id + '.png', qualidade: p.preco >= 700 ? 4 : 3,
+        icone: 'ui/amanda/skins/pecas/' + p.tipo + '-' + p.id + '@2x.png', qualidade: p.preco >= 700 ? 4 : 3,
         ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}),
       },
     }));

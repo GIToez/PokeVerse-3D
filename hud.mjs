@@ -484,6 +484,8 @@ if (typeof document !== 'undefined' && document.fonts?.addEventListener) documen
     entrelinha da maquete (layout antigo, `hud=padrao`, caixas justas de 1,03–1,06× a fonte) segue a conta de sempre: lá a folga cortava o
     acento ("Arco-Íris" das insígnias) — revisão de 18/09. (2) Nem na fonte mínima coube e a caixa só tem altura pra UMA linha: fica uma
     linha com reticências dentro da caixa, em vez de duas linhas cortadas ao meio (o título de 80 letras). Caixa de várias linhas segue como era. */
+/** The shop asks for a coin-less copy of its buy-button art; we keep the button's own art (null = use it as drawn). */
+export const semMoedaNaArte = () => null;
 export function encolher(el){
   if (!el || el.dataset.regra !== 'encolher') return;
   const base = +el.dataset.fs || 12, min = 7;

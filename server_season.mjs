@@ -132,7 +132,7 @@ export function criarTemporada({ dadosPub, contas, socketsDe, enviar, salvarCont
       const cos = lerCosmeticos();
       const pecas = p.ids.map(id => {
         const r = cos.roupas.find(x => x.id === id) || { nome: id, sexo: /^girl/.test(id) ? 'menina' : 'menino' };
-        return { chave: 'roupa:' + id, tipo: 'roupa', id, nome: r.nome, nomes: { en: r.nome }, icone: 'ui/amanda/skins/pecas/roupa-' + id + '.png', sexo: r.sexo };
+        return { chave: 'roupa:' + id, tipo: 'roupa', id, nome: r.nome, nomes: { en: r.nome }, icone: 'ui/amanda/skins/pecas/roupa-' + id + '@2x.png', sexo: r.sexo };
       });
       return { ...base, tipo: 'roupa', nome: pecas[0]?.nome || 'Outfit', pecas };
     }
