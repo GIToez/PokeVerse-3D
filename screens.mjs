@@ -209,11 +209,12 @@ export function atualizando(){
 }
 /** KIKADO (10/09): a conta entrou de outro lugar. Tela por cima de tudo, curta, com o caminho de volta — como em qualquer
     MMO. Nada de explicar save: o jogo daqui parou e ponto. */
-export function derrubado(texto = 'You logged in from somewhere else.'){
+export function derrubado(texto = 'You logged in from somewhere else.', motivo = null){
   texto = tr(texto);
+  const sub = motivo === 'sessao' ? 'Log in again to keep playing.' : 'Your account can only play from one place at a time.';
   if (document.getElementById('tela-derrubado')) return;
   const f = painel('<b style="color:#ffe07a;font-size:17px">' + texto + '</b>'
-    + '<p style="color:#98a4c0;margin:10px 0 16px">Your account can only play from one place at a time.</p>'
+    + '<p style="color:#98a4c0;margin:10px 0 16px">' + tr(sub) + '</p>'
     + '<button type="button" class="btn ouro" id="der-voltar" style="width:100%">Go to login</button>');
   f.id = 'tela-derrubado'; f.style.zIndex = '1200';
   /* Volta pra TELA DE LOGIN, não pro jogo (pedido dele, 10/09): a sessão daqui acabou, então o certo é sair da conta e
