@@ -1,0 +1,7 @@
+https://pokefableonline.com/ui/amanda/mapa/sevii/dados.js
+https://pokefableonline.com/ui/amanda/mapa/sub/floresta-verde.webp
+https://pokefableonline.com/ui/amanda/mapa/sub/borda-floresta-verde.webp
+https://pokefableonline.com/ui/amanda/mapa/sub/zona-safari.webp
+https://pokefableonline.com/ui/amanda/mapa/sub/borda-zona-safari.webp
+https://pokefableonline.com/ui/amanda/mapa/sub/centro-de-competicao.webp
+https://pokefableonline.com/ui/amanda/mapa/sub/borda-centro-de-competicao.webp
