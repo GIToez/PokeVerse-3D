@@ -146,7 +146,7 @@ export const ESQUEMAS = {
       { k: 'glb', rotulo: 'Model', tipo: 'texto', max: 60, col: true, validar: s => /^(npc|mon|pc)\/[\w-]{1,40}$/.test(s) ? null : 'folder/file without .glb (e.g. npc/fc1004_00, mon/pm0122)',
         ajuda: 'scenery/<model>.glb — npc/… (people) or mon/… (Pokémon). Signs have no model.' },
       { k: 'falas', rotulo: 'Lines (one per line)', tipo: 'linhas', validar: listaDeTextos },
-      { k: 'papel', rotulo: 'Role', tipo: 'opcao', col: true, opcoes: [{ v: 'cura', rotulo: 'Healing (Pokémon Center)' }, { v: 'loja', rotulo: 'Shop' }, { v: 'caixa', rotulo: 'Box (PC)' }] },
+      { k: 'role', rotulo: 'Role', tipo: 'opcao', col: true, opcoes: [{ v: 'heal', rotulo: 'Healing (Pokémon Center)' }, { v: 'shop', rotulo: 'Shop' }, { v: 'pc', rotulo: 'Box (PC)' }, { v: 'safari', rotulo: 'Safari Zone warden' }] },
       { k: 'placa', rotulo: 'Sign (invisible point with text)', tipo: 'bool', col: true },
       { k: 'tipo', rotulo: 'Original game type', tipo: 'num', int: true, min: 0, max: 99 },
       { k: 'cena', rotulo: 'Scene', tipo: 'num', int: true, min: 1, max: 99999999, ajuda: '1000001 = Kanto' },

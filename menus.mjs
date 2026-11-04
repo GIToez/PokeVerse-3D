@@ -198,7 +198,7 @@ export const JANELAS = {
   balsa:     { titulo: 'Ferry', icone: 'mapa', sub: 'the Sevii ferry' },
   eventos:   { titulo: 'Events', icone: 'mapa', sub: 'the weekly board', oculto: true },
   pokemart:  { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },
-  mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },  // só pelo vendedor da loja da cidade (NPC papel 'loja'): não fica no menu
+  mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },  // só pelo vendedor da loja da cidade (NPC role 'shop'): não fica no menu
   social:    { titulo: 'Social', icone: 'amigos', sub: 'chat, friends, mail', breve: true },
   batalha:   { titulo: 'Battle', icone: 'batalha', sub: 'PvP, ranking', breve: true },
   config:    { titulo: 'Settings', icone: 'ajuda', tecla: 'KeyO', sub: 'sound, graphics, HUD' },

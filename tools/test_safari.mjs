@@ -94,10 +94,10 @@ function conta(extra = {}) {
   assert(row[0]?.nome === 'Pidgeot' && row.some(e => e.nome === 'Nidoking'), 'habitat 1192 was replaced');
   assert(!habitats.areas['2115'], 'Johto safari grew a habitat table');
   const npcs = JSON.parse(fs.readFileSync(nodePath.join(root, 'public/data/npcs_glb.json'), 'utf8'));
-  assert(npcs['9001192']?.papel === 'safari' && npcs['9001192'].cena === 1000001, 'kanto warden');
+  assert(npcs['9001192']?.role === 'safari' && npcs['9001192'].cena === 1000001, 'kanto warden');
   assert(npcs['9001192'].pos.x === 228.5 && npcs['9001192'].pos.z === 199.5 && npcs['9001192'].pos.face === 180, 'kanto gate');
-  assert(npcs['9001193']?.placa === true && !npcs['9001193'].papel, 'kanto sign charges a fee');
-  assert(npcs['9002115']?.papel === 'safari' && npcs['9002115'].cena === 2000001, 'johto warden');
+  assert(npcs['9001193']?.placa === true && !npcs['9001193'].role, 'kanto sign charges a fee');
+  assert(npcs['9002115']?.role === 'safari' && npcs['9002115'].cena === 2000001, 'johto warden');
   assert(npcs['9002115'].pos.x === 324.5 && npcs['9002115'].pos.face === 0, 'johto gate');
   assert(npcs['9002116']?.placa === true && npcs['9002116'].cena === 2000001, 'johto sign');
 }

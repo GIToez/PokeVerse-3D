@@ -45,17 +45,17 @@ function conferir(lugar, cenaId, pessoas){
   ok(de.x === para.x && Math.abs((para.z - de.z) - 1.8) < 0.05, `${lugar.nome} landing is the step outside the door`);
   const area = cena(cenaId).areas.find(a => a.id === lugar.a);
   ok(area?.nome === lugar.nome && area.tipo === 2, `area ${lugar.a} on scene ${cenaId}`);
-  for (const [id, papel] of pessoas){
-    ok(glb[id]?.papel === papel, `${lugar.nome} npc ${id} is ${papel}`);
+  for (const [id, role] of pessoas){
+    ok(glb[id]?.role === role, `${lugar.nome} npc ${id} is ${role}`);
   }
 }
 
 for (const c of CENTROS_JOHTO){
   const joy = String(c.chegada - 5000000);
-  conferir(c, 4110001, [[joy, 'cura'], [String(+joy + 1), 'caixa']]);
+  conferir(c, 4110001, [[joy, 'heal'], [String(+joy + 1), 'pc']]);
 }
 for (const c of LOJAS_JOHTO){
-  conferir(c, 4110007, [[String(c.chegada - 5000000), 'loja']]);
+  conferir(c, 4110007, [[String(c.chegada - 5000000), 'shop']]);
 }
 
 /** Same city-digit swap the shared room applies when the arrival is not in the JSON. */
@@ -99,7 +99,7 @@ for (const c of LOJAS_JOHTO){
   const clerk = String(c.chegada - 5000000);
   ok(!lojas[clerk], `clerk ${clerk} has no stock row of its own`);
   ok(aba(clerk) === LOJA_PADRAO, `clerk ${clerk} sells the Viridian mart`);
-  ok(glb[clerk]?.papel === 'loja' && glb[clerk].falas?.[0] && !/isn't available/i.test(glb[clerk].falas[0]), `${c.nome} clerk invites you in`);
+  ok(glb[clerk]?.role === 'shop' && glb[clerk].falas?.[0] && !/isn't available/i.test(glb[clerk].falas[0]), `${c.nome} clerk invites you in`);
 }
 ok(estoque(lojas, LOJA_PADRAO).length > 0, 'the shared mart has stock');
 

@@ -308,9 +308,10 @@ function cfgAlvo(alvo, cfg){
   if (alvo == null || cfg == null) return false;
   return Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
 }
+const isHealer = role => role === 'heal' || role === 'cura' || String(role).toLowerCase() === 'joy';
 /** Overhead mark for an NPC: yellow `!` = talk now / quest giver, yellow `?` = talk again,
  *  orange `?` = turn in an item, cyan `?` = heal, red `!` = trainer to beat, green `?` = talk later in this quest. */
-export function marcaPara(cfg, { papel = '', treinador = false } = {}){
+export function marcaPara(cfg, { role = '', trainer = false } = {}){
   const p = passoAtual();
   if (p && (p.tipo === 'falar' || p.tipo === 'entregar') && cfgAlvo(p.cfgs || p.cfg, cfg)){
     if (p.tipo === 'entregar') return { sim: '?', cor: '#ff9f43' };
@@ -318,14 +319,14 @@ export function marcaPara(cfg, { papel = '', treinador = false } = {}){
     const jaFalou = !!(m && (m.passos || []).slice(0, estado.passo).some(x => (x.tipo === 'falar' || x.tipo === 'entregar') && cfgAlvo(x.cfgs || x.cfg, cfg)));
     return jaFalou ? { sim: '?', cor: '#ffd23a' } : { sim: '!', cor: '#ffd23a' };
   }
-  if (p && p.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!p.cfg || cfgAlvo(p.cfg, cfg))) return { sim: '?', cor: '#6ee7ff' };
-  if (p && p.tipo === 'derrotar' && treinador && (!p.cfg || cfgAlvo(p.cfgs || p.cfg, cfg))) return { sim: '!', cor: '#ff5b5b' };
+  if (p && p.tipo === 'curar' && isHealer(role) && (!p.cfg || cfgAlvo(p.cfg, cfg))) return { sim: '?', cor: '#6ee7ff' };
+  if (p && p.tipo === 'derrotar' && trainer && (!p.cfg || cfgAlvo(p.cfgs || p.cfg, cfg))) return { sim: '!', cor: '#ff5b5b' };
   const m = ativa();
   if (m) for (let i = (estado?.passo ?? 0) + 1; i < (m.passos || []).length; i++){
     const n = m.passos[i];
     if ((n.tipo === 'falar' || n.tipo === 'entregar') && cfgAlvo(n.cfgs || n.cfg, cfg)) return { sim: '?', cor: '#7dffb3' };
-    if (n.tipo === 'curar' && (papel === 'cura' || String(papel).toLowerCase() === 'joy') && (!n.cfg || cfgAlvo(n.cfg, cfg))) return { sim: '?', cor: '#7dffb3' };
-    if (n.tipo === 'derrotar' && treinador && (!n.cfg || cfgAlvo(n.cfgs || n.cfg, cfg))) return { sim: '!', cor: '#ff8aa8' };
+    if (n.tipo === 'curar' && isHealer(role) && (!n.cfg || cfgAlvo(n.cfg, cfg))) return { sim: '?', cor: '#7dffb3' };
+    if (n.tipo === 'derrotar' && trainer && (!n.cfg || cfgAlvo(n.cfgs || n.cfg, cfg))) return { sim: '!', cor: '#ff8aa8' };
   }
   for (const T of trilhasLaterais()){
     const q = T.m.passos[T.passo];

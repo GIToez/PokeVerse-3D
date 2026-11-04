@@ -3,7 +3,7 @@
  * De onde vem cada coisa:
  *   <mapa>.json   npcs[] {cfg, modelo, face, x, y, z, a} · treinadores[] {cfg, tipo, x, y, z, a}
  *                 grama[] {cfg, tipo 41, x, y, z, a} · agua[] {tipo, x, y, z, a} · spawn[] {x, z, y, a} (piso de caverna)
- *   npcs_glb.json[cfg]     QUEM o NPC é: nome, glb (scenery/<glb>.glb), falas, papel, placa — sem cadastro, o jogo não monta o NPC
+ *   npcs_glb.json[cfg]     QUEM o NPC é: nome, glb (scenery/<glb>.glb), falas, role, placa — sem cadastro, o jogo não monta o NPC
  *   doors.json[cfg]       ponto de NPC com cfg aqui é PORTA (t 6, leva à chegada n) ou CHEGADA (t 7, onde se nasce ao entrar)
  *   trainers.json[cfg]  o time de quem nasce na vaga (vaga cujo cfg não está lá não nasce ninguém)
  * O x do arquivo é espelhado (mundo = FLIPX·x), como as caixas. Os tiles são a grade de 1 m (centro em ,5) e a área de um
@@ -254,7 +254,7 @@ export function criarCamadas(dep) {
         ${n ? `<label class="inteira">Name <input type="text" id="c-nome" maxlength="60" value="${esc(n.nome || '')}"></label>
         ${n.placa ? '' : `<label class="inteira">Model <input type="text" id="c-glb" value="${esc(n.glb || '')}" placeholder="npc/fc1004_00"><span class="erro-campo" id="c-glb-erro"></span></label>`}
         <label class="inteira">Lines (one per line) <textarea id="c-falas" rows="4">${esc((n.falas || []).join('\n'))}</textarea></label>
-        <label class="inteira">Role <select id="c-papel"><option value="">none</option>${['cura', 'loja', 'caixa'].map(v => `<option${n.papel === v ? ' selected' : ''}>${v}</option>`).join('')}</select></label>`
+        <label class="inteira">Role <select id="c-role"><option value="">none</option>${['heal', 'shop', 'pc', 'safari'].map(v => `<option${n.role === v ? ' selected' : ''}>${v}</option>`).join('')}</select></label>`
         : '<div class="inteira aviso-c">Not registered in NPCs: this point does not appear in the game.</div><div class="inteira"><button id="c-cadastrar">Register this NPC</button></div>'}
         </div>
         ${n ? '<div class="fraco" style="font-size:11px;margin-top:4px">Name, model and lines apply to ALL points with this cfg.</div>' : ''}`;
@@ -294,7 +294,7 @@ export function criarCamadas(dep) {
       if (r.ok) { n.glb = r.v; mexeuNpc(); }
     };
     if ($('c-falas')) $('c-falas').oninput = e => { n.falas = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); mexeuNpc(); };
-    if ($('c-papel')) $('c-papel').onchange = e => { if (e.target.value) n.papel = e.target.value; else delete n.papel; mexeuNpc(); };
+    if ($('c-role')) $('c-role').onchange = e => { if (e.target.value) n.role = e.target.value; else delete n.role; delete n.papel; mexeuNpc(); };
     if ($('c-cadastrar')) $('c-cadastrar').onclick = () => { ref.npcs[o.cfg] = { nome: 'NPC', glb: 'npc/fc1004_00', falas: [], cena: +d.mapa || undefined, tipo: 1 }; glbSujos.add(o.cfg); marcar(); re(); };
     if ($('c-pt-t')) $('c-pt-t').onchange = e => { const p = ref.portas[o.cfg]; p.t = +e.target.value; if (p.t === 6 && p.n === undefined) p.n = 0; portasSujas.add(o.cfg); marcar(); re(); };
     if ($('c-pt-n')) $('c-pt-n').oninput = e => { const v = Number(e.target.value); if (!Number.isInteger(v) || v < 0) return; ref.portas[o.cfg].n = v; portasSujas.add(o.cfg); marcar(); $('c-pt-info').textContent = destinoTexto(v); redesenhar(); };
