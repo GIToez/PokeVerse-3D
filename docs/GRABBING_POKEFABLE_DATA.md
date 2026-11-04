@@ -35,3 +35,4 @@ Other HTTP routes their client calls: `/temporada` (Battle Pass), `/loja`, `/loj
 
 Not served by their site at all (their client falls back to nothing): `data/catalogo_efeitos.json`,
 `data/missoes_v2.json`, `data/npcs_falas.json`, `data/skins_jogador.json`.
+| `/temporada`, `/loja`, `/loja/catalogo?l=en` | `upcoming/data/pokefable_shop_pass.json` | Battle Pass season 1 (missions, reward tracks, prices), shop packs and founder packs, 68 cosmetic pieces. Their Stripe key is stripped. |
