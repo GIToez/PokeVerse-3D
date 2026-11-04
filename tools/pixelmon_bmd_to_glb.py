@@ -25,7 +25,15 @@ def read_bmd(path, with_mesh=True):
     data = Path(path).read_bytes()
     if not data or data[0] != 2:
         raise SystemExit(f'{path} is not a Pixelmon BMD version 2 file')
-    raw = lzma.decompress(data[1:])
+    # Some Pixelmon meshes are xz streams with the footer cut off. A strict
+    # decompress raises, but the bytes before the cut are a complete model.
+    dec = lzma.LZMADecompressor(format=lzma.FORMAT_XZ)
+    try:
+        raw = dec.decompress(data[1:])
+    except lzma.LZMAError:
+        raw = b''
+    if not raw:
+        raw = lzma.decompress(data[1:])
     o = 0
 
     def u8():
@@ -227,17 +235,25 @@ def convert(model_path, texture_path, animations, texture_name, node_name, model
         missing = [b['name'] for b in bones if b['name'] not in anim_id]
         unknown = [b['name'] for b in anim_bones if b['name'] not in by_name]
         if unknown:
-            raise SystemExit(f'{path} has bones the mesh does not: {unknown}')
+            # Extra channels belong to a different skeleton. Drop them instead of
+            # shifting every later bone, which is what bent Scizor's limbs.
+            odd = [n for n in unknown if n != 'Hat' and not str(n).startswith('root')]
+            if odd:
+                print(f'{clip_name}: ignoring animation bones the mesh does not have: {odd}')
         remapped = []
         for frame in frames:
             pose = {}
             for bone in anim_bones:
+                mesh_id = by_name.get(bone['name'])
+                if mesh_id is None:
+                    continue
                 if bone['id'] in frame:
-                    pose[by_name[bone['name']]] = frame[bone['id']]
+                    pose[mesh_id] = frame[bone['id']]
             remapped.append(pose)
-        known = {by_name[b['name']] for b in anim_bones}
-        if missing:
-            print(f'{clip_name}: no keys for {missing}; those bones stay in the bind pose')
+        known = {by_name[b['name']] for b in anim_bones if b['name'] in by_name}
+        odd_missing = [n for n in missing if n != 'Hat' and not str(n).startswith('root')]
+        if odd_missing:
+            print(f'{clip_name}: no keys for {odd_missing}; those bones stay in the bind pose')
         anim_data.append((clip_name, remapped, known))
 
     idle_frames = next((frames for name, frames, _ in anim_data if name == 'Idle'), None)
@@ -476,6 +492,55 @@ def build_glb(model):
     out += struct.pack('<I4s', len(blob), b'BIN\x00')
     out += blob
     return bytes(out)
+
+
+def retime_glb(path, speeds):
+    """Play listed clips faster or slower. Poses stay the same.
+
+    The field asks for Idle and Run by those names and plays them at 1×.
+    The monsters that already ship use about 1.6s of idle and a 0.8s walk
+    cycle. A Pixelmon clip spread over four seconds looks like a stiff idle
+    at that rate, so `speeds` is how many times faster each clip should run.
+    """
+    path = Path(path)
+    data = path.read_bytes()
+    json_len = struct.unpack_from('<I', data, 12)[0]
+    doc = json.loads(data[20:20 + json_len])
+    bin_at = 20 + json_len
+    bin_len = struct.unpack_from('<I', data, bin_at)[0]
+    blob = bytearray(data[bin_at + 8:bin_at + 8 + bin_len])
+    done = set()
+    for anim in doc.get('animations') or []:
+        speed = speeds.get(anim['name'])
+        if not speed or speed == 1:
+            continue
+        for samp in anim['samplers']:
+            idx = samp['input']
+            if idx in done:
+                continue
+            done.add(idx)
+            acc = doc['accessors'][idx]
+            view = doc['bufferViews'][acc['bufferView']]
+            off = view.get('byteOffset', 0) + acc.get('byteOffset', 0)
+            count = acc['count']
+            times = np.frombuffer(blob[off:off + 4 * count], dtype=np.float32).copy()
+            times /= np.float32(speed)
+            blob[off:off + 4 * count] = times.tobytes()
+            acc['min'] = [float(times[0])]
+            acc['max'] = [float(times[-1])]
+    text = pad(json.dumps(doc, separators=(',', ':')).encode('utf-8'), 4, 0x20)
+    blob = pad(bytes(blob), 4, 0)
+    out = bytearray()
+    out += b'glTF'
+    out += struct.pack('<II', 2, 12 + 8 + len(text) + 8 + len(blob))
+    out += struct.pack('<I4s', len(text), b'JSON')
+    out += text
+    out += struct.pack('<I4s', len(blob), b'BIN\x00')
+    out += blob
+    path.write_bytes(out)
+    return {name: round(doc['accessors'][anim['samplers'][0]['input']]['max'][0], 3)
+            for anim in doc['animations']
+            for name in [anim['name']]}
 
 
 def main():
