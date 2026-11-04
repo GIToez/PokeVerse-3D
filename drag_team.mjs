@@ -16,6 +16,7 @@ let ativo = null;                                                         // o a
 /** Liga o arrasto ao jogo: time(), caixa(), emCampo(e), motivo(), gravar(time, caixa), avisar(texto), som(id). */
 export function instalar(c){ cfg = c; }
 export const ligado = () => !!cfg;
+export const arrastando = () => !!ativo?.arrastando;
 
 const limitar = (v, a, b) => Math.max(a, Math.min(b, v));
 const avisar = t => { try { cfg?.avisar?.(t); } catch {} };

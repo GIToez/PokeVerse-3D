@@ -101,7 +101,10 @@ const CSS = `
 .pf *{box-sizing:border-box}
 .pf .pf-grupo,.pf .pf-img,.pf .pf-var,.pf .pf-ret,.pf .pf-fill,.pf .pf-txt,.pf .pf-rotulo{position:absolute;pointer-events:none}
 .pf [data-tag],.pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"],.pf [data-fig^="encaixe-"],.pf [data-fig^="casa-"]{pointer-events:auto;touch-action:manipulation}
+.pf [data-tag="aba"]:not([data-fig^="conteudo-"]){z-index:80}
+.pf .chat-caixa,.pf .chat-caixa *{pointer-events:auto}
 .pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"],.pf [data-fig^="encaixe-"],.pf [data-fig^="casa-"]{cursor:pointer}
+.pf [data-fig^="encaixe-"] *,.pf [data-fig^="casa-"] *{pointer-events:auto}
 .pf [data-tag="acao"]:not([data-fig^="conteudo-"]):active,.pf [data-tag="aba"]:not([data-fig^="conteudo-"]):active,.pf [data-tag="fecha"]:active{transform:scale(.98)}   /* os blocos conteudo-<aba> também levam a tag aba: sem o :not o painel inteiro "afundava" a cada clique (Jaime, 11/09) */
 .pf [data-fig^="ajuste-"]:active{transform:none}
 .pf [data-fig^="ajuste-"]{touch-action:none}
@@ -326,7 +329,7 @@ function ligarTag(el, f, pop){
   if (f.tag === 'escolhe'){ el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; el.addEventListener('click', ev => { ev.stopPropagation(); pop.__cb.escolhe?.(f.tagVal, el); }); return; }   // [escolhe:x] (opções do pop-up do inicial, rodada 29 — 18/09): avisa quem montou com o valor e o nó clicado
   if (!['fecha', 'aba', 'acao', 'abre'].includes(f.tag)) return;       // outras tags não são botão
   el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer';
-  el.addEventListener('click', ev => {
+  const disparar = ev => {
     ev.stopPropagation();
     if (f.tag === 'fecha'){                                              // X de um diálogo fecha só o diálogo; X do pop-up fecha tudo
       const ex = pop.querySelector('.pf-extra[data-fig="' + f.tagVal + '"]');
@@ -338,6 +341,21 @@ function ligarTag(el, f, pop){
     }
     else if (f.tag === 'aba') trocarAba(pop, f.tagVal);
     else if (f.tag === 'acao'){ if (el.dataset.desligado !== '1') pop.__cb.acao?.(f.tagVal, el); }
+  };
+  /* A phone tap on a scaled popup often never becomes a click. pointerup is the tap. */
+  el.addEventListener('pointerdown', ev => { el.__toqueX = ev.clientX; el.__toqueY = ev.clientY; });
+  el.addEventListener('pointerup', ev => {
+    if (el.__toqueX == null) return;
+    const moved = Math.hypot(ev.clientX - el.__toqueX, ev.clientY - el.__toqueY);
+    el.__toqueX = null;
+    if (moved > 24) return;
+    if (ev.target.closest?.('input, textarea, select')) return;
+    el.__pulsa = performance.now();
+    disparar(ev);
+  });
+  el.addEventListener('click', ev => {
+    if (performance.now() - (el.__pulsa || 0) < 700){ ev.stopPropagation(); return; }
+    disparar(ev);
   });
 }
 
@@ -773,7 +791,7 @@ export function golpeVazio(pop, i, vazio){
   const alt = pop.__refs?.golpe?.vazio?.img;
   const arte = vazio && alt ? alt : g.dataset.arte;
   if (arte) g.style.backgroundImage = 'url(' + arte + ')';
-  if (vazio){ texto(pop, 'golpe-nome', '', g); texto(pop, 'golpe-info', '', g); badge(pop, 'golpe-tipo', null, null, g); }
+  if (vazio){ texto(pop, 'golpe-nome', '', g); texto(pop, 'golpe-info', '', g); badge(pop, 'golpe-tipo', null, null, g); const selo = g.querySelector(':scope > [data-fig="selo-categoria"]'); if (selo) selo.style.display = 'none'; }
   return g;
 }
 /** Aba ativa: troca a arte das duas (ativa/inativa vêm da própria maquete) e avisa quem montou. */

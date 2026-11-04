@@ -275,7 +275,7 @@ function render(){
   if (aberta === 'pokemon' && abaAtual === 'caixa' && popBx && Popup.aberto(popBx)){ encherBox(popBx); return; }
   if (aberta === 'pokemon' && popPk && Popup.aberto(popPk)){ encherPokemon(popPk); return; }
   if (aberta === 'mochila' && popMo && Popup.aberto(popMo)){ encherMochila(popMo); return; }
-  if (aberta === 'missoes' && popMi && Popup.aberto(popMi) && abaAtual !== 'laterais'){ encherMissoes(popMi); return; }
+  if (aberta === 'missoes' && popMi && Popup.aberto(popMi)){ encherMissoes(popMi); return; }
   if (aberta === 'treinador' && popTr && Popup.aberto(popTr)){ encherTreinador(popTr); return; }
   if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ rMapaMundo(popMa.querySelector('.mapa-popup-corpo') || popMa); return; }
   if (aberta === 'social' && popSo && Popup.aberto(popSo)){ encherSocial(popSo); return; }
@@ -705,6 +705,65 @@ function figMostrar(el, on){
   if (!el) return;
   el.style.display = on ? (el.dataset.txt ? (el.dataset.display || 'flex') : 'block') : 'none';
 }
+function mostrarSetasCaixa(pop, on){
+  for (const id of ['subir', 'descer']){
+    const b = pop.querySelector('[data-tag="acao"][data-tagval="' + id + '"]');
+    if (b) b.style.display = on ? 'block' : 'none';
+  }
+}
+const NOME_ORDEM = { box: 'Box order', dex: 'Pokédex No.', lv: 'Level', iv: 'Total IVs', ev: 'Total EVs', nat: 'Nature', recent: 'Most recent' };
+function pintarFiltrosCaixa(pop){
+  for (const el of pop.querySelectorAll('[data-fig="btn-limpar-filtros"]')){
+    const t = el.querySelector('.pf-rotulo, .pf-txt, [data-txt]');
+    if (t) t.textContent = 'Clear filters';
+  }
+  rotuloCaixa(pop, 'folha-titulo', 'Filters');
+  rotuloCaixa(pop, 'rotulo-ordenar', 'Sort');
+  const nv = pop.querySelector('input[data-txt="filtro-nivel"]');
+  const iv = pop.querySelector('input[data-txt="filtro-iv"]');
+  if (nv) nv.placeholder = 'Lv 1–100';
+  if (iv) iv.placeholder = 'IV 0–186';
+  Popup.texto(pop, 'ordenar', NOME_ORDEM[bx.ordem] || 'Box order');
+  const btn = Popup.grupo(pop, 'btn-filtros');
+  if (btn){
+    let ic = btn.querySelector('[data-fig="icone-filtro"]');
+    if (!ic){
+      ic = document.createElement('div');
+      ic.dataset.fig = 'icone-filtro';
+      Object.assign(ic.style, { position: 'absolute', left: '8px', top: '6px', width: '28px', height: '28px', background: 'center / contain no-repeat', pointerEvents: 'none', zIndex: '5' });
+      btn.appendChild(ic);
+    }
+    const txt = btn.querySelector('[data-txt="filtros-qtd"]');
+    if (bx.tipo){
+      ic.style.display = 'block';
+      ic.style.backgroundImage = 'url(' + iconeTipoU(bx.tipo) + ')';
+      if (txt){ txt.textContent = bx.tipo; txt.style.left = '36px'; txt.style.width = '48px'; }
+    } else {
+      ic.style.display = 'none';
+      const n = [bx.busca, bx.lvMin !== '', bx.ivMin !== '', bx.shiny].filter(Boolean).length;
+      if (txt){ txt.textContent = n ? 'Filters · ' + n : 'Filters'; txt.style.left = '8px'; txt.style.width = '76px'; }
+    }
+    const marca = btn.querySelector('[data-fig="marca-ativa"]');
+    if (marca) marca.style.display = (bx.tipo || bx.busca || bx.lvMin !== '' || bx.ivMin !== '' || bx.shiny) ? 'block' : 'none';
+  }
+  const fig = Object.entries(TIPO_DE_FIG).find(([, en]) => en === bx.tipo)?.[0] || 'todos';
+  const folha = Popup.extra(pop, 'folha-filtros');
+  if (folha){
+    for (const el of folha.querySelectorAll('[data-tag="filtro"]')){
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+      const marca = el.querySelector('[data-fig="marca-ativa"]');
+      if (marca) marca.style.display = el.dataset.tagval === fig ? 'block' : 'none';
+    }
+  }
+  const menu = Popup.extra(pop, 'menu-ordenar');
+  if (menu){
+    for (const el of menu.querySelectorAll('[data-fig^="ordem-"]')){
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+    }
+  }
+}
 function rotuloCaixa(pop, fig, s){
   const el = pop?.querySelector('[data-fig="' + fig + '"]');
   if (!el) return;
@@ -751,12 +810,12 @@ function ligarCaixaV2(pop){
     const t = lista();
     if (!t) return;
     t.style.pointerEvents = 'auto';
-    t.style.overflowY = 'auto';
+    t.style.overflow = 'hidden';
     t.style.touchAction = 'manipulation';
   };
   marcarLista();
   pop.__marcarListaTime = marcarLista;
-  pop.addEventListener('click', ev => {
+  const escolherFiltro = ev => {
     const filtro = ev.target.closest?.('[data-tag="filtro"]');
     if (filtro && pop.contains(filtro)){
       ev.stopPropagation();
@@ -774,6 +833,17 @@ function ligarCaixaV2(pop){
       const id = mapa[ordem.dataset.fig.slice('ordem-'.length)];
       if (id){ bx.ordem = id; bx.page = 0; Popup.mostrarExtra(pop, 'menu-ordenar', false); encherBox(pop); }
     }
+  };
+  pop.addEventListener('click', escolherFiltro);
+  pop.addEventListener('pointerdown', ev => { pop.__toqueX = ev.clientX; pop.__toqueY = ev.clientY; });
+  pop.addEventListener('pointerup', ev => {
+    const moved = pop.__toqueX == null ? 0 : Math.hypot(ev.clientX - pop.__toqueX, ev.clientY - pop.__toqueY);
+    pop.__toqueX = null;
+    if (moved > 24) return;
+    if (!ev.target.closest?.('[data-tag="filtro"], [data-fig^="ordem-"]')) return;
+    if (performance.now() - (pop.__filtroPulsa || 0) < 700) return;
+    pop.__filtroPulsa = performance.now();
+    escolherFiltro(ev);
   });
   const fim = () => { ctx.atualizarSeguidorPainel?.(); ctx.pintarTime?.(true); render(); };
   const timeEl = () => Popup.grupo(pop, 'lista-time');
@@ -808,6 +878,7 @@ async function acaoCaixa(nome){
   if (nome === 'filtro-shiny'){ bx.shiny = !bx.shiny; bx.page = 0; encherBox(popBx); return; }
   if (nome === 'limpar-filtros'){ bx.busca = ''; bx.tipo = ''; bx.lvMin = ''; bx.ivMin = ''; bx.shiny = false; bx.page = 0; bx.ordem = 'box'; encherBox(popBx); return; }
   if (nome === 'inverter-ordem'){ bx.sentido = bx.sentido === 'desc' ? 'asc' : 'desc'; encherBox(popBx); return; }
+  if (nome === 'ficha-anterior' || nome === 'ficha-proxima'){ passarFicha(nome === 'ficha-proxima' ? 1 : -1); return; }
   if (nome === 'trazer' && bx.onde === 'caixa' && sel){ if (Arr.aplicar('caixa', bx.i, 'time', time.length)) fim(); return; }
   if (nome === 'guardar' && bx.onde === 'time' && sel){
     if (await guardarNoCaixa(sel)){ bx.onde = 'caixa'; bx.i = (ctx.lerLS('caixa', []) || []).length - 1; fim(); }
@@ -828,6 +899,23 @@ async function acaoCaixa(nome){
     return;
   }
   if (nome === 'vender' || nome === 'cancelar-venda' || nome === 'anunciar-varios') Chat.sistema('The market is not open yet.');
+}
+function listaFicha(){
+  const itens = [];
+  (ctx.jogo.time || []).forEach((e, i) => { if (e) itens.push({ onde: 'time', i }); });
+  ordemBx(ctx.lerLS('caixa', []) || []).filter(x => passaFiltroBx(x.e)).forEach(x => itens.push({ onde: 'caixa', i: x.i }));
+  return itens;
+}
+function passarFicha(dir){
+  const itens = listaFicha();
+  if (!itens.length) return;
+  let k = itens.findIndex(x => x.onde === bx.onde && x.i === bx.i);
+  k = k < 0 ? 0 : (k + dir + itens.length) % itens.length;
+  bx.onde = itens[k].onde;
+  bx.i = itens[k].i;
+  confirmarSoltar = null;
+  encherBox(popBx);
+  pintarFichaMonCaixa(popBx);
 }
 async function toqueTimeCaixa(pop, i){
   const time = ctx.jogo.time || [];
@@ -864,21 +952,26 @@ function toqueCasaCaixa(pop, i){
   ctx.pintarTime?.(true);
   render();
 }
-/** A short tap moves the Pokémon. A finger that slid (scrolling the list) does not. */
+/** A phone tap often never becomes a click: the list is a scroller and a finger always jitters.
+    pointerup is the tap. A drag, or a slide longer than a tap, does not move the Pokémon. */
 function ligarToqueCaixa(el, fn){
   if (!el || el.__escolheu) return;
   el.__escolheu = true;
-  el.addEventListener('pointerdown', ev => {
-    el.__toqueX = ev.clientX; el.__toqueY = ev.clientY; el.__toqueAndou = false;
-  });
-  el.addEventListener('pointermove', ev => {
-    if (el.__toqueX == null) return;
-    if (Math.hypot(ev.clientX - el.__toqueX, ev.clientY - el.__toqueY) > 10) el.__toqueAndou = true;
-  });
-  el.addEventListener('click', ev => {
-    if (el.classList.contains('vazia') || el.__toqueAndou){ el.__toqueAndou = false; return; }
-    ev.stopPropagation();
+  const soltou = ev => {
+    if (el.classList.contains('vazia') || Arr.arrastando()) return;
+    const moved = el.__toqueX == null ? 0 : Math.hypot(ev.clientX - el.__toqueX, ev.clientY - el.__toqueY);
+    el.__toqueX = null;
+    if (moved > 36) return;
+    el.__pulsa = performance.now();
     fn();
+  };
+  el.addEventListener('pointerdown', ev => { el.__toqueX = ev.clientX; el.__toqueY = ev.clientY; });
+  el.addEventListener('pointerup', soltou);
+  el.addEventListener('pointercancel', () => { el.__toqueX = null; });
+  el.addEventListener('click', ev => {
+    ev.stopPropagation();
+    if (performance.now() - (el.__pulsa || 0) < 700) return;
+    soltou(ev);
   });
 }
 function pintarEncaixeV2(pop, el, i, p, on){
@@ -945,6 +1038,7 @@ function pintarFichaRapidaV2(pop, sel){
     const btnGuardar = pop.querySelector('[data-tag="acao"][data-tagval="guardar"]');
     if (btnTrazer) btnTrazer.style.display = 'none';
     if (btnGuardar) btnGuardar.style.display = 'none';
+    mostrarSetasCaixa(pop, false);
     return;
   }
   const lv = sel.lv || 5;
@@ -971,6 +1065,7 @@ function pintarFichaRapidaV2(pop, sel){
   figMostrar(figFilho(f, 'selo-shiny'), !!sel.shiny);
   figMostrar(figFilho(f, 'selo-macho'), sel.sexo === 'm');
   figMostrar(figFilho(f, 'selo-femea'), sel.sexo === 'f');
+  iconesTipo(pop, f, S.types || []);
   const podeTrazer = !naParty && time.length < 6;
   const podeGuardar = naParty && time.length > 1;
   const podeSoltar = !(naParty && (sel.seguindo || time.length <= 1));
@@ -981,6 +1076,7 @@ function pintarFichaRapidaV2(pop, sel){
   const btnGuardar = pop.querySelector('[data-tag="acao"][data-tagval="guardar"]');
   if (btnTrazer) btnTrazer.style.display = naParty ? 'none' : '';
   if (btnGuardar) btnGuardar.style.display = naParty ? '' : 'none';
+  mostrarSetasCaixa(pop, naParty);
   Popup.botao(pop, 'subir', true, null);
   Popup.botao(pop, 'descer', true, null);
   Popup.botao(pop, 'soltar-nao', pedindo, 'Cancel');
@@ -1006,6 +1102,10 @@ function pintarFichaMonCaixa(pop){
   rotuloCaixa(d, 'rotulo-tag-ev', 'EV');
   rotuloCaixa(d, 'btn-fechar-ficha', 'Close');
   rotuloCaixa(d, 'btn-vender-ficha', 'Sell');
+  for (const fig of ['btn-ficha-anterior', 'btn-ficha-proxima']){
+    const b = d.querySelector('[data-fig="' + fig + '"]');
+    if (b){ b.style.pointerEvents = 'auto'; b.style.cursor = 'pointer'; b.style.zIndex = '40'; }
+  }
   for (const [id, nome] of Object.entries(STAT_FICHA)){
     const g = d.querySelector('[data-fig="iv-' + id + '"] .pf-rotulo');
     if (g) g.textContent = nome;
@@ -1031,10 +1131,12 @@ function pintarFichaMonCaixa(pop){
     Popup.barra(pop, 'iv', sel.ivs ? iv / 31 : 0, null, g);
     Popup.barra(pop, 'ev', Math.min(1, ev / 252), null, g);
   });
-  const movs = sel?.movs?.length ? sel.movs.map(m => ctx.golpe?.(m.id)?.nome || m.id) : [];
+  const golpes = sel?.movs?.length ? sel.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id }) })) : [];
   for (let i = 0; i < 4; i++){
     const g = d.querySelector('[data-fig="golpe-' + (i + 1) + '"]');
-    if (g) Popup.texto(pop, 'golpe', movs[i] || '', g);
+    if (!g) continue;
+    Popup.texto(pop, 'golpe', golpes[i]?.nome || '', g);
+    pintarSeloCategoria(g, golpes[i] || null);
   }
 }
 function pintarVagasCaixa(pop){
@@ -1092,17 +1194,16 @@ function encherBoxV2(pop){
       if (casa) pintarCasaV2(pop, casa, fatia[s] || null, bx.onde === 'caixa' && fatia[s] && bx.i === fatia[s].i);
     }
   });
-  const vazio = Popup.grupo(pop, 'vazio-filtro');
   const filtrando = !!(bx.busca || bx.tipo || bx.lvMin !== '' || bx.ivMin !== '' || bx.shiny);
-  if (vazio) vazio.style.display = filtrando && !filtrada.length ? 'block' : 'none';
   const aviso = Popup.grupo(pop, 'aviso-caixa'); if (aviso) aviso.style.display = 'none';
-  const vazioCx = Popup.grupo(pop, 'vazio-caixa'); if (vazioCx) vazioCx.style.display = !filtrando && !caixa.length ? 'block' : 'none';
+  const vazioCx = Popup.grupo(pop, 'vazio-caixa'); if (vazioCx) vazioCx.style.display = !caixa.length ? 'block' : 'none';
   const cont = Popup.grupo(pop, 'contador-caixa');
   if (cont){
     Popup.texto(pop, 'caixa-qtd', filtrada.length + ' / ' + caixa.length, cont);
     Popup.barra(pop, 'caixa-ocupada', caixa.length ? Math.min(1, filtrada.length / caixa.length) : 0, null, cont);
   }
   const vazioF = Popup.grupo(pop, 'vazio-filtro');
+  if (vazioF) vazioF.style.display = filtrando && caixa.length && !filtrada.length ? 'block' : 'none';
   if (vazioF && vazioF.style.display !== 'none') Popup.texto(pop, 'vazio-titulo', 'No Pokémon match.', vazioF);
   const vazioC = Popup.grupo(pop, 'vazio-caixa');
   if (vazioC && vazioC.style.display !== 'none'){
@@ -1113,10 +1214,7 @@ function encherBoxV2(pop){
   if (tipoTxt) tipoTxt.textContent = bx.tipo || 'Type';
   const shinyBtn = pop.querySelector('[data-tag="acao"][data-tagval="filtro-shiny"]');
   if (shinyBtn) shinyBtn.style.opacity = bx.shiny ? '1' : '0.55';
-  const nFiltros = [bx.busca, bx.tipo, bx.lvMin !== '', bx.ivMin !== '', bx.shiny].filter(Boolean).length;
-  Popup.texto(pop, 'filtros-qtd', nFiltros ? String(nFiltros) : '');
-  const marcaFiltro = pop.querySelector('[data-fig="btn-filtros"] [data-fig="marca-ativa"]');
-  if (marcaFiltro) marcaFiltro.style.display = nFiltros ? 'block' : 'none';
+  pintarFiltrosCaixa(pop);
   pintarFichaRapidaV2(pop, sel);
   pop.__ligarArrCaixa?.();
 }
@@ -1529,12 +1627,59 @@ function encherPokemonV2(pop){
     Popup.barra(pop, 'vida', k, corDaVida(k), cel);
     Popup.texto(pop, 'vida', Math.round(hp) + '/' + max, cel);
     figMostrar(figFilho(cel, 'selo-travado'), !!p.travado);
+    pintarMarcaStatus(pop, cel, p);
     if (S) iconesTipo(pop, cel, S.types || []);
   }
   Popup.selecionar(pop, (lista[selPokemon] ? selPokemon : 0) + 1, pref, pref);
   encherFichaPokemon(pop, lista[selPokemon], lista);
+  inglesRotulos(pop);
   const ovos = Popup.grupo(pop, 'linha-ovos');
   if (ovos) ovos.style.display = 'none';
+}
+/* The Figma sheet bakes "Status" onto move slot 4 (a blue pill) and "Attack" onto the other three.
+   Phone layouts have no category refs, so the art comes from the PC kit. Empty slots hide the pill. */
+const SELO_CAT = {
+  fisico: { nome: 'Physical', cor: '#3A1606', img: './ui/figma_webp/ui2-v2/pc-popup-pokemon-refs/selo-categoria/selo-categoria.webp' },
+  especial: { nome: 'Special', cor: '#FFFFFF', img: './ui/figma_webp/ui2-v2/pc-popup-pokemon-refs/selo-categoria/selo-categoria-2.webp' },
+  status: { nome: 'Status', cor: '#1D2B45', img: './ui/figma_webp/ui2-v2/pc-popup-pokemon-refs/selo-categoria/selo-categoria-3.webp' },
+};
+function catDoGolpe(g){
+  const c = String(g?.cat || g?.categoria || '').toLowerCase();
+  if (c === 'especial' || c === 'special') return 'especial';
+  if (c === 'status') return 'status';
+  if (c === 'fisico' || c === 'physical') return 'fisico';
+  return g ? 'fisico' : null;
+}
+function pintarSeloCategoria(no, g){
+  const selo = no?.querySelector(':scope > [data-fig="selo-categoria"]');
+  if (!selo) return;
+  const cat = catDoGolpe(g);
+  if (!cat){ selo.style.display = 'none'; return; }
+  const info = SELO_CAT[cat];
+  const pop = selo.closest('.pf');
+  const img = pop?.__refs?.['selo-categoria']?.[cat]?.img
+    || ctx.jogo?.hudLayout?.popups?.pc?.pokemon?.refs?.['selo-categoria']?.[cat]?.img
+    || info.img;
+  selo.style.display = 'block';
+  selo.style.backgroundImage = 'url(' + img + ')';
+  Hud.fundoComFolga(selo, 16);
+  const rot = selo.querySelector('[data-fig="rotulo-categoria"]');
+  if (rot){ rot.textContent = info.nome; rot.style.color = info.cor; }
+}
+const ROTULO_EN = {
+  'Meu time': 'My party', 'Atributos': 'Stats', 'Ficha do time': 'Party', 'Objetivos': 'Goals',
+  'No time': 'Not in party', 'Secundárias': 'Side', 'Secondary': 'Side', 'Principal': 'Main',
+  'Missões': 'Missions', 'Ver todas as conquistas ›': 'See all achievements ›', 'Ver ranking': 'See ranking',
+  'Estatísticas': 'Stats', 'Bônus de caça': 'Hunt bonus', 'Modelo 3D shiny ainda não chegou': 'Shiny colors are not exported yet',
+  'Mensagens': 'Messages', 'Amigos': 'Friends', 'dinheiro': 'money', 'insígnias': 'badges',
+  'tempo de jogo': 'playtime', 'personagem': 'character', 'inicial': 'starter', 'Colecionador': 'Collector',
+};
+function inglesRotulos(raiz){
+  if (!raiz) return;
+  for (const el of raiz.querySelectorAll('.pf-rotulo')){
+    const v = ROTULO_EN[el.textContent];
+    if (v) el.textContent = v;
+  }
 }
 function preencherFichaV2(pop, f, e, S, stats, lista){
   const nomes = ['hp', 'ataque', 'defesa', 'at-esp', 'def-esp', 'velocidade'];
@@ -1562,6 +1707,7 @@ function preencherFichaV2(pop, f, e, S, stats, lista){
   for (let i = 0; i < 4; i++){
     const g = movs[i], no = Popup.grupo(pop, 'golpe-' + (i + 1));
     Popup.golpeVazio(pop, i, !g);
+    pintarSeloCategoria(no, g);
     if (no) iconesTipo(pop, no, g?.tipo ? [g.tipo] : []);
     if (!g || !no) continue;
     Popup.texto(pop, 'golpe-nome', g.nome, no);
@@ -1592,6 +1738,19 @@ function preencherFichaV2(pop, f, e, S, stats, lista){
   Popup.botao(pop, 'soltar', podeSoltar, confirmarSoltar === chaveDe(e) ? '✔ Release for good' : 'Release');
   atualizarReaprender(pop, e);
   pintarHeldV2(pop, e);
+  pintarMarcaStatus(pop, f, e);
+  inglesRotulos(f);
+}
+const ICONE_STATUS = './ui/figma_webp/ui2-v2/celular-popup-pokemon/popup-pokemon/ficha/img/status-exemplo.webp';
+function pintarMarcaStatus(pop, cel, p){
+  const el = cel?.querySelector(':scope > [data-var="status"]');
+  if (!el) return;
+  const id = p?.status && typeof p.status === 'object' ? p.status.id : null;
+  if (!id){ el.style.display = 'none'; el.style.backgroundImage = 'none'; el.style.filter = ''; return; }
+  Popup.imagem(pop, 'status', ICONE_STATUS, cel);
+  el.style.display = 'block';
+  el.title = id;
+  el.style.filter = id === 'sleep' ? '' : id === 'burn' ? 'hue-rotate(-50deg) saturate(1.6)' : id === 'poison' || id === 'toxic' ? 'hue-rotate(70deg) saturate(1.8)' : id === 'paralysis' ? 'hue-rotate(30deg) saturate(1.8)' : id === 'freeze' ? 'hue-rotate(160deg) saturate(1.2)' : '';
 }
 /** Fills the 9-slice party window. The v2 kit fills the Figma window instead. */
 function encherPokemon(pop){
@@ -1737,7 +1896,7 @@ function encherFichaPokemon(pop, e, lista){
     esconderFichaFig(f, false);
     Popup.badge(pop, 'ficha-tipo', null, null, f);
     Popup.imagem(pop, 'pokemon', null, f);
-    for (let i = 0; i < 4; i++){ Popup.golpeVazio(pop, i, true); const no = Popup.grupo(pop, 'golpe-' + (i + 1)); if (no){ no.style.pointerEvents = ''; no.style.cursor = ''; } }
+    for (let i = 0; i < 4; i++){ Popup.golpeVazio(pop, i, true); const no = Popup.grupo(pop, 'golpe-' + (i + 1)); pintarSeloCategoria(no, null); if (no){ no.style.pointerEvents = ''; no.style.cursor = ''; } }
     Popup.botao(pop, 'evoluir', false, '✦ Evolve'); Popup.botao(pop, 'soltar', false, 'Release');
     atualizarReaprender(pop, null);
     if (pop.__def?.v2) pintarHeldV2(pop, null);
@@ -2128,9 +2287,9 @@ function encherTreinador(pop){
   const P = ctx.Personagem, pers = P?.ler?.();
   const ini = ctx.lerLS('inicial', null);
   Popup.texto(pop, 'jogador-nome', ctx.nome || 'Ash');
-  Popup.texto(pop, 'dinheiro', dinheiro().toLocaleString('pt-BR') + ' ' + (D2.moedas?.[1] || 'Moeda'));
+  Popup.texto(pop, 'dinheiro', dinheiro().toLocaleString('en-US') + ' Coins');
   Popup.texto(pop, 'tempo-jogo', h + 'h ' + String(mi).padStart(2, '0') + 'm');
-  Popup.texto(pop, 'time-resumo', (ctx.jogo.time || []).length + '/6 · caixa ' + (ctx.lerLS('caixa', []) || []).length);
+  Popup.texto(pop, 'time-resumo', (ctx.jogo.time || []).length + '/6 · box ' + (ctx.lerLS('caixa', []) || []).length);
   Popup.texto(pop, 'pokedex-resumo', vistos + ' ' + tr('seen') + ' · ' + pegos + ' ' + tr('caught'));
   Popup.texto(pop, 'insignias-resumo', tem.size + '/8');
   Popup.texto(pop, 'personagem', pers ? (P.nomeDe?.(pers) || pers.tipo) : 'Ash');
@@ -2160,8 +2319,9 @@ function encherTreinador(pop){
   /* 17/09 (auditoria dos placeholders): "ranking chega com o servidor" é texto fixo da maquete e já não é verdade (o ranking existe: /ranking no chat,
      posição na Pokédex). Fica a regra do shiny e, com conta, a posição de verdade. */
   const notaRk = pop.querySelector('[data-fig="nota-ranking"]');
-  if (notaRk){ notaRk.textContent = tr('shiny 1/4.096 pra todos'); minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = tr(p.especies.pos + 'º de ' + p.total + ' no ranking · shiny 1/4.096 pra todos'); /* 17/09: a frase inteira no tr() (padrão no ui_en/ui_es) */ }); }
-  Popup.texto(pop, 'obedecem', 'Obedecem até Lv ' + teto + ' · acima disso não obedecem golpes; cada insígnia sobe o teto (' + TETO_OBED.slice(0, 8).join('/') + ', Elite 100)');
+  if (notaRk){ notaRk.textContent = 'Shiny odds are 1/4,096 for everyone'; minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = p.especies.pos + ' of ' + p.total + ' in the ranking · shiny odds 1/4,096 for everyone'; }); }
+  Popup.texto(pop, 'obedecem', 'They obey up to Lv ' + teto + '. Above that they ignore moves. Each Badge raises the cap (' + TETO_OBED.slice(0, 8).join('/') + ', Elite 100).');
+  inglesRotulos(pop);
   // colecionador
   const K = ctx.conhecimento;
   if (K){
@@ -2753,17 +2913,24 @@ function acomodarRecompensas(pop){
   return fa;
 }
 function pintarRecompensaMi(pop, r){
-  const fa = acomodarRecompensas(pop);
+  const fa = Popup.grupo(pop, 'missao-ativa');
   if (!fa) return;
-  let box = fa.querySelector(':scope > .mi-recs');
-  if (!box){
-    box = document.createElement('div');
-    box.className = 'mi-recs grande';
-    fa.appendChild(box);
+  fa.querySelector(':scope > .mi-recs')?.remove();
+  /* An older build grew the card and painted HTML chips over the v2 reward line. Put the height back once. */
+  if (fa.dataset.recs){
+    const extra = 86;
+    fa.style.height = Math.max(40, (parseFloat(fa.style.height) || 170) - extra) + 'px';
+    const div = Popup.grupo(pop, 'divisor'), lista = Popup.grupo(pop, 'lista-capitulos');
+    if (div) div.style.top = ((parseFloat(div.style.top) || 405) - extra) + 'px';
+    if (lista){
+      lista.style.top = ((parseFloat(lista.style.top) || 417) - extra) + 'px';
+      lista.style.height = ((parseFloat(lista.style.height) || 292) + extra) + 'px';
+    }
+    delete fa.dataset.recs;
   }
-  box.innerHTML = htmlRecompensa(r);
   const txt = Popup.no(pop, 'recompensa');
-  if (txt){ txt.textContent = ''; txt.style.display = 'none'; }
+  if (txt) txt.style.display = txt.dataset.display || '';
+  Popup.texto(pop, 'recompensa', textoRecompensaMi(r), fa);
 }
 /* Geometria da lista de capítulos, LIDA da maquete (PC: capítulo 20 px, grupo em y 26, missões de 42 a cada 46, +10 depois;
    deitado: 14 / 18,7 / 29,9 a cada 34,5). Medida uma vez, antes do 1º clonarSerie mexer na árvore. */
@@ -2783,15 +2950,22 @@ function encherMissoes(pop){
   const M = ctx.missoes;
   const G = geometriaMissoes(pop);
   Popup.rotulo(pop, 'titulo');                                          // "Missões" e os nomes das abas: rótulos da maquete (v2 trouxe como txt/, não na arte)
-  for (const aba of pop.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(pop, 'aba', aba);
+  for (const aba of pop.querySelectorAll('[data-tag="aba"]')){
+    Popup.rotulo(pop, 'aba', aba);
+    const t = aba.querySelector('.pf-rotulo, .pf-txt');
+    if (!t) continue;
+    if (aba.dataset.tagval === 'secundarias') t.textContent = 'Side';
+    else if (aba.dataset.tagval === 'principal') t.textContent = 'Main';
+  }
+  inglesRotulos(pop);
   if (!M?.pronto?.()) return;
   if (Popup.abaAtual(pop) === 'secundarias'){ encherSecundarias(pop, G); return; }
   for (const el of pop.querySelectorAll('[data-sec-id],[data-sec-grupo]')){ delete el.dataset.secId; delete el.dataset.secGrupo; }
   const ativa = M.ativa(), idx = M.indicePasso(), prog = M.progresso();
   const fa = Popup.grupo(pop, 'missao-ativa');
-  Popup.texto(pop, 'capitulo-local', ativa ? 'Capítulo ' + ativa.capitulo + ' · ' + ativa.capNome : '', fa);
-  Popup.texto(pop, 'missao-titulo', ativa ? ativa.nome : "You've completed everything available for now.", fa);
-  Popup.texto(pop, 'missao-descricao', ativa ? (ativa.des || '') : 'More chapters arrive in future versions.', fa);
+  Popup.texto(pop, 'capitulo-local', ativa ? 'Chapter ' + ativa.capitulo + ' · ' + tr(ativa.capNome) : '', fa);
+  Popup.texto(pop, 'missao-titulo', ativa ? tr(ativa.nome) : "You've completed everything available for now.", fa);
+  Popup.texto(pop, 'missao-descricao', ativa ? tr(ativa.des || '') : 'More chapters arrive in future versions.', fa);
   const passos = ativa?.passos || [];
   for (let i = 0; i < 4; i++){
     const g = Popup.grupo(pop, 'objetivo-' + (i + 1)); if (!g) continue;
@@ -2807,8 +2981,8 @@ function encherMissoes(pop){
       ic.style.borderRadius = url ? '0' : '50%';
     }
     const cont = (i === idx && p2.n > 1) ? ' ' + Math.min(prog, p2.n) + '/' + p2.n : '';
-    Popup.texto(pop, 'objetivo', (p2.texto || '') + cont, g);
-    Popup.texto(pop, 'objetivo-local', p2.onde ? '(' + p2.onde + ')' : '', g);
+    Popup.texto(pop, 'objetivo', tr(p2.texto || '') + cont, g);
+    Popup.texto(pop, 'objetivo-local', p2.onde ? '(' + tr(p2.onde) + ')' : '', g);
   }
   pintarRecompensaMi(pop, ativa?.recompensa);
   // ---- lista de capítulos (altura variável)
@@ -2828,13 +3002,14 @@ function encherMissoes(pop){
     const aberto = capAberto === c.id;
     linha.style.top = y + 'px';
     const seta = linha.querySelector('[data-fig="icone-seta"]');
-    if (seta) seta.textContent = aberto ? '▼' : '▶';
-    if (G.arteAberto && G.arteFechado && G.arteAberto !== G.arteFechado) linha.style.backgroundImage = 'url(' + (aberto ? G.arteAberto : G.arteFechado) + ')';   // 17/09 (auditoria dos placeholders): no v2 o capítulo 1 (e as cópias dele) ficava sempre com ▼ e o aberto com ▶
+    const setaNaArte = G.arteAberto && G.arteFechado && G.arteAberto !== G.arteFechado;
+    if (seta) seta.textContent = setaNaArte ? '' : (aberto ? '▼' : '▶');
+    if (setaNaArte) linha.style.backgroundImage = 'url(' + (aberto ? G.arteAberto : G.arteFechado) + ')';   // v2 draws the arrow; a text ▼ on top was the old chapter list
     const feitas = c.missoes.filter(m => m.estado === 'feita').length;
     const est = feitas === c.missoes.length ? 'concluida' : c.missoes.some(m => m.estado === 'ativa') ? 'ativa' : 'bloqueada';
     const ic = Popup.no(pop, 'capitulo-estado', linha);
     if (ic){ const url = iconeEstado(pop, 'missao', est, 'objetivo-estado', ic); ic.style.backgroundImage = url ? 'url(' + url + ')' : 'none'; }
-    Popup.texto(pop, 'capitulo-nome', (c.side ? 'Side · ' : 'Chapter ' + c.id + ' · ') + c.nome, linha);
+    Popup.texto(pop, 'capitulo-nome', (c.side ? 'Side · ' : 'Chapter ' + c.id + ' · ') + tr(c.nome), linha);
     Popup.texto(pop, 'capitulo-progresso', feitas + '/' + c.missoes.length, linha);
     if (!aberto){ y += G.passoCap; return; }
     y += G.yGrupo;
@@ -2915,8 +3090,9 @@ function encherSecundarias(pop, G){
     delete linha.dataset.secId;
     linha.style.top = y + 'px';
     const seta = linha.querySelector('[data-fig="icone-seta"]');
-    if (seta) seta.textContent = open ? '▼' : '▶';
-    if (G.arteAberto && G.arteFechado && G.arteAberto !== G.arteFechado) linha.style.backgroundImage = 'url(' + (open ? G.arteAberto : G.arteFechado) + ')';
+    const setaNaArte = G.arteAberto && G.arteFechado && G.arteAberto !== G.arteFechado;
+    if (seta) seta.textContent = setaNaArte ? '' : (open ? '▼' : '▶');
+    if (setaNaArte) linha.style.backgroundImage = 'url(' + (open ? G.arteAberto : G.arteFechado) + ')';
     const est = g.id === 'feita' ? 'concluida' : g.id === 'ativa' ? 'ativa' : 'bloqueada';
     const ic = Popup.no(pop, 'capitulo-estado', linha);
     if (ic){ const url = iconeEstado(pop, 'missao', est, 'objetivo-estado', ic); ic.style.backgroundImage = url ? 'url(' + url + ')' : 'none'; }
