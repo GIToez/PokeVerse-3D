@@ -220,6 +220,10 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     const lista = meus(c)[tipo === 'efeito' ? 'efeitos' : 'roupas'];
     if (lista.includes(item.id)) return erro(c, 'you already have ' + item.nome);
     if (item.evento) return erro(c, item.nome + ': ' + item.evento);
+    if (item.oculto) return erro(c, item.nome + ' is not available');
+    if (item.feriado) return erro(c, item.nome + ' is only sold during ' + item.feriado);
+    if (item.diamantes) return erro(c, item.nome + ' is sold in the Diamond shop');
+    if (item.passe) return erro(c, item.nome + ' is a Battle Pass reward');
     if (item.premio === 'elite') {
       if (!eliteVencida(u)) return erro(c, item.nome + ': beat the Elite Four to get it');
     } else {

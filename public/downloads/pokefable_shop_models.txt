@@ -17,3 +17,4 @@ https://pokefableonline.com/cenario/pc/Bag042_1.glb
 https://pokefableonline.com/cenario/pc/Boy_045.glb
 https://pokefableonline.com/cenario/pc/Girl_045.glb
 https://pokefableonline.com/cenario/pc/fc2075_00.glb
+https://pokefableonline.com/cenario/pc/Girl_029.glb
