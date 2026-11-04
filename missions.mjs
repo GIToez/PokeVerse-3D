@@ -29,7 +29,7 @@ export async function instalar(c){
     estado.prog = estado.prog && typeof estado.prog === 'object' ? estado.prog : {};
     estado.passo = Number.isInteger(estado.passo) ? estado.passo : 0;
     normalizarLaterais();
-    if (estado.atual !== null && !porId(estado.atual)){ estado.atual = primeiraMissao()?.id ?? null; estado.passo = 0; }
+    if (estado.atual !== null && !porId(estado.atual)){ estado.atual = todas().find(m => !estado.feitas.includes(m.id))?.id ?? null; estado.passo = 0; }
     gravar();
   }
   if (!estado){
