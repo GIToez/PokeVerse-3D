@@ -3241,7 +3241,7 @@ function paginaFichaDx(d, S, X, j) {
       v.t0 = 0;
       requestAnimationFrame(v.quadro);
     }
-    v.anel.visible = !d.__def?.v2;
+    if (v.anel) v.anel.visible = !d.__def?.v2;
     const ca = glbDe(selDex);
     selDexGlb = ca;
     const da = k.querySelector(':scope > [data-fig="sem-3d"]'),
