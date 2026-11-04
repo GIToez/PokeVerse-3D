@@ -1,0 +1,10 @@
+https://pokefableonline.com/raid_r01_cena.mjs
+https://pokefableonline.com/raid_r03_cena.mjs
+https://pokefableonline.com/raid_r05_cena.mjs
+https://pokefableonline.com/cenario/raid/r01/r01_animacoes.json
+https://pokefableonline.com/cenario/raid/r03/r03_animacoes.json
+https://pokefableonline.com/cenario/raid/r03/referencia/envelope-zapdos.json
+https://pokefableonline.com/cenario/raid/r03/referencia/envelope-animacoes-v7.json
+https://pokefableonline.com/data/raid_r01.json
+https://pokefableonline.com/data/raid_r03.json
+https://pokefableonline.com/data/raid_r05.json
