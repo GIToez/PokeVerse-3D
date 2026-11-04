@@ -1,0 +1,34 @@
+{
+ "pm0380": {
+  "role": {
+   "Neck1": "core",
+   "Neck2": "core",
+   "Neck3": "core"
+  }
+ },
+ "pm0381": {
+  "role": {
+   "Neck1": "core",
+   "Neck2": "core",
+   "Neck3": "core"
+  }
+ },
+ "pm0894": {
+  "role": {
+   "R_Arm_1": "core",
+   "R_Arm_2": "core",
+   "R_Arm_3": "core",
+   "R_Arm_4": "core",
+   "R_Arm_5": "core",
+   "R_Arm_6": "core",
+   "R_Arm_7": "core",
+   "L_Arm_1": "core",
+   "L_Arm_2": "core",
+   "L_Arm_3": "core",
+   "L_Arm_4": "core",
+   "L_Arm_5": "core",
+   "L_Arm_6": "core",
+   "L_Arm_7": "core"
+  }
+ }
+}

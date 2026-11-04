@@ -12,11 +12,14 @@ recipe lifts a hanging arm forward and a spread wing upward, and raises a
 dog's head as well as tipping back a biped's.
 
 Only clips with tracks on the top-level bones alone (the defaults) get limbs,
-and each file is only done once (asset.extras.limbClips).
+and each file is only done once (asset.extras.limbClips) unless --rebuild,
+which strips the earlier limb tracks and writes them again.
 
-    python3 tools/limb_clips.py                 # every imported model
-    python3 tools/limb_clips.py pm0025_11 ...   # just these
+    python3 tools/limb_clips.py                       # every imported model
+    python3 tools/limb_clips.py pm0025_11 ...         # just these
+    python3 tools/limb_clips.py --tuned --rebuild     # redo the tuned list
 """
+import json
 import math
 import sys
 from collections import Counter
@@ -30,7 +33,9 @@ from default_clips import ease, mat_to_quat  # noqa: E402
 from pixelmon_bmd_to_glb import (  # noqa: E402
     append_accessor, quat_mul, quat_normalize, read_accessor, read_glb, write_glb,
 )
-from rig_roles import MON, analyse, rest_pose  # noqa: E402
+from rig_roles import MON, ROOT, analyse, rest_pose  # noqa: E402
+
+TUNED = ROOT / 'tools' / 'tuned_species.json'
 
 VERSION = 1
 GOALS = {
@@ -139,6 +144,46 @@ RECIPES = {
 }
 
 
+# Species flavors for the tuned list (tools/tuned_species.json): starter,
+# legendary, mythical and Mega lines, and everything that can fly, swim or
+# be ridden. Each replaces the named groups of a clip in RECIPES.
+FLAVORS = {
+    # Fire, water, dragon, ice and poison types breathe their Cast: rear back
+    # with the mouth shut, then thrust the head and hold the jaw wide (rigs
+    # without a jaw bone still get the head thrust).
+    'breath': {'Cast': {
+        'head': [(0, {}), (0.25, {'lift': 18}), (0.65, {'lift': 18}), (0.78, {'dip': 16}), (0.92, {'dip': 12}), (1.0, {})],
+        'neck': [(0, {}), (0.25, {'lift': 12}), (0.65, {'lift': 12}), (0.78, {'dip': 14}), (0.92, {'dip': 10}), (1.0, {})],
+        'jaw': [(0, {}), (0.62, {}), (0.74, {'down': 38}), (0.92, {'down': 34}), (1.0, {})],
+    }},
+    # Clawed fighters slash with one arm and then the other.
+    'claws': {'Attack': {
+        'lead': [(0, {}), (0.12, {'back': 45, 'out': 30}), (0.24, {'forward': 85, 'up': 20}), (0.34, {'forward': 60}), (0.70, {})],
+        'off': [(0, {}), (0.18, {'back': 40, 'out': 30}), (0.34, {'forward': 80, 'up': 15}), (0.46, {'forward': 55}), (0.70, {})],
+    }},
+    # Wings beat in Attack and fan a gust in Cast.
+    'wings': {
+        'Attack': {'wing': [(0, {}), (0.10, {'up': 45, 'out': 25}), (0.20, {}), (0.30, {'up': 45, 'out': 25}), (0.42, {}), (0.70, {})]},
+        'Cast': {'wing': [(0, {}), (0.10, {'up': 50, 'out': 30}), (0.25, {}), (0.40, {'up': 50, 'out': 30}), (0.55, {}),
+                          (0.70, {'up': 55, 'out': 40}), (0.82, {}), (1.0, {})]},
+    },
+    # Without free arms the attack is a double bite.
+    'bite': {'Attack': {
+        'jaw': [(0, {}), (0.18, {'down': 10}), (0.27, {'down': 40}), (0.34, {}), (0.42, {'down': 18}), (0.55, {}), (0.70, {})],
+    }},
+    # Legendary and mythical Pokemon roar when they appear and when they power up.
+    'roar': {
+        'Appear': {'head': [(0, {}), (0.22, {'lift': 22}), (0.45, {'lift': 12}), (0.60, {})],
+                   'jaw': [(0, {}), (0.15, {}), (0.30, {'down': 35}), (0.50, {'down': 20}), (0.60, {})]},
+        'Buff': {'head': [(0, {}), (0.60, {}), (0.85, {'lift': 28}), (1.05, {'lift': 24}), (1.2, {})],
+                 'jaw': [(0, {}), (0.60, {}), (0.80, {'down': 40}), (1.05, {'down': 36}), (1.2, {})]},
+    },
+}
+BREATH_TYPES = {'Fire', 'Water', 'Dragon', 'Ice', 'Poison'}
+CLAW_TYPES = {'Bug', 'Steel', 'Fighting', 'Dark', 'Dragon', 'Ground', 'Rock'}
+CLAW_WORDS = ('claw', 'pincer', 'scythe', 'blade', 'sickle', 'talon')
+
+
 def sample(keys, t):
     for (t0, a), (t1, b) in zip(keys, keys[1:]):
         if t <= t1:
@@ -173,16 +218,128 @@ def groups(info):
     return {k: v for k, v in out.items() if v}
 
 
+def flavors_for(info, plan, types, reasons):
+    if not reasons:
+        return []
+    chosen = []
+    if (plan.get('jaw') or plan.get('head')) and set(types) & BREATH_TYPES:
+        chosen.append('breath')
+    arms = plan.get('lead', []) + plan.get('off', [])
+    clawed = any(w in b.lower() for e in arms for b in e['bones'] for w in CLAW_WORDS)
+    if plan.get('lead') and plan.get('off') and (clawed or set(types) & CLAW_TYPES):
+        chosen.append('claws')
+    if plan.get('wing'):
+        chosen.append('wings')
+    elif 'fly' in reasons and 'Flying' in types and plan.get('lead') and info['stance'] in ('biped', 'bird', 'flyer'):
+        # Birds whose wings are rigged as arms: move the arms as wings.
+        chosen.append('arm wings')
+    if plan.get('jaw') and not plan.get('lead'):
+        chosen.append('bite')
+    if {'legendary', 'mythical'} & set(reasons):
+        chosen.append('roar')
+    return chosen
+
+
+def recipe(clip, flavors):
+    out = dict(RECIPES.get(clip, {}))
+    for f in flavors:
+        if f == 'arm wings':
+            for group in ('lead', 'off'):
+                wing = FLAVORS['wings'].get(clip, {}).get('wing') or RECIPES.get(clip, {}).get('wing')
+                if wing:
+                    out[group] = wing
+            continue
+        out.update(FLAVORS[f].get(clip, {}))
+    return out
+
+
+def strip_limbs(doc):
+    """Drop the tracks an earlier run added: in the default battle clips only
+    the top-level bones were animated before this tool."""
+    joints = set(doc['skins'][0]['joints'])
+    wrapper = doc['scenes'][doc.get('scene', 0)]['nodes'][0]
+    roots = {n for n in doc['nodes'][wrapper].get('children', []) if n in joints}
+    for anim in doc['animations']:
+        if anim['name'] not in RECIPES:
+            continue
+        keep = [ch for ch in anim['channels'] if ch['target']['node'] in roots]
+        used = sorted({ch['sampler'] for ch in keep})
+        remap = {old: new for new, old in enumerate(used)}
+        anim['samplers'] = [anim['samplers'][i] for i in used]
+        for ch in keep:
+            ch['sampler'] = remap[ch['sampler']]
+        anim['channels'] = keep
+    doc['asset'].get('extras', {}).pop('limbClips', None)
+
+
+def compact(doc, blob):
+    """Rewrite the buffer with only the accessors and views still in use."""
+    used_acc = set()
+    for mesh in doc.get('meshes', []):
+        for prim in mesh['primitives']:
+            used_acc.update(prim['attributes'].values())
+            if 'indices' in prim:
+                used_acc.add(prim['indices'])
+    for skin in doc.get('skins', []):
+        if 'inverseBindMatrices' in skin:
+            used_acc.add(skin['inverseBindMatrices'])
+    for anim in doc.get('animations', []):
+        for samp in anim['samplers']:
+            used_acc.update((samp['input'], samp['output']))
+    acc_map = {old: new for new, old in enumerate(sorted(used_acc))}
+    used_views = sorted({doc['accessors'][a]['bufferView'] for a in used_acc}
+                        | {img['bufferView'] for img in doc.get('images', []) if 'bufferView' in img})
+    new_blob = bytearray()
+    view_map = {}
+    views = []
+    for old in used_views:
+        view = dict(doc['bufferViews'][old])
+        while len(new_blob) % 4:
+            new_blob.append(0)
+        start = view.get('byteOffset', 0)
+        chunk = blob[start:start + view['byteLength']]
+        view['byteOffset'] = len(new_blob)
+        new_blob.extend(chunk)
+        view_map[old] = len(views)
+        views.append(view)
+    accessors = []
+    for old in sorted(used_acc):
+        acc = dict(doc['accessors'][old])
+        acc['bufferView'] = view_map[acc['bufferView']]
+        accessors.append(acc)
+    doc['accessors'], doc['bufferViews'] = accessors, views
+    for mesh in doc.get('meshes', []):
+        for prim in mesh['primitives']:
+            prim['attributes'] = {k: acc_map[v] for k, v in prim['attributes'].items()}
+            if 'indices' in prim:
+                prim['indices'] = acc_map[prim['indices']]
+    for skin in doc.get('skins', []):
+        if 'inverseBindMatrices' in skin:
+            skin['inverseBindMatrices'] = acc_map[skin['inverseBindMatrices']]
+    for anim in doc.get('animations', []):
+        for samp in anim['samplers']:
+            samp['input'], samp['output'] = acc_map[samp['input']], acc_map[samp['output']]
+    for img in doc.get('images', []):
+        if 'bufferView' in img:
+            img['bufferView'] = view_map[img['bufferView']]
+    return new_blob
+
+
 def axis_angle(axis, deg):
     a = math.radians(deg) / 2
     return np.array([*(axis * math.sin(a)), math.cos(a)])
 
 
-def add_limbs(path):
+def add_limbs(path, types=(), reasons=(), rebuild=False):
     doc, blob = read_glb(path)
     extras = doc.get('asset', {}).get('extras', {})
-    if doc.get('asset', {}).get('generator') != 'pixelmon_bmd_to_glb.py' or extras.get('limbClips'):
+    if doc.get('asset', {}).get('generator') != 'pixelmon_bmd_to_glb.py':
         return None
+    if extras.get('limbClips'):
+        if not rebuild:
+            return None
+        strip_limbs(doc)
+        blob = compact(doc, blob)
     info = analyse(path)
     world, parent, verts, lead = rest_pose(doc, blob)
     joints = doc['skins'][0]['joints']
@@ -197,6 +354,7 @@ def add_limbs(path):
         return np.concatenate(parts)
 
     plan = groups(info)
+    flavors = flavors_for(info, plan, types, reasons)
     bones = {}
     for group, chains in plan.items():
         weights = FALLOFF[group]
@@ -234,8 +392,8 @@ def add_limbs(path):
     done = []
     for anim in doc['animations']:
         name = anim['name']
-        recipe = RECIPES.get(name)
-        if not recipe:
+        keys_for = recipe(name, flavors)
+        if not keys_for:
             continue
         targeted = {ch['target']['node'] for ch in anim['channels']}
         if any(n in bones for n in targeted):
@@ -243,7 +401,7 @@ def add_limbs(path):
         timelines = {}
         added = 0
         for n, b in bones.items():
-            keys = recipe.get(b['group'])
+            keys = keys_for.get(b['group'])
             if not keys:
                 continue
             if b['group'] not in timelines:
@@ -287,29 +445,48 @@ def add_limbs(path):
             added += 1
         if added:
             done.append(name)
-    doc['asset'].setdefault('extras', {})['limbClips'] = VERSION
+    extras = doc['asset'].setdefault('extras', {})
+    extras['limbClips'] = VERSION
+    if flavors:
+        extras['limbFlavors'] = flavors
     write_glb(path, doc, blob)
-    return {'stance': info['stance'], 'groups': sorted(plan), 'clips': done}
+    return {'stance': info['stance'], 'groups': sorted(plan), 'clips': done, 'flavors': flavors}
 
 
-def _one(name):
+def species_info():
+    tuned = json.loads(TUNED.read_text()) if TUNED.exists() else {}
+    types = {}
+    for sp in json.loads((ROOT / 'public' / 'pokedex.json').read_text())['species']:
+        types.setdefault(int(sp['n']), sp.get('types') or [])
+    return tuned, types
+
+
+def _one(args):
+    name, rebuild, tuned, types = args
     try:
-        return name, add_limbs(MON / f'{name}.glb')
+        dex = int(name[2:6]) if name[2:6].isdigit() else -1
+        return name, add_limbs(MON / f'{name}.glb', types.get(dex, ()), tuned.get(str(dex), ()), rebuild)
     except Exception as err:  # one broken file should not stop the roster
         return name, {'error': str(err)}
 
 
 def main():
-    names = sys.argv[1:] or sorted(p.stem for p in MON.glob('*.glb'))
+    rebuild = '--rebuild' in sys.argv
+    tuned_only = '--tuned' in sys.argv
+    names = [a for a in sys.argv[1:] if not a.startswith('--')] or sorted(p.stem for p in MON.glob('*.glb'))
+    tuned, types = species_info()
+    if tuned_only:
+        names = [n for n in names if n[2:6].isdigit() and str(int(n[2:6])) in tuned]
     results = {}
     with ProcessPoolExecutor() as pool:
-        for name, result in pool.map(_one, names, chunksize=8):
+        for name, result in pool.map(_one, [(n, rebuild, tuned, types) for n in names], chunksize=8):
             if result:
                 results[name] = result
     errors = {k: v['error'] for k, v in results.items() if 'error' in v}
     ok = {k: v for k, v in results.items() if 'error' not in v}
     print(f'limbs added to {sum(1 for v in ok.values() if v["clips"])} models')
     print('groups', Counter(g for v in ok.values() for g in v['groups']).most_common())
+    print('flavors', Counter(f for v in ok.values() for f in v.get('flavors', [])).most_common())
     print('no limbs found', sum(1 for v in ok.values() if not v['clips']))
     for k, v in list(errors.items())[:20]:
         print('error', k, v)
