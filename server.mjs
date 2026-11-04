@@ -464,7 +464,7 @@ function inicialOk(dex) {
 let ESPECIES_OK = null;
 try {
   const pdx = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/pokedex.json'), 'utf8'));
-  ESPECIES_OK = new Set((pdx.species || []).map(s => +s.n).filter(n => n > 0));
+  ESPECIES_OK = new Set((pdx.species || []).map(s => +s.n).filter(n => n >= 0));
   console.log('Valid species:', ESPECIES_OK.size);
 } catch (e) { console.warn('pokedex.json not loaded (species validation off):', e.message); }
 function especieValida(dex) { return !ESPECIES_OK || ESPECIES_OK.has(+dex); }   // sem o arquivo, não bloqueia (fail-open no dev)

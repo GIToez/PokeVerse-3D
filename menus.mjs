@@ -2944,11 +2944,15 @@ let genDx = 1,
   dexRolarAte = null,
   evoDx = null;
 const GENS_DX = [
-  [1, 1, 151],
+  [1, 0, 151],
   [2, 152, 251],
   [3, 252, 386],
   [4, 387, 493],
   [5, 494, 649],
+  [6, 650, 721],
+  [7, 722, 809],
+  [8, 810, 905],
+  [9, 906, 1025],
 ];
 const SECOES_DX = ['ficha', 'status', 'evolucao', 'golpes', 'pesquisa'];
 const STATS_DX = [
@@ -3038,7 +3042,28 @@ function irParaDex(n) {
   dexRolarAte = n;
   render();
 }
+function garantirGeracaoDx(e){
+  let sel = e.querySelector(':scope > select.dex-geracao');
+  if (!sel){
+    sel = document.createElement('select');
+    sel.className = 'dex-geracao';
+    sel.setAttribute('translate', 'no');
+    Object.assign(sel.style, {
+      position: 'absolute', top: '8px', right: '56px', zIndex: '90',
+      font: '12px sans-serif', color: '#eaf6fb', background: '#14243a',
+      border: '1px solid #3d5a73', borderRadius: '4px', padding: '2px 4px',
+    });
+    for (const [g] of GENS_DX){
+      const o = document.createElement('option');
+      o.value = String(g); o.textContent = 'Gen ' + g; sel.appendChild(o);
+    }
+    sel.addEventListener('change', () => { genDx = +sel.value; selDex = null; dexRolarAte = 0; render(); });
+    e.appendChild(sel);
+  }
+  if (sel.value !== String(genDx)) sel.value = String(genDx);
+}
 async function encherPokedex(e) {
+  garantirGeracaoDx(e);
   Popup.rotulo(e, 'titulo');
   for (const a of e.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(e, 'aba', a);
   Popup.trocarAba(e, 'gen-' + genDx);
@@ -3220,6 +3245,27 @@ function mostrarSecaoDx(a, b) {
   }
   if (b !== 'ficha') pararDex();
 }
+function montarSeletorForma(k, glb){
+  if (!k) return;
+  let sel = k.querySelector(':scope > select.dex-forma');
+  const formas = formasDex(selDex);
+  if (formas.length < 2){ if (sel) sel.remove(); return; }
+  if (!sel){
+    sel = document.createElement('select');
+    sel.className = 'dex-forma';
+    sel.setAttribute('translate', 'no');
+    Object.assign(sel.style, {
+      position: 'absolute', left: '8px', top: '4px', zIndex: '80',
+      font: '12px sans-serif', color: '#eaf6fb', background: '#14243a',
+      border: '1px solid #3d5a73', borderRadius: '4px', padding: '2px 4px', maxWidth: '46%',
+    });
+    sel.addEventListener('change', () => { selDexGlb = sel.value; if (popDx && Popup.aberto(popDx)) encherPokedex(popDx); });
+    k.appendChild(sel);
+  }
+  const html = formas.map(e => `<option value="${esc(e.glb)}">${esc(rotuloFormaDex(e))}</option>`).join('');
+  if (sel.innerHTML !== html) sel.innerHTML = html;
+  sel.value = glb || '';
+}
 function paginaFichaDx(d, S, X, j) {
   const k = Popup.grupo(d, 'modelos'),
     o = k?.querySelector('[data-var="modelo-normal"]'),
@@ -3251,8 +3297,8 @@ function paginaFichaDx(d, S, X, j) {
       requestAnimationFrame(v.quadro);
     }
     if (v.anel) v.anel.visible = !d.__def?.v2;
-    const ca = glbDe(selDex);
-    selDexGlb = ca;
+    const ca = glbEscolhido(selDex);
+    montarSeletorForma(k, ca);
     const da = k.querySelector(':scope > [data-fig="sem-3d"]'),
       ea = Popup.grupo(d, 'dica-girar');
     if (da) {
@@ -4530,6 +4576,20 @@ const cacheGlb = new Map(), texShiny = new Map(), shinyPorAmostrador = new Map()
 async function carregarElenco(){ if (!elenco) elenco = await fetch('./data/cast.json').then(r => r.json()).catch(() => []); return elenco; }
 async function carregarDexExtra(){ if (!dexExtra) dexExtra = await fetch('./data/dex_extra.json').then(r => r.json()).catch(() => ({ especies: {}, golpes: {} })); return dexExtra; }
 const glbDe = n => { const cands = (elenco || []).filter(e => e.n === n); return (cands.find(e => /_00$/.test(e.glb)) || cands[0])?.glb || null; };
+function formasDex(n){
+  return (elenco || []).filter(e => e.n === n).sort((a, b) => String(a.glb).localeCompare(String(b.glb)));
+}
+function rotuloFormaDex(e){
+  if (e?.nota) return e.nota;
+  if (/_00$/.test(e?.glb || '')) return tr('Regular');
+  return (e?.glb || '').slice(-2);
+}
+/** The form the Pokédex is showing. Regular (_00) until the player picks Mega, a letter, or a season. */
+function glbEscolhido(n){
+  const formas = formasDex(n);
+  if (!formas.some(e => e.glb === selDexGlb)) selDexGlb = (formas.find(e => /_00$/.test(e.glb)) || formas[0])?.glb || null;
+  return selDexGlb;
+}
 function dexEstado(){
   const d = ctx.lerLS('dex', {});
   for (const [k, v] of Object.entries(ctx.conhecimento?.estadoAntigo?.() || {})) if (v === 'pego' || !d[k]) d[k] = v;   // Pokédex de conhecimento
@@ -4704,7 +4764,7 @@ function cadeiaEvolucao(dex){
 const chanceCaptura = rate => { const a = Math.max(1, rate) / 3; if (a >= 255) return 1; const b = 1048560 / Math.sqrt(Math.sqrt(16711680 / a)); return Math.pow(b / 65536, 4); };   // HP cheio, Pokébola
 function rPokedex(corpo){
   if (!I18n.dexPronto()) I18n.carregarDex().then(() => { if (aberta === 'pokedex') render(); });   // descrições por idioma (etapa 3): baixa só quando a janela abre
-  const gens = [[1, 1, 151], [2, 152, 251], [3, 252, 386], [4, 387, 493], [5, 494, 649]];
+  const gens = GENS_DX;
   const aba = abas(gens.map(([g]) => ({ id: String(g), nome: 'Gen ' + g })));
   const [, a, b] = gens.find(([g]) => String(g) === aba); const d = dexEstado();
   const q = dexBusca.trim().toLowerCase();
@@ -4725,7 +4785,9 @@ async function mostrarDex(){
   const d = dexEstado(), S = ctx.porDex.get(selDex), st = d[selDex], conhecido = !!st;
   await Promise.all([carregarElenco(), carregarDexExtra()]);
   const X = dexExtra.especies?.[selDex] || {}, G = dexExtra.golpes || {};
-  const glb = glbDe(selDex), v = visorDex(); v.redimensionar(600, 600, 0);   // janela antiga: as duas metades de sempre
+  const glb = glbEscolhido(selDex), v = visorDex(); v.redimensionar(600, 600, 0);   // janela antiga: as duas metades de sempre
+  const formas = formasDex(selDex);
+  const seletor = formas.length > 1 ? `<label class="dex-forma" style="display:flex;gap:6px;align-items:center;justify-content:center;margin:4px 0;font-size:12px">${esc(tr('Form'))} <select id="dex-forma">${formas.map(e => `<option value="${esc(e.glb)}"${e.glb === glb ? ' selected' : ''}>${esc(rotuloFormaDex(e))}</option>`).join('')}</select></label>` : '';
   const alt = ctx.alturas?.[selDex] ?? X.a, peso = S?.kg ?? X.p;
   const bs = S?.bs || [], nomes = ['HP', 'Atq', 'Def', 'AtE', 'DfE', 'Vel'];
   const fr = fraquezas(S?.types || []);
@@ -4746,6 +4808,7 @@ async function mostrarDex(){
   const golpeHtml = ([lv, id]) => { const g = G[id]; return g ? `<div><span class="lv">${lv}</span><b>${esc(g[0])}</b>${tipoHtml(g[1])}<small>${esc(catMap[g[2]] || '')} · ${esc(tr('power'))} ${g[3] || '—'} · PP ${g[4] || '—'}</small></div>` : ''; };
   f.innerHTML = `<h3>${nv >= 1 ? esc(S?.name) : '?????'} <small style="color:var(--muted)">No. ${String(selDex).padStart(3, '0')} · ${st === 'pego' ? esc(tr('caught')) : st ? esc(tr('seen')) : esc(tr('unknown'))}</small></h3>
     <div class="dex-nivel"><span class="pts" title="${rv ? rv.pontos + ' ' + esc(tr('knowledge points')) : ''}">${'●'.repeat(nv)}${'○'.repeat(5 - nv)}</span> <b>${esc(tr(nomesNivel[nv]))}</b>${rv && rv.proximo != null ? ` <small>${rv.pontos}/${rv.proximo} ${esc(tr('to'))} ${esc(tr(nomesNivel[nv + 1]))}</small>` : nv >= 5 ? ' <small>✨ ' + esc(tr('you know everything about the species')) + '</small>' : ''}${faltaLista.length ? `<div class="dex-falta">${esc(tr('to rank up:'))} ${faltaLista.map(x => esc(tr(x))).join(' · ')}</div>` : ''}</div>
+    ${seletor}
     <div class="dex-visor"></div>
     <div class="dex-rotulos"><span>Normal</span><span id="dex-rotulo-shiny">✨ Shiny</span></div>
     <div style="color:var(--muted);font-size:11px;text-align:center">${glb ? esc(tr('drag to rotate both')) : esc(tr('no 3D model exported yet'))}</div>
@@ -4765,6 +4828,7 @@ async function mostrarDex(){
     <div class="dex-secao">${esc(tr('resists'))} ${fr.resiste.length + fr.imune.length}</div><div>${[...fr.resiste, ...fr.imune].map(([t, m]) => `<span class="tipo" style="background:${ctx.R.COR_TIPO?.[t] || '#556'}">${t} ×${m === 0 ? '0' : m === 0.25 ? '¼' : '½'}</span>`).join('') || '—'}</div>` : '<div class="dex-secao oculto">🔒 ' + esc(tr('stats, evolution and weaknesses unlock at level 2 (catch one)')) + '</div>'}
     ${golpes.length ? (golpesMostrar.length ? `<div class="dex-secao">${esc(tr('moves by level'))}${nv < 4 ? ` <small>(${golpesMostrar.length}/${golpes.length} ${esc(tr('seen'))} · ${esc(tr('the full learnset unlocks at level 4'))})</small>` : ''}</div><div class="dex-golpes">${golpesMostrar.map(golpeHtml).join('')}</div>` : `<div class="dex-secao oculto">🔒 ${esc(tr('moves unlock by watching the species battle ({seen}/{total} of the learnset seen; everything at level 4)', { seen: 0, total: golpes.length }))}</div>`) : ''}`
     : '<div style="color:var(--muted);font-size:12px;margin-top:8px">' + esc(tr('Find this Pokémon to open the entry.')) + '</div>'}`;
+  f.querySelector('#dex-forma')?.addEventListener('change', ev => { selDexGlb = ev.target.value; mostrarDex(); });
   f.querySelector('.dex-visor').appendChild(v.canvas);
   f.querySelectorAll('.dex-cadeia [data-n]').forEach(e => e.onclick = () => { selDex = +e.dataset.n; render(); });
   selDexGlb = glb;
