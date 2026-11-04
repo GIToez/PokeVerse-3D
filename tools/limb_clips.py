@@ -49,6 +49,8 @@ UP_BACK = ('up', 'back')
 FWD_DOWN = ('forward', 'down')
 
 # clip: group: [(time s, {goal: degrees})]. Between keys the motion eases.
+# Wings never swing below their rest pose: on beetles the "wings" are the
+# shell, and tipping it down pushes the body out through it.
 # 'lift' means up and back (looks up whichever way the head points); 'dip'
 # is forward and down. Times line up with default_clips.CLIPS.
 RECIPES = {
@@ -62,7 +64,7 @@ RECIPES = {
         'front': [(0, {}), (0.18, {'back': 12}), (0.30, {'forward': 38, 'up': 15}), (0.42, {'forward': 32}), (0.70, {})],
         'hind': [(0, {}), (0.18, {'forward': 10}), (0.30, {'back': 28}), (0.42, {'back': 22}), (0.70, {})],
         'tail': [(0, {}), (0.18, {'up': 30}), (0.30, {'down': 18}), (0.42, {'down': 12}), (0.70, {})],
-        'wing': [(0, {}), (0.18, {'up': 40, 'out': 20}), (0.30, {'down': 35}), (0.42, {'down': 25}), (0.70, {})],
+        'wing': [(0, {}), (0.18, {'up': 40, 'out': 20}), (0.30, {}), (0.70, {})],
         'ear': [(0, {}), (0.18, {'back': 20}), (0.30, {'back': 32}), (0.50, {'back': 12}), (0.70, {})],
         'feeler': [(0, {}), (0.18, {'up': 20, 'back': 15}), (0.30, {'forward': 40}), (0.42, {'forward': 30}), (0.70, {})],
         'fin': [(0, {}), (0.18, {'out': 25}), (0.30, {'back': 25}), (0.70, {})],
@@ -77,7 +79,7 @@ RECIPES = {
                 (0.78, {'forward': 80, 'up': 15}), (1.0, {})],
         'front': [(0, {}), (0.25, {'forward': 12}), (0.65, {'forward': 12}), (0.78, {}), (1.0, {})],
         'tail': [(0, {}), (0.25, {'up': 32}), (0.65, {'up': 32}), (0.78, {}), (1.0, {})],
-        'wing': [(0, {}), (0.25, {'up': 45, 'out': 35}), (0.65, {'up': 45, 'out': 35}), (0.78, {'down': 22}), (1.0, {})],
+        'wing': [(0, {}), (0.25, {'up': 45, 'out': 35}), (0.65, {'up': 45, 'out': 35}), (0.78, {}), (1.0, {})],
         'ear': [(0, {}), (0.25, {'up': 22}), (0.65, {'up': 22}), (0.78, {'back': 15}), (1.0, {})],
         'feeler': [(0, {}), (0.25, {'up': 30, 'forward': 20}), (0.65, {'up': 30, 'forward': 20}), (0.78, {'forward': 45}), (1.0, {})],
         'fin': [(0, {}), (0.25, {'out': 30}), (0.65, {'out': 30}), (1.0, {})],
@@ -119,7 +121,7 @@ RECIPES = {
         'hind': [(0, {}), (0.45, {}), (1.0, {'back': 18}), (1.25, {'back': 17})],
         'leg': [(0, {}), (0.45, {}), (1.0, {'forward': 16}), (1.25, {'forward': 15})],
         'tail': [(0, {}), (0.45, {}), (1.0, {'down': 22}), (1.25, {'down': 20})],
-        'wing': [(0, {}), (0.45, {}), (1.0, {'out': 30, 'down': 22}), (1.25, {'out': 28, 'down': 20})],
+        'wing': [(0, {}), (0.45, {}), (1.0, {'out': 30}), (1.25, {'out': 28})],
         'ear': [(0, {}), (0.45, {}), (1.0, {'down': 30, 'back': 20}), (1.25, {'down': 28, 'back': 18})],
         'feeler': [(0, {}), (0.45, {}), (1.0, {'down': 30}), (1.25, {'down': 28})],
         'fin': [(0, {}), (0.45, {}), (1.0, {'down': 20}), (1.25, {'down': 18})],
@@ -203,7 +205,10 @@ def add_limbs(path):
             if group in ('tail', 'feeler'):
                 weights = [FALLOFF[group][min(i, len(FALLOFF[group]) - 1)] for i in range(len(nodes))]
             outward = 1.0 if chain['side'] == 'left' else -1.0 if chain['side'] == 'right' else 0.0
-            for n, w in zip(nodes, weights):
+            # A "head" that carries most of the mesh (Ledyba, Lotad) is really
+            # the body; full head moves would tip the whole model over.
+            scale = 0.5 if group in ('head', 'neck') and chain['mass'] > 0.35 else 1.0
+            for n, w in zip(nodes, [w * scale for w in weights]):
                 if n in bones:
                     continue
                 sub = carried(n)
