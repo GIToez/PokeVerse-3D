@@ -95,6 +95,9 @@ assert.match(menus, /TerrenoUI\.abrir/, 'the land window opens the garden');
 assert.match(menus, /GuildaUI\.abrir/, 'the guild opens its window');
 assert.match(menus, /FeiraUI\.abrir/, 'the player market opens its window');
 assert.match(menus, /Balsa\.abrir\('balcao'\)/, 'the ferry opens without a guessed stop');
+assert.match(menus, /EventosUI\.abrir\(\)/, 'the events board opens from the HUD');
+assert.match(menus, /PokemartUI\.popup/, 'the city shop uses the v2 Pokémart');
+assert.match(readFileSync(join(root, 'mission_guide.mjs'), 'utf8'), /flipX \* \+pin\.x/, 'mission pins use world coordinates');
 const popup = readFileSync(join(root, 'popup.mjs'), 'utf8');
 assert.match(popup, /data-fig\^="encaixe-"/, 'party slots in the box receive taps');
 assert.match(popup, /data-fig\^="casa-"/, 'box cells receive taps');
@@ -102,5 +105,19 @@ const index = readFileSync(join(root, 'index.html'), 'utf8');
 assert.match(index, /Hud\.carregarV2\(\)/, 'the page loads the v2 kit');
 assert.match(index, /hud\.v2'\) === '0'/, 'Settings can still pick the classic HUD');
 assert.match(index, /TmCounter\.instalar/, 'the TM counter is installed with the party drag');
+assert.match(index, /Guia\.quadro/, 'the mission arrow follows the current step');
+assert.match(index, /Menus\.abrir\('pokemart'/, 'the city clerk opens the v2 Pokémart');
+const { alvoDe } = await import('../mission_guide.mjs');
+assert.deepEqual(alvoDe([{ x: 10, z: 4, start: true }, { x: 2, z: 3 }], [], -1), { x: -2, z: 3 }, 'the main step is mirrored into the world');
+assert.deepEqual(alvoDe([{ cfg: 5, x: 10, z: 4 }], [{ cfg: 5, x: -9, z: 8 }], -1), { x: -9, z: 8 }, 'a NPC already in the scene keeps world coordinates');
+const missions = readFileSync(join(root, 'missions.mjs'), 'utf8');
+assert.match(missions, /<small class="rec">/, 'the tracker writes the v2 reward line');
+assert.doesNotMatch(missions, /mi-recs/, 'the tracker does not paint the old reward chips');
+const { linhaRecompensa } = await import('../missions.mjs');
+assert.equal(
+  linhaRecompensa({ dinheiro: 500, itens: { 1001: 5, 2001: 3 }, exp: 100 }, id => ({ 1001: 'Poké Ball', 2001: 'Potion' }[id])),
+  '500 Coins · Poké Ball ×5 · Potion ×3 · 100 XP',
+  'a mission reward reads as the v2 line',
+);
 
 console.log('hud v2 ok', imgs.size, 'images');

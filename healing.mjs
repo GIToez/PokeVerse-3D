@@ -1,0 +1,68 @@
+export const CURAS = {
+  2001: {
+    hp: 20,
+    d: 'A spray-type medicine for treating wounds. It can be used to restore 20 HP to a Pokémon.',
+  },
+  2002: {
+    hp: 60,
+    d: 'A spray-type medicine for treating wounds. It can be used to restore 60 HP to a Pokémon',
+  },
+  2003: {
+    hp: 200,
+    d: 'A spray-type medicine for treating wounds. It can be used to restore 200 HP to a Pokémon',
+  },
+  2004: { hp: 'cheio' },
+  2005: { hp: 'cheio', status: true },
+  2006: { status: true },
+  2007: { status: true },
+  2008: { status: true },
+  2009: { status: true },
+  2010: { status: true },
+  2011: { status: true },
+  2012: { reanima: 0.5 },
+  2013: { reanima: 1 },
+  2014: { hp: 30 },
+  2015: { hp: 50 },
+  2016: { hp: 70 },
+  2017: { hp: 100 },
+  2018: { hp: 60, d: 'A very bitter medicinal powder. Restores 60 HP to a Pokémon.' },
+  2019: { hp: 120, d: 'A very bitter medicinal root. Restores 120 HP to a Pokémon.' },
+  2020: { status: true },
+  2021: { reanima: 1, amizade: 15 },
+  2022: { pp: 10 },
+  2023: { pp: 'cheio' },
+  2024: { pp: 10, todos: true },
+  2025: { pp: 'cheio', todos: true },
+  2026: { status: true },
+  2027: { status: true },
+  2028: { status: true },
+  2029: { status: true },
+  2030: { status: true },
+  2031: { status: true },
+  2032: { status: true },
+  2033: { status: true },
+  2034: { status: true },
+  2035: { hp: 20 },
+  2036: { hp: 20 },
+  2037: { reanima: 1, time: true },
+  2038: { reanima: 1 },
+  2039: {
+    hp: 60,
+    amizade: 5,
+    d: "A herbal medicine. Restores 60 HP to a Pokémon, but it's bitter and lowers friendship.",
+  },
+  2040: {
+    hp: 100,
+    amizade: 10,
+    d: "A herbal medicine. Restores 100 HP to a Pokémon, but it's bitter and lowers friendship.",
+  },
+  2041: {
+    hp: 150,
+    amizade: 15,
+    d: "A herbal medicine. Restores 150 HP to a Pokémon, but it's bitter and lowers friendship.",
+  },
+};
+export const efeitoCura = (a) => CURAS[Number(a)] || null;
+export const semUsoHoje = (a) => ITENS_X.has(Number(a));
+const ITENS_X = new Set([2101, 2102, 2103, 2104, 2105, 2106, 2107]);
+export const hpDaCura = (e) => (!e || e.hp == null ? 0 : e.hp === 'cheio' ? 1e9 : Math.max(0, Number(e.hp) || 0));

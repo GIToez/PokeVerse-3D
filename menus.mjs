@@ -34,6 +34,10 @@ import * as OvosUI from './incubator_ui.mjs';
 import * as GuildaUI from './guild_ui.mjs';
 import * as Balsa from './ferry_ui.mjs';
 import * as FeiraUI from './market_ui.mjs';
+import * as EventosUI from './events_ui.mjs';
+import * as PokemartUI from './pokemart_ui.mjs';
+import * as Guia from './mission_guide.mjs';
+import { linhaRecompensa } from './missions.mjs';
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -192,6 +196,8 @@ export const JANELAS = {
   guilda:    { titulo: 'Guild', icone: 'amigos', sub: 'find or start a guild' },
   feira:     { titulo: 'Market', icone: 'loja', sub: 'player listings' },
   balsa:     { titulo: 'Ferry', icone: 'mapa', sub: 'the Sevii ferry' },
+  eventos:   { titulo: 'Events', icone: 'mapa', sub: 'the weekly board', oculto: true },
+  pokemart:  { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },
   mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },  // só pelo vendedor da loja da cidade (NPC papel 'loja'): não fica no menu
   social:    { titulo: 'Social', icone: 'amigos', sub: 'chat, friends, mail', breve: true },
   batalha:   { titulo: 'Battle', icone: 'batalha', sub: 'PvP, ranking', breve: true },
@@ -200,7 +206,7 @@ export const JANELAS = {
   raid:      { titulo: 'Raid', icone: 'batalha', sub: 'live raid', oculto: true },   // rodada 26: banner da raid ao vivo — só abre pelo btn-raid do HUD (raid_ui.mjs)
 };
 const ORDEM = Object.keys(JANELAS);
-const RECURSO_JANELA = new Set(['creche', 'terreno', 'guilda', 'feira', 'balsa']);
+const RECURSO_JANELA = new Set(['creche', 'terreno', 'guilda', 'feira', 'balsa', 'eventos', 'pokemart']);
 function soltarJanelaRecurso(){ if (RECURSO_JANELA.has(aberta)) aberta = null; }
 function listasCreche(){
   const entrada = (e, i) => {
@@ -264,6 +270,32 @@ function ligarRecursos(){
     emTurno: () => !!ctx.jogo?.emTurno?.(),
   });
   FeiraUI.instalar({ defPopup, aviso: t => Chat.sistema(t), fecharMenu: () => { fechar(); fecharGrade(); }, aoFecharJanela: soltarJanelaRecurso });
+  EventosUI.instalar({
+    defPopup,
+    fecharGrade,
+    ctx: () => ctx,
+    aoFechar: soltarJanelaRecurso,
+    abrirRaid: () => Chat.sistema('Raids open from the raid banner.'),
+    raidEstado: () => null,
+  });
+  PokemartUI.instalar({
+    dados: () => D,
+    estoque: id => RegrasItem.estoque(D?.lojas, id),
+    insignias: () => (ctx.lerLS?.('insignias', []) || []).length,
+    quantidades: () => { const o = {}; const it = ctx.lerLS?.('itens', {}) || {}; for (const [k, n] of Object.entries(it)) o[k] = n; return o; },
+    dinheiro: () => { try { return ctx.lerLS?.('dinheiro', 0) || 0; } catch { return 0; } },
+    setDinheiro: v => ctx.gravarLS?.('dinheiro', v),
+    comConta: () => !!ctx.comConta?.(),
+    bolsaOp: (op, d, o) => ctx.bolsaOp?.(op, d, o),
+    compras: () => ctx.conta?.compras?.() || null,
+    lerLS: (k, p) => ctx.lerLS?.(k, p),
+    gravarLS: (k, v) => ctx.gravarLS?.(k, v),
+    jogo: () => ctx.jogo,
+    nomeArea: a => ctx.nomeArea?.(a) || null,
+    npcDaLoja: () => null,
+    Som: ctx.Som,
+    soltar: soltarJanelaRecurso,
+  });
 }
 
 export function instalar(c){
@@ -292,7 +324,7 @@ async function dados(){
    Enquanto um deles existir, `aberto()` vale true e as teclas do jogo ficam de fora (o `tecla` abaixo). Um Set: aberto() roda todo quadro. */
 const DIALOGOS = new Set();
 function dialogoAberto(){ for (const d of DIALOGOS){ if (d.isConnected) return true; DIALOGOS.delete(d); } return false; }
-export const aberto = () => !!aberta || !$('menu-grade')?.hidden || dialogoAberto() || !!(popEb && Popup.aberto(popEb)) || !!(popIn && Popup.aberto(popIn)) || CrecheUI.aberto() || TerrenoUI.aberto() || GuildaUI.aberto() || Balsa.aberto() || FeiraUI.aberto();   // 18/09: a escolha do inicial (v2) também segura o jogo
+export const aberto = () => !!aberta || !$('menu-grade')?.hidden || dialogoAberto() || !!(popEb && Popup.aberto(popEb)) || !!(popIn && Popup.aberto(popIn)) || CrecheUI.aberto() || TerrenoUI.aberto() || GuildaUI.aberto() || Balsa.aberto() || FeiraUI.aberto() || EventosUI.aberto() || PokemartUI.aberto();   // 18/09: a escolha do inicial (v2) também segura o jogo
 export function alternarGrade(){ if (aberta) fechar(); else { const g = $('menu-grade'); g.hidden = !g.hidden; ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); } }
 function fecharGrade(){ $('menu-grade').hidden = true; }
 function marcarMapaCheio(on){
@@ -302,11 +334,34 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if (nome === 'loja' || nome === 'guarda'){ abrirGuarda(nome === 'loja' ? 'loja' : 'roupas'); return; }   // Wardrobe / cosmetics shop (Nov 2)
   if (nome === 'creche' || nome === 'terreno' || nome === 'guilda' || nome === 'feira' || nome === 'balsa'){ await abrirRecursoJanela(nome); return; }
+  if (nome === 'eventos'){
+    fechar();
+    fecharGrade();
+    if (EventosUI.abrir()) aberta = 'eventos';
+    else Chat.sistema('That window is not in this layout.');
+    return;
+  }
+  if (nome === 'pokemart'){
+    fechar();
+    fecharGrade();
+    await dados();
+    const pop = PokemartUI.popup(aba);
+    if (pop){
+      aberta = 'pokemart';
+      $('janela').hidden = true;
+      Popup.abrir(pop);
+      PokemartUI.pintar();
+      ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 });
+      return;
+    }
+    await abrir('mercado', aba);
+    return;
+  }
   if (nome === 'batalha' && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
   fecharGrade(); aberta = nome; abaAtual = aba; avisarRaid();
   if (nome === 'pokemon'){ reaprenderAberto = false; try { ctx.recuperarGolpes?.(); } catch (e){ console.warn('golpes perdidos:', e); } }   // 18/09: abrir a janela Pokémon confere os golpes do learnset até o nível (o que ficou pra trás entra ou vira pendência)
@@ -2900,7 +2955,7 @@ function rMissoes(corpo){
     const atual = sel
       ? `<div class="missao-atual"><small style="color:var(--muted)">SIDE · ${esc(ESTADO_SEC[sel.estado] || sel.estado)}${sel.onde || sel.grupoNome ? ' · ' + esc(tr(sel.onde || sel.grupoNome)) : ''}</small><br><b>${esc(tr(sel.nome))}</b><br><span style="font-size:12px">${esc(tr(sel.des || ''))}${sel.estado === 'disponivel' && sel.npc != null ? '<br>Talk to the quest giver (gold !) to accept it.' : ''}</span>
         <div style="margin-top:8px;font-size:13px;line-height:1.5">${(sel.passos || []).map((p, i) => `<div>${sel.estado === 'feita' || i < (sel.passo || 0) ? '✔' : sel.estado === 'ativa' && i === (sel.passo || 0) ? '▶' : '○'} ${passoTxt(sel, p, i)}</div>`).join('')}</div>
-        <div class="mi-recs grande">${htmlRecompensa(sel.recompensa)}</div></div>`
+        <div class="mi-rec-linha">${esc(textoRecompensaMi(sel.recompensa))}</div></div>`
       : '<div class="missao-atual"><b>No side quests for now.</b><br><span style="font-size:12px">Talk to an NPC with a gold ! to take one. They never replace the main story.</span></div>';
     corpo.innerHTML = atual + grupos.map(c => {
       const aberto = (sel && sel.estado === c.id) || (c.id === 'disponivel' && !sel);
@@ -2913,7 +2968,7 @@ function rMissoes(corpo){
   const passoTxt = (p, i) => { const n = p.n || 0; const c = i === idx && n > 1 ? ' ' + Math.min(prog, n) + '/' + n : ''; return esc(tr(p.texto)) + c + (p.onde ? ' <small style="color:var(--muted)">(' + esc(tr(p.onde)) + ')</small>' : ''); };
   const atual = ativa ? `<div class="missao-atual"><small style="color:var(--muted)">Chapter ${ativa.capitulo} · ${esc(tr(ativa.capNome))}</small><br><b>${esc(tr(ativa.nome))}</b><br><span style="font-size:12px">${esc(tr(ativa.des))}</span>
       <div style="margin-top:8px;font-size:13px;line-height:1.5">${ativa.passos.map((p, i) => `<div>${i < idx ? '✔' : i === idx ? '▶' : '○'} ${passoTxt(p, i)}</div>`).join('')}</div>
-      <div class="mi-recs grande">${htmlRecompensa(ativa.recompensa)}</div></div>`
+      <div class="mi-rec-linha">${esc(textoRecompensaMi(ativa.recompensa))}</div></div>`
     : '<div class="missao-atual"><b>You finished everything in the story for now.</b><br><span style="font-size:12px">More chapters arrive in later versions. Side quests stay on the other tab.</span></div>';
   corpo.innerHTML = atual + caps.map(c => { const feitas = c.missoes.filter(m => m.estado === 'feita').length, aberta = c.missoes.some(m => m.estado === 'ativa'); return `<details ${aberta ? 'open' : ''} style="margin-top:8px"><summary style="cursor:pointer;color:${feitas === c.missoes.length ? 'var(--muted)' : '#ffe07a'}">${feitas === c.missoes.length ? '✅' : aberta ? '▶️' : '🔒'} Chapter ${c.id} — ${esc(tr(c.nome))} <small style="color:var(--muted)">${feitas}/${c.missoes.length}</small></summary><div class="lista">${c.missoes.map(m => `<div class="linha" style="cursor:default;${m.estado === 'travada' ? 'opacity:.55' : ''}"><span style="font-size:16px">${m.estado === 'feita' ? '✅' : m.estado === 'ativa' ? '▶️' : '🔒'}</span><span class="nome"><b>${esc(tr(m.nome))}</b><small>${esc(tr(m.des))}</small></span></div>`).join('')}</div></details>`; }).join('');
 }
@@ -2963,50 +3018,7 @@ function arteExemplo(el){
   if (+el.dataset.exemploPad) Hud.fundoComFolga(el, +el.dataset.exemploPad);
 }
 function textoRecompensaMi(r){
-  return partesRecompensa(r).map(p => p.nome + (p.n > 1 || p.tipo !== 'item' ? ' ×' + p.n : '')).join(' · ') || '—';
-}
-function partesRecompensa(r){
-  if (!r) return [];
-  const out = [];
-  const moedas = r.dinheiro ?? r.moedas ?? r.money;
-  if (moedas) out.push({ tipo: 'moeda', n: moedas, nome: tr('Coins'), icone: './ui/itens/ic_1.png' });
-  const addItens = bag => {
-    if (!bag) return;
-    if (Array.isArray(bag)) for (const it of bag){
-      const id = it.id, n = it.n || 1, d = D.itens?.[id];
-      out.push({ tipo: 'item', n, nome: tr(it.nome || d?.n || ('item ' + id)), icone: d?.i ? './ui/itens/' + d.i + '.png' : (id ? './ui/itens/ic_' + id + '.png' : '') });
-    }
-    else for (const [id, n] of Object.entries(bag)){
-      if (!(n > 0)) continue;
-      const d = D.itens?.[id];
-      out.push({ tipo: 'item', n, nome: tr(d?.n || ('item ' + id)), icone: d?.i ? './ui/itens/' + d.i + '.png' : './ui/itens/ic_' + id + '.png' });
-    }
-  };
-  addItens(r.itens || r.items);
-  addItens(r.bolas);
-  const exp = r.exp ?? r.xp;
-  if (exp) out.push({ tipo: 'exp', n: exp, nome: 'XP', icone: './ui/itens/ic_5.png' });
-  return out;
-}
-function htmlRecompensa(r){
-  const partes = partesRecompensa(r);
-  if (!partes.length) return '<div class="mi-rec vazio">No reward listed</div>';
-  return partes.map(p => `<div class="mi-rec" title="${esc(p.nome)} ×${p.n}"><i style="background-image:url('${p.icone}')"></i><b>×${p.n}</b><small>${esc(p.nome)}</small></div>`).join('');
-}
-function acomodarRecompensas(pop){
-  const fa = Popup.grupo(pop, 'missao-ativa');
-  if (!fa || fa.dataset.recs) return fa;
-  fa.dataset.recs = '1';
-  const extra = 86;
-  fa.style.height = ((parseFloat(fa.style.height) || 170) + extra) + 'px';
-  fa.style.overflow = 'visible';
-  const div = Popup.grupo(pop, 'divisor'), lista = Popup.grupo(pop, 'lista-capitulos');
-  if (div) div.style.top = ((parseFloat(div.style.top) || 405) + extra) + 'px';
-  if (lista){
-    lista.style.top = ((parseFloat(lista.style.top) || 417) + extra) + 'px';
-    lista.style.height = Math.max(140, (parseFloat(lista.style.height) || 292) - extra) + 'px';
-  }
-  return fa;
+  return linhaRecompensa(r, id => D?.itens?.[id]?.n || ('item ' + id)) || '—';
 }
 function pintarRecompensaMi(pop, r){
   const fa = Popup.grupo(pop, 'missao-ativa');
@@ -4635,7 +4647,8 @@ function abrirRecurso(nome){
   if (!nome) return;
   if (nome === 'loja'){ abrir('loja'); return; }                         // the cosmetics shop exists now (Nov 2)
   if (nome === 'guilda' || nome === 'mercado'){ abrir(nome === 'mercado' ? 'feira' : nome); return; }
-  if (['fliperama', 'batalha', 'eventos'].includes(nome)){ if (!abrirEmBreve(nome)) abrir(nome === 'eventos' || nome === 'fliperama' ? 'loja' : nome); return; }
+  if (nome === 'eventos'){ abrir('eventos'); return; }
+  if (['fliperama', 'batalha'].includes(nome)){ if (!abrirEmBreve(nome)) abrir(nome === 'fliperama' ? 'loja' : nome); return; }
   abrir(nome);
 }
 /* ===== RODADA 30 (18/09): MODO PRÉVIA do adm — pedido da Amanda: abrir dentro do jogo as telas da maquete v2 que ainda não têm função
@@ -4783,6 +4796,27 @@ function cfCaber(b){
   for (let i = 0; i < 8 && fs > 7 && b.scrollWidth > b.clientWidth + 0.5; i++){ fs -= 1; b.style.fontSize = fs + 'px'; }
 }
 /** Settings → General: switch between the v2 HUD and the classic command island (LS hud.v2) and reload in place. */
+function cfLinhaGuia(pop){
+  const area = pop.querySelector('[data-fig="conteudo-geral"]'); if (!area) return;
+  const V = cfVaga(area, 3); if (!V) return;
+  let linha = area.querySelector('.cf-guia');
+  if (!linha){ linha = document.createElement('div'); linha.className = 'cf-guia'; area.appendChild(linha); }
+  const rotulo = V.rotulo;
+  Object.assign(linha.style, { position: 'absolute', left: V.left, top: V.top + 'px', width: V.width, height: V.height + 'px', pointerEvents: 'auto', zIndex: '5' });
+  const fonte = (rotulo?.style.fontWeight || '700') + ' ' + (rotulo?.style.fontSize || '14.5px') + ' "Nunito Sans", system-ui, sans-serif';
+  linha.innerHTML = '';
+  const lab = document.createElement('span'); lab.textContent = tr('Mission guide');
+  Object.assign(lab.style, { position: 'absolute', left: '0', top: '0', height: '100%', display: 'flex', alignItems: 'center', font: fonte, color: '#fff' });
+  linha.appendChild(lab);
+  const { bx, bw, bh, by } = V;
+  const on = Guia.modo() !== 'desligado';
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = on ? tr('On') : tr('Off');
+  Object.assign(b.style, { position: 'absolute', left: bx + 'px', top: by + 'px', width: bw + 'px', height: bh + 'px', borderRadius: (bh / 2) + 'px',
+    border: '1px solid rgba(248,194,55,1)', background: on ? '#F8C237' : 'rgba(11,18,32,.9)', color: on ? '#1A1A1A' : '#F8C237', font: fonte, cursor: 'pointer', padding: '0' });
+  b.title = tr('A gold arrow on the ground points at your current mission.');
+  b.onclick = () => { Guia.definirModo(on ? 'desligado' : 'ligado'); ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); cfLinhaGuia(pop); };
+  linha.appendChild(b); cfCaber(b);
+}
 function cfLinhaVisual(pop){
   const area = pop.querySelector('[data-fig="conteudo-geral"]'); if (!area) return;
   const V = cfVaga(area, 2); if (!V) return;                               // 2ª vaga: abaixo do Idioma
@@ -4853,6 +4887,7 @@ function encherConfig(pop){
   if (gAdm && gUi) gUi.style.top = gAdm.style.top;
   cfLinhaIdioma(pop);                                                      // IDIOMA (etapa 3): na vaga logo abaixo
   cfLinhaVisual(pop);                                                      // rodada 29: "Visual novo (beta)" na vaga seguinte
+  cfLinhaGuia(pop);
   /* o que ainda não existe: apagado, com o porquê */
   for (const [id, dica] of Object.entries(CF_FALTA)){
     Popup.toggle(pop, 'toggle-' + id, false);                              // apagado E desligado: dourado-apagado parece "ligado"

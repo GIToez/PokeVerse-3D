@@ -135,6 +135,12 @@ export function t(s, vars = null){
   if (vars) r = r.replace(/\{(\w+)\}/g, (tudo, nome) => (nome in vars ? String(vars[nome]) : tudo));
   return r;
 }
+/** Event titles the server already wrote in the player's language. A known phrase still translates. */
+export function tExato(s){
+  if (typeof s !== 'string' || !s) return s;
+  const k = s.trim(), e = exatas.get(k);
+  return e == null ? s : (k === s ? e : s.replace(k, e));
+}
 /** Traduz um HTML pequeno trocando só os textos entre as tags (pra templates antigos). */
 export function tHtml(html){
   if (!(exatas.size || padroes.length) || typeof html !== 'string') return html;

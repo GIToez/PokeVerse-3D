@@ -226,6 +226,7 @@ import * as Status from './status.mjs';       // major status, from the move's P
 import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, steps, bait and rock (shared with server_bag.mjs)
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
+import * as Guia from './mission_guide.mjs'; // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';
@@ -1183,7 +1184,7 @@ function desenharMM(foto, ax, az, raio){
   for (const pin of (jogo.missoesOk && Missoes.pinsMapaSync?.()) || []){
     const n = pin.cfg != null ? (jogo.npcs || []).find(x => +x.cfg === +pin.cfg && x.pivo?.visible !== false) : null;
     if (n) questPonto(n.vx ?? n.x, n.vz ?? n.z);
-    else if (pin.x != null && pin.z != null) questPonto(pin.x, pin.z);
+    else if (pin.x != null && pin.z != null) questPonto(flipX * pin.x, pin.z);
   }
 }
 const mmRT = new THREE.WebGLRenderTarget(256, 256);                      // o minimapa desenha AQUI a cada 3 quadros; na tela vai só um quad com a textura (barato)
@@ -8572,7 +8573,7 @@ async function falarCom(n){
   else if (+n.cfg === 2158801) TmCounter.abrir();                          // Celadon Department Store 2F: the TM clerk
   else if (n.papel === 'cura') curarTime(n);                               // Joy: cura o time depois da fala
   else if (n.papel === 'caixa') Menus.abrir('pokemon', 'caixa');           // balcão do PC: abre a Caixa
-  else if (n.papel === 'loja') Menus.abrir('mercado', String(n.cfg));         // vendedor: a loja da cidade (o cfg remapeado É o id da loja)
+  else if (n.papel === 'loja') Menus.abrir('pokemart', String(n.cfg));         // v2 Pokémart; falls back to the old list when that window is missing
   else if (n.papel === 'creche' || n.papel === 'daycare') Menus.abrir('creche');
   else if (n.papel === 'terreno' || n.papel === 'horta') Menus.abrir('terreno');
   else if (n.papel === 'guilda' || n.papel === 'guild') Menus.abrir('guilda');
@@ -10990,6 +10991,9 @@ function quadro(dt){
   }
   vigiarPortaoPallet(dt);
   vigiarSafari();
+  try {
+    Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: jogo.missoesOk ? Missoes.pinsMapaSync?.() : [], npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
+  } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
   if (jogo.chefe) atualizarChefe(dt);
   if (jogo.voadores?.length) atualizarVoadores(dt);
   if (jogo.selvagens?.length) atualizarSelvagens(dt);
