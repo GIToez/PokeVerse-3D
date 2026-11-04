@@ -2354,18 +2354,24 @@ const NOMES_NIVEL = ['unknown', 'Seen', 'Registered', 'Studied', 'Specialist', '
 function bolinhas(grupo, n, cheia = '#2FAE47', vazia = '#39424E'){
   if (!grupo) return;
   if (grupo.tagName === 'IMG'){ pipsNaImagem(grupo, n); return; }
-  [...grupo.querySelectorAll('[data-fig="bolinha"]')].forEach((b, i) => { b.style.backgroundColor = i < n ? cheia : vazia; });
+  const pontos = grupo.querySelectorAll('[data-fig="bolinha"]');
+  if (!pontos.length && (grupo.dataset.pipSrc || /^url\(/.test(grupo.style.backgroundImage))){ pipsNaImagem(grupo, n); return; }
+  [...pontos].forEach((b, i) => { b.style.backgroundColor = i < n ? cheia : vazia; });
 }
 /* The v2 layout ships the pips as a flat mockup picture with a fixed number already filled. Find the dots on the picture's middle row and
    repaint them: the first `n` in the picture's fill color, the rest empty with the blue ring. */
 const pipsCache = new Map();
 function pipsNaImagem(img, n){
-  const orig = img.dataset.pipSrc || (img.dataset.pipSrc = img.getAttribute('src'));
+  const ehImg = img.tagName === 'IMG';
+  const atual = () => ehImg ? img.getAttribute('src') : (/^url\("?(.*?)"?\)$/.exec(img.style.backgroundImage) || [])[1] || '';
+  const por = u => { if (ehImg) { if (img.getAttribute('src') !== u) img.src = u; } else if (atual() !== u) img.style.backgroundImage = 'url("' + u + '")'; };
+  const orig = img.dataset.pipSrc || (img.dataset.pipSrc = atual());
+  if (!orig) return;
   const chave = orig + '|' + n;
   img.dataset.pipN = n;
   const pronta = pipsCache.get(chave);
-  if (typeof pronta === 'string'){ if (img.getAttribute('src') !== pronta) img.src = pronta; return; }
-  if (pronta) { pronta.then(u => { if (u && +img.dataset.pipN === n) img.src = u; }); return; }
+  if (typeof pronta === 'string'){ por(pronta); return; }
+  if (pronta) { pronta.then(u => { if (u && +img.dataset.pipN === n) por(u); }); return; }
   const p = new Promise(ok => {
     const im = new Image();
     im.onload = () => {
@@ -2396,7 +2402,7 @@ function pipsNaImagem(img, n){
     im.src = orig;
   });
   pipsCache.set(chave, p);
-  p.then(u => { if (u && +img.dataset.pipN === n) img.src = u; });
+  p.then(u => { if (u && +img.dataset.pipN === n) por(u); });
 }
 /* ÍCONE DO TIPO NO v2 (17/09, auditoria dos placeholders): a pílula da rodada 29 é `slot-tipo > img/tipo` (ui/figma/tipo/<tipo>.png). O Popup.badge só pinta a
    pílula antiga (ret + texto): no v2 as caixas do ícone ficavam vazias no time, na ficha, nos golpes e na Pokédex. `tipo-N` sem tipo some (Pokémon de um tipo
