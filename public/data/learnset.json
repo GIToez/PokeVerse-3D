@@ -941,6 +941,12 @@
   "infernooverdrive": 20
  },
  "learnset": {
+  "0": [
+   ["watergun", 1],
+   ["skyattack", 1],
+   ["payday", 1],
+   ["bind", 1]
+  ],
   "1": [
    [
     "tackle",

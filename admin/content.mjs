@@ -24,7 +24,7 @@ export const ref = {
   /** dex → { nome, tipos } (pokedex.json: a 1ª entrada de cada nº é a forma base) */
   async especies() {
     const p = await baixar('/pokedex.json', { species: [] }), m = new Map();
-    for (const s of p.species || []) if (s.n > 0 && !m.has(s.n)) m.set(s.n, { nome: s.name, tipos: s.types || [] });
+    for (const s of p.species || []) if (s.n >= 0 && !m.has(s.n)) m.set(s.n, { nome: s.name, tipos: s.types || [] });
     return m;
   },
   async itens() { return (await baixar('/data/menu_data.json', {})).itens || {}; },
