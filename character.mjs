@@ -110,7 +110,7 @@ export function skinsDaCriacao(sexo){
                  ...SKINS_EXTRA.filter(s => s.sexo === sexo && naCriacao.get(s.glb) === true)];
   return lista.length ? lista : SKINS.filter(s => s.sexo === sexo);
 }
-/** Skin pelo id, nas duas listas (null se não existe — o `skinDe` cai no Ash). */
+/** Skin by id from both lists (null when missing; `skinDe` falls back to Hero). */
 export const skinPorId = id => SKINS.find(s => s.id === id) || SKINS_EXTRA.find(s => s.id === id) || null;
 const RGB = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
 /** Receita pro paint.mjs: por textura, a cor de cada canal (string = cor escolhida; array = cor fixa; null = branco). */
@@ -130,7 +130,7 @@ const lerLS = (k, padrao) => { try { const v = window.__contaLer ? window.__cont
 const gravarLS = (k, v) => { try { const t = JSON.stringify(v); if (window.__contaGravar) window.__contaGravar(k, t); else { localStorage.setItem(k, t); window.__contaTocou?.(k); } } catch {} };
 export const ler = () => { const p = lerLS('personagem', null); return p && typeof p === 'object' && p.tipo ? p : null; };
 export const gravar = p => gravarLS('personagem', p);
-export const skinDe = p => SKINS.find(s => s.id === p?.tipo) || SKINS_EXTRA.find(s => s.id === p?.tipo) || SKINS[0];
+export const skinDe = p => SKINS.find(s => s.id === p?.tipo) || SKINS_EXTRA.find(s => s.id === p?.tipo) || SKINS.find(s => s.id === 'heroi');
 export const glbDe = p => skinDe(p).glb;
 export const nomeDe = p => skinDe(p).nome;
 /** Primeira vez (sem `personagem` salvo) ou ?personagem=1. */

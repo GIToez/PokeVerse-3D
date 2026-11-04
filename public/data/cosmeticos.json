@@ -1,6 +1,148 @@
 {
- "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); the 28 creation outfits are free. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `evento` = not obtainable now; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
+ "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); only Hero, Heroine, HeartGold & SoulSilver, Platinum, Overalls and Sport are free at creation. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `estacao` = sold only during that season (winter Dec–Feb, spring Mar–May, summer Jun–Aug); `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `premio: \"pesca\"` = fishing quest reward; `evento` = not obtainable now; `fundador` = only in the founder packs; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
  "roupas": [
+  {
+   "id": "boy_012",
+   "nome": "Pikachu Jacket",
+   "sexo": "menino",
+   "fashion": 52004,
+   "diamantes": 300
+  },
+  {
+   "id": "boy_015",
+   "nome": "Eevee Embroidered Jacket",
+   "sexo": "menino",
+   "fashion": 52007,
+   "diamantes": 300
+  },
+  {
+   "id": "boy_016",
+   "nome": "Cyber Outfit",
+   "sexo": "menino",
+   "fashion": 52008,
+   "oculto": true
+  },
+  {
+   "id": "boy_017",
+   "nome": "Summer Outfit",
+   "sexo": "menino",
+   "fashion": 52009,
+   "diamantes": 300,
+   "estacao": "summer"
+  },
+  {
+   "id": "boy_018",
+   "nome": "Winter Outfit",
+   "sexo": "menino",
+   "fashion": 52010,
+   "diamantes": 300,
+   "estacao": "winter"
+  },
+  {
+   "id": "boy_021",
+   "nome": "Leather Jacket Outfit",
+   "sexo": "menino",
+   "fashion": 52013,
+   "oculto": true
+  },
+  {
+   "id": "boy_022",
+   "nome": "Gengar Embroidered Jacket",
+   "sexo": "menino",
+   "fashion": 52014,
+   "diamantes": 300
+  },
+  {
+   "id": "boy_030",
+   "nome": "Straw Hat Outfit",
+   "sexo": "menino",
+   "fashion": 52021,
+   "oculto": true,
+   "premio": "pesca",
+   "dica": "Fishing quest reward (quest not built yet)"
+  },
+  {
+   "id": "girl_010",
+   "nome": "Elegant Outfit",
+   "sexo": "menina",
+   "fashion": 53003,
+   "oculto": true
+  },
+  {
+   "id": "girl_012",
+   "nome": "Pikachu Jacket",
+   "sexo": "menina",
+   "fashion": 53004,
+   "diamantes": 300
+  },
+  {
+   "id": "girl_015",
+   "nome": "Eevee Embroidered Jacket",
+   "sexo": "menina",
+   "fashion": 53007,
+   "diamantes": 300
+  },
+  {
+   "id": "girl_016",
+   "nome": "Cyber Outfit",
+   "sexo": "menina",
+   "fashion": 53008,
+   "oculto": true
+  },
+  {
+   "id": "girl_017",
+   "nome": "Summer Outfit",
+   "sexo": "menina",
+   "fashion": 53009,
+   "diamantes": 300,
+   "estacao": "summer"
+  },
+  {
+   "id": "girl_018",
+   "nome": "Winter Outfit",
+   "sexo": "menina",
+   "fashion": 53010,
+   "diamantes": 300,
+   "estacao": "winter"
+  },
+  {
+   "id": "girl_019",
+   "nome": "Spring Outfit",
+   "sexo": "menina",
+   "fashion": 53011,
+   "diamantes": 300,
+   "estacao": "spring"
+  },
+  {
+   "id": "girl_021",
+   "nome": "Leather Jacket Outfit",
+   "sexo": "menina",
+   "fashion": 53013,
+   "oculto": true
+  },
+  {
+   "id": "girl_030",
+   "nome": "Straw Hat Outfit",
+   "sexo": "menina",
+   "fashion": 53021,
+   "oculto": true,
+   "premio": "pesca",
+   "dica": "Fishing quest reward (quest not built yet)"
+  },
+  {
+   "id": "ash",
+   "nome": "Ash Outfit",
+   "sexo": "menino",
+   "fashion": 52001,
+   "fundador": true
+  },
+  {
+   "id": "misty",
+   "nome": "Misty Outfit",
+   "sexo": "menina",
+   "fashion": 53001,
+   "fundador": true
+  },
   {
    "id": "boy_010",
    "nome": "Elegant Outfit",
@@ -13,7 +155,8 @@
    "nome": "Spring Outfit",
    "sexo": "menino",
    "fashion": 52011,
-   "preco": 25000
+   "diamantes": 300,
+   "estacao": "spring"
   },
   {
    "id": "boy_023",

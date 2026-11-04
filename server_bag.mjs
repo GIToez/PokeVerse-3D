@@ -221,6 +221,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     if (lista.includes(item.id)) return erro(c, 'you already have ' + item.nome);
     if (item.evento) return erro(c, item.nome + ': ' + item.evento);
     if (item.oculto) return erro(c, item.nome + ' is not available');
+    if (item.fundador) return erro(c, item.nome + ' comes with a founder pack');
     if (item.feriado) return erro(c, item.nome + ' is only sold during ' + item.feriado);
     if (item.diamantes) return erro(c, item.nome + ' is sold in the Diamond shop');
     if (item.passe) return erro(c, item.nome + ' is a Battle Pass reward');
@@ -240,7 +241,12 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
   function validarPersonagem(c, p) {
     if (!p || typeof p !== 'object' || Array.isArray(p)) return p ?? null;
     const C = catalogo(), M = meus(c);
-    if (C.roupas.some(r => r.id === p.tipo) && !M.roupas.includes(p.tipo)) return null;
+    if (C.roupas.some(r => r.id === p.tipo) && !M.roupas.includes(p.tipo)) {
+      // The stored look already passed this check, so an outfit that was free when it was picked (Ash, Misty) stays owned.
+      if (saveDe(c).personagem?.tipo !== p.tipo) return null;
+      M.roupas.push(p.tipo);
+      salvar?.();
+    }
     const out = { ...p };
     if (out.efeitos != null) {
       const e = {};
