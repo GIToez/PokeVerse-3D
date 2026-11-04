@@ -3,7 +3,9 @@ play.pokeverse.quest {
 	encode zstd gzip
 
 	@internal path /server /server/* /tools /tools/* /docs /docs/* /upcoming /upcoming/* /node_modules /node_modules/* /.git /.git/*
-	respond @internal 404
+	handle @internal {
+		respond 404
+	}
 
 	handle /servidor* {
 		uri strip_prefix /servidor
