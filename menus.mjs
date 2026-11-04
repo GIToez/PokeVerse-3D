@@ -811,10 +811,11 @@ function ligarCaixaV2(pop){
     if (!t) return;
     t.style.pointerEvents = 'auto';
     t.style.overflow = 'hidden';
-    t.style.touchAction = 'manipulation';
+    t.style.touchAction = 'none';
   };
   marcarLista();
   pop.__marcarListaTime = marcarLista;
+  ligarToqueCaixa(pop);
   const escolherFiltro = ev => {
     const filtro = ev.target.closest?.('[data-tag="filtro"]');
     if (filtro && pop.contains(filtro)){
@@ -952,27 +953,42 @@ function toqueCasaCaixa(pop, i){
   ctx.pintarTime?.(true);
   render();
 }
-/** A phone tap often never becomes a click: the list is a scroller and a finger always jitters.
-    pointerup is the tap. A drag, or a slide longer than a tap, does not move the Pokémon. */
-function ligarToqueCaixa(el, fn){
-  if (!el || el.__escolheu) return;
-  el.__escolheu = true;
-  const soltou = ev => {
-    if (el.classList.contains('vazia') || Arr.arrastando()) return;
-    const moved = el.__toqueX == null ? 0 : Math.hypot(ev.clientX - el.__toqueX, ev.clientY - el.__toqueY);
-    el.__toqueX = null;
-    if (moved > 36) return;
-    el.__pulsa = performance.now();
-    fn();
+/** A finger on the left-hand party column never becomes a click: Android turns the list into a
+    scroller and cancels the gesture. Remember the card on the way down, and finish the tap on
+    pointerup or pointercancel, even when the card itself no longer receives the event. */
+function ligarToqueCaixa(pop){
+  if (!pop || pop.__toqueCaixa) return;
+  pop.__toqueCaixa = true;
+  const slotDe = alvo => alvo?.closest?.('[data-fig^="encaixe-"], [data-fig^="casa-"]');
+  const agir = slot => {
+    if (!slot || slot.classList.contains('vazia') || Arr.arrastando()) return;
+    if (performance.now() - (slot.__pulsa || 0) < 700) return;
+    slot.__pulsa = performance.now();
+    if (slot.dataset.fig.startsWith('encaixe-')) toqueTimeCaixa(pop, +slot.dataset.arrI);
+    else toqueCasaCaixa(pop, +slot.dataset.arrI);
   };
-  el.addEventListener('pointerdown', ev => { el.__toqueX = ev.clientX; el.__toqueY = ev.clientY; });
-  el.addEventListener('pointerup', soltou);
-  el.addEventListener('pointercancel', () => { el.__toqueX = null; });
-  el.addEventListener('click', ev => {
-    ev.stopPropagation();
-    if (performance.now() - (el.__pulsa || 0) < 700) return;
-    soltou(ev);
-  });
+  pop.addEventListener('pointerdown', ev => {
+    const slot = slotDe(ev.target);
+    pop.__slot = slot && pop.contains(slot) ? slot : null;
+    pop.__slotX = ev.clientX; pop.__slotY = ev.clientY;
+  }, true);
+  const soltou = ev => {
+    const slot = pop.__slot;
+    const x0 = pop.__slotX, y0 = pop.__slotY;
+    pop.__slot = null;
+    if (!slot) return;
+    if (ev.type === 'pointercancel' && slot.dataset.fig.startsWith('casa-')) return;
+    const x = ev.clientX || x0 || 0, y = ev.clientY || y0 || 0;
+    if (x0 != null && Math.hypot(x - x0, y - y0) > 28) return;
+    agir(slot);
+  };
+  pop.addEventListener('pointerup', soltou, true);
+  pop.addEventListener('pointercancel', soltou, true);
+  pop.addEventListener('click', ev => {
+    const slot = slotDe(ev.target);
+    if (!slot || !pop.contains(slot)) return;
+    agir(slot);
+  }, true);
 }
 function pintarEncaixeV2(pop, el, i, p, on){
   if (!el) return;
@@ -981,7 +997,7 @@ function pintarEncaixeV2(pop, el, i, p, on){
   if (p?.seguindo) el.dataset.arrFixo = '1'; else delete el.dataset.arrFixo;
   el.__arrItem = p || null;
   el.style.cursor = p ? 'pointer' : '';
-  ligarToqueCaixa(el, () => toqueTimeCaixa(pop, i));
+  el.style.touchAction = 'none';
   Popup.itemVazio(pop, i, !p, 'encaixe');
   if (!p) return;
   Popup.imagem(pop, 'pokemon', iconeMonU(p.dex), el);
@@ -1006,7 +1022,6 @@ function pintarCasaV2(pop, el, item, on){
   el.dataset.arrI = String(p ? item.i : caixa.length);
   el.__arrItem = p || null;
   el.style.cursor = p ? 'pointer' : '';
-  ligarToqueCaixa(el, () => toqueCasaCaixa(pop, +el.dataset.arrI));
   const img = el.querySelector('[data-var="pokemon"]');
   if (img){ img.style.display = p ? 'block' : 'none'; img.style.backgroundImage = p ? 'url(' + iconeMonU(p.dex) + ')' : 'none'; }
   const lv = el.querySelector('[data-txt="casa-nivel"]');

@@ -104,7 +104,11 @@ const CSS = `
 .pf [data-tag="aba"]:not([data-fig^="conteudo-"]){z-index:80}
 .pf .chat-caixa,.pf .chat-caixa *{pointer-events:auto}
 .pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"],.pf [data-fig^="encaixe-"],.pf [data-fig^="casa-"]{cursor:pointer}
-.pf [data-fig^="encaixe-"] *,.pf [data-fig^="casa-"] *{pointer-events:auto}
+/* The party column is six fixed cards. A phone treats any overflow as a scroller and then
+   swallows the tap, so the list must not scroll and the finger must not pan the page.
+   The selection ring is drawn bigger than the card; leaving it click-through keeps the tap
+   on the card the finger is actually on. */
+.pf [data-fig="lista-time"],.pf [data-fig^="encaixe-"]{overflow:hidden;touch-action:none}
 .pf [data-tag="acao"]:not([data-fig^="conteudo-"]):active,.pf [data-tag="aba"]:not([data-fig^="conteudo-"]):active,.pf [data-tag="fecha"]:active{transform:scale(.98)}   /* os blocos conteudo-<aba> também levam a tag aba: sem o :not o painel inteiro "afundava" a cada clique (Jaime, 11/09) */
 .pf [data-fig^="ajuste-"]:active{transform:none}
 .pf [data-fig^="ajuste-"]{touch-action:none}

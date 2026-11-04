@@ -85,6 +85,8 @@ assert.match(menus, /Clear filters/, 'the phone box says Clear filters');
 assert.match(menus, /rotulo-ordenar', 'Sort'/, 'the phone box says Sort');
 assert.match(menus, /pointerup/, 'a phone tap on a box Pokémon does not wait for click');
 assert.match(menus, /overflow = 'hidden'/, 'the party list does not swallow taps');
+assert.match(menus, /touchAction = 'none'/, 'a finger on My party is not turned into a scroll');
+assert.match(menus, /pointercancel/, 'a cancelled phone tap on My party still stores the Pokémon');
 const drag = readFileSync(join(root, 'drag_team.mjs'), 'utf8');
 assert.match(drag, /export const arrastando/, 'a tap waits out a drag');
 assert.match(menus, /COMING SOON/, 'the shop banner is in English');
