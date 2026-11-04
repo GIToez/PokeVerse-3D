@@ -1,4 +1,4 @@
-"""Play every imported Pixelmon Idle and Run at the pace the field expects.
+"""Play every imported Pixelmon loop at the pace the field expects.
 
 The field plays Idle and Run at 1x and never scales the walk to the ground
 speed. The hand-made monsters use about a 2 s breath and a 0.8 s stride;
@@ -7,7 +7,7 @@ stiff idle (Scizor was the first one fixed this way).
 
 Some clips hold several identical cycles, so the speed comes from the
 length of one cycle, not from the length of the clip. Clips are only ever
-sped up, and only once: the speed-up is recorded in the file's
+sped up, and each clip only once: its speed-up is recorded in the file's
 asset.extras.retimed. Poses are unchanged.
 
     python3 tools/retime_roster.py                 # every Pixelmon model
@@ -28,7 +28,10 @@ MON = Path(__file__).resolve().parent.parent / 'public' / 'scenery' / 'mon'
 FPS = 30
 
 # clip: (target seconds per cycle, only retime above this, fastest speed-up)
-TARGET = {'Idle': (2.0, 2.4, 2.0), 'Run': (0.8, 0.9, 3.0)}
+TARGET = {
+    'Idle': (2.0, 2.4, 2.0), 'Run': (0.8, 0.9, 3.0),
+    'Fly': (1.0, 1.2, 2.5), 'Swim': (1.0, 1.2, 2.5), 'SwimIdle': (2.0, 2.4, 2.0),
+}
 
 
 def clip_length(doc, anim):
@@ -80,10 +83,10 @@ def cycle_length(doc, blob, anim, most=8, alike=0.8):
     return best
 
 
-def plan(doc, blob):
+def plan(doc, blob, done=()):
     speeds = {}
     for anim in doc.get('animations') or []:
-        if anim['name'] not in TARGET or not anim['samplers']:
+        if anim['name'] not in TARGET or anim['name'] in done or not anim['samplers']:
             continue
         target, above, fastest = TARGET[anim['name']]
         cycle = cycle_length(doc, blob, anim)
@@ -97,9 +100,8 @@ def retime(path, dry_run=False):
     if doc.get('asset', {}).get('generator') != 'pixelmon_bmd_to_glb.py':
         return None
     extras = doc['asset'].setdefault('extras', {})
-    if 'retimed' in extras:
-        return None
-    speeds = plan(doc, blob)
+    done = extras.get('retimed', {})
+    speeds = plan(doc, blob, done)
     if not speeds or dry_run:
         return {k: round(v[0], 2) for k, v in speeds.items()}
     owners = {}
@@ -140,7 +142,7 @@ def retime(path, dry_run=False):
                 blob[off:off + times.nbytes] = times.tobytes()
             doc['accessors'][idx]['min'] = [float(times.min())]
             doc['accessors'][idx]['max'] = [float(times.max())]
-    extras['retimed'] = {k: round(v[0], 4) for k, v in speeds.items()}
+    extras['retimed'] = {**done, **{k: round(v[0], 4) for k, v in speeds.items()}}
     write_glb(path, doc, blob)
     return {k: round(v[0], 2) for k, v in speeds.items()}
 
