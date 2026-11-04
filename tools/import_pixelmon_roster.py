@@ -47,6 +47,11 @@ SKIP_PREDICATE = {
     'pixelmon:flying', 'pixelmon:swim', 'pixelmon:mounted', 'pixelmon:bike',
     'pixelmon:ride', 'pixelmon:hover',
 }
+# Pixelmon animation type -> clip name in the GLB, beyond idle and walk.
+EXTRA_CLIPS = {
+    'fly': 'Fly', 'swim': 'Swim', 'idleswim': 'SwimIdle',
+    'special': 'Special', 'special2': 'Special2', 'special3': 'Special3',
+}
 POSE_SUFFIX = {'flying', 'bike', 'fly', 'mount', 'ground', 'swim'}
 
 
@@ -270,6 +275,7 @@ def plan_species(raw, existing):
             'shiny': entry.get('shiny'),
             'idle': idle,
             'walk': walk,
+            'extra': {kind: ref for kind in EXTRA_CLIPS if (ref := anim_ref(model, kind))},
         })
 
     ordered = []
@@ -394,6 +400,10 @@ def canonical_jobs(z, index, before=None):
         job['idle_path'] = idle
         job['walk_path'] = walk
         job['shiny_path'] = shiny
+        job['extra_paths'] = {
+            kind: path for kind, ref in (job.get('extra') or {}).items()
+            if (path := resolve(ref, index))
+        }
         resolved.append(job)
     return resolved
 
