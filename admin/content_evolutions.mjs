@@ -25,7 +25,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
   datalist('dl-f2-itens', Object.entries(itens).map(([id, i]) => [id, i.n]));
   datalist('dl-f2-especies', [...especies].map(([n, s]) => [n, s.nome]));
   datalist('dl-f2-golpes-dex', Object.entries(golpesDex).map(([id, g]) => [id, g[0]]));
-  const maxDex = Math.max(...especies.keys());
+  const minDex = Math.min(...especies.keys()), maxDex = Math.max(...especies.keys());
 
   let por = {}, orig = '{}', itensEvo = {}, origItens = '{}', sel = null, filtro = '', todas = false;
   sec.innerHTML = `
@@ -55,7 +55,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
   // ── Lista ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
   function renderLista() {
     const f = filtro, out = [];
-    for (let n = 1; n <= maxDex; n++) {
+    for (let n = minDex; n <= maxDex; n++) {
       const l = por[n], nome = nomeSp(n);
       if (f ? !(`${n} ${pad(n)} ${nome}`.toLowerCase().includes(f)) : !(todas || l?.length || String(sel) === String(n))) continue;
       out.push(`<button data-dex="${n}" class="${String(sel) === String(n) ? 'atual' : ''} ${l?.length ? '' : 'vazio'}"><span><span class="n">${pad(n)}</span> ${esc(nome)}</span><span class="n">${l?.length ? '→ ' + l.map(r => esc(nomeSp(r.para))).join(', ') : ''}</span></button>`);

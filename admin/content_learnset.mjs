@@ -10,7 +10,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
   const [especies, golpes] = await Promise.all([ref.especies(), ref.golpes()]);
   datalist('dl-f2-golpes', Object.entries(golpes).map(([id, g]) => [id, g.nome + (g.nomePt ? ' · ' + g.nomePt : '')]));
   const nomeSp = n => especies.get(+n)?.nome || `No. ${n}`;
-  const maxDex = Math.max(...especies.keys());
+  const minDex = Math.min(...especies.keys()), maxDex = Math.max(...especies.keys());
   const descGolpe = id => { const g = golpes[id]; return g ? `${g.nomePt || g.nome} · ${TIPOS[g.tipo] || g.tipo} · ${CAT[g.cat] || g.cat} · power ${g.poder || '—'} · PP ${g.pp ?? '20'}` : '⚠ unknown move (create it in Data files → Moves)'; };
 
   let learn = {}, orig = '{}', sel = null, filtro = '', soCom = true;
@@ -31,7 +31,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
   }
   function renderLista() {
     const out = [];
-    for (let n = 1; n <= maxDex; n++) {
+    for (let n = minDex; n <= maxDex; n++) {
       const l = learn[n], nome = nomeSp(n);
       if (filtro ? !`${n} ${pad(n)} ${nome}`.toLowerCase().includes(filtro) : soCom && !l?.length && String(sel) !== String(n)) continue;
       out.push(`<button data-dex="${n}" class="${String(sel) === String(n) ? 'atual' : ''} ${l?.length ? '' : 'vazio'}"><span><span class="n">${pad(n)}</span> ${esc(nome)}</span><span class="n">${l?.length || ''}</span></button>`);
