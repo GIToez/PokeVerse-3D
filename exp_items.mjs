@@ -17,7 +17,7 @@ export function expMultOf(mon, held){
 export function expSharers(party, fighter, held){
   const out = [];
   for (const p of party || []){
-    if (!p || p === fighter || !p.dex || (p.hp != null && p.hp <= 0)) continue;
+    if (!p || p === fighter || p.dex == null || (p.hp != null && p.hp <= 0)) continue;
     const e = expEffect(p, held);
     if (e?.tipo === 'expShare' && e.valor > 0) out.push({ mon: p, part: Math.min(1, e.valor) });
   }

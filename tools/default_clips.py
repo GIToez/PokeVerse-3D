@@ -33,6 +33,20 @@ FPS = 30
 # fractions of the model's size; pitch tips the top forward about the feet,
 # roll tips it onto its side. Between keys the motion eases in and out.
 CLIPS = {
+    # Only for models Pixelmon ships with no motions at all (Frillish, Klefki…):
+    # a slow breathing bob, and a hop with a small sway for walking.
+    'Idle': [
+        (0.00, 0, 0.000, 0, 0, 0, 1.000),
+        (1.00, 0, 0.025, 0, 0, 0, 1.015),
+        (2.00, 0, 0.000, 0, 0, 0, 1.000),
+    ],
+    'Run': [
+        (0.00, 0, 0.00, 0, 0, 0, 1),
+        (0.20, 0, 0.07, 4, 4, 0, 1),
+        (0.40, 0, 0.00, 0, 0, 0, 1),
+        (0.60, 0, 0.07, 4, -4, 0, 1),
+        (0.80, 0, 0.00, 0, 0, 0, 1),
+    ],
     'Appear': [
         (0.00, 0, 0.00, 0, 0, 0, 0.55),
         (0.22, 0, 0.06, 0, 0, 0, 1.06),

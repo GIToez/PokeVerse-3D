@@ -60,8 +60,8 @@ function resolverEspecie(txt) {
   txt = String(txt || '').trim();
   let dex = null;
   const mnum = txt.match(/^0*(\d+)/); if (mnum) dex = +mnum[1];
-  if (!dex) { const low = txt.toLowerCase(); dex = DEX_COM_MODELO.find(d => (NOME_DEX[d] || '').toLowerCase() === low); }
-  if (!dex || !GLB_DEX[dex]) return null;
+  if (dex == null) { const low = txt.toLowerCase(); dex = DEX_COM_MODELO.find(d => (NOME_DEX[d] || '').toLowerCase() === low) ?? null; }
+  if (dex == null || !GLB_DEX[dex]) return null;
   return { dex, glb: GLB_DEX[dex], nome: nomeDe(dex), peso: 100 };
 }
 
