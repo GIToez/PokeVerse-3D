@@ -102,6 +102,7 @@ const CSS = `
 .pf .pf-grupo,.pf .pf-img,.pf .pf-var,.pf .pf-ret,.pf .pf-fill,.pf .pf-txt,.pf .pf-rotulo{position:absolute;pointer-events:none}
 .pf [data-tag],.pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"],.pf [data-fig^="encaixe-"],.pf [data-fig^="casa-"]{pointer-events:auto;touch-action:manipulation}
 .pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"],.pf [data-fig^="encaixe-"],.pf [data-fig^="casa-"]{cursor:pointer}
+.pf [data-fig^="encaixe-"] *,.pf [data-fig^="casa-"] *{pointer-events:auto}
 .pf [data-tag="acao"]:not([data-fig^="conteudo-"]):active,.pf [data-tag="aba"]:not([data-fig^="conteudo-"]):active,.pf [data-tag="fecha"]:active{transform:scale(.98)}   /* os blocos conteudo-<aba> também levam a tag aba: sem o :not o painel inteiro "afundava" a cada clique (Jaime, 11/09) */
 .pf [data-fig^="ajuste-"]:active{transform:none}
 .pf [data-fig^="ajuste-"]{touch-action:none}
