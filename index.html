@@ -58,6 +58,69 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 <script>
+/* Fullscreen that survives map changes. Every door reloads the page and a browser tab drops API fullscreen on
+   every load. On touch devices in a browser tab this page becomes a thin host: it stops parsing here and runs the
+   game in a full-viewport frame. The host holds fullscreen, only the frame reloads, and the address bar mirrors the
+   frame. Installed apps (display-mode fullscreen) and desktops (F11 survives reloads) never need it; `?frame=0` opts out. */
+(function () {
+  var mm = function (q) { try { return matchMedia(q).matches; } catch (e) { return false; } };
+  var path = location.pathname;
+  var root = path === '/' || /\/index\.html$/.test(path);
+  if (window.top !== window || !root || !document.documentElement.requestFullscreen || !mm('(pointer: coarse)')) return;
+  if (mm('(display-mode: fullscreen)') || mm('(display-mode: standalone)')) return;
+  if (new URLSearchParams(location.search).get('frame') === '0') return;
+  window.stop();
+  /* The frame's path differs from the host's so Chrome never treats it as a recursive frame of the same URL. */
+  var framePath = path === '/' ? '/index.html' : '/';
+  var body = document.createElement('body');
+  body.style.cssText = 'margin:0;background:#06080d;overflow:hidden;';
+  document.documentElement.appendChild(body);
+  var frame = document.createElement('iframe');
+  frame.id = 'game-frame';
+  frame.allow = 'fullscreen; autoplay; screen-wake-lock; gamepad; clipboard-read; clipboard-write; web-share';
+  frame.setAttribute('allowfullscreen', '');
+  frame.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#06080d;';
+  frame.src = framePath + location.search + location.hash;
+  window.__gameHost = {
+    enter: function (o) { return document.documentElement.requestFullscreen(o); },
+    exit: function () { return document.fullscreenElement ? document.exitFullscreen() : Promise.resolve(); },
+    lock: function (o) { return screen.orientation && screen.orientation.lock ? screen.orientation.lock(o) : Promise.reject(new Error('no orientation lock')); }
+  };
+  var sync = function () {
+    try {
+      var l = frame.contentWindow.location;
+      if (l.origin !== location.origin) return;
+      var shown = path + l.search + l.hash;
+      if (shown !== location.pathname + location.search + location.hash) history.replaceState(null, '', shown);
+      var t = frame.contentDocument && frame.contentDocument.title;
+      if (t && t !== document.title) document.title = t;
+    } catch (e) {}
+  };
+  frame.addEventListener('load', function () { sync(); try { frame.contentWindow.focus(); } catch (e) {} });
+  setInterval(sync, 500);
+  document.addEventListener('fullscreenchange', function () {
+    try { frame.contentDocument.dispatchEvent(new Event('fullscreenchange')); } catch (e) {}
+  });
+  body.appendChild(frame);
+})();
+</script>
+<script>
+/* Inside the host frame: fullscreen requests and state go to the host page, so a map reload in here keeps it. */
+(function () {
+  var host;
+  try { host = window.parent !== window && window.parent.__gameHost; } catch (e) {}
+  if (!host) return;
+  var hostDoc = window.parent.document;
+  Element.prototype.requestFullscreen = function (o) { return host.enter(o); };
+  Document.prototype.exitFullscreen = function () { return host.exit(); };
+  Object.defineProperty(Document.prototype, 'fullscreenElement', {
+    configurable: true,
+    get: function () { return hostDoc.fullscreenElement ? this.documentElement : null; }
+  });
+  try { if (window.ScreenOrientation) ScreenOrientation.prototype.lock = function (o) { return host.lock(o); }; } catch (e) {}
+})();
+</script>
+<script>
 /* TELA CHEIA QUE CAI NA PORTA (17/09 — diego5itu8334 no #bugs com vídeo, TheSyvel e dv_dasmerces no #alpha-testers; Android no Chrome
    e no Samsung Internet): toda porta recarrega a página e o navegador larga a tela cheia, que só volta dentro de um gesto do jogador.
    Até a troca de cena sem recarga, `sessionStorage['telaCheia']` guarda se o jogador ESTÁ em tela cheia: entrar grava, sair por
