@@ -494,6 +494,55 @@ def build_glb(model):
     return bytes(out)
 
 
+def retime_glb(path, speeds):
+    """Play listed clips faster or slower. Poses stay the same.
+
+    The field asks for Idle and Run by those names and plays them at 1×.
+    The monsters that already ship use about 1.6s of idle and a 0.8s walk
+    cycle. A Pixelmon clip spread over four seconds looks like a stiff idle
+    at that rate, so `speeds` is how many times faster each clip should run.
+    """
+    path = Path(path)
+    data = path.read_bytes()
+    json_len = struct.unpack_from('<I', data, 12)[0]
+    doc = json.loads(data[20:20 + json_len])
+    bin_at = 20 + json_len
+    bin_len = struct.unpack_from('<I', data, bin_at)[0]
+    blob = bytearray(data[bin_at + 8:bin_at + 8 + bin_len])
+    done = set()
+    for anim in doc.get('animations') or []:
+        speed = speeds.get(anim['name'])
+        if not speed or speed == 1:
+            continue
+        for samp in anim['samplers']:
+            idx = samp['input']
+            if idx in done:
+                continue
+            done.add(idx)
+            acc = doc['accessors'][idx]
+            view = doc['bufferViews'][acc['bufferView']]
+            off = view.get('byteOffset', 0) + acc.get('byteOffset', 0)
+            count = acc['count']
+            times = np.frombuffer(blob[off:off + 4 * count], dtype=np.float32).copy()
+            times /= np.float32(speed)
+            blob[off:off + 4 * count] = times.tobytes()
+            acc['min'] = [float(times[0])]
+            acc['max'] = [float(times[-1])]
+    text = pad(json.dumps(doc, separators=(',', ':')).encode('utf-8'), 4, 0x20)
+    blob = pad(bytes(blob), 4, 0)
+    out = bytearray()
+    out += b'glTF'
+    out += struct.pack('<II', 2, 12 + 8 + len(text) + 8 + len(blob))
+    out += struct.pack('<I4s', len(text), b'JSON')
+    out += text
+    out += struct.pack('<I4s', len(blob), b'BIN\x00')
+    out += blob
+    path.write_bytes(out)
+    return {name: round(doc['accessors'][anim['samplers'][0]['input']]['max'][0], 3)
+            for anim in doc['animations']
+            for name in [anim['name']]}
+
+
 def main():
     parser = argparse.ArgumentParser(description='Convert one Pixelmon BMD into a field GLB')
     parser.add_argument('--model', required=True)
