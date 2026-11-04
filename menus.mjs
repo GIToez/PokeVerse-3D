@@ -374,7 +374,7 @@ export async function abrir(nome, aba = null){
   if (nome === 'eventos'){
     fechar();
     fecharGrade();
-    if (EventosUI.abrir()) aberta = 'eventos';
+    if (EventosUI.abrir(aba)) aberta = 'eventos';   // aba 'agenda' = the weekly schedule (the minimap's date strip opens it)
     else Chat.sistema('That window is not in this layout.');
     return;
   }

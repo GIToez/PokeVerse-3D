@@ -4,14 +4,17 @@
  * It cannot name the species, the level, or the experience total.
  *
  * A defeat pays once, for a wild this server still has listed for that account.
- * The species comes from that area's habitat at the reported time of day, and
- * the level comes from that row. The amount is the same Gen 5 formula the
+ * The species comes from that area's habitat for the server's time of day, the
+ * real season and weekday, and the weather (calendar.mjs); the level comes from
+ * that row. The amount is the same Gen 5 formula the
  * client used to apply on its own.
  */
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import nodePath from 'node:path';
 import * as Ev from './ev.mjs';
+import * as Calendario from './calendar.mjs';
+import * as Weather from './weather.mjs';
 import { grantLevelHp } from './server_hp.mjs';
 import { expMultOf, expSharers } from './exp_items.mjs';
 
@@ -28,16 +31,9 @@ function readJson(abs, fallback) {
   catch { return fallback; }
 }
 
-function bucket(hour) {
-  const x = ((hour % 24) + 24) % 24;
-  if (x >= 4 && x < 10) return 'manha';
-  if (x >= 10 && x < 20) return 'dia';
-  return 'noite';
-}
-
-function serverHour() {
+function serverHour(now = Date.now()) {
   const day = 60 * 60000;
-  return ((Date.now() % day) / day) * 24;
+  return ((now % day) / day) * 24;
 }
 
 export function criarWilds(ctx) {
@@ -117,7 +113,18 @@ export function criarWilds(ctx) {
     return cap[Math.max(0, Math.min(8, n | 0))];
   }
 
-  function rowsFor(area, water, hour) {
+  /** When this roll happens. The server's own clock decides; only staff may test another hour or weather
+      (/time and /weather in the chat change just their own screen, and they send it along). */
+  function momento(account, msg, now) {
+    const staff = !!account?.gm;
+    const hour = staff && Number.isFinite(+msg.hour) ? ((+msg.hour % 24) + 24) % 24 : serverHour(now);
+    const dia = Calendario.hoje(now);
+    let clima = staff && 'clima' in msg ? Weather.ler(msg.clima ?? '') : undefined;
+    if (clima === undefined) clima = Weather.paraHora(hour, now);
+    return { hora: hour, periodo: Calendario.periodoSpawn(hour), estacao: dia.estacao, semana: dia.semana, clima: clima || null };
+  }
+
+  function rowsFor(area, water, quando) {
     // Water species are a rod encounter. The overworld roll is the grass table.
     if (water) return [];
     const table = habitats.areas?.[String(area)];
@@ -125,9 +132,11 @@ export function criarWilds(ctx) {
     const land = e => !!e.agua === !!water;
     const models = ctx.modelos?.() || new Set();
     const hasModel = e => !models.size || models.has(e.glb);
-    const tagged = list.filter(e => land(e) && hasModel(e) && (!e.hora || (Array.isArray(e.hora) ? e.hora.includes(hour) : e.hora === hour)));
-    const open = list.filter(e => land(e) && hasModel(e));
-    return tagged.length ? tagged : open;
+    const now = list.filter(e => land(e) && hasModel(e) && Calendario.podeAparecer(e, quando));
+    if (now.length) return now;
+    // Nothing fits this time of day (a small table tied to other hours): any hour will do, but a season, weekday or
+    // weather rule still holds, so a winter-only Pokémon never fills an empty summer table.
+    return list.filter(e => land(e) && hasModel(e) && !e.estacoes && !e.dias && !e.climas);
   }
 
   function pickRow(rows) {
@@ -171,8 +180,8 @@ export function criarWilds(ctx) {
     const owned = sweep(who.user);
     if (owned.size >= LIVE_CAP) return { t: 'wild_spawn', ok: false };
 
-    const hour = Number.isFinite(+msg.hour) ? ((+msg.hour % 24) + 24) % 24 : serverHour();
-    const rows = rowsFor(area, !!msg.water, bucket(hour));
+    const quando = momento(who.account, msg, now);
+    const rows = rowsFor(area, !!msg.water, quando);
     if (!rows.length) return { t: 'wild_spawn', ok: false };
     const row = pickRow(rows);
     const lv = levelFor(row, area);
@@ -182,7 +191,7 @@ export function criarWilds(ctx) {
     rolledAt.set(who.user, stamps);
     return {
       t: 'wild_spawn', ok: true, id, dex: +row.dex, lv,
-      glb: row.glb, nome: row.nome, agua: row.agua ? 1 : 0,
+      glb: Calendario.glbDaEstacao(row.dex, row.glb, quando.estacao), nome: row.nome, agua: row.agua ? 1 : 0,
     };
   }
 

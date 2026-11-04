@@ -77,8 +77,8 @@ export function enviarPorta(chegada){
 }
 let wildRollWait = null;
 /** Ask the server to roll one wild in this area. Resolves to the spawn, or null. */
-export function pedirWild(area, water, hour){
-  if (wildRollWait || !enviar({ t: 'wild_roll', area, water: !!water, hour })) return Promise.resolve(null);
+export function pedirWild(area, water, hour, clima){   // hour/clima only count for staff testing with /time and /weather
+  if (wildRollWait || !enviar({ t: 'wild_roll', area, water: !!water, hour, ...(clima !== undefined ? { clima } : {}) })) return Promise.resolve(null);
   return new Promise(resolve => {
     const timer = setTimeout(() => { if (wildRollWait?.resolve === resolve) wildRollWait = null; resolve(null); }, 2500);
     wildRollWait = { resolve, timer };

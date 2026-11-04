@@ -250,6 +250,7 @@ import * as Missoes from './missions.mjs';        // missões principais de Kant
 import * as Ind from './individual.mjs';         // IV + EV + natureza por indivíduo (fórmulas da série)
 import * as Ev from './ev.mjs';
 import * as Relogio from './clock.mjs';
+import * as Calendario from './calendar.mjs';   // real date/weekday/season (Pacific time) + spawn rules
 import * as Weather from './weather.mjs';
 import * as Balao from './chat_bubble.mjs';      // speech bubble over whoever talks in Local chat
 import * as Selos from './notices.mjs';          // red unread badge (phone chat button)
@@ -4557,7 +4558,7 @@ async function nascerNoBerco(a, esp, t, tiles){
     if (iq >= 0) rolled = fila.splice(iq, 1)[0].rolled;
     else if (fila.length >= WILD_ESPERA_MAX){ aquecer(fila[0].rolled.glb); wildsEsperando.set(a, fila); return false; }
     else {
-      rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora());
+      rolled = await Rede.pedirWild(a, !!esp.agua, Relogio.hora(), clima.forcado ? (clima.nome || 'clear') : undefined);
       if (!rolled?.id){ wildsEsperando.set(a, fila); return false; }
       if (glbNegados.has(rolled.glb)){ Rede.enviar({ t: 'wild_drop', id: rolled.id }); wildsEsperando.set(a, fila); return false; }
       if (!quentes.has(rolled.glb)){ fila.push({ rolled, quando: Date.now() }); wildsEsperando.set(a, fila); aquecer(rolled.glb); return false; }
@@ -4804,19 +4805,13 @@ const NIVEL_AREA = {
 for (const [a, f] of Object.entries(CFG_JOGO.nivelArea || {}))           // painel admin: só as áreas listadas mudam
   if (Array.isArray(f) && f.length === 2 && f.every(Number.isInteger) && f[0] >= 1 && f[0] <= f[1] && f[1] <= 100) NIVEL_AREA[a] = f;
 function nivelSelvagem(area){ const f = NIVEL_AREA[area] || [3, 6]; return f[0] + Math.floor(Math.random() * (f[1] - f[0] + 1)); }
-/* HGSS clock: morning 4:00–9:59, day 10:00–19:59, night 20:00–3:59. Habitat rows tagged
-   `hora` only spawn in those buckets; rows without it (Kanto) spawn all day. */
-function faixaHgss(){
-  const x = ((Relogio.hora() % 24) + 24) % 24;
-  if (x >= 4 && x < 10) return 'manha';
-  if (x >= 10 && x < 20) return 'dia';
-  return 'noite';
-}
+/* Spawn rules (calendar.mjs, the same ones server_wild.mjs uses for accounts): time of day on the game clock, real season
+   and weekday, and the current weather. With no row for this hour any hour will do, but season/weekday/weather still hold. */
 function especiesAgora(lista){
   if (!lista?.length) return lista || [];
-  const h = faixaHgss();
-  const com = lista.filter(e => !e.hora || (Array.isArray(e.hora) ? e.hora.includes(h) : e.hora === h));
-  return com.length ? com : lista;
+  const d = Calendario.hoje(), quando = { periodo: Calendario.periodoSpawn(Relogio.hora()), estacao: d.estacao, semana: d.semana, clima: jogo.clima?.nome || null };
+  const com = lista.filter(e => Calendario.podeAparecer(e, quando)).map(e => Calendario.FORMA_DA_ESTACAO[e.dex] ? { ...e, glb: Calendario.glbDaEstacao(e.dex, e.glb, d.estacao) } : e);
+  return com.length ? com : lista.filter(e => !e.estacoes && !e.dias && !e.climas);
 }
 function nivelDoHabitat(esp, area){
   const a = +esp?.lvMin, b = +esp?.lvMax;
@@ -7190,7 +7185,7 @@ function opcoesEvolucao(e){
   return Evolucao.opcoes({ dex: e.dex, lv: e.lv || 1, amizade: e.amizade }, ctx).map(o => {
     const sp = porDex.get(o.regra.para);
     const alvo = sp && (ELENCO_JOGO.find(x => x.n === sp.n && /_00$/.test(x.glb)) || ELENCO_JOGO.find(x => x.n === sp.n));
-    return { ...o, dex: o.regra.para, nome: sp?.name || o.regra.nome, glb: alvo?.glb || null, itemNome: o.consome ? Evolucao.nomeItem(o.consome) : null };
+    return { ...o, dex: o.regra.para, nome: sp?.name || o.regra.nome, glb: (alvo && Calendario.formaNaEvolucao(e?.glb, o.regra.para)) || alvo?.glb || null, itemNome: o.consome ? Evolucao.nomeItem(o.consome) : null };
   });
 }
 function evolucaoDe(e){ return opcoesEvolucao(e).find(o => o.pode && o.glb) || null; }
@@ -9547,7 +9542,25 @@ if (jogo.ash){
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)
-  setInterval(() => { if (!jogo.ash || INTRO) return; const mmA = document.getElementById('mm-area'); if (mmA){ const w = Weather.rotulo(clima.nome); mmA.textContent = I18n.t(nomeAreaAtual()) + ' · ' + Relogio.texto() + (w ? ' · ' + w : ''); } const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema(I18n.t('You arrived in {x}.', { x: I18n.t(nomeAreaAtual()) })); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
+  /* The v2 minimap's bottom strip (`tempo` in the layout): today's real date, season and weekday (calendar.mjs). The
+     time and the weather already sit in the title above. A click opens the Events weekly schedule. */
+  const pintarDataMinimapa = () => {
+    const d = Calendario.hoje();
+    for (const g of document.querySelectorAll('#minimapa [data-fig="tempo"]')){
+      const data = g.querySelector('[data-fig="txt/hora"]'), est = g.querySelector('[data-fig="txt/clima"]'), ic = g.querySelector('[data-fig="img/clima"]');
+      const t1 = I18n.t(Calendario.NOME_MES_CURTO[d.mes - 1]) + ' ' + d.dia, t2 = I18n.t(Calendario.NOME_ESTACAO[d.estacao]) + ' · ' + I18n.t(Calendario.NOME_DIA_CURTO[d.semana]);
+      if (data && data.textContent !== t1){ data.textContent = t1; Hud.encolher?.(data); }
+      if (est && est.textContent !== t2){ est.textContent = t2; Hud.encolher?.(est); }
+      if (ic && ic.dataset.estacao !== d.estacao){ ic.dataset.estacao = d.estacao; ic.textContent = Calendario.ICONE_ESTACAO[d.estacao]; Object.assign(ic.style, { display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round((parseFloat(ic.style.height) || 20) * 0.75) + 'px', lineHeight: '1' }); }
+      g.title = I18n.t(Calendario.NOME_DIA[d.semana]) + ', ' + I18n.t(Calendario.NOME_MES[d.mes - 1]) + ' ' + d.dia + ' · ' + I18n.t(Calendario.NOME_ESTACAO[d.estacao]);
+      if (!g.__calendario){
+        g.__calendario = true;
+        Object.assign(g.style, { pointerEvents: 'auto', cursor: 'pointer' });
+        g.addEventListener('click', ev => { ev.stopPropagation(); Menus.abrir('eventos', 'agenda'); });
+      } else if (g.style.pointerEvents !== 'auto') Object.assign(g.style, { pointerEvents: 'auto', cursor: 'pointer' });
+    }
+  };
+  setInterval(() => { if (!jogo.ash || INTRO) return; pintarDataMinimapa(); const mmA = document.getElementById('mm-area'); if (mmA){ const w = Weather.rotulo(clima.nome); mmA.textContent = I18n.t(nomeAreaAtual()) + ' · ' + Relogio.texto() + (w ? ' · ' + w : ''); } const a = areaInteriorVisitada ?? areaAtual(); if (a != null && a !== areaVista){ atualizarMusica(); areaVista = a; Chat.sistema(I18n.t('You arrived in {x}.', { x: I18n.t(nomeAreaAtual()) })); if (jogo.missoesOk) Missoes.evento({ tipo: 'area', area: a }); }
     const aS = a + '@' + Rede.estadoRede().id;                              // com conta quem marca o passo 'ir' é o servidor: o `pos` só leva o NOME da área, a missão usa o número.
     if (a != null && comConta() && aS !== areaNoServidor){ areaNoServidor = aS; Rede.enviar({ t: 'missao_area', area: a }); }   // fora do "mudou de área": no load a conexão ainda não estava pronta e o aviso se perdia
   }, 700);
