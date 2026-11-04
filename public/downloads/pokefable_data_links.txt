@@ -1,9 +1,5 @@
 https://pokefableonline.com/data/biblioteca/status.json
 https://pokefableonline.com/data/biblioteca/golpes.json
-https://pokefableonline.com/data/catalogo_efeitos.json
-https://pokefableonline.com/data/missoes_v2.json
-https://pokefableonline.com/data/npcs_falas.json
-https://pokefableonline.com/data/skins_jogador.json
 https://pokefableonline.com/ui/amanda/skins/pokemon/indice.json
 https://pokefableonline.com/ui/amanda/skins/pecas/indice.json
 https://pokefableonline.com/ui/amanda/skins/efeitos/indice.json
