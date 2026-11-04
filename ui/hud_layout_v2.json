@@ -2833,34 +2833,6 @@
         "recorta": true
        },
        {
-        "nome": "selo-exp-share",
-        "x": 8,
-        "y": 4.1,
-        "w": 28,
-        "h": 13,
-        "tipo": "grupo",
-        "filhos": [
-         {
-          "nome": "rotulo",
-          "x": 0,
-          "y": 0,
-          "w": 28,
-          "h": 13,
-          "tipo": "rotulo",
-          "texto": "EXP",
-          "fonte": "Baloo 2",
-          "peso": 800,
-          "tamanho": 9,
-          "cor": "#06233A",
-          "al": "center",
-          "alV": "center",
-          "regra": "fixo"
-         }
-        ],
-        "img": "./ui/figma_webp/ui2-v2/pc-hud/v2/slot-poke-2/selo-exp-share.webp?v=feb09790",
-        "imgPad": 16
-       },
-       {
         "nome": "card-vida",
         "x": 0,
         "y": 0,
@@ -427308,34 +427280,6 @@
         "regra": "ajustar",
         "exemplo": null,
         "recorta": true
-       },
-       {
-        "nome": "selo-exp-share",
-        "x": 2.4,
-        "y": 1.1,
-        "w": 17,
-        "h": 8,
-        "tipo": "grupo",
-        "filhos": [
-         {
-          "nome": "rotulo",
-          "x": 0,
-          "y": 0,
-          "w": 17,
-          "h": 8,
-          "tipo": "rotulo",
-          "texto": "EXP",
-          "fonte": "Baloo 2",
-          "peso": 800,
-          "tamanho": 5.599999904632568,
-          "cor": "#06233A",
-          "al": "center",
-          "alV": "center",
-          "regra": "fixo"
-         }
-        ],
-        "img": "./ui/figma_webp/ui2-v2/celular/v2/time/slot-poke-2/selo-exp-share.webp?v=cce40061",
-        "imgPad": 16
        },
        {
         "nome": "card-vida",

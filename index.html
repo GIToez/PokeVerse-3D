@@ -6975,17 +6975,13 @@ function pintarTime(forcar = false){
   el.querySelectorAll('.tcel').forEach((c, i) => { if (jogo.time[i]) c.dataset.arrI = String(i); else c.dataset.arrFixo = '1'; });   // 20/09: as casas cheias são arrastáveis; a vazia não
   pintarSeloExp(el);
 }
-/* The phone mockup paints the top-left EXP badge on slots 2–6 only, so the first card never had it
-   and empty cards kept the badge plus the slot number (4, 5, 6). Every Pokémon in the party gets the
-   badge. An empty card gets neither. */
+/* The mockup left a small "EXP" pill on party slots 2–6. Experience is the bar under the health,
+   and the number in the corner is the level, so that pill stays hidden. Empty cards also drop the
+   leftover slot numbers 4, 5, and 6. */
 function pintarSeloExp(el){
   if (!el) return;
-  el.querySelectorAll('.tcel').forEach((cel, i) => {
-    const selo = cel.querySelector('[data-fig="selo-exp-share"]');
-    if (selo) selo.style.display = jogo.time[i] ? 'block' : 'none';
-    const n = cel.querySelector('.tslot.vazio > span');
-    if (n) n.style.display = 'none';
-  });
+  for (const selo of el.querySelectorAll('[data-fig="selo-exp-share"]')) selo.style.display = 'none';
+  for (const n of el.querySelectorAll('.tslot.vazio > span')) n.style.display = 'none';
 }
 
 /* ===== Drag the party. The server already accepted a new order (message `party`, handled by
