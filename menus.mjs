@@ -6010,7 +6010,7 @@ function pintarGuarda(){
         : `<div class="g-card"><small>${esc(tr('None yet: get them in the Shop.'))}</small></div>`;
     }
   } else {
-    const fR = roupas.filter(r => !r.tem), fE = efeitos.filter(e => !e.tem);
+    const fR = roupas.filter(r => !r.tem && !r.oculto && !r.feriado && !r.diamantes && !r.passe), fE = efeitos.filter(e => !e.tem);
     html = (fR.length ? `<div class="g-sub">${esc(tr('Outfits'))}</div>` + fR.map(x => cardGuarda(x, botaoLoja(x))).join('') : '')
       + (fE.length ? `<div class="g-sub">${esc(tr('Effects'))}</div>` + fE.map(x => cardGuarda(x, botaoLoja(x))).join('') : '');
     if (!fR.length && !fE.length) html = `<div class="g-card"><b>${esc(tr('You have everything!'))}</b></div>`;

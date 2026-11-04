@@ -1,5 +1,5 @@
 {
- "_sobre": "Cosmetics (wardrobe + cosmetics shop, Coins only — no real-money payments). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); the 28 creation outfits are free. `preco` = Coins, `premio: \"elite\"` = reward for beating the Elite Four, `evento` = not obtainable now. efeitos: drawn by cosmetic_fx.mjs (the newer build's particle prefabs are not in the project); tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
+ "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); the 28 creation outfits are free. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `evento` = not obtainable now; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
  "roupas": [
   {
    "id": "boy_010",
@@ -20,21 +20,21 @@
    "nome": "Charizard Outfit",
    "sexo": "menino",
    "fashion": 52015,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "boy_024",
    "nome": "Christmas Outfit",
    "sexo": "menino",
    "fashion": 52016,
-   "preco": 25000
+   "feriado": "Christmas"
   },
   {
    "id": "boy_027",
    "nome": "Gardevoir Outfit",
    "sexo": "menino",
    "fashion": 52018,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "boy_029",
@@ -49,14 +49,14 @@
    "nome": "Lopunny Outfit",
    "sexo": "menino",
    "fashion": 52020,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "boy_035",
    "nome": "Qixi Outfit",
    "sexo": "menino",
    "fashion": 52022,
-   "preco": 25000
+   "feriado": "Qixi Festival"
   },
   {
    "id": "boy_032",
@@ -91,7 +91,7 @@
    "nome": "Pumpkin Shadows",
    "sexo": "menino",
    "fashion": 52027,
-   "preco": 50000
+   "feriado": "Halloween"
   },
   {
    "id": "boy_047",
@@ -105,21 +105,21 @@
    "nome": "Eternal Crown",
    "sexo": "menino",
    "fashion": 52029,
-   "preco": 50000
+   "passe": true
   },
   {
    "id": "boy_050",
    "nome": "Burning Sky Suit",
    "sexo": "menino",
    "fashion": 52030,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "boy_051",
    "nome": "Valentine Outfit",
    "sexo": "menino",
    "fashion": 52031,
-   "preco": 25000
+   "feriado": "Valentine's Day"
   },
   {
    "id": "boy_052",
@@ -133,14 +133,14 @@
    "nome": "Nezha",
    "sexo": "menino",
    "fashion": 52033,
-   "preco": 50000
+   "feriado": "Lunar New Year"
   },
   {
    "id": "boy_054",
    "nome": "Phoenix Call to the Rising Sun",
    "sexo": "menino",
    "fashion": 52034,
-   "preco": 50000
+   "feriado": "Lunar New Year"
   },
   {
    "id": "boy_057",
@@ -176,35 +176,35 @@
    "nome": "Beijing Rhythm Banner",
    "sexo": "menino",
    "fashion": 52039,
-   "preco": 25000
+   "feriado": "Lunar New Year"
   },
   {
    "id": "girl_022",
    "nome": "Gengar Embroidered Jacket",
    "sexo": "menina",
    "fashion": 53014,
-   "preco": 50000
+   "diamantes": 300
   },
   {
    "id": "girl_023",
    "nome": "Charizard Outfit",
    "sexo": "menina",
    "fashion": 53015,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "girl_024",
    "nome": "Christmas Outfit",
    "sexo": "menina",
    "fashion": 53016,
-   "preco": 25000
+   "feriado": "Christmas"
   },
   {
    "id": "girl_027",
    "nome": "Gardevoir Outfit",
    "sexo": "menina",
    "fashion": 53018,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "girl_027",
@@ -212,21 +212,22 @@
    "sexo": "menina",
    "fashion": 53019,
    "premio": "elite",
-   "dica": "Beat the Elite Four"
+   "dica": "Beat the Elite Four (model missing)",
+   "oculto": true
   },
   {
    "id": "girl_028",
    "nome": "Lopunny Outfit",
    "sexo": "menina",
    "fashion": 53020,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "girl_035",
    "nome": "Qixi Outfit",
    "sexo": "menina",
    "fashion": 53022,
-   "preco": 25000
+   "feriado": "Qixi Festival"
   },
   {
    "id": "girl_032",
@@ -261,7 +262,7 @@
    "nome": "Pumpkin Shadows",
    "sexo": "menina",
    "fashion": 53027,
-   "preco": 50000
+   "feriado": "Halloween"
   },
   {
    "id": "girl_047",
@@ -275,21 +276,21 @@
    "nome": "Eternal Crown",
    "sexo": "menina",
    "fashion": 53029,
-   "preco": 50000
+   "passe": true
   },
   {
    "id": "girl_050",
    "nome": "Burning Sky Suit",
    "sexo": "menina",
    "fashion": 53030,
-   "preco": 50000
+   "diamantes": 750
   },
   {
    "id": "girl_051",
    "nome": "Valentine Outfit",
    "sexo": "menina",
    "fashion": 53031,
-   "preco": 25000
+   "feriado": "Valentine's Day"
   },
   {
    "id": "girl_052",
@@ -303,14 +304,14 @@
    "nome": "Nezha",
    "sexo": "menina",
    "fashion": 53033,
-   "preco": 50000
+   "feriado": "Lunar New Year"
   },
   {
    "id": "girl_054",
    "nome": "Phoenix Call to the Rising Sun",
    "sexo": "menina",
    "fashion": 53034,
-   "preco": 50000
+   "feriado": "Lunar New Year"
   },
   {
    "id": "girl_057",
@@ -346,7 +347,7 @@
    "nome": "Beijing Rhythm Banner",
    "sexo": "menina",
    "fashion": 53039,
-   "preco": 25000
+   "feriado": "Lunar New Year"
   }
  ],
  "efeitos": [
