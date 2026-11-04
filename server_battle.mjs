@@ -963,6 +963,7 @@ export function criarBatalha(ctx) {
       if (!bat) return;
       sair(ws);
     },
+    emLuta(u) { return lutas.has(u); },
     bloquearCura(u) {
       const c = ctx.contas[u];
       return !!(c && saveDe(c).elite.corrida);

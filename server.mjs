@@ -29,6 +29,7 @@ import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
 import { chegadaConfere } from './server_doors.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
+import { criarMercado } from './server_market.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -1319,6 +1320,7 @@ const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet') });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida });   // comprar / usar / descartar / held items (server_bag.mjs)
+const mercado = criarMercado({ dados: DADOS, dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta: u => batalha.emLuta(u) });
 const wilds = criarWilds({
   dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,
   expMult: () => eventos.efetivo().expMult,
@@ -1640,6 +1642,8 @@ wss.on('connection', ws => {
             enviar(ws, { ...m, t: 'posse', op });                 // eco: o `t` vem DEPOIS do ...m (antes o 'posse_<op>' do pedido sobrescrevia e o cliente esperava até o timeout)
           }
         }
+
+        else if (m.t?.startsWith('mercado_')) mercado.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {
           const op = m.t.slice(6);
