@@ -502,13 +502,7 @@ def retime_glb(path, speeds):
     cycle. A Pixelmon clip spread over four seconds looks like a stiff idle
     at that rate, so `speeds` is how many times faster each clip should run.
     """
-    path = Path(path)
-    data = path.read_bytes()
-    json_len = struct.unpack_from('<I', data, 12)[0]
-    doc = json.loads(data[20:20 + json_len])
-    bin_at = 20 + json_len
-    bin_len = struct.unpack_from('<I', data, bin_at)[0]
-    blob = bytearray(data[bin_at + 8:bin_at + 8 + bin_len])
+    doc, blob = read_glb(path)
     done = set()
     for anim in doc.get('animations') or []:
         speed = speeds.get(anim['name'])
@@ -528,8 +522,25 @@ def retime_glb(path, speeds):
             blob[off:off + 4 * count] = times.tobytes()
             acc['min'] = [float(times[0])]
             acc['max'] = [float(times[-1])]
-    text = pad(json.dumps(doc, separators=(',', ':')).encode('utf-8'), 4, 0x20)
+    write_glb(path, doc, blob)
+    return {name: round(doc['accessors'][anim['samplers'][0]['input']]['max'][0], 3)
+            for anim in doc['animations']
+            for name in [anim['name']]}
+
+
+def read_glb(path):
+    data = Path(path).read_bytes()
+    json_len = struct.unpack_from('<I', data, 12)[0]
+    doc = json.loads(data[20:20 + json_len])
+    bin_at = 20 + json_len
+    bin_len = struct.unpack_from('<I', data, bin_at)[0]
+    return doc, bytearray(data[bin_at + 8:bin_at + 8 + bin_len])
+
+
+def write_glb(path, doc, blob):
     blob = pad(bytes(blob), 4, 0)
+    doc['buffers'][0]['byteLength'] = len(blob)
+    text = pad(json.dumps(doc, separators=(',', ':')).encode('utf-8'), 4, 0x20)
     out = bytearray()
     out += b'glTF'
     out += struct.pack('<II', 2, 12 + 8 + len(text) + 8 + len(blob))
@@ -537,10 +548,167 @@ def retime_glb(path, speeds):
     out += text
     out += struct.pack('<I4s', len(blob), b'BIN\x00')
     out += blob
-    path.write_bytes(out)
-    return {name: round(doc['accessors'][anim['samplers'][0]['input']]['max'][0], 3)
-            for anim in doc['animations']
-            for name in [anim['name']]}
+    Path(path).write_bytes(out)
+
+
+GLTF_TYPES = {5121: np.uint8, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
+GLTF_WIDTH = {'SCALAR': 1, 'VEC2': 2, 'VEC3': 3, 'VEC4': 4, 'MAT4': 16}
+
+
+def accessor_slice(doc, idx):
+    acc = doc['accessors'][idx]
+    view = doc['bufferViews'][acc['bufferView']]
+    if view.get('byteStride'):
+        raise SystemExit('interleaved buffers are not supported')
+    dtype = np.dtype(GLTF_TYPES[acc['componentType']])
+    width = GLTF_WIDTH[acc['type']]
+    off = view.get('byteOffset', 0) + acc.get('byteOffset', 0)
+    return off, dtype, width, acc['count']
+
+
+def read_accessor(doc, blob, idx):
+    off, dtype, width, count = accessor_slice(doc, idx)
+    arr = np.frombuffer(bytes(blob[off:off + dtype.itemsize * width * count]), dtype=dtype)
+    return arr.reshape(count, width)
+
+
+def append_accessor(doc, blob, arr, kind, bounds=False):
+    while len(blob) % 4:
+        blob.append(0)
+    data = np.ascontiguousarray(arr, dtype=np.float32)
+    doc['bufferViews'].append({'buffer': 0, 'byteOffset': len(blob), 'byteLength': data.nbytes})
+    blob.extend(data.tobytes())
+    acc = {'bufferView': len(doc['bufferViews']) - 1, 'componentType': 5126, 'count': len(data), 'type': kind}
+    if bounds:
+        acc['min'] = data.min(axis=0).tolist()
+        acc['max'] = data.max(axis=0).tolist()
+    doc['accessors'].append(acc)
+    return len(doc['accessors']) - 1
+
+
+def axis_angle_quat(axis, angle):
+    s = math.sin(angle / 2)
+    return np.array([axis[0] * s, axis[1] * s, axis[2] * s, math.cos(angle / 2)])
+
+
+def flap_axes(doc, blob, bones):
+    """Hinge axis for each wing bone, in that bone's own frame.
+
+    A wing flaps about a line in its own plane, square to the line from the
+    joint out to the middle of the wing. The plane is the flattest direction
+    of the vertices the bone carries; its normal is turned away from the body
+    so a left and a right wing mirror each other and beat together.
+    """
+    skin = doc['skins'][0]
+    prim = doc['meshes'][0]['primitives'][0]
+    pos = read_accessor(doc, blob, prim['attributes']['POSITION']).astype(np.float64)
+    joints = read_accessor(doc, blob, prim['attributes']['JOINTS_0'])
+    weights = read_accessor(doc, blob, prim['attributes']['WEIGHTS_0']).astype(np.float64)
+    ibm = read_accessor(doc, blob, skin['inverseBindMatrices']).astype(np.float64)
+    names = [doc['nodes'][n].get('name') for n in skin['joints']]
+    lead = joints[np.arange(len(joints)), np.argmax(weights, axis=1)]
+    middle = pos.mean(axis=0)
+    axes = {}
+    for bone in bones:
+        j = names.index(bone)
+        world = np.linalg.inv(ibm[j].reshape(4, 4).T)
+        rot = world[:3, :3]
+        rot = rot / np.linalg.norm(rot, axis=0)
+        carried = pos[lead == j]
+        if len(carried) < 3:
+            raise SystemExit(f'{bone} carries no vertices; nothing to flap')
+        centre = carried.mean(axis=0)
+        reach = centre - world[:3, 3]
+        _, vecs = np.linalg.eigh(np.cov((carried - centre).T))
+        normal = vecs[:, 0]
+        if np.dot(normal, centre - middle) < 0:
+            normal = -normal
+        hinge = np.cross(reach, normal)
+        hinge /= np.linalg.norm(hinge)
+        axes[bone] = rot.T @ hinge
+    return axes
+
+
+def source_axis(doc, blob, node, least_degrees=2.0):
+    """Main axis a bone already swings about in the first clip that moves it."""
+    for anim in doc.get('animations') or []:
+        for ch in anim['channels']:
+            if ch['target']['node'] != node or ch['target']['path'] != 'rotation':
+                continue
+            q = read_accessor(doc, blob, anim['samplers'][ch['sampler']]['output']).astype(np.float64)
+            q[np.sum(q * q[0], axis=1) < 0] *= -1
+            mean = quat_normalize(q.mean(axis=0))
+            inverse = np.array([-mean[0], -mean[1], -mean[2], mean[3]])
+            spins = []
+            for key in q:
+                rel = quat_mul(inverse, quat_normalize(key))
+                if rel[3] < 0:
+                    rel = -rel
+                size = np.linalg.norm(rel[:3])
+                angle = 2 * math.atan2(size, rel[3])
+                spins.append(rel[:3] / size * angle if size > 1e-9 else np.zeros(3))
+            spins = np.array(spins)
+            if np.degrees(2 * np.linalg.norm(spins, axis=1).max()) < least_degrees:
+                continue
+            _, _, vt = np.linalg.svd(spins - spins.mean(axis=0))
+            return vt[0]
+    return None
+
+
+def flutter_glb(path, wings, beats):
+    """Replace the wing motion in every listed clip with an even flutter.
+
+    `wings` maps bone name to (swing in degrees either side, lag in radians).
+    `beats` maps clip name to wing beats per second; it is rounded so each
+    clip holds whole beats and still loops cleanly. The rest of the body is
+    left exactly as the source animated it.
+    """
+    doc, blob = read_glb(path)
+    axes = flap_axes(doc, blob, list(wings))
+    node_of = {n.get('name'): i for i, n in enumerate(doc['nodes'])}
+    # Where the source already flutters a wing, keep the direction it chose.
+    for bone in wings:
+        own = source_axis(doc, blob, node_of[bone])
+        if own is not None:
+            axes[bone] = own if np.dot(own, axes[bone]) >= 0 else -own
+    report = {}
+    for anim in doc.get('animations') or []:
+        rate = beats.get(anim['name'])
+        if not rate:
+            continue
+        times = read_accessor(doc, blob, anim['samplers'][0]['input'])[:, 0].astype(np.float64)
+        length = float(times[-1])
+        cycles = max(1, round(rate * length))
+        freq = cycles / length
+        # Linear keys need about ten samples a beat or a fast flap turns into a
+        # lumpy zig-zag, so the wings get their own timeline.
+        key_times = np.linspace(0.0, length, cycles * 10 + 1)
+        time_acc = append_accessor(doc, blob, key_times.astype(np.float32).reshape(-1, 1), 'SCALAR', bounds=True)
+        by_node = {ch['target']['node']: ch for ch in anim['channels'] if ch['target']['path'] == 'rotation'}
+        for bone, (swing, lag) in wings.items():
+            node = node_of[bone]
+            ch = by_node.get(node)
+            if ch:
+                samp = anim['samplers'][ch['sampler']]
+                src = read_accessor(doc, blob, samp['output']).astype(np.float64)
+                if samp.get('interpolation', 'LINEAR') == 'CUBICSPLINE':
+                    src = src[1::3]
+                src[np.sum(src * src[0], axis=1) < 0] *= -1
+                base = quat_normalize(src.mean(axis=0))
+            else:
+                base = quat_normalize(np.array(doc['nodes'][node].get('rotation', [0, 0, 0, 1]), dtype=np.float64))
+                samp = {}
+                anim['samplers'].append(samp)
+                anim['channels'].append({'sampler': len(anim['samplers']) - 1,
+                                         'target': {'node': node, 'path': 'rotation'}})
+            angles = np.radians(swing) * np.sin(2 * math.pi * freq * key_times - lag)
+            out = np.array([quat_mul(base, axis_angle_quat(axes[bone], a)) for a in angles], dtype=np.float32)
+            samp['input'] = time_acc
+            samp['output'] = append_accessor(doc, blob, out, 'VEC4')
+            samp['interpolation'] = 'LINEAR'
+        report[anim['name']] = round(freq, 2)
+    write_glb(path, doc, blob)
+    return report
 
 
 def main():
