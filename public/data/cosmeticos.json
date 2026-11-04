@@ -1,6 +1,20 @@
 {
- "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); the 28 creation outfits are free. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `evento` = not obtainable now; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
+ "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); the 28 creation outfits are free. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `evento` = not obtainable now; `fundador` = only in the founder packs; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
  "roupas": [
+  {
+   "id": "ash",
+   "nome": "Ash Outfit",
+   "sexo": "menino",
+   "fashion": 52001,
+   "fundador": true
+  },
+  {
+   "id": "misty",
+   "nome": "Misty Outfit",
+   "sexo": "menina",
+   "fashion": 53001,
+   "fundador": true
+  },
   {
    "id": "boy_010",
    "nome": "Elegant Outfit",

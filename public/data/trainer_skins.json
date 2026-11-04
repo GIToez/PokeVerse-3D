@@ -8,7 +8,7 @@
   "inicial": true,
   "glbOk": true,
   "tinta": "fixo",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52002,
@@ -437,7 +437,7 @@
   "inicial": true,
   "glbOk": true,
   "tinta": "misty",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53002,
