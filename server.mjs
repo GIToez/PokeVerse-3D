@@ -34,6 +34,9 @@ import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const DADOS = nodePath.join(__dir, 'server/data');
 fs.mkdirSync(DADOS, { recursive: true });
+/* The web server serves this checkout as plain files and runs as another user. Account data and git history must
+   be readable only by this service user, whatever the web server's own rules say. */
+for (const p of [DADOS, nodePath.join(__dir, '.git')]) { try { fs.chmodSync(p, 0o700); } catch {} }
 
 const VERSAO_REDE = 22;   // 22: a same-map door is stored, so a refresh stays on the far side
 
@@ -265,6 +268,19 @@ function recompensaMissao(m) {
 const contasArq = nodePath.join(DADOS, 'contas.json');
 let contas = {};
 try { contas = JSON.parse(fs.readFileSync(contasArq, 'utf8')); } catch {}
+/* Until Nov 4, 2026 server/data was publicly downloadable, so every session token and recovery code issued before
+   then is void: everyone logs in again with their password, and a GM hands out new recovery codes. Runs once. */
+const SECRETS_ROTATED = nodePath.join(DADOS, 'secrets-rotated-2026-11-04');
+if (!fs.existsSync(SECRETS_ROTATED)) {
+  for (const c of Object.values(contas)) {
+    if (!c || typeof c !== 'object') continue;
+    c.token = null; delete c.tokenExp;
+    c.codigo = crypto.randomBytes(8).toString('hex');
+  }
+  gravarContasDisco();
+  try { fs.writeFileSync(SECRETS_ROTATED, new Date().toISOString() + '\n'); } catch {}
+  console.log(`[security] voided session tokens and recovery codes for ${Object.keys(contas).length} accounts`);
+}
 
 /* Gravação: antes era fs.writeFileSync A CADA mutação (inclusive em cada captura/missão), reescrevendo o contas.json inteiro
    e travando o event loop. Agora `salvarContas()` AGRUPA as gravações de jogo (debounce ~500ms) e `salvarContasJa()` grava na
@@ -1722,7 +1738,7 @@ wss.on('connection', ws => {
   ws.on('error', () => {});
 });
 
-httpServer.listen(5190, process.env.HOST || undefined, () => {   // HOST=127.0.0.1 behind a reverse proxy; unset = all interfaces (LAN dev)
+httpServer.listen(+process.env.PORT || 5190, process.env.HOST || undefined, () => {   // HOST=127.0.0.1 behind a reverse proxy; unset = all interfaces (LAN dev)
   console.log('');
   console.log('╔═══════════════════════════════════════╗');
   console.log('║  Pokemon 3D Base — Dev Server      ║');
