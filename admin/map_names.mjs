@@ -110,6 +110,24 @@ function montar(dic) {
   padroes = pa;
 }
 
+/** Admin labels for every area in scenes.json: { id → name }. Areas that share a name inside one scene
+    (Trial Path ×18, the Elite Four rooms ×2…) get "#2", "#3" in id order so the GM can tell them apart;
+    the game keeps showing the plain name. */
+export function rotulosAreas(ce) {
+  const out = {};
+  for (const c of ce?.cenas || []) {
+    const conta = {}, vistos = {};
+    for (const a of c.areas || []) conta[a.nome] = (conta[a.nome] || 0) + 1;
+    for (const a of [...(c.areas || [])].sort((x, y) => x.id - y.id)) {
+      if (a.id in out) continue;
+      const nome = traduzNome(a.nome);
+      vistos[a.nome] = (vistos[a.nome] || 0) + 1;
+      out[a.id] = conta[a.nome] > 1 && vistos[a.nome] > 1 ? nome + ' #' + vistos[a.nome] : nome;
+    }
+  }
+  return out;
+}
+
 /** Translate a Portuguese (or already-English) place name from scenes.json. */
 export function traduzNome(s) {
   if (typeof s !== 'string' || !s) return s;

@@ -9,7 +9,7 @@ import { instalarAgenda } from '/admin/schedule.mjs';   // 📅 event schedule (
 import { instalarConteudo } from '/admin/content.mjs'; // Fase 2: telas Missões, Espécies, Evoluções, Learnset
 import { criarCamadas } from '/admin/layers.mjs';
 import { carregar as carregarIdioma } from '/i18n.mjs';
-import { carregar as carregarNomesMapa, nomeMapaComId, traduzNome } from '/admin/map_names.mjs';
+import { carregar as carregarNomesMapa, nomeMapaComId, traduzNome, rotulosAreas } from '/admin/map_names.mjs';
 const DICAS = {   // o rodapé do Editor de Mapa muda com a ferramenta
   zonas: 'wheel: zoom · drag: pan · click an area to edit it (drag its middle/edges) · drag a zone center/edge',
   pontos: 'wheel: zoom · drag empty space: pan · click a point to edit it, drag it to move it',
@@ -84,11 +84,13 @@ let sujoAreas = false, tilesMudados = false;
 const nomesMudados = new Set();   // ids de área renomeados/criados (só esses vão pro servidor)
 let areasOriginais = new Set();   // ids que já existiam no arquivo (o ID dessas não muda: habitats/níveis apontam pra ele)
 let nomesCena = {};       // id → nome no scenes.json
+let rotulosCena = {};     // id → admin label (same-name areas numbered); never written back
 let idsUsados = new Set();// todo id de área de todas as cenas (id novo não pode herdar habitat de área de outro mapa)
 let desenhandoArea = false, rascunho = null;
 let foto = null;          // fundo "minimapa" do mapa atual ({ img, x0, z0, esc, w, h, fonte, mapa })
 await carregarNomesMapa();
 const nomeArea = a => traduzNome(nomesCena[a] || dadosMapa?.nomes?.[a] || ('Area ' + a));
+const rotuloArea = a => (nomesMudados.has(a) ? null : rotulosCena[a]) || nomeArea(a);
 
 const CORES = ['#ff5d5d', '#4da3ff', '#3ecf8e', '#ffcf3a', '#c678dd', '#ff9d4d', '#56d4dd', '#f06292'];
 const corZona = z => CORES[(z.__i ?? 0) % CORES.length];
@@ -145,6 +147,7 @@ async function carregarCenas() {
   nomesCena = {}; idsUsados = new Set();
   const ce = await fetch('/data/scenes.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
   for (const c of ce?.cenas || []) for (const a of c.areas || []) { idsUsados.add(+a.id); if (!(a.id in nomesCena)) nomesCena[a.id] = a.nome; }
+  rotulosCena = rotulosAreas(ce);
 }
 async function trocarMapa(nome, semPerguntar = false) {
   if (!semPerguntar && (sujoAreas || Camadas?.sujo()) && nome !== mapaAtual && !confirm('This map has unsaved changes (areas/layers). Switch maps and discard them?')) { $('m-mapa').value = mapaAtual; return; }
@@ -222,7 +225,7 @@ function desenhar() {
       ctx.setLineDash(!areasOriginais.has(c.a) ? [6, 4] : []); ctx.strokeRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0); ctx.setLineDash([]);
     }
     if (cam.esc > 0.9) for (const c of dadosMapa.caixas || []) {   // rótulos por cima de todas as caixas (pílula escura: legível em cima da foto)
-      const r = rectTela(c), txt = nomeArea(c.a), sel = c === caixaSel;
+      const r = rectTela(c), txt = rotuloArea(c.a), sel = c === caixaSel;
       ctx.font = (sel ? 'bold ' : '') + '11px system-ui';
       const tw = ctx.measureText(txt).width + 10, cx = (r.x0 + r.x1) / 2;
       if (tw > r.x1 - r.x0 + 30 && !sel) continue;
@@ -402,7 +405,7 @@ function renderListaAreas() {
   const cxs = dadosMapa?.caixas || [];
   $('a-qtd').textContent = '(' + new Set(cxs.map(c => c.a)).size + ')';
   const filtro = ($('a-filtro').value || '').toLowerCase();
-  const itens = cxs.map(c => ({ c, nome: nomeArea(c.a) })).filter(o => !filtro || o.nome.toLowerCase().includes(filtro) || String(o.c.a).includes(filtro))
+  const itens = cxs.map(c => ({ c, nome: rotuloArea(c.a) })).filter(o => !filtro || o.nome.toLowerCase().includes(filtro) || String(o.c.a).includes(filtro))
     .sort((p, q) => p.nome.localeCompare(q.nome, undefined, { numeric: true }) || p.c.a - q.c.a);
   const nCaixas = {}; for (const c of cxs) nCaixas[c.a] = (nCaixas[c.a] || 0) + 1;
   $('a-lista').innerHTML = itens.map(({ c, nome }) => `<button data-i="${cxs.indexOf(c)}" class="${c === caixaSel ? 'atual' : ''}">
@@ -423,7 +426,7 @@ function abrirEditorArea() {
 function atualizarCamposArea() {
   const c = caixaSel; if (!c) return;
   const nova = !areasOriginais.has(c.a), irmas = dadosMapa.caixas.filter(k => k.a === c.a).length;
-  $('a-titulo').textContent = nomeArea(c.a);
+  $('a-titulo').textContent = rotuloArea(c.a);
   if (document.activeElement !== $('a-nome')) $('a-nome').value = nomeArea(c.a);
   if (document.activeElement !== $('a-id')) $('a-id').value = c.a;
   $('a-id').disabled = !nova;
@@ -680,7 +683,7 @@ let areaSel = null;
 function listaAreas() {
   // as áreas com habitat + TODAS as do mapa aberto (área nova aparece aqui pra ganhar espécies); nome = o que o jogo mostra
   const ids = new Set([...Object.keys(habitats.areas), ...(dadosMapa?.areas || []).map(String)]);
-  const arr = [...ids].map(id => ({ id, nome: nomeArea(id), qtd: (habitats.areas[id] || []).length }));
+  const arr = [...ids].map(id => ({ id, nome: rotuloArea(id), qtd: (habitats.areas[id] || []).length }));
   arr.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
   return arr;
 }
@@ -723,7 +726,7 @@ function selecionarArea(id) {
   areaSel = id; renderHabitats();
   const gen = id === '__gen';
   const lista = gen ? habitats.generico : (habitats.areas[id] ||= []);
-  const nome = gen ? 'Generic' : nomeArea(id);
+  const nome = gen ? 'Generic' : rotuloArea(id);
   $('h-titulo').textContent = nome + (gen ? '' : '  —  ' + id);
   mostrarNivel(gen ? null : id);
   const cont = $('h-especies'); cont.dataset.agua = '1';
