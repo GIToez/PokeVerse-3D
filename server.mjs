@@ -31,6 +31,7 @@ import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
 import { criarMercado } from './server_market.mjs';
 import { criarCarteira, criarLoja } from './server_shop.mjs';
+import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
@@ -518,7 +519,7 @@ function evoluirNoServidor(c, uid, item) {
     const alvo = D.cast.find(x => x.n === +r.para && /_00$/.test(x.glb)) || D.cast.find(x => x.n === +r.para);
     if (!alvo) { falta = nome + ' has no model yet'; continue; }
     if (consome != null) { c.save.itens[consome]--; if (c.save.itens[consome] <= 0) delete c.save.itens[consome]; }
-    pk.dex = +r.para; pk.nome = nome; pk.glb = alvo.glb;
+    pk.dex = +r.para; pk.nome = nome; pk.glb = Calendario.formaNaEvolucao(pk.glb, r.para) || alvo.glb;   // a Fall Deerling becomes a Fall Sawsbuck
     marcarPego(c, pk.dex);
     return { pk, consumiu: consome != null };
   }
@@ -736,6 +737,10 @@ function limparEspecie(e, exigirModelo) {
   if (Number.isInteger(lvA) && Number.isInteger(lvB) && lvA >= 1 && lvB <= 100 && lvA <= lvB){ o.lvMin = lvA; o.lvMax = lvB; }
   const horas = (Array.isArray(e.hora) ? e.hora : (e.hora ? [e.hora] : [])).filter(h => h === 'manha' || h === 'dia' || h === 'noite');
   if (horas.length && horas.length < 3) o.hora = [...new Set(horas)];
+  const regra = (k, ok) => { const l = [...new Set((Array.isArray(e[k]) ? e[k] : (e[k] ? [e[k]] : [])).map(x => String(x).toLowerCase()).filter(x => ok.includes(x)))]; if (l.length && l.length < ok.length) o[k] = l; };
+  regra('estacoes', Calendario.ESTACOES);   // spawn rules (calendar.mjs): real season, real weekday, weather
+  regra('dias', Calendario.DIAS);
+  regra('climas', ['clear', 'chuva', 'chuva_forte', 'sol', 'areia', 'granizo', 'neve', 'nevoeiro']);
   return o;
 }
 /* Objeto de cenário: uma peça (prefab `n`) colocada em x/y/z. O `a` do dump é sempre 0 (não é rotação — a orientação está no prefab);

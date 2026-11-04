@@ -5,12 +5,11 @@
  * public/data/cosmeticos.json (`diamantes`); a seasonal outfit (`estacao`) is only for sale during its season. */
 import fs from 'fs';
 import nodePath from 'path';
+import { estacaoAgora } from './calendar.mjs';
 
 const ORIGENS = ['pagamento', 'passe', 'evento', 'staff'];
 const MAX_REFS = 40;
-const ESTACAO_DO_MES = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
-
-export const estacaoAgora = (agora = Date.now()) => ESTACAO_DO_MES[new Date(agora - 8 * 3600e3).getUTCMonth()];
+export { estacaoAgora };
 
 export function criarCarteira() {
   function de(c) {
