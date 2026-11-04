@@ -30,6 +30,10 @@ from pixelmon_bmd_to_glb import read_accessor, read_glb  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 MON = ROOT / 'public' / 'scenery' / 'mon'
 OUT = ROOT / 'tools' / 'rig_roles.json'
+# Hand fixes from reviewing the tuned list, keyed by model ("pm0006_31") or
+# by species ("pm0006"); "core" makes a bone part of the body so the
+# battle clips leave it alone: {"pm0380": {"role": {"Neck1": "core"}}}
+OVERRIDES = ROOT / 'tools' / 'rig_overrides.json'
 
 LIMBS = ('arm', 'leg', 'wing', 'tail', 'fin', 'feeler')
 # First match wins, so the specific words come before the ones they contain.
@@ -150,10 +154,18 @@ def analyse(path):
         order.append(j)
         stack.extend(kids[j])
 
+    fixes = json.loads(OVERRIDES.read_text()) if OVERRIDES.exists() else {}
+    stem = Path(path).stem
+    fix = fixes.get(stem) or fixes.get(stem[:6], {})
+    forced = fix.get('role', {})
     role = {}
     from_name = {}
     for j in order:
-        own = name_role(names[j])
+        own = forced.get(names[j]) or name_role(names[j])
+        if names[j] in forced:
+            role[j] = own
+            from_name[j] = True
+            continue
         up = role.get(parent.get(j))
         if up in LIMBS + ('jaw', 'ear', 'skip') and own in (None, 'core'):
             own = up
@@ -284,6 +296,7 @@ def analyse(path):
         stance = 'serpent'
     else:
         stance = 'floater'
+    stance = fix.get('stance', stance)
     return {
         'stance': stance,
         'contacts': contacts,
