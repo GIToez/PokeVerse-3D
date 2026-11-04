@@ -216,12 +216,29 @@ def convert(model_path, texture_path, animations, texture_name, node_name, model
 
     # Pose the skeleton in the same space as the vertices, then drop it onto y = 0
     # using the first frame of Idle (the pose the game measures).
+    # Animation files often omit a bone the mesh has (Scizor's Hat). Their bone
+    # ids then shift, so a channel has to be matched by name, not by id.
     root_id = next(b['id'] for b in bones if b['parent'] < 0)
     anim_data = []
+    by_name = {b['name']: b['id'] for b in bones}
     for path, clip_name in animations:
         anim_bones, frames, _ = read_bmd(path, False)
-        known = {b['id'] for b in anim_bones}
-        anim_data.append((clip_name, frames, known))
+        anim_id = {b['name']: b['id'] for b in anim_bones}
+        missing = [b['name'] for b in bones if b['name'] not in anim_id]
+        unknown = [b['name'] for b in anim_bones if b['name'] not in by_name]
+        if unknown:
+            raise SystemExit(f'{path} has bones the mesh does not: {unknown}')
+        remapped = []
+        for frame in frames:
+            pose = {}
+            for bone in anim_bones:
+                if bone['id'] in frame:
+                    pose[by_name[bone['name']]] = frame[bone['id']]
+            remapped.append(pose)
+        known = {by_name[b['name']] for b in anim_bones}
+        if missing:
+            print(f'{clip_name}: no keys for {missing}; those bones stay in the bind pose')
+        anim_data.append((clip_name, remapped, known))
 
     idle_frames = next((frames for name, frames, _ in anim_data if name == 'Idle'), None)
     pose0 = idle_frames[0] if idle_frames else bind
