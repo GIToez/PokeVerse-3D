@@ -34,12 +34,31 @@ sleep 1
 curl -fsS http://127.0.0.1:5190/health
 echo
 
+# Caddy site config. Needs the sudo rules from scripts/live/grant-service-ctl.sh (run once as ubuntu).
+# A config Caddy rejects is put back to the last one it accepted, so a bad commit cannot take the site down.
 CADDY_SNIPPET=/etc/caddy/play.pokeverse.quest.caddy
 CADDY_SRC="$APP_DIR/scripts/live/play.pokeverse.quest.caddy"
-if [[ -f "$CADDY_SRC" && -f "$CADDY_SNIPPET" ]] && sudo -n true 2>/dev/null; then
-  echo "==> refresh Caddy site snippet"
-  sudo -n cp "$CADDY_SRC" "$CADDY_SNIPPET"
-  sudo -n systemctl reload caddy || echo "Caddy reload skipped (no permission or unit missing)"
+CADDY_GOOD="$APP_DIR/server/data/caddy-last-good.caddy"
+CADDY_BIN="$(command -v caddy || echo /usr/bin/caddy)"
+if [[ -f "$CADDY_SRC" && -f "$CADDY_SNIPPET" ]]; then
+  if cmp -s "$CADDY_SRC" "$CADDY_SNIPPET"; then
+    echo "==> Caddy site config unchanged"
+    [[ -f "$CADDY_GOOD" ]] || cp "$CADDY_SNIPPET" "$CADDY_GOOD" || true
+  elif sudo -n /usr/bin/install -m 644 "$CADDY_SRC" "$CADDY_SNIPPET" 2>/dev/null; then
+    if sudo -n "$CADDY_BIN" validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+      if sudo -n /usr/bin/systemctl reload caddy; then
+        cp "$CADDY_SRC" "$CADDY_GOOD" || true
+        echo "==> Caddy site config updated and reloaded"
+      else
+        echo "Caddy reload failed; the new site config takes effect on the next reload." >&2
+      fi
+    else
+      echo "Caddy rejected the new site config; keeping the previous one." >&2
+      if [[ -f "$CADDY_GOOD" ]]; then sudo -n /usr/bin/install -m 644 "$CADDY_GOOD" "$CADDY_SNIPPET" || true; fi
+    fi
+  else
+    echo "Caddy config not refreshed: run scripts/live/grant-service-ctl.sh once as ubuntu." >&2
+  fi
 fi
 
 echo "==> deploy done $(git rev-parse --short HEAD)"
