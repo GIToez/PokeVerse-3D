@@ -63,7 +63,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": false
+  "criacao": true
  },
  {
   "id": 52007,
@@ -129,7 +129,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": false
+  "criacao": true
  },
  {
   "id": 52013,
@@ -492,7 +492,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": false
+  "criacao": true
  },
  {
   "id": 53007,
@@ -558,7 +558,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": false
+  "criacao": true
  },
  {
   "id": 53013,
