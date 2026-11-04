@@ -2130,7 +2130,7 @@ function rMochila(corpo){
    que escolhi (está no relatório pra ela): todos = tudo; pokebolas = 7; medicina = 9 (Recuperação); tm = 4 (Máquina
    Técnica); chave = 3 (Itens transportados, que são os de missão); customizacao = 11 (traje) + 12 (montaria). */
 let popMo = null, catMo = 'todos', buscaMo = '', selMo = 0, confirmarDescarte = null;
-const CATS_MO = { todos: null, pokebolas: [7], medicina: [9], tm: [4], chave: [3], customizacao: [11, 12] };
+const CATS_MO = { todos: null, pokebolas: [7], medicina: [9], tm: [4], chave: [3], customizacao: [11, 12], held: [14] };
 /* O que "Usar" faz no jogo hoje: Pokébola vira a bola escolhida, item de Recuperação (t=9: poções, Reanimador) cura, pedra
    evolui. TM, traje, montaria e item de missão NÃO têm uso pela mochila ainda — o botão fica desligado (antes o `usarItem`
    tratava tudo como poção e consumia o item). Descartar não vale pra item de missão (t=3) nem pra bola (mora em `bolas`). */
@@ -2177,7 +2177,7 @@ function popupMo(){
   if (!def) return null;
   popMo = Popup.montar(def, {
     aba: c => { catMo = c; selMo = 0; confirmarDescarte = null; render(); },
-    acao: nome => acaoMochila(nome),
+    acao: (nome, el) => acaoMochila(nome, el),
     digita: v => { buscaMo = v; selMo = 0; render(); },
     fechar: () => { if (aberta === 'mochila') aberta = null; },
   });
@@ -2194,7 +2194,9 @@ function itensMochila(){
     .map(([id, n]) => ({ id, n, it: D.itens[id] }))
     .sort((a, b) => (a.it.t - b.it.t) || tr(a.it.n).localeCompare(tr(b.it.n), 'en'));
 }
-function acaoMochila(nome){
+function acaoMochila(nome, el){
+  const row = el?.closest?.('[data-fig^="item-"]'), n = row ? +row.dataset.fig.split('-').pop() : 0;
+  if (nome === 'equipar'){ if (n) selMo = n - 1; nome = 'usar'; }
   const lista = itensMochila(), alvo = lista[selMo];
   if (!alvo) return;
   if (nome === 'usar'){
@@ -2263,12 +2265,14 @@ function encherMochila(pop){
   }
   celulas.forEach((c, i) => {
     const e = lista[i];
-    for (const f of c.children){ if (f.dataset.sobre) continue; f.style.display = e ? (f.dataset.txt ? (f.dataset.display || 'flex') : 'block') : 'none'; }   // a marca de selecionado (v2) é da seleção, não do preenchimento
+    for (const f of c.children){ if (f.dataset.sobre || f.dataset.oculto) continue; f.style.display = e ? (f.dataset.txt ? (f.dataset.display || 'flex') : 'block') : 'none'; }   // a marca de selecionado (v2) é da seleção, não do preenchimento
     if (!e) return;
     Popup.texto(pop, 'item-nome', e.it.n || ('item ' + e.id), c);
     Popup.texto(pop, 'item-qtd', '×' + e.n, c);
     Popup.texto(pop, 'item-descricao', semBr(e.it.d), c);
     Popup.imagem(pop, 'item', e.it.i ? './ui/itens/' + e.it.i + '.png' : null, c);
+    const give = c.querySelector(':scope > [data-fig="btn-equipar-linha"]');
+    if (give){ const held = !!ctx.ehHeld?.(e.id); give.style.display = held ? 'block' : 'none'; if (held){ const l = give.querySelector('[data-fig="txt-btn"]'); if (l) l.textContent = tr('Give'); } }
   });
   Popup.selecionar(pop, selMo + 1, 'item', 'item');
   const alvo = lista[selMo];

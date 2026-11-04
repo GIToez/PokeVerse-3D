@@ -133,7 +133,7 @@ function desenhar(f, pai, i, pop){
   el.dataset.fig = f.nome;
   caixa(el, f);
   el.style.zIndex = String((i + 1) * 10);
-  if (f.oculto) el.style.display = 'none';
+  if (f.oculto){ el.style.display = 'none'; el.dataset.oculto = '1'; }
   const arte = (img, pad) => { Object.assign(el.style, { backgroundImage: 'url(' + img + ')', backgroundRepeat: 'no-repeat' }); Hud.fundoComFolga(el, pad); };   // v2: PNG com folga em volta da caixa
   if (f.sobre) el.dataset.sobre = f.sobre;
   if (f.corAba) el.dataset.corAba = '1';                                  // rodada 29: rótulo [cor:aba] — trocarAba pinta ativa/inativa                                // v2: imagem de ESTADO (marca de selecionado/aba ativa): quem preenche a célula não a liga; a ref do estado liga (estadoRef)
