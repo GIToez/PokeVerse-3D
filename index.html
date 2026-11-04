@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Pokemon 3D Base -->
+<!-- PokeVerse -->
 <html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <meta name="robots" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="./ui/favicon/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="./ui/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="./ui/favicon/favicon-16.png"><link rel="apple-touch-icon" href="./ui/favicon/apple-touch-icon.png"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#13254A">
-<title>Pokemon 3D Base</title>
+<title>PokeVerse</title><meta name="application-name" content="PokeVerse"><meta name="apple-mobile-web-app-title" content="PokeVerse"><meta name="mobile-web-app-capable" content="yes">
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
 </script>
@@ -773,7 +773,7 @@ function acharChegadaNoMapa(id){
     return q && q[1] === m[1] && q[2] === m[2] && q[4] === m[4];
   }) || null;
 }
-document.title = 'Pokemon 3D Base';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
+document.title = 'PokeVerse';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
 $('titulo').textContent = cenaAtual ? I18n.rotuloLugar(cenaAtual.nome) + ' · ' + I18n.rotuloLugar(NOME)
   : I18n.rotuloLugar('kanto') + ' — ' + (dados.areas.length > 4
     ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha|City|Town|Island/.test(n)).length })

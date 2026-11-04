@@ -118,7 +118,7 @@ export function mostrar(nome, L, c = {}){
     for (const x of pop.querySelectorAll('[data-tag="fecha"][data-tagval="seletor-cor"]')) x.addEventListener('click', () => H.fechou?.());   // cancelar devolve a cor de antes
   } else {
     Popup.imagem(pop, 'fundo', './ui/figma/backgrounds/fundo-login-escuro.png');   // sempre escuro (rodada 23)
-    Popup.imagem(pop, 'logo', './ui/figma/backgrounds/logo-pokefable.png');
+    Popup.imagem(pop, 'logo', './ui/figma/backgrounds/logo-pokeverse.webp');
     Popup.texto(pop, 'versao', ctx?.conta ? 'v0.2.0 · alfa' : 'v0.1.0 · prévia');
   }
   for (const inp of (H ? [] : pop.querySelectorAll('input'))){            // Enter = o botão da tela; sem Esc fechando (a tela é obrigatória no login)

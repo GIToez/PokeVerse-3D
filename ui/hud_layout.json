@@ -57456,7 +57456,7 @@
         "tipo": "imgvar",
         "id": "logo",
         "regra": "ajustar",
-        "exemplo": "./ui/figma/backgrounds/logo-pokefable.png"
+        "exemplo": "./ui/figma/backgrounds/logo-pokeverse.webp"
        },
        {
         "nome": "painel-login",
@@ -57706,7 +57706,7 @@
         "tipo": "imgvar",
         "id": "logo",
         "regra": "ajustar",
-        "exemplo": "./ui/figma/backgrounds/logo-pokefable.png"
+        "exemplo": "./ui/figma/backgrounds/logo-pokeverse.webp"
        },
        {
         "nome": "painel-cadastro",
@@ -60324,7 +60324,7 @@
         "tipo": "imgvar",
         "id": "logo",
         "regra": "ajustar",
-        "exemplo": "./ui/figma/backgrounds/logo-pokefable.png"
+        "exemplo": "./ui/figma/backgrounds/logo-pokeverse.webp"
        },
        {
         "nome": "painel-login",
@@ -60582,7 +60582,7 @@
         "tipo": "imgvar",
         "id": "logo",
         "regra": "ajustar",
-        "exemplo": "./ui/figma/backgrounds/logo-pokefable.png"
+        "exemplo": "./ui/figma/backgrounds/logo-pokeverse.webp"
        },
        {
         "nome": "painel-cadastro",
