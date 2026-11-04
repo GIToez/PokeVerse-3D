@@ -61,14 +61,34 @@ if ('serviceWorker' in navigator) {
 /* Fullscreen that survives map changes. Every door reloads the page and a browser tab drops API fullscreen on
    every load. On touch devices in a browser tab this page becomes a thin host: it stops parsing here and runs the
    game in a full-viewport frame. The host holds fullscreen, only the frame reloads, and the address bar mirrors the
-   frame. Installed apps (display-mode fullscreen) and desktops (F11 survives reloads) never need it. Only with `?frame=1` for now. */
+   frame. Installed apps (display-mode fullscreen) and desktops (F11 survives reloads) never need it.
+   Fail-safe: every page loaded in the frame must report that it started. If one doesn't in time, or the host itself throws, this device
+   remembers it for 3 days (localStorage `gameFrameOff`), the reason goes to the client log, and the page reloads without the frame.
+   `?frame=0` skips the frame once; `?frame=1` forgets a past failure and tries again. */
 (function () {
   var mm = function (q) { try { return matchMedia(q).matches; } catch (e) { return false; } };
   var path = location.pathname;
   var root = path === '/' || /\/index\.html$/.test(path);
   if (window.top !== window || !root || !document.documentElement.requestFullscreen || !mm('(pointer: coarse)')) return;
   if (mm('(display-mode: fullscreen)') || mm('(display-mode: standalone)')) return;
-  if (new URLSearchParams(location.search).get('frame') !== '1') return;   // opt-in while it white-screens on some real phones
+  var OFF = 'gameFrameOff', asked = new URLSearchParams(location.search).get('frame');
+  if (asked === '0') return;
+  try {
+    var off = JSON.parse(localStorage.getItem(OFF) || 'null');
+    if (asked === '1' || (off && !(Date.now() - Date.parse(off.at) < 3 * 864e5))) localStorage.removeItem(OFF);
+    else if (off) return;
+  } catch (e) { return; }
+  var failed = false;
+  var fallBack = function (reason) {
+    if (failed) return; failed = true;
+    try { localStorage.setItem(OFF, JSON.stringify({ reason: reason, at: new Date().toISOString() })); } catch (e) {}
+    try { fetch('/servidor/conta/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+      body: JSON.stringify({ tipo: 'frame-fallback', msg: reason, ua: navigator.userAgent, w: innerWidth, h: innerHeight }) }).catch(function () {}); } catch (e) {}
+    var q = new URLSearchParams(location.search); q.delete('frame');
+    var s = q.toString();
+    setTimeout(function () { location.replace(path + (s ? '?' + s : '') + location.hash); }, 150);
+  };
+  try {
   window.stop();
   /* The frame's path differs from the host's so Chrome never treats it as a recursive frame of the same URL. */
   var framePath = path === '/' ? '/index.html' : '/';
@@ -101,7 +121,29 @@ if ('serviceWorker' in navigator) {
   document.addEventListener('fullscreenchange', function () {
     try { frame.contentDocument.dispatchEvent(new Event('fullscreenchange')); } catch (e) {}
   });
+  /* Each document in the frame posts 'game-frame-ready' once it shows something (text or a canvas) at a real size, and 'game-frame-leaving'
+     when it unloads. A page gets 25 s to get there (slow phone networks), or 8 s after its load event. Time hidden in the background doesn't count. */
+  var waiting = true, deadline = Date.now() + 25000;
+  window.addEventListener('message', function (e) {
+    if (e.source !== frame.contentWindow || e.origin !== location.origin) return;
+    if (e.data === 'game-frame-leaving'){ waiting = true; deadline = Date.now() + 25000; }
+    else if (e.data === 'game-frame-ready'){
+      waiting = false;
+      var r = frame.getBoundingClientRect();
+      if (r.width < 50 || r.height < 50) fallBack('frame has no size (' + Math.round(r.width) + 'x' + Math.round(r.height) + ')');
+    }
+  });
+  frame.addEventListener('load', function () { if (waiting) deadline = Math.min(deadline, Date.now() + 8000); });
+  setInterval(function () {
+    if (!waiting) return;
+    if (document.visibilityState !== 'visible'){ deadline = Math.max(deadline, Date.now() + 10000); return; }
+    if (Date.now() > deadline){
+      var u = ''; try { u = frame.contentWindow.location.pathname + frame.contentWindow.location.search; } catch (e) { u = 'unreadable'; }
+      fallBack('page in frame never started: ' + u);
+    }
+  }, 1000);
   body.appendChild(frame);
+  } catch (e) { fallBack('host error: ' + (e && e.message || e)); }
 })();
 </script>
 <script>
@@ -118,6 +160,13 @@ if ('serviceWorker' in navigator) {
     get: function () { return hostDoc.fullscreenElement ? this.documentElement : null; }
   });
   try { if (window.ScreenOrientation) ScreenOrientation.prototype.lock = function (o) { return host.lock(o); }; } catch (e) {}
+  var post = function (m) { try { window.parent.postMessage(m, location.origin); } catch (e) {} };
+  var started = function () {
+    var b = document.body, shows = b && innerWidth > 0 && innerHeight > 0 && ((b.innerText || '').trim() || b.querySelector('canvas'));
+    if (shows) post('game-frame-ready'); else setTimeout(started, 200);
+  };
+  setTimeout(started, 0);
+  addEventListener('pagehide', function () { post('game-frame-leaving'); });
 })();
 </script>
 <script>
