@@ -42,6 +42,9 @@ export function aceitarPos(prevRaw, nextRaw, { porta = false, mapaPadrao } = {})
   if (prev && prev.mapa === next.mapa && !porta){
     const d = Math.hypot(next.x - prev.x, next.z - prev.z);
     if (d > POS_PULO_M) return { pos: prev, mudou: false };
+    /* `chegada` is how this map was entered; a shared Center/Mart room needs it to know its town and street exit.
+       Only a door sets it, so walking on keeps the one stored. */
+    if (prev.chegada) next.chegada = prev.chegada; else delete next.chegada;
   }
   if (prev && prev.mapa === next.mapa
     && Math.abs(prev.x - next.x) < 0.08

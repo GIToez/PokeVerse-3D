@@ -22,6 +22,12 @@ ok(!outro.mudou && outro.pos.x === 400, 'a later jump without a door is still ig
 const url = aceitarPos(kanto, { mapa: '4120017', x: 0, z: 0 }, {});
 ok(!url.mudou && url.pos.mapa === 'kanto', 'URL / relog cannot pick another map');
 
+const centro = aceitarPos(kanto, { mapa: '4110001', x: 0, z: -2, chegada: 7140301 }, { porta: true }).pos;
+const noBalcao = aceitarPos(centro, { mapa: '4110001', x: 4, z: -25 }, {});
+ok(noBalcao.mudou && noBalcao.pos.chegada === 7140301, 'walking inside a shared Center keeps the town it was entered from');
+const trocaCidade = aceitarPos(centro, { mapa: '4110001', x: 1, z: -3, chegada: 7140101 }, {});
+ok(trocaCidade.pos.chegada === 7140301, 'without a door the client cannot change the arrival');
+
 ok(!posLimpa({ mapa: 'kanto' }), 'position without x,z is rejected');
 ok(posDaConta({ posGm: { mapa: 'kanto', x: 1, z: 2 }, pos: kanto }).x === 1, 'GM teleport wins spawn');
 ok(posDaConta({ pos: kanto }).z === 20, 'walk position is what GET /save returns');
