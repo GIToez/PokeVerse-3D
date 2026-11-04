@@ -20,7 +20,7 @@ const fmt = n => Number(n).toLocaleString('en-US');
 export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) {
   const [especies, modelosR] = await Promise.all([ref.especies(), api('/admin/modelos')]);
   const nomeSp = n => especies.get(+n)?.nome || `No. ${n}`;
-  const maxDex = Math.max(...especies.keys());
+  const minDex = Math.min(...especies.keys()), maxDex = Math.max(...especies.keys());
   const glbsDe = {}; for (const { glb, dex } of modelosR.modelos || []) (glbsDe[dex] ||= []).push(String(glb).replace(/\.glb$/, ''));
 
   const D = {}, O = {};                                                      // D = em edição, O = como está no disco (texto)
@@ -54,7 +54,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
   // ── Lista ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
   function renderLista() {
     const so = $('.soMud').checked, out = [];
-    for (let n = 1; n <= maxDex; n++) {
+    for (let n = minDex; n <= maxDex; n++) {
       const nome = nomeSp(n);
       if (filtro && !`${n} ${pad(n)} ${nome}`.toLowerCase().includes(filtro)) continue;
       const mud = mudouDex(n);
