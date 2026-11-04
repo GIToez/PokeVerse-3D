@@ -8573,6 +8573,10 @@ async function falarCom(n){
   else if (n.papel === 'cura') curarTime(n);                               // Joy: cura o time depois da fala
   else if (n.papel === 'caixa') Menus.abrir('pokemon', 'caixa');           // balcão do PC: abre a Caixa
   else if (n.papel === 'loja') Menus.abrir('mercado', String(n.cfg));         // vendedor: a loja da cidade (o cfg remapeado É o id da loja)
+  else if (n.papel === 'creche' || n.papel === 'daycare') Menus.abrir('creche');
+  else if (n.papel === 'terreno' || n.papel === 'horta') Menus.abrir('terreno');
+  else if (n.papel === 'guilda' || n.papel === 'guild') Menus.abrir('guilda');
+  else if (n.papel === 'balsa' || n.papel === 'ferry') Menus.abrir('balsa');
   else if (n.papel === 'treinador') desafiarTreinador(n);                  // ⚔: convite pra batalha por turno
 }
 /* ---------------------------------------------------------------- mesa dos iniciais (laboratório)

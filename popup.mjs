@@ -452,6 +452,30 @@ export function mostrarExtra(pop, nome, on = null, pos = null){
 }
 /** Aplica uma referência de estado VETORIAL a uma célula: arte da célula (se a referência tiver), cor/borda dos `ret`
     de mesmo nome, cor dos `txt` de mesmo id, e as imagens de exemplo dos `img/` (bolinha, cadeado). */
+/** Nodes a state-ref draws that the base cell did not have. They stay hidden until mostrarDoRef. */
+export function filhosDoRef(pop, el, ref, estado){
+  const d = pop?.__refs?.[ref]?.[estado];
+  if (!d || !el) return [];
+  const g = [];
+  (d.filhos || []).forEach((f, i) => {
+    if (!f?.nome) return;
+    const c = el.querySelector(':scope > [data-fig="' + f.nome + '"]');
+    if (c){
+      if (c.dataset.doRef != null && !c.dataset.doRef.split(' ').includes(estado)) c.dataset.doRef += ' ' + estado;
+      return;
+    }
+    const n = desenhar(f, el, i, pop);
+    n.style.display = 'none';
+    n.dataset.doRef = estado;
+    g.push(n);
+  });
+  return g;
+}
+export function mostrarDoRef(el, estado){
+  for (const n of el?.querySelectorAll(':scope > [data-do-ref]') || [])
+    n.style.display = estado && n.dataset.doRef.split(' ').includes(estado) ? (n.dataset.txt ? n.dataset.display || 'flex' : 'block') : 'none';
+}
+export const EXT_IMG = /\.(png|jpe?g|webp)(\?|#|$)/i;
 export function estadoRef(pop, el, ref, estado){
   const R = pop?.__refs?.[ref]; const d = R?.[estado]; if (!d || !el) return null;
   if (d.img) el.style.backgroundImage = 'url(' + d.img + ')'; else if (Object.values(R).some(x => x.img)) el.style.backgroundImage = 'none';
@@ -512,7 +536,10 @@ export function item(pop, i, prefixo = 'item-time'){ return pop?.querySelector('
 export function grupo(pop, nome){ return pop?.querySelector('[data-fig="' + nome + '"]'); }
 
 export function texto(pop, id, s, dentro = null){
-  s = tr(s);                                                               // idioma (11/09): valor em pt vira o do jogador; número e nome passam direto
+  return textoCru(pop, id, tr(s), dentro);                                 // idioma (11/09): valor em pt vira o do jogador; número e nome passam direto
+}
+/** Same write as texto(), without translating. Callers that already translated (or must keep a name) use this. */
+export function textoCru(pop, id, s, dentro = null){
   const el = noDe(pop, 'data-txt', id, dentro); if (!el) return null;
   const v = s == null ? '' : String(s);
   /* Texto com QUEBRA escrita (rodada 26: a descrição da raid `[quebrar:3]` vem em 3 frases separadas por \n): o `white-space:normal`
@@ -797,6 +824,16 @@ export function golpeVazio(pop, i, vazio){
   if (arte) g.style.backgroundImage = 'url(' + arte + ')';
   if (vazio){ texto(pop, 'golpe-nome', '', g); texto(pop, 'golpe-info', '', g); badge(pop, 'golpe-tipo', null, null, g); const selo = g.querySelector(':scope > [data-fig="selo-categoria"]'); if (selo) selo.style.display = 'none'; }
   return g;
+}
+/** Highlights the chosen filter chip and dims the rest of that row. */
+export function marcarFiltro(el){
+  const row = el?.parentElement; if (!row) return;
+  for (const a of row.querySelectorAll(':scope > [data-tag="filtro"]')){
+    const on = a === el;
+    a.dataset.filtro = on ? 'ativo' : '';
+    for (const m of a.querySelectorAll(':scope > [data-sobre="ativa"], :scope > [data-fig="marca-ativa"]')) m.style.display = on ? 'block' : 'none';
+    for (const t of a.querySelectorAll('[data-cor-aba]')) t.style.color = on ? '#1D2B45' : '#EAF6FB';
+  }
 }
 /** Aba ativa: troca a arte das duas (ativa/inativa vêm da própria maquete) e avisa quem montou. */
 export function trocarAba(pop, nome){

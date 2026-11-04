@@ -10,6 +10,8 @@ const cache = new Map();                                                  // idi
 
 export const idioma = () => atual;
 export const ehPt = () => atual === 'pt';
+const LOCAIS = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
+export const local = () => LOCAIS[atual] || 'en-US';
 function escolhaGuardada(){
   try {
     if (localStorage.getItem(LS_ESCOLHA) !== '1') return null;
@@ -118,6 +120,7 @@ function travaTradutor(){
 try { travaTradutor(); } catch {}
 const TEM_LETRA = /[A-Za-zÀ-ú]/;
 /** Traduz. `vars` preenche {x} no resultado (e no original, quando não há tradução). Nunca lança; texto que não é string volta igual. */
+export const tNome = s => t(s);
 export function t(s, vars = null){
   if (typeof s !== 'string' || !s) return s;
   let r = s;

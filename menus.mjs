@@ -26,6 +26,14 @@ import * as Evolucao from './evolution.mjs';
 import * as Teclas from './keys.mjs';                                   // remappable keys: the window keys below come from Settings → Controls
 import * as PrefAparelho from './device_prefs.mjs';
 import * as RegrasItem from './item_rules.mjs';                          // Pokémart: the dump's stock + Great/Ultra Ball etc. unlocked by badges                    // per-device toggles (other players' names, floating damage)
+import * as CrecheUI from './daycare_ui.mjs';
+import * as TerrenoUI from './plot_ui.mjs';
+import * as TerrenoEstado from './plot_state.mjs';
+import * as HortaUI from './garden_ui.mjs';
+import * as OvosUI from './incubator_ui.mjs';
+import * as GuildaUI from './guild_ui.mjs';
+import * as Balsa from './ferry_ui.mjs';
+import * as FeiraUI from './market_ui.mjs';
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -179,6 +187,11 @@ export const JANELAS = {
   treinador: { titulo: 'Trainer', icone: 'personagem', tecla: 'KeyU', sub: 'badges, money' },
   loja:      { titulo: 'Shop', icone: 'loja', sub: 'outfits and effects for Coins' },   // Nov 2: the cosmetics shop (abrirGuarda, tab Shop). Coins only, no real-money payments
   guarda:    { titulo: 'Wardrobe', icone: 'personagem', sub: 'outfits and effects' },   // PREMIUM (GDD §7.5: doação → Medalhão trocável, cosméticos) — só "em breve" até o servidor; o Pokémart é outra janela
+  creche:    { titulo: 'Daycare', icone: 'pokebola', sub: 'leave a pair with Hideko' },
+  terreno:   { titulo: 'Land', icone: 'mapa', sub: 'garden and eggs' },
+  guilda:    { titulo: 'Guild', icone: 'amigos', sub: 'find or start a guild' },
+  feira:     { titulo: 'Market', icone: 'loja', sub: 'player listings' },
+  balsa:     { titulo: 'Ferry', icone: 'mapa', sub: 'the Sevii ferry' },
   mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },  // só pelo vendedor da loja da cidade (NPC papel 'loja'): não fica no menu
   social:    { titulo: 'Social', icone: 'amigos', sub: 'chat, friends, mail', breve: true },
   batalha:   { titulo: 'Battle', icone: 'batalha', sub: 'PvP, ranking', breve: true },
@@ -187,6 +200,71 @@ export const JANELAS = {
   raid:      { titulo: 'Raid', icone: 'batalha', sub: 'live raid', oculto: true },   // rodada 26: banner da raid ao vivo — só abre pelo btn-raid do HUD (raid_ui.mjs)
 };
 const ORDEM = Object.keys(JANELAS);
+const RECURSO_JANELA = new Set(['creche', 'terreno', 'guilda', 'feira', 'balsa']);
+function soltarJanelaRecurso(){ if (RECURSO_JANELA.has(aberta)) aberta = null; }
+function listasCreche(){
+  const entrada = (e, i) => {
+    if (!e || typeof e !== 'object') return null;
+    const dex = Math.floor(+e.dex || +ctx.dexDoGlb?.(e.glb) || 0);
+    if (!(dex > 0)) return null;
+    const uid = e.uid != null && e.uid !== '' ? String(e.uid) : 'local-' + i + '-' + dex;
+    return { uid, dex, nome: String(e.nome || ''), lv: Math.max(1, Math.floor(+e.lv || 1)), sexo: e.sexo ?? null, ivs: Array.isArray(e.ivs) ? e.ivs.slice(0, 6) : null, shiny: !!e.shiny, travado: !!e.travado };
+  };
+  return { time: timeAtual().map(entrada).filter(Boolean), caixa: (ctx.lerLS?.('caixa', []) || []).map(entrada).filter(Boolean), moedas: dinheiro() };
+}
+function estadoCreche(){ return { vista: TerrenoEstado.ovos() || null, ...listasCreche(), macho: null, femea: null }; }
+async function abrirRecursoJanela(nome){
+  fechar();
+  fecharGrade();
+  let ok = false;
+  try {
+    if (nome === 'creche') ok = !!CrecheUI.abrir(estadoCreche());
+    else if (nome === 'terreno') ok = !!TerrenoUI.abrir({ aba: 'horta' });
+    else if (nome === 'guilda') ok = !!(await GuildaUI.abrir());
+    else if (nome === 'feira') ok = !!(await FeiraUI.abrir());
+    else if (nome === 'balsa') ok = !!Balsa.abrir('balcao');
+  } catch (e){ console.warn(nome, e); ok = false; }
+  if (ok) aberta = nome;
+  else Chat.sistema('That window is not in this layout.');
+}
+function ligarRecursos(){
+  const gancho = {
+    segurar: el => DIALOGOS.add(el),
+    fecharMenu: () => { fechar(); fecharGrade(); },
+    Som: ctx.Som,
+    avisar: t => Chat.sistema(t),
+    aviso: t => Chat.sistema(t),
+    popups: () => {
+      const ori = ctx.MOBILE ? (Hud.presetAtual() === 'celular_deitado' ? 'deitado' : null) : 'pc';
+      return ori ? (ctx.jogo?.hudLayout?.popups?.[ori] || null) : null;
+    },
+    defPopup,
+    estadoCreche: listasCreche,
+    aoFecharJanela: soltarJanelaRecurso,
+    sistema: () => false,
+    item: id => D?.itens?.[id] || null,
+  };
+  CrecheUI.instalar(gancho);
+  TerrenoUI.instalar(gancho);
+  HortaUI.instalar(gancho);
+  OvosUI.instalar(gancho);
+  TerrenoEstado.instalar({ chat: t => Chat.sistema(t) });
+  GuildaUI.instalar({
+    ...gancho,
+    pedir: async op => op === 'vista'
+      ? { ok: true, vista: { guilda: null, convites: [], lista: [], pedidos: [], agora: Date.now(), eu: { fundar: { custo: 0, pode: false, porque: 'Guilds need the server.' } } } }
+      : { ok: false, erro: 'Guilds need the server. You can look around, but nothing is saved yet.' },
+  });
+  Balsa.instalar({
+    dados: () => (typeof ctx.dados === 'function' ? ctx.dados() : ctx.dados) || null,
+    fecharMenu: () => { fechar(); fecharGrade(); },
+    Chat,
+    segurar: el => DIALOGOS.add(el),
+    aoFecharJanela: soltarJanelaRecurso,
+    emTurno: () => !!ctx.jogo?.emTurno?.(),
+  });
+  FeiraUI.instalar({ defPopup, aviso: t => Chat.sistema(t), fecharMenu: () => { fechar(); fecharGrade(); }, aoFecharJanela: soltarJanelaRecurso });
+}
 
 export function instalar(c){
   ctx = c;
@@ -200,6 +278,7 @@ export function instalar(c){
   document.body.appendChild(j);
   addEventListener('keydown', tecla, true);
   document.addEventListener('hud:abrir', ev => abrirRecurso(String(ev.detail || '')));   // rodada 29: atalhos Eventos/Loja e ícones sem janela do HUD v2
+  ligarRecursos();
   if (PREVIA_URL){ let n = 0; const tenta = () => { if (ctx.jogo?.hudLayout?.popups){ previa(true); return; } if (++n < 80) setTimeout(tenta, 500); }; setTimeout(tenta, 500); }   // rodada 30: ?previa=1 abre a paleta assim que o layout v2 estiver montado
   setInterval(() => { if (ctx?.jogo?.ativo) ctx.gravarLS('tempo', (ctx.lerLS('tempo', 0) || 0) + 10); }, 10000);   // tempo de jogo, em segundos
 }
@@ -213,7 +292,7 @@ async function dados(){
    Enquanto um deles existir, `aberto()` vale true e as teclas do jogo ficam de fora (o `tecla` abaixo). Um Set: aberto() roda todo quadro. */
 const DIALOGOS = new Set();
 function dialogoAberto(){ for (const d of DIALOGOS){ if (d.isConnected) return true; DIALOGOS.delete(d); } return false; }
-export const aberto = () => !!aberta || !$('menu-grade')?.hidden || dialogoAberto() || !!(popEb && Popup.aberto(popEb)) || !!(popIn && Popup.aberto(popIn));   // 18/09: a escolha do inicial (v2) também segura o jogo
+export const aberto = () => !!aberta || !$('menu-grade')?.hidden || dialogoAberto() || !!(popEb && Popup.aberto(popEb)) || !!(popIn && Popup.aberto(popIn)) || CrecheUI.aberto() || TerrenoUI.aberto() || GuildaUI.aberto() || Balsa.aberto() || FeiraUI.aberto();   // 18/09: a escolha do inicial (v2) também segura o jogo
 export function alternarGrade(){ if (aberta) fechar(); else { const g = $('menu-grade'); g.hidden = !g.hidden; ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); } }
 function fecharGrade(){ $('menu-grade').hidden = true; }
 function marcarMapaCheio(on){
@@ -223,10 +302,11 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if (nome === 'loja' || nome === 'guarda'){ abrirGuarda(nome === 'loja' ? 'loja' : 'roupas'); return; }   // Wardrobe / cosmetics shop (Nov 2)
+  if (nome === 'creche' || nome === 'terreno' || nome === 'guilda' || nome === 'feira' || nome === 'balsa'){ await abrirRecursoJanela(nome); return; }
   if (nome === 'batalha' && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
   fecharGrade(); aberta = nome; abaAtual = aba; avisarRaid();
   if (nome === 'pokemon'){ reaprenderAberto = false; try { ctx.recuperarGolpes?.(); } catch (e){ console.warn('golpes perdidos:', e); } }   // 18/09: abrir a janela Pokémon confere os golpes do learnset até o nível (o que ficou pra trás entra ou vira pendência)
@@ -271,6 +351,7 @@ function abas(lista){
 }
 function render(){
   if (!aberta) return;
+  if (RECURSO_JANELA.has(aberta)) return;
   if (!D){ dados().then(repintar); return; }                             /* 19/09 (#relatos, Firefox): clique numa aba ou capítulo do pop-up enquanto o menu_data.json ainda baixava (a 1ª janela aberta na sessão) chegava aqui com D null e quebrava em D.itens; espera a tabela e pinta de novo */
   if (aberta === 'pokemon' && abaAtual === 'caixa' && popBx && Popup.aberto(popBx)){ encherBox(popBx); return; }
   if (aberta === 'pokemon' && popPk && Popup.aberto(popPk)){ encherPokemon(popPk); return; }
@@ -4553,7 +4634,8 @@ export function abrirInicial({ lista, palco = null, aoEscolher = null, semEscolh
 function abrirRecurso(nome){
   if (!nome) return;
   if (nome === 'loja'){ abrir('loja'); return; }                         // the cosmetics shop exists now (Nov 2)
-  if (['fliperama', 'batalha', 'guilda', 'mercado', 'eventos'].includes(nome)){ if (!abrirEmBreve(nome)) abrir(nome === 'eventos' || nome === 'fliperama' ? 'loja' : nome); return; }
+  if (nome === 'guilda' || nome === 'mercado'){ abrir(nome === 'mercado' ? 'feira' : nome); return; }
+  if (['fliperama', 'batalha', 'eventos'].includes(nome)){ if (!abrirEmBreve(nome)) abrir(nome === 'eventos' || nome === 'fliperama' ? 'loja' : nome); return; }
   abrir(nome);
 }
 /* ===== RODADA 30 (18/09): MODO PRÉVIA do adm — pedido da Amanda: abrir dentro do jogo as telas da maquete v2 que ainda não têm função

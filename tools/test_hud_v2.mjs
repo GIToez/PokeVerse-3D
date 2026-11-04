@@ -90,6 +90,11 @@ assert.match(menus, /pointercancel/, 'a cancelled phone tap on My party still st
 const drag = readFileSync(join(root, 'drag_team.mjs'), 'utf8');
 assert.match(drag, /export const arrastando/, 'a tap waits out a drag');
 assert.match(menus, /COMING SOON/, 'the shop banner is in English');
+assert.match(menus, /CrecheUI\.abrir/, 'the daycare opens its window');
+assert.match(menus, /TerrenoUI\.abrir/, 'the land window opens the garden');
+assert.match(menus, /GuildaUI\.abrir/, 'the guild opens its window');
+assert.match(menus, /FeiraUI\.abrir/, 'the player market opens its window');
+assert.match(menus, /Balsa\.abrir\('balcao'\)/, 'the ferry opens without a guessed stop');
 const popup = readFileSync(join(root, 'popup.mjs'), 'utf8');
 assert.match(popup, /data-fig\^="encaixe-"/, 'party slots in the box receive taps');
 assert.match(popup, /data-fig\^="casa-"/, 'box cells receive taps');
