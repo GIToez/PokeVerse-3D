@@ -14,6 +14,7 @@ const ARTE = [
   './ui/amanda/mapa/foto/',
   './ui/amanda/mapa/foto-alta/',
   './ui/amanda/mapa/sevii/',
+  './ui/amanda/mapa/johto/',
   './ui/amanda/mapa/sub/',
   './ui/amanda/mapa/borda.webp',
   './ui/amanda/mapa/agua.png',
@@ -48,7 +49,7 @@ const FILTROS = [
   ['ginasio', 'Gym'],
   ['missoes', 'Missions'],
   ['servicos', 'Lab, school, museum, daycare'],
-  ['balsa', 'Balsa'],
+  ['balsa', 'Ferry'],
   ['entradas', 'Entrances and caves'],
   ['rotas', 'Route names'],
 ];
@@ -61,6 +62,9 @@ let pop = null,
   camada = null,
   caixaFiltro = null;
 const REG = {};
+const REGIOES = ['kanto', 'sevii', 'johto'];
+const NOME_REGIAO = { kanto: 'Kanto', sevii: 'Sevii Islands', johto: 'Johto' };
+const ROTULO_REGIAO = { kanto: 'Kanto', sevii: 'Sevii', johto: 'Johto' };
 let PONTOS = null,
   HABITATS = null,
   carga = null,
@@ -83,6 +87,10 @@ function carregar() {
   return (carga ||= Promise.all([
     lerDadosJs(arte('dados.js')),
     lerDadosJs(arte('sevii/dados.js')),
+    lerDadosJs(arte('johto/dados.js')).catch((e) => {
+      console.warn('map: Johto data did not arrive', e);
+      return null;
+    }),
     fetch(url('./data/mapa_pontos.json'))
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null),
@@ -90,9 +98,10 @@ function carregar() {
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null),
   ])
-    .then(([k, s, p, h]) => {
+    .then(([k, s, j, p, h]) => {
       REG.kanto = k;
       REG.sevii = s;
+      if (j) REG.johto = j;
       PONTOS = p || {};
       HABITATS = h || { areas: {}, generico: [] };
       falhou = false;
@@ -106,7 +115,7 @@ function carregar() {
 const D = () => REG[est.reg] || null;
 const LUG = {};
 const lugaresDe = (r) => LUG[r] || (REG[r] && PONTOS ? (LUG[r] = Lug.lugares(REG[r], PONTOS[r], HABITATS)) : []);
-const todosLugares = () => [...lugaresDe('kanto'), ...lugaresDe('sevii')];
+const todosLugares = () => REGIOES.flatMap((r) => lugaresDe(r));
 const campeao = () => {
   const u = new URLSearchParams(location.search);
   return u.has('elite') ? u.get('elite') !== '0' : !!dep.lerLS?.('eliteVencida', false);
@@ -255,7 +264,7 @@ function ondeEstou() {
   } else {
     const h = (t) => {
       if (c == null) return null;
-      for (const r of ['kanto', 'sevii']) {
+      for (const r of REGIOES) {
         const v = PONTOS?.[r]?.[t]?.[c];
         const p = t === 'cenas' ? v?.[0] : v;
         if (p) return [r, p];
@@ -263,7 +272,7 @@ function ondeEstou() {
       return null;
     };
     const i = () => {
-      for (const r of ['kanto', 'sevii']) {
+      for (const r of REGIOES) {
         const l = PONTOS?.[r]?.cenas?.[b];
         if (l?.length) return [r, l[0]];
       }
@@ -283,7 +292,7 @@ function ondeEstou() {
     : null;
 }
 function areaDados(b) {
-  for (const r of ['kanto', 'sevii']) {
+  for (const r of REGIOES) {
     const a = REG[r]?.areas?.find((v) => +v.id === +b);
     if (a) return { a, r };
   }
@@ -293,7 +302,7 @@ function nomeDaArea(b, c = true) {
   const x = areaDados(b),
     L = lang();
   if (x) return (c && x.a.tipo === 'cidade' ? x.a.curto?.[L] : x.a.nome?.[L]) || x.a.nome?.pt;
-  for (const r of ['kanto', 'sevii'])
+  for (const r of REGIOES)
     for (const s of REG[r]?.submapas || []) if (+s.area === +b) return s.nome?.[L] || s.nome?.pt;
   const n = dep.nomeArea?.(b);
   return n ? tr(n) : null;
@@ -322,14 +331,14 @@ function missaoAtiva() {
 function alvoDoPasso(p) {
   if (!p || !PONTOS) return null;
   for (const c of [].concat(p.cfgs ?? [], p.cfg ?? []))
-    for (const r of ['kanto', 'sevii']) {
+    for (const r of REGIOES) {
       const q = PONTOS[r]?.npcs?.[c];
       if (q) return { reg: r, x: q[0], z: q[1], area: q[2] };
     }
   for (const a of [].concat(p.area ?? [], p.areas ?? [])) {
     const x = areaDados(a);
     if (x && !x.a.aParte) return { reg: x.r, x: x.a.ancora[0], z: x.a.ancora[1], area: +a };
-    for (const r of ['kanto', 'sevii']) {
+    for (const r of REGIOES) {
       const q = PONTOS[r]?.areas?.[a];
       if (q) return { reg: r, x: q[0], z: q[1], area: q[2] };
     }
@@ -347,7 +356,7 @@ function marcasNoMapa() {
   }
   const l = [];
   for (const [b, c] of m)
-    for (const r of ['kanto', 'sevii']) {
+    for (const r of REGIOES) {
       const q = PONTOS[r]?.npcs?.[b];
       if (q) {
         l.push({ reg: r, cfg: b, tipo: c, x: q[0], z: q[1], area: q[2] });
@@ -521,25 +530,44 @@ function pintarMenuRegiao() {
   const b = a.querySelector('[data-fig="item-regiao-kanto"]'),
     c = a.querySelector('[data-fig="item-regiao-sevii"]');
   if (!b || !c) return;
-  const d = b.querySelector('[data-txt="regiao-nome"]'),
-    e = c.querySelector('[data-txt="regiao-nome"]');
   if (b.dataset.arte0 == null) {
     b.dataset.arte0 = b.style.backgroundImage;
     c.dataset.arte0 = c.style.backgroundImage;
-    b.dataset.cor0 = d?.style.color || '';
-    c.dataset.cor0 = e?.style.color || '';
+    b.dataset.cor0 = b.querySelector('[data-txt="regiao-nome"]')?.style.color || '';
+    c.dataset.cor0 = c.querySelector('[data-txt="regiao-nome"]')?.style.color || '';
   }
-  const [f, g] = est.reg === 'sevii' ? [c, b] : [b, c],
-    h = b.dataset.arte0,
-    i = c.dataset.arte0;
-  f.style.backgroundImage = i;
-  g.style.backgroundImage = h;
-  const j = f.querySelector('[data-txt="regiao-nome"]'),
-    k = g.querySelector('[data-txt="regiao-nome"]');
-  if (j) j.style.color = c.dataset.cor0;
-  if (k) k.style.color = b.dataset.cor0;
-  Popup.texto(pop, 'regiao-nome', 'Kanto', b);
-  Popup.texto(pop, 'regiao-nome', 'Sevii Islands', c);
+  // The Figma menu only has Kanto and Sevii: extra regions are copies of the Sevii row, one row lower each,
+  // on a CSS panel that grows with them (the panel art is a fixed 2-row image).
+  const passo = M.px(c, 'top') - M.px(b, 'top');
+  const itens = { kanto: b, sevii: c };
+  REGIOES.filter((r) => !itens[r] && REG[r]).forEach((r, n) => {
+    let e = a.querySelector('[data-fig="item-regiao-' + r + '"]');
+    if (!e) {
+      e = c.cloneNode(true);
+      e.dataset.fig = 'item-regiao-' + r;
+      e.dataset.tagval = 'regiao:' + r;
+      e.style.top = M.px(c, 'top') + passo * (n + 1) + 'px';
+      a.appendChild(e);
+    }
+    itens[r] = e;
+  });
+  const linhas = Object.keys(itens).length;
+  if (linhas > 2) {
+    if (a.dataset.h0 == null) a.dataset.h0 = M.px(a, 'height');
+    a.style.height = +a.dataset.h0 + passo * (linhas - 2) + 'px';
+    a.style.backgroundImage = 'none';
+    a.style.background = 'linear-gradient(#1C3D66,#11294A)';
+    a.style.border = '2px solid #3E78B5';
+    a.style.borderRadius = '14px';
+    a.style.boxSizing = 'border-box';
+  }
+  for (const [r, e] of Object.entries(itens)) {
+    const on = r === est.reg;
+    e.style.backgroundImage = on ? b.dataset.arte0 : c.dataset.arte0;
+    const t = e.querySelector('[data-txt="regiao-nome"]');
+    if (t) t.style.color = on ? b.dataset.cor0 : c.dataset.cor0;
+    Popup.texto(pop, 'regiao-nome', NOME_REGIAO[r], e);
+  }
 }
 function trocarRegiao(a, b = null) {
   est.reg = a;
@@ -1079,7 +1107,7 @@ function camadaViva() {
     saida: tr('Exit'),
     ver: tr('View map'),
     voltar: tr('Kanto'),
-    balsa: tr('Balsa'),
+    balsa: tr('Ferry'),
     sevii: tr('Sevii Islands'),
   };
   const i = missaoAtiva(),
@@ -1372,7 +1400,7 @@ function pintarControles() {
     i = Popup.grupo(pop, 'btn-regiao');
   if (i) {
     i.style.display = g ? 'none' : 'block';
-    Popup.textoCru(pop, 'regiao', est.reg === 'sevii' ? tr('Sevii') : tr('Kanto'));
+    Popup.textoCru(pop, 'regiao', tr(ROTULO_REGIAO[est.reg] || 'Kanto'));
   }
   const j = Popup.extra(pop, 'btn-voltar-kanto');
   if (j) {

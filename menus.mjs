@@ -35,6 +35,8 @@ import * as GuildaUI from './guild_ui.mjs';
 import * as Balsa from './ferry_ui.mjs';
 import * as FeiraUI from './market_ui.mjs';
 import * as EventosUI from './events_ui.mjs';
+import * as MapaUI from './map_ui.mjs';                                   // v2 world map (Kanto, Sevii, Johto); ?worldmap=v1 keeps the old one
+import * as MapaViagem from './map_travel.mjs';
 import * as PokemartUI from './pokemart_ui.mjs';
 import * as LojaUI from './shop_ui.mjs';                                  // Diamond Shop + Battle Pass (server_shop.mjs / server_season.mjs)
 import * as Guia from './mission_guide.mjs';
@@ -287,6 +289,19 @@ function ligarRecursos(){
     abrirRaid: () => Chat.sistema('Raids open from the raid banner.'),
     raidEstado: () => null,
   });
+  MapaUI.instalar({
+    jogo: () => ctx.jogo,
+    areaAtual: () => areaDoJogador(),
+    cena: () => ctx.dados?.mapa ?? null,
+    nomeArea: a => ctx.nomeArea?.(a) || null,
+    missoes: () => ctx.missoes || null,
+    lerLS: (k, p) => ctx.lerLS?.(k, p),
+    dexEstado: () => ctx.lerLS?.('dex', {}) || {},
+    iconeMon: a => iconeMonDex(a),
+    Som: ctx.Som,
+    soltar: () => { if (aberta === 'mapa') aberta = null; },
+  });
+  MapaViagem.instalar({ voar: () => ctx.voar, fecharMenu: () => fechar() });
   PokemartUI.instalar({
     dados: () => D,
     estoque: id => RegrasItem.estoque(D?.lojas, id),
@@ -445,7 +460,7 @@ function render(){
   if (aberta === 'mochila' && popMo && Popup.aberto(popMo)){ encherMochila(popMo); return; }
   if (aberta === 'missoes' && popMi && Popup.aberto(popMi)){ encherMissoes(popMi); return; }
   if (aberta === 'treinador' && popTr && Popup.aberto(popTr)){ encherTreinador(popTr); return; }
-  if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ rMapaMundo(popMa.querySelector('.mapa-popup-corpo') || popMa); return; }
+  if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ if (MapaUI.dono(popMa)) MapaUI.pintar(); else rMapaMundo(popMa.querySelector('.mapa-popup-corpo') || popMa); return; }
   if (aberta === 'social' && popSocial && Popup.aberto(popSocial)){ fillSocial(popSocial); return; }
   if (aberta === 'pokedex' && popDx && Popup.aberto(popDx)){ encherPokedex(popDx); return; }
   if (aberta === 'config' && popCf && Popup.aberto(popCf)){ encherConfig(popCf); return; }   // rodada 24: o pop-up do Figma no lugar da tela antiga
@@ -2576,6 +2591,8 @@ function encherTreinador(pop){
 let pontosMapa = null, areaMapa = null, mapaResize = null, mapaRoda = null;
 function popupMa(){
   if (popMa) return popMa;
+  const v2 = new URLSearchParams(location.search).get('worldmap') !== 'v1' && defPopup('mapa');
+  if (v2 && MapaUI.ehNovo(v2)) return (popMa = MapaUI.montar(v2));
   let fundo = document.getElementById('pf-mapa-fundo');
   if (!fundo){
     fundo = document.createElement('div');
