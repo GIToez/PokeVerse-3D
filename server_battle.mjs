@@ -573,6 +573,12 @@ export function criarBatalha(ctx) {
       }
       for (const w of ctx.socketsDe(acc.u)) ctx.enviar(w, { t: 'elite', corrida: s.elite.corrida, vencida: !!s.elite.vencida });
     }
+    if (venceu) {
+      const conta = { treinador: 'treinador', ginasio: 'ginasio' }[bat.tipo];
+      if (conta) ctx.contarTemporada?.(acc.u, { conta });
+      if (fim.insignia) ctx.contarTemporada?.(acc.u, { conta: 'insignia' });
+      if (fim.campeao) ctx.contarTemporada?.(acc.u, { conta: 'elite' });
+    }
     gravarTime(acc, bat);
     s.bolsa = { dinheiro: s.dinheiro, itens: s.itens, bolas: s.bolas, insignias: s.insignias };
     fim.bolsa = s.bolsa;   // the client only learns about the new badge/money through this (network.mjs applies `fim.bolsa`)

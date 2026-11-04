@@ -389,6 +389,8 @@ export function criarRaid(h) {
     if (String(ws._mapa) === raid.cfg.arena) return recusa('Saia desta sala pra entrar na fila da raid.');
     if (raid.fila.size >= raid.cfg.vagas) return recusa('A fila da raid está cheia.');
     raid.fila.set(u, { u, nome: nomeDe(u), ida: false, chegou: false, dano: 0, cd: {} });
+    if (!raid.contados) raid.contados = new Set();
+    if (!raid.contados.has(u)) { raid.contados.add(u); h.aoEntrarFila?.(u); }   // once per raid: leaving and rejoining the queue doesn't count again
     sistema(ws, 'Você entrou na fila da raid do ' + raid.cfg.chefeNome + ' (' + raid.fila.size + '/' + raid.cfg.vagas + ').');
     if (raid.fase === 'anunciada' && raid.fila.size >= raid.cfg.vagas) contar();   // fila cheia: a contagem abre sozinha
     difundir();

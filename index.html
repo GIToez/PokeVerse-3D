@@ -3244,6 +3244,13 @@ function giveItem(text){
   if (!text){ Chat.sistema('Usage: /giveitem <item name or id> [amount] [@player] · /giveitem held gives every held item'); return; }
   Rede.enviar({ t: 'mod_item', texto: text });
 }
+/* /givediamonds <amount> [@player] (GM): staff Diamonds straight into that wallet (yours by default). */
+function giveDiamonds(text){
+  if (Conta.estado().modo !== 'conta'){ Chat.sistema('/givediamonds needs an account on the server.'); return; }
+  if (!GM_REAL){ Chat.sistema('/givediamonds is GM only.'); return; }
+  if (!text){ Chat.sistema('Usage: /givediamonds <amount> [@player]'); return; }
+  Rede.enviar({ t: 'mod_diamantes', texto: text });
+}
 /* /giveskates [name] (GM): with an account the server puts the skates in that bag (yours without a name); in the local game
    they go into this device's bag. */
 function darPatins(quem){
@@ -9304,7 +9311,7 @@ if (jogo.ash){
       return true;
     },
   };
-  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, balao: txt => { if (jogo.ash?.pivo) Balao.mostrar(jogo.ash.pivo, (jogo.ash.altura || 1.6) + 0.45, txt); }, aoMensagem: contarNaoLida, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.sendDm(nome, texto), ranking: () => Menus.showRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal, giveskates: quem => darPatins(quem), giveitem: text => giveItem(text),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
+  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, balao: txt => { if (jogo.ash?.pivo) Balao.mostrar(jogo.ash.pivo, (jogo.ash.altura || 1.6) + 0.45, txt); }, aoMensagem: contarNaoLida, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.sendDm(nome, texto), ranking: () => Menus.showRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal, giveskates: quem => darPatins(quem), giveitem: text => giveItem(text), givediamonds: text => giveDiamonds(text),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     hora: resto => {
       const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
       const uso = 'Use: /time night | day | dawn | dusk | 21 | 21:30 | off';

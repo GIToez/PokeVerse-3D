@@ -30,6 +30,8 @@ import { chegadaConfere } from './server_doors.mjs';
 import { temLink, podeLink, AVISO_LINK } from './chat_links.mjs';
 import { criarBolsa } from './server_bag.mjs';
 import { criarMercado } from './server_market.mjs';
+import { criarCarteira, criarLoja } from './server_shop.mjs';
+import { criarTemporada } from './server_season.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -187,6 +189,7 @@ function aplicarEvento(u, ev) {
       est.atual = proximaMissao(est.feitas);
       est.passo = 0;
       salvarMissao(u, est);
+      temporada.contar(u, { conta: 'historia' });
       return { estado: est, passoFeito: true, concluida };
     }
     salvarMissao(u, est);
@@ -628,6 +631,15 @@ function itemExiste(id) {
   } catch { return true; }                                                  // sem o arquivo (demo) não bloqueia
   return !itensCache.ids || itensCache.ids.has(String(id));
 }
+let itensTab = { mtime: -1, items: {} };
+function catalogoItens() {
+  try {
+    const arq = nodePath.join(DADOS_PUB, 'menu_data.json'), mt = fs.statSync(arq).mtimeMs;
+    if (mt !== itensTab.mtime) itensTab = { mtime: mt, items: JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {} };
+  } catch {}
+  return itensTab;
+}
+const nomeItem = id => catalogoItens().items[id]?.n || 'Item ' + id;
 function limparBolsa(d) {
   const bolsa = {};
   if (d.dinheiro !== undefined) {
@@ -994,6 +1006,16 @@ const httpServer = http.createServer((req, res) => {
       return json(200, { ok: true });
     }
 
+    if (req.method === 'GET' && rota === '/loja') return json(200, loja.info());
+    if (req.method === 'POST' && rota === '/loja/checkout') return json(503, { erro: 'Diamond purchases are not open yet.', codigo: 'loja-fechada' });
+    if (req.method === 'GET' && (rota === '/temporada' || rota === '/conta')) {
+      const u = usuarioDe(req);
+      if (!u || !contas[u]) return json(401, { erro: 'Invalid session.' });
+      if (rota === '/conta') return json(200, { usuario: u, nome: contas[u].save?.nome || u, email: '', emailVerificado: false });
+      const v = temporada.vista(contas[u]);
+      return v ? json(200, { vista: v }) : json(404, { erro: 'There is no season right now.' });
+    }
+
     if (req.method === 'POST' && rota === '/conta/personagem/apagar') {
       const u = usuarioDe(req);
       if (u && contas[u]?.save) { delete contas[u].save.personagem; salvarContas(); }
@@ -1314,16 +1336,20 @@ const wss = new WebSocketServer({
 let proxId = 1;
 // Fase 3 do painel: a lógica mora nos módulos; aqui só entram os helpers que eles reusam (os mesmos da tela Jogadores)
 const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, derrubar, logAdmin, gravarComBackup });
-const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar });
+const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n) });
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
-  shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet') });
-const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao });
+  shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }) });
+const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida });   // comprar / usar / descartar / held items (server_bag.mjs)
 const mercado = criarMercado({ dados: DADOS, dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta: u => batalha.emLuta(u) });
+const carteira = criarCarteira();
+const loja = criarLoja({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira });
+const temporada = criarTemporada({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira, itemCatalog: catalogoItens, nomeItem });
 const wilds = criarWilds({
   dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,
   expMult: () => eventos.efetivo().expMult,
+  aoDerrotar: (u, ev) => temporada.contar(u, { conta: 'ko', ...ev }),
 });
 
 function enviar(ws, obj) {
@@ -1623,6 +1649,7 @@ wss.on('connection', ws => {
             salvarContas();
             enviar(ws, { t: 'posse', op, pokemon: pk, vidas: c.save.time });
             // Dispara evento de missão de captura
+            temporada.contar(u, { conta: 'captura', dex: pk.dex });
             const rC = aplicarEvento(u, { tipo: 'captura', dex: m.pokemon?.dex });
             if (rC) enviarMissao(ws, rC);
           } else if (op === 'soltar' && m.uid && c?.save) {
@@ -1634,6 +1661,7 @@ wss.on('connection', ws => {
           } else if (op === 'evoluir' && m.uid != null && c?.save) {
             const r = evoluirNoServidor(c, m.uid, m.item ?? null);
             if (r.erro) { enviar(ws, { t: 'posse_erro', op, erro: r.erro }); return; }
+            temporada.contar(u, { conta: 'evolucao', dex: r.pk.dex });
             c.rev = (c.rev || 0) + 1;
             salvarContas();
             enviar(ws, { t: 'posse', op, uid: r.pk.uid, dex: r.pk.dex, glb: r.pk.glb, nome: r.pk.nome,
@@ -1644,6 +1672,8 @@ wss.on('connection', ws => {
         }
 
         else if (m.t?.startsWith('mercado_')) mercado.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'loja_ver' || m.t === 'loja_comprar') loja.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'temporada') temporada.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {
           const op = m.t.slice(6);

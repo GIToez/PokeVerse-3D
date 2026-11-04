@@ -211,6 +211,19 @@ export function criarModeracao(h) {
       ok({ usuario: u });
       return;
     }
+    if (op === 'diamantes') {                                                 // /givediamonds <amount> [@player] (GM): staff credit to the Diamond wallet
+      const t = String(m.texto || '').trim(), mt = /^(\d{1,6})(?:\s+@?(\S+))?$/.exec(t);
+      if (!mt || !(+mt[1] > 0)) { erro('Usage: /givediamonds <amount> [@player]'); return; }
+      const n = Math.min(100000, +mt[1]);
+      const u = mt[2] ? acharConta(mt[2]) : g;
+      if (!u) { erro('Account "' + mt[2].slice(0, 30) + '" not found'); return; }
+      const total = h.darDiamantes?.(u, n);
+      if (total == null) { erro('The Diamond wallet is not available'); return; }
+      logAdmin(g, u, 'givediamonds (chat)', { amount: n, total });
+      if (u !== g) for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: '💎 You got ' + n + ' Diamonds (balance ' + total + ').' });
+      ok({ usuario: u, n, total });
+      return;
+    }
     if (op === 'item') {                                                      // /giveitem <name | id | held> [amount] [@player] (GM)
       const r = parseGiveItem(String(m.texto || ''));
       if (r.erro) { erro(r.erro); return; }

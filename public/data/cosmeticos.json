@@ -1,5 +1,5 @@
 {
- "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); only Hero, Heroine, HeartGold & SoulSilver, Platinum, Overalls and Sport are free at creation. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `estacao` = sold only during that season (winter Dec–Feb, spring Mar–May, summer Jun–Aug); `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `premio: \"pesca\"` = fishing quest reward; `evento` = not obtainable now; `fundador` = only in the founder packs; `oculto` = hidden (no model yet). Players who already own an outfit keep it. efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
+ "_sobre": "Cosmetics (wardrobe + cosmetics shop). roupas: the dump outfits that are not on the character-creation screen (trainer_skins.json criacao:false); only Hero, Heroine, HeartGold & SoulSilver, Platinum, Overalls and Sport are free at creation. `preco` = Coins; `diamantes` = sold only in the Diamond shop; `estacao` = sold only during that season (winter Dec–Feb, spring Mar–May, summer Jun–Aug); `feriado` = holiday-exclusive, only sold during that holiday; `passe` = a Battle Pass reward; `premio: \"elite\"` = reward for beating the Elite Four; `premio: \"pesca\"` = fishing quest reward; `evento` = not obtainable now; `fundador` = only in the founder packs; `oculto` = hidden (no model yet). Players who already own an outfit keep it. mochilas: backpacks sold for `diamantes` in the Diamond shop (models in scenery/pc). efeitos: drawn by cosmetic_fx.mjs; tipo peito = around the trainer, rastro = behind the feet while walking. The server (server_bag.mjs `cosmetico`) checks price and ownership.",
  "roupas": [
   {
    "id": "boy_012",
@@ -573,6 +573,69 @@
    "fx": "folhas",
    "preco": 15000,
    "desc": "Green leaves swirl behind you."
+  }
+ ],
+ "mochilas": [
+  {
+   "id": "Bag001",
+   "nome": "Sun Backpack",
+   "diamantes": 300
+  },
+  {
+   "id": "Bag012",
+   "nome": "Classic Backpack",
+   "diamantes": 120
+  },
+  {
+   "id": "Bag014",
+   "nome": "Leather Satchel",
+   "diamantes": 120
+  },
+  {
+   "id": "Bag015",
+   "nome": "Sport Belt Bag",
+   "diamantes": 120
+  },
+  {
+   "id": "Bag016",
+   "nome": "Training Case",
+   "diamantes": 120
+  },
+  {
+   "id": "Bag017",
+   "nome": "Trail Backpack",
+   "diamantes": 150
+  },
+  {
+   "id": "Bag018",
+   "nome": "Khaki Backpack",
+   "diamantes": 150
+  },
+  {
+   "id": "Bag020",
+   "nome": "Cube Pack",
+   "diamantes": 150
+  },
+  {
+   "id": "Bag021",
+   "nome": "Rebel Backpack",
+   "diamantes": 150
+  },
+  {
+   "id": "Bag022",
+   "nome": "Adventurer's Backpack",
+   "diamantes": 250
+  },
+  {
+   "id": "Bag031",
+   "nome": "Drumstick Backpack",
+   "diamantes": 300
+  },
+  {
+   "id": "Bag036",
+   "nome": "Qixi Bag",
+   "diamantes": 400,
+   "feriado": "Qixi Festival"
   }
  ]
 }

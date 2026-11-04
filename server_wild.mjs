@@ -177,7 +177,7 @@ export function criarWilds(ctx) {
     const row = pickRow(rows);
     const lv = levelFor(row, area);
     const id = crypto.randomBytes(8).toString('hex');
-    owned.set(id, { dex: +row.dex, lv, at: now });
+    owned.set(id, { dex: +row.dex, lv, at: now, area });
     stamps.push(now);
     rolledAt.set(who.user, stamps);
     return {
@@ -249,6 +249,7 @@ export function criarWilds(ctx) {
       return { uid: p.uid, nome: p.nome, lv: p.lv, exp: p.exp, expReserva: p.expReserva || 0, amizade: p.amizade, evs: p.evs, gained: r.gained, banked: r.banked, levels: r.levels, share: true };
     });
     ctx.salvarContas?.();
+    ctx.aoDerrotar?.(who.user, { dex: wild.dex, lv: wild.lv, meuLv: mon.lv - (result.levels || 0), area: wild.area });
     const evText = Ev.textoGanho(result.ev);
     return {
       t: 'wild_exp',

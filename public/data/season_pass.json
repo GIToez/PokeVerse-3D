@@ -1,0 +1,1364 @@
+{
+ "_about": "Battle Pass season. Points come only from missions the server checks (server_season.mjs). conta: ko = wild Pokémon defeated, captura = Pokémon caught, historia = story missions finished, treinador = trainer battles won, ginasio = gym battles won (rematches count), insignia = new badges, evolucao = evolutions, elite = Elite Four beaten, raid = joined a raid queue. Filters: tipos (wild types), especies (distinct species), areas (distinct areas), desafio (wild level at least your Pokémon's). Daily missions can be finished once a day, up to `diariasPorSemana` per week. diamantes rewards go to the diamond wallet (origin: passe).",
+ "id": "S1",
+ "nome": "Season 1: The Badge Trail",
+ "inicio": "2026-11-04T00:00:00-08:00",
+ "dias": 45,
+ "pontosPorMissao": 50,
+ "pontosPorNivel": 100,
+ "maxNivel": 45,
+ "passe": {
+  "preco": 350,
+  "vendaAte": 35
+ },
+ "nivelComprado": {
+  "custo": 50
+ },
+ "diariasPorSemana": 21,
+ "diarias": [
+  {
+   "id": "S1-D01",
+   "texto": "Hunt: defeat 7 wild Pokémon",
+   "qtd": 7,
+   "conta": "ko"
+  },
+  {
+   "id": "S1-D02",
+   "texto": "Catch 4 Pokémon",
+   "qtd": 4,
+   "conta": "captura"
+  },
+  {
+   "id": "S1-D03",
+   "texto": "Three stops: defeat a wild Pokémon in 3 different areas",
+   "qtd": 3,
+   "conta": "ko",
+   "areas": true
+  },
+  {
+   "id": "S1-D10",
+   "texto": "Challenge: defeat 3 wild Pokémon at or above your Pokémon's level",
+   "qtd": 3,
+   "conta": "ko",
+   "desafio": true
+  },
+  {
+   "id": "S1-D12",
+   "texto": "Win 2 trainer battles",
+   "qtd": 2,
+   "conta": "treinador"
+  }
+ ],
+ "semanais": [
+  {
+   "semana": 1,
+   "tipo": "Rock",
+   "missoes": [
+    {
+     "id": "S1-W1-1",
+     "texto": "Catch 25 Pokémon",
+     "qtd": 25,
+     "conta": "captura"
+    },
+    {
+     "id": "S1-W1-2",
+     "texto": "Defeat 12 Rock- or Ground-type Pokémon",
+     "qtd": 12,
+     "conta": "ko",
+     "tipos": [
+      "rock",
+      "ground"
+     ]
+    },
+    {
+     "id": "S1-W1-3",
+     "texto": "Catch 5 different species",
+     "qtd": 5,
+     "conta": "captura",
+     "especies": true
+    },
+    {
+     "id": "S1-W1-4",
+     "texto": "Win 4 trainer battles",
+     "qtd": 4,
+     "conta": "treinador"
+    },
+    {
+     "id": "S1-W1-5",
+     "texto": "Finish 3 story missions",
+     "qtd": 3,
+     "conta": "historia"
+    }
+   ]
+  },
+  {
+   "semana": 2,
+   "tipo": "Water",
+   "missoes": [
+    {
+     "id": "S1-W2-1",
+     "texto": "Defeat 45 wild Pokémon",
+     "qtd": 45,
+     "conta": "ko"
+    },
+    {
+     "id": "S1-W2-2",
+     "texto": "Defeat 12 Water-type Pokémon",
+     "qtd": 12,
+     "conta": "ko",
+     "tipos": [
+      "water"
+     ]
+    },
+    {
+     "id": "S1-W2-3",
+     "texto": "Explorer: defeat wild Pokémon in 6 different areas",
+     "qtd": 6,
+     "conta": "ko",
+     "areas": true
+    },
+    {
+     "id": "S1-W2-4",
+     "texto": "Win 3 gym battles (rematches count)",
+     "qtd": 3,
+     "conta": "ginasio",
+     "requisito": "your first win and rematches both count"
+    },
+    {
+     "id": "S1-W2-5",
+     "texto": "Challenge: defeat 10 wild Pokémon at or above your Pokémon's level",
+     "qtd": 10,
+     "conta": "ko",
+     "desafio": true
+    }
+   ]
+  },
+  {
+   "semana": 3,
+   "tipo": "Electric",
+   "missoes": [
+    {
+     "id": "S1-W3-1",
+     "texto": "Catch 30 Pokémon",
+     "qtd": 30,
+     "conta": "captura"
+    },
+    {
+     "id": "S1-W3-2",
+     "texto": "Defeat 10 Electric-type Pokémon",
+     "qtd": 10,
+     "conta": "ko",
+     "tipos": [
+      "electric"
+     ]
+    },
+    {
+     "id": "S1-W3-3",
+     "texto": "Training: defeat 16 wild Pokémon",
+     "qtd": 16,
+     "conta": "ko"
+    },
+    {
+     "id": "S1-W3-4",
+     "texto": "Evolve 2 Pokémon",
+     "qtd": 2,
+     "conta": "evolucao"
+    },
+    {
+     "id": "S1-W3-5",
+     "texto": "Win 5 trainer battles",
+     "qtd": 5,
+     "conta": "treinador"
+    }
+   ]
+  },
+  {
+   "semana": 4,
+   "tipo": "Grass",
+   "missoes": [
+    {
+     "id": "S1-W4-1",
+     "texto": "Defeat 50 wild Pokémon",
+     "qtd": 50,
+     "conta": "ko"
+    },
+    {
+     "id": "S1-W4-2",
+     "texto": "Defeat 12 Grass- or Bug-type Pokémon",
+     "qtd": 12,
+     "conta": "ko",
+     "tipos": [
+      "grass",
+      "bug"
+     ]
+    },
+    {
+     "id": "S1-W4-3",
+     "texto": "Catch 6 different species",
+     "qtd": 6,
+     "conta": "captura",
+     "especies": true
+    },
+    {
+     "id": "S1-W4-4",
+     "texto": "Win 3 gym battles (rematches count)",
+     "qtd": 3,
+     "conta": "ginasio",
+     "requisito": "your first win and rematches both count"
+    },
+    {
+     "id": "S1-W4-5",
+     "texto": "Finish 3 story missions",
+     "qtd": 3,
+     "conta": "historia"
+    }
+   ]
+  },
+  {
+   "semana": 5,
+   "tipo": "Fire",
+   "missoes": [
+    {
+     "id": "S1-W5-1",
+     "texto": "Catch 30 Pokémon",
+     "qtd": 30,
+     "conta": "captura"
+    },
+    {
+     "id": "S1-W5-2",
+     "texto": "Defeat 12 Fire-type Pokémon",
+     "qtd": 12,
+     "conta": "ko",
+     "tipos": [
+      "fire"
+     ]
+    },
+    {
+     "id": "S1-W5-3",
+     "texto": "Explorer: defeat wild Pokémon in 8 different areas",
+     "qtd": 8,
+     "conta": "ko",
+     "areas": true
+    },
+    {
+     "id": "S1-W5-4",
+     "texto": "Evolve 3 Pokémon",
+     "qtd": 3,
+     "conta": "evolucao"
+    },
+    {
+     "id": "S1-W5-5",
+     "texto": "Win 6 trainer battles",
+     "qtd": 6,
+     "conta": "treinador"
+    }
+   ]
+  },
+  {
+   "semana": 6,
+   "tipo": "Psychic",
+   "missoes": [
+    {
+     "id": "S1-W6-1",
+     "texto": "Defeat 60 wild Pokémon",
+     "qtd": 60,
+     "conta": "ko"
+    },
+    {
+     "id": "S1-W6-2",
+     "texto": "Defeat 10 Psychic- or Ghost-type Pokémon",
+     "qtd": 10,
+     "conta": "ko",
+     "tipos": [
+      "psychic",
+      "ghost"
+     ]
+    },
+    {
+     "id": "S1-W6-3",
+     "texto": "Catch 8 different species",
+     "qtd": 8,
+     "conta": "captura",
+     "especies": true
+    },
+    {
+     "id": "S1-W6-4",
+     "texto": "Challenge: defeat 15 wild Pokémon at or above your Pokémon's level",
+     "qtd": 15,
+     "conta": "ko",
+     "desafio": true
+    },
+    {
+     "id": "S1-W6-5",
+     "texto": "Win 4 gym battles (rematches count)",
+     "qtd": 4,
+     "conta": "ginasio",
+     "requisito": "your first win and rematches both count"
+    }
+   ]
+  },
+  {
+   "semana": 7,
+   "tipo": "Dragon",
+   "missoes": [
+    {
+     "id": "S1-W7-1",
+     "texto": "Catch 35 Pokémon",
+     "qtd": 35,
+     "conta": "captura"
+    },
+    {
+     "id": "S1-W7-2",
+     "texto": "Defeat 8 Dragon- or Flying-type Pokémon",
+     "qtd": 8,
+     "conta": "ko",
+     "tipos": [
+      "dragon",
+      "flying"
+     ]
+    },
+    {
+     "id": "S1-W7-3",
+     "texto": "Defeat 70 wild Pokémon",
+     "qtd": 70,
+     "conta": "ko"
+    },
+    {
+     "id": "S1-W7-4",
+     "texto": "Finish 4 story missions",
+     "qtd": 4,
+     "conta": "historia"
+    },
+    {
+     "id": "S1-W7-5",
+     "texto": "Win 8 trainer battles",
+     "qtd": 8,
+     "conta": "treinador"
+    }
+   ]
+  }
+ ],
+ "temporada": [
+  {
+   "id": "S1-P1",
+   "texto": "First steps: catch 1 Pokémon",
+   "qtd": 1,
+   "conta": "captura"
+  },
+  {
+   "id": "S1-P2",
+   "texto": "First steps: defeat 5 wild Pokémon",
+   "qtd": 5,
+   "conta": "ko"
+  },
+  {
+   "id": "S1-P3",
+   "texto": "First steps: finish 1 story mission",
+   "qtd": 1,
+   "conta": "historia"
+  },
+  {
+   "id": "S1-T01",
+   "texto": "Catch 200 Pokémon",
+   "qtd": 200,
+   "conta": "captura"
+  },
+  {
+   "id": "S1-T02",
+   "texto": "Defeat 400 wild Pokémon",
+   "qtd": 400,
+   "conta": "ko"
+  },
+  {
+   "id": "S1-T03",
+   "texto": "Catch 35 different species",
+   "qtd": 35,
+   "conta": "captura",
+   "especies": true
+  },
+  {
+   "id": "S1-T04",
+   "texto": "Earn 4 badges",
+   "qtd": 4,
+   "conta": "insignia",
+   "requisito": "only new badges earned this season count"
+  },
+  {
+   "id": "S1-T05",
+   "texto": "Win 12 gym battles (rematches count)",
+   "qtd": 12,
+   "conta": "ginasio",
+   "requisito": "your first win and rematches both count"
+  },
+  {
+   "id": "S1-T06",
+   "texto": "Hunt in 20 different areas",
+   "qtd": 20,
+   "conta": "ko",
+   "areas": true
+  },
+  {
+   "id": "S1-T07",
+   "texto": "Evolve 8 Pokémon",
+   "qtd": 8,
+   "conta": "evolucao"
+  },
+  {
+   "id": "S1-T08",
+   "texto": "Challenge: defeat 50 wild Pokémon at or above your Pokémon's level",
+   "qtd": 50,
+   "conta": "ko",
+   "desafio": true
+  },
+  {
+   "id": "S1-T09",
+   "texto": "Finish 10 story missions",
+   "qtd": 10,
+   "conta": "historia"
+  },
+  {
+   "id": "S1-T10",
+   "texto": "Win 12 trainer battles",
+   "qtd": 12,
+   "conta": "treinador"
+  },
+  {
+   "id": "S1-T11",
+   "texto": "Join 3 raids",
+   "qtd": 3,
+   "conta": "raid"
+  },
+  {
+   "id": "S1-T12",
+   "texto": "Beat the Elite Four",
+   "qtd": 1,
+   "conta": "elite",
+   "requisito": "needs all 8 badges"
+  }
+ ],
+ "extras": {
+  "teto": 2,
+  "missoes": [
+   {
+    "id": "S1-X01",
+    "texto": "Raid: join any raid queue",
+    "qtd": 1,
+    "conta": "raid"
+   }
+  ]
+ },
+ "trilhas": {
+  "gratis": [
+   {
+    "nivel": 0,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 1,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 30
+     }
+    ]
+   },
+   {
+    "nivel": 2,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 3,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2002,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 4,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 5,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 6,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 7,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2012,
+      "qtd": 2
+     }
+    ]
+   },
+   {
+    "nivel": 8,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50308,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 9,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 10,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 11,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 12,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2002,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 13,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50306,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 14,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 15,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2012,
+      "qtd": 2
+     }
+    ]
+   },
+   {
+    "nivel": 16,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 17,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 18,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2024,
+      "qtd": 3
+     }
+    ]
+   },
+   {
+    "nivel": 19,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 20,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50304,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 21,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 22,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 23,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 24,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 25,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2002,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 26,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 27,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50307,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 28,
+    "premios": [
+     {
+      "tipo": "titulo",
+      "nome": "Kanto Wanderer"
+     }
+    ]
+   },
+   {
+    "nivel": 29,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2012,
+      "qtd": 3
+     }
+    ]
+   },
+   {
+    "nivel": 30,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 31,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 32,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 33,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50309,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 34,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 35,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 36,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 37,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1001,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 38,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2024,
+      "qtd": 3
+     }
+    ]
+   },
+   {
+    "nivel": 39,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 40,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50317,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 41,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 42,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 43,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2012,
+      "qtd": 2
+     }
+    ]
+   },
+   {
+    "nivel": 44,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 45,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 15
+     }
+    ]
+   }
+  ],
+  "paga": [
+   {
+    "nivel": 0,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 10
+     },
+     {
+      "tipo": "item",
+      "id": 2012,
+      "qtd": 2
+     }
+    ]
+   },
+   {
+    "nivel": 1,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 2,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 3,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 4,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2012,
+      "qtd": 3
+     }
+    ]
+   },
+   {
+    "nivel": 5,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 6,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 10
+     }
+    ]
+   },
+   {
+    "nivel": 7,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 8,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50304,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 9,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 10,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2003,
+      "qtd": 5
+     }
+    ]
+   },
+   {
+    "nivel": 11,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 12,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 25
+     }
+    ]
+   },
+   {
+    "nivel": 13,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 14,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2013,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 15,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 16,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 17,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 18,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50306,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 19,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 20,
+    "premios": [
+     {
+      "tipo": "roupa",
+      "ids": [
+       "boy_023",
+       "girl_023"
+      ]
+     }
+    ]
+   },
+   {
+    "nivel": 21,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 22,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 23,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 24,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 25
+     }
+    ]
+   },
+   {
+    "nivel": 25,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 26,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2013,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 27,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 28,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2013,
+      "qtd": 2
+     }
+    ]
+   },
+   {
+    "nivel": 29,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 30,
+    "premios": [
+     {
+      "tipo": "titulo",
+      "nome": "Season 1 Pathfinder"
+     }
+    ]
+   },
+   {
+    "nivel": 31,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 32,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50309,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 33,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 34,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 35,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 36,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 25
+     }
+    ]
+   },
+   {
+    "nivel": 37,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 38,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2013,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 39,
+    "premios": [
+     {
+      "tipo": "diamantes",
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 40,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50308,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 41,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1002,
+      "qtd": 15
+     }
+    ]
+   },
+   {
+    "nivel": 42,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 1003,
+      "qtd": 20
+     }
+    ]
+   },
+   {
+    "nivel": 43,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 2013,
+      "qtd": 3
+     }
+    ]
+   },
+   {
+    "nivel": 44,
+    "premios": [
+     {
+      "tipo": "item",
+      "id": 50317,
+      "qtd": 1
+     }
+    ]
+   },
+   {
+    "nivel": 45,
+    "premios": [
+     {
+      "tipo": "roupa",
+      "ids": [
+       "boy_049",
+       "girl_049"
+      ]
+     },
+     {
+      "tipo": "titulo",
+      "nome": "Trail Master · S1"
+     }
+    ]
+   }
+  ]
+ }
+}
