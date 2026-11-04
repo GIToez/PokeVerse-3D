@@ -334,7 +334,7 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if (nome === 'loja' || nome === 'guarda'){ abrirGuarda(nome === 'loja' ? 'loja' : 'roupas'); return; }   // Wardrobe / cosmetics shop (Nov 2)
@@ -365,8 +365,8 @@ export async function abrir(nome, aba = null){
   if (nome === 'batalha' && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
   fecharGrade(); aberta = nome; abaAtual = aba; avisarRaid();
   if (nome === 'pokemon'){ reaprenderAberto = false; try { ctx.recuperarGolpes?.(); } catch (e){ console.warn('golpes perdidos:', e); } }   // 18/09: abrir a janela Pokémon confere os golpes do learnset até o nível (o que ficou pra trás entra ou vira pendência)
-  const pop = nome === 'pokemon' ? (aba === 'caixa' ? popupBx() : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSo() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : null;
-  for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSo, popDx, popCf, popRd]) if (q && q !== pop && Popup.aberto(q)) Popup.fechar(q);   // um pop-up de cada vez (P e depois I empilhava os dois)
+  const pop = nome === 'pokemon' ? (aba === 'caixa' ? popupBx() : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSocial() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : null;
+  for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd]) if (q && q !== pop && Popup.aberto(q)) Popup.fechar(q);   // um pop-up de cada vez (P e depois I empilhava os dois)
   if (pop){                                                              // maquete do Figma no lugar da janela antiga
     $('janela').hidden = true;
     Popup.abrir(pop);
@@ -414,7 +414,7 @@ function render(){
   if (aberta === 'missoes' && popMi && Popup.aberto(popMi)){ encherMissoes(popMi); return; }
   if (aberta === 'treinador' && popTr && Popup.aberto(popTr)){ encherTreinador(popTr); return; }
   if (aberta === 'mapa' && popMa && Popup.aberto(popMa)){ rMapaMundo(popMa.querySelector('.mapa-popup-corpo') || popMa); return; }
-  if (aberta === 'social' && popSo && Popup.aberto(popSo)){ encherSocial(popSo); return; }
+  if (aberta === 'social' && popSocial && Popup.aberto(popSocial)){ fillSocial(popSocial); return; }
   if (aberta === 'pokedex' && popDx && Popup.aberto(popDx)){ encherPokedex(popDx); return; }
   if (aberta === 'config' && popCf && Popup.aberto(popCf)){ encherConfig(popCf); return; }   // rodada 24: o pop-up do Figma no lugar da tela antiga
   if (aberta === 'raid' && popRd && Popup.aberto(popRd)){ encherRaid(popRd); return; }   // rodada 26: banner da raid (quem enche é o raid_ui.mjs)
@@ -2296,7 +2296,7 @@ function encherMochila(pop){
 /* ============================================================ pop-ups da rodada 15–21 do Figma (05/09): Treinador, Mapa, Social,
    Pokédex. Mesma divisão de sempre: popup.mjs desenha, aqui ficam os dados e as regras. Cada um tem versão PC e deitado
    com os mesmos ids (defPopup escolhe). */
-let popTr = null, popMa = null, popSo = null, popDx = null;
+let popTr = null, popMa = null, popSocial = null, popDx = null;
 const pad3 = n => String(n).padStart(3, '0');
 const NOMES_NIVEL = ['unknown', 'Seen', 'Registered', 'Studied', 'Specialist', 'Master'];
 /** Pinta as N bolinhas (`ret bolinha`) de um grupo: verde até `n`, cinza depois. */
@@ -2470,7 +2470,7 @@ function encherTreinador(pop){
   /* 17/09 (auditoria dos placeholders): "ranking chega com o servidor" é texto fixo da maquete e já não é verdade (o ranking existe: /ranking no chat,
      posição na Pokédex). Fica a regra do shiny e, com conta, a posição de verdade. */
   const notaRk = pop.querySelector('[data-fig="nota-ranking"]');
-  if (notaRk){ notaRk.textContent = 'Shiny odds are 1/4,096 for everyone'; minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = p.especies.pos + ' of ' + p.total + ' in the ranking · shiny odds 1/4,096 for everyone'; }); }
+  if (notaRk){ notaRk.textContent = 'Shiny odds are 1/4,096 for everyone'; myRankingPosition().then(p => { if (p && p.species?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = '#' + p.species.pos + ' of ' + p.total + ' in the ranking · shiny odds 1/4,096 for everyone'; }); }
   Popup.texto(pop, 'obedecem', 'They obey up to Lv ' + teto + '. Above that they ignore moves. Each Badge raises the cap (' + TETO_OBED.slice(0, 8).join('/') + ', Elite 100).');
   inglesRotulos(pop);
   // colecionador
@@ -2585,238 +2585,239 @@ async function encherMapa(pop){
   pintarPinsMapa(pop);
 }
 
-/* ---------------------------------------------------------------- Social (fase 2b, 06/09: amigos e mensagens diretas pela conta) */
-let abaSo = 'amigos', soDados = null, soBusca = '', soConversa = null, soMsgs = [], soAmigoMenu = null, soCarregando = false;
-const soLigado = () => ctx.conta?.estado?.().modo === 'conta';
-const soChamar = (metodo, caminho, corpo) => soLigado() ? ctx.conta.chamar(metodo, caminho, corpo) : Promise.resolve({ ok: false, erro: 'Entre com uma conta pra ter amigos e mensagens.' });
-const tempoAtras = ms => { const s = Math.max(0, (Date.now() - ms) / 1000); return s < 90 ? 'now' : s < 3600 ? Math.round(s / 60) + 'min' : s < 86400 ? Math.round(s / 3600) + 'h' : Math.round(s / 86400) + 'd'; };
-const retrato = dex => dex ? './ui/mon/pm' + String(dex).padStart(4, '0') + '.png' : null;
-async function soCarregar(){
-  if (!soLigado() || soCarregando) return; soCarregando = true;
-  const r = await soChamar('GET', '/social'); soCarregando = false;
-  if (r.ok){ soDados = r.dados; if (popSo && Popup.aberto(popSo) && aberta === 'social') encherSocial(popSo); }
+/* ---------------------------------------------------------------- Social: friends and direct messages through the account.
+   The tab ids ('amigos', 'mensagens', 'chat') and the data-fig piece names come from the HUD layout files, so they stay as the designers named them. */
+let socialTab = 'amigos', socialData = null, socialSearch = '', socialChatWith = null, socialMessages = [], socialFriendMenu = null, socialLoading = false;
+const socialOnline = () => ctx.conta?.estado?.().modo === 'conta';
+const socialCall = (method, path, body) => socialOnline() ? ctx.conta.chamar(method, path, body) : Promise.resolve({ ok: false, erro: 'Log in with an account to have friends and messages.' });
+const timeAgo = ms => { const s = Math.max(0, (Date.now() - ms) / 1000); return s < 90 ? 'now' : s < 3600 ? Math.round(s / 60) + 'min' : s < 86400 ? Math.round(s / 3600) + 'h' : Math.round(s / 86400) + 'd'; };
+const portrait = dex => dex ? './ui/mon/pm' + String(dex).padStart(4, '0') + '.png' : null;
+async function socialLoad(){
+  if (!socialOnline() || socialLoading) return; socialLoading = true;
+  const r = await socialCall('GET', '/social'); socialLoading = false;
+  if (r.ok){ socialData = r.dados; if (popSocial && Popup.aberto(popSocial) && aberta === 'social') fillSocial(popSocial); }
   else if (r.erro) Chat.sistema('Social: ' + r.erro);
 }
-async function soAbrirConversa(com){
-  soConversa = com; abaSo = 'mensagens';
-  const r = await soChamar('GET', '/social/conversa?com=' + encodeURIComponent(com));
-  if (r.ok){ soMsgs = r.dados.mensagens || []; if (soDados){ const c = soDados.conversas.find(x => x.com === com); if (c) c.naoLidas = 0; } }
-  if (popSo && Popup.aberto(popSo)) encherSocial(popSo);
+async function socialOpenChat(withUser){
+  socialChatWith = withUser; socialTab = 'mensagens';
+  const r = await socialCall('GET', '/social/conversation?with=' + encodeURIComponent(withUser));
+  if (r.ok){ socialMessages = r.dados.messages || []; if (socialData){ const c = socialData.conversations.find(x => x.with === withUser); if (c) c.unread = 0; } }
+  if (popSocial && Popup.aberto(popSocial)) fillSocial(popSocial);
 }
-function popupSo(){
-  if (popSo) return popSo;
+function popupSocial(){
+  if (popSocial) return popSocial;
   const def = defPopup('social'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
-  popSo = Popup.montar(def, {
-    aba: a => { abaSo = a; render(); },
-    digita: (v, inp) => { if (inp?.dataset.txt === 'busca'){ soBusca = String(v || '').trim().toLowerCase(); render(); } },   // o campo de mensagem e o do convite são lidos na hora de enviar
-    abre: nome => { if (nome === 'dialogo-solicitacoes'){ Popup.mostrarExtra(popSo, nome, true); encherSolicitacoes(popSo); return true; } return false; },
-    acao: (nome, el) => { soAcao(nome, el).catch(e => Chat.sistema('Social: ' + (e?.message || e))); },
-    fechar: () => { if (aberta === 'social') aberta = null; Popup.mostrarExtra(popSo, 'tooltip-amigo', false); },
+  popSocial = Popup.montar(def, {
+    aba: a => { socialTab = a; render(); },
+    digita: (v, inp) => { if (inp?.dataset.txt === 'busca'){ socialSearch = String(v || '').trim().toLowerCase(); render(); } },   // the message and invite fields are read when sending
+    abre: name => { if (name === 'dialogo-solicitacoes'){ Popup.mostrarExtra(popSocial, name, true); fillRequests(popSocial); return true; } return false; },
+    acao: (name, el) => { socialAction(name, el).catch(e => Chat.sistema('Social: ' + (e?.message || e))); },
+    fechar: () => { if (aberta === 'social') aberta = null; Popup.mostrarExtra(popSocial, 'tooltip-amigo', false); },
   });
-  popSo.addEventListener('click', ev => {                                 // clique num amigo abre o menu dele; numa conversa, abre a conversa
-    const cel = ev.target?.closest?.('[data-fig="lista-amigos"] > [data-fig^="amigo-"]');
-    if (cel?.__amigo){
-      soAmigoMenu = cel.__amigo;
-      const rp = popSo.getBoundingClientRect(), rc = cel.getBoundingClientRect(), k = popSo.__escala || 1;
-      Popup.mostrarExtra(popSo, 'tooltip-amigo', true, { x: (rc.right - rp.left) / k - 250, y: (rc.top - rp.top) / k + 4 });
+  popSocial.addEventListener('click', ev => {                             // a friend opens their menu; a conversation opens the chat
+    const cell = ev.target?.closest?.('[data-fig="lista-amigos"] > [data-fig^="amigo-"]');
+    if (cell?.__friend){
+      socialFriendMenu = cell.__friend;
+      const rp = popSocial.getBoundingClientRect(), rc = cell.getBoundingClientRect(), k = popSocial.__escala || 1;
+      Popup.mostrarExtra(popSocial, 'tooltip-amigo', true, { x: (rc.right - rp.left) / k - 250, y: (rc.top - rp.top) / k + 4 });
       return;
     }
     const conv = ev.target?.closest?.('[data-fig^="conversa-"]');
-    if (conv?.__com){ soAbrirConversa(conv.__com); return; }
-    if (!ev.target.closest('[data-fig="tooltip-amigo"]')) Popup.mostrarExtra(popSo, 'tooltip-amigo', false);
+    if (conv?.__with){ socialOpenChat(conv.__with); return; }
+    if (!ev.target.closest('[data-fig="tooltip-amigo"]')) Popup.mostrarExtra(popSocial, 'tooltip-amigo', false);
   });
-  return popSo;
+  return popSocial;
 }
-const soInput = (pop, extra, campo) => pop.querySelector('[data-fig="' + extra + '"] [data-fig="' + campo + '"] input');
-async function soAcao(nome, el){
-  const pop = popSo;
-  if (nome === 'enviar-convite'){
-    const inp = soInput(pop, 'dialogo-convite', 'campo-nome'); const para = (inp?.value || '').trim();
-    if (!para){ Chat.sistema('Digite o nome exato do treinador.'); return; }
-    const r = await soChamar('POST', '/social/pedido', { para });
-    if (r.ok){ Chat.sistema(r.dados.amigos ? '🤝 Você e ' + r.dados.nick + ' agora são amigos.' : '📨 Convite enviado pra ' + r.dados.nick + '.'); if (inp) inp.value = ''; Popup.mostrarExtra(pop, 'dialogo-convite', false); soCarregar(); }
-    else Chat.sistema('Convite: ' + r.erro);
-  } else if (nome === 'aceitar' || nome === 'recusar'){
-    const de = el?.closest?.('[data-fig^="solicitacao-"]')?.__de; if (!de) return;
-    const r = await soChamar('POST', '/social/' + nome, { de });
-    if (r.ok) Chat.sistema(nome === 'aceitar' ? '🤝 Você e ' + (r.dados.nick || de) + ' agora são amigos.' : 'Convite recusado.'); else Chat.sistema('Social: ' + r.erro);
-    await soCarregar(); encherSolicitacoes(pop);
-  } else if (nome === 'mensagem'){
-    Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (soAmigoMenu) soAbrirConversa(soAmigoMenu.usuario);
-  } else if (nome === 'convidar'){                                        // fase 4: convite de TROCA (o PvP ainda vem depois)
+const socialInput = (pop, extra, field) => pop.querySelector('[data-fig="' + extra + '"] [data-fig="' + field + '"] input');
+async function socialAction(name, el){
+  const pop = popSocial;
+  if (name === 'enviar-convite'){
+    const inp = socialInput(pop, 'dialogo-convite', 'campo-nome'); const to = (inp?.value || '').trim();
+    if (!to){ Chat.sistema("Type the trainer's exact name."); return; }
+    const r = await socialCall('POST', '/social/request', { to });
+    if (r.ok){ Chat.sistema(r.dados.friends ? '🤝 You and ' + r.dados.nick + ' are now friends.' : '📨 Friend request sent to ' + r.dados.nick + '.'); if (inp) inp.value = ''; Popup.mostrarExtra(pop, 'dialogo-convite', false); socialLoad(); }
+    else Chat.sistema('Friend request: ' + r.erro);
+  } else if (name === 'aceitar' || name === 'recusar'){
+    const from = el?.closest?.('[data-fig^="solicitacao-"]')?.__from; if (!from) return;
+    const accept = name === 'aceitar';
+    const r = await socialCall('POST', accept ? '/social/accept' : '/social/decline', { from });
+    if (r.ok) Chat.sistema(accept ? '🤝 You and ' + (r.dados.nick || from) + ' are now friends.' : 'Friend request declined.'); else Chat.sistema('Social: ' + r.erro);
+    await socialLoad(); fillRequests(pop);
+  } else if (name === 'mensagem'){
+    Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (socialFriendMenu) socialOpenChat(socialFriendMenu.user);
+  } else if (name === 'convidar'){
     Popup.mostrarExtra(pop, 'tooltip-amigo', false);
-    if (!soAmigoMenu) return;
-    if (!ctx.trocar?.(soAmigoMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /battle ' + soAmigoMenu.nick);
-    else Chat.sistema('Trade invite sent. To battle instead: /battle ' + soAmigoMenu.nick);
-  } else if (nome === 'desfazer-amizade'){
-    Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (!soAmigoMenu) return;
-    const r = await soChamar('POST', '/social/remover', { usuario: soAmigoMenu.usuario });
-    if (r.ok) Chat.sistema(soAmigoMenu.nick + ' saiu da sua lista de amigos.'); else Chat.sistema('Social: ' + r.erro);
-    soCarregar();
-  } else if (nome === 'enviar'){
-    const inp = soInput(pop, 'conteudo-mensagens', 'campo-mensagem'); const texto = (inp?.value || '').trim();
-    if (!soConversa){ Chat.sistema('Escolha uma conversa ou abra pelo menu do amigo.'); return; }
-    if (!texto) return;
-    const r = await soChamar('POST', '/social/mensagem', { para: soConversa, texto });
-    if (r.ok){ if (inp) inp.value = ''; soMsgs.push({ de: soDados?.eu?.usuario, texto, hora: r.dados.hora, lida: true }); const nick = soDados?.amigos.find(a => a.usuario === soConversa)?.nick || soConversa; Chat.publicar('pm', texto, 'você → ' + nick); encherSocial(pop); soCarregar(); }
-    else Chat.sistema('Mensagem: ' + r.erro);
+    if (!socialFriendMenu) return;
+    if (!ctx.trocar?.(socialFriendMenu.nick)) Chat.sistema('To trade you need to be in the same area, next to each other. To battle: /battle ' + socialFriendMenu.nick);
+    else Chat.sistema('Trade invite sent. To battle instead: /battle ' + socialFriendMenu.nick);
+  } else if (name === 'desfazer-amizade'){
+    Popup.mostrarExtra(pop, 'tooltip-amigo', false); if (!socialFriendMenu) return;
+    const r = await socialCall('POST', '/social/remove', { user: socialFriendMenu.user });
+    if (r.ok) Chat.sistema(socialFriendMenu.nick + ' was removed from your friends.'); else Chat.sistema('Social: ' + r.erro);
+    socialLoad();
+  } else if (name === 'enviar'){
+    const inp = socialInput(pop, 'conteudo-mensagens', 'campo-mensagem'); const text = (inp?.value || '').trim();
+    if (!socialChatWith){ Chat.sistema("Pick a conversation, or open one from a friend's menu."); return; }
+    if (!text) return;
+    const r = await socialCall('POST', '/social/message', { to: socialChatWith, text });
+    if (r.ok){ if (inp) inp.value = ''; socialMessages.push({ from: socialData?.me?.user, text, time: r.dados.time, read: true }); const nick = socialData?.friends.find(a => a.user === socialChatWith)?.nick || socialChatWith; Chat.publicar('pm', text, 'you → ' + nick); fillSocial(pop); socialLoad(); }
+    else Chat.sistema('Message: ' + r.erro);
   }
 }
-/** Evento vindo da rede (network.mjs): mensagem direta ou convite. */
-export function socialEvento(m){
+/** Network event (network.mjs): a direct message or a friend-request update. */
+export function socialEvent(m){
   if (!m) return;
   if (m.t === 'dm'){
-    ctx.Som?.tocar?.('ui/sound_successful', { volume: .45, prio: true });   // toque de mensagem (11/09)
-    Chat.publicar('pm', m.texto, m.nick || m.de, null);                  // null: their message (no cargo tag of mine; counts as unread)
-    if (popSo && Popup.aberto(popSo) && aberta === 'social' && soConversa === m.de) soAbrirConversa(m.de); else soCarregar();
+    ctx.Som?.tocar?.('ui/sound_successful', { volume: .45, prio: true });
+    Chat.publicar('pm', m.text, m.nick || m.from, null);                 // null: their message (no role tag of mine; counts as unread)
+    if (popSocial && Popup.aberto(popSocial) && aberta === 'social' && socialChatWith === m.from) socialOpenChat(m.from); else socialLoad();
   } else if (m.t === 'social'){
-    const n = m.nick || m.de;
-    if (m.tipo === 'pedido' || m.tipo === 'aceito') ctx.Som?.tocar?.('ui/sound_click', { volume: .5, prio: true });
-    Chat.sistema(m.tipo === 'pedido' ? '🤝 ' + n + ' quer ser seu amigo: Social → Solicitações.' : m.tipo === 'aceito' ? '🤝 ' + n + ' aceitou seu convite.' : n + ' desfez a amizade.');
-    soCarregar();
+    const n = m.nick || m.from;
+    if (m.type === 'request' || m.type === 'accepted') ctx.Som?.tocar?.('ui/sound_click', { volume: .5, prio: true });
+    Chat.sistema(m.type === 'request' ? '🤝 ' + n + ' wants to be your friend: Social → Requests.' : m.type === 'accepted' ? '🤝 ' + n + ' accepted your friend request.' : n + ' removed you as a friend.');
+    socialLoad();
   }
 }
-/* ---------------------------------------------------------------- Ranking de colecionador (servidor/ranking.mjs) */
-let rankingEu = null, rankingEuEm = 0;
-const NOMES_RANKING = { especies: 'espécies de Kanto', shinies: 'shinies', conhecimento: 'pontos de conhecimento' };
-async function pegarRanking(caminho, comToken = false){
+/* ---------------------------------------------------------------- Collector ranking */
+let myRanking = null, myRankingAt = 0;
+const RANKING_NAMES = { species: 'Kanto species', shinies: 'shinies', knowledge: 'knowledge points' };
+async function fetchRanking(path, withToken = false){
   const base = ctx.conta?.baseUrl?.(); if (!base) return null;
-  if (comToken) { const r = await ctx.conta.chamar('GET', caminho); return r.ok ? r.dados : null; }
-  try { const r = await fetch(base + caminho, { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch { return null; }
+  if (withToken) { const r = await ctx.conta.chamar('GET', path); return r.ok ? r.dados : null; }
+  try { const r = await fetch(base + path, { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch { return null; }
 }
-/** /ranking no chat: top 5 de cada lista. */
-export async function mostrarRanking(){
-  const R = await pegarRanking('/ranking');
-  if (!R){ Chat.sistema('Ranking: sem servidor no ar.'); return false; }
-  Chat.sistema('🏆 Ranking de colecionadores (' + R.total + ' treinador' + (R.total === 1 ? '' : 'es') + '):');
-  for (const [chave, nome] of Object.entries(NOMES_RANKING)){
-    const l = (R.listas?.[chave] || []).slice(0, 5);
-    Chat.sistema('• ' + nome + ': ' + (l.length ? l.map(x => x.pos + 'º ' + x.nick + ' (' + x.valor + ')').join(' · ') : 'ninguém ainda'));
+/** /ranking in chat: the top 5 of each list. */
+export async function showRanking(){
+  const R = await fetchRanking('/ranking');
+  if (!R){ Chat.sistema('Ranking: the server is not available.'); return false; }
+  Chat.sistema('🏆 Collector ranking (' + R.total + ' trainer' + (R.total === 1 ? '' : 's') + '):');
+  for (const [key, label] of Object.entries(RANKING_NAMES)){
+    const l = (R.lists?.[key] || []).slice(0, 5);
+    Chat.sistema('• ' + label + ': ' + (l.length ? l.map(x => '#' + x.pos + ' ' + x.nick + ' (' + x.value + ')').join(' · ') : 'nobody yet'));
   }
   return true;
 }
-/** Minha posição (cache de 30 s), pra linha "Colecionador Kanto" da Pokédex. */
-async function minhaPosicao(){
+/** My position (cached 30 s), for the trainer card. */
+async function myRankingPosition(){
   if (ctx.conta?.estado?.().modo !== 'conta') return null;
-  if (rankingEu && Date.now() - rankingEuEm < 30000) return rankingEu;
-  rankingEu = await pegarRanking('/ranking/eu', true); rankingEuEm = Date.now();
-  return rankingEu;
+  if (myRanking && Date.now() - myRankingAt < 30000) return myRanking;
+  myRanking = await fetchRanking('/ranking/me', true); myRankingAt = Date.now();
+  return myRanking;
 }
-/** /w nome texto no chat: mensagem direta pra um amigo (pelo nick ou usuário). */
-export async function enviarDm(nome, texto){
-  if (!soLigado()){ Chat.sistema('Mensagem direta precisa de conta no servidor.'); return false; }
-  if (!soDados){ const r = await soChamar('GET', '/social'); if (r.ok) soDados = r.dados; }
-  const v = String(nome || '').toLowerCase(); const a = (soDados?.amigos || []).find(x => x.usuario === v || x.nick.toLowerCase() === v);
-  if (!a){ Chat.sistema('Não achei "' + nome + '" na sua lista de amigos (mensagem direta é só entre amigos).'); return false; }
-  const r = await soChamar('POST', '/social/mensagem', { para: a.usuario, texto });
-  if (r.ok){ Chat.publicar('pm', texto, 'você → ' + a.nick); if (soConversa === a.usuario) soMsgs.push({ de: soDados.eu.usuario, texto, hora: r.dados.hora }); return true; }
-  Chat.sistema('Mensagem: ' + r.erro); return false;
+/** /w name text in chat: a direct message to a friend (by nick or username). */
+export async function sendDm(name, text){
+  if (!socialOnline()){ Chat.sistema('Direct messages need an account on the server.'); return false; }
+  if (!socialData){ const r = await socialCall('GET', '/social'); if (r.ok) socialData = r.dados; }
+  const v = String(name || '').toLowerCase(); const a = (socialData?.friends || []).find(x => x.user === v || x.nick.toLowerCase() === v);
+  if (!a){ Chat.sistema("Couldn't find \"" + name + '" in your friends (direct messages are only between friends).'); return false; }
+  const r = await socialCall('POST', '/social/message', { to: a.user, text });
+  if (r.ok){ Chat.publicar('pm', text, 'you → ' + a.nick); if (socialChatWith === a.user) socialMessages.push({ from: socialData.me.user, text, time: r.dados.time }); return true; }
+  Chat.sistema('Message: ' + r.erro); return false;
 }
-function encherSolicitacoes(pop){
-  const sol = Popup.extra(pop, 'dialogo-solicitacoes'); if (!sol) return;
-  const P = soDados?.pedidos || [];
-  sol.style.overflowY = 'auto'; sol.style.pointerEvents = 'auto';
-  const cs = Popup.celulas(pop, 'dialogo-solicitacoes', Math.max(P.length, 1), 'solicitacao');
-  cs.forEach((c, i) => {
+function fillRequests(pop){
+  const dlg = Popup.extra(pop, 'dialogo-solicitacoes'); if (!dlg) return;
+  const P = socialData?.requests || [];
+  dlg.style.overflowY = 'auto'; dlg.style.pointerEvents = 'auto';
+  const cells = Popup.celulas(pop, 'dialogo-solicitacoes', Math.max(P.length, 1), 'solicitacao');
+  cells.forEach((c, i) => {
     const p = P[i]; c.style.display = p ? 'block' : 'none'; if (!p) return;
-    c.__de = p.de; c.style.pointerEvents = 'auto';
+    c.__from = p.from; c.style.pointerEvents = 'auto';
     Popup.texto(pop, 'solicitante-nome', p.nick, c); Popup.texto(pop, 'solicitante-info', 'Lv ' + (p.lv || 0) + (p.online ? ' · online' : ''), c);
-    Popup.imagem(pop, 'retrato', retrato(p.dex), c);
+    Popup.imagem(pop, 'retrato', portrait(p.dex), c);
   });
-  let nota = sol.querySelector(':scope > .pf-nota');
-  if (!nota){ nota = document.createElement('div'); nota.className = 'pf-nota'; Object.assign(nota.style, { position: 'absolute', left: '0', right: '0', top: '45%', textAlign: 'center', color: '#B8C2D9', font: '13px "Nunito Sans", system-ui, sans-serif', pointerEvents: 'none' }); sol.appendChild(nota); }
-  nota.textContent = P.length ? '' : 'Nenhum convite pendente.';
+  let note = dlg.querySelector(':scope > .pf-nota');
+  if (!note){ note = document.createElement('div'); note.className = 'pf-nota'; Object.assign(note.style, { position: 'absolute', left: '0', right: '0', top: '45%', textAlign: 'center', color: '#B8C2D9', font: '13px "Nunito Sans", system-ui, sans-serif', pointerEvents: 'none' }); dlg.appendChild(note); }
+  note.textContent = P.length ? '' : 'No pending friend requests.';
 }
-function encherMensagens(pop, mens){
-  const D = soDados; const conv = D?.conversas || [];
-  const cels = Popup.celulas(pop, 'conteudo-mensagens', Math.max(conv.length, 1), 'conversa');
-  cels.forEach((c, i) => {
-    const v = conv[i]; c.style.display = v ? 'block' : 'none'; if (!v) return;
-    c.__com = v.com; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
-    Popup.texto(pop, 'conversa-nome', v.nick, c); Popup.texto(pop, 'ultima-mensagem', v.ultima, c); Popup.texto(pop, 'nao-lidas', v.naoLidas ? String(v.naoLidas) : '', c);
-    const bq = c.querySelector('[data-fig="badge-nao-lidas"], [data-fig="badge-qtd"]'); if (bq) bq.style.display = v.naoLidas ? 'block' : 'none';
-    Popup.imagem(pop, 'retrato', retrato(v.dex), c);
-    c.style.outline = v.com === soConversa ? '1px solid #F8C237' : ''; c.style.outlineOffset = '-1px'; c.style.borderRadius = '6px';
+function fillMessages(pop, panel){
+  const D = socialData; const convs = D?.conversations || [];
+  const cells = Popup.celulas(pop, 'conteudo-mensagens', Math.max(convs.length, 1), 'conversa');
+  cells.forEach((c, i) => {
+    const v = convs[i]; c.style.display = v ? 'block' : 'none'; if (!v) return;
+    c.__with = v.with; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
+    Popup.texto(pop, 'conversa-nome', v.nick, c); Popup.texto(pop, 'ultima-mensagem', v.last, c); Popup.texto(pop, 'nao-lidas', v.unread ? String(v.unread) : '', c);
+    const badge = c.querySelector('[data-fig="badge-nao-lidas"], [data-fig="badge-qtd"]'); if (badge) badge.style.display = v.unread ? 'block' : 'none';
+    Popup.imagem(pop, 'retrato', portrait(v.dex), c);
+    c.style.outline = v.with === socialChatWith ? '1px solid #F8C237' : ''; c.style.outlineOffset = '-1px'; c.style.borderRadius = '6px';
   });
-  const log = mens.querySelector('[data-fig="conversa-log"]');
+  const nick = D?.friends.find(a => a.user === socialChatWith)?.nick || convs.find(x => x.with === socialChatWith)?.nick || socialChatWith;
+  const log = panel.querySelector('[data-fig="conversa-log"]');
   if (log){
-    let caixa = log.querySelector(':scope > .pf-dm-log');
-    if (!caixa){ caixa = document.createElement('div'); caixa.className = 'pf-dm-log'; Object.assign(caixa.style, { position: 'absolute', inset: '0', overflowY: 'auto', padding: '10px 12px', color: '#E6ECFF', font: '13px/1.45 "Nunito Sans", system-ui, sans-serif', pointerEvents: 'auto', userSelect: 'text' }); log.appendChild(caixa); log.style.pointerEvents = 'auto'; }
-    const eu = D?.eu?.usuario, nick = D?.amigos.find(a => a.usuario === soConversa)?.nick || conv.find(x => x.com === soConversa)?.nick || soConversa;
-    if (!soConversa) caixa.innerHTML = '<div style="color:#B8C2D9;text-align:center;margin-top:40%">Escolha uma conversa ao lado, ou clique num amigo e peça "mensagem".</div>';
-    else caixa.innerHTML = soMsgs.length ? soMsgs.map(m => '<div><b style="color:' + (m.de === eu ? '#8ef58e' : '#F8C237') + '">' + esc(m.de === eu ? 'Você' : nick) + '</b> <small style="color:#7f8db0">' + new Date(m.hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</small><br>' + esc(m.texto) + '</div>').join('') : '<div style="color:#B8C2D9;text-align:center;margin-top:40%">Sem mensagens ainda. Diga oi pra ' + esc(nick) + '.</div>';
-    caixa.scrollTop = caixa.scrollHeight;
+    let box = log.querySelector(':scope > .pf-dm-log');
+    if (!box){ box = document.createElement('div'); box.className = 'pf-dm-log'; Object.assign(box.style, { position: 'absolute', inset: '0', overflowY: 'auto', padding: '10px 12px', color: '#E6ECFF', font: '13px/1.45 "Nunito Sans", system-ui, sans-serif', pointerEvents: 'auto', userSelect: 'text' }); log.appendChild(box); log.style.pointerEvents = 'auto'; }
+    const me = D?.me?.user, hint = t => '<div style="color:#B8C2D9;text-align:center;margin-top:40%">' + t + '</div>';
+    if (!socialChatWith) box.innerHTML = hint('Pick a conversation on the side, or tap a friend and choose "Message".');
+    else box.innerHTML = socialMessages.length ? socialMessages.map(m => '<div><b style="color:' + (m.from === me ? '#8ef58e' : '#F8C237') + '">' + esc(m.from === me ? 'You' : nick) + '</b> <small style="color:#7f8db0">' + new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</small><br>' + esc(m.text) + '</div>').join('') : hint('No messages yet. Say hi to ' + esc(nick) + '.');
+    box.scrollTop = box.scrollHeight;
   }
-  const inp = soInput(pop, 'conteudo-mensagens', 'campo-mensagem');
+  const inp = socialInput(pop, 'conteudo-mensagens', 'campo-mensagem');
   if (inp){
-    const nick = D?.amigos.find(a => a.usuario === soConversa)?.nick || conv.find(x => x.com === soConversa)?.nick;
-    inp.placeholder = soConversa ? 'mensagem pra ' + nick + '…' : 'escolha uma conversa';
-    if (!inp.__enter){ inp.__enter = true; inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); soAcao('enviar').catch(() => {}); } }); }
+    inp.placeholder = socialChatWith ? 'Message ' + nick + '…' : 'Pick a conversation';
+    if (!inp.__enter){ inp.__enter = true; inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); socialAction('enviar').catch(() => {}); } }); }
   }
 }
-function encherSocial(pop){
+function fillSocial(pop){
   Popup.rotulo(pop, 'titulo'); for (const a of pop.querySelectorAll('[data-tag="aba"]')) Popup.rotulo(pop, 'aba', a);
-  Popup.trocarAba(pop, abaSo);
-  const vistaAmigos = ['campo-busca', 'btn-adicionar', 'btn-solicitacoes', 'lista-amigos'].map(n => Popup.grupo(pop, n)).filter(Boolean);
-  const cont = pop.querySelector('[data-txt="amigos-contagem"]');
-  const mostrarAmigos = abaSo === 'amigos';
-  for (const g of vistaAmigos) g.style.display = mostrarAmigos ? 'block' : 'none';
-  if (cont) cont.style.display = mostrarAmigos ? (cont.dataset.display || 'flex') : 'none';
-  if (!mostrarAmigos) Popup.mostrarExtra(pop, 'tooltip-amigo', false);
-  // aba Chat: o chat que o jogo já tem, em tela cheia dentro do painel
-  let caixa = pop.querySelector('.pf-chat-social');
-  const lista = Popup.grupo(pop, 'lista-amigos'), busca = Popup.grupo(pop, 'campo-busca');
-  if (!caixa && lista && busca){
-    caixa = document.createElement('div'); caixa.className = 'pf-chat-social';
-    const x = parseFloat(busca.style.left) || 48, y = parseFloat(busca.style.top) || 96, w = parseFloat(lista.style.width) || 1404;
-    const h = (parseFloat(lista.style.top) || 158) + (parseFloat(lista.style.height) || 332) - y;
-    Object.assign(caixa.style, { position: 'absolute', left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', display: 'none', pointerEvents: 'auto', zIndex: '40', userSelect: 'text' });
-    pop.appendChild(caixa); Chat.montar(caixa, { compacto: false });
+  Popup.trocarAba(pop, socialTab);
+  const friendsView = ['campo-busca', 'btn-adicionar', 'btn-solicitacoes', 'lista-amigos'].map(n => Popup.grupo(pop, n)).filter(Boolean);
+  const count = pop.querySelector('[data-txt="amigos-contagem"]');
+  const showFriends = socialTab === 'amigos';
+  for (const g of friendsView) g.style.display = showFriends ? 'block' : 'none';
+  if (count) count.style.display = showFriends ? (count.dataset.display || 'flex') : 'none';
+  if (!showFriends) Popup.mostrarExtra(pop, 'tooltip-amigo', false);
+  // Chat tab: the game's own chat, filling the panel
+  let chatBox = pop.querySelector('.pf-chat-social');
+  const list = Popup.grupo(pop, 'lista-amigos'), search = Popup.grupo(pop, 'campo-busca');
+  if (!chatBox && list && search){
+    chatBox = document.createElement('div'); chatBox.className = 'pf-chat-social';
+    const x = parseFloat(search.style.left) || 48, y = parseFloat(search.style.top) || 96, w = parseFloat(list.style.width) || 1404;
+    const h = (parseFloat(list.style.top) || 158) + (parseFloat(list.style.height) || 332) - y;
+    Object.assign(chatBox.style, { position: 'absolute', left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', display: 'none', pointerEvents: 'auto', zIndex: '40', userSelect: 'text' });
+    pop.appendChild(chatBox); Chat.montar(chatBox, { compacto: false });
   }
-  if (caixa) caixa.style.display = abaSo === 'chat' ? 'flex' : 'none';
-  // aba Mensagens: o conteúdo alternativo da maquete, no lugar da lista de amigos
-  const mens = Popup.extra(pop, 'conteudo-mensagens');
-  if (mens){
-    if (abaSo === 'mensagens'){
-      const x = parseFloat(busca?.style.left) || 48, y = parseFloat(busca?.style.top) || 96;
-      Popup.mostrarExtra(pop, 'conteudo-mensagens', true, { x, y }); mens.style.pointerEvents = 'auto';
-      if (soLigado() && !soDados) soCarregar();
-      encherMensagens(pop, mens);
+  if (chatBox) chatBox.style.display = socialTab === 'chat' ? 'flex' : 'none';
+  // Messages tab: the layout's alternate content, in place of the friends list
+  const panel = Popup.extra(pop, 'conteudo-mensagens');
+  if (panel){
+    if (socialTab === 'mensagens'){
+      const x = parseFloat(search?.style.left) || 48, y = parseFloat(search?.style.top) || 96;
+      Popup.mostrarExtra(pop, 'conteudo-mensagens', true, { x, y }); panel.style.pointerEvents = 'auto';
+      if (socialOnline() && !socialData) socialLoad();
+      fillMessages(pop, panel);
     } else Popup.mostrarExtra(pop, 'conteudo-mensagens', false);
   }
-  // amigos
-  const D = soDados;
-  const cels0 = () => pop.querySelectorAll('[data-fig="lista-amigos"] > [data-fig^="amigo-"]');
-  if (!soLigado()){ Popup.texto(pop, 'amigos-contagem', 'entre com uma conta pra ter amigos'); for (const c of cels0()) c.style.display = 'none'; Popup.texto(pop, 'solicitacoes-qtd', ''); bolinhaPedidos(pop, 0); return; }
-  if (!D){ Popup.texto(pop, 'amigos-contagem', 'carregando…'); for (const c of cels0()) c.style.display = 'none'; bolinhaPedidos(pop, 0); soCarregar(); return; }
-  const amigos = D.amigos.filter(a => !soBusca || a.nick.toLowerCase().includes(soBusca) || a.usuario.includes(soBusca));
-  Popup.texto(pop, 'amigos-contagem', D.amigos.length + (D.amigos.length === 1 ? ' amigo' : ' amigos') + ' · ' + D.amigos.filter(a => a.online).length + ' online');
-  const cels = Popup.celulas(pop, 'lista-amigos', Math.max(amigos.length, 1), 'amigo');
-  cels.forEach((c, i) => {
-    const a = amigos[i]; c.style.display = a ? 'block' : 'none'; if (!a) return;
-    c.__amigo = a; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
+  const D = socialData;
+  const friendCells = () => pop.querySelectorAll('[data-fig="lista-amigos"] > [data-fig^="amigo-"]');
+  if (!socialOnline()){ Popup.texto(pop, 'amigos-contagem', 'log in with an account to have friends'); for (const c of friendCells()) c.style.display = 'none'; Popup.texto(pop, 'solicitacoes-qtd', ''); requestsBadge(pop, 0); return; }
+  if (!D){ Popup.texto(pop, 'amigos-contagem', 'loading…'); for (const c of friendCells()) c.style.display = 'none'; requestsBadge(pop, 0); socialLoad(); return; }
+  const friends = D.friends.filter(a => !socialSearch || a.nick.toLowerCase().includes(socialSearch) || a.user.includes(socialSearch));
+  Popup.texto(pop, 'amigos-contagem', D.friends.length + (D.friends.length === 1 ? ' friend' : ' friends') + ' · ' + D.friends.filter(a => a.online).length + ' online');
+  const cells = Popup.celulas(pop, 'lista-amigos', Math.max(friends.length, 1), 'amigo');
+  cells.forEach((c, i) => {
+    const a = friends[i]; c.style.display = a ? 'block' : 'none'; if (!a) return;
+    c.__friend = a; c.style.pointerEvents = 'auto'; c.style.cursor = 'pointer';
     Popup.texto(pop, 'amigo-nome', a.nick, c);
-    Popup.texto(pop, 'amigo-info', a.online ? 'Lv ' + (a.lv || 0) + (a.area ? ' · ' + a.area : ' · online') : 'offline' + (a.vistoEm ? ' há ' + tempoAtras(a.vistoEm) : ''), c);
-    Popup.imagem(pop, 'retrato', retrato(a.dex), c);
-    const dot = c.querySelector('[data-fig="estado-online"]'); if (dot) dot.style.display = a.online ? 'block' : 'none';   // o quadradinho verde da maquete é "online"
+    Popup.texto(pop, 'amigo-info', a.online ? 'Lv ' + (a.lv || 0) + (a.area ? ' · ' + a.area : ' · online') : 'offline' + (a.seenAt ? ' · ' + timeAgo(a.seenAt) + ' ago' : ''), c);
+    Popup.imagem(pop, 'retrato', portrait(a.dex), c);
+    const dot = c.querySelector('[data-fig="estado-online"]'); if (dot) dot.style.display = a.online ? 'block' : 'none';   // the layout's little green square means "online"
   });
-  if (!amigos.length && lista){
-    let vazio = lista.querySelector(':scope > .pf-nota');
-    if (!vazio){ vazio = document.createElement('div'); vazio.className = 'pf-nota'; Object.assign(vazio.style, { position: 'absolute', left: '0', right: '0', top: '40%', textAlign: 'center', color: '#B8C2D9', font: '13px "Nunito Sans", system-ui, sans-serif', pointerEvents: 'none' }); lista.appendChild(vazio); }
-    vazio.textContent = D.amigos.length ? 'Ninguém com esse nome.' : 'Sem amigos ainda. "Adicionar amigo" pede o nome exato do treinador.'; vazio.style.display = 'block';
-  } else { const vazio = lista?.querySelector(':scope > .pf-nota'); if (vazio) vazio.style.display = 'none'; }
-  // solicitações (contador no botão; o diálogo é preenchido quando abre)
-  const n = D.pedidos.length;
+  if (!friends.length && list){
+    let empty = list.querySelector(':scope > .pf-nota');
+    if (!empty){ empty = document.createElement('div'); empty.className = 'pf-nota'; Object.assign(empty.style, { position: 'absolute', left: '0', right: '0', top: '40%', textAlign: 'center', color: '#B8C2D9', font: '13px "Nunito Sans", system-ui, sans-serif', pointerEvents: 'none' }); list.appendChild(empty); }
+    empty.textContent = D.friends.length ? 'Nobody with that name.' : "No friends yet. \"Add friend\" asks for the trainer's exact name."; empty.style.display = 'block';
+  } else { const empty = list?.querySelector(':scope > .pf-nota'); if (empty) empty.style.display = 'none'; }
+  // requests: count on the button; the dialog is filled when it opens
+  const n = D.requests.length;
   Popup.texto(pop, 'solicitacoes-qtd', n ? String(n) : '');
-  bolinhaPedidos(pop, n);                                                // badge-qtd do padrão e bolinha desenhada do v2 (17/09)
-  const sol = Popup.extra(pop, 'dialogo-solicitacoes'); if (sol && sol.style.display !== 'none') encherSolicitacoes(pop);
+  requestsBadge(pop, n);
+  const dlg = Popup.extra(pop, 'dialogo-solicitacoes'); if (dlg && dlg.style.display !== 'none') fillRequests(pop);
 }
 
-/* BOLINHA DE PEDIDOS (17/09, checagem visual): com 0 pedidos o botão Solicitações não mostra bolinha. HUD padrão: a bolinha é peça (`badge-qtd`). v2: ela vem
-   DESENHADA no PNG do btn-solicitacoes, então fica tampada com um pedaço do miolo do btn-adicionar — a mesma arte sem a bolinha, da mesma altura, e o degradê
-   do miolo só muda na vertical (no celular o btn-adicionar é mais estreito; por isso a amostra sai do MEIO dele). Pedido pra Amanda: a bolinha do v2 como peça
-   separada; aí a tampa sai. */
-function bolinhaPedidos(pop, n){
+/* With 0 requests the Requests button shows no dot. Default HUD: the dot is its own piece (`badge-qtd`). v2: the dot is PAINTED into the
+   btn-solicitacoes PNG, so it gets covered with a slice of the btn-adicionar fill — the same art without the dot, at the same height, and that fill's
+   gradient is vertical only (on phones btn-adicionar is narrower, so the sample comes from its MIDDLE). Once the v2 art ships the dot as its own piece,
+   this cover can go. */
+function requestsBadge(pop, n){
   const btn = pop.querySelector('[data-fig="btn-solicitacoes"]'); if (!btn) return;
   const badge = btn.querySelector('[data-fig="badge-qtd"]'); if (badge) badge.style.display = n ? 'block' : 'none';
   const ad = pop.querySelector('[data-fig="btn-adicionar"]'), q = btn.querySelector(':scope > [data-txt="solicitacoes-qtd"]');
@@ -2863,7 +2864,7 @@ async function encherPokedex(pop){
   if (K){
     const r = resumoDx; const base = tr('Kanto Collector') + ' · ' + r.pegosKanto + '/' + r.kantoAte + ' ' + tr('caught') + ' · ' + r.vistos + ' ' + tr('seen') + ' · ' + r.shinies + ' shiny';
     Popup.texto(pop, 'colecionador', base);
-    minhaPosicao().then(p => { if (p && p.especies?.pos && aberta === 'pokedex' && Popup.aberto(pop)) Popup.texto(pop, 'colecionador', base + ' · ' + p.especies.pos + ' ' + tr('of') + ' ' + p.total + ' ' + tr('in the ranking')); });
+    myRankingPosition().then(p => { if (p && p.species?.pos && aberta === 'pokedex' && Popup.aberto(pop)) Popup.texto(pop, 'colecionador', base + ' · #' + p.species.pos + ' ' + tr('of') + ' ' + p.total + ' ' + tr('in the ranking')); });
   }
   // lista
   const cels = Popup.celulas(pop, 'lista-especies', Math.max(sp.length, 1), 'especie');

@@ -101,8 +101,8 @@ async function api(metodo, caminho, corpo = null, keepalive = false){
     const cab = { 'Content-Type': 'application/json' }; if (token) cab.Authorization = 'Bearer ' + token;
     const r = await fetch(base + caminho, { method: metodo, headers: cab, body: corpo ? JSON.stringify(corpo) : undefined, signal: ctl.signal, keepalive });
     let dados = null; try { dados = await r.json(); } catch {}
-    return { ok: r.ok, status: r.status, dados, erro: r.ok ? null : (dados?.erro || ('Erro ' + r.status)) };
-  } catch (e){ return { ok: false, status: 0, dados: null, erro: 'Sem conexão com o servidor.' }; }
+    return { ok: r.ok, status: r.status, dados, erro: r.ok ? null : (dados?.erro || (r.status === 404 ? "This isn't available on the server yet." : 'Error ' + r.status)) };
+  } catch (e){ return { ok: false, status: 0, dados: null, erro: "Can't reach the server." }; }
   finally { clearTimeout(t); }
 }
 async function health(){
@@ -238,10 +238,10 @@ export async function garantir(c){
     const r = await api('GET', '/save');
     if (r.ok && r.dados && 'save' in r.dados){ gravarPasse(r.dados); modo = 'conta'; rev = r.dados.rev || 0; gravar(LS.rev, String(rev)); aplicarConta(r.dados); aplicarSave(r.dados.save); ligarSync(); return { modo, usuario, gm }; }
     if (r.status === 401) limparSessao();                                  // sessão venceu: login de novo
-    else { modo = 'sem-servidor'; console.warn('conta: ' + (r.erro || 'servidor sem contas (versão antiga?)')); return { modo }; }   // servidor velho responde 200 sem `save`: não apaga nada
+    else { modo = 'sem-servidor'; console.warn('account: ' + (r.erro || 'server has no accounts (old version?)')); return { modo }; }   // servidor velho responde 200 sem `save`: não apaga nada
   }
   const layout = await c.layoutHudP;
-  if (!layout?.telas?.pc?.login){ modo = 'sem-servidor'; console.warn('conta: o layout não tem a tela de login'); return { modo }; }
+  if (!layout?.telas?.pc?.login){ modo = 'sem-servidor'; console.warn('account: the layout has no login screen'); return { modo }; }
   try { c.aoTela?.(); } catch {}                                           // o index esconde o "carregando o mapa" quando a tela entra (12/09)
   const T = await import('./screens.mjs');
   await new Promise(resolve => T.mostrar('login', layout, { conta: { entrar, criar, recuperar, codigoNovo, alfa, validarChave, idioma }, aoEntrar: resolve }));   // alfa/validarChave: a caixa da Alpha Key (11/09)
@@ -260,14 +260,14 @@ export async function validarChave(chave){ const r = await api('POST', '/chaves/
 export async function recuperar(usuario, cod, nova){
   base = base || baseHttp(new URLSearchParams(location.search));
   const r = await api('POST', '/conta/recuperar', { usuario: String(usuario || '').toLowerCase().trim(), codigo: cod, nova });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra trocar a senha.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the password." };
   codigo = r.dados?.codigo || null;
   return { ok: true, codigo };
 }
 /** Login (screens.mjs chama). Devolve { ok } ou { ok:false, erro }. */
 export async function entrar(u, senha){
   const r = await api('POST', '/conta/entrar', { usuario: u, senha });
-  if (!r.ok || typeof r.dados?.token !== 'string') return { ok: false, erro: r.erro || 'O servidor não tem contas (versão antiga).' };
+  if (!r.ok || typeof r.dados?.token !== 'string') return { ok: false, erro: r.erro || "This server doesn't support accounts (old version)." };
   guardarSessao(r.dados.token, r.dados.usuario, r.dados.rev);
   gravarPasse(r.dados);                                                   // passe de progresso (19/09): o cookie existe antes de o boot pedir a cena
   modo = 'conta';
@@ -279,7 +279,7 @@ export async function entrar(u, senha){
 /** Cadastro (screens.mjs chama). */
 export async function criar(u, email, senha, chave = null){   // guarda o código de recuperação que vier (codigoNovo); `chave` = Alpha Key (11/09)
   const r = await api('POST', '/conta/criar', { usuario: u, email, senha, chave: chave || undefined });
-  if (!r.ok || typeof r.dados?.token !== 'string') return { ok: false, erro: r.erro || 'O servidor não tem contas (versão antiga).', precisaChave: !!r.dados?.precisaChave };
+  if (!r.ok || typeof r.dados?.token !== 'string') return { ok: false, erro: r.erro || "This server doesn't support accounts (old version).", precisaChave: !!r.dados?.precisaChave };
   guardarSessao(r.dados.token, r.dados.usuario, 0);
   gravarPasse(r.dados);                                                   // conta nova: o passe já vem com a BASE (a intro, o quarto, os iniciais)
   codigo = r.dados.codigo || null;                                        // o código de recuperação vem UMA vez, aqui (screens.mjs mostra)
@@ -399,10 +399,10 @@ export function aplicarDoServidor(save, revNovo){
     { ok:false, erro } — quem chama mostra o erro em vez de fingir que trocou. Sem conta, grava só neste aparelho. */
 export async function trocarNome(nome){
   const n = String(nome || '').replace(/\s+/g, ' ').trim().slice(0, 16);
-  if (n.length < 3) return { ok: false, erro: 'O nome do treinador tem de ter pelo menos 3 letras.' };
+  if (n.length < 3) return { ok: false, erro: 'The trainer name needs at least 3 letters.' };
   if (modo !== 'conta'){ gravar('nome', JSON.stringify(n)); return { ok: true, nome: n, local: true }; }
   const r = await api('POST', '/conta/nome', { nome: n });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra trocar o nome.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the name." };
   const posto = r.dados?.nome || n;
   gravarBruto('nome', JSON.stringify(posto));                             // 12/09: com conta o jogo lê `nome` do cofre — `gravar` (localStorage) deixava o nome antigo na tela até relogar
   ultimoHash = JSON.stringify(colherLocal() || {});                       // o aparelho já está igual ao servidor: não marcar sujo
@@ -412,15 +412,15 @@ export async function trocarNome(nome){
     velha, então quem chama tem de mostrar o novo pro jogador. */
 export async function trocarSenha(atual, nova){
   const r = await chamar('POST', '/conta/senha', { senhaAtual: atual, nova });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra trocar a senha.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the password." };
   return { ok: true, codigo: r.dados?.codigo || null };
 }
 /** APAGAR O PERSONAGEM (08/09): o jogo do jogador some no SERVIDOR (save, Pokémon, bolsa, missões); a conta e o nome ficam. */
 export async function apagarPersonagem(){
-  if (modo !== 'conta') return { ok: false, erro: 'Isto só vale com conta.' };
+  if (modo !== 'conta') return { ok: false, erro: 'This only works with an account.' };
   clearTimeout(timer); sujo = false; apagar(LS.sujo);
   const r = await api('POST', '/conta/personagem/apagar');
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra apagar o personagem.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't delete the character." };
   rev = r.dados?.rev ?? rev; gravar(LS.rev, String(rev));
   cofre.clear(); ultimoHash = '{}';
   apagarPasse();                                                          // o servidor manda outro na próxima conexão (o que foi desbloqueado continua na conta)
@@ -428,16 +428,16 @@ export async function apagarPersonagem(){
 }
 /** APAGAR A CONTA (08/09): irreversível, pede a senha. Depois disto não há mais sessão — quem chama recarrega a página. */
 export async function apagarConta(senha){
-  if (modo !== 'conta') return { ok: false, erro: 'Isto só vale com conta.' };
+  if (modo !== 'conta') return { ok: false, erro: 'This only works with an account.' };
   const r = await api('POST', '/conta/apagar', { senha });
-  if (!r.ok) return { ok: false, erro: r.erro || 'Não deu pra apagar a conta.' };
+  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't delete the account." };
   clearTimeout(timer); cofre.clear(); sujo = false;
   for (const k of SAVE_CHAVES) apagar(k);
   limparSessao(); modo = 'offline';
   return { ok: true };
 }
 /** Chamada autenticada pra outros módulos (Social): { ok, status, dados, erro }. */
-export async function chamar(metodo, caminho, corpo = null){ if (modo !== 'conta' || !token) return { ok: false, status: 0, dados: null, erro: 'Entre com uma conta pra usar isto.' }; return api(metodo, caminho, corpo); }
+export async function chamar(metodo, caminho, corpo = null){ if (modo !== 'conta' || !token) return { ok: false, status: 0, dados: null, erro: 'Log in with an account to use this.' }; return api(metodo, caminho, corpo); }
 /** Quem mostra avisos (o chat de Sistema): o index liga depois que o chat existe. */
 export function aoAvisar(fn){ aviso = fn; }
 /* TRAVA DE JOGO (10/09): a conta entrou em outro aparelho. Este aqui para de gravar na hora — o que ele fizer daqui pra

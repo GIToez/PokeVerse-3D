@@ -66,7 +66,7 @@ export function enviar(aba, texto){
   let canal = ABAS.includes(aba) ? aba : 'local', t = String(texto || '').trim();
   const w = t.match(/^\/w\s+(\S+)\s+(.*)$/i);                            // /w nome texto → mensagem direta (Social)
   if (w){ ctx?.dm?.(w[1], w[2].trim()); return 'pm'; }
-  if (/^\/ranking\b/i.test(t)){ ctx?.ranking?.(); return 'sistema'; }   // /ranking → top de colecionadores (menus.mjs mostrarRanking)
+  if (/^\/ranking\b/i.test(t)){ ctx?.ranking?.(); return 'sistema'; }   // /ranking → top de colecionadores (menus.mjs showRanking)
   if (/^\/(preso|stuck)\b/i.test(t)){ ctx?.preso?.(); return 'sistema'; }   // /preso (15/09, alfa): abre o diálogo "Estou preso" (relato obrigatório → último Centro); /stuck pros testers em inglês
   const tm = t.match(/^\/(time|hour|hora)\b\s*(.*)$/i);
   if (tm){ ctx?.hora?.(tm[2].trim()); return 'sistema'; }
