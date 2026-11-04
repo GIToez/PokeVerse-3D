@@ -41,7 +41,7 @@
   "inicial": true,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52005,
@@ -52,7 +52,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52006,
@@ -63,7 +63,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52007,
@@ -74,7 +74,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52008,
@@ -85,7 +85,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52009,
@@ -96,7 +96,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52010,
@@ -107,7 +107,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52011,
@@ -129,7 +129,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52013,
@@ -140,7 +140,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52014,
@@ -151,7 +151,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52015,
@@ -228,7 +228,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "fixo",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 52022,
@@ -459,7 +459,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53004,
@@ -470,7 +470,7 @@
   "inicial": true,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53005,
@@ -481,7 +481,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53006,
@@ -492,7 +492,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53007,
@@ -503,7 +503,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53008,
@@ -514,7 +514,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53009,
@@ -525,7 +525,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53010,
@@ -536,7 +536,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53011,
@@ -547,7 +547,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53012,
@@ -558,7 +558,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53013,
@@ -569,7 +569,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "propria",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53014,
@@ -657,7 +657,7 @@
   "inicial": false,
   "glbOk": true,
   "tinta": "fixo",
-  "criacao": true
+  "criacao": false
  },
  {
   "id": 53022,
