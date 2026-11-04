@@ -86,7 +86,7 @@ function aoAbrir() {
   const a = pop?.querySelector('[data-var="npc"]');
   if (!a) return;
   a.style.backgroundImage = 'none';
-  const b = npcDaLoja()?.glb;
+  const b = shopkeeper()?.glb;
   Retrato.desligar(donoRetrato);
   donoRetrato = b ? Retrato.ligar(a, b, { escala: () => pop?.__escala || 1 }) : 0;
 }
@@ -98,9 +98,9 @@ function aoFechar() {
     dep.soltar?.();
   } catch {}
 }
-function npcDaLoja() {
+function shopkeeper() {
   try {
-    return dep.npcDaLoja?.(S.loja) || null;
+    return dep.shopkeeper?.(S.loja) || null;
   } catch {
     return null;
   }
@@ -462,7 +462,7 @@ function pintarTudo(e) {
   }
   M.caberDepois(Popup.textoCru(pop, 'loja-local', nomeLoja()));
   Popup.textoCru(pop, 'saldo', fmt(saldo()));
-  const m = npcDaLoja();
+  const m = shopkeeper();
   M.caberDepois(Popup.textoCru(pop, 'npc-nome', m?.nome ? I18n.tNome(m.nome) : tr('Seller')));
   const o = !f.length;
   Popup.textoCru(

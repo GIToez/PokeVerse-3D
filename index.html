@@ -9589,6 +9589,7 @@ if (jogo.ash){
     if (a != null && comConta() && aS !== areaNoServidor){ areaNoServidor = aS; Rede.enviar({ t: 'missao_area', area: a }); }   // fora do "mudou de área": no load a conexão ainda não estava pronta e o aviso se perdia
   }, 700);
   Menus.instalar({
+    shopkeeper: cfg => { const i = NPCS_GLB[cfg]; return i?.glb ? { nome: i.nome, glb: i.glb } : null; },   // the clerk's model for the Pokémart portrait
     bolsaOp: (op, dados) => bolsaOp(op, dados), comConta: () => comConta(),   // BOLSA: loja e descarte passam pelo servidor (fora de conta o menus faz local, como sempre)
     /* POSSE: soltar de vez precisa do OK do servidor (com conta); sem conta é local, como sempre. */
     soltarNoServidor: async e => { if (!comConta()) return { ok: true }; if (!e?.uid) return { ok: false, erro: 'este Pokémon ainda não está registrado no servidor' };

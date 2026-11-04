@@ -292,7 +292,7 @@ function ligarRecursos(){
     gravarLS: (k, v) => ctx.gravarLS?.(k, v),
     jogo: () => ctx.jogo,
     nomeArea: a => ctx.nomeArea?.(a) || null,
-    npcDaLoja: () => null,
+    shopkeeper: cfg => ctx.shopkeeper?.(cfg) || { nome: 'Shopkeeper', glb: 'npc/fc2036_00' },   // HUD shop button: no clerk was talked to
     Som: ctx.Som,
     soltar: soltarJanelaRecurso,
   });
