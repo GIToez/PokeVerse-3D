@@ -2306,7 +2306,50 @@ const NOMES_NIVEL = ['unknown', 'Seen', 'Registered', 'Studied', 'Specialist', '
 /** Pinta as N bolinhas (`ret bolinha`) de um grupo: verde até `n`, cinza depois. */
 function bolinhas(grupo, n, cheia = '#2FAE47', vazia = '#39424E'){
   if (!grupo) return;
+  if (grupo.tagName === 'IMG'){ pipsNaImagem(grupo, n); return; }
   [...grupo.querySelectorAll('[data-fig="bolinha"]')].forEach((b, i) => { b.style.backgroundColor = i < n ? cheia : vazia; });
+}
+/* The v2 layout ships the pips as a flat mockup picture with a fixed number already filled. Find the dots on the picture's middle row and
+   repaint them: the first `n` in the picture's fill color, the rest empty with the blue ring. */
+const pipsCache = new Map();
+function pipsNaImagem(img, n){
+  const orig = img.dataset.pipSrc || (img.dataset.pipSrc = img.getAttribute('src'));
+  const chave = orig + '|' + n;
+  img.dataset.pipN = n;
+  const pronta = pipsCache.get(chave);
+  if (typeof pronta === 'string'){ if (img.getAttribute('src') !== pronta) img.src = pronta; return; }
+  if (pronta) { pronta.then(u => { if (u && +img.dataset.pipN === n) img.src = u; }); return; }
+  const p = new Promise(ok => {
+    const im = new Image();
+    im.onload = () => {
+      try {
+        const w = im.naturalWidth, h = im.naturalHeight, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const g = cv.getContext('2d'); g.drawImage(im, 0, 0);
+        const y = h >> 1, px = g.getImageData(0, y, w, 1).data, dots = [];
+        for (let x = 0, ini = -1; x <= w; x++){
+          const on = x < w && px[x * 4 + 3] > 128;
+          if (on && ini < 0) ini = x;
+          if (!on && ini >= 0){ dots.push([ini, x - 1]); ini = -1; }
+        }
+        const escuro = (r, gg, b) => r + gg + b < 150;
+        let fill = null;
+        for (const [a, b] of dots){ const i = ((a + b) >> 1) * 4; if (!escuro(px[i], px[i + 1], px[i + 2])){ fill = `rgb(${px[i]},${px[i + 1]},${px[i + 2]})`; break; } }
+        fill ||= '#43D17C';
+        dots.forEach(([a, b], i) => {
+          const cx = (a + b + 1) / 2, r = (b - a + 1) / 2, aro = Math.max(1, Math.round(r / 6));
+          g.clearRect(a - 1, y - r - 1, b - a + 3, 2 * r + 2);
+          g.beginPath(); g.arc(cx, y, r, 0, Math.PI * 2);
+          if (i < n){ g.fillStyle = fill; g.fill(); }
+          else { g.fillStyle = '#1D6FA8'; g.fill(); g.beginPath(); g.arc(cx, y, r - aro, 0, Math.PI * 2); g.fillStyle = '#0B1624'; g.fill(); }
+        });
+        const u = cv.toDataURL(); pipsCache.set(chave, u); ok(u);
+      } catch (e) { console.warn('pokédex pips:', e); pipsCache.delete(chave); ok(null); }
+    };
+    im.onerror = () => { pipsCache.delete(chave); ok(null); };
+    im.src = orig;
+  });
+  pipsCache.set(chave, p);
+  p.then(u => { if (u && +img.dataset.pipN === n) img.src = u; });
 }
 /* ÍCONE DO TIPO NO v2 (17/09, auditoria dos placeholders): a pílula da rodada 29 é `slot-tipo > img/tipo` (ui/figma/tipo/<tipo>.png). O Popup.badge só pinta a
    pílula antiga (ret + texto): no v2 as caixas do ícone ficavam vazias no time, na ficha, nos golpes e na Pokédex. `tipo-N` sem tipo some (Pokémon de um tipo
@@ -3995,7 +4038,7 @@ async function mostrarModeloDex(glb, conhecido){
   };
   montar(false); const temShiny = montar(true);
   v.giro = 0.6;
-  temShiny.then(n => { const r = $('dex-rotulo-shiny'); if (r && selDexGlb === glb) r.innerHTML = n ? '✨ Shiny' : '✨ Shiny <small style="color:var(--muted)">(sem textura shiny exportada — igual ao normal)</small>'; });
+  temShiny.then(n => { const r = $('dex-rotulo-shiny'); if (r && selDexGlb === glb) r.innerHTML = n ? '✨ Shiny' : '✨ Shiny <small style="color:var(--muted)">(no shiny colors exported yet — same as normal)</small>'; });
   return true;
 }
 /** Fraquezas/resistências pela tabela de tipos do jogo (rules.mjs). */
