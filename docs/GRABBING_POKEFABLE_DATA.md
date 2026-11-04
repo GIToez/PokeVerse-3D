@@ -18,6 +18,15 @@ The server base is `https://pokefableonline.com/servidor` (see `baseHttp` in `up
 Routes the client calls, all under `/conta/`: `conteudo` (story, side quests, NPC lines, translations),
 `estado`, `config`, `passe`, `personagem`, `idioma`, `nome`, `email`, `senha`, `termos`, `relato`.
 
+Several routes in one file (Battle Pass season with its challenges, shop catalog, shop state):
+
+```
+javascript:(async()=>{const h={Authorization:'Bearer '+localStorage.getItem('conta.token')};const o={};for(const p of ['/temporada','/loja/catalogo?l=en','/loja']){try{const r=await fetch('/servidor'+p,{headers:h});o[p]={status:r.status,data:r.ok?await r.json():await r.text()}}catch(e){o[p]={erro:String(e)}}}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='shop_pass.json';a.click()})()
+```
+
+Other HTTP routes their client calls: `/temporada` (Battle Pass), `/loja`, `/loja/catalogo?l=`, `/loja/checkout` (POST, real money),
+`/ranking/eu`. The Battle Pass actions (`ver`, `pegar`) go over the WebSocket as `{ t: 'temporada', op }`.
+
 ## What has been grabbed
 
 | Route | Saved as | Notes |
