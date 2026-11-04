@@ -498,6 +498,26 @@
     25
    ],
    "texto": "Doubles the damage of Pikachu's moves."
+  },
+  "900080": {
+   "id": 900080,
+   "nome": "Exp. Share",
+   "icone": "ic_900080",
+   "efeito": {
+    "tipo": "expShare",
+    "valor": 0.5
+   },
+   "texto": "The holder gets half the EXP its teammate earns, even without fighting."
+  },
+  "900081": {
+   "id": 900081,
+   "nome": "Lucky Egg",
+   "icone": "ic_900081",
+   "efeito": {
+    "tipo": "expMult",
+    "valor": 1.5
+   },
+   "texto": "The holder earns 1.5× EXP from knockouts."
   }
  }
 }

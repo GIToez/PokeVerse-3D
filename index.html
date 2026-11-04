@@ -7270,6 +7270,10 @@ function aplicarWildExp(m){
     }
   }
   if (m.banked > 0) avisarReserva(alvo, m.banked);
+  for (const s of m.shared || []){
+    aplicarWildExp(s);
+    Chat.sistema((s.nome || 'Pokémon') + ' got ' + s.gained + ' EXP from the Exp. Share.');
+  }
   guardarEstadoAtivo(); pintarTime(true);
 }
 function clonarEmissivos(raiz){

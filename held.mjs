@@ -21,6 +21,8 @@ export const TIPOS = [
   'golpeMod',
   'protecao',
   'criacao',
+  'expMult',
+  'expShare',
   'nada',
 ];
 export const ERROS = {

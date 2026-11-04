@@ -13,6 +13,7 @@ import crypto from 'node:crypto';
 import nodePath from 'node:path';
 import * as Ev from './ev.mjs';
 import { grantLevelHp } from './server_hp.mjs';
+import { expMultOf, expSharers } from './exp_items.mjs';
 
 const FLIP_X = -1;
 const LIVE_CAP = 72;
@@ -43,6 +44,7 @@ export function criarWilds(ctx) {
   const root = ctx.dir;
   const habitats = readJson(nodePath.join(root, 'public/data/habitats.json'), { areas: {}, generico: [] });
   const expTab = readJson(nodePath.join(root, 'public/data/exp.json'), { curvas: {}, especies: {} });
+  const heldTab = readJson(nodePath.join(root, 'public/data/held.json'), { itens: {} });
   Ev.usarYields(readJson(nodePath.join(root, 'public/data/ev_yields.json'), { rende: {} }));
 
   let cfg = { mtime: -1, nivel: {}, cap: LEVEL_CAP };
@@ -241,7 +243,11 @@ export function criarWilds(ctx) {
     if (!mon) return null;
     owned.delete(msg.id);
     const mult = Math.max(0.1, Math.min(10, +ctx.expMult?.() || 1));
-    const result = grant(mon, save, wild.dex, wild.lv, mult);
+    const result = grant(mon, save, wild.dex, wild.lv, mult * expMultOf(mon, heldTab));
+    const shared = expSharers(party, mon, heldTab).map(({ mon: p, part }) => {
+      const r = grant(p, save, wild.dex, wild.lv, mult * part);
+      return { uid: p.uid, nome: p.nome, lv: p.lv, exp: p.exp, expReserva: p.expReserva || 0, amizade: p.amizade, evs: p.evs, gained: r.gained, banked: r.banked, levels: r.levels, share: true };
+    });
     ctx.salvarContas?.();
     const evText = Ev.textoGanho(result.ev);
     return {
@@ -257,6 +263,7 @@ export function criarWilds(ctx) {
       banked: result.banked,
       levels: result.levels,
       evText: evText || '',
+      shared,
     };
   }
 

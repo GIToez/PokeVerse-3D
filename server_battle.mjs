@@ -12,6 +12,7 @@ import * as Status from './status.mjs';
 import * as Stg from './stages.mjs';
 import * as Regras from './item_rules.mjs';
 import { efetividade } from './rules.mjs';
+import { expMultOf, expSharers } from './exp_items.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const HP_X = Ind.HP_X;
@@ -62,6 +63,7 @@ export function criarBatalha(ctx) {
   Ev.usarYields(lerJson('public/data/ev_yields.json', { rende: {} }));
   Ind.carregarLearnset(learn);
   const expTab = lerJson('public/data/exp.json', { curvas: {}, especies: {} });
+  const heldTab = lerJson('public/data/held.json', { itens: {} });
   const ginasios = lerJson('public/data/gyms.json', {});
   const treinadores = lerJson('public/data/trainers.json', {});
   const elite = lerJson('public/data/elite.json', { membros: [] });
@@ -630,11 +632,17 @@ export function criarBatalha(ctx) {
     if (ele && ele.hp <= 0) {
       const ganhador = bat.eu.field;
       if (ganhador && ganhador.hp > 0) {
-        const xp = expGanha(ganhador.lv, ele.dex, ele.lv);
+        const xp = Math.max(1, Math.round(expGanha(ganhador.lv, ele.dex, ele.lv) * expMultOf(ganhador, heldTab)));
         const evR = Ev.ganharPorKo(ganhador, ele.dex);
         aplicarExp(ganhador, xp);
         log.push(ganhador.nome + ' gained ' + xp + ' EXP.');
         if (evR.ganhou?.some((n) => n)) log.push(ganhador.nome + ' gained ' + Ev.textoGanho(evR.ganhou) + ' EVs.');
+        for (const { mon, part } of expSharers(bat.eu.time, ganhador, heldTab)) {
+          const parte = Math.max(1, Math.round(expGanha(mon.lv, ele.dex, ele.lv) * part));
+          Ev.ganharPorKo(mon, ele.dex);
+          aplicarExp(mon, parte);
+          log.push((mon.nome || 'Pokémon') + ' gained ' + parte + ' EXP from the Exp. Share.');
+        }
       }
       if (!bat.dele.some((p) => p.hp > 0)) return 'vitoria';
       /* o próximo do treinador entra AQUI: com o índice parado no desmaiado, todo golpe seguinte caía nele (HP 0), dava EXP/EV
