@@ -5247,7 +5247,7 @@ function atualizarSelvagens(dt){
       s.pivo.rotation.y += dgT * Math.min(1, dt * 8);
       if (s.estado !== 'koTurno') tocarAnim(s, 'Idle');
       s.mix.update(dt);
-      if (!s.__vistoReg && s.dex && !INTRO){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokémon de treinador na batalha: conta como avistado (não no sonho da Liga — 13/09)
+      if (!s.__vistoReg && s.dex != null && !INTRO){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokémon de treinador na batalha: conta como avistado (não no sonho da Liga — 13/09)
       if (!s.rotulo){
         s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon';
         s.rotulo.innerHTML = `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ⚔</span><i><b></b></i>`;
@@ -5434,7 +5434,7 @@ function atualizarSelvagens(dt){
     s.vx += (s.x - s.vx) * k; s.vz += (s.z - s.vz) * k; s.vy += (s.y - s.vy) * k;
     s.pivo.position.set(s.vx, s.vy, s.vz);
     // rótulo com nome, nível, temperamento e HP, para achar o Pokémon na grama alta (L liga/desliga)
-    if (!s.__vistoReg && s.dex && dAsh < 18){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokédex de conhecimento: avistado (1× por indivíduo, a até 18 m)
+    if (!s.__vistoReg && s.dex != null && dAsh < 18){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokédex de conhecimento: avistado (1× por indivíduo, a até 18 m)
     if (!s.rotulo){
       s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon';
       $('sobre').appendChild(s.rotulo);
@@ -5676,9 +5676,9 @@ function golpear(atacante, defensor, golpe){
   if (defensor.estado === 'desmaiado' || defensor.estado === 'capturando' || defensor.estado === 'koTurno') return 0;   // caído/na bola: não apanha mais
   if (jogo.turno && !atacante.emTurno && atacante !== jogo.pika && (defensor === jogo.pika || defensor.emTurno)) return 0;   // batalha por turno: quem está nela é invulnerável pra quem está FORA
   if (!INTRO){                                                            // 13/09: no sonho da Liga a coreografia é golpeTurno — sem isto, Charizard e Mewtwo entravam na Pokédex do jogador novo
-    if (atacante.dex && golpe?.id) Conhecimento.evento('golpe', { dex: atacante.dex, id: golpe.id });      // Pokédex de conhecimento: golpe da espécie visto em uso
-    if (atacante === jogo.pika && defensor.dex && !defensor.__lutaReg){ defensor.__lutaReg = true; Conhecimento.evento('luta', { dex: defensor.dex }); }
-    else if (defensor === jogo.pika && atacante.dex && !atacante.__lutaReg){ atacante.__lutaReg = true; Conhecimento.evento('luta', { dex: atacante.dex }); }
+    if (atacante.dex != null && golpe?.id) Conhecimento.evento('golpe', { dex: atacante.dex, id: golpe.id });      // Pokédex de conhecimento: golpe da espécie visto em uso
+    if (atacante === jogo.pika && defensor.dex != null && !defensor.__lutaReg){ defensor.__lutaReg = true; Conhecimento.evento('luta', { dex: defensor.dex }); }
+    else if (defensor === jogo.pika && atacante.dex != null && !atacante.__lutaReg){ atacante.__lutaReg = true; Conhecimento.evento('luta', { dex: atacante.dex }); }
   }
   if (defensor.rede && Mundo.estaAtivo()){ Mundo.atacar(defensor, golpe, atacante); return 0; }   // fase 3b: selvagem da rede — o SERVIDOR calcula e devolve (shp → aplicarGolpe)
   if (atacante.rede && defensor === jogo.pika && Mundo.estaAtivo()){ Mundo.atacarParceiro(atacante, golpe, defensor); return 0; }   // fase 3c: selvagem da rede batendo no MEU parceiro — o servidor calcula e devolve (pdano → golpeNoParceiro)
@@ -8282,7 +8282,7 @@ function vigiarPortaoPallet(dt){
 const STRUGGLE = { ...GOLPES.tackle, id: 'struggle', nome: 'Struggle', poder: 50, tipo: 'Normal' };
 function fallbackGolpes(dex){ return jogo.quatroGolpes ? jogo.quatroGolpes(dex) : (GOLPES_ESPECIE[dex] || ['tackle']); }
 function aprenderNoNivel(p){
-  if (!p?.dex || !p.movs) return;
+  if (p?.dex == null || !p.movs) return;
   for (const id of Ind.aprendeEm(p.dex, p.lv)){
     if (!GOLPES[id] || p.movs.some(m => m.id === id) || (p.aprender || []).includes(id)) continue;
     if (p.movs.length < 4){ p.movs.push(Ind.novoGolpe(id)); Chat.sistema(p.nome + ' learned ' + GOLPES[id].nome + '!'); flutuar(p, 'aprendeu ' + GOLPES[id].nome + '!', '#8ef58e'); }
@@ -8312,7 +8312,7 @@ function registroDoTime(e){                                              // o re
     últimos do learnset e "pulou" os de nível baixo de propósito (como nos jogos) — esses não viram pendência sozinhos, ficam pro
     Reaprender. O que ficou pra trás pelo bug está sempre acima do último golpe aprendido. */
 function golpesPerdidos(p, { comRecusados = false, desdeOInicio = false } = {}){
-  if (!p?.dex || !Array.isArray(p.movs)) return [];
+  if (p?.dex == null || !Array.isArray(p.movs)) return [];
   const reg = registroDoTime(p) || p, tabela = Ind.learnsetDe(p.dex);
   const tem = new Set(Ind.idsDe(p)), fila = new Set(p.aprender || []), rec = new Set(comRecusados ? [] : (reg.recusados || [])), vistos = new Set();
   const base = desdeOInicio ? 0 : tabela.reduce((m, [id, n]) => (tem.has(id) || fila.has(id) || rec.has(id)) && n > m ? n : m, 0);
@@ -8336,12 +8336,12 @@ function recuperarGolpesDoTime(){
   if (jogo.semParceiro || !Ind.learnsetDe(1).length) return 0;             // sem inicial escolhido / learnset ainda não carregado: nada a fazer
   let n = 0; const p = jogo.pika, ia = membroAtivo();
   (jogo.time || []).forEach((t, i) => {
-    if (!t?.dex || !Array.isArray(t.movs) || !t.movs.length) return;     // registro sem golpes: quem cuida é o garantirMovs de sempre
+    if (t?.dex == null || !Array.isArray(t.movs) || !t.movs.length) return;     // registro sem golpes: quem cuida é o garantirMovs de sempre
     n += recuperarGolpes(t);
     if (p && i === ia){ if (p.movs !== t.movs) p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); }   // em campo: o mesmo array de golpes e a mesma fila (o guardarEstadoAtivo copia de volta)
   });
   if (n) gravarLS('time', jogo.time);
-  try { const caixa = lerLS('caixa', []) || []; let m = 0; for (const t of caixa){ if (t?.dex && Array.isArray(t.movs) && t.movs.length) m += recuperarGolpes(t, { quieto: true }); } if (m) gravarLS('caixa', caixa); n += m; } catch (e){ console.warn('golpes da caixa:', e); }
+  try { const caixa = lerLS('caixa', []) || []; let m = 0; for (const t of caixa){ if (t?.dex != null && Array.isArray(t.movs) && t.movs.length) m += recuperarGolpes(t, { quieto: true }); } if (m) gravarLS('caixa', caixa); n += m; } catch (e){ console.warn('golpes da caixa:', e); }
   if (n) try { pintarTime(true); } catch (e){ console.warn('pintarTime:', e); }
   return n;
 }

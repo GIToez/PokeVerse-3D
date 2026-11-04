@@ -245,7 +245,7 @@ export function criarWilds(ctx) {
     if (!wild) return null;
     const save = who.account.save;
     const party = Array.isArray(save.time) ? save.time : [];
-    const alive = p => p && p.dex && (p.hp == null || p.hp > 0);
+    const alive = p => p && p.dex != null && (p.hp == null || p.hp > 0);
     const follow = save.seguidorUid;
     let mon = follow != null ? party.find(p => alive(p) && String(p.uid) === String(follow)) : null;
     if (!mon) mon = party.find(alive);
