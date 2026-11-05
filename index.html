@@ -6761,7 +6761,7 @@ async function jogarBola(){
     ash.giro = Math.atan2(s.x - ash.x, s.z - ash.z); ash.alvoX = null;
     s.estado = 'capturando'; s.alvoX = null; s.investida = null; s.emVoo = true;   // emVoo (18/09): a MINHA bola está neste corpo até o finally — o world.mjs não o "desmaia" de novo no meio do voo e o F não joga outra
     if (s.raid) Raid.usouCaptura();                                      // the raid boss: one throw only
-    const promCapt = s.rede ? Mundo.capturar(s, id) : null;              // mundo compartilhado: pede JÁ (o servidor tranca o selvagem e sorteia); o resultado entra depois do voo
+    const promCapt = s.rede ? Mundo.capturar(s, id, noSafari && s.safariMod ? { safari: s.safariMod.tipo || null } : null) : null;   // Safari: the server applies bait / rock              // mundo compartilhado: pede JÁ (o servidor tranca o selvagem e sorteia); o resultado entra depois do voo
     jogo.alvo = (noSafari ? safariPerto(s) : desmaiadoMaisPerto(s)) || (jogo.alvo === s ? null : jogo.alvo);   // mira já vai pro próximo caído (no Safari, o próximo acordado)
     if (s.rotulo) s.rotulo.style.display = 'none';
     const escBase = s.pivo.scale.x;

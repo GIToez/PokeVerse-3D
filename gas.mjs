@@ -29,6 +29,17 @@ function tex() {                                                          // a c
   return textura;
 }
 
+/** The bone with the most skin weight on the biggest skinned mesh (Gastly: the ball's bone; Waist alone let the ball drop out of the
+    cloud in the Run clip). */
+function ossoDoCorpo(corpo) {
+  let malha = null, n = 0;
+  corpo.traverse(o => { if (o.isSkinnedMesh && o.geometry?.attributes?.skinWeight && o.geometry.attributes.position.count > n) { malha = o; n = o.geometry.attributes.position.count; } });
+  if (!malha?.skeleton) return null;
+  const idx = malha.geometry.attributes.skinIndex, pw = malha.geometry.attributes.skinWeight, soma = new Float64Array(malha.skeleton.bones.length);
+  for (let i = 0; i < idx.count; i++) for (let k = 0; k < 4; k++) soma[idx.getComponent(i, k)] += pw.getComponent(i, k);
+  let m = 0; for (let i = 1; i < soma.length; i++) if (soma[i] > soma[m]) m = i;
+  return malha.skeleton.bones[m] || null;
+}
 const _c = new THREE.Vector3(), _d = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3(), _p = new THREE.Vector3();
 
 /** Adds the gas to a cloned model; returns how many puffs were added (0 when the model has no recipe). */
@@ -43,14 +54,18 @@ export function aplicarGas(corpo, modelo = '') {
   const R = RECEITAS[chave];
   if (!R || corpo.__gas) return 0;
   corpo.updateMatrixWorld(true);
-  const cx = new THREE.Box3().setFromObject(corpo), tamanho = cx.getSize(new THREE.Vector3());
+  const cx = new THREE.Box3().setFromObject(corpo, true), tamanho = cx.getSize(new THREE.Vector3());
   /* body radius in the body's own units (montarCorpo scales the body afterwards; the radius is re-scaled every frame) */
   const raioLocal = (Math.max(tamanho.x, tamanho.y, tamanho.z) / 2 || 0.5) / (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
-  const osso = corpo.getObjectByName(R.osso || 'Waist');                 // the floating ball's bone: the cloud follows every animation
+  const osso = ossoDoCorpo(corpo) || corpo.getObjectByName(R.osso || 'Waist');   // the bone that carries most of the body: the cloud follows every animation
   const pai = osso || corpo;
   const grupo = new THREE.Group();
   grupo.name = 'gas-fantasma';
-  if (!osso) grupo.position.copy(cx.getCenter(new THREE.Vector3()).applyMatrix4(new THREE.Matrix4().copy(corpo.matrixWorld).invert()));
+  /* the cloud's centre is the BALL's centre, kept in the bone's own space: the Waist bone sits off-centre, so a cloud on the bone's
+     origin drifted to one side when Gastly faced left, right or away (it only lined up facing the camera) */
+  const meio = cx.getCenter(new THREE.Vector3());
+  if (osso) { osso.updateMatrixWorld(true); grupo.position.copy(osso.worldToLocal(meio.clone())); }
+  else grupo.position.copy(meio.applyMatrix4(new THREE.Matrix4().copy(corpo.matrixWorld).invert()));
   const claro = new THREE.Color(R.cor), escuro = new THREE.Color(R.cor2), t0 = performance.now() / 1000;
   const lista = [];
   /* the mass: points in the ellipse, denser towards the rim so the outline is lumpy; inner and low ones are the dark folds */
