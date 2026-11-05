@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#222;color:#fff;font:14px sans-serif}canvas{display:block}</style>
+<script type="importmap">{ "imports": { "three": "/vendor/three/build/three.module.js", "three/addons/": "/vendor/three/examples/jsm/" } }</script></head>
+<body><canvas id="c"></canvas>
+<script type="module">
+/* Gas bench: Gastly from the game camera angle (fov 20, offset 0,18.8,23.5), front / back / side, one row per recipe variant.
+   window.variantes = [{...recipe overrides}] then window.render() — used by the screenshot script. */
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import * as Gas from '/gas.mjs';
+const W = 360, H = 300;
+const ren = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+ren.outputColorSpace = THREE.SRGBColorSpace;
+const g = await new Promise((ok, err) => new GLTFLoader().load('/public/scenery/mon/pm0092_00.glb', ok, undefined, err));
+const base = JSON.parse(JSON.stringify(Gas.RECEITAS.pm0092));
+function cena(rec, giro, fundo) {
+  Object.assign(Gas.RECEITAS.pm0092, base, rec);
+  const s = new THREE.Scene(); s.background = new THREE.Color(fundo);
+  s.add(new THREE.AmbientLight(0xffffff, 1.6)); const d = new THREE.DirectionalLight(0xffffff, 1.4); d.position.set(3, 10, 6); s.add(d);
+  const chao = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ color: fundo })); chao.rotation.x = -Math.PI / 2; s.add(chao);
+  const corpo = SkeletonUtils.clone(g.scene);
+  const mix = new THREE.AnimationMixer(corpo); const idle = g.animations.find(a => a.name === 'Idle'); if (idle) mix.clipAction(idle).play(); mix.update(0.5);
+  corpo.updateMatrixWorld(true);
+  Gas.aplicarGas(corpo, 'pm0092_00');
+  const piv = new THREE.Group(); piv.add(corpo); piv.rotation.y = giro; s.add(piv);
+  corpo.scale.setScalar(0.7);   // game scale for Gastly (aplicarTamanho 92: 0.7)
+  return { s, mix };
+}
+const cam = new THREE.PerspectiveCamera(20, W / H, 0.5, 400);
+window.render = async (variantes, fundo = 0x5d8a3c, t = 1.2) => {
+  const views = [0, Math.PI, Math.PI / 2];
+  ren.setSize(W * views.length, H * variantes.length);
+  ren.setScissorTest(true);
+  for (let r = 0; r < variantes.length; r++) for (let v = 0; v < views.length; v++) {
+    const { s, mix } = cena(variantes[r], views[v], fundo);
+    mix.update(t);
+    const alvo = new THREE.Vector3(0, 0.9, 0);
+    cam.position.copy(alvo).add(new THREE.Vector3(0, 18.8, 23.5).multiplyScalar(0.15));
+    cam.lookAt(alvo); cam.updateMatrixWorld();
+    s.updateMatrixWorld(true);
+    const y = (variantes.length - 1 - r) * H;
+    ren.setViewport(v * W, y, W, H); ren.setScissor(v * W, y, W, H);
+    ren.render(s, cam); ren.render(s, cam);
+  }
+  return true;
+};
+window.pronto = true;
+</script></body></html>

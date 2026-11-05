@@ -7,8 +7,10 @@
  * The recipe is per model number, so Haunter / others can be added to RECEITAS. */
 import * as THREE from 'three';
 
-const RECEITAS = {
-  pm0092: { anel: 36, fios: 12, cor: 0xc9a0ec, cor2: 0x8652c6, op: 0.92, raio: [0.78, 1.5], tam: [0.72, 1.12], pluma: 2.5, lado: 0.55, brilho: 0x9a6cff },   // Gastly
+export const RECEITAS = {
+  /* massa: puffs filling an ellipse behind the ball (in ball radii): w × h, centre lifted by `sobe`; coroa: big puffs billowing on
+     top; tam: puff size range; cor (light, top) → cor2 (dark folds, inside / low). Tuned on the bench (tools/gas_bench). */
+  pm0092: { massa: 64, coroa: 5, w: 1.4, h: 1.35, sobe: 0.45, tam: [0.42, 0.75], cor: 0xcfa6f0, cor2: 0x6a3aa8, op: 0.95, halo: 0xb48ae0 },   // Gastly
 };
 
 let textura = null;
@@ -49,65 +51,54 @@ export function aplicarGas(corpo, modelo = '') {
   const grupo = new THREE.Group();
   grupo.name = 'gas-fantasma';
   if (!osso) grupo.position.copy(cx.getCenter(new THREE.Vector3()).applyMatrix4(new THREE.Matrix4().copy(corpo.matrixWorld).invert()));
-  const base = new THREE.Color(R.cor), fundo = new THREE.Color(R.cor2);
-  const total = R.anel + R.fios, t0 = performance.now() / 1000;
-  for (let i = 0; i < total; i++) {
-    const fio = i >= R.anel;
-    /* heavier above and behind, thin underneath: most of the ring sits on the top half, the bottom puffs are smaller and tucked in */
-    let angRing = (i / R.anel) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-    if (!fio && Math.sin(angRing) < -0.35 && Math.random() < 0.55) angRing = Math.PI - angRing;   // move about half of the bottom puffs to the top
-    const baixo = !fio && Math.sin(angRing) < -0.35;
-    const distR = R.raio[0] + Math.random() * (R.raio[1] - R.raio[0]);
-    const escuro = fio ? Math.random() * 0.25 : Math.min(1, (R.raio[1] - distR) / (R.raio[1] - R.raio[0]) * 0.8 + Math.random() * 0.25);   // inner puffs = the darker folds
-    const mat = new THREE.SpriteMaterial({ map: tex(), color: base.clone().lerp(fundo, escuro), transparent: true, opacity: R.op, depthWrite: false });
+  const claro = new THREE.Color(R.cor), escuro = new THREE.Color(R.cor2), t0 = performance.now() / 1000;
+  const lista = [];
+  /* the mass: points in the ellipse, denser towards the rim so the outline is lumpy; inner and low ones are the dark folds */
+  for (let i = 0; i < R.massa; i++) {
+    const a = Math.random() * Math.PI * 2, rr = Math.pow(Math.random(), 0.45);
+    const x = Math.cos(a) * rr * R.w, y = Math.sin(a) * rr * R.h + R.sobe;
+    const tom = Math.min(1, (1 - rr) * 0.75 + (y < R.sobe ? 0.25 : 0) + Math.random() * 0.15);
+    lista.push({ x, y, tam: R.tam[0] + Math.random() * (R.tam[1] - R.tam[0]), tom, coroa: false, atras: 0.6 + (1 - rr) * 0.5 });
+  }
+  /* the crown: a few big puffs on top that swell and fade in turn (smoke rising off the cloud, no chain of balls) */
+  for (let i = 0; i < R.coroa; i++) lista.push({ x: (i / Math.max(1, R.coroa - 1) - 0.5) * R.w * 1.1, y: R.sobe + R.h * 0.85, tam: R.tam[1] * 1.15, tom: 0.05, coroa: true, atras: 0.9 });
+  lista.sort((p, q) => q.atras - p.atras);                               // far ones drawn first
+  lista.forEach((P, i) => {
+    const mat = new THREE.SpriteMaterial({ map: tex(), color: claro.clone().lerp(escuro, P.tom), transparent: true, opacity: R.op, depthWrite: false });
     const s = new THREE.Sprite(mat);
-    s.renderOrder = 4;
-    /* ring puffs: evenly round the silhouette, radius and size jittered; plume puffs start at the top */
-    const ang = fio ? -Math.PI / 2 + (Math.random() - 0.5) * 1.6 : angRing;
-    const dist = baixo ? R.raio[0] * 0.92 : distR;
-    const tam = (R.tam[0] + Math.random() * (R.tam[1] - R.tam[0])) * (baixo ? 0.7 : 1);
-    const fase = Math.random() * Math.PI * 2, ciclo = 1.8 + Math.random() * 1.6, atraso = Math.random() * ciclo;
+    s.renderOrder = 4 + i / 1000;
+    const fase = Math.random() * Math.PI * 2, ciclo = 2.6 + Math.random() * 1.8, atraso = Math.random() * ciclo;
     s.onBeforeRender = (_renderer, _scene, camera) => {
       const t = performance.now() / 1000 - t0;
       grupo.getWorldPosition(_c);
-      const R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);   // body radius in world units now
+      const R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
       camera.getWorldDirection(_d);
       _r.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
       _u.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-      let ox, oy, atras, e, op;
-      if (fio) {                                                          // plume: leaves the top of the cloud, rises, swells and fades
-        const k = ((t + atraso) % ciclo) / ciclo;
-        ox = Math.cos(-Math.PI / 2 - ang) * R0 * 0.6 + Math.sin(t * 0.8 + fase) * R0 * 0.25 + k * R0 * (R.lado || 0) * 1.6;   // the plume trails off to one side
-        oy = R0 * (0.7 + k * R.pluma);
-        atras = R0 * 0.9; e = R0 * tam * (0.55 + 0.75 * k); op = R.op * Math.sin(Math.PI * Math.min(1, k * 1.15));
-      } else {                                                            // ring: breathes in and out, drifts slowly round
-        const a = ang + Math.sin(t * 0.45 + fase) * 0.12 + t * 0.06;
-        const rr = R0 * dist * (0.94 + 0.1 * Math.sin(t * 1.3 + fase));
-        ox = Math.cos(a) * rr; oy = Math.sin(a) * rr * 0.95 + R0 * 0.08;
-        atras = R0 * 0.75; e = R0 * tam * (0.9 + 0.14 * Math.sin(t * 1.7 + fase * 2)); op = R.op * (0.8 + 0.2 * Math.sin(t * 1.1 + fase));
-      }
-      _p.copy(_c).addScaledVector(_r, ox).addScaledVector(_u, oy).addScaledVector(_d, atras);   // behind the ball, seen from the camera
+      let ox = P.x + Math.sin(t * 0.7 + fase) * 0.06, oy = P.y + Math.cos(t * 0.6 + fase) * 0.06, e = P.tam * (0.93 + 0.09 * Math.sin(t * 1.3 + fase)), op = R.op;
+      if (P.coroa) { const k = ((t + atraso) % ciclo) / ciclo; oy += k * 0.8; ox += Math.sin(fase) * k * 0.3; e *= 0.35 + 0.75 * Math.sin(Math.PI * Math.min(1, k * 1.1)); op = R.op * Math.min(1, k * 6, (1 - k) * 4); }   // swells, then shrinks away (a fade alone went grey over grass)
+      _p.copy(_c).addScaledVector(_r, ox * R0).addScaledVector(_u, oy * R0).addScaledVector(_d, P.atras * R0);   // behind the ball, seen from the camera
       grupo.worldToLocal(_p);
       s.position.copy(_p);
-      const kLocal = 1 / (grupo.matrixWorld.getMaxScaleOnAxis() || 1);
-      s.scale.set(e * kLocal, e * kLocal, 1);
+      const kl = R0 / (grupo.matrixWorld.getMaxScaleOnAxis() || 1);
+      s.scale.set(e * kl * 2, e * kl * 2, 1);                            // tam = puff radius in ball radii
       mat.opacity = op;
-      s.updateMatrixWorld();                                              // this frame's matrix (onBeforeRender runs after the scene's update)
+      s.updateMatrixWorld();
     };
     grupo.add(s);
-  }
-  if (R.brilho != null) {                                                 /* faint additive glow behind the ball: ghostly at night and in caves, barely there by day */
-    const mg = new THREE.SpriteMaterial({ map: tex(), color: R.brilho, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending });
-    const g = new THREE.Sprite(mg); g.renderOrder = 3;
-    g.onBeforeRender = (_r0, _s0, camera) => {
-      const t = performance.now() / 1000 - t0, R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
-      grupo.getWorldPosition(_c); camera.getWorldDirection(_d);
-      _p.copy(_c).addScaledVector(_d, R0 * 1.1); grupo.worldToLocal(_p); g.position.copy(_p);
-      const e = R0 * 3.4 * (1 + 0.05 * Math.sin(t * 1.4)) / (grupo.matrixWorld.getMaxScaleOnAxis() || 1);
-      g.scale.set(e, e, 1); mg.opacity = 0.22 + 0.06 * Math.sin(t * 1.4); g.updateMatrixWorld();
+  });
+  if (R.halo != null) {                                                  /* soft lilac haze around the cloud (normal blending: additive turned green on grass) */
+    const mh = new THREE.SpriteMaterial({ map: tex(), color: R.halo, transparent: true, opacity: 0.22, depthWrite: false });
+    const h = new THREE.Sprite(mh); h.renderOrder = 3;
+    h.onBeforeRender = (_r0, _s0, camera) => {
+      const R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
+      grupo.getWorldPosition(_c); camera.getWorldDirection(_d); _u.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
+      _p.copy(_c).addScaledVector(_u, R.sobe * R0).addScaledVector(_d, R0 * 1.4); grupo.worldToLocal(_p); h.position.copy(_p);
+      const e = R0 * R.w * 2.9 / (grupo.matrixWorld.getMaxScaleOnAxis() || 1); h.scale.set(e, e, 1); h.updateMatrixWorld();
     };
-    grupo.add(g);
+    grupo.add(h);
   }
+  const total = lista.length;
   pai.add(grupo);
   corpo.__gas = grupo;
   return total;
