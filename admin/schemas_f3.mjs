@@ -40,7 +40,54 @@ const faixasFixas = ks => v => {
   return null;
 };
 
+/* Achievements (server_progression.mjs): the tiers of one achievement. */
+const METAIS = ['bronze', 'prata', 'ouro', 'platina', 'diamante'];
+const RECOMPENSAS = ['titulo', 'cosmetico', 'dinheiro', 'diamantes', 'item'];
+const degrausOk = v => {
+  if (!Array.isArray(v) || !v.length || v.length > 5) return 'use 1 to 5 tiers: [{ "degrau": "bronze", "min": 10, "pontosMestre": 100, "recompensa": { "tipo": "titulo", "id": "Collector", "nome": "Collector" } }]';
+  let antes = 0;
+  for (const [i, d] of v.entries()) {
+    if (!d || typeof d !== 'object') return `tier ${i + 1}: must be an object`;
+    if (!METAIS.includes(d.degrau)) return `tier ${i + 1}: degrau is one of ${METAIS.join(', ')}`;
+    if (!Number.isFinite(d.min) || d.min <= antes) return `tier ${i + 1}: min must be a number above the previous tier`;
+    antes = d.min;
+    if (d.pontosMestre != null && !(Number.isInteger(d.pontosMestre) && d.pontosMestre >= 0)) return `tier ${i + 1}: pontosMestre is a whole number`;
+    const r = d.recompensa;
+    if (r != null) {
+      if (!RECOMPENSAS.includes(r.tipo)) return `tier ${i + 1}: recompensa.tipo is one of ${RECOMPENSAS.join(', ')}`;
+      if ((r.tipo === 'titulo' || r.tipo === 'cosmetico' || r.tipo === 'item') && !r.id) return `tier ${i + 1}: this reward needs an id`;
+      if ((r.tipo === 'dinheiro' || r.tipo === 'diamantes' || r.tipo === 'item') && !(Number.isInteger(r.qtd) && r.qtd > 0)) return `tier ${i + 1}: this reward needs qtd`;
+    }
+  }
+  return null;
+};
+const CONTADORES = [
+  ['captura', 'Pokémon caught'], ['shiny', 'Shiny Pokémon caught'], ['especies', 'Species caught (Pokédex)'], ['ko', 'Wild Pokémon defeated'],
+  ['treinador', 'Trainer battles won'], ['ginasio', 'Gym battles won'], ['insignias', 'Badges'], ['elite', 'Elite Four beaten'],
+  ['historia', 'Story missions finished'], ['evolucao', 'Evolutions'], ['nivel', 'Highest Pokémon level'], ['raid', 'Raids joined'], ['dinheiro', 'Coins held'],
+];
 export const ESQUEMAS_F3 = {
+  conquistas: {
+    titulo: 'Achievements', arquivo: 'conquistas', caminho: 'conquistas', forma: 'lista', id: 'id', recarga: 'vivo',
+    descricao: 'Trainer card → Achievements. Each achievement counts one thing and has up to 5 tiers (bronze → diamond). A tier is reached at `min`; the player then presses Redeem for its reward and Master Level XP. Changes apply on the next view (players reopen the window).',
+    campos: [
+      { k: 'id', rotulo: 'Id', tipo: 'texto', max: 40, col: true, obrigatorio: true, ajuda: 'Lowercase, no spaces. Changing it resets everyone\'s claimed tiers for this one.' },
+      { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 60, col: true, obrigatorio: true },
+      { k: 'descricao', rotulo: 'Description', tipo: 'texto', max: 160 },
+      { k: 'categoria', rotulo: 'Category (id)', tipo: 'texto', max: 24, col: true, ajuda: 'One of the ids in Achievement categories.' },
+      { k: 'conta', rotulo: 'Counts', tipo: 'opcao', col: true, obrigatorio: true, opcoes: CONTADORES.map(([v, rotulo]) => ({ v, rotulo })) },
+      { k: 'oculta', rotulo: 'Hidden until the first tier', tipo: 'bool' },
+      { k: 'degraus', rotulo: 'Tiers', tipo: 'json', validar: degrausOk, ajuda: '[{ "degrau": "bronze", "min": 10, "pontosMestre": 100, "recompensa": { "tipo": "dinheiro", "qtd": 500, "nome": "500 Coins" } }, …] — recompensa.tipo: titulo, cosmetico (outfit id), dinheiro, diamantes, item (id + qtd).' },
+    ],
+  },
+  conquistas_categorias: {
+    titulo: 'Achievement categories', arquivo: 'conquistas', caminho: 'categorias', forma: 'lista', id: 'id', recarga: 'vivo',
+    descricao: 'The category tabs of the Achievements window, in this order.',
+    campos: [
+      { k: 'id', rotulo: 'Id', tipo: 'texto', max: 24, col: true, obrigatorio: true },
+      { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 40, col: true, obrigatorio: true },
+    ],
+  },
   npc_tintas: {
     titulo: 'NPC colors', arquivo: 'npc_tints', forma: 'mapa', idValido: /^[\w][\w .:()-]{0,79}$/, idAjuda: 'the model\'s material name (e.g. fc2013_00_nursejoy_hair_col) or "<model>:<material>"',
     descricao: 'The factory color of each part of NPCs, outfits and backpacks: the texture is nearly white and the color comes from here, through the mask\'s R/G/B/black channels. The preview shows the model (when it exists in this copy) with your edits.',

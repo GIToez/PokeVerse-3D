@@ -1,6 +1,7 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 import * as I18n from './i18n.mjs';                                     // etapa 3: a linha de idioma nas Configurações e a Pokédex por idioma
-import * as CorreioUI from './mail_ui.mjs';                                // Mail (v2 popup)
+import * as CorreioUI from './mail_ui.mjs';
+import * as ProgressaoUi from './progression_ui.mjs';                       // Achievements, Master Level, titles (v2 popup)                                // Mail (v2 popup)
 /* Menus do jogo — casca DOM, sem servidor (menus.css).
  *
  * Um botão Menu (☰ na HUD, ou Esc) abre a grade; cada item abre UMA janela por vez:
@@ -346,6 +347,16 @@ function ligarRecursos(){
 }
 
 export function instalar(c){
+  ProgressaoUi.instalar({
+    enviar: (m) => c.correioEnviar?.(m),
+    comConta: () => !!c.comConta?.(),
+    Chat,
+    Som: c.Som,
+    segurar: (el) => DIALOGOS.add(el),
+    tituloAutomatico: () => c.conhecimento?.tituloAtual?.() || '',
+    aoTitulo: () => c.aoTitulo?.(),
+    nick: () => c.nome || '',
+  });
   CorreioUI.instalar({
     enviar: (m) => c.correioEnviar?.(m),
     Chat,
@@ -509,6 +520,7 @@ function tecla(e){
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;
   if (Teclas.capturando() || remap?.el.isConnected) return;               // the key list (Settings → Controls) is open: it handles the keys, Esc included
   const grade = !$('menu-grade').hidden;
+  if (e.code === 'Escape' && ProgressaoUi.fecharTopo?.()){ e.preventDefault(); e.stopImmediatePropagation(); return; }   // achievements window
   if (e.code === 'Escape' && popPrevia && Popup.aberto(popPrevia)){ fecharPrevia(); e.preventDefault(); e.stopImmediatePropagation(); return; }   // pop-up da prévia do adm (rodada 30)
   if (e.code === 'F7' && !e.repeat && ctx?.gm?.()){ previa(); e.preventDefault(); return; }   // rodada 30: paleta da prévia do adm
   if (e.code === 'Escape' && popEb && Popup.aberto(popEb)){ Popup.fechar(popEb); e.preventDefault(); e.stopImmediatePropagation(); return; }   // banner "Em breve" (v2)
@@ -755,6 +767,8 @@ function popupCo(){
   });
   return popCo;
 }
+/** The network's achievement messages (view, redeem, title). */
+export function progressaoRede(m){ ProgressaoUi.receber(m); }
 /** The network's mail messages (count in the welcome, new letter, list, errors). */
 export function correioRede(m){
   CorreioUI.receber(m);
@@ -2530,7 +2544,7 @@ function popupTr(){
   if (popTr) return popTr;
   const def = defPopup('treinador'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
   popTr = Popup.montar(def, {
-    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } return false; },
+    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } return false; },
     fechar: () => { if (aberta === 'treinador') aberta = null; if (visorTr) visorTr.ativo = false; },
   });
   return popTr;

@@ -1,0 +1,812 @@
+{
+ "_sobre": "Achievements (Trainer card → Achievements). `conta` is what each one counts: ko, captura, shiny, treinador, ginasio, evolucao, historia, elite, raid (server-checked events) or especies, insignias, nivel, dinheiro (read from the save). Tiers go bronze → prata → ouro → platina → diamante; `min` is the target, `pontosMestre` the Master Level XP it gives once redeemed, `recompensa` = { tipo: titulo | cosmetico | dinheiro | diamantes | item, id, qtd, nome }. Edit in the admin panel: Data files → Achievements.",
+ "mestre": {
+  "xpPorNivel": 1000
+ },
+ "categorias": [
+  {
+   "id": "captura",
+   "nome": "Catching"
+  },
+  {
+   "id": "colecao",
+   "nome": "Collection"
+  },
+  {
+   "id": "batalha",
+   "nome": "Battles"
+  },
+  {
+   "id": "historia",
+   "nome": "Story"
+  },
+  {
+   "id": "aventura",
+   "nome": "Adventure"
+  }
+ ],
+ "conquistas": [
+  {
+   "id": "catch-em",
+   "nome": "Gotta Catch 'Em",
+   "descricao": "Catch wild Pokémon.",
+   "categoria": "captura",
+   "conta": "captura",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 500,
+      "nome": "500 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 50,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1500,
+      "nome": "1,500 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 200,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Collector",
+      "nome": "Collector"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 500,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 30,
+      "nome": "30 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 1000,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Pokémon Master",
+      "nome": "Pokémon Master"
+     }
+    }
+   ]
+  },
+  {
+   "id": "species",
+   "nome": "Pokédex Pages",
+   "descricao": "Register different species as caught.",
+   "categoria": "colecao",
+   "conta": "especies",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 500,
+      "nome": "500 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 30,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Field Researcher",
+      "nome": "Field Researcher"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 75,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 20,
+      "nome": "20 Diamonds"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 151,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Kanto Complete",
+      "nome": "Kanto Complete"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 251,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Living Dex",
+      "nome": "Living Dex"
+     }
+    }
+   ]
+  },
+  {
+   "id": "shiny-hunter",
+   "nome": "Shiny Hunter",
+   "descricao": "Catch shiny Pokémon.",
+   "categoria": "captura",
+   "conta": "shiny",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Lucky Find",
+      "nome": "Lucky Find"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 3,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 30,
+      "nome": "30 Diamonds"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 10,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Shiny Hunter",
+      "nome": "Shiny Hunter"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 25,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 80,
+      "nome": "80 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 50,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Starlight",
+      "nome": "Starlight"
+     }
+    }
+   ]
+  },
+  {
+   "id": "knockouts",
+   "nome": "Wild Battler",
+   "descricao": "Defeat wild Pokémon.",
+   "categoria": "batalha",
+   "conta": "ko",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 300,
+      "nome": "300 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 100,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1000,
+      "nome": "1,000 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 500,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Brawler",
+      "nome": "Brawler"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 2000,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 20,
+      "nome": "20 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 5000,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Unstoppable",
+      "nome": "Unstoppable"
+     }
+    }
+   ]
+  },
+  {
+   "id": "trainers",
+   "nome": "Trainer Rival",
+   "descricao": "Win battles against trainers.",
+   "categoria": "batalha",
+   "conta": "treinador",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 500,
+      "nome": "500 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 25,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1500,
+      "nome": "1,500 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 75,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Rival",
+      "nome": "Rival"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 150,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 25,
+      "nome": "25 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 300,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Ace Trainer",
+      "nome": "Ace Trainer"
+     }
+    }
+   ]
+  },
+  {
+   "id": "gyms",
+   "nome": "Gym Challenger",
+   "descricao": "Win gym battles (rematches count).",
+   "categoria": "batalha",
+   "conta": "ginasio",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1000,
+      "nome": "1,000 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 5,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Challenger",
+      "nome": "Challenger"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 15,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 20,
+      "nome": "20 Diamonds"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 40,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Gym Crusher",
+      "nome": "Gym Crusher"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 100,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 60,
+      "nome": "60 Diamonds"
+     }
+    }
+   ]
+  },
+  {
+   "id": "badges",
+   "nome": "Badge Trail",
+   "descricao": "Earn Kanto gym badges.",
+   "categoria": "historia",
+   "conta": "insignias",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 500,
+      "nome": "500 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 3,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1500,
+      "nome": "1,500 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 5,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Badge Seeker",
+      "nome": "Badge Seeker"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 7,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 30,
+      "nome": "30 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 8,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Kanto Champion",
+      "nome": "Kanto Champion"
+     }
+    }
+   ]
+  },
+  {
+   "id": "elite",
+   "nome": "League Contender",
+   "descricao": "Beat the Elite Four.",
+   "categoria": "historia",
+   "conta": "elite",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "League Contender",
+      "nome": "League Contender"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 3,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 30,
+      "nome": "30 Diamonds"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 10,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Elite",
+      "nome": "Elite"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 25,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 80,
+      "nome": "80 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 50,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Hall of Famer",
+      "nome": "Hall of Famer"
+     }
+    }
+   ]
+  },
+  {
+   "id": "story",
+   "nome": "Storyteller",
+   "descricao": "Finish story missions.",
+   "categoria": "historia",
+   "conta": "historia",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 500,
+      "nome": "500 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 15,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1500,
+      "nome": "1,500 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 30,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Storyteller",
+      "nome": "Storyteller"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 45,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 30,
+      "nome": "30 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 56,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Legend of Kanto",
+      "nome": "Legend of Kanto"
+     }
+    }
+   ]
+  },
+  {
+   "id": "evolve",
+   "nome": "Metamorphosis",
+   "descricao": "Evolve Pokémon.",
+   "categoria": "colecao",
+   "conta": "evolucao",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 300,
+      "nome": "300 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 10,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1000,
+      "nome": "1,000 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 30,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Evolutionist",
+      "nome": "Evolutionist"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 75,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 20,
+      "nome": "20 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 150,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Professor's Pride",
+      "nome": "Professor's Pride"
+     }
+    }
+   ]
+  },
+  {
+   "id": "level",
+   "nome": "Power Trainer",
+   "descricao": "Raise a Pokémon's level.",
+   "categoria": "aventura",
+   "conta": "nivel",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 300,
+      "nome": "300 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 25,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1000,
+      "nome": "1,000 Coins"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 50,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Trainer",
+      "nome": "Trainer"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 75,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 30,
+      "nome": "30 Diamonds"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 100,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Level 100",
+      "nome": "Level 100"
+     }
+    }
+   ]
+  },
+  {
+   "id": "raids",
+   "nome": "Raid Squad",
+   "descricao": "Join live raids.",
+   "categoria": "aventura",
+   "conta": "raid",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 100,
+     "recompensa": {
+      "tipo": "dinheiro",
+      "qtd": 1000,
+      "nome": "1,000 Coins"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 5,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Raider",
+      "nome": "Raider"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 15,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 25,
+      "nome": "25 Diamonds"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 40,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Raid Veteran",
+      "nome": "Raid Veteran"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 100,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 80,
+      "nome": "80 Diamonds"
+     }
+    }
+   ]
+  },
+  {
+   "id": "rich",
+   "nome": "Big Spender",
+   "descricao": "Hold Coins at once.",
+   "categoria": "aventura",
+   "conta": "dinheiro",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10000,
+     "pontosMestre": 100
+    },
+    {
+     "degrau": "prata",
+     "min": 50000,
+     "pontosMestre": 250,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Wealthy",
+      "nome": "Wealthy"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 150000,
+     "pontosMestre": 500,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 20,
+      "nome": "20 Diamonds"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 500000,
+     "pontosMestre": 1000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Tycoon",
+      "nome": "Tycoon"
+     }
+    },
+    {
+     "degrau": "diamante",
+     "min": 1000000,
+     "pontosMestre": 2000,
+     "recompensa": {
+      "tipo": "diamantes",
+      "qtd": 60,
+      "nome": "60 Diamonds"
+     }
+    }
+   ]
+  },
+  {
+   "id": "secret-shiny-legend",
+   "nome": "A Rare Light",
+   "descricao": "Catch 100 shiny Pokémon.",
+   "categoria": "captura",
+   "conta": "shiny",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 3000,
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "Living Legend",
+      "nome": "Living Legend"
+     }
+    }
+   ],
+   "oculta": true
+  }
+ ]
+}

@@ -36,6 +36,7 @@ import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
 import { createMail } from './server_mail.mjs';
+import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -1392,6 +1393,9 @@ const wilds = criarWilds({
   expMult: () => eventos.efetivo().expMult,
   aoDerrotar: (u, ev) => temporada.contar(u, { conta: 'ko', ...ev }),
 });
+/* ACHIEVEMENTS (server_progression.mjs): every event the season pass counts also counts here. */
+const progressao = createProgression({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, dataDir: DADOS_PUB, wallet: carteira });
+{ const contarTemporada = temporada.contar; temporada.contar = (u, ev) => { try { contarTemporada(u, ev); } finally { progressao.count(u, ev); } }; }
 /* MAIL (server_mail.mjs): letters on the account, opened from the HUD's Mail shortcut. */
 const mail = createMail({
   accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, wallet: carteira, newIndividual: individuoServidor, markCaught: marcarPego,
@@ -1402,7 +1406,7 @@ const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
   onCatch: (ws, u, pk) => {
-    temporada.contar(u, { conta: 'captura', dex: pk.dex });
+    temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny });
     const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex });
     if (r) enviarMissao(ws, r);
   },
@@ -1711,7 +1715,7 @@ wss.on('connection', ws => {
             salvarContas();
             enviar(ws, { t: 'posse', op, pokemon: pk, vidas: c.save.time });
             // Dispara evento de missão de captura
-            temporada.contar(u, { conta: 'captura', dex: pk.dex });
+            temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny });
             const rC = aplicarEvento(u, { tipo: 'captura', dex: m.pokemon?.dex });
             if (rC) enviarMissao(ws, rC);
           } else if (op === 'soltar' && m.uid && c?.save) {
@@ -1818,6 +1822,7 @@ wss.on('connection', ws => {
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
         else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'progressao_vista' || m.t === 'progressao_resgatar' || m.t === 'progressao_titulo') progressao.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'nascer' || m.t === 'spos' || m.t === 'sataque' || m.t === 'shp' || m.t === 'capturar') world.receive(ws, m);   // raid ao vivo (o `ataque` só existe com o Mundo ligado: o chefe)
         break;
