@@ -1229,3 +1229,290 @@ export function registroDe(rect, palcoW, palcoH, extra = {}){
   const ax = cx < palcoW / 2 ? 'left' : 'right', ay = cy < palcoH / 2 ? 'top' : 'bottom';
   return { ax, x: Math.round(ax === 'left' ? rect.left : palcoW - rect.right), ay, y: Math.round(ay === 'top' ? rect.top : palcoH - rect.bottom), s: 1, ...extra };
 }
+
+/* ── SITUATIONAL WIDGETS (from upcoming/hud.mjs) ──────────────────────────────────────────────────────────────────────
+   Small HUD pieces the v2 layout defines under `situacao` (the fishing "HOOKED!" alert, the fishing hint and button…):
+   sit(name) builds one on demand, sitMostrar shows/hides it, sitEm / sitSeguir place it on screen or over a 3D target,
+   escrever / rotular fill its texts. The game registers the camera and targets with usarCamera / usarAlvo. */
+const SIT = new Map();
+let CAMERA = null;
+const ALVOS = {};
+export function usarCamera(c) {
+  CAMERA = c || null;
+}
+export function usarAlvo(a, b) {
+  ALVOS[a] = typeof b === 'function' ? b : null;
+}
+const RESERVA = {
+  jogador: () => globalThis.__dbg?.jogo?.ash,
+  pokemon: () => globalThis.__dbg?.jogo?.pika,
+  inimigo: () => globalThis.__dbg?.jogo?.alvo,
+};
+export function alvoDe(a) {
+  try {
+    return (ALVOS[a] || RESERVA[a])?.() || null;
+  } catch {
+    return null;
+  }
+}
+export function naTela(x, y, z) {
+  const c = CAMERA || globalThis.__dbg?.camera;
+  if (!c && !naTela.avisou) {
+    naTela.avisou = true;
+    console.warn(
+      'Hud: [follow:x] requested without a camera — index must call Hud.usarCamera(cam) (the window.__dbg fallback does not exist here)',
+    );
+  }
+  if (!c?.projectionMatrix || !c.matrixWorldInverse || ![x, y, z].every(Number.isFinite)) return null;
+  const m = c.matrixWorldInverse.elements,
+    p = c.projectionMatrix.elements;
+  const a = m[0] * x + m[4] * y + m[8] * z + m[12],
+    b = m[1] * x + m[5] * y + m[9] * z + m[13],
+    d = m[2] * x + m[6] * y + m[10] * z + m[14],
+    e = m[3] * x + m[7] * y + m[11] * z + m[15];
+  const f = p[0] * a + p[4] * b + p[8] * d + p[12] * e,
+    g = p[1] * a + p[5] * b + p[9] * d + p[13] * e,
+    h = p[2] * a + p[6] * b + p[10] * d + p[14] * e,
+    i = p[3] * a + p[7] * b + p[11] * d + p[15] * e;
+  if (!(i > 0)) return null;
+  const j = f / i,
+    k = g / i,
+    l = h / i;
+  if (l > 1 || Math.abs(j) > 1.2 || Math.abs(k) > 1.2) return null;
+  return { x: ((j + 1) / 2) * innerWidth, y: ((1 - k) / 2) * innerHeight };
+}
+export function sitDef(a) {
+  const b = aplicar.__preset;
+  return (b && layoutAtual()?.situacao?.[b]?.[a]) || null;
+}
+const interativa = (t) =>
+  !!(
+    t?.tag ||
+    (function b(a) {
+      return (a || []).some((f) => f.tag || b(f.filhos));
+    })(t?.filhos) ||
+    Object.values(t?.celulas || {}).some((c) => Object.values(c.moldes || {}).some((m) => m.tag))
+  );
+const arvoreDe = (d, a) => (a && d?.estados?.[a]) || d;
+function montarSit(a, d, b) {
+  const c = b && d.estados?.[b] ? b : !d.filhos && d.estados ? Object.keys(d.estados)[0] : null,
+    t = arvoreDe(d, c);
+  if (a.__sitArvore !== t)
+    for (const v of a.querySelectorAll(':scope > [data-sit-livre], :scope > [data-sit-sb]')) v.remove();
+  a.__sitDef = d;
+  a.__sitEst = c;
+  a.__sitArvore = t;
+  a.__sitGer = (a.__sitGer || 0) + 1;
+  if (a.dataset.encolhida) {
+    delete a.dataset.encolhida;
+    a.style.borderImage = '';
+    a.style.border = '';
+  }
+  const e = t.tag || d.tag;
+  if (e) {
+    a.dataset.tag = e;
+    a.dataset.tagval = t.tagVal || d.tagVal || '';
+  } else {
+    delete a.dataset.tag;
+    delete a.dataset.tagval;
+  }
+  Object.assign(a.style, {
+    position: 'fixed',
+    width: t.w + 'px',
+    height: t.h + 'px',
+    backgroundColor: 'transparent',
+    backgroundImage: t.img ? 'url(' + t.img + ')' : 'none',
+    pointerEvents: interativa(t) || interativa(d) ? 'auto' : 'none',
+    cursor: e ? 'pointer' : '',
+  });
+  if (t.img) fundoComFolga(a, t.imgPad);
+  montarFigma(
+    a,
+    { nome: d.nome, v2: true, sit: true, ocultosVivos: !!a.__ocultosVivos, filhos: t.filhos || [] },
+    false,
+  );
+  if (c) estado(a, c, 1);
+  sitTransform(a);
+}
+export function sit(a, b = null) {
+  const d = sitDef(a);
+  let c = SIT.get(a) || null;
+  if (!d) {
+    if (c) c.hidden = true;
+    return null;
+  }
+  if (c && b?.ocultos && !c.__ocultosVivos) {
+    c.__ocultosVivos = true;
+    if (c.__sitDef) montarSit(c, c.__sitDef, c.__sitEst);
+  }
+  if (!c) {
+    c = document.createElement('div');
+    c.id = 'sit-' + a;
+    c.className = 'hud-sit';
+    c.dataset.sit = a;
+    c.hidden = true;
+    c.__ocultosVivos = !!b?.ocultos;
+    c.style.zIndex = '34';
+    c.addEventListener('pointerdown', (a) => {
+      if (c.style.pointerEvents !== 'none') a.stopPropagation();
+    });
+    c.addEventListener('wheel', (a) => a.stopPropagation(), { passive: true });
+    c.addEventListener('click', (a) => {
+      const n = a.target.closest?.('[data-tag]');
+      if (!n || !c.contains(n) || n.dataset.desligado === '1') return;
+      a.stopPropagation();
+      c.__sitCb?.(n.dataset.tag, n.dataset.tagval || '', n, a);
+    });
+    document.body.appendChild(c);
+    SIT.set(a, c);
+  }
+  if (c.__sitDef !== d) montarSit(c, d, c.__sitEst);
+  return c;
+}
+export function sitEstado(a, b) {
+  if (!a?.__sitDef) return a;
+  const d = a.__sitDef,
+    c = b && d.estados?.[b] ? b : !d.filhos && d.estados ? Object.keys(d.estados)[0] : null;
+  if (c !== a.__sitEst) montarSit(a, a.__sitDef, c);
+  return a;
+}
+export const sitGeracao = (a) => a?.__sitGer || 0;
+export function sitMostrar(a, b) {
+  if (a) {
+    a.hidden = !b;
+    if (!b && a.__sitAviso) a.__sitAviso++;
+  }
+  return a;
+}
+export function sitAo(a, b) {
+  if (a) a.__sitCb = typeof b === 'function' ? b : null;
+  return a;
+}
+const ANCORAS = {
+  topo: ['0', '0', '0 0'],
+  'topo-meio': ['-50%', '0', '50% 0'],
+  'topo-dir': ['-100%', '0', '100% 0'],
+  meio: ['-50%', '-50%', '50% 50%'],
+  'esq-meio': ['0', '-50%', '0 50%'],
+  'dir-meio': ['-100%', '-50%', '100% 50%'],
+  base: ['-50%', '-100%', '50% 100%'],
+  'base-esq': ['0', '-100%', '0 100%'],
+  'base-dir': ['-100%', '-100%', '100% 100%'],
+};
+function sitTransform(b) {
+  const a = ANCORAS[b.__sitAncora] || ANCORAS.topo;
+  b.style.transformOrigin = a[2];
+  b.style.transform = 'translate(' + a[0] + ',' + a[1] + ') scale(' + (ESCALA * (b.__sitEscala || 1)).toFixed(4) + ')';
+}
+export function sitEm(a, x, y, b = 'topo') {
+  if (!a || !Number.isFinite(x) || !Number.isFinite(y)) return a;
+  a.__sitAncora = b;
+  a.__sitMaq = null;
+  Object.assign(a.style, {
+    left: Math.round(x) + 'px',
+    top: Math.round(y) + 'px',
+    right: 'auto',
+    bottom: 'auto',
+    visibility: '',
+  });
+  sitTransform(a);
+  return a;
+}
+export function sitNaMaquete(a, x, y) {
+  const T = PRESETS[aplicar.__preset],
+    t = a?.__sitArvore;
+  if (!a || !T || !t || !Number.isFinite(x) || !Number.isFinite(y)) return a;
+  const k = ESCALA * (a.__sitEscala || 1),
+    w = t.w,
+    h = t.h,
+    b = Math.round(((x + w / 2) / T.w) * 100),
+    c = (y + h / 2) / T.h;
+  const d =
+    b > 30 && b < 70
+      ? innerWidth / 2 + (x + w / 2 - T.w / 2) * ESCALA - (w * k) / 2
+      : b <= 30
+        ? x * ESCALA
+        : innerWidth - (T.w - x) * ESCALA;
+  const e = c >= 0.5 ? innerHeight - (T.h - y) * ESCALA : y * ESCALA;
+  sitEm(a, d, e, 'topo');
+  a.__sitMaq = { x, y };
+  return a;
+}
+export function sitSeguir(a, b, c = 0.3) {
+  if (!a) return false;
+  const e = typeof b === 'string' ? alvoDe(b) : b;
+  const p = e ? naTela(e.vx ?? e.x, (e.vy ?? e.y ?? 0) + (e.altura || 1.6) + c, e.vz ?? e.z) : null;
+  if (!p) {
+    a.style.visibility = 'hidden';
+    return false;
+  }
+  sitEm(a, p.x, p.y, 'base');
+  return true;
+}
+export function escrever(a, b, s, c = null) {
+  const d = (c || a)?.querySelector('[data-fig="txt/' + b + '"]');
+  if (!d) return null;
+  const v = s == null ? '' : String(s);
+  if (d.textContent !== v) {
+    d.textContent = v;
+    encolher(d);
+  }
+  return d;
+}
+export function rotular(a, b, s, c = null) {
+  const d = (c || a)?.querySelector('[data-fig="' + b + '"]');
+  if (!d) return null;
+  const v = s == null ? '' : String(s);
+  if (d.textContent !== v) {
+    d.textContent = v;
+    encolher(d);
+  }
+  return d;
+}
+export function mostrarFig(a, b, c, e = null) {
+  const f = (e || a)?.querySelector('[data-fig="' + b + '"]');
+  if (!f) return null;
+  const m = c ? '1' : '0';
+  if (f.dataset.mostrar !== m) f.dataset.mostrar = m;
+  const d = c ? f.dataset.figDisplay || 'block' : 'none';
+  if (f.style.display !== d) f.style.display = d;
+  return f;
+}
+export function estadoFilho(a, b, c, e = null) {
+  const g = a?.querySelector('[data-fig="' + b + '"]');
+  if (!g) return null;
+  const i = (a) => {
+    for (const f of a || []) {
+      if (f.nome === b) return f;
+      const r = i(f.filhos);
+      if (r) return r;
+    }
+    return null;
+  };
+  const j = i(a.__figmaP?.filhos);
+  let k = null;
+  if (c) {
+    const d = sitDef(e || b)?.estados?.[c];
+    k = d ? (e ? i(d.filhos) : d) : null;
+    if (!k && a.__figmaP?.refsFilhos?.[b]?.[c]) k = a.__figmaP.refsFilhos[b][c];
+  }
+  const l = k || j;
+  if (!l) return g;
+  if (l.img) {
+    const v = 'url("' + l.img + '")';
+    if (g.style.backgroundImage !== v) g.style.backgroundImage = v;
+    if (k) {
+      const m = k.imgPad ?? 16;
+      g.style.backgroundSize = k.w + 2 * m + 'px ' + (k.h + 2 * m) + 'px';
+      g.style.backgroundPosition = -m + 'px ' + -m + 'px';
+      g.style.backgroundRepeat = 'no-repeat';
+    } else fundoComFolga(g, j.imgPad);
+  }
+  for (const f of l.filhos || [])
+    if (f.tipo === 'txt' && f.cor) {
+      const t = g.querySelector(':scope > [data-fig="' + f.nome + '"],:scope > [data-figlig="' + f.nome + '"]');
+      if (t && t.style.color !== f.cor) t.style.color = f.cor;
+    }
+  g.dataset.estado = c || '';
+  return g;
+}

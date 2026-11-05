@@ -9392,6 +9392,7 @@ if (jogo.ash){
     try { Menus.repintar?.(); } catch {}                                 // 20/09: a janela Pokémon aberta volta pro que o servidor disse (o arrasto mostra a ordem nova na hora, mas quem manda é ele)
     try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: o save reescrito pelo servidor (troca, prêmio) também passa pela recuperação
   }
+  try { Hud.usarCamera?.(cam); Hud.usarAlvo?.('jogador', () => jogo.ash); Hud.usarAlvo?.('pokemon', () => jogo.pika); Hud.usarAlvo?.('inimigo', () => jogo.alvo); } catch {}   // HUD widgets that follow a 3D target (fishing alert, hints)
   Mundo.instalar({ jogo, enviar: Rede.enviar, uidParceiro, esconder: guardarSelvagem, guardar: guardarSelvagem, desmaiar: s => desmaiar(s, false) /* KO visto pela rede (sestado): só toma a mira se eu não mirava ninguém — ver desmaiar (18/09) */, morrer, tocarUma, espectar: (s, m) => { verBolaDoOutro(s, m); },   // fase 3a: selvagens da sala; a bola do outro voa aqui também
     golpeNoParceiro: (s, m) => {                                         // fase 3c: o selvagem bateu no MEU parceiro; o dano veio do servidor (o HP continua meu: só desconto)
       /* O `network.mjs` aplica o `vida` de TODA mensagem (aplicarVidas) ANTES de despachar o `pdano`: o HP do parceiro já chegava
