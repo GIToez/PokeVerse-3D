@@ -9,6 +9,7 @@
  * catching Pokémon, healing at a Pokémon Center).
  */
 
+import * as RegrasItemS from './item_rules.mjs';   // Running Shoes (TENIS) and the other key-item ids
 import http from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 import fs from 'node:fs';
@@ -639,7 +640,11 @@ let itensCache = { mtime: -1, ids: null };
 function itemExiste(id) {
   try {
     const arq = nodePath.join(DADOS_PUB, 'menu_data.json'), mt = fs.statSync(arq).mtimeMs;
-    if (mt !== itensCache.mtime) itensCache = { mtime: mt, ids: new Set(Object.keys(JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {})) };
+    if (mt !== itensCache.mtime) {
+      const ids = new Set(Object.keys(JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {}));
+      try { for (const k of Object.keys(JSON.parse(fs.readFileSync(nodePath.join(DADOS_PUB, 'itens_novos.json'), 'utf8')).itens || {})) ids.add(k); } catch {}   // TM pieces, Rare Candy S…MAX, shards, incubators
+      itensCache = { mtime: mt, ids };
+    }
   } catch { return true; }                                                  // sem o arquivo (demo) não bloqueia
   return !itensCache.ids || itensCache.ids.has(String(id));
 }
@@ -663,7 +668,7 @@ function limparBolsa(d) {
     if (!d[k] || typeof d[k] !== 'object' || Array.isArray(d[k])) return { erro: k + ': invalid format.' };
     const m = {};
     for (const [id, q] of Object.entries(d[k])) {
-      if (!/^\d{1,9}$/.test(id) || !itemExiste(id)) return { erro: `${k}: o item ${id} não existe no jogo.` };
+      if (!/^\d{1,9}$/.test(id) || !itemExiste(id)) return { erro: `${k}: item ${id} does not exist in the game.` };
       const n = Number(q);
       if (!Number.isInteger(n) || n < 0 || n > 999999) return { erro: `${k} ${id}: quantidade de 0 a 999999.` };
       if (n > 0) m[id] = n;                                                  // 0 = tira da bolsa
@@ -1271,6 +1276,17 @@ const httpServer = http.createServer((req, res) => {
         const pronto = (extra = {}) => { c.rev = (c.rev || 0) + 1; salvarContasJa(); return json(200, { ok: true, conta: resumoConta(u, c), save: c.save, rev: c.rev, log: logAdminDe(u, 60), ...extra }); };
 
         if (acao === 'bolsa') {
+          /* The panel sends the whole table it showed, plus what it loaded (`itensAntes` / `bolasAntes`). Anything the player got
+             after the panel loaded (a purchase, a drop, the Running Shoes) is kept instead of being wiped by the old table. */
+          const juntar = (agora, antes, novo) => {
+            if (!antes || typeof antes !== 'object' || !novo || typeof novo !== 'object') return novo;
+            const out = { ...(agora || {}) };
+            for (const k of Object.keys(antes)) if (!(k in novo)) delete out[k];
+            for (const [k, q] of Object.entries(novo)) out[k] = q;
+            return out;
+          };
+          d.itens = juntar(c.save.itens, d.itensAntes, d.itens);
+          d.bolas = juntar(c.save.bolas, d.bolasAntes, d.bolas);
           const r = limparBolsa(d);
           if (r.erro) return json(400, { erro: r.erro });
           const antes = { dinheiro: c.save.dinheiro ?? null, itens: c.save.itens || {}, bolas: c.save.bolas || {}, insignias: c.save.insignias || [] };
@@ -1395,9 +1411,21 @@ const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, de
 const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n) });
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
+  bolaBonus: (id, w, u) => world.ballBonus(id, w, u),   // the ball's catch bonus, same as in the wild (Level / Net / Nest / Repeat Ball…)
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
   aoPontuar: (u, n, mvp, parte) => { temporada.contar(u, { conta: 'raidPontos', n, parte }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
-const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
+/* RUNNING SHOES (item_rules.mjs TENIS): from Oak's aide after the Boulder Badge (server_battle calls this on the first win over
+   Brock); accounts that already had the badge, and GM accounts, get them on their next login. */
+function darTenis(u, { avisar = true } = {}) {
+  const c = contas[u]; if (!c) return false;
+  if (!c.save) c.save = {};
+  const s = c.save; if (!s.itens || typeof s.itens !== 'object') s.itens = {};
+  if (+s.itens[RegrasItemS.TENIS] > 0) return false;
+  s.itens[RegrasItemS.TENIS] = 1; c.rev = (c.rev || 0) + 1; salvarContas();
+  if (avisar) for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: "👟 Professor Oak's aide caught up with you: \"Brock's badge! The Professor wants you to have these.\" You got the Running Shoes! Hold Shift (or push the joystick all the way) to run.", bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas || {} } });
+  return true;
+}
+const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u) });
 /* WARDROBE (server_wardrobe.mjs): the outfit/bag/effect catalog and who owns what. */
 const guarda = createWardrobe({ dataDir: DADOS_PUB });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida, guarda });   // comprar / usar / descartar / held items (server_bag.mjs)
@@ -1501,6 +1529,7 @@ wss.on('connection', ws => {
         }
         if (eventos.aoEntrar(ws, uTok)) return;                            // Fase 3: manutenção barra quem não é GM; senão manda o evento ao vivo
         moderacao.aoEntrar(ws, uTok);                                      // Fase 3: chegou onde o GM levou (posGm) → apaga
+        if (uTok && contas[uTok] && (contas[uTok].gm || (contas[uTok].save?.insignias || []).map(Number).includes(RegrasItemS.TENIS_INSIGNIA))) darTenis(uTok);   // Running Shoes for badges won before they existed (and GMs)
         if (uTok) for (const w of socketsDe(uTok)) {                       // sessão única, como em produção: a aba/aparelho anterior leva `saia` (não reconecta) e some do mapa dos outros — antes cada aba virava mais um boneco
           if (w === ws) continue;
           enviar(w, { t: 'saia', texto: 'You logged in from somewhere else.' });
@@ -1890,9 +1919,10 @@ wss.on('connection', ws => {
         }
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
-        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque' || m.t === 'r01') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
         else if (m.t === 'progressao_vista' || m.t === 'progressao_resgatar' || m.t === 'progressao_titulo') progressao.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
+        else if (m.t === 'capturar' && raid.capturar(ws, m)) {}   // the raid boss's catch throw (server_raid.mjs); any other id is a shared-world wild
         else if (m.t === 'nascer' || m.t === 'spos' || m.t === 'sataque' || m.t === 'shp' || m.t === 'capturar' || m.t === 'pesca_lancar' || m.t === 'pesca_puxar' || m.t === 'pesca_largar') world.receive(ws, m);   // raid ao vivo (o `ataque` só existe com o Mundo ligado: o chefe)
         break;
       }

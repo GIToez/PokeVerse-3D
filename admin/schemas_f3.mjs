@@ -203,7 +203,7 @@ export const ESQUEMAS_F3 = {
       { k: 'chefeHp', rotulo: 'Boss HP', tipo: 'num', min: 0, max: 10000000, int: true, ajuda: '0 = automatic (by number of players). /raid hp N changes it for that raid only.' },
       { k: 'chefeDano', rotulo: 'Boss damage (×)', tipo: 'num', min: 0, max: 10, ajuda: '1 = normal. /raid dano F changes it for that raid only.' },
       { k: 'taxaShiny', rotulo: 'Prize shiny (1 in N)', tipo: 'num', min: 1, max: 1000000, int: true, ajuda: '/raid shiny N changes it for that raid only.' },
-      { k: 'premio', rotulo: 'Prize', tipo: 'opcao', opcoes: [{ v: 'mew', rotulo: 'The boss (joins the team)' }, { v: 'sem-mew', rotulo: 'Items only (no boss)' }] },
+      { k: 'premio', rotulo: 'Prize', tipo: 'opcao', opcoes: [{ v: 'mew', rotulo: 'Items + one catch throw for the top fighters' }, { v: 'sem-mew', rotulo: 'Items only (no catch throw)' }] },
       { k: 'altura', rotulo: 'Boss height in the arena (m)', tipo: 'num', min: 0.5, max: 20, ajuda: 'Original: 2.5.' },
       { k: 'flutua', rotulo: 'How high the boss floats (m)', tipo: 'num', min: 0, max: 10, ajuda: 'Original: 1.' },
     ],

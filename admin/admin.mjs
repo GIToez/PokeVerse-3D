@@ -44,7 +44,7 @@ let NOME_DEX = {};      // dex → nome
 let GLB_DEX = {};       // dex → glb preferido
 let DEX_COM_MODELO = [];// dex ordenados que têm modelo
 async function carregarReferencia() {
-  try { const p = await fetch('/pokedex.json').then(r => r.json()); for (const s of p.species || []) NOME_DEX[s.n] = s.name; } catch {}
+  try { const p = await fetch('/pokedex.json').then(r => r.json()); for (const s of p.species || []) if (!NOME_DEX[s.n]) NOME_DEX[s.n] = s.name;   /* first entry = the base form (Mega and other forms come later with the same number) */ } catch {}
   const m = await api('/admin/modelos');
   const porDex = {};
   for (const { glb, dex } of (m.modelos || [])) { (porDex[dex] ||= []).push(glb); }

@@ -509,6 +509,7 @@ export function criarBatalha(ctx) {
         s.dinheiro = (s.dinheiro || 0) + ganho;
         if (primeira) {
           s.insignias.push(g.insignia.id);
+          if (+g.insignia.id === 101) setTimeout(() => ctx.darTenis?.(acc.u), 2500);   // Brock: Oak's aide brings the Running Shoes (server.mjs)
           fim.insignia = g.insignia.id;
           const r = ctx.aplicarEvento?.(acc.u, { tipo: 'insignia', id: g.insignia.id, numero: g.numero });
           if (r) for (const w of ctx.socketsDe(acc.u)) ctx.enviarMissao(w, r);

@@ -286,6 +286,8 @@ export function instalarDados({ api, toast, avisarJogo }) {
   }
 
   for (const b of document.querySelectorAll('#lado button[data-vista="historico"]')) b.addEventListener('click', renderHistorico);
+  /* Sidebar shortcuts (🎒 Items, 🛒 Shops): the Data files screen opened straight on that file. */
+  for (const b of document.querySelectorAll('#lado button[data-vista="dados"][data-abrir]')) b.addEventListener('click', () => setTimeout(() => { renderLista(); abrir(b.dataset.abrir); }, 0));
   addEventListener('beforeunload', e => { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
   renderLista();
 }

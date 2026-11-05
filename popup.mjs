@@ -365,6 +365,7 @@ function ligarTag(el, f, pop){
      card inside it used to switch back to that tab (the Wardrobe jumped to Outfit on every click). */
   if (f.tag === 'aba' && /^conteudo-/.test(el.dataset.fig || f.nome || '')) { el.style.pointerEvents = 'auto'; return; }
   el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer';
+  if (f.tag === 'abre' && f.tagVal) el.dataset.abre = f.tagVal;   // lets a red dot point at the button (e.g. achievements to redeem: progression_ui.mjs)
   const disparar = ev => {
     ev.stopPropagation();
     if (f.tag === 'fecha'){                                              // X de um diálogo fecha só o diálogo; X do pop-up fecha tudo

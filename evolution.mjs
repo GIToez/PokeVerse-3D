@@ -38,7 +38,9 @@ export function familiaAbaixo(dex){
 }
 export const itens = () => D?.itens || {};
 export const ehItemDeEvolucao = id => !!D?.itens?.[id];
-export const nomeItem = id => D?.itens?.[id]?.n || ('item ' + id);
+let traduzNome = n => n;                                                /* the client passes i18n's tName (usarTradutor); the server keeps the raw name */
+export const usarTradutor = f => { if (typeof f === 'function') traduzNome = f; };
+export const nomeItem = id => { const n = D?.itens?.[id]?.n; return n ? traduzNome(n) : ('item ' + id); };   /* item names in the data are Portuguese: shown in the player's language */
 /** Dia 6h–17h59, noite 18h–5h59 (relógio do aparelho — Espeon de dia, Umbreon à noite). */
 export const horario = (d = new Date()) => { const h = d.getHours(); return (h >= 18 || h < 6) ? 'noite' : 'dia'; };
 const TIPOS = { Normal: 'Normal', Fighting: 'Fighting', Flying: 'Flying', Poison: 'Poison', Ground: 'Ground', Rock: 'Rock', Bug: 'Bug', Ghost: 'Ghost', Steel: 'Steel', Fire: 'Fire', Water: 'Water', Grass: 'Grass', Electric: 'Electric', Psychic: 'Psychic', Ice: 'Ice', Dragon: 'Dragon', Dark: 'Dark', Fairy: 'Fairy' };

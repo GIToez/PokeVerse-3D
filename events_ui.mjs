@@ -316,7 +316,7 @@ function passosBase(o) {
           horaDe(o.raid?.filaEm || o.oc) +
           ': join via the raid button.',
         'Everyone in the queue at start time goes to the arena together.',
-        'Reward: anyone dealing ≥ 1/4 of average damage. 1 per boss per day.',
+        'Rewards: 5%+ of the average damage gets the items; 25%+ also gets one catch throw with your own ball (once per boss per day).',
       ];
     case 'invasao':
       return [

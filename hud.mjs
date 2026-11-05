@@ -700,6 +700,12 @@ function montarFigma(e, F, abs){
         else { el = pai.querySelector('[data-fig="' + f.nome + '"]'); if (!el){ el = document.createElement('span'); el.dataset.fig = f.nome; el.textContent = (abs || lig.exemploNoTxt) ? tr(f.exemplo || '') : ''; pai.appendChild(el); } el.className = 'fig-txt'; }
         vivos.add(el); estiloTexto(el, f); el.style.zIndex = z; encolher(el); return;
       }
+      if (f.tipo === 'rotulo'){                                                /* fixed label of the mock-up (button text, small titles): it shows its own text in the player's language until the game writes another (Hud.rotular). The situational pieces (Safari dialogue, panels) had blank buttons without this. */
+        let el = pai.querySelector(':scope > [data-fig="' + f.nome + '"]');
+        if (!el){ el = document.createElement('span'); el.dataset.fig = f.nome; el.textContent = tr(f.texto || f.exemplo || ''); pai.appendChild(el); }
+        el.className = 'fig-txt';
+        vivos.add(el); estiloTexto(el, f); el.style.zIndex = z; encolher(el); return;
+      }
       if (f.tipo === 'fill'){                                                  // barra proporcional: o jogo dá a fração (Hud.fill)
         const sel = lig.fill?.[f.id]; let el = sel ? achar(pai, sel, f.nome) : null;
         if (el) el.dataset.figlig = f.nome;

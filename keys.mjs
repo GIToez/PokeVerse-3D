@@ -44,6 +44,11 @@ export const ACOES = [
     icone: { glifo: 'andar-direita' },
     semTecla: 'no key: click the ground only',
   }),
+  A('andar', 'correr', 'Run', 'hold while moving · needs the Running Shoes', 'ShiftLeft', 'ShiftRight', {
+    segura: true,
+    icone: { glifo: 'andar-frente' },
+    semTecla: 'no key: push the joystick all the way, or click the ground',
+  }),
   A('andar', 'montar', 'Mount and dismount', 'the mount in use or the 1st shortcut', 'KeyM', null, {
     icone: { arte: './ui/icones/montaria.png' },
     semTecla: 'no key: mount shortcut only',

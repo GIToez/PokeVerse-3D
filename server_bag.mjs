@@ -233,8 +233,8 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
   }
 
   /* Safari visit. The client cannot grant itself balls: the fee and the stack live here.
-     entrar  { zona, x, z }   500 Coins, 30 Safari Balls, 500 steps, only next to that zone's warden
-     passo   { n }            steps walked in the paid grass (capped)
+     entrar  { zona, x, z }   500 Coins, 30 Safari Balls, 20 minutes, only next to that zone's warden
+     passo   { n }            a clock check while walking in the paid grass (ends with 'tempo' after 20 minutes)
      bola    {}               one Safari Ball thrown
      sair    {}               walk out: leftover balls from this visit are removed
      expulsar{ zona }         no visit, standing in the grass: the answer carries the gate */
@@ -242,6 +242,14 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     const s = saveDe(c);
     const acao = String(m.acao || '');
     const zona = +m.zona;
+    /* The 20 minutes ran out: whatever the message, the visit ends here (leftover Safari Balls removed, walked to the gate). */
+    if (Safari.acabouOTempo(s.safari)) {
+      const zonaFim = +s.safari.zona;
+      const fim = Safari.encerrar(s.bolas, { ...s.safari, fim: Date.now() + 1000 });
+      s.bolas = fim.bolas;
+      s.safari = null;
+      if (acao !== 'entrar') return pronto(c, { fim: 'tempo', pouso: Safari.pouso(zonaFim, m.x), safari: null, tirou: fim.tirou });
+    }
     if (acao === 'entrar') {
       if (!Safari.perto(zona, m.x, m.z)) return erro(c, 'Talk to the warden at the gate.');
       const r = Safari.entrar({ dinheiro: s.dinheiro || 0, bolas: s.bolas, sessao: s.safari, zona });
@@ -254,12 +262,12 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     if (acao === 'passo') {
       const r = Safari.passo(s.safari, m.n);
       if (!r.sessao) return erro(c, 'You are not on a Safari visit.');
-      if (r.fim === 'passos') {
+      if (r.fim === 'passos' || r.fim === 'tempo') {
         const zonaFim = r.sessao.zona;
         const fim = Safari.encerrar(s.bolas, r.sessao);
         s.bolas = fim.bolas;
         s.safari = null;
-        return pronto(c, { fim: 'passos', pouso: Safari.pouso(zonaFim, m.x), safari: null, tirou: fim.tirou });
+        return pronto(c, { fim: r.fim, pouso: Safari.pouso(zonaFim, m.x), safari: null, tirou: fim.tirou });
       }
       s.safari = r.sessao;
       return pronto(c, { safari: r.sessao });

@@ -140,7 +140,7 @@ export function createWorld(h) {
     let inArea = 0;
     for (const w of room.wilds.values()) if (w.area === area && w.state !== 'gone') inArea++;
     if (inArea >= AREA_CAP) return;
-    const rolled = wilds.rollAt(ws, area, !!m.aquatico);   // area check + habitat roll + level cap, the solo rules
+    const rolled = wilds.rollAt(ws, area, !!m.aquatico, { x, z });   // area check + habitat roll + level cap, the solo rules
     if (!rolled) return;
     const S = species(rolled.dex);
     const ind = newIndividual({ dex: rolled.dex, nome: rolled.nome, glb: rolled.glb, lv: rolled.lv });
@@ -506,5 +506,5 @@ export function createWorld(h) {
   const stats = () => ({ maps: rooms.size, wilds: [...rooms.values()].reduce((n, r) => n + r.wilds.size, 0) });
   /** One wild on a map by id (Transform reads its species, level and moves). */
   const wild = (map, id) => roomOf(map).wilds.get(String(id)) || null;
-  return { receive, list, joined, left, stats, wild, _test: { shakes, rooms } };
+  return { receive, list, joined, left, stats, wild, ballBonus, _test: { shakes, rooms } };
 }
