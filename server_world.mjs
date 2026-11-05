@@ -61,7 +61,7 @@ export function createWorld(h) {
       dex = { byN: new Map(), chart: {} };
       try {
         const d = JSON.parse(fs.readFileSync(nodePath.join(root, 'public/pokedex.json'), 'utf8'));
-        dex = { byN: new Map((d.species || []).map(s => [+s.n, s])), chart: d.chart || {} };
+        dex = { byN: new Map((d.species || []).filter(s => !s.base).map(s => [+s.n, s])), chart: d.chart || {} };
       } catch (e) { console.warn('world: pokedex.json:', e.message); }
     }
     return dex.byN.get(+n) || EMPTY_SPECIES;

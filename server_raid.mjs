@@ -60,7 +60,7 @@ export function criarRaid(h) {
       pokedex = { porN: new Map(), chart: {} };
       try {
         const d = JSON.parse(fs.readFileSync(nodePath.join(raiz, 'public/pokedex.json'), 'utf8'));
-        pokedex = { porN: new Map((d.species || []).map(s => [+s.n, s])), chart: d.chart || {} };
+        pokedex = { porN: new Map((d.species || []).filter(s => !s.base).map(s => [+s.n, s])), chart: d.chart || {} };
       } catch (e) { console.warn('raid: pokedex.json:', e.message); }
     }
     return pokedex.porN.get(+dex) || null;

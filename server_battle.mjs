@@ -59,7 +59,7 @@ function glbDe(dex, dado) {
 export function criarBatalha(ctx) {
   const pdx = lerJson('public/pokedex.json', { species: [], chart: {} });
   const chart = pdx.chart || {};
-  const porDex = new Map((pdx.species || []).map((s) => [+s.n, s]));
+  const porDex = new Map((pdx.species || []).filter((s) => !s.base).map((s) => [+s.n, s]));   // forms (Mega, Alola…) share the base's number: the base wins
   const golpes = lerJson('public/data/moves.json', {});
   const learn = lerJson('public/data/learnset.json', { learnset: {}, pp: {} });
   Ev.usarYields(lerJson('public/data/ev_yields.json', { rende: {} }));

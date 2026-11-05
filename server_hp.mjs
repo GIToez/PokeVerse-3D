@@ -16,7 +16,7 @@ function speciesOf(dex) {
   if (!species) {
     try {
       const pdx = JSON.parse(fs.readFileSync(nodePath.join(root, 'public/pokedex.json'), 'utf8'));
-      species = new Map((pdx.species || []).map(s => [+s.n, s]));
+      species = new Map((pdx.species || []).filter(s => !s.base).map(s => [+s.n, s]));   // forms share the base's number: the base wins
     } catch {
       species = new Map();
     }
