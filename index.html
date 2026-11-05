@@ -6882,6 +6882,16 @@ function comConta(){ return Conta.estado().modo === 'conta' && Rede.estadoRede()
 /** O `uid` (posse do servidor) do Pokémon que está em campo: é nele que o servidor põe o XP e tira o HP (passo 3). */
 function uidParceiro(){ const p = jogo.pika; if (p?.uid != null && (jogo.time || []).some(t => String(t?.uid) === String(p.uid))) return p.uid;   // 14/09: o uid carimbado na entidade vale primeiro
   const i = membroAtivo(); return (i >= 0 ? jogo.time?.[i]?.uid : null) ?? null; }
+/** Golpes vindos num `vidas` do servidor. Se a lista dele é MENOR e só tem golpes que já conhecemos, ela está velha (golpe aprendido
+    por nível aqui ainda não chegou na conta): antes ela substituía tudo e os golpes 3 e 4 sumiam da barra no meio da luta (poção,
+    held item). Aí ficam os nossos golpes, só com o PP que o servidor mandou pros que ele conhece. Senão (TM ensinou/trocou) vale a dele. */
+function movsDoServidor(local, serv){
+  const novo = serv.filter(m => m && m.id).map(m => ({ id: m.id, pp: m.pp, ppMax: m.ppMax }));
+  const meus = Array.isArray(local) ? local.filter(m => m && m.id) : [];
+  if (novo.length < meus.length && novo.every(m => meus.some(x => x.id === m.id)))
+    return meus.map(x => { const s = novo.find(m => m.id === x.id); return s ? { ...x, pp: s.pp ?? x.pp, ppMax: s.ppMax ?? x.ppMax } : x; });
+  return novo;
+}
 /** Nível/XP/HP que o SERVIDOR acabou de mexer: escreve no time, na caixa e no Pokémon em campo (passo 3). */
 function aplicarVidas(lista){
   if (!Array.isArray(lista)) return;
@@ -6899,7 +6909,7 @@ function aplicarVidas(lista){
       if ('status' in v) e.status = v.status || null;
       if (v.expReserva != null) e.expReserva = v.expReserva;               // XP guardada pelo teto de nível: agora é do servidor (12/09)
       if ('held' in v){ e.held = v.held || null; mexeuHeld = true; }          // held item (server_bag.mjs: segurar / tirar / consumir)
-      if (Array.isArray(v.movs)) e.movs = v.movs.map(m => ({ id: m.id, pp: m.pp, ppMax: m.ppMax }));   // TM counter: the server taught a move
+      if (Array.isArray(v.movs)) e.movs = movsDoServidor(e.movs, v.movs);   // TM counter: the server taught a move (a stale, shorter list no longer erases moves learned here)
       e.koAte = v.hp === 0 ? Math.max(e.koAte || 0, Date.now() + 1e12) : 0;   // KO dito pelo servidor dura até a cura dele (12/09): com `Date.now()` o KO "vencia" na hora e o Pokémon voltava inteiro sozinho
       if (ehTime) mexeuT = true; else mexeuC = true;
     }

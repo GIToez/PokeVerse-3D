@@ -24,6 +24,7 @@ import { criarRaid } from './server_raid.mjs';                     // raid ao vi
 import { criarBatalha } from './server_battle.mjs';
 import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
+import { mergeMovs } from './server_moves.mjs';
 import { fundir as fundirStatus } from './status.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
@@ -370,6 +371,7 @@ function mergeProgress(record, item) {
   if (Number.isInteger(friendship) && friendship >= 0 && friendship <= 255) record.amizade = friendship;
   mergeHp(record, item);
   fundirStatus(record, item);
+  mergeMovs(record, item);   // level-up / relearn moves learned on the client (server_moves.mjs validates them)
 }
 /* Applies a party reorder. The account already owns every Pokémon; this only accepts the same
    set of ids (nothing created, duplicated, or deleted). */
