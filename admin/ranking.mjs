@@ -8,7 +8,8 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 const when = ms => (ms ? new Date(ms).toLocaleString('en-US', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—');
 const LISTS = {
   mestre: 'Master Level', insignias: 'Badges', hall: 'Hall of Fame', elite: 'Elite Four race', historia: 'Story missions',
-  treinadores: 'Trainers defeated', kanto: 'Kanto Pokédex', nacional: 'National Pokédex', conhecimento: 'Knowledge points',
+  treinadores: 'Trainers defeated', kanto: 'Kanto Pokédex', johto: 'Johto Pokédex', hoenn: 'Hoenn Pokédex', sinnoh: 'Sinnoh Pokédex', unova: 'Unova Pokédex',
+  kalos: 'Kalos Pokédex', alola: 'Alola Pokédex', galar: 'Galar Pokédex', paldea: 'Paldea Pokédex', nacional: 'National Pokédex', conhecimento: 'Knowledge points',
   lendarios: 'Legendaries', shiny_capturados: 'Shinies caught', shiny_caixa: 'Shinies in the Box', shiny_especies: 'Shiny species',
   sem_capturas: 'Weekly · catches', sem_shinies: 'Weekly · shinies', sem_selvagens: 'Weekly · wild defeated', sem_raid: 'Weekly · raid points',
 };

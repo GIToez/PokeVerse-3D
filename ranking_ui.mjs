@@ -37,6 +37,56 @@ const ABAS = {
   guildas: [['guildas-semana', 'guildas']],
 };
 const LISTA_DO_FILTRO = new Map(Object.values(ABAS).flat());
+/* The Collector tab's Pokédex filter is a region picker: click it for a dropdown of every region (server lists kanto … paldea). */
+const REGIOES = ['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar', 'Paldea'];
+const FILTRO_REGIAO = 'pokedex-kanto';
+let regiao = 'kanto',
+  menuRegiao = null;
+const nomeRegiao = (k) => REGIOES.find((r) => r.toLowerCase() === k) || 'Kanto';
+function rotularRegiao() {
+  const f = pop?.querySelector('[data-tag="filtro"][data-tagval="' + FILTRO_REGIAO + '"]');
+  if (f) Popup.textoCru(pop, 'lista', tr('{r} Pokédex', { r: tr(nomeRegiao(regiao)) }) + ' ▾', f);
+}
+function fecharMenuRegiao() {
+  menuRegiao?.remove();
+  menuRegiao = null;
+}
+function abrirMenuRegiao() {
+  if (menuRegiao) return fecharMenuRegiao();
+  const f = pop?.querySelector('[data-tag="filtro"][data-tagval="' + FILTRO_REGIAO + '"]');
+  if (!f?.parentElement) return;
+  const lab = f.querySelector('[data-txt="lista"]'),
+    fonte = lab ? getComputedStyle(lab) : null;
+  const m = document.createElement('div');
+  m.dataset.rkRegioes = '1';
+  Object.assign(m.style, {
+    position: 'absolute', left: px(f, 'left') + 'px', top: px(f, 'top') + px(f, 'height') + 4 + 'px', minWidth: px(f, 'width') + 'px',
+    zIndex: '60', display: 'grid', gridTemplateColumns: 'repeat(3, auto)', gap: '4px', padding: '6px', pointerEvents: 'auto',
+    background: 'rgba(9,22,48,.97)', border: '2px solid #3ec7ff', borderRadius: '10px', boxShadow: '0 6px 18px rgba(0,0,0,.45)',
+  });
+  for (const r of REGIOES) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = tr(r);
+    const on = r.toLowerCase() === regiao;
+    Object.assign(b.style, {
+      font: fonte ? fonte.fontWeight + ' ' + fonte.fontSize + ' ' + fonte.fontFamily : '700 13px sans-serif', padding: '4px 10px', borderRadius: '7px',
+      cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + (on ? '#f8c237' : '#2a6fa8'), background: on ? '#f8c237' : '#12305c', color: on ? '#1a1a1a' : '#eaf6fb',
+    });
+    b.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      regiao = r.toLowerCase();
+      escolhida.colecionador = regiao;
+      fecharMenuRegiao();
+      rotularRegiao();
+      pintar(true);
+    });
+    m.appendChild(b);
+  }
+  f.parentElement.appendChild(m);
+  menuRegiao = m;
+}
+addEventListener('pointerdown', (e) => { if (menuRegiao && !menuRegiao.contains(e.target) && !e.target.closest?.('[data-tagval="' + FILTRO_REGIAO + '"]')) fecharMenuRegiao(); }, true);
 let dep = { segurar: null, fecharMenu: null, Som: null };
 let pop = null,
   aba = 'jornada',
@@ -115,6 +165,14 @@ function valorDe(a, x, b = null) {
       return [fmt(v), plural(v, 'mission', 'missions')];
     case 'treinadores':
       return [fmt(v), plural(v, 'trainer', 'trainers')];
+    case 'johto':
+    case 'hoenn':
+    case 'sinnoh':
+    case 'unova':
+    case 'kalos':
+    case 'alola':
+    case 'galar':
+    case 'paldea':
     case 'kanto':
     case 'nacional':
     case 'shiny_especies':
@@ -251,6 +309,7 @@ function montarPop() {
     if (!LISTA_DO_FILTRO.has(f.dataset.tagval)) f.style.display = 'none';
   }
   for (const a of Object.keys(ABAS)) marcarEscolhida(a);
+  rotularRegiao();
   const g = new Set();
   for (const h of pop.querySelectorAll('.pf-extra, .pf-extra *')) {
     const m = /url\("?([^")]+)"?\)/.exec(h.style.backgroundImage || '');
@@ -272,14 +331,19 @@ function marcarEscolhida(a) {
 }
 function aoTrocarAba(a) {
   if (!ABAS[a]) return;
+  fecharMenuRegiao();
   aba = a;
   Popup.abaSolta(pop, a);
   marcarEscolhida(a);
   pintar(true);
 }
 function aoFiltro(b) {
-  const c = LISTA_DO_FILTRO.get(b);
+  let c = LISTA_DO_FILTRO.get(b);
   if (!c) return;
+  if (b === FILTRO_REGIAO) {
+    c = regiao;
+    abrirMenuRegiao();
+  } else fecharMenuRegiao();
   const a = Object.keys(ABAS).find((k) => ABAS[k].some(([n]) => n === b)) || aba;
   escolhida[a] = c;
   try {
@@ -288,6 +352,7 @@ function aoFiltro(b) {
   pintar(true);
 }
 function aoFechar() {
+  fecharMenuRegiao();
   marca?.remove();
   marca = null;
 }

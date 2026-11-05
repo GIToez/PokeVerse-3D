@@ -203,6 +203,11 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     } else if (r.tipo === 'cosmetico' && /^roupa:/.test(r.id)) {
       if (!Array.isArray(save.skins)) save.skins = [];
       if (!save.skins.includes(r.id.slice(6))) save.skins.push(r.id.slice(6));
+    } else if (r.tipo === 'cosmetico' && /^(mochila|peito|rastro):/.test(r.id)) {   // a bag or an effect: save.pecas (server_wardrobe.mjs)
+      const [k, raw] = [r.id.slice(0, r.id.indexOf(':')), r.id.slice(r.id.indexOf(':') + 1)], id = k === 'mochila' ? raw : +raw;
+      if (!save.pecas || typeof save.pecas !== 'object') save.pecas = {};
+      if (!Array.isArray(save.pecas[k])) save.pecas[k] = [];
+      if (!save.pecas[k].some(x => String(x) === String(id))) save.pecas[k].push(id);
     } else if (r.tipo === 'cosmetico' || r.tipo === 'moldura' || r.tipo === 'montaria') {
       // seals, emotes, ornaments, auras, trails, frames and mount licences: kept on the account for their screens
       const key = r.tipo === 'moldura' ? 'molduras' : r.tipo === 'montaria' ? 'montariasGanhas' : 'visuais';

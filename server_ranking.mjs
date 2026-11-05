@@ -6,7 +6,7 @@
  *   GET /ranking/me   (token)   → the same (older client name)
  *
  * Lists: mestre (Master level), insignias, hall (first Elite Four win, earliest first), elite (fastest Elite Four run),
- * historia (missions), treinadores, kanto, nacional, conhecimento (Pokédex knowledge points), lendarios (legendary species),
+ * historia (missions), treinadores, kanto … paldea (one Pokédex list per region), nacional, conhecimento (Pokédex knowledge points), lendarios (legendary species),
  * shiny_capturados, shiny_caixa (shinies in party + Box), shiny_especies, and the weekly ones (sem_capturas, sem_shinies,
  * sem_selvagens, sem_raid) that reset every Monday 00:00 UTC. The week's #1 of each weekly list gets that list's
  * title (public/data/ranking.json → premios) for `diasPremio` days.
@@ -16,6 +16,7 @@
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import { knowledgeSummary } from './server_knowledge.mjs';
+import { REGIONS } from './server_progression.mjs';
 
 const DAY = 86400e3;
 const caught = v => v === 'pego' || v === 'caught';
@@ -27,7 +28,9 @@ export function weekOf(t = Date.now()) {
 const weekEnd = id => Date.parse(id + 'T00:00:00Z') + 7 * DAY;
 const ddmm = t => { const d = new Date(t); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
 
-export const LISTS = ['mestre', 'insignias', 'hall', 'elite', 'historia', 'treinadores', 'kanto', 'nacional', 'conhecimento', 'lendarios',
+/** One Pokédex list per region (kanto, johto … paldea): the Collector tab's region picker. */
+export const REGION_LISTS = REGIONS.map(([name, from, to]) => ({ key: name.toLowerCase(), name, from, to }));
+export const LISTS = ['mestre', 'insignias', 'hall', 'elite', 'historia', 'treinadores', ...REGION_LISTS.map(r => r.key), 'nacional', 'conhecimento', 'lendarios',
   'shiny_capturados', 'shiny_caixa', 'shiny_especies', 'sem_capturas', 'sem_shinies', 'sem_selvagens', 'sem_raid'];
 const WEEKLY = { sem_capturas: 'capturas', sem_shinies: 'shinies', sem_selvagens: 'selvagens', sem_raid: 'raid' };
 const LOWER_IS_BETTER = new Set(['hall', 'elite']);
@@ -89,7 +92,6 @@ export function createRanking({ accounts, progression, dataDir, serverDir, saveA
       elite: el.melhor || null,
       historia: progression.valueOf(u, 'missoes'),
       treinadores: Math.max(progression.valueOf(u, 'treinador'), beaten),
-      kanto: dex.filter(n => n >= 1 && n <= 151).length,
       nacional: dex.length,
       conhecimento: knowledgeSummary(s).points,
       lendarios: dex.filter(n => L.has(n)).length,
@@ -97,6 +99,7 @@ export function createRanking({ accounts, progression, dataDir, serverDir, saveA
       shiny_caixa: mon.filter(p => p?.shiny).length,
       shiny_especies: progression.valueOf(u, 'shinyEspecies'),
     };
+    for (const r of REGION_LISTS) v[r.key] = dex.filter(n => n >= r.from && n <= r.to).length;
     for (const [k, f] of Object.entries(WEEKLY)) v[k] = w[f] | 0;
     for (const k of Object.keys(v)) if (!LOWER_IS_BETTER.has(k) && !(v[k] > 0)) v[k] = null;   // zero = not on the list
     if (v.mestre <= 1) v.mestre = null;   // everyone starts at Master Level 1

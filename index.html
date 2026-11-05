@@ -269,6 +269,7 @@ import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohto
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';
 import { aguaSoPesca } from './water_fishing.mjs';   // PokeFable's fishing-only water areas (town and route ponds)
+import * as CatalogoCosm from './cosmetics_catalog.mjs';   // wardrobe + shop catalog (GET /loja/catalogo)
 import * as CosFx from './cosmetic_fx.mjs';       // auras/trails from the Wardrobe (drawn, data/cosmeticos.json)      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
@@ -3845,7 +3846,7 @@ if (PLAY){
       try { await Conta.enviarAgora(); } catch {}
       location.replace(u.toString()); await new Promise(() => {});
     }
-    const perso = (FAIRY || DEMO) ? null : Personagem.ler();      // skin escolhida; Fairy e demo ficam com o Ash
+    const perso = (FAIRY || DEMO) ? null : Personagem.visual();   // base character + the worn wardrobe outfit; Fairy and demo stay Ash
     const [ash, pika] = await Promise.all([
       montarPersonagemBoot('./scenery/pc/' + Personagem.glbDe(perso) + '.glb', +params0.get('ash') || null, (+(params0.get('ashgiro') || 0)) * Math.PI / 180)
         .catch(e => { console.warn('trainer skin:', e); return montarPersonagemBoot('./scenery/pc/Male_XiaoZhi.glb', +params0.get('ash') || null, 0); }),   // GLB da skin faltando: cai no Ash (17/09: queda de rede não chega aqui, fica na caixa "Tentar de novo" do montarPersonagemBoot)
@@ -9232,74 +9233,37 @@ if (jogo.ash){
      once every 30 s. The trip is the same scene change as waking up after a faint (irParaCena into that Center through its
      door), so the server accepts the new position. */
 
-  /* ===== WARDROBE + COSMETICS SHOP (Nov 2). Outfits: the 28 on the creation screen are free; the other dump outfits are in
-     data/cosmeticos.json (Coins, an Elite Four reward, or an event that isn't running). Effects: an aura (`peito`) and a trail
-     (`rastro`), drawn by cosmetic_fx.mjs. What you wear rides in `personagem` (tipo + efeitos), so the room sees it; the server
-     only passes on what the account owns (server_bag.mjs). Backpacks (`personagem.mochila`) come from the Diamond Shop (server_shop.mjs). */
-  let COSM = { roupas: [], efeitos: [] };
-  const cosmPronto = fetch('./data/cosmeticos.json').then(r => r.ok ? r.json() : null).then(d => { if (d) COSM = d; }).catch(() => {});
-  const fxDoId = id => COSM.efeitos.find(e => e.id === +id)?.fx || null;
-  const kindsDe = pers => ({ peito: fxDoId(pers?.efeitos?.peito), rastro: fxDoId(pers?.efeitos?.rastro) });
-  CosFx.instalar({ THREE, cena, toque: MOBILE });
-  const corpoEu = { get pivo(){ return jogo.ash?.pivo || null; }, get altura(){ return jogo.ash?.altura || 1.6; }, get montado(){ return !!jogo.montaria; } };
-  const fxProprio = () => CosFx.vestir('eu', corpoEu, kindsDe(Personagem.ler()));
-  cosmPronto.then(fxProprio);
-  const meusCosm = () => { const m = lerLS('cosmeticos', null); return { roupas: Array.isArray(m?.roupas) ? m.roupas : [], efeitos: Array.isArray(m?.efeitos) ? m.efeitos : [], mochilas: Array.isArray(m?.mochilas) ? m.mochilas : [] }; };
+  /* ===== WARDROBE (wardrobe_ui.mjs, from upcoming/). `personagem` is the base character; the outfit over it is the save key
+     `skin`, the bag `mochila`, the chest effect `peito` and the trail `rastro`. What the account owns (`skins`, `pecas`) is
+     written by the server only (server_wardrobe.mjs); the server also refuses to store a worn piece the account doesn't own.
+     Chest effects and trails are saved and shown to others once their particle files are in (particles/ChestStar.json …). */
+  CosFx.instalar({ THREE, cena, toque: MOBILE });   // the old drawn auras: their ids are retired, so nothing is drawn until the new effects land
+  CatalogoCosm.instalar({ chamar: (m, p) => Conta.chamar(m, p), comConta: () => comConta(), idioma: () => I18n.language() });
   const GUARDA = {
-    pronto: cosmPronto,
-    catalogo: () => COSM,
-    meus: meusCosm,
-    elite: () => !!lerLS('eliteVencida', false),
-    dinheiro: () => +lerLS('dinheiro', 0) || 0,
-    atual: () => Personagem.ler() || {},
-    /** Outfits of the current trainer's gender: free (creation) first, then the catalog ones. */
-    roupas(){
-      const eu = Personagem.skinDe(Personagem.ler()), sexo = eu?.sexo || 'menino';
-      const gratis = Personagem.skinsDaCriacao(sexo).map(s => ({ id: s.id, nome: s.nome, glb: s.glb, skin: s, gratis: true }));
-      const loja = COSM.roupas.filter(r => r.sexo === sexo).map(r => ({ ...r, skin: Personagem.skinPorId(r.id) })).filter(r => r.skin);
-      return [...gratis, ...loja.map(r => ({ ...r, glb: r.skin.glb }))];
-    },
-    async vestirRoupa(id){
-      const s = Personagem.skinPorId(id); if (!s) return false;
-      if (jogo.montaria){ Chat.sistema('Dismount to change outfits.'); return false; }
-      const item = COSM.roupas.find(r => r.id === id);
-      if (item && !meusCosm().roupas.includes(id)) return false;
-      const p = { ...(Personagem.ler() || {}), tipo: id };
-      Personagem.gravar(p);
-      await jogo.trocarJogador?.(p);
-      fxProprio();
+    /** Wear an owned outfit, or null to go back to the base character. */
+    async equipar(id){
+      if (jogo.montaria){ Chat.sistema(I18n.t('Dismount to change outfits.')); return false; }
+      if (id != null && !Personagem.skinsDaConta().includes(id)) return false;
+      Personagem.gravarSkin(id);
+      await jogo.trocarJogador?.(Personagem.visual());
       return true;
     },
-    vestirEfeito(slot, id){
-      if (id != null && !meusCosm().efeitos.includes(+id)) return false;
-      const p = { ...(Personagem.ler() || {}) };
-      p.efeitos = { ...(p.efeitos || {}) };
-      if (id == null) delete p.efeitos[slot]; else p.efeitos[slot] = +id;
-      Personagem.gravar(p); fxProprio();
-      return true;
+    /** A bag (`mochila`, glb like 'Bag014'), a chest effect (`peito`) or a trail (`rastro`); null takes it off. */
+    async equiparPeca(encaixe, valor){
+      const tem = (lerLS('pecas', null) || {})[encaixe];
+      if (valor != null && !(Array.isArray(tem) && tem.some(x => String(x) === String(valor)))) return false;
+      if (encaixe === 'mochila'){
+        gravarLS('mochila', valor || null);
+        Personagem.gravar({ ...(Personagem.ler() || {}), mochila: valor || null });
+        const corpo = jogo.ash?.pivo;
+        if (corpo){ if (valor) await Personagem.vestirMochila(corpo, valor).catch(e => console.warn('backpack:', e)); else Personagem.tirarMochila(corpo); }
+        return true;
+      }
+      if (encaixe === 'peito' || encaixe === 'rastro'){ gravarLS(encaixe, valor ?? null); return true; }
+      return false;
     },
-    /** Wear an owned Diamond Shop backpack (`glb` like 'Bag014'), or take it off with null. */
-    vestirMochila(glb){
-      if (glb != null && !meusCosm().mochilas.includes(glb)) return false;
-      Personagem.gravar({ ...(Personagem.ler() || {}), mochila: glb || null });
-      const corpo = jogo.ash?.pivo;
-      if (corpo){ if (glb) Personagem.vestirMochila(corpo, glb).catch(e => console.warn('backpack:', e)); else Personagem.tirarMochila(corpo); }
-      return true;
-    },
-    /** Buy (or claim the Elite Four reward). With an account the server decides; without one the local save pays. */
-    async comprar(tipo, id){
-      const lista = tipo === 'efeito' ? COSM.efeitos : COSM.roupas, item = lista.find(x => String(x.id) === String(id));
-      if (!item) return { erro: 'unknown cosmetic' };
-      if (comConta()){ const r = await bolsaOp('cosmetico', { tipo, id: item.id }); return r || { erro: 'no reply' }; }
-      const m = meusCosm(), chave = tipo === 'efeito' ? 'efeitos' : 'roupas';
-      if (m[chave].includes(item.id)) return { erro: 'you already have it' };
-      if (item.evento) return { erro: item.evento };
-      if (item.premio === 'elite'){ if (!GUARDA.elite()) return { erro: 'beat the Elite Four to get it' }; }
-      else { const d = GUARDA.dinheiro(); if (d < (+item.preco || 0)) return { erro: 'not enough Coins' }; gravarLS('dinheiro', d - item.preco); }
-      m[chave].push(item.id); gravarLS('cosmeticos', m);
-      Som.tocar('ui/sound_itemget', { volume: .7, prio: true });
-      return { ok: true };
-    },
+    pecasDaConta: () => lerLS('pecas', null) || {},
+    encaixados: () => ({ mochila: lerLS('mochila', null) ?? Personagem.ler()?.mochila ?? null, peito: lerLS('peito', null), rastro: lerLS('rastro', null) }),
   };
   const VOAR_INSIGNIAS = 3, VOAR_ESPERA_S = 30;
   const voarLista = () => {
@@ -9590,7 +9554,7 @@ if (jogo.ash){
     trocar: nome => Troca.convidar(nome), desafiarJogador,             // Social → menu do amigo → convidar (fase 4: mesa de troca) / /batalhar
     destinoPreso, irDestinoPreso,                                      // ESTOU PRESO (15/09): pra onde vai e a ida (sem curar), depois do relato aceito
     jogo, R, porDex, lerLS, gravarLS, Som, Ev, conta: Conta, contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, voar: VOAR, guarda: GUARDA, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
-    criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p) return jogo.trocarJogador?.(p); }),   // Configurações → ✎ Personagem
+    criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p){ Personagem.gravarSkin(null); return jogo.trocarJogador?.(p); } }),   // a new base character takes the wardrobe outfit off   // Configurações → ✎ Personagem
     personagemNome: () => Personagem.nomeDe(Personagem.ler()),
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },
     nomeArea: a => nomeAreaCena(a) || rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || '') || null,   // nomes das áreas (índice de cenas, mapa ou tabela fixa)

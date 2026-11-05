@@ -1,90 +1,90 @@
 {
-  "red": {
-    "arquivo": "ui/guarda-roupa/miniaturas/red.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/red@2x.png",
-    "tipo": "skin",
-    "nome": "Red",
-    "sexo": "menino",
-    "info": "Pacote Fundador"
-  },
-  "leon": {
-    "arquivo": "ui/guarda-roupa/miniaturas/leon.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/leon@2x.png",
-    "tipo": "skin",
-    "nome": "Leon",
-    "sexo": "menino",
-    "info": "Pacote Fundador"
-  },
-  "leaf": {
-    "arquivo": "ui/guarda-roupa/miniaturas/leaf.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/leaf@2x.png",
-    "tipo": "skin",
-    "nome": "Leaf",
-    "sexo": "menina",
-    "info": "Pacote Fundador"
-  },
-  "ash": {
-    "arquivo": "ui/guarda-roupa/miniaturas/ash.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/ash@2x.png",
-    "tipo": "skin",
-    "nome": "Ash",
-    "sexo": "menino",
-    "info": "Hall da Fama"
-  },
-  "misty": {
-    "arquivo": "ui/guarda-roupa/miniaturas/misty.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/misty@2x.png",
-    "tipo": "skin",
-    "nome": "Misty",
-    "sexo": "menina",
-    "info": "Hall da Fama"
-  },
-  "heroi": {
-    "arquivo": "ui/guarda-roupa/miniaturas/heroi.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/heroi@2x.png",
-    "tipo": "base",
-    "nome": "Herói",
-    "sexo": "menino",
-    "info": "Sua roupa"
-  },
-  "boy_012": {
-    "arquivo": "ui/guarda-roupa/miniaturas/boy_012.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/boy_012@2x.png",
-    "tipo": "base",
-    "nome": "Casaco do Pikachu",
-    "sexo": "menino",
-    "info": "Sua roupa"
-  },
-  "boy_025": {
-    "arquivo": "ui/guarda-roupa/miniaturas/boy_025.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/boy_025@2x.png",
-    "tipo": "base",
-    "nome": "Coração de Ouro",
-    "sexo": "menino",
-    "info": "Sua roupa"
-  },
-  "heroina": {
-    "arquivo": "ui/guarda-roupa/miniaturas/heroina.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/heroina@2x.png",
-    "tipo": "base",
-    "nome": "Heroína",
-    "sexo": "menina",
-    "info": "Sua roupa"
-  },
-  "girl_012": {
-    "arquivo": "ui/guarda-roupa/miniaturas/girl_012.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/girl_012@2x.png",
-    "tipo": "base",
-    "nome": "Casaco do Pikachu",
-    "sexo": "menina",
-    "info": "Sua roupa"
-  },
-  "girl_025": {
-    "arquivo": "ui/guarda-roupa/miniaturas/girl_025.png",
-    "arquivo2x": "ui/guarda-roupa/miniaturas/girl_025@2x.png",
-    "tipo": "base",
-    "nome": "Alma de Prata",
-    "sexo": "menina",
-    "info": "Sua roupa"
-  }
+ "red": {
+  "arquivo": "ui/guarda-roupa/miniaturas/red.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/red@2x.png",
+  "tipo": "skin",
+  "nome": "Red",
+  "sexo": "menino",
+  "info": "Founder Pack"
+ },
+ "leon": {
+  "arquivo": "ui/guarda-roupa/miniaturas/leon.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/leon@2x.png",
+  "tipo": "skin",
+  "nome": "Leon",
+  "sexo": "menino",
+  "info": "Founder Pack"
+ },
+ "leaf": {
+  "arquivo": "ui/guarda-roupa/miniaturas/leaf.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/leaf@2x.png",
+  "tipo": "skin",
+  "nome": "Leaf",
+  "sexo": "menina",
+  "info": "Founder Pack"
+ },
+ "ash": {
+  "arquivo": "ui/guarda-roupa/miniaturas/ash.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/ash@2x.png",
+  "tipo": "skin",
+  "nome": "Ash",
+  "sexo": "menino",
+  "info": "Hall of Fame"
+ },
+ "misty": {
+  "arquivo": "ui/guarda-roupa/miniaturas/misty.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/misty@2x.png",
+  "tipo": "skin",
+  "nome": "Misty",
+  "sexo": "menina",
+  "info": "Hall of Fame"
+ },
+ "heroi": {
+  "arquivo": "ui/guarda-roupa/miniaturas/heroi.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/heroi@2x.png",
+  "tipo": "base",
+  "nome": "Hero",
+  "sexo": "menino",
+  "info": "Your outfit"
+ },
+ "boy_012": {
+  "arquivo": "ui/guarda-roupa/miniaturas/boy_012.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/boy_012@2x.png",
+  "tipo": "base",
+  "nome": "Pikachu Jacket",
+  "sexo": "menino",
+  "info": "Your outfit"
+ },
+ "boy_025": {
+  "arquivo": "ui/guarda-roupa/miniaturas/boy_025.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/boy_025@2x.png",
+  "tipo": "base",
+  "nome": "HeartGold",
+  "sexo": "menino",
+  "info": "Your outfit"
+ },
+ "heroina": {
+  "arquivo": "ui/guarda-roupa/miniaturas/heroina.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/heroina@2x.png",
+  "tipo": "base",
+  "nome": "Heroine",
+  "sexo": "menina",
+  "info": "Your outfit"
+ },
+ "girl_012": {
+  "arquivo": "ui/guarda-roupa/miniaturas/girl_012.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/girl_012@2x.png",
+  "tipo": "base",
+  "nome": "Pikachu Jacket",
+  "sexo": "menina",
+  "info": "Your outfit"
+ },
+ "girl_025": {
+  "arquivo": "ui/guarda-roupa/miniaturas/girl_025.png",
+  "arquivo2x": "ui/guarda-roupa/miniaturas/girl_025@2x.png",
+  "tipo": "base",
+  "nome": "SoulSilver",
+  "sexo": "menina",
+  "info": "Your outfit"
+ }
 }

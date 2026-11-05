@@ -94674,7 +94674,7 @@
       "al": "center",
       "alV": "center",
       "regra": "encolher",
-      "exemplo": "Guarda-roupa",
+      "exemplo": "Wardrobe",
       "alturaLinha": 56
      },
      {
@@ -94744,7 +94744,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Roupa",
+        "exemplo": "Outfit",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -94800,7 +94800,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Mochila",
+        "exemplo": "Bag",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -94856,7 +94856,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Peito",
+        "exemplo": "Chest",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -94912,7 +94912,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Rastro",
+        "exemplo": "Trail",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -94936,7 +94936,7 @@
       "al": "right",
       "alV": "center",
       "regra": "max:12",
-      "exemplo": "73 peças",
+      "exemplo": "73 pieces",
       "cortar": true,
       "alturaLinha": 44
      },
@@ -95020,7 +95020,7 @@
             "al": "center",
             "alV": "center",
             "regra": "encolher",
-            "exemplo": "Herói",
+            "exemplo": "Hero",
             "alturaLinha": 18
            },
            {
@@ -95038,7 +95038,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Sua roupa",
+            "exemplo": "Your outfit",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -95124,7 +95124,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Pacote Fundador",
+            "exemplo": "Founder Pack",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -95151,7 +95151,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 12
              }
@@ -95241,7 +95241,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Pacote Fundador",
+            "exemplo": "Founder Pack",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -95327,7 +95327,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Pacote Fundador",
+            "exemplo": "Founder Pack",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -95424,7 +95424,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -95510,7 +95510,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -95596,7 +95596,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -95682,7 +95682,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -95724,7 +95724,7 @@
         "w": 384.7,
         "h": 16,
         "tipo": "rotulo",
-        "texto": "Arraste pra girar",
+        "texto": "Drag to rotate",
         "fonte": "Nunito Sans",
         "peso": 700,
         "tamanho": 12.5,
@@ -95788,7 +95788,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:40",
-        "exemplo": "Skin exclusiva · Pacote Fundador",
+        "exemplo": "Exclusive skin · Founder Pack",
         "cortar": true,
         "alturaLinha": 22
        },
@@ -95817,7 +95817,7 @@
             "w": 400.2,
             "h": 29,
             "tipo": "rotulo",
-            "texto": "Equipar",
+            "texto": "Wear",
             "fonte": "Baloo 2",
             "peso": 800,
             "tamanho": 20,
@@ -95861,7 +95861,7 @@
            "w": 400.2,
            "h": 29,
            "tipo": "rotulo",
-           "texto": "Desequipar",
+           "texto": "Take off",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 20,
@@ -95898,7 +95898,7 @@
            "w": 184.2,
            "h": 29,
            "tipo": "rotulo",
-           "texto": "Trocar base",
+           "texto": "Change base",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 20,
@@ -95928,7 +95928,7 @@
            "w": 184.2,
            "h": 29,
            "tipo": "rotulo",
-           "texto": "Equipar",
+           "texto": "Wear",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 20,
@@ -95965,7 +95965,7 @@
            "w": 400.2,
            "h": 29,
            "tipo": "rotulo",
-           "texto": "Trocar base",
+           "texto": "Change base",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 20,
@@ -96003,7 +96003,7 @@
          "al": "center",
          "alV": "center",
          "regra": "max:57",
-         "exemplo": "Você ainda não tem nenhum rastro.",
+         "exemplo": "You don't have any trails yet.",
          "cortar": true,
          "alturaLinha": 32
         },
@@ -96022,7 +96022,7 @@
          "al": "center",
          "alV": "center",
          "regra": "max:60",
-         "exemplo": "Quando ganhar um, ele aparece aqui.",
+         "exemplo": "When you earn one, it shows up here.",
          "cortar": true,
          "alturaLinha": 22
         }
@@ -96126,7 +96126,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -96153,7 +96153,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 12
              }
@@ -96242,7 +96242,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96327,7 +96327,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96412,7 +96412,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96521,7 +96521,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -96548,7 +96548,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 12
              }
@@ -96637,7 +96637,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96722,7 +96722,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96807,7 +96807,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96892,7 +96892,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -96977,7 +96977,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -97086,7 +97086,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -97171,7 +97171,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -97198,7 +97198,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 12
              }
@@ -97287,7 +97287,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -97372,7 +97372,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -97457,7 +97457,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -97542,7 +97542,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -312688,7 +312688,7 @@
       "al": "center",
       "alV": "center",
       "regra": "encolher",
-      "exemplo": "Guarda-roupa",
+      "exemplo": "Wardrobe",
       "alturaLinha": 30
      },
      {
@@ -312758,7 +312758,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Roupa",
+        "exemplo": "Outfit",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -312814,7 +312814,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Mochila",
+        "exemplo": "Bag",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -312870,7 +312870,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Peito",
+        "exemplo": "Chest",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -312926,7 +312926,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:10",
-        "exemplo": "Rastro",
+        "exemplo": "Trail",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -312950,7 +312950,7 @@
       "al": "right",
       "alV": "center",
       "regra": "max:12",
-      "exemplo": "73 peças",
+      "exemplo": "73 pieces",
       "cortar": true,
       "alturaLinha": 30
      },
@@ -313034,7 +313034,7 @@
             "al": "center",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Herói",
+            "exemplo": "Hero",
             "cortar": true,
             "alturaLinha": 11
            },
@@ -313053,7 +313053,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Sua roupa",
+            "exemplo": "Your outfit",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -313140,7 +313140,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Pacote Fundador",
+            "exemplo": "Founder Pack",
             "cortar": true,
             "alturaLinha": 9
            },
@@ -313167,7 +313167,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 9
              }
@@ -313258,7 +313258,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Pacote Fundador",
+            "exemplo": "Founder Pack",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -313345,7 +313345,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Pacote Fundador",
+            "exemplo": "Founder Pack",
             "cortar": true,
             "alturaLinha": 9
            },
@@ -313443,7 +313443,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -313530,7 +313530,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -313617,7 +313617,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -313704,7 +313704,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -313746,7 +313746,7 @@
         "w": 207.6,
         "h": 11,
         "tipo": "rotulo",
-        "texto": "Arraste pra girar",
+        "texto": "Drag to rotate",
         "fonte": "Nunito Sans",
         "peso": 700,
         "tamanho": 7.5,
@@ -313810,7 +313810,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:40",
-        "exemplo": "Skin exclusiva · Pacote Fundador",
+        "exemplo": "Exclusive skin · Founder Pack",
         "cortar": true,
         "alturaLinha": 13
        },
@@ -313839,7 +313839,7 @@
             "w": 213.2,
             "h": 17.4,
             "tipo": "rotulo",
-            "texto": "Equipar",
+            "texto": "Wear",
             "fonte": "Baloo 2",
             "peso": 800,
             "tamanho": 12,
@@ -313883,7 +313883,7 @@
            "w": 213.2,
            "h": 17.4,
            "tipo": "rotulo",
-           "texto": "Desequipar",
+           "texto": "Take off",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 12,
@@ -313920,7 +313920,7 @@
            "w": 95.2,
            "h": 17.4,
            "tipo": "rotulo",
-           "texto": "Trocar base",
+           "texto": "Change base",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 12,
@@ -313950,7 +313950,7 @@
            "w": 95.2,
            "h": 17.4,
            "tipo": "rotulo",
-           "texto": "Equipar",
+           "texto": "Wear",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 12,
@@ -313987,7 +313987,7 @@
            "w": 213.2,
            "h": 17.4,
            "tipo": "rotulo",
-           "texto": "Trocar base",
+           "texto": "Change base",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 12,
@@ -314025,7 +314025,7 @@
          "al": "center",
          "alV": "center",
          "regra": "max:57",
-         "exemplo": "Você ainda não tem nenhum rastro.",
+         "exemplo": "You don't have any trails yet.",
          "cortar": true,
          "alturaLinha": 17.6
         },
@@ -314044,7 +314044,7 @@
          "al": "center",
          "alV": "center",
          "regra": "max:60",
-         "exemplo": "Quando ganhar um, ele aparece aqui.",
+         "exemplo": "When you earn one, it shows up here.",
          "cortar": true,
          "alturaLinha": 12
         }
@@ -314149,7 +314149,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            },
@@ -314176,7 +314176,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 9
              }
@@ -314266,7 +314266,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -314352,7 +314352,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -314438,7 +314438,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Guarda-roupa",
+            "exemplo": "Wardrobe",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -314548,7 +314548,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            },
@@ -314575,7 +314575,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 9
              }
@@ -314665,7 +314665,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -314751,7 +314751,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -314837,7 +314837,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -314923,7 +314923,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -315009,7 +315009,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -315119,7 +315119,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -315205,7 +315205,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            },
@@ -315232,7 +315232,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "EM USO",
+              "exemplo": "IN USE",
               "cortar": true,
               "alturaLinha": 9
              }
@@ -315322,7 +315322,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -315408,7 +315408,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -315494,7 +315494,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }
@@ -315580,7 +315580,7 @@
             "al": "center",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "Hall da Fama",
+            "exemplo": "Hall of Fame",
             "cortar": true,
             "alturaLinha": 9
            }

@@ -190,9 +190,8 @@ export function criarTemporada({ dadosPub, contas, socketsDe, enviar, salvarCont
       s[pocket][p.id] = (+s[pocket][p.id] || 0) + (p.qtd || 1);
     } else if (p.tipo === 'diamantes') carteira.creditar(c, p.qtd, 'passe');
     else if (p.tipo === 'roupa') {
-      if (!s.cosmeticos || typeof s.cosmeticos !== 'object') s.cosmeticos = { roupas: [], efeitos: [] };
-      if (!Array.isArray(s.cosmeticos.roupas)) s.cosmeticos.roupas = [];
-      for (const id of p.ids) if (!s.cosmeticos.roupas.includes(id)) s.cosmeticos.roupas.push(id);
+      if (!Array.isArray(s.skins)) s.skins = [];   // owned outfits (server_wardrobe.mjs)
+      for (const id of p.ids) if (!s.skins.includes(id)) s.skins.push(id);
     } else if (p.tipo === 'titulo') {
       if (!Array.isArray(s.titulos)) s.titulos = [];
       if (!s.titulos.includes(p.nome)) s.titulos.push(p.nome);

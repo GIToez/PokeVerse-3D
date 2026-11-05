@@ -1,8 +1,8 @@
 /* Diamond shop on the server: the wallet (save.carteira), the cosmetics for sale and buying them with Diamonds.
  *   {t:'loja_ver', rid}                    → {t:'loja', rid, ok, vitrine}
- *   {t:'loja_comprar', rid, produto, ref}  buy 'peca:roupa:<id>' or 'peca:mochila:<glb>'; `ref` makes a retry safe
- * Diamonds only come in from the Battle Pass, staff grants (/givediamonds) and, later, real-money packs. Prices live in
- * public/data/cosmeticos.json (`diamantes`); a seasonal outfit (`estacao`) is only for sale during its season. */
+ *   {t:'loja_comprar', rid, produto, ref}  buy 'peca:<roupa|mochila|peito|rastro>:<id>'; `ref` makes a retry safe
+ * Diamonds only come in from the Battle Pass, staff grants (/givediamonds) and, later, real-money packs. The catalog and prices
+ * are public/data/catalogo_loja.json (server_wardrobe.mjs); a seasonal outfit (`estacao`) is only for sale during its season. */
 import fs from 'fs';
 import nodePath from 'path';
 import { estacaoAgora } from './calendar.mjs';
@@ -39,41 +39,19 @@ export function criarCarteira() {
   return { de, creditar, debitar };
 }
 
-export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, carteira }) {
-  let cache = null, mtime = 0;
-  function cosmeticos() {
-    const a = nodePath.join(dadosPub, 'cosmeticos.json');
-    try { const st = fs.statSync(a); if (!cache || st.mtimeMs !== mtime) { cache = JSON.parse(fs.readFileSync(a, 'utf8')); mtime = st.mtimeMs; } } catch (e) { console.warn('shop: cosmeticos.json', e.message); }
-    return cache || { roupas: [], efeitos: [], mochilas: [] };
-  }
-  function meus(c) {
-    if (!c.save) c.save = {};
-    const s = c.save;
-    if (!s.cosmeticos || typeof s.cosmeticos !== 'object' || Array.isArray(s.cosmeticos)) s.cosmeticos = {};
-    for (const k of ['roupas', 'efeitos', 'mochilas']) if (!Array.isArray(s.cosmeticos[k])) s.cosmeticos[k] = [];
-    return s.cosmeticos;
-  }
-  function aVenda() {
-    const C = cosmeticos(), est = estacaoAgora(), out = [];
-    for (const r of C.roupas || []) {
-      if (!(r.diamantes > 0) || r.oculto || r.fundador || r.feriado || r.passe) continue;
-      if (r.estacao && r.estacao !== est) continue;
-      out.push({ tipo: 'roupa', id: r.id, nome: r.nome, preco: r.diamantes, sexo: r.sexo, estacao: r.estacao || null });
-    }
-    for (const b of C.mochilas || []) if (b.diamantes > 0 && !b.oculto && !b.feriado) out.push({ tipo: 'mochila', id: b.id, nome: b.nome, preco: b.diamantes, sexo: null });
-    return out;
-  }
+export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, carteira, guarda }) {
+  /** What the shop sells right now (server_wardrobe.mjs reads public/data/catalogo_loja.json). */
+  const aVenda = () => guarda.saleList();
   function vitrine(c) {
-    const M = meus(c);
+    const save = c.save || (c.save = {});
     const pecas = aVenda().map(p => ({
       id: 'peca:' + p.tipo + ':' + p.id,
-      preco: p.preco,
+      preco: +p.preco,
       preso: true,
-      tem: (p.tipo === 'roupa' ? M.roupas : M.mochilas).includes(p.id),
+      tem: guarda.has(save, p.tipo, p.id),
       peca: {
-        tipo: p.tipo, id: p.id, nome: p.nome, nomes: { en: p.nome },
-        icone: 'ui/amanda/skins/pecas/' + p.tipo + '-' + p.id + '@2x.png', qualidade: p.preco >= 700 ? 4 : 3,
-        ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}),
+        tipo: p.tipo, id: p.id, nome: p.nome, nomes: { en: p.nome }, icone: p.icone || null, qualidade: p.qualidade ?? 3,
+        ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}), ...(p.ponto ? { ponto: p.ponto } : {}),
       },
     }));
     return { aberta: true, saldo: carteira.de(c), produtos: [], pecas, montarias: [], skinsMon: [] };
@@ -94,19 +72,18 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
     if (!Array.isArray(s.lojaRefs)) s.lojaRefs = [];
     const ref = String(m.ref || '').slice(0, 40);
     if (ref && s.lojaRefs.includes(ref)) return resp({ ok: true, repetido: true, vitrine: vitrine(c) });
-    const mt = /^peca:(roupa|mochila):([\w-]{1,40})$/.exec(String(m.produto || ''));
-    const p = mt && aVenda().find(x => x.tipo === mt[1] && x.id === mt[2]);
+    const mt = /^peca:(roupa|mochila|peito|rastro):([\w-]{1,40})$/.exec(String(m.produto || ''));
+    const p = mt && aVenda().find(x => x.tipo === mt[1] && String(x.id) === mt[2]);
     if (!p) return resp({ ok: false, erro: 'recusado', mensagem: "That isn't for sale right now.", vitrine: vitrine(c) });
-    const lista = meus(c)[p.tipo === 'roupa' ? 'roupas' : 'mochilas'];
-    if (lista.includes(p.id)) return resp({ ok: false, erro: 'recusado', mensagem: 'You already have ' + p.nome + '.', vitrine: vitrine(c) });
+    if (guarda.has(s, p.tipo, p.id)) return resp({ ok: false, erro: 'recusado', mensagem: 'You already have ' + p.nome + '.', vitrine: vitrine(c) });
     if (m.preco != null && +m.preco !== p.preco) return resp({ ok: false, erro: 'preco-mudou', mensagem: 'The price changed: review and confirm again.', vitrine: vitrine(c) });
     const falta = p.preco - carteira.de(c).total;
     if (falta > 0) return resp({ ok: false, erro: 'saldo-insuficiente', falta, mensagem: 'Not enough Diamonds.', vitrine: vitrine(c) });
-    carteira.debitar(c, p.preco);
-    lista.push(p.id);
+    carteira.debitar(c, +p.preco);
+    guarda.give(s, p.tipo, p.id);
     if (ref) { s.lojaRefs.push(ref); if (s.lojaRefs.length > MAX_REFS) s.lojaRefs.splice(0, s.lojaRefs.length - MAX_REFS); }
     salvarContas(); empurrarSave(u);
-    return resp({ ok: true, comprou: { tipo: p.tipo, id: p.id, preco: p.preco }, vitrine: vitrine(c) });
+    return resp({ ok: true, comprou: { tipo: p.tipo, id: p.id, preco: +p.preco }, pecas: s.pecas, skins: s.skins, vitrine: vitrine(c) });
   }
 
   /** GET /loja: the real-money side. Payments are not set up yet, so the counter is closed but the packs still show. */
@@ -134,5 +111,5 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
     return total;
   }
 
-  return { receber, vitrine, info, darDiamantes, meus };
+  return { receber, vitrine, info, darDiamantes };
 }

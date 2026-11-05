@@ -36,6 +36,7 @@ import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
 import { createRanking } from './server_ranking.mjs';
+import { createWardrobe } from './server_wardrobe.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -346,11 +347,12 @@ for (const c of Object.values(contas)) for (const p of [...(c?.save?.time || [])
    Tudo isso é decidido pelo SERVIDOR. Os helpers abaixo filtram o que o cliente manda. */
 
 // As ÚNICAS chaves do save que o cliente pode gravar por `prefs`; o resto é do servidor.
-const PREFS_OK = new Set(['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'introVista', 'ultimoCentro', 'tempo', 'inicial']);
+const PREFS_OK = new Set(['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'skin', 'peito', 'rastro', 'introVista', 'ultimoCentro', 'tempo', 'inicial']);
 function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
   for (const k of Object.keys(prefs)) {
     if (!PREFS_OK.has(k)) continue;                                       // chave fora da lista (dinheiro, bolas…) é IGNORADA
+    if (['skin', 'mochila', 'peito', 'rastro'].includes(k) && !bolsaServ.vestivel(c, k, prefs[k])) continue;   // only owned pieces can be worn (server_wardrobe.mjs)
     if (k === 'personagem') { const p = bolsaServ.validarPersonagem(c, prefs[k]); if (p === null && prefs[k] != null) continue; c.save[k] = p; continue; }   // paid outfit not owned: keeps the last valid one
     c.save[k] = prefs[k];
   }
@@ -985,6 +987,11 @@ const httpServer = http.createServer((req, res) => {
     // ── Sair ──────────────────────────────────────────────────────────────
     // Scene pass: the upcoming client asks for a signed pass. We do not gate scenes yet (pass_rules.mjs
     // SCENES_GATED = false), so this only confirms the session; with no `passe` the client treats every scene as free.
+    if (req.method === 'GET' && rota === '/loja/catalogo') {   // 👕 wardrobe + shop catalog, with what this account owns
+      const u = usuarioDe(req), c = u ? contas[u] : null;
+      if (c?.save) guarda.owned(c.save);
+      return json(200, guarda.catalogFor(c, String(url.searchParams.get('l') || 'en').slice(0, 2)));
+    }
     if (rota.startsWith('/ranking') && ranking.route(rota, req.method, json, usuarioDe, req)) return;   // 🏆 rankings (server_ranking.mjs)
     if (req.method === 'GET' && rota === '/conta/passe') {
       const u = usuarioDe(req);
@@ -1387,10 +1394,12 @@ const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
   aoPontuar: (u, n, mvp) => { temporada.contar(u, { conta: 'raidPontos', n }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
-const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida });   // comprar / usar / descartar / held items (server_bag.mjs)
+/* WARDROBE (server_wardrobe.mjs): the outfit/bag/effect catalog and who owns what. */
+const guarda = createWardrobe({ dataDir: DADOS_PUB });
+const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida, guarda });   // comprar / usar / descartar / held items (server_bag.mjs)
 const mercado = criarMercado({ dados: DADOS, dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta: u => batalha.emLuta(u) });
 const carteira = criarCarteira();
-const loja = criarLoja({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira });
+const loja = criarLoja({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira, guarda });
 const temporada = criarTemporada({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira, itemCatalog: catalogoItens, nomeItem });
 const wilds = criarWilds({
   dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,

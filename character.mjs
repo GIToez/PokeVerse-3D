@@ -51,6 +51,13 @@ try {
   for (const s of roupas) if (s.glbOk && s.prefab !== 'Boy_001' && !SKINS.some(k => k.glb === s.prefab))
     SKINS_EXTRA.push({ id: s.prefab.toLowerCase(), sexo: s.sexo, nome: s.nome, glb: s.prefab, desc: 'Fashion ' + s.id + (s.inicial ? ' · original starter' : ''), extra: true });
 } catch (e){ console.warn('skins do dump:', e); }
+/* Wardrobe catalog outfits (public/data/catalogo_loja.json, server_wardrobe.mjs): ids like `red` or `leon` that are not dump
+   prefab names get their own entry, so `skinDe`/`glbDe` find the right model for a worn outfit. */
+try {
+  const cat = await fetch('./data/catalogo_loja.json').then(r => (r.ok ? r.json() : null)).catch(() => null);
+  for (const p of cat?.pecas || []) if (p?.tipo === 'roupa' && typeof p.id === 'string' && p.glb && !SKINS.some(k => k.id === p.id) && !SKINS_EXTRA.some(k => k.id === p.id))
+    SKINS_EXTRA.push({ id: p.id, sexo: p.sexo === 'menina' ? 'menina' : 'menino', nome: p.nome || p.id, glb: p.glb, desc: 'Wardrobe', extra: true, catalogo: true });
+} catch (e){ console.warn('wardrobe catalog outfits:', e); }
 export const PADRAO = {
   heroi:   { pele: '#ffcbaa', cabelo: '#322527', roupa: '#f83537', roupa2: '#ffffff', olhos: '#ffffff' },
   heroina: { pele: '#ffcbaa', cabelo: '#1a4195', roupa: '#ff9bd7', roupa2: '#ffffff', olhos: '#00bdff' },
@@ -132,6 +139,18 @@ export const ler = () => { const p = lerLS('personagem', null); return p && type
 export const gravar = p => gravarLS('personagem', p);
 export const skinDe = p => SKINS.find(s => s.id === p?.tipo) || SKINS_EXTRA.find(s => s.id === p?.tipo) || SKINS.find(s => s.id === 'heroi');
 export const glbDe = p => skinDe(p).glb;
+/* WARDROBE (wardrobe_ui.mjs): `personagem` is the base character (creation screen); the outfit worn over it is the save key
+   `skin` (null = the base itself), from the owned list `skins` (server-written). `visual()` is what to draw and to send. */
+export const SKINS_PREMIO = [];
+export const lerSkin = () => { const s = lerLS('skin', null); return typeof s === 'string' && s ? s : null; };
+export const gravarSkin = a => gravarLS('skin', a || null);
+export const skinsDaConta = () => { const l = lerLS('skins', []); return Array.isArray(l) ? l.filter(x => typeof x === 'string') : []; };
+export function visual(a = ler()){
+  const b = lerSkin();
+  if (!b || !skinPorId(b)) return a;
+  const { cores, skin, ...e } = a || {};
+  return { ...e, tipo: b };
+}
 export const nomeDe = p => skinDe(p).nome;
 /** Primeira vez (sem `personagem` salvo) ou ?personagem=1. */
 export const precisaCriar = (forcar = false) => forcar || !ler();

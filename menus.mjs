@@ -1,6 +1,7 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 import * as I18n from './i18n.mjs';                                     // etapa 3: a linha de idioma nas Configurações e a Pokédex por idioma
 import * as CorreioUI from './mail_ui.mjs';
+import * as GuardaRoupaUI from './wardrobe_ui.mjs';                         // Wardrobe (v2 popup)
 import * as RankingUi from './ranking_ui.mjs';                               // Ranking (v2 popup)
 import * as ProgressaoUi from './progression_ui.mjs';                       // Achievements, Master Level, titles (v2 popup)                                // Mail (v2 popup)
 /* Menus do jogo — casca DOM, sem servidor (menus.css).
@@ -350,6 +351,15 @@ function ligarRecursos(){
 export function instalar(c){
   ProgressaoUi.aoMudarVista?.(() => { if (aberta === 'treinador' && popTr && Popup.aberto(popTr)) encherTreinador(popTr); });   // Master pill and Stats refresh when the server sends a new view
   RankingUi.instalar({ segurar: (el) => DIALOGOS.add(el), Som: c.Som });
+  GuardaRoupaUI.instalar({
+    equipar: (t) => c.guarda?.equipar?.(t),
+    equiparPeca: (k, v) => c.guarda?.equiparPeca?.(k, v),
+    pecasDaConta: () => c.guarda?.pecasDaConta?.() || {},
+    encaixados: () => c.guarda?.encaixados?.() || {},
+    criarPersonagem: () => c.criarPersonagem?.(),
+    nomeEspecie: (dex) => c.porDex?.get?.(+dex)?.name || null,
+    Chat, Som: c.Som, segurar: (el) => DIALOGOS.add(el), fecharMenu: () => fechar(),
+  });
   ProgressaoUi.instalar({
     enviar: (m) => c.correioEnviar?.(m),
     comConta: () => !!c.comConta?.(),
@@ -2547,7 +2557,7 @@ function popupTr(){
   if (popTr) return popTr;
   const def = defPopup('treinador'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
   popTr = Popup.montar(def, {
-    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } if (alvo === 'popup-ranking'){ RankingUi.abrir(); return true; } if (alvo === 'dialogo-estatisticas'){ abrirEstatisticas(); return true; } return false; },
+    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } if (alvo === 'popup-ranking'){ RankingUi.abrir(); return true; } if (alvo === 'popup-guarda-roupa'){ abrirGuarda('roupas'); return true; } if (alvo === 'dialogo-estatisticas'){ abrirEstatisticas(); return true; } return false; },
     fechar: () => { if (aberta === 'treinador') aberta = null; if (visorTr) visorTr.ativo = false; },
   });
   return popTr;
@@ -6154,158 +6164,13 @@ async function apagarTudo(){
   location.href = u.toString();
 }
 
-/* ============================================================ WARDROBE + COSMETICS SHOP (Nov 2)
-   One window, three tabs: Outfits (yours: the 28 free creation outfits + the ones you bought), Effects (aura / trail) and Shop
-   (what you don't have: Coins, the Elite Four reward, or an event that isn't running). The 3D preview is the creation screen's
-   stage (character.mjs criarPalco). The rules and the purchases are in index.html (ctx.guarda) and server_bag.mjs. Coins only. */
-let guarda = null;                                                         // { el, aba, sel, palco }
-function guardaEstilo(){
-  if (document.getElementById('guarda-css')) return;
-  const s = document.createElement('style'); s.id = 'guarda-css';
-  s.textContent = `#guarda{position:fixed;inset:0;z-index:58;display:flex;align-items:center;justify-content:center;background:rgba(4,8,18,.6);font:500 13px/1.35 "Nunito Sans",system-ui,sans-serif;color:#e8eefc}
-#guarda .g-caixa{width:min(980px,96vw);height:min(640px,90vh);display:flex;flex-direction:column;background:rgba(11,18,32,.97);border:1px solid rgba(248,194,55,.55);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.6)}
-#guarda .g-topo{display:flex;align-items:center;gap:12px;padding:12px 16px}
-#guarda .g-topo b{font:800 19px "Baloo 2","Nunito Sans",sans-serif;color:#F8C237}
-#guarda .g-topo .g-moedas{margin-left:auto;color:#ffe07a;font-weight:800}
-#guarda .g-x{background:none;border:0;color:#98a4c0;font-size:19px;cursor:pointer}
-#guarda .g-abas{display:flex;gap:6px;padding:0 16px 10px}
-#guarda .g-abas button{padding:5px 14px;border-radius:999px;border:1px solid rgba(248,194,55,.4);background:transparent;color:#F8C237;font:700 13px inherit;cursor:pointer}
-#guarda .g-abas button.on{background:#F8C237;color:#1a1a1a}
-#guarda .g-corpo{flex:1;display:flex;gap:12px;padding:0 16px 14px;min-height:0}
-#guarda .g-previa{width:34%;min-width:220px;display:flex;flex-direction:column;border-radius:12px;background:radial-gradient(#22304d,#0b1020 70%);border:1px solid rgba(255,255,255,.08);overflow:hidden;position:relative}
-#guarda .g-previa .palco{flex:1;min-height:200px}
-#guarda .palco-3d{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
-#guarda .g-previa .g-info{padding:10px 12px;border-top:1px solid rgba(255,255,255,.08)}
-#guarda .g-previa .g-info b{display:block;font-size:15px;color:#fff}
-#guarda .g-previa .g-info small{color:#98a4c0}
-#guarda .g-lista{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-content:start}
-#guarda .g-card{padding:10px;border-radius:10px;border:1px solid rgba(248,194,55,.22);background:#0f172a;cursor:pointer;display:flex;flex-direction:column;gap:6px}
-#guarda .g-card.sel{border-color:#F8C237;box-shadow:0 0 0 1px #F8C237 inset}
-#guarda .g-card b{font-size:13px;color:#fff}
-#guarda .g-card small{color:#98a4c0;font-size:11px}
-#guarda .g-card .g-tag{align-self:flex-start;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:800}
-#guarda .g-card .g-tag.usa{background:#2FAE47;color:#fff}
-#guarda .g-card .g-tag.trava{background:#39424E;color:#cfd6e4}
-#guarda .g-card button{margin-top:auto;padding:5px 8px;border-radius:7px;border:1px solid #F8C237;background:#F8C237;color:#1a1a1a;font:800 12px inherit;cursor:pointer}
-#guarda .g-card button:disabled{background:transparent;color:#7f8aa6;border-color:#39424E;cursor:default}
-#guarda .g-sub{grid-column:1/-1;margin:6px 0 0;color:#F8C237;font:800 13px inherit}
-#guarda .g-aviso{min-height:18px;padding:0 16px 10px;color:#FFD23A;font-size:12px}
-#guarda .g-aviso.ok{color:#8EF58E}`;
-  document.head.appendChild(s);
-}
-const G_ICONE_FX = { peito: '✨', rastro: '👣' };
+/* WARDROBE: the v2 window (wardrobe_ui.mjs, from upcoming/). Outfits, bags, chest effects and trails the account owns;
+   the hooks that wear them are in index.html (ctx.guarda), the ownership rules in server_wardrobe.mjs. The Shop tab
+   of the old window is the v2 Shop now (shop_ui.mjs). */
 function abrirGuarda(aba = 'roupas'){
-  const G = ctx.guarda; if (!G) return;
-  guardaEstilo(); fecharGrade(); fechar();
-  if (!guarda){
-    const el = document.createElement('div'); el.id = 'guarda';
-    el.innerHTML = `<div class="g-caixa" role="dialog" aria-modal="true"><div class="g-topo"><b>${esc(tr('Wardrobe'))}</b><span class="g-moedas"></span><button type="button" class="g-x" aria-label="${esc(tr('Close'))}">✕</button></div><div class="g-abas"></div><div class="g-corpo"><div class="g-previa"><div class="palco"></div><div class="g-info"></div></div><div class="g-lista"></div></div><div class="g-aviso" aria-live="polite"></div></div>`;
-    el.addEventListener('click', ev => {
-      if (ev.target === el || ev.target.closest('.g-x')){ fecharGuarda(); return; }
-      const a = ev.target.closest('[data-gaba]'); if (a){ guarda.aba = a.dataset.gaba; guarda.sel = null; pintarGuarda(); return; }
-      const b = ev.target.closest('[data-gacao]'); if (b){ ev.stopPropagation(); acaoGuarda(b.dataset.gacao, b.dataset.gid, b.dataset.gtipo, b.dataset.gslot); return; }
-      const c = ev.target.closest('[data-gcard]'); if (c){ guarda.sel = { tipo: c.dataset.gtipo, id: c.dataset.gcard }; pintarGuarda(); }
-    });
-    guarda = { el, aba, sel: null, palco: null };
-    addEventListener('keydown', ev => {                                    // on top: no key reaches the game or the window behind
-      if (!guarda?.el.isConnected) return;
-      ev.stopImmediatePropagation();
-      if (ev.code === 'Escape'){ ev.preventDefault(); fecharGuarda(); }
-    }, true);
-  }
-  guarda.aba = aba; guarda.sel = null;
-  document.body.appendChild(guarda.el);
-  G.pronto.then(() => pintarGuarda());
-  pintarGuarda();
-}
-function fecharGuarda(){
-  if (!guarda) return;
-  guarda.el.remove();
-  try { guarda.palco?.fechar(); } catch {}
-  guarda.palco = null;
-}
-function avisarGuarda(texto, ok = false){
-  const a = guarda?.el.querySelector('.g-aviso'); if (!a) return;
-  a.textContent = texto || ''; a.classList.toggle('ok', !!ok);
-  clearTimeout(avisarGuarda.t); avisarGuarda.t = setTimeout(() => { if (a.isConnected) a.textContent = ''; }, 5000);
-}
-const precoTxt = n => (+n || 0).toLocaleString('en-US') + ' ' + tr('Coins');
-function linhasGuarda(){
-  const G = ctx.guarda, C = G.catalogo(), M = G.meus(), atual = G.atual(), ef = atual.efeitos || {};
-  const roupas = G.roupas().map(r => ({ ...r, tipo: 'roupa', tem: !!r.gratis || M.roupas.includes(r.id), usa: atual.tipo === r.id }));
-  const efeitos = (C.efeitos || []).map(e => ({ ...e, slot: e.tipo, tipo: 'efeito', tem: M.efeitos.includes(e.id), usa: ef[e.tipo] === e.id }));
-  const mochilas = (C.mochilas || []).filter(b => (M.mochilas || []).includes(b.id)).map(b => ({ ...b, tipo: 'mochila', tem: true, usa: atual.mochila === b.id }));
-  return { roupas, efeitos, mochilas };
-}
-function estadoLoja(x){
-  if (x.evento) return { trava: x.evento };
-  if (x.premio === 'elite') return ctx.guarda.elite() ? { acao: 'resgatar', rotulo: tr('Claim') } : { trava: tr('Beat the Elite Four') };
-  return { acao: 'comprar', rotulo: precoTxt(x.preco), pode: ctx.guarda.dinheiro() >= (+x.preco || 0) };
-}
-function cardGuarda(x, botao){
-  const sel = guarda.sel && guarda.sel.tipo === x.tipo && String(guarda.sel.id) === String(x.id);
-  const titulo = (x.tipo === 'efeito' ? G_ICONE_FX[x.slot] + ' ' : '') + tr(x.nome);
-  return `<div class="g-card${sel ? ' sel' : ''}" data-gcard="${esc(x.id)}" data-gtipo="${x.tipo}"><b>${esc(titulo)}</b>${x.tipo === 'efeito' ? `<small>${esc(tr(x.desc || ''))}</small>` : ''}${x.usa ? `<span class="g-tag usa">${esc(tr('Wearing'))}</span>` : ''}${botao}</div>`;
-}
-const botaoLoja = x => { const st = estadoLoja(x); return st.trava ? `<span class="g-tag trava">🔒 ${esc(tr(st.trava))}</span>` : `<button type="button" data-gacao="${st.acao}" data-gid="${esc(x.id)}" data-gtipo="${x.tipo}" ${st.pode === false ? 'disabled' : ''}>${esc(st.rotulo)}</button>`; };
-function pintarGuarda(){
-  if (!guarda?.el.isConnected) return;
-  const G = ctx.guarda, el = guarda.el, { roupas, efeitos, mochilas } = linhasGuarda();
-  el.querySelector('.g-moedas').textContent = '💰 ' + precoTxt(G.dinheiro());
-  el.querySelector('.g-abas').innerHTML = [['roupas', 'Outfits'], ['mochilas', 'Backpacks'], ['efeitos', 'Effects'], ['loja', 'Shop']].map(([k, n]) => `<button type="button" data-gaba="${k}" class="${guarda.aba === k ? 'on' : ''}">${esc(tr(n))}</button>`).join('');
-  let html = '';
-  if (guarda.aba === 'roupas'){
-    html = roupas.filter(r => r.tem).map(r => cardGuarda(r, r.usa ? '' : `<button type="button" data-gacao="vestir" data-gid="${esc(r.id)}" data-gtipo="roupa">${esc(tr('Wear'))}</button>`)).join('');
-  } else if (guarda.aba === 'mochilas'){
-    const algum = mochilas.some(b => b.usa);
-    html = `<div class="g-card${algum ? '' : ' sel'}"><b>${esc(tr('None'))}</b>${algum ? `<button type="button" data-gacao="tirarmochila">${esc(tr('Wear'))}</button>` : `<span class="g-tag usa">${esc(tr('Wearing'))}</span>`}</div>`;
-    html += mochilas.length ? mochilas.map(b => cardGuarda(b, b.usa ? `<button type="button" data-gacao="tirarmochila">${esc(tr('Take off'))}</button>` : `<button type="button" data-gacao="vestirmochila" data-gid="${esc(b.id)}">${esc(tr('Wear'))}</button>`)).join('')
-      : `<div class="g-card"><small>${esc(tr('None yet: get them in the Diamond Shop.'))}</small></div>`;
-  } else if (guarda.aba === 'efeitos'){
-    for (const [slot, nome] of [['peito', 'Auras'], ['rastro', 'Trails']]){
-      const doSlot = efeitos.filter(e => e.slot === slot), meus = doSlot.filter(e => e.tem), algum = doSlot.some(e => e.usa);
-      html += `<div class="g-sub">${G_ICONE_FX[slot]} ${esc(tr(nome))}</div>`;
-      html += `<div class="g-card${algum ? '' : ' sel'}"><b>${esc(tr('None'))}</b>${algum ? `<button type="button" data-gacao="tirarfx" data-gslot="${slot}">${esc(tr('Take off'))}</button>` : `<span class="g-tag usa">${esc(tr('Wearing'))}</span>`}</div>`;
-      html += meus.length ? meus.map(e => cardGuarda(e, e.usa ? `<button type="button" data-gacao="tirarfx" data-gslot="${slot}">${esc(tr('Take off'))}</button>` : `<button type="button" data-gacao="vestirfx" data-gid="${e.id}" data-gslot="${slot}">${esc(tr('Wear'))}</button>`)).join('')
-        : `<div class="g-card"><small>${esc(tr('None yet: get them in the Shop.'))}</small></div>`;
-    }
-  } else {
-    const fR = roupas.filter(r => !r.tem && !r.oculto && !r.fundador && !r.feriado && !r.diamantes && !r.passe), fE = efeitos.filter(e => !e.tem);
-    html = (fR.length ? `<div class="g-sub">${esc(tr('Outfits'))}</div>` + fR.map(x => cardGuarda(x, botaoLoja(x))).join('') : '')
-      + (fE.length ? `<div class="g-sub">${esc(tr('Effects'))}</div>` + fE.map(x => cardGuarda(x, botaoLoja(x))).join('') : '');
-    if (!fR.length && !fE.length) html = `<div class="g-card"><b>${esc(tr('You have everything!'))}</b></div>`;
-  }
-  el.querySelector('.g-lista').innerHTML = html;
-  /* preview: the selected outfit (or the one you wear); a selected effect shows its text under the outfit you wear */
-  const atual = G.atual();
-  const selR = guarda.sel?.tipo === 'roupa' ? roupas.find(r => String(r.id) === guarda.sel.id) : null;
-  const selE = guarda.sel?.tipo === 'efeito' ? efeitos.find(e => String(e.id) === guarda.sel.id) : null;
-  const mostra = selR || roupas.find(r => r.usa) || roupas[0];
-  const info = el.querySelector('.g-info');
-  info.innerHTML = selE ? `<b>${G_ICONE_FX[selE.slot]} ${esc(tr(selE.nome))}</b><small>${esc(tr(selE.desc || ''))}</small>`
-    : mostra ? `<b>${esc(tr(mostra.nome))}</b><small>${esc(mostra.gratis ? tr('Free outfit') : mostra.tem ? tr('Yours') : mostra.evento ? tr(mostra.evento) : mostra.premio === 'elite' ? tr('Reward for beating the Elite Four') : precoTxt(mostra.preco))}</small>` : '';
-  const caixa = el.querySelector('.g-previa'), pal = caixa.querySelector('.palco');
-  if (mostra?.skin && ctx.Personagem?.criarPalco){
-    if (!guarda.palco){ guarda.palco = ctx.Personagem.criarPalco(caixa, t => ctx.Personagem.coresDe(t, atual)); caixa.appendChild(guarda.palco.canvas); guarda.palco.quadro(); }
-    pal.dataset.id = mostra.skin.id;
-    pal.classList.toggle('pronto', !!guarda.palco.itens.get(mostra.skin.id)?.pronto);
-    guarda.palco.montar(mostra.skin).then(() => { if (pal.dataset.id === mostra.skin.id) guarda.palco.selecionar(mostra.skin.id); }).catch(e => console.warn('wardrobe preview:', e));
-  }
-}
-async function acaoGuarda(acao, id, tipo, slot){
-  const G = ctx.guarda;
-  if (acao === 'vestir'){ avisarGuarda(tr('Changing…')); const ok = await G.vestirRoupa(id); avisarGuarda(ok ? tr('Outfit changed.') : tr("Couldn't change the outfit."), ok); pintarGuarda(); return; }
-  if (acao === 'vestirfx'){ const ok = G.vestirEfeito(slot, +id); avisarGuarda(ok ? tr('Effect on.') : tr("You don't have that effect."), ok); pintarGuarda(); return; }
-  if (acao === 'vestirmochila' || acao === 'tirarmochila'){
-    if (ctx.jogo?.montaria){ avisarGuarda(tr('Dismount to change backpacks.')); return; }
-    const ok = G.vestirMochila?.(acao === 'vestirmochila' ? id : null);
-    avisarGuarda(ok ? tr(acao === 'vestirmochila' ? 'Backpack on.' : 'Backpack off.') : tr("You don't have that backpack."), ok); pintarGuarda(); return;
-  }
-  if (acao === 'tirarfx'){ G.vestirEfeito(slot, null); avisarGuarda(tr('Effect off.'), true); pintarGuarda(); return; }
-  if (acao === 'comprar' || acao === 'resgatar'){
-    const r = await G.comprar(tipo, id);
-    if (!r || r.erro){ avisarGuarda(tr(r?.erro || 'no reply')); pintarGuarda(); return; }
-    avisarGuarda(tr(tipo === 'efeito' ? 'Got it! Wear it in Effects.' : 'Got it! Wear it in Outfits.'), true);
-    pintarGuarda();
-  }
+  if (aba === 'loja'){ fechar(); return LojaUI.abrir?.('cosmeticos') ?? false; }
+  const k = { roupas: 'roupa', mochilas: 'mochila', efeitos: 'peito' }[aba] || aba;
+  if (GuardaRoupaUI.abrir(k)) return true;
+  Chat.sistema(tr('The wardrobe needs the new interface (Settings → HUD).'));
+  return false;
 }

@@ -30,7 +30,7 @@ import * as Tm from './tm.mjs';
 
 const FRAGMENTO_TERA = 50112, COLETA_ESPERA_MS = 120000;                  // the same item and wait as the client (index.html falarCom, tipoNpc 9)
 
-export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, eliteVencida = () => false }) {
+export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, eliteVencida = () => false, guarda }) {
   const lerJson = (() => {
     const cache = new Map();
     return arq => {
@@ -71,14 +71,7 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     for (const lista of [s.time, s.caixa]) for (const p of Array.isArray(lista) ? lista : []) if (p && String(p.uid) === String(uid)) return p;
     return null;
   }
-  const catalogo = () => lerJson('cosmeticos.json') || { roupas: [], efeitos: [], mochilas: [] };
-  const meus = c => {
-    const s = saveDe(c);
-    if (!s.cosmeticos || typeof s.cosmeticos !== 'object' || Array.isArray(s.cosmeticos)) s.cosmeticos = {};
-    for (const k of ['roupas', 'efeitos', 'mochilas']) if (!Array.isArray(s.cosmeticos[k])) s.cosmeticos[k] = [];
-    return s.cosmeticos;
-  };
-  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null, cosmeticos: { roupas: [...meus(c).roupas], efeitos: [...meus(c).efeitos], mochilas: [...meus(c).mochilas] } }; };
+  const retrato = c => { const s = saveDe(c); return { dinheiro: s.dinheiro ?? 0, bolas: s.bolas, itens: s.itens, insignias: s.insignias || [], safari: s.safari || null, ...(guarda ? (guarda.owned(s), { skins: [...s.skins], pecas: { mochila: [...s.pecas.mochila], peito: [...s.pecas.peito], rastro: [...s.pecas.rastro] } }) : {}) }; };
   const vida = p => ({ uid: p.uid, hp: p.hp, maxHp: p.maxHp, amizade: p.amizade, held: p.held ?? null, status: Status.exportar(p.status), ...(p.movs ? { movs: p.movs } : {}), ...(p.evs ? { evs: p.evs } : {}) });
   const tocarAmizade = (p, id) => {
     const d = Regras.amizadeDe(id);
@@ -213,52 +206,30 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return pronto(c);
   }
 
-  function cosmetico(c, m, u) {
-    const tipo = m.tipo === 'efeito' ? 'efeito' : 'roupa', C = catalogo();
-    const item = (tipo === 'efeito' ? C.efeitos : C.roupas).find(x => String(x.id) === String(m.id));
-    if (!item) return erro(c, 'that cosmetic does not exist');
-    const lista = meus(c)[tipo === 'efeito' ? 'efeitos' : 'roupas'];
-    if (lista.includes(item.id)) return erro(c, 'you already have ' + item.nome);
-    if (item.evento) return erro(c, item.nome + ': ' + item.evento);
-    if (item.oculto) return erro(c, item.nome + ' is not available');
-    if (item.fundador) return erro(c, item.nome + ' comes with a founder pack');
-    if (item.feriado) return erro(c, item.nome + ' is only sold during ' + item.feriado);
-    if (item.diamantes) return erro(c, item.nome + ' is sold in the Diamond shop');
-    if (item.passe) return erro(c, item.nome + ' is a Battle Pass reward');
-    if (item.premio === 'elite') {
-      if (!eliteVencida(u)) return erro(c, item.nome + ': beat the Elite Four to get it');
-    } else {
-      const preco = Math.max(0, Math.floor(+item.preco || 0)), s = saveDe(c);
-      if (!(preco > 0)) return erro(c, 'that cosmetic is not for sale');
-      if ((s.dinheiro || 0) < preco) return erro(c, 'not enough Coins');
-      s.dinheiro -= preco;
-    }
-    lista.push(item.id);
-    return pronto(c);
-  }
-  /** The `personagem` the client wants to wear: null when it is a paid outfit the account doesn't own; effects it doesn't
-      own are dropped. Free outfits (the creation ones) are not in the catalog, so they always pass. */
+  /** Retired: outfits, bags and effects are bought in the Diamond shop now (server_shop.mjs + server_wardrobe.mjs). */
+  function cosmetico(c) { return erro(c, 'outfits, bags and effects are in the Shop'); }
+  /** The `personagem` the client wants to wear: null when its outfit is a catalog outfit the account doesn't own (the stored
+      one stays); a bag or effect it doesn't own is dropped. Base characters are not in the catalog's pieces, so they always pass. */
   function validarPersonagem(c, p) {
     if (!p || typeof p !== 'object' || Array.isArray(p)) return p ?? null;
-    const C = catalogo(), M = meus(c);
-    if (C.roupas.some(r => r.id === p.tipo) && !M.roupas.includes(p.tipo)) {
-      // The stored look already passed this check, so an outfit that was free when it was picked (Ash, Misty) stays owned.
-      if (saveDe(c).personagem?.tipo !== p.tipo) return null;
-      M.roupas.push(p.tipo);
-      salvar?.();
-    }
+    if (!guarda) return p;
+    const s = saveDe(c);
+    if (guarda.piece('roupa', p.tipo) && !guarda.has(s, 'roupa', p.tipo) && s.personagem?.tipo !== p.tipo) return null;
     const out = { ...p };
     if (out.efeitos != null) {
       const e = {};
-      for (const slot of ['peito', 'rastro']) {
-        const id = +out.efeitos?.[slot];
-        const ok = C.efeitos.find(x => x.id === id && x.tipo === slot);
-        if (ok && M.efeitos.includes(id)) e[slot] = id;
-      }
+      for (const slot of ['peito', 'rastro']) { const id = +out.efeitos?.[slot]; if (id && guarda.has(s, slot, id)) e[slot] = id; }
       out.efeitos = e;
     }
-    if (out.mochila != null && !((C.mochilas || []).some(b => b.id === out.mochila) && M.mochilas.includes(out.mochila))) out.mochila = null;   // Diamond Shop backpacks only, and only owned ones
+    for (const slot of ['peito', 'rastro']) if (out[slot] != null && !guarda.has(s, slot, out[slot])) out[slot] = null;
+    if (out.mochila != null && !guarda.has(s, 'mochila', out.mochila)) out.mochila = null;
     return out;
+  }
+  /** One worn piece from the save sync (skin / mochila / peito / rastro): kept only when owned (or a base character). */
+  function vestivel(c, key, v) {
+    if (v == null || !guarda) return true;
+    const tipo = key === 'skin' ? 'roupa' : key;
+    return guarda.has(saveDe(c), tipo, v);
   }
 
   /* Safari visit. The client cannot grant itself balls: the fee and the stack live here.
@@ -360,5 +331,6 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     tratar(c, op, m, u) { const f = OPS[op]; return f && c ? f(c, m, u) : null; },
     motorHeld,
     validarPersonagem,
+    vestivel,
   };
 }

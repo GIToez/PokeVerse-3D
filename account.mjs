@@ -57,7 +57,6 @@ export const SAVE_CHAVES = [
   'skinsMon',
   'aparicoes',
   'safari',
-  'cosmeticos',
 ];
 const LS = {
   token: 'conta.token',
@@ -1038,7 +1037,7 @@ export function saveDoServidor(a, b) {
   }
 }
 // safari: Safari Zone visits; cosmeticos: outfits/effects bought in the Wardrobe (server_bag.mjs)
-const BOLSA_CHAVES = ['dinheiro', 'itens', 'presos', 'bolas', 'bolasPresas', 'insignias', 'safari', 'cosmeticos'];
+const BOLSA_CHAVES = ['dinheiro', 'itens', 'presos', 'bolas', 'bolasPresas', 'insignias', 'safari', 'skins', 'pecas'];
 let avisarBolsa = null;
 let avisarSaveNovo = null;
 export function aoSave(a) {

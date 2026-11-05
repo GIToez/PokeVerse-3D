@@ -1,0 +1,1490 @@
+{
+ "_sobre": "Wardrobe and cosmetics shop catalog (GET /loja/catalogo, server_wardrobe.mjs). From PokeFable's catalog, plus our extra outfits. tipo: roupa (outfit) | mochila (bag) | peito (chest effect) | rastro (trail). origens: where it comes from (loja = shop, evento, conquista = achievement, passe = season pass, pacote-fundador / pacote-alpha = packs). preco: Diamonds, only for origens with loja. estacao: only sold in that season. liberada:false hides it until released.",
+ "bases": [
+  {
+   "tipo": "heroi",
+   "nome": "Hero",
+   "sexo": "menino",
+   "glb": "Boy_002"
+  },
+  {
+   "tipo": "boy_012",
+   "nome": "Pikachu Hoodie",
+   "sexo": "menino",
+   "glb": "Boy_012"
+  },
+  {
+   "tipo": "boy_025",
+   "nome": "HeartGold",
+   "sexo": "menino",
+   "glb": "Boy_025"
+  },
+  {
+   "tipo": "heroina",
+   "nome": "Heroine",
+   "sexo": "menina",
+   "glb": "Girl_002"
+  },
+  {
+   "tipo": "girl_012",
+   "nome": "Pikachu Hoodie",
+   "sexo": "menina",
+   "glb": "Girl_012"
+  },
+  {
+   "tipo": "girl_025",
+   "nome": "SoulSilver",
+   "sexo": "menina",
+   "glb": "Girl_025"
+  }
+ ],
+ "pecas": [
+  {
+   "tipo": "roupa",
+   "id": "red",
+   "nome": "Red",
+   "sexo": "menino",
+   "glb": "Boy_045",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador"
+  },
+  {
+   "tipo": "roupa",
+   "id": "leon",
+   "nome": "Leon",
+   "sexo": "menino",
+   "glb": "fc2075_00",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador"
+  },
+  {
+   "tipo": "roupa",
+   "id": "leaf",
+   "nome": "Leaf",
+   "sexo": "menina",
+   "glb": "Girl_045",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador"
+  },
+  {
+   "tipo": "roupa",
+   "id": "ash",
+   "nome": "Ash",
+   "sexo": "menino",
+   "glb": "Male_XiaoZhi",
+   "origens": [
+    "pacote-alpha"
+   ],
+   "exclusiva": "pacote-alpha",
+   "icone": "ui/amanda/skins/pecas/roupa-ash@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "misty",
+   "nome": "Misty",
+   "sexo": "menina",
+   "glb": "Girl_001",
+   "origens": [
+    "pacote-alpha"
+   ],
+   "exclusiva": "pacote-alpha",
+   "icone": "ui/amanda/skins/pecas/roupa-misty@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_010",
+   "nome": "Elegant Set (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_010",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_010@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_013",
+   "nome": "Platinum Set (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_013",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_013@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_014",
+   "nome": "Overalls (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_014",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_014@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_015",
+   "nome": "Eevee Jacket (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_015",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_015@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_016",
+   "nome": "Cyber Set (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_016",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_016@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_017",
+   "nome": "Summer (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_017",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_017@2x.png",
+   "estacao": "summer"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_020",
+   "nome": "Sportswear (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_020",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_020@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_021",
+   "nome": "Leather Jacket (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_021",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_021@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_022",
+   "nome": "Gengar Jacket (boy)",
+   "qualidade": 2,
+   "sexo": "menino",
+   "glb": "Boy_022",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_022@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_023",
+   "nome": "Charizard Coat (boy)",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_023",
+   "origens": [
+    "passe"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_023@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_028",
+   "nome": "Raboot Coat",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_028",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 750,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_028@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_030",
+   "nome": "Straw Hat (boy)",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_030",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 600,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_030@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_032",
+   "nome": "Breezy Outfit (boy)",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_032",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 450,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_032@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_040",
+   "nome": "Elegant Embroidery (boy)",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_040",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 450,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_040@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_043",
+   "nome": "Pumpkin Ghost (boy)",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_043",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_043@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_049",
+   "nome": "Eternal Crown (boy)",
+   "qualidade": 4,
+   "sexo": "menino",
+   "glb": "Boy_049",
+   "origens": [
+    "passe"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_049@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_050",
+   "nome": "Rayquaza Coat (boy)",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_050",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 750,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_050@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_013",
+   "nome": "Platinum Set (girl)",
+   "qualidade": 2,
+   "sexo": "menina",
+   "glb": "Girl_013",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_013@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_014",
+   "nome": "Overalls (girl)",
+   "qualidade": 2,
+   "sexo": "menina",
+   "glb": "Girl_014",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_014@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_015",
+   "nome": "Eevee Jacket (girl)",
+   "qualidade": 2,
+   "sexo": "menina",
+   "glb": "Girl_015",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_015@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_016",
+   "nome": "Cyber Set (girl)",
+   "qualidade": 2,
+   "sexo": "menina",
+   "glb": "Girl_016",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_016@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_021",
+   "nome": "Leather Jacket (girl)",
+   "qualidade": 2,
+   "sexo": "menina",
+   "glb": "Girl_021",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 450,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_021@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_022",
+   "nome": "Gengar Jacket (girl)",
+   "qualidade": 2,
+   "sexo": "menina",
+   "glb": "Girl_022",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_022@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_023",
+   "nome": "Charizard Coat (girl)",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_023",
+   "origens": [
+    "passe"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_023@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_030",
+   "nome": "Straw Hat (girl)",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_030",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 600,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_030@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_043",
+   "nome": "Pumpkin Ghost (girl)",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_043",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_043@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_049",
+   "nome": "Eternal Crown (girl)",
+   "qualidade": 4,
+   "sexo": "menina",
+   "glb": "Girl_049",
+   "origens": [
+    "passe"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_049@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_050",
+   "nome": "Rayquaza Coat (girl)",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_050",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 750,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_050@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag001",
+   "nome": "Sun Backpack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag001",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag001@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag012",
+   "nome": "Classic Backpack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag012",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 120,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag012@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag014",
+   "nome": "Leather Satchel",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag014",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 120,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag014@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag015",
+   "nome": "Sport Belt Bag",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag015",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 120,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag015@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag016",
+   "nome": "Training Case",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag016",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 120,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag016@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag017",
+   "nome": "Trail Backpack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag017",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 150,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag017@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag018",
+   "nome": "Khaki Backpack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag018",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 150,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag018@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag020",
+   "nome": "Cube Pack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag020",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 150,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag020@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag021",
+   "nome": "Rebel Backpack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag021",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 150,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag021@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag022",
+   "nome": "Adventurer's Backpack",
+   "qualidade": 2,
+   "sexo": "todos",
+   "glb": "Bag022",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 250,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag022@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag023",
+   "nome": "Shadow Dragon Wings",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Bag023",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador",
+   "icone": "ui/fashion/fa_54012.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag023_1",
+   "nome": "Flame Dragon Wings",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Bag023_1",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador",
+   "icone": "ui/fashion/fa_54014.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag031",
+   "nome": "Chicken leg",
+   "qualidade": 3,
+   "sexo": "todos",
+   "glb": "Bag031",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag031@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag036",
+   "nome": "Qixi bag",
+   "qualidade": 3,
+   "sexo": "todos",
+   "glb": "Bag036",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 400,
+   "icone": "ui/amanda/skins/pecas/mochila-Bag036@2x.png"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag042",
+   "nome": "Red's Backpack",
+   "glb": "Bag042",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador"
+  },
+  {
+   "tipo": "mochila",
+   "id": "Bag042_1",
+   "nome": "Leaf's Backpack",
+   "glb": "Bag042_1",
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55001,
+   "nome": "Mark",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 110,
+   "icone": "ui/itens/ic_55001.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55002,
+   "nome": "Smoke",
+   "qualidade": 2,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 110,
+   "icone": "ui/itens/ic_55002.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55006,
+   "nome": "Rainbow Trail",
+   "qualidade": 2,
+   "origens": [
+    "conquista"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "icone": "ui/itens/ic_55006.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55007,
+   "nome": "Carrot Trail",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 300,
+   "icone": "ui/itens/ic_55007.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55008,
+   "nome": "Domineering Trail",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 300,
+   "icone": "ui/itens/ic_55008.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55010,
+   "nome": "Lunar trail",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 400,
+   "icone": "ui/itens/ic_55010.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55011,
+   "nome": "Gold ingot",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 600,
+   "icone": "ui/itens/ic_55011.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55012,
+   "nome": "Elven light",
+   "qualidade": 3,
+   "origens": [
+    "pacote-alpha"
+   ],
+   "exclusiva": "pacote-alpha",
+   "aparece": "sim",
+   "ponto": "pés",
+   "icone": "ui/itens/ic_55012.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55013,
+   "nome": "Ghost Trail",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 600,
+   "icone": "ui/itens/ic_55013.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55014,
+   "nome": "Whipped Cream",
+   "qualidade": 2,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 400,
+   "icone": "ui/itens/ic_55014.png"
+  },
+  {
+   "tipo": "rastro",
+   "id": 55015,
+   "nome": "Flying Cloud",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "pés",
+   "preco": 600,
+   "icone": "ui/itens/ic_55015.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56001,
+   "nome": "Stars",
+   "qualidade": 2,
+   "origens": [
+    "pacote-alpha"
+   ],
+   "exclusiva": "pacote-alpha",
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56001.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56003,
+   "nome": "Petal",
+   "qualidade": 2,
+   "origens": [
+    "conquista"
+   ],
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56003.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56004,
+   "nome": "Bubble",
+   "qualidade": 3,
+   "origens": [
+    "conquista"
+   ],
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56004.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56005,
+   "nome": "Snow Aura",
+   "qualidade": 3,
+   "origens": [
+    "conquista"
+   ],
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56005.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56012,
+   "nome": "Moonlight",
+   "qualidade": 3,
+   "origens": [
+    "conquista"
+   ],
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56012.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56013,
+   "nome": "Fortune",
+   "qualidade": 3,
+   "origens": [
+    "pacote-fundador"
+   ],
+   "exclusiva": "pacote-fundador",
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56013.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56015,
+   "nome": "Ghost Possession Orange",
+   "qualidade": 3,
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "aparece": "sim",
+   "ponto": "cabeça",
+   "icone": "ui/itens/ic_56015.png"
+  },
+  {
+   "tipo": "peito",
+   "id": 56019,
+   "nome": "Shining Stars",
+   "qualidade": 2,
+   "origens": [
+    "conquista"
+   ],
+   "aparece": "sim",
+   "ponto": "peito",
+   "icone": "ui/itens/ic_56017.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_012",
+   "nome": "Pikachu Jacket",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_012",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_012@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_018",
+   "nome": "Winter Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_018",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_018@2x.png",
+   "estacao": "winter"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_010",
+   "nome": "Elegant Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_010",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_010@2x.png",
+   "liberada": false
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_012",
+   "nome": "Pikachu Jacket",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_012",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_012@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_017",
+   "nome": "Summer Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_017",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_017@2x.png",
+   "estacao": "summer"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_018",
+   "nome": "Winter Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_018",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_018@2x.png",
+   "estacao": "winter"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_019",
+   "nome": "Spring Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_019",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_019@2x.png",
+   "estacao": "spring"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_019",
+   "nome": "Spring Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_019",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 300,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_019@2x.png",
+   "estacao": "spring"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_024",
+   "nome": "Christmas Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_024",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_024@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_027",
+   "nome": "Gardevoir Outfit",
+   "qualidade": 4,
+   "sexo": "menino",
+   "glb": "Boy_027",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 750,
+   "icone": "ui/amanda/skins/pecas/roupa-boy_027@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_029",
+   "nome": "League Champion Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_029",
+   "origens": [
+    "conquista"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_029@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_035",
+   "nome": "Qixi Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_035",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_035@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_038",
+   "nome": "Moonlight Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_038",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_038@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_042",
+   "nome": "Divine Elf",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_042",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_042@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_047",
+   "nome": "Diana",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_047",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_047@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_051",
+   "nome": "Valentine Outfit",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_051",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_051@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_052",
+   "nome": "A Quiet Spring Stroll",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_052",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_052@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_053",
+   "nome": "Nezha",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_053",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_053@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_054",
+   "nome": "Phoenix Call to the Rising Sun",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_054",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_054@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_057",
+   "nome": "Champion Path — Champion",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_057",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_057@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_056",
+   "nome": "Champion Path — Top 10",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_056",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_056@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_055",
+   "nome": "Champion Path — King",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_055",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_055@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_058",
+   "nome": "Elite Four",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_058",
+   "origens": [
+    "conquista"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_058@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "boy_059",
+   "nome": "Beijing Rhythm Banner",
+   "qualidade": 3,
+   "sexo": "menino",
+   "glb": "Boy_059",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-boy_059@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_024",
+   "nome": "Christmas Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_024",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_024@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_027",
+   "nome": "Gardevoir Outfit",
+   "qualidade": 4,
+   "sexo": "menina",
+   "glb": "Girl_027",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 750,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_027@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_027",
+   "nome": "League Champion Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_027",
+   "origens": [
+    "conquista"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_027@2x.png",
+   "liberada": false
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_028",
+   "nome": "Lopunny Outfit",
+   "qualidade": 4,
+   "sexo": "menina",
+   "glb": "Girl_028",
+   "origens": [
+    "evento",
+    "loja"
+   ],
+   "preco": 750,
+   "icone": "ui/amanda/skins/pecas/roupa-girl_028@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_035",
+   "nome": "Qixi Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_035",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_035@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_032",
+   "nome": "Cooling Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_032",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_032@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_038",
+   "nome": "Moonlight Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_038",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_038@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_040",
+   "nome": "Elegant Embroidery Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_040",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_040@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_042",
+   "nome": "Divine Elf",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_042",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_042@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_047",
+   "nome": "Diana",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_047",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_047@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_051",
+   "nome": "Valentine Outfit",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_051",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_051@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_052",
+   "nome": "A Quiet Spring Stroll",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_052",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_052@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_053",
+   "nome": "Nezha",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_053",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_053@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_054",
+   "nome": "Phoenix Call to the Rising Sun",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_054",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_054@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_057",
+   "nome": "Champion Path — Champion",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_057",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_057@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_056",
+   "nome": "Champion Path — Top 10",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_056",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_056@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_055",
+   "nome": "Champion Path — King",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_055",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_055@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_058",
+   "nome": "Elite Four",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_058",
+   "origens": [
+    "conquista"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_058@2x.png"
+  },
+  {
+   "tipo": "roupa",
+   "id": "girl_059",
+   "nome": "Beijing Rhythm Banner",
+   "qualidade": 3,
+   "sexo": "menina",
+   "glb": "Girl_059",
+   "origens": [
+    "evento"
+   ],
+   "icone": "ui/amanda/skins/pecas/roupa-girl_059@2x.png"
+  }
+ ]
+}
