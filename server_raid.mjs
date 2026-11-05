@@ -28,6 +28,10 @@ import { hp as hpBase, stat as statBase, carregarLearnset, learnsetDe } from './
 import { efetividade } from './rules.mjs';
 import { TODOS } from './moves_all.mjs';
 import * as Stg from './stages.mjs';
+import { createR01 } from './server_raid_r01.mjs';
+
+/** The Articuno raid's arena (upcoming/raid_r01_*): its fight runs in server_raid_r01.mjs, driven by data/raid_r01.json. */
+const ARENA_R01 = '9700001';
 
 /** O que vale sem data/raid.json (o mesmo PADRAO do raid.mjs do cliente, mais o que só o servidor usa). */
 export const PADRAO = { arena: '4120009', vagas: 10, chefeNome: 'Mew', chefeDex: 151, chefeGlb: 'pm0151_00', chefeNivel: 70, chefeHp: 0, chefeDano: 1, taxaShiny: 100, premio: 'mew' };
@@ -97,6 +101,10 @@ export function criarRaid(h) {
   /* A sala: o chefe no meio do bbox da cena (no Quarto da Lorelei, onde ela fica), os participantes em fileiras 6 m ao sul, de frente
      pra ele. Tudo em coordenadas do MUNDO (as do jogador, do posGm e do Mundo). O cliente ainda acerta pro chão livre mais perto. */
   function geometria(arena) {
+    if (String(arena) === ARENA_R01) {   // the Articuno arena: boss at the centre, players on the regra's spawn points (south)
+      const sp = dadosR01()?.spawns || [];
+      return { r01: true, sp, b: { x0: -20, x1: 20, z0: -20, z1: 20 }, cx: 0, cz: 0, chefe: { x: 0, z: 0 } };
+    }
     let b = null; try { b = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, arena + '.json'), 'utf8')).bbox || null; } catch {}
     if (!b || ![b.x0, b.x1, b.z0, b.z1].every(Number.isFinite)) b = { x0: -19.2, x1: 0.3, z0: 0, z1: 30 };   // o do 4120009
     const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
@@ -104,6 +112,7 @@ export function criarRaid(h) {
   }
   const OFS = [0, 1.8, -1.8, 3.6, -3.6, 5.4, -5.4];
   function vaga(g, i) {
+    if (g.r01 && g.sp.length) { const v = g.sp[i % g.sp.length]; return { x: v.x, z: v.z, giro: v.giro ?? 3.14 }; }
     const lado = OFS[i % OFS.length], fileira = Math.floor(i / OFS.length);
     const fx = Math.min(g.b.x1 - 1, Math.max(g.b.x0 + 1, g.cx + lado)), fz = Math.min(g.b.z1 - 1, Math.max(g.b.z0 + 1, g.cz - 6 - fileira * 2));
     const x = +(FLIPX * fx).toFixed(2), z = +fz.toFixed(2);
@@ -122,6 +131,17 @@ export function criarRaid(h) {
   const danoRaid = () => raid.sobre.dano ?? raid.cfg.chefeDano;
   const taxaRaid = () => raid.sobre.shiny ?? raid.cfg.taxaShiny;
   const premioRaid = () => raid.sobre.premio ?? raid.cfg.premio;
+  let r01Dados = null;
+  function dadosR01() {
+    if (!r01Dados) { try { r01Dados = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'raid_r01.json'), 'utf8')); } catch (e) { console.warn('[raid] raid_r01.json:', e.message); } }
+    return r01Dados;
+  }
+  /** The Articuno fight (only when the raid's arena is its arena). */
+  const r01 = createR01({
+    dados: dadosR01, paraArena: (o) => paraArena(o), naArena: () => naArena(), idDe: (w) => w._id,
+    maxHpDe: (w) => { const u = contaDe(w); const mon = w._raidMon || (u && monDaConta(u, { uid: w._info?.uid })); if (!mon) return 0; if (mon.maxHp > 0) return mon.maxHp; const S = especie(mon.dex); return S ? hpBase(S.bs[0], lvDe(mon), ivsDe(mon)[0] || 0) : 100; },
+  });
+  const ehR01 = () => !!raid && String(raid.cfg.arena) === ARENA_R01;
 
   function retrato(u) {
     if (!raid) return { t: 'raid', fase: 'nenhuma' };
@@ -254,11 +274,13 @@ export function criarRaid(h) {
       est: Stg.novo(), sementes: new Map(), proxSemente: Date.now() + SEMENTE_MS };   // estágios do chefe valem pra sala inteira; sementes = conta → { dreno, de }
     raid.fase = 'luta'; raid.lutaAte = Date.now() + LUTA_MS;
     paraArena({ t: 'selvagem', s: registroChefe() });
+    if (ehR01()) r01.iniciar(raid.chefe);
     console.log(`[raid] #${raid.id} fight: ${raid.cfg.chefeNome} with ${maxHp} HP, ${chegaram.length} in the arena`);
     difundir();
   }
   /** KO do chefe: prêmio pra quem bateu (já gravado na conta, online ou não), e a volta em FIM_MS. */
   function vencer() {
+    if (ehR01()) r01.morte();
     raid.fase = 'fim'; raid.venceu = true; raid.fimAte = Date.now() + FIM_MS; raid.chefe.hp = 0;
     paraArena({ t: 'sestado', id: raid.chefe.id, estado: 'desmaiado', ate: raid.fimAte, hp: 0 });
     const resumo = [];
@@ -279,6 +301,7 @@ export function criarRaid(h) {
   }
   /** O chefe escapou (tempo) ou a staff encerrou no meio da luta. */
   function perder(texto) {
+    if (ehR01()) r01.fim();
     raid.fase = 'fim'; raid.fimAte = Date.now() + FIM_MS; raid.fugiu = true;
     for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) enviar(w, { t: 'raid_fim', id: raid.id, venceu: false, premio: null });
     if (raid.chefe) paraArena({ t: 'sumiu', id: raid.chefe.id, motivo: 'fugiu' });
@@ -289,6 +312,7 @@ export function criarRaid(h) {
   /** A volta de cada participante e o fim da raid. Quem está na arena recarrega pra onde estava; offline nasce lá no próximo login. */
   function terminar() {
     const cfg = raid.cfg;
+    if (ehR01()) r01.fim();
     if (raid.venceu && raid.chefe) paraArena({ t: 'sumiu', id: raid.chefe.id, motivo: 'morreu' });
     for (const p of raid.fila.values()) {
       const c = contas[p.u]; if (!c) continue;
@@ -412,6 +436,7 @@ export function criarRaid(h) {
     if (!raid || raid.fase !== 'luta' || !raid.chefe || String(m.id) !== String(raid.chefe.id)) return;
     const u = contaDe(ws), p = u && raid.fila.get(u);
     if (!p || String(ws._mapa) !== raid.cfg.arena) return;
+    if (ehR01() && (!r01.alcance(ws) || r01.congelado(ws))) return;      // Articuno: too far from the boss, or frozen
     const golpe = golpes()[String(m.golpe || '')]; if (!golpe) return;
     const agora = Date.now(), espera = Math.max(500, (+golpe.recarga || 1.5) * 600);   // 60 % da recarga do golpe: folga pro relógio do cliente, sem metralhadora
     if (agora - (p.cd[golpe.id] || 0) < espera || agora - (p.ultimo || 0) < 300) return;
@@ -423,14 +448,16 @@ export function criarRaid(h) {
     if (Math.random() > Stg.chance(1, golpe, est, ch.est)) { paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano: 0, eff: 1, golpe: golpe.id, de: ws._id, errou: true }); return; }
     const { dano, eff } = golpe.cat === 'status' ? { dano: 0, eff: 1 }
       : calcDano(golpe, lv, A, statMon(A, mon, fis ? 1 : 3) * Stg.mulStat(est, fis ? 1 : 3), B, statBase(B.bs[fis ? 2 : 4], lv, 31, 0, null, fis ? 2 : 4) * Stg.mulStat(ch.est, fis ? 2 : 4));
-    ch.hp = Math.max(0, ch.hp - dano); p.dano += dano;
+    const danoF = ehR01() ? Math.round(dano * r01.multiplicador()) : dano;   // Articuno stunned by the steam: vulnerable
+    ch.hp = Math.max(0, ch.hp - danoF); p.dano += danoF;
+    if (ehR01()) r01.aoDano(ch.hp, ch.maxHp);
     const estagios = Stg.doGolpe(golpe, est, ch.hp > 0 && (golpe.cat === 'status' || eff !== 0) ? ch.est : null);
     let semente = null;
     if (golpe.semente && ch.hp > 0) {
       if (!Stg.podeSemear(B.types)) semente = 'imune';
       else if (!ch.sementes.has(u)) { ch.sementes.set(u, { dreno: Stg.drenoSemente(hpBase(A.bs[0], lv, ivsDe(mon)[0] || 0)), de: ws._id }); semente = true; }
     }
-    paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano, eff, golpe: golpe.id, de: ws._id, ...(estagios ? { estagios } : {}), ...(semente ? { semente } : {}) });
+    paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano: danoF, eff, golpe: golpe.id, de: ws._id, ...(estagios ? { estagios } : {}), ...(semente ? { semente } : {}) });
     if (ch.hp <= 0) vencer();
   }
   /** Os estágios do Pokémon do participante: novos quando ele troca de Pokémon (outro uid). */
@@ -479,6 +506,7 @@ export function criarRaid(h) {
     else if (m.t === 'raid_entrar') entrarFila(ws);
     else if (m.t === 'raid_sair') sairFila(ws);
     else if (m.t === 'ataque') ataque(ws, m);
+    else if (m.t === 'r01' && ehR01() && raid.fase === 'luta' && raid.fila.has(contaDe(ws))) r01.receber(ws, m);
   }
 
   // ── Entrada no mundo ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -492,6 +520,7 @@ export function criarRaid(h) {
   function aoEntrar(ws) {
     const u = contaDe(ws), c = contas[u], p = u && raid?.fila.get(u);
     enviar(ws, retrato(u));
+    if (ehR01() && r01.ativo() && p && String(ws._mapa) === raid.cfg.arena) enviar(ws, { t: 'r01', ev: 'retrato', agora: Date.now(), retrato: r01.retrato() });
     if (!c) return;
     const naSala = !!raid && String(ws._mapa) === raid.cfg.arena;
     if (p && FASES_DENTRO.has(raid.fase)) {
@@ -525,7 +554,7 @@ export function criarRaid(h) {
       }
       else if (raid.fase === 'luta') {
         if (agora >= raid.lutaAte) perder('O ' + raid.cfg.chefeNome + ' escapou: o tempo acabou.');
-        else if (agora >= raid.chefe.proxGolpe) golpeDoChefe();
+        else if (!ehR01() && agora >= raid.chefe.proxGolpe) golpeDoChefe();   // Articuno attacks on its own clock (server_raid_r01.mjs)
         else if (raid.chefe.sementes.size && agora >= raid.chefe.proxSemente) drenarSementes();
       }
       else if (raid.fase === 'fim' && agora >= raid.fimAte) terminar();
