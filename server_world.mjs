@@ -27,6 +27,8 @@ import { hp as hpBase, stat as statBase } from './individual.mjs';
 import { efetividade } from './rules.mjs';
 import { TODOS } from './moves_all.mjs';
 import * as Stg from './stages.mjs';
+import * as Weather from './weather.mjs';
+import { createMapWeather } from './server_weather.mjs';
 
 const AREA_CAP = 16;              // most wilds one area holds at once (the client's own ceiling is 16 × density)
 const ROOM_CAP = 160;             // most wilds one map holds at once
@@ -47,6 +49,10 @@ const DEFAULT_BALLS = { 1001: 1, 1002: 1.5, 1003: 2, 1004: 255, 1005: 1.5, 1006:
 
 export function createWorld(h) {
   const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, onKO, log = () => {} } = h;
+
+  /* The overworld weather (server_weather.mjs): the same rules as turn battles for power, type, defense and accuracy. */
+  const tempo = h.mapWeather || createMapWeather({ dataDir });
+  const weatherAt = (map) => tempo.weatherOf(map);
 
   // ── Game data (the same files the client reads) ───────────────────────────────────────────────────────────────────
   let dex = null;
@@ -255,12 +261,16 @@ export function createWorld(h) {
   /** A transformed Ditto fights with the copied types and stats (transform.mjs). */
   const effective = p => (Transf.dados() ? Transf.especieEfetiva(species(p.dex), p) || species(p.dex) : species(p.dex));
   const statOf = (S, p, i) => statBase(S.bs[i], levelOf(p), ivsOf(p)[i] || 0, 0, p?.natureza, i);
-  /** The raid formula, which is the client's `golpear`: STAB 1.5, type chart, 85–100 %. */
-  function damage(move, lv, A, atk, D, def) {
-    const eff = efetividade(dex?.chart || {}, move.tipo, D.types);
-    const stab = A.types.includes(move.tipo) ? 1.5 : 1;
-    const base = Math.floor(((2 * lv / 5 + 2) * (+move.poder || 0) * atk / Math.max(1, def)) / 50 + 2);
-    return { eff, dano: eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * (0.85 + Math.random() * 0.15))) };
+  /** The raid formula, which is the client's `golpear`: STAB 1.5, type chart, 85–100 %, plus the map's weather
+      (weather.mjs: Water/Fire ×1.5/×0.5 in rain and sun, Weather Ball, Solar Beam, Rock Sp. Def in sand, Ice Defense in snow). */
+  function damage(move, lv, A, atk, D, def, clima = null, defI = 2) {
+    const tipo = Weather.tipoGolpe(clima, move);
+    const poder = Weather.poderGolpe(clima, move, +move.poder || 0);
+    const eff = efetividade(dex?.chart || {}, tipo, D.types);
+    const stab = A.types.includes(tipo) ? 1.5 : 1;
+    const d = Weather.defesa(clima, D.types, defI, def);
+    const base = Math.floor(((2 * lv / 5 + 2) * poder * atk / Math.max(1, d)) / 50 + 2);
+    return { eff, dano: eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * Weather.poderTipo(clima, tipo) * (0.85 + Math.random() * 0.15))) };
   }
 
   function attack(ws, m) {
@@ -278,13 +288,13 @@ export function createWorld(h) {
     if (!mon) return;
     w.touched = now;
     if (w.owner == null || !onMap(map).some(x => x._id === w.owner)) setOwner(map, w, ws._id);
-    const A = effective(mon), B = species(w.dex), lv = levelOf(mon), physical = move.cat === 'fisico';
-    if (Math.random() > Stg.chance(1, move, null, w.est)) {
+    const A = effective(mon), B = species(w.dex), lv = levelOf(mon), physical = move.cat === 'fisico', clima = weatherAt(map);
+    if (Math.random() > Stg.chance(Weather.precisao(clima, move) ?? 1, move, null, w.est)) {
       toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: 0, eff: 1, golpe: move.id, de: ws._id, errou: true });
       return;
     }
     const { dano, eff } = move.cat === 'status' ? { dano: 0, eff: 1 }
-      : damage(move, lv, A, statOf(A, mon, physical ? 1 : 3), B, statBase(B.bs[physical ? 2 : 4], w.lv, ivsOf(w.ind)[physical ? 2 : 4] || 0, 0, w.ind.natureza, physical ? 2 : 4));
+      : damage(move, lv, A, statOf(A, mon, physical ? 1 : 3), B, statBase(B.bs[physical ? 2 : 4], w.lv, ivsOf(w.ind)[physical ? 2 : 4] || 0, 0, w.ind.natureza, physical ? 2 : 4), clima, physical ? 2 : 4);
     w.hp = Math.max(0, w.hp - dano);
     const d = w.damage.get(u) || { dealt: 0, at: 0, ws: null };
     d.dealt += dano; d.at = now; d.ws = ws;
@@ -308,10 +318,10 @@ export function createWorld(h) {
     let move = moveById(m.golpe);
     if (!move || move.cat === 'status') move = learned.tackle || STRUGGLE;
     w.lastHit = now; w.touched = now;
-    const B = species(w.dex), D = effective(mon), physical = move.cat === 'fisico';
-    const missed = Math.random() > Stg.chance(1, move, w.est, null);
+    const B = species(w.dex), D = effective(mon), physical = move.cat === 'fisico', clima = weatherAt(map);
+    const missed = Math.random() > Stg.chance(Weather.precisao(clima, move) ?? 1, move, w.est, null);
     const { dano, eff } = missed ? { dano: 0, eff: 1 }
-      : damage(move, w.lv, B, statBase(B.bs[physical ? 1 : 3], w.lv, ivsOf(w.ind)[physical ? 1 : 3] || 0, 0, w.ind.natureza, physical ? 1 : 3), D, statOf(D, mon, physical ? 2 : 4));
+      : damage(move, w.lv, B, statBase(B.bs[physical ? 1 : 3], w.lv, ivsOf(w.ind)[physical ? 1 : 3] || 0, 0, w.ind.natureza, physical ? 1 : 3), D, statOf(D, mon, physical ? 2 : 4), clima, physical ? 2 : 4);
     // no uid/hp: the Pokémon in the field takes it, and party HP is the client's (as in raids)
     toMap(map, { t: 'pdano', id: w.id, alvo: target._id, golpe: move.id, dano, eff, ...(missed ? { errou: true } : {}) });
   }

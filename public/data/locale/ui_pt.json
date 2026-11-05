@@ -7522,5 +7522,14 @@
   "Needs 3 badges (you have 2)": "Pede 3 insígnias (você tem 2)",
   "Pikachu already knows 4 moves": "Pikachu já sabe 4 golpes",
   "needs 3 badges": "precisa de 3 insígnias",
-  "Teach Thunderbolt": "Ensinar Thunderbolt"
+  "Teach Thunderbolt": "Ensinar Thunderbolt",
+  "{n} turn": "{n} turno",
+  "{n} turns": "{n} turnos",
+  "Rain": "Chuva",
+  "Heavy rain": "Chuva forte",
+  "Harsh sunlight": "Sol forte",
+  "Sandstorm": "Tempestade de areia",
+  "Hail": "Granizo",
+  "Snow": "Neve",
+  "Fog": "Neblina"
 }

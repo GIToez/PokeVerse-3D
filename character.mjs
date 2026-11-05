@@ -147,7 +147,9 @@ export const gravarSkin = a => gravarLS('skin', a || null);
 /** Owned outfits. GM / admin accounts own every catalog outfit (window.__pvTudo, set by index.html from the account). */
 export const skinsDaConta = () => {
   const l = lerLS('skins', []), meus = Array.isArray(l) ? l.filter(x => typeof x === 'string') : [];
-  return globalThis.__pvTudo ? [...new Set([...meus, ...SKINS_EXTRA.filter(s => s.catalogo).map(s => s.id)])] : meus;
+  let doServidor = [];   // the server catalog's `tem` marks (index.html: GM / staff own all; others what they bought or won)
+  try { const t = typeof globalThis.__pvTemRoupas === 'function' ? globalThis.__pvTemRoupas() : []; doServidor = Array.isArray(t) ? t.filter(x => typeof x === 'string') : []; } catch {}
+  return [...new Set([...meus, ...doServidor, ...(globalThis.__pvTudo ? SKINS_EXTRA.filter(s => s.catalogo).map(s => s.id) : [])])];
 };
 export function visual(a = ler()){
   const b = lerSkin(), fx = efeitosVestidos();

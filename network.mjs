@@ -1406,7 +1406,8 @@ export function pedirBatalha(a, b = {}) {
       c({ erro: 'the server did not respond' });
     }, 12000);
     batEsperando = { resolve: c, timer: d };
-    enviar({ t: 'bat_' + a, ...b });
+    const cl = a === 'desafiar' || a === 'acao' ? ctx?.climaTeste?.() : undefined;   // staff weather test (the server ignores it for others)
+    enviar({ t: 'bat_' + a, ...b, ...(cl !== undefined ? { clima: cl } : {}) });
   });
 }
 let portaEsperando = null;

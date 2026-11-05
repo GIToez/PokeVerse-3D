@@ -110,6 +110,7 @@ window.__telaCheia = (() => {
 html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--text);font:12px/1.4 "Segoe UI",Arial,sans-serif}
 #tela{position:fixed;inset:0;width:100%;height:100%;display:block}
 #sobre{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+#turno .tclima{display:inline-flex;align-items:center;gap:3px;color:#35C6E8;font-weight:800}#turno .tclima img{width:18px;height:18px;object-fit:contain}
 #clima-tela{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
 .rotulo{position:absolute;transform:translate(-50%,-100%);padding:2px 7px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--gold);font-weight:700;white-space:nowrap;letter-spacing:.3px}
 .rotulo.mon{padding:1px 5px;font-size:10px;font-weight:600;color:#d6e2ff;background:#101624cc;min-width:70px;text-align:center}
@@ -9298,7 +9299,18 @@ if (jogo.ash){
   jogo.vestirFxProprio = vestirFxProprio;
   CatalogoCosm.instalar({ chamar: (m, p) => Conta.chamar(m, p), comConta: () => comConta(), idioma: () => I18n.language() });
   /* GM / admin accounts own every outfit, bag and effect (the server agrees: server_wardrobe.mjs isGm). */
-  setInterval(() => { globalThis.__pvTudo = !!Conta.ehGm?.(); }, 2000); globalThis.__pvTudo = !!Conta.ehGm?.();
+  /* The server's catalog marks each piece this account owns (`tem`; GM and staff accounts own all of it: server_wardrobe.mjs
+     isGm), so the wardrobe takes those marks too — a GM flag alone missed staff-role accounts and anything owned elsewhere. */
+  const temDoCatalogo = () => {
+    const out = { roupa: [], mochila: [], peito: [], rastro: [] };
+    for (const p of CatalogoCosm.atual?.()?.pecas || []) if (p?.tem && out[p.tipo]) out[p.tipo].push(p.id);
+    return out;
+  };
+  const marcarTudo = () => {
+    globalThis.__pvTudo = !!Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff';
+    globalThis.__pvTemRoupas = () => temDoCatalogo().roupa;   // read live: the wardrobe may repaint before this timer
+  };
+  setInterval(marcarTudo, 2000); marcarTudo(); CatalogoCosm.aoMudar?.(marcarTudo);
   const GUARDA = {
     /** Wear an owned outfit, or null to go back to the base character. */
     async equipar(id){
@@ -9324,9 +9336,8 @@ if (jogo.ash){
     },
     pecasDaConta: () => {
       const meus = lerLS('pecas', null) || {};
-      if (!globalThis.__pvTudo) return meus;
-      const C = CatalogoCosm.atual?.(), todos = { mochila: [], peito: [], rastro: [] };   // GM / admin: every bag and effect
-      for (const p of C?.pecas || []) if (todos[p.tipo]) todos[p.tipo].push(p.id);
+      const C = CatalogoCosm.atual?.(), todos = { mochila: [], peito: [], rastro: [] };   // GM / admin: every bag and effect; others: what the server says they own
+      for (const p of C?.pecas || []) if (todos[p.tipo] && (globalThis.__pvTudo || p.tem)) todos[p.tipo].push(p.id);
       for (const k of Object.keys(todos)) todos[k] = [...new Set([...(meus[k] || []), ...todos[k]])];
       return todos;
     },
@@ -9504,7 +9515,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, climaTeste: () => (Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff') && (clima.forcado || Relogio.forcada?.() != null) ? (clima.nome || 'clear') : undefined,   /* staff testing /weather or /time: battles use that weather (server_weather.mjs) */ efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
@@ -11019,6 +11030,14 @@ function fimTurno(vitoria, op = {}){
     mostrarFala(t.nome, t.derrota, n);
   }
 }
+/* The turn battle's weather (server: the map's, or a weather move's for 5 turns), with the v2 weather icons. */
+const ICONE_CLIMA_TURNO = { chuva: 'icone-clima', sol: 'icone-clima-2', neve: 'icone-clima-3', granizo: 'icone-clima-3', areia: 'icone-clima-4' };
+function climaDoTurno(T){
+  const c = T?.serv?.clima; if (!c?.id) return '';
+  const ic = ICONE_CLIMA_TURNO[c.id], nome = I18n.t(Weather.rotulo(c.id) || c.id);
+  return ' · <span class="tclima">' + (ic ? '<img alt="" src="./ui/figma_webp/ui2-v2/celular-atalhos-refs/clima/clima/' + ic + '.webp">' : '') + escHtml(nome)
+    + (c.turnos ? ' · ' + escHtml(I18n.t(c.turnos === 1 ? '{n} turn' : '{n} turns', { n: c.turnos })) : '') + '</span>';
+}
 function pintarTurno(){
   const T = jogo.turno, el = $('turno');
   if (!T){ el.hidden = true; return; }
@@ -11026,7 +11045,7 @@ function pintarTurno(){
   const agora = Date.now(), ativo = membroAtivo();
   const iTroca = jogo.time.findIndex((c, j) => j !== ativo && !(c.hp === 0 && (c.koAte || 0) > agora) && !(c.hp === 0));
   const golpes = (p?.movs || []).map((m, i) => ({ g: GOLPES[m.id], m, i })).filter(x => x.g);
-  el.innerHTML = `<div class="tcab">⚔ <b>${escHtml(T.info.nome)}</b> · Pokémon ${Math.min(T.idx + 1, T.info.time.length)}/${T.info.time.length} · ${I18n.t('round')} ${T.rodada}${livreE ? '' : ' <span class="tmini">' + I18n.t('…resolving') + '</span>'}</div>
+  el.innerHTML = `<div class="tcab">⚔ <b>${escHtml(T.info.nome)}</b> · Pokémon ${Math.min(T.idx + 1, T.info.time.length)}/${T.info.time.length} · ${I18n.t('round')} ${T.rodada}${climaDoTurno(T)}${livreE ? '' : ' <span class="tmini">' + I18n.t('…resolving') + '</span>'}</div>
     <div class="tlinha">${golpes.map(({ g, m, i }) => `<button type="button" class="tbt golpe" data-tg="${i}" ${livreE && m.pp > 0 ? '' : 'disabled'}><b>${i + 1}</b>${g.nome || g.id}<small>${g.tipo || ''} · ${g.poder || '—'} · PP ${m.pp}/${m.ppMax}</small></button>`).join('')}${p && Ind.semPP(p) ? `<button type="button" class="tbt golpe" data-tg="s" ${livreE ? '' : 'disabled'}><b>!</b>Struggle<small>Normal · 50 · ${I18n.t('no PP')}</small></button>` : ''}</div>
     <div class="tlinha"><button type="button" class="tbt" id="t-mochila" ${livreE ? '' : 'disabled'}>🎒 ${I18n.t('Bag')}</button>
       <button type="button" class="tbt" id="t-troca" ${livreE && iTroca >= 0 ? '' : 'disabled'}>🔄 ${I18n.t('Switch')}</button>

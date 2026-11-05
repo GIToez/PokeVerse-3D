@@ -90,8 +90,23 @@ export function createTurnEngine({ status, engineMoves, moves, species, statOf, 
    * One turn. A and B: { p: party record, move: our move object or null (switched / used an item), side: 'eu' | 'ele' }.
    * Returns { events, lances (from A's side), log }.
    */
-  function turn(A, B, cache, rng = Math.random) {
+  /** The field's weather for this turn: the map's (under), a weather move's (over, on both sides — a Pokémon that just came
+      in takes the one already on the field). */
+  function setWeather(cA, cB, mapWeather) {
+    for (const c of [cA, cB]) c.est.climaMapa = mapWeather || null;
+    const vA = cA.est.vol.clima, vB = cB.est.vol.clima;
+    if (vA && !vB) cB.est.vol.clima = { ...vA };
+    else if (vB && !vA) cA.est.vol.clima = { ...vB };
+  }
+  /** The weather on the field right now (engine id), for the snapshot. */
+  const fieldWeather = (p, cache) => {
+    const c = cache.get(p), id = BE.climaAtivo(c);
+    return id ? { id, turnos: c.est.vol.clima?.tipo === id ? c.est.vol.clima.turnos ?? null : null } : null;
+  };
+
+  function turn(A, B, cache, rng = Math.random, mapWeather = null) {
     const cA = combatant(A.p, 'a', cache), cB = combatant(B.p, 'b', cache);
+    setWeather(cA, cB, mapWeather);
     const gA = A.move ? engineMove(A.move) : null, gB = B.move ? engineMove(B.move) : null;
     const events = BE.turno(cA, gA, cB, gB, { rng });
     writeBack(cA, A.p); writeBack(cB, B.p);
@@ -166,5 +181,5 @@ export function createTurnEngine({ status, engineMoves, moves, species, statOf, 
     return { lances, log };
   }
 
-  return { turn, combatant, writeBack, stagesOf, seededOf, volatilesOf, leftField, engineMove };
+  return { turn, combatant, writeBack, stagesOf, seededOf, volatilesOf, leftField, engineMove, fieldWeather };
 }

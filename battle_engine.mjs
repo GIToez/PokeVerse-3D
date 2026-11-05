@@ -289,6 +289,7 @@ export function aplicarStatus(c, a, b = {}) {
   if (f && f !== c && ativo(c, 'safeguard') && (PRINCIPAIS.has(a) || a === 'confusion'))
     return falha(c, 'safeguard', { status: a });
   if (!h && (j.imunes || []).some((t) => (c.tipos || []).includes(t))) return falha(c, 'imune', { status: a });
+  if (a === 'freeze' && climaAtivo(c) === 'sol') return falha(c, 'clima', { status: a });   // nothing freezes in harsh sun
   if (PRINCIPAIS.has(a)) {
     if (e.principal)
       return falha(
@@ -450,19 +451,41 @@ function nocaute(a, d, g, b) {
   tirar(d, d.hp, c, 'dano', { golpe: g.ident });
   return 'ok';
 }
-const TIPO_DO_CLIMA = { chuva: 'water', sol: 'fire', areia: 'rock', granizo: 'ice' };
+const TIPO_DO_CLIMA = { chuva: 'water', sol: 'fire', areia: 'rock', granizo: 'ice', neve: 'ice' };
+/* PokeVerse: the weather on the field. A weather move (Rain Dance, Sunny Day…) sets `vol.clima` on BOTH sides for 5 turns
+   and wins; under it lies the map's own weather (`est.climaMapa`, set before every turn by the server from the overworld:
+   chuva, sol, areia, granizo, neve, nevoeiro). */
+export const climaAtivo = (a) => a?.est?.vol?.clima?.tipo || a?.est?.climaMapa || null;
+const CLIMA_REAL = (c) => !!c && c !== 'nevoeiro';   // fog only blurs accuracy: no Weather Ball type, no Solar Beam cut
+const CURA_CLIMA = new Set(['moonlight', 'synthesis', 'morning-sun']);
+const SOLAR = new Set(['solar-beam', 'solar-blade']);
 function multClima(a, g) {
-  const c = a.est.vol.clima?.tipo;
+  const c = climaAtivo(a);
   if (!c) return 1;
   if (c === 'chuva') return g.tipo === 'water' ? 1.5 : g.tipo === 'fire' ? 0.5 : 1;
   if (c === 'sol') return g.tipo === 'fire' ? 1.5 : g.tipo === 'water' ? 0.5 : 1;
   return 1;
 }
 const acertaNoClima = (a, g) => {
-  const c = a.est.vol?.clima?.tipo;
+  const c = climaAtivo(a);
   return (
-    (c === 'chuva' && (g.ident === 'thunder' || g.ident === 'hurricane')) || (c === 'granizo' && g.ident === 'blizzard')
+    (c === 'chuva' && (g.ident === 'thunder' || g.ident === 'hurricane')) ||
+    ((c === 'granizo' || c === 'neve') && g.ident === 'blizzard')
   );
+};
+/** Accuracy multiplier from the weather: Thunder / Hurricane 50 % in harsh sun, everything ×0.6 in fog. */
+const precisaoClima = (a, g) => {
+  const c = climaAtivo(a);
+  if (c === 'sol' && (g.ident === 'thunder' || g.ident === 'hurricane')) return 0.5 / Math.max(0.01, (g.precisao || 100) / 100);
+  if (c === 'nevoeiro') return 0.6;
+  return 1;
+};
+/** Defense multiplier for the target: Rock-types ×1.5 Sp. Def in sand, Ice-types ×1.5 Defense in snow. */
+const defesaClima = (a, d, fisico) => {
+  const c = climaAtivo(a);
+  if (c === 'areia' && !fisico && (d.tipos || []).includes('rock')) return 1.5;
+  if (c === 'neve' && fisico && (d.tipos || []).includes('ice')) return 1.5;
+  return 1;
 };
 const COM_STATUS = new Set(['burn', 'poison', 'bad-poison', 'paralysis']);
 const PODER = {
@@ -496,7 +519,7 @@ const PODER = {
     return r < 5 ? 10 : r < 15 ? 30 : r < 35 ? 50 : r < 65 ? 70 : r < 85 ? 90 : r < 95 ? 110 : 150;
   },
   'wring-out': (a, d) => Math.max(1, Math.floor((120 * d.hp) / d.maxHp)),
-  'weather-ball': (a, d, g) => (a.est.vol.clima ? 100 : (g.poder ?? 50)),
+  'weather-ball': (a, d, g) => (CLIMA_REAL(climaAtivo(a)) ? 100 : (g.poder ?? 50)),
 };
 PODER.reversal = PODER.flail;
 PODER['grass-knot'] = PODER['low-kick'];
@@ -609,7 +632,7 @@ function acerta(a, d, g, b, c = null) {
   let e = d.est.estagios.evasion || 0;
   if (d.est.vol.identificado && e > 0) e = 0;
   const n = limitar((a.est.estagios.accuracy || 0) - e, -6, 6);
-  return b() < (g.precisao / 100) * multEstagio(n, true) * (c?.held?.precisao?.(a, d, c.alvoAgiu) ?? 1);
+  return b() < (g.precisao / 100) * multEstagio(n, true) * precisaoClima(a, g) * (c?.held?.precisao?.(a, d, c.alvoAgiu) ?? 1);
 }
 function sortearAcertos([a, b], c) {
   if (a === b) return a;
@@ -648,18 +671,20 @@ function modificadores(a, d, g, b, c) {
   if (e && a.est.principal?.id === 'burn' && g.ident !== 'facade') i *= CAT?.burn?.ataqueFisico ?? 0.5;
   if (!b && ativo(d, e ? 'reflect' : 'light-screen')) i *= 0.5;
   i *= multClima(a, g);
-  const j = PODER[g.ident] ? PODER[g.ident](a, d, g, c) : (g.poder ?? 60);
+  let j = PODER[g.ident] ? PODER[g.ident](a, d, g, c) : (g.poder ?? 60);
+  const cl = climaAtivo(a);
+  if (SOLAR.has(g.ident) && CLIMA_REAL(cl) && cl !== 'sol') j = Math.floor(j / 2);
   return {
     poder: j,
     ataque: multEstagio(f),
-    defesa: multEstagio(h),
+    defesa: multEstagio(h) * defesaClima(a, d, e),
     critico: b,
     final: i,
     ignorarImunidade: ignoraImunidade(d, g) || undefined,
   };
 }
 function golpeDeDano(a, d, g, b) {
-  if (g.ident === 'weather-ball' && a.est.vol.clima) g = { ...g, tipo: TIPO_DO_CLIMA[a.est.vol.clima.tipo] || g.tipo };
+  if (g.ident === 'weather-ball' && TIPO_DO_CLIMA[climaAtivo(a)]) g = { ...g, tipo: TIPO_DO_CLIMA[climaAtivo(a)] };
   const { eventos: c, rng: e } = b,
     f = g.efeito || {};
   if (g.ident === 'present' && e() < 0.2) {
@@ -835,8 +860,9 @@ const curaTime = (a, d, g, b) => {
   return 'ok';
 };
 const climaDe = (b) => (a, d, g, c) => {
-  if (a.est.vol.clima?.tipo === b) return nega(a, c, 'ja-tem');
+  if (climaAtivo(a) === b) return nega(a, c, 'ja-tem');
   a.est.vol.clima = { tipo: b, turnos: 5 };
+  if (d && d !== a) preparar(d).est.vol.clima = { tipo: b, turnos: 5 };   // PokeVerse: weather covers the whole field
   c.eventos.push({ t: 'volatil', alvo: a.id, id: 'clima', tipo: b, turnos: 5 });
   return 'ok';
 };
@@ -961,10 +987,17 @@ function golpeDeStatus(a, d, g, b) {
     }
     case 'net-good-stats':
       return mudarAtributos(e, a, c.atributos, b) ? 'ok' : 'falhou';
-    case 'heal':
+    case 'heal': {
       if (e.hp >= e.maxHp) return nega(e, b, 'hp-cheio');
-      dar(e, Math.max(1, Math.floor((e.maxHp * c.cura) / 100)), b.eventos);
+      let cura = c.cura;
+      if (CURA_CLIMA.has(g.ident)) {   // Moonlight / Synthesis / Morning Sun: ⅔ in harsh sun, ¼ in rain, sand, hail or snow
+        const cl = climaAtivo(a);
+        if (cl === 'sol') cura = 200 / 3;
+        else if (CLIMA_REAL(cl)) cura = 25;
+      }
+      dar(e, Math.max(1, Math.floor((e.maxHp * cura) / 100)), b.eventos);
       return 'ok';
+    }
     case 'swagger':
       mudarAtributos(d, a, c.atributos, b);
       b.eventos.push(aplicarStatus(d, 'confusion', { rng: b.rng, de: a, modo: b.modo }));
@@ -999,6 +1032,11 @@ export function fimDoTurno(c, a = {}) {
   const e = preparar(c).est,
     v = e.vol,
     g = [];
+  if (c.hp <= 0) return g;
+  const cl = climaAtivo(c), tp = c.tipos || [];   // PokeVerse: sandstorm / hail chip 1/16 a turn
+  if (cl === 'areia' && !tp.some((t) => t === 'rock' || t === 'ground' || t === 'steel'))
+    tirar(c, cota(c, 1 / 16), g, 'dano', { motivo: 'areia' });
+  else if (cl === 'granizo' && !tp.includes('ice')) tirar(c, cota(c, 1 / 16), g, 'dano', { motivo: 'granizo' });
   if (c.hp <= 0) return g;
   const p = e.principal;
   if (p?.id === 'burn') tirar(c, cota(c, CAT?.burn?.danoTurno ?? 1 / 16), g, 'dano', { motivo: 'burn' });
@@ -1279,6 +1317,8 @@ const TXT_DANO = {
   curse: '{n} is hurt by the curse.',
   nightmare: '{n} is locked in a nightmare.',
   queda: '{n} fell and hurt itself.',
+  areia: '{n} is buffeted by the sandstorm!',
+  granizo: '{n} is pelted by hail!',
   explosao: '',
   'final-gambit': '',
   'belly-drum': '{n} cut its own HP to power up.',

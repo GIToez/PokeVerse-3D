@@ -14,6 +14,7 @@ import * as Regras from './item_rules.mjs';
 import { efetividade } from './rules.mjs';
 import { expMultOf, expSharers } from './exp_items.mjs';
 import { createTurnEngine } from './server_battle_engine.mjs';
+import { createMapWeather } from './server_weather.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const HP_X = Ind.HP_X;
@@ -78,6 +79,11 @@ export function criarBatalha(ctx) {
   /* The battle engine (battle_engine.mjs via server_battle_engine.mjs) resolves every turn. `fx` holds each fighting
      Pokémon's engine combatant (stages, volatile states) for the fight; it goes with limparVol (switch, faint, start/end). */
   const fx = new WeakMap();
+  /* The map's weather (server_weather.mjs), read every turn: it is the overworld's, and a weather move covers it for 5 turns. */
+  const tempo = ctx.mapWeather || createMapWeather({ dataDir: nodePath.join(__dir, 'public/data') });
+  const climaMapa = (bat) => tempo.forEngine(tempo.weatherOf(bat.mapa, { account: ctx.contas[bat.usuario], forced: bat.climaGm }));
+  /** What the client draws in the turn weather pill: { id, turnos } (turnos only for a weather move's). */
+  const climaDaLuta = (bat) => (bat.eu.field && engine.fieldWeather(bat.eu.field, fx)) || (climaMapa(bat) ? { id: climaMapa(bat), turnos: null } : null);
   const engine = createTurnEngine({
     status: lerJson('public/data/biblioteca/status.json', {}), engineMoves: lerJson('public/data/biblioteca/golpes.json', { golpes: {} }).golpes,
     moves: golpes, species: (dex) => especie(dex), statOf: (S, p, i) => Ind.statDe(S, p, i), struggle: STRUGGLE,
@@ -277,6 +283,7 @@ export function criarBatalha(ctx) {
       dele: bat.dele.map(snapshotMon),
       eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, status: Status.exportar(eu.status), estagios: engine.stagesOf(eu, fx), semente: engine.seededOf(eu, fx), efeitos: engine.volatilesOf(eu, fx) } : null,
       ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, status: Status.exportar(ele.status), estagios: engine.stagesOf(ele, fx), semente: engine.seededOf(ele, fx), efeitos: engine.volatilesOf(ele, fx) } : null,
+      clima: climaDaLuta(bat),
       lances: bat.lances || [],
       log: bat.log || [],
       vidas: bat.eu.time.map((p) => ({
@@ -628,7 +635,7 @@ export function criarBatalha(ctx) {
     const golpeEle = escolherGolpe(ele);
     if (meuGolpe && meuGolpe !== STRUGGLE) gastarPP(eu, meuGolpe.id);
     if (golpeEle !== STRUGGLE) gastarPP(ele, golpeEle.id);
-    const r = engine.turn({ p: bat.eu.field, move: meuGolpe }, { p: ele, move: golpeEle }, fx);
+    const r = engine.turn({ p: bat.eu.field, move: meuGolpe }, { p: ele, move: golpeEle }, fx, Math.random, climaMapa(bat));
     bat.lances.push(...r.lances);
     bat.log.push(...r.log);
     for (const p of [bat.eu.field, ele]) if (p.hp <= 0) { p.status = null; limparVol(p); }
@@ -684,7 +691,7 @@ export function criarBatalha(ctx) {
     }
 
     const gA = preparar(aFirst, aFirst.acao), gB = preparar(bFirst, bFirst.acao);
-    const rT = engine.turn({ p: aFirst.eu.field, move: gA }, { p: bFirst.eu.field, move: gB }, fx);
+    const rT = engine.turn({ p: aFirst.eu.field, move: gA }, { p: bFirst.eu.field, move: gB }, fx, Math.random, climaMapa(aFirst));
     aFirst.lances.push(...rT.lances);
     bFirst.lances.push(...rT.lances.map((l) => (l.de ? { ...l, de: l.de === 'eu' ? 'ele' : 'eu', ...(l.avisos ? { avisos: l.avisos.map((v) => ({ ...v, quem: v.quem === 'eu' ? 'ele' : v.quem === 'ele' ? 'eu' : v.quem })) } : {}) } : l)));
     aFirst.log.push(...rT.log);
@@ -736,6 +743,8 @@ export function criarBatalha(ctx) {
         convites.delete(acc.u + '>' + b.u);
         const r = abrirPvp(ws, acc, b);
         if (r.erro) return { t: 'bat_erro', ...r };
+        for (const u of [acc.u, b.u]) { const l = lutas.get(u); if (l) { l.mapa = ws._mapa; l.climaGm = 'clima' in m ? m.clima : undefined; } }
+        r.a.clima = climaDaLuta(lutas.get(acc.u)); r.b.clima = climaDaLuta(lutas.get(b.u));
         ctx.enviar(b.ws, { ...r.b, abrir: true });
         return r.a;
       }
@@ -745,6 +754,8 @@ export function criarBatalha(ctx) {
     }
     const r = abrirNpc(ws, acc, tipo, m.id);
     if (r.erro) return { t: 'bat_erro', ...r };
+    const l = lutas.get(acc.u);
+    if (l) { l.mapa = ws._mapa; l.climaGm = 'clima' in m ? m.clima : undefined; r.clima = climaDaLuta(l); }
     return r;
   }
 
@@ -753,6 +764,7 @@ export function criarBatalha(ctx) {
     if (!acc) return { t: 'bat_erro', ...fail('log in to battle', 'account') };
     const bat = lutas.get(acc.u);
     if (!bat) return { t: 'bat_erro', ...fail('you are not in a battle', 'dropped') };
+    if ('clima' in m) bat.climaGm = m.clima;   // staff testing /weather mid-battle (only staff accounts are believed)
     const r = bat.pvp ? jogarPvp(bat, acc, m) : jogarNpc(bat, acc, m);
     if (r.erro) return { t: 'bat_erro', ...r };
     const agora = Date.now();
