@@ -15,7 +15,11 @@ export const FUGA_CALMA = 0.12;
  *  Kanto's plaza is the high-z side of the north barrier. Johto's warden stands in area 2124,
  *  so the whole of area 2115 is the paid grass. */
 export const PORTAO = {
-  1192: { x: 228.5, z: 199.5, lado: 'norte', linha: 196.5, cena: 1000001 },
+  /* Kanto (Nov 5, the upcoming/ design, public/data/safari.json `entrada`): the Safari grass is not walkable from Fuchsia on this map,
+     so the warden stands at the Safari door in Fuchsia City; paying takes you inside (`entrada`) and the visit ending brings you back
+     out to the door (`saida`). These three are GAME coordinates (no flip). x/z stay the old gate for anything that still reads them. */
+  1192: { x: 228.5, z: 199.5, lado: 'norte', linha: 196.5, cena: 1000001,
+    atendente: { x: 170, z: 86.7 }, saida: { x: 170, z: 88.9 }, entrada: { x: -230, z: 185 } },   /* 6 m north of the gate house, in the open (190.7 hid you behind the roof) */
   2115: { x: 324.5, z: 100.5, lado: 'sempre', linha: 0, cena: 2000001 },
 };
 
@@ -55,15 +59,24 @@ export function naZonaPaga(area, z) {
 export function pouso(zona, mundoX) {
   const p = PORTAO[+zona];
   if (!p) return null;
+  if (p.saida) return { x: p.saida.x, z: p.saida.z };
   const x = +mundoX;
   const flip = Number.isFinite(x) && Math.abs(x - p.x) < Math.abs(x - (-p.x)) ? 1 : -1;
   return { x: +(flip * p.x).toFixed(2), z: +p.z.toFixed(2) };
 }
 
 /** Within talking range of that zone's warden, in world coordinates. */
+/** Where paying puts you (inside the grass), or null when you just walk in. */
+export function entrada(zona) {
+  const e = PORTAO[+zona]?.entrada;
+  return e ? { x: e.x, z: e.z } : null;
+}
+export const temSaida = zona => !!PORTAO[+zona]?.saida;
+
 export function perto(zona, x, z) {
   const p = PORTAO[+zona];
   if (!p || !Number.isFinite(+x) || !Number.isFinite(+z)) return false;
+  if (p.atendente) return Math.hypot(+x - p.atendente.x, +z - p.atendente.z) <= 8;
   const d = Math.min(Math.hypot(+x - p.x, +z - p.z), Math.hypot(+x + p.x, +z - p.z));
   return d <= 8;
 }

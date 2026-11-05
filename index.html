@@ -6573,7 +6573,7 @@ async function safariTerminar(motivo, pousoServidor){
     Chat.sistema(msg);
     SafariUi.fecharDialogo();
     SafariUi.avisoFim(motivo === 'passos' ? 'tempo' : motivo);
-    if (motivo !== 'saiu') safariIrAoPortao(pouso);
+    if (motivo !== 'saiu' || Safari.temSaida(zona)) safariIrAoPortao(pouso);   // Kanto: always back out to the warden's door in Fuchsia
     try { pintarBarra(); } catch {}
   } finally { jogo.safariEncerrando = false; }
 }
@@ -6594,6 +6594,8 @@ async function safariPagar(zona){
   }
   jogo.bolaSel = String(Safari.BOLA); gravarLS('bolaSel', jogo.bolaSel);
   jogo.safariDentro = false;
+  const dentro = Safari.entrada(z);                                       // Kanto: the warden is in Fuchsia and takes you inside
+  if (dentro){ jogo.safariPe = null; safariIrAoPortao(dentro); }
   Som.tocar('ui/sound_itemget', { volume: .7, prio: true });
   Chat.sistema('Paid ' + Safari.PRECO + ' Coins. You have ' + Safari.BOLAS + ' Safari Balls and 20 minutes. F throws, G is bait, R is a rock.');
   flutuar(jogo.ash, '30 Safari Balls', '#8ef58e');
@@ -8532,7 +8534,7 @@ async function montarNpcs(){
      usam o GLB da casa do jogador (4110008), e os NPCs do JSON da cena são os moradores da casa dona (área 1804). Visitando outra área
      pela mesma cena, só entram NPCs daquela área — a Mãe fica em casa. (Os moradores do Brock não estão nos dados: a casa fica vazia.) */
   const casaVisitada = INTERIOR ? casaCompartilhada() : null;
-  for (const n of [...(dados.npcs || []), ...extras]){
+  for (const n of [...extras, ...(dados.npcs || [])]){                  /* the few hand-placed NPCs (Safari wardens, Gary's house…) first: at the end of Kanto's 1,300 they appeared minutes late */
     if (jogo.raidArena) break;                                           // RAID AO VIVO: a sala virou arena no meio da montagem (snapshot do servidor)
     if (casaVisitada && n.a && n.a !== casaVisitada.area) continue;
     if (NPC_SO_NA_MISSAO[n.cfg] && !NPC_SO_NA_MISSAO[n.cfg].includes(Missoes.ativa?.()?.id)) continue;

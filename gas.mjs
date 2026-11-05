@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 
 const RECEITAS = {
-  pm0092: { puffs: 18, raio: 1.05, tam: 1.6, cor: 0x9a5ae6, cor2: 0x5a2a9e, op: 0.55 },   // Gastly
+  pm0092: { puffs: 30, raio: 1.25, tam: 1.15, cor: 0xa064f0, cor2: 0x4a1d8a, op: 0.5, fios: 10 },   // Gastly
 };
 
 let textura = null;
@@ -47,16 +47,27 @@ export function aplicarGas(corpo, modelo = '') {
   for (let i = 0; i < R.puffs; i++) {
     const mat = new THREE.SpriteMaterial({ map: tex(), color: base.clone().lerp(fundo, Math.random() * 0.6), transparent: true, opacity: R.op, depthWrite: false, blending: THREE.NormalBlending });
     const s = new THREE.Sprite(mat);
-    const fase = Math.random() * Math.PI * 2, vel = 0.25 + Math.random() * 0.35, alt = (Math.random() - 0.5) * 0.8, dist = R.raio * (0.75 + Math.random() * 0.45);
+    const fio = i < (R.fios || 0);                                          /* wisps: rise out of the cloud and fade, then start again (the smoky edge) */
+    const fase = Math.random() * Math.PI * 2, vel = (fio ? 0.12 : 0.25) + Math.random() * 0.35, alt = (Math.random() - 0.5) * 0.9, dist = R.raio * (fio ? 0.6 + Math.random() * 0.6 : 0.7 + Math.random() * 0.55);
+    const ciclo = 1.6 + Math.random() * 1.4, atraso = Math.random() * ciclo;
     const t0 = performance.now() / 1000;
     s.renderOrder = 6;
     s.onBeforeRender = () => {
-      const t = performance.now() / 1000 - t0, a = fase + t * vel;
-      const r = raioCorpo * escLocal * dist;
-      s.position.set(Math.cos(a) * r, (alt + Math.sin(t * 0.9 + fase) * 0.18) * raioCorpo * escLocal, Math.sin(a) * r);
-      const k = raioCorpo * escLocal * R.tam * (0.85 + 0.25 * Math.sin(t * 1.7 + fase * 2));
+      const t = performance.now() / 1000 - t0, a = fase + t * vel, u = raioCorpo * escLocal;
+      if (fio) {
+        const k = ((t + atraso) % ciclo) / ciclo;                         // 0 → 1 over one rise
+        const r = u * dist * (1 + 0.5 * k);
+        s.position.set(Math.cos(a) * r, (alt * 0.5 + k * 1.3) * u, Math.sin(a) * r);
+        const e = u * R.tam * (0.45 + 0.55 * k);
+        s.scale.set(e, e, 1);
+        mat.opacity = R.op * 0.9 * Math.sin(Math.PI * k);
+        return;
+      }
+      const r = u * dist * (0.92 + 0.12 * Math.sin(t * 1.1 + fase * 3));
+      s.position.set(Math.cos(a) * r, (alt + Math.sin(t * 0.9 + fase) * 0.2) * u, Math.sin(a) * r);
+      const k = u * R.tam * (0.8 + 0.3 * Math.sin(t * 1.7 + fase * 2));
       s.scale.set(k, k, 1);
-      mat.opacity = R.op * (0.65 + 0.35 * Math.sin(t * 1.3 + fase));
+      mat.opacity = R.op * (0.6 + 0.4 * Math.sin(t * 1.3 + fase));
     };
     grupo.add(s);
   }

@@ -42,12 +42,12 @@ export function criarWilds(ctx) {
   const root = ctx.dir;
   const habitats = readJson(nodePath.join(root, 'public/data/habitats.json'), { areas: {}, generico: [] });
   /* Kanto's Safari Zone (area 1192) rolls from public/data/safari.json's four sub-areas instead of the habitat table. That file
-     is in data coordinates (x flipped against the game's), so the game x is flipped back before the polygon test. */
+     is in game coordinates, like the player's position. */
   const safariTab = readJson(nodePath.join(root, 'public/data/safari.json'), null);
   const SAFARI_AREA = 1192;
   function safariRow(area, water, x, z) {
     if (+area !== SAFARI_AREA || !safariTab || !Number.isFinite(+x) || !Number.isFinite(+z)) return null;
-    return sortearSafari(safariTab, FLIP_X * +x, +z, !!water);
+    return sortearSafari(safariTab, +x, +z, !!water);   // safari.json is in game coordinates (its polygon is at x −300…−152, where the player stands)
   }
   const expTab = readJson(nodePath.join(root, 'public/data/exp.json'), { curvas: {}, especies: {} });
   const heldTab = readJson(nodePath.join(root, 'public/data/held.json'), { itens: {} });

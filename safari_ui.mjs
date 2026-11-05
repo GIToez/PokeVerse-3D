@@ -12,7 +12,7 @@ export const relogio = (ms) => {
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 };
 const nomeDaZona = () => {
-  const a = document.getElementById('mm-area')?.textContent || '';
+  const a = (document.getElementById('mm-area')?.textContent || '').split(' · ')[0].trim();   // the minimap line also carries the clock and weather
   return /saf[aá]ri/i.test(a) ? a : tr('Safari Zone');
 };
 
