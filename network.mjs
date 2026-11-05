@@ -1571,6 +1571,11 @@ async function montar(o, a) {
     console.warn('network: outfit of ' + o.nome, e);
   }
   o.visual = p;
+  try {
+    ctx.efeitosDaSala?.(f.pivo, p);   // their chest effect / trail (cosmetic_effects.mjs)
+  } catch (e) {
+    console.warn('network: effects of ' + o.nome, e);
+  }
   const y = ctx.chaoEm?.(o.alvo.x, o.alvo.z) ?? o.alvo.y;
   f.x = f.vx = o.alvo.x;
   f.z = f.vz = o.alvo.z;

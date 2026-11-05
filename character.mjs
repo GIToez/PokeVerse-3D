@@ -146,10 +146,16 @@ export const lerSkin = () => { const s = lerLS('skin', null); return typeof s ==
 export const gravarSkin = a => gravarLS('skin', a || null);
 export const skinsDaConta = () => { const l = lerLS('skins', []); return Array.isArray(l) ? l.filter(x => typeof x === 'string') : []; };
 export function visual(a = ler()){
-  const b = lerSkin();
-  if (!b || !skinPorId(b)) return a;
+  const b = lerSkin(), fx = efeitosVestidos();
+  if (!b || !skinPorId(b)) return a ? { ...a, ...fx } : a;
   const { cores, skin, ...e } = a || {};
-  return { ...e, tipo: b };
+  return { ...e, tipo: b, ...fx };
+}
+/** The worn chest effect and trail (save keys `peito` / `rastro`): they ride in the look the room sees. */
+function efeitosVestidos(){
+  const o = {};
+  for (const k of ['peito', 'rastro']){ const v = +lerLS(k, null); if (Number.isSafeInteger(v) && v > 0) o[k] = v; }
+  return o;
 }
 export const nomeDe = p => skinDe(p).nome;
 /** Primeira vez (sem `personagem` salvo) ou ?personagem=1. */

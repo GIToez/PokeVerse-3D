@@ -269,6 +269,7 @@ import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohto
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';
 import { aguaSoPesca } from './water_fishing.mjs';   // PokeFable's fishing-only water areas (town and route ponds)
+import * as Efeitos from './cosmetic_effects.mjs';   // wardrobe chest effects and trails (particles from particles/)
 import * as TransfUi from './transform_ui.mjs';     // Transform: a Ditto partner copies a nearby Pokémon (server_transform.mjs)
 import * as CatalogoCosm from './cosmetics_catalog.mjs';   // wardrobe + shop catalog (GET /loja/catalogo)
 import * as CosFx from './cosmetic_fx.mjs';       // auras/trails from the Wardrobe (drawn, data/cosmeticos.json)      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
@@ -9284,6 +9285,17 @@ if (jogo.ash){
      written by the server only (server_wardrobe.mjs); the server also refuses to store a worn piece the account doesn't own.
      Chest effects and trails are saved and shown to others once their particle files are in (particles/ChestStar.json …). */
   CosFx.instalar({ THREE, cena, toque: MOBILE });   // the old drawn auras: their ids are retired, so nothing is drawn until the new effects land
+  Efeitos.instalar({ THREE, cena, Part, toque: MOBILE, agora: () => performance.now() / 1000 });
+  /** Your own chest effect and trail: put on again when the body changes (outfit swap) or a piece changes. */
+  let fxCorpo = null;
+  const vestirFxProprio = (forcar = false) => {
+    const corpo = jogo.ash?.pivo; if (!corpo) return;
+    if (fxCorpo && fxCorpo !== corpo) Efeitos.descartar(fxCorpo);
+    if (fxCorpo === corpo && !forcar) return;
+    fxCorpo = corpo;
+    Efeitos.vestir(corpo, { peito: lerLS('peito', null), rastro: lerLS('rastro', null) }, { proprio: true }).catch(e => console.warn('effects:', e));
+  };
+  jogo.vestirFxProprio = vestirFxProprio;
   CatalogoCosm.instalar({ chamar: (m, p) => Conta.chamar(m, p), comConta: () => comConta(), idioma: () => I18n.language() });
   const GUARDA = {
     /** Wear an owned outfit, or null to go back to the base character. */
@@ -9305,7 +9317,7 @@ if (jogo.ash){
         if (corpo){ if (valor) await Personagem.vestirMochila(corpo, valor).catch(e => console.warn('backpack:', e)); else Personagem.tirarMochila(corpo); }
         return true;
       }
-      if (encaixe === 'peito' || encaixe === 'rastro'){ gravarLS(encaixe, valor ?? null); return true; }
+      if (encaixe === 'peito' || encaixe === 'rastro'){ gravarLS(encaixe, valor ?? null); vestirFxProprio(true); return true; }
       return false;
     },
     pecasDaConta: () => lerLS('pecas', null) || {},
@@ -9483,7 +9495,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
@@ -11118,6 +11130,7 @@ function quadro(dt){
       if (!m.vivo){ m.descartar(); cena.remove(m.raiz); magias.splice(i, 1); }
     }
     atualizarClima(dt);
+    try { jogo.vestirFxProprio?.(); Efeitos.quadro(dt, cam, jogo.ash ? { x: jogo.ash.x, z: jogo.ash.z } : null); } catch (e){ console.warn('effects:', e); }
     try { CosFx.quadro(dt, cam, ren.domElement.height, k => { const o = Rede.outroPor(k.slice(1))?.ent; return o ? Math.hypot(o.x - alvo.x, o.z - alvo.z) : Infinity; }); } catch (e){ console.warn('cosmetic fx:', e); }
     // anel do alvo
     const a = jogo.alvo;
