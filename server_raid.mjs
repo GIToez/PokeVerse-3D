@@ -38,7 +38,11 @@ export const PADRAO = { arena: '4120009', vagas: 10, chefeNome: 'Mew', chefeDex:
 const CONTAGEM_MS = 15000;                                                   // "Começa em N s": depois do /raid comecar ou da fila cheia
 const INDO_MS = 30000;                                                       // espera máxima pela arena (a cena leva uns segundos pra carregar); quem chegar depois entra na luta
 const LUTA_MS = 5 * 60000;                                                   // sem KO nesse tempo, o chefe foge
-const FIM_MS = 8000;                                                         // do prêmio até a volta ("Em instantes você volta pra onde estava")
+const FIM_MS = 8000;
+/* REWARD TIERS (share = the player's damage ÷ the average damage of everyone who hit): below PARTE_PREMIO nothing (one hit and
+   idle), from it the items, from PARTE_CAPTURA the items + one catch throw with their own ball, once per boss per day (Pacific). */
+const PARTE_PREMIO = 0.05, PARTE_CAPTURA = 0.25;
+const CAPTURA_MS = 30000;                                                    // how long the fainted boss waits for the throws                                                         // do prêmio até a volta ("Em instantes você volta pra onde estava")
 const FATOR_HP = 1.5;                                                        // vida automática: cada participante soma 1,5 chefe do nível dele
 const FORCA_CHEFE = 0.2;                                                     // golpe do chefe = fórmula do jogo no nível do alvo × isto × o `dano` da raid
 const CADA_ALVO_MS = 6000;                                                   // em média o chefe bate em cada participante a cada 6 s (com mais gente, bate mais vezes)
@@ -214,7 +218,7 @@ export function criarRaid(h) {
     for (const [id, n] of Object.entries(PREMIO.bolas)) s.bolas[id] = (s.bolas[id] || 0) + n;
     if (!s.itens || typeof s.itens !== 'object') s.itens = {};
     for (const [id, n] of Object.entries(PREMIO.itens)) s.itens[id] = (s.itens[id] || 0) + n;
-    if (premioRaid() === 'mew') {
+    if (false) {   // the boss itself is no longer handed out: qualifying players get ONE catch throw instead (capturar below)
       const S = especie(raid.cfg.chefeDex);
       const pk = individuoServidor({ dex: raid.cfg.chefeDex, nome: S?.name || raid.cfg.chefeNome, glb: raid.cfg.chefeGlb, lv: raid.cfg.chefeNivel });
       pk.shiny = Math.random() < 1 / Math.max(1, taxaRaid() / (shinyMult() || 1));   // a taxa da raid ÷ o multiplicador do evento ao vivo
@@ -290,10 +294,19 @@ export function criarRaid(h) {
     raid.fase = 'fim'; raid.venceu = true; raid.fimAte = Date.now() + FIM_MS; raid.chefe.hp = 0;
     paraArena({ t: 'sestado', id: raid.chefe.id, estado: 'desmaiado', ate: raid.fimAte, hp: 0 });
     const resumo = [];
+    const bateram = [...raid.fila.values()].filter(p => p.dano > 0);
+    const media = bateram.reduce((t, p) => t + p.dano, 0) / Math.max(1, bateram.length);
+    let algumPode = false;
     for (const p of raid.fila.values()) {
-      const premio = p.dano > 0 ? pagar(p.u) : null, c = contas[p.u];
-      resumo.push(p.u + ' ' + p.dano + (premio?.mew ? (premio.mew.shiny ? ' ✨' : '') + ' +' + premio.mew.nome : ''));
-      const msg = { t: 'raid_fim', id: raid.id, venceu: true, premio,
+      const parte = media > 0 ? p.dano / media : 0, c = contas[p.u];
+      const premio = parte >= PARTE_PREMIO ? pagar(p.u) : null;
+      const jaHoje = c?.raidCapturas?.[raid.cfg.chefeDex] === diaPt();
+      p.parte = parte;
+      p.podeCapturar = premioRaid() === 'mew' && parte >= PARTE_CAPTURA && !jaHoje && !!c;
+      if (p.podeCapturar) algumPode = true;
+      resumo.push(p.u + ' ' + p.dano + ' (' + Math.round(parte * 100) + '%' + (p.podeCapturar ? ', throw' : '') + ')');
+      const captura = { pode: p.podeCapturar, jaHoje: !!jaHoje, parte: +parte.toFixed(3), minPremio: PARTE_PREMIO, minCaptura: PARTE_CAPTURA };
+      const msg = { t: 'raid_fim', id: raid.id, venceu: true, premio, captura, chefeId: raid.chefe.id,
         ...(premio && c?.save ? { bolsa: { dinheiro: c.save.dinheiro, itens: c.save.itens, bolas: c.save.bolas }, save: c.save, rev: c.rev } : {}) };
       for (const w of socketsDe(p.u)) enviar(w, msg);
     }
@@ -301,6 +314,7 @@ export function criarRaid(h) {
       const L = [...raid.fila.values()].filter(p => p.dano > 0), top = Math.max(0, ...L.map(p => p.dano)), soma = L.reduce((t, p) => t + p.dano, 0) || 1;
       for (const p of L) try { h.aoPontuar?.(p.u, p.dano, p.dano === top, p.dano / soma); } catch (e) { console.warn('[raid] points:', e.message); }
     }
+    if (algumPode) { raid.fimAte = Date.now() + CAPTURA_MS; paraArena({ t: 'sestado', id: raid.chefe.id, estado: 'desmaiado', ate: raid.fimAte, hp: 0 }); }   // time to throw
     salvarContas();
     console.log(`[raid] #${raid.id} won (damage: ${resumo.join(', ')})`);
     difundir();
@@ -412,7 +426,7 @@ export function criarRaid(h) {
     }
     if (op === 'premio') {
       if (txt !== 'mew' && txt !== 'sem-mew') { erro('Use: /raid prize mew | sem-mew'); return; }
-      raid.sobre.premio = txt; ok('Prize: ' + (txt === 'mew' ? raid.cfg.chefeNome + ' + items' : 'items only') + '.', { premio: txt }); return;
+      raid.sobre.premio = txt; ok('Prize: ' + (txt === 'mew' ? 'items + a catch throw for the top fighters' : 'items only (no catch throw)') + '.', { premio: txt }); return;
     }
     erro('Use: /raid announce [boss | random] | start | cancel | hp N | damage F | shiny N | prize mew|sem-mew | status');
   }
@@ -518,6 +532,53 @@ export function criarRaid(h) {
     setTimeout(() => { if (deste()) paraArena({ t: 'pdano', id: ch.id, alvo: w._id, golpe: golpe.id, dano, eff, ...(errou ? { errou } : {}), ...(estagios ? { estagios } : {}) }); }, Math.round((+golpe.atraso || 0.3) * 1000) + 250);   // sem uid/hp: vale o parceiro em campo, e o HP é do cliente
     setTimeout(() => { if (deste()) paraArena({ t: 'spos', id: ch.id, x: ch.x, z: ch.z, giro: ch.giro, anim: 'Idle' }); }, 1400);   // Idle de novo: o próximo golpe toca a animação outra vez
   }
+  const diaPt = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  /** One catch throw at the fainted boss (a qualifying player, own ball, once per boss per day). The usual Gen III odds with the
+      species' catch rate (legendary 2, mythical 1) and the ball's bonus; a Master Ball always catches. True when it was the boss. */
+  function capturar(ws, m) {
+    if (!raid?.chefe || String(m.id) !== String(raid.chefe.id)) return false;
+    const reply = o => enviar(ws, { t: 'scapt', id: String(m.id), ...o });
+    const u = contaDe(ws), p = u && raid.fila.get(u), c = u && contas[u];
+    if (!c || !p) { reply({ ok: false, chac: 0, erro: 'raid' }); return true; }
+    if (raid.fase !== 'fim' || !raid.venceu || Date.now() > raid.fimAte) { reply({ ok: false, chac: 0, erro: 'acordado' }); return true; }
+    if (!p.podeCapturar) { reply({ ok: false, chac: 0, erro: 'raid-sem-chance' }); sistema(ws, (p.parte || 0) >= PARTE_CAPTURA ? 'You already had your throw at ' + raid.cfg.chefeNome + ' today.' : 'Only players with at least ' + Math.round(PARTE_CAPTURA * 100) + '% of the average damage get a throw.'); return true; }
+    const ball = String(m.bola || 1001), save = c.save || (c.save = {});
+    if (!save.bolas || typeof save.bolas !== 'object') save.bolas = {};
+    if (!((save.bolas[ball] | 0) > 0)) { reply({ ok: false, chac: 0, erro: 'sem-bola' }); return true; }
+    save.bolas[ball] = (save.bolas[ball] | 0) - 1;
+    p.podeCapturar = false;
+    if (!c.raidCapturas || typeof c.raidCapturas !== 'object') c.raidCapturas = {};
+    c.raidCapturas[raid.cfg.chefeDex] = diaPt();
+    const S = especie(raid.cfg.chefeDex), rate = Math.max(1, +S?.rate || 3);
+    const corpo = { dex: raid.cfg.chefeDex, lv: raid.cfg.chefeNivel, hp: 0, maxHp: 1 };
+    const bonus = +ball === 1004 ? 255 : Math.max(1, +(h.bolaBonus?.(ball, corpo, u)) || 1);
+    const a = rate * bonus;                                                  // fainted (HP 0): ((3·max − 2·0)·rate·bonus) / (3·max)
+    let n = 0;
+    if (a >= 255) n = 4;
+    else { const b = 1048560 / Math.sqrt(Math.sqrt(16711680 / a)); while (n < 4 && Math.random() * 65536 < b) n++; }
+    raid.fimAte = Math.max(raid.fimAte, Date.now() + 3500 + Math.max(1, n) * 700 + 2500);   // nobody is sent home mid-throw
+    const bag = { dinheiro: save.dinheiro ?? 0, itens: save.itens || {}, bolas: save.bolas };
+    if (n >= 4) {
+      const pk = individuoServidor({ dex: raid.cfg.chefeDex, nome: S?.name || raid.cfg.chefeNome, glb: raid.cfg.chefeGlb, lv: raid.cfg.chefeNivel });
+      pk.shiny = Math.random() < 1 / Math.max(1, taxaRaid() / (shinyMult() || 1));
+      pk.origem = 'raid';
+      if (!Array.isArray(save.time)) save.time = [];
+      if (!Array.isArray(save.caixa)) save.caixa = [];
+      if (save.time.length < 6) save.time.push(pk); else save.caixa.push(pk);
+      marcarPego(c, pk.dex);
+      c.rev = (c.rev || 0) + 1;
+      salvarContasJa();
+      reply({ ok: true, chac: n, mon: pk, vidas: save.time, bolsa: bag });
+      todos('🎉 ' + (c.save?.nome || u) + ' caught ' + (pk.shiny ? 'a ✨ SHINY ' : '') + pk.nome + ' in the raid!');
+      console.log(`[raid] #${raid.id} ${u} caught ${pk.nome}${pk.shiny ? ' (shiny)' : ''} with ball ${ball}`);
+    } else {
+      c.rev = (c.rev || 0) + 1;
+      salvarContasJa();
+      reply({ ok: false, chac: n, bolsa: bag });
+      console.log(`[raid] #${raid.id} ${u} missed ${raid.cfg.chefeNome} (${n} shakes, ball ${ball})`);
+    }
+    return true;
+  }
   function receber(ws, m) {
     if (m.t === 'raid_staff') comando(ws, m);
     else if (m.t === 'raid_entrar') entrarFila(ws);
@@ -591,5 +652,5 @@ export function criarRaid(h) {
     contar(); difundir();
   }
   const resumo = (preset = null) => { const c = lerCfg(preset); return { chefe: c.chefeNome, dex: c.chefeDex, nivel: c.chefeNivel, vagas: c.vagas }; };
-  return { receber, bemvindo, aoEntrar, anunciarAgendada, comecarAgendada, resumo, estado: () => raid && { ...retrato(null), sobre: raid.sobre, chefe: raid.chefe } };
+  return { capturar, receber, bemvindo, aoEntrar, anunciarAgendada, comecarAgendada, resumo, estado: () => raid && { ...retrato(null), sobre: raid.sobre, chefe: raid.chefe } };
 }

@@ -1393,6 +1393,7 @@ const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, de
 const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n) });
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
+  bolaBonus: (id, w, u) => world.ballBonus(id, w, u),   // the ball's catch bonus, same as in the wild (Level / Net / Nest / Repeat Ball…)
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
   aoPontuar: (u, n, mvp, parte) => { temporada.contar(u, { conta: 'raidPontos', n, parte }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
@@ -1891,6 +1892,7 @@ wss.on('connection', ws => {
         else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
         else if (m.t === 'progressao_vista' || m.t === 'progressao_resgatar' || m.t === 'progressao_titulo') progressao.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
+        else if (m.t === 'capturar' && raid.capturar(ws, m)) {}   // the raid boss's catch throw (server_raid.mjs); any other id is a shared-world wild
         else if (m.t === 'nascer' || m.t === 'spos' || m.t === 'sataque' || m.t === 'shp' || m.t === 'capturar' || m.t === 'pesca_lancar' || m.t === 'pesca_puxar' || m.t === 'pesca_largar') world.receive(ws, m);   // raid ao vivo (o `ataque` só existe com o Mundo ligado: o chefe)
         break;
       }

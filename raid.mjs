@@ -185,8 +185,15 @@ function aoVoltar(m){
 }
 
 /* Resultado: a bolsa, as vidas e o save já foram aplicados pelo network.mjs (como em toda mensagem do servidor); aqui é o aviso. */
+let capt = null;                                                          // the last win's catch throw: { pode, jaHoje, parte, minPremio, minCaptura, ate, usou }
+/** Can I throw a ball at the fainted raid boss right now? (one throw, after the win, 25%+ of the average damage) */
+export const podeCapturar = () => !!(capt?.pode && !capt.usou && Date.now() < capt.ate);
+export const captura = () => capt;
+/** The throw was sent (the server answers with the shakes): no second one. */
+export const usouCaptura = () => { if (capt) capt.usou = true; };
 function aoFim(m){
   const p = m.premio || null;
+  capt = m.venceu && m.captura ? { ...m.captura, ate: Date.now() + 28000, usou: false } : null;
   let texto;
   if (m.venceu && p && (p.mew || p.dinheiro || Object.keys(p.itens || {}).length)){
     const partes = [];
@@ -196,12 +203,15 @@ function aoFim(m){
     texto = nomeChefe() + ' defeated! Prize: ' + partes.join(', ') + '.';
     try { ctx.Som?.tocar?.('ui/sound_pkmnget', { volume: 0.8, prio: true }); } catch {}
   } else if (m.venceu){
-    texto = nomeChefe() + ' defeated! You dealt no damage: no prize this time.';
+    texto = nomeChefe() + ' defeated! You dealt too little damage for a prize this time.';
   } else {
     texto = 'The raid is over: ' + nomeChefe() + ' got away.';
   }
   avisar(texto);
   if (m.venceu && p?.mew?.shiny) ctx.Chat?.sistema?.('✨ Your ' + (p.mew.nome || nomeChefe()) + ' is SHINY!');
   if (p?.mew) ctx.Chat?.sistema?.((p.mew.nome || nomeChefe()) + ' joined your party (or your PC box, if the party is full).');
+  if (capt?.pode) { ctx.Chat?.sistema?.('🎯 You earned a catch throw! Pick a ball and press F (or tap the ball) at the fainted ' + nomeChefe() + ' — one throw only.'); avisar('One throw: catch ' + nomeChefe() + '!', { chat: false }); }
+  else if (m.venceu && capt?.jaHoje && capt.parte >= capt.minCaptura) ctx.Chat?.sistema?.('You already had your throw at ' + nomeChefe() + ' today: the items are yours.');
+  else if (m.venceu && capt && capt.parte >= capt.minPremio) ctx.Chat?.sistema?.('Deal at least ' + Math.round(capt.minCaptura * 100) + '% of the average damage to earn a catch throw.');
   if (ctx.emArena()) ctx.Chat?.sistema?.('You will be back where you were in a moment.');
 }

@@ -7602,5 +7602,10 @@
   "Live raid: {nome}!": "Raid ao vivo: {nome}!",
   "{nome} appeared in Kanto!\nBetter SHINY odds.\nRare rewards for the group.": "O {nome} apareceu em Kanto!\nChance de SHINY aumentada.\nRecompensas raras pro grupo.",
   "{nome} appeared in Kanto! Better SHINY odds and rare rewards for the group that wins.": "O {nome} apareceu em Kanto! Chance de SHINY aumentada e recompensas raras pro grupo que vencer.",
-  "Heading to the {x} raid…": "Indo pra raid do {x}…"
+  "Heading to the {x} raid…": "Indo pra raid do {x}…",
+  "Rewards: 5%+ of the average damage gets the items; 25%+ also gets one catch throw with your own ball (once per boss per day).": "Prêmios: 5%+ do dano médio leva os itens; 25%+ também ganha um arremesso de captura com a sua própria bola (uma vez por chefe ao dia).",
+  "Take the boss down with the group first: the best fighters get one throw at the end.": "Derrubem o chefe em grupo primeiro: quem mais lutou ganha um arremesso no fim.",
+  "You already had your throw at this boss today.": "Você já fez seu arremesso neste chefe hoje.",
+  "You already threw your ball.": "Você já jogou sua bola.",
+  "no throw": "sem arremesso"
 }

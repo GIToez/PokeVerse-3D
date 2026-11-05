@@ -64,6 +64,7 @@ function pintarPonto() {
       a.textContent =
         'body[data-conq-resgatar] [data-j="treinador"]{position:relative}' +
         'body[data-conq-resgatar] [data-j="treinador"]::after,body[data-conq-resgatar] #menu-btn::after{content:"";position:absolute;top:6%;right:6%;width:22%;max-width:12px;min-width:7px;aspect-ratio:1;border-radius:50%;background:#ff4d4d;box-shadow:0 0 0 2px #0B1220;pointer-events:none;z-index:5}' +
+        'body[data-conq-resgatar] [data-abre="popup-conquistas"]::after{content:"";position:absolute;top:4%;right:4%;width:14px;height:14px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 0 2px #0B1220;pointer-events:none;z-index:5}' +   /* the profile's Achievements button: what the menu's dot is about */
         'body[data-conq-resgatar] .tr-conq::after{content:"";display:inline-block;width:8px;height:8px;margin-left:5px;border-radius:50%;background:#ff4d4d;vertical-align:middle}';
       document.head.appendChild(a);
     }

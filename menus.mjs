@@ -819,7 +819,11 @@ export function correioRede(m){
   pintarSeloCorreio();
 }
 /** The unread count on the HUD's Mail shortcut. */
+/* The HUD can be rebuilt (layout change, rotation) after the last mail message, and the rebuilt badge showed again — with a "0".
+   Repainted every 2 s too: cheap, and the badge is never wrong for long. */
+let seloCorreioT = 0;
 function pintarSeloCorreio(){
+  if (!seloCorreioT && typeof setInterval === 'function') seloCorreioT = setInterval(pintarSeloCorreio, 2000);
   const n = CorreioUI.contagem?.() || 0;
   for (const b of document.querySelectorAll('#atalhos-v2 [data-fig="badge-cartas"]')){
     b.style.display = n > 0 ? 'block' : 'none';
@@ -827,6 +831,7 @@ function pintarSeloCorreio(){
     if (t) t.textContent = n > 99 ? '99+' : String(n);
   }
 }
+if (typeof document !== 'undefined') setTimeout(pintarSeloCorreio, 3000);   // also before any mail message: the mockup's sample number must not show
 function defPopup(nome){
   const ori = ctx.MOBILE ? (Hud.presetAtual() === 'celular_deitado' ? 'deitado' : null) : 'pc';   // celular em pé não tem maquete: janela antiga
   if (!ori) return null;

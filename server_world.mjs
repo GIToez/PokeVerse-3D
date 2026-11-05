@@ -506,5 +506,5 @@ export function createWorld(h) {
   const stats = () => ({ maps: rooms.size, wilds: [...rooms.values()].reduce((n, r) => n + r.wilds.size, 0) });
   /** One wild on a map by id (Transform reads its species, level and moves). */
   const wild = (map, id) => roomOf(map).wilds.get(String(id)) || null;
-  return { receive, list, joined, left, stats, wild, _test: { shakes, rooms } };
+  return { receive, list, joined, left, stats, wild, ballBonus, _test: { shakes, rooms } };
 }

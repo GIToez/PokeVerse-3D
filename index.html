@@ -6700,13 +6700,20 @@ async function jogarBola(){
   if (noSafari){ if (!s || s.estado === 'morto' || s.estado === 'guardado' || s.estado === 'capturando') s = safariPerto(); }
   else if (!s || s.estado !== 'desmaiado') s = desmaiadoMaisPerto() || s;   // F sem alvo caído: o caído mais perto
   if (!s || s.estado === 'morto' || s.estado === 'capturando' || s.estado === 'guardado'){ flutuar(ash, 'pick a target (Tab or click)', '#ffd23a'); return; }
-  if (s.raid){ flutuar(ash, 'the raid Mew cannot be caught', '#ffd23a'); Chat.sistema('The raid Mew cannot be caught: take it down with the group and the prize comes at the end.'); return; }   // RAID AO VIVO (14/09)
+  if (s.raid && !Raid.podeCapturar()){                                   // the raid boss: ONE throw after the win, for players with 25%+ of the average damage (server_raid.mjs)
+    const c = Raid.captura();
+    const txt = s.estado !== 'desmaiado' ? 'Take the boss down with the group first: the best fighters get one throw at the end.'
+      : c?.jaHoje ? 'You already had your throw at this boss today.'
+      : c && !c.usou ? 'Only players with at least ' + Math.round((c.minCaptura || 0.25) * 100) + '% of the average damage get a throw.'
+      : 'You already threw your ball.';
+    flutuar(ash, 'no throw', '#ffd23a'); Chat.sistema(txt); return;
+  }
   if (s.chefe){ flutuar(ash, "the boss won't fit in a ball", '#f58e8e'); return; }
   const regraBola = Safari.podeJogar({ sessao: jogo.safari, naZona: onde.paga, bola: id, estado: s.estado });
   if (!regraBola.ok){ flutuar(ash, regraBola.erro, '#ffd23a'); return; }
   if ((jogo.bolas[id] || 0) <= 0){ flutuar(ash, 'no ' + (BOLAS[id]?.[0] || 'ball'), '#f58e8e'); return; }
   const dist = Math.hypot(s.x - ash.x, s.z - ash.z);
-  if (dist > RAIO_BOLA){ flutuar(ash, 'too far (' + dist.toFixed(0) + ' m)', '#ffd23a'); return; }
+  if (dist > RAIO_BOLA && !s.raid){ flutuar(ash, 'too far (' + dist.toFixed(0) + ' m)', '#ffd23a'); return; }   /* the raid boss: the trainer stays at the spawn, the throw reaches it */
   if (bolasVivas.length >= MAX_BOLAS_NO_AR){ flutuar(ash, 'wait for the balls to land', '#ffd23a'); return; }
   let bola = null;
   /* 14/09 (Syvel, Guts: "capturou mas não entrou no time"): com a conexão caída os selvagens da rede viram locais e a bola sorteava
@@ -6739,6 +6746,7 @@ async function jogarBola(){
     }
     ash.giro = Math.atan2(s.x - ash.x, s.z - ash.z); ash.alvoX = null;
     s.estado = 'capturando'; s.alvoX = null; s.investida = null; s.emVoo = true;   // emVoo (18/09): a MINHA bola está neste corpo até o finally — o world.mjs não o "desmaia" de novo no meio do voo e o F não joga outra
+    if (s.raid) Raid.usouCaptura();                                      // the raid boss: one throw only
     const promCapt = s.rede ? Mundo.capturar(s, id) : null;              // mundo compartilhado: pede JÁ (o servidor tranca o selvagem e sorteia); o resultado entra depois do voo
     jogo.alvo = (noSafari ? safariPerto(s) : desmaiadoMaisPerto(s)) || (jogo.alvo === s ? null : jogo.alvo);   // mira já vai pro próximo caído (no Safari, o próximo acordado)
     if (s.rotulo) s.rotulo.style.display = 'none';
