@@ -6565,39 +6565,25 @@ function dialogoNiveisDeAntes(n, a = null) {
         }),
   });
 }
-/* CLAIM ALL. The Figma layout has no button for it, so it is a copy of "Buy level" placed just to its left,
-   with its own action. It shows how many rewards are ready and turns off when there are none or a claim is running. */
+/* CLAIM ALL. The v2 layout has two `btn-resgatar-tudo` buttons to the right of "See challenges": the green one with a
+   count badge (`selo-qtd` / `resgatar-qtd`) and a grey one the layout starts hidden. Green while rewards are ready,
+   grey when there are none or a claim is running. Both carry the `resgatar-tudo` action. */
 function paintClaimAll(banner, V) {
-  const model = no(banner, 'btn-comprar-nivel');
-  if (!model) return;
-  let btn = no(banner, 'btn-resgatar-tudo');
-  if (!btn) {
-    btn = model.cloneNode(true);
-    btn.removeAttribute('id');
-    for (const el of btn.querySelectorAll('[id]')) el.removeAttribute('id');
-    btn.dataset.fig = 'btn-resgatar-tudo';
-    btn.dataset.tag = 'acao';
-    btn.dataset.tagval = 'resgatar-tudo';
-    for (const el of btn.querySelectorAll('[data-tag]')) { delete el.dataset.tag; delete el.dataset.tagval; }
-    model.parentNode.insertBefore(btn, model);
-  }
+  const buttons = [...banner.querySelectorAll(':scope > [data-fig="btn-resgatar-tudo"]')];
+  if (!buttons.length) return;
+  const green = buttons.find((b) => b.querySelector('[data-fig="selo-qtd"]')) || buttons[0];
+  const grey = buttons.find((b) => b !== green) || null;
   const ready = PT.prontos(V);
-  const width = model.offsetWidth || parseFloat(model.style.width) || 120;
-  const left = parseFloat(model.style.left);
-  if (Number.isFinite(left)) btn.style.left = left - width - 8 + 'px';
-  btn.style.top = model.style.top;
-  btn.style.display = 'block';
-  const label = btn.querySelector(':scope > .pf-rotulo') || btn.querySelector('[data-txt]') || btn;
-  const text = ready > 0 ? tr('Claim all ({n})', { n: fmt(ready) }) : tr('Claim all');
-  if (label.textContent !== text) {
-    label.textContent = text;
-    caberLinha(label);
-  }
   const on = ready > 0 && !E.ocupadoPasse && !E.exemplo;
-  btn.dataset.desligado = on ? '0' : '1';
-  btn.style.opacity = on ? '1' : '0.5';
-  btn.style.cursor = on ? 'pointer' : 'default';
-  btn.title = on ? tr('Claim every reward that is ready') : tr('Nothing to claim right now');
+  mostra(green, on || !grey);
+  if (grey) mostra(grey, !on);
+  const shown = on || !grey ? green : grey;
+  const label = Popup.textoCru(pop, 'resgatar-tudo', tr('Claim all'), shown);
+  if (label) caberLinha(label);
+  if (on) Popup.textoCru(pop, 'resgatar-qtd', ready > 999 ? '999' : fmt(ready), green);
+  shown.dataset.desligado = on ? '0' : '1';
+  shown.style.cursor = on ? 'pointer' : 'default';
+  shown.title = on ? tr('Claim every reward that is ready') : tr('Nothing to claim right now');
 }
 async function claimAll() {
   if (E.ocupadoPasse || !PT.abaVisivel(E.temporada) || !(PT.prontos(E.temporada) > 0)) return;
