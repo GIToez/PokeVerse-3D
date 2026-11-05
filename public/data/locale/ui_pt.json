@@ -7591,5 +7591,16 @@
   "can't attack now": "não dá pra atacar agora",
   "The raid is over. Heading back…": "A raid acabou. Voltando…",
   "Going back to where you were…": "Voltando pra onde você estava…",
-  "You will be back where you were in a moment.": "Em instantes você volta pra onde estava."
+  "You will be back where you were in a moment.": "Em instantes você volta pra onde estava.",
+  "Starts in {s}s": "Começa em {s}s",
+  "IN QUEUE": "NA FILA",
+  "LIVE RAID": "RAID AO VIVO",
+  "Leave the queue": "Sair da fila",
+  "Queue full": "Fila cheia",
+  "No raid announced right now.": "Nenhuma raid anunciada agora.",
+  "Live raid": "Raid ao vivo",
+  "Live raid: {nome}!": "Raid ao vivo: {nome}!",
+  "{nome} appeared in Kanto!\nBetter SHINY odds.\nRare rewards for the group.": "O {nome} apareceu em Kanto!\nChance de SHINY aumentada.\nRecompensas raras pro grupo.",
+  "{nome} appeared in Kanto! Better SHINY odds and rare rewards for the group that wins.": "O {nome} apareceu em Kanto! Chance de SHINY aumentada e recompensas raras pro grupo que vencer.",
+  "Heading to the {x} raid…": "Indo pra raid do {x}…"
 }
