@@ -1,5 +1,6 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 import * as I18n from './i18n.mjs';                                     // etapa 3: a linha de idioma nas Configurações e a Pokédex por idioma
+import * as CorreioUI from './mail_ui.mjs';                                // Mail (v2 popup)
 /* Menus do jogo — casca DOM, sem servidor (menus.css).
  *
  * Um botão Menu (☰ na HUD, ou Esc) abre a grade; cada item abre UMA janela por vez:
@@ -186,6 +187,7 @@ function pintarRotulosFicha(pop){
   }
 }
 export const JANELAS = {
+  correio: { titulo: 'Mail', icone: 'amigos', sub: 'letters, rewards and notices', oculto: true },
   pokemon:   { titulo: 'Pokémon', icone: 'pokebola', tecla: 'KeyP', sub: 'party and box' },
   mochila:   { titulo: 'Bag', icone: 'mochila', tecla: 'KeyI', sub: 'items and balls' },
   missoes:   { titulo: 'Missions', icone: 'missoes', tecla: 'KeyJ', sub: 'the journey through Kanto' },
@@ -344,6 +346,23 @@ function ligarRecursos(){
 }
 
 export function instalar(c){
+  CorreioUI.instalar({
+    enviar: (m) => c.correioEnviar?.(m),
+    Chat,
+    Som: c.Som,
+    item: (a) => D?.itens?.[a] || null,
+    nomeTitulo: (a) => c.nomeTitulo?.(a) || null,
+    nomePokemon: (a) => c.porDex?.get?.(+a)?.name || null,
+    nomeRoupa: (a) => c.Personagem?.nomeDe?.({ tipo: a }) || null,
+    skinsDaConta: () => c.skinsDaConta?.() || [],
+    skinEquipada: () => c.skinEquipada?.() || null,
+    aplicarTitulos: (l) => c.conta?.aplicarTitulosGanhos?.(l),
+    semConta: () => !c.comConta?.(),
+    repintar: () => {
+      if (popCo && Popup.aberto(popCo) && aberta === 'correio') CorreioUI.encherV2(popCo, Popup);
+      pintarSeloCorreio();
+    },
+  });
   ctx = c;
   const g = document.createElement('div'); g.id = 'menu-grade'; g.hidden = true;
   g.innerHTML = `<div class="caixa"><h2>Menu <small>Esc fecha · ${ORDEM.filter(k => JANELAS[k].tecla).map(k => Teclas.rotuloAcao('janela-' + k) + ' ' + tr(JANELAS[k].titulo).toLowerCase()).join(' · ')}</small></h2><div class="itens">${ORDEM.filter(k => !JANELAS[k].oculto).map(k => `<button type="button" data-j="${k}" class="${JANELAS[k].breve ? 'breve' : ''}"><i class="ic ic-${JANELAS[k].icone}"></i><b>${tr(JANELAS[k].titulo)}</b><small>${tr(JANELAS[k].sub)}</small></button>`).join('')}</div></div>`;
@@ -386,6 +405,19 @@ export async function abrir(nome, aba = null){
   if (nome === 'loja' && ctx.comConta?.() && LojaUI.abrir()) return;          // with an account the shop button opens the Diamond Shop; Coin outfits stay in the Wardrobe's Shop tab
   if (nome === 'loja' || nome === 'guarda'){ abrirGuarda(nome === 'loja' ? 'loja' : 'roupas'); return; }   // Wardrobe / cosmetics shop (Nov 2)
   if (nome === 'creche' || nome === 'terreno' || nome === 'guilda' || nome === 'feira' || nome === 'balsa'){ await abrirRecursoJanela(nome); return; }
+  if (nome === 'correio'){                                               // Mail (upcoming/mail_ui.mjs, server_mail.mjs)
+    fechar();
+    fecharGrade();
+    const pop = popupCo();
+    if (!pop){ Chat.sistema(tr('That window is not in this layout.')); return; }
+    aberta = 'correio';
+    $('janela').hidden = true;
+    Popup.abrir(pop);
+    CorreioUI.listar(true);
+    CorreioUI.encherV2(pop, Popup);
+    ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 });
+    return;
+  }
   if (nome === 'eventos'){
     fechar();
     fecharGrade();
@@ -711,6 +743,32 @@ export function escolherEvolucao(e, ops){
    as sobrando ficam com os textos vazios e a barra a zero, como na maquete. */
 let popPk = null;
 /** A maquete vem por orientação (`popups.pc` e `popups.deitado`); no celular ainda não há pop-up ligado. */
+/* MAIL (v2 popup `correio`): the letters come from server_mail.mjs; mail_ui.mjs draws the list and the open letter. */
+let popCo = null;
+function popupCo(){
+  if (popCo) return popCo;
+  const a = defPopup('correio');
+  if (!a || new URLSearchParams(location.search).get('popup') === '0') return null;
+  popCo = Popup.montar(a, {
+    acao: (a, b) => { if (CorreioUI.acaoV2?.(a, b)) CorreioUI.encherV2(popCo, Popup); },
+    fechar: () => { if (aberta === 'correio') aberta = null; },
+  });
+  return popCo;
+}
+/** The network's mail messages (count in the welcome, new letter, list, errors). */
+export function correioRede(m){
+  CorreioUI.receber(m);
+  pintarSeloCorreio();
+}
+/** The unread count on the HUD's Mail shortcut. */
+function pintarSeloCorreio(){
+  const n = CorreioUI.contagem?.() || 0;
+  for (const b of document.querySelectorAll('#atalhos-v2 [data-fig="badge-cartas"]')){
+    b.style.display = n > 0 ? 'block' : 'none';
+    const t = b.querySelector('[data-fig="txt/cartas-novas"]');
+    if (t) t.textContent = n > 99 ? '99+' : String(n);
+  }
+}
 function defPopup(nome){
   const ori = ctx.MOBILE ? (Hud.presetAtual() === 'celular_deitado' ? 'deitado' : null) : 'pc';   // celular em pé não tem maquete: janela antiga
   if (!ori) return null;

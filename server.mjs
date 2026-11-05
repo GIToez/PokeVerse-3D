@@ -35,6 +35,7 @@ import { criarCarteira, criarLoja } from './server_shop.mjs';
 import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
+import { createMail } from './server_mail.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -1390,6 +1391,8 @@ const wilds = criarWilds({
   expMult: () => eventos.efetivo().expMult,
   aoDerrotar: (u, ev) => temporada.contar(u, { conta: 'ko', ...ev }),
 });
+/* MAIL (server_mail.mjs): letters on the account, opened from the HUD's Mail shortcut. */
+const mail = createMail({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, wallet: carteira, newIndividual: individuoServidor, markCaught: marcarPego });
 /* SHARED WORLD (server_world.mjs): the wild Pokémon live here, one set per map, and every player on the map sees them. */
 const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
@@ -1465,7 +1468,7 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         ws._worldJoined = true; world.joined(ws);                           // shared world: wilds nobody owns on this map go to this player
@@ -1811,6 +1814,7 @@ wss.on('connection', ws => {
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
         else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'nascer' || m.t === 'spos' || m.t === 'sataque' || m.t === 'shp' || m.t === 'capturar') world.receive(ws, m);   // raid ao vivo (o `ataque` só existe com o Mundo ligado: o chefe)
         break;
       }
