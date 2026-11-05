@@ -9483,7 +9483,8 @@ if (jogo.ash){
       if (op === 'elite'){ Rede.enviar({ t: 'elite_campeoes', n: +resto || 10 }); return; }   // ELITE FOUR (20/09): o hall dos campeões, pro prêmio
       if (op === 'raid'){                                                  // RAID AO VIVO (14/09): /raid anunciar | comecar | cancelar | hp N | dano F | shiny N | premio mew|sem-mew | status
         const [o0, ...r] = resto.split(/\s+/).filter(Boolean);
-        const o = String(o0 || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');   // /raid começar vale
+        const o1 = String(o0 || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');   // /raid começar vale
+        const o = ({ announce: 'anunciar', start: 'comecar', begin: 'comecar', cancel: 'cancelar', stop: 'cancelar', damage: 'dano', prize: 'premio' })[o1] || o1;   // English first (the server knows both)
         const USO = 'Use: /raid announce [boss | random] | start | cancel | hp N | damage F | shiny N | prize mew|sem-mew | status';
         if (!['anunciar', 'comecar', 'cancelar', 'hp', 'dano', 'shiny', 'premio', 'status'].includes(o)){ Chat.sistema(USO); return; }
         const bruto = r.join(' ').trim().toLowerCase(), num = +bruto.replace(',', '.'), numerico = ['hp', 'dano', 'shiny'].includes(o);
@@ -9491,8 +9492,8 @@ if (jogo.ash){
            deixava passar número > 0 e esses dois nunca chegavam. O resto do conferir é do servidor (ele responde com a ajuda). */
         const autoHp = o === 'hp' && bruto === 'auto';
         const numOk = bruto !== '' && Number.isFinite(num) && (o === 'dano' ? num >= 0 : num > 0);
-        if (numerico && !autoHp && !numOk){ Chat.sistema('Use: /raid ' + o + (o === 'dano' ? ' F (ex.: 0,5 ou 1,5)' : o === 'hp' ? ' N (vida do Mew) ou /raid hp auto' : ' N (1 em N)') + '.'); return; }
-        if (o === 'premio' && !['mew', 'sem-mew'].includes(bruto)){ Chat.sistema('Use: /raid premio mew | sem-mew'); return; }
+        if (numerico && !autoHp && !numOk){ Chat.sistema('Use: /raid ' + o1 + (o === 'dano' ? ' F (e.g. 0.5 or 1.5)' : o === 'hp' ? ' N (the boss HP) or /raid hp auto' : ' N (1 in N)') + '.'); return; }
+        if (o === 'premio' && !['mew', 'sem-mew'].includes(bruto)){ Chat.sistema('Use: /raid prize mew | sem-mew'); return; }
         Rede.enviar({ t: 'raid_staff', op: o, valor: numerico && !autoHp ? num : (bruto || null) });
         return;
       }

@@ -397,24 +397,24 @@ export function criarRaid(h) {
         paraArena({ t: 'shp', id: ch.id, hp: ch.hp, maxHp: ch.maxHp });
         difundir();
       }
-      ok('Vida do chefe: ' + (raid.sobre.hp ?? 'automática') + (raid.chefe ? ' (agora ' + raid.chefe.hp + '/' + raid.chefe.maxHp + ')' : '') + '.', { hp: raid.sobre.hp });
+      ok('Boss HP: ' + (raid.sobre.hp ?? 'automatic') + (raid.chefe ? ' (now ' + raid.chefe.hp + '/' + raid.chefe.maxHp + ')' : '') + '.', { hp: raid.sobre.hp });
       return;
     }
     if (op === 'dano') {
       const f = +String(v).replace(',', '.');
       if (!(f >= 0 && f <= 10)) { erro('Use: /raid damage F (0 to 10; 1 = normal, 0 = the minimum, 1 damage).'); return; }
-      raid.sobre.dano = f; ok('Dano do chefe ×' + f + '.', { dano: f }); return;
+      raid.sobre.dano = f; ok('Boss damage ×' + f + '.', { dano: f }); return;
     }
     if (op === 'shiny') {
       const n = Math.round(+String(v).replace(',', '.'));
-      if (!(n >= 1 && n <= 1e6)) { erro('Use: /raid shiny N (1 em N; 1 = sempre shiny).'); return; }
+      if (!(n >= 1 && n <= 1e6)) { erro('Use: /raid shiny N (1 in N; 1 = always shiny).'); return; }
       raid.sobre.shiny = n; ok('Prize shiny odds: 1 in ' + n + '.', { shiny: n }); return;
     }
     if (op === 'premio') {
-      if (txt !== 'mew' && txt !== 'sem-mew') { erro('Use: /raid premio mew | sem-mew'); return; }
+      if (txt !== 'mew' && txt !== 'sem-mew') { erro('Use: /raid prize mew | sem-mew'); return; }
       raid.sobre.premio = txt; ok('Prize: ' + (txt === 'mew' ? raid.cfg.chefeNome + ' + items' : 'items only') + '.', { premio: txt }); return;
     }
-    erro('Use: /raid anunciar | comecar | cancelar | hp N | dano F | shiny N | premio mew|sem-mew | status');
+    erro('Use: /raid announce [boss | random] | start | cancel | hp N | damage F | shiny N | prize mew|sem-mew | status');
   }
   function status() {
     if (!raid) return 'No raid right now (data/raid.json default: ' + (c => c.chefeNome + ' Lv ' + c.chefeNivel + ', ' + c.vagas + ' spots, arena ' + c.arena)(lerCfg()) + ').';

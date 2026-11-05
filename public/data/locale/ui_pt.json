@@ -7588,5 +7588,8 @@
   "{w}: never misses": "{w}: nunca erra",
   "{w}: only 50% accuracy": "{w}: só 50% de precisão",
   "frozen!": "congelado!",
-  "can't attack now": "não dá pra atacar agora"
+  "can't attack now": "não dá pra atacar agora",
+  "The raid is over. Heading back…": "A raid acabou. Voltando…",
+  "Going back to where you were…": "Voltando pra onde você estava…",
+  "You will be back where you were in a moment.": "Em instantes você volta pra onde estava."
 }
