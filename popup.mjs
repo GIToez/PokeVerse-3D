@@ -387,11 +387,15 @@ function ligarTag(el, f, pop){
     el.__toqueX = null;
     if (moved > 24) return;
     if (ev.target.closest?.('input, textarea, select')) return;
-    el.__pulsa = performance.now();
+    el.__pulsa = pop.__pulsa = performance.now();
     disparar(ev);
   });
+  /* The phone's click for that tap comes late. It must be swallowed for the WHOLE pop-up, not only this element: the tap can
+     swap the button under the finger (wardrobe Equip → Take off sit in the same spot), and the late click then hit the new
+     one and undid the tap (the bag / effect equipped and came straight off again). */
   el.addEventListener('click', ev => {
-    if (performance.now() - (el.__pulsa || 0) < 700){ ev.stopPropagation(); return; }
+    const t = Math.max(el.__pulsa || 0, pop.__pulsa || 0);
+    if (performance.now() - t < 700){ ev.stopPropagation(); return; }
     disparar(ev);
   });
 }

@@ -5662,6 +5662,7 @@ function tiqueVolatil(e, dt, luta){
 }
 /** Sleep, freeze, and paralysis can cancel the action that was about to land. */
 function impedido(e){
+  if (e?.rede && Mundo.estaAtivo()) return ['sleep', 'freeze'].includes(Status.limpo(e.status)?.id);   // shared world: the server's engine rolls paralysis, confusion…; asleep / frozen it just waits
   const r = Status.podeAgir(e, Math.random, { relogio: !jogo.turno });   // tempo real: o sono passa pelo relógio (tiqueSono), não por tentativa
   if (r.acordou) flutuar(e, 'woke up', Status.cor('sleep'));
   if (r.descongelou) flutuar(e, 'thawed', Status.cor('freeze'));
@@ -5679,7 +5680,7 @@ function tiqueSono(e, dt){
 }
 /** Burn, poison, and bad poison tick while a real-time fight is going. Turn battles tick on the server. */
 function tiqueStatus(e, dt, luta){
-  if (!e || jogo.turno || !luta) return;
+  if (!e || jogo.turno || !luta || (e.rede && Mundo.estaAtivo())) return;   // a shared-world wild: the server ticks it (server_world_fight.mjs)
   if (!Status.limpo(e.status) || !(e.hp > 0)) { e.statusRelogio = 0; return; }
   e.statusRelogio = (e.statusRelogio || 0) + dt;
   if (e.statusRelogio < 4) return;
@@ -9468,13 +9469,31 @@ if (jogo.ash){
          atualizado pelo `vida`; o parceiro em campo não sofre nada. Era assim que o substituto entrava com o HP zerado na tela. */
       if (m.uid != null && String(m.uid) !== String(uidParceiro())){ __boot.aviso('pdano de outro uid', { uid: m.uid, emCampo: uidParceiro(), hp: m.hp, dano: m.dano }); return; }
       const g = GOLPES[m.golpe] || STRUGGLE;
+      if (m.parado){ if (s) flutuar(s, I18n.t(m.parado), '#9ab'); return; }   // the wild was asleep / paralyzed / flinched… (the server's engine)
       if (m.errou){ flutuar(p, 'missed', '#9ab'); return; }
       p.hp = m.hp != null ? m.hp : Math.max(0, p.hp - (m.dano || 0));       // passo 3: o HP que vale é o do servidor
       try { guardarEstadoAtivo(); } catch {}
       if (p.hp <= 0) __boot.aviso('pdano zerou o parceiro', { hp: m.hp, dano: m.dano, uid: m.uid, emTurno: !!p.emTurno });
       aplicarGolpe(s, p, g, m.dano, m.eff);
       if (m.estagios) mostrarEstagios(m.estagios.quem === 'eu' ? s : p, m.estagios.mudancas, true);
+      if (m.critico) flutuar(p, I18n.t('critical hit!'), '#ffd23a');
+      for (const a of m.avisos || []) flutuar(a.quem === 'eu' ? (s || p) : p, I18n.t(a.txt), '#ffe07a');
     },
+    /* Status from the server's engine: the wild's (sstatus) and my partner's (pstatus). */
+    statusSelvagem: (s, m) => {
+      const antes = Status.limpo(s.status)?.id || null;
+      s.status = m.st ? { id: m.st, n: m.n | 0 } : null;
+      if (m.st && m.st !== antes) flutuar(s, Status.nome(m.st) + '!', Status.cor(m.st));
+      else if (!m.st && antes) flutuar(s, I18n.t(antes === 'sleep' ? 'woke up' : antes === 'freeze' ? 'thawed' : 'cured'), Status.cor(antes));
+      if (s.rotulo){ s.rotMarca = undefined; pintarRotuloSelvagem(s); }
+    },
+    statusParceiro: m => {
+      const p = jogo.pika; if (!p || !(p.hp > 0) || !m.st) return;
+      p.status = { id: m.st, n: m.n | 0 };
+      flutuar(p, Status.nome(m.st) + '!', Status.cor(m.st));
+      guardarEstadoAtivo();
+    },
+    statusNoOutro: m => { const par = Rede.outroPor(m.alvo)?.par; if (par?.pivo && m.st) flutuar(par, Status.nome(m.st) + '!', Status.cor(m.st)); },
     golpeNoOutro: (s, m) => {                                            // o selvagem bateu no parceiro de OUTRO jogador: número, efeito e "Wound" em cima dele
       const par = Rede.outroPor(m.alvo)?.par; if (!par?.pivo) return;
       const g = GOLPES[m.golpe] || STRUGGLE;
@@ -9492,6 +9511,13 @@ if (jogo.ash){
       const atacante = m.meu ? jogo.pika : (Rede.outroPor(m.de)?.par || null);
       if (s.estado === 'desmaiado' || s.estado === 'capturando') { s.hp = m.hp; return; }
       s.hp = m.hp;
+      if (m.tique){                                                       // the server's real-time clock: burn, poison, sandstorm, hail (server_world_fight.mjs)
+        const cor = { burn: Status.cor('burn'), poison: Status.cor('poison'), 'bad-poison': Status.cor('toxic'), areia: '#d9b46a', granizo: '#9ad8f5' }[m.tique] || '#ff8a8a';
+        flutuar(s, '−' + m.dano, cor);
+        if (s.hp > 0) tocarUma(s, 'Wound');
+        if (s.rotulo) pintarRotuloSelvagem(s);
+        return;
+      }
       if (m.dreno){                                                       // Leech Seed no chefe da raid: quem plantou recebe o que foi drenado
         flutuar(s, '−' + m.dano, '#8ef58e');
         const p = jogo.pika;
@@ -9500,12 +9526,14 @@ if (jogo.ash){
       }
       if (m.errou){ flutuar(s, 'missed', '#9ab'); return; }
       aplicarGolpe(atacante, s, g, m.dano, m.eff);
+      if (m.critico) flutuar(s, I18n.t('critical hit!'), '#ffd23a');
+      for (const a of m.avisos || []) flutuar(a.quem === 'eu' ? (atacante || s) : s, I18n.t(a.txt), '#ffe07a');
       if (m.estagios) mostrarEstagios(m.estagios.quem === 'eu' ? atacante : s, m.estagios.mudancas, true);
       if (m.semente === true){ s.semente = { de: atacante || 'parceiro' }; flutuar(s, 'seeded!', '#8ef58e'); }
       else if (m.semente === 'imune') flutuar(s, 'immune', '#9ab');
     },
     criar: reg => criarSelvagem({ dex: reg.dex, glb: reg.glb, nome: reg.nome, agua: reg.aquatico }, reg.x, reg.z, { area: reg.area, generico: reg.generico, casa: reg.casa, lv: reg.lv, perfil: reg.perfil, shiny: reg.shiny, ivs: reg.ivs, natureza: reg.natureza })
-      .then(s => { if (reg.aquatico){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; } s.pertoDeGrama = reg.pertoDeGrama !== false; s.hp = reg.hp; s.maxHp = reg.maxHp; if (reg.raid) montarChefeRaid(s, reg); jogo.selvagens.push(s); return s; }),
+      .then(s => { if (reg.aquatico){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; } s.pertoDeGrama = reg.pertoDeGrama !== false; s.hp = reg.hp; s.maxHp = reg.maxHp; if (reg.st) s.status = { id: reg.st, n: 0 }; if (reg.raid) montarChefeRaid(s, reg); jogo.selvagens.push(s); return s; }),
     /* RAID AO VIVO (14/09): a barra de vida do chefe no topo sai do REGISTRO (com ou sem corpo aqui) e some com ele. */
     raidHp: r => Raid.chefe({ nome: r.nome || 'Mew', lv: r.lv, hp: r.hp, maxHp: r.maxHp }),
     raidSumiu: () => Raid.chefe(null) });

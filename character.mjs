@@ -223,14 +223,18 @@ export async function vestirMochila(corpo, glb){
   const body = skinneds.sort((a, b) => b.skeleton.bones.length - a.skeleton.bones.length)[0];
   if (!body?.skeleton){ console.warn('mochila: treinador sem esqueleto'); return null; }
   const nomes = bolsa.skeleton.bones.map(b => b.name);
-  const idx = nomes.map(n => body.skeleton.bones.findIndex(b => b.name === n));
-  if (idx.some(i => i < 0)){ console.warn('mochila: osso não achado no treinador', nomes); return null; }
+  /* A bone the body mesh's skeleton does not list (some trainer models only list the bones that move the body) is still in
+     the model's bone tree: take it from there. Only a bone missing everywhere stops the bag. */
+  const norm = n => String(n || '').replace(/[\s_:.-]+/g, '').toLowerCase();
+  const daArvore = new Map(); corpo.traverse(o => { if ((o.isBone || /bip001/i.test(o.name)) && !daArvore.has(norm(o.name))) daArvore.set(norm(o.name), o); });
+  const ossos = nomes.map(n => body.skeleton.bones.find(b => b.name === n) || body.skeleton.bones.find(b => norm(b.name) === norm(n)) || daArvore.get(norm(n)) || null);
+  if (ossos.some(o => !o)){ console.warn('mochila: osso não achado no treinador', nomes.filter((n, i) => !ossos[i])); return null; }
   /* A mochila vira irmã da malha `body`, MANTENDO a transformação própria do nó dela (o FBX da mochila e do Herói
      vem com o nó da malha em escala 100 e vértices em centímetros; as outras roupas vêm em metros — copiar a
      transformação do corpo encolhia a mochila a 1 cm no Casaco do Pikachu). O esqueleto usa os OSSOS do treinador
      com as inversas e o bindMatrix da própria mochila: o rig é o mesmo (Bip001, mesma pose de descanso), então em
      repouso cai onde o jogo a modelou e depois segue a animação do corpo. */
-  const esq = new THREE.Skeleton(idx.map(i => body.skeleton.bones[i]), bolsa.skeleton.boneInverses.map(m => m.clone()));
+  const esq = new THREE.Skeleton(ossos, bolsa.skeleton.boneInverses.map(m => m.clone()));
   bolsa.castShadow = true; bolsa.receiveShadow = true; bolsa.frustumCulled = false;
   body.parent.add(bolsa);
   bolsa.bind(esq, bolsa.bindMatrix.clone());

@@ -29,6 +29,7 @@ import { TODOS } from './moves_all.mjs';
 import * as Stg from './stages.mjs';
 import * as Weather from './weather.mjs';
 import { createMapWeather } from './server_weather.mjs';
+import { createWorldFight } from './server_world_fight.mjs';
 
 const AREA_CAP = 16;              // most wilds one area holds at once (the client's own ceiling is 16 × density)
 const ROOM_CAP = 160;             // most wilds one map holds at once
@@ -106,7 +107,7 @@ export function createWorld(h) {
     return {
       id: w.id, area: w.area, dex: w.dex, glb: w.glb, nome: w.nome, lv: w.lv, shiny: w.ind.shiny, ivs: w.ind.ivs, natureza: w.ind.natureza,
       x: w.x, z: w.z, giro: w.giro, anim: w.anim, casa: w.casa, generico: w.generico, perfil: w.perfil, aquatico: w.aquatico,
-      pertoDeGrama: w.pertoDeGrama, hp: w.hp, maxHp: w.maxHp, estado: w.state, ...(w.until ? { ate: w.until } : {}), dono: w.owner,
+      pertoDeGrama: w.pertoDeGrama, hp: w.hp, maxHp: w.maxHp, estado: w.state, ...(w.status?.id ? { st: w.status.id } : {}), ...(w.until ? { ate: w.until } : {}), dono: w.owner,
     };
   }
   /** The wilds a player joining `map` should see (the welcome's `selvagens`). */
@@ -261,6 +262,16 @@ export function createWorld(h) {
   /** A transformed Ditto fights with the copied types and stats (transform.mjs). */
   const effective = p => (Transf.dados() ? Transf.especieEfetiva(species(p.dex), p) || species(p.dex) : species(p.dex));
   const statOf = (S, p, i) => statBase(S.bs[i], levelOf(p), ivsOf(p)[i] || 0, 0, p?.natureza, i);
+  /* Every hit runs on the battle engine in real time (server_world_fight.mjs): status, stages, Leech Seed, weather… */
+  const fight = createWorldFight({
+    dataDir, moves, struggle: STRUGGLE,
+    species: (dex, p) => (p && !p.ind ? effective(p) : species(dex)),
+    statOfParty: (S, p, i) => statOf(S, p, i),
+    statOfWild: (S, w, i) => statBase(S.bs[i], w.lv, ivsOf(w.ind)[i] || 0, 0, w.ind.natureza, i),
+    prepParty: (p) => { if (!(p.maxHp > 0)) p.maxHp = Math.max(1, hpBase(effective(p).bs[0], levelOf(p), ivsOf(p)[0] || 0)); if (p.hp == null) p.hp = p.maxHp; return p; },
+  });
+  const engineWeather = (map) => tempo.forEngine(weatherAt(map));
+  const sendStatus = (map, w, st) => toMap(map, { t: 'sstatus', id: w.id, hp: w.hp, st: st?.id || null, n: st?.n || 0 });
   /** The raid formula, which is the client's `golpear`: STAB 1.5, type chart, 85–100 %, plus the map's weather
       (weather.mjs: Water/Fire ×1.5/×0.5 in rain and sun, Weather Ball, Solar Beam, Rock Sp. Def in sand, Ice Defense in snow). */
   function damage(move, lv, A, atk, D, def, clima = null, defI = 2) {
@@ -288,18 +299,17 @@ export function createWorld(h) {
     if (!mon) return;
     w.touched = now;
     if (w.owner == null || !onMap(map).some(x => x._id === w.owner)) setOwner(map, w, ws._id);
-    const A = effective(mon), B = species(w.dex), lv = levelOf(mon), physical = move.cat === 'fisico', clima = weatherAt(map);
-    if (Math.random() > Stg.chance(Weather.precisao(clima, move) ?? 1, move, null, w.est)) {
-      toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: 0, eff: 1, golpe: move.id, de: ws._id, errou: true });
-      return;
-    }
-    const { dano, eff } = move.cat === 'status' ? { dano: 0, eff: 1 }
-      : damage(move, lv, A, statOf(A, mon, physical ? 1 : 3), B, statBase(B.bs[physical ? 2 : 4], w.lv, ivsOf(w.ind)[physical ? 2 : 4] || 0, 0, w.ind.natureza, physical ? 2 : 4), clima, physical ? 2 : 4);
-    w.hp = Math.max(0, w.hp - dano);
+    const hpBefore = w.hp;
+    const r = fight.hitWild(mon, w, move, engineWeather(map), now);
+    if (r.errou) { toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: 0, eff: 1, golpe: move.id, de: ws._id, errou: true }); if (r.st !== undefined) sendStatus(map, w, r.st); return; }
+    const dano = Math.max(0, hpBefore - w.hp);
     const d = w.damage.get(u) || { dealt: 0, at: 0, ws: null };
     d.dealt += dano; d.at = now; d.ws = ws;
     w.damage.set(u, d);
-    toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano, eff, golpe: move.id, de: ws._id });
+    if (r.semente) { w.seedBy = ws._id; w.seedUser = u; }
+    toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: r.dano, eff: r.eff, golpe: move.id, de: ws._id, ...(r.critico ? { critico: true } : {}),
+      ...(r.estagios ? { estagios: r.estagios } : {}), ...(r.semente ? { semente: true } : {}), ...(r.avisos ? { avisos: r.avisos } : {}) });
+    if (r.st !== undefined) sendStatus(map, w, r.st);
     if (w.hp <= 0) knockOut(map, w);
   }
 
@@ -318,12 +328,15 @@ export function createWorld(h) {
     let move = moveById(m.golpe);
     if (!move || move.cat === 'status') move = learned.tackle || STRUGGLE;
     w.lastHit = now; w.touched = now;
-    const B = species(w.dex), D = effective(mon), physical = move.cat === 'fisico', clima = weatherAt(map);
-    const missed = Math.random() > Stg.chance(Weather.precisao(clima, move) ?? 1, move, w.est, null);
-    const { dano, eff } = missed ? { dano: 0, eff: 1 }
-      : damage(move, w.lv, B, statBase(B.bs[physical ? 1 : 3], w.lv, ivsOf(w.ind)[physical ? 1 : 3] || 0, 0, w.ind.natureza, physical ? 1 : 3), D, statOf(D, mon, physical ? 2 : 4), clima, physical ? 2 : 4);
+    const hpBefore = w.hp;
+    const r = fight.wildHits(w, mon, move, engineWeather(map), now);
     // no uid/hp: the Pokémon in the field takes it, and party HP is the client's (as in raids)
-    toMap(map, { t: 'pdano', id: w.id, alvo: target._id, golpe: move.id, dano, eff, ...(missed ? { errou: true } : {}) });
+    toMap(map, { t: 'pdano', id: w.id, alvo: target._id, golpe: move.id, dano: r.dano, eff: r.eff, ...(r.errou ? { errou: true } : {}), ...(r.parado ? { parado: r.parado } : {}),
+      ...(r.critico ? { critico: true } : {}), ...(r.estagios ? { estagios: r.estagios } : {}), ...(r.avisos ? { avisos: r.avisos } : {}) });
+    if (r.status) toMap(map, { t: 'pstatus', id: w.id, alvo: target._id, st: r.status.id, n: r.status.n || 0 });
+    if (w.hp !== hpBefore) toMap(map, { t: 'shp', id: w.id, hp: w.hp });   // recoil, confusion hitting itself
+    if (r.stSelf !== undefined) sendStatus(map, w, r.stSelf);
+    if (w.hp <= 0 && w.state === 'vagando') knockOut(map, w);
   }
 
   /** A client-side tick (burn, poison) lowered the wild's HP: accept small drops from players fighting it. */
@@ -339,7 +352,7 @@ export function createWorld(h) {
 
   function knockOut(map, w) {
     const now = Date.now();
-    w.state = 'desmaiado'; w.hp = 0; w.until = now + FAINT_MS;
+    w.state = 'desmaiado'; w.hp = 0; w.until = now + FAINT_MS; w.status = null; fight.forget(w);
     toMap(map, { t: 'sestado', id: w.id, estado: 'desmaiado', ate: w.until, hp: 0 });
     for (const [, d] of w.damage) if (now - d.at < XP_WINDOW_MS && d.ws?.readyState === 1) wilds.award(d.ws, w);
     if (onKO) {   // item drops (server_drops.mjs): each account's share of the damage, the top hitter, and the rank
@@ -439,6 +452,24 @@ export function createWorld(h) {
       setOwner(map, w, next._id);
     }
   }
+  /* The real-time clock of wilds in a fight (once a second): burn / poison / sandstorm / hail / Leech Seed, waking up.
+     A wild nobody has touched for 20 s leaves the fight (its status stays, the clock stops). */
+  setInterval(() => {
+    const now = Date.now();
+    for (const [map, room] of rooms) for (const w of room.wilds.values()) {
+      if (w.state !== 'vagando' || !fight.inFight(w)) continue;
+      if (now - w.touched > 20e3) { fight.forget(w); continue; }
+      const t = fight.tick(w, engineWeather(map), now);
+      if (!t) continue;
+      for (const x of t.danos) {
+        if (x.motivo === 'leech-seed' && w.seedBy != null) toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: x.v, eff: 1, golpe: 'leechseed', de: w.seedBy, dreno: true });
+        else toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: x.v, tique: x.motivo || 'status' });
+      }
+      if (t.st !== undefined) sendStatus(map, w, t.st);
+      if (w.hp <= 0) knockOut(map, w);
+    }
+  }, 1000).unref?.();
+
   /** A player joined a map: wilds nobody owns go to them. */
   function joined(ws) {
     const room = rooms.get(String(ws._mapa || 'kanto'));

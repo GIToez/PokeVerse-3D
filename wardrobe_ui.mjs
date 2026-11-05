@@ -945,6 +945,15 @@ async function montarCorpo(a, b = 'Idle') {
   });
   Personagem.apagarMalhasOcultas(g, e);
   await Personagem.aplicar(e, a);
+  /* PokeVerse: the bag is a separate model the game binds to the trainer's skeleton (character.mjs vestirMochila); the
+     preview never did that, so a selected or worn bag did not show here. */
+  if (a?.mochila) {
+    try {
+      await Personagem.vestirMochila?.(e, a.mochila);
+    } catch (err) {
+      console.warn('wardrobe: preview bag', err);
+    }
+  }
   const f = new THREE.AnimationMixer(e);
   const h =
     g.animations.find((c) => c.name === b) || g.animations.find((c) => c.name === 'Idle') || g.animations[0] || null;
