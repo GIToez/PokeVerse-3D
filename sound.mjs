@@ -95,6 +95,12 @@ export async function tocar(caminho, { volume = 1, tom = 1, variacao = 0.06, pri
   src.start();
 }
 
+/** Toca o PRIMEIRO da lista que existir em sound/ — para sons opcionais: o arquivo novo, se alguém já o pôs na pasta,
+    senão o de reserva. A procura vai pro cache, então só o primeiro disparo espera o fetch. */
+export async function tocarPrimeiro(lista, opcoes){
+  for (const c of lista) if (c && await carregar(c)) return tocar(c, opcoes);
+}
+
 /* -------------------------------------------------------------- música */
 /* MÚSICA (11/09): por <audio> em STREAMING, não por buffer. O caminho dos efeitos (decodificar tudo pra memória) custa
    ~35 MB por faixa de 100 s em estéreo — os 16 temas de Kanto seriam meio giga no celular. O <audio> entra no grafo pelo
