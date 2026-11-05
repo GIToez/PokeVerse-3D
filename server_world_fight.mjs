@@ -128,10 +128,12 @@ export function createWorldFight({ dataDir, species, moves, statOfParty, statOfW
     if (!ev.length) return null;
     engine.writeBack(c, w);
     const danos = ev.filter((e) => e.t === 'dano' && e.alvo === c.id).map((e) => ({ v: e.v, motivo: e.motivo || null }));
+    const volta = ev.filter((e) => e.t === 'estagio-volta' && e.alvo === c.id).map((e) => STAT_OUT[e.atributo] || e.atributo);   // stages wear off (AJUSTE.estagiosS)
     const after = stOf(c);
-    return { danos, ...((after?.id || null) !== before ? { st: after } : {}) };
+    return { danos, ...(volta.length ? { volta } : {}), ...((after?.id || null) !== before ? { st: after } : {}) };
   }
   const inFight = (w) => cache.has(w);
-  const forget = (w) => cache.delete(w);
+  /** The fight is over for this wild: its stages and volatile states go (true when it had stages to clear). */
+  const forget = (w) => { const c = cache.get(w); const had = !!c && Object.values(c.est?.estagios || {}).some((n) => n); cache.delete(w); return had; };
   return { hitWild, wildHits, tick, inFight, forget };
 }

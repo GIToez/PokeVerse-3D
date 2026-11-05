@@ -5679,6 +5679,25 @@ function tiqueSono(e, dt){
   if (e === jogo.pika) guardarEstadoAtivo();
 }
 /** Burn, poison, and bad poison tick while a real-time fight is going. Turn battles tick on the server. */
+/** Real time: sandstorm / hail chip the partner 1/16 of max HP every engine turn (3 s) of a fight — the same rule the
+    server's engine applies to the wild (server_world_fight.mjs). Rock / Ground / Steel ignore sand, Ice ignores hail.
+    Turn battles: the server's turn does it. Indoors there is no weather. */
+const CLIMA_TURNO_S = 3;
+function tiqueClima(e, dt, luta){
+  if (!e || jogo.turno || !luta || INTERIOR || !(e.hp > 0) || e.desmaiado > 0){ if (e) e.climaRelogio = 0; return; }
+  let c = null; try { c = clima.nome; } catch { return; }   // early frames: the weather state comes later in this script
+  const tipos = porDex.get(e.dex)?.types || [];
+  const fere = (c === 'areia' && !tipos.some(t => t === 'Rock' || t === 'Ground' || t === 'Steel')) || (c === 'granizo' && !tipos.includes('Ice'));
+  if (!fere){ e.climaRelogio = 0; return; }
+  e.climaRelogio = (e.climaRelogio || 0) + dt;
+  if (e.climaRelogio < CLIMA_TURNO_S) return;
+  e.climaRelogio -= CLIMA_TURNO_S;
+  const d = Math.max(1, Math.floor((e.maxHp || 1) / 16));
+  e.hp = Math.max(0, e.hp - d);
+  flutuar(e, '−' + d, c === 'areia' ? '#d9b46a' : '#9ad8f5');
+  guardarEstadoAtivo();
+  if (e.hp <= 0){ e.status = null; morrer(e); }
+}
 function tiqueStatus(e, dt, luta){
   if (!e || jogo.turno || !luta || (e.rede && Mundo.estaAtivo())) return;   // a shared-world wild: the server ticks it (server_world_fight.mjs)
   if (!Status.limpo(e.status) || !(e.hp > 0)) { e.statusRelogio = 0; return; }
@@ -9481,6 +9500,10 @@ if (jogo.ash){
     },
     /* Status from the server's engine: the wild's (sstatus) and my partner's (pstatus). */
     statusSelvagem: (s, m) => {
+      if (m.estagiosVolta && s.estagios){                                 // the server's stages wore off (30 s) or the fight ended
+        if (m.estagiosVolta === 'todos') s.estagios = null; else for (const a of m.estagiosVolta) if (a in s.estagios) s.estagios[a] = 0;
+        if (s.rotulo){ s.rotMarca = undefined; pintarRotuloSelvagem(s); }
+      }
       const antes = Status.limpo(s.status)?.id || null;
       s.status = m.st ? { id: m.st, n: m.n | 0 } : null;
       if (m.st && m.st !== antes) flutuar(s, Status.nome(m.st) + '!', Status.cor(m.st));
@@ -9880,6 +9903,7 @@ function atualizarParceiro(dt){
   if (jogo.trocaCd > 0) jogo.trocaCd = Math.max(0, jogo.trocaCd - dt);
   const hostil = jogo.selvagens.find(s => s.estado === 'atacando' && Math.hypot(s.x - pika.x, s.z - pika.z) < 12);
   tiqueStatus(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
+  tiqueClima(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   tiqueVolatil(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   tiqueSono(pika, dt);
   if (jogo.turno || jogo.ordem){ pika.emBatalha = true; pika.calma = 0; }   // aggro de selvagem NÃO congela o parceiro: ele segue você e só briga quando VOCÊ manda (ou no turno)

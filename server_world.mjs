@@ -458,14 +458,14 @@ export function createWorld(h) {
     const now = Date.now();
     for (const [map, room] of rooms) for (const w of room.wilds.values()) {
       if (w.state !== 'vagando' || !fight.inFight(w)) continue;
-      if (now - w.touched > 20e3) { fight.forget(w); continue; }
+      if (now - w.touched > 20e3) { if (fight.forget(w)) toMap(map, { t: 'sstatus', id: w.id, hp: w.hp, st: w.status?.id || null, n: w.status?.n || 0, estagiosVolta: 'todos' }); continue; }
       const t = fight.tick(w, engineWeather(map), now);
       if (!t) continue;
       for (const x of t.danos) {
         if (x.motivo === 'leech-seed' && w.seedBy != null) toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: x.v, eff: 1, golpe: 'leechseed', de: w.seedBy, dreno: true });
         else toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: x.v, tique: x.motivo || 'status' });
       }
-      if (t.st !== undefined) sendStatus(map, w, t.st);
+      if (t.st !== undefined || t.volta) toMap(map, { t: 'sstatus', id: w.id, hp: w.hp, st: w.status?.id || null, n: w.status?.n || 0, ...(t.volta ? { estagiosVolta: t.volta } : {}) });
       if (w.hp <= 0) knockOut(map, w);
     }
   }, 1000).unref?.();

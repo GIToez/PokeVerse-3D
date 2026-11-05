@@ -60,6 +60,16 @@ const mon = (dex, lv = 30) => ({ uid: 'p' + dex + Math.random(), dex, lv, nome: 
   for (let i = 0; i < 30 && !got; i++) { const r = F.wildHits(w, p, MOVES.poisonsting, null); if (r.status) got = r.status; }
   ok('Poison Sting can poison the partner (reported for the client)', got?.id === 'poison', JSON.stringify(got));
 }
+/* stages wear off on the server's clock, and the client is told */
+{
+  const w = wild(19), p = mon(25); let now = Date.now();
+  F.hitWild(p, w, MOVES.growl, null, now);
+  let volta = null;
+  for (let i = 0; i < 40 && !volta; i++) { now += 1000; volta = F.tick(w, null, now)?.volta || null; }
+  ok('a stat drop wears off after a while and the change is reported', Array.isArray(volta) && volta.includes('atk'), JSON.stringify(volta));
+  const w2 = wild(19); F.hitWild(p, w2, MOVES.growl, null);
+  ok('ending the fight reports that its stages were cleared', F.forget(w2) === true && F.forget(w2) === false);
+}
 /* weather from the map */
 {
   const w = wild(16), p = mon(7), w2 = wild(16);
