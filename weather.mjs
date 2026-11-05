@@ -86,6 +86,7 @@ export function tipoGolpe(clima, golpe){
 export function precisao(clima, golpe){
   const id = String(golpe?.id || '');
   if (CHUVA(clima) && (id === 'thunder' || id === 'hurricane')) return 1;
+  if ((clima === 'granizo' || clima === 'neve') && id === 'blizzard') return 1;
   if (clima === 'sol' && (id === 'thunder' || id === 'hurricane')) return 0.5;
   if (clima === 'nevoeiro') return 0.6;
   return null;

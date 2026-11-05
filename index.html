@@ -281,6 +281,7 @@ import * as Evolucao from './evolution.mjs';     // regras de evolução dos jog
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
 import * as Dialogos from './dialogues.mjs';     // Fase 3 do painel: falas fixas (portão, Oak, abertura) vêm do data/dialogues.json
 import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atrasoDoGolpe, corrigirEfeito } from './moves.mjs';
+import * as MoveMarks from './move_marks.mjs';   // matchup badges, weather dots and the 0.5 s move / weather info cards (v2 HUD)
 import * as R from './rules.mjs';              // fórmulas da série: stats, dano, tipos
 import * as I18n from './i18n.mjs';             // IDIOMA do jogador (11/09): pt (fonte), en, es
 import * as Arrastar from './drag_team.mjs';   // drag to reorder the party and move between party and box; the server accepts it as `party`
@@ -9130,6 +9131,14 @@ if (jogo.ash){
   }
   $('f-pika-lv').textContent = 'Lv' + jogo.pika.lv;
   [0, 1, 2, 3].forEach(i => $('sk' + (i + 1)).addEventListener('click', () => { Som.destravar(); const id = jogo.pika.golpesIds[i]; if (id) usarGolpe(id); }));
+  /* Move marks + info cards: the target is the turn battle's foe, else the wild you aim at; the weather is the turn battle's
+     (server) or the map's (none indoors). */
+  MoveMarks.install({ state: () => {
+    const T = jogo.turno, alvo = T ? T.inimigo : jogo.alvo;
+    return { pika: jogo.pika, golpes: GOLPES, porDex, chart: DB.chart, turno: !!T, indoors: INTERIOR,
+      alvo: alvo && alvo.estado !== 'desmaiado' && alvo.hp !== 0 ? alvo : null,
+      clima: T ? (T.serv ? T.serv.clima?.id || null : clima.nome || null) : (INTERIOR ? null : clima.nome || null) };
+  } });
   $('bola-btn').addEventListener('click', () => { Som.destravar(); jogarBola(); });
   $('bola-tipo').addEventListener('click', e => { e.stopPropagation(); Som.destravar(); if (!Hud.alternarLequeBola()) proximaBola(); });
   {                                                                   // atalhos: clique usa; vazio, botão direito ou toque longo (550 ms) abre o seletor
@@ -9608,8 +9617,9 @@ if (jogo.ash){
       const t1 = I18n.t(Calendario.NOME_MES_CURTO[d.mes - 1]) + ' ' + d.dia, t2 = I18n.t(Calendario.NOME_ESTACAO[d.estacao]) + ' · ' + I18n.t(Calendario.NOME_DIA_CURTO[d.semana]);
       if (data && data.textContent !== t1){ data.textContent = t1; Hud.encolher?.(data); }
       if (est && est.textContent !== t2){ est.textContent = t2; Hud.encolher?.(est); }
-      if (ic && ic.dataset.estacao !== d.estacao){ ic.dataset.estacao = d.estacao; ic.textContent = Calendario.ICONE_ESTACAO[d.estacao]; Object.assign(ic.style, { display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round((parseFloat(ic.style.height) || 20) * 0.75) + 'px', lineHeight: '1' }); }
-      g.title = I18n.t(Calendario.NOME_DIA[d.semana]) + ', ' + I18n.t(Calendario.NOME_MES[d.mes - 1]) + ' ' + d.dia + ' · ' + I18n.t(Calendario.NOME_ESTACAO[d.estacao]);
+      const wIc = INTERIOR ? null : MoveMarks.iconeClima(clima.nome), icKey = wIc || d.estacao;   // weather icon while there is weather, else the season's
+      if (ic && ic.dataset.estacao !== icKey){ ic.dataset.estacao = icKey; ic.textContent = wIc ? '' : Calendario.ICONE_ESTACAO[d.estacao]; Object.assign(ic.style, { display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round((parseFloat(ic.style.height) || 20) * 0.75) + 'px', lineHeight: '1', backgroundImage: wIc ? "url('" + wIc + "')" : 'none', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }); }
+      g.removeAttribute('title'); g.setAttribute('aria-label', I18n.t(Calendario.NOME_DIA[d.semana]) + ', ' + I18n.t(Calendario.NOME_MES[d.mes - 1]) + ' ' + d.dia + ' · ' + I18n.t(Calendario.NOME_ESTACAO[d.estacao]));   // the 0.5 s weather card (move_marks.mjs) replaces the tooltip
       if (!g.__calendario){
         g.__calendario = true;
         Object.assign(g.style, { pointerEvents: 'auto', cursor: 'pointer' });
@@ -9631,7 +9641,7 @@ if (jogo.ash){
     gm: () => GM_REAL,                                                  // Configurações: as ferramentas de bastidor só pra GM (ou jogo local)
     trocar: nome => Troca.convidar(nome), desafiarJogador,             // Social → menu do amigo → convidar (fase 4: mesa de troca) / /batalhar
     destinoPreso, irDestinoPreso,                                      // ESTOU PRESO (15/09): pra onde vai e a ida (sem curar), depois do relato aceito
-    jogo, R, porDex, lerLS, gravarLS, Som, Ev, conta: Conta, tmEnviar: m => Rede.enviar(m), golpe: id => GOLPES[id] || null,   // TM / held screens (tm_ui.mjs, held_ui.mjs) contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, voar: VOAR, guarda: GUARDA, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
+    jogo, R, porDex, lerLS, gravarLS, Som, Ev, conta: Conta, tmEnviar: m => Rede.enviar(m), golpe: id => GOLPES[id] || null,   /* TM / held screens (tm_ui.mjs, held_ui.mjs). Never a // comment mid-line here: it swallowed the rest of this line (guarda, missoes, evoluir…) */ contexto: contextoRelato, flutuar, pintarTime, dexDoGlb, MOBILE, Personagem, missoes: Missoes, conhecimento: Conhecimento, Ind, aprenderGolpe, golpesReaprender, reaprender, recuperarGolpes: recuperarGolpesDoTime, golpe: id => GOLPES[id], definirTamanhos, depuracao, diagnostico, qualidade: QUALIDADE, evolucaoDe, evoluir: evoluirParceiro, opcoesEvolucao, usarItemEvolucao, ehItemDeEvolucao: id => Evolucao.ehItemDeEvolucao(id), expPara: Evolucao.expPara, usarItem, ehHeld, segurarItem, voar: VOAR, guarda: GUARDA, ehPatins: id => +id === RegrasItem.PATINS, patinsLigados: () => !!jogo.patins, nomeHeld: id => HELD?.efeito(id) || null, reanimadorNaMochila, reanimarMembro: e => { const i = e.seguindo ? membroAtivo() : jogo.time.indexOf(registroDoTime(e)); const r = reanimadorNaMochila(); return i >= 0 && r ? reanimar(i, r.id, r.nome) : false; }, atalhos: () => jogo.atalhos, definirAtalho, teclasAtalho: ATALHOS_TECLAS, montarias: () => MONTARIAS.filter(d => podeMontar(d[0])).map(d => ({ glb: d[0], nome: d[1], voa: d[4], meio: d[7] || 'terra' })), get nome(){ return nomeJogador(); }, renomear: async n => { const r = await Conta.trocarNome(n); if (r.ok) rotularJogador(); return r; }, alturas: ALTURAS,
     criarPersonagem: () => abrirCriador({ som: Som, cancelavel: true, sobreJogo: true }).then(p => { if (p){ Personagem.gravarSkin(null); return jogo.trocarJogador?.(p); } }),   // a new base character takes the wardrobe outfit off   // Configurações → ✎ Personagem
     personagemNome: () => Personagem.nomeDe(Personagem.ler()),
     chart: DB.chart, tipos: DB.types, get habitats(){ return typeof habitats !== 'undefined' ? habitats : null; },
@@ -9689,7 +9699,7 @@ function pintarBarra(){
     const id = p.golpesIds[i], g = id && GOLPES[id], el = $('sk' + (i + 1));
     if (!g){ if (!el.classList.contains('vazio')){ el.classList.add('vazio'); for (const f of [...el.children]) if (!f.dataset.fig) f.remove(); el.__pronto = false; el.__id = null; el.__ic = null; el.__txt = null; el.__pct = null; el.title = I18n.t('no move'); } continue; } else if (el.classList.contains('vazio')) el.classList.remove('vazio');
     if (!el.__pronto){ el.insertAdjacentHTML('afterbegin', `<b>${i + 1}</b><em></em><s></s><i></i><small></small>`); el.__pronto = true; el.__em = el.querySelector(':scope > em'); el.__s = el.querySelector(':scope > s'); el.__i = el.querySelector(':scope > i'); el.__small = el.querySelector(':scope > small'); Hud.remontar($('skills')); }   // os <span data-fig> do Figma ficam; a peça remonta pra estilizar o miolo novo
-    if (el.__id !== id){ el.__id = id; el.__em.textContent = g.nome; el.__s.style.background = R.COR_TIPO?.[g.tipo] || '#556'; el.title = `${g.nome} · ${g.tipo} · ${I18n.t('power')} ${g.poder} · ${I18n.t('cooldown')} ${g.recarga}s`; Hud.encolher(el.__em); }
+    if (el.__id !== id){ el.__id = id; el.__em.textContent = g.nome; el.__s.style.background = R.COR_TIPO?.[g.tipo] || '#556'; el.removeAttribute('title'); el.setAttribute('aria-label', `${g.nome} · ${g.tipo} · ${I18n.t('power')} ${g.poder} · ${I18n.t('cooldown')} ${g.recarga}s`);   /* the 0.5 s info card replaces the browser tooltip */ Hud.encolher(el.__em); }
     const ic = el.__ic || (el.__ic = el.querySelector('[data-var="tipo"]'));                       // Figma: ícone do tipo do golpe no slot (img/tipo)
     if (ic && ic.__tipo !== g.tipo){
       ic.__tipo = g.tipo; const srcTipo = './ui/figma/tipo/' + (TIPO_PT[g.tipo] || 'normal') + '.png';   /* 18/09 (rodada 32, Amanda: "a qualidade caiu depois do d6239fe0"): de volta aos PNGs de 692 px; o tamanho continua sendo a caixa do slot-tipo */
@@ -9706,6 +9716,7 @@ function pintarBarra(){
     const txt = rec > 0 && p.hp > 0 ? rec.toFixed(1) : (m ? (semPp ? I18n.t('no PP') : m.pp + '/' + m.ppMax) : '');
     if (el.__txt !== txt){ el.__small.textContent = txt; el.__txt = txt; }
   }
+  MoveMarks.paint();
   const a = jogo.alvo;
   /* Nós nomeados: a peça `inimigo-status` do Figma liga nome/nível/estado e a barra. O innerHTML só é reescrito quando
      o TEXTO muda (a largura da barra saiu do template e vai por Hud.fill), senão a árvore montada seria destruída a
