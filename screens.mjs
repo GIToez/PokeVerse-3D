@@ -135,8 +135,21 @@ export function mostrar(nome, L, c = {}){
   if (nome === 'cadastro' && ctx?.conta?.alfa) caixaAlphaKey(pop);        // ALPHA KEY (11/09): com o cadastro fechado, a caixa vem antes do formulário
   else if (nome !== 'cadastro') chaveAlfa = null;
   if (nome === 'login' || nome === 'cadastro'){
-    barraIdioma(pop, nome);                                              // IDIOMA (11/09): PT · EN · ES no canto da tela
-    botaoDiscord(pop);                                                   // DISCORD (20/09): canto de baixo, do lado oposto ao idioma
+    /* The v2 mockup draws its own language selector and Discord button (wired in acao): the code-made ones were drawn on top
+       of them (a blank gold button next to the PT/EN/ES pills, and a small grey "Discord" over the mockup's). Only without them. */
+    if (!pop.querySelector('[data-fig="seletor-idioma"]')) barraIdioma(pop, nome);
+    else {
+      /* The mockup's gold "selected" mark sits inside PT: move it to the language in use. */
+      const marca = pop.querySelector('[data-fig="seletor-idioma"] [data-fig="marca-ativa"]'), alvo = pop.querySelector('[data-fig="idioma-' + I18n.language() + '"]');
+      if (marca && alvo && marca.parentElement !== alvo) alvo.insertBefore(marca, alvo.firstChild);
+    }
+    if (pop.querySelector('[data-fig="seletor-idioma"]')) for (const l of ['pt', 'en', 'es']){
+      const b = pop.querySelector('[data-fig="idioma-' + l + '"]'); if (!b) continue;
+      b.classList.toggle('on', I18n.language() === l); b.title = I18n.LANGUAGES[l] || l;
+      const t = b.querySelector('[data-fig="txt/idioma"]'); if (t && !t.textContent.trim()) t.textContent = l.toUpperCase();   // the mockup's label is only a sample
+    }
+    if (!pop.querySelector('[data-fig="btn-discord"]')) botaoDiscord(pop);
+    else { const ic = pop.querySelector('[data-fig="btn-discord"] [data-var="icone-discord"]'); if (ic && !ic.innerHTML) { ic.innerHTML = LOGO_DISCORD; ic.style.color = '#ffffff'; ic.style.display = 'flex'; ic.style.alignItems = 'center'; ic.style.justifyContent = 'center'; const sv = ic.querySelector('svg'); if (sv) { sv.setAttribute('width', '100%'); sv.setAttribute('height', '100%'); } } }   // the mockup leaves the icon slot empty
   }
   return pop;
 }
@@ -180,6 +193,8 @@ function estiloTela(){
 .tela-extra .btn:disabled{ opacity: .5; cursor: default; }
 .tela-idioma{ position: absolute; top: 14px; right: 18px; display: flex; gap: 6px; z-index: 40; }
 .tela-idioma button{ min-width: 40px; padding: 6px 10px; border: 1px solid #2a3350; border-radius: 999px; background: #151e30cc; color: #98a4c0; font: 700 12px system-ui, Segoe UI, Roboto, sans-serif; cursor: pointer; }
+[data-fig^="idioma-"].on [data-fig="txt/idioma"]{ color: #1d2b45 !important; }
+[data-fig^="idioma-"]:not(.on) [data-fig="txt/idioma"]{ color: #d6e2ff !important; }
 .tela-idioma button.on{ border-color: #f8c237; background: #13254a; color: #f8c237; }
 /* DISCORD (20/09): canto de baixo à ESQUERDA. A direita já é do rótulo de versão ("v0.2.0 · alfa", o pf-txt da maquete) e o
    botão caía exatamente em cima dele — medido, 66x23 sobre 80x13. À esquerda o canto está vazio, e o botão fica na diagonal
@@ -298,6 +313,10 @@ async function caixaAlphaKey(pop, erroInicial = ''){
 }
 
 function acao(tela, a, el, pop){
+  /* The mockup's own Discord and language buttons (v2 login / sign-up screens). They work in the preview too. */
+  if (a === 'discord'){ try { window.open(DISCORD, '_blank', 'noopener,noreferrer'); } catch {} return; }
+  const li = /^idioma-(pt|en|es)$/.exec(a || '');
+  if (li){ const l = li[1]; if (I18n.language() !== l) (async () => { await I18n.set(l); ctx?.conta?.idioma?.(l); mostrar(tela, layout, ctx); })(); return; }
   if (!ctx?.conta){                                                       // prévia (?tela=): só conta o que faria
     const aviso = t => { ctx?.Chat?.sistema?.(t); console.log('telas:', t); };
     if (a === 'login') aviso('Prévia: o login de verdade abre quando o jogo está com o servidor no ar (conta por usuário + senha).');
