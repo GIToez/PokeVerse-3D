@@ -149,7 +149,7 @@ const TABELA_FUNDADOR = './data/fundador.json',
   DADOS_SKINS = './data/skins_jogador.json';
 const PAD = 16;
 const FUNDO_PASSE = './ui/amanda/loja/fundo-passe.png';
-const fmt = (n) => Math.round(Number.isFinite(+n) ? +n : 0).toLocaleString(I18n.local(), { useGrouping: 'always' });
+const fmt = (n) => Math.round(Number.isFinite(+n) ? +n : 0).toLocaleString(I18n.locale(), { useGrouping: 'always' });
 const px = (a, k) => parseFloat(a?.style?.[k]) || 0;
 function confirmarNoBotao(b, t, a) {
   const c = Hud.semMoedaNaArte(b.dataset.arte),
@@ -358,7 +358,7 @@ function moeda() {
     }
     if (moedaEscolhida === 'brl' || moedaEscolhida === 'usd') return moedaEscolhida;
   }
-  return I18n.idioma() === 'pt' ? 'brl' : 'usd';
+  return I18n.language() === 'pt' ? 'brl' : 'usd';
 }
 function escolherMoeda(m) {
   if ((m !== 'brl' && m !== 'usd') || E.ocupado) return;
@@ -566,7 +566,7 @@ async function verTemporada() {
 }
 function produtoPeca(p) {
   const q = p.peca || {},
-    l = I18n.idioma?.() || 'pt',
+    l = I18n.language?.() || 'pt',
     a = q.nomes && typeof q.nomes === 'object' && typeof q.nomes[l] === 'string' && q.nomes[l] ? q.nomes[l] : null;
   const b = a || tr(String(q.nome || q.id || p.id)),
     c = q.tipo === 'roupa' ? nomeCurto(b) : b;
@@ -615,7 +615,7 @@ function produtoMontaria(p) {
   return {
     id: p.id,
     preco: p.preco,
-    nome: tr('{x} Shiny', { x: I18n.tNome(String(q.nome || q.id || '')) }),
+    nome: tr('{x} Shiny', { x: I18n.tName(String(q.nome || q.id || '')) }),
     desc: tr(
       q.meio === 'agua'
         ? p.temNormal
@@ -663,7 +663,7 @@ function produtoMontariaNormal(p) {
   return {
     id: p.id,
     preco: p.preco,
-    nome: tr('{x} Normal', { x: I18n.tNome(String(q.nome || q.id || '')) }),
+    nome: tr('{x} Normal', { x: I18n.tName(String(q.nome || q.id || '')) }),
     desc: tr(
       q.meio === 'agua'
         ? 'The mount, bound to your account: it can only swim, with the Surf license.'
@@ -697,7 +697,7 @@ const montariasLoja = () => (E.vit?.aberta ? (E.vit.montarias || []).map(produto
 const ehSkinMonLoja = (a) => typeof a === 'string' && a.startsWith('skinMon:');
 function produtoSkinMon(p) {
   const q = p.skin || {},
-    l = I18n.idioma?.() || 'pt',
+    l = I18n.language?.() || 'pt',
     a = /^pm(\d{4})_\d{2}$/.exec(String(q.id || ''))?.[1] || null;
   const b = (q.nomes && typeof q.nomes[l] === 'string' && q.nomes[l]) || String(q.nome || q.id || p.id);
   const F = fotoDe(String(q.id || ''));
@@ -1051,7 +1051,7 @@ function pecasEmDestaque() {
 }
 const listaNomes = (l) => {
   try {
-    return new Intl.ListFormat(I18n.local(), { type: 'conjunction' }).format(l);
+    return new Intl.ListFormat(I18n.locale(), { type: 'conjunction' }).format(l);
   } catch {
     return l.join(', ');
   }
@@ -1064,7 +1064,7 @@ const comoTela = (a) => ({
   indice: E.indice,
   t: tr,
   lista: listaNomes,
-  local: I18n.local(),
+  local: I18n.locale(),
 });
 function slideInicial() {
   return 0;
@@ -1258,7 +1258,7 @@ function montarPop() {
       Popup.texto(
         pop,
         'filtro',
-        f.dataset.tagval === 'todos' && I18n.idioma() === 'en' ? 'All' : t.dataset.exemplo || '',
+        f.dataset.tagval === 'todos' && I18n.language() === 'en' ? 'All' : t.dataset.exemplo || '',
         f,
       );
   }
@@ -3210,7 +3210,7 @@ const comoJanela = (a) => ({
   indice: E.indice,
   t: tr,
   lista: listaNomes,
-  local: I18n.local(),
+  local: I18n.locale(),
   mob: mobF(),
   dinheiro,
 });
@@ -4943,7 +4943,7 @@ function seloDestaque(c, a, d, b) {
   if (!s) return;
   const t = s.querySelector('[data-txt]');
   if (t) {
-    const v = d.cru ? (I18n.tExato?.(d.texto) ?? d.texto) : tr(d.texto);
+    const v = d.cru ? (I18n.tExact?.(d.texto) ?? d.texto) : tr(d.texto);
     t.textContent = String(v).toUpperCase();
   }
   const i = t ? larguraDoTexto(t) : 60,
@@ -5596,7 +5596,7 @@ function pintarAtivo(g, b, c) {
   }
   const d =
     Conta.dataDoMedalhao?.(c, E.exemplo ? 0 : undefined) ||
-    new Date(c).toLocaleDateString(I18n.local(), { day: '2-digit', month: '2-digit', year: 'numeric' });
+    new Date(c).toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit', year: 'numeric' });
   a.textContent = tr(TXT.medalhaoAtivo, { data: d });
   const x =
     px(b, 'left') +
@@ -5714,8 +5714,8 @@ function caberLinha(t) {
 function ctxPasse() {
   return {
     t: tr,
-    idioma: I18n.idioma?.() || 'pt',
-    local: I18n.local(),
+    idioma: I18n.language?.() || 'pt',
+    local: I18n.locale(),
     agora: E.exemplo ? Date.now() : agoraDoServidor(),
     lista: listaNomes,
     sexo: sexoDoPersonagem(),

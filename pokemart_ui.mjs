@@ -11,7 +11,7 @@ const textoErro = (a) => {
 };
 const tr = (s, v) => I18n.t(s, v);
 const num = (v, p = 0) => (v != null && Number.isFinite(+v) ? +v : p);
-const fmt = (n) => Math.round(num(n)).toLocaleString(I18n.local());
+const fmt = (n) => Math.round(num(n)).toLocaleString(I18n.locale());
 const px = M.px,
   filho = M.filho;
 const maiuscula = (s) => {
@@ -463,7 +463,7 @@ function pintarTudo(e) {
   M.caberDepois(Popup.textoCru(pop, 'loja-local', nomeLoja()));
   Popup.textoCru(pop, 'saldo', fmt(saldo()));
   const m = shopkeeper();
-  M.caberDepois(Popup.textoCru(pop, 'npc-nome', m?.nome ? I18n.tNome(m.nome) : tr('Seller')));
+  M.caberDepois(Popup.textoCru(pop, 'npc-nome', m?.nome ? I18n.tName(m.nome) : tr('Seller')));
   const o = !f.length;
   Popup.textoCru(
     pop,
@@ -565,5 +565,5 @@ function nomeLoja() {
   if (a?.nome) return tr(a.nome);
   const m = /^2(15|22)(\d\d)\d\d$/.exec(String(S.loja || ''));
   const b = m ? dep.nomeArea?.(+(m[1] + m[2])) : null;
-  return b ? I18n.tNome(b) : tr('Pokémart');
+  return b ? I18n.tName(b) : tr('Pokémart');
 }

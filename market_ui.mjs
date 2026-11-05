@@ -20,7 +20,7 @@ const abas = () => abaAtual;
 function render(){ if (aberta === 'mercado' && popMc && Popup.aberto(popMc)) encherMercado(popMc); }
 
 export function avisoDoServidor(a){
-  const t = Mercado.textoAviso(a, tr, I18n.local());
+  const t = Mercado.textoAviso(a, tr, I18n.locale());
   if (t) Chat.sistema(tr('Market: {x}', { x: t }));
   try { ctx.Som?.tocar?.('ui/sound_click', { volume: 0.6 }); } catch {}
   mercadoAviso();
@@ -80,8 +80,8 @@ let mc = {
   ocupado: false,
   aviso: '',
 };
-const mcMoedas = (n) => Math.round(+n || 0).toLocaleString(I18n.local()) + ' ₽';
-const mcNumero = (n) => Math.round(+n || 0).toLocaleString(I18n.local());
+const mcMoedas = (n) => Math.round(+n || 0).toLocaleString(I18n.locale()) + ' ₽';
+const mcNumero = (n) => Math.round(+n || 0).toLocaleString(I18n.locale());
 const mcIconeItem = (a) => {
   const i = D?.itens?.[a]?.i;
   return './ui/itens/' + (i || 'ic_' + a) + '.png';
@@ -437,7 +437,7 @@ async function mcCarregarMinhas() {
     mc.minhas = r;
     mc.agora = r.agora;
     for (const a of r.avisos || []) {
-      const t = Mercado.textoAviso(a.aviso, tr, I18n.local());
+      const t = Mercado.textoAviso(a.aviso, tr, I18n.locale());
       if (t) Chat.sistema(tr('Market: {x}', { x: t }));
       else Chat.sistema('Market: ' + a.texto);
     }
@@ -447,7 +447,7 @@ async function mcCarregarMinhas() {
 }
 function rMinhas(c, d) {
   const M = mc.minhas;
-  c.innerHTML = `${mc.aviso}${M?.avisos?.length ? `<div style="margin-bottom:8px;font-size:12px;color:#8fe08f">${M.avisos.map((a) => '• ' + esc(Mercado.textoAviso(a.aviso, tr, I18n.local()) || tr(a.texto))).join('<br>')}</div>` : ''}<div class="lista">${!M ? `<div class="vazio">${esc(tr('loading…'))}</div>` : !M.ofertas.length ? `<div class="vazio">${esc(tr('You have no active listings.'))}</div>` : M.ofertas.map((o) => mcLinhaOferta(o, 'cancelar')).join('')}</div>${d}`;
+  c.innerHTML = `${mc.aviso}${M?.avisos?.length ? `<div style="margin-bottom:8px;font-size:12px;color:#8fe08f">${M.avisos.map((a) => '• ' + esc(Mercado.textoAviso(a.aviso, tr, I18n.locale()) || tr(a.texto))).join('<br>')}</div>` : ''}<div class="lista">${!M ? `<div class="vazio">${esc(tr('loading…'))}</div>` : !M.ofertas.length ? `<div class="vazio">${esc(tr('You have no active listings.'))}</div>` : M.ofertas.map((o) => mcLinhaOferta(o, 'cancelar')).join('')}</div>${d}`;
   c.querySelectorAll('[data-acao="cancelar"]').forEach(
     (b) =>
       (b.onclick = async () => {
@@ -1753,9 +1753,9 @@ function mcEncherPrecos(a) {
     Popup.texto(
       a,
       'venda-quando',
-      (d ? tr('today') : b.toLocaleDateString(I18n.local(), { day: '2-digit', month: '2-digit' })) +
+      (d ? tr('today') : b.toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit' })) +
         ' ' +
-        b.toLocaleTimeString(I18n.local(), { hour: '2-digit', minute: '2-digit' }),
+        b.toLocaleTimeString(I18n.locale(), { hour: '2-digit', minute: '2-digit' }),
       c,
     );
     Popup.texto(a, 'venda-qtd', v.quantidade + ' ' + tr('pcs'), c);
@@ -2362,8 +2362,8 @@ function mcQuando(a) {
       ? tr('today')
       : d.toDateString() === b.toDateString()
         ? tr('yesterday')
-        : b.toLocaleDateString(I18n.local(), { day: '2-digit', month: '2-digit' });
-  return e + ' ' + b.toLocaleTimeString(I18n.local(), { hour: '2-digit', minute: '2-digit' });
+        : b.toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit' });
+  return e + ' ' + b.toLocaleTimeString(I18n.locale(), { hour: '2-digit', minute: '2-digit' });
 }
 function mcPrecoTopoMon(v, E) {
   if (!E) return '';

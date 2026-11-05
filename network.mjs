@@ -33,7 +33,7 @@ import * as Relogio from './clock.mjs';
 import * as Conta from './account.mjs';
 import * as Pref from './device_prefs.mjs';
 import * as Lotacao from './capacity.mjs';
-import { t as tr, local as localDoIdioma, tExato, dataDasVars } from './i18n.mjs';
+import { t as tr, locale as languageLocale, tExact, dateFromVars } from './i18n.mjs';
 import { textoAviso } from './market.mjs';
 import * as TerrenoEstado from './plot_state.mjs';
 import * as Balao from './chat_bubble.mjs';
@@ -376,14 +376,14 @@ export function varsDoServidor(v) {
   for (const k of Object.keys(v))
     if (/^\w{1,24}$/.test(k))
       o[k] = typeof v[k] === 'string' || (typeof v[k] === 'number' && Number.isFinite(v[k])) ? v[k] : '';
-  return dataDasVars(o);
+  return dateFromVars(o);
 }
 export const temVars = (m) => !!m?.vars && typeof m.vars === 'object' && !Array.isArray(m.vars);
 export const textoSistema = (m) => tr(String(m?.texto ?? ''), temVars(m) ? varsDoServidor(m.vars) : null);
 export function textoInvasao(m) {
-  if (!temVars(m)) return tExato(String(m?.texto || ''));
+  if (!temVars(m)) return tExact(String(m?.texto || ''));
   const v = varsDoServidor(m.vars);
-  if (typeof v.y === 'string') v.y = tExato(v.y);
+  if (typeof v.y === 'string') v.y = tExact(v.y);
   return tr(String(m?.texto ?? ''), v);
 }
 export function enviar(a) {
@@ -877,7 +877,7 @@ function receber(m) {
       if (m.t === 'mod_erro') return C?.sistemaCru?.(textoModErro(m.erro));
       const r = (s, v) => C?.sistemaCru?.(tr(s, v));
       const w = (t, a = false) =>
-        a ? new Date(t).toLocaleTimeString(localDoIdioma()) : new Date(t).toLocaleString(localDoIdioma());
+        a ? new Date(t).toLocaleTimeString(languageLocale()) : new Date(t).toLocaleString(languageLocale());
       if (m.op === 'online') {
         const l = m.lista || [];
         const _ = (x) => {
@@ -1136,7 +1136,7 @@ function receber(m) {
     case 'mercado_aviso': {
       if (m.save) ctx.troca?.aplicarSave?.(m.save, m.rev);
       {
-        const t = textoAviso(m.aviso, tr, localDoIdioma());
+        const t = textoAviso(m.aviso, tr, languageLocale());
         if (t && ctx.Chat?.sistemaCru) ctx.Chat.sistemaCru(tr('Market: {x}', { x: t }));
         else if (m.texto) ctx.Chat?.sistemaCru?.(tr('Market: {x}', { x: String(m.texto) }));
       }

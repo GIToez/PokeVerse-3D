@@ -8,7 +8,7 @@ import { instalarEventos } from '/admin/events.mjs';
 import { instalarAgenda } from '/admin/schedule.mjs';   // 📅 event schedule (server_schedule.mjs)   // Fase 3: eventos ao vivo, aviso global, manutenção
 import { instalarConteudo } from '/admin/content.mjs'; // Fase 2: telas Missões, Espécies, Evoluções, Learnset
 import { criarCamadas } from '/admin/layers.mjs';
-import { carregar as carregarIdioma } from '/i18n.mjs';
+import { load as loadLanguage } from '/i18n.mjs';
 import { carregar as carregarNomesMapa, nomeMapaComId, traduzNome, rotulosAreas } from '/admin/map_names.mjs';
 const DICAS = {   // o rodapé do Editor de Mapa muda com a ferramenta
   zonas: 'wheel: zoom · drag: pan · click an area to edit it (drag its middle/edges) · drag a zone center/edge',
@@ -97,7 +97,7 @@ const corZona = z => CORES[(z.__i ?? 0) % CORES.length];
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 async function iniciar() {
-  await carregarIdioma('en');   // admin is English-first; do not write localStorage (the game keeps the player's language)
+  await loadLanguage('en');   // admin is English-first; do not write localStorage (the game keeps the player's language)
   const quem = await api('/admin/eu');
   if (quem.status === 401 || !token) { mostrarLogin(); return; }
   if (!quem.gm) { mostrarLogin('The account "' + (quem.usuario || '') + '" is not a GM.'); return; }

@@ -10,7 +10,7 @@ const avisouBloqueio = new Map();
 const esc = (s) =>
   String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
-const fmt = (n) => Math.round(num(n)).toLocaleString(I18n.local?.() || 'pt-BR');
+const fmt = (n) => Math.round(num(n)).toLocaleString(I18n.locale?.() || 'pt-BR');
 const cabeca = (a) => (num(a) > 0 ? './ui/mon/pm' + String(Math.round(num(a))).padStart(4, '0') + '.png' : null);
 export function instalar(c) {
   ctx = c || {};

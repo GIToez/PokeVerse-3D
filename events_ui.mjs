@@ -86,7 +86,7 @@ const MESES = {
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
 };
-const lng = () => (DIAS[I18n.idioma()] ? I18n.idioma() : 'en');
+const lng = () => (DIAS[I18n.language()] ? I18n.language() : 'en');
 const horaDe = (a) => {
   const p = partes(a);
   return lng() === 'pt' ? p2(p.h) + 'h' + (p.mi ? p2(p.mi) : '') : p2(p.h) + ':' + p2(p.mi);
@@ -180,8 +180,8 @@ function contagem(o) {
   if (a < o.fim && o.fim - o.oc > MIN) return { rotulo: tr('ends in'), texto: b(o.fim - a) };
   return { rotulo: tr('ended'), texto: diaMes(o.oc) };
 }
-const tituloDe = (o) => o.tr?.[lng()]?.titulo || I18n.tExato(o.titulo);   // English is the source; the schedule carries the other languages
-const descDe = (o) => o.tr?.[lng()]?.descricao || I18n.tExato(o.descricao || '');
+const tituloDe = (o) => o.tr?.[lng()]?.titulo || I18n.tExact(o.titulo);   // English is the source; the schedule carries the other languages
+const descDe = (o) => o.tr?.[lng()]?.descricao || I18n.tExact(o.descricao || '');
 const ROTULO_TIPO = {
   raid: 'RAID',
   invasao: 'INVASION',
@@ -797,7 +797,7 @@ function abrirDetalhe(o) {
   Popup.texto(popDet, 'evento-periodo', periodo(o));
   Popup.textoCru(popDet, 'evento-texto', descDe(o) || tr('No description.'));
   const d = passosDe(o),
-    e = passosDaStaff(o) ? (a, b, s) => Popup.textoCru(a, b, I18n.tExato(s)) : Popup.texto;
+    e = passosDaStaff(o) ? (a, b, s) => Popup.textoCru(a, b, I18n.tExact(s)) : Popup.texto;
   for (let i = 1; i <= 3; i++) {
     const g = Popup.grupo(popDet, 'passo-' + i);
     if (g) g.style.display = d[i - 1] ? '' : 'none';
@@ -894,7 +894,7 @@ function participar(o) {
     Chat.sistema(
       '📍 ' +
         (o.invasao?.lugar
-          ? I18n.t('The invasion is in {x}.', { x: I18n.tExato(o.invasao.lugar) })
+          ? I18n.t('The invasion is in {x}.', { x: I18n.tExact(o.invasao.lugar) })
           : I18n.t('Search the map: the location is a surprise.')),
     );
     Popup.fechar(popDet);

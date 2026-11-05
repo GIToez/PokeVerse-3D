@@ -516,7 +516,7 @@ const layoutHudCedoP = hudClassico ? (hudQ === 'padrao' ? Hud.carregarPadrao() :
   const ajustar = () => { if (window.__dbg) return; gire.hidden = !retrato(); };
   ajustar(); addEventListener('resize', ajustar);
 })();
-await I18n.iniciar(params0Cedo.get('idioma'));
+await I18n.start(params0Cedo.get('idioma'));
 for (const raiz of [$('hud'), $('menu-icones')]) { const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT); for (let n; (n = w.nextNode());) { const k = n.nodeValue.trim(); if (k) n.nodeValue = n.nodeValue.replace(k, I18n.t(k)); } for (const b of raiz.querySelectorAll('[title]')) b.title = I18n.t(b.title); }
 try { const g = $('gire'); if (g){ g.querySelector('b').textContent = I18n.t('Vire o celular'); g.querySelector('span').textContent = I18n.t('O jogo é na horizontal.'); const b = $('gire-cheia'); if (b) b.textContent = I18n.t('Tela cheia'); } } catch {}   // "vire o celular" no idioma do jogador (12/09)                             // as telas já saem no idioma certo
 if (!DEMO && !/[?&]fairy=1/.test(location.search) && params0Cedo.get('rede') !== '0' && params0Cedo.get('conta') !== '0') Som.musica('bg/sound_login', { fade: 2 });
@@ -772,7 +772,7 @@ try {
 }
 __boot.marcar('dados');                                                  // diagnóstico do boot: mapa + pokédex baixados
 const porDex = new Map(); for (const s of DB.species) if (!porDex.has(s.n)) porDex.set(s.n, s);
-I18n.registrarCenas(indice?.cenas);
+I18n.registerScenes(indice?.cenas);
 const cenaAtual = indice?.cenas.find(c => String(c.id) === NOME);
 /* Interiores COMPARTILHADOS (Centro Pokémon 4110001, loja 4110007): a sala é uma só, mas cada cidade tem o seu elenco e as suas
    portas — os ids seguem [tipo][14|15][cidade][índice], e o JSON exportado traz os de UMA cidade (Pewter no Centro, Cinnabar na
@@ -812,10 +812,10 @@ function acharChegadaNoMapa(id){
   }) || null;
 }
 document.title = 'PokeVerse';                                    // era 'Kanto' / nome da cena (Jaime, 12/09: o título é o do jogo)
-$('titulo').textContent = cenaAtual ? I18n.rotuloLugar(cenaAtual.nome) + ' · ' + I18n.rotuloLugar(NOME)
-  : I18n.rotuloLugar('kanto') + ' — ' + (dados.areas.length > 4
+$('titulo').textContent = cenaAtual ? I18n.placeLabel(cenaAtual.nome) + ' · ' + I18n.placeLabel(NOME)
+  : I18n.placeLabel('kanto') + ' — ' + (dados.areas.length > 4
     ? I18n.t('{n} areas ({x} cities)', { n: dados.areas.length, x: Object.values(dados.nomes || {}).filter(n => /Cidade|Ilha|City|Town|Island/.test(n)).length })
-    : dados.areas.map(a => I18n.rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a))).join(' + '));
+    : dados.areas.map(a => I18n.placeLabel(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a))).join(' + '));
 if (DEMO){
   $('titulo').textContent = I18n.t('Pallet & Route 1 · demo');
   $('hud').querySelector('table').hidden = true;
@@ -870,7 +870,7 @@ function resumirMotivo(s, n){ s = String(s || '').replace(/\s+/g, ' ').trim(); r
     ui_<l>.json não veio, sairia em português): o idioma vem do I18n, do localStorage `idioma` ou do navegador. */
 function bootErroWebgl(){
   const b = $('boot'); if (!b) return;
-  const l = (() => { try { const v = I18n.idioma(); if (/^(pt|en|es)$/.test(v || '')) return v; } catch {}
+  const l = (() => { try { const v = I18n.language(); if (/^(pt|en|es)$/.test(v || '')) return v; } catch {}
     try { const v = localStorage.getItem('idioma'); if (/^(pt|en|es)$/.test(v || '')) return v; } catch {}
     const n = String((navigator.languages && navigator.languages[0]) || navigator.language || '').toLowerCase(); return n.startsWith('es') ? 'es' : n.startsWith('en') ? 'en' : 'pt'; })();
   const ua = navigator.userAgent || '', ios = /iPhone|iPad|iPod/.test(ua), celular = ios || /Android/.test(ua);
@@ -986,7 +986,7 @@ function contextoRelato(){
   let tam = null; try { tam = localStorage.getItem('hud.tamanho'); } catch {}
   return { mapa: NOME, area: document.getElementById('mm-area')?.textContent || null, pos: a ? Math.round(a.x) + ',' + Math.round(a.z) : null,
     versao: Rede.VERSAO_REDE, rede: r.estado || null, ping: r.ms ?? r.ping ?? null, fps: document.getElementById('h-fps')?.textContent || null, memoria: mem,
-    idioma: I18n.idioma(), tamanho: tam, toque: document.body.classList.contains('mobile') || matchMedia('(pointer: coarse)').matches, tela: innerWidth + '×' + innerHeight, sessaoMin: Math.round((Date.now() - NASCEU_EM) / 60000), url: location.search.slice(0, 200), quando: new Date().toISOString(),
+    idioma: I18n.language(), tamanho: tam, toque: document.body.classList.contains('mobile') || matchMedia('(pointer: coarse)').matches, tela: innerWidth + '×' + innerHeight, sessaoMin: Math.round((Date.now() - NASCEU_EM) / 60000), url: location.search.slice(0, 200), quando: new Date().toISOString(),
     ...contextoPreso(a) };
 }
 /* ESTOU PRESO (15/09): o que a equipe precisa pra REPRODUZIR a trava — posição com 1 casa (y com 2: andar/escada), por qual ponto
@@ -2625,9 +2625,9 @@ function soltarGlbDaCena(){
 }
 { soltarImagensDaCena(principal.raiz, texturasPiso); }
 soltarGlbDaCena();
-$('h-inst').textContent = principal.nInst.toLocaleString(I18n.idioma() === 'pt' ? 'pt-BR' : 'en-US') + (principal.prefabs ? ' (' + principal.prefabs + ' prefabs)' : '');
+$('h-inst').textContent = principal.nInst.toLocaleString(I18n.language() === 'pt' ? 'pt-BR' : 'en-US') + (principal.prefabs ? ' (' + principal.prefabs + ' prefabs)' : '');
 $('h-malhas').textContent = principal.nMalhas + (nPisos ? ' ' + I18n.t('(+{n} splat floors)', { n: nPisos }) : '');
-$('h-tris').textContent = Math.round(principal.nTris).toLocaleString(I18n.idioma() === 'pt' ? 'pt-BR' : 'en-US');
+$('h-tris').textContent = Math.round(principal.nTris).toLocaleString(I18n.language() === 'pt' ? 'pt-BR' : 'en-US');
 
 // sem área (interior pequeno): centro do que foi colocado
 const centroBbox = dados.bbox ? { x: (dados.bbox.x0 + dados.bbox.x1) / 2, z: (dados.bbox.z0 + dados.bbox.z1) / 2 } : { x: 0, z: 0 };
@@ -3730,7 +3730,7 @@ function cenaDoDestino(dest, id){
     || cenaCasaJohto(id, PORTAS, CENAS_EXPORTADAS)
     || dest.c;
 }
-const rotuloLugar = s => I18n.rotuloLugar(s);
+const rotuloLugar = s => I18n.placeLabel(s);
 const nomeAreaCena = a => {
   for (const c of indice?.cenas || []){ const ar = c.areas?.find(x => x.id === a); if (ar) return rotuloLugar(ar.nome); }
   return rotuloLugar(dados.nomes?.[a] || '');
@@ -4360,7 +4360,7 @@ try {
       // Fase 3: músicas, diálogos, traduções e falas dos NPCs valem na hora (o resto do que entra no boot pede F5)
       else if (arq === 'musicas') fetch('./data/music.json?t=' + Date.now()).then(r => r.json()).then(j => { MUSICAS = j; atualizarMusica(); Chat.sistema('Music reloaded.'); }).catch(() => {});
       else if (arq === 'dialogos') Dialogos.recarregar().then(() => Chat.sistema('Dialogue reloaded.'));
-      else if (arq === 'traducoes') I18n.recarregar().then(() => Chat.sistema('Translations reloaded.'));
+      else if (arq === 'traducoes') I18n.reload().then(() => Chat.sistema('Translations reloaded.'));
       else if (arq === 'npcs_glb') fetch('./data/npcs_glb.json?t=' + Date.now()).then(r => r.json()).then(j => {
         for (const k of Object.keys(NPCS_GLB)) if (!(k in j)) delete NPCS_GLB[k];
         Object.assign(NPCS_GLB, j); let n = 0;
@@ -9901,7 +9901,7 @@ camadaInstanciada('t', dados.treinadores, new THREE.ConeGeometry(0.32, 1.0, 12).
 camadaInstanciada('p', dados.portas, new THREE.BoxGeometry(0.8, 0.25, 0.8).translate(0, 0.12, 0), '#ffd23a');
 
 // caixas das áreas: retângulo no chão + rótulo em DOM
-const nomeArea = a => I18n.rotuloLugar(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a));
+const nomeArea = a => I18n.placeLabel(dados.nomes?.[a] || NOMES_AREA[a] || ('área ' + a));
 const caixasG = new THREE.Group();
 const rotulos = [];
 for (const c of dados.caixas){
@@ -9951,13 +9951,13 @@ let zoom = THREE.MathUtils.clamp(+(params.get('zoom') || (jogo.ativo ? (INTERIOR
 if (indice?.cenas?.length && !DEMO){
   const sel = document.createElement('select');
   const opAtual = document.createElement('option');
-  opAtual.value = 'kanto'; opAtual.textContent = I18n.rotuloLugar('kanto') + ' · overworld';
+  opAtual.value = 'kanto'; opAtual.textContent = I18n.placeLabel('kanto') + ' · overworld';
   if (NOME === 'kanto') opAtual.selected = true;
   sel.appendChild(opAtual);
   for (const c of indice.cenas){
     if (c.id === 1000001) continue;
     const op = document.createElement('option');
-    op.value = c.id; op.textContent = I18n.rotuloLugar(c.nome || c.id) + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
+    op.value = c.id; op.textContent = I18n.placeLabel(c.nome || c.id) + (c.areas.length > 1 ? ' (' + c.areas.length + ')' : '');
     if (String(c.id) === NOME) op.selected = true;
     sel.appendChild(op);
   }

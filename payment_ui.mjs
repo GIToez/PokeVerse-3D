@@ -746,7 +746,7 @@ function pintar() {
   const a = el('termos');
   if (a) {
     a.textContent = tr('Terms of Use');
-    a.href = '/portal/termos.html?idioma=' + (I18n.idioma?.() || 'pt');
+    a.href = '/portal/termos.html?idioma=' + (I18n.language?.() || 'pt');
   }
   const j = c.fase === 'pago',
     k = el('como'),

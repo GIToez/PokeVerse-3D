@@ -54,13 +54,13 @@ function aplicarConta(d){
   if ('pos' in d) posUltima = d.pos || null;
   /* Language: an explicit pick on this device wins (login bar). An old account left on `pt`
      from the Portuguese-first default must not pull the UI back to PT. */
-  if (d.idioma && I18n.IDIOMAS[d.idioma]){
+  if (d.idioma && I18n.LANGUAGES[d.idioma]){
     let escolha = null; try { escolha = localStorage.getItem('idioma.escolha'); } catch {}
-    if (escolha !== '1' && d.idioma !== 'pt' && d.idioma !== I18n.idioma()) I18n.definir(d.idioma);
+    if (escolha !== '1' && d.idioma !== 'pt' && d.idioma !== I18n.language()) I18n.set(d.idioma);
   }
 }
 /** Avisa a conta do idioma escolhido (barra da tela de login, ou quem chamar). */
-export async function idioma(l){ if (modo === 'conta' && token && I18n.IDIOMAS[l]) return api('POST', '/conta/idioma', { idioma: l }); return null; }
+export async function idioma(l){ if (modo === 'conta' && token && I18n.LANGUAGES[l]) return api('POST', '/conta/idioma', { idioma: l }); return null; }
 /* ONDE A CONTA PAROU (08/09): vem do servidor no GET /save e o index usa pra nascer no lugar certo depois de recarregar. */
 let posUltima = null, posPend = null;
 export const posSalva = () => posUltima;
@@ -281,7 +281,7 @@ export async function entrar(u, senha){
   gravarPasse(r.dados);                                                   // passe de progresso (19/09): o cookie existe antes de o boot pedir a cena
   modo = 'conta';
   aplicarConta(r.dados);
-  if (r.dados.idioma !== I18n.idioma()) api('POST', '/conta/idioma', { idioma: I18n.idioma() });   // a escolha da tela vai pra conta                                                  // marca de GM, cargo e onde parou — igual ao caminho do token (10/09)
+  if (r.dados.idioma !== I18n.language()) api('POST', '/conta/idioma', { idioma: I18n.language() });   // a escolha da tela vai pra conta                                                  // marca de GM, cargo e onde parou — igual ao caminho do token (10/09)
   aplicarSave(r.dados.save);                                              // 08/09: o que vale é o da conta — progresso solto no aparelho NÃO é mais importado
   return { ok: true, usuario };
 }
@@ -293,7 +293,7 @@ export async function criar(u, email, senha, chave = null){   // guarda o códig
   gravarPasse(r.dados);                                                   // conta nova: o passe já vem com a BASE (a intro, o quarto, os iniciais)
   codigo = r.dados.codigo || null;                                        // o código de recuperação vem UMA vez, aqui (screens.mjs mostra)
   modo = 'conta'; if (ctx) ctx.__novo = true;
-  api('POST', '/conta/idioma', { idioma: I18n.idioma() });               // conta nova nasce com o idioma da tela
+  api('POST', '/conta/idioma', { idioma: I18n.language() });               // conta nova nasce com o idioma da tela
   aplicarSave(null);                                                      // 08/09: conta nova nasce VAZIA (era aqui que o personagem velho do aparelho ressuscitava)
   return { ok: true, usuario };
 }

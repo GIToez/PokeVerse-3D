@@ -1,4 +1,4 @@
-import { t as tr, tNome } from './i18n.mjs';
+import { t as tr, tName } from './i18n.mjs';
 import * as Conhecimento from './knowledge.mjs';
 import * as Conta from './account.mjs';
 import * as Ev from './plot_catalog.mjs';
@@ -90,7 +90,7 @@ export function varsDe(v) {
     if (/^\w{1,24}$/.test(k))
       o[k] =
         typeof v[k] === 'string'
-          ? tNome(v[k].slice(0, 200))
+          ? tName(v[k].slice(0, 200))
           : typeof v[k] === 'number' && Number.isFinite(v[k])
             ? v[k]
             : '';
