@@ -1,0 +1,11 @@
+# Mew raid "Psychic Echoes" (their r05, arena 9700005). The game code and data/raid_r05.json are already here;
+# the arena model is what's missing. Open each link while logged in to PokeFable, or run grab_needed.js there.
+https://pokefableonline.com/cenario/raid/r05/r05_arena.glb
+https://pokefableonline.com/cenario/raid/r05/r05_config.json
+https://pokefableonline.com/cenario/raid/r05/ampliacao/config.json
+https://pokefableonline.com/cenario/raid/r05/marcas/abrigo_ciano.png
+https://pokefableonline.com/cenario/raid/r05/marcas/anel_borda.png
+https://pokefableonline.com/cenario/raid/r05/marcas/area_circular.png
+https://pokefableonline.com/cenario/raid/r05/marcas/marca_alvo.png
+https://pokefableonline.com/cenario/raid/r05/marcas/interagir_dourado.png
+https://pokefableonline.com/data/raid_r05.json

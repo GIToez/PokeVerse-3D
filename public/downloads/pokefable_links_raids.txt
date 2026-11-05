@@ -18,3 +18,6 @@ https://pokefableonline.com/cenario/raid/r03/r03_zapdos_anim.glb
 https://pokefableonline.com/cenario/raid/r03/referencia/envelope-animacoes-v7.json
 https://pokefableonline.com/cenario/raid/r03/referencia/envelope-zapdos.json
 https://pokefableonline.com/cenario/raid/r05/r05_arena.glb
+https://pokefableonline.com/cenario/raid/r05/r05_config.json
+https://pokefableonline.com/cenario/raid/r05/ampliacao/config.json
+https://pokefableonline.com/data/raid_r05.json

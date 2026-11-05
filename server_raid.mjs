@@ -42,7 +42,7 @@ const FIM_MS = 8000;
 /* REWARD TIERS (share = the player's damage ÷ the average damage of everyone who hit): below PARTE_PREMIO nothing (one hit and
    idle), from it the items, from PARTE_CAPTURA the items + one catch throw with their own ball, once per boss per day (Pacific). */
 const PARTE_PREMIO = 0.05, PARTE_CAPTURA = 0.25;
-const CAPTURA_MS = 30000;                                                    // how long the fainted boss waits for the throws                                                         // do prêmio até a volta ("Em instantes você volta pra onde estava")
+const CAPTURA_MS = 60000;                                                    // how long the fainted boss waits for the throws                                                         // do prêmio até a volta ("Em instantes você volta pra onde estava")
 const FATOR_HP = 1.5;                                                        // vida automática: cada participante soma 1,5 chefe do nível dele
 const FORCA_CHEFE = 0.2;                                                     // golpe do chefe = fórmula do jogo no nível do alvo × isto × o `dano` da raid
 const CADA_ALVO_MS = 6000;                                                   // em média o chefe bate em cada participante a cada 6 s (com mais gente, bate mais vezes)
@@ -538,8 +538,13 @@ export function criarRaid(h) {
   /** One catch throw at the fainted boss (a qualifying player, own ball, once per boss per day). The usual Gen III odds with the
       species' catch rate (legendary 2, mythical 1) and the ball's bonus; a Master Ball always catches. True when it was the boss. */
   function capturar(ws, m) {
-    if (!raid?.chefe || String(m.id) !== String(raid.chefe.id)) return false;
     const reply = o => enviar(ws, { t: 'scapt', id: String(m.id), ...o });
+    if (!raid?.chefe || String(m.id) !== String(raid.chefe.id)) {
+      /* A raid boss id (1e9 + raid number) whose raid is already over: answer, so the client does not wait 8 s for nothing and
+         blame the server. The ball was not taken. Any other id is a shared-world wild (server_world.mjs). */
+      if (+m.id >= 1e9 && +m.id < 2e9) { reply({ ok: false, chac: 0, erro: 'raid-acabou' }); sistema(ws, 'The raid is over: the catch window closed before the ball arrived.'); return true; }
+      return false;
+    }
     const u = contaDe(ws), p = u && raid.fila.get(u), c = u && contas[u];
     if (!c || !p) { reply({ ok: false, chac: 0, erro: 'raid' }); return true; }
     if (raid.fase !== 'fim' || !raid.venceu || Date.now() > raid.fimAte) { reply({ ok: false, chac: 0, erro: 'acordado' }); return true; }

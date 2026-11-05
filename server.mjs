@@ -1917,7 +1917,7 @@ wss.on('connection', ws => {
         }
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
-        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque' || m.t === 'r01') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
         else if (m.t === 'progressao_vista' || m.t === 'progressao_resgatar' || m.t === 'progressao_titulo') progressao.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'capturar' && raid.capturar(ws, m)) {}   // the raid boss's catch throw (server_raid.mjs); any other id is a shared-world wild

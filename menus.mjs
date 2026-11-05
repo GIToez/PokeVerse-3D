@@ -845,9 +845,17 @@ function popupPk(){
   if (def){
     popPk = Popup.montar(def, {
       item: i => { selPokemon = i; confirmarSoltar = null; confirmarAprender = null; reaprenderAberto = false; heldPicker = false; render(); },
-      acao: nome => acaoPokemon(nome),
+      acao: (nome, el) => nome === 'reaprender' ? escolherReaprenderV2(popPk, el) : acaoPokemon(nome),
+      escolhe: (v, el) => { if (v === 'reaprender') escolherReaprenderV2(popPk, el); },
       abre: nome => {
         const e = timeAtual()[selPokemon];
+        if (nome === 'lista-reaprender'){                                  // v2 "Relearn move" dialog (the mock-up's own), filled with this Pokémon's moves
+          const ex = Popup.extra(popPk, 'lista-reaprender');
+          const aberto = !!ex && ex.style.display !== 'none';
+          if (!aberto){ reaprenderPag = 0; pintarReaprenderV2(popPk, e); }
+          Popup.mostrarExtra(popPk, 'lista-reaprender', !aberto);
+          return true;
+        }
         if (nome === 'menu-item-segurado'){
           const extra = popPk?.querySelector('.pf-extra[data-fig="menu-item-segurado"]');
           if (extra && extra.style.display !== 'none'){
@@ -879,7 +887,10 @@ function popupPk(){
     }
     const evo = popPk.querySelector('[data-fig="ficha"] [data-txt="evolucao"]');
     if (evo) evo.addEventListener('click', ev => { ev.stopPropagation(); acaoPokemon('nao-aprender'); });
-    montarReaprender(popPk);
+    if (Popup.extra(popPk, 'lista-reaprender')){                         /* the v2 layout has its own Relearn button + dialog: no synthetic one on top of it */
+      const ex = Popup.extra(popPk, 'lista-reaprender');
+      ex.addEventListener('wheel', ev => { ev.preventDefault(); ev.stopPropagation(); const e = timeAtual()[selPokemon], n = (ctx.golpesReaprender?.(e) || []).length, pags = Math.ceil(n / 4); if (pags < 2) return; reaprenderPag = (reaprenderPag + (ev.deltaY > 0 ? 1 : pags - 1)) % pags; pintarReaprenderV2(popPk, e); }, { passive: false });
+    } else montarReaprender(popPk);
     return popPk;
   }
   popPk = document.createElement('div');
@@ -1727,7 +1738,48 @@ function montarReaprender(pop){
   });
   f.appendChild(b); f.appendChild(l);
 }
+/* v2 Relearn (Nov 5): the mock-up's ficha button "btn-reaprender" ([abre:lista-reaprender]) and its dialog with 4 rows
+   (golpe-reaprender-1..4: type icon, name, category tag, info, Learn button). More than 4 moves: the mouse wheel pages. */
+let reaprenderPag = 0;
+function pintarReaprenderV2(pop, e){
+  const ex = Popup.extra(pop, 'lista-reaprender'); if (!ex) return;
+  const lista = e ? (ctx.golpesReaprender?.(e) || []) : [];
+  const pags = Math.max(1, Math.ceil(lista.length / 4)); if (reaprenderPag >= pags) reaprenderPag = 0;
+  const rot = (nome, txt) => { const el = ex.querySelector('[data-fig="' + nome + '"]'); if (el && el.textContent !== txt) el.textContent = txt; };
+  rot('rotulo-reaprender-titulo', tr('Relearn move'));
+  rot('rotulo-reaprender-dica', lista.length ? tr('Pick one, then the move it replaces.') + (pags > 1 ? ' · ' + tr('scroll for more') + ' (' + (reaprenderPag + 1) + '/' + pags + ')' : '') : tr('Nothing to relearn.'));
+  for (let i = 0; i < 4; i++){
+    const no = ex.querySelector('[data-fig="golpe-reaprender-' + (i + 1) + '"]'); if (!no) continue;
+    const g = lista[reaprenderPag * 4 + i];
+    no.style.visibility = g ? '' : 'hidden';
+    if (!g) continue;
+    no.dataset.golpe = g.id;
+    Popup.textoCru(pop, 'reaprender-nome', tr(g.nome), no);
+    Popup.textoCru(pop, 'reaprender-info', (g.poder ? tr('power') + ' ' + g.poder + ' · ' : '') + (g.pp ? 'PP ' + g.pp + ' · ' : '') + 'Lv ' + g.lv, no);
+    pintarSeloCategoria(no, g);
+    iconesTipo(pop, no, g.tipo ? [g.tipo] : []);
+    const b = no.querySelector('[data-fig^="btn-reaprender-"] [data-fig="txt-btn"]');
+    if (b && b.textContent !== tr('Learn')) b.textContent = tr('Learn');
+  }
+}
+function escolherReaprenderV2(pop, el){
+  const linha = el?.closest?.('[data-fig^="golpe-reaprender-"]'), id = linha?.dataset.golpe;
+  const e = timeAtual()[selPokemon]; if (!id || !e) return;
+  Popup.mostrarExtra(pop, 'lista-reaprender', false);
+  confirmarAprender = null;
+  ctx.reaprender?.(e, id);
+  render();
+}
+function pintarBotaoReaprenderV2(pop, e){
+  const b = Popup.grupo(pop, 'ficha')?.querySelector('[data-fig="btn-reaprender"]'); if (!b) return;
+  const n = e ? (ctx.golpesReaprender?.(e) || []).length : 0;
+  b.style.visibility = n ? '' : 'hidden';
+  Popup.textoCru(pop, 'btn-reaprender', tr('Relearn') + ' (' + n + ')', b);
+  if (!n) Popup.mostrarExtra(pop, 'lista-reaprender', false);
+  else if (Popup.extra(pop, 'lista-reaprender')?.style.display !== 'none') pintarReaprenderV2(pop, e);
+}
 function atualizarReaprender(pop, e){
+  if (Popup.extra(pop, 'lista-reaprender')){ pintarBotaoReaprenderV2(pop, e); return; }
   const b = pop.querySelector('.gp-reaprender-btn'), l = pop.querySelector('.gp-reaprender-lista'); if (!b || !l) return;
   if (pop.querySelector('.pk-sheet')){ b.style.display = 'none'; l.style.display = 'none'; return; }
   const lista = e ? (ctx.golpesReaprender?.(e) || []) : [];

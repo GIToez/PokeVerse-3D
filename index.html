@@ -228,6 +228,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import './glb_no_blob.mjs';                     // texturas dos .glb sem URL blob: (sem as centenas de "blob:" quebrados no F12)
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import * as Gas from './gas.mjs';           // ghost gas around Gastly (Nov 5)
 import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
 import * as Diretor from './director.mjs';       // modo diretor (?diretor=1): monta a cena e grava com o OBS
 import * as Captura from './capture.mjs';       // modo captura (?captura=1): cena de TikTok jogando de verdade, selvagens escolhidos
@@ -282,6 +283,7 @@ import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
 import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
 import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolutions.json, data/exp.json)
+Evolucao.usarTradutor(n => I18n.tName(n));        // evolution hints name items in the player's language
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
 import * as Dialogos from './dialogues.mjs';     // Fase 3 do painel: falas fixas (portão, Oak, abertura) vêm do data/dialogues.json
 import { GOLPES, GOLPES_PIKA, GOLPES_ESPECIE, VEL_PROJETIL, ajusteEfeito, atrasoDoGolpe, corrigirEfeito } from './moves.mjs';
@@ -3043,7 +3045,8 @@ function montarCorpo(g, corpo, alturaAlvo, giroBase = 0, arq = ''){
   corpo.traverse(o => { if (o.isMesh){ o.castShadow = true; o.frustumCulled = false; } });
   unificarEsqueleto(corpo);
   Fogo.aplicarFogo(corpo, arq);                   // chamas do Moltres, Charmander & cia. (fire.mjs; receita por modelo)
-  Lodo.aplicarLodo(corpo, arq);                   // lodo translúcido do Grimer/Muk (sludge.mjs): sem ele a pele opaca esconde os olhos
+  Lodo.aplicarLodo(corpo, arq);
+  Gas.aplicarGas(corpo, arq);                     // Gastly's purple gas cloud (gas.mjs)                   // lodo translúcido do Grimer/Muk (sludge.mjs): sem ele a pele opaca esconde os olhos
   Personagem.apagarMalhasOcultas?.(g, corpo);     // 17/09 (coe, "batendo asa com asa fechada"): some a malha que todo clipe apaga — a asa dobrada do Pidgeotto (character.mjs)
   const mix = new THREE.AnimationMixer(corpo);
   const acoes = new Map(g.animations.map(c => [c.name, mix.clipAction(c)]));
@@ -7512,9 +7515,10 @@ async function interagir(){
   const { ash, pika } = jogo;
   if (ash && !interagindo && !jogo.montaria){
     if (falando){ pularFala?.(); return; }
+    if (Pesca.ocupado()){ Pesca.tentar(); return; }                       /* line in the water: Z reels in (it used to stop at ocupado() and never pulled) */
     if (pertoDaMesa()){ escolherInicial(); return; }
     const n = npcPerto(); if (n){ falarCom(n); return; }
-    if (Pesca.ocupado() || Pesca.tentar()) return;                       // facing water with a rod: cast / reel in (fishing_game.mjs)
+    if (Pesca.tentar()) return;                                           /* facing water with a rod: cast (fishing_game.mjs) */
   }
   if (!ash || !pika || interagindo || jogo.montaria || pika.hp <= 0 || pika.desmaiado > 0) return;
   if (Math.hypot(pika.x - ash.x, pika.z - ash.z) > Math.max(3.5, folgaParceiro(pika) + 0.8)){ flutuar(ash, pika.nome + ' is too far', '#ffd23a'); return; }   // 14/09: o Gyarados seguidor para a 3,6 m
@@ -8444,7 +8448,7 @@ function recuperarGolpesDoTime(){
 function golpesReaprender(e){
   const p = e?.seguindo && jogo.pika ? jogo.pika : registroDoTime(e); if (!p) return [];
   const niv = new Map(); for (const [id, n] of Ind.learnsetDe(p.dex)) if (!niv.has(id)) niv.set(id, n);
-  return golpesPerdidos(p, { comRecusados: true, desdeOInicio: true }).map(id => ({ id, nome: GOLPES[id].nome, tipo: GOLPES[id].tipo, poder: GOLPES[id].poder, lv: niv.get(id) ?? 1 })).sort((a, b) => b.lv - a.lv);
+  return golpesPerdidos(p, { comRecusados: true, desdeOInicio: true }).map(id => ({ id, nome: GOLPES[id].nome, tipo: GOLPES[id].tipo, poder: GOLPES[id].poder, cat: GOLPES[id].cat, pp: GOLPES[id].pp ?? null, lv: niv.get(id) ?? 1 })).sort((a, b) => b.lv - a.lv);
 }
 /** O jogador escolheu `id` no Reaprender: com vaga livre entra na hora; senão vai pra frente da fila e a janela pede qual esquecer. */
 function reaprender(e, id){
@@ -10183,7 +10187,14 @@ if (dados.caixas.length > 2 && !DEMO){
   }
   sel.addEventListener('change', () => {
     const c = dados.caixas.find(k => k.a === +sel.value);
-    if (c) alvo.copy(mundo(c.x, 0, c.z));
+    if (c){                                                             // F8 "go to": the trainer (and partner) walk-in at that area's centre, on ground
+      const m = mundo(c.x, 0, c.z), t = terraPerto(m.x, m.z, 40) || { x: m.x, z: m.z };
+      if (jogo.ash){
+        teleportar(jogo.ash, t.x, t.z);
+        if (jogo.pika && !jogo.montaria) teleportar(jogo.pika, t.x + 0.8, t.z);
+        try { gravarParada(); } catch {}
+      } else alvo.copy(m);
+    }
     sel.blur();
   });
   $('teclas').insertAdjacentHTML('beforeend', '<div style="margin-top:6px" id="ir-box">' + I18n.t('go to:') + ' </div>');
@@ -11582,7 +11593,7 @@ if (params0.get('figmateste') === '1'){                                  // UMA 
 if (CONTA.modo === 'conta'){ try { const u = new URL(location.href); const doJogador = ['jogar', 'mapa', 'chegada', 'voltou', 'v', 'qualidade', 'densidade'];   // qualidade/densidade (13/09): agora ficam guardadas no aparelho, então podem sair da URL
   if (u.search && [...u.searchParams.keys()].every(k => doJogador.includes(k))) history.replaceState(null, '', u.pathname); } catch {} }
 __boot.marcar('pronto', { inv: inventarioCena() });                      // o inventário da cena vai junto (o que o celular carregou de verdade)
-window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
+window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar, criarSelvagem };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
 if (Fairy){
   Fairy.comecar({ jogo, cena, cam, dados, NOME, chaoEm, tocarAnim, montarPersonagem, livre, bloqueio, porDex, R, THREE, flipX: () => flipX, mundo }).catch(e => console.error('fairy:', e));
 }
