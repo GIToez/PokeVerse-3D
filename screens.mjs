@@ -1,3 +1,4 @@
+import * as LoginScene from './login_scene.mjs';
 import * as I18n from './i18n.mjs';   // IDIOMA (11/09)
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 /* Telas de FORA do jogo desenhadas no Figma da Amanda (rodada 19): login e cadastro, tela cheia, sem HUD.
@@ -135,6 +136,7 @@ export function mostrar(nome, L, c = {}){
   if (nome === 'cadastro' && ctx?.conta?.alfa) caixaAlphaKey(pop);        // ALPHA KEY (11/09): com o cadastro fechado, a caixa vem antes do formulário
   else if (nome !== 'cadastro') chaveAlfa = null;
   if (nome === 'login' || nome === 'cadastro'){
+    try { LoginScene.dress(pop, tr); } catch (e){ console.warn('login scene:', e); }   // concept G: the animated route + the PokeVerse wordmark (login_scene.mjs)
     /* The v2 mockup draws its own language selector and Discord button (wired in acao): the code-made ones were drawn on top
        of them (a blank gold button next to the PT/EN/ES pills, and a small grey "Discord" over the mockup's). Only without them. */
     if (!pop.querySelector('[data-fig="seletor-idioma"]')) barraIdioma(pop, nome);
