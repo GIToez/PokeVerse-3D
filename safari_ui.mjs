@@ -6,6 +6,56 @@
    Every function returns false / null when the layout has no such piece, so index.html falls back to the old speech box. */
 import { t as tr } from './i18n.mjs';
 import * as Hud from './hud.mjs';
+import * as Teclas from './keys.mjs';
+
+/* index.html: { acao(tipo) → throws bait ('isca') or a rock ('pedra'), alvo() → the wild Pokémon in reach, or null } */
+let ctx = {};
+export function instalar(c) { ctx = c || {}; }
+
+/* ── Bait / Rock buttons (Nov 5): under the Safari panel during a visit, the same as the G / R keys, and the only way on a phone.
+   Greyed out while no wild Pokémon is in reach. The key shown is the player's own (Settings → Controls). ── */
+let barra = null;
+function montarBarra() {
+  if (barra) return barra;
+  barra = document.createElement('div');
+  barra.id = 'safari-acoes';
+  barra.innerHTML = '<button type="button" data-tipo="isca"><span class="sa-ic">🍓</span><span class="sa-nome"></span><kbd></kbd></button>'
+    + '<button type="button" data-tipo="pedra"><span class="sa-ic">🪨</span><span class="sa-nome"></span><kbd></kbd></button>';
+  const st = document.createElement('style');
+  st.textContent = `#safari-acoes{position:fixed;z-index:33;display:flex;gap:8px;pointer-events:auto}
+#safari-acoes[hidden]{display:none}
+#safari-acoes button{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px 0 8px;border:2px solid #4fa3d1;border-radius:12px;background:linear-gradient(#1f3f6b,#13284a);color:#eaf6fb;font:800 14px 'Baloo 2',system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 0 #0b1a30}
+#safari-acoes button:active{transform:translateY(2px);box-shadow:0 1px 0 #0b1a30}
+#safari-acoes button.off{opacity:.45;cursor:default}
+#safari-acoes .sa-ic{font-size:20px;line-height:1}
+#safari-acoes kbd{min-width:20px;height:20px;padding:0 4px;border-radius:5px;background:#F8C237;color:#1d2b45;font:800 12px 'Baloo 2',system-ui;display:inline-grid;place-items:center}
+body.mobile #safari-acoes kbd{display:none}`;
+  document.head.appendChild(st);
+  for (const b of barra.querySelectorAll('button')) {
+    b.addEventListener('pointerdown', ev => ev.stopPropagation());
+    b.addEventListener('click', ev => { ev.stopPropagation(); if (!b.classList.contains('off')) ctx.acao?.(b.dataset.tipo); });
+  }
+  document.body.appendChild(barra);
+  return barra;
+}
+function pintarBarra(viva, a) {
+  if (!viva) { if (barra) barra.hidden = true; return; }
+  const b = montarBarra();
+  b.hidden = false;
+  const alvo = !!ctx.alvo?.();
+  for (const el of b.querySelectorAll('button')) {
+    const isca = el.dataset.tipo === 'isca';
+    const nome = tr(isca ? 'Bait' : 'Rock');
+    if (el.querySelector('.sa-nome').textContent !== nome) el.querySelector('.sa-nome').textContent = nome;
+    const k = Teclas.rotuloAcao(isca ? 'safari-isca' : 'safari-pedra', 'hud', tr);
+    const kb = el.querySelector('kbd'); kb.textContent = k && k !== '—' ? k : ''; kb.style.display = kb.textContent ? '' : 'none';
+    el.classList.toggle('off', !alvo);
+    el.title = alvo ? tr(isca ? 'Throw bait: it eats and is less likely to flee, but harder to catch' : 'Throw a rock: easier to catch, but more likely to flee') : tr('Face a wild Pokémon first');
+  }
+  const r = a.getBoundingClientRect();
+  b.style.left = Math.round(r.right - b.offsetWidth) + 'px';
+  b.style.top = Math.round(r.bottom + 8) + 'px';
+}
 
 export const relogio = (ms) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -35,6 +85,7 @@ export function painel(sessao) {
     if (chave !== ultimoPainel || a.hidden) { Hud.sitEm(a, pos[0], pos[1], 'topo'); ultimoPainel = chave; }
   }
   Hud.sitMostrar(a, viva);
+  pintarBarra(viva, a);
   return true;
 }
 

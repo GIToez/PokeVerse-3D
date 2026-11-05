@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 
 const RECEITAS = {
-  pm0092: { anel: 34, fios: 12, cor: 0xb58ae0, cor2: 0x7d4fc0, op: 0.88, raio: [0.78, 1.45], tam: [0.75, 1.15], pluma: 2.4 },   // Gastly
+  pm0092: { anel: 36, fios: 12, cor: 0xc9a0ec, cor2: 0x8652c6, op: 0.92, raio: [0.78, 1.5], tam: [0.72, 1.12], pluma: 2.5, lado: 0.55, brilho: 0x9a6cff },   // Gastly
 };
 
 let textura = null;
@@ -17,7 +17,7 @@ function tex() {                                                          // a c
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d');
   const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.55, 'rgba(255,255,255,.95)'); r.addColorStop(0.8, 'rgba(255,255,255,.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.7, 'rgba(255,255,255,1)'); r.addColorStop(0.86, 'rgba(255,255,255,.6)'); r.addColorStop(0.97, 'rgba(255,255,255,0)');   // firm, lumpy edge (cartoon gas)
   g.fillStyle = r; g.fillRect(0, 0, 128, 128);
   g.globalCompositeOperation = 'source-atop';                             // a slightly darker lower half gives each puff some volume
   const s = g.createLinearGradient(0, 30, 0, 128); s.addColorStop(0, 'rgba(0,0,0,0)'); s.addColorStop(1, 'rgba(40,0,70,.28)');
@@ -53,13 +53,19 @@ export function aplicarGas(corpo, modelo = '') {
   const total = R.anel + R.fios, t0 = performance.now() / 1000;
   for (let i = 0; i < total; i++) {
     const fio = i >= R.anel;
-    const mat = new THREE.SpriteMaterial({ map: tex(), color: base.clone().lerp(fundo, Math.random() * (fio ? 0.35 : 0.7)), transparent: true, opacity: R.op, depthWrite: false });
+    /* heavier above and behind, thin underneath: most of the ring sits on the top half, the bottom puffs are smaller and tucked in */
+    let angRing = (i / R.anel) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+    if (!fio && Math.sin(angRing) < -0.35 && Math.random() < 0.55) angRing = Math.PI - angRing;   // move about half of the bottom puffs to the top
+    const baixo = !fio && Math.sin(angRing) < -0.35;
+    const distR = R.raio[0] + Math.random() * (R.raio[1] - R.raio[0]);
+    const escuro = fio ? Math.random() * 0.25 : Math.min(1, (R.raio[1] - distR) / (R.raio[1] - R.raio[0]) * 0.8 + Math.random() * 0.25);   // inner puffs = the darker folds
+    const mat = new THREE.SpriteMaterial({ map: tex(), color: base.clone().lerp(fundo, escuro), transparent: true, opacity: R.op, depthWrite: false });
     const s = new THREE.Sprite(mat);
     s.renderOrder = 4;
     /* ring puffs: evenly round the silhouette, radius and size jittered; plume puffs start at the top */
-    const ang = fio ? -Math.PI / 2 + (Math.random() - 0.5) * 1.6 : (i / R.anel) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-    const dist = R.raio[0] + Math.random() * (R.raio[1] - R.raio[0]);
-    const tam = R.tam[0] + Math.random() * (R.tam[1] - R.tam[0]);
+    const ang = fio ? -Math.PI / 2 + (Math.random() - 0.5) * 1.6 : angRing;
+    const dist = baixo ? R.raio[0] * 0.92 : distR;
+    const tam = (R.tam[0] + Math.random() * (R.tam[1] - R.tam[0])) * (baixo ? 0.7 : 1);
     const fase = Math.random() * Math.PI * 2, ciclo = 1.8 + Math.random() * 1.6, atraso = Math.random() * ciclo;
     s.onBeforeRender = (_renderer, _scene, camera) => {
       const t = performance.now() / 1000 - t0;
@@ -71,7 +77,7 @@ export function aplicarGas(corpo, modelo = '') {
       let ox, oy, atras, e, op;
       if (fio) {                                                          // plume: leaves the top of the cloud, rises, swells and fades
         const k = ((t + atraso) % ciclo) / ciclo;
-        ox = Math.cos(-Math.PI / 2 - ang) * R0 * 0.6 + Math.sin(t * 0.8 + fase) * R0 * 0.25;
+        ox = Math.cos(-Math.PI / 2 - ang) * R0 * 0.6 + Math.sin(t * 0.8 + fase) * R0 * 0.25 + k * R0 * (R.lado || 0) * 1.6;   // the plume trails off to one side
         oy = R0 * (0.7 + k * R.pluma);
         atras = R0 * 0.9; e = R0 * tam * (0.55 + 0.75 * k); op = R.op * Math.sin(Math.PI * Math.min(1, k * 1.15));
       } else {                                                            // ring: breathes in and out, drifts slowly round
@@ -89,6 +95,18 @@ export function aplicarGas(corpo, modelo = '') {
       s.updateMatrixWorld();                                              // this frame's matrix (onBeforeRender runs after the scene's update)
     };
     grupo.add(s);
+  }
+  if (R.brilho != null) {                                                 /* faint additive glow behind the ball: ghostly at night and in caves, barely there by day */
+    const mg = new THREE.SpriteMaterial({ map: tex(), color: R.brilho, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending });
+    const g = new THREE.Sprite(mg); g.renderOrder = 3;
+    g.onBeforeRender = (_r0, _s0, camera) => {
+      const t = performance.now() / 1000 - t0, R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
+      grupo.getWorldPosition(_c); camera.getWorldDirection(_d);
+      _p.copy(_c).addScaledVector(_d, R0 * 1.1); grupo.worldToLocal(_p); g.position.copy(_p);
+      const e = R0 * 3.4 * (1 + 0.05 * Math.sin(t * 1.4)) / (grupo.matrixWorld.getMaxScaleOnAxis() || 1);
+      g.scale.set(e, e, 1); mg.opacity = 0.22 + 0.06 * Math.sin(t * 1.4); g.updateMatrixWorld();
+    };
+    grupo.add(g);
   }
   pai.add(grupo);
   corpo.__gas = grupo;

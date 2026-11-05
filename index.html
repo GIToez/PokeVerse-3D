@@ -11322,7 +11322,7 @@ function quadro(dt){
   }
   vigiarPortaoPallet(dt);
   vigiarSafari();
-  if (!(jogo.safariPainelEm > performance.now() - 250)){ jogo.safariPainelEm = performance.now(); try { SafariUi.painel(Safari.vivo(jogo.safari) ? jogo.safari : null); } catch {} }
+  if (!(jogo.safariPainelEm > performance.now() - 250)){ jogo.safariPainelEm = performance.now(); try { if (!jogo.safariUiPronta){ jogo.safariUiPronta = true; SafariUi.instalar({ acao: tipo => safariAcao(tipo), alvo: () => { const s = jogo.alvo; return s && Safari.ehZona(s.area) && !['morto', 'capturando', 'guardado', 'desmaiado'].includes(s.estado) && Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) <= RAIO_BOLA ? s : null; } }); } SafariUi.painel(Safari.vivo(jogo.safari) ? jogo.safari : null); } catch (e){ console.warn('safari ui', e); } }
   try {
     Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: jogo.missoesOk ? Missoes.pinsMapaSync?.() : [], npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }

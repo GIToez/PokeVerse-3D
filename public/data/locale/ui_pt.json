@@ -7627,5 +7627,9 @@
   "Pick one, then the move it replaces.": "Escolha um e depois o golpe que ele substitui.",
   "scroll for more": "role para ver mais",
   "Nothing to relearn.": "Nada para reaprender.",
-  "Learn": "Aprender"
+  "Learn": "Aprender",
+  "Bait": "Isca",
+  "Throw bait: it eats and is less likely to flee, but harder to catch": "Jogar isca: ele come e foge menos, mas fica mais difícil de pegar",
+  "Throw a rock: easier to catch, but more likely to flee": "Jogar pedra: mais fácil de pegar, mas foge mais",
+  "Face a wild Pokémon first": "Fique de frente para um Pokémon selvagem primeiro"
 }
