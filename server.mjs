@@ -1405,8 +1405,8 @@ const mail = createMail({
 const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
-  onCatch: (ws, u, pk, bola) => {
-    temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola });
+  onCatch: (ws, u, pk, bola, agua) => {
+    temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola, agua });
     const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex });
     if (r) enviarMissao(ws, r);
   },

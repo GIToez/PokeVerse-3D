@@ -1,812 +1,2394 @@
 {
- "_sobre": "Achievements (Trainer card → Achievements). `conta` is what each one counts: ko, captura, shiny, treinador, ginasio, evolucao, historia, elite, raid (server-checked events) or especies, insignias, nivel, dinheiro (read from the save). Tiers go bronze → prata → ouro → platina → diamante; `min` is the target, `pontosMestre` the Master Level XP it gives once redeemed, `recompensa` = { tipo: titulo | cosmetico | dinheiro | diamantes | item, id, qtd, nome }. Edit in the admin panel: Data files → Achievements.",
+ "_sobre": "Achievements (Trainer card → See all achievements). Imported from PokeFable's achievement view (upcoming/data/pokefable_achievements.json) and translated to English. `conta` is what each one counts (see server_progression.mjs COUNTERS). Edit in the admin panel: Data files → Achievements.",
  "mestre": {
   "xpPorNivel": 1000
  },
  "categorias": [
   {
+   "id": "pokedex",
+   "nome": "Pokédex"
+  },
+  {
    "id": "captura",
    "nome": "Catching"
   },
   {
-   "id": "colecao",
-   "nome": "Collection"
+   "id": "luta",
+   "nome": "Battle"
   },
   {
-   "id": "batalha",
-   "nome": "Battles"
+   "id": "insignias",
+   "nome": "Badges"
   },
   {
-   "id": "historia",
+   "id": "elite",
+   "nome": "Elite Four"
+  },
+  {
+   "id": "shiny",
+   "nome": "Shiny"
+  },
+  {
+   "id": "pesca",
+   "nome": "Fishing"
+  },
+  {
+   "id": "raid",
+   "nome": "Raid"
+  },
+  {
+   "id": "guilda",
+   "nome": "Guild"
+  },
+  {
+   "id": "mercado",
+   "nome": "Market"
+  },
+  {
+   "id": "missao",
    "nome": "Story"
   },
   {
-   "id": "aventura",
-   "nome": "Adventure"
+   "id": "social",
+   "nome": "Social"
+  },
+  {
+   "id": "exploracao",
+   "nome": "Exploration"
+  },
+  {
+   "id": "tempo",
+   "nome": "Journey time"
   }
  ],
  "conquistas": [
   {
-   "id": "catch-em",
-   "nome": "Gotta Catch 'Em",
-   "descricao": "Catch wild Pokémon.",
+   "id": "observador",
+   "nome": "Observer",
+   "descricao": "See 25 different species.",
+   "categoria": "pokedex",
+   "conta": "especiesVistas",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 50,
+     "descricao": "See 25 different species.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "observador",
+      "nome": "Observer"
+     }
+    }
+   ],
+   "existente": true
+  },
+  {
+   "id": "colecionador",
+   "nome": "Collector",
+   "descricao": "Catch 25 different species.",
+   "categoria": "pokedex",
+   "conta": "especies",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 100,
+     "descricao": "Catch 25 different species.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "colecionador",
+      "nome": "Collector"
+     }
+    }
+   ],
+   "existente": true
+  },
+  {
+   "id": "estudioso",
+   "nome": "Scholar",
+   "descricao": "Bring 10 species to the Studied level of the Pokédex.",
+   "categoria": "pokedex",
+   "conta": "estudadas",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 150,
+     "descricao": "Bring 10 species to the Studied level of the Pokédex.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "estudioso",
+      "nome": "Scholar"
+     }
+    }
+   ],
+   "existente": true
+  },
+  {
+   "id": "mestreKanto",
+   "nome": "Kanto Master",
+   "descricao": "Register 151 Kanto species as caught.",
+   "categoria": "pokedex",
+   "conta": "especiesKanto",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 151,
+     "pontosMestre": 2000,
+     "descricao": "Register 151 Kanto species as caught.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "mestreKanto",
+      "nome": "Kanto Master"
+     }
+    }
+   ],
+   "existente": true
+  },
+  {
+   "id": "professor",
+   "nome": "Professor",
+   "descricao": "Bring 25 species to the Master level of the Pokédex.",
+   "categoria": "pokedex",
+   "conta": "mestres",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 500,
+     "descricao": "Bring 25 species to the Master level of the Pokédex.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "professor",
+      "nome": "Professor"
+     }
+    }
+   ],
+   "existente": true
+  },
+  {
+   "id": "pokedex-kanto",
+   "nome": "Kanto Pokédex",
+   "descricao": "Register 40 Kanto species as caught.",
+   "categoria": "pokedex",
+   "conta": "especiesKanto",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 40,
+     "pontosMestre": 100,
+     "descricao": "Register 40 Kanto species as caught.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "pokedex-bronze",
+      "nome": "Pokédex Frame (bronze)"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 80,
+     "pontosMestre": 250,
+     "descricao": "Register 80 Kanto species as caught.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0038",
+      "nome": "Ninetales"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 120,
+     "pontosMestre": 500,
+     "descricao": "Register 120 Kanto species as caught.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "pesquisador",
+      "nome": "Field Researcher"
+     }
+    }
+   ]
+  },
+  {
+   "id": "dex-capturados",
+   "nome": "Species Hunter",
+   "descricao": "Catch 20 different species.",
+   "categoria": "pokedex",
+   "conta": "especies",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 20,
+     "pontosMestre": 100,
+     "descricao": "Catch 20 different species.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:pokebola",
+      "nome": "Poké Ball Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 50,
+     "pontosMestre": 250,
+     "descricao": "Catch 50 different species.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "cacador-especies",
+      "nome": "Species Hunter"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 90,
+     "pontosMestre": 500,
+     "descricao": "Catch 90 different species.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "pokedex-ouro",
+      "nome": "Pokédex Frame (gold)"
+     }
+    }
+   ]
+  },
+  {
+   "id": "captura-tipos",
+   "nome": "Every Type",
+   "descricao": "Catch Pokémon of 6 different types.",
+   "categoria": "pokedex",
+   "conta": "tiposCapturados",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 6,
+     "pontosMestre": 100,
+     "descricao": "Catch Pokémon of 6 different types.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:tipos",
+      "nome": "Types Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 12,
+     "pontosMestre": 250,
+     "descricao": "Catch Pokémon of 12 different types.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "colecionador-de-tipos",
+      "nome": "Type Collector"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 16,
+     "pontosMestre": 500,
+     "descricao": "Catch Pokémon of 16 different types.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipos-ouro",
+      "nome": "Types Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "evolucoes",
+   "nome": "Metamorphosis",
+   "descricao": "Evolve 5 Pokémon.",
+   "categoria": "pokedex",
+   "conta": "evolucao",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 100,
+     "descricao": "Evolve 5 Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:evolucao",
+      "nome": "Evolution Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 30,
+     "pontosMestre": 300,
+     "descricao": "Evolve 30 Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "guia-da-evolucao",
+      "nome": "Evolution Guide"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 100,
+     "pontosMestre": 600,
+     "descricao": "Evolve 100 Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "peito:56003",
+      "nome": "Petals"
+     }
+    }
+   ]
+  },
+  {
+   "id": "captura-total",
+   "nome": "Catches",
+   "descricao": "Catch 10 Pokémon.",
    "categoria": "captura",
    "conta": "captura",
    "degraus": [
     {
      "degrau": "bronze",
      "min": 10,
-     "pontosMestre": 100,
+     "pontosMestre": 50,
+     "descricao": "Catch 10 Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 500,
-      "nome": "500 Coins"
+      "tipo": "cosmetico",
+      "id": "emote:pokebola",
+      "nome": "Poké Ball Emote"
      }
     },
     {
      "degrau": "prata",
-     "min": 50,
-     "pontosMestre": 250,
+     "min": 150,
+     "pontosMestre": 150,
+     "descricao": "Catch 150 Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1500,
-      "nome": "1,500 Coins"
+      "tipo": "titulo",
+      "id": "capturador",
+      "nome": "Born Catcher"
      }
     },
     {
      "degrau": "ouro",
-     "min": 200,
-     "pontosMestre": 500,
+     "min": 750,
+     "pontosMestre": 400,
+     "descricao": "Catch 750 Pokémon.",
      "recompensa": {
-      "tipo": "titulo",
-      "id": "Collector",
-      "nome": "Collector"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 500,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 30,
-      "nome": "30 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 1000,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Pokémon Master",
-      "nome": "Pokémon Master"
+      "tipo": "moldura",
+      "id": "captura-ouro",
+      "nome": "Catcher's Frame"
      }
     }
    ]
   },
   {
-   "id": "species",
-   "nome": "Pokédex Pages",
-   "descricao": "Register different species as caught.",
-   "categoria": "colecao",
-   "conta": "especies",
+   "id": "captura-agua",
+   "nome": "Open Sea",
+   "descricao": "Catch 30 Pokémon that were in the water.",
+   "categoria": "captura",
+   "conta": "capturaAgua",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 30,
+     "pontosMestre": 150,
+     "descricao": "Catch 30 Pokémon that were in the water.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0131",
+      "nome": "Lapras"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 150,
+     "pontosMestre": 400,
+     "descricao": "Catch 150 Pokémon that were in the water.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0009",
+      "nome": "Blastoise"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 500,
+     "pontosMestre": 800,
+     "descricao": "Catch 500 Pokémon that were in the water.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "rei-dos-mares",
+      "nome": "King of the Seas"
+     }
+    }
+   ]
+  },
+  {
+   "id": "captura-safari",
+   "nome": "Safari",
+   "descricao": "Catch 10 Pokémon in the Safari Zone.",
+   "categoria": "captura",
+   "conta": "capturaSafari",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 150,
+     "descricao": "Catch 10 Pokémon in the Safari Zone.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0128",
+      "nome": "Tauros"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 50,
+     "pontosMestre": 400,
+     "descricao": "Catch 50 Pokémon in the Safari Zone.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "guarda-safari",
+      "nome": "Safari Warden"
+     }
+    }
+   ]
+  },
+  {
+   "id": "captura-bolas",
+   "nome": "Variety",
+   "descricao": "Catch with 4 different kinds of Poké Ball.",
+   "categoria": "captura",
+   "conta": "bolasDiferentes",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 4,
+     "pontosMestre": 150,
+     "descricao": "Catch with 4 different kinds of Poké Ball.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "enfeite:cinto-de-bolas",
+      "nome": "Poké Ball Belt"
+     }
+    }
+   ]
+  },
+  {
+   "id": "captura-mestra",
+   "nome": "Hidden achievement",
+   "descricao": "Keep playing to find out.",
+   "categoria": "captura",
+   "conta": "secreta",
+   "degraus": [],
+   "oculta": true
+  },
+  {
+   "id": "luta-total",
+   "nome": "On the Trail",
+   "descricao": "Defeat 100 wild Pokémon.",
+   "categoria": "luta",
+   "conta": "ko",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 50,
+     "descricao": "Defeat 100 wild Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:punho",
+      "nome": "Fist Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 1000,
+     "pontosMestre": 200,
+     "descricao": "Defeat 1,000 wild Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "veterano-de-rota",
+      "nome": "Route Veteran"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 10000,
+     "pontosMestre": 800,
+     "descricao": "Defeat 10,000 wild Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "luta-ouro",
+      "nome": "Battle Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-faixa3",
+   "nome": "Tough Routes",
+   "descricao": "Defeat 100 wild Pokémon of level 31 to 45.",
+   "categoria": "luta",
+   "conta": "koFaixa3",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 100,
+     "descricao": "Defeat 100 wild Pokémon of level 31 to 45.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:montanha",
+      "nome": "Mountain Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 500,
+     "pontosMestre": 300,
+     "descricao": "Defeat 500 wild Pokémon of level 31 to 45.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "casca-grossa",
+      "nome": "Thick-Skinned"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 2000,
+     "pontosMestre": 600,
+     "descricao": "Defeat 2,000 wild Pokémon of level 31 to 45.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "faixa3-ouro",
+      "nome": "Tough Routes Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-faixa4",
+   "nome": "Edge of the Map",
+   "descricao": "Defeat 50 wild Pokémon of level 46 or higher.",
+   "categoria": "luta",
+   "conta": "koFaixa4",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 150,
+     "descricao": "Defeat 50 wild Pokémon of level 46 or higher.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:pico",
+      "nome": "Peak Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 250,
+     "pontosMestre": 400,
+     "descricao": "Defeat 250 wild Pokémon of level 46 or higher.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0112",
+      "nome": "Rhydon"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1000,
+     "pontosMestre": 800,
+     "descricao": "Defeat 1,000 wild Pokémon of level 46 or higher.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "lenda-das-rotas",
+      "nome": "Legend of the Routes"
+     }
+    }
+   ]
+  },
+  {
+   "id": "treinadores",
+   "nome": "Route Challenger",
+   "descricao": "Beat 10 route trainers.",
+   "categoria": "luta",
+   "conta": "treinador",
    "degraus": [
     {
      "degrau": "bronze",
      "min": 10,
      "pontosMestre": 100,
+     "descricao": "Beat 10 route trainers.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 500,
-      "nome": "500 Coins"
+      "tipo": "cosmetico",
+      "id": "selo:luva",
+      "nome": "Glove Seal"
      }
     },
     {
      "degrau": "prata",
      "min": 30,
-     "pontosMestre": 250,
+     "pontosMestre": 300,
+     "descricao": "Beat 30 route trainers.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Field Researcher",
-      "nome": "Field Researcher"
+      "id": "heroi-de-mil-batalhas",
+      "nome": "Hero of a Thousand Battles"
      }
     },
     {
      "degrau": "ouro",
-     "min": 75,
-     "pontosMestre": 500,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 20,
-      "nome": "20 Diamonds"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 151,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Kanto Complete",
-      "nome": "Kanto Complete"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 251,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Living Dex",
-      "nome": "Living Dex"
-     }
-    }
-   ]
-  },
-  {
-   "id": "shiny-hunter",
-   "nome": "Shiny Hunter",
-   "descricao": "Catch shiny Pokémon.",
-   "categoria": "captura",
-   "conta": "shiny",
-   "degraus": [
-    {
-     "degrau": "bronze",
-     "min": 1,
-     "pontosMestre": 100,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Lucky Find",
-      "nome": "Lucky Find"
-     }
-    },
-    {
-     "degrau": "prata",
-     "min": 3,
-     "pontosMestre": 250,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 30,
-      "nome": "30 Diamonds"
-     }
-    },
-    {
-     "degrau": "ouro",
-     "min": 10,
-     "pontosMestre": 500,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Shiny Hunter",
-      "nome": "Shiny Hunter"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 25,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 80,
-      "nome": "80 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
      "min": 50,
-     "pontosMestre": 2000,
+     "pontosMestre": 600,
+     "descricao": "Beat 50 route trainers.",
      "recompensa": {
-      "tipo": "titulo",
-      "id": "Starlight",
-      "nome": "Starlight"
+      "tipo": "moldura",
+      "id": "treinadores-ouro",
+      "nome": "Challengers' Frame"
      }
     }
    ]
   },
   {
-   "id": "knockouts",
-   "nome": "Wild Battler",
-   "descricao": "Defeat wild Pokémon.",
-   "categoria": "batalha",
-   "conta": "ko",
+   "id": "luta-normal",
+   "nome": "Bread and Butter",
+   "descricao": "Defeat 100 wild Normal-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Normal",
    "degraus": [
     {
      "degrau": "bronze",
-     "min": 25,
-     "pontosMestre": 100,
-     "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 300,
-      "nome": "300 Coins"
-     }
-    },
-    {
-     "degrau": "prata",
      "min": 100,
-     "pontosMestre": 250,
+     "pontosMestre": 50,
+     "descricao": "Defeat 100 wild Normal-type Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1000,
-      "nome": "1,000 Coins"
+      "tipo": "cosmetico",
+      "id": "selo:normal",
+      "nome": "Normal-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 750,
+     "pontosMestre": 150,
+     "descricao": "Defeat 750 wild Normal-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-normal",
+      "nome": "Versatile Trainer"
      }
     },
     {
      "degrau": "ouro",
-     "min": 500,
-     "pontosMestre": 500,
+     "min": 3000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 3,000 wild Normal-type Pokémon.",
      "recompensa": {
-      "tipo": "titulo",
-      "id": "Brawler",
-      "nome": "Brawler"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 2000,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 20,
-      "nome": "20 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 5000,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Unstoppable",
-      "nome": "Unstoppable"
+      "tipo": "moldura",
+      "id": "tipo-normal",
+      "nome": "Normal-type Frame"
      }
     }
    ]
   },
   {
-   "id": "trainers",
-   "nome": "Trainer Rival",
-   "descricao": "Win battles against trainers.",
-   "categoria": "batalha",
-   "conta": "treinador",
+   "id": "luta-venenoso",
+   "nome": "Antidote",
+   "descricao": "Defeat 100 wild Poison-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Poison",
    "degraus": [
     {
      "degrau": "bronze",
-     "min": 5,
-     "pontosMestre": 100,
+     "min": 100,
+     "pontosMestre": 50,
+     "descricao": "Defeat 100 wild Poison-type Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 500,
-      "nome": "500 Coins"
+      "tipo": "cosmetico",
+      "id": "selo:venenoso",
+      "nome": "Poison-type Seal"
      }
     },
     {
      "degrau": "prata",
-     "min": 25,
-     "pontosMestre": 250,
+     "min": 750,
+     "pontosMestre": 150,
+     "descricao": "Defeat 750 wild Poison-type Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1500,
-      "nome": "1,500 Coins"
+      "tipo": "titulo",
+      "id": "tipo-venenoso",
+      "nome": "Master of Toxins"
      }
     },
     {
      "degrau": "ouro",
-     "min": 75,
-     "pontosMestre": 500,
+     "min": 3000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 3,000 wild Poison-type Pokémon.",
      "recompensa": {
-      "tipo": "titulo",
-      "id": "Rival",
-      "nome": "Rival"
+      "tipo": "moldura",
+      "id": "tipo-venenoso",
+      "nome": "Poison-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-voador",
+   "nome": "Clipped Wings",
+   "descricao": "Defeat 100 wild Flying-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Flying",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 50,
+     "descricao": "Defeat 100 wild Flying-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:voador",
+      "nome": "Flying-type Seal"
      }
     },
     {
-     "degrau": "platina",
+     "degrau": "prata",
+     "min": 750,
+     "pontosMestre": 150,
+     "descricao": "Defeat 750 wild Flying-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-voador",
+      "nome": "Sky Hunter"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 3000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 3,000 wild Flying-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-voador",
+      "nome": "Flying-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-agua",
+   "nome": "Against the Current",
+   "descricao": "Defeat 100 wild Water-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Water",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 50,
+     "descricao": "Defeat 100 wild Water-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:agua",
+      "nome": "Water-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 750,
+     "pontosMestre": 150,
+     "descricao": "Defeat 750 wild Water-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-agua",
+      "nome": "Lord of the Tides"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 3000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 3,000 wild Water-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-agua",
+      "nome": "Water-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-planta",
+   "nome": "Full Pruning",
+   "descricao": "Defeat 50 wild Grass-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Grass",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Grass-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:planta",
+      "nome": "Grass-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 400,
+     "pontosMestre": 150,
+     "descricao": "Defeat 400 wild Grass-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-planta",
+      "nome": "Forest Guardian"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1500,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,500 wild Grass-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-planta",
+      "nome": "Grass-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-inseto",
+   "nome": "Pest Control",
+   "descricao": "Defeat 50 wild Bug-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Bug",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Bug-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:inseto",
+      "nome": "Bug-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 400,
+     "pontosMestre": 150,
+     "descricao": "Defeat 400 wild Bug-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-inseto",
+      "nome": "Entomologist"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1500,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,500 wild Bug-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-inseto",
+      "nome": "Bug-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-terra",
+   "nome": "Earthquake",
+   "descricao": "Defeat 50 wild Ground-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Ground",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Ground-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:terra",
+      "nome": "Ground-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 400,
+     "pontosMestre": 150,
+     "descricao": "Defeat 400 wild Ground-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-terra",
+      "nome": "Seismic Shock"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1500,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,500 wild Ground-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-terra",
+      "nome": "Ground-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-psiquico",
+   "nome": "Shielded Mind",
+   "descricao": "Defeat 50 wild Psychic-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Psychic",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Psychic-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:psiquico",
+      "nome": "Psychic-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 400,
+     "pontosMestre": 150,
+     "descricao": "Defeat 400 wild Psychic-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-psiquico",
+      "nome": "Sharp Mind"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1500,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,500 wild Psychic-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-psiquico",
+      "nome": "Psychic-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-lutador",
+   "nome": "Technical Knockout",
+   "descricao": "Defeat 50 wild Fighting-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Fighting",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Fighting-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:lutador",
+      "nome": "Fighting-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 400,
+     "pontosMestre": 150,
+     "descricao": "Defeat 400 wild Fighting-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-lutador",
+      "nome": "Iron Fist"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1500,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,500 wild Fighting-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-lutador",
+      "nome": "Fighting-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-fogo",
+   "nome": "Against the Flames",
+   "descricao": "Defeat 50 wild Fire-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Fire",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Fire-type Pokémon.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0059",
+      "nome": "Arcanine"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 250,
+     "pontosMestre": 150,
+     "descricao": "Defeat 250 wild Fire-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-fogo",
+      "nome": "Flame Tamer"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,000 wild Fire-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-fogo",
+      "nome": "Fire-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-eletrico",
+   "nome": "Short Circuit",
+   "descricao": "Defeat 50 wild Electric-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Electric",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Electric-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:eletrico",
+      "nome": "Electric-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 250,
+     "pontosMestre": 150,
+     "descricao": "Defeat 250 wild Electric-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-eletrico",
+      "nome": "High Voltage"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,000 wild Electric-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-eletrico",
+      "nome": "Electric-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-pedra",
+   "nome": "Rock Breaker",
+   "descricao": "Defeat 50 wild Rock-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Rock",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Defeat 50 wild Rock-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:pedra",
+      "nome": "Rock-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 250,
+     "pontosMestre": 150,
+     "descricao": "Defeat 250 wild Rock-type Pokémon.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0111",
+      "nome": "Rhyhorn"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 1000,
+     "pontosMestre": 400,
+     "descricao": "Defeat 1,000 wild Rock-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-pedra",
+      "nome": "Rock Crusher"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-fantasma",
+   "nome": "Not Afraid of Ghosts",
+   "descricao": "Defeat 25 wild Ghost-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Ghost",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 50,
+     "descricao": "Defeat 25 wild Ghost-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:fantasma",
+      "nome": "Ghost-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
      "min": 150,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 25,
-      "nome": "25 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 300,
-     "pontosMestre": 2000,
+     "pontosMestre": 150,
+     "descricao": "Defeat 150 wild Ghost-type Pokémon.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Ace Trainer",
-      "nome": "Ace Trainer"
-     }
-    }
-   ]
-  },
-  {
-   "id": "gyms",
-   "nome": "Gym Challenger",
-   "descricao": "Win gym battles (rematches count).",
-   "categoria": "batalha",
-   "conta": "ginasio",
-   "degraus": [
-    {
-     "degrau": "bronze",
-     "min": 1,
-     "pontosMestre": 100,
-     "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1000,
-      "nome": "1,000 Coins"
-     }
-    },
-    {
-     "degrau": "prata",
-     "min": 5,
-     "pontosMestre": 250,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Challenger",
-      "nome": "Challenger"
+      "id": "tipo-fantasma",
+      "nome": "Ghost Hunter"
      }
     },
     {
      "degrau": "ouro",
-     "min": 15,
-     "pontosMestre": 500,
+     "min": 600,
+     "pontosMestre": 400,
+     "descricao": "Defeat 600 wild Ghost-type Pokémon.",
      "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 20,
-      "nome": "20 Diamonds"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 40,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Gym Crusher",
-      "nome": "Gym Crusher"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 100,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 60,
-      "nome": "60 Diamonds"
+      "tipo": "moldura",
+      "id": "dump:58002",
+      "nome": "Gengar Frame"
      }
     }
    ]
   },
   {
-   "id": "badges",
-   "nome": "Badge Trail",
-   "descricao": "Earn Kanto gym badges.",
-   "categoria": "historia",
+   "id": "luta-gelo",
+   "nome": "Icebreaker",
+   "descricao": "Defeat 25 wild Ice-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Ice",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 50,
+     "descricao": "Defeat 25 wild Ice-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:gelo",
+      "nome": "Ice-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 150,
+     "pontosMestre": 150,
+     "descricao": "Defeat 150 wild Ice-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-gelo",
+      "nome": "Heart of Ice"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 600,
+     "pontosMestre": 400,
+     "descricao": "Defeat 600 wild Ice-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-gelo",
+      "nome": "Ice-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-fada",
+   "nome": "Fairy Tales",
+   "descricao": "Defeat 25 wild Fairy-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Fairy",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 50,
+     "descricao": "Defeat 25 wild Fairy-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:fada",
+      "nome": "Fairy-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 150,
+     "pontosMestre": 150,
+     "descricao": "Defeat 150 wild Fairy-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-fada",
+      "nome": "Fairy Charm"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 600,
+     "pontosMestre": 400,
+     "descricao": "Defeat 600 wild Fairy-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-fada",
+      "nome": "Fairy-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "luta-aco",
+   "nome": "Tempered Steel",
+   "descricao": "Defeat 25 wild Steel-type Pokémon.",
+   "categoria": "luta",
+   "conta": "koTipo:Steel",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 50,
+     "descricao": "Defeat 25 wild Steel-type Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:aco",
+      "nome": "Steel-type Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 150,
+     "pontosMestre": 150,
+     "descricao": "Defeat 150 wild Steel-type Pokémon.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "tipo-aco",
+      "nome": "Will of Steel"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 600,
+     "pontosMestre": 400,
+     "descricao": "Defeat 600 wild Steel-type Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "tipo-aco",
+      "nome": "Steel-type Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "insignias",
+   "nome": "Road to the League",
+   "descricao": "Earn a Kanto badge.",
+   "categoria": "insignias",
    "conta": "insignias",
    "degraus": [
     {
      "degrau": "bronze",
      "min": 1,
      "pontosMestre": 100,
+     "descricao": "Earn a Kanto badge.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 500,
-      "nome": "500 Coins"
+      "tipo": "cosmetico",
+      "id": "selo:insignia",
+      "nome": "First Badge Seal"
      }
     },
     {
      "degrau": "prata",
-     "min": 3,
-     "pontosMestre": 250,
+     "min": 4,
+     "pontosMestre": 300,
+     "descricao": "Earn 4 Kanto badges.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1500,
-      "nome": "1,500 Coins"
+      "tipo": "titulo",
+      "id": "desafiante",
+      "nome": "Gym Challenger"
      }
     },
     {
      "degrau": "ouro",
-     "min": 5,
-     "pontosMestre": 500,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Badge Seeker",
-      "nome": "Badge Seeker"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 7,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 30,
-      "nome": "30 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
      "min": 8,
-     "pontosMestre": 2000,
+     "pontosMestre": 1000,
+     "descricao": "Earn 8 Kanto badges.",
      "recompensa": {
-      "tipo": "titulo",
-      "id": "Kanto Champion",
-      "nome": "Kanto Champion"
+      "tipo": "moldura",
+      "id": "insignias-ouro",
+      "nome": "Eight Badges Frame"
      }
     }
    ]
   },
   {
-   "id": "elite",
-   "nome": "League Contender",
-   "descricao": "Beat the Elite Four.",
-   "categoria": "historia",
+   "id": "elite-campeao",
+   "nome": "League Champion",
+   "descricao": "Beat the Elite Four and become Champion.",
+   "categoria": "elite",
    "conta": "elite",
    "degraus": [
     {
      "degrau": "bronze",
      "min": 1,
-     "pontosMestre": 100,
+     "pontosMestre": 1000,
+     "descricao": "Beat the Elite Four and become Champion.",
      "recompensa": {
-      "tipo": "titulo",
-      "id": "League Contender",
-      "nome": "League Contender"
+      "tipo": "montaria",
+      "id": "pm0006",
+      "nome": "Charizard"
      }
     },
     {
      "degrau": "prata",
-     "min": 3,
-     "pontosMestre": 250,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 30,
-      "nome": "30 Diamonds"
-     }
-    },
-    {
-     "degrau": "ouro",
-     "min": 10,
-     "pontosMestre": 500,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Elite",
-      "nome": "Elite"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 25,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 80,
-      "nome": "80 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 50,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Hall of Famer",
-      "nome": "Hall of Famer"
-     }
-    }
-   ]
-  },
-  {
-   "id": "story",
-   "nome": "Storyteller",
-   "descricao": "Finish story missions.",
-   "categoria": "historia",
-   "conta": "historia",
-   "degraus": [
-    {
-     "degrau": "bronze",
      "min": 5,
-     "pontosMestre": 100,
+     "pontosMestre": 1500,
+     "descricao": "Beat the Elite Four 5 times.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 500,
-      "nome": "500 Coins"
-     }
-    },
-    {
-     "degrau": "prata",
-     "min": 15,
-     "pontosMestre": 250,
-     "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1500,
-      "nome": "1,500 Coins"
+      "tipo": "montaria",
+      "id": "pm0146",
+      "nome": "Moltres"
      }
     },
     {
      "degrau": "ouro",
-     "min": 30,
-     "pontosMestre": 500,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Storyteller",
-      "nome": "Storyteller"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 45,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 30,
-      "nome": "30 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 56,
+     "min": 20,
      "pontosMestre": 2000,
+     "descricao": "Beat the Elite Four 20 times.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Legend of Kanto",
-      "nome": "Legend of Kanto"
+      "id": "campeao-eterno",
+      "nome": "Eternal Champion"
      }
     }
    ]
   },
   {
-   "id": "evolve",
-   "nome": "Metamorphosis",
-   "descricao": "Evolve Pokémon.",
-   "categoria": "colecao",
-   "conta": "evolucao",
+   "id": "elite-relampago",
+   "nome": "Lightning Run",
+   "descricao": "Beat the Elite Four in under 20 minutes.",
+   "categoria": "elite",
+   "conta": "eliteRapida",
    "degraus": [
     {
      "degrau": "bronze",
      "min": 1,
-     "pontosMestre": 100,
-     "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 300,
-      "nome": "300 Coins"
-     }
-    },
-    {
-     "degrau": "prata",
-     "min": 10,
-     "pontosMestre": 250,
-     "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1000,
-      "nome": "1,000 Coins"
-     }
-    },
-    {
-     "degrau": "ouro",
-     "min": 30,
-     "pontosMestre": 500,
+     "pontosMestre": 800,
+     "descricao": "Beat the Elite Four in under 20 minutes.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Evolutionist",
-      "nome": "Evolutionist"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 75,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 20,
-      "nome": "20 Diamonds"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 150,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Professor's Pride",
-      "nome": "Professor's Pride"
+      "id": "velocista-da-liga",
+      "nome": "League Sprinter"
      }
     }
    ]
   },
   {
-   "id": "level",
-   "nome": "Power Trainer",
-   "descricao": "Raise a Pokémon's level.",
-   "categoria": "aventura",
-   "conta": "nivel",
+   "id": "shiny",
+   "nome": "Shiny Hunter",
+   "descricao": "Catch a shiny Pokémon.",
+   "categoria": "shiny",
+   "conta": "shiny",
    "degraus": [
     {
      "degrau": "bronze",
-     "min": 10,
-     "pontosMestre": 100,
+     "min": 1,
+     "pontosMestre": 500,
+     "descricao": "Catch a shiny Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 300,
-      "nome": "300 Coins"
+      "tipo": "titulo",
+      "id": "shiny",
+      "nome": "Shiny Hunter"
+     }
+    }
+   ],
+   "existente": true
+  },
+  {
+   "id": "shiny-capturados",
+   "nome": "Rare Glow",
+   "descricao": "Catch 3 shiny Pokémon.",
+   "categoria": "shiny",
+   "conta": "shiny",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 3,
+     "pontosMestre": 800,
+     "descricao": "Catch 3 shiny Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "peito:56019",
+      "nome": "Shining Stars"
      }
     },
     {
      "degrau": "prata",
-     "min": 25,
-     "pontosMestre": 250,
+     "min": 10,
+     "pontosMestre": 1500,
+     "descricao": "Catch 10 shiny Pokémon.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1000,
-      "nome": "1,000 Coins"
+      "tipo": "moldura",
+      "id": "shiny-prata",
+      "nome": "Shining Frame"
      }
     },
     {
      "degrau": "ouro",
-     "min": 50,
-     "pontosMestre": 500,
+     "min": 25,
+     "pontosMestre": 3000,
+     "descricao": "Catch 25 shiny Pokémon.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Trainer",
-      "nome": "Trainer"
+      "id": "lenda-brilhante",
+      "nome": "Shining Legend"
+     }
+    }
+   ]
+  },
+  {
+   "id": "shiny-especies",
+   "nome": "Shiny Collection",
+   "descricao": "Catch shinies of 5 different species.",
+   "categoria": "shiny",
+   "conta": "shinyEspecies",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 2000,
+     "descricao": "Catch shinies of 5 different species.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "rastro:55006",
+      "nome": "Rainbow Trail"
+     }
+    }
+   ]
+  },
+  {
+   "id": "shiny-ko",
+   "nome": "Hidden achievement",
+   "descricao": "Keep playing to find out.",
+   "categoria": "shiny",
+   "conta": "secreta",
+   "degraus": [],
+   "oculta": true
+  },
+  {
+   "id": "pesca-maestria",
+   "nome": "Fishing Mastery",
+   "descricao": "Reach fishing mastery 20.",
+   "categoria": "pesca",
+   "conta": "pescaMaestria",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 20,
+     "pontosMestre": 150,
+     "descricao": "Reach fishing mastery 20.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "pescador",
+      "nome": "Angler"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 40,
+     "pontosMestre": 300,
+     "descricao": "Reach fishing mastery 40.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "dump:58009",
+      "nome": "Magikarp Frame"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 60,
+     "pontosMestre": 600,
+     "descricao": "Reach fishing mastery 60.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "pescador-experiente",
+      "nome": "Expert Angler"
      }
     },
     {
      "degrau": "platina",
-     "min": 75,
+     "min": 80,
      "pontosMestre": 1000,
+     "descricao": "Reach fishing mastery 80.",
      "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 30,
-      "nome": "30 Diamonds"
+      "tipo": "cosmetico",
+      "id": "peito:56005",
+      "nome": "Snow Aura"
      }
     },
     {
      "degrau": "diamante",
      "min": 100,
      "pontosMestre": 2000,
+     "descricao": "Reach fishing mastery 100.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Level 100",
-      "nome": "Level 100"
+      "id": "mestre-pescador",
+      "nome": "Master Angler"
      }
     }
    ]
   },
   {
-   "id": "raids",
-   "nome": "Raid Squad",
-   "descricao": "Join live raids.",
-   "categoria": "aventura",
+   "id": "pesca-total",
+   "nome": "Line in the Water",
+   "descricao": "Fish up 50 Pokémon.",
+   "categoria": "pesca",
+   "conta": "pesca",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 50,
+     "pontosMestre": 50,
+     "descricao": "Fish up 50 Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "enfeite:boia",
+      "nome": "Fishing Float"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 500,
+     "pontosMestre": 200,
+     "descricao": "Fish up 500 Pokémon.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:peixe",
+      "nome": "Fish Emote"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 2000,
+     "pontosMestre": 500,
+     "descricao": "Fish up 2,000 Pokémon.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "pesca-ouro",
+      "nome": "Angler's Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "pesca-especies",
+   "nome": "Aquarium",
+   "descricao": "Fish up 5 different species.",
+   "categoria": "pesca",
+   "conta": "pescaEspecies",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 100,
+     "descricao": "Fish up 5 different species.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:aquario",
+      "nome": "Aquarium Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 10,
+     "pontosMestre": 300,
+     "descricao": "Fish up 10 different species.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "ictiologo",
+      "nome": "Ichthyologist"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 18,
+     "pontosMestre": 600,
+     "descricao": "Fish up 18 different species.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "peito:56004",
+      "nome": "Bubbles"
+     }
+    }
+   ]
+  },
+  {
+   "id": "pesca-magikarp",
+   "nome": "Angler's Patience",
+   "descricao": "Fish up 100 Magikarp.",
+   "categoria": "pesca",
+   "conta": "pescaMagikarp",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 400,
+     "descricao": "Fish up 100 Magikarp.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0130",
+      "nome": "Gyarados"
+     }
+    }
+   ]
+  },
+  {
+   "id": "pesca-gyarados",
+   "nome": "Hidden achievement",
+   "descricao": "Keep playing to find out.",
+   "categoria": "pesca",
+   "conta": "secreta",
+   "degraus": [],
+   "oculta": true
+  },
+  {
+   "id": "raid-participar",
+   "nome": "Against the Legend",
+   "descricao": "Contribute to a raid.",
+   "categoria": "raid",
    "conta": "raid",
    "degraus": [
     {
      "degrau": "bronze",
      "min": 1,
-     "pontosMestre": 100,
+     "pontosMestre": 150,
+     "descricao": "Contribute to a raid.",
      "recompensa": {
-      "tipo": "dinheiro",
-      "qtd": 1000,
-      "nome": "1,000 Coins"
+      "tipo": "cosmetico",
+      "id": "emote:vitoria",
+      "nome": "Victory Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 10,
+     "pontosMestre": 500,
+     "descricao": "Contribute to 10 raids.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "cacador-de-lendas",
+      "nome": "Legend Hunter"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 25,
+     "pontosMestre": 1000,
+     "descricao": "Contribute to 25 raids.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0149",
+      "nome": "Dragonite"
+     }
+    }
+   ]
+  },
+  {
+   "id": "raid-pontos",
+   "nome": "Front Line",
+   "descricao": "Earn 100 raid contribution points.",
+   "categoria": "raid",
+   "conta": "raidPontos",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 100,
+     "pontosMestre": 200,
+     "descricao": "Earn 100 raid contribution points.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:espada",
+      "nome": "Sword Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 500,
+     "pontosMestre": 500,
+     "descricao": "Earn 500 raid contribution points.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "raid-prata",
+      "nome": "Front Line Frame"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 2000,
+     "pontosMestre": 1000,
+     "descricao": "Earn 2,000 raid contribution points.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "muralha",
+      "nome": "Bulwark"
+     }
+    }
+   ]
+  },
+  {
+   "id": "raid-mvp",
+   "nome": "Raid Standout",
+   "descricao": "Be the top contributor in a raid.",
+   "categoria": "raid",
+   "conta": "mvp",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 400,
+     "descricao": "Be the top contributor in a raid.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "peito:56012",
+      "nome": "Moonlight"
      }
     },
     {
      "degrau": "prata",
      "min": 5,
-     "pontosMestre": 250,
+     "pontosMestre": 800,
+     "descricao": "Be the top contributor in a raid 5 times.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Raider",
-      "nome": "Raider"
+      "id": "mvp",
+      "nome": "Raid Standout"
      }
     },
     {
      "degrau": "ouro",
-     "min": 15,
-     "pontosMestre": 500,
+     "min": 20,
+     "pontosMestre": 1500,
+     "descricao": "Be the top contributor in a raid 20 times.",
      "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 25,
-      "nome": "25 Diamonds"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 40,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Raid Veteran",
-      "nome": "Raid Veteran"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 100,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 80,
-      "nome": "80 Diamonds"
+      "tipo": "moldura",
+      "id": "raid-ouro",
+      "nome": "Standout Frame"
      }
     }
    ]
   },
   {
-   "id": "rich",
-   "nome": "Big Spender",
-   "descricao": "Hold Coins at once.",
-   "categoria": "aventura",
-   "conta": "dinheiro",
+   "id": "guilda-entrar",
+   "nome": "Companions",
+   "descricao": "Join a guild.",
+   "categoria": "guilda",
+   "conta": "guildaEntrar",
    "degraus": [
     {
      "degrau": "bronze",
-     "min": 10000,
-     "pontosMestre": 100
+     "min": 1,
+     "pontosMestre": 50,
+     "descricao": "Join a guild.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:guilda",
+      "nome": "Guild Seal"
+     }
+    }
+   ]
+  },
+  {
+   "id": "guilda-fundar",
+   "nome": "Founder",
+   "descricao": "Found a guild.",
+   "categoria": "guilda",
+   "conta": "guildaFundar",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 200,
+     "descricao": "Found a guild.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "fundador",
+      "nome": "Guild Founder"
+     }
+    }
+   ]
+  },
+  {
+   "id": "guilda-chefe",
+   "nome": "Boss of the Day",
+   "descricao": "Fight the guild boss on 5 different days.",
+   "categoria": "guilda",
+   "conta": "chefeGuilda",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 100,
+     "descricao": "Fight the guild boss on 5 different days.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:escudo",
+      "nome": "Shield Emote"
+     }
     },
     {
      "degrau": "prata",
-     "min": 50000,
-     "pontosMestre": 250,
+     "min": 30,
+     "pontosMestre": 300,
+     "descricao": "Fight the guild boss on 30 different days.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Wealthy",
-      "nome": "Wealthy"
+      "id": "guardiao-da-guilda",
+      "nome": "Guild Guardian"
      }
     },
     {
      "degrau": "ouro",
-     "min": 150000,
-     "pontosMestre": 500,
+     "min": 100,
+     "pontosMestre": 800,
+     "descricao": "Fight the guild boss on 100 different days.",
      "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 20,
-      "nome": "20 Diamonds"
-     }
-    },
-    {
-     "degrau": "platina",
-     "min": 500000,
-     "pontosMestre": 1000,
-     "recompensa": {
-      "tipo": "titulo",
-      "id": "Tycoon",
-      "nome": "Tycoon"
-     }
-    },
-    {
-     "degrau": "diamante",
-     "min": 1000000,
-     "pontosMestre": 2000,
-     "recompensa": {
-      "tipo": "diamantes",
-      "qtd": 60,
-      "nome": "60 Diamonds"
+      "tipo": "moldura",
+      "id": "guilda-ouro",
+      "nome": "Guild Frame"
      }
     }
    ]
   },
   {
-   "id": "secret-shiny-legend",
-   "nome": "A Rare Light",
-   "descricao": "Catch 100 shiny Pokémon.",
-   "categoria": "captura",
-   "conta": "shiny",
+   "id": "guilda-meta",
+   "nome": "Goal Reached",
+   "descricao": "Help the guild reach its daily goal 10 times.",
+   "categoria": "guilda",
+   "conta": "guildaMeta",
    "degraus": [
     {
      "degrau": "bronze",
-     "min": 100,
-     "pontosMestre": 3000,
+     "min": 10,
+     "pontosMestre": 200,
+     "descricao": "Help the guild reach its daily goal 10 times.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "enfeite:estandarte",
+      "nome": "Guild Banner"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 50,
+     "pontosMestre": 600,
+     "descricao": "Help the guild reach its daily goal 50 times.",
      "recompensa": {
       "tipo": "titulo",
-      "id": "Living Legend",
-      "nome": "Living Legend"
+      "id": "pilar-da-guilda",
+      "nome": "Guild Pillar"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mercado-vendas",
+   "nome": "Merchant",
+   "descricao": "Make a sale in the Market.",
+   "categoria": "mercado",
+   "conta": "venda",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 50,
+     "descricao": "Make a sale in the Market.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:moeda",
+      "nome": "Coin Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 25,
+     "pontosMestre": 300,
+     "descricao": "Sell 25 times in the Market (up to 30 a day count).",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0053",
+      "nome": "Persian"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 200,
+     "pontosMestre": 800,
+     "descricao": "Sell 200 times in the Market (up to 30 a day count).",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "magnata",
+      "nome": "Tycoon"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mercado-compras",
+   "nome": "Regular Customer",
+   "descricao": "Make a purchase in the Market.",
+   "categoria": "mercado",
+   "conta": "compra",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 50,
+     "descricao": "Make a purchase in the Market.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:sacola",
+      "nome": "Bag Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 25,
+     "pontosMestre": 300,
+     "descricao": "Buy 25 times in the Market (up to 30 a day count).",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "dump:58005",
+      "nome": "Meowth Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "missao-historia",
+   "nome": "The Journey",
+   "descricao": "Finish 5 story chapters.",
+   "categoria": "missao",
+   "conta": "capitulos",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 200,
+     "descricao": "Finish 5 story chapters.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:mapa",
+      "nome": "Map Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 10,
+     "pontosMestre": 500,
+     "descricao": "Finish 10 story chapters.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "aventureiro",
+      "nome": "Adventurer"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 20,
+     "pontosMestre": 1500,
+     "descricao": "Finish 20 story chapters.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "jornada-ouro",
+      "nome": "Journey Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "missao-total",
+   "nome": "Helpful",
+   "descricao": "Finish 25 missions.",
+   "categoria": "missao",
+   "conta": "missoes",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 25,
+     "pontosMestre": 100,
+     "descricao": "Finish 25 missions.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:joinha",
+      "nome": "Thumbs-Up Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 75,
+     "pontosMestre": 300,
+     "descricao": "Finish 75 missions.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "prestativo",
+      "nome": "Helpful"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 150,
+     "pontosMestre": 800,
+     "descricao": "Finish 150 missions.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "missao-ouro",
+      "nome": "Helpful Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "social-troca",
+   "nome": "Fair Trade",
+   "descricao": "Trade with another trainer.",
+   "categoria": "social",
+   "conta": "troca",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 50,
+     "descricao": "Trade with another trainer.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:aperto",
+      "nome": "Handshake Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 25,
+     "pontosMestre": 300,
+     "descricao": "Trade 25 times with other trainers (up to 10 a day count).",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "negociador",
+      "nome": "Negotiator"
+     }
+    }
+   ]
+  },
+  {
+   "id": "social-parceiros",
+   "nome": "Network of Friends",
+   "descricao": "Trade with 5 different trainers.",
+   "categoria": "social",
+   "conta": "parceiros",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 5,
+     "pontosMestre": 150,
+     "descricao": "Trade with 5 different trainers.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "enfeite:laco",
+      "nome": "Friendship Ribbon"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 20,
+     "pontosMestre": 500,
+     "descricao": "Trade with 20 different trainers.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "amigo-de-todos",
+      "nome": "Everyone's Friend"
+     }
+    }
+   ]
+  },
+  {
+   "id": "exploracao-kanto",
+   "nome": "Trailblazer",
+   "descricao": "Visit 10 Kanto areas.",
+   "categoria": "exploracao",
+   "conta": "areas",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 50,
+     "descricao": "Visit 10 Kanto areas.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "selo:bussola",
+      "nome": "Compass Seal"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 25,
+     "pontosMestre": 300,
+     "descricao": "Visit 25 Kanto areas.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0085",
+      "nome": "Dodrio"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 38,
+     "pontosMestre": 800,
+     "descricao": "Visit 38 Kanto areas.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "cartografo",
+      "nome": "Kanto Cartographer"
+     }
+    }
+   ]
+  },
+  {
+   "id": "exploracao-cidades",
+   "nome": "Tourist",
+   "descricao": "Visit the 10 Kanto cities.",
+   "categoria": "exploracao",
+   "conta": "cidades",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 10,
+     "pontosMestre": 200,
+     "descricao": "Visit the 10 Kanto cities.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "turista",
+      "nome": "Kanto Tourist"
+     }
+    }
+   ]
+  },
+  {
+   "id": "exploracao-masmorras",
+   "nome": "Explorer of the Depths",
+   "descricao": "Enter 4 Kanto dungeons (caves, towers, buildings and the ship).",
+   "categoria": "exploracao",
+   "conta": "masmorras",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 4,
+     "pontosMestre": 100,
+     "descricao": "Enter 4 Kanto dungeons (caves, towers, buildings and the ship).",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "enfeite:lanterna",
+      "nome": "Explorer's Lantern"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 8,
+     "pontosMestre": 400,
+     "descricao": "Enter 8 Kanto dungeons (caves, towers, buildings and the ship).",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "espeleologo",
+      "nome": "Speleologist"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 13,
+     "pontosMestre": 1000,
+     "descricao": "Enter 13 Kanto dungeons (caves, towers, buildings and the ship).",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0142",
+      "nome": "Aerodactyl"
+     }
+    }
+   ]
+  },
+  {
+   "id": "alphaTester",
+   "nome": "Alpha Tester",
+   "descricao": "Played in the PokeVerse alpha.",
+   "categoria": "tempo",
+   "conta": "alfa",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 300,
+     "descricao": "Played in the PokeVerse alpha.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "alphaTester",
+      "nome": "Alpha Tester"
      }
     }
    ],
-   "oculta": true
+   "existente": true
+  },
+  {
+   "id": "tempo-dias",
+   "nome": "Always Around",
+   "descricao": "Play on 7 different days.",
+   "categoria": "tempo",
+   "conta": "dias",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 7,
+     "pontosMestre": 100,
+     "descricao": "Play on 7 different days.",
+     "recompensa": {
+      "tipo": "cosmetico",
+      "id": "emote:aceno",
+      "nome": "Wave Emote"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 30,
+     "pontosMestre": 400,
+     "descricao": "Play on 30 different days.",
+     "recompensa": {
+      "tipo": "montaria",
+      "id": "pm0143",
+      "nome": "Snorlax"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 100,
+     "pontosMestre": 1000,
+     "descricao": "Play on 100 different days.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "veterano",
+      "nome": "Kanto Veteran"
+     }
+    }
+   ]
+  },
+  {
+   "id": "tempo-ano",
+   "nome": "A Year of Journeys",
+   "descricao": "Play on 365 different days.",
+   "categoria": "tempo",
+   "conta": "dias",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 365,
+     "pontosMestre": 3000,
+     "descricao": "Play on 365 different days.",
+     "recompensa": {
+      "tipo": "moldura",
+      "id": "aniversario",
+      "nome": "One-Year Frame"
+     }
+    }
+   ]
+  },
+  {
+   "id": "tempo-medalhao",
+   "nome": "Medallion Shine",
+   "descricao": "Activate the Medallion.",
+   "categoria": "tempo",
+   "conta": "medalhao",
+   "degraus": [
+    {
+     "degrau": "bronze",
+     "min": 1,
+     "pontosMestre": 50,
+     "descricao": "Activate the Medallion.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "apoiador",
+      "nome": "Supporter"
+     }
+    },
+    {
+     "degrau": "prata",
+     "min": 3,
+     "pontosMestre": 50,
+     "descricao": "Activate the Medallion for 3 months.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "apoiador-fiel",
+      "nome": "Loyal Supporter"
+     }
+    },
+    {
+     "degrau": "ouro",
+     "min": 6,
+     "pontosMestre": 50,
+     "descricao": "Activate the Medallion for 6 months.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "patrono",
+      "nome": "Patron"
+     }
+    },
+    {
+     "degrau": "platina",
+     "min": 12,
+     "pontosMestre": 50,
+     "descricao": "Activate the Medallion for 12 months.",
+     "recompensa": {
+      "tipo": "titulo",
+      "id": "grande-patrono",
+      "nome": "Grand Patron"
+     }
+    }
+   ]
   }
  ]
 }

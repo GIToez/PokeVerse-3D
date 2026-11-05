@@ -18,14 +18,33 @@ import fs from 'node:fs';
 import nodePath from 'node:path';
 
 const TIERS = ['bronze', 'prata', 'ouro', 'platina', 'diamante'];
-const EVENT_COUNTERS = new Set(['ko', 'captura', 'shiny', 'treinador', 'ginasio', 'evolucao', 'historia', 'elite', 'raid']);
+/* Counted from server-checked events (`count`). The ones no server system reports yet (fishing, guilds, the market,
+   trades, medallions, the Elite Four timer, raid points/MVP) stay at 0 until that system sends them. */
+const EVENT_COUNTERS = new Set(['ko', 'captura', 'shiny', 'treinador', 'ginasio', 'evolucao', 'historia', 'elite', 'raid',
+  'capturaAgua', 'capturaSafari', 'koFaixa3', 'koFaixa4', 'pesca', 'pescaMagikarp', 'pescaMaestria', 'raidPontos', 'mvp', 'chefeGuilda',
+  'guildaEntrar', 'guildaFundar', 'guildaMeta', 'venda', 'compra', 'troca', 'eliteRapida', 'medalhao', 'capitulos', 'cidades', 'masmorras', 'cura', 'secreta']);
+const caught = v => v === 'pego' || v === 'caught';
+/** Read from the save, the account, or the per-kind tallies (`p.tally`) that `count` keeps. */
 const SAVE_COUNTERS = {
-  especies: save => Object.values(save?.dex || {}).filter(v => v === 'pego' || v === 'caught').length,
-  insignias: save => (Array.isArray(save?.insignias) ? save.insignias.length : 0),
-  nivel: save => Math.max(0, ...[...(save?.time || []), ...(save?.caixa || [])].map(p => +p?.lv || 0)),
-  dinheiro: save => Math.max(0, +save?.dinheiro || 0),
+  especies: (save) => Object.values(save?.dex || {}).filter(caught).length,
+  especiesVistas: (save) => Object.keys(save?.dex || {}).length,
+  especiesKanto: (save) => Object.entries(save?.dex || {}).filter(([n, v]) => +n >= 1 && +n <= 151 && caught(v)).length,
+  insignias: (save) => (Array.isArray(save?.insignias) ? save.insignias.length : 0),
+  nivel: (save) => Math.max(0, ...[...(save?.time || []), ...(save?.caixa || [])].map(p => +p?.lv || 0)),
+  dinheiro: (save) => Math.max(0, +save?.dinheiro || 0),
+  missoes: (save) => (Array.isArray(save?.missoes?.feitas) ? save.missoes.feitas.length : 0) + (Array.isArray(save?.missoes?.laterais?.feitas) ? save.missoes.laterais.feitas.length : 0),
+  estudadas: () => 0,   // Pokédex knowledge levels are worked out by the client (knowledge.mjs); not on the server yet
+  mestres: () => 0,
+  tiposCapturados: (save, c, t) => Object.keys(t.tiposCapturados || {}).length,
+  bolasDiferentes: (save, c, t) => Object.keys(t.bolas || {}).length,
+  shinyEspecies: (save, c, t) => Object.keys(t.shinyDex || {}).length,
+  pescaEspecies: (save, c, t) => Object.keys(t.pescaDex || {}).length,
+  parceiros: (save, c, t) => Object.keys(t.parceiros || {}).length,
+  areas: (save, c, t) => Object.keys(t.areas || {}).length,
+  dias: (save, c, p) => 0,   // filled from p.dias in valueOf
+  alfa: (save, c) => (c.alfa ? 1 : 0),
 };
-export const COUNTERS = [...EVENT_COUNTERS, ...Object.keys(SAVE_COUNTERS)];
+export const COUNTERS = [...EVENT_COUNTERS, ...Object.keys(SAVE_COUNTERS), 'koTipo:<Type>'];
 
 export function createProgression({ accounts, send, socketsOf, saveAccounts, dataDir, wallet }) {
   const file = nodePath.join(dataDir, 'conquistas.json');
@@ -35,7 +54,7 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
       const mt = fs.statSync(file).mtimeMs;
       if (mt !== cache.mtime) {
         const d = JSON.parse(fs.readFileSync(file, 'utf8')) || {};
-        cache = { mtime: mt, def: { categorias: Array.isArray(d.categorias) ? d.categorias : [], conquistas: (Array.isArray(d.conquistas) ? d.conquistas : []).filter(a => a?.id && Array.isArray(a.degraus) && a.degraus.length), mestre: { xpPorNivel: 1000, ...(d.mestre || {}) } } };
+        cache = { mtime: mt, def: { categorias: Array.isArray(d.categorias) ? d.categorias : [], conquistas: (Array.isArray(d.conquistas) ? d.conquistas : []).filter(a => a?.id && Array.isArray(a.degraus) && (a.degraus.length || a.oculta)), mestre: { xpPorNivel: 1000, ...(d.mestre || {}) } } };
       }
     } catch (e) { if (cache.mtime !== -2) console.warn('conquistas.json:', e.message); cache.mtime = -2; }
     return cache.def;
@@ -81,7 +100,13 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
       ovos: p.cont.ovo | 0, chocados: p.cont.chocado | 0, shinyOvo: p.cont.shinyOvo | 0,
     };
   }
-  const valueOf = (c, key) => (SAVE_COUNTERS[key] ? SAVE_COUNTERS[key](c.save) : Math.max(0, +stateOf(c).cont[key] || 0));
+  function valueOf(c, key) {
+    const p = stateOf(c), t = p.tally || {};
+    if (key === 'dias') return Array.isArray(p.dias) ? p.dias.length : 0;
+    if (String(key).startsWith('koTipo:')) return (t.koTipos || {})[key.slice(7)] | 0;
+    if (SAVE_COUNTERS[key]) return SAVE_COUNTERS[key](c.save || {}, c, t);
+    return Math.max(0, +p.cont[key] || 0);
+  }
 
   /** A server-checked event happened (the season pass's `contar` calls this too). */
   function count(u, ev) {
@@ -94,7 +119,20 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     const t = p.tally || (p.tally = {});
     if (ev.conta === 'captura' && ev.dex) bump(t.porDex || (t.porDex = {}), String(ev.dex));
     if (ev.conta === 'captura' && ev.bola) bump(t.bolas || (t.bolas = {}), String(ev.bola));
-    if (ev.conta === 'ko' && ev.dex) { const ty = typesOf(ev.dex)[0]; if (ty) bump(t.koTipo || (t.koTipo = {}), ty); }
+    if (ev.conta === 'ko' && ev.dex) {
+      const ty = typesOf(ev.dex);
+      if (ty[0]) bump(t.koTipo || (t.koTipo = {}), ty[0]);                     // main type, for "most defeated type"
+      for (const x of ty) bump(t.koTipos || (t.koTipos = {}), x);             // either type, for the per-type achievements
+      const lv = +ev.lv || 0;
+      if (lv >= 31 && lv <= 45) bump(p.cont, 'koFaixa3');
+      if (lv >= 46) bump(p.cont, 'koFaixa4');
+    }
+    if (ev.conta === 'captura' && ev.dex) {
+      for (const x of typesOf(ev.dex)) (t.tiposCapturados || (t.tiposCapturados = {}))[x] = 1;
+      if (ev.shiny) (t.shinyDex || (t.shinyDex = {}))[String(ev.dex)] = 1;
+      if (ev.agua) bump(p.cont, 'capturaAgua');
+      if (+ev.bola === 1005) bump(p.cont, 'capturaSafari');
+    }
     if ((ev.conta === 'ko' || ev.conta === 'captura') && ev.area != null) (t.areas || (t.areas = {}))[String(ev.area)] = 1;
     if (!Array.isArray(p.dias)) p.dias = [];
     if (p.dias.at(-1) !== today()) p.dias.push(today());
@@ -112,14 +150,14 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
       const value = valueOf(c, a.conta), done = tiersDone(c, a), claimed = Math.min(done, p.resgatados[a.id] | 0);
       for (let i = 0; i < claimed; i++) masterXp += +a.degraus[i].pontosMestre || 0;
       tiersTotal += a.degraus.length; tiersDoneAll += done;
-      const finished = done >= a.degraus.length;
+      const finished = a.degraus.length > 0 && done >= a.degraus.length;
       if (finished) completed++;
       if (done > claimed) toClaim++;
-      const next = a.degraus[done] || a.degraus[a.degraus.length - 1];
+      const next = a.degraus[done] || a.degraus[a.degraus.length - 1] || null;
       const hidden = !!a.oculta && done === 0;
       return {
         id: a.id, nome: hidden ? '???' : a.nome, descricao: hidden ? 'A hidden achievement.' : a.descricao || '', categoria: a.categoria || 'todas',
-        oculta: hidden, valor: hidden ? null : value, alvo: +next.min, concluida: finished, podeResgatar: done > claimed,
+        oculta: hidden, valor: hidden ? null : value, alvo: next ? +next.min : null, concluida: finished, podeResgatar: done > claimed,
         degrausFeitos: done, resgatados: claimed,
         degraus: hidden ? [] : a.degraus.map(d => ({ degrau: TIERS.includes(d.degrau) ? d.degrau : 'bronze', min: +d.min, pontosMestre: +d.pontosMestre || 0, descricao: d.descricao || '', ...(d.recompensa ? { recompensa: d.recompensa } : {}) })),
       };
@@ -146,9 +184,14 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     if (r.tipo === 'titulo') {
       if (!Array.isArray(c.titulosGanhos)) c.titulosGanhos = [];
       if (!c.titulosGanhos.includes(r.id)) c.titulosGanhos.push(r.id);
-    } else if (r.tipo === 'cosmetico') {
+    } else if (r.tipo === 'cosmetico' && /^roupa:/.test(r.id)) {
       if (!Array.isArray(save.skins)) save.skins = [];
-      if (!save.skins.includes(r.id)) save.skins.push(r.id);
+      if (!save.skins.includes(r.id.slice(6))) save.skins.push(r.id.slice(6));
+    } else if (r.tipo === 'cosmetico' || r.tipo === 'moldura' || r.tipo === 'montaria') {
+      // seals, emotes, ornaments, auras, trails, frames and mount licences: kept on the account for their screens
+      const key = r.tipo === 'moldura' ? 'molduras' : r.tipo === 'montaria' ? 'montariasGanhas' : 'visuais';
+      if (!Array.isArray(c[key])) c[key] = [];
+      if (!c[key].includes(r.id)) c[key].push(r.id);
     } else if (r.tipo === 'dinheiro') save.dinheiro = (save.dinheiro | 0) + Math.max(1, +r.qtd | 0);
     else if (r.tipo === 'diamantes') wallet.creditar(c, Math.max(1, +r.qtd | 0), 'conquista');
     else if (r.tipo === 'item') { if (!save.itens || typeof save.itens !== 'object') save.itens = {}; save.itens[r.id] = (save.itens[r.id] | 0) + Math.max(1, +r.qtd | 0); }

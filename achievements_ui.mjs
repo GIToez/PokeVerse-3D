@@ -16,6 +16,7 @@ const ART = './ui/amanda/conquistas/';
 /* Medal art in the repo: rings for the five metals, centres for 'todas' and 'oculta' only (the per-category centres and
    the empty 'sem' ring are on the download list). Anything else falls back so no medal draws a broken image. */
 const AROS = new Set(['bronze', 'prata', 'ouro', 'platina', 'diamante']);
+/* Add a category id here once its miolo-<id>.png is in ui/amanda/conquistas/miolos (the download list has the links). */
 const MIOLOS = new Set(['todas', 'oculta']);
 const aroUrl = (m) => ART + 'aros/aro-' + (AROS.has(m) ? m : 'bronze') + '.png';
 const mioloUrl = (c) => ART + 'miolos/miolo-' + (MIOLOS.has(c) ? c : 'todas') + '.png';

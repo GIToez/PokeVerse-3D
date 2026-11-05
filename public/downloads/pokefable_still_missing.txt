@@ -819,10 +819,19 @@ https://pokefableonline.com/ui/amanda/mapa/foto-alta/9_8.webp
 https://pokefableonline.com/ui/amanda/mapa/foto-alta/9_9.webp
 https://pokefableonline.com/ui/amanda/mapa/sevii/foto/6_4.webp
 
-# Achievement medal art (the window falls back to the "all" centre and the bronze ring without these) — names guessed from the code: one centre per category id, plus the empty ring
+# Achievement medal art — one centre per category (ids from PokeFable's achievement view) and the empty ring — 15
 https://pokefableonline.com/ui/amanda/conquistas/aros/aro-sem.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-pokedex.png
 https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-captura.png
-https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-colecao.png
-https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-batalha.png
-https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-historia.png
-https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-aventura.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-luta.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-insignias.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-elite.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-shiny.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-pesca.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-raid.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-guilda.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-mercado.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-missao.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-social.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-exploracao.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-tempo.png

@@ -64,7 +64,7 @@ const degrausOk = v => {
 const CONTADORES = [
   ['captura', 'Pokémon caught'], ['shiny', 'Shiny Pokémon caught'], ['especies', 'Species caught (Pokédex)'], ['ko', 'Wild Pokémon defeated'],
   ['treinador', 'Trainer battles won'], ['ginasio', 'Gym battles won'], ['insignias', 'Badges'], ['elite', 'Elite Four beaten'],
-  ['historia', 'Story missions finished'], ['evolucao', 'Evolutions'], ['nivel', 'Highest Pokémon level'], ['raid', 'Raids joined'], ['dinheiro', 'Coins held'],
+  ['historia', 'Story missions finished'], ['evolucao', 'Evolutions'], ['nivel', 'Highest Pokémon level'], ['raid', 'Raids joined'], ['dinheiro', 'Coins held'], ['especiesVistas', 'Species seen'], ['especiesKanto', 'Kanto species caught'], ['tiposCapturados', 'Types caught'], ['capturaAgua', 'Catches in water'], ['capturaSafari', 'Safari catches'], ['bolasDiferentes', 'Ball kinds used'], ['koFaixa3', 'Wild defeated Lv 31–45'], ['koFaixa4', 'Wild defeated Lv 46+'], ['shinyEspecies', 'Shiny species'], ['missoes', 'Missions finished'], ['areas', 'Areas visited'], ['dias', 'Days played'], ['alfa', 'Alpha tester'],
 ];
 export const ESQUEMAS_F3 = {
   conquistas: {
@@ -75,7 +75,7 @@ export const ESQUEMAS_F3 = {
       { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 60, col: true, obrigatorio: true },
       { k: 'descricao', rotulo: 'Description', tipo: 'texto', max: 160 },
       { k: 'categoria', rotulo: 'Category (id)', tipo: 'texto', max: 24, col: true, ajuda: 'One of the ids in Achievement categories.' },
-      { k: 'conta', rotulo: 'Counts', tipo: 'opcao', col: true, obrigatorio: true, opcoes: CONTADORES.map(([v, rotulo]) => ({ v, rotulo })) },
+      { k: 'conta', rotulo: 'Counts', tipo: 'texto', max: 32, col: true, obrigatorio: true, ajuda: 'What it counts: ' + CONTADORES.map(([v, r]) => v + ' (' + r + ')').join(', ') + '. Per type: koTipo:Fire, koTipo:Water… Some counters (fishing, guilds, market, trades, medallion) stay at 0 until their system reports them.' },
       { k: 'oculta', rotulo: 'Hidden until the first tier', tipo: 'bool' },
       { k: 'degraus', rotulo: 'Tiers', tipo: 'json', validar: degrausOk, ajuda: '[{ "degrau": "bronze", "min": 10, "pontosMestre": 100, "recompensa": { "tipo": "dinheiro", "qtd": 500, "nome": "500 Coins" } }, …] — recompensa.tipo: titulo, cosmetico (outfit id), dinheiro, diamantes, item (id + qtd).' },
     ],

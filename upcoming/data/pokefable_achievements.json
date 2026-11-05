@@ -1,0 +1,4908 @@
+{
+ "t": "progressao_vista",
+ "vista": {
+  "mestre": {
+   "nivel": 2,
+   "xp": 130,
+   "base": 40,
+   "proximo": 160,
+   "falta": 30,
+   "partes": [
+    {
+     "id": "especieKanto",
+     "nome": "Espécie de Kanto registrada",
+     "q": 1,
+     "xp": 100
+    },
+    {
+     "id": "missao",
+     "nome": "Missão concluída",
+     "q": 1,
+     "xp": 30
+    }
+   ],
+   "destrava": {
+    "caixa": 300,
+    "anunciosExtras": 0,
+    "anunciosBase": 20,
+    "anunciosTeto": 20,
+    "titulos": [],
+    "molduras": [],
+    "estrelas": 0,
+    "menosRecargaViagem": 0
+   },
+   "proximoDestrave": {
+    "nivel": 10,
+    "destrava": [
+     {
+      "caixa": 10
+     },
+     {
+      "titulo": "mestre-10"
+     },
+     {
+      "moldura": "mestre-bronze"
+     }
+    ]
+   },
+   "proximos": [
+    {
+     "nivel": 10,
+     "destrava": [
+      {
+       "caixa": 10
+      },
+      {
+       "titulo": "mestre-10"
+      },
+      {
+       "moldura": "mestre-bronze"
+      }
+     ]
+    },
+    {
+     "nivel": 20,
+     "destrava": [
+      {
+       "caixa": 10
+      },
+      {
+       "viagem": 0.1
+      }
+     ]
+    },
+    {
+     "nivel": 25,
+     "destrava": [
+      {
+       "titulo": "mestre-25"
+      }
+     ]
+    }
+   ]
+  },
+  "caixa": {
+   "nome": "Caixa",
+   "detalhe": "{base} + {mestre} do Mestre + {compradas} compradas",
+   "base": 300,
+   "mestre": 0,
+   "mestreMax": 100,
+   "compradas": 0,
+   "tetoCompradas": 600,
+   "total": 300,
+   "time": 6,
+   "limitePosse": 306,
+   "nivel": 2,
+   "proximoMestre": {
+    "nivel": 10,
+    "mais": 10
+   },
+   "medalhao": 0,
+   "fundador": 0
+  },
+  "conquistas": [
+   {
+    "id": "observador",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": true,
+    "nome": "Observador",
+    "descricao": "Veja 25 espécies diferentes.",
+    "valor": 5,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Veja 25 espécies diferentes.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "observador",
+       "nome": "Observador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "colecionador",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": true,
+    "nome": "Colecionador",
+    "descricao": "Registre 25 espécies na Pokédex.",
+    "valor": 1,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Registre 25 espécies na Pokédex.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "colecionador",
+       "nome": "Colecionador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "estudioso",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": true,
+    "nome": "Estudioso",
+    "descricao": "Leve 10 espécies ao nível Estudado da Pokédex.",
+    "valor": 0,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Leve 10 espécies ao nível Estudado da Pokédex.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "estudioso",
+       "nome": "Estudioso"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "mestreKanto",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": true,
+    "nome": "Mestre de Kanto",
+    "descricao": "Registre as 151 espécies de Kanto.",
+    "valor": 1,
+    "alvo": 151,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 151,
+      "descricao": "Registre as 151 espécies de Kanto.",
+      "pontosMestre": 2000,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "mestreKanto",
+       "nome": "Mestre de Kanto"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "professor",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": true,
+    "nome": "Professor",
+    "descricao": "Leve 25 espécies ao nível Mestre da Pokédex.",
+    "valor": 0,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Leve 25 espécies ao nível Mestre da Pokédex.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "professor",
+       "nome": "Professor"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "pokedex-kanto",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": false,
+    "nome": "Pokédex de Kanto",
+    "descricao": "Registre 40 espécies de Kanto na Pokédex.",
+    "valor": 1,
+    "alvo": 40,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 40,
+      "descricao": "Registre 40 espécies de Kanto na Pokédex.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "pokedex-bronze",
+       "nome": "Moldura da Pokédex (bronze)"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 80,
+      "descricao": "Registre 80 espécies de Kanto na Pokédex.",
+      "pontosMestre": 250,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0038",
+       "nome": "Ninetales"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 120,
+      "descricao": "Registre 120 espécies de Kanto na Pokédex.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "pesquisador",
+       "nome": "Pesquisador de Campo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "dex-capturados",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": false,
+    "nome": "Caçador de Espécies",
+    "descricao": "Capture 20 espécies diferentes com as suas Pokébolas.",
+    "valor": 0,
+    "alvo": 20,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 20,
+      "descricao": "Capture 20 espécies diferentes com as suas Pokébolas.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:pokebola",
+       "nome": "Selo da Pokébola",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 50,
+      "descricao": "Capture 50 espécies diferentes com as suas Pokébolas.",
+      "pontosMestre": 250,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "cacador-especies",
+       "nome": "Caçador de Espécies"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 90,
+      "descricao": "Capture 90 espécies diferentes com as suas Pokébolas.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "pokedex-ouro",
+       "nome": "Moldura da Pokédex (ouro)"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "captura-tipos",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": false,
+    "nome": "Todos os Tipos",
+    "descricao": "Capture Pokémon de 6 tipos diferentes.",
+    "valor": 0,
+    "alvo": 6,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 6,
+      "descricao": "Capture Pokémon de 6 tipos diferentes.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:tipos",
+       "nome": "Selo dos Tipos",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 12,
+      "descricao": "Capture Pokémon de 12 tipos diferentes.",
+      "pontosMestre": 250,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "colecionador-de-tipos",
+       "nome": "Colecionador de Tipos"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 16,
+      "descricao": "Capture Pokémon de 16 tipos diferentes.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipos-ouro",
+       "nome": "Moldura dos Tipos"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "evolucoes",
+    "categoria": "pokedex",
+    "oculta": false,
+    "existente": false,
+    "nome": "Metamorfose",
+    "descricao": "Evolua 5 Pokémon.",
+    "valor": 0,
+    "alvo": 5,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 5,
+      "descricao": "Evolua 5 Pokémon.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:evolucao",
+       "nome": "Selo da Evolução",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 30,
+      "descricao": "Evolua 30 Pokémon.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "guia-da-evolucao",
+       "nome": "Guia da Evolução"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 100,
+      "descricao": "Evolua 100 Pokémon.",
+      "pontosMestre": 600,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "peito:56003",
+       "nome": "Pétalas",
+       "sub": "peito"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "captura-total",
+    "categoria": "captura",
+    "oculta": false,
+    "existente": false,
+    "nome": "Capturas",
+    "descricao": "Capture 10 Pokémon.",
+    "valor": 0,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Capture 10 Pokémon.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:pokebola",
+       "nome": "Emote da Pokébola",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 150,
+      "descricao": "Capture 150 Pokémon.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "capturador",
+       "nome": "Capturador Nato"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 750,
+      "descricao": "Capture 750 Pokémon.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "captura-ouro",
+       "nome": "Moldura do Capturador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "captura-agua",
+    "categoria": "captura",
+    "oculta": false,
+    "existente": false,
+    "nome": "Mar Aberto",
+    "descricao": "Capture 30 Pokémon que estavam na água.",
+    "valor": 0,
+    "alvo": 30,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 30,
+      "descricao": "Capture 30 Pokémon que estavam na água.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0131",
+       "nome": "Lapras"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 150,
+      "descricao": "Capture 150 Pokémon que estavam na água.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0009",
+       "nome": "Blastoise"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 500,
+      "descricao": "Capture 500 Pokémon que estavam na água.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "rei-dos-mares",
+       "nome": "Rei dos Mares"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "captura-safari",
+    "categoria": "captura",
+    "oculta": false,
+    "existente": false,
+    "nome": "Safári",
+    "descricao": "Capture 10 Pokémon no Safári.",
+    "valor": 0,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Capture 10 Pokémon no Safári.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0128",
+       "nome": "Tauros"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 50,
+      "descricao": "Capture 50 Pokémon no Safári.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "guarda-safari",
+       "nome": "Guarda do Safári"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "captura-bolas",
+    "categoria": "captura",
+    "oculta": false,
+    "existente": false,
+    "nome": "Variedade",
+    "descricao": "Capture com 4 tipos diferentes de Pokébola.",
+    "valor": 0,
+    "alvo": 4,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 4,
+      "descricao": "Capture com 4 tipos diferentes de Pokébola.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "enfeite:cinto-de-bolas",
+       "nome": "Cinto de Pokébolas",
+       "sub": "enfeite"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "captura-mestra",
+    "categoria": "captura",
+    "oculta": true,
+    "existente": false,
+    "nome": "Conquista oculta",
+    "descricao": "Continue jogando pra descobrir.",
+    "valor": null,
+    "alvo": null,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": []
+   },
+   {
+    "id": "luta-total",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Na Trilha",
+    "descricao": "Derrote 100 Pokémon selvagens.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Derrote 100 Pokémon selvagens.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:punho",
+       "nome": "Emote do Punho",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 1000,
+      "descricao": "Derrote 1.000 Pokémon selvagens.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "veterano-de-rota",
+       "nome": "Veterano de Rota"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 10000,
+      "descricao": "Derrote 10.000 Pokémon selvagens.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "luta-ouro",
+       "nome": "Moldura de Batalha"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-faixa3",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Rotas Difíceis",
+    "descricao": "Derrote 100 Pokémon selvagens de nível 31 a 45.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Derrote 100 Pokémon selvagens de nível 31 a 45.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:montanha",
+       "nome": "Selo da Montanha",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 500,
+      "descricao": "Derrote 500 Pokémon selvagens de nível 31 a 45.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "casca-grossa",
+       "nome": "Casca-Grossa"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 2000,
+      "descricao": "Derrote 2.000 Pokémon selvagens de nível 31 a 45.",
+      "pontosMestre": 600,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "faixa3-ouro",
+       "nome": "Moldura das Rotas Difíceis"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-faixa4",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Fim do Mapa",
+    "descricao": "Derrote 50 Pokémon selvagens de nível 46 ou mais.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens de nível 46 ou mais.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:pico",
+       "nome": "Selo do Pico",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 250,
+      "descricao": "Derrote 250 Pokémon selvagens de nível 46 ou mais.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0112",
+       "nome": "Rhydon"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1000,
+      "descricao": "Derrote 1.000 Pokémon selvagens de nível 46 ou mais.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "lenda-das-rotas",
+       "nome": "Lenda das Rotas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "treinadores",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Desafiante das Rotas",
+    "descricao": "Vença 10 treinadores de rota.",
+    "valor": 0,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Vença 10 treinadores de rota.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:luva",
+       "nome": "Selo da Luva",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 30,
+      "descricao": "Vença 30 treinadores de rota.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "heroi-de-mil-batalhas",
+       "nome": "Herói de Mil Batalhas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 50,
+      "descricao": "Vença 50 treinadores de rota.",
+      "pontosMestre": 600,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "treinadores-ouro",
+       "nome": "Moldura dos Desafiantes"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-normal",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Feijão com Arroz",
+    "descricao": "Derrote 100 Pokémon selvagens do tipo Normal.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Derrote 100 Pokémon selvagens do tipo Normal.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:normal",
+       "nome": "Selo do tipo Normal",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 750,
+      "descricao": "Derrote 750 Pokémon selvagens do tipo Normal.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-normal",
+       "nome": "Treinador Versátil"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 3000,
+      "descricao": "Derrote 3.000 Pokémon selvagens do tipo Normal.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-normal",
+       "nome": "Moldura do tipo Normal"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-venenoso",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Antídoto",
+    "descricao": "Derrote 100 Pokémon selvagens do tipo Venenoso.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Derrote 100 Pokémon selvagens do tipo Venenoso.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:venenoso",
+       "nome": "Selo do tipo Venenoso",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 750,
+      "descricao": "Derrote 750 Pokémon selvagens do tipo Venenoso.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-venenoso",
+       "nome": "Mestre das Toxinas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 3000,
+      "descricao": "Derrote 3.000 Pokémon selvagens do tipo Venenoso.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-venenoso",
+       "nome": "Moldura do tipo Venenoso"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-voador",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Asas Cortadas",
+    "descricao": "Derrote 100 Pokémon selvagens do tipo Voador.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Derrote 100 Pokémon selvagens do tipo Voador.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:voador",
+       "nome": "Selo do tipo Voador",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 750,
+      "descricao": "Derrote 750 Pokémon selvagens do tipo Voador.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-voador",
+       "nome": "Caçador dos Céus"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 3000,
+      "descricao": "Derrote 3.000 Pokémon selvagens do tipo Voador.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-voador",
+       "nome": "Moldura do tipo Voador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-agua",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Contra a Correnteza",
+    "descricao": "Derrote 100 Pokémon selvagens do tipo Água.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Derrote 100 Pokémon selvagens do tipo Água.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:agua",
+       "nome": "Selo do tipo Água",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 750,
+      "descricao": "Derrote 750 Pokémon selvagens do tipo Água.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-agua",
+       "nome": "Senhor das Marés"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 3000,
+      "descricao": "Derrote 3.000 Pokémon selvagens do tipo Água.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-agua",
+       "nome": "Moldura do tipo Água"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-planta",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Poda Geral",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Planta.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Planta.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:planta",
+       "nome": "Selo do tipo Planta",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 400,
+      "descricao": "Derrote 400 Pokémon selvagens do tipo Planta.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-planta",
+       "nome": "Guardião da Floresta"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1500,
+      "descricao": "Derrote 1.500 Pokémon selvagens do tipo Planta.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-planta",
+       "nome": "Moldura do tipo Planta"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-inseto",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Dedetização",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Inseto.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Inseto.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:inseto",
+       "nome": "Selo do tipo Inseto",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 400,
+      "descricao": "Derrote 400 Pokémon selvagens do tipo Inseto.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-inseto",
+       "nome": "Entomólogo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1500,
+      "descricao": "Derrote 1.500 Pokémon selvagens do tipo Inseto.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-inseto",
+       "nome": "Moldura do tipo Inseto"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-terra",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Terremoto",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Terra.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Terra.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:terra",
+       "nome": "Selo do tipo Terra",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 400,
+      "descricao": "Derrote 400 Pokémon selvagens do tipo Terra.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-terra",
+       "nome": "Abalo Sísmico"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1500,
+      "descricao": "Derrote 1.500 Pokémon selvagens do tipo Terra.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-terra",
+       "nome": "Moldura do tipo Terra"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-psiquico",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Mente Blindada",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Psíquico.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Psíquico.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:psiquico",
+       "nome": "Selo do tipo Psíquico",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 400,
+      "descricao": "Derrote 400 Pokémon selvagens do tipo Psíquico.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-psiquico",
+       "nome": "Mente Afiada"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1500,
+      "descricao": "Derrote 1.500 Pokémon selvagens do tipo Psíquico.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-psiquico",
+       "nome": "Moldura do tipo Psíquico"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-lutador",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Nocaute Técnico",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Lutador.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Lutador.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:lutador",
+       "nome": "Selo do tipo Lutador",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 400,
+      "descricao": "Derrote 400 Pokémon selvagens do tipo Lutador.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-lutador",
+       "nome": "Punho de Ferro"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1500,
+      "descricao": "Derrote 1.500 Pokémon selvagens do tipo Lutador.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-lutador",
+       "nome": "Moldura do tipo Lutador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-fogo",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Contra as Chamas",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Fogo.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Fogo.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0059",
+       "nome": "Arcanine"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 250,
+      "descricao": "Derrote 250 Pokémon selvagens do tipo Fogo.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-fogo",
+       "nome": "Domador de Chamas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1000,
+      "descricao": "Derrote 1.000 Pokémon selvagens do tipo Fogo.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-fogo",
+       "nome": "Moldura do tipo Fogo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-eletrico",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Curto-Circuito",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Elétrico.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Elétrico.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:eletrico",
+       "nome": "Selo do tipo Elétrico",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 250,
+      "descricao": "Derrote 250 Pokémon selvagens do tipo Elétrico.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-eletrico",
+       "nome": "Alta Voltagem"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1000,
+      "descricao": "Derrote 1.000 Pokémon selvagens do tipo Elétrico.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-eletrico",
+       "nome": "Moldura do tipo Elétrico"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-pedra",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Quebra-Pedra",
+    "descricao": "Derrote 50 Pokémon selvagens do tipo Pedra.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Pedra.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:pedra",
+       "nome": "Selo do tipo Pedra",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 250,
+      "descricao": "Derrote 250 Pokémon selvagens do tipo Pedra.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0111",
+       "nome": "Rhyhorn"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 1000,
+      "descricao": "Derrote 1.000 Pokémon selvagens do tipo Pedra.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-pedra",
+       "nome": "Quebra-Rochas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-fantasma",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Sem Medo de Assombração",
+    "descricao": "Derrote 25 Pokémon selvagens do tipo Fantasma.",
+    "valor": 0,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Derrote 25 Pokémon selvagens do tipo Fantasma.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:fantasma",
+       "nome": "Selo do tipo Fantasma",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 150,
+      "descricao": "Derrote 150 Pokémon selvagens do tipo Fantasma.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-fantasma",
+       "nome": "Caça-Fantasmas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 600,
+      "descricao": "Derrote 600 Pokémon selvagens do tipo Fantasma.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "dump:58002",
+       "nome": "Moldura Gengar"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-gelo",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Quebra-Gelo",
+    "descricao": "Derrote 25 Pokémon selvagens do tipo Gelo.",
+    "valor": 0,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Derrote 25 Pokémon selvagens do tipo Gelo.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:gelo",
+       "nome": "Selo do tipo Gelo",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 150,
+      "descricao": "Derrote 150 Pokémon selvagens do tipo Gelo.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-gelo",
+       "nome": "Coração de Gelo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 600,
+      "descricao": "Derrote 600 Pokémon selvagens do tipo Gelo.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-gelo",
+       "nome": "Moldura do tipo Gelo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-fada",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Contos de Fada",
+    "descricao": "Derrote 25 Pokémon selvagens do tipo Fada.",
+    "valor": 0,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Derrote 25 Pokémon selvagens do tipo Fada.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:fada",
+       "nome": "Selo do tipo Fada",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 150,
+      "descricao": "Derrote 150 Pokémon selvagens do tipo Fada.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-fada",
+       "nome": "Encanto de Fada"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 600,
+      "descricao": "Derrote 600 Pokémon selvagens do tipo Fada.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-fada",
+       "nome": "Moldura do tipo Fada"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "luta-aco",
+    "categoria": "luta",
+    "oculta": false,
+    "existente": false,
+    "nome": "Aço Temperado",
+    "descricao": "Derrote 25 Pokémon selvagens do tipo Aço.",
+    "valor": 0,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Derrote 25 Pokémon selvagens do tipo Aço.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:aco",
+       "nome": "Selo do tipo Aço",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 150,
+      "descricao": "Derrote 150 Pokémon selvagens do tipo Aço.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "tipo-aco",
+       "nome": "Vontade de Aço"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 600,
+      "descricao": "Derrote 600 Pokémon selvagens do tipo Aço.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "tipo-aco",
+       "nome": "Moldura do tipo Aço"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "insignias",
+    "categoria": "insignias",
+    "oculta": false,
+    "existente": false,
+    "nome": "Caminho da Liga",
+    "descricao": "Conquiste uma insígnia de Kanto.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Conquiste uma insígnia de Kanto.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:insignia",
+       "nome": "Selo da Primeira Insígnia",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 4,
+      "descricao": "Conquiste 4 insígnias de Kanto.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "desafiante",
+       "nome": "Desafiante de Ginásio"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 8,
+      "descricao": "Conquiste 8 insígnias de Kanto.",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "insignias-ouro",
+       "nome": "Moldura das Oito Insígnias"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "elite-campeao",
+    "categoria": "elite",
+    "oculta": false,
+    "existente": false,
+    "nome": "Campeão da Liga",
+    "descricao": "Vença a Elite dos Quatro e seja Campeão.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Vença a Elite dos Quatro e seja Campeão.",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0006",
+       "nome": "Charizard"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 5,
+      "descricao": "Vença a Elite dos Quatro 5 vezes.",
+      "pontosMestre": 1500,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0146",
+       "nome": "Moltres"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 20,
+      "descricao": "Vença a Elite dos Quatro 20 vezes.",
+      "pontosMestre": 2000,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "campeao-eterno",
+       "nome": "Campeão Eterno"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "elite-relampago",
+    "categoria": "elite",
+    "oculta": false,
+    "existente": false,
+    "nome": "Corrida Relâmpago",
+    "descricao": "Vença a Elite dos Quatro em menos de 20 minutos.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Vença a Elite dos Quatro em menos de 20 minutos.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "velocista-da-liga",
+       "nome": "Velocista da Liga"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "shiny",
+    "categoria": "shiny",
+    "oculta": false,
+    "existente": true,
+    "nome": "Caçador de Shiny",
+    "descricao": "Capture um Pokémon shiny.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Capture um Pokémon shiny.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "shiny",
+       "nome": "Caçador de Shiny"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "shiny-capturados",
+    "categoria": "shiny",
+    "oculta": false,
+    "existente": false,
+    "nome": "Brilho Raro",
+    "descricao": "Capture 3 Pokémon shiny.",
+    "valor": 0,
+    "alvo": 3,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 3,
+      "descricao": "Capture 3 Pokémon shiny.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "peito:56019",
+       "nome": "Estrelas Brilhantes",
+       "sub": "peito"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 10,
+      "descricao": "Capture 10 Pokémon shiny.",
+      "pontosMestre": 1500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "shiny-prata",
+       "nome": "Moldura Brilhante"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 25,
+      "descricao": "Capture 25 Pokémon shiny.",
+      "pontosMestre": 3000,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "lenda-brilhante",
+       "nome": "Lenda Brilhante"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "shiny-especies",
+    "categoria": "shiny",
+    "oculta": false,
+    "existente": false,
+    "nome": "Coleção Brilhante",
+    "descricao": "Capture shiny de 5 espécies diferentes.",
+    "valor": 0,
+    "alvo": 5,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 5,
+      "descricao": "Capture shiny de 5 espécies diferentes.",
+      "pontosMestre": 2000,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "rastro:55006",
+       "nome": "Trilha Arco-Íris",
+       "sub": "rastro"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "shiny-ko",
+    "categoria": "shiny",
+    "oculta": true,
+    "existente": false,
+    "nome": "Conquista oculta",
+    "descricao": "Continue jogando pra descobrir.",
+    "valor": null,
+    "alvo": null,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": []
+   },
+   {
+    "id": "pesca-maestria",
+    "categoria": "pesca",
+    "oculta": false,
+    "existente": false,
+    "nome": "Maestria da Pesca",
+    "descricao": "Chegue à maestria de pesca 20.",
+    "valor": 0,
+    "alvo": 20,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 20,
+      "descricao": "Chegue à maestria de pesca 20.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "pescador",
+       "nome": "Pescador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 40,
+      "descricao": "Chegue à maestria de pesca 40.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "dump:58009",
+       "nome": "Moldura Magikarp"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 60,
+      "descricao": "Chegue à maestria de pesca 60.",
+      "pontosMestre": 600,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "pescador-experiente",
+       "nome": "Pescador Experiente"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "platina",
+      "min": 80,
+      "descricao": "Chegue à maestria de pesca 80.",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "peito:56005",
+       "nome": "Aura de Neve",
+       "sub": "peito"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "diamante",
+      "min": 100,
+      "descricao": "Chegue à maestria de pesca 100.",
+      "pontosMestre": 2000,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "mestre-pescador",
+       "nome": "Mestre Pescador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "pesca-total",
+    "categoria": "pesca",
+    "oculta": false,
+    "existente": false,
+    "nome": "Linha na Água",
+    "descricao": "Pesque 50 Pokémon.",
+    "valor": 0,
+    "alvo": 50,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 50,
+      "descricao": "Pesque 50 Pokémon.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "enfeite:boia",
+       "nome": "Boia de Pesca",
+       "sub": "enfeite"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 500,
+      "descricao": "Pesque 500 Pokémon.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:peixe",
+       "nome": "Emote do Peixe",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 2000,
+      "descricao": "Pesque 2.000 Pokémon.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "pesca-ouro",
+       "nome": "Moldura do Pescador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "pesca-especies",
+    "categoria": "pesca",
+    "oculta": false,
+    "existente": false,
+    "nome": "Aquário",
+    "descricao": "Pesque 5 espécies diferentes.",
+    "valor": 0,
+    "alvo": 5,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 5,
+      "descricao": "Pesque 5 espécies diferentes.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:aquario",
+       "nome": "Selo do Aquário",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 10,
+      "descricao": "Pesque 10 espécies diferentes.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "ictiologo",
+       "nome": "Ictiólogo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 18,
+      "descricao": "Pesque 18 espécies diferentes.",
+      "pontosMestre": 600,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "peito:56004",
+       "nome": "Bolhas",
+       "sub": "peito"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "pesca-magikarp",
+    "categoria": "pesca",
+    "oculta": false,
+    "existente": false,
+    "nome": "Paciência de Pescador",
+    "descricao": "Pesque 100 Magikarp.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Pesque 100 Magikarp.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0130",
+       "nome": "Gyarados"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "pesca-gyarados",
+    "categoria": "pesca",
+    "oculta": true,
+    "existente": false,
+    "nome": "Conquista oculta",
+    "descricao": "Continue jogando pra descobrir.",
+    "valor": null,
+    "alvo": null,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": []
+   },
+   {
+    "id": "raid-participar",
+    "categoria": "raid",
+    "oculta": false,
+    "existente": false,
+    "nome": "Contra o Lendário",
+    "descricao": "Contribua numa raid.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Contribua numa raid.",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:vitoria",
+       "nome": "Emote da Vitória",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 10,
+      "descricao": "Contribua em 10 raids.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "cacador-de-lendas",
+       "nome": "Caçador de Lendas"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 25,
+      "descricao": "Contribua em 25 raids.",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0149",
+       "nome": "Dragonite"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "raid-pontos",
+    "categoria": "raid",
+    "oculta": false,
+    "existente": false,
+    "nome": "Linha de Frente",
+    "descricao": "Some 100 pontos de contribuição em raids.",
+    "valor": 0,
+    "alvo": 100,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 100,
+      "descricao": "Some 100 pontos de contribuição em raids.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:espada",
+       "nome": "Selo da Espada",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 500,
+      "descricao": "Some 500 pontos de contribuição em raids.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "raid-prata",
+       "nome": "Moldura da Linha de Frente"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 2000,
+      "descricao": "Some 2.000 pontos de contribuição em raids.",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "muralha",
+       "nome": "Muralha"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "raid-mvp",
+    "categoria": "raid",
+    "oculta": false,
+    "existente": false,
+    "nome": "Destaque da Raid",
+    "descricao": "Seja quem mais contribuiu numa raid.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Seja quem mais contribuiu numa raid.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "peito:56012",
+       "nome": "Brilho da Lua",
+       "sub": "peito"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 5,
+      "descricao": "Seja quem mais contribuiu numa raid, 5 vezes.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "mvp",
+       "nome": "Destaque das Raids"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 20,
+      "descricao": "Seja quem mais contribuiu numa raid, 20 vezes.",
+      "pontosMestre": 1500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "raid-ouro",
+       "nome": "Moldura do Destaque"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "guilda-entrar",
+    "categoria": "guilda",
+    "oculta": false,
+    "existente": false,
+    "nome": "Companheiros",
+    "descricao": "Entre numa guilda.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Entre numa guilda.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:guilda",
+       "nome": "Selo da Guilda",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "guilda-fundar",
+    "categoria": "guilda",
+    "oculta": false,
+    "existente": false,
+    "nome": "Fundador",
+    "descricao": "Funde uma guilda.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Funde uma guilda.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "fundador",
+       "nome": "Fundador de Guilda"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "guilda-chefe",
+    "categoria": "guilda",
+    "oculta": false,
+    "existente": false,
+    "nome": "Chefe do Dia",
+    "descricao": "Lute contra o chefe da guilda em 5 dias diferentes.",
+    "valor": 0,
+    "alvo": 5,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 5,
+      "descricao": "Lute contra o chefe da guilda em 5 dias diferentes.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:escudo",
+       "nome": "Emote do Escudo",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 30,
+      "descricao": "Lute contra o chefe da guilda em 30 dias diferentes.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "guardiao-da-guilda",
+       "nome": "Guardião da Guilda"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 100,
+      "descricao": "Lute contra o chefe da guilda em 100 dias diferentes.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "guilda-ouro",
+       "nome": "Moldura da Guilda"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "guilda-meta",
+    "categoria": "guilda",
+    "oculta": false,
+    "existente": false,
+    "nome": "Meta Batida",
+    "descricao": "Ajude a guilda a bater a meta do dia 10 vezes.",
+    "valor": 0,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Ajude a guilda a bater a meta do dia 10 vezes.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "enfeite:estandarte",
+       "nome": "Estandarte da Guilda",
+       "sub": "enfeite"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 50,
+      "descricao": "Ajude a guilda a bater a meta do dia 50 vezes.",
+      "pontosMestre": 600,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "pilar-da-guilda",
+       "nome": "Pilar da Guilda"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "mercado-vendas",
+    "categoria": "mercado",
+    "oculta": false,
+    "existente": false,
+    "nome": "Negociante",
+    "descricao": "Faça uma venda no Mercado.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Faça uma venda no Mercado.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:moeda",
+       "nome": "Emote da Moeda",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 25,
+      "descricao": "Venda 25 vezes no Mercado (contam até 30 por dia).",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0053",
+       "nome": "Persian"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 200,
+      "descricao": "Venda 200 vezes no Mercado (contam até 30 por dia).",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "magnata",
+       "nome": "Magnata"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "mercado-compras",
+    "categoria": "mercado",
+    "oculta": false,
+    "existente": false,
+    "nome": "Freguês",
+    "descricao": "Faça uma compra no Mercado.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Faça uma compra no Mercado.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:sacola",
+       "nome": "Emote da Sacola",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 25,
+      "descricao": "Compre 25 vezes no Mercado (contam até 30 por dia).",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "dump:58005",
+       "nome": "Moldura Meowth"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "missao-historia",
+    "categoria": "missao",
+    "oculta": false,
+    "existente": false,
+    "nome": "A Jornada",
+    "descricao": "Conclua 5 capítulos da história.",
+    "valor": 0,
+    "alvo": 5,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 5,
+      "descricao": "Conclua 5 capítulos da história.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:mapa",
+       "nome": "Selo do Mapa",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 10,
+      "descricao": "Conclua 10 capítulos da história.",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "aventureiro",
+       "nome": "Aventureiro"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 20,
+      "descricao": "Conclua 20 capítulos da história.",
+      "pontosMestre": 1500,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "jornada-ouro",
+       "nome": "Moldura da Jornada"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "missao-total",
+    "categoria": "missao",
+    "oculta": false,
+    "existente": false,
+    "nome": "Prestativo",
+    "descricao": "Conclua 25 missões.",
+    "valor": 1,
+    "alvo": 25,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 25,
+      "descricao": "Conclua 25 missões.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:joinha",
+       "nome": "Emote do Joinha",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 75,
+      "descricao": "Conclua 75 missões.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "prestativo",
+       "nome": "Prestativo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 150,
+      "descricao": "Conclua 150 missões.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "missao-ouro",
+       "nome": "Moldura do Prestativo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "social-troca",
+    "categoria": "social",
+    "oculta": false,
+    "existente": false,
+    "nome": "Troca Justa",
+    "descricao": "Faça uma troca com outro treinador.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Faça uma troca com outro treinador.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:aperto",
+       "nome": "Emote do Aperto de Mão",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 25,
+      "descricao": "Faça 25 trocas com outros treinadores (contam até 10 por dia).",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "negociador",
+       "nome": "Negociador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "social-parceiros",
+    "categoria": "social",
+    "oculta": false,
+    "existente": false,
+    "nome": "Rede de Amigos",
+    "descricao": "Troque com 5 treinadores diferentes (contam até 10 trocas por dia).",
+    "valor": 0,
+    "alvo": 5,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 5,
+      "descricao": "Troque com 5 treinadores diferentes (contam até 10 trocas por dia).",
+      "pontosMestre": 150,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "enfeite:laco",
+       "nome": "Laço da Amizade",
+       "sub": "enfeite"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 20,
+      "descricao": "Troque com 20 treinadores diferentes (contam até 10 trocas por dia).",
+      "pontosMestre": 500,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "amigo-de-todos",
+       "nome": "Amigo de Todos"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "exploracao-kanto",
+    "categoria": "exploracao",
+    "oculta": false,
+    "existente": false,
+    "nome": "Desbravador",
+    "descricao": "Visite 10 áreas de Kanto.",
+    "valor": 2,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Visite 10 áreas de Kanto.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "selo:bussola",
+       "nome": "Selo da Bússola",
+       "sub": "selo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 25,
+      "descricao": "Visite 25 áreas de Kanto.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0085",
+       "nome": "Dodrio"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 38,
+      "descricao": "Visite 38 áreas de Kanto.",
+      "pontosMestre": 800,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "cartografo",
+       "nome": "Cartógrafo de Kanto"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "exploracao-cidades",
+    "categoria": "exploracao",
+    "oculta": false,
+    "existente": false,
+    "nome": "Turista",
+    "descricao": "Visite as 10 cidades de Kanto.",
+    "valor": 1,
+    "alvo": 10,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 10,
+      "descricao": "Visite as 10 cidades de Kanto.",
+      "pontosMestre": 200,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "turista",
+       "nome": "Turista de Kanto"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "exploracao-masmorras",
+    "categoria": "exploracao",
+    "oculta": false,
+    "existente": false,
+    "nome": "Explorador das Profundezas",
+    "descricao": "Entre em 4 masmorras de Kanto (cavernas, torres, prédios e o navio).",
+    "valor": 0,
+    "alvo": 4,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 4,
+      "descricao": "Entre em 4 masmorras de Kanto (cavernas, torres, prédios e o navio).",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "enfeite:lanterna",
+       "nome": "Lanterna do Explorador",
+       "sub": "enfeite"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 8,
+      "descricao": "Entre em 8 masmorras de Kanto (cavernas, torres, prédios e o navio).",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "espeleologo",
+       "nome": "Espeleólogo"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 13,
+      "descricao": "Entre em 13 masmorras de Kanto (cavernas, torres, prédios e o navio).",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0142",
+       "nome": "Aerodactyl"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "alphaTester",
+    "categoria": "tempo",
+    "oculta": false,
+    "existente": true,
+    "nome": "Alpha Tester",
+    "descricao": "Jogou no alfa de Poke Fable Online.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Jogou no alfa de Poke Fable Online.",
+      "pontosMestre": 300,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "alphaTester",
+       "nome": "Alpha Tester"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "tempo-dias",
+    "categoria": "tempo",
+    "oculta": false,
+    "existente": false,
+    "nome": "Sempre por Aqui",
+    "descricao": "Jogue em 7 dias diferentes.",
+    "valor": 2,
+    "alvo": 7,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 7,
+      "descricao": "Jogue em 7 dias diferentes.",
+      "pontosMestre": 100,
+      "recompensa": {
+       "tipo": "cosmetico",
+       "id": "emote:aceno",
+       "nome": "Emote do Aceno",
+       "sub": "emote"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 30,
+      "descricao": "Jogue em 30 dias diferentes.",
+      "pontosMestre": 400,
+      "recompensa": {
+       "tipo": "montaria",
+       "id": "pm0143",
+       "nome": "Snorlax"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 100,
+      "descricao": "Jogue em 100 dias diferentes.",
+      "pontosMestre": 1000,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "veterano",
+       "nome": "Veterano de Kanto"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "tempo-ano",
+    "categoria": "tempo",
+    "oculta": false,
+    "existente": false,
+    "nome": "Um Ano de Jornada",
+    "descricao": "Jogue em 365 dias diferentes.",
+    "valor": 2,
+    "alvo": 365,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 365,
+      "descricao": "Jogue em 365 dias diferentes.",
+      "pontosMestre": 3000,
+      "recompensa": {
+       "tipo": "moldura",
+       "id": "aniversario",
+       "nome": "Moldura de Um Ano"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   },
+   {
+    "id": "tempo-medalhao",
+    "categoria": "tempo",
+    "oculta": false,
+    "existente": false,
+    "nome": "Brilho do Medalhão",
+    "descricao": "Ative o Medalhão.",
+    "valor": 0,
+    "alvo": 1,
+    "concluida": false,
+    "degrausFeitos": 0,
+    "resgatados": 0,
+    "podeResgatar": null,
+    "degraus": [
+     {
+      "degrau": "bronze",
+      "min": 1,
+      "descricao": "Ative o Medalhão.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "apoiador",
+       "nome": "Apoiador"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "prata",
+      "min": 3,
+      "descricao": "Ative 3 meses de Medalhão.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "apoiador-fiel",
+       "nome": "Apoiador Fiel"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "ouro",
+      "min": 6,
+      "descricao": "Ative 6 meses de Medalhão.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "patrono",
+       "nome": "Patrono"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     },
+     {
+      "degrau": "platina",
+      "min": 12,
+      "descricao": "Ative 12 meses de Medalhão.",
+      "pontosMestre": 50,
+      "recompensa": {
+       "tipo": "titulo",
+       "id": "grande-patrono",
+       "nome": "Grande Patrono"
+      },
+      "concluido": false,
+      "em": null,
+      "resgatado": false
+     }
+    ]
+   }
+  ],
+  "categorias": [
+   {
+    "id": "pokedex",
+    "nome": "Pokédex",
+    "total": 9,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "captura",
+    "nome": "Captura",
+    "total": 5,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "luta",
+    "nome": "Batalha",
+    "total": 20,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "insignias",
+    "nome": "Insígnias",
+    "total": 1,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "elite",
+    "nome": "Elite dos Quatro",
+    "total": 2,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "shiny",
+    "nome": "Shiny",
+    "total": 4,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "pesca",
+    "nome": "Pesca",
+    "total": 5,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "raid",
+    "nome": "Raid",
+    "total": 3,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "guilda",
+    "nome": "Guilda",
+    "total": 4,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "mercado",
+    "nome": "Mercado",
+    "total": 2,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "missao",
+    "nome": "História",
+    "total": 2,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "social",
+    "nome": "Social",
+    "total": 2,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "exploracao",
+    "nome": "Exploração",
+    "total": 3,
+    "concluidas": 0,
+    "aResgatar": 0
+   },
+   {
+    "id": "tempo",
+    "nome": "Tempo de jornada",
+    "total": 4,
+    "concluidas": 0,
+    "aResgatar": 0
+   }
+  ],
+  "resumo": {
+   "conquistas": 0,
+   "total": 66,
+   "degraus": 0,
+   "aResgatar": 0
+  },
+  "montarias": {
+   "regra": "licenca",
+   "andar": 3.6,
+   "velocidades": {
+    "bicicleta": 7,
+    "terra": 9,
+    "agua": 6.75,
+    "voo": 9
+   },
+   "licencas": {
+    "bicicleta": {
+     "nome": "Licença de bicicleta",
+     "efeito": "Andar de bicicleta.",
+     "tem": false,
+     "em": null,
+     "fonte": "missão da questline (Cerulean, depois da 2ª insígnia), com escolha da cor"
+    },
+    "terra": {
+     "nome": "Licença de montaria terrestre",
+     "efeito": "Montar em terra, inclusive as voadoras (sem voar).",
+     "tem": false,
+     "em": null,
+     "fonte": "servidor, na 3ª insígnia (ql-terra)"
+    },
+    "agua": {
+     "nome": "Licença de montaria aquática",
+     "efeito": "Nadar com as montarias aquáticas.",
+     "tem": false,
+     "em": null,
+     "fonte": "missão da questline (capítulo 10)"
+    },
+    "voo": {
+     "nome": "Licença de voo",
+     "efeito": "Voar com as montarias voadoras.",
+     "tem": false,
+     "em": null,
+     "fonte": "missão da questline (depois da Liga)"
+    }
+   },
+   "lista": [
+    {
+     "id": "bicicleta-azul",
+     "nome": "Bicicleta azul",
+     "dex": null,
+     "etapa": "bicicleta",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 7
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "bicicleta"
+     ],
+     "conquista": null
+    },
+    {
+     "id": "bicicleta-vermelha",
+     "nome": "Bicicleta vermelha",
+     "dex": null,
+     "etapa": "bicicleta",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 7
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "bicicleta"
+     ],
+     "conquista": null
+    },
+    {
+     "id": "bicicleta-verde",
+     "nome": "Bicicleta verde",
+     "dex": null,
+     "etapa": "bicicleta",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 7
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "bicicleta"
+     ],
+     "conquista": null
+    },
+    {
+     "id": "skate",
+     "nome": "Skate",
+     "dex": null,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": "fundador",
+     "pode": false,
+     "motivo": "so_pacote",
+     "precisa": null,
+     "conquista": null
+    },
+    {
+     "id": "hoverboard",
+     "nome": "Hoverboard",
+     "dex": null,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": "fundador",
+     "pode": false,
+     "motivo": "so_pacote",
+     "precisa": null,
+     "conquista": null
+    },
+    {
+     "id": "pm0078",
+     "nome": "Rapidash",
+     "dex": 78,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": true,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": null
+    },
+    {
+     "id": "pm0059",
+     "nome": "Arcanine",
+     "dex": 59,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "luta-fogo",
+      "nome": "Contra as Chamas",
+      "degrau": "bronze",
+      "descricao": "Derrote 50 Pokémon selvagens do tipo Fogo."
+     }
+    },
+    {
+     "id": "pm0128",
+     "nome": "Tauros",
+     "dex": 128,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "captura-safari",
+      "nome": "Safári",
+      "degrau": "bronze",
+      "descricao": "Capture 10 Pokémon no Safári."
+     }
+    },
+    {
+     "id": "pm0111",
+     "nome": "Rhyhorn",
+     "dex": 111,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "luta-pedra",
+      "nome": "Quebra-Pedra",
+      "degrau": "prata",
+      "descricao": "Derrote 250 Pokémon selvagens do tipo Pedra."
+     }
+    },
+    {
+     "id": "pm0112",
+     "nome": "Rhydon",
+     "dex": 112,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "luta-faixa4",
+      "nome": "Fim do Mapa",
+      "degrau": "prata",
+      "descricao": "Derrote 250 Pokémon selvagens de nível 46 ou mais."
+     }
+    },
+    {
+     "id": "pm0085",
+     "nome": "Dodrio",
+     "dex": 85,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "exploracao-kanto",
+      "nome": "Desbravador",
+      "degrau": "prata",
+      "descricao": "Visite 25 áreas de Kanto."
+     }
+    },
+    {
+     "id": "pm0053",
+     "nome": "Persian",
+     "dex": 53,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "mercado-vendas",
+      "nome": "Negociante",
+      "degrau": "prata",
+      "descricao": "Venda 25 vezes no Mercado (contam até 30 por dia)."
+     }
+    },
+    {
+     "id": "pm0038",
+     "nome": "Ninetales",
+     "dex": 38,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "pokedex-kanto",
+      "nome": "Pokédex de Kanto",
+      "degrau": "prata",
+      "descricao": "Registre 80 espécies de Kanto na Pokédex."
+     }
+    },
+    {
+     "id": "pm0143",
+     "nome": "Snorlax",
+     "dex": 143,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "tempo-dias",
+      "nome": "Sempre por Aqui",
+      "degrau": "prata",
+      "descricao": "Jogue em 30 dias diferentes."
+     }
+    },
+    {
+     "id": "pm0211",
+     "nome": "Qwilfish",
+     "dex": 211,
+     "etapa": "agua",
+     "meio": "agua",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": true,
+     "vel": {
+      "agua": 6.75
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "agua"
+     ],
+     "conquista": null
+    },
+    {
+     "id": "pm0131",
+     "nome": "Lapras",
+     "dex": 131,
+     "etapa": "agua",
+     "meio": "agua",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "agua": 6.75
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "agua"
+     ],
+     "conquista": {
+      "id": "captura-agua",
+      "nome": "Mar Aberto",
+      "degrau": "bronze",
+      "descricao": "Capture 30 Pokémon que estavam na água."
+     }
+    },
+    {
+     "id": "pm0130",
+     "nome": "Gyarados",
+     "dex": 130,
+     "etapa": "agua",
+     "meio": "agua",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "agua": 6.75
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "agua"
+     ],
+     "conquista": {
+      "id": "pesca-magikarp",
+      "nome": "Paciência de Pescador",
+      "degrau": "bronze",
+      "descricao": "Pesque 100 Magikarp."
+     }
+    },
+    {
+     "id": "pm0009",
+     "nome": "Blastoise",
+     "dex": 9,
+     "etapa": "anfibia",
+     "meio": "anfibia",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9,
+      "agua": 6.75
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra",
+      "agua"
+     ],
+     "conquista": {
+      "id": "captura-agua",
+      "nome": "Mar Aberto",
+      "degrau": "prata",
+      "descricao": "Capture 150 Pokémon que estavam na água."
+     }
+    },
+    {
+     "id": "pm0018",
+     "nome": "Pidgeot",
+     "dex": 18,
+     "etapa": "voo",
+     "meio": "terra",
+     "voa": true,
+     "podeVoar": false,
+     "precisaVoar": [
+      "voo"
+     ],
+     "basica": true,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": null
+    },
+    {
+     "id": "pm0006",
+     "nome": "Charizard",
+     "dex": 6,
+     "etapa": "voo",
+     "meio": "terra",
+     "voa": true,
+     "podeVoar": false,
+     "precisaVoar": [
+      "voo"
+     ],
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "elite-campeao",
+      "nome": "Campeão da Liga",
+      "degrau": "bronze",
+      "descricao": "Vença a Elite dos Quatro e seja Campeão."
+     }
+    },
+    {
+     "id": "pm0142",
+     "nome": "Aerodactyl",
+     "dex": 142,
+     "etapa": "voo",
+     "meio": "terra",
+     "voa": true,
+     "podeVoar": false,
+     "precisaVoar": [
+      "voo"
+     ],
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "exploracao-masmorras",
+      "nome": "Explorador das Profundezas",
+      "degrau": "ouro",
+      "descricao": "Entre em 13 masmorras de Kanto (cavernas, torres, prédios e o navio)."
+     }
+    },
+    {
+     "id": "pm0149",
+     "nome": "Dragonite",
+     "dex": 149,
+     "etapa": "voo",
+     "meio": "terra",
+     "voa": true,
+     "podeVoar": false,
+     "precisaVoar": [
+      "voo"
+     ],
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "raid-participar",
+      "nome": "Contra o Lendário",
+      "degrau": "ouro",
+      "descricao": "Contribua em 25 raids."
+     }
+    },
+    {
+     "id": "pm0146",
+     "nome": "Moltres",
+     "dex": 146,
+     "etapa": "voo",
+     "meio": "terra",
+     "voa": true,
+     "podeVoar": false,
+     "precisaVoar": [
+      "voo"
+     ],
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": null,
+     "pode": false,
+     "motivo": "sem_licenca",
+     "precisa": [
+      "terra"
+     ],
+     "conquista": {
+      "id": "elite-campeao",
+      "nome": "Campeão da Liga",
+      "degrau": "prata",
+      "descricao": "Vença a Elite dos Quatro 5 vezes."
+     }
+    },
+    {
+     "id": "pm0791",
+     "nome": "Solgaleo",
+     "dex": 791,
+     "etapa": "terra",
+     "meio": "terra",
+     "voa": false,
+     "podeVoar": false,
+     "precisaVoar": null,
+     "basica": false,
+     "vel": {
+      "terra": 9
+     },
+     "podeNormal": false,
+     "podeShiny": false,
+     "shinyLicenca": false,
+     "podeNadar": false,
+     "precisaNadar": null,
+     "cartao": false,
+     "shiny": false,
+     "pago": false,
+     "pacote": "fundador",
+     "pode": false,
+     "motivo": "so_pacote",
+     "precisa": null,
+     "conquista": null
+    }
+   ]
+  },
+  "titulos": {
+   "ativos": [],
+   "escolhido": null,
+   "catalogo": [
+    {
+     "id": "observador",
+     "nome": "Observador",
+     "origem": "existente",
+     "conquista": "observador",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "colecionador",
+     "nome": "Colecionador",
+     "origem": "existente",
+     "conquista": "colecionador",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "estudioso",
+     "nome": "Estudioso",
+     "origem": "existente",
+     "conquista": "estudioso",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "mestreKanto",
+     "nome": "Mestre de Kanto",
+     "origem": "existente",
+     "conquista": "mestreKanto",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "professor",
+     "nome": "Professor",
+     "origem": "existente",
+     "conquista": "professor",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "pesquisador",
+     "nome": "Pesquisador de Campo",
+     "origem": "conquista",
+     "conquista": "pokedex-kanto",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "cacador-especies",
+     "nome": "Caçador de Espécies",
+     "origem": "conquista",
+     "conquista": "dex-capturados",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "colecionador-de-tipos",
+     "nome": "Colecionador de Tipos",
+     "origem": "conquista",
+     "conquista": "captura-tipos",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "guia-da-evolucao",
+     "nome": "Guia da Evolução",
+     "origem": "conquista",
+     "conquista": "evolucoes",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "capturador",
+     "nome": "Capturador Nato",
+     "origem": "conquista",
+     "conquista": "captura-total",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "rei-dos-mares",
+     "nome": "Rei dos Mares",
+     "origem": "conquista",
+     "conquista": "captura-agua",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "guarda-safari",
+     "nome": "Guarda do Safári",
+     "origem": "conquista",
+     "conquista": "captura-safari",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "veterano-de-rota",
+     "nome": "Veterano de Rota",
+     "origem": "conquista",
+     "conquista": "luta-total",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "casca-grossa",
+     "nome": "Casca-Grossa",
+     "origem": "conquista",
+     "conquista": "luta-faixa3",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "lenda-das-rotas",
+     "nome": "Lenda das Rotas",
+     "origem": "conquista",
+     "conquista": "luta-faixa4",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "heroi-de-mil-batalhas",
+     "nome": "Herói de Mil Batalhas",
+     "origem": "conquista",
+     "conquista": "treinadores",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-normal",
+     "nome": "Treinador Versátil",
+     "origem": "conquista",
+     "conquista": "luta-normal",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-venenoso",
+     "nome": "Mestre das Toxinas",
+     "origem": "conquista",
+     "conquista": "luta-venenoso",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-voador",
+     "nome": "Caçador dos Céus",
+     "origem": "conquista",
+     "conquista": "luta-voador",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-agua",
+     "nome": "Senhor das Marés",
+     "origem": "conquista",
+     "conquista": "luta-agua",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-planta",
+     "nome": "Guardião da Floresta",
+     "origem": "conquista",
+     "conquista": "luta-planta",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-inseto",
+     "nome": "Entomólogo",
+     "origem": "conquista",
+     "conquista": "luta-inseto",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-terra",
+     "nome": "Abalo Sísmico",
+     "origem": "conquista",
+     "conquista": "luta-terra",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-psiquico",
+     "nome": "Mente Afiada",
+     "origem": "conquista",
+     "conquista": "luta-psiquico",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-lutador",
+     "nome": "Punho de Ferro",
+     "origem": "conquista",
+     "conquista": "luta-lutador",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-fogo",
+     "nome": "Domador de Chamas",
+     "origem": "conquista",
+     "conquista": "luta-fogo",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-eletrico",
+     "nome": "Alta Voltagem",
+     "origem": "conquista",
+     "conquista": "luta-eletrico",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-pedra",
+     "nome": "Quebra-Rochas",
+     "origem": "conquista",
+     "conquista": "luta-pedra",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "tipo-fantasma",
+     "nome": "Caça-Fantasmas",
+     "origem": "conquista",
+     "conquista": "luta-fantasma",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-gelo",
+     "nome": "Coração de Gelo",
+     "origem": "conquista",
+     "conquista": "luta-gelo",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-fada",
+     "nome": "Encanto de Fada",
+     "origem": "conquista",
+     "conquista": "luta-fada",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "tipo-aco",
+     "nome": "Vontade de Aço",
+     "origem": "conquista",
+     "conquista": "luta-aco",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "desafiante",
+     "nome": "Desafiante de Ginásio",
+     "origem": "conquista",
+     "conquista": "insignias",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "campeao-eterno",
+     "nome": "Campeão Eterno",
+     "origem": "conquista",
+     "conquista": "elite-campeao",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "velocista-da-liga",
+     "nome": "Velocista da Liga",
+     "origem": "conquista",
+     "conquista": "elite-relampago",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "shiny",
+     "nome": "Caçador de Shiny",
+     "origem": "existente",
+     "conquista": "shiny",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "lenda-brilhante",
+     "nome": "Lenda Brilhante",
+     "origem": "conquista",
+     "conquista": "shiny-capturados",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "pescador",
+     "nome": "Pescador",
+     "origem": "conquista",
+     "conquista": "pesca-maestria",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "pescador-experiente",
+     "nome": "Pescador Experiente",
+     "origem": "conquista",
+     "conquista": "pesca-maestria",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "mestre-pescador",
+     "nome": "Mestre Pescador",
+     "origem": "conquista",
+     "conquista": "pesca-maestria",
+     "degrau": "diamante",
+     "indice": 4
+    },
+    {
+     "id": "ictiologo",
+     "nome": "Ictiólogo",
+     "origem": "conquista",
+     "conquista": "pesca-especies",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "secreto-1",
+     "secreto": true
+    },
+    {
+     "id": "cacador-de-lendas",
+     "nome": "Caçador de Lendas",
+     "origem": "conquista",
+     "conquista": "raid-participar",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "muralha",
+     "nome": "Muralha",
+     "origem": "conquista",
+     "conquista": "raid-pontos",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "mvp",
+     "nome": "Destaque das Raids",
+     "origem": "conquista",
+     "conquista": "raid-mvp",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "fundador",
+     "nome": "Fundador de Guilda",
+     "origem": "conquista",
+     "conquista": "guilda-fundar",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "guardiao-da-guilda",
+     "nome": "Guardião da Guilda",
+     "origem": "conquista",
+     "conquista": "guilda-chefe",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "pilar-da-guilda",
+     "nome": "Pilar da Guilda",
+     "origem": "conquista",
+     "conquista": "guilda-meta",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "magnata",
+     "nome": "Magnata",
+     "origem": "conquista",
+     "conquista": "mercado-vendas",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "aventureiro",
+     "nome": "Aventureiro",
+     "origem": "conquista",
+     "conquista": "missao-historia",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "prestativo",
+     "nome": "Prestativo",
+     "origem": "conquista",
+     "conquista": "missao-total",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "negociador",
+     "nome": "Negociador",
+     "origem": "conquista",
+     "conquista": "social-troca",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "amigo-de-todos",
+     "nome": "Amigo de Todos",
+     "origem": "conquista",
+     "conquista": "social-parceiros",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "cartografo",
+     "nome": "Cartógrafo de Kanto",
+     "origem": "conquista",
+     "conquista": "exploracao-kanto",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "turista",
+     "nome": "Turista de Kanto",
+     "origem": "conquista",
+     "conquista": "exploracao-cidades",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "espeleologo",
+     "nome": "Espeleólogo",
+     "origem": "conquista",
+     "conquista": "exploracao-masmorras",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "alphaTester",
+     "nome": "Alpha Tester",
+     "origem": "existente",
+     "conquista": "alphaTester",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "veterano",
+     "nome": "Veterano de Kanto",
+     "origem": "conquista",
+     "conquista": "tempo-dias",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "apoiador",
+     "nome": "Apoiador",
+     "origem": "conquista",
+     "conquista": "tempo-medalhao",
+     "degrau": "bronze",
+     "indice": 0
+    },
+    {
+     "id": "apoiador-fiel",
+     "nome": "Apoiador Fiel",
+     "origem": "conquista",
+     "conquista": "tempo-medalhao",
+     "degrau": "prata",
+     "indice": 1
+    },
+    {
+     "id": "patrono",
+     "nome": "Patrono",
+     "origem": "conquista",
+     "conquista": "tempo-medalhao",
+     "degrau": "ouro",
+     "indice": 2
+    },
+    {
+     "id": "grande-patrono",
+     "nome": "Grande Patrono",
+     "origem": "conquista",
+     "conquista": "tempo-medalhao",
+     "degrau": "platina",
+     "indice": 3
+    },
+    {
+     "id": "mestre-10",
+     "nome": "Treinador em Ascensão",
+     "origem": "mestre",
+     "nivel": 10
+    },
+    {
+     "id": "mestre-25",
+     "nome": "Treinador Experiente",
+     "origem": "mestre",
+     "nivel": 25
+    },
+    {
+     "id": "mestre-50",
+     "nome": "Mestre Pokémon",
+     "origem": "mestre",
+     "nivel": 50
+    },
+    {
+     "id": "mestre-75",
+     "nome": "Grão-Mestre",
+     "origem": "mestre",
+     "nivel": 75
+    },
+    {
+     "id": "mestre-100",
+     "nome": "Lenda Viva",
+     "origem": "mestre",
+     "nivel": 100
+    },
+    {
+     "id": "mestre-150",
+     "nome": "Mito de Kanto",
+     "origem": "mestre",
+     "nivel": 150
+    },
+    {
+     "id": "semana-capturas",
+     "nome": "Caçador da Semana",
+     "origem": "semana"
+    },
+    {
+     "id": "semana-shiny",
+     "nome": "Brilho da Semana",
+     "origem": "semana"
+    },
+    {
+     "id": "semana-ko",
+     "nome": "Treinador de Campo",
+     "origem": "semana"
+    },
+    {
+     "id": "semana-raid",
+     "nome": "Terror dos Lendários",
+     "origem": "semana"
+    },
+    {
+     "id": "semana-pesca",
+     "nome": "Pescador da Semana",
+     "origem": "semana"
+    },
+    {
+     "id": "T1-gratis-28",
+     "nome": "Andarilho de Kanto",
+     "origem": "passe"
+    },
+    {
+     "id": "T1-paga-30",
+     "nome": "Desbravador da Temporada 1",
+     "origem": "passe"
+    },
+    {
+     "id": "T1-paga-45",
+     "nome": "Mestre da Trilha · T1",
+     "origem": "passe"
+    }
+   ]
+  },
+  "visuais": {
+   "cosmeticos": [],
+   "molduras": []
+  }
+ }
+}
