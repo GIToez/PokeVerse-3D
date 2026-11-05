@@ -19,8 +19,12 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
 
   async function referencia() {
     if (ref) return ref;
-    const d = await fetch('/data/menu_data.json').then(r => r.json()).catch(() => ({}));
-    const itens = d.itens || {};
+    const [d, novos, en] = await Promise.all(['/data/menu_data.json', '/data/itens_novos.json', '/data/locale/ui_en.json'].map(u => fetch(u).then(r => r.json()).catch(() => ({}))));
+    /* The newer items (TM pieces, Rare Candy S…MAX, shards, incubators) live in itens_novos.json with Portuguese names; ui_en.json
+       has their English names. Without them they showed as "item 900021" and the bag would not save. */
+    const EN = { 'Cartão de Ativação de Traje': 'Outfit Activation Card', 'Fragmento de guilda': 'Guild Shard', 'Fragmento de Mew': 'Mew Shard', 'Peça de TM rara': 'Rare TM Piece' };
+    const itens = { ...(d.itens || {}) };
+    for (const [k, v] of Object.entries(novos.itens || {})) if (!itens[k]) itens[k] = { ...v, n: EN[v.n] || en[v.n] || v.n };
     ref = { itens, tipos: d.tipos || {}, insignias: d.insignias || [],
       bolas: Object.entries(itens).filter(([, i]) => i.t === 7).map(([id, i]) => ({ id, nome: t(i.n) })).sort((a, b) => a.id - b.id) };
     $('dl-itens').innerHTML = Object.entries(itens).filter(([, i]) => i.t !== 7).map(([id, i]) => `<option value="${id} ${esc(t(i.n))}">`).join('');
@@ -231,7 +235,7 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
     $('j-item-ok').onclick = addItem;
     $('j-item-add').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); addItem(); } };
     $('j-bolsa-ok').onclick = () => {
-      const corpo = { bolas: {}, itens: {}, insignias: [] }, din = $('j-dinheiro').value.trim();
+      const corpo = { bolas: {}, itens: {}, insignias: [], itensAntes: det.save?.itens || {}, bolasAntes: det.save?.bolas || {} }, din = $('j-dinheiro').value.trim();
       if (din !== '') corpo.dinheiro = Number(din);
       for (const i of document.querySelectorAll('#j-ficha [data-bola]')) if (+i.value > 0) corpo.bolas[i.dataset.bola] = Number(i.value);
       for (const tr of $('j-itens').querySelectorAll('tr')) { const q = Number(tr.querySelector('input').value); if (q > 0) corpo.itens[tr.dataset.item] = q; }

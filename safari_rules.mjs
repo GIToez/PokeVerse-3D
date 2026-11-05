@@ -1,12 +1,14 @@
 /** Safari Zone visit, shared by the client and the server bag.
- *  The grass tables stay as they are: Kanto area 1192 keeps its evolved habitat.
- *  A visit is a fee, a stack of Safari Balls, and a step limit. Bait and rocks
- *  change the catch and the flee roll for the wild in front of you. */
+ *  Nov 5: the upcoming/ version's rules (public/data/safari.json) without its battles: a visit is a fee, 30 Safari Balls and
+ *  20 minutes (it was 500 steps); your Pokémon stay in their Balls and you throw at wild Pokémon that are awake, the classic way.
+ *  Bait and rocks are on, with that file's numbers: bait ×0.5 catch and ×⅓ flee, a rock ×2 catch and ×2.5 flee, and the flee
+ *  chance grows with the species' Speed. In Kanto (area 1192) the wild Pokémon come from that file's four sub-areas. */
 
 export const BOLA = 1005;
 export const PRECO = 500;
 export const BOLAS = 30;
-export const PASSOS = 500;
+export const PASSOS = 500;          // old step limit (kept so old saves still read)
+export const DURACAO_MS = 20 * 60000;   // a visit lasts 20 minutes
 export const FUGA_CALMA = 0.12;
 
 /** Gate the player is sent back to. Coordinates are the map's stored x/z (the client flips x).
@@ -20,9 +22,14 @@ export const PORTAO = {
 export const ATENDENTE = { 9001192: 1192, 9002115: 2115 };
 
 export const MOD = {
-  isca: { captura: 0.5, fuga: 0.05 },
-  pedra: { captura: 2, fuga: 0.3 },
+  isca: { captura: 0.5, fuga: 0.3333 },   // multipliers (safari.json regras.captura / regras.fuga)
+  pedra: { captura: 2, fuga: 2.5 },
 };
+/** Flee chance per bait / rock / ball (safari.json regras.fuga): min(15%, 3% + 0.09% × Speed) × the bait/rock multiplier, at most 50%. */
+export function chanceFuga(vel, mod) {
+  const base = Math.min(0.15, 0.03 + 0.0009 * Math.max(0, num(vel, 50)));
+  return mod && Number.isFinite(+mod.fuga) ? Math.min(0.5, base * +mod.fuga) : base;
+}
 
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);
 
@@ -61,21 +68,25 @@ export function perto(zona, x, z) {
   return d <= 8;
 }
 
-export function normalizar(s) {
+/** A live visit ({ zona, fim, restantes }), or null. `agora` lets the server and tests pass their clock. A visit from before the
+ *  timer (it only had `passos`) gets 20 minutes from now the first time it is read. */
+export function normalizar(s, agora = Date.now()) {
   if (!s || typeof s !== 'object') return null;
   const zona = +s.zona;
-  const passos = Math.floor(+s.passos);
   const restantes = Math.floor(+s.restantes);
-  if (!ehZona(zona) || !(passos > 0) || !(restantes > 0)) return null;
-  return { zona, passos: Math.min(PASSOS, passos), restantes: Math.min(BOLAS, restantes) };
+  const fim = Number.isFinite(+s.fim) && +s.fim > 0 ? +s.fim : (Math.floor(+s.passos) > 0 ? agora + DURACAO_MS : 0);
+  if (!ehZona(zona) || !(restantes > 0) || !(fim > agora)) return null;
+  return { zona, fim, restantes: Math.min(BOLAS, restantes) };
 }
+/** The visit ran out of time (it was live, now it is not, and it still had balls). */
+export const acabouOTempo = (s, agora = Date.now()) => !!s && typeof s === 'object' && +s.restantes > 0 && Number.isFinite(+s.fim) && +s.fim > 0 && agora >= +s.fim;
 
-export function vivo(s) {
-  return !!normalizar(s);
+export function vivo(s, agora = Date.now()) {
+  return !!normalizar(s, agora);
 }
 
 /** Start a visit. Does not mutate the caller's money or balls. Not enough Coins leaves both alone. */
-export function entrar({ dinheiro, bolas, sessao, zona }) {
+export function entrar({ dinheiro, bolas, sessao, zona, agora = Date.now() }) {
   if (vivo(sessao)) return { ok: false, erro: 'You already have a Safari visit going.' };
   const d = Math.floor(num(dinheiro, 0));
   if (!ehZona(zona)) return { ok: false, erro: 'There is no Safari Zone here.' };
@@ -87,23 +98,21 @@ export function entrar({ dinheiro, bolas, sessao, zona }) {
     ok: true,
     dinheiro: d - PRECO,
     bolas: b,
-    sessao: { zona: +zona, passos: PASSOS, restantes: BOLAS },
+    sessao: { zona: +zona, fim: agora + DURACAO_MS, restantes: BOLAS },
   };
 }
 
-/** Steps walked inside the paid grass. `n` is capped so one message cannot end the visit. */
-export function passo(sessao, n = 1) {
-  const s0 = normalizar(sessao);
+/** The clock check (it was the step counter): a visit past its 20 minutes ends with 'tempo'. */
+export function passo(sessao, n = 1, agora = Date.now()) {
+  if (acabouOTempo(sessao, agora)) return { sessao: { ...sessao }, fim: 'tempo' };
+  const s0 = normalizar(sessao, agora);
   if (!s0) return { sessao: null, fim: 'acabou' };
-  const k = Math.max(1, Math.min(8, Math.floor(+n || 1)));
-  const passos = s0.passos - k;
-  if (passos <= 0) return { sessao: { ...s0, passos: 0 }, fim: 'passos' };
-  return { sessao: { ...s0, passos }, fim: null };
+  return { sessao: s0, fim: null };
 }
 
 /** One Safari Ball left the bag. The last ball ends the visit. */
-export function jogou(sessao) {
-  const s0 = normalizar(sessao);
+export function jogou(sessao, agora = Date.now()) {
+  const s0 = normalizar(sessao, agora);
   if (!s0) return { sessao: null, fim: 'acabou' };
   const restantes = s0.restantes - 1;
   const s = { ...s0, restantes };
@@ -152,10 +161,37 @@ export function aplicar(tipo) {
   return { tipo, captura: m.captura, fuga: m.fuga };
 }
 
-/** `rng` returns a number in [0, 1). */
-export function foge(mod, rng) {
-  const p = mod && Number.isFinite(+mod.fuga) ? +mod.fuga : FUGA_CALMA;
-  return rng() < p;
+/** `rng` returns a number in [0, 1). `vel` = the species' base Speed (faster ones flee more). */
+export function foge(mod, rng, vel = 50) {
+  return rng() < chanceFuga(vel, mod);
+}
+
+/* ── Kanto's Safari spawns (public/data/safari.json, the upcoming/ data): the zone polygon, its four sub-areas (east / north /
+   west cut lines, the rest is the centre) and each one's land and water tables with weights and levels. World coordinates. ── */
+export function dentroDe(poly, x, z) {
+  let c = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [b, d] = poly[i], [e, f] = poly[j];
+    if (d > z !== f > z && x < ((e - b) * (z - d)) / (f - d) + b) c = !c;
+  }
+  return c;
+}
+export function subAreaSafari(D, x, z) {
+  const P = D?.zona?.poligono, k = D?.cortes;
+  if (!P || !k || !Number.isFinite(+x) || !Number.isFinite(+z) || !dentroDe(P, +x, +z)) return null;
+  return +x >= k.lesteX ? 'leste' : +z < k.norteZ ? 'norte' : +x < k.oesteX ? 'oeste' : 'centro';
+}
+/** { dex, nome, glb, lv, agua, subArea } for a spawn at x,z, or null outside the zone. */
+export function sortearSafari(D, x, z, agua = false, rng = Math.random) {
+  const id = subAreaSafari(D, x, z); if (!id) return null;
+  const sub = (D.subAreas || []).find(s => s.id === id); if (!sub) return null;
+  const L = (agua ? sub.agua : sub.terra) || [];
+  let tot = 0; for (const e of L) tot += Math.max(0, +e.peso || 0);
+  if (!(tot > 0)) return null;
+  let r = rng() * tot, g = L[L.length - 1];
+  for (const e of L) { r -= Math.max(0, +e.peso || 0); if (r < 0) { g = e; break; } }
+  const lv = g.lv[0] + Math.floor(rng() * (g.lv[1] - g.lv[0] + 1));
+  return { dex: g.dex, nome: g.nome, glb: g.glb, lv: Math.min(g.lv[1], lv), agua: !!agua, subArea: id };
 }
 
 export function multCaptura(mod) {

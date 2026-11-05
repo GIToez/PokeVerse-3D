@@ -638,7 +638,11 @@ let itensCache = { mtime: -1, ids: null };
 function itemExiste(id) {
   try {
     const arq = nodePath.join(DADOS_PUB, 'menu_data.json'), mt = fs.statSync(arq).mtimeMs;
-    if (mt !== itensCache.mtime) itensCache = { mtime: mt, ids: new Set(Object.keys(JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {})) };
+    if (mt !== itensCache.mtime) {
+      const ids = new Set(Object.keys(JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {}));
+      try { for (const k of Object.keys(JSON.parse(fs.readFileSync(nodePath.join(DADOS_PUB, 'itens_novos.json'), 'utf8')).itens || {})) ids.add(k); } catch {}   // TM pieces, Rare Candy S…MAX, shards, incubators
+      itensCache = { mtime: mt, ids };
+    }
   } catch { return true; }                                                  // sem o arquivo (demo) não bloqueia
   return !itensCache.ids || itensCache.ids.has(String(id));
 }
@@ -662,7 +666,7 @@ function limparBolsa(d) {
     if (!d[k] || typeof d[k] !== 'object' || Array.isArray(d[k])) return { erro: k + ': invalid format.' };
     const m = {};
     for (const [id, q] of Object.entries(d[k])) {
-      if (!/^\d{1,9}$/.test(id) || !itemExiste(id)) return { erro: `${k}: o item ${id} não existe no jogo.` };
+      if (!/^\d{1,9}$/.test(id) || !itemExiste(id)) return { erro: `${k}: item ${id} does not exist in the game.` };
       const n = Number(q);
       if (!Number.isInteger(n) || n < 0 || n > 999999) return { erro: `${k} ${id}: quantidade de 0 a 999999.` };
       if (n > 0) m[id] = n;                                                  // 0 = tira da bolsa
@@ -1270,6 +1274,17 @@ const httpServer = http.createServer((req, res) => {
         const pronto = (extra = {}) => { c.rev = (c.rev || 0) + 1; salvarContasJa(); return json(200, { ok: true, conta: resumoConta(u, c), save: c.save, rev: c.rev, log: logAdminDe(u, 60), ...extra }); };
 
         if (acao === 'bolsa') {
+          /* The panel sends the whole table it showed, plus what it loaded (`itensAntes` / `bolasAntes`). Anything the player got
+             after the panel loaded (a purchase, a drop, the Running Shoes) is kept instead of being wiped by the old table. */
+          const juntar = (agora, antes, novo) => {
+            if (!antes || typeof antes !== 'object' || !novo || typeof novo !== 'object') return novo;
+            const out = { ...(agora || {}) };
+            for (const k of Object.keys(antes)) if (!(k in novo)) delete out[k];
+            for (const [k, q] of Object.entries(novo)) out[k] = q;
+            return out;
+          };
+          d.itens = juntar(c.save.itens, d.itensAntes, d.itens);
+          d.bolas = juntar(c.save.bolas, d.bolasAntes, d.bolas);
           const r = limparBolsa(d);
           if (r.erro) return json(400, { erro: r.erro });
           const antes = { dinheiro: c.save.dinheiro ?? null, itens: c.save.itens || {}, bolas: c.save.bolas || {}, insignias: c.save.insignias || [] };

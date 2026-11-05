@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import nodePath from 'node:path';
 import * as Ev from './ev.mjs';
+import { sortearSafari } from './safari_rules.mjs';
 import * as Calendario from './calendar.mjs';
 import * as Weather from './weather.mjs';
 import { grantLevelHp } from './server_hp.mjs';
@@ -40,6 +41,14 @@ function serverHour(now = Date.now()) {
 export function criarWilds(ctx) {
   const root = ctx.dir;
   const habitats = readJson(nodePath.join(root, 'public/data/habitats.json'), { areas: {}, generico: [] });
+  /* Kanto's Safari Zone (area 1192) rolls from public/data/safari.json's four sub-areas instead of the habitat table. That file
+     is in data coordinates (x flipped against the game's), so the game x is flipped back before the polygon test. */
+  const safariTab = readJson(nodePath.join(root, 'public/data/safari.json'), null);
+  const SAFARI_AREA = 1192;
+  function safariRow(area, water, x, z) {
+    if (+area !== SAFARI_AREA || !safariTab || !Number.isFinite(+x) || !Number.isFinite(+z)) return null;
+    return sortearSafari(safariTab, FLIP_X * +x, +z, !!water);
+  }
   const expTab = readJson(nodePath.join(root, 'public/data/exp.json'), { curvas: {}, especies: {} });
   const heldTab = readJson(nodePath.join(root, 'public/data/held.json'), { itens: {} });
   Ev.usarYields(readJson(nodePath.join(root, 'public/data/ev_yields.json'), { rende: {} }));
@@ -183,10 +192,11 @@ export function criarWilds(ctx) {
     if (owned.size >= LIVE_CAP) return { t: 'wild_spawn', ok: false };
 
     const quando = momento(who.account, msg, now);
-    const rows = rowsFor(area, !!msg.water, quando);
+    const saf = safariRow(area, msg.water, x, z);
+    const rows = saf ? [saf] : rowsFor(area, !!msg.water, quando);
     if (!rows.length) return { t: 'wild_spawn', ok: false };
-    const row = pickRow(rows);
-    const lv = levelFor(row, area);
+    const row = saf || pickRow(rows);
+    const lv = saf ? saf.lv : levelFor(row, area);
     const id = crypto.randomBytes(8).toString('hex');
     owned.set(id, { dex: +row.dex, lv, at: now, area });
     stamps.push(now);
@@ -281,7 +291,7 @@ export function criarWilds(ctx) {
 
   /* SHARED WORLD (server_world.mjs). The world asks for one species and level at the spot a player proposed: the same
      habitat rules, area check and level cap as `roll`, but no per-player budget (the world caps each area instead). */
-  function rollAt(ws, area, water) {
+  function rollAt(ws, area, water, spot) {
     const who = accountOf(ws);
     if (!who) return null;
     const info = ws._info || {};
@@ -291,6 +301,8 @@ export function criarWilds(ctx) {
     const near = here.length ? here : areasAt(ws._mapa, x, z, BOX_MARGIN);
     if (!near.some(a => +a === +area)) return null;
     const quando = momento(who.account, {}, Date.now());
+    const saf = safariRow(area, water, spot ? +spot.x : x, spot ? +spot.z : z);
+    if (saf) return { dex: +saf.dex, lv: saf.lv, glb: saf.glb, nome: saf.nome, agua: saf.agua ? 1 : 0 };
     const rows = rowsFor(+area, !!water, quando);
     if (!rows.length) return null;
     const row = pickRow(rows);

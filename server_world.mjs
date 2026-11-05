@@ -140,7 +140,7 @@ export function createWorld(h) {
     let inArea = 0;
     for (const w of room.wilds.values()) if (w.area === area && w.state !== 'gone') inArea++;
     if (inArea >= AREA_CAP) return;
-    const rolled = wilds.rollAt(ws, area, !!m.aquatico);   // area check + habitat roll + level cap, the solo rules
+    const rolled = wilds.rollAt(ws, area, !!m.aquatico, { x, z });   // area check + habitat roll + level cap, the solo rules
     if (!rolled) return;
     const S = species(rolled.dex);
     const ind = newIndividual({ dex: rolled.dex, nome: rolled.nome, glb: rolled.glb, lv: rolled.lv });

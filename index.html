@@ -266,7 +266,8 @@ import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
 import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
-import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, steps, bait and rock (shared with server_bag.mjs)
+import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, 20 minutes, bait and rock (shared with server_bag.mjs)
+import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
 import * as Guia from './mission_guide.mjs'; // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
@@ -5336,7 +5337,7 @@ function atualizarSelvagens(dt){
       s.safariT = (s.safariT || 0) + dt;
       if (s.safariT >= 4){
         s.safariT = 0;
-        if (Safari.foge(s.safariMod, Math.random)){ safariFugiu(s); continue; }
+        if (Safari.foge(s.safariMod, Math.random, safariVel(s))){ safariFugiu(s); continue; }
       }
     }
     // reação ao treinador: arisco foge, agressivo parte para cima do Pikachu
@@ -6522,6 +6523,7 @@ function safariPerto(excluir = null){
   }
   return melhor;
 }
+const safariVel = s => porDex.get(+s?.dex)?.bs?.[5] ?? 50;   // base Speed: faster species flee more (safari.json regras.fuga)
 function safariFugiu(s){
   if (!s || s.estado === 'morto' || s.estado === 'guardado' || s.estado === 'capturando') return;
   flutuar(s, 'fled!', '#f58e8e');
@@ -6561,11 +6563,13 @@ async function safariTerminar(motivo, pousoServidor){
       jogo.safari = Safari.normalizar(lerLS('safari', null));
       pouso = pouso || Safari.pouso(zona, jogo.ash?.x);
     }
-    const msg = motivo === 'passos' ? 'The Safari visit is over. You used all 500 steps, so the leftover Safari Balls stay at the gate.'
+    const msg = motivo === 'passos' || motivo === 'tempo' ? "Time's up! The Safari visit is over, and the leftover Safari Balls stay at the gate."
       : motivo === 'bolas' ? 'The Safari visit is over. You used the last Safari Ball.'
       : motivo === 'saiu' ? 'You left the Safari Zone. The leftover Safari Balls stay at the gate.'
       : 'The Safari visit is over.';
     Chat.sistema(msg);
+    SafariUi.fecharDialogo();
+    SafariUi.avisoFim(motivo === 'passos' ? 'tempo' : motivo);
     if (motivo !== 'saiu') safariIrAoPortao(pouso);
     try { pintarBarra(); } catch {}
   } finally { jogo.safariEncerrando = false; }
@@ -6588,7 +6592,7 @@ async function safariPagar(zona){
   jogo.bolaSel = String(Safari.BOLA); gravarLS('bolaSel', jogo.bolaSel);
   jogo.safariDentro = false;
   Som.tocar('ui/sound_itemget', { volume: .7, prio: true });
-  Chat.sistema('Paid 500 Coins. You have 30 Safari Balls and 500 steps. F throws, G is bait, R is a rock.');
+  Chat.sistema('Paid ' + Safari.PRECO + ' Coins. You have ' + Safari.BOLAS + ' Safari Balls and 20 minutes. F throws, G is bait, R is a rock.');
   flutuar(jogo.ash, '30 Safari Balls', '#8ef58e');
   try { pintarBarra(); } catch {}
 }
@@ -6600,7 +6604,7 @@ async function safariPassos(n){
     jogo.safariFila = 0;
     if (!comConta()){
       const r = Safari.passo(jogo.safari, k);
-      if (r.fim) await safariTerminar('passos');
+      if (r.fim) await safariTerminar(r.fim);
       else { jogo.safari = r.sessao; gravarLS('safari', jogo.safari); }
     } else {
       const r = await bolsaOp('safari', { acao: 'passo', n: k, zona: jogo.safari.zona });
@@ -6620,7 +6624,7 @@ async function safariExpulsar(zona){
   }
   safariIrAoPortao(p);
   flutuar(jogo.ash, 'Pay the warden to enter', '#ffd23a');
-  Chat.sistema('The Safari Zone is fenced. Talk to the warden at the gate: 500 Coins for 30 Safari Balls and 500 steps.');
+  Chat.sistema('The Safari Zone is fenced. Talk to the warden at the gate: ' + Safari.PRECO + ' Coins for ' + Safari.BOLAS + ' Safari Balls and 20 minutes.');
 }
 function safariRecolherParceiro(avisar){
   const p = jogo.pika; if (!p || jogo.semParceiro) return;
@@ -6657,6 +6661,7 @@ function vigiarSafari(){
   else if (jogo.pika?.recolhidoSafari) safariDevolverParceiro();
   if (jogo.safariEncerrando || jogo.safariBola || jogo.safariPassoVoo) return;
   const onde = safariOnde();
+  if (Safari.acabouOTempo(jogo.safari)){ safariTerminar('tempo'); return; }   // 20 minutes are up, even standing still
   const viva = Safari.vivo(jogo.safari);
   if (onde.paga && !viva){
     if (!jogo.safariTrava){ jogo.safariTrava = true; safariExpulsar(onde.area); }
@@ -6690,7 +6695,7 @@ function safariAcao(tipo){
   if (Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) > RAIO_BOLA){ flutuar(jogo.ash, 'too far', '#ffd23a'); return; }
   s.safariMod = Safari.aplicar(tipo);
   const nome = tipo === 'isca' ? 'bait' : 'a rock';
-  if (Safari.foge(s.safariMod, Math.random)) safariFugiu(s);
+  if (Safari.foge(s.safariMod, Math.random, safariVel(s))) safariFugiu(s);
   else { flutuar(s, tipo === 'isca' ? 'is eating' : 'is angry', '#ffd23a'); Chat.sistema('You threw ' + nome + ' at ' + s.nome + '.'); }
 }
 async function jogarBola(){
@@ -6861,7 +6866,7 @@ async function jogarBola(){
           if (s.rotulo) s.rotulo.style.display = '';
           flutuar(s, 'broke free! (' + chac + ' shake' + (chac === 1 ? '' : 's') + ')', '#f58e8e');
           Chat.sistema(s.nome + ' broke free of the Safari Ball (' + chac + ' shake' + (chac === 1 ? '' : 's') + ').');
-          if (Safari.foge(s.safariMod, Math.random)) safariFugiu(s);
+          if (Safari.foge(s.safariMod, Math.random, safariVel(s))) safariFugiu(s);
         } else {
         s.estado = 'desmaiado'; s.desmaio = Math.max(s.desmaio || 0, 4); s.rotDesm = undefined;   // escapou: segue caído, dá tempo de outra bola
         if (s.rotulo) s.rotulo.style.display = '';
@@ -8707,9 +8712,21 @@ async function falarCom(n){
   }
   if (!n.placa) n.pivo.rotation.y = Math.atan2(a.x - n.x, a.z - n.z);
   const falaMissao = jogo.missoesOk ? Missoes.falaPara(n.cfg) : null;    // passo atual aponta pra este NPC: ele fala a linha da missão
+  if (n.role === 'safari'){                                             // v2 warden dialogue (safari_ui.mjs); the old speech box when the layout has none
+    const pedido = SafariUi.dialogo({ npc: n, nome: n.nome, sessao: Safari.vivo(jogo.safari) ? jogo.safari : null, preco: Safari.PRECO, bolas: Safari.BOLAS, minutos: Math.round(Safari.DURACAO_MS / 60000),
+      longe: () => !jogo.ash || Math.hypot(jogo.ash.x - n.x, jogo.ash.z - n.z) > 6 });
+    if (pedido){
+      const r = await pedido;
+      if (!n.placa) n.pivo.rotation.y = n.giro;
+      if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
+      if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });
+      if (r === 'entrar' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
+      return;
+    }
+  }
   const visitaSafari = n.role === 'safari' && Safari.vivo(jogo.safari);
   const linhasFala = visitaSafari
-    ? ['You still have ' + jogo.safari.restantes + ' Safari Balls and ' + jogo.safari.passos + ' steps.', 'Leave the Zone and the visit ends. Leftover Safari Balls stay at the gate.']
+    ? ['You still have ' + jogo.safari.restantes + ' Safari Balls and ' + SafariUi.relogio(jogo.safari.fim - Date.now()) + ' left.', 'Leave the Zone and the visit ends. Leftover Safari Balls stay at the gate.']
     : (falaMissao || (n.falas.length ? n.falas : ['…']));
   try { await mostrarFala(n.nome, linhasFala, n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
@@ -9837,7 +9854,7 @@ function pintarBarra(){
   const bi = $('bola-icone'); if (bi && bi.__sel !== sel){ bi.__sel = sel; bi.classList.add('real'); bi.style.backgroundImage = "url('./ui/itens/ic_" + sel + ".png')"; }   // ícone real da bola (pacote Item)
   const bb = $('bola-btn'), semBola = nb <= 0; if (bb.__frio !== semBola){ bb.classList.toggle('frio', semBola); bb.__frio = semBola; }
   if (bb) bb.title = visita
-    ? (jogo.safari.restantes + ' Safari Balls · ' + jogo.safari.passos + ' steps · F throw · G bait · R rock')
+    ? (jogo.safari.restantes + ' Safari Balls · ' + SafariUi.relogio(jogo.safari.fim - Date.now()) + ' left · F throw · G bait · R rock')
     : I18n.t('{name} ×{n} · throw with F · Shift+F switches ball', { name: I18n.t(BOLAS[sel]?.[0] || sel), n: nb });
   pintarAtalhos();
 }
@@ -11276,6 +11293,7 @@ function quadro(dt){
   }
   vigiarPortaoPallet(dt);
   vigiarSafari();
+  if (!(jogo.safariPainelEm > performance.now() - 250)){ jogo.safariPainelEm = performance.now(); try { SafariUi.painel(Safari.vivo(jogo.safari) ? jogo.safari : null); } catch {} }
   try {
     Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: jogo.missoesOk ? Missoes.pinsMapaSync?.() : [], npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
@@ -11564,7 +11582,7 @@ if (params0.get('figmateste') === '1'){                                  // UMA 
 if (CONTA.modo === 'conta'){ try { const u = new URL(location.href); const doJogador = ['jogar', 'mapa', 'chegada', 'voltou', 'v', 'qualidade', 'densidade'];   // qualidade/densidade (13/09): agora ficam guardadas no aparelho, então podem sair da URL
   if (u.search && [...u.searchParams.keys()].every(k => doJogador.includes(k))) history.replaceState(null, '', u.pathname); } catch {} }
 __boot.marcar('pronto', { inv: inventarioCena() });                      // o inventário da cena vai junto (o que o celular carregou de verdade)
-window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
+window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
 if (Fairy){
   Fairy.comecar({ jogo, cena, cam, dados, NOME, chaoEm, tocarAnim, montarPersonagem, livre, bloqueio, porDex, R, THREE, flipX: () => flipX, mundo }).catch(e => console.error('fairy:', e));
 }
