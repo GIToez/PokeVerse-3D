@@ -1,310 +1,890 @@
-/* Player account. Login is a username and password, and the save lives on the account.
- * With the server up, the game starts after login and progress comes from the account.
- * The client does not upload a whole save. Each key the game writes becomes a WebSocket
- * message about 2.5 s later: party and box (`time` / `caixa`) go out as `party` (order,
- * nickname, moves — the server still owns which Pokémon exist), character preferences go
- * out as `pref`, and the knowledge Pokédex goes out as `conhecimento`. Items, money,
- * badges, missions, the name, gym cooldowns and beaten trainers belong to the server; the
- * local copy only mirrors what the server sends. On close, anything still pending goes out
- * over HTTP (`POST /conta/estado`). With no server, or with ?rede=0 / ?conta=0, everything
- * stays in localStorage.
- *   Conta.garantir({ params, layoutHudP })  → { modo: 'conta' | 'sem-servidor' | 'offline', usuario }
- *   Conta.tocou(chave)                       → the game calls this on every save write
- *   Conta.sair() / Conta.zerarSave()         → Settings
- * SAVE_CHAVES are the saved keys. Device preferences (hud.*, chat.*, volume, sizes, skin, dev) never upload.
- */
-import * as I18n from './i18n.mjs';                                      // IDIOMA (11/09): a conta lembra a escolha
-import { COOKIE as COOKIE_PASSE, CENAS_LIVRES, VALIDADE_S, FOLGA_S, lerPasse, stemPermitido } from './pass_rules.mjs';   // PASSE DE PROGRESSO (fase 2, 19/09)
-const VALIDADE_PASSE_S = VALIDADE_S + FOLGA_S;                          // vida do cookie (a borda confere o `exp` assinado)
-export const SAVE_CHAVES = ['time', 'caixa', 'itens', 'bolas', 'bolaSel', 'atalhos', 'dinheiro', 'dex', 'conhecimento', 'insignias', 'eliteVencida',
-  'ginasioCd', 'treinadoresVencidos', 'inicial', 'introVista', 'ultimoCentro', 'seguidor', 'seguidorUid', 'nome', 'personagem', 'mochila', 'tempo', 'cristal', 'missoes', 'safari', 'cosmeticos'];   // seguidorUid (14/09): QUAL dos dois Pidgey segue — vai pro servidor como preferência, senão em outro aparelho o boot pegava o primeiro. safari: the visit (fee, balls, steps) is server-owned, same as dinheiro
-const LS = { token: 'conta.token', usuario: 'conta.usuario', rev: 'conta.rev', dono: 'conta.dono', sujo: 'conta.sujo', gm: 'conta.gm' };
-const ESPERA_ENVIO = 2500, ESPERA_ERRO = 10000, VARREDURA = 20000;
-
-let base = null, token = null, usuario = null, rev = 0, modo = 'offline', gm = false;   // gm: marca de GM/adm, dita pelo servidor
-let sujo = false, timer = null, enviando = false, ultimoHash = '', avisouErro = false, ctx = null, aviso = null;
-
-/* O COFRE (08/09): COM CONTA, as chaves de jogo (SAVE_CHAVES) não ficam no aparelho — vivem aqui, em memória, e são o que o
-   servidor mandou. O jogo lê e grava por `lerBruto`/`gravarBruto` (o `lerLS`/`gravarLS` do index passa por eles), então nada
-   mais no código precisou saber disso. Preferiências do aparelho (hud.*, volume, qualidade, pele…) continuam no localStorage,
-   porque são de cada máquina. SEM conta (?rede=0, demo pública, bancadas) tudo segue no localStorage: lá não há servidor. */
-const cofre = new Map();                      // chave de save → texto JSON
+import * as I18n from './i18n.mjs';
+import * as ConfigConta from './account_settings.mjs';
+import * as Carga from './loading.mjs';
+import {
+  COOKIE as COOKIE_PASSE,
+  CENAS_LIVRES,
+  VALIDADE_S,
+  FOLGA_S,
+  lerPasse,
+  autoriza,
+  precisaPara,
+} from './pass_rules.mjs';
+import * as RegrasPasse from './pass_rules.mjs';
+import TEXTURAS_SHINY from './pass_textures.mjs';
+import { agora as agoraDoServidor, desvioAtual } from './clock.mjs';
+const VALIDADE_PASSE_S = VALIDADE_S + FOLGA_S;
+export const SAVE_CHAVES = [
+  'time',
+  'caixa',
+  'itens',
+  'presos',
+  'bolas',
+  'bolasPresas',
+  'bolaSel',
+  'atalhos',
+  'dinheiro',
+  'dex',
+  'conhecimento',
+  'insignias',
+  'eliteVencida',
+  'ginasioCd',
+  'treinadoresVencidos',
+  'inicial',
+  'introVista',
+  'ultimoCentro',
+  'seguidor',
+  'seguidorUid',
+  'nome',
+  'personagem',
+  'mochila',
+  'tempo',
+  'cristal',
+  'missoes',
+  'skin',
+  'skins',
+  'pecas',
+  'pegos',
+  'vara',
+  'pesca',
+  'peito',
+  'rastro',
+  'fundador',
+  'medalhao',
+  'perfume',
+  'montariaShiny',
+  'skinMon',
+  'skinsMon',
+  'aparicoes',
+  'safari',
+  'cosmeticos',
+];
+const LS = {
+  token: 'conta.token',
+  usuario: 'conta.usuario',
+  rev: 'conta.rev',
+  dono: 'conta.dono',
+  sujo: 'conta.sujo',
+  gm: 'conta.gm',
+};
+const ESPERA_ENVIO = 2500,
+  ESPERA_ERRO = 10000,
+  ESPERA_MAX = 10000;
+let base = null,
+  token = null,
+  usuario = null,
+  rev = 0,
+  modo = 'offline',
+  gm = false;
+let sujo = false,
+  timer = null,
+  ultimoHash = '',
+  ctx = null,
+  aviso = null;
+let pendenteDesde = 0;
+const cofre = new Map();
 const CHAVES = new Set(SAVE_CHAVES);
 export const comConta = () => modo === 'conta';
-/* CARGOS (09/09): quem é staff/mod aparece no jogo. Quem dá é o SERVIDOR (vem no login e no GET /save) — nunca a URL.
-   A tabela mora aqui porque o index, o network.mjs e o chat.mjs precisam da mesma cor e da mesma etiqueta. */
-export const CARGOS = { staff: { tag: 'STAFF', cor: '#ff4d4d' }, mod: { tag: 'MOD', cor: '#ffa640' } };
-export const cargoDe = c => CARGOS[c] || null;
-/** Como o nome de alguém deve aparecer: { texto, cor }. Serve pro rótulo na cabeça e pro chat. */
-export function comCargo(nome, cargo, corPadrao = '#ffe07a'){
-  const q = CARGOS[cargo];
-  return q ? { texto: '[' + q.tag + '] ' + nome, cor: q.cor, tag: q.tag } : { texto: nome, cor: corPadrao, tag: null };
+const CARGO_MOD = Object.freeze({ tag: 'MOD', cor: '#ffa640' });
+export const CARGOS = { staff: { tag: 'STAFF', cor: '#ff4d4d' }, mod: CARGO_MOD, tutor: CARGO_MOD };
+export const cargoDe = (c) => (typeof c === 'string' && Object.hasOwn(CARGOS, c) ? CARGOS[c] : null);
+export const COR_FUNDADOR = '#c58cff';
+export function comCargo(a, b, c = '#ffe07a', d = false) {
+  const q = cargoDe(b);
+  return q
+    ? { texto: '[' + q.tag + '] ' + a, cor: q.cor, tag: q.tag }
+    : { texto: a, cor: d === true ? COR_FUNDADOR : c, tag: null };
 }
 let meuCargo = null;
 export const meuCargoAtual = () => meuCargo;
-let meuAlfa = false;                                                      // Alpha Tester (12/09): a conta jogou no alpha; vem do servidor (login e GET /save), como o cargo
+export function definirMeuCargo(c) {
+  meuCargo = cargoDe(c) ? c : null;
+  return meuCargo;
+}
+let meuAlfa = false;
 export const souAlfa = () => meuAlfa;
-/** O que a CONTA diz sobre quem é você: marca de GM, cargo e onde parou. Vem no `GET /save` e também no login — os dois
-    caminhos passam por aqui pra não acontecer de novo de um deles esquecer um campo. */
-function aplicarConta(d){
+let meusTitulos = [];
+export const titulosGanhos = () => meusTitulos;
+export const souFundador = () => Array.isArray(meusTitulos) && meusTitulos.includes('pacoteFundador');
+let avisarTitulos = null;
+export function aoTitulosGanhos(a) {
+  avisarTitulos = typeof a === 'function' ? a : null;
+}
+export function aplicarTitulosGanhos(l) {
+  if (!Array.isArray(l)) return;
+  const a = JSON.stringify(meusTitulos);
+  meusTitulos = l.filter((x) => typeof x === 'string').slice(0, 50);
+  if (JSON.stringify(meusTitulos) !== a)
+    try {
+      avisarTitulos?.(meusTitulos.slice());
+    } catch (e) {
+      console.warn('account titles:', e);
+    }
+}
+function aplicarConta(d) {
   if (!d) return;
   marcarGm(d.gm);
   meuCargo = d.cargo || null;
-  if ('alfa' in d) meuAlfa = !!d.alfa;                                    // só mexe se o campo veio (servidor velho não manda; não zera à toa)
+  if ('alfa' in d) meuAlfa = !!d.alfa;
+  if ('titulosGanhos' in d)
+    meusTitulos = Array.isArray(d.titulosGanhos)
+      ? d.titulosGanhos.filter((x) => typeof x === 'string').slice(0, 50)
+      : [];
   if ('pos' in d) posUltima = d.pos || null;
-  /* Language: an explicit pick on this device wins (login bar). An old account left on `pt`
-     from the Portuguese-first default must not pull the UI back to PT. */
-  if (d.idioma && I18n.LANGUAGES[d.idioma]){
-    let escolha = null; try { escolha = localStorage.getItem('idioma.escolha'); } catch {}
-    if (escolha !== '1' && d.idioma !== 'pt' && d.idioma !== I18n.language()) I18n.set(d.idioma);
+  if ('config' in d && modo === 'conta')
+    ConfigConta.ligar({
+      doServidor: d.config,
+      enviar: (a, b, c) => api('POST', '/conta/config', { tipo: a, config: b }, !!c),
+    });
+  if (d.idioma && I18n.LANGUAGES[d.idioma]) {
+    let choice = null;
+    try {
+      choice = localStorage.getItem('idioma.escolha');
+    } catch {}
+    if (choice !== '1' && d.idioma !== 'pt' && d.idioma !== I18n.language()) I18n.set(d.idioma);
   }
 }
-/** Avisa a conta do idioma escolhido (barra da tela de login, ou quem chamar). */
-export async function idioma(l){ if (modo === 'conta' && token && I18n.LANGUAGES[l]) return api('POST', '/conta/idioma', { idioma: l }); return null; }
-/* ONDE A CONTA PAROU (08/09): vem do servidor no GET /save e o index usa pra nascer no lugar certo depois de recarregar. */
-let posUltima = null, posPend = null;
+export async function idioma(l) {
+  if (modo === 'conta' && token && I18n.LANGUAGES[l]) return api('POST', '/conta/idioma', { idioma: l });
+  return null;
+}
+let posUltima = null,
+  posPend = null;
 export const posSalva = () => posUltima;
-/** Last walk on this page (x,z,giro,mapa). Sent on hide so F5 / relog is not the last door. Server still validates jumps. */
+/** Last walk on this page (x, z, giro, mapa). Sent on hide so F5 / relog is not the last door. The server still validates jumps. */
 export function lembrarPos(p){
   if (!p || !Number.isFinite(+p.x) || !Number.isFinite(+p.z)) return;
   const mapa = String(p.mapa || '');
   if (!/^[\w.-]{1,40}$/.test(mapa)) return;
   posPend = { mapa, x: +(+p.x).toFixed(2), y: Number.isFinite(+p.y) ? +(+p.y).toFixed(2) : 0, z: +(+p.z).toFixed(2), giro: Number.isFinite(+p.giro) ? +(+p.giro).toFixed(3) : 0, ...(p.chegada ? { chegada: +p.chegada } : {}), ...(p.porta && p.chegada ? { porta: 1 } : {}) };
 }
-/** Leitura crua de uma chave (texto JSON ou null). Com conta e chave de save, vem do cofre. */
-export function lerBruto(k){ return (comConta() && CHAVES.has(k)) ? (cofre.get(k) ?? null) : ler(k); }
-/** Gravação crua. Com conta e chave de save, fica no cofre e marca pra subir; o aparelho não vê. */
-export function gravarBruto(k, txt){
-  if (comConta() && CHAVES.has(k)){ cofre.set(k, txt); tocouChave(k); return; }
-  gravar(k, txt); tocou(k);
+export function lerBruto(k) {
+  return comConta() && CHAVES.has(k) ? (cofre.get(k) ?? null) : ler(k);
 }
-const ler = k => { try { return localStorage.getItem(k); } catch { return null; } };
-const gravar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
-const apagar = k => { try { localStorage.removeItem(k); } catch {} };
-
-export const estado = () => ({ modo, usuario, rev, sujo, base, gm });
-/** GM/adm? A marca vem do SERVIDOR (login e GET /save); o localStorage é só espelho pro boot seguinte (index: const GM). */
-export const ehGm = () => gm;
-function marcarGm(v){ gm = !!v; if (gm) gravar(LS.gm, '1'); else apagar(LS.gm); }
-export const tokenAtual = () => (modo === 'conta' ? token : null);
-export const baseUrl = () => base;                                       // http do servidor (rotas públicas, ex.: /ranking)
-export function baseHttp(params){
-  const s = params.get('servidor');                                       // ?servidor=ws://host:porta (o mesmo da rede) → http://host:porta
-  if (s){ try { const u = new URL(s); return (u.protocol === 'wss:' ? 'https://' : 'http://') + u.host; } catch {} }
-  return location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190';   // no site (HTTPS) o servidor fica atrás de /servidor no mesmo host (12/09)
-}
-
-/* ------------------------------------------------------------------ chamadas */
-async function api(metodo, caminho, corpo = null, keepalive = false){
-  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 8000);
-  try {
-    const cab = { 'Content-Type': 'application/json' }; if (token) cab.Authorization = 'Bearer ' + token;
-    const r = await fetch(base + caminho, { method: metodo, headers: cab, body: corpo ? JSON.stringify(corpo) : undefined, signal: ctl.signal, keepalive });
-    let dados = null; try { dados = await r.json(); } catch {}
-    return { ok: r.ok, status: r.status, dados, erro: r.ok ? null : (dados?.erro || (r.status === 404 ? "This isn't available on the server yet." : 'Error ' + r.status)) };
-  } catch (e){ return { ok: false, status: 0, dados: null, erro: "Can't reach the server." }; }
-  finally { clearTimeout(t); }
-}
-async function health(){
-  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 2500);
-  try { const r = await fetch(base + '/health', { signal: ctl.signal, cache: 'no-store' }); return r.ok; } catch { return false; } finally { clearTimeout(t); }
-}
-
-/* ------------------------------------------------------------------ espelho local ↔ save */
-function colherLocal(){                                                   // o que está no localStorage, só as chaves de save
-  const s = {}; let tem = false;
-  for (const k of SAVE_CHAVES){ const v = lerBruto(k); if (v == null) continue; try { s[k] = JSON.parse(v); tem = true; } catch {} }
-  return tem ? s : null;
-}
-/* Diamond wallet (server_shop.mjs): only the server writes it, so it lives here in memory and never in the save keys. */
-let carteira = { total: 0, bloqueada: false };
-function lembrarCarteira(save){
-  const w = save?.carteira;
-  if (w && typeof w === 'object') carteira = { total: Number.isSafeInteger(w.total) ? w.total : 0, bloqueada: !!w.bloqueada };
-  else if (save) carteira = { total: 0, bloqueada: false };
-}
-export const diamantes = () => (modo === 'conta' ? { ...carteira } : null);
-function aplicarSave(save){                                                // o save da conta vira o estado do jogo (chave ausente some)
-  lembrarCarteira(save);
-  for (const k of SAVE_CHAVES){
-    const tem = save && k in save && save[k] !== undefined;
-    if (comConta()){                                                       // 08/09: com conta o jogo mora no cofre, e o
-      if (tem) cofre.set(k, JSON.stringify(save[k])); else cofre.delete(k);   // APARELHO não guarda nada de jogo — nem sobra velha
-      apagar(k);
-    } else if (tem) gravar(k, JSON.stringify(save[k])); else apagar(k);
+export function gravarBruto(k, a) {
+  if (comConta() && CHAVES.has(k)) {
+    cofre.set(k, a);
+    tocouChave(k);
+    return;
   }
-  gravar(LS.dono, usuario); apagar(LS.sujo); sujo = false;
+  gravar(k, a);
+  tocou(k);
+}
+const ler = (k) => {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const gravar = (k, v) => {
+  try {
+    localStorage.setItem(k, v);
+  } catch {}
+};
+const apagar = (k) => {
+  try {
+    localStorage.removeItem(k);
+  } catch {}
+};
+export const estado = () => ({ modo, usuario, rev, sujo, base, gm });
+export const ehGm = () => gm;
+function marcarGm(v) {
+  gm = !!v;
+  if (gm) gravar(LS.gm, '1');
+  else apagar(LS.gm);
+}
+export const tokenAtual = () => (modo === 'conta' ? token : null);
+export const baseUrl = () => base;
+export function servidorDaUrl(a) {
+  return null;
+}
+export function baseHttp(a) {
+  const u = servidorDaUrl(a);
+  if (u) return (u.protocol === 'wss:' ? 'https://' : 'http://') + u.host;
+  return location.protocol === 'https:' ? location.origin + '/servidor' : 'http://' + location.hostname + ':5190';
+}
+export function noSite() {
+  try {
+    return !!location.hostname && true;
+  } catch {
+    return false;
+  }
+}
+const ENTRADA_IDA = 'entrada.ida',
+  ENTRADA_JANELA = 60e3;
+export function irParaEntrada() {
+  if (!noSite()) return false;
+  try {
+    if (Date.now() - (+sessionStorage.getItem(ENTRADA_IDA) || 0) < ENTRADA_JANELA) return false;
+    sessionStorage.setItem(ENTRADA_IDA, String(Date.now()));
+  } catch {
+    return false;
+  }
+  apagarPasse(true);
+  try {
+    location.replace('/');
+  } catch {
+    return false;
+  }
+  return true;
+}
+async function api(a, b, c = null, d = false, f = 8000) {
+  const g = new AbortController();
+  const t = setTimeout(() => g.abort(), f);
+  try {
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h.Authorization = 'Bearer ' + token;
+    const r = await fetch(base + b, {
+      method: a,
+      headers: h,
+      body: c ? JSON.stringify(c) : undefined,
+      signal: g.signal,
+      keepalive: d,
+    });
+    let i = null;
+    try {
+      i = await r.json();
+    } catch {}
+    if (r.status === 403 && i?.banido === true && h.Authorization) banido(i);
+    return { ok: r.ok, status: r.status, dados: i, erro: r.ok ? null : i?.erro || (r.status === 404 ? "This isn't available on the server yet." : 'Error ' + r.status) };
+  } catch (e) {
+    return { ok: false, status: 0, dados: null, erro: 'No connection to the server.' };
+  } finally {
+    clearTimeout(t);
+  }
+}
+async function health(a = 2500) {
+  const b = new AbortController();
+  const t = setTimeout(() => b.abort(), a);
+  try {
+    const r = await fetch(base + '/health', { signal: b.signal, cache: 'no-store' });
+    return r.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(t);
+  }
+}
+function colherLocal() {
+  const s = {};
+  let a = false;
+  for (const k of SAVE_CHAVES) {
+    const v = lerBruto(k);
+    if (v == null) continue;
+    try {
+      s[k] = JSON.parse(v);
+      a = true;
+    } catch {}
+  }
+  return a ? s : null;
+}
+function aplicarSave(a) {
+  if (a && a.carteira && typeof a.carteira === 'object') definirDiamantes(a.carteira);
+  if (comConta()) refazerConfirmado(a);
+  for (const k of SAVE_CHAVES) {
+    const b = a && k in a && a[k] !== undefined;
+    if (comConta()) {
+      if (b) cofre.set(k, JSON.stringify(a[k]));
+      else cofre.delete(k);
+      apagar(k);
+    } else if (b) gravar(k, JSON.stringify(a[k]));
+    else apagar(k);
+  }
+  gravar(LS.dono, usuario);
+  apagar(LS.sujo);
+  sujo = false;
   ultimoHash = JSON.stringify(colherLocal() || {});
 }
-function guardarSessao(t, u, r){ token = t; usuario = u; rev = r || 0; gravar(LS.token, t); gravar(LS.usuario, u); gravar(LS.rev, String(rev)); }
-function limparSessao(cookie = true){ token = null; usuario = null; rev = 0; for (const k of Object.values(LS)) apagar(k); apagarPasse(cookie); }
-
-/* ------------------------------------------------------------------ PASSE DE PROGRESSO (fase 2, 19/09)
-   "Só baixa quem progride": na borda (Worker da Cloudflare), `scenery/` só entrega a cena e o modelo de Pokémon que a CONTA já
-   alcançou. A prova é o passe assinado pelo servidor (pass_rules.mjs), que viaja no cookie `pf_passe` (Path=/cenario).
-   Quem grava o cookie é o CLIENTE, com o `{passe, exp}` que o servidor manda no JSON (login, cadastro, GET /save, GET /conta/passe)
-   e no WebSocket (`{t:'passe'}`, network.mjs). O cookie tem Path=/cenario, então a página (em /) NÃO consegue lê-lo de volta pelo
-   document.cookie: o que o jogo sabe que tem fica num ESPELHO no localStorage (`passe.atual`), gravado junto com o cookie.
-   `exp` (segundos) cresce a cada emissão da mesma conta: um passe mais velho nunca substitui um mais novo (a resposta HTTP que
-   chega depois da mensagem do WebSocket). Sem Worker (localhost, LAN) nada disso nega nada: o cookie só vai junto e é ignorado. */
+function guardarSessao(t, u, r) {
+  token = t;
+  usuario = u;
+  rev = r || 0;
+  gravar(LS.token, t);
+  gravar(LS.usuario, u);
+  gravar(LS.rev, String(rev));
+}
+function limparSessao(a = true) {
+  token = null;
+  usuario = null;
+  rev = 0;
+  for (const k of Object.values(LS)) apagar(k);
+  apagarPasse(a);
+}
 const LS_PASSE = 'passe.atual';
-let passeMem = null;                                                      // o texto do passe (espelho em memória do localStorage)
-/* Relê o espelho a cada consulta (revisão, 19/09): o cookie é um só pro navegador inteiro, e outra aba pode ter gravado um passe mais
-   novo. Com a cópia em memória presa à primeira leitura, esta aba comparava com o passe velho e podia gravar por cima do mais novo.
-   Sem localStorage (bloqueado), fica a memória. */
-function passeGuardado(){ const ls = ler(LS_PASSE); if (ls != null) passeMem = ls; else if (passeMem == null) passeMem = ''; return passeMem ? lerPasse(passeMem) : null; }
-/* Os campos que dizem O QUE o passe libera (uid, bandeiras, dex, skins, cenas): o `exp` fica de fora. Mudou = liberou algo novo. */
-const conteudoPasse = txt => { const p = String(txt || '').split('.'); return [p[1], p[3], p[4], p[5], p[6]].join('.'); };
-/** Grava o passe que o servidor mandou ({passe, exp}). Síncrona. Devolve se aceitou. */
-export function gravarPasse(d){
-  const txt = d && typeof d.passe === 'string' ? d.passe : null;
-  const n = txt ? lerPasse(txt) : null; if (!n) return false;
-  const cur = passeGuardado();
-  if (cur && cur.uid === n.uid && n.exp < cur.exp) return false;         // passe mais velho que o que já temos (HTTP atrasado depois do WS)
-  const agoraS = Math.floor(Date.now() / 1000);
-  /* A vida do cookie NÃO depende do relógio do aparelho (verificação, 19/09): com o relógio adiantado mais de 7 dias, `exp − agora`
-     dava 60 s e o cookie sumia com o jogo aberto — cada modelo novo virava 403 até o passe seguinte. Quem decide se o passe venceu é
-     a borda, pelo `exp` assinado e pelo relógio dela; um cookie que dura mais que o passe só leva um passe vencido (negado igual). */
-  const idade = Math.max(VALIDADE_PASSE_S, n.exp - agoraS);
-  const seguro = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';   // em http:// de LAN o Secure seria recusado
-  try { document.cookie = COOKIE_PASSE + '=' + txt + '; Path=/cenario; Max-Age=' + idade + '; SameSite=Lax' + seguro; } catch {}
-  const cresceu = !cur || conteudoPasse(passeMem) !== conteudoPasse(txt);
-  passeMem = txt; gravar(LS_PASSE, txt);
-  n.cresceu = cresceu;
-  try { dispatchEvent(new CustomEvent('passe-novo', { detail: n })); } catch {}
+export const REGIOES = './data/regioes.json';
+let passeMem = null;
+function passeGuardado() {
+  const a = ler(LS_PASSE);
+  if (a != null) passeMem = a;
+  else if (passeMem == null) passeMem = '';
+  return passeMem ? lerPasse(passeMem) : null;
+}
+const conteudoPasse = (a) => {
+  const p = String(a || '').split('.');
+  return [p[1], p[3], p[4], p[5], p[6]].join('.');
+};
+export function gravarPasse(d) {
+  const a = d && typeof d.passe === 'string' ? d.passe : null;
+  const n = a ? lerPasse(a) : null;
+  if (!n) return false;
+  const b = passeGuardado();
+  if (b && b.uid === n.uid && n.exp < b.exp) return false;
+  const c = Math.floor(Date.now() / 1000);
+  const e = Math.max(VALIDADE_PASSE_S, n.exp - c);
+  const f = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
+  try {
+    document.cookie = COOKIE_PASSE + '=; Path=/cenario; Max-Age=0; SameSite=Lax' + f;
+    document.cookie = COOKIE_PASSE + '=' + a + '; Path=/; Max-Age=' + e + '; SameSite=Lax' + f;
+  } catch {}
+  const g = !b || conteudoPasse(passeMem) !== conteudoPasse(a);
+  const h = !!b && b.uid === n.uid && ehCasca(b);
+  passeMem = a;
+  gravar(LS_PASSE, a);
+  n.cresceu = g;
+  n.casca = ehCasca(n);
+  n.virouConteudo = h && !n.casca;
+  try {
+    dispatchEvent(new CustomEvent('passe-novo', { detail: n }));
+  } catch {}
+  if (n.virouConteudo)
+    try {
+      dispatchEvent(new CustomEvent('passe-conteudo', { detail: n }));
+    } catch {}
   return true;
 }
-/** Regrava o cookie a partir do espelho (revisão, 19/09): o boot chama antes de pedir a cena. Quem limpou só os cookies do site
-    ainda tem o passe no localStorage — sem isto a cena tomava um 403 até o passe novo chegar. Só com o passe da MESMA conta da
-    sessão guardada e ainda válido. */
-export function reporCookie(){
-  const p = passeAtual(); if (!p || p.uid !== ler(LS.usuario)) return false;
-  const idade = Math.max(VALIDADE_PASSE_S, p.exp - Math.floor(Date.now() / 1000));
-  const seguro = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
-  try { document.cookie = COOKIE_PASSE + '=' + passeMem + '; Path=/cenario; Max-Age=' + idade + '; SameSite=Lax' + seguro; } catch { return false; }
+export function reporCookie() {
+  const p = passeAtual();
+  if (!p || p.uid !== ler(LS.usuario)) return false;
+  const a = Math.max(VALIDADE_PASSE_S, p.exp - Math.floor(Date.now() / 1000));
+  const b = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
+  try {
+    document.cookie = COOKIE_PASSE + '=; Path=/cenario; Max-Age=0; SameSite=Lax' + b;
+    document.cookie = COOKIE_PASSE + '=' + passeMem + '; Path=/; Max-Age=' + a + '; SameSite=Lax' + b;
+  } catch {
+    return false;
+  }
   return true;
 }
-/** Apaga o cookie e o espelho (sair da conta, apagar personagem, apagar conta, sessão vencida). `cookie = false` só esquece o
-    espelho: o cookie sai no próximo boot sem sessão (ver `limparPasseSemSessao`). */
-export function apagarPasse(cookie = true){
-  passeMem = ''; apagar(LS_PASSE);
-  if (!cookie) return;
-  try { document.cookie = COOKIE_PASSE + '=; Path=/cenario; Max-Age=0; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : ''); } catch {}
+export function apagarPasse(a = true) {
+  passeMem = '';
+  apagar(LS_PASSE);
+  if (!a) return;
+  try {
+    for (const p of ['/', '/cenario'])
+      document.cookie =
+        COOKIE_PASSE +
+        '=; Path=' +
+        p +
+        '; Max-Age=0; SameSite=Lax' +
+        (location.protocol === 'https:' ? '; Secure' : '');
+  } catch {}
 }
-/** Boot sem sessão guardada (quem acabou de sair da conta, visitante): o cookie que sobrou não é de ninguém e sai aqui. */
-export function limparPasseSemSessao(){ if (!temSessaoSalva()) apagarPasse(); }
-/** O passe que o aparelho tem (lido do espelho), ou null se falta ou venceu. */
-export function passeAtual(){ const p = passeGuardado(); return p && p.exp * 1000 > Date.now() ? p : null; }
-/** Segundos até o passe vencer (0 sem passe). */
-export const passeVenceEm = () => { const p = passeAtual(); return p ? Math.max(0, p.exp - Math.floor(Date.now() / 1000)) : 0; };
-/** A borda entregaria esta cena ('kanto', '4110002'…)? */
-export function cobreCena(id){ const p = passeAtual(); return CENAS_LIVRES.includes(String(id)) || !!p?.gm || !!p?.cenas.has(String(id)); }
-/** …e este modelo de Pokémon ('pm0025_00', 'pm0054.glb')? */
-export function cobreGlb(stem){ const p = passeAtual(); return !!p && (p.gm || !stemPermitido(String(stem || '').replace(/\.glb$/, ''), p)); }
-/** Há sessão guardada neste aparelho (o mesmo token que o `garantir` usa)? */
+export function limparPasseSemSessao() {
+  if (!temSessaoSalva()) apagarPasse();
+}
+export function passeAtual() {
+  const p = passeGuardado();
+  return p && p.exp * 1000 > Date.now() ? p : null;
+}
+export const passeVenceEm = () => {
+  const p = passeAtual();
+  return p ? Math.max(0, p.exp - Math.floor(Date.now() / 1000)) : 0;
+};
+const FLAG_CASCA = Number.isInteger(RegrasPasse.FLAG_CASCA) && RegrasPasse.FLAG_CASCA > 0 ? RegrasPasse.FLAG_CASCA : 2;
+export function ehCasca(p) {
+  return !!p && !p.gm && (p.casca === true || ((+p.flags || 0) & FLAG_CASCA) !== 0);
+}
+export const naCasca = () => ehCasca(passeAtual());
+export function motivoDaBorda(a) {
+  const r = autoriza(precisaPara(a, TEXTURAS_SHINY), passeAtual());
+  return r.ok ? null : String(r.motivo || 'negado');
+}
+export function cobreCena(a) {
+  const p = passeAtual();
+  return (
+    CENAS_LIVRES.includes(String(a)) ||
+    !!p?.gm ||
+    (!!p && autoriza(precisaPara('/scenery/' + String(a) + '.glb'), p).ok)
+  );
+}
+export function cobreGlb(a) {
+  const p = passeAtual();
+  return !!p && (p.gm || autoriza(precisaPara('/scenery/mon/' + String(a || '').replace(/\.glb$/, '') + '.glb'), p).ok);
+}
 export const temSessaoSalva = () => !!(token || ler(LS.token));
-/* PASSE CEDO: com a sessão salva, pede o passe ANTES da cena (o boot espera `ms`); falhou ou demorou, segue com o que tiver.
-   Pedidos ao mesmo tempo dividem a mesma chamada. Devolve { ok, status }. */
 let passeVoando = null;
-/* `onde` = {cena, chegada} (verificação, 19/09): a cena que o boot vai abrir e a chegada da porta. O servidor libera o que está perto
-   da chegada (habitat e portas) — senão quem sai de um interior por OUTRA porta (Caverna do Diglett, andares da Torre) aquecia
-   espécies que o passe ainda não cobria, antes de o WebSocket conectar. */
-export function passeCedo(ms = 1500, onde = null){
-  const tk = token || ler(LS.token);
-  if (!tk) return Promise.resolve({ ok: false, status: 0 });
-  if (!passeVoando){
+export function passeCedo(a = 1500, c = null) {
+  const d = token || ler(LS.token);
+  if (!d) return Promise.resolve({ ok: false, status: 0 });
+  if (!passeVoando) {
     const b = base || baseHttp(new URLSearchParams(location.search));
-    const q = onde && onde.cena ? '?cena=' + encodeURIComponent(String(onde.cena)) + (onde.chegada ? '&chegada=' + encodeURIComponent(String(onde.chegada)) : '') : '';
+    const q =
+      c && c.cena
+        ? '?cena=' +
+          encodeURIComponent(String(c.cena)) +
+          (c.chegada ? '&chegada=' + encodeURIComponent(String(c.chegada)) : '')
+        : '';
     passeVoando = (async () => {
-      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 8000);
+      const a = new AbortController();
+      const t = setTimeout(() => a.abort(), 8000);
       try {
-        const r = await fetch(b + '/conta/passe' + q, { headers: { Authorization: 'Bearer ' + tk }, cache: 'no-store', signal: ctl.signal });
-        let dados = null; try { dados = await r.json(); } catch {}
-        if (r.ok && dados?.passe) gravarPasse(dados);
-        return { ok: r.ok && !!dados?.passe, status: r.status };
-      } catch { return { ok: false, status: 0 }; }
-      finally { clearTimeout(t); passeVoando = null; }
+        const r = await fetch(b + '/conta/passe' + q, {
+          headers: { Authorization: 'Bearer ' + d },
+          cache: 'no-store',
+          signal: a.signal,
+        });
+        let c = null;
+        try {
+          c = await r.json();
+        } catch {}
+        if (r.ok && c?.passe) gravarPasse(c);
+        else if (r.status === 403 && c?.banido === true) banido(c);
+        return { ok: r.ok && !!c?.passe, status: r.status };
+      } catch {
+        return { ok: false, status: 0 };
+      } finally {
+        clearTimeout(t);
+        passeVoando = null;
+      }
     })();
   }
-  const voando = passeVoando;
-  return Promise.race([voando, new Promise(res => setTimeout(() => res({ ok: false, status: 0, demorou: true }), ms))]);
+  const e = passeVoando;
+  return Promise.race([e, new Promise((b) => setTimeout(() => b({ ok: false, status: 0, demorou: true }), a))]);
 }
-
-/* ------------------------------------------------------------------ o portão do boot */
-/** Chamado pelo index ANTES de ler o save. Resolve quando o jogo pode seguir (logado, ou sem servidor). */
-export async function garantir(c){
-  ctx = c; const p = c.params;
-  if (p.get('rede') === '0' || p.get('conta') === '0' || /[?&]figmateste=1(&|$)/.test(location.search)){ modo = 'offline'; return { modo }; }
-  base = baseHttp(p);
-  if (!(await health())){ modo = 'sem-servidor'; console.log('conta: servidor fora do ar em ' + base + ' — jogando no localStorage'); return { modo }; }
-  token = ler(LS.token); usuario = ler(LS.usuario); rev = +ler(LS.rev) || 0;
-  if (token){
-    /* 08/09: até aqui, se a sessão anterior fechou com mudança não enviada, o espelho do APARELHO subia por cima antes de ler.
-       Com o servidor dono de Pokémon, bolsa, nível e missões isso protegia pouco e atrapalhava muito (ressuscitava estado
-       velho). Agora quem manda é sempre o servidor; o preço é perder os últimos segundos de uma sessão que caiu. */
-    apagar(LS.sujo);
-    await flushPendingParty();                                           // F5 in the Center: apply the box move before GET /save
-    const r = await api('GET', '/save');
-    if (r.ok && r.dados && 'save' in r.dados){ gravarPasse(r.dados); modo = 'conta'; rev = r.dados.rev || 0; gravar(LS.rev, String(rev)); aplicarConta(r.dados); aplicarSave(r.dados.save); ligarSync(); return { modo, usuario, gm }; }
-    if (r.status === 401) limparSessao();                                  // sessão venceu: login de novo
-    else { modo = 'sem-servidor'; console.warn('account: ' + (r.erro || 'server has no accounts (old version?)')); return { modo }; }   // servidor velho responde 200 sem `save`: não apaga nada
+const TETO_403 = 3,
+  JANELA_403 = 60e3,
+  FOLGA_403 = 5000;
+let pedidos403 = [],
+  renovou403Em = 0,
+  renovando403 = null;
+export function renovarNo403() {
+  if (modo !== 'conta' || travado || encerrada || !(token || ler(LS.token))) return Promise.resolve(false);
+  if (renovando403) return renovando403;
+  const a = Date.now();
+  if (a - renovou403Em < FOLGA_403) {
+    reporCookie();
+    return Promise.resolve(true);
   }
-  const layout = await c.layoutHudP;
-  if (!layout?.telas?.pc?.login){ modo = 'sem-servidor'; console.warn('account: the layout has no login screen'); return { modo }; }
-  try { c.aoTela?.(); } catch {}                                           // o index esconde o "carregando o mapa" quando a tela entra (12/09)
-  const T = await import('./screens.mjs');
-  await new Promise(resolve => T.mostrar('login', layout, { conta: { entrar, criar, recuperar, codigoNovo, alfa, validarChave, idioma }, aoEntrar: resolve }));   // alfa/validarChave: a caixa da Alpha Key (11/09)
-  modo = 'conta'; ligarSync();
+  pedidos403 = pedidos403.filter((t) => a - t < JANELA_403);
+  if (pedidos403.length >= TETO_403) return Promise.resolve(false);
+  pedidos403.push(a);
+  renovando403 = (async () => {
+    try {
+      reporCookie();
+      const r = await passeCedo(5000);
+      if (r?.ok) renovou403Em = Date.now();
+      return !!r?.ok;
+    } catch {
+      return false;
+    } finally {
+      renovando403 = null;
+    }
+  })();
+  return renovando403;
+}
+const RENOVAR_ANTES_S = Math.min(6 * 3600, Math.floor(VALIDADE_S / 2));
+export const passeFolgado = () => passeVenceEm() >= RENOVAR_ANTES_S;
+let voltouEm = -1e9;
+function renovarAoVoltar() {
+  if (modo !== 'conta' || travado || encerrada || !(token || ler(LS.token))) return;
+  if (passeFolgado()) return;
+  const a = Date.now();
+  if (a - voltouEm < 60e3) return;
+  voltouEm = a;
+  reporCookie();
+  passeCedo(5000).catch(() => {});
+}
+const AVISO_PORTAO = {
+  offline: 'No internet on this device. Waiting for the connection to come back…',
+  instavel: 'Your connection is unstable. Trying to reach the server again…',
+  servidor: "The server isn't responding right now (it may be restarting). Trying again…",
+  ok: 'Trying to reach the server again…',
+};
+function avisoPortao(a) {
+  if (ctx?.aoAvisoRede) {
+    try {
+      ctx.aoAvisoRede(a);
+    } catch {}
+    return;
+  }
+  const b = document.getElementById('boot');
+  if (b && a) {
+    b.hidden = false;
+    b.textContent = a;
+  }
+}
+const esperarDeNovo = async (a, b) => {
+  if (a === 1) avisoPortao(I18n.t(AVISO_PORTAO.ok));
+  const c = await Carga.diagnosticar(base, 4000).catch(() => 'instavel');
+  avisoPortao(I18n.t(AVISO_PORTAO[c] || AVISO_PORTAO.instavel));
+  if (a === 1)
+    try {
+      window.__boot?.aviso?.('conta: ' + b + ' failed (' + c + '), retrying');
+    } catch {}
+  await new Promise((r) => setTimeout(r, Math.min(5000, 1000 * a)));
+};
+export function diagnosticarRede(a = 5000) {
+  return Carga.diagnosticar(base || baseHttp(new URLSearchParams(location.search)), a);
+}
+export async function garantir(c) {
+  ctx = c;
+  const p = c.params;
+  base = baseHttp(p);
+  if (!ler(LS.token) && irParaEntrada()) return new Promise(() => {});
+  if (ler(LS.token)) telas().catch(() => {});
+  const a = true;
+  let b = false;
+  for (let e = 1; !(await health(Math.min(8000, 2500 * e))); e++) {
+    b = true;
+    await esperarDeNovo(e, 'health');
+  }
+  if (encerrada) return encerrada;
+  token = ler(LS.token);
+  usuario = ler(LS.usuario);
+  rev = +ler(LS.rev) || 0;
+  if (token) {
+    apagar(LS.sujo);
+    await flushPendingParty(); // F5 in the Center: apply the box move before GET /save
+    let r = await api('GET', '/save');
+    for (let f = 1; !r.ok && (r.status === 0 || r.status >= 500); f++) {
+      b = true;
+      await esperarDeNovo(f, 'GET /save');
+      r = await api('GET', '/save');
+    }
+    if (b) avisoPortao(null);
+    if (r.ok && r.dados && 'save' in r.dados) {
+      gravarPasse(r.dados);
+      modo = 'conta';
+      rev = r.dados.rev || 0;
+      gravar(LS.rev, String(rev));
+      aplicarConta(r.dados);
+      aplicarSave(r.dados.save);
+      if (r.dados.termosPendentes) await pedirTermos(r.dados.termosPendentes, c);
+      ligarSync();
+      return { modo, usuario, gm };
+    }
+    if (r.status === 403 && r.dados?.banido === true) return banido(r.dados);
+    limparSessao();
+  }
+  if (encerrada) return encerrada;
+  if (irParaEntrada()) return new Promise(() => {});
+  const d = await c.layoutHudP;
+  if (!d?.telas?.pc?.login) {
+    throw new Error("account: without the login screen there's no way to sign in");
+  }
+  try {
+    c.aoTela?.();
+  } catch {}
+  const T = await telas();
+  await new Promise((a) =>
+    T.mostrar('login', d, {
+      conta: { entrar, criar, recuperar, codigoNovo, alfa, validarChave, idioma, aceitarTermos, sair, irParaEntrada },
+      aoEntrar: a,
+    }),
+  );
+  modo = 'conta';
+  ligarSync();
   return { modo, usuario, novo: !!ctx.__novo };
 }
-/* CÓDIGO DE RECUPERAÇÃO (07/09): o servidor mostra UMA vez, no cadastro (e a cada troca de senha). Guardo em memória só pra
-   a tela conseguir exibir; nunca vai pro localStorage — se fosse ficar guardado no aparelho não serviria de recuperação. */
 let codigo = null;
-export const codigoNovo = () => { const c = codigo; codigo = null; return c; };
-/* ALPHA KEYS (11/09): o cadastro pode estar fechado. A tela pergunta (`alfa`) e confere a chave (`validarChave`) ANTES de
-   abrir o formulário; o `criar` manda a chave junto e o servidor a gasta. */
-export async function alfa(){ const r = await api('GET', '/alfa'); return { chaveObrigatoria: !!(r.ok && r.dados?.chaveObrigatoria) }; }
-export async function validarChave(chave){ const r = await api('POST', '/chaves/validar', { chave }); return r.ok ? { ok: true, chave: r.dados?.chave || chave } : { ok: false, erro: r.erro }; }
-/** Esqueci a senha: usuário + código de recuperação → senha nova (e um código novo). */
-export async function recuperar(usuario, cod, nova){
+export const codigoNovo = () => {
+  const c = codigo;
+  codigo = null;
+  return c;
+};
+export async function alfa() {
+  const r = await api('GET', '/alfa');
+  return { chaveObrigatoria: !!(r.ok && r.dados?.chaveObrigatoria) };
+}
+export async function validarChave(a) {
+  const r = await api('POST', '/chaves/validar', { chave: a });
+  return r.ok ? { ok: true, chave: r.dados?.chave || a } : { ok: false, erro: r.erro };
+}
+export async function recuperar(a, b, c) {
   base = base || baseHttp(new URLSearchParams(location.search));
-  const r = await api('POST', '/conta/recuperar', { usuario: String(usuario || '').toLowerCase().trim(), codigo: cod, nova });
+  const r = await api('POST', '/conta/recuperar', {
+    usuario: String(a || '')
+      .toLowerCase()
+      .trim(),
+    codigo: b,
+    nova: c,
+  });
   if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the password." };
   codigo = r.dados?.codigo || null;
   return { ok: true, codigo };
 }
-/** Login (screens.mjs chama). Devolve { ok } ou { ok:false, erro }. */
-export async function entrar(u, senha){
-  const r = await api('POST', '/conta/entrar', { usuario: u, senha });
-  if (!r.ok || typeof r.dados?.token !== 'string') return { ok: false, erro: r.erro || "This server doesn't support accounts (old version)." };
+export async function entrar(u, a) {
+  const r = await api('POST', '/conta/entrar', { usuario: u, senha: a });
+  if (!r.ok && typeof r.dados?.modelo === 'string')
+    return { ok: false, erro: fraseDoServidor(r.dados, r.erro), cru: true };
+  if (!r.ok || typeof r.dados?.token !== 'string')
+    return { ok: false, erro: r.erro || 'The server has no accounts (old version).' };
   guardarSessao(r.dados.token, r.dados.usuario, r.dados.rev);
-  gravarPasse(r.dados);                                                   // passe de progresso (19/09): o cookie existe antes de o boot pedir a cena
+  gravarPasse(r.dados);
   modo = 'conta';
   aplicarConta(r.dados);
-  if (r.dados.idioma !== I18n.language()) api('POST', '/conta/idioma', { idioma: I18n.language() });   // a escolha da tela vai pra conta                                                  // marca de GM, cargo e onde parou — igual ao caminho do token (10/09)
-  aplicarSave(r.dados.save);                                              // 08/09: o que vale é o da conta — progresso solto no aparelho NÃO é mais importado
-  return { ok: true, usuario };
+  if (r.dados.idioma !== I18n.language()) api('POST', '/conta/idioma', { idioma: I18n.language() });
+  aplicarSave(r.dados.save);
+  return {
+    ok: true,
+    usuario,
+    termosPendentes: typeof r.dados.termosPendentes === 'string' ? r.dados.termosPendentes : null,
+  };
 }
-/** Cadastro (screens.mjs chama). */
-export async function criar(u, email, senha, chave = null){   // guarda o código de recuperação que vier (codigoNovo); `chave` = Alpha Key (11/09)
-  const r = await api('POST', '/conta/criar', { usuario: u, email, senha, chave: chave || undefined });
-  if (!r.ok || typeof r.dados?.token !== 'string') return { ok: false, erro: r.erro || "This server doesn't support accounts (old version).", precisaChave: !!r.dados?.precisaChave };
+export async function aceitarTermos(a) {
+  const r = await api('POST', '/conta/termos', { versao: a });
+  return r.ok ? { ok: true } : { ok: false, erro: r.erro || "That didn't work. Try again." };
+}
+async function pedirTermos(a, c) {
+  try {
+    c?.aoTela?.();
+  } catch {}
+  const T = await telas();
+  await T.pedirAceiteTermos({ versao: a, aceitar: aceitarTermos, sair });
+}
+export async function criar(u, a, b, c = null, d = {}) {
+  const r = await api('POST', '/conta/criar', {
+    usuario: u,
+    email: a,
+    senha: b,
+    chave: c || undefined,
+    idioma: I18n.language(),
+    termos: d?.termos || undefined,
+  });
+  if (!r.ok || typeof r.dados?.token !== 'string')
+    return {
+      ok: false,
+      erro: r.erro || 'The server has no accounts (old version).',
+      precisaChave: !!r.dados?.precisaChave,
+      precisaCaptcha: !!r.dados?.precisaCaptcha,
+    };
   guardarSessao(r.dados.token, r.dados.usuario, 0);
-  gravarPasse(r.dados);                                                   // conta nova: o passe já vem com a BASE (a intro, o quarto, os iniciais)
-  codigo = r.dados.codigo || null;                                        // o código de recuperação vem UMA vez, aqui (screens.mjs mostra)
-  modo = 'conta'; if (ctx) ctx.__novo = true;
-  api('POST', '/conta/idioma', { idioma: I18n.language() });               // conta nova nasce com o idioma da tela
-  aplicarSave(null);                                                      // 08/09: conta nova nasce VAZIA (era aqui que o personagem velho do aparelho ressuscitava)
+  gravarPasse(r.dados);
+  codigo = r.dados.codigo || null;
+  modo = 'conta';
+  if (ctx) ctx.__novo = true;
+  api('POST', '/conta/idioma', { idioma: I18n.language() });
+  aplicarSave(null);
   return { ok: true, usuario };
 }
-/* The client does not upload a whole save. A party or box write becomes a `party` message
-   (order, nickname, moves — the server still owns which Pokémon exist). Character
-   preferences become `pref`. The knowledge Pokédex becomes `conhecimento`. Items, money,
-   badges, missions, the name, gym cooldowns and beaten trainers stay a local mirror until
-   the server sends its copy. Before the world is up, the message waits and goes out on connect. */
-const PREFS = ['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'introVista', 'ultimoCentro', 'tempo', 'inicial'];
+let telasP = null;
+export function telas() {
+  if (!telasP)
+    telasP = import('./screens.mjs').catch((e) => {
+      telasP = null;
+      throw e;
+    });
+  return telasP;
+}
+let encerrada = null;
+function contaEncerrada(a, b) {
+  if (encerrada) return encerrada;
+  encerrada = new Promise(() => {});
+  const c = telas();
+  limparSessao(false);
+  pararSync();
+  try {
+    dispatchEvent(new CustomEvent('conta-encerrada', { detail: { motivo: b } }));
+  } catch {}
+  try {
+    ctx?.aoTela?.();
+  } catch {}
+  c.then((T) => {
+    apagarPasse(true);
+    T.derrubado(a, b, { cru: true, voltar: voltarProLogin });
+  }).catch(() => {
+    apagarPasse(true);
+    try {
+      alert(a);
+    } catch {}
+    voltarProLogin();
+  });
+  return encerrada;
+}
+function banido(d) {
+  console.warn('account: suspended (403 from server)');
+  return contaEncerrada(fraseDoServidor(d, 'Account suspended.'), 'banido');
+}
+function fraseDoServidor(d, a) {
+  if (typeof d?.modelo === 'string' && d.modelo && d.modelo.length <= 240) {
+    const v = Object.create(null),
+      b = d.vars;
+    if (b && typeof b === 'object' && !Array.isArray(b))
+      for (const k of Object.keys(b))
+        if (/^\w{1,24}$/.test(k))
+          v[k] = typeof b[k] === 'string' || (typeof b[k] === 'number' && Number.isFinite(b[k])) ? b[k] : '';
+    I18n.dateFromVars(v);
+    const t = String(I18n.t(d.modelo, v) ?? '');
+    if (t.trim() && !/\{\w+\}/.test(t)) return t;
+  }
+  return String(I18n.t(typeof d?.erro === 'string' && d.erro ? d.erro : a));
+}
+export function voltarProLogin() {
+  limparSessao();
+  if (irParaEntrada()) return;
+  try {
+    const u = new URL(location.href),
+      q = new URLSearchParams({ jogar: '1' });
+    for (const k of ['servidor', 'raf']) if (u.searchParams.has(k)) q.set(k, u.searchParams.get(k));
+    location.replace(u.pathname + '?' + q);
+  } catch {
+    location.reload();
+  }
+}
+let conferiuEm = -1e9,
+  banOuvido = null;
+export function avisoDoBan(a) {
+  const t = String(a ?? '')
+    .replace(/^⛔\s*/, '')
+    .trim();
+  if (t) banOuvido = { texto: t, em: Date.now() };
+}
+export async function conferirSessao() {
+  if (modo !== 'conta' || !token || travado || encerrada) return null;
+  const a = Date.now();
+  if (a - conferiuEm < 30e3) return null;
+  conferiuEm = a;
+  const r = await api('GET', '/conta');
+  if (r.status === 401 && !encerrada) {
+    const b = banOuvido && Date.now() - banOuvido.em < 2 * 60e3 ? banOuvido : null;
+    contaEncerrada(b ? b.texto : fraseDoServidor(r.dados, 'Please log in again.'), b ? 'banido' : 'sessao');
+  }
+  return r.status;
+}
+const PREFS = [
+  'bolaSel',
+  'atalhos',
+  'seguidor',
+  'seguidorUid',
+  'personagem',
+  'mochila',
+  'introVista',
+  'ultimoCentro',
+  'tempo',
+  'inicial',
+  'skin',
+  'vara',
+  'peito',
+  'rastro',
+  'montariaShiny',
+  'skinMon',
+  'aparicoes',
+];
+const PREFS_DO_VISUAL = ['personagem', 'skin', 'mochila', 'peito', 'rastro', 'skinMon'];
 let enviarRede = null;
-const pendente = { party: false, prefs: new Set(), conhecimento: false };
+const pendente = { arranjo: false, prefs: new Set(), conhecimento: false };
+const DO_SERVIDOR_ARRANJO = new Set([
+  'uid',
+  'dex',
+  'glb',
+  'lv',
+  'exp',
+  'hp',
+  'maxHp',
+  'shiny',
+  'quando',
+  'devolvido',
+  'ppEsq',
+  'bola',
+  'cid',
+]);
+const LOTE_WS = 40,
+  LOTE_HTTP = 25,
+  ESPERA_LOTE = 1200,
+  ESPERA_OK = 15000;
+let compacto = false,
+  seqArranjo = 0;
+const confirmado = new Map();
+const voando = new Map();
+const emVoo = new Map();
+function assinatura(p) {
+  const o = {};
+  for (const k of Object.keys(p).sort()) if (!DO_SERVIDOR_ARRANJO.has(k)) o[k] = p[k];
+  try {
+    return JSON.stringify(o);
+  } catch {
+    return '';
+  }
+}
+function refazerConfirmado(a) {
+  confirmado.clear();
+  voando.clear();
+  for (const e of emVoo.values()) clearTimeout(e.timer);
+  emVoo.clear();
+  for (const k of ['time', 'caixa'])
+    for (const p of Array.isArray(a?.[k]) ? a[k] : [])
+      if (p && typeof p === 'object' && p.uid != null) confirmado.set(String(p.uid), assinatura(p));
+}
+function arranjoEnxuto(b) {
+  const c = new Map();
+  let d = 0;
+  const e = (e) =>
+    (Array.isArray(e) ? e : []).map((p) => {
+      if (!p || typeof p !== 'object' || p.uid == null) return p;
+      const u = String(p.uid),
+        a = assinatura(p);
+      if (a === confirmado.get(u) || a === voando.get(u)) return p.uid;
+      if (c.size >= b) {
+        d++;
+        return p.uid;
+      }
+      c.set(u, a);
+      return p;
+    });
+  return { time: e(lerCofre('time')), caixa: e(lerCofre('caixa')), fichas: c, faltam: d };
+}
+function confirmar(b) {
+  for (const [u, a] of b) {
+    confirmado.set(u, a);
+    if (voando.get(u) === a) voando.delete(u);
+  }
+}
+function esquecerVoo(b) {
+  const e = emVoo.get(b);
+  if (!e) return;
+  emVoo.delete(b);
+  clearTimeout(e.timer);
+  for (const [u, a] of e.fichas) if (voando.get(u) === a) voando.delete(u);
+  if (e.fichas.size && modo === 'conta' && !travado) {
+    pendente.arranjo = true;
+    sujo = true;
+    clearTimeout(timer);
+    timer = setTimeout(despachar, ESPERA_ENVIO);
+  }
+}
+export function arranjoOk(a) {
+  const e = emVoo.get(+a);
+  if (!e) return;
+  emVoo.delete(+a);
+  clearTimeout(e.timer);
+  confirmar(e.fichas);
+}
+const idsDaAssinatura = (a) => {
+  try {
+    const o = a ? JSON.parse(a) : null;
+    return Array.isArray(o?.movs) ? o.movs.map((m) => String(m?.id ?? m)) : null;
+  } catch {
+    return null;
+  }
+};
+export function antesDoGolpe(b, c) {
+  if (modo !== 'conta' || travado || !compacto || !noMundo || !enviarRede || b == null || !c || c === 'struggle')
+    return false;
+  const u = String(b),
+    d = String(c);
+  if ([voando.get(u), confirmado.get(u)].some((a) => idsDaAssinatura(a)?.includes(d))) return false;
+  const e = [...(lerCofre('time') || []), ...(lerCofre('caixa') || [])].find(
+    (p) => p && typeof p === 'object' && String(p.uid) === u,
+  );
+  if (!Array.isArray(e?.movs) || !e.movs.some((m) => String(m?.id ?? m) === d)) return false;
+  pendente.arranjo = true;
+  despachar();
+  return true;
+}
+export function mandarJa() {
+  if (modo === 'conta' && !travado && temPendente()) despachar();
+}
 const SS_PARTY = 'conta.arranjoPend';   // old key on purpose: a refresh during deploy still finds the pending party
 function snapshotParty(){
   try {
@@ -322,121 +902,371 @@ function clearPendingParty(){ try { sessionStorage.removeItem(SS_PARTY); } catch
 async function flushPendingParty(){
   const order = readPendingParty();
   if (!order || !token) return;
-  const r = await api('POST', '/conta/estado', { party: order }, true);
+  const r = await api('POST', '/conta/estado', { arranjo: order }, true);
   if (r.ok) clearPendingParty();
 }
-/** The game connects the WebSocket here; anything still pending goes out. */
-export function ligarRede(fn){ enviarRede = fn; despachar(); }
-const lerCofre = k => { try { return JSON.parse(cofre.get(k) ?? 'null'); } catch { return null; } };
-function tocouChave(k){
-  if (modo !== 'conta') return;
-  if (k === 'time' || k === 'caixa'){ pendente.party = true; snapshotParty(); }
-  else if (PREFS.includes(k)) pendente.prefs.add(k);
-  else if (k === 'dex' || k === 'conhecimento') pendente.conhecimento = true;
-  else return;                                                           // server-owned key: the local copy is only a mirror
-  sujo = true; clearTimeout(timer);
-  timer = setTimeout(despachar, k === 'time' || k === 'caixa' ? 80 : ESPERA_ENVIO);
+export function ligarRede(a) {
+  enviarRede = a;
+  despachar();
 }
-const temPendente = () => pendente.party || pendente.prefs.size || pendente.conhecimento;
-/** Sends whatever is still pending. Over the WebSocket while playing; over HTTP (`POST /conta/estado`, keepalive) when the page is closing, because the socket may not flush its queue. Anything that did not go out stays pending. */
-function despachar(viaHttp = false){
+const lerCofre = (k) => {
+  try {
+    return JSON.parse(cofre.get(k) ?? 'null');
+  } catch {
+    return null;
+  }
+};
+function tocouChave(k) {
+  if (modo !== 'conta') return;
+  if (k === 'time' || k === 'caixa') {
+    pendente.arranjo = true;
+    snapshotParty();
+  } else if (PREFS.includes(k)) pendente.prefs.add(k);
+  else if (k === 'dex' || k === 'conhecimento') pendente.conhecimento = true;
+  else return;
+  const a = Date.now();
+  if (!pendenteDesde) pendenteDesde = a;
+  sujo = true;
   clearTimeout(timer);
-  if (modo !== 'conta' || travado || (!temPendente() && !posPend)) return null;
-  if (viaHttp){
-    const corpo = {};
-    if (pendente.party){ corpo.party = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }; snapshotParty(); }
-    if (pendente.prefs.size){ corpo.prefs = {}; for (const k of pendente.prefs) corpo.prefs[k] = lerCofre(k); }
-    if (pendente.conhecimento){ corpo.dex = lerCofre('dex'); corpo.conhecimento = lerCofre('conhecimento'); }
-    if (posPend) corpo.pos = posPend;
-    pendente.party = false; pendente.prefs.clear(); pendente.conhecimento = false; sujo = false; apagar(LS.sujo);
-    return api('POST', '/conta/estado', corpo, true).then(r => {
-      if (r.ok && corpo.party) clearPendingParty();
+  timer = setTimeout(
+    despachar,
+    PREFS_DO_VISUAL.includes(k) ? 0 : Math.max(0, Math.min(ESPERA_ENVIO, pendenteDesde + ESPERA_MAX - a)),
+  );
+}
+const temPendente = () => pendente.arranjo || pendente.prefs.size || pendente.conhecimento;
+function despachar(b = false) {
+  clearTimeout(timer);
+  pendenteDesde = 0;
+  if (modo !== 'conta' || travado || (!temPendente() && !(b && posPend))) return null;
+  if (b) {
+    const d = {};
+    let e = null,
+      f = 0;
+    if (pendente.arranjo) {
+      if (compacto) {
+        const a = arranjoEnxuto(LOTE_HTTP);
+        d.arranjo = { time: a.time, caixa: a.caixa };
+        e = a.fichas;
+        f = a.faltam;
+      } else d.arranjo = { time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] };
+    }
+    if (pendente.prefs.size) {
+      d.prefs = {};
+      for (const k of pendente.prefs) d.prefs[k] = lerCofre(k);
+    }
+    if (pendente.conhecimento) {
+      d.dex = lerCofre('dex');
+      d.conhecimento = lerCofre('conhecimento');
+    }
+    if (posPend) d.pos = posPend;
+    pendente.arranjo = f > 0;
+    pendente.prefs.clear();
+    pendente.conhecimento = false;
+    sujo = f > 0;
+    if (!sujo) apagar(LS.sujo);
+    if (f) timer = setTimeout(despachar, ESPERA_LOTE);
+    return api('POST', '/conta/estado', d, true).then((r) => {
       if (r.status === 409 && r.dados?.outroAparelho) pararSync();
+      else if (r.ok && e) confirmar(e);
+      if (r.ok && d.arranjo) clearPendingParty();
+      else if (!r.ok && d.arranjo && modo === 'conta' && !travado) {
+        pendente.arranjo = true;
+        sujo = true;
+      }
       return r.ok;
     });
   }
-  if (!enviarRede || !noMundo) return null;                              // world not up yet: the welcome message tries again
-  if (pendente.party && enviarRede({ t: 'party', time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] })) pendente.party = false;
-  for (const k of [...pendente.prefs]) if (enviarRede({ t: 'pref', chave: k, valor: lerCofre(k) })) pendente.prefs.delete(k);
-  if (pendente.conhecimento && enviarRede({ t: 'conhecimento', dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') })) pendente.conhecimento = false;
-  if (!temPendente()){ sujo = false; apagar(LS.sujo); }
-  else { timer = setTimeout(despachar, ESPERA_ERRO); }                    // the socket dropped: try again
+  if (!enviarRede || !noMundo) return null;
+  let c = false;
+  if (pendente.arranjo) {
+    if (compacto) {
+      const a = arranjoEnxuto(LOTE_WS),
+        g = ++seqArranjo;
+      if (enviarRede({ t: 'arranjo', seq: g, time: a.time, caixa: a.caixa })) {
+        if (a.fichas.size) {
+          for (const [u, h] of a.fichas) voando.set(u, h);
+          emVoo.set(g, { fichas: a.fichas, timer: setTimeout(() => esquecerVoo(g), ESPERA_OK) });
+        }
+        pendente.arranjo = a.faltam > 0;
+        c = a.faltam > 0;
+      }
+    } else if (enviarRede({ t: 'arranjo', time: lerCofre('time') || [], caixa: lerCofre('caixa') || [] }))
+      pendente.arranjo = false;
+  }
+  for (const k of [...pendente.prefs])
+    if (enviarRede({ t: 'pref', chave: k, valor: lerCofre(k) })) pendente.prefs.delete(k);
+  if (
+    pendente.conhecimento &&
+    enviarRede({ t: 'conhecimento', dex: lerCofre('dex'), conhecimento: lerCofre('conhecimento') })
+  )
+    pendente.conhecimento = false;
+  if (!temPendente()) {
+    sujo = false;
+    apagar(LS.sujo);
+  } else {
+    timer = setTimeout(despachar, c ? ESPERA_LOTE : ESPERA_ERRO);
+  }
   return null;
 }
-function ligarSync(){
-  if (ligarSync.__ligado) return; ligarSync.__ligado = true;
+function ligarSync() {
+  if (ligarSync.__ligado) return;
+  ligarSync.__ligado = true;
+  try {
+    sessionStorage.removeItem(ENTRADA_IDA);
+  } catch {}
+  telas().catch(() => {});
   addEventListener('pagehide', () => despachar(true));
-  addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') despachar(true); });
+  addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') despachar(true);
+    else renovarAoVoltar();
+  });
 }
-/** The game calls this on every save write. */
-export function tocou(chave){ if (modo === 'conta' && SAVE_CHAVES.includes(chave)) tocouChave(chave); }
-if (typeof window !== 'undefined'){ window.__contaTocou = tocou; window.__contaLer = lerBruto; window.__contaGravar = gravarBruto; }   // character.mjs grava sem importar
-function marcarSujo(){ sujo = true; }                                       // kept for old callers; new writes go through tocouChave
-/** The server rebuilt the save (party order corrected, or a trade): its copy wins, and the game reloads it. */
-export function saveDoServidor(save, revNovo){ aplicarDoServidor(save, revNovo); try { avisarSaveNovo?.(); } catch (e){ console.warn('save do servidor:', e); } }
-/** O SERVIDOR mexeu no save (troca de Pokémon): vira o localStorage aqui e o `rev` acompanha, sem marcar sujo (senão o
-    aparelho subiria por cima o save velho que ainda estava na memória dele). */
-/* BOLSA (passo 2 do save do servidor): dinheiro, itens, Pokébolas e insígnias são do SERVIDOR. Tudo que ele manda (resposta de
-   uma operação, ou o acerto que vem no `PUT /save`) é escrito aqui, sem marcar sujo — senão o aparelho subiria por cima o
-   número velho que ainda está na memória dele. `aoBolsa` deixa o index reler `jogo.bolas` e repintar a HUD. */
-const BOLSA_CHAVES = ['dinheiro', 'itens', 'bolas', 'insignias', 'safari', 'cosmeticos'];   // cosmeticos: outfits/effects bought in the Wardrobe (server_bag.mjs)
+export function tocou(a) {
+  if (modo === 'conta' && SAVE_CHAVES.includes(a)) tocouChave(a);
+}
+if (typeof window !== 'undefined') {
+  window.__contaTocou = tocou;
+  window.__contaLer = lerBruto;
+  window.__contaGravar = gravarBruto;
+}
+export function saveDoServidor(a, b) {
+  aplicarDoServidor(a, b);
+  try {
+    avisarSaveNovo?.();
+  } catch (e) {
+    console.warn('server save:', e);
+  }
+}
+// safari: Safari Zone visits; cosmeticos: outfits/effects bought in the Wardrobe (server_bag.mjs)
+const BOLSA_CHAVES = ['dinheiro', 'itens', 'presos', 'bolas', 'bolasPresas', 'insignias', 'safari', 'cosmeticos'];
 let avisarBolsa = null;
-/* O index relê o save do localStorage quando o servidor o reescreve no meio do jogo (senão a memória dele fica com o time velho). */
 let avisarSaveNovo = null;
-export function aoSave(fn){ avisarSaveNovo = fn; }
-export function aoBolsa(fn){ avisarBolsa = fn; }
-export function aplicarBolsa(bolsa){
-  if (!bolsa || typeof bolsa !== 'object') return false;
-  for (const k of BOLSA_CHAVES) if (k in bolsa) gravarBruto(k, JSON.stringify(bolsa[k]));   // 12/09: com conta o jogo LÊ do cofre — gravar no localStorage deixava dinheiro/itens/insígnias do servidor invisíveis até o próximo login (compra sem item, insígnia que não contava no teto); `tocouChave` ignora estas chaves (só espelho)
-  try { avisarBolsa?.(bolsa); } catch (e){ console.warn('bolsa:', e); }
+export function aoSave(a) {
+  avisarSaveNovo = a;
+}
+let saldoDia = { total: 0, bloqueada: false },
+  avisarDiamantes = null;
+export const diamantes = () => saldoDia;
+export function definirDiamantes(s) {
+  if (!s || !Number.isFinite(+s.total)) return;
+  saldoDia = { total: Math.max(0, Math.floor(+s.total)), bloqueada: !!s.bloqueada };
+  if (s.origem === 'pagamento' && typeof s.sessao === 'string' && /^cs_(test|live)_[A-Za-z0-9_]{1,250}$/.test(s.sessao))
+    creditoPag = {
+      seq: (creditoPag?.seq || 0) + 1,
+      sessao: s.sessao,
+      pagamento: typeof s.pagamento === 'string' ? s.pagamento.slice(0, 255) : null,
+      creditados: Number.isSafeInteger(s.creditados) && s.creditados > 0 ? s.creditados : 0,
+    };
+  try {
+    avisarDiamantes?.(saldoDia);
+  } catch (e) {
+    console.warn('diamantes:', e);
+  }
+}
+export function aoDiamantes(a) {
+  avisarDiamantes = a;
+}
+let creditoPag = null;
+export const ultimoCreditoDePagamento = () => creditoPag;
+const ouvintesPagamento = new Set();
+export function aoPagamento(a) {
+  if (typeof a === 'function') ouvintesPagamento.add(a);
+}
+export function avisarPagamento(m) {
+  for (const a of ouvintesPagamento)
+    try {
+      a(m);
+    } catch (e) {
+      console.warn('pagamento:', e);
+    }
+}
+export function aoBolsa(a) {
+  avisarBolsa = a;
+}
+const ateDoMedalhao = (v) => {
+  const a = v && typeof v === 'object' && !Array.isArray(v) ? v.ate : null;
+  return Number.isSafeInteger(a) && a > 0 ? a : 0;
+};
+export function meuMedalhaoAte() {
+  let v = null;
+  try {
+    v = JSON.parse(lerBruto('medalhao') ?? 'null');
+  } catch {}
+  return ateDoMedalhao(v);
+}
+export const souMembro = (a = agoraDoServidor()) => meuMedalhaoAte() > a;
+export function aplicarMedalhao(m) {
+  const a = ateDoMedalhao(m);
+  if (a) gravarBruto('medalhao', JSON.stringify({ ate: a }));
+  return a;
+}
+const perfumeDe = (v) => {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const a = v.ate,
+    b = +v.mult;
+  return Number.isSafeInteger(a) && a > 0 && Number.isFinite(b) && b > 1 && b <= 10 ? { ate: a, mult: b } : null;
+};
+export function meuPerfume() {
+  let v = null;
+  try {
+    v = JSON.parse(lerBruto('perfume') ?? 'null');
+  } catch {}
+  return perfumeDe(v);
+}
+export function aplicarPerfume(p) {
+  const v = perfumeDe(p);
+  if (v) gravarBruto('perfume', JSON.stringify(v));
+  return v;
+}
+export function dataDoMedalhao(a, b = desvioAtual()) {
+  if (!Number.isSafeInteger(a) || a <= 0) return '';
+  const d = new Date(a - (Number.isFinite(b) ? b : 0));
+  return Number.isFinite(d.getTime())
+    ? d.toLocaleString(I18n.locale(), {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '';
+}
+let comprasHoje = null;
+export const compras = () => comprasHoje;
+export function aplicarBolsa(a) {
+  if (!a || typeof a !== 'object') return false;
+  if (a.compras && typeof a.compras === 'object') comprasHoje = a.compras;
+  for (const k of BOLSA_CHAVES) if (k in a) gravarBruto(k, JSON.stringify(a[k]));
+  if ('bolas' in a && !('bolasPresas' in a)) gravarBruto('bolasPresas', '{}');
+  try {
+    avisarBolsa?.(a);
+  } catch (e) {
+    console.warn('bolsa:', e);
+  }
   return true;
 }
-export function aplicarDoServidor(save, revNovo){
-  if (modo !== 'conta' || !save || typeof save !== 'object') return false;
-  if ('carteira' in save) lembrarCarteira(save);
-  /* Mid-game updates may be a slice (time/caixa). Only overwrite keys that arrived —
-     a missing key must not wipe the rest of the vault (party vanishing on a door). */
-  for (const k of SAVE_CHAVES){
-    if (!(k in save) || save[k] === undefined) continue;
-    cofre.set(k, JSON.stringify(save[k]));
+export function aplicarDoServidor(a, b) {
+  if (modo !== 'conta' || !a || typeof a !== 'object') return false;
+  if (a.carteira && typeof a.carteira === 'object') definirDiamantes(a.carteira);
+  /* Mid-game updates may be a slice (time/caixa). Only overwrite keys that arrived:
+     a missing key must not wipe the rest of the vault (the party vanishing on a door). */
+  for (const k of SAVE_CHAVES) {
+    if (!(k in a) || a[k] === undefined) continue;
+    cofre.set(k, JSON.stringify(a[k]));
     apagar(k);
   }
-  if (Number.isFinite(+revNovo)){ rev = +revNovo; gravar(LS.rev, String(rev)); }
-  sujo = false; apagar(LS.sujo);
+  if (Number.isFinite(+b)) {
+    rev = +b;
+    gravar(LS.rev, String(rev));
+  }
+  sujo = false;
+  apagar(LS.sujo);
   return true;
 }
-/** NOME DO TREINADOR (08/09): é ÚNICO no servidor (amizade e troca acham gente pelo nome). Devolve { ok, nome } ou
-    { ok:false, erro } — quem chama mostra o erro em vez de fingir que trocou. Sem conta, grava só neste aparelho. */
-export async function trocarNome(nome){
-  const n = String(nome || '').replace(/\s+/g, ' ').trim().slice(0, 16);
-  if (n.length < 3) return { ok: false, erro: 'The trainer name needs at least 3 letters.' };
-  if (modo !== 'conta'){ gravar('nome', JSON.stringify(n)); return { ok: true, nome: n, local: true }; }
+export async function trocarNome(a) {
+  const n = String(a || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 16);
+  if (n.length < 3) return { ok: false, erro: 'The trainer name must have at least 3 letters.' };
+  if (modo !== 'conta') {
+    gravar('nome', JSON.stringify(n));
+    return { ok: true, nome: n, local: true };
+  }
   const r = await api('POST', '/conta/nome', { nome: n });
   if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the name." };
-  const posto = r.dados?.nome || n;
-  gravarBruto('nome', JSON.stringify(posto));                             // 12/09: com conta o jogo lê `nome` do cofre — `gravar` (localStorage) deixava o nome antigo na tela até relogar
-  ultimoHash = JSON.stringify(colherLocal() || {});                       // o aparelho já está igual ao servidor: não marcar sujo
-  return { ok: true, nome: posto };
+  const b = r.dados?.nome || n;
+  gravarBruto('nome', JSON.stringify(b));
+  ultimoHash = JSON.stringify(colherLocal() || {});
+  return { ok: true, nome: b };
 }
-/** Troca a senha. A rota existe desde 07/09 e devolve um CÓDIGO DE RECUPERAÇÃO novo — o antigo morre junto com a senha
-    velha, então quem chama tem de mostrar o novo pro jogador. */
-export async function trocarSenha(atual, nova){
-  const r = await chamar('POST', '/conta/senha', { senhaAtual: atual, nova });
+export async function trocarSenha(a, b) {
+  const r = await chamar('POST', '/conta/senha', { senhaAtual: a, nova: b });
   if (!r.ok) return { ok: false, erro: r.erro || "Couldn't change the password." };
   return { ok: true, codigo: r.dados?.codigo || null };
 }
-/** APAGAR O PERSONAGEM (08/09): o jogo do jogador some no SERVIDOR (save, Pokémon, bolsa, missões); a conta e o nome ficam. */
-export async function apagarPersonagem(){
+export async function apagarPersonagem(a, b = '') {
   if (modo !== 'conta') return { ok: false, erro: 'This only works with an account.' };
-  clearTimeout(timer); sujo = false; apagar(LS.sujo);
-  const r = await api('POST', '/conta/personagem/apagar');
-  if (!r.ok) return { ok: false, erro: r.erro || "Couldn't delete the character." };
-  rev = r.dados?.rev ?? rev; gravar(LS.rev, String(rev));
-  cofre.clear(); ultimoHash = '{}';
-  apagarPasse();                                                          // o servidor manda outro na próxima conexão (o que foi desbloqueado continua na conta)
+  clearTimeout(timer);
+  sujo = false;
+  apagar(LS.sujo);
+  const r = await api('POST', '/conta/personagem/apagar', {
+    senha: String(a || ''),
+    nome: String(b || '').slice(0, 40),
+  });
+  if (!r.ok) {
+    if (temPendente()) {
+      sujo = true;
+      timer = setTimeout(despachar, ESPERA_ENVIO);
+    }
+    return { ok: false, erro: r.erro || "Couldn't delete the character." };
+  }
+  rev = r.dados?.rev ?? rev;
+  gravar(LS.rev, String(rev));
+  cofre.clear();
+  ultimoHash = '{}';
+  apagarPasse();
   return { ok: true };
 }
-/** APAGAR A CONTA (08/09): irreversível, pede a senha. Depois disto não há mais sessão — quem chama recarrega a página. */
+export async function chamar(a, b, c = null, d = null) {
+  if (modo !== 'conta' || !token)
+    return { ok: false, status: 0, dados: null, erro: 'Sign in with an account to use this.' };
+  const p = Number(d?.prazo),
+    e = Number.isFinite(p) && p >= 1000 ? Math.min(p, 60000) : 8000;
+  return api(a, b, c, false, e);
+}
+export function aoAvisar(a) {
+  aviso = a;
+}
+let travado = false,
+  noMundo = false,
+  esperasNoMundo = 0;
+export function entrouNoMundo(a) {
+  noMundo = true;
+  esperasNoMundo = 0;
+  compacto = Number(a) >= 22;
+  for (const b of [...emVoo.keys()]) esquecerVoo(b);
+  despachar();
+}
+export function pararSync() {
+  if (travado) return;
+  travado = true;
+  clearTimeout(timer);
+  sujo = false;
+  apagar(LS.sujo);
+}
+export const estaTravado = () => travado;
+export async function enviarAgora() {
+  const r = despachar(true);
+  if (r) await r;
+}
+export async function sair() {
+  if (modo === 'conta') {
+    await enviarAgora();
+    try {
+      await ConfigConta.despejar();
+    } catch {}
+    ConfigConta.parar();
+    await api('POST', '/conta/sair');
+  }
+  for (const k of SAVE_CHAVES) apagar(k);
+  limparSessao(false);
+  modo = 'offline';
+  location.reload();
+}
+export async function zerarSave(a, b = '') {
+  if (modo !== 'conta') return false;
+  clearTimeout(timer);
+  sujo = false;
+  apagar(LS.sujo);
+  const r = await api('PUT', '/save', { save: null, rev, senha: String(a || ''), nome: String(b || '').slice(0, 40) });
+  if (r.ok) {
+    rev = r.dados.rev;
+    gravar(LS.rev, String(rev));
+  }
+  ultimoHash = '{}';
+  return r.ok;
+}
 export async function apagarConta(senha){
   if (modo !== 'conta') return { ok: false, erro: 'This only works with an account.' };
   const r = await api('POST', '/conta/apagar', { senha });
@@ -445,40 +1275,4 @@ export async function apagarConta(senha){
   for (const k of SAVE_CHAVES) apagar(k);
   limparSessao(); modo = 'offline';
   return { ok: true };
-}
-/** Chamada autenticada pra outros módulos (Social): { ok, status, dados, erro }. */
-export async function chamar(metodo, caminho, corpo = null){ if (modo !== 'conta' || !token) return { ok: false, status: 0, dados: null, erro: 'Log in with an account to use this.' }; return api(metodo, caminho, corpo); }
-/** Quem mostra avisos (o chat de Sistema): o index liga depois que o chat existe. */
-export function aoAvisar(fn){ aviso = fn; }
-/* TRAVA DE JOGO (10/09): a conta entrou em outro aparelho. Este aqui para de gravar na hora — o que ele fizer daqui pra
-   frente não vale, e continuar mandando só sobrescreveria o outro. Quem quiser voltar recarrega a página. */
-let travado = false, noMundo = false, esperasNoMundo = 0;
-/** O `network.mjs` avisa quando o WebSocket entrou no mundo (a trava de jogo passou a ser nossa). */
-export function entrouNoMundo(){ noMundo = true; esperasNoMundo = 0; despachar(); }   // passo 6: o que ficou pendente sobe agora
-export function pararSync(){                                              // sem discurso: quem explica é a tela de derrubado (screens.mjs)
-  if (travado) return; travado = true;
-  clearTimeout(timer); sujo = false; apagar(LS.sujo);
-}
-export const estaTravado = () => travado;
-/** Manda o que estiver pendente agora (Configurações, antes de sair). */
-export async function enviarAgora(){ const r = despachar(true); if (r) await r; }   // passo 6: o que estiver pendente vai por HTTP (aguardável: sair/troca)
-
-/* ------------------------------------------------------------------ sair / zerar */
-export async function sair(){
-  if (modo === 'conta'){ await enviarAgora(); await api('POST', '/conta/sair'); }
-  for (const k of SAVE_CHAVES) apagar(k);                                  // o próximo a entrar neste aparelho não herda o progresso
-  /* Integração (19/09): o cookie do passe NÃO sai aqui. Até a recarga, a página ainda termina de montar o que estava baixando
-     (NPC-Pokémon da cena) e, sem o cookie, cada pedido desses virava um 403 da borda. Quem apaga é o boot seguinte, que já
-     começa sem sessão (limparPasseSemSessao, no index). */
-  limparSessao(false); modo = 'offline';
-  location.reload();                                                     // volta pra tela de login (mesma URL: mapa, servidor de teste…)
-}
-/** "Apagar progresso": a conta continua, o save vira vazio (o index limpa o localStorage e recarrega). */
-export async function zerarSave(){
-  if (modo !== 'conta') return false;
-  clearTimeout(timer); sujo = false; apagar(LS.sujo);
-  const r = await api('PUT', '/save', { save: null, rev });
-  if (r.ok){ rev = r.dados.rev; gravar(LS.rev, String(rev)); }
-  ultimoHash = '{}';
-  return r.ok;
 }

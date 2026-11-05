@@ -979,6 +979,35 @@ const httpServer = http.createServer((req, res) => {
     }
 
     // ── Sair ──────────────────────────────────────────────────────────────
+    // Scene pass: the upcoming client asks for a signed pass. We do not gate scenes yet (pass_rules.mjs
+    // SCENES_GATED = false), so this only confirms the session; with no `passe` the client treats every scene as free.
+    if (req.method === 'GET' && rota === '/conta/passe') {
+      const u = usuarioDe(req);
+      if (!u) return json(401, { erro: 'Invalid session.' });
+      return json(200, { ok: true, gated: false });
+    }
+    // Terms of use accepted (screens ask once per terms version).
+    if (req.method === 'POST' && rota === '/conta/termos') {
+      const u = usuarioDe(req);
+      if (!u || !contas[u]) return json(401, { erro: 'Invalid session.' });
+      contas[u].termos = { versao: String(d.versao || '').slice(0, 40), em: Date.now() };
+      salvarContas();
+      return json(200, { ok: true });
+    }
+    // Account settings (account_settings.mjs): one small object per settings type.
+    if (req.method === 'POST' && rota === '/conta/config') {
+      const u = usuarioDe(req);
+      if (!u || !contas[u]) return json(401, { erro: 'Invalid session.' });
+      const tipo = String(d.tipo || '');
+      if (!/^[a-z_]{1,24}$/i.test(tipo) || !d.config || typeof d.config !== 'object' || Array.isArray(d.config)) return json(400, { erro: 'Invalid settings.' });
+      const texto = JSON.stringify(d.config);
+      if (texto.length > 4000) return json(413, { erro: 'Settings are too large.' });
+      if (!contas[u].config || typeof contas[u].config !== 'object') contas[u].config = {};
+      contas[u].config[tipo] = JSON.parse(texto);
+      salvarContas();
+      return json(200, { ok: true });
+    }
+
     if (req.method === 'POST' && rota === '/conta/sair') {
       const u = usuarioDe(req);
       if (u && contas[u]) { sessoes.delete(contas[u].token); contas[u].token = null; salvarContasJa(); }
@@ -1511,6 +1540,8 @@ wss.on('connection', ws => {
             marcarPegoDoTime(cArr);
             cArr.rev = (cArr.rev || 0) + 1;
             salvarContas();
+            // batched party sync (account.mjs, protocol 22+): confirm the batch so the client stops resending it
+            if (Number.isSafeInteger(m.seq)) enviar(ws, { t: 'arranjo_ok', seq: m.seq });
           }
         }
         break;

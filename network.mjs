@@ -38,6 +38,7 @@ import { textoAviso } from './market.mjs';
 import * as TerrenoEstado from './plot_state.mjs';
 import * as Balao from './chat_bubble.mjs';
 import * as Interp from './interpolation.mjs';
+import * as Evento from './event.mjs'; // live-event multipliers (EXP, shiny, density) from the admin panel
 export const VERSAO_REDE = 50;
 let comConta = false;
 let portaVivaAnunciada = false;
@@ -97,7 +98,7 @@ export function salaPronta() {
   posParado = false;
   if (m && ws && ws.readyState === 1) {
     for (const j of m.jogadores || []) adicionar(j);
-    ctx.mundo?.ligar(m.id, m.selvagens || []);
+    if (!soloWilds) ctx.mundo?.ligar(m.id, m.selvagens || []);
   }
   for (const q of a)
     try {
@@ -123,6 +124,34 @@ export function instalar(c) {
   conectar();
 }
 export const estadoRede = () => ({ estado, id, url, outros: outros.size, ping: ping.ms });
+/* WILD ROLL SHIM (bundled server). Our server has no shared world yet: its welcome says `soloWilds`, the client
+   spawns its own wilds by asking `wild_roll`, and the server registers catches (posse_capturar). The upcoming client
+   expects a world server that pushes shared wilds (`selvagem`, `spos`, `shp`...). Both paths stay until
+   server_wild.mjs runs that world. */
+let soloWilds = false;
+let wildRollWait = null;
+export const selvagensDoAparelho = () => soloWilds && estado === 'ligado';
+/** Ask the server to roll one wild in this area. Resolves to the spawn, or null. hour/clima only count for staff testing. */
+export function pedirWild(area, water, hour, clima) {
+  if (wildRollWait || !enviar({ t: 'wild_roll', area, water: !!water, hour, ...(clima !== undefined ? { clima } : {}) }))
+    return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      if (wildRollWait?.resolve === resolve) wildRollWait = null;
+      resolve(null);
+    }, 2500);
+    wildRollWait = { resolve, timer };
+  });
+}
+/** Tell the server this position is a door landing, before the next walk sample. */
+export function enviarPorta(chegada) {
+  const a = ctx?.jogo?.ash;
+  if (!a || !(+chegada > 0)) return false;
+  const giro = a.giro || 0, anim = a.anim || 'Idle';
+  const foi = enviar({ t: 'pos', x: +a.x.toFixed(2), y: +(a.y || 0).toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, porta: 1, chegada: +chegada });
+  if (foi) ultimoEnvio = { ...ultimoEnvio, x: a.x, z: a.z, giro, anim, quando: performance.now() };
+  return foi;
+}
 export const outroPor = (a) => outros.get(a) || null;
 export const listaOutros = () =>
   [...outros.values()].map((o) => ({
@@ -493,7 +522,8 @@ function receber(m) {
       TerrenoEstado.conectou();
       if (m.conta) enviar({ t: 'bat_consultar' });
       for (const j of m.jogadores || []) adicionar(j);
-      ctx.mundo?.ligar(m.id, m.selvagens || []);
+      soloWilds = !!m.soloWilds;
+      if (!soloWilds) ctx.mundo?.ligar(m.id, m.selvagens || []);
       ctx.Chat?.sistemaCru?.(
         tr(
           m.conta
@@ -779,6 +809,26 @@ function receber(m) {
     case 'dm':
     case 'social':
       ctx.social?.(m);
+      return;
+    case 'wild_spawn': {
+      const wait = wildRollWait;
+      wildRollWait = null;
+      if (wait) {
+        clearTimeout(wait.timer);
+        wait.resolve(m.ok ? m : null);
+      }
+      return;
+    }
+    case 'wild_exp':
+      ctx.wildExp?.(m);
+      return;
+    case 'evento': {
+      const txt = Evento.doServidor(m);
+      if (txt) ctx.Chat?.sistema(txt);
+      return;
+    }
+    case 'bat_convite':
+      ctx.batalhaConvite?.(m);
       return;
     case 'selvagem':
     case 'spos':
