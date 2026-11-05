@@ -127,6 +127,11 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
       if (lv >= 31 && lv <= 45) bump(p.cont, 'koFaixa3');
       if (lv >= 46) bump(p.cont, 'koFaixa4');
     }
+    if (ev.conta === 'pesca' && ev.dex) {
+      (t.pescaDex || (t.pescaDex = {}))[String(ev.dex)] = 1;
+      if (+ev.dex === 129) bump(p.cont, 'pescaMagikarp');
+      if (Number.isFinite(+ev.nivel)) p.cont.pescaMaestria = Math.max(p.cont.pescaMaestria | 0, +ev.nivel);
+    }
     if (ev.conta === 'captura' && ev.dex) {
       for (const x of typesOf(ev.dex)) (t.tiposCapturados || (t.tiposCapturados = {}))[x] = 1;
       if (ev.shiny) (t.shinyDex || (t.shinyDex = {}))[String(ev.dex)] = 1;

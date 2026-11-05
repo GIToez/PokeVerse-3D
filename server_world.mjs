@@ -45,7 +45,7 @@ const SAFARI_BALL = 1005;
 const DEFAULT_BALLS = { 1001: 1, 1002: 1.5, 1003: 2, 1004: 255, 1005: 1.5, 1006: 1, 1007: 1, 1008: 1, 1009: 1 };
 
 export function createWorld(h) {
-  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, log = () => {} } = h;
+  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, log = () => {} } = h;
 
   // ── Game data (the same files the client reads) ───────────────────────────────────────────────────────────────────
   let dex = null;
@@ -147,6 +147,87 @@ export function createWorld(h) {
     };
     room.wilds.set(w.id, w);
     toMap(ws._mapa, { t: 'selvagem', s: record(w) });
+  }
+
+  /** Puts a server-built wild on the map and tells the room. `extra` overrides the record (fished Pokémon, etc.). */
+  function placeWild(ws, { area, dex, glb, nome, lv }, x, z, extra = {}) {
+    const S = species(dex);
+    const ind = newIndividual({ dex, nome, glb, lv });
+    const maxHp = Math.max(1, hpBase(S.bs[0], lv, ivsOf(ind)[0] || 0));
+    const w = {
+      id: crypto.randomBytes(6).toString('hex'), area, dex, glb, nome, lv, ind, x: +(+x).toFixed(2), z: +(+z).toFixed(2), giro: 0, anim: 'Idle',
+      casa: null, generico: false, perfil: null, aquatico: false, pertoDeGrama: false, hp: maxHp, maxHp, state: 'vagando', until: 0,
+      owner: ws._id, touched: Date.now(), damage: new Map(), cooldowns: new Map(), lastHit: 0, catcher: null, timer: null, est: null, ...extra,
+    };
+    roomOf(ws._mapa).wilds.set(w.id, w);
+    toMap(ws._mapa, { t: 'selvagem', s: record(w) });
+    return w;
+  }
+
+  // ── Fishing (fishing_game.mjs) ─────────────────────────────────────────────────────────────────────────────────────
+  /* pesca_lancar {vara, x, z} → pesca_lancou; after the rod's wait → pesca_fisgou {janelaMs}; pesca_puxar inside the window
+     → the fish surfaces on the shore spot the client sends (`costa`, checked to be next to the player) as a shared wild,
+     and pesca_emergiu {x, z, id, especie, maestria}. Too early → pesca_erro 'cedo'; too late → pesca_escapou.
+     What bites is data/pesca.json (the area's water species, `generico` elsewhere; the Old Rod only hooks Magikarp).
+     Fishing mastery lives on the account (contas[u].pesca = { pescas, nivel }) and unlocks the better rods. */
+  let fishCache = { mtime: -1, d: null };
+  function fishData() {
+    try {
+      const f = nodePath.join(dataDir, 'pesca.json'), mt = fs.statSync(f).mtimeMs;
+      if (mt !== fishCache.mtime) fishCache = { mtime: mt, d: JSON.parse(fs.readFileSync(f, 'utf8')) };
+    } catch { fishCache = { mtime: -1, d: null }; }
+    return fishCache.d;
+  }
+  const FISH_RANGE = 16, SHORE_RANGE = 4;
+  function stopFishing(ws) { if (ws._fish) clearTimeout(ws._fish.timer); ws._fish = null; }
+  function cast(ws, m) {
+    const fail = (texto, erro) => send(ws, { t: 'pesca_erro', ...(erro ? { erro } : {}), texto });
+    const u = userOf(ws);
+    if (!u) return fail('Log in with an account to fish.');
+    const D = fishData(), rod = (D?.varas || []).find(v => +v.item === +m.vara);
+    if (!rod) return fail("Can't fish right now.");
+    const c = accounts[u], save = c.save || {};
+    if (!((save.itens?.[rod.item] | 0) > 0)) return fail("You don't have that rod.");
+    const mastery = (c.pesca?.nivel | 0);
+    if (mastery < (+rod.maestria || 0)) return fail('Your fishing mastery is too low for that rod.');
+    const me = where(ws), x = +m.x, z = +m.z;
+    if (!Number.isFinite(x) || !Number.isFinite(z) || !(Math.hypot(me.x - x, me.z - z) <= FISH_RANGE)) return fail('Cast closer to the water.');
+    stopFishing(ws);
+    const f = ws._fish = { rod, x, z, phase: 'waiting', timer: null, hookedAt: 0 };
+    send(ws, { t: 'pesca_lancou' });
+    const [w0, w1] = rod.espera || [3, 7];
+    f.timer = setTimeout(() => {
+      if (ws._fish !== f) return;
+      f.phase = 'hooked'; f.hookedAt = Date.now();
+      send(ws, { t: 'pesca_fisgou', janelaMs: rod.janelaMs || 1500 });
+      f.timer = setTimeout(() => { if (ws._fish === f && f.phase === 'hooked') { stopFishing(ws); send(ws, { t: 'pesca_escapou', texto: 'It got away!' }); } }, (+rod.janelaMs || 1500) + 400);
+    }, (w0 + Math.random() * (w1 - w0)) * 1000);
+  }
+  function reel(ws, m) {
+    const f = ws._fish, u = userOf(ws);
+    if (!f || !u) return;
+    stopFishing(ws);
+    if (f.phase !== 'hooked') return send(ws, { t: 'pesca_erro', erro: 'cedo', texto: 'Too early! It got away.' });
+    const D = fishData(), area = wilds.areaOf(ws);
+    const list = (D?.areas?.[String(area)] || D?.generico || []).filter(e => +e.dex > 0);
+    const karp = f.rod.soMagikarp || !list.length || Math.random() < (+f.rod.magikarp || 0);
+    const e = karp ? { dex: 129, nome: 'Magikarp', glb: 'pm0129_00.glb' } : list[Math.floor(Math.random() * list.length)];
+    const glb = e.glb || 'pm' + String(e.dex).padStart(4, '0') + '_00.glb';
+    const [l0, l1] = f.rod.nivel || [5, 10], lv = l0 + Math.floor(Math.random() * (l1 - l0 + 1));
+    // the fish lands on the dry spot the client picked next to the player (its map knows the shore); else beside the player
+    const me = where(ws);
+    let x = me.x, z = me.z + 1;
+    if (m.costa && Number.isFinite(+m.costa.x) && Number.isFinite(+m.costa.z) && Math.hypot(+m.costa.x - me.x, +m.costa.z - me.z) <= SHORE_RANGE) { x = +m.costa.x; z = +m.costa.z; }
+    const w = placeWild(ws, { area: area ?? 0, dex: +e.dex, glb, nome: species(e.dex).name || e.nome, lv }, x, z, { pescado: true });
+    // mastery
+    const c = accounts[u], P = c.pesca || (c.pesca = { pescas: 0, nivel: 0 });
+    const steps = D?.maestria?.degraus || [0], top = +D?.maestria?.teto || steps.length - 1, before = P.nivel | 0;
+    P.pescas = (P.pescas | 0) + 1;
+    while (P.nivel < top && P.pescas >= +steps[P.nivel + 1]) P.nivel++;
+    const unlocked = (D?.varas || []).filter(v => +v.maestria > before && +v.maestria <= P.nivel).map(v => +v.item);
+    saveAccounts();
+    try { onFish?.(ws, u, { dex: w.dex, nivel: P.nivel }); } catch (err) { console.warn('world: onFish', err); }
+    send(ws, { t: 'pesca_emergiu', x: w.x, z: w.z, id: w.id, especie: { nome: w.nome, lv: w.lv }, maestria: { pescas: P.pescas, nivel: P.nivel, subiu: P.nivel > before, desbloqueou: unlocked } });
   }
 
   // ── Movement (from the owner only) ─────────────────────────────────────────────────────────────────────────────────
@@ -306,7 +387,7 @@ export function createWorld(h) {
       c.rev = (c.rev || 0) + 1;
       saveAccounts();
       reply({ ok: true, chac: n, mon: pk, vidas: save.time, bolsa: bag });
-      try { onCatch?.(ws, u, pk, +ball, !!w.aquatico); } catch (e) { console.warn('world: onCatch', e); }
+      try { onCatch?.(ws, u, pk, +ball, !!(w.aquatico || w.pescado)); } catch (e) { console.warn('world: onCatch', e); }
       w.timer = setTimeout(() => remove(map, w, 'capturado'), settleMs);
       log('catch', u, pk.dex, pk.lv, pk.shiny ? 'shiny' : '');
     } else {
@@ -329,6 +410,7 @@ export function createWorld(h) {
   }
   /** A player left a map (closed the tab, went through a door): their wilds go to the nearest player still there. */
   function left(ws, map = ws._mapa) {
+    stopFishing(ws);
     const room = rooms.get(String(map || 'kanto'));
     if (!room) return;
     const others = onMap(map).filter(x => x !== ws);
@@ -367,6 +449,9 @@ export function createWorld(h) {
       case 'sataque': return wildAttack(ws, m);
       case 'shp': return clientHp(ws, m);
       case 'capturar': return capture(ws, m);
+      case 'pesca_lancar': return cast(ws, m);
+      case 'pesca_puxar': return reel(ws, m);
+      case 'pesca_largar': stopFishing(ws); return send(ws, { t: 'pesca_largou' });
     }
   }
   const stats = () => ({ maps: rooms.size, wilds: [...rooms.values()].reduce((n, r) => n + r.wilds.size, 0) });

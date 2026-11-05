@@ -9206,11 +9206,24 @@ if (jogo.ash){
     } else if (m.t === 'pesca_largar') pescaLimpa();
   }
   Pesca.instalar({
-    jogo, cena, t: (s, v) => I18n.t(s, v), lerLS, gravarLS, mobile: () => MOBILE, comServidor: () => true, enviar: pescaEnviar,
+    jogo, cena, t: (s, v) => I18n.t(s, v), lerLS, gravarLS, mobile: () => MOBILE, comServidor: () => true,
+    /* Shared world (server_world.mjs): the server rolls the bite and puts the fish on the map for everyone; the reel tells it
+       a dry spot next to you to land on. Without a world server, the local stand-in above answers. */
+    enviar: m => {
+      if (!Mundo.estaAtivo()) return pescaEnviar(m);
+      if (m.t === 'pesca_puxar' && jogo.ash){
+        const a = jogo.ash;
+        for (const [d, g] of [[1.4, 0], [1.1, 0.6], [1.1, -0.6], [1.6, Math.PI / 2], [1.6, -Math.PI / 2]]){
+          const px = a.x + Math.sin((a.giro || 0) + g) * d, pz = a.z + Math.cos((a.giro || 0) + g) * d;
+          if (livre(px, pz) && !naAgua(px, pz)){ m = { ...m, costa: { x: +px.toFixed(2), z: +pz.toFixed(2) } }; break; }
+        }
+      }
+      return Rede.enviar(m);
+    },
     flutuar, chat: txt => Chat.sistema(txt), som: (n, o) => Som.tocar(n, o), efeito: (n, alvo, alto, o) => efeito(n, alvo, alto, o).catch?.(() => {}),
     naAgua, aguaEm, dentroDoMapa, chaoEm, itens: () => lerLS('itens', {}),
     bloqueado: () => Menus.aberto() || Troca.aberta() || !!falando,
-    corpoDe: id => (jogo.selvagens || []).find(s => s.pescaId === id) || null,
+    corpoDe: id => (jogo.selvagens || []).find(s => s.pescaId === id || (s.rede && s.id === id)) || null,
     mirar: s => { jogo.alvo = s; },
   });
   /* ===== MAP → FLY (Nov 2): travel to a Pokémon Center you have already walked into (LS `centrosVisitados`, recorded at the
@@ -9459,7 +9472,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');

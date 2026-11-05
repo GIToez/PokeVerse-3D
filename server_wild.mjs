@@ -303,8 +303,18 @@ export function criarWilds(ctx) {
     return defeat(ws, { id });
   }
 
+  /** The area this player stands in (the first one, with the same edge margin as a roll), or null. */
+  function areaOf(ws) {
+    const info = ws._info || {}, x = +info.x, z = +info.z;
+    if (!Number.isFinite(x) || !Number.isFinite(z)) return null;
+    const here = areasAt(ws._mapa, x, z, 0);
+    const near = here.length ? here : areasAt(ws._mapa, x, z, BOX_MARGIN);
+    return near.length ? +near[0] : null;
+  }
+
   return {
     rollAt,
+    areaOf,
     award: (ws, wild) => {
       const out = award(ws, wild);
       if (out) ctx.enviar(ws, out);
