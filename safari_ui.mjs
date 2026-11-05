@@ -29,7 +29,11 @@ function montarBarra() {
 #safari-acoes button.off{opacity:.45;cursor:default}
 #safari-acoes .sa-ic{font-size:20px;line-height:1}
 #safari-acoes kbd{min-width:20px;height:20px;padding:0 4px;border-radius:5px;background:#F8C237;color:#1d2b45;font:800 12px 'Baloo 2',system-ui;display:inline-grid;place-items:center}
-body.mobile #safari-acoes kbd{display:none}`;
+body.mobile #safari-acoes kbd{display:none}
+body.mobile #safari-acoes{flex-direction:column}
+body.mobile #safari-acoes button{height:46px;padding:0 14px 0 10px;font-size:15px}
+/* During a visit the Pokémon stay in their Balls: their moves and the item hotkeys have nothing to do, so they make room */
+body.em-safari #skills,body.em-safari #sk1,body.em-safari #sk2,body.em-safari #sk3,body.em-safari #sk4,body.em-safari #atalhos,body.em-safari #atalhos-v2{visibility:hidden!important;pointer-events:none!important}`;
   document.head.appendChild(st);
   for (const b of barra.querySelectorAll('button')) {
     b.addEventListener('pointerdown', ev => ev.stopPropagation());
@@ -52,9 +56,15 @@ function pintarBarra(viva, a) {
     el.classList.toggle('off', !alvo);
     el.title = alvo ? tr(isca ? 'Throw bait: it eats and is less likely to flee, but harder to catch' : 'Throw a rock: easier to catch, but more likely to flee') : tr('Face a wild Pokémon first');
   }
-  const r = a.getBoundingClientRect();
-  b.style.left = Math.round(r.right - b.offsetWidth) + 'px';
-  b.style.top = Math.round(r.bottom + 8) + 'px';
+  const bola = document.body.classList.contains('mobile') ? document.getElementById('bola-btn')?.getBoundingClientRect() : null;
+  if (bola && bola.width) {                                                 /* phone: beside the ball button, where the hotkeys were */
+    b.style.left = Math.round(bola.left - 12 - b.offsetWidth) + 'px';
+    b.style.top = Math.round(bola.top + bola.height / 2 - b.offsetHeight / 2) + 'px';
+  } else {
+    const r = a.getBoundingClientRect();
+    b.style.left = Math.round(r.right - b.offsetWidth) + 'px';
+    b.style.top = Math.round(r.bottom + 8) + 'px';
+  }
 }
 
 export const relogio = (ms) => {
@@ -80,11 +90,13 @@ export function painel(sessao) {
     a.style.zIndex = '33';
     const raid = document.getElementById('alerta-raid');
     const r = raid && !raid.hidden && raid.style.display !== 'none' && raid.offsetParent !== null ? raid.getBoundingClientRect() : null;
-    const pos = r && r.width ? [Math.max(8, r.right - w), r.bottom + 8 * k] : [innerWidth - 16 - w, 248];
+    const mm = document.getElementById('minimapa')?.getBoundingClientRect();   // otherwise right under the minimap (a fixed 248 px sat on the phone's move buttons)
+    const pos = r && r.width ? [Math.max(8, r.right - w), r.bottom + 8 * k] : mm && mm.width ? [Math.max(8, mm.right - w), mm.bottom + 8 * k] : [innerWidth - 16 - w, 248];
     const chave = pos.map(Math.round).join(',') + '|' + innerWidth;
     if (chave !== ultimoPainel || a.hidden) { Hud.sitEm(a, pos[0], pos[1], 'topo'); ultimoPainel = chave; }
   }
   Hud.sitMostrar(a, viva);
+  document.body.classList.toggle('em-safari', viva);
   pintarBarra(viva, a);
   return true;
 }
