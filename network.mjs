@@ -1,537 +1,2196 @@
-/* Rede do cliente — FASE 1 (05/09/2026): presença e chat de verdade.
- * Conecta no servidor de `servidor/server.mjs` (WebSocket), manda a posição/animação do jogador ~10× por segundo quando
- * ela muda, e monta na cena os OUTROS jogadores do mesmo mapa (modelo do treinador com a roupa deles, nome em cima da cabeça,
- * o parceiro seguindo). O chat manda Local/Global/Trade/Help pro servidor e recebe o que os outros falam.
- * Sem servidor no ar o jogo continua igual: tenta reconectar em silêncio (2 s, 4 s… até 30 s).
- *   ?servidor=ws://host:porta  → outro servidor (padrão: ws://<host da página>:5190)
- *   ?rede=0                    → não conecta
- * O `index.html` chama `Rede.instalar(ctx)` depois do nascimento do jogador e `Rede.quadro(dt)` no fim de cada quadro.
- */
-let ctx = null, ws = null, url = '', id = null, estado = 'desligado', tentativas = 0, timer = null;
-const outros = new Map();                    // id → { id, nome, alvo:{x,y,z,giro}, anim, ent, par, parceiroGlb, removido }
-let ultimoEnvio = { x: 0, z: 0, giro: 0, anim: '', quando: 0, area: null, px: 0, pz: 0, pg: 0, pa: '' };
+let ctx = null,
+  ws = null,
+  url = '',
+  id = null,
+  estado = 'desligado',
+  tentativas = 0,
+  timer = null;
+const outros = new Map();
+let ultimoEnvio = {
+  x: 0,
+  z: 0,
+  giro: 0,
+  anim: '',
+  quando: 0,
+  area: null,
+  px: 0,
+  pz: 0,
+  pg: 0,
+  pa: '',
+  tq: -1,
+  tm: 0,
+  mexeu: false,
+};
+let tQuadro = 0;
 let ping = { enviado: 0, ms: null };
-let ultimoPar = null, ultimoUid = null, ultimaRoupa = null, ultimoTitulo = null, tAparencia = 0, ultimaMont = null;   // ultimaMont (14/09): a montaria que a sala já sabe   // ultimoUid: qual Pokémon está em campo (passo 3: o XP e o dano caem nele); ultimoTitulo: o título sob o nome (12/09)
-import * as Conta from './account.mjs';                                    // a bolsa que o servidor manda é escrita por ele (sem depender do ctx)
-import * as Evento from './event.mjs';                                  // Fase 3 do painel: multiplicadores do evento ao vivo ({t:'evento'})
-import * as PrefAparelho from './device_prefs.mjs';                    // Settings → "Other players' names" (per device)
-export const VERSAO_REDE = 22;                                            // 22: a same-map door is stored, so a refresh stays on the far side
-/** Pokémon walking beside you. The Safari grass keeps yours in the Ball, so the room does not draw one. */
-function parceiroNoMundo(){
-  const j = ctx?.jogo;
-  if (!j || j.semParceiro || j.pika?.recolhidoSafari) return null;
-  return j.pika || null;
+let ultimoPar = null,
+  ultimoUid = null,
+  ultimaRoupa = null,
+  ultimoTitulo = null,
+  tAparencia = 0,
+  ultimaMont = null;
+import * as Relogio from './clock.mjs';
+import * as Conta from './account.mjs';
+import * as Pref from './device_prefs.mjs';
+import * as Lotacao from './capacity.mjs';
+import { t as tr, local as localDoIdioma, tExato, dataDasVars } from './i18n.mjs';
+import { textoAviso } from './market.mjs';
+import * as TerrenoEstado from './plot_state.mjs';
+import * as Balao from './chat_bubble.mjs';
+import * as Interp from './interpolation.mjs';
+export const VERSAO_REDE = 50;
+let comConta = false;
+let portaVivaAnunciada = false;
+export const portaViva = () => portaVivaAnunciada && !desligado && !!ws && ws.readyState === 1;
+let troca = null,
+  filaDaSala = null,
+  bemvindoDaSala = null,
+  posParado = false,
+  posParadoEm = 0,
+  mudo = false;
+const PRAZO_TROCA = 4000;
+export function trocarDeSala(a) {
+  if (!portaViva() || troca || filaDaSala || mudo) return Promise.resolve({ silencio: true });
+  return new Promise((b) => {
+    const t = { porta: +a.porta, mapa: String(a.mapa), timer: 0 };
+    t.fim = (r) => {
+      if (troca !== t) return;
+      troca = null;
+      clearTimeout(t.timer);
+      if (r.silencio) mudo = true;
+      else if (!r.ok) posParado = false;
+      b(r);
+    };
+    troca = t;
+    posParado = true;
+    posParadoEm = performance.now();
+    t.timer = setTimeout(() => t.fim({ silencio: true }), PRAZO_TROCA);
+    if (!enviar({ ...a, t: 'mapa' })) t.fim({ silencio: true });
+  });
 }
-
-export function instalar(c){
+function bemvindoDaTroca(m) {
+  if (String(m.mapa) !== troca.mapa) {
+    troca.fim({ silencio: true });
+    return;
+  }
+  id = m.id;
+  portaVivaAnunciada = m.portaViva === true;
+  if (m.agora) Relogio.acertar(m.agora);
+  if (m.correio != null) ctx.correio?.({ t: 'correio_contagem', naoLidas: m.correio });
+  if (m.diamantes) ctx.conta?.definirDiamantes?.(m.diamantes);
+  if (m.respawn) ctx.respawnDoServidor?.(m.respawn);
+  if (m.compras) Conta.aplicarBolsa({ compras: m.compras });
+  if (m.caca) ctx.cacaVista?.(m.caca);
+  ctx.minhaGuilda?.(m.guilda || null);
+  bemvindoDaSala = m;
+  filaDaSala = [];
+  troca.fim({ ok: true });
+}
+export function largarOutros() {
+  for (const o of [...outros.values()]) remover(o);
+}
+export function salaPronta() {
+  const m = bemvindoDaSala,
+    a = filaDaSala || [];
+  bemvindoDaSala = null;
+  filaDaSala = null;
+  posParado = false;
+  if (m && ws && ws.readyState === 1) {
+    for (const j of m.jogadores || []) adicionar(j);
+    ctx.mundo?.ligar(m.id, m.selvagens || []);
+  }
+  for (const q of a)
+    try {
+      receber(q);
+    } catch (e) {
+      console.warn('network: the new room queue (' + q?.t + ')', e);
+    }
+  mandarPos(performance.now(), true);
+}
+export function instalar(c) {
   ctx = c;
+  TerrenoEstado.instalar({
+    enviar,
+    ligado: () => estado === 'ligado' && id != null && comConta && !desligado,
+    chat: (t) => ctx?.Chat?.sistemaCru?.(t),
+  });
   const p = new URLSearchParams(location.search);
-  if (p.get('rede') === '0') return;
-  url = p.get('servidor') || (location.protocol === 'https:' ? 'wss://' + location.host + '/servidor' : 'ws://' + location.hostname + ':5190');   // no site (HTTPS) o servidor fica atrás de /servidor no mesmo host (12/09); local segue :5190
+  ligarFundo();
+  ligarRelogioDeEnvio();
+  url =
+    Conta.servidorDaUrl(p)?.href ||
+    (location.protocol === 'https:' ? 'wss://' + location.host + '/servidor' : 'ws://' + location.hostname + ':5190');
   conectar();
 }
 export const estadoRede = () => ({ estado, id, url, outros: outros.size, ping: ping.ms });
-let soloWilds = false;                                                       // servidor dev local: os selvagens nascem no aparelho (sem servidor de mundo)
-export const selvagensDoAparelho = () => soloWilds && estado === 'ligado';  // aí a captura de selvagem local vale, e quem registra o Pokémon é o servidor (posse_capturar)
-export const outroPor = id => outros.get(id) || null;                       // a entidade de outro jogador (a bola dele sai da mão dele)
-export const listaOutros = () => [...outros.values()].map(o => ({ id: o.id, nome: o.nome, x: o.ent?.x, z: o.ent?.z, anim: o.anim, pronto: !!o.ent, parceiro: o.parceiroGlb, montaria: o.mont?.glb || null, montariaPedida: o.montaria || null, alturaPar: o.par?.altura, escalaPar: o.par?.pivo.scale.x, px: o.par?.x, pz: o.par?.z, pgiro: o.par?.giro }));
-
-function conectar(){
+export const outroPor = (a) => outros.get(a) || null;
+export const listaOutros = () =>
+  [...outros.values()].map((o) => ({
+    id: o.id,
+    nome: o.nome,
+    x: o.ent?.x,
+    z: o.ent?.z,
+    anim: o.anim,
+    pronto: !!o.ent,
+    oculto: !!o.oculto,
+    longe: !!o.longe,
+    parceiro: o.parceiroGlb,
+    montaria: o.mont?.glb || null,
+    montariaPedida: o.montaria || null,
+    alturaPar: o.par?.altura,
+    escalaPar: o.par?.pivo.scale.x,
+    px: o.par?.x,
+    pz: o.par?.z,
+    pgiro: o.par?.giro,
+    seguidorStaff: o.segStaff?.glb || null,
+    seguidorShiny: !!o.segStaff?.shiny,
+    seguidorPronto: !!o.seg,
+    sx: o.seg?.x,
+    sz: o.seg?.z,
+  }));
+function conectar() {
   if (!url || ws) return;
   estado = 'conectando';
   let s;
-  try { s = new WebSocket(url); } catch { agendar(); return; }
+  try {
+    s = new WebSocket(url);
+  } catch {
+    agendar();
+    return;
+  }
   ws = s;
-  s.onopen = () => { estado = 'ligado'; tentativas = 0; entrar(); };
-  s.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch { return; } receber(m); };
+  s.onopen = () => {
+    estado = 'ligado';
+    tentativas = 0;
+    jaLigou = true;
+    recebidaEm = performance.now();
+    entrar();
+  };
+  s.onmessage = (a) => {
+    recebidaEm = performance.now();
+    let m;
+    try {
+      m = JSON.parse(a.data);
+    } catch {
+      return;
+    }
+    receber(m);
+  };
   s.onerror = () => {};
   s.onclose = () => {
-    const estava = estado === 'ligado';
-    ws = null; id = null; estado = 'desligado';
-    if (desligado){ for (const o of [...outros.values()]) remover(o); ctx.mundo?.desligar(); return; }   // saiu de propósito: não reconecta
-    for (const o of [...outros.values()]) remover(o);
-    ctx.mundo?.desligar();                                              // os selvagens da rede viram locais até reconectar
-    /* A VAGA DA BATALHA MORRE COM O SOCKET (revisão de 20/09): desde que o segundo pedido passou a ser recusado com `ocupado`
-       (em vez de tomar a vaga do primeiro), uma vaga presa TRANCA a batalha. A jogada que estava no ar quando a conexão caiu
-       nunca é respondida, e a vaga só se soltava sozinha 12 s depois: nesse meio-tempo o jogo já reconectou, o jogador volta
-       no treinador e o `bat_desafiar` leva "espere a resposta da jogada anterior" — a luta simplesmente não abre. */
-    largarBatalha('a conexão caiu no meio da jogada');
-    if (estava) ctx.Chat?.sistema('A conexão com o servidor caiu. Tentando de novo…');
-    agendar();
+    if (ws === s) aoFechar();
   };
 }
-function agendar(){ if (desligado) return; clearTimeout(timer); const espera = Math.min(30000, 2000 * Math.pow(2, tentativas++)); timer = setTimeout(conectar, espera); }
-/* A conta entrou em outro aparelho (10/09): o servidor manda `saia` e daqui em diante NÃO se reconecta — senão os dois
-   aparelhos ficam se derrubando em revezamento, cada um gravando o seu save por cima do outro. */
+function aoFechar() {
+  const a = estado === 'ligado';
+  const b = a && id == null;
+  ws = null;
+  id = null;
+  estado = 'desligado';
+  if (troca) troca.fim({ silencio: true });
+  filaDaSala = null;
+  bemvindoDaSala = null;
+  comConta = false;
+  TerrenoEstado.desconectou();
+  if (desligado) {
+    for (const o of [...outros.values()]) remover(o);
+    ctx.mundo?.desligar();
+    return;
+  }
+  for (const o of [...outros.values()]) remover(o);
+  ctx.mundo?.desligar();
+  if (b) Conta.conferirSessao?.().catch(() => {});
+  if (!largarBatalha('the connection dropped mid-move')) ctx.batalhaCaiu?.();
+  if (a) avisarQueda();
+  else if (!jaLigou && tentativas === 2) avisarQueda(true);
+  agendar();
+}
+const QUEDA = {
+  instavel: 'Your connection dropped. Reconnecting…',
+  offline: "No internet on this device. The game will reconnect automatically when it's back.",
+  servidor: "The server isn't responding right now (it may be restarting). The game will reconnect automatically.",
+  ok: 'The connection dropped for a moment. Reconnecting…',
+};
+const PRIMEIRA = {
+  instavel: 'Your connection is unstable: still trying to reach the server…',
+  offline: QUEDA.offline,
+  servidor: QUEDA.servidor,
+};
+let jaLigou = false,
+  ultimaQueda = { t: -1e9, diag: '' },
+  ultimoDiag = -1e9;
+async function avisarQueda(a = false) {
+  if (performance.now() - ultimoDiag < 5000) return;
+  ultimoDiag = performance.now();
+  let b = 'instavel';
+  try {
+    b = await Conta.diagnosticarRede(5000);
+  } catch {}
+  if (desligado || estado === 'ligado') return;
+  const c = (a ? PRIMEIRA : QUEDA)[b];
+  if (!c) return;
+  const d = performance.now();
+  if (b === ultimaQueda.diag && d - ultimaQueda.t < 20000) return;
+  ultimaQueda = { t: d, diag: b };
+  ctx.Chat?.sistema(c);
+}
+function reconectarJa() {
+  if (desligado || ws || !url) return;
+  clearTimeout(timer);
+  conectar();
+}
+let recebidaEm = 0;
+const PING_MS = 20000,
+  VIGIA_MS = 45000;
+const pingComMedida = (a = false) => {
+  const m = {
+    t: 'ping',
+    hora: Date.now(),
+    ms: ping.ms ?? null,
+    fps: (() => {
+      try {
+        return ctx?.fpsMedio?.() ?? null;
+      } catch {
+        return null;
+      }
+    })(),
+  };
+  try {
+    const b = ctx?.quadroMedio?.();
+    if (b) m.qd = b;
+  } catch {}
+  if (a)
+    try {
+      const c = ctx?.aparelho?.();
+      if (c) m.ap = c;
+    } catch {}
+  return m;
+};
+function pingDeFundo() {
+  if (estado === 'ligado' && id != null) {
+    ping.enviado = performance.now();
+    enviar(pingComMedida());
+  }
+}
+function vigiar() {
+  if (estado !== 'ligado' || !ws || document.hidden) return;
+  if (performance.now() - recebidaEm < VIGIA_MS) return;
+  const s = ws;
+  ws = null;
+  try {
+    s.onclose = null;
+    s.onmessage = null;
+    s.close();
+  } catch {}
+  console.warn('network: nothing arrived in ' + Math.round(VIGIA_MS / 1000) + ' s with the tab visible — reconnecting');
+  aoFechar();
+}
+let fundoLigado = false;
+function ligarFundo() {
+  if (fundoLigado || typeof document === 'undefined') return;
+  fundoLigado = true;
+  setInterval(pingDeFundo, PING_MS);
+  setInterval(vigiar, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      const a = ctx?.jogo?.ash;
+      if (!a || estado !== 'ligado' || id == null || posParado) return;
+      const b = performance.now(),
+        c = Interp.marcaDeEnvio(b, ultimoEnvio.tm);
+      enviar({
+        t: 'pos',
+        x: +a.x.toFixed(2),
+        y: +a.y.toFixed(2),
+        z: +a.z.toFixed(2),
+        giro: +(a.giro || 0).toFixed(3),
+        anim: 'Idle',
+        ...semChaoAgora(),
+        tm: c,
+        ...saltosAgora(),
+      });
+      ultimoEnvio = {
+        ...ultimoEnvio,
+        x: a.x,
+        z: a.z,
+        anim: 'Idle',
+        quando: b,
+        tm: c,
+        mexeu: false,
+        tq: Math.max(ultimoEnvio.tq, tQuadro),
+      };
+    } else {
+      recebidaEm = Math.max(recebidaEm, performance.now());
+      pingDeFundo();
+      reconectarJa();
+    }
+  });
+  addEventListener('online', reconectarJa);
+}
+const semChaoAgora = () => {
+  try {
+    return ctx?.semChao?.() ? { semChao: 1 } : {};
+  } catch {
+    return {};
+  }
+};
+function agendar() {
+  if (desligado) return;
+  clearTimeout(timer);
+  const a = Math.min(30000, 2000 * Math.pow(2, tentativas++));
+  timer = setTimeout(conectar, a);
+}
 let desligado = false;
 export const foiDesligado = () => desligado;
-export function enviar(obj){ if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(obj)); return true; } catch {} } return false; }   // devolve se FOI (passo 6: a conta segura o que não foi)   // exportado: o mundo compartilhado (world.mjs) manda por aqui
-/** Tell the server this position is a door landing, before the next walk sample. */
-export function enviarPorta(chegada){
-  const a = ctx?.jogo?.ash;
-  if (!a || !(+chegada > 0)) return false;
-  const giro = a.giro || 0, anim = a.anim || 'Idle';
-  const foi = enviar({ t: 'pos', x: +a.x.toFixed(2), y: +(a.y || 0).toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, porta: 1, chegada: +chegada });
-  if (foi) ultimoEnvio = { ...ultimoEnvio, x: a.x, z: a.z, giro, anim, quando: performance.now() };
-  return foi;
-}
-let wildRollWait = null;
-/** Ask the server to roll one wild in this area. Resolves to the spawn, or null. */
-export function pedirWild(area, water, hour, clima){   // hour/clima only count for staff testing with /time and /weather
-  if (wildRollWait || !enviar({ t: 'wild_roll', area, water: !!water, hour, ...(clima !== undefined ? { clima } : {}) })) return Promise.resolve(null);
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { if (wildRollWait?.resolve === resolve) wildRollWait = null; resolve(null); }, 2500);
-    wildRollWait = { resolve, timer };
+if (typeof addEventListener === 'function')
+  addEventListener('conta-encerrada', () => {
+    desligado = true;
+    clearTimeout(timer);
+    try {
+      ws?.close();
+    } catch {}
   });
+export const textoModErro = (a) => (a ? '⚠ ' + tr(String(a)) + '.' : '⚠ ' + tr("That didn't work."));
+export const textoErro = (a, b = "That didn't work.") => {
+  const s = String(a || b),
+    t = NO_IDIOMA.has(s) ? s : String(tr(s));
+  return '⚠ ' + (/[.!?…]$/.test(t) ? t : t + '.');
+};
+const NO_IDIOMA = new Set();
+export function recusaDaBolsa(m) {
+  const o = { erro: String(m?.erro || 'recusado') };
+  if (typeof m?.codigo === 'string' && /^[\w-]{1,32}$/.test(m.codigo)) o.codigo = m.codigo;
+  if (typeof m?.modelo === 'string' && m.modelo && m.modelo.length <= 240) {
+    const t = String(tr(m.modelo, varsDoServidor(m.vars)));
+    if (t.trim() && !/\{\w+\}/.test(t)) {
+      o.erro = t;
+      o.cru = true;
+      NO_IDIOMA.add(t);
+      if (NO_IDIOMA.size > 32) NO_IDIOMA.delete(NO_IDIOMA.values().next().value);
+    }
+  }
+  return o;
 }
-function entrar(){
+export function varsDoServidor(v) {
+  const o = Object.create(null);
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return o;
+  for (const k of Object.keys(v))
+    if (/^\w{1,24}$/.test(k))
+      o[k] = typeof v[k] === 'string' || (typeof v[k] === 'number' && Number.isFinite(v[k])) ? v[k] : '';
+  return dataDasVars(o);
+}
+export const temVars = (m) => !!m?.vars && typeof m.vars === 'object' && !Array.isArray(m.vars);
+export const textoSistema = (m) => tr(String(m?.texto ?? ''), temVars(m) ? varsDoServidor(m.vars) : null);
+export function textoInvasao(m) {
+  if (!temVars(m)) return tExato(String(m?.texto || ''));
+  const v = varsDoServidor(m.vars);
+  if (typeof v.y === 'string') v.y = tExato(v.y);
+  return tr(String(m?.texto ?? ''), v);
+}
+export function enviar(a) {
+  if (ws && ws.readyState === 1) {
+    try {
+      ws.send(JSON.stringify(a));
+      return true;
+    } catch {}
+  }
+  return false;
+}
+function entrar() {
   const a = ctx.jogo?.ash;
-  if (!a){ setTimeout(entrar, 500); return; }
-  const pk = parceiroNoMundo();                                        // jogo novo, ou Safari: sem Pokémon no campo até sair da área
-  enviar({ t: 'entrar', token: ctx.token?.() || null, nome: ctx.nomeJogador(), mapa: ctx.mapa, chegada: ctx.chegada?.() || null, porta: ctx.portaFresca?.() ? 1 : 0, area: ctx.area?.() || null, x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +(a.giro || 0).toFixed(3),
-           anim: a.anim || 'Idle', personagem: ctx.Personagem?.ler?.() || null, parceiro: pk?.glb || null, shiny: !!pk?.shiny, uid: ctx.uidParceiro?.() ?? null, montaria: ctx.jogo?.montaria?.glb || null, titulo: ctx.tituloAtual?.() || '', versao: VERSAO_REDE,
-           ...(pk ? { px: +pk.x.toFixed(2), pz: +pk.z.toFixed(2), pg: +(pk.giro || 0).toFixed(3), pa: pk.anim || 'Idle' } : {}) });   // onde o parceiro está DE VERDADE (os outros o desenhavam numa formação fixa)
-  ping.enviado = performance.now(); enviar({ t: 'ping', hora: Date.now() });
+  if (!a) {
+    setTimeout(entrar, 500);
+    return;
+  }
+  if (posParado && performance.now() - posParadoEm < 15000) {
+    setTimeout(entrar, 300);
+    return;
+  }
+  const b = ctx.jogo.semParceiro ? null : ctx.jogo.pika;
+  enviar({
+    t: 'entrar',
+    token: ctx.token?.() || null,
+    nome: ctx.nomeJogador(),
+    mapa: ctx.mapa,
+    chegada: ctx.chegada?.() || null,
+    area: ctx.area?.() || null,
+    x: +a.x.toFixed(2),
+    y: +a.y.toFixed(2),
+    z: +a.z.toFixed(2),
+    giro: +(a.giro || 0).toFixed(3),
+    anim: a.anim || 'Idle',
+    personagem: (ctx.Personagem?.visual ?? ctx.Personagem?.ler)?.() || null,
+    parceiro: b?.glb || null,
+    shiny: !!b?.shiny,
+    uid: ctx.uidParceiro?.() ?? null,
+    montaria: ctx.jogo?.montaria?.glb || null,
+    voo: !!ctx.jogo?.montaria?.voa,
+    mshiny: !!(ctx.jogo?.montaria?.glb && ctx.jogo.montaria.shiny),
+    titulo: ctx.tituloAtual?.() || '',
+    versao: VERSAO_REDE,
+    ...(b ? { px: +b.x.toFixed(2), pz: +b.z.toFixed(2), pg: +(b.giro || 0).toFixed(3), pa: b.anim || 'Idle' } : {}),
+  });
+  ping.enviado = performance.now();
+  enviar(pingComMedida(true));
 }
-
-function receber(m){
-  /* PASSE DE PROGRESSO (fase 2, 19/09): o servidor manda `{t:'passe'}` ANTES da mensagem que faz baixar um modelo ou uma cena
-     (bemvindo, selvagem, parceiro, bat…). Grava o cookie aqui, síncrono e antes de tudo: a próxima mensagem já encontra o passe. */
-  if (m.t === 'passe'){ Conta.gravarPasse(m); return; }
+function posDeOutro(m) {
+  const o = outros.get(m.id);
+  if (!o) return;
+  const a = performance.now(),
+    b = o.alvoPar;
+  if (andou(o.alvo.x, o.alvo.z, m.x, m.z)) o.andouEm = a;
+  o.alvo = { x: m.x, y: m.y, z: m.z, giro: m.giro || 0, voo: Number.isFinite(+m.voo) ? +m.voo : null };
+  o.anim = m.anim || 'Idle';
+  if (m.px != null)
+    o.alvoPar = {
+      x: m.px,
+      z: m.pz,
+      giro: m.pg || 0,
+      anim: m.pa || 'Idle',
+      quando: !b || andou(b.x, b.z, m.px, m.pz) ? a : b.quando,
+    };
+  if (m.tm != null) Interp.receber((o.trilha ||= Interp.criarTrilha()), m, a);
+  else o.trilha = null;
+}
+function receber(m) {
+  if (m.t === 'passe') {
+    Conta.gravarPasse(m);
+    return;
+  }
+  if (mudo && m.t !== 'porta_ok' && m.t !== 'pong') return;
+  if (filaDaSala && m.t !== 'pong') {
+    filaDaSala.push(m);
+    return;
+  }
   if (m.bolsa) Conta.aplicarBolsa(m.bolsa);
   if (m.pago?.bolsa) Conta.aplicarBolsa(m.pago.bolsa);
-  if (m.fim?.bolsa) Conta.aplicarBolsa(m.fim.bolsa);                      // fim de batalha no servidor: insígnia e dinheiro do ginásio/treinador                    // 12/09: a recompensa de missão (`missao` → `pago.bolsa`) vinha aninhada e nunca era aplicada — o novato terminava a 1ª missão sem as 5 Pokébolas até relogar
-  if ((m.vidas || m.vida) && m.t !== 'bat' && !(m.t === 'pdano' && m.alvo !== id)) ctx.vidas?.(m.vidas || [m.vida]);   // pdano de OUTRO jogador nunca mexe na minha ficha (13/09: uid é por conta — o "1" dele é o meu inicial)   // passo 3: nível/XP/HP que o servidor acabou de mexer. `bat` fica de fora (12/09): o HP final chegava ANTES dos lances serem animados e o meu golpe era pulado ("atacante com hp 0"); a rodada aplica no fim                              // dinheiro/itens/bolas/insígnias do servidor viajam em várias mensagens (bolsa, posse, scapt)
-  switch (m.t){
+  if ((m.vidas || m.vida) && m.t !== 'bat' && !(m.t === 'pdano' && m.alvo !== id)) ctx.vidas?.(m.vidas || [m.vida]);
+  if (m.t === 'chat' && m.canal === 'local') {
+    try {
+      const o = outros.get(m.de?.id),
+        e = o?.ent;
+      if (e?.pivo) Balao.mostrar(e.pivo, e.rotulo?.position.y ?? (e.altura || 1.5) + 0.35, m.texto);
+    } catch {}
+  }
+  switch (m.t) {
     case 'bemvindo':
-      id = m.id;
-      ctx.conta?.entrouNoMundo?.();                                        // a trava de jogo agora é nossa: um 409 daqui em diante é conflito de verdade
-      for (const j of m.jogadores || []) adicionar(j);
-      soloWilds = !!m.soloWilds;
-      if (!m.soloWilds) ctx.mundo?.ligar(m.id, m.selvagens || []);       // fase 3a: selvagens da sala (servidor de mundo). O dev local manda soloWilds → o cliente nasce os selvagens sozinho (index), com batalha/captura locais
-      ctx.Chat?.sistema('Connected to the server' + (m.conta ? ' as ' + m.conta : '') + ': ' + (m.online || 1) + ' online, ' + ((m.jogadores || []).length + 1) + ' on this map.');
-      /* JOGO ATUALIZADO (10/09): o cliente se atualiza sozinho, como um MMO faz — antes ele só pedia "recarregue a
-         página", e quem estivesse jogando ficava com uma versão velha falando com o servidor novo. Recarrega UMA vez por
-         versão (o carimbo no sessionStorage evita laço se o arquivo servido continuar velho, por cache ou deploy pela metade). */
-      if (m.versao && m.versao > VERSAO_REDE){
-        /* Falha FECHADA: se o sessionStorage não grava (dados do site bloqueados, cota estourada, aba restaurada), a gente
-           NÃO recarrega — senão recarregaria pra sempre, que é justamente o "problema repetidamente" do celular. */
-        let jaTentou = true;
-        try { jaTentou = sessionStorage.getItem('versao.tentou') === String(m.versao); sessionStorage.setItem('versao.tentou', String(m.versao)); } catch { jaTentou = true; }
-        if (jaTentou) ctx.Chat?.sistema('⚠ O jogo foi atualizado no servidor. Feche e abra a página pra pegar a versão nova.');
-        else { desligado = true; clearTimeout(timer); import('./screens.mjs').then(T => T.atualizando()).catch(() => {}); setTimeout(() => { try { window.__telaCheia?.lembrar(); } catch {} location.reload(); }, 1400); }
-      }
-      return;
-    case 'entrou': adicionar(m.jogador); return;
-    case 'saiu': { const o = outros.get(m.id); if (o) remover(o); return; }
-    case 'pos': { const o = outros.get(m.id); if (!o) return; o.alvo = { x: m.x, y: m.y, z: m.z, giro: m.giro || 0 }; o.anim = m.anim || 'Idle'; o.quandoPos = performance.now(); if (m.px != null) o.alvoPar = { x: m.px, z: m.pz, giro: m.pg || 0, anim: m.pa || 'Idle', quando: performance.now() }; return; }
-    case 'parceiro': { const o = outros.get(m.id); if (!o) return; o.parceiroGlb = m.parceiro || null; o.pshiny = !!m.pshiny; o.montaria = m.montaria || null; if (o.ent) montarParceiro(o).then(() => montarMontariaOutro(o)).catch(e => console.warn('rede: parceiro novo de ' + o.nome, e)); return; }   // ele trocou de seguidor (inicial, Shift+Z, evolução)
-    case 'personagem': { const o = outros.get(m.id); if (!o) return;
-      { const sem = q => { try { const { efeitos, ...r } = q || {}; return JSON.stringify(r); } catch { return ''; } };   // only the aura/trail changed: no rebuild of the body
-        if (o.ent && sem(o.personagem) === sem(m.personagem)){ o.personagem = m.personagem || null; ctx.cosmeticoOutro?.(o); return; } }
-      const ap = o.alvoPar; const j = { id: o.id, nome: o.nome, cargo: o.cargo, titulo: o.titulo, x: o.ent?.x ?? o.alvo.x, y: o.alvo.y, z: o.ent?.z ?? o.alvo.z, giro: o.ent?.giro ?? o.alvo.giro, anim: o.anim, parceiro: o.parceiroGlb, montaria: o.montaria, personagem: m.personagem, ...(ap ? { px: o.par?.x ?? ap.x, pz: o.par?.z ?? ap.z, pg: ap.giro, pa: ap.anim } : {}) }; remover(o); adicionar(j); return; }   // trocou a roupa/skin: remonta (o parceiro fica onde estava; cargo/título seguem junto)
-    case 'titulo': { const o = outros.get(m.id); if (!o) return; o.titulo = m.titulo || ''; etiquetar(o); return; }   // mudou o título sob o nome (12/09)
-    case 'saia': {                                                       // a conta entrou de outro lugar: este aqui acabou
-      desligado = true; clearTimeout(timer);
-      ctx.conta?.pararSync?.();                                          // para de gravar, calado (quem explica é a tela)
-      import('./screens.mjs').then(T => T.derrubado(m.texto, m.motivo)).catch(() => alert(m.texto || 'You logged in from somewhere else.'));
-      try { ws?.close(); } catch {}
-      return;
-    }
-    case 'save': ctx.conta?.saveDoServidor?.(m.save, m.rev); return;   // passo 6: o servidor montou o save de novo (arranjo corrigido): vale o dele
-    case 'chat': {
-      ctx.Chat?.publicar(m.canal, m.texto, m.de?.nome || '?', m.de?.cargo || null);
-      const o = m.canal === 'local' && m.de?.id != null ? outros.get(String(m.de.id)) : null;   // speech bubble over whoever said it (same map only)
-      if (o?.ent?.pivo) ctx.balao?.(o.ent, m.texto);
-      return;
-    }
-    case 'sistema': ctx.Chat?.sistema(m.texto); return;
-    case 'invasao': ctx.invasao?.(m.texto); return;                      // INVASÃO (15/09): letreiro passante branco no topo, além do chat
-    case 'evento': { const txt = Evento.doServidor(m); if (txt) ctx.Chat?.sistema(txt); return; }   // Fase 3 do painel: EXP/shiny/densidade do evento ao vivo
-    case 'elite': ctx.elite?.(m); return;                                // ELITE FOUR (20/09): retrato da corrida (quem já caiu, se ela zerou) — só pra mostrar
-    case 'pong': ping.ms = Math.round(performance.now() - ping.enviado); return;
-    case 'volta': ctx.volta?.(m); return;                                // 18/09: entrada vetada pelo servidor (cena/chegada não batem com onde a conta parou) — recarrega na cena de antes
-    case 'porta_ok': { const e = portaEsperando; if (e && (e.chegada == null || +m.chegada === +e.chegada)){ portaEsperando = null; clearTimeout(e.timer); e.resolve(!!m.ok); } return; }   // resposta à intenção `porta` (passe da cena de destino)
-    case 'dm': case 'social': ctx.social?.(m); return;                   // fase 2b: mensagem direta / convite de amizade (menus.mjs)
-    case 'selvagem': case 'spos': case 'shp': case 'dono': case 'sestado': case 'scapt': case 'sumiu': case 'pdano': case 'xp': ctx.mundo?.receber(m); return;
-    case 'wild_spawn': {
-      const wait = wildRollWait; wildRollWait = null;
-      if (wait) { clearTimeout(wait.timer); wait.resolve(m.ok ? m : null); }
-      return;
-    }
-    case 'wild_exp': ctx.wildExp?.(m); return;
-    case 'raid': case 'raid_ir': case 'raid_voltar': case 'raid_fim':        // RAID AO VIVO (14/09, protocolo 15): estado da fila/luta, ida e volta da arena, prêmio (raid.mjs)
-      if (m.t === 'raid_fim' && m.save) ctx.conta?.saveDoServidor?.(m.save, m.rev);   // o Mew do prêmio entra no time pelo save montado no servidor (bolsa e vidas já foram aplicadas no topo)
-      ctx.raid?.receber?.(m); return;
-    case 'troca_convite': case 'troca_convidou': case 'troca_recusou': case 'troca_abriu': case 'troca_estado':
-    case 'troca_salvar': case 'troca_feita': case 'troca_cancelou': ctx.troca?.receber(m); return;   // fase 4: mesa de troca (trade.mjs)
-    case 'posse': case 'posse_erro': {                                   // posse dos Pokémon: resposta do servidor a um pedirPosse
-      const pend = posseEsperando.get(m.op); if (!pend) return;
-      posseEsperando.delete(m.op); clearTimeout(pend.timer);
-      pend.resolve(m.t === 'posse' ? m : { erro: m.erro || 'recusado' });
-      return;
-    }
-    case 'mod': case 'mod_erro': {                                       // moderação (08/09): a resposta vai pro chat de Sistema
-      const C = ctx.Chat;
-      if (m.t === 'mod_erro') return C?.sistema('⚠ ' + (m.erro || 'não deu') + '.');
-      if (m.op === 'online'){
-        const l = m.lista || [];
-        C?.sistema('👥 ' + l.length + ' online: ' + (l.map(x => x.nome + (x.conta ? ' (' + x.conta + ')' : ' [visitante]') + (x.gm ? ' ★' : '') + (x.mudo ? ' 🔇' : '') + ' · ' + (x.area || x.mapa)).join(' | ') || 'ninguém'));
-      } else if (m.op === 'ver'){
-        const q = m.banidoAte === -1 ? 'banido pra sempre' : m.banidoAte ? 'banido até ' + new Date(m.banidoAte).toLocaleString('pt-BR') : (m.mudoAte ? 'de mudo até ' + new Date(m.mudoAte).toLocaleTimeString('pt-BR') : 'sem nada');
-        C?.sistema('🔎 ' + m.usuario + (m.gm ? ' ★GM' : '') + ': ' + q + (m.motivo ? ' — ' + m.motivo : ''));
-      } else if (m.op === 'aviso') C?.sistema('📢 aviso enviado.');
-      else if (m.op === 'mudo') C?.sistema('🔇 ' + m.usuario + ' silenciado por ' + m.minutos + ' min.');
-      else if (m.op === 'kick') C?.sistema('⛔ ' + m.usuario + ' foi tirado (' + (m.derrubou || 0) + ' conexão).');
-      else if (m.op === 'banir') C?.sistema('⛔ ' + m.usuario + ' banido ' + (m.ate === -1 ? 'pra sempre' : 'até ' + new Date(m.ate).toLocaleString('pt-BR')) + '.');
-      else if (m.op === 'perdoar') C?.sistema('✅ ' + m.usuario + ' liberado.');
-      else if (m.op === 'tp') C?.sistema('🧭 ' + m.usuario + ' levado pra ' + (m.nome || m.mapa) + ' (' + m.x + ', ' + m.z + ')' + (m.derrubou ? ' — a cena dele já está recarregando lá.' : ' — nasce lá na próxima entrada.'));
-      else if (m.op === 'item') C?.sistema('🎁 ' + m.usuario + ' got ' + m.what + '.');
-      else if (m.op === 'diamantes') C?.sistema('💎 ' + m.usuario + ' got ' + m.n + ' Diamonds (balance ' + m.total + ').');
-      else if (m.op === 'patins') C?.sistema('🛼 ' + m.usuario + (m.ja ? ' already has Roller Skates.' : ' got Roller Skates.'));
-      else if (m.op === 'puxar') C?.sistema('🧲 ' + m.usuario + ' puxado até você' + (m.derrubou ? ' — a cena dele já está recarregando aqui.' : ' — está offline: nasce do seu lado na próxima entrada.'));
-      else if (m.op === 'ir'){                                           // Fase 3: /ir nome — no mesmo mapa, teleporta; noutro, o servidor manda `volta` (recarrega lá)
-        C?.sistema('🧭 Indo até ' + m.usuario + ' (' + m.mapa + ', ' + m.x + ', ' + m.z + ').');
-        if (m.mesmoMapa) ctx.teleportar?.(+m.x, +m.z);
-      }
-      return;
-    }
-    case 'missao': case 'missao_erro': {                                 // passo 5: o servidor conferiu um passo (ou recusou)
-      if (m.estado) ctx.missao?.(m);
-      else if (m.erro) ctx.Chat?.sistema('⚠ ' + m.erro + '.');
-      return;
-    }
-    case 'bat_convite':
-      ctx.batalhaConvite?.(m);
-      return;
-    case 'bat': case 'bat_erro': {                                       // batalha por turnos conduzida pelo servidor (passo 4)
-      const pend = batEsperando;
-      if (!pend) {
-        if (m.t === 'bat' && (m.abrir || m.pvp) && !m.erro) ctx.batalhaAbrir?.(m);
-        else if (m.t === 'bat' && m.fim) ctx.batalhaFim?.(m);
+      if (troca) {
+        bemvindoDaTroca(m);
         return;
       }
-      batEsperando = null; clearTimeout(pend.timer);
-      pend.resolve(m.t === 'bat' ? m : { erro: m.erro || m.error || 'refused', error: m.error || m.erro || 'refused', code: m.code || m.codigo || null, vez: m.vez ?? null, espera: m.espera ?? null });
+      id = m.id;
+      portaVivaAnunciada = m.portaViva === true;
+      if (m.agora) Relogio.acertar(m.agora);
+      if (m.correio != null) ctx.correio?.({ t: 'correio_contagem', naoLidas: m.correio });
+      if (m.diamantes) ctx.conta?.definirDiamantes?.(m.diamantes);
+      if (m.respawn) ctx.respawnDoServidor?.(m.respawn);
+      if (m.compras) Conta.aplicarBolsa({ compras: m.compras });
+      if (m.caca) ctx.cacaVista?.(m.caca);
+      ctx.minhaGuilda?.(m.guilda || null);
+      if (m.conta) ctx.progressaoEntrou?.();
+      if (m.conta) ctx.modoStaff?.(m.staff ? { t: 'staff', ...m.staff } : { t: 'staff', fora: true });
+      ctx.conta?.entrouNoMundo?.(m.versao);
+      comConta = !!m.conta;
+      TerrenoEstado.conectou();
+      if (m.conta) enviar({ t: 'bat_consultar' });
+      for (const j of m.jogadores || []) adicionar(j);
+      ctx.mundo?.ligar(m.id, m.selvagens || []);
+      ctx.Chat?.sistemaCru?.(
+        tr(
+          m.conta
+            ? 'Connected to the server as {x}: {n} online, {m} on this map.'
+            : 'Connected to the server: {n} online, {m} on this map.',
+          { x: m.conta, n: m.online || 1, m: (m.jogadores || []).length + 1 },
+        ),
+      );
+      if (m.versao && m.versao > VERSAO_REDE) {
+        let c = true;
+        try {
+          c = sessionStorage.getItem('versao.tentou') === String(m.versao);
+          sessionStorage.setItem('versao.tentou', String(m.versao));
+        } catch {
+          c = true;
+        }
+        if (c)
+          ctx.Chat?.sistema('⚠ The game was updated on the server. Close and reopen the page to get the new version.');
+        else {
+          desligado = true;
+          clearTimeout(timer);
+          Conta.telas()
+            .then((T) => T.atualizando())
+            .catch(() => {});
+          setTimeout(
+            () => {
+              try {
+                window.__telaCheia?.lembrar();
+              } catch {}
+              location.reload();
+            },
+            1400 + Math.floor(Math.random() * 4000),
+          );
+        }
+      }
+      return;
+    case 'entrou':
+      adicionar(m.jogador);
+      return;
+    case 'saiu': {
+      const o = outros.get(m.id);
+      if (o) remover(o);
       return;
     }
-    case 'vida': case 'vida_erro': {                                     // resposta da cura completa
-      const pend = vidaEsperando; if (!pend) return;
-      vidaEsperando = null; clearTimeout(pend.timer);
-      pend.resolve(m.t === 'vida' ? m : { erro: m.erro || 'recusado' });
+    case 'pos':
+      posDeOutro(m);
+      return;
+    case 'lote': {
+      if (Array.isArray(m.p)) for (const e of m.p) if (e && typeof e === 'object') posDeOutro(e);
+      if (Array.isArray(m.s) && ctx.mundo)
+        for (const e of m.s)
+          if (e && typeof e === 'object') {
+            e.t = 'spos';
+            ctx.mundo.receber(e);
+          }
       return;
     }
-    case 'bolsa': case 'bolsa_erro': {                                   // bolsa: dinheiro/itens/bolas/insígnias (o retrato vem junto)
-      const pend = bolsaEsperando.get(m.op); if (!pend) return;
-      bolsaEsperando.delete(m.op); clearTimeout(pend.timer);
-      pend.resolve(m.t === 'bolsa' ? m : { erro: m.erro || 'recusado' });
-      return;
-    }   // fase 3a: mundo compartilhado (world.mjs)
-    case 'mercado': case 'mercado_erro': {
-      const pend = mercadoEsperando.get(m.op); if (!pend) return;
-      mercadoEsperando.delete(m.op); clearTimeout(pend.timer);
-      pend.resolve(m.t === 'mercado' ? m : { erro: m.erro || 'refused' });
+    case 'parceiro': {
+      const o = outros.get(m.id);
+      if (!o) return;
+      o.parceiroGlb = m.parceiro || null;
+      o.pshiny = !!m.pshiny;
+      o.montaria = m.montaria || null;
+      o.voo = !!m.voo;
+      o.mshiny = !!(m.montaria && m.mshiny);
+      if (o.mont) o.mont.voa = o.voo;
+      const d = m.transf && o.par ? { x: o.par.x, y: o.par.y, z: o.par.z, giro: o.par.giro } : null;
+      if (o.ent)
+        montarParceiro(o)
+          .then(() => {
+            if (m.transf && o.par) {
+              if (d) {
+                const q = o.par;
+                q.x = q.vx = d.x;
+                q.z = q.vz = d.z;
+                q.y = q.vy = d.y;
+                q.giro = d.giro ?? q.giro;
+                q.pivo.position.set(q.x, q.y, q.z);
+              }
+              if (!o.longe) ctx.efeitoTransf?.(o.par, m.transf);
+            }
+            return montarMontariaOutro(o);
+          })
+          .catch((e) => console.warn('network: new partner of ' + o.nome, e));
       return;
     }
-    case 'mercado_aviso': ctx.mercadoAviso?.(m.aviso); return;
+    case 'personagem': {
+      const o = outros.get(m.id);
+      if (!o) return;
+      const f = o.alvoPar;
+      const j = {
+        id: o.id,
+        nome: o.nome,
+        cargo: o.cargo,
+        titulo: o.titulo,
+        x: o.ent?.x ?? o.alvo.x,
+        y: o.alvo.y,
+        z: o.ent?.z ?? o.alvo.z,
+        giro: o.ent?.giro ?? o.alvo.giro,
+        anim: o.anim,
+        parceiro: o.parceiroGlb,
+        pshiny: o.pshiny,
+        montaria: o.montaria,
+        voo: o.voo,
+        mshiny: o.mshiny,
+        seguidorStaff: o.segStaff,
+        personagem: m.personagem,
+        ...(f ? { px: o.par?.x ?? f.x, pz: o.par?.z ?? f.z, pg: f.giro, pa: f.anim } : {}),
+      };
+      remover(o);
+      adicionar(j);
+      return;
+    }
+    case 'titulo': {
+      const o = outros.get(m.id);
+      if (!o) return;
+      o.titulo = m.titulo || '';
+      etiquetar(o);
+      return;
+    }
+    case 'staff':
+    case 'staff_erro':
+      ctx.modoStaff?.(m);
+      return;
+    case 'seguidor_staff': {
+      const o = outros.get(m.id);
+      if (!o) return;
+      o.segStaff = seguidorValido(m.seguidor);
+      if (o.ent) montarSeguidorStaff(o).catch((e) => console.warn('network: staff follower ' + o.nome, e));
+      return;
+    }
+    case 'cargo': {
+      const q = Conta.cargoDe(m.cargo) ? m.cargo : null;
+      if (m.id === id) {
+        Conta.definirMeuCargo?.(q);
+        try {
+          ctx.meuCargo?.(q);
+        } catch {}
+        return;
+      }
+      const o = outros.get(m.id);
+      if (!o) return;
+      o.cargo = q;
+      etiquetar(o);
+      return;
+    }
+    case 'guilda_tag': {
+      if (m.id === id) {
+        ctx.minhaGuilda?.(m.guilda || null);
+        return;
+      }
+      const o = outros.get(m.id);
+      if (!o) return;
+      o.guilda = m.guilda || null;
+      etiquetar(o);
+      return;
+    }
+    case 'saia': {
+      desligado = true;
+      clearTimeout(timer);
+      ctx.conta?.pararSync?.();
+      const g = temVars(m) ? textoSistema(m) : m.texto;
+      Conta.telas()
+        .then((T) =>
+          T.derrubado(g, m.motivo, {
+            cru: temVars(m),
+            voltar: m.motivo === 'banido' ? () => Conta.voltarProLogin() : null,
+          }),
+        )
+        .catch(() => alert(g || 'Você entrou de outro lugar.'));
+      try {
+        ws?.close();
+      } catch {}
+      return;
+    }
+    case 'diamantes':
+      ctx.conta?.definirDiamantes?.(m);
+      return;
+    case 'pagamento':
+      ctx.conta?.avisarPagamento?.(m);
+      return;
+    case 'save':
+      if (Array.isArray(m.titulosGanhos)) Conta.aplicarTitulosGanhos(m.titulosGanhos);
+      ctx.conta?.saveDoServidor?.(m.save, m.rev);
+      TerrenoEstado.salvou();
+      return;
+    case 'arranjo_ok':
+      Conta.arranjoOk?.(m.seq);
+      return;
+    case 'chat':
+      ctx.Chat?.publicar(
+        m.canal,
+        m.texto,
+        (m.de?.guilda ? '[' + m.de.guilda + '] ' : '') + (m.de?.nome || '?'),
+        m.de?.cargo || null,
+        m.de?.md === true,
+        m.de?.fd === true,
+      );
+      return;
+    case 'sistema':
+      if (temVars(m)) ctx.Chat?.sistemaCru?.(textoSistema(m));
+      else ctx.Chat?.sistema(m.texto);
+      if (/^⛔ (Sua conta está suspensa|Conta suspensa\.)/.test(String(m.texto ?? '')))
+        Conta.avisoDoBan?.(temVars(m) ? textoSistema(m) : tr(String(m.texto)));
+      return;
+    case 'eventos':
+    case 'evento_aviso':
+      ctx.eventos?.(m);
+      return;
+    case 'terreno':
+    case 'terreno_ir':
+    case 'terreno_voltar':
+    case 'ovo':
+    case 'ovo_erro':
+    case 'ovo_aviso':
+    case 'horta':
+    case 'horta_erro':
+      TerrenoEstado.receber(m);
+      return;
+    case 'guilda': {
+      const p = guildaEsperando.get(m.rid);
+      if (p) {
+        guildaEsperando.delete(m.rid);
+        clearTimeout(p.timer);
+        p.resolve(m);
+      }
+      return;
+    }
+    case 'correio':
+    case 'correio_erro':
+    case 'correio_novo':
+      ctx.correio?.(m);
+      return;
+    case 'tm':
+      ctx.tm?.(m);
+      return;
+    case 'progressao':
+    case 'progressao_vista':
+    case 'progressao_resgate':
+    case 'progressao_titulo':
+    case 'progressao_erro':
+      ctx.progressao?.(m);
+      return;
+    case 'held_ok':
+    case 'held_erro':
+    case 'held':
+      ctx.held?.(m);
+      return;
+    case 'guilda_ir':
+    case 'guilda_voltar':
+    case 'guilda_base':
+      ctx.guildaCena?.(m);
+      return;
+    case 'guilda_vista':
+    case 'guilda_chat':
+      ctx.guilda?.(m);
+      return;
+    case 'invasao':
+      ctx.invasao?.(textoInvasao(m));
+      return;
+    case 'elite':
+      ctx.elite?.(m);
+      return;
+    case 'pong':
+      ping.ms = Math.round(performance.now() - ping.enviado);
+      return;
+    case 'volta':
+      if (troca && +m.porta === troca.porta) {
+        troca.fim({ volta: m });
+        return;
+      }
+      ctx.volta?.(m);
+      return;
+    case 'porta_ok': {
+      const e = portaEsperando;
+      if (e && (e.chegada == null || +m.chegada === +e.chegada)) {
+        portaEsperando = null;
+        clearTimeout(e.timer);
+        e.resolve(!!m.ok);
+      }
+      return;
+    }
+    case 'dm':
+    case 'social':
+      ctx.social?.(m);
+      return;
+    case 'selvagem':
+    case 'spos':
+    case 'shp':
+    case 'dono':
+    case 'sestado':
+    case 'scapt':
+    case 'sumiu':
+    case 'pdano':
+    case 'xp':
+    case 'golpe_volta':
+    case 'sstatus':
+    case 'pstatus':
+      ctx.mundo?.receber(m);
+      return;
+    case 'raid':
+    case 'raid_ir':
+    case 'raid_voltar':
+    case 'raid_fim':
+      if (m.t === 'raid_fim' && m.save) ctx.conta?.saveDoServidor?.(m.save, m.rev);
+      ctx.raid?.receber?.(m);
+      return;
+    case 'r01':
+    case 'r01_erro':
+      ctx.raidR01?.receber?.(m);
+      return;
+    case 'r03':
+    case 'r03_erro':
+      ctx.raidR01?.receber?.(m);
+      return;
+    case 'r05':
+    case 'r05_erro':
+      ctx.raidR01?.receber?.(m);
+      return;
+    case 'fragmentos_ok':
+    case 'fragmentos_erro':
+      ctx.fragmentos?.(m);
+      return;
+    case 'troca_convite':
+    case 'troca_convidou':
+    case 'troca_recusou':
+    case 'troca_abriu':
+    case 'troca_estado':
+    case 'troca_salvar':
+    case 'troca_feita':
+    case 'troca_cancelou':
+    case 'troca_aviso':
+      ctx.troca?.receber(m);
+      return;
+    case 'posse':
+    case 'posse_erro': {
+      const i = posseEsperando.get(m.op);
+      if (!i) return;
+      posseEsperando.delete(m.op);
+      clearTimeout(i.timer);
+      i.resolve(m.t === 'posse' ? m : { erro: m.erro || 'recusado' });
+      return;
+    }
+    case 'shiny_perto':
+      ctx.shinyPerto?.(m);
+      return;
+    case 'trava':
+      ctx.trava?.(m);
+      return;
+    case 'viagem_vista':
+    case 'teleporte':
+    case 'viagem':
+      ctx.viagem?.(m);
+      return;
+    case 'balsa_vista':
+    case 'balsa':
+      ctx.balsa?.(m);
+      return;
+    case 'safari':
+    case 'safari_erro':
+    case 'safari_fim':
+      ctx.safari?.(m);
+      return;
+    case 'pesca_lancou':
+    case 'pesca_fisgou':
+    case 'pesca_escapou':
+    case 'pesca_emergiu':
+    case 'pesca_erro':
+    case 'pesca_largou':
+      ctx.pesca?.(m);
+      return;
+    case 'montaria_recusada':
+      ctx.montariaRecusada?.(m);
+      return;
+    case 'voo_recusado':
+      ctx.vooRecusado?.(m);
+      return;
+    case 'mod':
+    case 'mod_erro': {
+      const C = ctx.Chat;
+      if (m.t === 'mod_erro') return C?.sistemaCru?.(textoModErro(m.erro));
+      const r = (s, v) => C?.sistemaCru?.(tr(s, v));
+      const w = (t, a = false) =>
+        a ? new Date(t).toLocaleTimeString(localDoIdioma()) : new Date(t).toLocaleString(localDoIdioma());
+      if (m.op === 'online') {
+        const l = m.lista || [];
+        const _ = (x) => {
+          const q = !x.gm && Conta.cargoDe(x.cargo);
+          return q ? ' [' + q.tag + ']' : '';
+        };
+        const $ = l
+          .map(
+            (x) =>
+              x.nome +
+              (x.conta ? ' (' + x.conta + ')' : ' [' + tr('visitante') + ']') +
+              (x.gm ? ' ★' : '') +
+              _(x) +
+              (x.mudo ? ' 🔇' : '') +
+              ' · ' +
+              tr(String(x.area || x.mapa || '')),
+          )
+          .join(' | ');
+        r('👥 {n} online: {x}', { n: l.length, x: $ || tr('nobody') });
+      } else if (m.op === 'ver') {
+        const q =
+          m.banidoAte === -1
+            ? tr('banned permanently')
+            : m.banidoAte
+              ? tr('banned until {x}', { x: w(m.banidoAte) })
+              : m.mudoAte
+                ? tr('muted until {x}', { x: w(m.mudoAte, true) })
+                : tr('nothing');
+        C?.sistemaCru?.(
+          '🔎 ' +
+            m.usuario +
+            (m.gm ? ' ★GM' : Conta.cargoDe(m.cargo) ? ' [' + Conta.cargoDe(m.cargo).tag + ']' : '') +
+            ': ' +
+            q +
+            (m.motivo ? ' — ' + m.motivo : ''),
+        );
+      } else if (m.op === 'aviso') r('📢 announcement sent.');
+      else if (m.op === 'mudo')
+        r(m.mantido ? '🔇 {x} was already muted for longer: the longer mute stays.' : '🔇 {x} muted for {n} min.', {
+          x: m.usuario,
+          n: m.minutos,
+        });
+      else if (m.op === 'kick') r('⛔ {x} was kicked ({n} connection).', { x: m.usuario, n: m.derrubou || 0 });
+      else if (m.op === 'banir')
+        r(m.ate === -1 ? '⛔ {x} banned permanently.' : '⛔ {x} banned until {y}.', {
+          x: m.usuario,
+          y: m.ate === -1 ? '' : w(m.ate),
+        });
+      else if (m.op === 'perdoar') r('✅ {x} unmuted.', { x: m.usuario });
+      else if (m.op === 'tp')
+        r(
+          m.derrubou
+            ? '🧭 {x} sent to {y} ({a}, {b}) — they got the F5 notice.'
+            : "🧭 {x} sent to {y} ({a}, {b}) — they'll spawn there on their next login.",
+          { x: m.usuario, y: m.nome ? tr(String(m.nome)) : String(m.mapa ?? ''), a: m.x, b: m.z },
+        );
+      else if (m.op === 'mercado') {
+        if (m.tirou != null)
+          C?.sistemaCru?.(
+            '🧹 Listing #' +
+              m.tirou +
+              ' de ' +
+              m.vendedor +
+              ' removed (' +
+              m.descricao +
+              '): the item went back to its owner, the fee did not. Reason: ' +
+              m.motivo +
+              '.',
+          );
+        else {
+          const l = m.ofertas || [],
+            h = (o) => Math.max(0, Math.round((o.expiraEm - Date.now()) / 3600e3));
+          C?.sistemaCru?.(
+            '📦 ' +
+              m.usuario +
+              ': ' +
+              (l.length
+                ? l.length +
+                  (l.length > 1 ? ' listings — ' : ' listing — ') +
+                  l
+                    .map(
+                      (o) =>
+                        '#' +
+                        o.id +
+                        ' ' +
+                        o.descricao +
+                        ' a ' +
+                        Math.round(o.precoUnit || 0).toLocaleString('pt-BR') +
+                        (o.tipo === 'item' && o.quantidade > 1 ? ' cada' : '') +
+                        ' (expires in ' +
+                        h(o) +
+                        ' h)',
+                    )
+                    .join(' · ') +
+                  '. To remove: /mercado tirar id reason.'
+                : 'no open listings.'),
+          );
+        }
+      } else if (m.op === 'renomear')
+        C?.sistemaCru?.(
+          '✏️ "' +
+            (m.de ?? '—') +
+            '" (' +
+            m.usuario +
+            ') is now called "' +
+            m.para +
+            '"' +
+            (m.derrubou ? ' — they got the F5 notice.' : '.'),
+        );
+      else if (m.op === 'puxar')
+        r(
+          m.derrubou
+            ? '🧲 {x} pulled to you — they got the F5 notice.'
+            : "🧲 {x} pulled to you — they're offline: they'll spawn next to you on their next login.",
+          { x: m.usuario },
+        );
+      return;
+    }
+    case 'content':
+      ctx.conteudo?.(m);
+      return;
+    case 'catalogo':
+      ctx.catalogo?.(m);
+      return;
+    case 'missao':
+    case 'missao_erro': {
+      if (m.estado) ctx.missao?.(m);
+      else if (m.erro && !ctx.missaoRecusada?.(m)) ctx.Chat?.sistemaCru?.(textoErro(m.erro));
+      return;
+    }
+    case 'bat':
+    case 'bat_erro': {
+      const aa = batEsperando;
+      if (!aa) {
+        if (m.t === 'bat' && m.fim) ctx.batalhaFim?.(m);
+        else if (m.t === 'bat' && ctx.batalhaConhecida && !ctx.batalhaConhecida(m)) enviar({ t: 'bat_largar' });
+        return;
+      }
+      batEsperando = null;
+      clearTimeout(aa.timer);
+      aa.resolve(
+        m.t === 'bat'
+          ? m
+          : {
+              erro: m.erro || 'recusado',
+              codigo: m.codigo || null,
+              vez: m.vez ?? null,
+              espera: m.espera ?? null,
+              golpe: m.golpe ?? null,
+              motivo: m.motivo ?? null,
+              livres: Array.isArray(m.livres) ? m.livres : null,
+              pp: m.pp && typeof m.pp === 'object' ? m.pp : null,
+            },
+      );
+      return;
+    }
+    case 'bat_estado': {
+      if (m.aberta && ctx.batalhaConhecida && !ctx.batalhaConhecida(m.aberta)) enviar({ t: 'bat_largar' });
+      else if (!m.aberta && !batEsperando)
+        ctx.batalhaCaiu?.({ reconexao: true, guardada: m.guardada || null, outra: !!m.outra });
+      return;
+    }
+    case 'bat_largada':
+      ctx.batalhaGuardada?.(m.guardada || null);
+      return;
+    case 'vida':
+    case 'vida_erro': {
+      const ba = vidaEsperando;
+      if (!ba) return;
+      vidaEsperando = null;
+      clearTimeout(ba.timer);
+      ba.resolve(m.t === 'vida' ? m : { erro: m.erro || 'recusado' });
+      return;
+    }
+    case 'bolsa':
+    case 'bolsa_erro': {
+      if (m.t === 'bolsa' && m.op === 'usar' && m.medalhao) Conta.aplicarMedalhao(m.medalhao);
+      let ca = m.rid != null && bolsaEsperando.has(m.rid) ? m.rid : null;
+      if (ca == null && m.rid == null)
+        for (const [k, p] of bolsaEsperando)
+          if (p.op === m.op) {
+            ca = k;
+            break;
+          }
+      if (ca == null) return;
+      const da = bolsaEsperando.get(ca);
+      bolsaEsperando.delete(ca);
+      clearTimeout(da.timer);
+      da.resolve(m.t === 'bolsa' ? m : recusaDaBolsa(m));
+      return;
+    }
+    case 'mercado':
+    case 'mercado_erro': {
+      if (m.save) ctx.troca?.aplicarSave?.(m.save, m.rev);
+      const ea = mercadoEsperando.get(m.op);
+      if (!ea) return;
+      mercadoEsperando.delete(m.op);
+      clearTimeout(ea.timer);
+      ea.resolve(m.t === 'mercado' ? m : { erro: m.erro || 'recusado' });
+      return;
+    }
     case 'loja': {
-      const pend = m.rid != null ? lojaEsperando.get(m.rid) : null; if (!pend) return;
-      lojaEsperando.delete(m.rid); clearTimeout(pend.timer); pend.resolve(m);
+      const fa = m.rid != null ? lojaEsperando.get(m.rid) : null;
+      if (!fa) return;
+      lojaEsperando.delete(m.rid);
+      clearTimeout(fa.timer);
+      fa.resolve(m);
       return;
     }
-    case 'temporada': case 'temporada_erro': {
-      const pend = m.rid != null ? temporadaEsperando.get(m.rid) : null;
-      if (!pend){ if (m.t === 'temporada' && m.vista) avisarTemporada(m); return; }   // a late answer still refreshes the open pass
-      temporadaEsperando.delete(m.rid); clearTimeout(pend.timer);
-      pend.resolve(m.t === 'temporada' ? { ...m, ok: m.ok !== false } : { ...m, ok: false, erro: m.erro || 'recusado', mensagem: typeof m.mensagem === 'string' ? m.mensagem : '' });
+    case 'temporada':
+    case 'temporada_erro': {
+      const ga = m.rid != null ? temporadaEsperando.get(m.rid) : null;
+      if (!ga) {
+        const ha = m.rid != null ? temporadaVencidos.get(m.rid) : null;
+        if (ha) {
+          temporadaVencidos.delete(m.rid);
+          avisarTemporada({ ...m, atrasada: true, opPedido: ha.op, ok: m.t === 'temporada' && m.ok !== false });
+          return;
+        }
+        if (m.t === 'temporada' && m.vista) avisarTemporada(m);
+        return;
+      }
+      temporadaEsperando.delete(m.rid);
+      clearTimeout(ga.timer);
+      ga.resolve(
+        m.t === 'temporada'
+          ? { ...m, ok: m.ok !== false }
+          : { ...m, ok: false, erro: m.erro || 'recusado', mensagem: typeof m.mensagem === 'string' ? m.mensagem : '' },
+      );
       return;
     }
-    case 'temporada_evento': avisarTemporada(m); return;
-    default: return;
+    case 'temporada_evento':
+      avisarTemporada(m);
+      return;
+    case 'drop':
+      ctx.drop?.(m);
+      return;
+    case 'caca':
+      ctx.caca?.(m);
+      return;
+    case 'transf': {
+      const u = String(m.uid ?? ''),
+        ia = transfEsperando.get(u);
+      if (ia) {
+        transfEsperando.delete(u);
+        clearTimeout(ia.timer);
+      }
+      try {
+        ctx.aoTransf?.(m, !!ia);
+      } catch (e) {
+        console.warn('network: transf', e);
+      }
+      if (ia) ia.resolve(m);
+      return;
+    }
+    case 'mercado_aviso': {
+      if (m.save) ctx.troca?.aplicarSave?.(m.save, m.rev);
+      {
+        const t = textoAviso(m.aviso, tr, localDoIdioma());
+        if (t && ctx.Chat?.sistemaCru) ctx.Chat.sistemaCru(tr('Market: {x}', { x: t }));
+        else if (m.texto) ctx.Chat?.sistemaCru?.(tr('Market: {x}', { x: String(m.texto) }));
+      }
+      try {
+        ctx.Som?.tocar?.('ui/sound_click', { volume: 0.6 });
+      } catch {}
+      ctx.mercadoAviso?.();
+      return;
+    }
+    default:
+      return;
   }
 }
-/** O que o chat manda (chat.mjs chama via ctx.rede): o texto já foi publicado localmente. */
-/* POSSE dos Pokémon (o servidor é o dono desde 06/09): o cliente PEDE e espera a resposta. Uma operação de cada tipo por vez;
-   6 s sem resposta devolve `{ erro }` e o jogo avisa em vez de inventar Pokémon que o servidor não conhece. */
-const posseEsperando = new Map();                                        // op → { resolve, timer }
-export function pedirPosse(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
-  const antigo = posseEsperando.get(op); if (antigo){ clearTimeout(antigo.timer); antigo.resolve({ erro: 'pedido repetido' }); posseEsperando.delete(op); }
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { posseEsperando.delete(op); resolve({ erro: 'o servidor não respondeu' }); }, 6000);
-    posseEsperando.set(op, { resolve, timer });
-    enviar({ t: 'posse_' + op, ...dados });
+const posseEsperando = new Map();
+export function pedirPosse(a, b = {}) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
+  const c = posseEsperando.get(a);
+  if (c) {
+    clearTimeout(c.timer);
+    c.resolve({ erro: 'pedido repetido' });
+    posseEsperando.delete(a);
+  }
+  return new Promise((c) => {
+    const d = setTimeout(() => {
+      posseEsperando.delete(a);
+      c({ erro: 'the server did not respond' });
+    }, 6000);
+    posseEsperando.set(a, { resolve: c, timer: d });
+    enviar({ t: 'posse_' + a, ...b });
   });
 }
-/* BOLSA (o servidor é o dono desde 07/09): usar item, recompensa de missão, prêmio de ginásio/treinador. A resposta traz o
-   retrato inteiro da bolsa, que o `account.mjs` escreve no aparelho. */
-const bolsaEsperando = new Map();
-export function pedirBolsa(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
-  const antigo = bolsaEsperando.get(op); if (antigo){ clearTimeout(antigo.timer); antigo.resolve({ erro: 'pedido repetido' }); bolsaEsperando.delete(op); }
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { bolsaEsperando.delete(op); resolve({ erro: 'o servidor não respondeu' }); }, 6000);
-    bolsaEsperando.set(op, { resolve, timer });
-    enviar({ t: 'bolsa_' + op, ...dados });
+const guildaEsperando = new Map();
+let guildaRid = 0;
+export function pedirGuilda(a, b = {}) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ ok: false, erro: 'No connection to the server.' });
+  const c = ++guildaRid;
+  return new Promise((d) => {
+    const e = setTimeout(() => {
+      guildaEsperando.delete(c);
+      d({ ok: false, erro: "The server didn't respond." });
+    }, 8000);
+    guildaEsperando.set(c, { resolve: d, timer: e });
+    enviar({ ...b, t: 'guilda', op: a, rid: c });
   });
 }
-/* Player Market (server_market.mjs): one request of each kind at a time, like the bag. */
 const mercadoEsperando = new Map();
-export function pedirMercado(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'No connection to the server.' });
-  const antigo = mercadoEsperando.get(op); if (antigo){ clearTimeout(antigo.timer); antigo.resolve({ erro: 'pedido repetido' }); mercadoEsperando.delete(op); }
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { mercadoEsperando.delete(op); resolve({ erro: "The server didn't respond." }); }, 8000);
-    mercadoEsperando.set(op, { resolve, timer });
-    enviar({ t: 'mercado_' + op, ...dados });
+export function pedirMercado(a, b = {}) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
+  const c = mercadoEsperando.get(a);
+  if (c) {
+    clearTimeout(c.timer);
+    c.resolve({ erro: 'pedido repetido' });
+    mercadoEsperando.delete(a);
+  }
+  return new Promise((c) => {
+    const d = setTimeout(() => {
+      mercadoEsperando.delete(a);
+      c({ erro: 'the server did not respond' });
+    }, 8000);
+    mercadoEsperando.set(a, { resolve: c, timer: d });
+    enviar({ t: 'mercado_' + a, ...b });
   });
 }
-/* Diamond shop (server_shop.mjs) and Battle Pass (server_season.mjs): every request carries its own `rid`, so several can be
-   in flight; 8 s without an answer resolves `{ ok:false, erro:'sem-resposta' }`. */
-const lojaEsperando = new Map(), temporadaEsperando = new Map(), ouvintesTemporada = new Set();
-let lojaRid = 0, temporadaRid = 0;
+const bolsaEsperando = new Map();
+let bolsaRid = 0;
+export function pedirBolsa(a, b = {}) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
+  const c = ++bolsaRid;
+  return new Promise((d) => {
+    const e = setTimeout(() => {
+      bolsaEsperando.delete(c);
+      d({ erro: 'the server did not respond' });
+    }, 6000);
+    bolsaEsperando.set(c, { op: a, resolve: d, timer: e });
+    enviar({ ...b, t: 'bolsa_' + a, rid: c });
+  });
+}
+const lojaEsperando = new Map();
+let lojaRid = 0;
+export function pedirLoja(a, b = {}) {
+  if (!ws || ws.readyState !== 1)
+    return Promise.resolve({ ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' });
+  const c = ++lojaRid;
+  return new Promise((d) => {
+    const e = setTimeout(() => {
+      lojaEsperando.delete(c);
+      d({ ok: false, erro: 'sem-resposta', mensagem: "The server didn't respond." });
+    }, 8000);
+    lojaEsperando.set(c, { resolve: d, timer: e });
+    enviar({ ...b, t: 'loja_' + a, rid: c });
+  });
+}
+const temporadaEsperando = new Map();
+let temporadaRid = 0;
+const temporadaVencidos = new Map();
+const ouvintesTemporada = new Set();
+export function aoTemporada(a) {
+  if (typeof a !== 'function') return () => {};
+  ouvintesTemporada.add(a);
+  return () => ouvintesTemporada.delete(a);
+}
+export const RITMO_TEMPORADA = Object.freeze({ todos: [1.6, 5], gravam: [1.6, 3] });
+const baldesTemporada = new Map(),
+  filaTemporada = [];
+let filaTemporadaTimer = 0;
+function baldeTemporada(k, t) {
+  const [a, c] = RITMO_TEMPORADA[k];
+  let b = baldesTemporada.get(k);
+  if (!b) {
+    b = { n: c, t };
+    baldesTemporada.set(k, b);
+  }
+  b.n = Math.min(c, b.n + ((t - b.t) / 1000) * a);
+  b.t = t;
+  return b;
+}
 const SEM_CONEXAO = () => ({ ok: false, erro: 'sem-conexao', mensagem: 'No connection to the server.' });
-function pedirComRid(mapa, rid, msg){
-  if (!ws || ws.readyState !== 1) return Promise.resolve(SEM_CONEXAO());
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { mapa.delete(rid); resolve({ ok: false, erro: 'sem-resposta', mensagem: "The server didn't respond." }); }, 8000);
-    mapa.set(rid, { resolve, timer });
-    if (!enviar(msg)){ clearTimeout(timer); mapa.delete(rid); resolve(SEM_CONEXAO()); }
-  });
+function lembrarVencido(a, b) {
+  const t = Date.now();
+  temporadaVencidos.set(a, { op: b, em: t });
+  for (const [k, x] of temporadaVencidos)
+    if (t - x.em > 10 * 60e3 || temporadaVencidos.size > 40) temporadaVencidos.delete(k);
+    else break;
 }
-export function pedirLoja(op, dados = {}){ const rid = ++lojaRid; return pedirComRid(lojaEsperando, rid, { ...dados, t: 'loja_' + op, rid }); }
-export function pedirTemporada(op, dados = {}){ const rid = ++temporadaRid; return pedirComRid(temporadaEsperando, rid, { ...(dados && typeof dados === 'object' ? dados : {}), t: 'temporada', op, rid }); }
-export function aoTemporada(fn){ if (typeof fn !== 'function') return () => {}; ouvintesTemporada.add(fn); return () => ouvintesTemporada.delete(fn); }
-function avisarTemporada(m){ for (const fn of [...ouvintesTemporada]) try { fn(m); } catch (e) { console.warn('network: season', e); } }
-/* VIDA (passo 3): a cura completa é pedida ao servidor, que confere se você está no Centro Pokémon (ou se o time todo caiu). */
-let vidaEsperando = null;
-export function pedirVida(op = 'curar'){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
-  if (vidaEsperando){ clearTimeout(vidaEsperando.timer); vidaEsperando.resolve({ erro: 'pedido repetido' }); vidaEsperando = null; }
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { vidaEsperando = null; resolve({ erro: 'o servidor não respondeu' }); }, 6000);
-    vidaEsperando = { resolve, timer };
-    enviar({ t: 'vida_' + op });
-  });
-}
-/* BATALHA (passo 4): o servidor conduz. `desafiar` abre, `acao` joga, `sair` desiste; a resposta traz o estado e os `lances`. */
-let batEsperando = null;
-/** Solta a vaga de espera da batalha (a conexão caiu): quem estava esperando recebe o erro na hora, sem os 12 s do relógio. */
-function largarBatalha(motivo){
-  const pend = batEsperando; if (!pend) return;
-  batEsperando = null; clearTimeout(pend.timer);
-  pend.resolve({ erro: motivo || 'no connection to the server', error: motivo || 'no connection to the server', code: 'dropped' });
-}
-export function pedirBatalha(op, dados = {}){
-  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'sem conexão com o servidor' });
-  /* UM PEDIDO DE CADA VEZ (20/09, chaospider "A ganância do homem quebra o jogo"): quando chegava um pedido novo com outro no
-     ar, o antigo era respondido com "pedido repetido" e o NOVO ia pro servidor assim mesmo — as duas mensagens chegavam lá,
-     duas rodadas aconteciam e as respostas passavam a casar com o pedido errado (só existe uma vaga de espera). A partir daqui
-     o segundo pedido é recusado SEM sair da máquina; só o `sair` fura a fila, porque desistir não pode ficar preso. */
-  if (batEsperando && op !== 'sair') return Promise.resolve({ erro: 'wait for the response to your previous move', error: 'wait for the response to your previous move', code: 'busy' });
-  if (batEsperando){ clearTimeout(batEsperando.timer); batEsperando.resolve({ erro: 'pedido repetido' }); batEsperando = null; }
-  return new Promise(resolve => {
-    const timer = setTimeout(() => { batEsperando = null; resolve({ erro: 'o servidor não respondeu' }); }, 12000);
-    batEsperando = { resolve, timer };
-    enviar({ t: 'bat_' + op, ...dados });
-  });
-}
-/* PORTA (passe de progresso, 19/09): encostou numa porta pra uma cena que o passe ainda não cobre. Avisa o servidor (`{t:'porta'}`),
-   que confere a porta e libera o destino; espera até `ms` pelo passe novo que cubra `mapa` (ou pelo `porta_ok`) e resolve de
-   qualquer jeito — quem chama segue pra porta, e o boot da cena seguinte ainda tem a rede de segurança dele. */
-let portaEsperando = null;
-export function pedirPorta(porta, chegada, mapa, ms = 1500){
-  if (!ws || ws.readyState !== 1) return Promise.resolve(false);
-  if (portaEsperando){ clearTimeout(portaEsperando.timer); portaEsperando.resolve(false); portaEsperando = null; }
-  return new Promise(resolve => {
-    const fim = ok => { removeEventListener('passe-novo', ouvir); if (portaEsperando?.resolve === fim){ clearTimeout(portaEsperando.timer); portaEsperando = null; } resolve(ok); };
-    const ouvir = () => { if (Conta.cobreCena(mapa)) fim(true); };
-    addEventListener('passe-novo', ouvir);
-    portaEsperando = { chegada, resolve: fim, timer: setTimeout(() => fim(false), ms) };
-    enviar({ t: 'porta', porta: +porta || porta, chegada: +chegada || chegada });
-  });
-}
-export function enviarChat(canal, texto){ if (estado === 'ligado') enviar({ t: 'chat', canal, texto }); }
-
-/* ------------------------------------------------------------------ os outros na cena */
-function adicionar(j){
-  if (!j || j.id === id || outros.has(j.id)) return;
-  const o = { id: j.id, nome: j.nome || 'Jogador', cargo: j.cargo || null, titulo: j.titulo || '', alvo: { x: j.x || 0, y: j.y || 0, z: j.z || 0, giro: j.giro || 0 }, anim: j.anim || 'Idle', ent: null, par: null, pshiny: !!j.pshiny, parceiroGlb: j.parceiro || null, montaria: j.montaria || null, mont: null, quandoPos: performance.now(),
-    alvoPar: j.px != null ? { x: j.px, z: j.pz, giro: j.pg || 0, anim: j.pa || 'Idle', quando: performance.now() } : null };   // cargo/titulo (12/09): o `cargo` nunca era copiado pra `o` — o [STAFF]/[MOD] dos OUTROS não aparecia; agora vem junto do título
-  outros.set(o.id, o);
-  montar(o, j.personagem).catch(e => console.warn('rede: não montou ' + o.nome, e));
-}
-async function montar(o, personagem){
-  const P = ctx.Personagem;
-  const p = personagem || P?.PADRAO || null;
-  const arq = './scenery/pc/' + (P?.glbDe?.(p) || 'Ash') + '.glb';
-  const ent = await ctx.montarPersonagem(arq, null, 0);
-  if (o.removido){ ctx.cena.remove(ent.pivo); return; }
-  try { if (p && P?.aplicar) await P.aplicar(ent.pivo, p); } catch (e){ console.warn('rede: roupa de ' + o.nome, e); }
-  const y = ctx.chaoEm?.(o.alvo.x, o.alvo.z) ?? o.alvo.y;
-  ent.x = ent.vx = o.alvo.x; ent.z = ent.vz = o.alvo.z; ent.y = ent.vy = y; ent.giro = o.alvo.giro;
-  ent.pivo.position.set(ent.x, ent.y, ent.z); ent.pivo.rotation.y = ent.giro;
-  ctx.tocarAnim(ent, 'Idle');
-  o.ent = ent; o.personagem = personagem || null;
-  ctx.cosmeticoOutro?.(o);                                               // aura/trail they wear (personagem.efeitos, cosmetic_fx.mjs)
-  etiquetar(o);                                                          // plaquinha: nome + [cargo] em cima, <título> embaixo (12/09)
-  await montarParceiro(o);
-  await montarMontariaOutro(o);                                          // 14/09: chegou montado
-}
-/** (Re)desenha a plaquinha de um outro jogador: nome + [STAFF]/[MOD] em cima, <título> embaixo. Chamada ao montar e quando o título muda. */
-function etiquetar(o){
-  const ent = o.ent; if (!ent) return;
-  if (ent.rotulo){ ent.pivo.remove(ent.rotulo); ent.rotulo.material?.map?.dispose(); ent.rotulo.material?.dispose(); }
-  const eti = Conta.comCargo(o.nome, o.cargo, '#8ec5ff');                 // cargos (09/09): [STAFF]/[MOD] também na cabeça dos outros
-  const rotulo = ctx.rotuloSprite(eti.texto, eti.cor, 2.0, o.titulo || '', undefined, true);
-  rotulo.position.y = ent.altura + 0.35 + (o.titulo ? 0.16 : 0); ent.pivo.add(rotulo); ent.rotulo = rotulo;
-  rotulo.visible = PrefAparelho.ler('nomesOutros') !== false;
-}
-if (typeof addEventListener === 'function') addEventListener('pref-aparelho', ev => {   // toggled in Settings: every name now, no reload
-  if (ev.detail?.k !== 'nomesOutros') return;
-  for (const o of outros.values()) if (o.ent?.rotulo) o.ent.rotulo.visible = !!ev.detail.v;
-});
-/** O parceiro que anda atrás do outro jogador (monta, ou troca quando ele muda de seguidor). */
-async function montarParceiro(o){
-  if (o.par){ ctx.cena.remove(o.par.pivo); o.par = null; }
-  const ent = o.ent; if (!ent || !o.parceiroGlb || !ctx.modeloMon || !ctx.montarCorpo || !ctx.clonar) return;
-  const pedido = o.parceiroGlb;
-  try {
-    const glb = pedido.endsWith('.glb') ? pedido : pedido + '.glb';
-    const g = await ctx.modeloMon(glb);
-    if (o.removido || o.parceiroGlb !== pedido) return;                  // trocou de novo enquanto carregava
-    const par = ctx.montarCorpo(g, ctx.clonar(g.scene), null, 0, glb);
-    par.glb = glb; ctx.escalarSeguidor?.(par); if (o.pshiny) ctx.aplicarShinyCampo?.(par.pivo, true);   // shiny (14/09): o parceiro do outro veste a textura _1 como o seu                            // MESMA régua de tamanho do seu parceiro (proporcional/jogo/nativo): sem isto o Pikachu do outro vinha no tamanho nativo
-    par.x = par.vx = ent.x - 1.1; par.z = par.vz = ent.z + 0.6; par.y = par.vy = ent.y;
-    par.pivo.position.set(par.x, par.y, par.z); ctx.tocarAnim(par, 'Idle');
-    if (o.par){ ctx.cena.remove(o.par.pivo); }
-    o.par = par;
-    o.parFalhou = false;
-  } catch (e){ o.parFalhou = true; console.warn('rede: parceiro de ' + o.nome, e); }   // passe de progresso: o passe-novo tenta de novo
-}
-/* MONTARIA DOS OUTROS (14/09): o modelo da montaria com o corpo do outro sentado na sela — a mesma conta do montar() do index
-   (montarCorpo + pontoDeSela + escala do MONTARIAS). Enquanto montado, o parceiro dele some (está na bola). */
-async function montarMontariaOutro(o){
-  const ent = o.ent; if (!ent) return;
-  if (!o.montaria){ soltarMontariaOutro(o); return; }
-  if (o.mont && o.mont.glb === o.montaria) return;
-  if (!ctx.modeloMon || !ctx.montarCorpo || !ctx.clonar || !ctx.pontoDeSela) return;
-  const pedido = o.montaria;
-  try {
-    const g = await ctx.modeloMon(pedido + '.glb');
-    if (o.removido || o.montaria !== pedido || !o.ent) return;              // desmontou/trocou enquanto carregava
-    soltarMontariaOutro(o);
-    const def = ctx.montariaDef?.(pedido) || [pedido, pedido, 'RideIdle1', 'Ride1', true, 0.6, 25000, 'anfibia'];
-    const m = ctx.montarCorpo(g, ctx.clonar(g.scene), null, 0, pedido);
-    m.glb = pedido; m.poseIdle = def[2]; m.poseRun = def[3]; m.voa = def[4]; const fator = def[5] || 0.6; m.pivo.scale.setScalar(fator); m.altura *= fator;
-    m.ponto = ctx.pontoDeSela(m);
-    m.pivo.position.set(ent.x, ent.y, ent.z); m.pivo.rotation.y = ent.giro; ctx.cena.add(m.pivo);
-    const esc = new (ent.pivo.position.constructor)(); m.pivo.updateMatrixWorld(true); m.ponto.getWorldScale(esc);
-    m.ponto.add(ent.pivo); ent.pivo.position.set(0, 0, 0); ent.pivo.rotation.set(0, 0, 0); ent.pivo.scale.setScalar(1 / (esc.x || 1));
-    ctx.tocarAnim(ent, m.poseIdle); ctx.soEsta?.(ent, m.poseIdle); ctx.tocarAnim(m, 'Idle');
-    if (o.par) o.par.pivo.visible = false;
-    o.mont = m; o.montFalhou = false;
-  } catch (e){ o.montFalhou = true; console.warn('rede: montaria de ' + o.nome, e); }
-}
-/* O passe cresceu (liberou espécie/skin): o parceiro ou a montaria de outro jogador que a borda tinha negado monta agora.
-   Numa volta SEGUINTE do laço (setTimeout 0), não aqui dentro: este ouvinte foi registrado antes do ouvinte do index que zera a lista
-   de modelos negados (`glbNegados`), e o `ctx.modeloMon` é chamado de forma síncrona pelo montarParceiro — tentando já, o modelo
-   ainda estaria na lista, seria recusado na hora e a nova tentativa se perdia até o passe crescer de novo. */
-if (typeof addEventListener === 'function') addEventListener('passe-novo', ev => {
-  if (ev?.detail && ev.detail.cresceu === false) return;
-  setTimeout(remontarNegados, 0);
-});
-function remontarNegados(){
-  for (const o of outros.values()){
-    if (o.removido || !o.ent) continue;
-    if (o.parFalhou && o.parceiroGlb){ o.parFalhou = false; montarParceiro(o).then(() => { if (o.par && o.mont) o.par.pivo.visible = false; }).catch(() => {}); }
-    if (o.montFalhou && o.montaria){ o.montFalhou = false; montarMontariaOutro(o).catch(() => {}); }
+function drenarTemporada() {
+  clearTimeout(filaTemporadaTimer);
+  filaTemporadaTimer = 0;
+  while (filaTemporada.length) {
+    const P = filaTemporada[0],
+      t = Date.now(),
+      a = baldeTemporada('todos', t),
+      b = P.op === 'ver' ? null : baldeTemporada('gravam', t);
+    if (a.n < 1 || (b && b.n < 1)) {
+      const e = Math.max((1 - a.n) / RITMO_TEMPORADA.todos[0], b ? (1 - b.n) / RITMO_TEMPORADA.gravam[0] : 0);
+      filaTemporadaTimer = setTimeout(drenarTemporada, Math.ceil(e * 1000) + 5);
+      return;
+    }
+    filaTemporada.shift();
+    if (!ws || ws.readyState !== 1) {
+      P.resolve(SEM_CONEXAO());
+      continue;
+    }
+    a.n -= 1;
+    if (b) b.n -= 1;
+    const c = ++temporadaRid;
+    const d = setTimeout(() => {
+      temporadaEsperando.delete(c);
+      lembrarVencido(c, P.op);
+      P.resolve({ ok: false, erro: 'sem-resposta', mensagem: "The server didn't respond.", rid: c });
+    }, 8000);
+    temporadaEsperando.set(c, { resolve: P.resolve, timer: d });
+    if (!enviar({ ...P.dados, t: 'temporada', op: P.op, rid: c })) {
+      clearTimeout(d);
+      temporadaEsperando.delete(c);
+      P.resolve(SEM_CONEXAO());
+    }
   }
 }
-function soltarMontariaOutro(o){
-  const m = o.mont; if (!m) return; const ent = o.ent;
-  if (ent){ ctx.cena.add(ent.pivo); ent.pivo.scale.setScalar(1); ent.pivo.position.set(ent.x, ent.y, ent.z); ent.pivo.rotation.set(0, ent.giro, 0); ctx.tocarAnim(ent, 'Idle'); ctx.soEsta?.(ent, 'Idle'); }
-  ctx.cena.remove(m.pivo); o.mont = null;
-  if (o.par) o.par.pivo.visible = true;
+export function pedirTemporada(a, b = {}) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve(SEM_CONEXAO());
+  return new Promise((c) => {
+    filaTemporada.push({ op: a, dados: b && typeof b === 'object' ? b : {}, resolve: c });
+    if (!filaTemporadaTimer) drenarTemporada();
+  });
 }
-function remover(o){
+function avisarTemporada(m) {
+  for (const a of [...ouvintesTemporada]) {
+    try {
+      a(m);
+    } catch (e) {
+      console.warn('network: season', e);
+    }
+  }
+}
+let vidaEsperando = null;
+export function pedirVida(a = 'curar') {
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
+  if (vidaEsperando) {
+    clearTimeout(vidaEsperando.timer);
+    vidaEsperando.resolve({ erro: 'pedido repetido' });
+    vidaEsperando = null;
+  }
+  return new Promise((b) => {
+    const c = setTimeout(() => {
+      vidaEsperando = null;
+      b({ erro: 'the server did not respond' });
+    }, 6000);
+    vidaEsperando = { resolve: b, timer: c };
+    enviar({ t: 'vida_' + a });
+  });
+}
+let batEsperando = null;
+function largarBatalha(a) {
+  const b = batEsperando;
+  if (!b) return false;
+  batEsperando = null;
+  clearTimeout(b.timer);
+  b.resolve({ erro: a || 'no connection to the server', codigo: 'queda' });
+  return true;
+}
+export function consultarBatalha() {
+  if (comConta && ws && ws.readyState === 1) enviar({ t: 'bat_consultar' });
+}
+export function pedirBatalha(a, b = {}) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve({ erro: 'no connection to the server' });
+  if (batEsperando && a !== 'sair')
+    return Promise.resolve({ erro: 'wait for the response to your previous move', codigo: 'ocupado' });
+  if (batEsperando) {
+    clearTimeout(batEsperando.timer);
+    batEsperando.resolve({ erro: 'pedido repetido' });
+    batEsperando = null;
+  }
+  return new Promise((c) => {
+    const d = setTimeout(() => {
+      batEsperando = null;
+      if (a === 'desafiar') enviar({ t: 'bat_largar' });
+      c({ erro: 'the server did not respond' });
+    }, 12000);
+    batEsperando = { resolve: c, timer: d };
+    enviar({ t: 'bat_' + a, ...b });
+  });
+}
+let portaEsperando = null;
+export function pedirPorta(a, b, c, d = 1500) {
+  if (!ws || ws.readyState !== 1) return Promise.resolve(false);
+  if (portaEsperando) {
+    clearTimeout(portaEsperando.timer);
+    portaEsperando.resolve(false);
+    portaEsperando = null;
+  }
+  return new Promise((e) => {
+    const f = (a) => {
+      removeEventListener('passe-novo', g);
+      if (portaEsperando?.resolve === f) {
+        clearTimeout(portaEsperando.timer);
+        portaEsperando = null;
+      }
+      e(a);
+    };
+    const g = () => {
+      if (Conta.cobreCena(c)) f(true);
+    };
+    addEventListener('passe-novo', g);
+    portaEsperando = { chegada: b, resolve: f, timer: setTimeout(() => f(false), d) };
+    enviar({ t: 'porta', porta: +a || a, chegada: +b || b });
+  });
+}
+const transfEsperando = new Map();
+function pedirTransf(a) {
+  if (!ws || ws.readyState !== 1)
+    return Promise.resolve({ ok: false, erro: 'semConexao', texto: 'No connection to the server.' });
+  const u = String(a.uid ?? ''),
+    b = transfEsperando.get(u);
+  if (b) {
+    clearTimeout(b.timer);
+    transfEsperando.delete(u);
+    b.resolve({ ok: false, erro: 'repetido', texto: '' });
+  }
+  return new Promise((b) => {
+    const c = setTimeout(() => {
+      transfEsperando.delete(u);
+      b({ ok: false, erro: 'semResposta', texto: "The server didn't respond." });
+    }, 6000);
+    transfEsperando.set(u, { resolve: b, timer: c });
+    enviar(a);
+  });
+}
+export const pedirTransformar = (a, b) => pedirTransf({ t: 'transformar', uid: a, alvo: b });
+export const pedirDestransformar = (a) => pedirTransf({ t: 'destransformar', uid: a });
+export function enviarChat(a, b) {
+  if (estado === 'ligado') enviar({ t: 'chat', canal: a, texto: b });
+}
+function adicionar(j) {
+  if (!j || j.id === id || outros.has(j.id)) return;
+  const o = {
+    id: j.id,
+    nome: j.nome || 'Jogador',
+    cargo: j.cargo || null,
+    fundador: j.fundador === true,
+    guilda: j.guilda || null,
+    titulo: j.titulo || '',
+    alvo: { x: j.x || 0, y: j.y || 0, z: j.z || 0, giro: j.giro || 0 },
+    anim: j.anim || 'Idle',
+    ent: null,
+    par: null,
+    pshiny: !!j.pshiny,
+    parceiroGlb: j.parceiro || null,
+    montaria: j.montaria || null,
+    voo: !!j.voo,
+    mshiny: !!(j.montaria && j.mshiny),
+    mont: null,
+    andouEm: 0,
+    segStaff: seguidorValido(j.seguidorStaff),
+    seg: null,
+    alvoPar: j.px != null ? { x: j.px, z: j.pz, giro: j.pg || 0, anim: j.pa || 'Idle', quando: 0 } : null,
+  };
+  outros.set(o.id, o);
+  o.personagem = j.personagem || null;
+  montar(o, j.personagem).catch((e) => console.warn('network: failed to build ' + o.nome, e));
+}
+export function remontarRoupasNovas() {
+  const P = ctx?.Personagem;
+  if (!P?.skinDe) return 0;
+  let n = 0;
+  for (const o of [...outros.values()]) {
+    const t = o.roupaNova;
+    if (!t || o.removido || !o.ent || P.skinDe({ tipo: t })?.id !== t) continue;
+    const a = o.alvoPar;
+    const j = {
+      id: o.id,
+      nome: o.nome,
+      cargo: o.cargo,
+      guilda: o.guilda,
+      titulo: o.titulo,
+      x: o.ent?.x ?? o.alvo.x,
+      y: o.alvo.y,
+      z: o.ent?.z ?? o.alvo.z,
+      giro: o.ent?.giro ?? o.alvo.giro,
+      anim: o.anim,
+      parceiro: o.parceiroGlb,
+      pshiny: o.pshiny,
+      montaria: o.montaria,
+      voo: o.voo,
+      mshiny: o.mshiny,
+      seguidorStaff: o.segStaff,
+      personagem: o.personagem,
+      ...(a ? { px: o.par?.x ?? a.x, pz: o.par?.z ?? a.z, pg: a.giro, pa: a.anim } : {}),
+    };
+    remover(o);
+    adicionar(j);
+    n++;
+  }
+  return n;
+}
+export function baseDoCriador(P, p) {
+  const a = P?.skinDe?.(p)?.sexo === 'menina' ? 'menina' : 'menino';
+  return (
+    P?.SKINS?.find?.((s) => s?.sexo === a) ||
+    (a === 'menina' ? { id: 'heroina', glb: 'Girl_002' } : { id: 'heroi', glb: 'Boy_002' })
+  );
+}
+export function vestirBase(p, b) {
+  if (p?.tipo === b.id) return p;
+  const { cores: a, skin: c, ...d } = p && typeof p === 'object' ? p : {};
+  return { ...d, tipo: b.id };
+}
+async function montar(o, a) {
+  const P = ctx.Personagem;
+  let p = a || P?.PADRAO || null;
+  const c = typeof p?.tipo === 'string' && p.tipo ? p.tipo : null;
+  o.roupaNova = c && P?.skinDe && P.skinDe(p)?.id !== c ? c : null;
+  if (o.roupaNova)
+    try {
+      ctx.roupaNova?.(o.roupaNova);
+    } catch {}
+  const d = './scenery/pc/' + (P?.glbDe?.(p) || 'Boy_002') + '.glb';
+  let f;
+  try {
+    f = await ctx.montarPersonagem(d, null, 0);
+  } catch (e) {
+    const b = baseDoCriador(P, p);
+    if (o.removido || d === './scenery/pc/' + b.glb + '.glb') throw e;
+    console.warn(
+      'network: the outfit of ' +
+        o.nome +
+        " didn't arrive (" +
+        (e?.message || e) +
+        "); using the creator's base, " +
+        b.glb,
+    );
+    p = vestirBase(p, b);
+    f = await ctx.montarPersonagem('./scenery/pc/' + b.glb + '.glb', null, 0);
+  }
+  if (o.removido) {
+    ctx.cena.remove(f.pivo);
+    return;
+  }
+  if (lotacaoLigada() && outros.size > Lotacao.LIMITE) f.pivo.visible = false;
+  try {
+    if (p && P?.aplicar) await P.aplicar(f.pivo, p);
+  } catch (e) {
+    console.warn('network: outfit of ' + o.nome, e);
+  }
+  o.visual = p;
+  const y = ctx.chaoEm?.(o.alvo.x, o.alvo.z) ?? o.alvo.y;
+  f.x = f.vx = o.alvo.x;
+  f.z = f.vz = o.alvo.z;
+  f.y = f.vy = y;
+  f.giro = o.alvo.giro;
+  f.pivo.position.set(f.x, f.y, f.z);
+  f.pivo.rotation.y = f.giro;
+  ctx.tocarAnim(f, 'Idle');
+  o.ent = f;
+  if (lotacaoLigada()) reavaliarLotado();
+  if (longeLigado && distanciaDe(o) > RAIO_VOLTA) definirLonge(o, true);
+  if (o.roupaNova && P?.skinDe?.({ tipo: o.roupaNova })?.id === o.roupaNova) setTimeout(remontarRoupasNovas, 0);
+  etiquetar(o);
+  await montarParceiro(o);
+  await montarMontariaOutro(o);
+  await montarSeguidorStaff(o);
+}
+function etiquetar(o) {
+  const a = o.ent;
+  if (!a) return;
+  if (a.rotulo) {
+    a.pivo.remove(a.rotulo);
+    a.rotulo.material?.map?.dispose();
+    a.rotulo.material?.dispose();
+  }
+  const b = Conta.comCargo((o.guilda ? '[' + o.guilda + '] ' : '') + o.nome, o.cargo, '#8ec5ff', o.fundador === true);
+  const c = ctx.rotuloSprite(b.texto, b.cor, 2, o.titulo || '', undefined, true);
+  c.position.y = a.altura + 0.35 + (o.titulo ? 0.16 : 0);
+  a.pivo.add(c);
+  a.rotulo = c;
+  c.visible = Pref.ler('nomesOutros') !== false;
+}
+if (typeof addEventListener === 'function')
+  addEventListener('pref-aparelho', (a) => {
+    if (a?.detail?.k === 'ocultarLotado') {
+      reavaliarLotado();
+      return;
+    }
+    if (a?.detail?.k !== 'nomesOutros') return;
+    for (const o of outros.values()) if (o.ent?.rotulo) o.ent.rotulo.visible = !!a.detail.v;
+  });
+const lotacaoLigada = () => Pref.ler('ocultarLotado') === true;
+let lotadoEm = 0;
+function reavaliarLotado(b = performance.now()) {
+  lotadoEm = b;
+  const a = ctx?.jogo?.ash,
+    c = [...outros.values()].filter((o) => o.ent && !o.removido);
+  const d =
+    lotacaoLigada() && a
+      ? Lotacao.visiveis(
+          c.map((o) => ({ id: o.id, x: o.ent.x, z: o.ent.z, oculto: !!o.oculto })),
+          { x: a.x, z: a.z },
+        )
+      : null;
+  for (const o of c) definirOculto(o, !!d && !d.has(o.id));
+}
+function esconderTudo(o) {
+  if (o.ent) o.ent.pivo.visible = false;
+  if (o.mont) o.mont.pivo.visible = false;
+  if (o.par) o.par.pivo.visible = false;
+  if (o.seg) o.seg.pivo.visible = false;
+}
+function definirOculto(o, a) {
+  if (o.oculto === a) return;
+  o.oculto = a;
+  if (a) {
+    esconderTudo(o);
+    return;
+  }
+  if (!o.longe) mostrarTudo(o);
+}
+function mostrarTudo(o) {
+  if (o.ent) o.ent.pivo.visible = true;
+  if (o.mont) o.mont.pivo.visible = true;
+  if (o.par) o.par.pivo.visible = !o.mont;
+  if (o.seg) o.seg.pivo.visible = !o.mont;
+}
+export const RAIO_SAI = 90,
+  RAIO_VOLTA = 80,
+  RAIO_CADENCIA = 30,
+  RAIO_CADENCIA3 = 55;
+let longeLigado = true,
+  nQuadro = 0;
+export function ajustarLonge(v) {
+  longeLigado = v !== false;
+  if (!longeLigado) for (const o of outros.values()) if (o.longe) definirLonge(o, false);
+  return longeLigado;
+}
+function distanciaDe(o) {
+  const a = ctx?.jogo?.ash,
+    e = o.ent;
+  if (!a || !e) return 0;
+  const d = Math.hypot(e.x - a.x, e.z - a.z);
+  return Number.isFinite(d) ? d : 0;
+}
+export const passoDaCadencia = (d) => (!(d >= RAIO_CADENCIA) ? 1 : d < RAIO_CADENCIA3 ? 2 : 3);
+function faseDe(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) return Math.abs(Math.trunc(v)) % 6;
+  let h = 0;
+  for (const c of String(v)) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return Math.abs(h) % 6;
+}
+const pivosDaCena = (o) => [o.mont ? o.mont.pivo : o.ent?.pivo, o.par?.pivo, o.seg?.pivo];
+function guardarLonge(o) {
+  esconderTudo(o);
+  for (const p of pivosDaCena(o)) if (p && p.parent === ctx.cena) ctx.cena.remove(p);
+}
+function definirLonge(o, a) {
+  if (!!o.longe === a) return;
+  o.longe = a;
+  if (a) {
+    guardarLonge(o);
+    return;
+  }
+  for (const p of pivosDaCena(o)) if (p && !p.parent) ctx.cena.add(p);
+  o.dtMix = 0;
+  if (!o.oculto) mostrarTudo(o);
+  if (o.visual && o.ent)
+    try {
+      ctx.efeitosDaSala?.(o.ent.pivo, o.visual);
+    } catch (e) {
+      console.warn('network: effects of ' + o.nome, e);
+    }
+}
+function seguirLonge(o, e, a, b) {
+  e.y = Number.isFinite(a?.voo) && o.mont?.voa ? a.voo : Number.isFinite(a?.y) ? a.y : e.y;
+  e.giro = Number.isFinite(a?.giro) ? a.giro : e.giro;
+  if (o.mont) {
+    const m = o.mont;
+    m.pivo.position.set(e.x, e.y, e.z);
+    m.pivo.rotation.y = e.giro;
+  } else {
+    e.pivo.position.set(e.x, e.y, e.z);
+    e.pivo.rotation.y = e.giro;
+  }
+  const p = o.par;
+  if (p) {
+    const q = b || e;
+    p.x = p.vx = q.x;
+    p.z = p.vz = q.z;
+    p.y = p.vy = e.y;
+    if (b) p.giro = b.giro ?? p.giro;
+    p.pivo.position.set(p.x, p.y, p.z);
+    p.travaAnim = 0;
+  }
+  const s = o.seg;
+  if (s) {
+    const q = o.mont ? e : pontoDoSeguidor(e, p, s);
+    s.x = s.vx = q.x;
+    s.z = s.vz = q.z;
+    s.y = s.vy = e.y;
+    s.giro = e.giro;
+    s.pivo.position.set(s.x, s.y, s.z);
+  }
+}
+async function montarParceiro(o) {
+  if (o.par) {
+    ctx.cena.remove(o.par.pivo);
+    o.par = null;
+  }
+  const a = o.ent;
+  if (!a || !o.parceiroGlb || !ctx.modeloMon || !ctx.montarCorpo || !ctx.clonar) return;
+  const b = o.parceiroGlb;
+  try {
+    const c = b.endsWith('.glb') ? b : b + '.glb';
+    const g = await ctx.modeloMon(c);
+    if (o.removido || o.parceiroGlb !== b) return;
+    const d = ctx.montarCorpo(g, ctx.clonar(g.scene), null, 0, c);
+    d.dex = +(/pm(\d{4})/.exec(c)?.[1] || 0) || undefined;
+    d.ehParceiro = true;
+    d.glb = c;
+    ctx.escalarSeguidor?.(d);
+    if (o.pshiny) ctx.aplicarShinyCampo?.(d.pivo, true);
+    d.x = d.vx = a.x - 1.1;
+    d.z = d.vz = a.z + 0.6;
+    d.y = d.vy = a.y;
+    d.pivo.position.set(d.x, d.y, d.z);
+    ctx.tocarAnim(d, 'Idle');
+    if (o.par) {
+      ctx.cena.remove(o.par.pivo);
+    }
+    o.par = d;
+    o.parFalhou = false;
+    if (o.oculto) esconderTudo(o);
+    if (o.longe) guardarLonge(o);
+  } catch (e) {
+    o.parFalhou = true;
+    console.warn('network: partner of ' + o.nome, e);
+  }
+}
+async function montarMontariaOutro(o) {
+  const a = o.ent;
+  if (!a) return;
+  if (!o.montaria) {
+    soltarMontariaOutro(o);
+    return;
+  }
+  if (o.mont && o.mont.glb === o.montaria && !!o.mont.shiny === !!o.mshiny) return;
+  if (!ctx.modeloMon || !ctx.montarCorpo || !ctx.clonar || !ctx.pontoDeSela) return;
+  const b = o.montaria;
+  try {
+    const g = await ctx.modeloMon(b + '.glb');
+    if (o.removido || o.montaria !== b || !o.ent) return;
+    soltarMontariaOutro(o);
+    const c = ctx.montariaDef?.(b) || [b, b, 'RideIdle1', 'Ride1', true, 0.6, 25000, 'anfibia'];
+    const m = ctx.montarCorpo(g, ctx.clonar(g.scene), null, 0, b);
+    m.glb = b;
+    m.poseIdle = c[2];
+    m.poseRun = c[3];
+    m.voa = !!o.voo;
+    m.shiny = !!o.mshiny;
+    if (m.shiny && ctx.aplicarShinyCampo && ctx.raizShinyDaMontaria)
+      ctx.aplicarShinyCampo(ctx.raizShinyDaMontaria(m), true);
+    const d = c[5] || 0.6;
+    m.pivo.scale.setScalar(d);
+    m.altura *= d;
+    m.passada = (ctx.passadaDoRun?.(g, m) || 0) * d || null;
+    m.ponto = ctx.pontoDeSela(m);
+    m.pivo.position.set(a.x, a.y, a.z);
+    m.pivo.rotation.y = a.giro;
+    ctx.cena.add(m.pivo);
+    const f = new a.pivo.position.constructor();
+    m.pivo.updateMatrixWorld(true);
+    m.ponto.getWorldScale(f);
+    m.ponto.add(a.pivo);
+    a.pivo.position.set(0, 0, 0);
+    a.pivo.rotation.set(0, 0, 0);
+    a.pivo.scale.setScalar(1 / (f.x || 1));
+    ctx.tocarAnim(a, m.poseIdle);
+    ctx.soEsta?.(a, m.poseIdle);
+    ctx.tocarAnim(m, 'Idle');
+    if (o.par) o.par.pivo.visible = false;
+    if (o.seg) o.seg.pivo.visible = false;
+    o.mont = m;
+    o.montFalhou = false;
+    if (o.oculto) esconderTudo(o);
+    if (o.longe) guardarLonge(o);
+  } catch (e) {
+    o.montFalhou = true;
+    console.warn('rede: montaria de ' + o.nome, e);
+  }
+}
+const RE_SEG = /^pm\d{4}(_\d{2})?$/;
+function seguidorValido(v) {
+  if (!v || typeof v !== 'object') return null;
+  const a = String(v.glb || '').replace(/\.glb$/, '');
+  return RE_SEG.test(a) ? { glb: a, shiny: v.shiny === true } : null;
+}
+async function montarSeguidorStaff(o) {
+  if (o.seg) {
+    ctx.cena.remove(o.seg.pivo);
+    o.seg = null;
+  }
+  const a = o.ent,
+    b = o.segStaff;
+  if (!a || !b || !ctx.modeloMon || !ctx.montarCorpo || !ctx.clonar) return;
+  try {
+    const c = b.glb + '.glb',
+      g = await ctx.modeloMon(c);
+    if (o.removido || o.segStaff !== b || !o.ent) return;
+    const s = ctx.montarCorpo(g, ctx.clonar(g.scene), null, 0, c);
+    s.dex = +(/pm(\d{4})/.exec(c)?.[1] || 0) || undefined;
+    s.glb = c;
+    s.ehSeguidorStaff = true;
+    ctx.escalarSeguidor?.(s);
+    if (b.shiny) ctx.aplicarShinyCampo?.(s.pivo, true);
+    const p = pontoDoSeguidor(a, o.par, s);
+    s.x = s.vx = p.x;
+    s.z = s.vz = p.z;
+    s.y = s.vy = a.y;
+    s.giro = a.giro || 0;
+    s.pivo.position.set(s.x, s.y, s.z);
+    s.pivo.rotation.y = s.giro;
+    ctx.tocarAnim(s, 'Idle');
+    if (o.seg) ctx.cena.remove(o.seg.pivo);
+    o.seg = s;
+    o.segFalhou = false;
+    if (o.oculto || o.mont) s.pivo.visible = false;
+    if (o.longe) guardarLonge(o);
+  } catch (e) {
+    o.segFalhou = true;
+    console.warn('network: staff follower ' + o.nome, e);
+  }
+}
+function pontoDoSeguidor(e, a, s) {
+  const g = e.giro || 0,
+    b = Math.sin(g),
+    c = Math.cos(g),
+    d = Math.cos(g),
+    f = -Math.sin(g);
+  if (s && a && Number.isFinite(a.x) && Number.isFinite(a.z)) {
+    const i = (a.x - e.x) * d + (a.z - e.z) * f;
+    if (Math.abs(i) > 0.4) s.lado = i > 0 ? -1 : 1;
+  }
+  const h = s?.lado || -1;
+  const p = { x: e.x - b * 1.7 + d * 1.2 * h, z: e.z - c * 1.7 + f * 1.2 * h };
+  if (a && Number.isFinite(a.x) && Math.hypot(p.x - a.x, p.z - a.z) < 1.3) {
+    p.x += d * 0.9 * h;
+    p.z += f * 0.9 * h;
+  }
+  return p;
+}
+function seguirSeguidorStaff(s, e, b, c = null, f = b) {
+  const a = pontoDoSeguidor(e, c, s),
+    d = Math.hypot(a.x - s.x, a.z - s.z);
+  if (d > 12) {
+    s.x = a.x;
+    s.z = a.z;
+  } else if (d > 0.25) {
+    const k = 1 - Math.exp(-b / 0.18);
+    s.x += (a.x - s.x) * k;
+    s.z += (a.z - s.z) * k;
+    s.giro = Math.atan2(a.x - s.x, a.z - s.z);
+  }
+  s.y = ctx.chaoEm?.(s.x, s.z) ?? e.y;
+  s.pivo.position.set(s.x, s.y, s.z);
+  s.vx = s.x;
+  s.vy = s.y;
+  s.vz = s.z;
+  s.pivo.rotation.y = s.giro ?? e.giro;
+  ctx.tocarAnim(s, d > 0.3 ? (s.acoes?.has('Run') ? 'Run' : 'Idle') : 'Idle');
+  if (f) s.mix?.update(f);
+}
+if (typeof addEventListener === 'function')
+  addEventListener('passe-novo', (a) => {
+    if (a?.detail && a.detail.cresceu === false) return;
+    setTimeout(remontarNegados, 0);
+  });
+function remontarNegados() {
+  for (const o of outros.values()) {
+    if (o.removido || !o.ent) continue;
+    if (o.parFalhou && o.parceiroGlb) {
+      o.parFalhou = false;
+      montarParceiro(o)
+        .then(() => {
+          if (o.par && o.mont) o.par.pivo.visible = false;
+        })
+        .catch(() => {});
+    }
+    if (o.montFalhou && o.montaria) {
+      o.montFalhou = false;
+      montarMontariaOutro(o).catch(() => {});
+    }
+    if (o.segFalhou && o.segStaff) {
+      o.segFalhou = false;
+      montarSeguidorStaff(o).catch(() => {});
+    }
+  }
+}
+function soltarMontariaOutro(o) {
+  const m = o.mont;
+  if (!m) return;
+  const a = o.ent;
+  if (a) {
+    ctx.cena.add(a.pivo);
+    a.pivo.scale.setScalar(1);
+    a.pivo.position.set(a.x, a.y, a.z);
+    a.pivo.rotation.set(0, a.giro, 0);
+    ctx.tocarAnim(a, 'Idle');
+    ctx.soEsta?.(a, 'Idle');
+  }
+  ctx.cena.remove(m.pivo);
+  o.mont = null;
+  if (o.par) {
+    o.par.pivo.visible = true;
+    o.par.meio = undefined;
+  }
+  if (o.seg) o.seg.pivo.visible = true;
+  if (o.oculto) esconderTudo(o);
+  if (o.longe) guardarLonge(o);
+}
+function remover(o) {
   o.removido = true;
-  ctx.cosmeticoSai?.(o);
-  if (o.mont){ ctx.cena.remove(o.mont.pivo); o.mont = null; }              // 14/09: a montaria dele (o corpo está na sela: sai junto)
-  if (o.ent){ ctx.cena.remove(o.ent.pivo); o.ent.rotulo?.material?.map?.dispose(); o.ent = null; }
-  if (o.par){ ctx.cena.remove(o.par.pivo); o.par = null; }
+  if (o.mont) {
+    ctx.cena.remove(o.mont.pivo);
+    o.mont = null;
+  }
+  if (o.ent) {
+    ctx.cena.remove(o.ent.pivo);
+    o.ent.rotulo?.material?.map?.dispose();
+    o.ent = null;
+  }
+  if (o.par) {
+    ctx.cena.remove(o.par.pivo);
+    o.par = null;
+  }
+  if (o.seg) {
+    ctx.cena.remove(o.seg.pivo);
+    o.seg = null;
+  }
   outros.delete(o.id);
 }
-const voltaCurta = (de, para) => { let d = para - de; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
-
-/** Trocou de Pokémon em campo (13/09): a sala e o servidor ficam sabendo no próximo quadro, não dali a até 1 s. */
-let ultimoShiny = null;                                                 // shiny do parceiro (14/09)
-export function parceiroAgora(){ tAparencia = 0; }
-/** Chamado no fim de cada quadro do jogo: manda a nossa posição quando muda e move os outros suavemente até a última posição recebida. */
-export function quadro(dt){
+const andou = (a, b, c, d) => Math.hypot(c - a, d - b) > 0.02;
+const acaoParada = (n) => !!n && !/^(Idle|Run|Walk|Ride)/i.test(n);
+const voltaCurta = (a, b) => {
+  const v = Math.PI * 2;
+  let d = (b - a) % v;
+  if (d > Math.PI) d -= v;
+  else if (d < -Math.PI) d += v;
+  return d;
+};
+function seguirParceiro(p, a, e, b, c, f = b) {
+  const d = Math.hypot(a.x - p.x, a.z - p.z);
+  if (a.direto) {
+    p.x = a.x;
+    p.z = a.z;
+  } else if (d > 12) {
+    p.x = a.x;
+    p.z = a.z;
+  } else if (d > 0.01) {
+    const k = 1 - Math.exp(-b / 0.11);
+    p.x += (a.x - p.x) * k;
+    p.z += (a.z - p.z) * k;
+  }
+  p.giro = (p.giro || 0) + voltaCurta(p.giro || 0, a.giro) * (1 - Math.exp(-b / 0.08));
+  p.y = (p.meio ? ctx.apoio?.(p) : null) ?? ctx.chaoEm?.(p.x, p.z) ?? e.y;
+  p.pivo.position.set(p.x, p.y, p.z);
+  p.vx = p.x;
+  p.vy = p.y;
+  p.vz = p.z;
+  p.pivo.rotation.y = p.giro;
+  const g = a.direto ? c - a.quando > 200 : d < 0.03 && c - a.quando > 250;
+  ctx.tocarAnim(
+    p,
+    g ? (acaoParada(a.anim) && p.acoes?.has(a.anim) ? a.anim : 'Idle') : p.acoes?.has(a.anim) ? a.anim : 'Run',
+  );
+  if (f) p.mix?.update(f);
+}
+let ultimoShiny = null;
+let ultimoVoo = null;
+let ultimoMShiny = null;
+export function parceiroAgora() {
+  tAparencia = 0;
+}
+function ligarRelogioDeEnvio() {
+  if (relogioDeEnvio) return;
+  relogioDeEnvio = setInterval(() => mandarPos(performance.now()), Interp.ENVIO_MS);
+}
+let relogioDeEnvio = null;
+const saltosAgora = () => {
+  const n = Math.floor(+ctx?.jogo?.teleportes || 0) % 1e6;
+  return n > 0 ? { sl: n } : {};
+};
+function mandarPos(b, c = false) {
+  const a = ctx?.jogo?.ash;
+  if (!a || estado !== 'ligado' || id == null || posParado) return;
+  const d = a.anim || 'Idle',
+    e = a.giro || 0,
+    f = ctx.jogo.semParceiro ? null : ctx.jogo.pika;
+  const g = f ? f.x : 0,
+    h = f ? f.z : 0,
+    i = f ? f.giro || 0 : 0,
+    j = f ? f.anim || 'Idle' : '';
+  const k = ctx.area?.() || null;
+  const l = c ? b : tQuadro,
+    m = { x: a.x, z: a.z, giro: e, anim: d, px: g, pz: h, pg: i, pa: j, area: k };
+  const n = Interp.motivoDeEnvio(ultimoEnvio, m, b, l, c);
+  if (!n) return;
+  const o = Interp.marcaDeEnvio(l, ultimoEnvio.tm);
+  enviar({
+    t: 'pos',
+    x: +a.x.toFixed(2),
+    y: +a.y.toFixed(2),
+    z: +a.z.toFixed(2),
+    giro: +e.toFixed(3),
+    anim: d,
+    ...(k !== ultimoEnvio.area ? { area: k } : {}),
+    ...(f ? { px: +g.toFixed(2), pz: +h.toFixed(2), pg: +i.toFixed(3), pa: j } : {}),
+    ...semChaoAgora(),
+    ...(ctx.jogo?.montaria?.voa && Number.isFinite(ctx.jogo.montaria.y)
+      ? { voo: +ctx.jogo.montaria.y.toFixed(2) }
+      : {}),
+    tm: o,
+    ...saltosAgora(),
+  });
+  const p =
+    Math.hypot(a.x - ultimoEnvio.x, a.z - ultimoEnvio.z) > 0.02 ||
+    Math.hypot(g - ultimoEnvio.px, h - ultimoEnvio.pz) > 0.05;
+  ultimoEnvio = {
+    x: a.x,
+    z: a.z,
+    giro: e,
+    anim: d,
+    quando: b,
+    area: k,
+    px: g,
+    pz: h,
+    pg: i,
+    pa: j,
+    tq: Math.max(l, tQuadro),
+    tm: o,
+    mexeu: p,
+  };
+}
+export function posAgora() {
+  mandarPos(performance.now(), true);
+}
+export function quadro(b) {
   if (!ctx) return;
-  const a = ctx.jogo?.ash, agora = performance.now();
-  if (a && estado === 'ligado' && id != null && agora - tAparencia > 1000){   // 1× por segundo: mudou de seguidor ou de roupa? avisa a sala
-    tAparencia = agora;
-    const pkVis = parceiroNoMundo();
-    const par = pkVis?.glb || null;
-    const uidPar = ctx.uidParceiro?.() ?? null, mont = ctx.jogo.montaria?.glb || null, shi = !!(par && ctx.jogo.pika?.shiny);
-    if (par !== ultimoPar || uidPar !== ultimoUid || mont !== ultimaMont || shi !== ultimoShiny){ if (ultimoPar !== null || par || mont) enviar({ t: 'parceiro', parceiro: par, shiny: shi, uid: uidPar, montaria: mont }); ultimoPar = par; ultimoUid = uidPar; ultimaMont = mont; ultimoShiny = shi; }   // shiny (14/09): o parceiro do outro monta com a textura shiny   // montaria (14/09): montou/desmontou → a sala sabe
-    let roupa = null; try { roupa = JSON.stringify(ctx.Personagem?.ler?.() || null); } catch {}
-    if (roupa !== ultimaRoupa){ if (ultimaRoupa !== null) enviar({ t: 'personagem', personagem: ctx.Personagem?.ler?.() || null }); ultimaRoupa = roupa; }
-    const tit = ctx.tituloAtual?.() || '';                               // título sob o nome (12/09): ganhou um, ou trocou de idioma → a sala reescreve a plaquinha
-    if (tit !== ultimoTitulo){ if (ultimoTitulo !== null) enviar({ t: 'titulo', titulo: tit }); ultimoTitulo = tit; }
-  }
-  if (a && estado === 'ligado' && id != null){
-    const anim = a.anim || 'Idle', giro = a.giro || 0, pk = parceiroNoMundo();
-    const px = pk ? pk.x : 0, pz = pk ? pk.z : 0, pg = pk ? (pk.giro || 0) : 0, pa = pk ? (pk.anim || 'Idle') : '';
-    const mudou = Math.hypot(a.x - ultimoEnvio.x, a.z - ultimoEnvio.z) > 0.02 || Math.abs(giro - ultimoEnvio.giro) > 0.005 || anim !== ultimoEnvio.anim
-      || Math.hypot(px - ultimoEnvio.px, pz - ultimoEnvio.pz) > 0.05 || Math.abs(pg - ultimoEnvio.pg) > 0.02 || pa !== ultimoEnvio.pa;   // o parceiro também conta (os outros o veem onde ele está)
-    const area = ctx.area?.() || null;
-    const chegadaPorta = +ctx.portaAgora?.() || 0;
-    if ((mudou && agora - ultimoEnvio.quando > 90) || agora - ultimoEnvio.quando > 4000 || area !== ultimoEnvio.area){
-      enviar({ t: 'pos', x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2), giro: +giro.toFixed(3), anim, ...(area !== ultimoEnvio.area ? { area } : {}),
-        ...(chegadaPorta ? { porta: 1, chegada: chegadaPorta } : {}),
-        ...(pk ? { px: +px.toFixed(2), pz: +pz.toFixed(2), pg: +pg.toFixed(3), pa } : {}) });
-      ultimoEnvio = { x: a.x, z: a.z, giro, anim, quando: agora, area, px, pz, pg, pa };
+  const a = ctx.jogo?.ash,
+    c = performance.now();
+  if (a && estado === 'ligado' && id != null && c - tAparencia > 1000) {
+    tAparencia = c;
+    const f = ctx.jogo.semParceiro || ctx.jogo.pika?.recolhido ? null : ctx.jogo.pika?.glb || null;
+    const g = ctx.uidParceiro?.() ?? null,
+      h = ctx.jogo.montaria?.glb || null,
+      i = !!(f && ctx.jogo.pika?.shiny),
+      j = !!(h && ctx.jogo.montaria?.voa),
+      l = !!(h && ctx.jogo.montaria?.shiny);
+    if (
+      f !== ultimoPar ||
+      g !== ultimoUid ||
+      h !== ultimaMont ||
+      i !== ultimoShiny ||
+      j !== ultimoVoo ||
+      l !== ultimoMShiny
+    ) {
+      if (ultimoPar !== null || f || h)
+        enviar({ t: 'parceiro', parceiro: f, shiny: i, uid: g, montaria: h, voo: j, mshiny: l });
+      ultimoPar = f;
+      ultimoUid = g;
+      ultimaMont = h;
+      ultimoShiny = i;
+      ultimoVoo = j;
+      ultimoMShiny = l;
+    }
+    const n = () => (ctx.Personagem?.visual ?? ctx.Personagem?.ler)?.() || null;
+    let q = null;
+    try {
+      q = JSON.stringify(n());
+    } catch {}
+    if (q !== ultimaRoupa) {
+      if (ultimaRoupa !== null) enviar({ t: 'personagem', personagem: n() });
+      ultimaRoupa = q;
+    }
+    const u = ctx.tituloAtual?.() || '';
+    if (u !== ultimoTitulo) {
+      if (ultimoTitulo !== null) enviar({ t: 'titulo', titulo: u });
+      ultimoTitulo = u;
     }
   }
-  for (const o of outros.values()){
-    const e = o.ent; if (!e) continue;
-    const longe = Math.hypot(o.alvo.x - e.x, o.alvo.z - e.z);
-    if (longe > 12){ e.x = o.alvo.x; e.z = o.alvo.z; }                    // teleporte: não atravessa o mapa correndo
-    else { const k = 1 - Math.exp(-dt / 0.11); e.x += (o.alvo.x - e.x) * k; e.z += (o.alvo.z - e.z) * k; }
-    e.y = o.mont?.voa ? o.alvo.y : (ctx.chaoEm?.(e.x, e.z) ?? o.alvo.y);   // voando (Lugia): a altura é a que ele mandou
-    e.giro += voltaCurta(e.giro, o.alvo.giro) * (1 - Math.exp(-dt / 0.08));
-    const parado = longe < 0.03 && agora - o.quandoPos > 250;
-    if (o.mont){                                                           // 14/09: montado — quem anda é a montaria; o corpo está na sela (filho do ponto)
-      const m = o.mont; m.pivo.position.set(e.x, e.y, e.z); m.pivo.rotation.y = e.giro;
-      ctx.tocarAnim(m, parado ? 'Idle' : (m.acoes?.has('Run') ? 'Run' : 'Idle')); m.mix?.update(dt);
-      ctx.tocarAnim(e, parado ? m.poseIdle : (e.acoes?.has(m.poseRun) ? m.poseRun : m.poseIdle)); e.mix?.update(dt);
-      continue;                                                            // o parceiro dele está na bola
+  tQuadro = c;
+  if (c - lotadoEm > 250) reavaliarLotado(c);
+  nQuadro = (nQuadro + 1) % 6000;
+  for (const o of outros.values()) {
+    const e = o.ent;
+    if (!e) continue;
+    const v = e.x,
+      w = e.z;
+    const r = o.trilha ? Interp.amostrar(o.trilha, c, b, e, o.par) : null;
+    let _,
+      $ = o.alvo,
+      aa = o.anim,
+      ap = o.alvoPar;
+    if (r) {
+      if (Math.hypot(r.x - e.x, r.z - e.z) > Math.max(0.002, 0.2 * b)) o.movEm = c;
+      e.x = r.x;
+      e.z = r.z;
+      $ = r;
+      _ = c - (o.movEm || 0) > 200;
+      if (!acaoParada(o.anim)) aa = r.anim;
+      if (r.par && ap) {
+        const p = o.par;
+        if (!p || Math.hypot(r.par.x - p.x, r.par.z - p.z) > Math.max(0.002, 0.2 * b)) o.parMovEm = c;
+        ap = {
+          x: r.par.x,
+          z: r.par.z,
+          giro: r.par.giro,
+          anim: acaoParada(ap.anim) ? ap.anim : r.par.anim,
+          quando: o.parMovEm || 0,
+          direto: true,
+        };
+      }
+    } else {
+      const da = Interp.perseguir(e, o.alvo, b);
+      _ = da < 0.03 && c - o.andouEm > 250;
     }
-    e.pivo.position.set(e.x, e.y, e.z); e.pivo.rotation.y = e.giro;
-    ctx.tocarAnim(e, parado ? 'Idle' : (e.acoes?.has(o.anim) ? o.anim : 'Run'));
-    e.mix?.update(dt);
+    {
+      const s = (c - (o.tTela || c)) / 1000,
+        d = Math.hypot(e.x - v, e.z - w);
+      o.tTela = c;
+      if (d > 12) o.velTela = 0;
+      else if (s > 0) o.velTela = (o.velTela || 0) + (d / s - (o.velTela || 0)) * (1 - Math.exp(-s / 0.25));
+    }
+    const ba = longeLigado ? distanciaDe(o) : 0;
+    if (longeLigado) {
+      const ea = o.longe ? !(ba < RAIO_VOLTA) : ba > RAIO_SAI;
+      if (ea !== !!o.longe) definirLonge(o, ea);
+    }
+    if (o.longe) {
+      seguirLonge(o, e, $, ap);
+      continue;
+    }
+    o.dtMix = (o.dtMix || 0) + b;
+    const ca = passoDaCadencia(ba),
+      dm = ca === 1 || (nQuadro + (o.fase ??= faseDe(o.id))) % ca === 0 ? o.dtMix : 0;
+    if (dm) o.dtMix = 0;
+    if (o.oculto) {
+      esconderTudo(o);
+      continue;
+    }
+    e.y = o.mont?.voa ? ($.voo ?? $.y) : (ctx.chaoEm?.(e.x, e.z) ?? $.y);
+    e.giro += voltaCurta(e.giro, $.giro) * (1 - Math.exp(-b / 0.08));
+    if (o.mont) {
+      const m = o.mont;
+      m.pivo.position.set(e.x, e.y, e.z);
+      m.pivo.rotation.y = e.giro;
+      ctx.tocarAnim(m, _ ? 'Idle' : m.acoes?.has('Run') ? 'Run' : 'Idle');
+      ctx.tocarAnim(e, _ ? m.poseIdle : e.acoes?.has(m.poseRun) ? m.poseRun : m.poseIdle);
+      ctx.aplicarRitmo?.(m, e, _ ? 1 : (ctx.ritmoDoRun?.(m, o.velTela) ?? 1));
+      if (dm) {
+        m.mix?.update(dm);
+        e.mix?.update(dm);
+      }
+      const p = o.par;
+      if (p) {
+        const fa = !m.voa && !!ctx.naAgua?.($.x, $.z);
+        p.meio = fa ? 'anfibia' : undefined;
+        p.pivo.visible = fa;
+        p.travaAnim = Math.max(0, (p.travaAnim || 0) - b);
+        if (fa && ap) seguirParceiro(p, ap, e, b, c, dm);
+        else {
+          p.x = p.vx = e.x;
+          p.z = p.vz = e.z;
+          p.y = p.vy = e.y;
+          p.pivo.position.set(p.x, p.y, p.z);
+        }
+      }
+      if (o.seg) {
+        const s = o.seg;
+        s.pivo.visible = false;
+        s.x = s.vx = e.x;
+        s.z = s.vz = e.z;
+        s.y = s.vy = e.y;
+        s.pivo.position.set(s.x, s.y, s.z);
+      }
+      continue;
+    }
+    e.pivo.position.set(e.x, e.y, e.z);
+    e.pivo.rotation.y = e.giro;
+    ctx.tocarAnim(e, _ ? (acaoParada(aa) && e.acoes?.has(aa) ? aa : 'Idle') : e.acoes?.has(aa) ? aa : 'Run');
+    if (dm) e.mix?.update(dm);
     const p = o.par;
-    if (p) p.travaAnim = Math.max(0, (p.travaAnim || 0) - dt);            // o "Wound" (tocarUma) do golpe que ele levou segura a troca só pela duração do clipe (3c)
-    if (p && o.alvoPar){                                                 // o parceiro vai pra onde ele está DE VERDADE na tela do dono
-      const ap = o.alvoPar, d = Math.hypot(ap.x - p.x, ap.z - p.z);
-      if (d > 12){ p.x = ap.x; p.z = ap.z; }
-      else if (d > 0.01){ const k = 1 - Math.exp(-dt / 0.11); p.x += (ap.x - p.x) * k; p.z += (ap.z - p.z) * k; }
-      p.giro = (p.giro || 0) + voltaCurta(p.giro || 0, ap.giro) * (1 - Math.exp(-dt / 0.08));
-      p.y = ctx.chaoEm?.(p.x, p.z) ?? e.y;
-      p.pivo.position.set(p.x, p.y, p.z); p.vx = p.x; p.vy = p.y; p.vz = p.z; p.pivo.rotation.y = p.giro;
-      const paradoP = d < 0.03 && agora - ap.quando > 250;
-      ctx.tocarAnim(p, paradoP ? 'Idle' : (p.acoes?.has(ap.anim) ? ap.anim : 'Run')); p.mix?.update(dt);
-    } else if (p){                                                       // cliente antigo sem posição do parceiro: anda atrás, um pouco de lado
-      const ax = e.x - Math.sin(e.giro) * 1.1 + Math.cos(e.giro) * 0.5, az = e.z - Math.cos(e.giro) * 1.1 - Math.sin(e.giro) * 0.5;
+    if (p) p.travaAnim = Math.max(0, (p.travaAnim || 0) - b);
+    if (o.seg) {
+      o.seg.pivo.visible = true;
+      seguirSeguidorStaff(o.seg, e, b, p, dm);
+    }
+    if (p && ap) seguirParceiro(p, ap, e, b, c, dm);
+    else if (p) {
+      const ax = e.x - Math.sin(e.giro) * 1.1 + Math.cos(e.giro) * 0.5,
+        az = e.z - Math.cos(e.giro) * 1.1 - Math.sin(e.giro) * 0.5;
       const d = Math.hypot(ax - p.x, az - p.z);
-      if (d > 10){ p.x = ax; p.z = az; }
-      else if (d > 0.25){ const k = 1 - Math.exp(-dt / 0.18); p.x += (ax - p.x) * k; p.z += (az - p.z) * k; p.giro = Math.atan2(ax - p.x, az - p.z); }
+      if (d > 10) {
+        p.x = ax;
+        p.z = az;
+      } else if (d > 0.25) {
+        const k = 1 - Math.exp(-b / 0.18);
+        p.x += (ax - p.x) * k;
+        p.z += (az - p.z) * k;
+        p.giro = Math.atan2(ax - p.x, az - p.z);
+      }
       p.y = ctx.chaoEm?.(p.x, p.z) ?? e.y;
-      p.pivo.position.set(p.x, p.y, p.z); p.vx = p.x; p.vy = p.y; p.vz = p.z; p.pivo.rotation.y = p.giro || e.giro;
-      ctx.tocarAnim(p, d > 0.3 ? 'Run' : 'Idle'); p.mix?.update(dt);
+      p.pivo.position.set(p.x, p.y, p.z);
+      p.vx = p.x;
+      p.vy = p.y;
+      p.vz = p.z;
+      p.pivo.rotation.y = p.giro || e.giro;
+      ctx.tocarAnim(p, d > 0.3 ? 'Run' : 'Idle');
+      if (dm) p.mix?.update(dm);
     }
   }
 }
