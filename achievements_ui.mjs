@@ -13,11 +13,11 @@ let pop = null,
   avisoT = null;
 const A = { aba: 'conquistas', cat: 'todas', soResgatar: false, filtroTit: 'todos', titulo: null, escada: null };
 const ART = './ui/amanda/conquistas/';
-/* Medal art in the repo: rings for the five metals, centres for 'todas' and 'oculta' only (the per-category centres and
-   the empty 'sem' ring are on the download list). Anything else falls back so no medal draws a broken image. */
-const AROS = new Set(['bronze', 'prata', 'ouro', 'platina', 'diamante']);
-/* Add a category id here once its miolo-<id>.png is in ui/amanda/conquistas/miolos (the download list has the links). */
-const MIOLOS = new Set(['todas', 'oculta']);
+/* Medal art in the repo: a ring per metal plus the empty 'sem' ring, and a centre per category. Anything else falls back
+   (bronze ring, 'todas' centre) so no medal draws a broken image. */
+const AROS = new Set(['bronze', 'diamante', 'ouro', 'platina', 'prata', 'sem']);
+/* The medal centres in ui/amanda/conquistas/miolos, one per achievement category (a new category falls back to 'todas'). */
+const MIOLOS = new Set(['captura', 'elite', 'exploracao', 'guilda', 'insignias', 'luta', 'mercado', 'missao', 'oculta', 'pesca', 'pokedex', 'raid', 'shiny', 'social', 'tempo', 'todas']);
 const aroUrl = (m) => ART + 'aros/aro-' + (AROS.has(m) ? m : 'bronze') + '.png';
 const mioloUrl = (c) => ART + 'miolos/miolo-' + (MIOLOS.has(c) ? c : 'todas') + '.png';
 const noUrl = (m, a) => ART + 'nos/no-' + m + (a ? '-vazio' : '') + '.png';

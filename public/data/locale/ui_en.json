@@ -7752,5 +7752,10 @@
   "Resgatar tudo ({n})": "Claim all ({n})",
   "Resgatar todas as recompensas prontas": "Claim every reward that is ready",
   "Nada para resgatar agora": "Nothing to claim right now",
-  "Nada para resgatar agora.": "Nothing to claim right now."
+  "Nada para resgatar agora.": "Nothing to claim right now.",
+  "completa": "complete",
+  "Platina": "Platinum",
+  "Diamante": "Diamond",
+  "conquista": "achievement",
+  "resgatada": "redeemed"
 }
