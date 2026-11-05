@@ -30,7 +30,7 @@ export function posLimpa(p, mapaPadrao){
 
 export function posDaConta(c){
   if (!c) return null;
-  return c.posGm || c.pos || null;
+  return c.posGm ? { ...c.posGm, gm: true } : c.pos || null;   // gm: a GM / raid teleport — the client looks wider for free ground around it
 }
 
 /** Decide whether `nextRaw` may replace the stored walk position. */

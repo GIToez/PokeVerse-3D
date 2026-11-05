@@ -2693,7 +2693,7 @@ function podeIr(e, x, z){ return e?.meio === 'agua' ? navegavel(x, z) : e?.meio 
 /* `aceita(px, pz)` (opcional, 19/09): filtro extra do ponto — o desmonte do surf só aceita terra de onde dá pra montar de novo. */
 function terraPerto(x, z, r = 6, aceita = null){
   if (livre(x, z) && (!aceita || aceita(x, z))) return { x, z };
-  for (const d of [1, 2, 3, 4, 5, 6, 8, 10]){
+  for (const d of [1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 28, 40]){
     if (d > r) break;
     for (let i = 0; i < 16; i++){ const a = i / 16 * Math.PI * 2, px = x + Math.sin(a) * d, pz = z + Math.cos(a) * d; if (livre(px, pz) && (!aceita || aceita(px, pz))) return { x: px, z: pz }; }
   }
@@ -4005,10 +4005,10 @@ if (PLAY){
        do raio a porta entra em `emPorta` e só dispara depois de sair e voltar — quem saía andando reto atravessava a soleira sem
        teleporte e ia parar no vazio de fora do cômodo (hipótese pros vídeos do l.neto no laboratório e na escola). */
     const paradaNaPorta = paradaSalva && INTERIOR && (dados.npcs || []).some(n => PORTAS[n.cfg]?.t === 6 && Math.hypot(flipX * n.x - paradaSalva.x, n.z - paradaSalva.z) < 1.3);
-    if (paradaSalva && !paradaNaPorta && paradaSalva.mapa === NOME && chaoEm(paradaSalva.x, paradaSalva.z) != null){
+    if (paradaSalva && !paradaNaPorta && String(paradaSalva.mapa) === String(NOME) && (chaoEm(paradaSalva.x, paradaSalva.z) != null || paradaSalva.gm)){   // gm: sent by a GM (/tp, /puxar, panel) — a spot off the ground looks up to 40 m for free ground instead of the default spawn
       /* 16/09: parou DENTRO da rocha (posição guardada antes da máscara do navmesh do Monte Lua)? nasce no chão andável mais perto; sem nenhum em 10 m, na chegada */
       /* 19/09: ou parou no MIOLO de uma guarita (posição guardada antes da zona das guaritas): mesma saída, o chão livre mais perto */
-      const t = (noNavmesh(paradaSalva.x, paradaSalva.z) && !naGuarita(paradaSalva.x, paradaSalva.z)) ? { x: paradaSalva.x, z: paradaSalva.z } : terraPerto(paradaSalva.x, paradaSalva.z, 10);
+      const t = (chaoEm(paradaSalva.x, paradaSalva.z) != null && noNavmesh(paradaSalva.x, paradaSalva.z) && !naGuarita(paradaSalva.x, paradaSalva.z)) ? { x: paradaSalva.x, z: paradaSalva.z } : terraPerto(paradaSalva.x, paradaSalva.z, paradaSalva.gm ? 40 : 10);
       if (t){ cx0 = { x: flipX * t.x, z: t.z }; ash.giro = paradaSalva.giro || 0; }   // cx0 é em unity; ash.x aplica o flipX de novo
     }
     /* RAID AO VIVO (14/09): na arena o servidor espalha os participantes com a posição da conta. Sem as portas (é o `prepararPortas` que tira
@@ -9621,7 +9621,11 @@ if (jogo.ash){
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
       fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });
-    } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
+    }, irAte: m => {                                                     /* /ir name (and the panel's Go there) on the same map: land next to them */
+      if (!jogo.ash || !Number.isFinite(+m.x) || !Number.isFinite(+m.z)) return;
+      const t = livre(+m.x + 1.2, +m.z) ? { x: +m.x + 1.2, z: +m.z } : (terraPerto(+m.x, +m.z, 6) || { x: +m.x, z: +m.z });
+      teleportar(jogo.ash, t.x, t.z); if (jogo.pika && !jogo.montaria) puxarParceiro('');
+    }, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
   /* LETREIRO DE INVASÃO (15/09): alerta passante BRANCO no topo, estilo anúncio de jogo mobile. Injeta o CSS na 1ª vez, cria a
