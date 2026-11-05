@@ -317,6 +317,7 @@ export function criarWilds(ctx) {
   return {
     rollAt,
     areaOf,
+    levelCap,
     award: (ws, wild) => {
       const out = award(ws, wild);
       if (out) ctx.enviar(ws, out);

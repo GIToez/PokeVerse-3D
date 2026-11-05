@@ -19,6 +19,7 @@
  *
  * Wire tokens stay as the client expects them (selvagem, spos, shp, sestado, sumiu, scapt, pdano, dono); renaming them
  * belongs to the protocol pass that renames both ends at once. */
+import * as Transf from './transform.mjs';
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import crypto from 'node:crypto';
@@ -251,6 +252,8 @@ export function createWorld(h) {
     return (hint.uid != null && party.find(p => alive(p) && String(p.uid) === String(hint.uid)))
       || (hint.dex != null && party.find(p => alive(p) && +p.dex === +hint.dex)) || party.find(alive) || null;
   }
+  /** A transformed Ditto fights with the copied types and stats (transform.mjs). */
+  const effective = p => (Transf.dados() ? Transf.especieEfetiva(species(p.dex), p) || species(p.dex) : species(p.dex));
   const statOf = (S, p, i) => statBase(S.bs[i], levelOf(p), ivsOf(p)[i] || 0, 0, p?.natureza, i);
   /** The raid formula, which is the client's `golpear`: STAB 1.5, type chart, 85–100 %. */
   function damage(move, lv, A, atk, D, def) {
@@ -275,7 +278,7 @@ export function createWorld(h) {
     if (!mon) return;
     w.touched = now;
     if (w.owner == null || !onMap(map).some(x => x._id === w.owner)) setOwner(map, w, ws._id);
-    const A = species(mon.dex), B = species(w.dex), lv = levelOf(mon), physical = move.cat === 'fisico';
+    const A = effective(mon), B = species(w.dex), lv = levelOf(mon), physical = move.cat === 'fisico';
     if (Math.random() > Stg.chance(1, move, null, w.est)) {
       toMap(map, { t: 'shp', id: w.id, hp: w.hp, dano: 0, eff: 1, golpe: move.id, de: ws._id, errou: true });
       return;
@@ -305,7 +308,7 @@ export function createWorld(h) {
     let move = moveById(m.golpe);
     if (!move || move.cat === 'status') move = learned.tackle || STRUGGLE;
     w.lastHit = now; w.touched = now;
-    const B = species(w.dex), D = species(mon.dex), physical = move.cat === 'fisico';
+    const B = species(w.dex), D = effective(mon), physical = move.cat === 'fisico';
     const missed = Math.random() > Stg.chance(1, move, w.est, null);
     const { dano, eff } = missed ? { dano: 0, eff: 1 }
       : damage(move, w.lv, B, statBase(B.bs[physical ? 1 : 3], w.lv, ivsOf(w.ind)[physical ? 1 : 3] || 0, 0, w.ind.natureza, physical ? 1 : 3), D, statOf(D, mon, physical ? 2 : 4));
@@ -455,5 +458,7 @@ export function createWorld(h) {
     }
   }
   const stats = () => ({ maps: rooms.size, wilds: [...rooms.values()].reduce((n, r) => n + r.wilds.size, 0) });
-  return { receive, list, joined, left, stats, _test: { shakes, rooms } };
+  /** One wild on a map by id (Transform reads its species, level and moves). */
+  const wild = (map, id) => roomOf(map).wilds.get(String(id)) || null;
+  return { receive, list, joined, left, stats, wild, _test: { shakes, rooms } };
 }

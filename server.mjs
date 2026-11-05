@@ -37,6 +37,7 @@ import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
 import { createRanking } from './server_ranking.mjs';
 import { createWardrobe } from './server_wardrobe.mjs';
+import { createTransform } from './server_transform.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1433,6 +1434,11 @@ const world = createWorld({
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
+/* TRANSFORM (server_transform.mjs + transform.mjs): Ditto copies a nearby Pokémon for 30 min in the world. */
+const transformacao = createTransform({
+  accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, world, wilds, battle: batalha, saveAccounts: salvarContas,
+  onMap: map => [...conexoes.values()].filter(w => w._mapa === map), broadcast: (ws, obj) => broadcast(ws, obj),
+});
 
 function broadcast(remetente, obj, soMesmoMapa = true) {
   const m = remetente._mapa;
@@ -1445,7 +1451,7 @@ function broadcast(remetente, obj, soMesmoMapa = true) {
 
 function infoJogador(ws) {
   const i = ws._info || {};
-  return { id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', parceiro: i.parceiro || null, pshiny: !!i.shiny, montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
+  return { id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
 }
 
 wss.on('connection', ws => {
@@ -1497,6 +1503,7 @@ wss.on('connection', ws => {
         enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
+        transformacao.joined(ws);                                         // a Ditto that can't stay transformed changes back
         ws._worldJoined = true; world.joined(ws);                           // shared world: wilds nobody owns on this map go to this player
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo
@@ -1538,9 +1545,16 @@ wss.on('connection', ws => {
         broadcast(ws, { t: 'pos', id: ws._id, x: m.x, y: m.y, z: m.z, giro: m.giro, anim: m.anim, px: m.px, pz: m.pz, pg: m.pg, pa: m.pa });
         break;
 
-      case 'parceiro':
-        if (ws._info) { ws._info.parceiro = m.parceiro; ws._info.shiny = m.pshiny; ws._info.montaria = m.montaria; }
-        broadcast(ws, { t: 'parceiro', id: ws._id, parceiro: m.parceiro, pshiny: m.pshiny, montaria: m.montaria });
+      case 'parceiro': {
+        const uidAntes = ws._info?.uid ?? null;
+        if (ws._info) { ws._info.parceiro = m.parceiro; ws._info.shiny = m.shiny ?? m.pshiny; ws._info.montaria = m.montaria; if (m.uid !== undefined) ws._info.uid = m.uid; }
+        if (uidAntes != null && String(uidAntes) !== String(ws._info?.uid ?? '')) transformacao.partnerChanged(ws, uidAntes);   // swapped out: the Ditto changes back
+        const tv = transformacao.shown(ws);
+        broadcast(ws, { t: 'parceiro', id: ws._id, parceiro: tv?.glb || m.parceiro, pshiny: tv ? tv.shiny : !!(m.shiny ?? m.pshiny), montaria: m.montaria, ...(tv ? { transf: { dex: tv.dex, nome: tv.nome } } : {}) });
+        break;
+      }
+      case 'transformar': case 'destransformar':   // Transform (server_transform.mjs)
+        transformacao.receive(ws, m);
         break;
 
       case 'personagem': {

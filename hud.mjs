@@ -1534,3 +1534,236 @@ export function figImagem(raiz, nome, url, dentro = null, pad = null){
   else { f.style.backgroundSize = f.__bg0[0]; f.style.backgroundPosition = f.__bg0[1]; }
   return f;
 }
+/* Situational widget helpers from upcoming/hud.mjs (transform_ui.mjs uses them): repeated cells of a widget, and an extra state drawn over it. */
+export function sitCelulas(a, b, c) {
+  const t = a?.__sitArvore,
+    C = t?.celulas?.[b];
+  if (!C) return [];
+  let d = a.querySelector(':scope > [data-sit-livre="' + b + '"]');
+  if (!d) {
+    d = document.createElement('div');
+    d.dataset.sitLivre = b;
+    a.appendChild(d);
+  }
+  const n = c.length,
+    e = C.n || 1,
+    f = C.pos?.[e - 1] || [0, 0];
+  Object.assign(d.style, {
+    position: 'absolute',
+    left: C.x + 'px',
+    top: C.y + 'px',
+    width: C.w + 'px',
+    height: C.h + 'px',
+    zIndex: '40',
+    overflowX: 'hidden',
+    overflowY: n > e ? 'auto' : 'hidden',
+    pointerEvents: n > e ? 'auto' : 'none',
+    scrollbarWidth: n > e && !sbDef() ? 'thin' : 'none',
+  });
+  const g = [];
+  let j = 0;
+  for (let i = 0; i < n; i++) {
+    const k = c[i] && c[i] !== 'normal' && C.moldes[c[i]] ? c[i] : 'normal',
+      M = (k === 'normal' && C.vagas?.[i]) || C.moldes[k];
+    let r = d.querySelector(':scope > [data-sit-linha="' + i + '"]');
+    if (!r) {
+      r = document.createElement('div');
+      r.dataset.sitLinha = String(i);
+      d.appendChild(r);
+    }
+    const [l, m] = C.pos?.[i] || [f[0] + (i - e + 1) * (C.passoX || 0), f[1] + (i - e + 1) * (C.passoY || 0)];
+    Object.assign(r.style, {
+      position: 'absolute',
+      left: l + 'px',
+      top: m + 'px',
+      width: M.w + 'px',
+      height: M.h + 'px',
+      backgroundImage: M.img ? 'url(' + M.img + ')' : 'none',
+      backgroundColor: 'transparent',
+      cursor: M.tag ? 'pointer' : '',
+    });
+    if (M.img) fundoComFolga(r, M.imgPad);
+    if (M.tag) {
+      r.dataset.tag = M.tag;
+      r.dataset.tagval = M.tagVal || '';
+    } else {
+      delete r.dataset.tag;
+      delete r.dataset.tagval;
+    }
+    r.dataset.i = String(i);
+    if (r.__molde !== M) {
+      r.__molde = M;
+      montarFigma(r, { nome: b, v2: true, sit: true, filhos: M.filhos || [] }, false);
+      if (k !== 'normal') estado(r, k, 1);
+    }
+    r.hidden = false;
+    g.push(r);
+    j = Math.max(j, m + M.h);
+  }
+  for (const r of d.querySelectorAll(':scope > [data-sit-linha]')) if (+r.dataset.sitLinha >= n) r.remove();
+  ajustarMoldura(a, t, C, n, d, j);
+  return g;
+}
+function ajustarMoldura(a, t, C, n, b, c) {
+  const e = C.n || 1,
+    d = n > e ? sbDef() : null;
+  let w = t.w,
+    h = t.h,
+    i = 0;
+  if (n < e) {
+    const o = C.pos?.[Math.max(0, n - 1)] || [0, 0],
+      p = C.moldes?.normal?.h || C.h / e;
+    h = Math.round(C.y + o[1] + p + Math.max(8, t.h - (C.y + C.h)));
+  }
+  if (d) {
+    const m = Math.max(0, t.w - (C.x + C.w)),
+      g = Math.max(3, Math.round(m / 2));
+    i = C.x + C.w + g;
+    w = Math.round(i + d.w + m);
+  }
+  if ((w !== t.w || h !== t.h) && t.img) {
+    const q = t.imgPad || 0,
+      r = 24,
+      s = (((q + r) / (t.h + 2 * q)) * 100).toFixed(3) + '%',
+      u = (((q + r) / (t.w + 2 * q)) * 100).toFixed(3) + '%';
+    a.dataset.encolhida = '1';
+    Object.assign(a.style, {
+      backgroundImage: 'none',
+      border: '0 solid transparent',
+      borderImage:
+        'url(' + t.img + ') ' + s + ' ' + u + ' ' + s + ' ' + u + ' fill / ' + (q + r) + 'px / ' + q + 'px stretch',
+    });
+  } else if (a.dataset.encolhida) {
+    delete a.dataset.encolhida;
+    Object.assign(a.style, { borderImage: '', border: '' });
+    if (t.img) {
+      a.style.backgroundImage = 'url(' + t.img + ')';
+      fundoComFolga(a, t.imgPad);
+    }
+  }
+  a.style.width = w + 'px';
+  a.style.height = h + 'px';
+  for (const f of t.filhos || [])
+    if (f.tipo === 'txt' && f.al === 'right') {
+      const x = a.querySelector(':scope > [data-fig="' + f.nome + '"]');
+      if (x) x.style.left = f.x + w - t.w + 'px';
+    }
+  let j = a.querySelector(':scope > [data-sit-sb]');
+  if (!d) {
+    if (j) j.remove();
+    b.__sbAtualizar = null;
+    return;
+  }
+  if (!j) {
+    j = document.createElement('div');
+    j.dataset.sitSb = b.dataset.sitLivre || '1';
+    const v = document.createElement('div');
+    v.dataset.sitPolegar = '1';
+    j.appendChild(v);
+    a.appendChild(j);
+    j.addEventListener(
+      'wheel',
+      (a) => {
+        b.scrollTop += a.deltaY;
+      },
+      { passive: true },
+    );
+    let z = 0,
+      _ = 0,
+      $ = null;
+    const aa = () => {
+      const a = j.getBoundingClientRect(),
+        b = v.getBoundingClientRect();
+      return { rt: a, rp: b, l: a.height - b.height };
+    };
+    j.addEventListener('pointerdown', (a) => {
+      a.stopPropagation();
+      a.preventDefault();
+      const { rt: c, rp: d, l } = aa(),
+        e = b.scrollHeight - b.clientHeight;
+      if (a.target !== v && l > 0) b.scrollTop = ((a.clientY - c.top - d.height / 2) / l) * e;
+      z = a.clientY;
+      _ = b.scrollTop;
+      $ = a.pointerId;
+      try {
+        j.setPointerCapture(a.pointerId);
+      } catch {}
+    });
+    j.addEventListener('pointermove', (a) => {
+      if ($ == null || a.pointerId !== $) return;
+      const { l } = aa();
+      if (l > 0) b.scrollTop = _ + ((a.clientY - z) * (b.scrollHeight - b.clientHeight)) / l;
+    });
+    const ba = (a) => {
+      if (a.pointerId !== $) return;
+      $ = null;
+      try {
+        j.releasePointerCapture(a.pointerId);
+      } catch {}
+    };
+    j.addEventListener('pointerup', ba);
+    j.addEventListener('pointercancel', ba);
+    b.addEventListener('scroll', () => b.__sbAtualizar?.(), { passive: true });
+  }
+  const k = j.firstChild;
+  Object.assign(j.style, {
+    position: 'absolute',
+    left: i + 'px',
+    top: C.y + 'px',
+    width: d.w + 'px',
+    height: C.h + 'px',
+    zIndex: '41',
+    pointerEvents: 'auto',
+    cursor: 'pointer',
+  });
+  Object.assign(k.style, { position: 'absolute', left: (d.w - d.polegar.w) / 2 + 'px', width: d.polegar.w + 'px' });
+  pilula(j, d);
+  pilula(k, d.polegar);
+  b.__sbAtualizar = () => {
+    const a = C.h,
+      d = Math.max(c, C.h + 1),
+      e = Math.max(Math.min(24, a / 3), Math.round((a * C.h) / d));
+    const y = Math.round((a - e) * Math.min(1, b.scrollTop / (d - C.h)));
+    k.style.height = e + 'px';
+    k.style.top = Math.max(0, Math.min(a - e, y)) + 'px';
+  };
+  b.__sbAtualizar();
+}
+const sbDef = () => layoutAtual()?._figma?.scrollbar?.[aplicar.__preset === 'pc' ? 'pc' : 'deitado'] || null;
+export function sitSobre(a, b, d, e = true, g = null) {
+  if (!a) return null;
+  let c = a.querySelector(':scope > [data-sit-livre="' + b + '"]');
+  const t = e ? sitDef(b)?.estados?.[d] : null;
+  if (!t) {
+    if (c) c.remove();
+    return null;
+  }
+  if (c?.__sitArvore === t) return c;
+  if (c) c.remove();
+  const i = new Set(),
+    j = (a) => {
+      for (const f of a || []) {
+        i.add(f.nome);
+        j(f.filhos);
+      }
+    };
+  if (g) j(layoutAtual()?.[aplicar.__preset]?.[g]?.figma?.filhos);
+  for (const n of a.querySelectorAll('[data-fig],[data-figlig]')) i.add(n.dataset.fig || n.dataset.figlig);
+  c = document.createElement('div');
+  c.dataset.sitLivre = b;
+  c.__sitArvore = t;
+  Object.assign(c.style, {
+    position: 'absolute',
+    left: '0',
+    top: '0',
+    width: t.w + 'px',
+    height: t.h + 'px',
+    zIndex: '60',
+    pointerEvents: 'none',
+  });
+  a.appendChild(c);
+  montarFigma(c, { nome: b, v2: true, sit: true, filhos: (t.filhos || []).filter((f) => !i.has(f.nome)) }, false);
+  c.style.position = 'absolute';
+  c.style.display = 'block';
+  return c;
+}
