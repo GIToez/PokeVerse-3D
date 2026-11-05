@@ -104,7 +104,7 @@ export function criarRaid(h) {
       chefeHp: Math.round(num(d.chefeHp, 0, 1e7, PADRAO.chefeHp)),
       chefeDano: num(d.chefeDano, 0, 10, PADRAO.chefeDano),
       taxaShiny: Math.round(num(d.taxaShiny, 1, 1e6, PADRAO.taxaShiny)),
-      premio: d.premio === 'sem-mew' ? 'sem-mew' : PADRAO.premio,
+      premio: d.premio === 'sem-mew' || d.premio === 'items' ? 'sem-mew' : PADRAO.premio,   // 'mew' (stored name) = items + the catch throw; 'sem-mew' / 'items' = items only
       lutaMin: num(d.lutaMin, 1, 30, LUTA_MS / 60000),                     // minutes to KO the boss before it flees
     };
   }
@@ -362,7 +362,7 @@ export function criarRaid(h) {
     const g = sessoes.get(ws._info?.token) || null, cg = contas[g];
     if (!cg?.gm && cg?.cargo !== 'staff') { sistema(ws, '⚠ Only staff can run the raid.'); return; }
     let op = semAcento(m.op); op = OP_ALIAS[op] || op;
-    const v = m.valor, txt = semAcento(v);
+    const v = m.valor; let txt = semAcento(v);
     const ok = (texto, extra = {}) => { sistema(ws, '🐉 ' + texto); if (op !== 'status') logAdmin(g, '*', 'raid ' + op, { depois: { id: raid?.id ?? null, ...extra } }); };
     const erro = texto => sistema(ws, '⚠ ' + texto);
     if (op === 'anunciar') {
@@ -425,10 +425,12 @@ export function criarRaid(h) {
       raid.sobre.shiny = n; ok('Prize shiny odds: 1 in ' + n + '.', { shiny: n }); return;
     }
     if (op === 'premio') {
-      if (txt !== 'mew' && txt !== 'sem-mew') { erro('Use: /raid prize mew | sem-mew'); return; }
+      const pr = { catch: 'mew', throw: 'mew', mew: 'mew', items: 'sem-mew', 'sem-mew': 'sem-mew' }[txt];
+      if (!pr) { erro('Use: /raid prize catch | items  (catch = items + one throw for the top fighters, items = no throw)'); return; }
+      txt = pr;
       raid.sobre.premio = txt; ok('Prize: ' + (txt === 'mew' ? 'items + a catch throw for the top fighters' : 'items only (no catch throw)') + '.', { premio: txt }); return;
     }
-    erro('Use: /raid announce [boss | random] | start | cancel | hp N | damage F | shiny N | prize mew|sem-mew | status');
+    erro('Use: /raid announce [boss | random] | start | cancel | hp N | damage F | shiny N | prize catch|items | status');
   }
   function status() {
     if (!raid) return 'No raid right now (data/raid.json default: ' + (c => c.chefeNome + ' Lv ' + c.chefeNivel + ', ' + c.vagas + ' spots, arena ' + c.arena)(lerCfg()) + ').';
