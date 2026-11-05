@@ -16,8 +16,10 @@ const STAT_IN = { atk: 'attack', def: 'defense', spa: 'special-attack', spd: 'sp
 const STAT_OUT = Object.fromEntries(Object.entries(STAT_IN).map(([a, b]) => [b, a]));
 const ST_IN = { toxic: 'bad-poison' }, ST_OUT = { 'bad-poison': 'toxic' };
 /* engine "can't move" reasons → our status ids (the client's Status.aviso / color) */
-const PARADO = { sono: 'sleep', congelado: 'freeze', paralisia: 'paralysis' };
+const PARADO = { sono: 'asleep', congelado: 'frozen', paralisia: 'paralyzed', hesitar: 'flinched', recarga: 'must recharge', disable: 'move disabled', taunt: 'taunted', encore: 'locked by Encore' };
 const VOLATIL_COR = { confusion: '#E8578A', trap: '#B6A136', 'leech-seed': '#6BB84A', flinch: '#9A9AA6', curse: '#6B4F99', nightmare: '#4C3F73' };
+/* Short pop-up words for the events that happen outside a move (the full sentence goes to the battle text). */
+const CURTO = { confuso: 'confused', 'se-bate': 'hurt itself', acorda: 'woke up', descongela: 'thawed', 'cura-status': 'cured', fim: '' };
 const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 
 export function createTurnEngine({ status, engineMoves, moves, species, statOf, struggle }) {
@@ -122,10 +124,15 @@ export function createTurnEngine({ status, engineMoves, moves, species, statOf, 
       }
       if (e.t === 'nao-age') {
         cur = null;
-        lances.push({ de: sideOf(e.alvo), parado: PARADO[e.motivo] || e.motivo, avisoTxt: txt });
+        lances.push({ de: sideOf(e.alvo), parado: PARADO[e.motivo] || 'can\'t move', avisoTxt: txt });
         continue;
       }
-      if (!cur) { if (txt && !['dano', 'cura', 'desmaia'].includes(e.t)) aviso(e.alvo, txt); continue; }
+      if (!cur) {   // before a move (confusion, waking up…) or after both (end-of-turn damage)
+        if (e.t === 'dano') aviso(e.alvo, '-' + e.v + ' HP', '#ff8a8a');
+        else if (e.t === 'cura') aviso(e.alvo, '+' + (e.v || '') + ' HP', '#8ef58e');
+        else if (e.t !== 'desmaia') aviso(e.alvo, CURTO[e.t] || txt, VOLATIL_COR[e.id] || (e.t === 'confuso' || e.t === 'se-bate' ? VOLATIL_COR.confusion : undefined));
+        continue;
+      }
       const onFoe = e.alvo !== actor;
       switch (e.t) {
         case 'dano':

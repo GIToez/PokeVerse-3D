@@ -10740,6 +10740,10 @@ async function rodadaDoServidor(T, acao){
     }
     const at = l.de === 'eu' ? jogo.pika : T.inimigo, def = l.de === 'eu' ? T.inimigo : jogo.pika;
     if (!at || !def) continue;
+    /* battle engine pop-ups (server_battle_engine.mjs): 'protected!', 'confused!', 'critical hit!', '-12 HP'… over whoever they
+       are about; `quem` is from my side ('eu' = my Pokémon). */
+    const avisos = () => { for (const v of l.avisos || []) { const m = v.quem === 'eu' ? jogo.pika : v.quem === 'ele' ? T.inimigo : at; if (m) flutuar(m, v.txt, v.cor || '#ffd23a'); } };
+    if (!l.golpe && !l.parado){ avisos(); await esperarSeg(0.35); continue; }   // a lance that only carries texts (end of turn)
     /* o lance carrega o uid de quem LEVA o golpe: se não é quem está no campo agora, o dano não cai nele (era assim que o
        golpe pendente ia parar no Pokémon errado). O turno segue; o `eu.uid` da resposta acerta o campo logo abaixo. */
     const meuUid = def === jogo.pika ? (def.uid ?? uidParceiro()) : null;
@@ -10748,13 +10752,15 @@ async function rodadaDoServidor(T, acao){
       continue;
     }
     if (l.parado){
-      flutuar(at, Status.aviso(l.parado), Status.cor(at.status?.id) || '#9ab');
+      flutuar(at, Status.aviso(l.parado) || 'can\'t move', Status.cor(at.status?.id) || '#9ab');
+      avisos();
       if (at === jogo.pika) guardarEstadoAtivo();
       continue;
     }
     const g = (l.golpe === 'struggle' ? STRUGGLE : GOLPES[l.golpe]) || STRUGGLE;
     if (l.statusQuem !== 'eu' && g.tipo === 'Fire' && def.status?.id === 'freeze') flutuar(def, 'thawed', Status.cor('freeze'));
     await golpeTurno(at, def, g, { dano: l.dano, eff: l.eff, hp: l.hpAlvo, errou: !!l.errou });
+    avisos();
     if (l.curou && at){ at.hp = at.maxHp; flutuar(at, 'HP restored', '#8ef58e'); }
     if (l.estagios) mostrarEstagios(l.estagios.quem === 'eu' ? at : def, l.estagios.mudancas, true);
     if (l.semente === true && def){ def.semente = { de: at === jogo.pika ? 'parceiro' : at }; flutuar(def, 'seeded!', '#8ef58e'); if (def.rotulo){ def.rotMarca = undefined; pintarRotuloSelvagem(def); } }

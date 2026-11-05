@@ -23,6 +23,7 @@ const contas = {
           movs: [
             { id: 'thunderbolt', pp: 15, ppMax: 15 },
             { id: 'tackle', pp: 35, ppMax: 35 },
+            { id: 'irontail', pp: 15, ppMax: 15 },   // Brock's Onix is Ground: Thunderbolt can't touch it, and on the engine it stacks Curse
           ],
         },
       ],
@@ -120,7 +121,7 @@ const xpLines = [];
 batalha.receber(ws, { t: 'bat_desafiar', tipo: 'ginasio', id: 101 });
 let gymEnd = null, gymRounds = 0;
 while (gymRounds++ < 60) {
-  batalha.receber(ws, { t: 'bat_acao', acao: 'golpe', golpe: 'thunderbolt', vez: last().vez });
+  batalha.receber(ws, { t: 'bat_acao', acao: 'golpe', golpe: (last().ele?.dex === 95 ? 'irontail' : 'thunderbolt'), vez: last().vez });
   gymEnd = last();
   if (gymEnd.t === 'bat_erro') throw new Error('gym action failed: ' + JSON.stringify(gymEnd));
   xpLines.push(...(gymEnd.log || []).filter((l) => /EXP/.test(l)));

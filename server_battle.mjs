@@ -13,6 +13,7 @@ import * as Stg from './stages.mjs';
 import * as Regras from './item_rules.mjs';
 import { efetividade } from './rules.mjs';
 import { expMultOf, expSharers } from './exp_items.mjs';
+import { createTurnEngine } from './server_battle_engine.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const HP_X = Ind.HP_X;
@@ -74,13 +75,20 @@ export function criarBatalha(ctx) {
   /* Stages and Leech Seed of the Pokémon in the field. The party objects ARE the save (timeJogador), so this
      battle-only state stays out of them: a WeakMap keyed by the Pokémon, wiped on switch, faint, and battle start/end. */
   const vol = new WeakMap();
+  /* The battle engine (battle_engine.mjs via server_battle_engine.mjs) resolves every turn. `fx` holds each fighting
+     Pokémon's engine combatant (stages, volatile states) for the fight; it goes with limparVol (switch, faint, start/end). */
+  const fx = new WeakMap();
+  const engine = createTurnEngine({
+    status: lerJson('public/data/biblioteca/status.json', {}), engineMoves: lerJson('public/data/biblioteca/golpes.json', { golpes: {} }).golpes,
+    moves: golpes, species: (dex) => especie(dex), statOf: (S, p, i) => Ind.statDe(S, p, i), struggle: STRUGGLE,
+  });
   function volDe(p) {
     let v = vol.get(p);
     if (!v) vol.set(p, (v = { est: Stg.novo(), semente: false }));
     return v;
   }
   const estDe = (p) => (p ? volDe(p).est : null);
-  const limparVol = (...lista) => { for (const p of lista.flat()) if (p) vol.delete(p); };
+  const limparVol = (...lista) => { for (const p of lista.flat()) if (p) { vol.delete(p); fx.delete(p); } };
 
   function contaDe(ws) {
     const u = ws._usuario && ctx.sessoes.get(ws._info?.token);
@@ -149,9 +157,6 @@ export function criarBatalha(ctx) {
     return p;
   }
 
-  function velDe(p) {
-    return Ind.statDe(especie(p.dex), p, 5) * Status.mulVel(p) * Stg.mulStat(estDe(p), 5);
-  }
 
   /** A medicine in a turn battle. Amounts already in ITENS_BATALHA stay as they are; other cures use item_rules. */
   function usarItemNaLuta(eu, id, save) {
@@ -182,42 +187,7 @@ export function criarBatalha(ctx) {
     return true;
   }
 
-  function anotarLance(log, lance, at, def) {
-    if (!lance || !log) return;
-    if (lance.parado) { log.push((at?.nome || 'Pokémon') + ' ' + Status.aviso(lance.parado) + '!'); return; }
-    if (lance.errou) { log.push((at?.nome || 'Pokémon') + "'s attack missed!"); return; }
-    if (lance.statusNome) {
-      const quem = lance.statusQuem === 'eu' ? at : def;
-      log.push((quem?.nome || 'Pokémon') + ' is ' + lance.statusNome + '!');
-    }
-    if (lance.estagios) {
-      const quem = lance.estagios.quem === 'eu' ? at : def;
-      for (const m of lance.estagios.mudancas) log.push(Stg.frase(quem?.nome, m));
-    }
-    if (lance.semente === true) log.push((def?.nome || 'Pokémon') + ' was seeded!');
-    else if (lance.semente === 'imune') log.push("It doesn't affect " + (def?.nome || 'Pokémon') + '...');
-  }
 
-  /** End of turn: burn/poison, then Leech Seed. `pares` = [[mon, the foe in the field now]]: the seed heals that foe. */
-  function residualTurno(pares, log) {
-    for (const [mon] of pares) {
-      if (!mon || mon.hp <= 0) continue;
-      const antes = Status.limpo(mon.status);
-      const d = Status.residual(mon);
-      if (!(d > 0) || !antes) continue;
-      mon.hp = Math.max(0, mon.hp - d);
-      log.push((mon.nome || 'Pokémon') + ' is hurt by being ' + Status.nome(antes.id) + '!');
-      if (mon.hp <= 0) { mon.status = null; limparVol(mon); }
-    }
-    for (const [mon, foe] of pares) {
-      if (!mon || mon.hp <= 0 || !volDe(mon).semente) continue;
-      const d = Math.min(mon.hp, Stg.drenoSemente(mon.maxHp));
-      mon.hp -= d;
-      log.push((mon.nome || 'Pokémon') + "'s health is sapped by Leech Seed!");
-      if (foe && foe.hp > 0) foe.hp = Math.min(foe.maxHp || foe.hp, foe.hp + d);
-      if (mon.hp <= 0) { mon.status = null; limparVol(mon); }
-    }
-  }
 
   function golpeDe(id) {
     if (id === 'struggle') return STRUGGLE;
@@ -305,8 +275,8 @@ export function criarBatalha(ctx) {
       pvp: !!bat.pvp,
       abrir: true,
       dele: bat.dele.map(snapshotMon),
-      eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, status: Status.exportar(eu.status), estagios: { ...estDe(eu) }, semente: !!volDe(eu).semente } : null,
-      ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, status: Status.exportar(ele.status), estagios: { ...estDe(ele) }, semente: !!volDe(ele).semente } : null,
+      eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, status: Status.exportar(eu.status), estagios: engine.stagesOf(eu, fx), semente: engine.seededOf(eu, fx), efeitos: engine.volatilesOf(eu, fx) } : null,
+      ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, status: Status.exportar(ele.status), estagios: engine.stagesOf(ele, fx), semente: engine.seededOf(ele, fx), efeitos: engine.volatilesOf(ele, fx) } : null,
       lances: bat.lances || [],
       log: bat.log || [],
       vidas: bat.eu.time.map((p) => ({
@@ -589,53 +559,6 @@ export function criarBatalha(ctx) {
     return fim;
   }
 
-  function aplicarLance(de, at, def, g) {
-    const agir = Status.podeAgir(at);
-    if (!agir.age) {
-      return { de, golpe: g.id, dano: 0, eff: 1, hpAlvo: def.hp, alvo: def.uid ?? null, parado: agir.porque };
-    }
-    if (!gastarPP(at, g.id) && g.id !== 'struggle') return null;
-    if (g.id !== 'struggle' && !(at.movs || []).some((m) => m.id === g.id) && g !== STRUGGLE) return null;
-    const rolado = calcularDano(at, def, g);
-    if (!rolado.errou && rolado.dano > 0) {
-      def.hp = Math.max(0, def.hp - rolado.dano);
-      if (def.hp <= 0) def.status = null;
-    }
-    const emSi = g.statusEm === 'eu';
-    let statusId = null, statusN = 0, curou = false;
-    if (!rolado.errou && (emSi || rolado.eff !== 0)) {
-      const quem = emSi ? at : def;
-      if (quem?.hp > 0) {
-        const tipo = Weather.tipoGolpe(null, g);
-        if (!emSi && tipo === 'Fire') Status.descongelar(quem);
-        if (g.statusCura === 'cheio' && !Status.limpo(quem.status)) {
-          quem.hp = quem.maxHp;
-          curou = true;
-        }
-        const novo = Status.doGolpe(quem, g, especie(quem.dex).types || []);
-        if (novo) { statusId = novo.id; statusN = novo.n; }
-      }
-    }
-    let estagios = null, semente = null;
-    if (!rolado.errou) {
-      /* status moves skip the type chart (Growl works on a Ghost); a side effect needs the hit to land */
-      const alvoOk = def.hp > 0 && (g.cat === 'status' || rolado.eff !== 0);
-      estagios = Stg.doGolpe(g, at.hp > 0 ? estDe(at) : null, alvoOk ? estDe(def) : null);
-      if (g.semente && def.hp > 0) {
-        if (!Stg.podeSemear(especie(def.dex).types)) semente = 'imune';
-        else if (!volDe(def).semente) { volDe(def).semente = true; semente = true; }
-      }
-    }
-    if (def.hp <= 0) limparVol(def);
-    if (g.id === 'struggle') at.hp = Math.max(0, at.hp - Math.max(1, Math.floor(at.maxHp / 4)));
-    if (at.hp <= 0) limparVol(at);
-    return {
-      de, golpe: g.id, dano: rolado.dano, eff: rolado.eff, hpAlvo: def.hp, alvo: def.uid ?? null,
-      errou: !!rolado.errou,
-      statusId, statusN, statusQuem: emSi ? 'eu' : 'ele', statusNome: statusId ? Status.nome(statusId) : null, curou,
-      ...(estagios ? { estagios } : {}), ...(semente ? { semente } : {}),
-    };
-  }
 
   function depoisDoLance(bat, acc, log) {
     const ele = bat.dele[bat.eleIdx];
@@ -700,37 +623,16 @@ export function criarBatalha(ctx) {
       if (meuGolpe !== STRUGGLE && !(eu.movs || []).some((m) => m.id === meuGolpe.id && m.pp > 0)) meuGolpe = escolherGolpe(eu);
     }
 
-    const jogarEu = () => {
-      const lance = aplicarLance('eu', eu, ele, meuGolpe);
-      if (lance) { bat.lances.push(lance); anotarLance(bat.log, lance, eu, ele); }
-    };
-    const jogarEle = () => {
-      const lance = aplicarLance('ele', ele, bat.eu.field, escolherGolpe(ele));
-      if (lance) { bat.lances.push(lance); anotarLance(bat.log, lance, ele, bat.eu.field); }
-    };
-    /* A move goes in Speed order (stages and paralysis count). Switching and items always go first. */
-    const vEu = meuGolpe ? velDe(eu) : 0, vEle = meuGolpe ? velDe(ele) : 0;
-    let fim = null;
-    if (meuGolpe && (vEle > vEu || (vEle === vEu && Math.random() < 0.5))) {
-      jogarEle();
-      fim = depoisDoLance(bat, acc, bat.log);
-      if (!fim && ele.hp > 0 && bat.eu.field === eu && eu.hp > 0) {   // fainted first: the one sent in does not move this turn
-        jogarEu();
-        fim = depoisDoLance(bat, acc, bat.log);
-      }
-    } else {
-      if (meuGolpe) jogarEu();
-      fim = depoisDoLance(bat, acc, bat.log);
-      if (!fim && ele.hp > 0 && bat.eu.field.hp > 0) {
-        jogarEle();
-        fim = depoisDoLance(bat, acc, bat.log);
-      }
-    }
-    if (!fim && ele.hp > 0 && bat.eu.field?.hp > 0) {
-      residualTurno([[bat.eu.field, ele], [ele, bat.eu.field]], bat.log);
-      fim = depoisDoLance(bat, acc, bat.log);
-    }
-
+    /* One turn on the engine: priority, Speed, every move's effect, end-of-turn damage. A switch or an item is this side's
+       action (no move): the trainer still moves. */
+    const golpeEle = escolherGolpe(ele);
+    if (meuGolpe && meuGolpe !== STRUGGLE) gastarPP(eu, meuGolpe.id);
+    if (golpeEle !== STRUGGLE) gastarPP(ele, golpeEle.id);
+    const r = engine.turn({ p: bat.eu.field, move: meuGolpe }, { p: ele, move: golpeEle }, fx);
+    bat.lances.push(...r.lances);
+    bat.log.push(...r.log);
+    for (const p of [bat.eu.field, ele]) if (p.hp <= 0) { p.status = null; limparVol(p); }
+    let fim = depoisDoLance(bat, acc, bat.log);
     if (fim === 'vitoria' || fim === 'derrota') {
       bat.fim = pagar(acc, bat, fim === 'vitoria');
       lutas.delete(acc.u);
@@ -754,39 +656,23 @@ export function criarBatalha(ctx) {
     const accA = { u: aFirst.usuario, c: ctx.contas[aFirst.usuario] };
     const accB = { u: bFirst.usuario, c: ctx.contas[bFirst.usuario] };
 
-    const resolver = (lado, ac, alvoLado) => {
+    /* Switches and items happen first (no move for that side); then one engine turn for the two in the field. */
+    const preparar = (lado, ac) => {
       lado.lances = [];
       lado.log = [];
       const eu = lado.eu.field;
-      const ele = alvoLado.eu.field;
       if (ac.acao === 'trocar') {
         const prox = lado.eu.time.find((p) => String(p.uid) === String(ac.uid) && p.hp > 0);
-        if (prox) {
-          limparVol(lado.eu.field);
-          lado.eu.field = prox;
-          lado.lances.push({ troca: prox.uid });
-        }
-        return;
+        if (prox) { limparVol(lado.eu.field); lado.eu.field = prox; lado.lances.push({ troca: prox.uid }); }
+        return null;
       }
-      if (ac.acao === 'item') {
-        const id = +ac.item;
-        const s = saveDe(ctx.contas[lado.usuario]);
-        if (s) usarItemNaLuta(eu, id, s);
-        return;
-      }
-      if (ac.acao === 'fugir') {
-        lado.fimPedido = 'fugiu';
-        return;
-      }
+      if (ac.acao === 'item') { const s = saveDe(ctx.contas[lado.usuario]); if (s) usarItemNaLuta(eu, +ac.item, s); return null; }
+      if (ac.acao === 'fugir') { lado.fimPedido = 'fugiu'; return null; }
       const g = golpeDe(ac.golpe) || escolherGolpe(eu);
-      const lance = aplicarLance('eu', eu, ele, g);
-      if (lance) { lado.lances.push(lance); anotarLance(lado.log, lance, eu, ele); }
+      const ok = g === STRUGGLE || (eu.movs || []).some((m) => m.id === g.id && m.pp > 0) ? g : escolherGolpe(eu);
+      if (ok !== STRUGGLE) gastarPP(eu, ok.id);
+      return ok;
     };
-
-    const velA = velDe(aFirst.eu.field);
-    const velB = velDe(bFirst.eu.field);
-    const ordem = velA === velB ? (Math.random() < 0.5 ? [aFirst, bFirst] : [bFirst, aFirst]) : velA > velB ? [aFirst, bFirst] : [bFirst, aFirst];
-
     if (aFirst.acao.acao === 'fugir' || bFirst.acao.acao === 'fugir') {
       const quem = aFirst.acao.acao === 'fugir' ? aFirst : bFirst;
       const outroL = quem.par;
@@ -797,21 +683,13 @@ export function criarBatalha(ctx) {
       return retrato(bat);
     }
 
-    for (const lado of ordem) {
-      if (lado.eu.field.hp <= 0 || lado.par.eu.field.hp <= 0) continue;
-      resolver(lado, lado.acao, lado.par);
-      lado.par.lances = lado.par.lances || [];
-      for (const l of lado.lances) {
-        if (l.golpe) lado.par.lances.push({ ...l, de: 'ele', alvo: lado.par.eu.field?.uid });
-      }
-    }
-
-    if (aFirst.eu.field?.hp > 0 && bFirst.eu.field?.hp > 0) {
-      const extra = [];
-      residualTurno([[aFirst.eu.field, bFirst.eu.field], [bFirst.eu.field, aFirst.eu.field]], extra);
-      aFirst.log.push(...extra);
-      bFirst.log.push(...extra);
-    }
+    const gA = preparar(aFirst, aFirst.acao), gB = preparar(bFirst, bFirst.acao);
+    const rT = engine.turn({ p: aFirst.eu.field, move: gA }, { p: bFirst.eu.field, move: gB }, fx);
+    aFirst.lances.push(...rT.lances);
+    bFirst.lances.push(...rT.lances.map((l) => (l.de ? { ...l, de: l.de === 'eu' ? 'ele' : 'eu', ...(l.avisos ? { avisos: l.avisos.map((v) => ({ ...v, quem: v.quem === 'eu' ? 'ele' : v.quem === 'ele' ? 'eu' : v.quem })) } : {}) } : l)));
+    aFirst.log.push(...rT.log);
+    bFirst.log.push(...rT.log);
+    for (const p of [aFirst.eu.field, bFirst.eu.field]) if (p.hp <= 0) { p.status = null; limparVol(p); }
 
     const koA = !primeiroVivo(aFirst.eu.time);
     const koB = !primeiroVivo(bFirst.eu.time);
