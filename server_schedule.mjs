@@ -143,6 +143,14 @@ export function criarAgenda(h) {
     cache = { mtime: mt, v }; versao++;
     return v;
   }
+  /** Events-board art for a boss: ui/events/<slug>/ (made by tools/raid_art). None = the board uses Mew's art only for Mew. */
+  const RAIZ = nodePath.join(dadosPub, '..', '..'), artes = new Map();
+  const arteDe = (nome) => {
+    const slug = String(nome || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (!slug) return null;
+    if (!artes.has(slug)) artes.set(slug, fs.existsSync(nodePath.join(RAIZ, 'ui', 'events', slug, 'pc-detalhe.webp')) ? slug : null);
+    return artes.get(slug);
+  };
   const estadoDe = (o, agora) => (agora >= o.fim ? 'encerrado' : agora >= o.oc ? 'agora' : 'breve');
   function lista(de, ate, agora = Date.now()) {
     const out = [];
@@ -155,7 +163,7 @@ export function criarAgenda(h) {
         };
         if (e.quando === 'semana') { r.repete = 'semana'; r.regra = { repete: 'semana', dias: e.dias, horas: e.horas }; }
         if (e.bonus) r.bonus = { ...e.bonus };
-        if (e.raid) { const { filaMin, ...preset } = e.raid; let res = null; try { res = h.raid?.resumo?.(preset); } catch {} r.raid = { ...res, filaMin, filaEm: o.oc - filaMin * MIN, preset }; }   // try: at boot server.mjs's `raid` may not exist yet
+        if (e.raid) { const { filaMin, ...preset } = e.raid; let res = null; try { res = h.raid?.resumo?.(preset); } catch {} r.raid = { ...res, filaMin, filaEm: o.oc - filaMin * MIN, preset }; const a = arteDe(preset.chefeNome || res?.chefe); if (a) r.raid.arte = a; }   // try: at boot server.mjs's `raid` may not exist yet
         out.push(r);
       }
     }
