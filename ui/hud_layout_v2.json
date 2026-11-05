@@ -155287,7 +155287,7 @@
       "al": "center",
       "alV": "center",
       "regra": "encolher",
-      "exemplo": "Balcão de TMs",
+      "exemplo": "TM Counter",
       "alturaLinha": 56
      },
      {
@@ -155336,7 +155336,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Montar TM",
+        "exemplo": "Craft TM",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 44
@@ -155416,7 +155416,7 @@
         "al": "left",
         "alV": "center",
         "regra": "encolher",
-        "exemplo": "Ver a loja",
+        "exemplo": "See the shop",
         "alturaLinha": 44
        }
       ],
@@ -155502,7 +155502,7 @@
           "al": "left",
           "alV": "center",
           "regra": "reticencias",
-          "exemplo": "Buscar TM ou golpe…",
+          "exemplo": "Search TM or move…",
           "cortar": true,
           "alturaLinha": 32.72
          }
@@ -155535,7 +155535,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:14",
-          "exemplo": "Pro meu time",
+          "exemplo": "For my team",
           "cortar": true,
           "alturaLinha": 40
          }
@@ -155578,8 +155578,8 @@
           "cor": "#1D2B45",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Todas",
+          "regra": "encolher",
+          "exemplo": "All",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 28
@@ -155622,8 +155622,8 @@
           "cor": "#EAF6FB",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Comum",
+          "regra": "encolher",
+          "exemplo": "Common",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 28
@@ -155668,8 +155668,8 @@
           "cor": "#EAF6FB",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Forte",
+          "regra": "encolher",
+          "exemplo": "Strong",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 28
@@ -155714,8 +155714,8 @@
           "cor": "#EAF6FB",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Rara",
+          "regra": "encolher",
+          "exemplo": "Rare",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 28
@@ -155846,7 +155846,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -155957,7 +155957,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -156068,7 +156068,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -156179,7 +156179,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "COMUM",
+              "exemplo": "COMMON",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -156290,7 +156290,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "COMUM",
+              "exemplo": "COMMON",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -156401,7 +156401,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "COMUM",
+              "exemplo": "COMMON",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -156430,7 +156430,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:50",
-        "exemplo": "Nenhuma TM com esse nome ou filtro.",
+        "exemplo": "No TM with that name or filter.",
         "cortar": true,
         "alturaLinha": 24,
         "oculto": true,
@@ -156507,7 +156507,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 22
              }
@@ -156573,7 +156573,7 @@
             "al": "left",
             "alV": "center",
             "regra": "encolher",
-            "exemplo": "Emite uma descarga elétrica poderosa que pode paralisar o oponente.",
+            "exemplo": "Releases a strong electric blast that may paralyze the target.",
             "alturaLinha": 18
            },
            {
@@ -156591,7 +156591,7 @@
               "w": 144.7,
               "h": 12,
               "tipo": "rotulo",
-              "texto": "CATEGORIA",
+              "texto": "CATEGORY",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 9.5,
@@ -156615,7 +156615,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:16",
-              "exemplo": "Ataque Especial",
+              "exemplo": "Special Attack",
               "cortar": true,
               "alturaLinha": 18
              }
@@ -156638,7 +156638,7 @@
               "w": 82.7,
               "h": 12,
               "tipo": "rotulo",
-              "texto": "PODER",
+              "texto": "POWER",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 9.5,
@@ -156685,7 +156685,7 @@
               "w": 88.7,
               "h": 12,
               "tipo": "rotulo",
-              "texto": "PRECISÃO",
+              "texto": "ACCURACY",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 9.5,
@@ -156732,7 +156732,7 @@
               "w": 94.7,
               "h": 12,
               "tipo": "rotulo",
-              "texto": "RECARGA",
+              "texto": "COOLDOWN",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 9.5,
@@ -156835,7 +156835,7 @@
               "w": 84,
               "h": 22,
               "tipo": "rotulo",
-              "texto": "Forte contra",
+              "texto": "Strong against",
               "fonte": "Nunito Sans",
               "peso": 900,
               "tamanho": 11,
@@ -156913,7 +156913,7 @@
               "w": 170,
               "h": 16,
               "tipo": "rotulo",
-              "texto": "Uso único",
+              "texto": "Single use",
               "fonte": "Nunito Sans",
               "peso": 900,
               "tamanho": 11.5,
@@ -156937,7 +156937,7 @@
               "al": "right",
               "alV": "center",
               "regra": "encolher",
-              "exemplo": "Pede 3 insígnias (você tem 2)",
+              "exemplo": "Needs 3 badges (you have 2)",
               "alturaLinha": 16
              }
             ]
@@ -156961,7 +156961,7 @@
             "w": 202,
             "h": 22,
             "tipo": "rotulo",
-            "texto": "QUEM DO TIME APRENDE",
+            "texto": "WHO ON MY TEAM LEARNS",
             "fonte": "Baloo 2",
             "peso": 800,
             "tamanho": 12,
@@ -156997,7 +156997,7 @@
             "al": "center",
             "alV": "center",
             "regra": "encolher",
-            "exemplo": "+12 NA SUA CAIXA",
+            "exemplo": "+12 IN YOUR BOX",
             "alturaLinha": 22
            }
           ],
@@ -157391,7 +157391,7 @@
             "w": 106,
             "h": 22,
             "tipo": "rotulo",
-            "texto": "RECEITA",
+            "texto": "RECIPE",
             "fonte": "Baloo 2",
             "peso": 800,
             "tamanho": 12,
@@ -157479,7 +157479,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:16",
-              "exemplo": "tem 7",
+              "exemplo": "have 7",
               "cortar": true,
               "alturaLinha": 18
              }
@@ -157554,7 +157554,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:16",
-              "exemplo": "tem 24",
+              "exemplo": "have 24",
               "cortar": true,
               "alturaLinha": 18
              }
@@ -157616,7 +157616,7 @@
               "al": "center",
               "alV": "center",
               "regra": "encolher",
-              "exemplo": "tem 12.450",
+              "exemplo": "have 12,450",
               "alturaLinha": 18
              }
             ],
@@ -157659,7 +157659,7 @@
             "al": "center",
             "alV": "center",
             "regra": "encolher",
-            "exemplo": "Montar",
+            "exemplo": "Craft",
             "alturaLinha": 29
            }
           ],
@@ -157681,7 +157681,7 @@
           "al": "right",
           "alV": "center",
           "regra": "max:82",
-          "exemplo": "A TM montada vai pra Mochila: use lá pra ensinar.",
+          "exemplo": "The built TM goes to your Bag: use it there to teach.",
           "cortar": true,
           "alturaLinha": 16
          }
@@ -157764,7 +157764,7 @@
              "al": "left",
              "alV": "center",
              "regra": "max:8",
-             "exemplo": "FORTE",
+             "exemplo": "STRONG",
              "cortar": true,
              "alturaLinha": 22
             }
@@ -157829,7 +157829,7 @@
            "al": "left",
            "alV": "center",
            "regra": "encolher",
-           "exemplo": "Emite uma descarga elétrica poderosa que pode paralisar o oponente.",
+           "exemplo": "Releases a strong electric blast that may paralyze the target.",
            "alturaLinha": 18
           },
           {
@@ -157847,7 +157847,7 @@
              "w": 144.7,
              "h": 12,
              "tipo": "rotulo",
-             "texto": "CATEGORIA",
+             "texto": "CATEGORY",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 9.5,
@@ -157871,7 +157871,7 @@
              "al": "center",
              "alV": "center",
              "regra": "max:16",
-             "exemplo": "Ataque Especial",
+             "exemplo": "Special Attack",
              "cortar": true,
              "alturaLinha": 18
             }
@@ -157894,7 +157894,7 @@
              "w": 82.7,
              "h": 12,
              "tipo": "rotulo",
-             "texto": "PODER",
+             "texto": "POWER",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 9.5,
@@ -157941,7 +157941,7 @@
              "w": 88.7,
              "h": 12,
              "tipo": "rotulo",
-             "texto": "PRECISÃO",
+             "texto": "ACCURACY",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 9.5,
@@ -157988,7 +157988,7 @@
              "w": 94.7,
              "h": 12,
              "tipo": "rotulo",
-             "texto": "RECARGA",
+             "texto": "COOLDOWN",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 9.5,
@@ -158091,7 +158091,7 @@
              "w": 84,
              "h": 22,
              "tipo": "rotulo",
-             "texto": "Forte contra",
+             "texto": "Strong against",
              "fonte": "Nunito Sans",
              "peso": 900,
              "tamanho": 11,
@@ -158167,7 +158167,7 @@
              "w": 170,
              "h": 16,
              "tipo": "rotulo",
-             "texto": "Uso único",
+             "texto": "Single use",
              "fonte": "Nunito Sans",
              "peso": 900,
              "tamanho": 11.5,
@@ -158191,7 +158191,7 @@
              "al": "right",
              "alV": "center",
              "regra": "encolher",
-             "exemplo": "Pede 3 insígnias (você tem 2)",
+             "exemplo": "Needs 3 badges (you have 2)",
              "alturaLinha": 16
             }
            ]
@@ -158215,7 +158215,7 @@
            "w": 202,
            "h": 22,
            "tipo": "rotulo",
-           "texto": "QUEM DO TIME APRENDE",
+           "texto": "WHO ON MY TEAM LEARNS",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 12,
@@ -158251,7 +158251,7 @@
            "al": "center",
            "alV": "center",
            "regra": "encolher",
-           "exemplo": "+12 NA SUA CAIXA",
+           "exemplo": "+12 IN YOUR BOX",
            "alturaLinha": 22
           }
          ],
@@ -158631,7 +158631,7 @@
            "w": 106,
            "h": 22,
            "tipo": "rotulo",
-           "texto": "RECEITA",
+           "texto": "RECIPE",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 12,
@@ -158718,7 +158718,7 @@
              "al": "center",
              "alV": "center",
              "regra": "max:16",
-             "exemplo": "tem 0",
+             "exemplo": "have 0",
              "cortar": true,
              "alturaLinha": 18
             }
@@ -158792,7 +158792,7 @@
              "al": "center",
              "alV": "center",
              "regra": "max:16",
-             "exemplo": "tem 5",
+             "exemplo": "have 5",
              "cortar": true,
              "alturaLinha": 18
             }
@@ -158854,7 +158854,7 @@
              "al": "center",
              "alV": "center",
              "regra": "encolher",
-             "exemplo": "tem 12.450",
+             "exemplo": "have 12,450",
              "alturaLinha": 18
             }
            ],
@@ -158897,7 +158897,7 @@
            "al": "center",
            "alV": "center",
            "regra": "encolher",
-           "exemplo": "Faltam peças",
+           "exemplo": "Missing pieces",
            "alturaLinha": 29
           }
          ],
@@ -158928,7 +158928,7 @@
          "al": "right",
          "alV": "center",
          "regra": "max:70",
-         "exemplo": "Falta 1 Peça rara pra montar esta TM.",
+         "exemplo": "Missing 1 Rare piece to craft this TM.",
          "cortar": true,
          "alturaLinha": 16
         }
@@ -158957,7 +158957,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:8",
-         "exemplo": "COMUM",
+         "exemplo": "COMMON",
          "cortar": true,
          "alturaLinha": 22
         }
@@ -158984,7 +158984,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:8",
-         "exemplo": "FORTE",
+         "exemplo": "STRONG",
          "cortar": true,
          "alturaLinha": 22
         }
@@ -159011,7 +159011,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:8",
-         "exemplo": "RARA",
+         "exemplo": "RARE",
          "cortar": true,
          "alturaLinha": 22
         }
@@ -159040,7 +159040,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:14",
-         "exemplo": "Pro meu time",
+         "exemplo": "For my team",
          "cortar": true,
          "alturaLinha": 40
         }
@@ -159201,7 +159201,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:80",
-        "exemplo": "Golpes que não têm TM: o tutor ensina na hora, por Moedas.",
+        "exemplo": "Moves with no TM: the tutor teaches them on the spot, for Coins.",
         "cortar": true,
         "alturaLinha": 28
        },
@@ -159518,7 +159518,7 @@
               "w": 120.2,
               "h": 29,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 20,
@@ -159829,7 +159829,7 @@
               "w": 120.2,
               "h": 29,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 20,
@@ -160113,7 +160113,7 @@
               "w": 120.2,
               "h": 29,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 20,
@@ -160442,7 +160442,7 @@
               "w": 120.2,
               "h": 29,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 20,
@@ -160762,7 +160762,7 @@
               "w": 120.2,
               "h": 29,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 20,
@@ -160835,7 +160835,7 @@
         "al": "left",
         "alV": "center",
         "regra": "encolher",
-        "exemplo": "Ensinar Thunderbolt",
+        "exemplo": "Teach Thunderbolt",
         "alturaLinha": 36
        },
        {
@@ -160888,7 +160888,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:70",
-        "exemplo": "Quem aprende? A TM some depois de ensinar.",
+        "exemplo": "Who learns it? The TM is consumed after teaching.",
         "cortar": true,
         "alturaLinha": 22
        },
@@ -160956,7 +160956,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "pode aprender",
+            "exemplo": "can learn",
             "cortar": true,
             "alturaLinha": 24
            },
@@ -161029,7 +161029,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "pode aprender",
+            "exemplo": "can learn",
             "cortar": true,
             "alturaLinha": 24
            }
@@ -161093,7 +161093,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "já sabe",
+            "exemplo": "already knows",
             "cortar": true,
             "alturaLinha": 24
            },
@@ -161166,7 +161166,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "não aprende",
+            "exemplo": "can't learn",
             "cortar": true,
             "alturaLinha": 24
            },
@@ -161239,7 +161239,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "não aprende",
+            "exemplo": "can't learn",
             "cortar": true,
             "alturaLinha": 24
            },
@@ -161312,7 +161312,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "precisa de 3 insígnias",
+            "exemplo": "needs 3 badges",
             "cortar": true,
             "alturaLinha": 24
            },
@@ -161348,7 +161348,7 @@
           "w": 314.2,
           "h": 29,
           "tipo": "rotulo",
-          "texto": "Cancelar",
+          "texto": "Cancel",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 20,
@@ -161378,7 +161378,7 @@
           "w": 314.2,
           "h": 29,
           "tipo": "rotulo",
-          "texto": "Ensinar",
+          "texto": "Teach",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 20,
@@ -161423,7 +161423,7 @@
         "al": "left",
         "alV": "center",
         "regra": "encolher",
-        "exemplo": "Pikachu já sabe 4 golpes",
+        "exemplo": "Pikachu already knows 4 moves",
         "alturaLinha": 36
        },
        {
@@ -161477,7 +161477,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:6",
-            "exemplo": "NOVO",
+            "exemplo": "NEW",
             "cortar": true,
             "alturaLinha": 22
            }
@@ -161547,7 +161547,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:70",
-        "exemplo": "Qual esquecer? Esse não volta sozinho.",
+        "exemplo": "Which to forget? It won't come back on its own.",
         "cortar": true,
         "alturaLinha": 22
        },
@@ -161923,7 +161923,7 @@
           "w": 284.2,
           "h": 29,
           "tipo": "rotulo",
-          "texto": "Não aprender",
+          "texto": "Don't learn",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 20,
@@ -161953,7 +161953,7 @@
           "w": 284.2,
           "h": 29,
           "tipo": "rotulo",
-          "texto": "Esquecer",
+          "texto": "Forget",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 20,
@@ -162032,7 +162032,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:16",
-        "exemplo": "tem 8",
+        "exemplo": "have 8",
         "cortar": true,
         "alturaLinha": 18
        }
@@ -372543,7 +372543,7 @@
       "al": "center",
       "alV": "center",
       "regra": "encolher",
-      "exemplo": "Balcão de TMs",
+      "exemplo": "TM Counter",
       "alturaLinha": 30
      },
      {
@@ -372592,7 +372592,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Montar TM",
+        "exemplo": "Craft TM",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 30
@@ -372672,7 +372672,7 @@
         "al": "left",
         "alV": "center",
         "regra": "encolher",
-        "exemplo": "Ver a loja",
+        "exemplo": "See the shop",
         "alturaLinha": 30
        }
       ],
@@ -372758,7 +372758,7 @@
           "al": "left",
           "alV": "center",
           "regra": "reticencias",
-          "exemplo": "Buscar TM ou golpe…",
+          "exemplo": "Search TM or move…",
           "cortar": true,
           "alturaLinha": 19.6
          }
@@ -372791,7 +372791,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:14",
-          "exemplo": "Pro meu time",
+          "exemplo": "For my team",
           "cortar": true,
           "alturaLinha": 24
          }
@@ -372834,8 +372834,8 @@
           "cor": "#1D2B45",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Todas",
+          "regra": "encolher",
+          "exemplo": "All",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 15
@@ -372878,8 +372878,8 @@
           "cor": "#EAF6FB",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Comum",
+          "regra": "encolher",
+          "exemplo": "Common",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 15
@@ -372924,8 +372924,8 @@
           "cor": "#EAF6FB",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Forte",
+          "regra": "encolher",
+          "exemplo": "Strong",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 15
@@ -372970,8 +372970,8 @@
           "cor": "#EAF6FB",
           "al": "left",
           "alV": "center",
-          "regra": "max:10",
-          "exemplo": "Rara",
+          "regra": "encolher",
+          "exemplo": "Rare",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 15
@@ -373102,7 +373102,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373213,7 +373213,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373324,7 +373324,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373435,7 +373435,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "COMUM",
+              "exemplo": "COMMON",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373546,7 +373546,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "COMUM",
+              "exemplo": "COMMON",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373657,7 +373657,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "COMUM",
+              "exemplo": "COMMON",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373686,7 +373686,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:50",
-        "exemplo": "Nenhuma TM com esse nome ou filtro.",
+        "exemplo": "No TM with that name or filter.",
         "cortar": true,
         "alturaLinha": 14,
         "oculto": true,
@@ -373798,7 +373798,7 @@
             "al": "left",
             "alV": "top",
             "regra": "encolher",
-            "exemplo": "Emite uma descarga elétrica poderosa que pode paralisar o oponente.",
+            "exemplo": "Releases a strong electric blast that may paralyze the target.",
             "alturaLinha": 10
            },
            {
@@ -373833,7 +373833,7 @@
               "al": "left",
               "alV": "center",
               "regra": "max:8",
-              "exemplo": "FORTE",
+              "exemplo": "STRONG",
               "cortar": true,
               "alturaLinha": 13
              }
@@ -373856,7 +373856,7 @@
               "w": 64,
               "h": 13,
               "tipo": "rotulo",
-              "texto": "Forte contra",
+              "texto": "Strong against",
               "fonte": "Nunito Sans",
               "peso": 900,
               "tamanho": 8,
@@ -373932,7 +373932,7 @@
               "w": 140,
               "h": 10,
               "tipo": "rotulo",
-              "texto": "Uso único",
+              "texto": "Single use",
               "fonte": "Nunito Sans",
               "peso": 900,
               "tamanho": 8,
@@ -373956,7 +373956,7 @@
               "al": "right",
               "alV": "center",
               "regra": "encolher",
-              "exemplo": "Pede 3 insígnias (você tem 2)",
+              "exemplo": "Needs 3 badges (you have 2)",
               "alturaLinha": 10
              }
             ]
@@ -373976,7 +373976,7 @@
               "w": 76,
               "h": 9,
               "tipo": "rotulo",
-              "texto": "CATEGORIA",
+              "texto": "CATEGORY",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 8,
@@ -374000,7 +374000,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:16",
-              "exemplo": "Ataque Especial",
+              "exemplo": "Special Attack",
               "cortar": true,
               "alturaLinha": 11
              }
@@ -374023,7 +374023,7 @@
               "w": 36,
               "h": 9,
               "tipo": "rotulo",
-              "texto": "PODER",
+              "texto": "POWER",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 8,
@@ -374070,7 +374070,7 @@
               "w": 50,
               "h": 9,
               "tipo": "rotulo",
-              "texto": "PRECISÃO",
+              "texto": "ACCURACY",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 8,
@@ -374117,7 +374117,7 @@
               "w": 56,
               "h": 9,
               "tipo": "rotulo",
-              "texto": "RECARGA",
+              "texto": "COOLDOWN",
               "fonte": "Nunito Sans",
               "peso": 700,
               "tamanho": 8,
@@ -374647,7 +374647,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:16",
-              "exemplo": "tem 2",
+              "exemplo": "have 2",
               "cortar": true,
               "alturaLinha": 11
              }
@@ -374722,7 +374722,7 @@
               "al": "center",
               "alV": "center",
               "regra": "max:16",
-              "exemplo": "tem 5",
+              "exemplo": "have 5",
               "cortar": true,
               "alturaLinha": 11
              }
@@ -374784,7 +374784,7 @@
               "al": "center",
               "alV": "center",
               "regra": "encolher",
-              "exemplo": "tem 12.450",
+              "exemplo": "have 12,450",
               "alturaLinha": 11
              }
             ],
@@ -374827,7 +374827,7 @@
             "al": "center",
             "alV": "center",
             "regra": "encolher",
-            "exemplo": "Montar",
+            "exemplo": "Craft",
             "alturaLinha": 17.4
            }
           ],
@@ -374849,7 +374849,7 @@
           "al": "right",
           "alV": "center",
           "regra": "max:82",
-          "exemplo": "A TM montada vai pra Mochila: use lá pra ensinar.",
+          "exemplo": "The built TM goes to your Bag: use it there to teach.",
           "cortar": true,
           "alturaLinha": 10
          },
@@ -374868,7 +374868,7 @@
             "w": 124,
             "h": 13,
             "tipo": "rotulo",
-            "texto": "QUEM DO TIME APRENDE",
+            "texto": "WHO ON MY TEAM LEARNS",
             "fonte": "Baloo 2",
             "peso": 800,
             "tamanho": 8,
@@ -374904,7 +374904,7 @@
             "al": "center",
             "alV": "center",
             "regra": "encolher",
-            "exemplo": "+12 NA SUA CAIXA",
+            "exemplo": "+12 IN YOUR BOX",
             "alturaLinha": 13
            }
           ],
@@ -374926,7 +374926,7 @@
             "w": 56,
             "h": 13,
             "tipo": "rotulo",
-            "texto": "RECEITA",
+            "texto": "RECIPE",
             "fonte": "Baloo 2",
             "peso": 800,
             "tamanho": 8,
@@ -375018,7 +375018,7 @@
              "al": "left",
              "alV": "center",
              "regra": "max:8",
-             "exemplo": "RARA",
+             "exemplo": "RARE",
              "cortar": true,
              "alturaLinha": 13
             }
@@ -375083,7 +375083,7 @@
            "al": "left",
            "alV": "center",
            "regra": "quebrar:2",
-           "exemplo": "Um raio forte no alvo. Pode paralisar (10%).",
+           "exemplo": "A strong bolt at the target. May paralyze (10%).",
            "cortar": true,
            "alturaLinha": 11
           },
@@ -375102,7 +375102,7 @@
              "w": 48,
              "h": 12.6,
              "tipo": "rotulo",
-             "texto": "CATEGORIA",
+             "texto": "CATEGORY",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 7.5,
@@ -375126,7 +375126,7 @@
              "al": "left",
              "alV": "center",
              "regra": "max:9",
-             "exemplo": "Especial",
+             "exemplo": "Special",
              "cortar": true,
              "alturaLinha": 12.6
             }
@@ -375149,7 +375149,7 @@
              "w": 30,
              "h": 12.6,
              "tipo": "rotulo",
-             "texto": "PODER",
+             "texto": "POWER",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 7.5,
@@ -375196,7 +375196,7 @@
              "w": 42,
              "h": 12.6,
              "tipo": "rotulo",
-             "texto": "PRECISÃO",
+             "texto": "ACCURACY",
              "fonte": "Nunito Sans",
              "peso": 700,
              "tamanho": 7.5,
@@ -375303,7 +375303,7 @@
            "w": 74,
            "h": 13,
            "tipo": "rotulo",
-           "texto": "QUEM APRENDE",
+           "texto": "WHO LEARNS",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 7.5,
@@ -375689,7 +375689,7 @@
            "w": 56,
            "h": 13,
            "tipo": "rotulo",
-           "texto": "RECEITA",
+           "texto": "RECIPE",
            "fonte": "Baloo 2",
            "peso": 800,
            "tamanho": 7.5,
@@ -375776,7 +375776,7 @@
              "al": "center",
              "alV": "center",
              "regra": "max:16",
-             "exemplo": "tem 0",
+             "exemplo": "have 0",
              "cortar": true,
              "alturaLinha": 11
             }
@@ -375850,7 +375850,7 @@
              "al": "center",
              "alV": "center",
              "regra": "max:16",
-             "exemplo": "tem 5",
+             "exemplo": "have 5",
              "cortar": true,
              "alturaLinha": 11
             }
@@ -375912,7 +375912,7 @@
              "al": "center",
              "alV": "center",
              "regra": "encolher",
-             "exemplo": "tem 12.450",
+             "exemplo": "have 12,450",
              "alturaLinha": 11
             }
            ],
@@ -375955,7 +375955,7 @@
            "al": "center",
            "alV": "center",
            "regra": "encolher",
-           "exemplo": "Faltam peças",
+           "exemplo": "Missing pieces",
            "alturaLinha": 17.4
           }
          ],
@@ -375986,7 +375986,7 @@
          "al": "right",
          "alV": "center",
          "regra": "max:70",
-         "exemplo": "Falta 1 Peça rara pra montar esta TM.",
+         "exemplo": "Missing 1 Rare piece to craft this TM.",
          "cortar": true,
          "alturaLinha": 10
         }
@@ -376015,7 +376015,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:8",
-         "exemplo": "COMUM",
+         "exemplo": "COMMON",
          "cortar": true,
          "alturaLinha": 13
         }
@@ -376042,7 +376042,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:8",
-         "exemplo": "FORTE",
+         "exemplo": "STRONG",
          "cortar": true,
          "alturaLinha": 13
         }
@@ -376069,7 +376069,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:8",
-         "exemplo": "RARA",
+         "exemplo": "RARE",
          "cortar": true,
          "alturaLinha": 13
         }
@@ -376098,7 +376098,7 @@
          "al": "left",
          "alV": "center",
          "regra": "max:14",
-         "exemplo": "Pro meu time",
+         "exemplo": "For my team",
          "cortar": true,
          "alturaLinha": 24
         }
@@ -376259,7 +376259,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:80",
-        "exemplo": "Golpes que não têm TM: o tutor ensina na hora, por Moedas.",
+        "exemplo": "Moves with no TM: the tutor teaches them on the spot, for Coins.",
         "cortar": true,
         "alturaLinha": 16
        },
@@ -376576,7 +376576,7 @@
               "w": 55.2,
               "h": 17.2,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 12,
@@ -376887,7 +376887,7 @@
               "w": 55.2,
               "h": 17.2,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 12,
@@ -377171,7 +377171,7 @@
               "w": 55.2,
               "h": 17.2,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 12,
@@ -377500,7 +377500,7 @@
               "w": 55.2,
               "h": 17.2,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 12,
@@ -377820,7 +377820,7 @@
               "w": 55.2,
               "h": 17.2,
               "tipo": "rotulo",
-              "texto": "Ensinar",
+              "texto": "Teach",
               "fonte": "Baloo 2",
               "peso": 800,
               "tamanho": 12,
@@ -377893,7 +377893,7 @@
         "al": "left",
         "alV": "center",
         "regra": "encolher",
-        "exemplo": "Ensinar Thunderbolt",
+        "exemplo": "Teach Thunderbolt",
         "alturaLinha": 20.2
        },
        {
@@ -377946,7 +377946,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:70",
-        "exemplo": "Quem aprende? A TM some depois de ensinar.",
+        "exemplo": "Who learns it? The TM is consumed after teaching.",
         "cortar": true,
         "alturaLinha": 13
        },
@@ -378014,7 +378014,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "pode aprender",
+            "exemplo": "can learn",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -378087,7 +378087,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "pode aprender",
+            "exemplo": "can learn",
             "cortar": true,
             "alturaLinha": 14
            }
@@ -378151,7 +378151,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "já sabe",
+            "exemplo": "already knows",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -378224,7 +378224,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "não aprende",
+            "exemplo": "can't learn",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -378297,7 +378297,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "não aprende",
+            "exemplo": "can't learn",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -378370,7 +378370,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:24",
-            "exemplo": "precisa de 3 insígnias",
+            "exemplo": "needs 3 badges",
             "cortar": true,
             "alturaLinha": 14
            },
@@ -378406,7 +378406,7 @@
           "w": 170.6,
           "h": 17.2,
           "tipo": "rotulo",
-          "texto": "Cancelar",
+          "texto": "Cancel",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 12,
@@ -378436,7 +378436,7 @@
           "w": 170.6,
           "h": 17.2,
           "tipo": "rotulo",
-          "texto": "Ensinar",
+          "texto": "Teach",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 12,
@@ -378481,7 +378481,7 @@
         "al": "left",
         "alV": "center",
         "regra": "encolher",
-        "exemplo": "Pikachu já sabe 4 golpes",
+        "exemplo": "Pikachu already knows 4 moves",
         "alturaLinha": 20.2
        },
        {
@@ -378535,7 +378535,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:6",
-            "exemplo": "NOVO",
+            "exemplo": "NEW",
             "cortar": true,
             "alturaLinha": 13
            }
@@ -378605,7 +378605,7 @@
         "al": "left",
         "alV": "center",
         "regra": "max:70",
-        "exemplo": "Qual esquecer? Esse não volta sozinho.",
+        "exemplo": "Which to forget? It won't come back on its own.",
         "cortar": true,
         "alturaLinha": 13
        },
@@ -378981,7 +378981,7 @@
           "w": 153.6,
           "h": 17.2,
           "tipo": "rotulo",
-          "texto": "Não aprender",
+          "texto": "Don't learn",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 12,
@@ -379011,7 +379011,7 @@
           "w": 153.6,
           "h": 17.2,
           "tipo": "rotulo",
-          "texto": "Esquecer",
+          "texto": "Forget",
           "fonte": "Baloo 2",
           "peso": 800,
           "tamanho": 12,
@@ -379090,7 +379090,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:16",
-        "exemplo": "tem 8",
+        "exemplo": "have 8",
         "cortar": true,
         "alturaLinha": 11
        }

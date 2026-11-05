@@ -1516,3 +1516,21 @@ export function estadoFilho(a, b, c, e = null) {
   g.dataset.estado = c || '';
   return g;
 }
+/** Sets the image of a layout `img/<name>` node (held_ui.mjs uses it for item art). `fit` padding: fills the box keeping
+    the art's own padding, like the other v2 art (from upcoming/hud.mjs). */
+const GEO_IMG = new Map();
+export function figImagem(raiz, nome, url, dentro = null, pad = null){
+  const f = (dentro || raiz)?.querySelector('[data-fig="img/' + nome + '"]');
+  if (!f) return null;
+  const v = url ? 'url(' + url + ')' : 'none';
+  if (f.style.backgroundImage !== v) f.style.backgroundImage = v;
+  if (f.__bg0 == null) f.__bg0 = [f.style.backgroundSize, f.style.backgroundPosition];
+  const g = url && pad ? GEO_IMG.get(url) : null, w = parseFloat(f.style.width) || 0, h = parseFloat(f.style.height) || 0;
+  if (g && w && h){
+    const l = g.w - 2 * g.pad, m = g.h - 2 * g.pad, k = Math.min(w / l, h / m);
+    f.style.backgroundSize = (g.w * k).toFixed(2) + 'px ' + (g.h * k).toFixed(2) + 'px';
+    f.style.backgroundPosition = ((w - l * k) / 2 - g.pad * k).toFixed(2) + 'px ' + ((h - m * k) / 2 - g.pad * k).toFixed(2) + 'px';
+  } else if (url && pad) fundoComFolga(f, pad);
+  else { f.style.backgroundSize = f.__bg0[0]; f.style.backgroundPosition = f.__bg0[1]; }
+  return f;
+}

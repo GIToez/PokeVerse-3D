@@ -325,6 +325,52 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return pronto(c, { vidas: [vida(p)], aprendeu: entrada.nome, esqueceu: fez.esqueceu || null });
   }
 
+  /* TM screens from upcoming/ (tm_ui.mjs): {t:'tm_montar', item} builds a TM at the counter from its band's pieces and
+     Coins (tm_regras.json montar); {t:'tm_ensinar', item, uid, esquecer?} teaches from a TM in the bag (single use; the badge
+     lock is here); {t:'tm_tutor', golpe, uid, esquecer?} the move tutor, for Coins. Reply: {t:'tm', op, ok, erro?, falta?, trava?}
+     plus the bag snapshot and the Pokémon (`bolsa`, `vidas`), which the client applies like any bag op. */
+  function tmProtocolo(c, m) {
+    const op = { tm_montar: 'montar', tm_ensinar: 'ensinar', tm_tutor: 'tutor' }[m.t];
+    if (!op) return null;
+    const falha = (erro, extra = {}) => ({ tm: { t: 'tm', op, ok: false, erro, ...extra }, bolsa: retrato(c) });
+    const cat = catalogoTm(), regras = lerJson('tm_regras.json') || {};
+    if (!cat) return falha('The TM counter is not available.');
+    const s = saveDe(c);
+    if (!s.itens || typeof s.itens !== 'object') s.itens = {};
+    const entradaDoItem = item => [...cat.porChave.values()].find(e => +e.item === +item) || null;
+    if (op === 'montar') {
+      const e = entradaDoItem(m.item);
+      if (!e) return falha('That TM is not made here.');
+      const receita = regras.montar?.[e.faixa] || {};
+      for (const [id, qtd] of Object.entries(receita.pecas || {})) if ((+s.itens[id] || 0) < +qtd) return falha('Missing pieces.', { falta: { item: +id, qtd: +qtd - (+s.itens[id] || 0) } });
+      const preco = Math.max(0, Math.floor(+receita.dinheiro || 0));
+      if ((s.dinheiro || 0) < preco) return falha('Not enough Coins.', { falta: { dinheiro: preco - (s.dinheiro || 0) } });
+      for (const [id, qtd] of Object.entries(receita.pecas || {})) { s.itens[id] -= +qtd; if (s.itens[id] <= 0) delete s.itens[id]; }
+      s.dinheiro = (s.dinheiro || 0) - preco;
+      s.itens[e.item] = (+s.itens[e.item] || 0) + 1;
+      const r = pronto(c);
+      return { ...r, tm: { t: 'tm', op, ok: true, item: e.item } };
+    }
+    const tutor = op === 'tutor';
+    const e = tutor ? cat.tutor.get(String(m.golpe || '')) : entradaDoItem(m.item);
+    if (!e) return falha(tutor ? 'That move is not taught here.' : 'That TM is not taught here.');
+    if (!tutor && !((+s.itens[e.item] || 0) > 0)) return falha("You don't have that TM.", { falta: { item: e.item, qtd: 1 } });
+    const p = monDe(c, m.uid);
+    if (!p) return falha('That Pokémon is not in your party or box.');
+    const apr = Tm.podeAprender(cat, p, e);
+    if (!apr.ok) return falha(apr.erro);
+    const nIns = Array.isArray(s.insignias) ? s.insignias.length : 0;
+    if (!tutor && nIns < e.trava) return falha('Not enough badges.', { trava: e.trava });
+    const preco = tutor ? e.preco : 0;
+    if ((s.dinheiro || 0) < preco) return falha('Not enough Coins.', { falta: { dinheiro: preco - (s.dinheiro || 0) } });
+    const fez = Tm.aplicar(p, e, m.esquecer || null);
+    if (!fez.ok) return falha(fez.erro, fez.cheio ? { cheio: true } : {});
+    if (tutor) s.dinheiro = (s.dinheiro || 0) - preco;
+    else { s.itens[e.item] -= 1; if (s.itens[e.item] <= 0) delete s.itens[e.item]; }   // the machine is single use
+    const r = pronto(c, { vidas: [vida(p)] });
+    return { ...r, tm: { t: 'tm', op, ok: true, golpe: e.chave, uid: p.uid, esquecido: fez.esqueceu || null } };
+  }
+
   const OPS = { comprar, usar, descartar, segurar, tirar: tirarHeld, consumir, coleta, premio, safari: safariOp, cosmetico, tm: tmOp };
   return {
     /** Handles the op, or returns null when it isn't one of these. */
@@ -332,5 +378,6 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     motorHeld,
     validarPersonagem,
     vestivel,
+    tmProtocolo,
   };
 }

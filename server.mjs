@@ -1573,9 +1573,29 @@ wss.on('connection', ws => {
       }
 
       case 'party':
+      case 'tm_montar': case 'tm_ensinar': case 'tm_tutor': {   // TM counter / teach / tutor (tm_ui.mjs → server_bag.mjs tmProtocolo)
+        const uTm = sessoes.get(ws._info?.token) || ws._usuario, cTm = uTm && contas[uTm];
+        if (!cTm) { enviar(ws, { t: 'tm', op: m.t.slice(3), ok: false, erro: 'TMs need an account.' }); break; }
+        if (!cTm.save) cTm.save = {};
+        const r = bolsaServ.tmProtocolo(cTm, m);
+        if (!r) break;
+        enviar(ws, { t: 'bolsa', op: 'tm', bolsa: r.bolsa, ...(r.vidas ? { vidas: r.vidas } : {}) });
+        enviar(ws, r.tm);
+        break;
+      }
       case 'arranjo': {
         const uArr = sessoes.get(ws._info?.token) || ws._usuario;
         const cArr = uArr && contas[uArr];
+        if (cArr && m.held && typeof m.held === 'object') {   // held_ui.mjs: give / swap / take a held item (server_bag.mjs segurar / tirar)
+          if (!cArr.save) cArr.save = {};
+          const h = m.held, tirar = h.item == null;
+          const r = bolsaServ.tratar(cArr, tirar ? 'tirar' : 'segurar', { uid: h.uid, item: h.item, preso: h.preso }, uArr);
+          if (r?.erro) { enviar(ws, { t: 'bolsa_erro', op: 'segurar', ...r }); enviar(ws, { t: 'held_erro', uid: h.uid, motivo: r.erro }); break; }
+          enviar(ws, { t: 'bolsa', op: tirar ? 'tirar' : 'segurar', ...r });
+          const pv = r?.vidas?.[0];
+          enviar(ws, { t: 'held_ok', uid: h.uid, held: pv?.held ? (typeof pv.held === 'object' ? pv.held : { id: pv.held }) : null });
+          break;
+        }
         if (cArr) {
           if (!cArr.save) cArr.save = {};
           if (applyPartyOrder(cArr, m)) {

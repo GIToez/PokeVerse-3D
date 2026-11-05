@@ -1,6 +1,8 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 import * as I18n from './i18n.mjs';                                     // etapa 3: a linha de idioma nas Configurações e a Pokédex por idioma
 import * as CorreioUI from './mail_ui.mjs';
+import * as TmUi from './tm_ui.mjs';                                       // TM counter, teach, tutor (v2)
+import * as HeldUi from './held_ui.mjs';                                   // held items: who holds what (v2)
 import * as GuardaRoupaUI from './wardrobe_ui.mjs';                         // Wardrobe (v2 popup)
 import * as RankingUi from './ranking_ui.mjs';                               // Ranking (v2 popup)
 import * as ProgressaoUi from './progression_ui.mjs';                       // Achievements, Master Level, titles (v2 popup)                                // Mail (v2 popup)
@@ -351,6 +353,27 @@ function ligarRecursos(){
 export function instalar(c){
   ProgressaoUi.aoMudarVista?.(() => { if (aberta === 'treinador' && popTr && Popup.aberto(popTr)) encherTreinador(popTr); });   // Master pill and Stats refresh when the server sends a new view
   RankingUi.instalar({ segurar: (el) => DIALOGOS.add(el), Som: c.Som });
+  TmUi.instalar({
+    enviar: (m) => c.tmEnviar?.(m),
+    temLoja: (a) => !!(D?.lojas?.[String(a)] || []).length,
+    Chat, Som: c.Som,
+    lerLS: (k, p) => c.lerLS(k, p),
+    time: () => c.jogo?.time || [],
+    golpe: (a) => c.golpe?.(a) || null,
+    item: (a) => D?.itens?.[a] || null,
+    abrirLoja: (a) => abrir('pokemart', String(a)),
+    repintar: () => repintar(),
+    segurar: (el) => DIALOGOS.add(el),
+  });
+  HeldUi.instalar({
+    enviar: (m) => c.tmEnviar?.(m),
+    Chat, Som: c.Som,
+    time: () => c.jogo?.time || [],
+    item: (a) => D?.itens?.[a] || null,
+    golpe: (a) => c.golpe?.(a) || null,
+    repintar: () => repintar(),
+    segurar: (el) => DIALOGOS.add(el),
+  });
   GuardaRoupaUI.instalar({
     equipar: (t) => c.guarda?.equipar?.(t),
     equiparPeca: (k, v) => c.guarda?.equiparPeca?.(k, v),
@@ -405,7 +428,15 @@ export function instalar(c){
 export function mercadoAviso(a){ FeiraUI.avisoDoServidor(a); }
 async function dados(){
   if (D) return D;
-  if (!carregandoD) carregandoD = fetch('./data/menu_data.json').then(r => r.json()).catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] }));
+  if (!carregandoD) carregandoD = Promise.all([
+    fetch('./data/menu_data.json').then(r => r.json()).catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] })),
+    fetch('./data/itens_novos.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // the new items (TM pieces, tickets…): upcoming/ merges them the same way
+  ]).then(async ([d, novos]) => {
+    d.itens ||= {};
+    for (const [id, it] of Object.entries(novos?.itens || {})) if (!d.itens[id] && it && typeof it.n === 'string') d.itens[id] = { n: it.n, d: it.d || '', t: it.t ?? 8, ...(it.i ? { i: it.i } : {}), ...(it.q != null ? { q: it.q } : {}), ...(it.preso ? { preso: true } : {}) };
+    try { await Promise.all([TmUi.carregar(), HeldUi.carregar()]); TmUi.corrigirItens(d.itens); } catch {}
+    return d;
+  });
   D = await carregandoD; return D;
 }
 /* DIÁLOGOS DA ABA CONTA (15/09): "Estou preso" e "Mandar pra equipe" são DOM solto, fora do `aberta` — o /preso abre o diálogo com o
@@ -2266,7 +2297,7 @@ const CATS_MO = { todos: null, pokebolas: [7], medicina: [9], tm: [4], chave: [3
 /* O que "Usar" faz no jogo hoje: Pokébola vira a bola escolhida, item de Recuperação (t=9: poções, Reanimador) cura, pedra
    evolui. TM, traje, montaria e item de missão NÃO têm uso pela mochila ainda — o botão fica desligado (antes o `usarItem`
    tratava tudo como poção e consumia o item). Descartar não vale pra item de missão (t=3) nem pra bola (mora em `bolas`). */
-const podeUsarMo = a => a.it.t === 7 || a.it.t === 9 || !!ctx.ehItemDeEvolucao?.(a.id) || !!ctx.ehHeld?.(a.id) || !!ctx.ehPatins?.(a.id);   // Roller Skates: on/off (index.html alternarPatins) · held items: "Give" to the partner in the field
+const podeUsarMo = a => a.it.t === 7 || a.it.t === 9 || (a.it.t === 4 && TmUi.ehMaquina(a.id)) || HeldUi.ehHeld(a.id) || !!ctx.ehItemDeEvolucao?.(a.id) || !!ctx.ehHeld?.(a.id) || !!ctx.ehPatins?.(a.id);   // Roller Skates: on/off (index.html alternarPatins) · held items: "Give" to the partner in the field
 /* POR QUE NÃO USOU (17/09, Marcolino no #alpha-testers: "clico e não vai" na Poção): o Usar chama o `usarItem` do index, que só cura
    o Pokémon EM CAMPO e avisava flutuando em cima dele — atrás da janela (e sem aviso nenhum quando não era a vez na batalha). Agora o
    motivo (HP cheio, desmaiado, sem Pokémon, acabou) e o resultado ("recuperou 20 HP") ficam 4 s DENTRO da Mochila: na linha de dica do
@@ -2335,7 +2366,8 @@ function acaoMochila(nome, el){
     confirmarDescarte = null;
     if (!podeUsarMo(alvo)){ avisarMo(alvo.id, 'esse item não se usa pela Mochila'); render(); return; }   // só chega aqui pelo toque duplo (o botão fica desligado)
     if (alvo.it.t === 7){ ctx.jogo.bolaSel = alvo.id; ctx.gravarLS('bolaSel', alvo.id); render(); return; }   // Pokébola: vira a bola escolhida
-    if (ctx.ehHeld?.(alvo.id)){ ctx.segurarItem(alvo.id, (txt, ok) => { avisarMo(alvo.id, txt, ok); render(); }); return; }   // held item: the partner holds it (index.html segurarItem)
+    if (HeldUi.ehHeld(alvo.id)){ if (!HeldUi.dialogoNaMochila()) fechar(); HeldUi.abrirSegurar(alvo.id, !!alvo.preso); return; }   // held item: pick who holds it (held_ui.mjs)
+    if (alvo.it.t === 4 && TmUi.ehMaquina(alvo.id)){ fechar(); TmUi.abrirEnsinar(alvo.id); return; }                          // a TM: pick who learns it (tm_ui.mjs)
     if (ctx.ehItemDeEvolucao?.(alvo.id)){
       if (!evoluiAgoraMo(alvo)){ avisarMo(alvo.id, (alvo.it.n || 'this item') + ' has no effect on ' + (ctx.jogo?.pika?.nome || 'your Pokémon')); render(); return; }   // revisão (17/09): o aviso fica na janela (antes ela fechava e o aviso flutuava atrás)
       fechar(); ctx.usarItemEvolucao?.(alvo.id); return;
@@ -6174,3 +6206,8 @@ function abrirGuarda(aba = 'roupas'){
   Chat.sistema(tr('The wardrobe needs the new interface (Settings → HUD).'));
   return false;
 }
+/* TM and held-item replies from the server (network.mjs → index.html → here). */
+export function tmRede(m){ TmUi.receber(m); }
+export function heldRede(m){ HeldUi.receber(m); }
+/** The Celadon TM clerk (and any counter or tutor in tm_regras.json): the v2 counter. */
+export async function abrirBalcaoTm(cfg){ await dados(); await TmUi.carregar(); if (TmUi.ehBalcao(cfg) || TmUi.ehTutor(cfg)){ TmUi.abrirBalcao(cfg); return true; } return false; }
