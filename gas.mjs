@@ -10,7 +10,7 @@ import * as THREE from 'three';
 export const RECEITAS = {
   /* massa: puffs filling an ellipse behind the ball (in ball radii): w × h, centre lifted by `sobe`; coroa: big puffs billowing on
      top; tam: puff size range; cor (light, top) → cor2 (dark folds, inside / low). Tuned on the bench (tools/gas_bench). */
-  pm0092: { massa: 64, coroa: 5, w: 1.4, h: 1.35, sobe: 0.45, tam: [0.42, 0.75], cor: 0xcfa6f0, cor2: 0x6a3aa8, op: 0.95, halo: 0xb48ae0 },   // Gastly
+  pm0092: { massa: 64, coroa: 5, w: 1.4, h: 1.35, sobe: 0.45, tam: [0.42, 0.75], cor: 0xcfa6f0, cor2: 0x6a3aa8, op: 0.95, halo: 0xb48ae0, frente: 22, opFrente: 0.3, veuR: [0.8, 1.1] },   // Gastly
 };
 
 let textura = null;
@@ -76,6 +76,12 @@ export function aplicarGas(corpo, modelo = '') {
     lista.push({ x, y, tam: R.tam[0] + Math.random() * (R.tam[1] - R.tam[0]), tom, coroa: false, atras: 0.6 + (1 - rr) * 0.5 });
   }
   /* the crown: a few big puffs on top that swell and fade in turn (smoke rising off the cloud, no chain of balls) */
+  /* the veil: see-through puffs IN FRONT of the ball, mostly round its rim, so the gas wraps over the body from any side; the face
+     still shows through (opFrente) */
+  for (let i = 0; i < (R.frente || 0); i++) {
+    const a = R.veuBaixo ? Math.PI * (1.05 + Math.random() * 0.9) : Math.random() * Math.PI * 2, rr = (R.veuR || [0.8, 1.1])[0] + Math.random() * ((R.veuR || [0.8, 1.1])[1] - (R.veuR || [0.8, 1.1])[0]);
+    lista.push({ x: Math.cos(a) * rr, y: Math.sin(a) * rr * 0.9 + 0.05, tam: R.tam[0] * (0.8 + Math.random() * 0.5), tom: Math.random() * 0.4, coroa: false, atras: -(0.9 + Math.random() * 0.4), veu: true });
+  }
   for (let i = 0; i < R.coroa; i++) lista.push({ x: (i / Math.max(1, R.coroa - 1) - 0.5) * R.w * 1.1, y: R.sobe + R.h * 0.85, tam: R.tam[1] * 1.15, tom: 0.05, coroa: true, atras: 0.9 });
   lista.sort((p, q) => q.atras - p.atras);                               // far ones drawn first
   lista.forEach((P, i) => {
@@ -90,7 +96,7 @@ export function aplicarGas(corpo, modelo = '') {
       camera.getWorldDirection(_d);
       _r.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
       _u.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-      let ox = P.x + Math.sin(t * 0.7 + fase) * 0.06, oy = P.y + Math.cos(t * 0.6 + fase) * 0.06, e = P.tam * (0.93 + 0.09 * Math.sin(t * 1.3 + fase)), op = R.op;
+      let ox = P.x + Math.sin(t * 0.7 + fase) * 0.06, oy = P.y + Math.cos(t * 0.6 + fase) * 0.06, e = P.tam * (0.93 + 0.09 * Math.sin(t * 1.3 + fase)), op = P.veu ? R.opFrente * (0.75 + 0.25 * Math.sin(t * 0.9 + fase)) : R.op;
       if (P.coroa) { const k = ((t + atraso) % ciclo) / ciclo; oy += k * 0.8; ox += Math.sin(fase) * k * 0.3; e *= 0.35 + 0.75 * Math.sin(Math.PI * Math.min(1, k * 1.1)); op = R.op * Math.min(1, k * 6, (1 - k) * 4); }   // swells, then shrinks away (a fade alone went grey over grass)
       _p.copy(_c).addScaledVector(_r, ox * R0).addScaledVector(_u, oy * R0).addScaledVector(_d, P.atras * R0);   // behind the ball, seen from the camera
       grupo.worldToLocal(_p);
