@@ -9461,6 +9461,8 @@ if (jogo.ash){
     },
     moderar: (op, resto) => {                                             // MODERAÇÃO (08/09): o servidor confere a marca de GM
       const [a, b, ...c] = resto.split(/\s+/);
+      const num = v => /^-?\d+(?:\.\d+)?$/.test(v || '');
+      if (op === 'tp' && a && (!b || (num(a) && num(b) && !c.length))){ Rede.enviar({ t: 'mod_tp', usuario: null, destino: resto }); return; }   // /tp cidade | /tp x z (no name): moves the GM themself
       const msg = op === 'online' ? { t: 'mod_online' }
                 : op === 'aviso' ? { t: 'mod_aviso', texto: resto }
                 : op === 'mudo' ? { t: 'mod_mudo', usuario: a, minutos: b === '0' ? 0 : (+b || 10), motivo: c.join(' ') }   // Fase 3: /mudo nome 0 tira o silêncio

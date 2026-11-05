@@ -273,7 +273,7 @@ export function criarModeracao(h) {
       ok({ usuario: u, what });
       return;
     }
-    const u = acharConta(m.usuario);
+    const u = op === 'tp' && !m.usuario ? g : acharConta(m.usuario);   // /tp cidade | /tp x z with no name: the GM themself
     if (!u) { erro(m.usuario ? 'Account "' + String(m.usuario).slice(0, 30) + '" not found' : 'Missing the name'); return; }
     const c = contas[u];
     if (u === g && ['mudo', 'kick', 'banir', 'perdoar'].includes(op)) { erro("You can't do that to your own account"); return; }
