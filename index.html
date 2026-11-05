@@ -9976,6 +9976,7 @@ function atualizarParceiro(dt){
     pika.pivo.visible = false; pika.emBatalha = false; jogo.ordem = null; pika.destino = null;
     pika.x = pika.vx = ash.x; pika.z = pika.vz = ash.z; pika.y = pika.vy = ash.y;
     pika.pivo.position.set(pika.vx, pika.vy, pika.vz);
+    animarCorpos(dt, [ash], false);                                       /* the trainer's body still has to follow: without this the Safari froze the body while the player (and the camera) kept moving */
     return;
   }
   // Pikachu: em batalha ele FICA — não persegue o Ash entre um golpe e outro.
@@ -10068,7 +10069,12 @@ function atualizarParceiro(dt){
     pika.travado = (pika.travado || 0) + dt;
     if (pika.travado > 1.2){ pika.travado = 0; puxarParceiro('destravou'); }
   } else pika.travado = 0;
-  for (const e of (jogo.montaria ? [pika] : [ash, pika])){                // montado, o Ash é filho da sela: só o parceiro aqui
+  animarCorpos(dt, jogo.montaria ? [pika] : [ash, pika], r01);            // montado, o Ash é filho da sela: só o parceiro aqui
+}
+/** Ground, run/idle clip and smoothed visual position of the trainer and the partner (end of atualizarParceiro). */
+function animarCorpos(dt, lista, r01){
+  const { ash, pika } = jogo;
+  for (const e of lista){
     e.travaAnim = Math.max(0, e.travaAnim - dt);
     if (e.travaAnim <= 0 && e.anim && !['Idle', 'Run'].includes(e.anim) && !(e === pika && pika.desmaiado > 0)) e.anim = null;   // acabou o golpe/ferido: volta ao estado
     const y = r01 ? RaidR01.alturaChao(e.x, e.z) : apoioDe(e);           // nadando (surf) bóia na superfície; senão o chão
