@@ -2,20 +2,11 @@
 # The folder after the domain is PokeFable's (cenario/ = our scenery/, som/ = our sound/, particulas/ = our particles/).
 # The script also follows the raid configs and grabs every raid / effect / sound file the page has loaded.
 
-# Raids r01 (Seafoam Blizzard, Articuno), r03 (Power Plant Overload, Zapdos), r05 (Psychic Echoes): arenas, boss animations,
+# Got the Articuno (r01) arena, pieces, animations and markings on 2026-11-05. Still gated: r03 (Power Plant Overload, Zapdos), r05 (Psychic Echoes): arenas, boss animations,
 # ground markings, configs — answered 403 (gated) earlier on 2026-11-05; should open with the raid.
 # raid assets
-https://pokefableonline.com/cenario/raid/r01/marcas/abrigo_ciano.png
-https://pokefableonline.com/cenario/raid/r01/marcas/anel_borda.png
-https://pokefableonline.com/cenario/raid/r01/marcas/area_circular.png
-https://pokefableonline.com/cenario/raid/r01/marcas/cone_vento.png
-https://pokefableonline.com/cenario/raid/r01/marcas/interagir_dourado.png
-https://pokefableonline.com/cenario/raid/r01/marcas/marca_alvo.png
 https://pokefableonline.com/cenario/raid/r01/r01_animacoes.json
-https://pokefableonline.com/cenario/raid/r01/r01_arena.glb
-https://pokefableonline.com/cenario/raid/r01/r01_articuno_anim.glb
 https://pokefableonline.com/cenario/raid/r01/r01_config.json
-https://pokefableonline.com/cenario/raid/r01/r01_pecas.glb
 https://pokefableonline.com/cenario/raid/r03/escudo_eletrico.png
 https://pokefableonline.com/cenario/raid/r03/marcas/abrigo_ciano.png
 https://pokefableonline.com/cenario/raid/r03/marcas/anel_borda.png
@@ -65,30 +56,8 @@ https://pokefableonline.com/som/skill/collapse1.ogg
 https://pokefableonline.com/som/se/collapse1.ogg
 
 # their current raid data and code (to update ours)
-https://pokefableonline.com/data/raid_r01.json
-https://pokefableonline.com/data/raid_r03.json
-https://pokefableonline.com/data/raid_r05.json
 
 # raid assets
 https://pokefableonline.com/cenario/raid/r01/colisoes.json
 
 # their current raid data and code (to update ours)
-https://pokefableonline.com/raid.mjs
-https://pokefableonline.com/raid_loading.mjs
-https://pokefableonline.com/raid_r01.mjs
-https://pokefableonline.com/raid_r01_attacks.mjs
-https://pokefableonline.com/raid_r01_boss.mjs
-https://pokefableonline.com/raid_r01_game.mjs
-https://pokefableonline.com/raid_r01_scene.mjs
-https://pokefableonline.com/raid_r03.mjs
-https://pokefableonline.com/raid_r03_attacks.mjs
-https://pokefableonline.com/raid_r03_boss.mjs
-https://pokefableonline.com/raid_r03_game.mjs
-https://pokefableonline.com/raid_r03_mirror.mjs
-https://pokefableonline.com/raid_r03_scene.mjs
-https://pokefableonline.com/raid_r05.mjs
-https://pokefableonline.com/raid_r05_attacks.mjs
-https://pokefableonline.com/raid_r05_boss.mjs
-https://pokefableonline.com/raid_r05_game.mjs
-https://pokefableonline.com/raid_r05_mirror.mjs
-https://pokefableonline.com/raid_r05_scene.mjs
