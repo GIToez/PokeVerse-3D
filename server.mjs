@@ -9,6 +9,7 @@
  * catching Pokémon, healing at a Pokémon Center).
  */
 
+import * as RegrasItemS from './item_rules.mjs';   // Running Shoes (TENIS) and the other key-item ids
 import http from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 import fs from 'node:fs';
@@ -1396,7 +1397,18 @@ const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin,
   bolaBonus: (id, w, u) => world.ballBonus(id, w, u),   // the ball's catch bonus, same as in the wild (Level / Net / Nest / Repeat Ball…)
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
   aoPontuar: (u, n, mvp, parte) => { temporada.contar(u, { conta: 'raidPontos', n, parte }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
-const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
+/* RUNNING SHOES (item_rules.mjs TENIS): from Oak's aide after the Boulder Badge (server_battle calls this on the first win over
+   Brock); accounts that already had the badge, and GM accounts, get them on their next login. */
+function darTenis(u, { avisar = true } = {}) {
+  const c = contas[u]; if (!c) return false;
+  if (!c.save) c.save = {};
+  const s = c.save; if (!s.itens || typeof s.itens !== 'object') s.itens = {};
+  if (+s.itens[RegrasItemS.TENIS] > 0) return false;
+  s.itens[RegrasItemS.TENIS] = 1; c.rev = (c.rev || 0) + 1; salvarContas();
+  if (avisar) for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: "👟 Professor Oak's aide caught up with you: \"Brock's badge! The Professor wants you to have these.\" You got the Running Shoes! Hold Shift (or push the joystick all the way) to run.", bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas || {} } });
+  return true;
+}
+const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u) });
 /* WARDROBE (server_wardrobe.mjs): the outfit/bag/effect catalog and who owns what. */
 const guarda = createWardrobe({ dataDir: DADOS_PUB });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida, guarda });   // comprar / usar / descartar / held items (server_bag.mjs)
@@ -1500,6 +1512,7 @@ wss.on('connection', ws => {
         }
         if (eventos.aoEntrar(ws, uTok)) return;                            // Fase 3: manutenção barra quem não é GM; senão manda o evento ao vivo
         moderacao.aoEntrar(ws, uTok);                                      // Fase 3: chegou onde o GM levou (posGm) → apaga
+        if (uTok && contas[uTok] && (contas[uTok].gm || (contas[uTok].save?.insignias || []).map(Number).includes(RegrasItemS.TENIS_INSIGNIA))) darTenis(uTok);   // Running Shoes for badges won before they existed (and GMs)
         if (uTok) for (const w of socketsDe(uTok)) {                       // sessão única, como em produção: a aba/aparelho anterior leva `saia` (não reconecta) e some do mapa dos outros — antes cada aba virava mais um boneco
           if (w === ws) continue;
           enviar(w, { t: 'saia', texto: 'You logged in from somewhere else.' });

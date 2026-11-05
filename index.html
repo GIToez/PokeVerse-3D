@@ -3237,6 +3237,10 @@ function selaNaSuperficie(m, nomeOsso, [tras, baixo] = [0, 0]){
    Losing the item (discard, trade) takes them off (pintarAtalhos). GMs give them with /giveskates [name]. */
 const temPatins = () => (+lerLS('itens', {})[RegrasItem.PATINS] || 0) > 0;
 const patinando = () => !!jogo.patins && !jogo.montaria && !jogo.turno && !!jogo.ash && !naAgua(jogo.ash.x, jogo.ash.z);
+/* RUNNING SHOES (Nov 5, item_rules.mjs TENIS): on foot the trainer WALKS; with the shoes, holding Run (Shift by default), pushing the
+   joystick all the way or clicking the ground runs at the old speed. Skates and mounts are their own speed. */
+const temTenis = () => (+lerLS('itens', {})[RegrasItem.TENIS] || 0) > 0;
+const querCorrer = (porClique = false) => temTenis() && (porClique || Teclas.segura('correr', teclas) || (toque.ativo && Math.hypot(toque.x, toque.y) > 0.85));
 function alternarPatins(aviso = null, ligar = !jogo.patins){
   const diz = (t, ok) => { if (aviso) aviso(t, ok); else if (jogo.ash) flutuar(jogo.ash, t, ok ? '#8ef58e' : '#ffd23a'); return ok; };
   if (ligar && !temPatins()) return diz("you don't have Roller Skates", false);
@@ -9888,7 +9892,9 @@ function atualizarJogo(dt, entrada){
       n.mix?.update(dt);
     } }
   const m = jogo.montaria;                             // montado: a montaria anda (mais rápida; voando, por cima de tudo)
-  const velA = (m ? m.vel : ash.vel) * (ADM && m?.voa && teclas.has('ShiftLeft') ? 3 : 1) * (!m && patinando() ? RegrasItem.PATINS_VEL : 1);   // adm: Shift = turbo · Roller Skates on foot
+  const aPe = !m && !patinando();
+  jogo.andando = aPe && !querCorrer(entrada.lengthSq() === 0 && ash.alvoX !== null);   // walking (no shoes, or not holding Run): slower, and the run clip plays slower
+  const velA = (m ? m.vel : ash.vel) * (ADM && m?.voa && teclas.has('ShiftLeft') ? 3 : 1) * (!m && patinando() ? RegrasItem.PATINS_VEL : 1) * (jogo.andando ? RegrasItem.TENIS_ANDAR : 1);   // adm: Shift = turbo · Roller Skates on foot · walking without the Running Shoes
   const mover = (e, dx, dz) => m?.voa ? deslocarVoando(e, dx, dz) : deslocar(e, dx, dz);
   // Ash: teclado tem prioridade; senão vai até o clique
   let moveu = false;
@@ -10045,7 +10051,7 @@ function atualizarParceiro(dt){
     const y = r01 ? RaidR01.alturaChao(e.x, e.z) : apoioDe(e);           // nadando (surf) bóia na superfície; senão o chão
     if (y !== null) e.y = y;
     tocarAnim(e, e.quieto > 0.14 ? 'Idle' : 'Run');
-    if (e === ash) e.mix.timeScale = e.quieto <= 0.14 && patinando() ? 0.7 : 1;   // Roller Skates: longer strides, it reads as gliding
+    if (e === ash) e.mix.timeScale = e.quieto <= 0.14 && patinando() ? 0.7 : e.quieto <= 0.14 && jogo.andando ? 0.66 : 1;   // Roller Skates: longer strides, it reads as gliding · walking: the run clip slowed down
     // posição visual suavizada: tira o degrau do chão e do giro
     const k = 1 - Math.exp(-dt / 0.05);
     e.vx += (e.x - e.vx) * k; e.vz += (e.z - e.vz) * k; e.vy += (e.y - e.vy) * (1 - Math.exp(-dt / 0.08));

@@ -71,4 +71,10 @@ export function linhaDaLoja(lojas, loja, item, nInsignias = 0){
 /* ROLLER SKATES (Nov 2): a key item, never used up. From the Bag (or a 5–9 shortcut) it toggles skating: on foot the trainer
    moves PATINS_VEL× faster. GMs hand it out with /giveskates [name] (server_moderation.mjs `patins`). */
 export const PATINS = 57900;
+/* RUNNING SHOES (Nov 5): a key item like in FireRed / LeafGreen — Professor Oak's aide hands them over after Brock's Boulder Badge.
+   Without them the trainer walks (TENIS_ANDAR × the run speed); with them, hold Shift (remappable) or push the joystick all the way
+   to run. Clicking the ground runs too once you have them. */
+export const TENIS = 57901;
+export const TENIS_INSIGNIA = 101;   // Boulder Badge (Brock, gyms.json)
+export const TENIS_ANDAR = 0.62;
 export const PATINS_VEL = 1.6;
