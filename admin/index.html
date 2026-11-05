@@ -238,6 +238,7 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
     <section id="v-mapa" class="vista">
       <div class="barra">
         <label>Map <select id="m-mapa"></select></label>
+        <button id="m-novo-mapa" title="Start a new map: blank ground or a copy of an existing map">🆕 New map</button>
         <span class="sep"></span>
         <button id="m-nova" title="Click on the map to place the zone center">➕ New zone</button>
         <button id="m-aqui" title="Creates a zone where your character is right now">📍 Zone where I am</button>
@@ -384,6 +385,22 @@ table.d-sublista td .ajuda { max-width: 150px; white-space: nowrap; overflow: hi
     <section id="v-especies" class="vista" hidden></section>
     <section id="v-evolucoes" class="vista" hidden></section>
     <section id="v-learnset" class="vista" hidden></section>
+    <dialog id="nm-dlg" style="background:#121826;color:#e8eefc;border:1px solid #3a4660;border-radius:12px;padding:18px 20px;min-width:380px">
+      <form method="dialog" id="nm-form" style="display:grid;gap:10px">
+        <style>#nm-form input,#nm-form select{background:#0b111c;color:#e8eefc;border:1px solid #3a4660;border-radius:6px;padding:5px 8px}#nm-form label{display:grid;gap:4px}</style>
+        <h3 style="margin:0">🆕 New map</h3>
+        <label>Name <input id="nm-nome" required maxlength="60" placeholder="e.g. Route 26, Mt. Silver Cave"></label>
+        <label>Kind <select id="nm-tipo"><option value="fora">Outdoors (sky, weather, wild Pokémon)</option><option value="dentro">Indoors (house, cave, building)</option></select></label>
+        <label>Start from <select id="nm-modo"><option value="vazio">Blank: flat grass ground</option><option value="clonar">Copy of an existing map</option></select></label>
+        <div id="nm-vazio" style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
+          <label>Width (m) <input id="nm-w" type="number" min="10" max="200" value="60"></label>
+          <label>Depth (m) <input id="nm-d" type="number" min="10" max="200" value="60"></label>
+        </div>
+        <label id="nm-clonar" hidden>Map to copy <select id="nm-de"></select></label>
+        <small style="opacity:.75" id="nm-nota">The ground uses the prefab library of the Safari Zone map (trees, rocks, grass, fences…). Paint grass/water/floor with the Brush, place props in the 3D editor.</small>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button value="cancel" formnovalidate>Cancel</button><button class="prim" id="nm-ok" value="ok">Create map</button></div>
+      </form>
+    </dialog>
   </main>
 </div>
 

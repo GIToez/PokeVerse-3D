@@ -9715,7 +9715,7 @@ if (jogo.ash){
     document.body.appendChild(el); mm.el = el; mm.jan = el.querySelector('#mm-janela'); mm.ativo = true;
     mm.tela2d = el.querySelector('#mm-tela'); mm.c2d = mm.tela2d.getContext('2d');
     mm.tiles = new Map(); mm.cdTile = 0;                                 // fog of war por sessão: ladrilhos de 32 m fotografados ao vivo, 1 vez cada, quando o jogador chega perto
-    if (!MM_VIVO && !INTERIOR){                                          // a foto assada da rua: Kanto ou Johto, mesma régua (x0, z0, esc)
+    if (!MM_VIVO && !INTERIOR && (NOME === 'kanto' || NOME === 'pallet_route1' || +NOME === 1000001 || +NOME === 2000001)){   // the baked street photo exists for Kanto and Johto only; any other map (a new one, a cave…) draws the live minimap
       const base = +NOME === 2000001 ? './ui/minimapa_johto' : './ui/minimapa_kanto';
       fetch(base + '.json').then(r => r.ok ? r.json() : null).then(regua => {
         if (!regua || !regua.esc) return;

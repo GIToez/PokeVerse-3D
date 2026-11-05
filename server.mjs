@@ -1131,6 +1131,75 @@ const httpServer = http.createServer((req, res) => {
         console.log(`[admin] ${g} saved habitats (${Object.keys(areas).length} areas)`);
         return json(200, { ok: true, areas: Object.keys(areas).length });
       }
+      /* ── NEW MAP (Nov 5): blank or a clone of an existing map ──
+         POST /admin/mapa/novo { modo: 'vazio' | 'clonar', nome, tipo: 'fora' | 'dentro', de (clone source), lib (blank: the prefab
+         library map, default 2100011), largura / profundidade (blank, metres) }.
+         A map is three files plus its scenes.json entry: public/data/<id>.json (areas, scenery pieces, layers), scenery/<id>.glb (the
+         prefab library; hard-linked to the source's file, so it costs no disk) and scenery/<id>_chao.json. New maps get ids from
+         9100001 and their own area ids, so names, music and spawns never mix with the map they came from. A clone keeps the
+         scenery, ground, grass and water; NPCs, doors, trainers and stories are left out (they belong to the original's places). */
+      if (rota === '/admin/mapa/novo' && req.method === 'POST') {
+        const modo = d.modo === 'clonar' ? 'clonar' : 'vazio';
+        const nome = String(d.nome || '').trim().slice(0, 60);
+        if (!nome) return json(400, { erro: 'Give the new map a name.' });
+        const fora = d.tipo !== 'dentro';
+        const cenasArq = nodePath.join(DADOS_PUB, 'scenes.json'), cenas = lerJson(cenasArq, { cenas: [] });
+        if (!Array.isArray(cenas.cenas)) cenas.cenas = [];
+        const usados = new Set(cenas.cenas.map(c => +c.id)), areasUsadas = new Set(cenas.cenas.flatMap(c => (c.areas || []).map(a => +a.id)));
+        let id = 9100001; while (usados.has(id) || fs.existsSync(nodePath.join(DADOS_PUB, id + '.json'))) id++;
+        let proxArea = 910001; const novaArea = () => { while (areasUsadas.has(proxArea)) proxArea++; areasUsadas.add(proxArea); return proxArea++; };
+        const glbDe = m => { const lib = GLB_EMPRESTADO[m] || m; for (const dir of [CENARIO_RAIZ, CENARIO_PUB]) { const f = nodePath.join(dir, lib + '.glb'); if (fs.existsSync(f)) return { dir, lib, f }; } return null; };
+        const ligar = (de, para) => { try { fs.linkSync(de, para); } catch { fs.copyFileSync(de, para); } };
+        let dados, origem, areasCena;
+        if (modo === 'clonar') {
+          const de = String(d.de || '');
+          if (!/^[\w-]{1,40}$/.test(de)) return json(400, { erro: 'Pick the map to clone.' });
+          const src = lerJson(nodePath.join(DADOS_PUB, de + '.json'), null);
+          if (!src) return json(404, { erro: 'Map ' + de + ' not found.' });
+          origem = glbDe(de);
+          if (!origem) return json(400, { erro: 'Map ' + de + ' has no 3D file to clone.' });
+          const troca = new Map();                                               // old area id → new one
+          const nova = a => { if (!troca.has(+a)) troca.set(+a, novaArea()); return troca.get(+a); };
+          dados = { ...src, mapa: id, nome, npcs: [], portas: [], treinadores: [], historias: [] };
+          dados.caixas = (src.caixas || []).map(c => ({ ...c, a: nova(c.a) }));
+          for (const k of ['grama', 'agua']) if (Array.isArray(src[k])) dados[k] = src[k].map(t => (t && typeof t === 'object' && 'a' in t ? { ...t, a: nova(t.a) } : t));
+          const nomesSrc = src.nomes || {}, cenaSrc = cenas.cenas.find(c => String(c.id) === de);
+          dados.nomes = {}; areasCena = [];
+          for (const [velho, novo] of troca) {
+            const n0 = nomesSrc[velho] || cenaSrc?.areas?.find(a => +a.id === velho)?.nome || nome;
+            dados.nomes[novo] = n0; areasCena.push({ id: novo, nome: n0, tipo: fora ? 1 : 2 });
+          }
+          if (!areasCena.length) { const a = novaArea(); areasCena.push({ id: a, nome, tipo: fora ? 1 : 2 }); dados.nomes = { [a]: nome }; }
+        } else {
+          const lib = String(d.lib || '2100011');
+          origem = glbDe(lib);
+          const libDados = lerJson(nodePath.join(DADOS_PUB, lib + '.json'), null);
+          if (!origem || !libDados) return json(400, { erro: 'Library map ' + lib + ' not found.' });
+          const W = Math.max(10, Math.min(200, Math.round(+d.largura || 60))), D = Math.max(10, Math.min(200, Math.round(+d.profundidade || 60)));
+          const piso = (libDados.prefabs || []).find(n => /^floor_grass/.test(n)) || (libDados.prefabs || []).find(n => /floor/i.test(n)) || 'floor_grass2';
+          const objetos = [];                                                    // the ground: floor tiles, like the source maps
+          for (let x = -W / 2; x < W / 2; x++) for (let z = -D / 2; z < D / 2; z++) objetos.push({ n: piso, x: x + 0.5, y: 0, z: z + 0.5, a: 0 });   // floor_grass2 is a 1 × 1 m tile
+          const a = novaArea();
+          dados = { mapa: id, nome, areas: [], nomes: { [a]: nome }, caixas: [{ a, x: 0, y: 0, z: 0, sx: W, sy: 20, sz: D }], objetos, ambiente: [], areaEnv: [],
+            grama: [], agua: [], portas: [], treinadores: [], historias: [], npcs: [], nav: [], prefabs: libDados.prefabs || [], bbox: { x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2 } };
+          areasCena = [{ id: a, nome, tipo: fora ? 1 : 2 }];
+        }
+        try {
+          ligar(origem.f, nodePath.join(CENARIO_RAIZ, id + '.glb'));
+          const chao = nodePath.join(origem.dir, origem.lib + '_chao.json');
+          if (fs.existsSync(chao)) fs.copyFileSync(chao, nodePath.join(CENARIO_RAIZ, id + '_chao.json'));
+          fs.writeFileSync(nodePath.join(DADOS_PUB, id + '.json'), JSON.stringify(dados));
+          cenas.cenas.push({ id, nome, areas: areasCena, objeto: false, criado: { por: g, em: new Date().toISOString(), modo, de: modo === 'clonar' ? String(d.de) : String(d.lib || '2100011') } });
+          gravarComBackup(cenasArq, cenas);
+        } catch (e) { return json(500, { erro: 'Could not write the map files: ' + e.message }); }
+        logAdmin(g, '*', 'new map', { depois: { id, nome, modo, de: d.de || d.lib || null } });
+        /* the GM who made it is sent there (next load, or now if the game is open): the middle of its first area, on ground */
+        const c0 = dados.caixas?.[0];
+        contas[g].posGm = { mapa: String(id), x: c0 ? -(+c0.x || 0) : 0, z: c0 ? +c0.z || 0 : 0, giro: 0 }; salvarContas();
+        for (const w of socketsDe(g)) enviar(w, { t: 'volta', mapa: String(id), texto: '🧭 Going to the new map ' + nome + '…' });
+        console.log(`[admin] ${g} created map ${id} "${nome}" (${modo}${modo === 'clonar' ? ' of ' + d.de : ''})`);
+        return json(200, { ok: true, id, nome, areas: areasCena, objetos: dados.objetos?.length || 0 });
+      }
       // ── Editor de Cenário 3D: objetos (prefabs colocados) do mapa ──
       if (rota === '/admin/mapas-glb' && req.method === 'GET') {           // mapas com .glb (public/scenery/ + scenery/ raiz) que têm <mapa>.json
         const mapas = mapasComGlb();
@@ -1270,7 +1339,7 @@ const httpServer = http.createServer((req, res) => {
       if (rota.startsWith('/admin/jogador/') && req.method === 'POST') {
         const acao = rota.slice('/admin/jogador/'.length), u = String(d.u || ''), c = contas[u];
         if (!c) return json(404, { erro: 'Account not found.' });
-        if (u === g && ((acao === 'cargo' && d.gm !== true) || (acao === 'moderar' && d.acao !== 'recado')))   // não se tranca pra fora do painel
+        if (u === g && ((acao === 'cargo' && d.gm !== true) || (acao === 'moderar' && d.acao !== 'recado' && d.acao !== 'levar')))   // não se tranca pra fora do painel
           return json(400, { erro: "This can't be done on your own account." });
         if (!c.save) c.save = {};
         const pronto = (extra = {}) => { c.rev = (c.rev || 0) + 1; salvarContasJa(); return json(200, { ok: true, conta: resumoConta(u, c), save: c.save, rev: c.rev, log: logAdminDe(u, 60), ...extra }); };

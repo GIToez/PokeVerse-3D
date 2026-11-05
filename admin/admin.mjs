@@ -603,6 +603,24 @@ function ligarTabelaEspecies(cont, lista, aoMudar) {
 // ── Botões do editor de mapa ──────────────────────────────────────────────────
 function ligarUI() {
   $('m-mapa').addEventListener('change', e => trocarMapa(e.target.value));
+  /* 🆕 New map (server: /admin/mapa/novo): blank ground or a copy of a map; the new one opens here, with links to try it in game
+     and to dress it in the 3D editor. */
+  $('m-novo-mapa').addEventListener('click', () => {
+    $('nm-de').innerHTML = mapas.map(m => `<option value="${esc(m)}"${m === mapaAtual ? ' selected' : ''}>${esc(nomeMapaComId(m))}</option>`).join('');
+    const ver = () => { const c = $('nm-modo').value === 'clonar'; $('nm-clonar').hidden = !c; $('nm-vazio').style.display = c ? 'none' : 'grid';
+      $('nm-nota').textContent = c ? 'Copies the scenery, ground, grass and water with new area ids. NPCs, doors, trainers and stories stay with the original.' : 'The ground uses the prefab library of the Safari Zone map (trees, rocks, grass, fences…). Paint grass/water/floor with the Brush, place props in the 3D editor.'; };
+    $('nm-modo').onchange = ver; ver();
+    $('nm-dlg').showModal();
+  });
+  $('nm-dlg').addEventListener('close', async () => {
+    if ($('nm-dlg').returnValue !== 'ok') return;
+    const modo = $('nm-modo').value;
+    const r = await api('/admin/mapa/novo', 'POST', { modo, nome: $('nm-nome').value, tipo: $('nm-tipo').value, de: $('nm-de').value, largura: +$('nm-w').value, profundidade: +$('nm-d').value });
+    if (!r.ok) { toast(r.erro || 'Could not create the map.', true); return; }
+    toast('Map ' + r.id + ' "' + r.nome + '" created. Your game goes there (open the game if it is closed). Dress it in the 🏗️ 3D editor.');
+    mapaAtual = String(r.id);
+    await carregarTudo();
+  });
   $('m-nova').addEventListener('click', () => { colocando = !colocando; tela.classList.toggle('colocando', colocando); $('m-nova').classList.toggle('on', colocando); if (colocando) toast('Click on the map to place the zone center.'); });
   $('m-aqui').addEventListener('click', () => pedirPos(pos => { if (pos.mapa !== mapaAtual) trocarMapa(pos.mapa).then(() => criarZona(pos.x, pos.z)); else criarZona(pos.x, pos.z); }));
   $('m-eu').addEventListener('click', () => pedirPos(pos => { if (pos.mapa !== mapaAtual) trocarMapa(pos.mapa); cam.x = pos.x; cam.z = pos.z; desenhar(); }));
