@@ -578,7 +578,8 @@ export function criarBatalha(ctx) {
     }
     if (venceu) {
       const conta = { treinador: 'treinador', ginasio: 'ginasio' }[bat.tipo];
-      if (conta) ctx.contarTemporada?.(acc.u, { conta });
+      if (conta) ctx.contarTemporada?.(acc.u, { conta, chave: bat.tipo === 'ginasio' ? String(bat.meta?.g?.insignia?.id ?? '') : String(bat.meta?.treinador ?? ''),
+        primeira: bat.tipo === 'ginasio' && !!fim.insignia, revanche: bat.tipo === 'ginasio' && !fim.insignia });   // drops: first win vs rematch
       if (fim.insignia) ctx.contarTemporada?.(acc.u, { conta: 'insignia' });
       if (fim.campeao) ctx.contarTemporada?.(acc.u, { conta: 'elite' });
     }

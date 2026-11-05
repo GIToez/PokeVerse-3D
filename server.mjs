@@ -38,6 +38,7 @@ import { createWorld } from './server_world.mjs';
 import { createRanking } from './server_ranking.mjs';
 import { createWardrobe } from './server_wardrobe.mjs';
 import { createTransform } from './server_transform.mjs';
+import { createDrops } from './server_drops.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1393,7 +1394,7 @@ const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derr
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
-  aoPontuar: (u, n, mvp) => { temporada.contar(u, { conta: 'raidPontos', n }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
+  aoPontuar: (u, n, mvp, parte) => { temporada.contar(u, { conta: 'raidPontos', n, parte }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
 /* WARDROBE (server_wardrobe.mjs): the outfit/bag/effect catalog and who owns what. */
 const guarda = createWardrobe({ dataDir: DADOS_PUB });
@@ -1410,6 +1411,19 @@ const wilds = criarWilds({
 /* ACHIEVEMENTS (server_progression.mjs): every event the season pass counts also counts here. */
 const progressao = createProgression({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, dataDir: DADOS_PUB, wallet: carteira });
 { const contarTemporada = temporada.contar; temporada.contar = (u, ev) => { try { contarTemporada(u, ev); } finally { progressao.count(u, ev); } }; }
+/* ITEM DROPS (server_drops.mjs + drop.mjs, rules public/data/drops.json): trainers, gyms, missions, the Elite Four and raids
+   come through the counter events; wild KOs come from the shared world (onKO). */
+const drops = createDrops({ accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas });
+{ const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
+  try { contarAntes(u, ev); } finally {
+    try {
+      if (ev?.conta === 'treinador') drops.roll(u, { fonte: 'treinador', chave: ev.chave });
+      else if (ev?.conta === 'ginasio') drops.roll(u, { fonte: 'ginasio', chave: ev.chave, primeira: !!ev.primeira, revanche: !!ev.revanche });
+      else if (ev?.conta === 'elite') drops.roll(u, { fonte: 'elite', chave: 'elite' });
+      else if (ev?.conta === 'historia') drops.roll(u, { fonte: 'missao' });
+      else if (ev?.conta === 'raidPontos') drops.roll(u, { fonte: 'raid', contribuicao: +ev.parte || 0 });
+    } catch (e) { console.warn('[drops]', e.message); }
+  } }; }
 /* RANKINGS (server_ranking.mjs): GET /ranking, /ranking/eu; weekly lists reset on Monday 00:00 UTC. */
 const ranking = createRanking({ accounts: contas, progression: progressao, dataDir: DADOS_PUB, serverDir: DADOS, saveAccounts: salvarContas,
   send: enviar, socketsOf: socketsDe, isBanned: c => !!banidoAteDe(c), logAdmin });
@@ -1424,6 +1438,7 @@ const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
   onFish: (ws, u, f) => temporada.contar(u, { conta: 'pesca', dex: f.dex, nivel: f.nivel }),
+  onKO: (u, ev) => drops.roll(u, { fonte: 'selvagem', ...ev }),   // item drops (server_drops.mjs)
   onCatch: (ws, u, pk, bola, agua) => {
     temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola, agua });
     const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex });

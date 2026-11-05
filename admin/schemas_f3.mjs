@@ -88,6 +88,16 @@ export const ESQUEMAS_F3 = {
       { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 40, col: true, obrigatorio: true },
     ],
   },
+  drops: {
+    titulo: 'Item drops', arquivo: 'drops', forma: 'objeto', recarga: 'vivo',
+    descricao: 'What drops from wild Pokémon (selvagem), trainers (treinador), gym leaders (ginasio), missions (missao), the Elite Four (elite) and raids (raid). Read live by server_drops.mjs: a change applies on the next drop. Each source is a list of rules: item, qtd, chance (0–1) or aCada (every N times), cotaDia (daily quota) + acumula (days it can bank), cotaSemana (weekly), umaVez (once per account), cond { dex, tipo, lvMin, shiny, insigniaMin, primeira, revanche, contribuicaoMin }.',
+    campos: [
+      { k: 'fontes', rotulo: 'Rules by source', tipo: 'json', validar: v => v && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every(l => Array.isArray(l) && l.every(r => r && typeof r.id === 'string' && (r.item != null || r.itemPorDex || r.itemPorChave))) ? null : 'an object: source → list of rules, each with an id and an item', ajuda: 'Sources: selvagem, treinador, ginasio, missao, elite, raid.' },
+      { k: 'regraKo', rotulo: 'Wild KO rule', tipo: 'json', ajuda: 'folgaNivel: the wild may be up to this many levels below yours. minParte: the share of damage you need (0.1 = 10%). maxContas: how many accounts get credit. lvMeuMax: cap on "your level" (null = none).' },
+      { k: 'tetoRaras', rotulo: 'Weekly cap on rare items', tipo: 'json', ajuda: '{ "item": 900022, "porSemana": 4 } — the item and how many a week from all sources together.' },
+      { k: 'fusoMin', rotulo: 'Day rollover (minutes from UTC)', tipo: 'num', min: -720, max: 840, int: true, ajuda: '-180 = Brazil time, as PokeFable. -480 = Pacific.' },
+    ],
+  },
   catalogo_loja: {
     titulo: 'Shop catalog (wardrobe)', arquivo: 'catalogo_loja', caminho: 'pecas', forma: 'lista', id: 'id', recarga: 'vivo',
     descricao: 'Every outfit, bag, chest effect and trail: the Wardrobe and the Shop read this (server_wardrobe.mjs). A piece is sold when Where it comes from has "loja" and it has a price; a seasonal one only in its season.',

@@ -46,7 +46,7 @@ const SAFARI_BALL = 1005;
 const DEFAULT_BALLS = { 1001: 1, 1002: 1.5, 1003: 2, 1004: 255, 1005: 1.5, 1006: 1, 1007: 1, 1008: 1, 1009: 1 };
 
 export function createWorld(h) {
-  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, log = () => {} } = h;
+  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, onKO, log = () => {} } = h;
 
   // ── Game data (the same files the client reads) ───────────────────────────────────────────────────────────────────
   let dex = null;
@@ -332,6 +332,11 @@ export function createWorld(h) {
     w.state = 'desmaiado'; w.hp = 0; w.until = now + FAINT_MS;
     toMap(map, { t: 'sestado', id: w.id, estado: 'desmaiado', ate: w.until, hp: 0 });
     for (const [, d] of w.damage) if (now - d.at < XP_WINDOW_MS && d.ws?.readyState === 1) wilds.award(d.ws, w);
+    if (onKO) {   // item drops (server_drops.mjs): each account's share of the damage, the top hitter, and the rank
+      const L = [...w.damage].filter(([, d]) => now - d.at < XP_WINDOW_MS).sort((a, b) => b[1].dealt - a[1].dealt);
+      const total = L.reduce((t, [, d]) => t + d.dealt, 0) || 1, S = species(w.dex);
+      L.forEach(([u, d], i) => { try { onKO(u, { dex: w.dex, lv: w.lv, tipos: S.types || [], shiny: !!w.ind?.shiny, parte: d.dealt / total, maior: i === 0, lugar: i, lvMeu: levelOf(fieldMon(u)) }); } catch (e) { console.warn('[world] drops:', e.message); } });
+    }
     clearTimeout(w.timer);
     w.timer = setTimeout(() => { if (w.state === 'desmaiado') remove(map, w, 'morreu'); }, FAINT_MS);
   }

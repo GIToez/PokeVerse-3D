@@ -270,8 +270,8 @@ export function criarRaid(h) {
       for (const w of socketsDe(p.u)) enviar(w, msg);
     }
     { // raid points (damage dealt) and the MVP go to the achievements and the weekly ranking
-      const L = [...raid.fila.values()].filter(p => p.dano > 0), top = Math.max(0, ...L.map(p => p.dano));
-      for (const p of L) try { h.aoPontuar?.(p.u, p.dano, p.dano === top); } catch (e) { console.warn('[raid] points:', e.message); }
+      const L = [...raid.fila.values()].filter(p => p.dano > 0), top = Math.max(0, ...L.map(p => p.dano)), soma = L.reduce((t, p) => t + p.dano, 0) || 1;
+      for (const p of L) try { h.aoPontuar?.(p.u, p.dano, p.dano === top, p.dano / soma); } catch (e) { console.warn('[raid] points:', e.message); }
     }
     salvarContas();
     console.log(`[raid] #${raid.id} won (damage: ${resumo.join(', ')})`);

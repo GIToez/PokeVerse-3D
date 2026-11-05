@@ -1,0 +1,32 @@
+{
+  "_sobre": "Item drops (server_drops.mjs, engine drop.mjs from upcoming/). PokeFable's own table lives on their server, so these starting numbers follow their TM piece descriptions: common pieces from wild Pokémon, trainers and missions; strong from gym leaders, rematches, shinies, high-level areas and the Elite Four; rare from raids and the Elite Four crown (rare ones capped per week). Fields per rule: item, qtd, chance (0–1) or aCada (every N times), cotaDia (daily quota) + acumula (days it can bank), cotaSemana, umaVez (once per account per key), cond { dex, tipo, lvMin, shiny, insigniaMin, primeira, revanche, chave, contribuicaoMin }.",
+  "fusoMin": -180,
+  "regraKo": { "lvMeuMax": null, "folgaNivel": 10, "minParte": 0.1, "maxContas": 4 },
+  "tetoRaras": { "item": 900022, "porSemana": 4 },
+  "fontes": {
+    "selvagem": [
+      { "id": "peca-comum", "nome": "Common TM Piece", "item": 900020, "qtd": 1, "chance": 0.06, "cotaDia": 12, "acumula": 3 },
+      { "id": "peca-comum-garantida", "nome": "Common TM Piece (every 40 KOs)", "item": 900020, "qtd": 2, "aCada": 40, "semNivel": false },
+      { "id": "peca-forte-shiny", "nome": "Strong TM Piece (shiny)", "item": 900021, "qtd": 2, "cond": { "shiny": true } },
+      { "id": "peca-forte-alto", "nome": "Strong TM Piece (high-level area)", "item": 900021, "qtd": 1, "chance": 0.03, "cond": { "lvMin": 40 }, "cotaDia": 2, "acumula": 3 }
+    ],
+    "treinador": [
+      { "id": "peca-comum", "nome": "Common TM Piece", "item": 900020, "qtd": 2, "chance": 0.5, "cotaDia": 10, "acumula": 3 }
+    ],
+    "ginasio": [
+      { "id": "primeira-vitoria", "nome": "Strong TM Pieces (first win)", "item": 900021, "qtd": 3, "cond": { "primeira": true }, "umaVez": "ginasio" },
+      { "id": "revanche", "nome": "Strong TM Piece (rematch)", "item": 900021, "qtd": 1, "cond": { "revanche": true }, "cotaSemana": 6 }
+    ],
+    "missao": [
+      { "id": "peca-comum", "nome": "Common TM Pieces", "item": 900020, "qtd": 3 }
+    ],
+    "elite": [
+      { "id": "coroa-primeira", "nome": "Rare TM Pieces (first crown)", "item": 900022, "qtd": 2, "umaVez": "elite" },
+      { "id": "coroa", "nome": "Strong TM Pieces (Elite Four crown)", "item": 900021, "qtd": 3 }
+    ],
+    "raid": [
+      { "id": "peca-rara", "nome": "Rare TM Piece", "item": 900022, "qtd": 1, "chance": 0.5, "cond": { "contribuicaoMin": 0.05 } },
+      { "id": "peca-forte", "nome": "Strong TM Pieces", "item": 900021, "qtd": 2, "cond": { "contribuicaoMin": 0.01 } }
+    ]
+  }
+}
