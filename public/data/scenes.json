@@ -2861,6 +2861,18 @@
     }
    ],
    "objeto": true
+  },
+  {
+   "id": 9700001,
+   "nome": "Seafoam Blizzard",
+   "areas": [
+    {
+     "id": 970001,
+     "nome": "Seafoam Blizzard",
+     "tipo": 2
+    }
+   ],
+   "objeto": true
   }
  ]
 }

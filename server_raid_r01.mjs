@@ -32,7 +32,7 @@ function crosses(p, q, pol) {
   return false;
 }
 
-export function createR01({ dados, paraArena, naArena, idDe, maxHpDe, clock = () => Date.now(), every = (fn, ms) => setInterval(fn, ms) }) {
+export function createR01({ dados, paraArena, naArena, idDe, maxHpDe, clock = () => Date.now(), every = (fn, ms) => setInterval(fn, ms) , danoMult = () => 1 }) {
   const D = dados(), R = D.regra, G = R.golpes;
   let st = null, timer = null;
   const now = clock;
@@ -47,7 +47,7 @@ export function createR01({ dados, paraArena, naArena, idDe, maxHpDe, clock = ()
   const inHeat = (p) => lit().some((b) => Math.hypot(p.x - b.x, p.z - b.z) <= (R.calor || 4));
 
   function hurt(ws, golpe, frac) {
-    const maxHp = maxHpDe(ws) || 100, dano = Math.max(1, Math.round(maxHp * rand(frac[0], frac[1])));
+    const maxHp = maxHpDe(ws) || 100, dano = Math.max(1, Math.round(maxHp * rand(frac[0], frac[1]) * danoMult()));   // × the staff's /raid damage (raid.json chefeDano)
     const id = idDe(ws);
     send('dano', { jogador: id, golpe });
     paraArena({ t: 'pdano', id: st.chefeId, alvo: id, golpe: { icebeam: 'icebeam', icywind: 'icywind', hail: 'hail', blizzard: 'blizzard', glacialdive: 'glacialdive' }[golpe] || 'tackle', dano, eff: 1 });

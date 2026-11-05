@@ -64,6 +64,8 @@ export function limparEventoAgenda(e, i = 0) {
     if (v.bonus.xp === 1 && v.bonus.shiny === 1 && v.bonus.densidade === 1) return { erro: `${id}: a bonus needs EXP, shiny or wild above ×1.` };
   }
   if (tipo === 'raid') v.raid = { filaMin: Math.round(num(e.raid?.filaMin, 1, 120, 15)) };
+  { const t = ms(e.paradoEm); if (t != null) v.paradoEm = new Date(t).toISOString(); }   // "Stop now" from the panel: whatever was running at that moment ends there
+  if (e.manual) v.manual = true;                                                          // made by "Start now" (one time, starts at the click)
   return { v };
 }
 export function limparAgenda(d) {
@@ -78,8 +80,13 @@ export function limparAgenda(d) {
   return { v: { v: 1, eventos: out } };
 }
 
-/** Every occurrence of `e` that overlaps [de, ate). */
+/** Every occurrence of `e` that overlaps [de, ate). An occurrence that was running when "Stop now" was pressed ends at that moment. */
 export function ocorrencias(e, de, ate) {
+  const p = ms(e.paradoEm);
+  const lista = ocorrenciasCruas(e, de, ate);
+  return p == null ? lista : lista.map(o => (o.oc <= p && o.fim > p ? { oc: o.oc, fim: p } : o)).filter(o => o.fim > o.oc && o.fim > de);
+}
+function ocorrenciasCruas(e, de, ate) {
   if (!e.ligado) return [];
   if (e.quando !== 'semana') {
     const a = ms(e.inicio), b = ms(e.fim);
@@ -207,6 +214,44 @@ export function criarAgenda(h) {
       console.log(`[admin] ${g} saved the event schedule (${res.v.eventos.length} events)`);
       const agora = Date.now();
       json(200, { ok: true, dados: ler(), proximos: lista(agora - DIA, agora + 14 * DIA, agora).filter(o => o.estado !== 'encerrado').slice(0, 30), bonus: bonusAgora(agora) });
+      return true;
+    }
+    /* START NOW / STOP NOW (panel buttons): { id, acao: 'iniciar' | 'parar', duracaoMin? }.
+       Start adds a one-time copy that begins now (a raid: the queue opens now and the fight starts after its queue time); stop ends
+       every occurrence of that event running right now (a "Start now" copy is removed). The weekly rule itself stays as it is. */
+    if (r === '/admin/agenda/agora' && metodo === 'POST') {
+      const atual = ler(), agora = Date.now();
+      const e = atual.eventos.find(x => x.id === String(d.id || ''));
+      if (!e) { json(404, { erro: 'No event with that ID (save the schedule first).' }); return true; }
+      let eventos = atual.eventos.map(x => ({ ...x })), msg;
+      if (d.acao === 'iniciar') {
+        const durPad = e.quando === 'semana' ? e.duracaoMin : Math.round((ms(e.fim) - ms(e.inicio)) / MIN);
+        const dur = Math.round(num(d.duracaoMin, 1, 7 * 1440, durPad || 60));
+        const fila = e.raid ? e.raid.filaMin : 0;
+        const ini = agora + fila * MIN;
+        const copia = { ...e, id: (e.id.slice(0, 30) + '-now-' + agora.toString(36).slice(-5)), ligado: true, quando: 'uma', manual: true,
+          inicio: new Date(ini).toISOString(), fim: new Date(ini + dur * MIN).toISOString() };
+        for (const k of ['dias', 'horas', 'duracaoMin', 'desde', 'ate', 'paradoEm']) delete copia[k];
+        eventos = eventos.filter(x => !(x.manual && ms(x.fim) <= agora));   // old finished "Start now" copies go
+        if (eventos.length >= MAX_EVENTOS) { json(400, { erro: 'The schedule is full (' + MAX_EVENTOS + ' events).' }); return true; }
+        eventos.unshift(copia);
+        msg = e.raid ? `"${e.titulo}": raid queue open now, the fight starts in ${fila} min.` : `"${e.titulo}" started (${dur} min).`;
+      } else if (d.acao === 'parar') {
+        const rodando = (x) => ocorrencias(x, agora - 1, agora + 1).some(o => o.oc <= agora && o.fim > agora);
+        const base = e.manual ? e.id : null;
+        eventos = eventos.filter(x => !(x.manual && (x.id === base || (rodando(x) && x.titulo === e.titulo && x.tipo === e.tipo))))
+          .map(x => (x.id === e.id && rodando(x) ? { ...x, paradoEm: new Date(agora).toISOString() } : x));
+        msg = `"${e.titulo}" stopped.`;
+        if (e.tipo === 'raid') msg += ' A raid already in its queue or fight keeps going: use /raid cancel in the game to end it.';
+      } else { json(400, { erro: 'acao must be iniciar or parar.' }); return true; }
+      const res = limparAgenda({ v: 1, eventos });
+      if (res.erro) { json(400, { erro: res.erro }); return true; }
+      gravarComBackup(ARQ, res.v); cache.mtime = -2; ler();
+      logAdmin(g, '*', 'event ' + d.acao + ' now', { id: e.id });
+      avisarClientes(); h.aoMudar?.();
+      tique();
+      console.log(`[admin] ${g}: ${msg}`);
+      json(200, { ok: true, msg, dados: ler(), proximos: lista(agora - DIA, agora + 14 * DIA, agora).filter(o => o.estado !== 'encerrado').slice(0, 30), bonus: bonusAgora(agora) });
       return true;
     }
     return false;

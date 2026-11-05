@@ -138,7 +138,7 @@ export function criarRaid(h) {
   }
   /** The Articuno fight (only when the raid's arena is its arena). */
   const r01 = createR01({
-    dados: dadosR01, paraArena: (o) => paraArena(o), naArena: () => naArena(), idDe: (w) => w._id,
+    dados: dadosR01, danoMult: () => danoRaid(), paraArena: (o) => paraArena(o), naArena: () => naArena(), idDe: (w) => w._id,
     maxHpDe: (w) => { const u = contaDe(w); const mon = w._raidMon || (u && monDaConta(u, { uid: w._info?.uid })); if (!mon) return 0; if (mon.maxHp > 0) return mon.maxHp; const S = especie(mon.dex); return S ? hpBase(S.bs[0], lvDe(mon), ivsDe(mon)[0] || 0) : 100; },
   });
   const ehR01 = () => !!raid && String(raid.cfg.arena) === ARENA_R01;

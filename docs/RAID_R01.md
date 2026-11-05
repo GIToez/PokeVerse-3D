@@ -36,13 +36,14 @@ Errors: `{ t: 'r01_erro', erro, op, faltam }`. Client → server: `{ t: 'r01', o
 `{ op: 'trocar', uid }`. Player hits on the boss stay the normal `ataque` → `shp`; the boss's hits are `pdano`.
 In this arena the player's **Pokémon** moves (positions are `pos` px / pz), the trainer stays at the spawn.
 
-## Client integration (next)
-1. Copy from `upcoming/`: `raid_r01_game`, `raid_r01_scene`, `raid_r01_attacks`, `raid_r01_boss`, `raid_r01`, `raid_loading`, and
-   `raid_r03_game`, `raid_r05_game` (+ their `raid_r03*`, `raid_r05*`) because `raid_r01_game` imports them.
-2. `raid.mjs`: the upcoming version knows `ARENAS` (9700001 / 9700003 / 9700005) — merge `ehArena` so travelling works for 9700001.
-3. `index.html` boot: when `RaidR01.ehArena(NOME)`, skip the map GLB (there is no scenes.json entry), make an empty scene and call
-   `RaidR01.ligar({ cena, camera, jogo, Rede, Chat, idioma, tocarUma, trocarPara, deslocar, preparando, mapa: NOME })`.
-4. Main loop: `RaidR01.quadro(dt)`; movement → `RaidR01.controlaPokemon()` / `moverPokemon(dt, dir, alvo)`; camera `enquadrar`;
-   F key `usaF`; `golpeBarrado`, `congelado`, `alturaChao`; boss body `vincularChefe(s)` from `montarChefeRaid`.
-5. `network.mjs`: route `t: 'r01' | 'r01_erro'` (and r03 / r05) to `RaidR01.receber`.
-6. Admin: `data/raid.json` → `arena: "9700001"`, `chefeNome: "Articuno"`, `chefeDex: 144`, `chefeGlb: "pm0144_00"`.
+## Client integration (done 2026-11-05)
+- Modules copied from `upcoming/` to the root (`raid_r01*`, `raid_loading`, and `raid_r03*` / `raid_r05*` that `raid_r01_game` imports).
+  Asset paths renamed to this repo's folders (`scenery/`, `particles/`, `sound/`).
+- Scene `9700001` has a `scenes.json` entry and a placeholder map (`scenery/9700001.glb`, an invisible 50 × 50 m floor), so the normal
+  boot runs; `ligarR01()` in `index.html` then builds the arena art on top (boot with the raid stamp, or `ativarArenaRaid`).
+- In the arena the keys / joystick / click steer the **Pokémon** (`RaidR01.moverPokemon`), with collision from the arena navmesh and
+  pillars (`deslocarR01`); the trainer stays at the spawn. No leash or following. Camera follows the Pokémon, pulled toward the centre.
+- F at an unlit brazier relights it (raid_r01_game listens; the ball throw is skipped). Frozen = no moves. The world's Articuno body is
+  hidden (`vincularChefe`); the arena's animated Articuno is what you see.
+- `/raid damage F` (raid.json `chefeDano`) also scales the arena's frost damage.
+- Switch raids in the panel: Data files → Raid → arena `9700001` + boss 144 / `pm0144_00` (Articuno) or `4120009` + 151 / `pm0151_00` (Mew).

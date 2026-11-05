@@ -22,7 +22,8 @@ const CSS = `
 #v-agenda input[type=datetime-local] { background: #0f131b; border: 1px solid var(--borda); border-radius: 6px; padding: 5px 8px; color: var(--texto); }
 #v-agenda .ag-prox li { margin: 2px 0; }
 #v-agenda .ag-ajuda { font-size: 12px; color: var(--fraco); }
-#v-agenda .ag-sujo { color: var(--acento); font-weight: 700; }`;
+#v-agenda .ag-sujo { color: var(--acento); font-weight: 700; }
+#v-agenda .ag-vivo { color: #43D17C; font-weight: 700; font-size: 12px; }`;
 
 const novoEvento = () => ({ id: 'event-' + Date.now().toString(36), ligado: true, tipo: 'bonus', titulo: '', descricao: '', destaque: false,
   quando: 'semana', dias: [6], horas: ['00:00'], duracaoMin: 1440, bonus: { xp: 2, shiny: 1, densidade: 1 } });
@@ -38,6 +39,23 @@ export function instalarAgenda({ api, toast }) {
     render();
   }
 
+  /** Is one of this event's occurrences running now? (from the server's list of the next two weeks) */
+  const correndo = (e) => proximos.some(o => o.id === e.id && o.estado === 'agora');
+  async function agora(e, acao) {
+    if (sujo) { toast('Save the schedule first (▶ / ⏹ act on the saved version).', true); return; }
+    let duracaoMin;
+    if (acao === 'iniciar') {
+      const pad = e.quando === 'semana' ? e.duracaoMin : Math.round((Date.parse(e.fim) - Date.parse(e.inicio)) / 60000);
+      const h = prompt(`Start "${e.titulo || e.id}" now.${e.tipo === 'raid' ? ` The raid queue opens right away and the fight starts in ${e.raid?.filaMin ?? 15} min.` : ''}\n\nHow many hours should it last?`, String(+((pad || 60) / 60).toFixed(2)));
+      if (h == null) return;
+      duracaoMin = Math.round(+h * 60);
+      if (!(duracaoMin >= 1)) { toast('Give a duration in hours (e.g. 1 or 0.5).', true); return; }
+    } else if (!confirm(`Stop "${e.titulo || e.id}" now?`)) return;
+    const r = await api('/admin/agenda/agora', 'POST', { id: e.id, acao, duracaoMin });
+    if (!r.ok) { toast(r.erro || 'Failed.', true); return; }
+    ({ dados, proximos, bonus } = r); sujo = false;
+    render(); toast(r.msg || 'Done.');
+  }
   function cartao(e, i) {
     const semana = e.quando === 'semana';
     const dur = e.duracaoMin || 60;
@@ -45,7 +63,11 @@ export function instalarAgenda({ api, toast }) {
       <div class="ag-topo"><h3>${esc(e.titulo || 'New event')}</h3>
         <label class="chk"><input type="checkbox" data-k="ligado" ${e.ligado ? 'checked' : ''}> On</label>
         <label class="chk"><input type="checkbox" data-k="destaque" ${e.destaque ? 'checked' : ''}> Featured</label>
+        ${correndo(e) ? '<span class="ag-vivo">🟢 running</span>' : ''}
+        <button data-acao="iniciar" title="Start a copy of this event right now (a raid: the queue opens now)">▶ Start now</button>
+        <button data-acao="parar" title="End this event if it is running right now" ${correndo(e) ? '' : 'disabled'}>⏹ Stop</button>
         <button data-acao="apagar" title="Delete this event">🗑️</button></div>
+      ${e.manual ? '<div class="ag-ajuda">Started by hand with ▶ Start now — it goes away by itself after it ends.</div>' : ''}
       <div class="form">
         <label>ID <input type="text" data-k="id" maxlength="40" value="${esc(e.id)}"></label>
         <label>Type <select data-k="tipo">${TIPOS.map(([k, n]) => `<option value="${k}" ${e.tipo === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
@@ -103,6 +125,8 @@ export function instalarAgenda({ api, toast }) {
     $('ag-salvar').onclick = salvar;
     for (const c of document.querySelectorAll('#v-agenda .ag-ev')) {
       const e = dados.eventos[+c.dataset.i];
+      c.querySelector('[data-acao="iniciar"]').onclick = () => agora(e, 'iniciar');
+      c.querySelector('[data-acao="parar"]').onclick = () => agora(e, 'parar');
       c.querySelector('[data-acao="apagar"]').onclick = () => {
         if (!confirm(`Delete "${e.titulo || e.id}"?`)) return;
         dados.eventos.splice(+c.dataset.i, 1); sujo = true; render();

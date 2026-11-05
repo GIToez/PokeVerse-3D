@@ -34,6 +34,10 @@ export const CFG = { ...lido,
   chefeNivel: Math.round(numOu(lido.chefeNivel, 1, 100, PADRAO.chefeNivel)),
   altura: numOu(lido.altura, 0.5, 20, PADRAO.altura), flutua: numOu(lido.flutua, 0, 10, PADRAO.flutua) };
 export const ARENA = CFG.arena;
+/** Is this scene the raid arena? (a `#instance` suffix is ignored) */
+export const ehArena = (a) => String(a ?? '').split('#')[0] === ARENA;
+/** Pre-fight preparation window (the arena modules ask before letting a brazier be used): this server has none. */
+export const preparando = () => false;
 /** O nome do chefe desta raid: o que o servidor mandou, senão o do data/raid.json. */
 const nomeChefe = () => String(snap?.nome || CFG.chefeNome);
 const CARIMBO = 'raid.ativa';
