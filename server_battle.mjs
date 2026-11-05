@@ -416,7 +416,7 @@ export function criarBatalha(ctx) {
     limparVol(bat.eu.time, dele);
     lutas.set(acc.u, bat);
     if (tipo === 'elite' && !s.elite.corrida) {
-      s.elite.corrida = { proximo: 1, hp: Object.fromEntries(s.time.map((p) => [String(p.uid), p.hp])) };
+      s.elite.corrida = { proximo: 1, inicio: Date.now(), hp: Object.fromEntries(s.time.map((p) => [String(p.uid), p.hp])) };
       ctx.salvarContas();
       for (const w of ctx.socketsDe(acc.u)) ctx.enviar(w, { t: 'elite', corrida: s.elite.corrida, vencida: !!s.elite.vencida });
     }
@@ -557,12 +557,15 @@ export function criarBatalha(ctx) {
           fim.premio = { dinheiro: M.dinheiro || 0 };
         }
         if (M.campeao) {
+          const ini = +s.elite.corrida?.inicio || 0, ms = ini ? Date.now() - ini : 0;   // the run time feeds the Elite Four race ranking
+          if (ms > 0 && (!s.elite.melhor || ms < s.elite.melhor)) s.elite.melhor = ms;
+          if (!s.elite.campeaoEm) s.elite.campeaoEm = Date.now();
           s.elite.corrida = null;
           s.elite.vencida = true;
           fim.campeao = true;
           fim.elite = { ordem: M.ordem, nome: M.nome, campeao: true };
         } else {
-          s.elite.corrida = { proximo: M.ordem + 1, hp: Object.fromEntries(s.time.map((p) => [String(p.uid), p.hp])) };
+          s.elite.corrida = { proximo: M.ordem + 1, inicio: s.elite.corrida?.inicio || Date.now(), hp: Object.fromEntries(s.time.map((p) => [String(p.uid), p.hp])) };
           const prox = elitePorOrdem.get(M.ordem + 1);
           fim.elite = { ordem: M.ordem, nome: M.nome, proximo: prox ? { nome: prox.nome, ordem: prox.ordem } : null };
           fim.proximo = fim.elite.proximo;

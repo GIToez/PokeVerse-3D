@@ -1381,7 +1381,8 @@ const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, de
 const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n) });
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
-  shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }) });
+  shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
+  aoPontuar: (u, n, mvp) => { temporada.contar(u, { conta: 'raidPontos', n }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev) });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida });   // comprar / usar / descartar / held items (server_bag.mjs)
 const mercado = criarMercado({ dados: DADOS, dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta: u => batalha.emLuta(u) });

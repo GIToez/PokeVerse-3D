@@ -16,6 +16,7 @@
  *   {t:'progressao_titulo', id|null}      picks the shown title (null = automatic) → {t:'progressao_titulo', ok, id, nome} */
 import fs from 'node:fs';
 import nodePath from 'node:path';
+import { knowledgeSummary } from './server_knowledge.mjs';
 
 const TIERS = ['bronze', 'prata', 'ouro', 'platina', 'diamante'];
 /* Counted from server-checked events (`count`). The ones no server system reports yet (fishing, guilds, the market,
@@ -24,6 +25,9 @@ const EVENT_COUNTERS = new Set(['ko', 'captura', 'shiny', 'treinador', 'ginasio'
   'capturaAgua', 'capturaSafari', 'koFaixa3', 'koFaixa4', 'pesca', 'pescaMagikarp', 'pescaMaestria', 'raidPontos', 'mvp', 'chefeGuilda',
   'guildaEntrar', 'guildaFundar', 'guildaMeta', 'venda', 'compra', 'troca', 'eliteRapida', 'medalhao', 'capitulos', 'cidades', 'masmorras', 'cura', 'secreta']);
 const caught = v => v === 'pego' || v === 'caught';
+/** National dex number ranges per region; the Account stats tile rotates through them. */
+export const REGIONS = [['Kanto', 1, 151], ['Johto', 152, 251], ['Hoenn', 252, 386], ['Sinnoh', 387, 493], ['Unova', 494, 649],
+  ['Kalos', 650, 721], ['Alola', 722, 809], ['Galar', 810, 905], ['Paldea', 906, 1025]];
 /** Read from the save, the account, or the per-kind tallies (`p.tally`) that `count` keeps. */
 const SAVE_COUNTERS = {
   especies: (save) => Object.values(save?.dex || {}).filter(caught).length,
@@ -33,8 +37,8 @@ const SAVE_COUNTERS = {
   nivel: (save) => Math.max(0, ...[...(save?.time || []), ...(save?.caixa || [])].map(p => +p?.lv || 0)),
   dinheiro: (save) => Math.max(0, +save?.dinheiro || 0),
   missoes: (save) => (Array.isArray(save?.missoes?.feitas) ? save.missoes.feitas.length : 0) + (Array.isArray(save?.missoes?.laterais?.feitas) ? save.missoes.laterais.feitas.length : 0),
-  estudadas: () => 0,   // Pokédex knowledge levels are worked out by the client (knowledge.mjs); not on the server yet
-  mestres: () => 0,
+  estudadas: (save) => knowledgeSummary(save).studied,   // Pokédex knowledge level 3+ (server_knowledge.mjs)
+  mestres: (save) => knowledgeSummary(save).masters,      // level 5
   tiposCapturados: (save, c, t) => Object.keys(t.tiposCapturados || {}).length,
   bolasDiferentes: (save, c, t) => Object.keys(t.bolas || {}).length,
   shinyEspecies: (save, c, t) => Object.keys(t.shinyDex || {}).length,
@@ -86,14 +90,21 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     const balls = Object.values(t.bolas || {}).reduce((a, b) => a + b, 0);
     const kanto = Object.entries(s.dex || {}).filter(([n, v]) => +n >= 1 && +n <= 151 && (v === 'pego' || v === 'caught')).length;
     const missions = Array.isArray(s.missoes?.feitas) ? s.missoes.feitas.length : 0;
+    const isCaught = v => v === 'pego' || v === 'caught', species = Object.values(s.dex || {}).filter(isCaught).length;
+    if (!names) nameOf(0);
+    const regioes = REGIONS.map(([nome, a, b]) => {
+      let total = 0; for (const n of names.keys()) if (n >= a && n <= b) total++;
+      return { nome, pegos: Object.entries(s.dex || {}).filter(([n, v]) => +n >= a && +n <= b && isCaught(v)).length, total };
+    }).filter(r => r.total > 0);
+    const beaten = Array.isArray(s.treinadoresVencidos) ? s.treinadoresVencidos.length : Object.keys(s.treinadoresVencidos || {}).length;
     return {
       desde: c.criadaEm || (p.dias?.[0] ? Date.parse(p.dias[0]) : null), dias: (p.dias || []).length, tempo: Math.max(0, +s.tempo || 0),
-      capturas: p.cont.captura | 0, kanto, derrotados: p.cont.ko | 0, raids: p.cont.raid | 0,
+      capturas: Math.max(p.cont.captura | 0, species), kanto, nacional: species, nacionalTotal: regioes.reduce((t, r) => t + r.total, 0), regioes, derrotados: p.cont.ko | 0, raids: p.cont.raid | 0,
       maisCapturado: caught ? { dex: +caught[0], nome: nameOf(caught[0]), n: caught[1] } : null,
       tipoMaisDerrotado: type ? { tipo: type[0], n: type[1] } : null,
       bolaFavorita: ball && balls ? { id: +ball[0], pct: Math.round((ball[1] / balls) * 100) } : null,
       shinies: p.cont.shiny | 0, bolasUsadas: balls, pescados: p.cont.pesca | 0,
-      treinadores: p.cont.treinador | 0, insignias: Array.isArray(s.insignias) ? s.insignias.length : 0, elite: p.cont.elite | 0, curas: p.cont.cura | 0,
+      treinadores: Math.max(p.cont.treinador | 0, beaten), insignias: Array.isArray(s.insignias) ? s.insignias.length : 0, elite: p.cont.elite | 0, curas: p.cont.cura | 0,
       mvp: p.cont.mvp | 0, chefes: Object.keys(t.chefes || {}).length, chefeGuilda: p.cont.chefeGuilda | 0,
       areas: Object.keys(t.areas || {}).length, cidades: p.cont.cidades | 0, masmorras: p.cont.masmorras | 0, evolucoes: p.cont.evolucao | 0,
       trocas: p.cont.troca | 0, parceiros: Object.keys(t.parceiros || {}).length, vendas: p.cont.venda | 0, compras: p.cont.compra | 0, missoes: missions,

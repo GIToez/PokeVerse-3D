@@ -2604,17 +2604,7 @@ function mioloInsignia(cel, ref, pop){
     backgroundPosition: (d / 2 - (Cx + pad) * s) + 'px ' + (h / 2 - (Cy + pad) * s) + 'px' });
 }
 /* ACCOUNT STATS (Trainer card → Stats): the `estatisticas` block of the achievements view (server_progression.mjs).
-   The layout's labels are Portuguese; English players get these, everyone else the dictionary of their language. */
-const STATS_EN = {
-  'Estatísticas da conta': 'Account stats', 'Capturas': 'Catches', 'Espécies de Kanto': 'Kanto species', 'Pokémon derrotados': 'Pokémon defeated',
-  'Raids': 'Raids', 'Mais capturado': 'Most caught', 'Tipo mais derrotado': 'Most defeated type', 'Bola favorita': 'Favorite ball',
-  'Captura': 'Catching', 'Shinies': 'Shinies', 'Pokébolas usadas': 'Poké Balls used', 'Pescados': 'Fished', 'Batalha': 'Battle',
-  'Treinadores vencidos': 'Trainers defeated', 'Insígnias': 'Badges', 'Elite Four': 'Elite Four', 'Curas no Centro': 'Center heals',
-  'Raids e chefes': 'Raids and bosses', 'MVP': 'MVP', 'Chefes diferentes': 'Different bosses', 'Chefe da guilda': 'Guild boss',
-  'Exploração': 'Exploration', 'Áreas visitadas': 'Areas visited', 'Cidades': 'Cities', 'Masmorras': 'Dungeons', 'Evoluções': 'Evolutions',
-  'Social e comércio': 'Social and trade', 'Trocas': 'Trades', 'Parceiros de troca': 'Trade partners', 'Mercado: vendas / compras': 'Market: sales / purchases',
-  'Missões': 'Missions', 'Criação': 'Breeding', 'Ovos criados': 'Eggs bred', 'Ovos chocados': 'Eggs hatched', 'Shiny de ovo': 'Egg shinies', 'Bônus de caça': 'Hunt bonus',
-};
+   The layout's labels are English; other languages come from the locale dictionaries. */
 let estatisticasAbertas = false;
 function abrirEstatisticas(){
   if (!popTr) return;
@@ -2623,16 +2613,29 @@ function abrirEstatisticas(){
   ProgressaoUi.pedirVista?.();
   encherEstatisticas(popTr);
 }
+/* The Pokédex tile rotates: Kanto → Johto → … → Paldea → National, one every few seconds, while the window is open. */
+let dexRoda = { i: 0, t: null };
+function rodarDex(ex, S){
+  const pegar = () => {
+    const L = [...(S.regioes || []), { nome: 'National', pegos: S.nacional ?? S.kanto ?? 0, total: S.nacionalTotal || 151 }];
+    return L[dexRoda.i % L.length];
+  };
+  const pintar = () => {
+    const r = pegar(), v = ex.querySelector('[data-txt="est-kanto"]'), lab = v?.parentElement?.querySelector(':scope > .pf-rotulo');
+    if (lab) lab.textContent = r.nome === 'National' ? tr('National Pokédex') : tr('{r} species', { r: tr(r.nome) });
+    Popup.texto(popTr, 'est-kanto', Math.round(r.pegos).toLocaleString(I18n.locale()) + ' / ' + Math.round(r.total).toLocaleString(I18n.locale()), ex);
+    Popup.barra(popTr, 'progresso-kanto', r.total ? r.pegos / r.total : 0, null, ex);
+  };
+  pintar();
+  if (!dexRoda.t) dexRoda.t = setInterval(() => {
+    const e = Popup.extra(popTr, 'dialogo-estatisticas');
+    if (!estatisticasAbertas || !e || e.style.display === 'none') { clearInterval(dexRoda.t); dexRoda.t = null; return; }
+    dexRoda.i++; const V = ProgressaoUi.vistaAtual?.()?.estatisticas; if (V) { S = V; pintar(); }
+  }, 3500);
+}
 function encherEstatisticas(pop){
   const ex = Popup.extra(pop, 'dialogo-estatisticas'); if (!ex) return;
   if (ex.style.display === 'none') { estatisticasAbertas = false; return; }
-  const pt = I18n.language() === 'pt';
-  for (const el of ex.querySelectorAll('.pf-rotulo')){
-    const orig = el.dataset.ptOrig || (el.dataset.ptOrig = el.textContent.trim());
-    const en = STATS_EN[orig];
-    const want = pt || !en ? orig : tr(en);
-    if (el.textContent !== want) el.textContent = want;
-  }
   const S = ProgressaoUi.vistaAtual?.()?.estatisticas;
   const n = v => Math.round(+v || 0).toLocaleString(I18n.locale());
   const put = (id, v) => Popup.texto(pop, id, v, ex);
@@ -2640,7 +2643,7 @@ function encherEstatisticas(pop){
   const h = Math.floor(S.tempo / 3600), mi = Math.floor((S.tempo % 3600) / 60);
   const since = S.desde ? new Date(S.desde).toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit' }) : null;
   put('est-desde', [ctx.nome || '', since ? tr('since {d}', { d: since }) : null, tr(S.dias === 1 ? '{n} day played' : '{n} days played', { n: S.dias }), tr('{h}h {m}m played', { h, m: mi })].filter(Boolean).join(' · '));
-  put('est-capturas', n(S.capturas)); put('est-kanto', S.kanto + ' / 151'); put('est-derrotados', n(S.derrotados)); put('est-raids', n(S.raids));
+  put('est-capturas', n(S.capturas)); rodarDex(ex, S); put('est-derrotados', n(S.derrotados)); put('est-raids', n(S.raids));
   put('destaque-1', S.maisCapturado ? tr(S.maisCapturado.nome) + ' · ' + n(S.maisCapturado.n) : '—');
   put('destaque-2', S.tipoMaisDerrotado ? tr(S.tipoMaisDerrotado.tipo) + ' · ' + n(S.tipoMaisDerrotado.n) : '—');
   put('destaque-3', S.bolaFavorita ? tr(D?.itens?.[S.bolaFavorita.id]?.n || 'Ball') + ' · ' + S.bolaFavorita.pct + '%' : '—');
