@@ -6733,6 +6733,7 @@ function verificarPortas(dt){
     /* 17/09 (Loja de Departamentos de Celadon): montado, a porta armada no nascimento/pouso NUNCA desarmava (o `emPorta.delete` só roda
        a pé, no laço de baixo). Chegou pela escada rolante (pouso a 1,0–1,8 m da escada de volta), montou, deu uma volta e encostou na
        escada: ela seguia armada, não desmontava e não disparava — "não vai pro próximo andar" de novo, e o mesmo na saída pra rua. */
+    if (jogo.montaria.voa){ for (const p of portasCena){ const d = distPorta(p, ash.x, ash.z); if (d > 1.9) emPorta.delete(p); else if (d < 1.1) emPorta.add(p); } return; }   // VOANDO (05/11): no ar a porta não dispara, só arma — ver index.html
     for (const p of portasCena){ const d = distPorta(p, ash.x, ash.z); if (d > 1.9) emPorta.delete(p); else if (d < 1.1 && ladoDaChegada(p, ash.x, ash.z)) emPorta.add(p); }   // portão de salto curto encostado pelo lado da chegada (17/09, genandrade): só arma, não desmonta
     if (portasCena.some(p => !emPorta.has(p) && distPorta(p, ash.x, ash.z) < 1.1 && !passandoRente(p, ash.giro))) desmontar();
     return;
