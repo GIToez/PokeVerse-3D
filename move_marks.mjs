@@ -216,13 +216,14 @@ function wire(el, key, build) {
     if (e.pointerType === 'mouse') { hideCard(); return; }                 // clicking uses the move right away
     held = false; sx = e.clientX; sy = e.clientY;
     clearTimeout(holdTimer);
-    holdTimer = setTimeout(() => { held = true; open(); }, HOLD_MS);
+    holdTimer = setTimeout(() => { held = true; pinned = true; open(); }, HOLD_MS);   // opened by a hold: it stays until the next tap
   });
   el.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse' && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) clearTimeout(holdTimer); });
-  const end = (e) => { if (e.pointerType === 'mouse') return; clearTimeout(holdTimer); if (held) pinned = true; };   // the card stays up: the next tap anywhere closes it
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
-  el.addEventListener('contextmenu', (e) => { if (held) e.preventDefault(); });
+  /* Letting go early (a tap) cancels the hold. A pointercancel does NOT: phones fire it in the middle of a long press when
+     the browser starts its own long-press gesture — that used to close the card while the finger was still down. */
+  el.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') clearTimeout(holdTimer); });
+  el.addEventListener('contextmenu', (e) => e.preventDefault());           // no long-press menu on the move buttons / pill
+  Object.assign(el.style, { touchAction: 'none', webkitTouchCallout: 'none', webkitUserSelect: 'none', userSelect: 'none' });
   el.addEventListener('click', (e) => { if (held) { held = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a hold never fires the move / opens the calendar
 }
 
@@ -303,6 +304,6 @@ export function install(d) {
     if (on) { swallow = on; e.stopImmediatePropagation(); }
   }, true);
   addEventListener('click', (e) => { if (swallow && swallow.contains(e.target)) { e.stopImmediatePropagation(); e.preventDefault(); } swallow = null; }, true);
-  addEventListener('blur', hideCard);
+  addEventListener('blur', () => { if (!pinned) hideCard(); });   // a phone's long press can blur the page: a held card stays
   addEventListener('keydown', (e) => { if (e.key === 'Escape') hideCard(); });
 }
