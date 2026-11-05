@@ -143643,7 +143643,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Jornada",
+        "exemplo": "Journey",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -143689,7 +143689,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Colecionador",
+        "exemplo": "Collector",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -143781,7 +143781,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Da semana",
+        "exemplo": "Weekly",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -143827,7 +143827,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Guildas",
+        "exemplo": "Guilds",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -143873,7 +143873,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Torneio",
+        "exemplo": "Tournament",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 26
@@ -143901,7 +143901,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:6",
-          "exemplo": "novo",
+          "exemplo": "new",
           "cortar": true,
           "alturaLinha": 20
          }
@@ -143959,7 +143959,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Nível de Mestre",
+          "exemplo": "Master Level",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -144005,7 +144005,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Insígnias",
+          "exemplo": "Badges",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -144051,7 +144051,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Hall da Fama",
+          "exemplo": "Hall of Fame",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -144097,7 +144097,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:22",
-          "exemplo": "Corrida da Elite",
+          "exemplo": "Elite Four Race",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -144143,7 +144143,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "História",
+          "exemplo": "Story",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -144189,7 +144189,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:21",
-          "exemplo": "Treinadores vencidos",
+          "exemplo": "Trainers defeated",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -144281,7 +144281,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -144319,7 +144319,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -144400,7 +144400,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -144438,7 +144438,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -144538,7 +144538,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -144639,7 +144639,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -144721,7 +144721,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -144759,7 +144759,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -144860,7 +144860,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -144961,7 +144961,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -145100,7 +145100,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "nível",
+          "exemplo": "level",
           "cortar": true,
           "alturaLinha": 18
          }
@@ -145157,7 +145157,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Pokédex de Kanto",
+          "exemplo": "Kanto Pokédex",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -145201,7 +145201,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Pokédex Nacional",
+          "exemplo": "National Pokédex",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -145245,7 +145245,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Conhecimento",
+          "exemplo": "Knowledge",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -145289,7 +145289,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Lendários",
+          "exemplo": "Legendaries",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -145380,7 +145380,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -145418,7 +145418,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -145498,7 +145498,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -145536,7 +145536,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -145635,7 +145635,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -145735,7 +145735,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -145816,7 +145816,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -145854,7 +145854,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -145954,7 +145954,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -146054,7 +146054,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -146192,7 +146192,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "espécies",
+          "exemplo": "species",
           "cortar": true,
           "alturaLinha": 18
          }
@@ -146245,7 +146245,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Capturados",
+          "exemplo": "Caught",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -146289,7 +146289,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Na caixa",
+          "exemplo": "In the Box",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -146333,7 +146333,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Espécies",
+          "exemplo": "Species",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -146424,7 +146424,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -146542,7 +146542,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -146860,7 +146860,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -147289,7 +147289,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Capturas",
+          "exemplo": "Catches",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -147377,7 +147377,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Selvagens",
+          "exemplo": "Wild",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -147445,7 +147445,7 @@
         "al": "right",
         "alV": "center",
         "regra": "max:53",
-        "exemplo": "o 1º da semana leva um título por 7 dias",
+        "exemplo": "the week's 1st place gets a title for 7 days",
         "cortar": true,
         "alturaLinha": 22
        },
@@ -147531,7 +147531,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -147569,7 +147569,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -147649,7 +147649,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -147687,7 +147687,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -147786,7 +147786,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -147886,7 +147886,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -147967,7 +147967,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -148005,7 +148005,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148105,7 +148105,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148205,7 +148205,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148343,7 +148343,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "capturas",
+          "exemplo": "catches",
           "cortar": true,
           "alturaLinha": 18
          }
@@ -148396,7 +148396,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Guildas da semana",
+          "exemplo": "Weekly guilds",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 22
@@ -148487,7 +148487,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "32 membros",
+            "exemplo": "32 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -148525,7 +148525,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148605,7 +148605,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "28 membros",
+            "exemplo": "28 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -148643,7 +148643,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148723,7 +148723,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "25 membros",
+            "exemplo": "25 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -148761,7 +148761,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148842,7 +148842,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "22 membros",
+            "exemplo": "22 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -148880,7 +148880,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -148961,7 +148961,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "19 membros",
+            "exemplo": "19 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -148999,7 +148999,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -149080,7 +149080,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "18 membros",
+            "exemplo": "18 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -149118,7 +149118,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -149199,7 +149199,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "15 membros",
+            "exemplo": "15 members",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -149237,7 +149237,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -149375,7 +149375,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "pontos",
+          "exemplo": "points",
           "cortar": true,
           "alturaLinha": 18
          }
@@ -149581,7 +149581,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -149619,7 +149619,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -149699,7 +149699,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -149737,7 +149737,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -149836,7 +149836,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -149936,7 +149936,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -150017,7 +150017,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 18
            },
@@ -150055,7 +150055,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -150155,7 +150155,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -150255,7 +150255,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 18
            }
@@ -150393,7 +150393,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "pontos",
+          "exemplo": "points",
           "cortar": true,
           "alturaLinha": 18
          }
@@ -360872,7 +360872,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Jornada",
+        "exemplo": "Journey",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -360918,7 +360918,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Colecionador",
+        "exemplo": "Collector",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -361010,7 +361010,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Da semana",
+        "exemplo": "Weekly",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -361056,7 +361056,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Guildas",
+        "exemplo": "Guilds",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -361102,7 +361102,7 @@
         "al": "center",
         "alV": "center",
         "regra": "max:14",
-        "exemplo": "Torneio",
+        "exemplo": "Tournament",
         "cortar": true,
         "corAba": true,
         "alturaLinha": 16
@@ -361130,7 +361130,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:6",
-          "exemplo": "novo",
+          "exemplo": "new",
           "cortar": true,
           "alturaLinha": 12
          }
@@ -361188,7 +361188,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Nível de Mestre",
+          "exemplo": "Master Level",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -361234,7 +361234,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Insígnias",
+          "exemplo": "Badges",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -361280,7 +361280,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Hall da Fama",
+          "exemplo": "Hall of Fame",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -361326,7 +361326,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:22",
-          "exemplo": "Corrida da Elite",
+          "exemplo": "Elite Four Race",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -361372,7 +361372,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "História",
+          "exemplo": "Story",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -361418,7 +361418,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:21",
-          "exemplo": "Treinadores vencidos",
+          "exemplo": "Trainers defeated",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -361510,7 +361510,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -361548,7 +361548,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -361629,7 +361629,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -361667,7 +361667,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -361767,7 +361767,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -361868,7 +361868,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -361950,7 +361950,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -361988,7 +361988,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -362089,7 +362089,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -362190,7 +362190,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "nível",
+            "exemplo": "level",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -362329,7 +362329,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "nível",
+          "exemplo": "level",
           "cortar": true,
           "alturaLinha": 10.1
          }
@@ -362386,7 +362386,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Pokédex de Kanto",
+          "exemplo": "Kanto Pokédex",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -362430,7 +362430,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Pokédex Nacional",
+          "exemplo": "National Pokédex",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -362474,7 +362474,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Conhecimento",
+          "exemplo": "Knowledge",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -362518,7 +362518,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Lendários",
+          "exemplo": "Legendaries",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -362609,7 +362609,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -362647,7 +362647,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -362727,7 +362727,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -362765,7 +362765,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -362864,7 +362864,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -362964,7 +362964,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -363045,7 +363045,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -363083,7 +363083,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -363183,7 +363183,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -363283,7 +363283,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "espécies",
+            "exemplo": "species",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -363421,7 +363421,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "espécies",
+          "exemplo": "species",
           "cortar": true,
           "alturaLinha": 10.1
          }
@@ -363474,7 +363474,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Capturados",
+          "exemplo": "Caught",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -363518,7 +363518,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Na caixa",
+          "exemplo": "In the Box",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -363562,7 +363562,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Espécies",
+          "exemplo": "Species",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -363653,7 +363653,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -363771,7 +363771,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -364089,7 +364089,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -364518,7 +364518,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Capturas",
+          "exemplo": "Catches",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -364606,7 +364606,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Selvagens",
+          "exemplo": "Wild",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -364674,7 +364674,7 @@
         "al": "right",
         "alV": "center",
         "regra": "max:53",
-        "exemplo": "o 1º da semana leva um título por 7 dias",
+        "exemplo": "the week's 1st place gets a title for 7 days",
         "cortar": true,
         "alturaLinha": 12.3
        },
@@ -364760,7 +364760,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -364798,7 +364798,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -364878,7 +364878,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -364916,7 +364916,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365015,7 +365015,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365115,7 +365115,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365196,7 +365196,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -365234,7 +365234,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365334,7 +365334,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365434,7 +365434,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "capturas",
+            "exemplo": "catches",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365572,7 +365572,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "capturas",
+          "exemplo": "catches",
           "cortar": true,
           "alturaLinha": 10.1
          }
@@ -365625,7 +365625,7 @@
           "al": "center",
           "alV": "center",
           "regra": "max:20",
-          "exemplo": "Guildas da semana",
+          "exemplo": "Weekly guilds",
           "cortar": true,
           "corAba": true,
           "alturaLinha": 12.3
@@ -365716,7 +365716,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "32 membros",
+            "exemplo": "32 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -365754,7 +365754,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365834,7 +365834,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "28 membros",
+            "exemplo": "28 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -365872,7 +365872,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -365952,7 +365952,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "25 membros",
+            "exemplo": "25 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -365990,7 +365990,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -366071,7 +366071,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "22 membros",
+            "exemplo": "22 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -366109,7 +366109,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -366190,7 +366190,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "19 membros",
+            "exemplo": "19 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -366228,7 +366228,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -366309,7 +366309,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "18 membros",
+            "exemplo": "18 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -366347,7 +366347,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -366428,7 +366428,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "15 membros",
+            "exemplo": "15 members",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -366466,7 +366466,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -366604,7 +366604,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "pontos",
+          "exemplo": "points",
           "cortar": true,
           "alturaLinha": 10.1
          }
@@ -366810,7 +366810,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Mestre de Kanto",
+            "exemplo": "Kanto Master",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -366848,7 +366848,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -366928,7 +366928,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Colecionadora",
+            "exemplo": "Collector",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -366966,7 +366966,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -367065,7 +367065,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -367165,7 +367165,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -367246,7 +367246,7 @@
             "al": "left",
             "alV": "center",
             "regra": "reticencias",
-            "exemplo": "Desbravador da T1",
+            "exemplo": "Season 1 Pathfinder",
             "cortar": true,
             "alturaLinha": 10.1
            },
@@ -367284,7 +367284,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -367384,7 +367384,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -367484,7 +367484,7 @@
             "al": "left",
             "alV": "center",
             "regra": "max:12",
-            "exemplo": "pontos",
+            "exemplo": "points",
             "cortar": true,
             "alturaLinha": 10.1
            }
@@ -367622,7 +367622,7 @@
           "al": "left",
           "alV": "center",
           "regra": "max:12",
-          "exemplo": "pontos",
+          "exemplo": "points",
           "cortar": true,
           "alturaLinha": 10.1
          }

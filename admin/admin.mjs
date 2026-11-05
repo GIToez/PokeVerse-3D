@@ -5,7 +5,8 @@
 import { instalarDados } from '/admin/data.mjs';
 import { instalarJogadores } from '/admin/players.mjs';
 import { instalarEventos } from '/admin/events.mjs';
-import { instalarCorreio } from '/admin/mail.mjs';   // 📬 Mail (server_mail.mjs)
+import { instalarCorreio } from '/admin/mail.mjs';
+import { instalarRanking } from '/admin/ranking.mjs';   // 🏆 Ranking (server_ranking.mjs)   // 📬 Mail (server_mail.mjs)
 import { instalarAgenda } from '/admin/schedule.mjs';   // 📅 event schedule (server_schedule.mjs)   // Fase 3: eventos ao vivo, aviso global, manutenção
 import { instalarConteudo } from '/admin/content.mjs'; // Fase 2: telas Missões, Espécies, Evoluções, Learnset
 import { criarCamadas } from '/admin/layers.mjs';
@@ -108,7 +109,7 @@ async function iniciar() {
   await carregarReferencia();
   await carregarTudo();
   ligarUI();
-  if (!dadosInstalado){ dadosInstalado = true; instalarDados({ api, toast, avisarJogo }); instalarJogadores({ api, toast, canal, resolverEspecie }); instalarEventos({ api, toast }); instalarCorreio({ api, toast, resolverEspecie }); instalarAgenda({ api, toast }); instalarConteudo({ api, toast, avisarJogo }); }
+  if (!dadosInstalado){ dadosInstalado = true; instalarDados({ api, toast, avisarJogo }); instalarJogadores({ api, toast, canal, resolverEspecie }); instalarEventos({ api, toast }); instalarCorreio({ api, toast, resolverEspecie }); instalarRanking({ api, toast }); instalarAgenda({ api, toast }); instalarConteudo({ api, toast, avisarJogo }); }
 }
 let dadosInstalado = false;
 function mostrarLogin(msg = '') {

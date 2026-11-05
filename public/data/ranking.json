@@ -1,0 +1,13 @@
+{
+  "top": 20,
+  "cacheSegundos": 30,
+  "diasPremio": 7,
+  "ocultarStaff": false,
+  "ocultos": [],
+  "premios": {
+    "sem_capturas": "Catcher of the Week",
+    "sem_shinies": "Shiny Hunter of the Week",
+    "sem_selvagens": "Wild Battler of the Week",
+    "sem_raid": "Raider of the Week"
+  }
+}

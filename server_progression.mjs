@@ -90,7 +90,7 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     const balls = Object.values(t.bolas || {}).reduce((a, b) => a + b, 0);
     const kanto = Object.entries(s.dex || {}).filter(([n, v]) => +n >= 1 && +n <= 151 && (v === 'pego' || v === 'caught')).length;
     const missions = Array.isArray(s.missoes?.feitas) ? s.missoes.feitas.length : 0;
-    const isCaught = v => v === 'pego' || v === 'caught', species = Object.values(s.dex || {}).filter(isCaught).length;
+    const isCaught = v => v === 'pego' || v === 'caught', species = Object.entries(s.dex || {}).filter(([n, v]) => +n >= 1 && isCaught(v)).length;
     if (!names) nameOf(0);
     const regioes = REGIONS.map(([nome, a, b]) => {
       let total = 0; for (const n of names.keys()) if (n >= a && n <= b) total++;
@@ -255,5 +255,22 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     }
   }
 
-  return { receive, count, view: u => (accounts[u] ? view(accounts[u]) : null), def };
+  /** Master level without building the whole view (rankings read it for every account). */
+  function masterLevel(c) {
+    const D = def(), p = stateOf(c);
+    let xp = 0;
+    for (const a of D.conquistas) { const n = Math.min(tiersDone(c, a), p.resgatados[a.id] | 0); for (let i = 0; i < n; i++) xp += +a.degraus[i].pontosMestre || 0; }
+    return 1 + Math.floor(xp / Math.max(1, +D.mestre.xpPorNivel || 1000));
+  }
+  /** The title shown next to the name: the one picked, else the latest earned; its display name from the achievements file. */
+  function titleOf(c) {
+    const earned = Array.isArray(c.titulosGanhos) ? c.titulosGanhos : [];
+    const p = stateOf(c), id = p.escolhido && earned.includes(p.escolhido) ? p.escolhido : earned.at(-1);
+    if (!id) return '';
+    for (const a of def().conquistas) for (const d of a.degraus) if (d.recompensa?.tipo === 'titulo' && d.recompensa.id === id) return d.recompensa.nome || id;
+    return id;
+  }
+  return { receive, count, view: u => (accounts[u] ? view(accounts[u]) : null), def,
+    valueOf: (u, key) => (accounts[u] ? valueOf(accounts[u], key) : 0), masterLevel: u => (accounts[u] ? masterLevel(accounts[u]) : 1),
+    titleOf: u => (accounts[u] ? titleOf(accounts[u]) : '') };
 }

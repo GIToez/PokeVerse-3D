@@ -35,6 +35,7 @@ import { criarCarteira, criarLoja } from './server_shop.mjs';
 import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
+import { createRanking } from './server_ranking.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -984,6 +985,7 @@ const httpServer = http.createServer((req, res) => {
     // ── Sair ──────────────────────────────────────────────────────────────
     // Scene pass: the upcoming client asks for a signed pass. We do not gate scenes yet (pass_rules.mjs
     // SCENES_GATED = false), so this only confirms the session; with no `passe` the client treats every scene as free.
+    if (rota.startsWith('/ranking') && ranking.route(rota, req.method, json, usuarioDe, req)) return;   // 🏆 rankings (server_ranking.mjs)
     if (req.method === 'GET' && rota === '/conta/passe') {
       const u = usuarioDe(req);
       if (!u) return json(401, { erro: 'Invalid session.' });
@@ -1082,6 +1084,7 @@ const httpServer = http.createServer((req, res) => {
       if (!g) return json(403, { erro: 'GM accounts only.' });
       if (rota === '/admin/agenda' && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
+      if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
       if (rota.startsWith('/admin/correio') && mail.adminRoute(rota, req.method, d, g, json, url)) return;   // 📬 Mail tab (server_mail.mjs)   // Fase 3: eventos ao vivo (server_events.mjs)
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
       if (rota === '/admin/modelos' && req.method === 'GET')
@@ -1397,6 +1400,10 @@ const wilds = criarWilds({
 /* ACHIEVEMENTS (server_progression.mjs): every event the season pass counts also counts here. */
 const progressao = createProgression({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, dataDir: DADOS_PUB, wallet: carteira });
 { const contarTemporada = temporada.contar; temporada.contar = (u, ev) => { try { contarTemporada(u, ev); } finally { progressao.count(u, ev); } }; }
+/* RANKINGS (server_ranking.mjs): GET /ranking, /ranking/eu; weekly lists reset on Monday 00:00 UTC. */
+const ranking = createRanking({ accounts: contas, progression: progressao, dataDir: DADOS_PUB, serverDir: DADOS, saveAccounts: salvarContas,
+  send: enviar, socketsOf: socketsDe, isBanned: c => !!banidoAteDe(c), logAdmin });
+{ const contarAntes = temporada.contar; temporada.contar = (u, ev) => { try { contarAntes(u, ev); } finally { ranking.count(u, ev); } }; }
 /* MAIL (server_mail.mjs): letters on the account, opened from the HUD's Mail shortcut. */
 const mail = createMail({
   accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, wallet: carteira, newIndividual: individuoServidor, markCaught: marcarPego,

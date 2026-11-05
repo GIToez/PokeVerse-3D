@@ -1,6 +1,7 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
 import * as I18n from './i18n.mjs';                                     // etapa 3: a linha de idioma nas Configurações e a Pokédex por idioma
 import * as CorreioUI from './mail_ui.mjs';
+import * as RankingUi from './ranking_ui.mjs';                               // Ranking (v2 popup)
 import * as ProgressaoUi from './progression_ui.mjs';                       // Achievements, Master Level, titles (v2 popup)                                // Mail (v2 popup)
 /* Menus do jogo — casca DOM, sem servidor (menus.css).
  *
@@ -348,6 +349,7 @@ function ligarRecursos(){
 
 export function instalar(c){
   ProgressaoUi.aoMudarVista?.(() => { if (aberta === 'treinador' && popTr && Popup.aberto(popTr)) encherTreinador(popTr); });   // Master pill and Stats refresh when the server sends a new view
+  RankingUi.instalar({ segurar: (el) => DIALOGOS.add(el), Som: c.Som });
   ProgressaoUi.instalar({
     enviar: (m) => c.correioEnviar?.(m),
     comConta: () => !!c.comConta?.(),
@@ -2545,7 +2547,7 @@ function popupTr(){
   if (popTr) return popTr;
   const def = defPopup('treinador'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
   popTr = Popup.montar(def, {
-    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } if (alvo === 'dialogo-estatisticas'){ abrirEstatisticas(); return true; } return false; },
+    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } if (alvo === 'popup-ranking'){ RankingUi.abrir(); return true; } if (alvo === 'dialogo-estatisticas'){ abrirEstatisticas(); return true; } return false; },
     fechar: () => { if (aberta === 'treinador') aberta = null; if (visorTr) visorTr.ativo = false; },
   });
   return popTr;
@@ -2914,7 +2916,7 @@ export function socialEvent(m){
 }
 /* ---------------------------------------------------------------- Collector ranking */
 let myRanking = null, myRankingAt = 0;
-const RANKING_NAMES = { species: 'Kanto species', shinies: 'shinies', knowledge: 'knowledge points' };
+const RANKING_NAMES = { nacional: 'Pokédex species', shiny_capturados: 'shinies caught', conhecimento: 'knowledge points', mestre: 'Master Level' };
 async function fetchRanking(path, withToken = false){
   const base = ctx.conta?.baseUrl?.(); if (!base) return null;
   if (withToken) { const r = await ctx.conta.chamar('GET', path); return r.ok ? r.dados : null; }
@@ -2924,10 +2926,10 @@ async function fetchRanking(path, withToken = false){
 export async function showRanking(){
   const R = await fetchRanking('/ranking');
   if (!R){ Chat.sistema('Ranking: the server is not available.'); return false; }
-  Chat.sistema('🏆 Collector ranking (' + R.total + ' trainer' + (R.total === 1 ? '' : 's') + '):');
+  Chat.sistema('🏆 Ranking (' + R.total + ' trainer' + (R.total === 1 ? '' : 's') + '):');
   for (const [key, label] of Object.entries(RANKING_NAMES)){
-    const l = (R.lists?.[key] || []).slice(0, 5);
-    Chat.sistema('• ' + label + ': ' + (l.length ? l.map(x => '#' + x.pos + ' ' + x.nick + ' (' + x.value + ')').join(' · ') : 'nobody yet'));
+    const l = (R.listas?.[key] || []).slice(0, 5);
+    Chat.sistema('• ' + label + ': ' + (l.length ? l.map(x => '#' + x.pos + ' ' + x.nick + ' (' + x.valor + ')').join(' · ') : 'nobody yet'));
   }
   return true;
 }
@@ -2935,7 +2937,8 @@ export async function showRanking(){
 async function myRankingPosition(){
   if (ctx.conta?.estado?.().modo !== 'conta') return null;
   if (myRanking && Date.now() - myRankingAt < 30000) return myRanking;
-  myRanking = await fetchRanking('/ranking/me', true); myRankingAt = Date.now();
+  const r = await fetchRanking('/ranking/eu', true); myRankingAt = Date.now();
+  myRanking = r ? { ...r, species: r.eu?.nacional || null, especies: r.eu?.nacional || null } : null;   // the Pokédex species list
   return myRanking;
 }
 /** /w name text in chat: a direct message to a friend (by nick or username). */
@@ -3122,7 +3125,7 @@ let genDx = 1,
   dexRolarAte = null,
   evoDx = null;
 const GENS_DX = [
-  [1, 0, 151],
+  [1, 1, 151],   // starts at 1: no MissingNo. (no. 0) in the Pokédex
   [2, 152, 251],
   [3, 252, 386],
   [4, 387, 493],
@@ -3189,7 +3192,7 @@ function abasGenDx(def) {
     for (const f of a.filhos || []) {
       f.x *= k;
       f.w *= k;
-      if (f.exemplo) f.exemplo = 'Gen ' + g;
+      if (f.exemplo) f.exemplo = (def.w > 1000 ? 'Gen ' : 'G') + g;   // the phone row is too narrow for "Gen 1"
     }
     return a;
   });
@@ -4951,7 +4954,7 @@ const chanceCaptura = rate => { const a = Math.max(1, rate) / 3; if (a >= 255) r
 function rPokedex(corpo){
   if (!I18n.dexReady()) I18n.loadDex().then(() => { if (aberta === 'pokedex') render(); });   // descrições por idioma (etapa 3): baixa só quando a janela abre
   const gens = GENS_DX;
-  const aba = abas(gens.map(([g]) => ({ id: String(g), nome: 'Gen ' + g })));
+  const aba = abas(gens.map(([g]) => ({ id: String(g), nome: (document.body.classList.contains('mobile') ? 'G' : 'Gen ') + g })));
   const [, a, b] = gens.find(([g]) => String(g) === aba); const d = dexEstado();
   const q = dexBusca.trim().toLowerCase();
   const sp = [...ctx.porDex.values()].filter(s => s.n >= a && s.n <= b).filter(s => !q || String(s.n) === q || (d[s.n] && s.name.toLowerCase().includes(q))).sort((p, r) => p.n - r.n);
@@ -5583,6 +5586,7 @@ export function abrirInicial({ lista, palco = null, aoEscolher = null, semEscolh
 /** Um clique numa peça do HUD v2 (hud:abrir): o que existe abre; o que não existe mostra o banner. */
 function abrirRecurso(nome){
   if (!nome) return;
+  if (nome === 'ranking'){ RankingUi.abrir(); return; }                 // 🏆 ranking_ui.mjs
   if (nome === 'loja'){ abrir('loja'); return; }                         // the cosmetics shop exists now (Nov 2)
   if (nome === 'guilda' || nome === 'mercado'){ abrir(nome === 'mercado' ? 'feira' : nome); return; }
   if (nome === 'eventos'){ abrir('eventos'); return; }

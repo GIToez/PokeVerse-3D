@@ -88,6 +88,20 @@ export const ESQUEMAS_F3 = {
       { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 40, col: true, obrigatorio: true },
     ],
   },
+  ranking: {
+    titulo: 'Ranking', arquivo: 'ranking', forma: 'objeto', recarga: 'vivo',
+    descricao: 'The Ranking window (Trainer card → Ranking). Weekly lists reset every Monday 00:00 UTC; the #1 of each weekly list gets its prize title. The Ranking tab of this panel shows the live lists and can close the week early.',
+    campos: [
+      { k: 'top', rotulo: 'Players shown per list', tipo: 'num', min: 1, max: 100, int: true, ajuda: 'Default 20 (the window has room for 20).' },
+      { k: 'cacheSegundos', rotulo: 'Refresh every (seconds)', tipo: 'num', min: 5, max: 3600, int: true, ajuda: 'The lists are rebuilt at most this often. Default 30.' },
+      { k: 'diasPremio', rotulo: 'Weekly title lasts (days)', tipo: 'num', min: 1, max: 60, int: true, ajuda: 'Default 7.' },
+      { k: 'ocultarStaff', rotulo: 'Hide GM and staff accounts', tipo: 'bool', ajuda: 'Leave off while testing.' },
+      { k: 'ocultos', rotulo: 'Hidden players (usernames)', tipo: 'json', validar: v => Array.isArray(v) && v.every(x => typeof x === 'string') ? null : 'a list of usernames, e.g. ["bob","ana"]', ajuda: 'They never appear on any list.' },
+      { k: 'premios', rotulo: 'Weekly prize titles', tipo: 'json',
+        validar: v => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).every(k => ['sem_capturas', 'sem_shinies', 'sem_selvagens', 'sem_raid'].includes(k) && typeof v[k] === 'string') ? null : 'keys: sem_capturas, sem_shinies, sem_selvagens, sem_raid; values: the title text',
+        ajuda: 'An empty text means that list gives no title.' },
+    ],
+  },
   npc_tintas: {
     titulo: 'NPC colors', arquivo: 'npc_tints', forma: 'mapa', idValido: /^[\w][\w .:()-]{0,79}$/, idAjuda: 'the model\'s material name (e.g. fc2013_00_nursejoy_hair_col) or "<model>:<material>"',
     descricao: 'The factory color of each part of NPCs, outfits and backpacks: the texture is nearly white and the color comes from here, through the mask\'s R/G/B/black channels. The preview shows the model (when it exists in this copy) with your edits.',

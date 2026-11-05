@@ -112,7 +112,7 @@ export names, not from running them:
 | Held items, TMs, EVs, status | `held.mjs`, `held_ui.mjs`, `tm_ui.mjs`, `ev.mjs`, `status.mjs` |
 | Battle pass, payments, founder pack | `pass_rules.mjs`, `pass_screen.mjs`, `payment_rules.mjs`, `payment_ui.mjs`, `founder_pack.mjs`, `founder_rules.mjs`, `event_pack.mjs` |
 | Cosmetics, wardrobe | `cosmetics_catalog.mjs`, `cosmetic_effects.mjs`, `wardrobe.mjs`, `wardrobe_ui.mjs`, `skin_mon.mjs` |
-| Achievements, rankings, side quests, guide | `achievements_ui.mjs`, `ranking_ui.mjs`, `side_quests_ui.mjs`, `guide.mjs`, `progression_ui.mjs` |
+| Achievements ✅, rankings ✅ (server_ranking.mjs, admin Ranking tab), side quests, guide | `achievements_ui.mjs`, `ranking_ui.mjs`, `side_quests_ui.mjs`, `guide.mjs`, `progression_ui.mjs` |
 | Furniture/placement, plots | `decorate_*.mjs`, `placement*.mjs`, `plot_*.mjs`, `plot_objects.mjs` |
 | Controls, quality, world map | `controls_ui.mjs`, `keys.mjs`, `quality.mjs`, `map_ui.mjs`, `map_places.mjs`, `travel_ui.mjs` |
 | Newer versions of live modules | `menus.mjs`, `hud.mjs`, `screens.mjs`, `account.mjs`, `network.mjs`, `world.mjs` and others |
