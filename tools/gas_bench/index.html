@@ -19,16 +19,16 @@ function cena(rec, giro, fundo) {
   s.add(new THREE.AmbientLight(0xffffff, 1.6)); const d = new THREE.DirectionalLight(0xffffff, 1.4); d.position.set(3, 10, 6); s.add(d);
   const chao = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ color: fundo })); chao.rotation.x = -Math.PI / 2; s.add(chao);
   const corpo = SkeletonUtils.clone(g.scene);
-  const mix = new THREE.AnimationMixer(corpo); const idle = g.animations.find(a => a.name === 'Idle'); if (idle) mix.clipAction(idle).play(); mix.update(0.5);
   corpo.updateMatrixWorld(true);
-  Gas.aplicarGas(corpo, 'pm0092_00');
+  Gas.aplicarGas(corpo, 'pm0092_00');                                    // same order as the game's montarCorpo: on the bind pose, before Idle plays
+  const mix = new THREE.AnimationMixer(corpo); const idle = g.animations.find(a => a.name === (window.clipe || 'Idle')); if (idle) mix.clipAction(idle).play(); mix.update(0.5);
   const piv = new THREE.Group(); piv.add(corpo); piv.rotation.y = giro; s.add(piv);
   corpo.scale.setScalar(0.7);   // game scale for Gastly (aplicarTamanho 92: 0.7)
   return { s, mix };
 }
 const cam = new THREE.PerspectiveCamera(20, W / H, 0.5, 400);
 window.render = async (variantes, fundo = 0x5d8a3c, t = 1.2) => {
-  const views = [0, Math.PI, Math.PI / 2];
+  const views = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
   ren.setSize(W * views.length, H * variantes.length);
   ren.setScissorTest(true);
   for (let r = 0; r < variantes.length; r++) for (let v = 0; v < views.length; v++) {

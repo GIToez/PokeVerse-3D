@@ -30,6 +30,7 @@ import * as Stg from './stages.mjs';
 import * as Weather from './weather.mjs';
 import { createMapWeather } from './server_weather.mjs';
 import { createWorldFight } from './server_world_fight.mjs';
+import * as Safari from './safari_rules.mjs';
 
 const AREA_CAP = 16;              // most wilds one area holds at once (the client's own ceiling is 16 × density)
 const ROOM_CAP = 160;             // most wilds one map holds at once
@@ -393,16 +394,20 @@ export function createWorld(h) {
     const w = roomOf(map).wilds.get(String(m.id));
     if (!w) return reply({ ok: false, chac: 0, erro: 'sumiu' });
     if (w.state === 'capturando') return reply({ ok: false, chac: 0, erro: 'outro' });
-    if (w.state !== 'desmaiado') return reply({ ok: false, chac: 0, erro: 'acordado' });
-    if (distTo(ws, w) > FIGHT_RANGE) return reply({ ok: false, chac: 0, erro: 'longe' });
     const ball = String(m.bola || 1001);
+    /* SAFARI (Nov 5): there are no battles in the Safari Zone, so the Safari Ball is thrown at an AWAKE wild (full HP, the classic
+       rule). Every Safari throw used to come back 'acordado' = 0 shakes. Bait halves the catch, a rock doubles it (safari_rules MOD). */
+    const naSafari = +ball === SAFARI_BALL && Safari.ehZona(w.area) && Safari.vivo(accounts[u]?.save?.safari) && w.state === 'vagando';
+    if (w.state !== 'desmaiado' && !naSafari) return reply({ ok: false, chac: 0, erro: 'acordado' });
+    if (distTo(ws, w) > FIGHT_RANGE) return reply({ ok: false, chac: 0, erro: 'longe' });
     if (ballRate(ball) == null) return reply({ ok: false, chac: 0, erro: 'bola' });
     const c = accounts[u], save = c.save || (c.save = {});
     if (!save.bolas || typeof save.bolas !== 'object') save.bolas = {};
     const safariBall = +ball === SAFARI_BALL;   // Safari Balls belong to the Safari visit, which the client keeps, not to the bag
     if (!safariBall && !((save.bolas[ball] | 0) > 0)) return reply({ ok: false, chac: 0, erro: 'sem-bola' });
     if (!safariBall) save.bolas[ball] = (save.bolas[ball] | 0) - 1;   // the ball is spent on every valid throw, caught or not
-    const n = shakes(w, ballBonus(ball, w, u));
+    const modSafari = naSafari && (m.safari === 'isca' || m.safari === 'pedra') ? Safari.MOD[m.safari].captura : 1;
+    const n = shakes(w, ballBonus(ball, w, u) * modSafari);
     w.state = 'capturando'; w.catcher = ws._id;
     clearTimeout(w.timer);
     toMap(map, { t: 'sestado', id: w.id, estado: 'capturando', porId: ws._id, bola: +ball, chac: n }, ws);
@@ -426,6 +431,7 @@ export function createWorld(h) {
       reply({ ok: false, chac: n, bolsa: bag });
       w.timer = setTimeout(() => {
         if (w.state !== 'capturando') return;
+        if (naSafari) { w.state = 'vagando'; w.catcher = null; toMap(map, { t: 'sestado', id: w.id, estado: 'vagando', hp: w.hp }); return; }   // Safari: it pops out awake and roams again
         w.state = 'desmaiado'; w.catcher = null; w.until = Date.now() + FAINT_MS / 2;   // broke free: a shorter second window
         toMap(map, { t: 'sestado', id: w.id, estado: 'desmaiado', ate: w.until, hp: 0 });
         w.timer = setTimeout(() => { if (w.state === 'desmaiado') remove(map, w, 'morreu'); }, FAINT_MS / 2);
