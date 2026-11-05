@@ -490,7 +490,7 @@ function respostaSolta(m) {
             : tr('💎 Season pass: your earlier purchase went through (+{n} levels).', { n }),
         );
     }
-    if (m.ok && (a === 'pegar' || a === 'pegarTudo' || a === 'comprarPasse')) {
+    if (m.ok && (a === 'pegar' || a === 'pegarTudo' || a === 'claimAll' || a === 'comprarPasse')) {
       posseNova(m);
       const c = PT.nomesEntregues(E.temporada, m.entregues, ctxPasse());
       if (c.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(c) }));
@@ -1934,6 +1934,11 @@ function aoClicar(a) {
       } catch {}
       pintarDialogoPasse(true);
     }
+    return;
+  }
+  if (h === 'acao' && i === 'resgatar-tudo') {
+    a.stopPropagation();
+    if (g.dataset.desligado !== '1') claimAll();
     return;
   }
   if (h === 'acao' && i === 'resgatar-passe') {
@@ -5879,6 +5884,7 @@ function pintarPasse() {
     Popup.textoCru(pop, 'temporada-termina', H.termina, a);
     Popup.textoCru(pop, 'nivel-passe', H.nivel, a);
     mostra(no(a, 'btn-comprar-nivel'), H.mais);
+    paintClaimAll(a, V);
     Popup.textoCru(pop, 'xp-passe', H.xp, a);
     Popup.barra(pop, 'xp-passe', H.fracao, COR_XP, a);
     Popup.textoCru(pop, 'desafios-semana', H.desafios, a);
@@ -6558,6 +6564,69 @@ function dialogoNiveisDeAntes(n, a = null) {
           x,
         }),
   });
+}
+/* CLAIM ALL. The Figma layout has no button for it, so it is a copy of "Buy level" placed just to its left,
+   with its own action. It shows how many rewards are ready and turns off when there are none or a claim is running. */
+function paintClaimAll(banner, V) {
+  const model = no(banner, 'btn-comprar-nivel');
+  if (!model) return;
+  let btn = no(banner, 'btn-resgatar-tudo');
+  if (!btn) {
+    btn = model.cloneNode(true);
+    btn.removeAttribute('id');
+    for (const el of btn.querySelectorAll('[id]')) el.removeAttribute('id');
+    btn.dataset.fig = 'btn-resgatar-tudo';
+    btn.dataset.tag = 'acao';
+    btn.dataset.tagval = 'resgatar-tudo';
+    for (const el of btn.querySelectorAll('[data-tag]')) { delete el.dataset.tag; delete el.dataset.tagval; }
+    model.parentNode.insertBefore(btn, model);
+  }
+  const ready = PT.prontos(V);
+  const width = model.offsetWidth || parseFloat(model.style.width) || 120;
+  const left = parseFloat(model.style.left);
+  if (Number.isFinite(left)) btn.style.left = left - width - 8 + 'px';
+  btn.style.top = model.style.top;
+  btn.style.display = 'block';
+  const label = btn.querySelector(':scope > .pf-rotulo') || btn.querySelector('[data-txt]') || btn;
+  const text = ready > 0 ? tr('Claim all ({n})', { n: fmt(ready) }) : tr('Claim all');
+  if (label.textContent !== text) {
+    label.textContent = text;
+    caberLinha(label);
+  }
+  const on = ready > 0 && !E.ocupadoPasse && !E.exemplo;
+  btn.dataset.desligado = on ? '0' : '1';
+  btn.style.opacity = on ? '1' : '0.5';
+  btn.style.cursor = on ? 'pointer' : 'default';
+  btn.title = on ? tr('Claim every reward that is ready') : tr('Nothing to claim right now');
+}
+async function claimAll() {
+  if (E.ocupadoPasse || !PT.abaVisivel(E.temporada) || !(PT.prontos(E.temporada) > 0)) return;
+  if (E.exemplo) {
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
+    return;
+  }
+  E.ocupadoPasse = 'claim-all';
+  pintar();
+  const r = await pedirPasse('claimAll');
+  E.ocupadoPasse = null;
+  if (r?.vista) novaVista(r.vista);
+  if (!aberto()) return;
+  if (r?.ok) {
+    try {
+      dep.Som?.tocar?.('ui/sound_itemget', { volume: 0.7, prio: true });
+    } catch {}
+    posseNova(r);
+    const d = PT.nomesEntregues(E.temporada, r.entregues, ctxPasse());
+    if (d.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(d) }));
+    pintar();
+    return;
+  }
+  if (r?.erro === 'devagar' || r?.erro === 'sem-resposta' || r?.erro === 'nada-pra-pegar') {
+    if (r.vista) pintar();
+    else verTemporada();
+    return;
+  }
+  recusaPasse(r, "Couldn't claim");
 }
 async function resgatar(a, b) {
   if (E.ocupadoPasse || !PT.abaVisivel(E.temporada)) return;

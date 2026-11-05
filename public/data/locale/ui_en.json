@@ -7748,5 +7748,9 @@
   "IV · genética": "IV · genetics",
   "EV · treino": "EV · training",
   "Reaprender ({n})": "Relearn ({n})",
-  "Escolha um e depois o golpe que ele substitui.": "Pick one, then the move it replaces."
+  "Escolha um e depois o golpe que ele substitui.": "Pick one, then the move it replaces.",
+  "Resgatar tudo ({n})": "Claim all ({n})",
+  "Resgatar todas as recompensas prontas": "Claim every reward that is ready",
+  "Nada para resgatar agora": "Nothing to claim right now",
+  "Nada para resgatar agora.": "Nothing to claim right now."
 }
