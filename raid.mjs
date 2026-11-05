@@ -34,8 +34,10 @@ export const CFG = { ...lido,
   chefeNivel: Math.round(numOu(lido.chefeNivel, 1, 100, PADRAO.chefeNivel)),
   altura: numOu(lido.altura, 0.5, 20, PADRAO.altura), flutua: numOu(lido.flutua, 0, 10, PADRAO.flutua) };
 export const ARENA = CFG.arena;
-/** Is this scene the raid arena? (a `#instance` suffix is ignored) */
-export const ehArena = (a) => String(a ?? '').split('#')[0] === ARENA;
+/** Is this scene a raid arena? Scheduled raids pick their own boss and arena (server_schedule.mjs), so besides data/raid.json's
+    arena it is the one the server named for the raid in progress, or one of the known arenas (Mew's room, the Articuno arena). */
+export const ARENAS_CONHECIDAS = new Set(['4120009', '9700001']);
+export const ehArena = (a) => { const m = String(a ?? '').split('#')[0]; return m === ARENA || (snap?.mapa != null && m === String(snap.mapa)) || ARENAS_CONHECIDAS.has(m); };
 /** Pre-fight preparation window (the arena modules ask before letting a brazier be used): this server has none. */
 export const preparando = () => false;
 /** O nome do chefe desta raid: o que o servidor mandou, senão o do data/raid.json. */
@@ -57,7 +59,7 @@ export function apagarCarimbo(){ try { sessionStorage.removeItem(CARIMBO); } cat
 export function marcarIda(id){ try { sessionStorage.setItem(IDA, String(id ?? '1')); } catch {} }
 const jaFoi = id => { try { return sessionStorage.getItem(IDA) === String(id); } catch { return true; } };   // falha FECHADA: sem storage, não navega sozinho
 /** A cena que está carregando é a arena E a aba foi levada pra lá pela raid? */
-export const arenaNoBoot = mapa => String(mapa) === ARENA && !!carimbo();
+export const arenaNoBoot = mapa => ehArena(mapa) && !!carimbo();
 export const estado = () => snap;
 
 /* ------------------------------------------------------------------ interface (raid_ui.mjs, da outra frente) */
@@ -122,7 +124,7 @@ function aoEstado(m){
   recebeu = true;
   snap = { ...m, fase: m.fase || 'nenhuma' };
   ui('estado', snap);
-  const naArena = String(ctx.mapa) === ARENA;
+  const naArena = String(ctx.mapa) === String(snap.mapa || ARENA);
   const dentro = !!snap.eu && FASES_DENTRO.has(snap.fase);
 
   if (naArena && dentro){
@@ -178,7 +180,7 @@ function aoVoltar(m){
   apagarCarimbo();
   clearTimeout(timerFim); timerFim = null; clearTimeout(timerIda); timerIda = null;
   chefe(null);
-  if (!ctx.emArena() && String(ctx.mapa) !== ARENA) return;
+  if (!ctx.emArena() && !ehArena(ctx.mapa)) return;
   ctx.irParaCena?.({ mapa: m.mapa || null, texto: 'Voltando pra onde você estava…' });
 }
 

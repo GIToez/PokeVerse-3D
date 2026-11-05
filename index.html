@@ -3529,7 +3529,7 @@ const jogo = { ativo: false, ash: null, pika: null, trabalhadores: [] };
    carimbo velho nunca tira as portas de quem chega na sala da Lorelei andando pela Elite Four. Também liga pelo snapshot do
    servidor (`{t:'raid', eu:true, fase:'indo|luta|fim'}`: `ativarArenaRaid`). Fica em `jogo` (declarado aqui) por causa da TDZ. */
 jogo.raidArena = Raid.arenaNoBoot(NOME);
-if (String(NOME) !== Raid.ARENA) Raid.apagarCarimbo();
+if (!Raid.ehArena(NOME)) Raid.apagarCarimbo();
 let dadosTreinadores = null, povoandoT = false;                          // treinadores de rota (povoarTreinadores): declarados AQUI por causa do setInterval do boot (12/09)
 let indiceTime = -1, parceiroUid = null;                                 // qual do time está em campo (índice e uid): usados pelo amarrarParceiro no boot, então declarados AQUI (TDZ, 12/09)
 const TIPO_PT = { Normal: 'normal', Fire: 'fogo', Water: 'agua', Grass: 'planta', Electric: 'eletrico', Ice: 'gelo', Fighting: 'lutador', Poison: 'venenoso', Ground: 'terrestre', Flying: 'voador', Psychic: 'psiquico', Bug: 'inseto', Rock: 'pedra', Ghost: 'fantasma', Dragon: 'dragao', Dark: 'noturno', Steel: 'metalico', Fairy: 'fada' };   // ícones ui/figma/tipo/<nome>.png (era lá embaixo, perto do pintarBarra)
@@ -7900,7 +7900,7 @@ async function irParaCena({ mapa = null, chegada = null, texto = '', raid = null
 }
 /* A arena virou "modo raid" DEPOIS do boot (snapshot do servidor com `eu:true`): tira portas, NPCs, treinadores e selvagens locais. */
 function ativarArenaRaid(id){
-  if (jogo.raidArena || String(NOME) !== Raid.ARENA) return;
+  if (jogo.raidArena || !Raid.ehArena(NOME)) return;
   jogo.raidArena = true; Raid.carimbar(id);
   portasCena.length = 0; emPorta.clear();
   for (const e of [...(jogo.npcs || [])]){ if (jogo.turno?.npc === e) continue; removerCorpo(e); }

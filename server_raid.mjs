@@ -45,6 +45,8 @@ const CADA_ALVO_MS = 6000;                                                   // 
 const FLIPX = -1;                                                            // arquivo → mundo: o exportador espelha o x (o mesmo da moderação)
 const PREMIO = { dinheiro: 3000, bolas: { 1003: 5 }, itens: { 2003: 3, 2012: 2 } };   // Ultra Bola ×5, HiperPoção ×3, Reanimador ×2 (ids do menu_data.json), pra quem bateu
 const FASES_FILA = new Set(['anunciada', 'contagem']), FASES_DENTRO = new Set(['indo', 'luta', 'fim']);
+/** Fields a scheduled raid may set for itself (the rest stays data/raid.json's). */
+const PADRAO_CAMPOS = { arena: 1, vagas: 1, chefeNome: 1, chefeDex: 1, chefeGlb: 1, chefeNivel: 1, chefeHp: 1, chefeDano: 1, taxaShiny: 1, premio: 1, lutaMin: 1 };
 const OP_ALIAS = { comecar: 'comecar', iniciar: 'comecar', start: 'comecar', cancela: 'cancelar', parar: 'cancelar', cancel: 'cancelar', stop: 'cancelar', announce: 'anunciar', damage: 'dano', prize: 'premio' };
 const semAcento = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 const num = (v, min, max, pad) => { const n = Number(v); return Number.isFinite(n) && n >= min && n <= max ? n : pad; };
@@ -83,8 +85,11 @@ export function criarRaid(h) {
     return golpesCache.tab;
   }
   /** data/raid.json validado como o raid.mjs do cliente faz (a arena e as vagas têm que bater com o que ele mostra). */
-  function lerCfg() {
+  /** `preset` = a scheduled raid's own boss (server_schedule.mjs → event.raid: arena, chefeNome, chefeDex, chefeGlb, chefeNivel…),
+      laid over data/raid.json for that one raid. */
+  function lerCfg(preset = null) {
     let d = {}; try { d = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'raid.json'), 'utf8')) || {}; } catch {}
+    if (preset && typeof preset === 'object') for (const [k, v] of Object.entries(preset)) if (v != null && v !== '' && k in PADRAO_CAMPOS) d[k] = v;
     return {
       arena: /^\d{3,9}$/.test(String(d.arena ?? '')) ? String(d.arena) : PADRAO.arena,
       vagas: Math.round(num(d.vagas, 1, 50, PADRAO.vagas)),
@@ -96,6 +101,7 @@ export function criarRaid(h) {
       chefeDano: num(d.chefeDano, 0, 10, PADRAO.chefeDano),
       taxaShiny: Math.round(num(d.taxaShiny, 1, 1e6, PADRAO.taxaShiny)),
       premio: d.premio === 'sem-mew' ? 'sem-mew' : PADRAO.premio,
+      lutaMin: num(d.lutaMin, 1, 30, LUTA_MS / 60000),                     // minutes to KO the boss before it flees
     };
   }
   /* A sala: o chefe no meio do bbox da cena (no Quarto da Lorelei, onde ela fica), os participantes em fileiras 6 m ao sul, de frente
@@ -224,8 +230,8 @@ export function criarRaid(h) {
   }
 
   // ── Fases ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  function anunciar(g, titulo = '') {
-    const cfg = lerCfg();
+  function anunciar(g, titulo = '', preset = null) {
+    const cfg = lerCfg(preset);
     if (!especie(cfg.chefeDex)) return { erro: 'Species no. ' + cfg.chefeDex + ' from data/raid.json is not in pokedex.json.' };
     const geo = geometria(cfg.arena);
     raid = { id: ++seq, fase: 'anunciada', cfg, geo, sobre: { hp: null, dano: null, shiny: null, premio: null }, fila: new Map(), por: g,
@@ -245,7 +251,7 @@ export function criarRaid(h) {
     const i = [...raid.fila.keys()].indexOf(p.u), v = vaga(raid.geo, Math.max(0, i));
     const aqui = String(ws._mapa) !== cfg.arena && Number.isFinite(+ws._info?.x) && Number.isFinite(+ws._info?.z)
       ? { mapa: String(ws._mapa), x: +(+ws._info.x).toFixed(2), z: +(+ws._info.z).toFixed(2), giro: +(+ws._info.giro || 0).toFixed(3) } : seguro();
-    c.raidVolta = { ...aqui, raid: raid.id };
+    c.raidVolta = { ...aqui, raid: raid.id, arena: cfg.arena };
     c.posGm = { mapa: cfg.arena, x: v.x, z: v.z, giro: v.giro };
     salvarContasJa();
     p.ida = true;
@@ -272,7 +278,7 @@ export function criarRaid(h) {
     const ch = raid.geo.chefe;
     raid.chefe = { id: 1e9 + raid.id, hp: maxHp, maxHp, x: ch.x, z: ch.z, giro: +Math.PI.toFixed(3), proxGolpe: Date.now() + 4000,   // giro π: de frente pro sul, onde a fila fica
       est: Stg.novo(), sementes: new Map(), proxSemente: Date.now() + SEMENTE_MS };   // estágios do chefe valem pra sala inteira; sementes = conta → { dreno, de }
-    raid.fase = 'luta'; raid.lutaAte = Date.now() + LUTA_MS;
+    raid.fase = 'luta'; raid.lutaAte = Date.now() + Math.round((raid.cfg.lutaMin || LUTA_MS / 60000) * 60000);
     paraArena({ t: 'selvagem', s: registroChefe() });
     if (ehR01()) r01.iniciar(raid.chefe);
     console.log(`[raid] #${raid.id} fight: ${raid.cfg.chefeNome} with ${maxHp} HP, ${chegaram.length} in the arena`);
@@ -324,7 +330,7 @@ export function criarRaid(h) {
         /* na arena: volta agora. Offline: o posGm leva no próximo login. A caminho (recarregando pra arena): o posGm já aponta pra casa e,
            se ele chegar na arena mesmo assim, o aoEntrar manda o raid_voltar (a raidVolta fica até ele sair de lá). */
         if (posDe(dest)) c.posGm = posDe(dest); else delete c.posGm;
-        if (!volta) c.raidVolta = { ...dest, raid: raid.id };
+        if (!volta) c.raidVolta = { ...dest, raid: raid.id, arena: cfg.arena };
         for (const w of la) enviar(w, { t: 'raid_voltar', id: raid.id, mapa: dest.mapa });
       } else {                                                               // online fora da arena (nunca foi, ou já saiu): nada a desfazer
         if (c.posGm?.mapa === cfg.arena) delete c.posGm;
@@ -530,7 +536,7 @@ export function criarRaid(h) {
       return;
     }
     const v = c.raidVolta; if (!v) return;
-    const arena = lerCfg().arena;
+    const arena = String(v.arena || lerCfg().arena);                        // the arena of the raid this account went to (scheduled raids pick their own)
     if (String(ws._mapa) === arena || (raid && naSala)) {                  // na arena sem raid (acabou enquanto recarregava, reinício do servidor): de volta pra casa
       if (v.x != null) c.posGm = { mapa: v.mapa, x: v.x, z: v.z, giro: v.giro || 0 };
       salvarContasJa();
@@ -564,15 +570,15 @@ export function criarRaid(h) {
 
   /* Event schedule (server_schedule.mjs): the queue opens on its own before the start, and the countdown starts on time
      (nobody in the queue = canceled). A raid already running is left alone. */
-  function anunciarAgendada(titulo) {
+  function anunciarAgendada(titulo, preset = null) {
     if (raid) return { erro: 'a raid is already running' };
-    return anunciar('schedule', titulo);
+    return anunciar('schedule', titulo, preset);
   }
   function comecarAgendada() {
     if (!raid || raid.por !== 'schedule' || raid.fase !== 'anunciada') return;
     if (!raid.fila.size) { todos('The ' + raid.cfg.chefeNome + ' raid was canceled: nobody joined the queue.'); raid = null; difundir(); return; }
     contar(); difundir();
   }
-  const resumo = () => { const c = lerCfg(); return { chefe: c.chefeNome, dex: c.chefeDex, nivel: c.chefeNivel, vagas: c.vagas }; };
+  const resumo = (preset = null) => { const c = lerCfg(preset); return { chefe: c.chefeNome, dex: c.chefeDex, nivel: c.chefeNivel, vagas: c.vagas }; };
   return { receber, bemvindo, aoEntrar, anunciarAgendada, comecarAgendada, resumo, estado: () => raid && { ...retrato(null), sobre: raid.sobre, chefe: raid.chefe } };
 }

@@ -8,6 +8,15 @@ const paraCampo = iso => { if (!iso) return ''; const d = new Date(iso); return 
 const doCampo = v => (v ? new Date(v).toISOString() : null);
 const quando = t => new Date(t).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' PT';
 const DIAS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const AJUDA_TIPO = {
+  bonus: 'Raises EXP / shiny / wild for everyone while it runs.',
+  festival: 'Shows on the Events board and is announced in game when it starts; give it rates to make it a bonus too.',
+  torneio: 'Shows on the Events board and is announced in game when it starts (the tournament itself is run by staff).',
+  invasao: 'Shows on the Events board and is announced in game when it starts; rates are optional.',
+  outro: 'Shows on the Events board and is announced in game when it starts.',
+};
+const TIPO_NOME = { bonus: 'Bonus', raid: 'Raid', festival: 'Festival', torneio: 'Tournament', invasao: 'Invasion', outro: 'Other' };
+const taxasTxt = b => (b ? [b.xp !== 1 ? 'EXP ×' + b.xp : '', b.shiny !== 1 ? 'shiny ×' + b.shiny : '', b.densidade !== 1 ? 'wild ×' + b.densidade : ''].filter(Boolean).join(' · ') : '');
 const TIPOS = [['bonus', 'Bonus (EXP / shiny / wild)'], ['raid', 'Raid'], ['festival', 'Festival'], ['torneio', 'Tournament'], ['invasao', 'Invasion'], ['outro', 'Other']];
 const CSS = `
 #v-agenda { overflow: auto; padding: 16px; display: grid; gap: 14px; align-content: start; }
@@ -86,24 +95,35 @@ export function instalarAgenda({ api, toast }) {
         : `
           <label>Starts (your time) <input type="datetime-local" data-k="inicio" value="${paraCampo(e.inicio)}"></label>
           <label>Ends (your time) <input type="datetime-local" data-k="fim" value="${paraCampo(e.fim)}"></label>`}
-        ${e.tipo === 'bonus' ? `
-          <label>EXP × <input type="number" data-k="bonus.xp" min="1" max="5" step="0.25" value="${e.bonus?.xp ?? 2}"></label>
+        ${e.tipo !== 'raid' ? `
+          <div class="inteira ag-ajuda"><b>${e.tipo === 'bonus' ? 'Rates while it runs' : 'Rates while it runs (optional — leave all at ×1 for a board entry only)'}</b> · ${AJUDA_TIPO[e.tipo] || ''}</div>
+          <label>EXP × <input type="number" data-k="bonus.xp" min="1" max="5" step="0.25" value="${e.bonus?.xp ?? (e.tipo === 'bonus' ? 2 : 1)}"></label>
           <label>Shiny × <input type="number" data-k="bonus.shiny" min="1" max="20" step="1" value="${e.bonus?.shiny ?? 1}"></label>
           <label>Wild × <input type="number" data-k="bonus.densidade" min="0.25" max="3" step="0.25" value="${e.bonus?.densidade ?? 1}"></label>
           <div class="inteira ag-ajuda">Stacks with the Live events screen: a live ×1.5 during a ×2 weekend gives ×3.</div>` : ''}
         ${e.tipo === 'raid' ? `
           <label>Queue opens (minutes before) <input type="number" data-k="raid.filaMin" min="1" max="120" step="1" value="${e.raid?.filaMin ?? 15}"></label>
-          <div class="inteira ag-ajuda">Runs the raid set in Data files → raid (boss, level, spots). The queue opens on its own; at the start time the countdown begins, or the raid is canceled if nobody joined.</div>` : ''}
+          <label>Fight time (minutes, then it flees) <input type="number" data-k="raid.lutaMin" min="1" max="30" step="1" value="${esc(e.raid?.lutaMin ?? '')}" placeholder="5"></label>
+          <label>Boss name <input type="text" data-k="raid.chefeNome" maxlength="30" value="${esc(e.raid?.chefeNome ?? '')}" placeholder="from Data files → raid"></label>
+          <label>Boss species no. <input type="number" data-k="raid.chefeDex" min="1" max="2000" value="${esc(e.raid?.chefeDex ?? '')}" placeholder="e.g. 144"></label>
+          <label>Boss model <input type="text" data-k="raid.chefeGlb" maxlength="12" value="${esc(e.raid?.chefeGlb ?? '')}" placeholder="e.g. pm0144_00"></label>
+          <label>Boss level <input type="number" data-k="raid.chefeNivel" min="1" max="100" value="${esc(e.raid?.chefeNivel ?? '')}" placeholder="70"></label>
+          <label>Arena scene <input type="text" data-k="raid.arena" maxlength="12" value="${esc(e.raid?.arena ?? '')}" placeholder="4120009 or 9700001"></label>
+          <div class="inteira ag-ajuda">Empty boss fields use Data files → raid. Arena 9700001 is the Articuno arena (its own attacks and braziers); 4120009 (Lorelei's Room) works for any boss. The queue opens on its own; at the start time the countdown begins, or the raid is canceled if nobody joined.</div>` : ''}
       </div></div>`;
   }
 
   function render() {
-    const agoraTxt = bonus ? `🎉 Running now: <b>${esc(bonus.nome)}</b> · EXP ×${bonus.xp}${bonus.shiny !== 1 ? ' · shiny ×' + bonus.shiny : ''}${bonus.densidade !== 1 ? ' · wild ×' + bonus.densidade : ''} — until ${quando(Date.parse(bonus.fim))}` : 'No scheduled bonus running right now.';
+    const rodando = proximos.filter(o => o.estado === 'agora');
+    const agoraTxt = (rodando.length
+      ? '<b>Running now</b><ul>' + rodando.map(o => `<li>🟢 <b>${esc(o.titulo)}</b> · ${TIPO_NOME[o.tipo] || o.tipo}${o.raid?.chefe ? ' · ' + esc(o.raid.chefe) + ' Lv ' + o.raid.nivel : ''}${taxasTxt(o.bonus) ? ' · ' + taxasTxt(o.bonus) : ''} — until ${quando(o.fim)}</li>`).join('') + '</ul>'
+      : '<b>Nothing from the schedule is running right now.</b>')
+      + (bonus ? `<div>Rates in effect from the schedule: <b>EXP ×${bonus.xp}${bonus.shiny !== 1 ? ' · shiny ×' + bonus.shiny : ''}${bonus.densidade !== 1 ? ' · wild ×' + bonus.densidade : ''}</b> (Live events stack on top)</div>` : '');
     $('v-agenda').innerHTML = `
       <div class="topo-edit"><h2>Event schedule</h2><span class="ag-sujo" id="ag-sujo" ${sujo ? '' : 'hidden'}>● unsaved</span>
         <button id="ag-novo">➕ New event</button><button class="prim" id="ag-salvar">Save schedule</button><button id="ag-atualizar">Refresh</button></div>
       <div class="caixa">${agoraTxt}
-        <div class="ag-prox"><b>Next two weeks</b>${proximos.length ? '<ul>' + proximos.map(o => `<li>${o.estado === 'agora' ? '🟢' : '🕒'} ${quando(o.oc)} → ${quando(o.fim)} · ${esc(o.titulo)}</li>`).join('') + '</ul>' : '<div class="ag-ajuda">Nothing booked.</div>'}</div>
+        <div class="ag-prox"><b>Next two weeks</b>${proximos.length ? '<ul>' + proximos.map(o => `<li>${o.estado === 'agora' ? '🟢' : '🕒'} ${quando(o.oc)} → ${quando(o.fim)} · ${esc(o.titulo)} <span class="ag-ajuda">(${TIPO_NOME[o.tipo] || o.tipo}${o.raid?.chefe ? ': ' + esc(o.raid.chefe) + ' Lv ' + o.raid.nivel : ''}${taxasTxt(o.bonus) ? ': ' + taxasTxt(o.bonus) : ''})</span></li>`).join('') + '</ul>' : '<div class="ag-ajuda">Nothing booked.</div>'}</div>
         <div class="ag-ajuda">Everything here shows on the game's Events board (and the minimap calendar opens it). Live, one-off tweaks stay on 🎉 Live events.</div></div>
       <div class="ag-lista">${dados.eventos.map(cartao).join('') || '<div class="caixa">No events yet: press ➕ New event.</div>'}</div>`;
     ligar();
@@ -115,7 +135,7 @@ export function instalarAgenda({ api, toast }) {
     if (k === 'duracaoH') { e.duracaoMin = Math.round(+v * 60); return; }
     if (k === 'desde' || k === 'ate' || k === 'inicio' || k === 'fim') { e[k] = doCampo(v); return; }
     const [a, b] = k.split('.');
-    if (b) { e[a] = { ...(e[a] || {}), [b]: a === 'pt' ? v : +v }; return; }
+    if (b) { const txt = a === 'pt' || (a === 'raid' && ['chefeNome', 'chefeGlb', 'arena'].includes(b)); e[a] = { ...(e[a] || {}), [b]: txt ? v : (v === '' ? '' : +v) }; return; }
     e[k] = v;
   }
 
@@ -159,7 +179,7 @@ export function instalarAgenda({ api, toast }) {
     const limpo = dados.eventos.map(e => {
       const o = { ...e };
       if (o.quando === 'semana') { delete o.inicio; delete o.fim; } else { delete o.dias; delete o.horas; delete o.duracaoMin; delete o.desde; delete o.ate; }
-      if (o.tipo !== 'bonus') delete o.bonus;
+      if (o.tipo === 'raid' || (o.bonus && o.tipo !== 'bonus' && (o.bonus.xp ?? 1) == 1 && (o.bonus.shiny ?? 1) == 1 && (o.bonus.densidade ?? 1) == 1)) delete o.bonus;
       if (o.tipo !== 'raid') delete o.raid;
       return o;
     });

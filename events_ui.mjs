@@ -294,7 +294,18 @@ function pintarArte(p, b, c, a) {
   return d;
 }
 const passosDaStaff = (o) => Array.isArray(o.passos) && o.passos.some(Boolean);
+/** A Festival / Tournament / Invasion / Other given rates on the panel says them too. */
+function taxasDe(o) {
+  const b = o.bonus;
+  if (!b || o.tipo === 'bonus') return null;
+  const l = [b.xp > 1 ? 'EXP ×' + b.xp : '', b.shiny > 1 ? 'shiny ×' + b.shiny : '', b.densidade && b.densidade !== 1 ? 'wild Pokémon ×' + b.densidade : ''].filter(Boolean);
+  return l.length ? 'While it runs: ' + l.join(' · ') + ' for everyone.' : null;
+}
 function passosDe(o) {
+  const l = passosBase(o), t = taxasDe(o);
+  return t && Array.isArray(l) ? [t, ...l] : l;
+}
+function passosBase(o) {
   if (passosDaStaff(o)) return o.passos;
   switch (o.tipo) {
     case 'raid':

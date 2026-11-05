@@ -58,12 +58,26 @@ export function limparEventoAgenda(e, i = 0) {
     if (b == null || b <= a) return { erro: `${id}: the end must be after the start.` };
     Object.assign(v, { quando: 'uma', inicio: new Date(a).toISOString(), fim: new Date(b).toISOString() });
   }
-  if (tipo === 'bonus') {
+  /* Rates while it runs: required for a Bonus, optional for a Festival / Tournament / Invasion / Other (all ×1 = just a board entry). */
+  if (tipo !== 'raid' && (tipo === 'bonus' || e.bonus)) {
     const b = e.bonus || {};
-    v.bonus = { xp: Math.round(num(b.xp, 1, 5, 1) * 100) / 100, shiny: Math.round(num(b.shiny, 1, 20, 1) * 100) / 100, densidade: Math.round(num(b.densidade, 0.25, 3, 1) * 100) / 100 };
-    if (v.bonus.xp === 1 && v.bonus.shiny === 1 && v.bonus.densidade === 1) return { erro: `${id}: a bonus needs EXP, shiny or wild above ×1.` };
+    const bonus = { xp: Math.round(num(b.xp, 1, 5, 1) * 100) / 100, shiny: Math.round(num(b.shiny, 1, 20, 1) * 100) / 100, densidade: Math.round(num(b.densidade, 0.25, 3, 1) * 100) / 100 };
+    const neutro = bonus.xp === 1 && bonus.shiny === 1 && bonus.densidade === 1;
+    if (neutro && tipo === 'bonus') return { erro: `${id}: a bonus needs EXP, shiny or wild above ×1.` };
+    if (!neutro) v.bonus = bonus;
   }
-  if (tipo === 'raid') v.raid = { filaMin: Math.round(num(e.raid?.filaMin, 1, 120, 15)) };
+  if (tipo === 'raid') {
+    v.raid = { filaMin: Math.round(num(e.raid?.filaMin, 1, 120, 15)) };
+    /* The raid's own boss (empty = data/raid.json): a daily rotation sets a different one per day. */
+    const r = e.raid || {};
+    if (/^\d{3,9}$/.test(String(r.arena ?? ''))) v.raid.arena = String(r.arena);
+    if (texto(r.chefeNome, 30)) v.raid.chefeNome = texto(r.chefeNome, 30);
+    if (Number.isFinite(+r.chefeDex) && +r.chefeDex >= 1 && +r.chefeDex <= 2000 && r.chefeDex !== '') v.raid.chefeDex = Math.round(+r.chefeDex);
+    if (/^pm\d{4}(_\d{2})?$/.test(String(r.chefeGlb ?? ''))) v.raid.chefeGlb = String(r.chefeGlb);
+    if (Number.isFinite(+r.chefeNivel) && +r.chefeNivel >= 1 && +r.chefeNivel <= 100 && r.chefeNivel !== '') v.raid.chefeNivel = Math.round(+r.chefeNivel);
+    if (Number.isFinite(+r.lutaMin) && +r.lutaMin >= 1 && +r.lutaMin <= 30 && r.lutaMin !== '') v.raid.lutaMin = +r.lutaMin;
+    if (v.raid.chefeDex && v.raid.chefeGlb && +v.raid.chefeGlb.slice(2, 6) !== v.raid.chefeDex) return { erro: `${id}: model ${v.raid.chefeGlb} is not species no. ${v.raid.chefeDex}.` };
+  }
   { const t = ms(e.paradoEm); if (t != null) v.paradoEm = new Date(t).toISOString(); }   // "Stop now" from the panel: whatever was running at that moment ends there
   if (e.manual) v.manual = true;                                                          // made by "Start now" (one time, starts at the click)
   return { v };
@@ -141,7 +155,7 @@ export function criarAgenda(h) {
         };
         if (e.quando === 'semana') { r.repete = 'semana'; r.regra = { repete: 'semana', dias: e.dias, horas: e.horas }; }
         if (e.bonus) r.bonus = { ...e.bonus };
-        if (e.raid) r.raid = { ...h.raid?.resumo?.(), filaMin: e.raid.filaMin, filaEm: o.oc - e.raid.filaMin * MIN };
+        if (e.raid) { const { filaMin, ...preset } = e.raid; let res = null; try { res = h.raid?.resumo?.(preset); } catch {} r.raid = { ...res, filaMin, filaEm: o.oc - filaMin * MIN, preset }; }   // try: at boot server.mjs's `raid` may not exist yet
         out.push(r);
       }
     }
@@ -151,7 +165,7 @@ export function criarAgenda(h) {
   function bonusAgora(agora = Date.now()) {
     let b = null;
     for (const o of lista(agora - 1, agora + 1, agora)) {
-      if (o.tipo !== 'bonus' || o.estado !== 'agora') continue;
+      if (!o.bonus || o.estado !== 'agora') continue;   // any type with rates (a Festival with ×2 EXP counts too)
       b ||= { xp: 1, shiny: 1, densidade: 1, nome: '', fim: null };
       b.xp *= o.bonus.xp; b.shiny *= o.bonus.shiny; b.densidade *= o.bonus.densidade;
       b.nome = b.nome ? b.nome + ' + ' + o.titulo : o.titulo;
@@ -161,15 +175,28 @@ export function criarAgenda(h) {
   }
 
   // Raids on the schedule: the queue opens `filaMin` before the start, and the countdown starts on time.
+  // Everything else is announced to everyone online when it starts (the top banner + System chat), with its rates.
   const feitos = new Set();
+  const taxas = (b) => (b ? [b.xp !== 1 ? 'EXP ×' + b.xp : '', b.shiny !== 1 ? 'shiny ×' + b.shiny : '', b.densidade !== 1 ? 'wild ×' + b.densidade : ''].filter(Boolean).join(' · ') : '');
+  const ROTULO = { bonus: '🎉', festival: '🎪 Festival', torneio: '🏆 Tournament', invasao: '⚠️ Invasion', outro: '📅' };
   function tique() {
     const agora = Date.now();
+    for (const o of lista(agora - 2 * MIN, agora + 1, agora)) {
+      if (o.tipo === 'raid' || o.estado !== 'agora' || agora - o.oc > 2 * MIN) continue;
+      const k = o.id + '@' + o.oc + ':aviso';
+      if (feitos.has(k)) continue;
+      feitos.add(k);
+      const t = taxas(o.bonus);
+      const texto = (ROTULO[o.tipo] || '📅') + ' ' + o.titulo + ' has started' + (t ? ': ' + t : '') + '!';
+      for (const w of conexoes.values()) if (w._info) enviar(w, { t: 'invasao', texto });
+      console.log('[agenda] ' + texto);
+    }
     for (const o of lista(agora - 2 * MIN, agora + 121 * MIN, agora)) {
       if (o.tipo !== 'raid' || !h.raid) continue;
       const k = o.id + '@' + o.oc;
       if (agora >= o.raid.filaEm && agora < o.oc && !feitos.has(k + ':fila')) {
         feitos.add(k + ':fila');
-        const r = h.raid.anunciarAgendada(o.titulo);
+        const r = h.raid.anunciarAgendada(o.titulo, o.raid.preset);
         console.log(`[agenda] ${o.id}: raid queue ${r.erro ? 'not opened (' + r.erro + ')' : 'opened'}`);
       }
       if (agora >= o.oc && agora < o.oc + 2 * MIN && !feitos.has(k + ':luta')) {
