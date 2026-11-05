@@ -818,3 +818,11 @@ https://pokefableonline.com/ui/amanda/mapa/foto-alta/9_7.webp
 https://pokefableonline.com/ui/amanda/mapa/foto-alta/9_8.webp
 https://pokefableonline.com/ui/amanda/mapa/foto-alta/9_9.webp
 https://pokefableonline.com/ui/amanda/mapa/sevii/foto/6_4.webp
+
+# Achievement medal art (the window falls back to the "all" centre and the bronze ring without these) — names guessed from the code: one centre per category id, plus the empty ring
+https://pokefableonline.com/ui/amanda/conquistas/aros/aro-sem.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-captura.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-colecao.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-batalha.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-historia.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-aventura.png
