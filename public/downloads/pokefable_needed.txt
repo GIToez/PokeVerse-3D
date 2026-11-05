@@ -1,0 +1,49 @@
+# Files to download from PokeFable (checked 2026-11-05). Download each link and upload it here.
+# The folder after the domain is PokeFable's (cenario/ = our scenery/).
+
+# Achievement medals: one centre per category, plus the empty ring — 15
+https://pokefableonline.com/ui/amanda/conquistas/aros/aro-sem.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-pokedex.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-captura.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-luta.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-insignias.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-elite.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-shiny.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-pesca.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-raid.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-guilda.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-mercado.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-missao.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-social.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-exploracao.png
+https://pokefableonline.com/ui/amanda/conquistas/miolos/miolo-tempo.png
+
+# Raids r01 (Seafoam Blizzard), r03 (Power Plant Overload), r05 (Psychic Echoes): arenas, boss animations, ground markings, configs — 28
+https://pokefableonline.com/cenario/raid/r01/marcas/abrigo_ciano.png
+https://pokefableonline.com/cenario/raid/r01/marcas/anel_borda.png
+https://pokefableonline.com/cenario/raid/r01/marcas/area_circular.png
+https://pokefableonline.com/cenario/raid/r01/marcas/cone_vento.png
+https://pokefableonline.com/cenario/raid/r01/marcas/interagir_dourado.png
+https://pokefableonline.com/cenario/raid/r01/marcas/marca_alvo.png
+https://pokefableonline.com/cenario/raid/r01/r01_animacoes.json
+https://pokefableonline.com/cenario/raid/r01/r01_arena.glb
+https://pokefableonline.com/cenario/raid/r01/r01_articuno_anim.glb
+https://pokefableonline.com/cenario/raid/r01/r01_config.json
+https://pokefableonline.com/cenario/raid/r01/r01_pecas.glb
+https://pokefableonline.com/cenario/raid/r03/escudo_eletrico.png
+https://pokefableonline.com/cenario/raid/r03/marcas/abrigo_ciano.png
+https://pokefableonline.com/cenario/raid/r03/marcas/anel_borda.png
+https://pokefableonline.com/cenario/raid/r03/marcas/area_circular.png
+https://pokefableonline.com/cenario/raid/r03/marcas/cone_vento.png
+https://pokefableonline.com/cenario/raid/r03/marcas/faixa_linha.png
+https://pokefableonline.com/cenario/raid/r03/marcas/interagir_dourado.png
+https://pokefableonline.com/cenario/raid/r03/marcas/marca_alvo.png
+https://pokefableonline.com/cenario/raid/r03/marcas/polaridade_mais.png
+https://pokefableonline.com/cenario/raid/r03/marcas/polaridade_menos.png
+https://pokefableonline.com/cenario/raid/r03/r03_animacoes.json
+https://pokefableonline.com/cenario/raid/r03/r03_arena.glb
+https://pokefableonline.com/cenario/raid/r03/r03_pecas.glb
+https://pokefableonline.com/cenario/raid/r03/r03_zapdos_anim.glb
+https://pokefableonline.com/cenario/raid/r03/referencia/envelope-animacoes-v7.json
+https://pokefableonline.com/cenario/raid/r03/referencia/envelope-zapdos.json
+https://pokefableonline.com/cenario/raid/r05/r05_arena.glb

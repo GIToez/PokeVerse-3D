@@ -268,6 +268,7 @@ import * as Guia from './mission_guide.mjs'; // gold arrow on the ground for the
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';
+import { aguaSoPesca } from './water_fishing.mjs';   // PokeFable's fishing-only water areas (town and route ponds)
 import * as CosFx from './cosmetic_fx.mjs';       // auras/trails from the Wardrobe (drawn, data/cosmeticos.json)      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
@@ -4539,7 +4540,7 @@ function noQuadro(x, z, yPadrao){
 const wildsEsperando = new Map(), WILD_ESPERA_MS = 8 * 60 * 1000, WILD_ESPERA_MAX = 2;
 let povoando = false;
 /** Teto de selvagens da área (o mesmo número de sempre do `povoar`). */
-const tetoArea = (a, DENS) => THREE.MathUtils.clamp(Math.round(((gramaPorArea.get(a)?.length || 0) / 3) / (DEMO ? 14 : 18) * DENS), Math.max(3, Math.round(5 * DENS)), Math.round((DEMO ? 20 : 16) * DENS));
+const tetoArea = (a, DENS) => THREE.MathUtils.clamp(Math.round(((gramaPorArea.get(a)?.length || 0) + (aguaSoPesca(a) ? 0 : (aguaPorArea.get(a)?.length || 0)) / 3) / (DEMO ? 14 : 18) * DENS), Math.max(3, Math.round(5 * DENS)), Math.round((DEMO ? 20 : 16) * DENS));
 const populacaoArea = a => Math.max(jogo.selvagens.filter(s => s.area === a).length, Mundo.estaAtivo() ? Mundo.contar(a) : 0);
 /** Faz nascer `esp` no tile `t` da área `a` (mundo compartilhado, conta com sorteio no servidor, ou solo). Verdadeiro se nasceu/foi proposto. */
 async function nascerNoBerco(a, esp, t, tiles){
@@ -4645,20 +4646,20 @@ async function povoar(){
       if (s.rede) continue;                                              // selvagem da rede: o Mundo guarda/recria o corpo pela distância
       if (Math.hypot(s.x - ash.x, s.z - ash.z) > 110) guardarSelvagem(s);
     }
-    for (const a of gramaPorArea.keys()){   // water species are the rod's catch, not a body on the tile
+    for (const a of new Set([...gramaPorArea.keys(), ...[...aguaPorArea.keys()].filter(x => !aguaSoPesca(x))])){   // water species swim on open water (surf routes, lakes); the ponds in water_fishing.mjs stay rod-only
       const tiles = gramaPorArea.get(a) || [];
       const c = centroArea.get(a);
       if (Math.hypot(c.cx - ash.x, c.cz - ash.z) - c.r > 70) continue;
       if (populacaoArea(a) >= tetoArea(a, DENS)) continue;               // na rede conta o registro da sala (com ou sem corpo aqui)
       if (Date.now() < (areaRespawn.get(a) || 0) && jogo.selvagens.filter(s => s.area === a).length >= 3) continue;   // a área respira depois de morte/captura
-      const especies = especiesAgora(habitats.areas[String(a)] || habitats.generico).filter(e => !e.agua && !glbNegados.has(e.glb));
+      const especies = especiesAgora(habitats.areas[String(a)] || habitats.generico).filter(e => (!e.agua || (!aguaSoPesca(a) && aguaPorArea.has(a))) && !glbNegados.has(e.glb));
       if (!especies.length) continue;
       const prontas = especies.filter(e => quentes.has(e.glb));
       // espécie fria: manda aquecer (uma por vez, fora do quadro) e nasce noutro tique.
       // A missing model is refused and the next tick draws from whoever is left, at the HGSS weights.
       if (!prontas.length){ aquecer(escolherEspecie(especies).glb); frios++; continue; }
       const esp = escolherEspecie(prontas);
-      if (esp.agua || !tiles.length) continue;                           // fish wait on the rod; a lake with no grass stays empty
+      if (!esp.agua && !tiles.length) continue;                          // a water-only area gets no land Pokémon
       /* Sorteia o berço várias vezes (ver ZONA MORTA DO SPAWN, acima): fica com o primeiro ponto longe ou fora do
          quadro e, se nenhum servir, com o mais distante que apareceu — a área nunca mais seca por causa do raio. */
       let t = null, reserva = null, distReserva = -1;

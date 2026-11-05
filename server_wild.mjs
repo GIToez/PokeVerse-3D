@@ -16,6 +16,7 @@ import * as Ev from './ev.mjs';
 import * as Calendario from './calendar.mjs';
 import * as Weather from './weather.mjs';
 import { grantLevelHp } from './server_hp.mjs';
+import { aguaSoPesca } from './water_fishing.mjs';   // PokeFable's fishing-only water areas
 import { expMultOf, expSharers } from './exp_items.mjs';
 
 const FLIP_X = -1;
@@ -125,8 +126,9 @@ export function criarWilds(ctx) {
   }
 
   function rowsFor(area, water, quando) {
-    // Water species are a rod encounter. The overworld roll is the grass table.
-    if (water) return [];
+    // Water species swim on open water (surfing routes, lakes, the sea) like PokeFable did; only the areas in
+    // water_fishing.mjs (small town and route ponds) keep their water species as a rod encounter.
+    if (water && aguaSoPesca(area)) return [];
     const table = habitats.areas?.[String(area)];
     const list = Array.isArray(table) ? table : (habitats.generico || []);
     const land = e => !!e.agua === !!water;
