@@ -85,7 +85,7 @@ const deps = () => ({
   tipos: (a) => Mo.tiposEspecie(a, repintar),
   cria: dep.cria || criaPadrao,
   choca: dep.choca || chocaPadrao,
-  local: I18n.local(),
+  local: I18n.locale(),
 });
 const noAr = () => {
   if (!TerrenoEstado.ligado()) return false;

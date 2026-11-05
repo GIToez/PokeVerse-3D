@@ -7408,5 +7408,10 @@
   "You pick the colors on the next screen.": "As cores você escolhe na próxima tela.",
   "Your session expired. Log in again.": "Sua sessão expirou. Entre de novo.",
   "Log in again to keep playing.": "Entre de novo para continuar jogando.",
-  "Your account is suspended.": "Sua conta está suspensa."
+  "Your account is suspended.": "Sua conta está suspensa.",
+  "Claim all ({n})": "Resgatar tudo ({n})",
+  "Claim all": "Resgatar tudo",
+  "Claim every reward that is ready": "Resgatar todas as recompensas prontas",
+  "Nothing to claim right now": "Nada para resgatar agora",
+  "Nothing to claim right now.": "Nada para resgatar agora."
 }

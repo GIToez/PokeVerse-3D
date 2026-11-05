@@ -1,38 +1,204 @@
-/* PASSE DE PROGRESSO — regras do lado do cliente (refeito 26/10: o arquivo não veio junto com a build).
-   O passe é um texto com campos separados por ponto: versão.uid.exp.bandeiras.dex.skins.cenas.assinatura
-   (é a ordem que o account.mjs usa em `conteudoPasse`). Quem confere a assinatura é a borda (Worker); aqui só se lê.
-   Servidor local (server.mjs) não emite passe nem tem borda: toda cena vale, então CENAS_LIVRES cobre qualquer id. */
-
+export const VERSAO = '2';
 export const COOKIE = 'pf_passe';
-export const VALIDADE_S = 7 * 24 * 3600;                                  // vida de um passe emitido
-export const FOLGA_S = 3600;                                              // margem pro relógio do aparelho
-
-/** Cenas que não precisam de passe. Sem borda (localhost/LAN) nada é negado: `includes` diz sim pra qualquer cena. */
-export const CENAS_LIVRES = Object.freeze({ includes: () => true });
-
-const lista = s => (s ? String(s).split(',').map(x => x.trim()).filter(Boolean) : []);
-
-/** Lê o texto do passe → { uid, exp, gm, dex:Set<number>, skins:Set, cenas:Set } ou null se não tiver a forma certa. */
-export function lerPasse(txt){
-  const p = String(txt || '').split('.');
-  if (p.length < 7) return null;
-  let uid; try { uid = decodeURIComponent(p[1]); } catch { return null; }
-  const exp = Number(p[2]);
-  if (!uid || !Number.isFinite(exp)) return null;
-  const bandeiras = p[3] || '';
+export const MAX_DEX = 1025;
+export const VALIDADE_S = 24 * 3600;
+export const FOLGA_S = 300;
+export const FLAG_GM = 1;
+export const FLAG_CASCA = 2;
+export const FLAG_PECAS = 4;
+export const CASCA = Object.freeze({
+  cenas: Object.freeze(['kanto', 'pallet_route1', '4120013', '4110008', '4110002', '4110009']),
+  areas: Object.freeze([1101, 1201]),
+});
+export const RECUSAS_DE_PROGRESSO = Object.freeze(['sem_cena', 'sem_dex', 'sem_skin', 'sem_cena_npc', 'sem_shiny']);
+export const SHINY_DA_POSSE = Object.freeze({ 59: '0059_99', 791: '0791_99' });
+export function marcaDoShiny(a) {
+  const n = Math.floor(+a);
+  return Number.isInteger(n) && Object.hasOwn(SHINY_DA_POSSE, n) ? SHINY_DA_POSSE[n] : null;
+}
+function marcaDoGlb(g) {
+  const p = partesDoStem(g);
+  return p && !p.skin ? marcaDoShiny(p.dex) : null;
+}
+/* SCENE GATING. PokeFable's edge only served scenes and models a signed pass covered. Our server does not sign passes
+   yet (to-do: gated scene access), so with SCENES_GATED off every scene is free and autoriza() always says yes. */
+export const SCENES_GATED = false;
+export const CENAS_LIVRES = SCENES_GATED ? [] : Object.freeze({ includes: () => true });
+export const BASE = {
+  cenas: ['kanto', 'pallet_route1', '4120013', '4110008', '4110002'],
+  dex: [1, 4, 7, 6, 150, 25, 17],
+  skins: ['0006_51'],
+};
+export const PASTAS_LIVRES = {
+  agua: 'sea, flow and caustics textures: loaded on the first frame of any scene, before the player exists',
+  fogo: "flame shader (Charmander, Moltres…): shared effect piece, not a single species' art",
+  lodo: 'sludge shader (Grimer/Muk): same as fire',
+};
+const RE_CENA = /^\/cenario\/(kanto|pallet_route1|casa|habitat|\d{7})(?:_chao\.json|(?:_ktx2)?\.glb)$/;
+const RE_MON = /^\/cenario\/mon\/(pm\d{4}(?:_\d{2})?)\.glb$/;
+const RE_SHINY = /^\/cenario\/mon\/shiny\/([^/]+)_1\.png$/;
+const RE_LIVRE = new RegExp('^\\/cenario\\/(?:' + Object.keys(PASTAS_LIVRES).join('|') + ')\\/');
+const RE_NPC_PASTA = /^\/cenario\/npc\//;
+const RE_NPC_ARQ = /\/([A-Za-z0-9_.-]+)\.glb$/i;
+const RE_CASCA = /^\/cenario\/(?:pc|npc)\//;
+const RE_STEM = /^pm(\d{4})(?:_(\d{2}))?$/;
+const RE_STEM_TEX = /^(pm\d{4}(?:_\d{2}(?=[_.]|$))?)/;
+export const RE_ID_CENA = /^(?:kanto|pallet_route1|casa|habitat|\d{7})$/;
+export const ARTE_DE_RAID = { r01: '9700001', r03: '9700003', r05: '9700005' };
+const RE_RAID = /^\/cenario\/raid\/([a-z0-9]+)\/(?:marcas\/)?[a-z0-9_]+\.(?:glb|png)$/;
+export const OBJETOS_DE_CENA = { incubadora: 'habitat' };
+const RE_OBJETO = /^\/cenario\/objetos\/([a-z0-9_]+)\.glb$/;
+export function b64urlDe(a) {
+  let s = '';
+  for (const b of a) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+export function b64urlPara(a) {
+  const s = String(a).replace(/-/g, '+').replace(/_/g, '/');
+  const b = atob(s + '==='.slice((s.length + 3) % 4));
+  const u = new Uint8Array(b.length);
+  for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+  return u;
+}
+export function precisaPara(a, b = null, c = null) {
+  let p;
+  try {
+    p = decodeURIComponent(String(a || '').split('?')[0]);
+  } catch {
+    return { tipo: 'gm', motivo: 'caminho_invalido' };
+  }
+  if (!p.startsWith('/scenery/')) return { tipo: 'livre' };
+  if (p.includes('..') || p.includes('\\') || p.includes('//') || /\/\.(?:\/|$)/.test(p))
+    return { tipo: 'gm', motivo: 'caminho_invalido' };
+  if (RE_LIVRE.test(p)) return { tipo: 'livre' };
+  let m;
+  if (RE_NPC_PASTA.test(p)) {
+    const d = RE_NPC_ARQ.exec(p);
+    const e = d && c && c[d[1]];
+    return Array.isArray(e) && e.length ? { tipo: 'npc', glb: d[1], cenas: e } : { tipo: 'passe' };
+  }
+  if (RE_CASCA.test(p)) return { tipo: 'passe' };
+  if ((m = RE_CENA.exec(p))) return CENAS_LIVRES.includes(m[1]) ? { tipo: 'livre' } : { tipo: 'cena', id: m[1] };
+  if ((m = RE_MON.exec(p))) return { tipo: 'mon', glbs: [m[1]] };
+  if ((m = RE_SHINY.exec(p))) {
+    const t = b && b[m[1]];
+    const s = t && t.length ? null : RE_STEM_TEX.exec(m[1]);
+    const f = t && t.length ? t : s ? [s[1]] : null;
+    if (!f) return { tipo: 'gm', motivo: 'textura_desconhecida' };
+    return f.some((g) => marcaDoGlb(g)) ? { tipo: 'mon', glbs: f, shiny: true } : { tipo: 'mon', glbs: f };
+  }
+  if ((m = RE_RAID.exec(p)) && Object.hasOwn(ARTE_DE_RAID, m[1])) return { tipo: 'cena', id: ARTE_DE_RAID[m[1]] };
+  if ((m = RE_OBJETO.exec(p)) && Object.hasOwn(OBJETOS_DE_CENA, m[1]))
+    return { tipo: 'cena', id: OBJETOS_DE_CENA[m[1]] };
+  return { tipo: 'gm', motivo: 'fora_das_regras' };
+}
+export function montarBase({ uid: a, exp: b, flags: d = 0, dex: e = [], skins: f = [], cenas: g = [] }) {
+  const h = new Uint8Array(Math.ceil(MAX_DEX / 8));
+  for (const l of e) {
+    const n = +l;
+    if (Number.isInteger(n) && n >= 1 && n <= MAX_DEX) h[(n - 1) >> 3] |= 1 << ((n - 1) & 7);
+  }
+  let i = h.length;
+  while (i > 0 && h[i - 1] === 0) i--;
+  const j = [...new Set([...f].map(String).filter((s) => /^\d{4}_\d{2}$/.test(s) && !s.endsWith('_00')))].sort();
+  const k = [...new Set([...g].map(String).filter((c) => RE_ID_CENA.test(c)))].sort();
+  return [
+    VERSAO,
+    b64urlDe(new TextEncoder().encode(String(a))),
+    String(Math.floor(+b)),
+    String(d | 0),
+    b64urlDe(h.subarray(0, i)),
+    j.join('~'),
+    k.join('~'),
+  ].join('.');
+}
+export function lerPasse(a) {
+  const p = String(a || '').split('.');
+  if (p.length !== 8 || p[0] !== VERSAO) return null;
+  if (!/^\d{10}$/.test(p[2]) || !/^\d{1,3}$/.test(p[3]) || !/^[A-Za-z0-9_-]{0,172}$/.test(p[4])) return null;
+  if (p[5] && !/^\d{4}_\d{2}(?:~\d{4}_\d{2})*$/.test(p[5])) return null;
+  const b = p[6] ? p[6].split('~') : [];
+  if (!b.every((c) => RE_ID_CENA.test(c)) || !/^[A-Za-z0-9_-]{43}$/.test(p[7])) return null;
+  let d, e;
+  try {
+    d = new TextDecoder().decode(b64urlPara(p[1]));
+    e = b64urlPara(p[4]);
+  } catch {
+    return null;
+  }
   return {
-    uid, exp,
-    gm: /g/i.test(bandeiras),
-    dex: new Set(lista(p[4]).map(Number).filter(Number.isFinite)),
-    skins: new Set(lista(p[5])),
-    cenas: new Set(lista(p[6])),
+    uid: d,
+    exp: +p[2],
+    flags: +p[3],
+    gm: (+p[3] & FLAG_GM) !== 0,
+    casca: (+p[3] & FLAG_CASCA) !== 0,
+    pecas: (+p[3] & FLAG_PECAS) !== 0,
+    skins: new Set(p[5] ? p[5].split('~') : []),
+    cenas: new Set(b),
+    temDex(n) {
+      const i = +n - 1;
+      return i >= 0 && i >> 3 < e.length && (e[i >> 3] & (1 << (i & 7))) !== 0;
+    },
+    base: p.slice(0, 7).join('.'),
+    sig: p[7],
   };
 }
-
-/** O passe NÃO cobre este modelo ('pm0025_00')? Devolve o motivo (texto) ou null quando cobre — o account.mjs (cobreGlb)
-    nega com `!stemPermitido(...)`. Modelo que não é de Pokémon (sem `pmNNNN`) sempre passa. */
-export function stemPermitido(stem, p){
-  const m = /^pm(\d{4})/i.exec(String(stem || ''));
+export async function verificar(a, b, c = Math.floor(Date.now() / 1000)) {
+  const d = lerPasse(a);
+  if (!d) return { ok: false, motivo: 'invalido' };
+  const e = globalThis.crypto?.subtle;
+  if (!e) return { ok: false, motivo: 'sem_webcrypto' };
+  const f = await e.importKey('raw', new TextEncoder().encode(String(b)), { name: 'HMAC', hash: 'SHA-256' }, false, [
+    'verify',
+  ]);
+  let g;
+  try {
+    g = b64urlPara(d.sig);
+  } catch {
+    return { ok: false, motivo: 'invalido' };
+  }
+  if (!(await e.verify('HMAC', f, g, new TextEncoder().encode(d.base)))) return { ok: false, motivo: 'assinatura' };
+  if (d.exp + FOLGA_S < c) return { ok: false, motivo: 'vencido', lido: d };
+  if (d.exp > c + VALIDADE_S + FOLGA_S) return { ok: false, motivo: 'invalido' };
+  return { ok: true, lido: d };
+}
+export function stemPermitido(a, b) {
+  const m = RE_STEM.exec(a);
+  if (!m) return 'sem_dex';
+  if (!b.temDex(+m[1])) return 'sem_dex';
+  if (m[2] && m[2] !== '00' && !b.skins.has(m[1] + '_' + m[2])) return 'sem_skin';
+  return null;
+}
+export function autoriza(a, b) {
+  if (!SCENES_GATED || a.tipo === 'livre') return { ok: true };
+  if (!b) return { ok: false, motivo: 'sem_passe' };
+  if (b.gm) return { ok: true };
+  const r = decidir(a, b);
+  return !r.ok && b.casca && RECUSAS_DE_PROGRESSO.includes(r.motivo) ? { ok: false, motivo: 'casca' } : r;
+}
+function decidir(a, b) {
+  if (a.tipo === 'passe') return { ok: true };
+  if (a.tipo === 'npc')
+    return a.cenas.some((c) => b.cenas.has(c)) ? { ok: true } : { ok: false, motivo: 'sem_cena_npc' };
+  if (a.tipo === 'cena') return b.cenas.has(a.id) ? { ok: true } : { ok: false, motivo: 'sem_cena' };
+  if (a.tipo === 'mon') {
+    let d = 'sem_dex';
+    for (const g of a.glbs) {
+      const r = stemPermitido(g, b);
+      if (!r) {
+        const e = a.shiny ? marcaDoGlb(g) : null;
+        if (!e || b.skins.has(e)) return { ok: true };
+        d = 'sem_shiny';
+        continue;
+      }
+      if (r === 'sem_skin' && d !== 'sem_shiny') d = r;
+    }
+    return { ok: false, motivo: d };
+  }
+  return { ok: false, motivo: a.motivo || 'so_gm' };
+}
+export function partesDoStem(a) {
+  const m = RE_STEM.exec(String(a || '').replace(/\.glb$/, ''));
   if (!m) return null;
-  return p?.dex?.has(+m[1]) ? null : 'espécie fora do passe';
+  return { dex: +m[1], skin: m[2] && m[2] !== '00' ? m[1] + '_' + m[2] : null };
 }

@@ -39,7 +39,7 @@ export function abrir(a) {
   abrirTerreno(a);
   return disponivel();
 }
-const deps = (a) => ({ tr, nome: a.nome, tipos: a.tipos, local: I18n.local() });
+const deps = (a) => ({ tr, nome: a.nome, tipos: a.tipos, local: I18n.locale() });
 const conteudo = (a) => Popup.extra(a, 'conteudo-ovos');
 const nitida = (a, b) => {
   if (!a) return null;

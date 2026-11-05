@@ -3,6 +3,7 @@
  * evolution, story mission, raid queue). The client asks over the WebSocket:
  *   {t:'temporada', op:'ver'}                         → {t:'temporada', rid, ok, vista}
  *   {t:'temporada', op:'pegar', nivel, trilha}        claim one level's reward on 'gratis' or 'paga'
+ *   {t:'temporada', op:'claimAll'}                    claim every ready reward on both tracks ('pegarTudo' is the old name)
  *   {t:'temporada', op:'comprarPasse', ref, preco}    unlock the paid track with Diamonds
  *   {t:'temporada', op:'comprarNivel', n, ref, custo} buy levels with Diamonds (they only unlock paid-track Diamonds/outfits)
  * The reply shape (`vista`) is the one pass_screen.mjs draws. */
@@ -232,6 +233,13 @@ export function criarTemporada({ dadosPub, contas, socketsDe, enviar, salvarCont
       const tr = m.trilha === 'paga' ? 'paga' : 'gratis', n = +m.nivel;
       const entregues = pegarPendentes(c, u, S, (a, b) => a === tr && b === n);
       if (!entregues.length) return erro('nada-pra-pegar', 'Nothing to claim there.', { vista: vista(c) });
+      salvarContas(); empurrarSave(u);
+      return resp({ vista: vista(c), entregues, pendentes: [] });
+    }
+    if (m.op === 'claimAll' || m.op === 'pegarTudo') {
+      // Every reward whose state is 'pronto': reached levels only, and the paid track only with the pass unlocked.
+      const entregues = pegarPendentes(c, u, S, () => true);
+      if (!entregues.length) return erro('nada-pra-pegar', 'Nothing to claim right now.', { vista: vista(c) });
       salvarContas(); empurrarSave(u);
       return resp({ vista: vista(c), entregues, pendentes: [] });
     }

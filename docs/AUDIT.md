@@ -16,7 +16,7 @@ A 3D, browser-based Pokémon MMO set in Kanto. There is one continuous outdoor m
 plus 71 interior and dungeon scenes. 248 species have 3D models, and 123 of them spawn in the wild. Combat with wild Pokémon
 is real time, and capture uses the Gen III formula. There are 8 gyms, 56 story missions, trading, chat, staff-run raids, live
 events and a large GM admin panel. Logged-in trainer, gym, Elite Four and player battles are handled on the bundled server
-(`server_battle.mjs`). Wild Pokémon are still spawned per client (no shared world server).
+(`server_battle.mjs`). Wild Pokémon live on the server and are shared by everyone on a map (`server_world.mjs`).
 
 ## Headline numbers
 
@@ -63,8 +63,7 @@ events and a large GM admin panel. Logged-in trainer, gym, Elite Four and player
 
 | Gap | Effect |
 |---|---|
-| Shared world / wilds | Each client still spawns its own wild Pokémon; captures stay client-trusted |
-| No world server | Each client spawns its own wild Pokémon, so players don't see the same wilds and captures are trusted from the client |
+| Shared world / wilds | Done (server_world.mjs): the server rolls, owns and fights the wilds per map, and every player there sees the same ones; catches are rolled and recorded on the server |
 | Protocol mismatch | Client protocol version 18, server 15. No visible error, but the client expects messages the server never sends (progress pass, door checks, direct messages, Elite Four runs) |
 
 **Gameplay not implemented:** status conditions (burn, sleep, paralysis…), EVs, PvP, fishing, the Safari Zone game mode,

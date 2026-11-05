@@ -2658,7 +2658,7 @@ async function encherMapa(pop){
   if (aberta !== 'mapa' || !Popup.aberto(pop)) return;
   const nomes = { ...(pontosMapa.nomes || {}), ...(ctx.dados?.nomes || {}) };   // a cena recortada (pallet_route1) só conhece as próprias áreas; os pontos trazem os nomes de Kanto
   if (areaMapa == null || !nomes[areaMapa]) areaMapa = areaDoJogador() ?? +Object.keys(pontosMapa.areas || {})[0];
-  const a = areaMapa, nome = I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes[a] || ('área ' + a));
+  const a = areaMapa, nome = I18n.placeLabel(ctx.nomeArea?.(a) || nomes[a] || ('área ' + a));
   Popup.texto(pop, 'area-nome', nome);
   const proprios = mapaHabitats.areas?.[String(a)] || [];
   const lista = proprios.length ? proprios : (ehRota(a) ? mapaHabitats.generico || [] : []);
@@ -4105,7 +4105,7 @@ const FILTRO_ICONE = {
 };
 const iconeFiltro = tipo => FILTRO_ICONE[tipo] || './ui/icones/mapa.png';
 function nomeAreaMapa(a, nomes){
-  return I18n.rotuloLugar(ctx.nomeArea?.(a) || nomes?.[a] || ctx.dados?.nomes?.[a] || ('Area ' + a));
+  return I18n.placeLabel(ctx.nomeArea?.(a) || nomes?.[a] || ctx.dados?.nomes?.[a] || ('Area ' + a));
 }
 function listaHabitat(a){
   const proprios = mapaHabitats?.areas?.[String(a)] || [];
@@ -4586,7 +4586,7 @@ function rMapaVivo(corpo, dd, caixas){
   const desenhar = () => {
     c.fillStyle = '#79b7e0'; c.fillRect(0, 0, 1280, 960);                // mar
     for (const b of caixas){                                             // áreas
-      const nome = I18n.rotuloLugar(dd.nomes?.[b.a] || ''); const cid = ehCidade(nome);
+      const nome = I18n.placeLabel(dd.nomes?.[b.a] || ''); const cid = ehCidade(nome);
       c.fillStyle = cid ? '#dcca97' : '#95c96f';
       c.beginPath(); c.roundRect(X(fx * b.x - b.sx / 2), Z(b.z - b.sz / 2), b.sx * k, b.sz * k, 6); c.fill();
       c.strokeStyle = mapaSel === b.a ? '#ffd23a' : '#6b6b4a'; c.lineWidth = mapaSel === b.a ? 3 : 1.2; c.stroke();
@@ -4595,7 +4595,7 @@ function rMapaVivo(corpo, dd, caixas){
     c.fillStyle = '#4d8fd6'; for (const t2 of dd.agua || []) c.fillRect(X(fx * t2.x), Z(t2.z), k, k);       // água
     c.fillStyle = '#3f8a2f'; for (const t2 of dd.grama || []) c.fillRect(X(fx * t2.x), Z(t2.z), k, k);      // grama alta
     for (const b of caixas){                                             // rótulos
-      const nome = I18n.rotuloLugar(dd.nomes?.[b.a] || ''); if (!nome || /^area /i.test(nome)) continue;
+      const nome = I18n.placeLabel(dd.nomes?.[b.a] || ''); if (!nome || /^area /i.test(nome)) continue;
       const cid = ehCidade(nome), rot = nome, cx2 = X(fx * b.x), cz2 = Z(b.z);
       c.font = (cid ? '600 19px' : '600 13px') + ' system-ui'; c.textAlign = 'center';
       if (cid){ const w = c.measureText(rot).width + 16; c.fillStyle = '#ffffffee'; c.beginPath(); c.roundRect(cx2 - w / 2, cz2 - 13, w, 26, 12); c.fill(); c.strokeStyle = '#444'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#1a1a1a'; c.fillText(rot, cx2, cz2 + 5); }
@@ -4606,7 +4606,7 @@ function rMapaVivo(corpo, dd, caixas){
   };
   const cartao = async a => {
     mapaSel = a; desenhar();
-    const alvo = corpo.querySelector('#m-card'); const nome = I18n.rotuloLugar(dd.nomes?.[a] || ('Area ' + a));
+    const alvo = corpo.querySelector('#m-card'); const nome = I18n.placeLabel(dd.nomes?.[a] || ('Area ' + a));
     mapaHabitats ??= await fetch('./data/habitats.json').then(r => r.json()).catch(() => ({ areas: {}, generico: [] }));
     const live = (ctx.jogo?.selvagens || []).filter(s => s.area === a && s.estado !== 'morto').length;
     alvo.innerHTML = htmlCartaoMapa(a, nome, { live });
@@ -4817,7 +4817,7 @@ function cadeiaEvolucao(dex){
 }
 const chanceCaptura = rate => { const a = Math.max(1, rate) / 3; if (a >= 255) return 1; const b = 1048560 / Math.sqrt(Math.sqrt(16711680 / a)); return Math.pow(b / 65536, 4); };   // HP cheio, Pokébola
 function rPokedex(corpo){
-  if (!I18n.dexPronto()) I18n.carregarDex().then(() => { if (aberta === 'pokedex') render(); });   // descrições por idioma (etapa 3): baixa só quando a janela abre
+  if (!I18n.dexReady()) I18n.loadDex().then(() => { if (aberta === 'pokedex') render(); });   // descrições por idioma (etapa 3): baixa só quando a janela abre
   const gens = GENS_DX;
   const aba = abas(gens.map(([g]) => ({ id: String(g), nome: 'Gen ' + g })));
   const [, a, b] = gens.find(([g]) => String(g) === aba); const d = dexEstado();
@@ -4848,7 +4848,7 @@ async function mostrarDex(){
   const cadeia = conhecido && S ? cadeiaEvolucao(selDex) : [];
   const golpes = (X.g || []).slice().sort((p, q) => p[0] - q[0]);
   const noMapa = (ctx.jogo.selvagens || []).filter(s => s.dex === selDex && s.estado !== 'morto').length;
-  const onde = (() => { const h = ctx.habitats; if (!h) return []; const out = []; for (const [area, lista] of Object.entries(h.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(I18n.rotuloLugar(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || (tr('area') + ' ' + area))); if ((h.generico || []).some(e => e.dex === selDex)) out.push(tr('any route grass')); return out; })();
+  const onde = (() => { const h = ctx.habitats; if (!h) return []; const out = []; for (const [area, lista] of Object.entries(h.areas || {})) if (lista.some(e => e.dex === selDex)) out.push(I18n.placeLabel(ctx.nomeArea?.(+area) || ctx.dados?.nomes?.[area] || (tr('area') + ' ' + area))); if ((h.generico || []).some(e => e.dex === selDex)) out.push(tr('any route grass')); return out; })();
   const catMap = { 1: tr('physical'), 2: tr('special'), 3: tr('status') };
   /* Pokédex de conhecimento: cada nível revela mais (1 tipos/onde · 2 stats, altura/peso, evolução, fraquezas · 3 taxa de
      captura, habilidades · 4 gênero, learnset completo, habilidade oculta · 5 Mestre). Sem o módulo: visto = 1, pego = 2. */
@@ -4868,7 +4868,7 @@ async function mostrarDex(){
     <div style="color:var(--muted);font-size:11px;text-align:center">${glb ? esc(tr('drag to rotate both')) : esc(tr('no 3D model exported yet'))}</div>
     ${nv >= 1 ? `
     <div>${(S?.types || []).map(tipoHtml).join('')}</div>
-    ${(I18n.descricaoDex(selDex) || X.d) && nv >= 2 ? `<p class="dex-des">${esc(I18n.descricaoDex(selDex) || X.d)}</p>` : ''}
+    ${(I18n.dexDescription(selDex) || X.d) && nv >= 2 ? `<p class="dex-des">${esc(I18n.dexDescription(selDex) || X.d)}</p>` : ''}
     <table class="stats dex-tab">
       <tr><td>${esc(tr('height / weight'))}</td>${nv >= 2 ? `<td>${alt ? alt.toFixed(1) + ' m' : '—'} · ${peso ? peso + ' kg' : '—'}</td>` : trava(2, 'catch one')}</tr>
       ${X.h?.length ? `<tr><td>${esc(tr('abilities'))}</td>${nv >= 3 ? `<td>${X.h.map(esc).join(', ')}${X.ho ? (nv >= 4 ? ` <small style="color:var(--muted)">(${esc(tr('hidden:'))} ${esc(X.ho)})</small>` : ' <small class="oculto">(' + esc(tr('hidden: unlocks at level 4')) + ')</small>') : ''}</td>` : trava(3)}</tr>` : ''}
@@ -5300,7 +5300,7 @@ export function estouPreso(){
     enviando = false;
     if (!r.ok){
       let msg = tr(r.erro || 'não foi');
-      if (!I18n.ehPt() && msg === r.erro){                                  // o texto do servidor ainda não tem tradução: diz o essencial no idioma do jogador
+      if (!I18n.isPortuguese() && msg === r.erro){                                  // o texto do servidor ainda não tem tradução: diz o essencial no idioma do jogador
         const min = /(\d+)\s*min/.exec(r.erro || '')?.[1];
         if (r.status === 429 && min) msg = tr('Você usou o "Estou preso" há pouco. Espere {n} min antes de usar de novo.', { n: min });
         else if (r.status === 400) msg = tr('O relato não passou nas regras: pelo menos 50 caracteres e 5 palavras, sem enchimento.');
@@ -5657,12 +5657,12 @@ function cfLinhaIdioma(pop){
   linha.appendChild(lab);
   const { bx, bw, bh, by } = V;
   const cada = bw / 3;
-  Object.entries(I18n.IDIOMAS).forEach(([l, nome], i) => {
+  Object.entries(I18n.LANGUAGES).forEach(([l, nome], i) => {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = l.toUpperCase(); b.title = nome;
-    const on = I18n.idioma() === l;
+    const on = I18n.language() === l;
     Object.assign(b.style, { position: 'absolute', left: (bx + i * cada) + 'px', top: by + 'px', width: (cada - 4) + 'px', height: bh + 'px', borderRadius: (bh / 2) + 'px',
       border: '1px solid rgba(248,194,55,' + (on ? '1' : '.45') + ')', background: on ? '#F8C237' : 'rgba(11,18,32,.9)', color: on ? '#1A1A1A' : '#F8C237', font: fonte, cursor: on ? 'default' : 'pointer', padding: '0' });
-    b.onclick = async () => { if (I18n.idioma() === l) return; await I18n.definir(l); try { await ctx.conta?.idioma?.(l); } catch {} cfRecarregar('idioma', l); };
+    b.onclick = async () => { if (I18n.language() === l) return; await I18n.set(l); try { await ctx.conta?.idioma?.(l); } catch {} cfRecarregar('idioma', l); };
     linha.appendChild(b);
   });
 }

@@ -7,7 +7,7 @@ import * as ViagemUi from './map_travel.mjs';
 import * as Lug from './map_places.mjs';
 const tr = (s, v) => I18n.t(s, v);
 const lang = () => {
-  const l = I18n.idioma?.();
+  const l = I18n.language?.();
   return l === 'en' || l === 'es' ? l : 'pt';
 };
 const ARTE = [

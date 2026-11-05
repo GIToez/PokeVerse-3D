@@ -149,7 +149,7 @@ const TABELA_FUNDADOR = './data/fundador.json',
   DADOS_SKINS = './data/skins_jogador.json';
 const PAD = 16;
 const FUNDO_PASSE = './ui/amanda/loja/fundo-passe.png';
-const fmt = (n) => Math.round(Number.isFinite(+n) ? +n : 0).toLocaleString(I18n.local(), { useGrouping: 'always' });
+const fmt = (n) => Math.round(Number.isFinite(+n) ? +n : 0).toLocaleString(I18n.locale(), { useGrouping: 'always' });
 const px = (a, k) => parseFloat(a?.style?.[k]) || 0;
 function confirmarNoBotao(b, t, a) {
   const c = Hud.semMoedaNaArte(b.dataset.arte),
@@ -358,7 +358,7 @@ function moeda() {
     }
     if (moedaEscolhida === 'brl' || moedaEscolhida === 'usd') return moedaEscolhida;
   }
-  return I18n.idioma() === 'pt' ? 'brl' : 'usd';
+  return I18n.language() === 'pt' ? 'brl' : 'usd';
 }
 function escolherMoeda(m) {
   if ((m !== 'brl' && m !== 'usd') || E.ocupado) return;
@@ -490,7 +490,7 @@ function respostaSolta(m) {
             : tr('💎 Season pass: your earlier purchase went through (+{n} levels).', { n }),
         );
     }
-    if (m.ok && (a === 'pegar' || a === 'pegarTudo' || a === 'comprarPasse')) {
+    if (m.ok && (a === 'pegar' || a === 'pegarTudo' || a === 'claimAll' || a === 'comprarPasse')) {
       posseNova(m);
       const c = PT.nomesEntregues(E.temporada, m.entregues, ctxPasse());
       if (c.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(c) }));
@@ -566,7 +566,7 @@ async function verTemporada() {
 }
 function produtoPeca(p) {
   const q = p.peca || {},
-    l = I18n.idioma?.() || 'pt',
+    l = I18n.language?.() || 'pt',
     a = q.nomes && typeof q.nomes === 'object' && typeof q.nomes[l] === 'string' && q.nomes[l] ? q.nomes[l] : null;
   const b = a || tr(String(q.nome || q.id || p.id)),
     c = q.tipo === 'roupa' ? nomeCurto(b) : b;
@@ -615,7 +615,7 @@ function produtoMontaria(p) {
   return {
     id: p.id,
     preco: p.preco,
-    nome: tr('{x} Shiny', { x: I18n.tNome(String(q.nome || q.id || '')) }),
+    nome: tr('{x} Shiny', { x: I18n.tName(String(q.nome || q.id || '')) }),
     desc: tr(
       q.meio === 'agua'
         ? p.temNormal
@@ -663,7 +663,7 @@ function produtoMontariaNormal(p) {
   return {
     id: p.id,
     preco: p.preco,
-    nome: tr('{x} Normal', { x: I18n.tNome(String(q.nome || q.id || '')) }),
+    nome: tr('{x} Normal', { x: I18n.tName(String(q.nome || q.id || '')) }),
     desc: tr(
       q.meio === 'agua'
         ? 'The mount, bound to your account: it can only swim, with the Surf license.'
@@ -697,7 +697,7 @@ const montariasLoja = () => (E.vit?.aberta ? (E.vit.montarias || []).map(produto
 const ehSkinMonLoja = (a) => typeof a === 'string' && a.startsWith('skinMon:');
 function produtoSkinMon(p) {
   const q = p.skin || {},
-    l = I18n.idioma?.() || 'pt',
+    l = I18n.language?.() || 'pt',
     a = /^pm(\d{4})_\d{2}$/.exec(String(q.id || ''))?.[1] || null;
   const b = (q.nomes && typeof q.nomes[l] === 'string' && q.nomes[l]) || String(q.nome || q.id || p.id);
   const F = fotoDe(String(q.id || ''));
@@ -1051,7 +1051,7 @@ function pecasEmDestaque() {
 }
 const listaNomes = (l) => {
   try {
-    return new Intl.ListFormat(I18n.local(), { type: 'conjunction' }).format(l);
+    return new Intl.ListFormat(I18n.locale(), { type: 'conjunction' }).format(l);
   } catch {
     return l.join(', ');
   }
@@ -1064,7 +1064,7 @@ const comoTela = (a) => ({
   indice: E.indice,
   t: tr,
   lista: listaNomes,
-  local: I18n.local(),
+  local: I18n.locale(),
 });
 function slideInicial() {
   return 0;
@@ -1258,7 +1258,7 @@ function montarPop() {
       Popup.texto(
         pop,
         'filtro',
-        f.dataset.tagval === 'todos' && I18n.idioma() === 'en' ? 'All' : t.dataset.exemplo || '',
+        f.dataset.tagval === 'todos' && I18n.language() === 'en' ? 'All' : t.dataset.exemplo || '',
         f,
       );
   }
@@ -1934,6 +1934,11 @@ function aoClicar(a) {
       } catch {}
       pintarDialogoPasse(true);
     }
+    return;
+  }
+  if (h === 'acao' && i === 'resgatar-tudo') {
+    a.stopPropagation();
+    if (g.dataset.desligado !== '1') claimAll();
     return;
   }
   if (h === 'acao' && i === 'resgatar-passe') {
@@ -3210,7 +3215,7 @@ const comoJanela = (a) => ({
   indice: E.indice,
   t: tr,
   lista: listaNomes,
-  local: I18n.local(),
+  local: I18n.locale(),
   mob: mobF(),
   dinheiro,
 });
@@ -4943,7 +4948,7 @@ function seloDestaque(c, a, d, b) {
   if (!s) return;
   const t = s.querySelector('[data-txt]');
   if (t) {
-    const v = d.cru ? (I18n.tExato?.(d.texto) ?? d.texto) : tr(d.texto);
+    const v = d.cru ? (I18n.tExact?.(d.texto) ?? d.texto) : tr(d.texto);
     t.textContent = String(v).toUpperCase();
   }
   const i = t ? larguraDoTexto(t) : 60,
@@ -5596,7 +5601,7 @@ function pintarAtivo(g, b, c) {
   }
   const d =
     Conta.dataDoMedalhao?.(c, E.exemplo ? 0 : undefined) ||
-    new Date(c).toLocaleDateString(I18n.local(), { day: '2-digit', month: '2-digit', year: 'numeric' });
+    new Date(c).toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit', year: 'numeric' });
   a.textContent = tr(TXT.medalhaoAtivo, { data: d });
   const x =
     px(b, 'left') +
@@ -5714,8 +5719,8 @@ function caberLinha(t) {
 function ctxPasse() {
   return {
     t: tr,
-    idioma: I18n.idioma?.() || 'pt',
-    local: I18n.local(),
+    idioma: I18n.language?.() || 'pt',
+    local: I18n.locale(),
     agora: E.exemplo ? Date.now() : agoraDoServidor(),
     lista: listaNomes,
     sexo: sexoDoPersonagem(),
@@ -5879,6 +5884,7 @@ function pintarPasse() {
     Popup.textoCru(pop, 'temporada-termina', H.termina, a);
     Popup.textoCru(pop, 'nivel-passe', H.nivel, a);
     mostra(no(a, 'btn-comprar-nivel'), H.mais);
+    paintClaimAll(a, V);
     Popup.textoCru(pop, 'xp-passe', H.xp, a);
     Popup.barra(pop, 'xp-passe', H.fracao, COR_XP, a);
     Popup.textoCru(pop, 'desafios-semana', H.desafios, a);
@@ -6558,6 +6564,69 @@ function dialogoNiveisDeAntes(n, a = null) {
           x,
         }),
   });
+}
+/* CLAIM ALL. The Figma layout has no button for it, so it is a copy of "Buy level" placed just to its left,
+   with its own action. It shows how many rewards are ready and turns off when there are none or a claim is running. */
+function paintClaimAll(banner, V) {
+  const model = no(banner, 'btn-comprar-nivel');
+  if (!model) return;
+  let btn = no(banner, 'btn-resgatar-tudo');
+  if (!btn) {
+    btn = model.cloneNode(true);
+    btn.removeAttribute('id');
+    for (const el of btn.querySelectorAll('[id]')) el.removeAttribute('id');
+    btn.dataset.fig = 'btn-resgatar-tudo';
+    btn.dataset.tag = 'acao';
+    btn.dataset.tagval = 'resgatar-tudo';
+    for (const el of btn.querySelectorAll('[data-tag]')) { delete el.dataset.tag; delete el.dataset.tagval; }
+    model.parentNode.insertBefore(btn, model);
+  }
+  const ready = PT.prontos(V);
+  const width = model.offsetWidth || parseFloat(model.style.width) || 120;
+  const left = parseFloat(model.style.left);
+  if (Number.isFinite(left)) btn.style.left = left - width - 8 + 'px';
+  btn.style.top = model.style.top;
+  btn.style.display = 'block';
+  const label = btn.querySelector(':scope > .pf-rotulo') || btn.querySelector('[data-txt]') || btn;
+  const text = ready > 0 ? tr('Claim all ({n})', { n: fmt(ready) }) : tr('Claim all');
+  if (label.textContent !== text) {
+    label.textContent = text;
+    caberLinha(label);
+  }
+  const on = ready > 0 && !E.ocupadoPasse && !E.exemplo;
+  btn.dataset.desligado = on ? '0' : '1';
+  btn.style.opacity = on ? '1' : '0.5';
+  btn.style.cursor = on ? 'pointer' : 'default';
+  btn.title = on ? tr('Claim every reward that is ready') : tr('Nothing to claim right now');
+}
+async function claimAll() {
+  if (E.ocupadoPasse || !PT.abaVisivel(E.temporada) || !(PT.prontos(E.temporada) > 0)) return;
+  if (E.exemplo) {
+    dep.Chat?.sistema?.(tr('Preview: nothing is charged.'));
+    return;
+  }
+  E.ocupadoPasse = 'claim-all';
+  pintar();
+  const r = await pedirPasse('claimAll');
+  E.ocupadoPasse = null;
+  if (r?.vista) novaVista(r.vista);
+  if (!aberto()) return;
+  if (r?.ok) {
+    try {
+      dep.Som?.tocar?.('ui/sound_itemget', { volume: 0.7, prio: true });
+    } catch {}
+    posseNova(r);
+    const d = PT.nomesEntregues(E.temporada, r.entregues, ctxPasse());
+    if (d.length) chatPasse(tr('🎁 Season pass: {x}.', { x: listaNomes(d) }));
+    pintar();
+    return;
+  }
+  if (r?.erro === 'devagar' || r?.erro === 'sem-resposta' || r?.erro === 'nada-pra-pegar') {
+    if (r.vista) pintar();
+    else verTemporada();
+    return;
+  }
+  recusaPasse(r, "Couldn't claim");
 }
 async function resgatar(a, b) {
   if (E.ocupadoPasse || !PT.abaVisivel(E.temporada)) return;

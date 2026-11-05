@@ -34,6 +34,7 @@ import { criarMercado } from './server_market.mjs';
 import { criarCarteira, criarLoja } from './server_shop.mjs';
 import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
+import { createWorld } from './server_world.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -979,6 +980,35 @@ const httpServer = http.createServer((req, res) => {
     }
 
     // ── Sair ──────────────────────────────────────────────────────────────
+    // Scene pass: the upcoming client asks for a signed pass. We do not gate scenes yet (pass_rules.mjs
+    // SCENES_GATED = false), so this only confirms the session; with no `passe` the client treats every scene as free.
+    if (req.method === 'GET' && rota === '/conta/passe') {
+      const u = usuarioDe(req);
+      if (!u) return json(401, { erro: 'Invalid session.' });
+      return json(200, { ok: true, gated: false });
+    }
+    // Terms of use accepted (screens ask once per terms version).
+    if (req.method === 'POST' && rota === '/conta/termos') {
+      const u = usuarioDe(req);
+      if (!u || !contas[u]) return json(401, { erro: 'Invalid session.' });
+      contas[u].termos = { versao: String(d.versao || '').slice(0, 40), em: Date.now() };
+      salvarContas();
+      return json(200, { ok: true });
+    }
+    // Account settings (account_settings.mjs): one small object per settings type.
+    if (req.method === 'POST' && rota === '/conta/config') {
+      const u = usuarioDe(req);
+      if (!u || !contas[u]) return json(401, { erro: 'Invalid session.' });
+      const tipo = String(d.tipo || '');
+      if (!/^[a-z_]{1,24}$/i.test(tipo) || !d.config || typeof d.config !== 'object' || Array.isArray(d.config)) return json(400, { erro: 'Invalid settings.' });
+      const texto = JSON.stringify(d.config);
+      if (texto.length > 4000) return json(413, { erro: 'Settings are too large.' });
+      if (!contas[u].config || typeof contas[u].config !== 'object') contas[u].config = {};
+      contas[u].config[tipo] = JSON.parse(texto);
+      salvarContas();
+      return json(200, { ok: true });
+    }
+
     if (req.method === 'POST' && rota === '/conta/sair') {
       const u = usuarioDe(req);
       if (u && contas[u]) { sessoes.delete(contas[u].token); contas[u].token = null; salvarContasJa(); }
@@ -1360,6 +1390,16 @@ const wilds = criarWilds({
   expMult: () => eventos.efetivo().expMult,
   aoDerrotar: (u, ev) => temporada.contar(u, { conta: 'ko', ...ev }),
 });
+/* SHARED WORLD (server_world.mjs): the wild Pokémon live here, one set per map, and every player on the map sees them. */
+const world = createWorld({
+  root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
+  newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
+  onCatch: (ws, u, pk) => {
+    temporada.contar(u, { conta: 'captura', dex: pk.dex });
+    const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex });
+    if (r) enviarMissao(ws, r);
+  },
+});
 
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
@@ -1396,6 +1436,7 @@ wss.on('connection', ws => {
 
     switch (m.t) {
       case 'entrar': {
+        if (ws._worldJoined) world.left(ws, ws._mapa);   // a second `entrar` on the same socket is a map change
         ws._mapa = m.mapa || 'kanto';
         ws._info = { ...m };
         const uTok = m.token ? sessoes.get(m.token) : null;
@@ -1424,9 +1465,10 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: [], online: conexoes.size, conta: ws._usuario, versao: VERSAO_REDE, soloWilds: true, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
+        ws._worldJoined = true; world.joined(ws);                           // shared world: wilds nobody owns on this map go to this player
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo
         const uM = sessoes.get(m.token) || null;
@@ -1511,6 +1553,8 @@ wss.on('connection', ws => {
             marcarPegoDoTime(cArr);
             cArr.rev = (cArr.rev || 0) + 1;
             salvarContas();
+            // batched party sync (account.mjs, protocol 22+): confirm the batch so the client stops resending it
+            if (Number.isSafeInteger(m.seq)) enviar(ws, { t: 'arranjo_ok', seq: m.seq });
           }
         }
         break;
@@ -1766,7 +1810,8 @@ wss.on('connection', ws => {
         }
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
-        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') raid.receber(ws, m);   // raid ao vivo (o `ataque` só existe com o Mundo ligado: o chefe)
+        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'nascer' || m.t === 'spos' || m.t === 'sataque' || m.t === 'shp' || m.t === 'capturar') world.receive(ws, m);   // raid ao vivo (o `ataque` só existe com o Mundo ligado: o chefe)
         break;
       }
     }
@@ -1774,6 +1819,7 @@ wss.on('connection', ws => {
 
   ws.on('close', () => {
     try { batalha.aoSair(ws); } catch {}
+    try { world.left(ws); } catch {}
     if (ws._usuario && contas[ws._usuario] && ws._info) gravarPosConta(ws._usuario, { mapa: ws._mapa, x: ws._info.x, y: ws._info.y, z: ws._info.z, giro: ws._info.giro }, { ja: true });
     if (!conexoes.delete(ws._id)) return;                                 // já saiu da lista (sessão única) e o `saiu` já foi
     console.log(`[-] ${ws._usuario || ws._id} left (${conexoes.size} online)`);

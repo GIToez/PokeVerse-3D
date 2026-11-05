@@ -157,10 +157,10 @@ function botaoDiscord(pop){
 function barraIdioma(pop, nome){
   if (pop.querySelector('.tela-idioma')) return;
   const b = document.createElement('div'); b.className = 'tela-idioma';
-  for (const [l, rot] of Object.entries(I18n.IDIOMAS)){
+  for (const [l, rot] of Object.entries(I18n.LANGUAGES)){
     const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = l.toUpperCase(); bt.title = rot;
-    bt.classList.toggle('on', I18n.idioma() === l);
-    bt.onclick = async () => { if (I18n.idioma() === l) return; await I18n.definir(l); ctx?.conta?.idioma?.(l); mostrar(nome, layout, ctx); };
+    bt.classList.toggle('on', I18n.language() === l);
+    bt.onclick = async () => { if (I18n.language() === l) return; await I18n.set(l); ctx?.conta?.idioma?.(l); mostrar(nome, layout, ctx); };
     b.appendChild(bt);
   }
   pop.appendChild(b);

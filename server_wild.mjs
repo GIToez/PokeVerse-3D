@@ -277,7 +277,39 @@ export function criarWilds(ctx) {
     };
   }
 
+  /* SHARED WORLD (server_world.mjs). The world asks for one species and level at the spot a player proposed: the same
+     habitat rules, area check and level cap as `roll`, but no per-player budget (the world caps each area instead). */
+  function rollAt(ws, area, water) {
+    const who = accountOf(ws);
+    if (!who) return null;
+    const info = ws._info || {};
+    const x = +info.x, z = +info.z;
+    if (!Number.isFinite(x) || !Number.isFinite(z)) return null;
+    const here = areasAt(ws._mapa, x, z, 0);
+    const near = here.length ? here : areasAt(ws._mapa, x, z, BOX_MARGIN);
+    if (!near.some(a => +a === +area)) return null;
+    const quando = momento(who.account, {}, Date.now());
+    const rows = rowsFor(+area, !!water, quando);
+    if (!rows.length) return null;
+    const row = pickRow(rows);
+    return { dex: +row.dex, lv: levelFor(row, +area), glb: Calendario.glbDaEstacao(row.dex, row.glb, quando.estacao), nome: row.nome, agua: row.agua ? 1 : 0 };
+  }
+  /** XP for a shared wild this player helped knock out: the same grant as a solo defeat (party share, EVs, level cap). */
+  function award(ws, wild) {
+    const who = accountOf(ws);
+    if (!who) return null;
+    const id = 'w' + crypto.randomBytes(6).toString('hex');
+    sweep(who.user).set(id, { dex: +wild.dex, lv: +wild.lv, at: Date.now(), area: wild.area });
+    return defeat(ws, { id });
+  }
+
   return {
+    rollAt,
+    award: (ws, wild) => {
+      const out = award(ws, wild);
+      if (out) ctx.enviar(ws, out);
+      return out;
+    },
     roll: (ws, msg) => ctx.enviar(ws, roll(ws, msg || {})),
     drop: (ws, msg) => drop(ws, msg || {}),
     defeat: (ws, msg) => {

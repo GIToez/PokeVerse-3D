@@ -1,158 +1,271 @@
-/* Player language. English is the source. `t()` leaves English alone and translates into PT/ES
- * from data/locale/ui_<l>.json, content_<l>.json, names_<l>.json. names_en.json only maps leftover
- * Portuguese dump strings. Default language is English; PT/ES are selectable (login bar, ?idioma=,
- * saved choice). Pokémon species names stay English in every language. */
-export const IDIOMAS = { pt: 'Português', en: 'English', es: 'Español' };
-const LS = 'idioma';
-const LS_ESCOLHA = 'idioma.escolha';   // only set when the player (or ?idioma=) picks a language
-let atual = 'en', exatas = new Map(), padroes = [], carregado = { en: true };
-const cache = new Map();                                                  // idioma → { exatas, padroes }
+/* Player language. English is the source. `t()` leaves English alone and translates into PT/ES from
+ * data/locale/ui_<l>.json, content_<l>.json and names_<l>.json. names_en.json only maps leftover Portuguese dump
+ * strings. The default language is English; PT/ES are selectable (login bar, ?idioma=, saved choice).
+ * Pokémon species names stay English in every language.
+ * Merged from the live module and upcoming/i18n.mjs: the upcoming helpers (append, missing, number and date
+ * formatting, template keys) are in; the live loader, GM translation panel and scene-name labels are kept. */
+export const LANGUAGES = { pt: 'Português', en: 'English', es: 'Español' };
+const STORAGE_KEY = 'idioma';
+const STORAGE_CHOICE_KEY = 'idioma.escolha';   // only set when the player (or ?idioma=) picks a language
+let current = 'en', exact = new Map(), patterns = [], templates = new Map(), loaded = { en: true };
+const cache = new Map();                       // language → { exact, patterns, templates, parts }
+const missingMap = new Map(), knownOutputs = new Set();
+const history = new Map();                     // language → Map of extra translations added at runtime
 
-export const idioma = () => atual;
-export const ehPt = () => atual === 'pt';
-const LOCAIS = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
-export const local = () => LOCAIS[atual] || 'en-US';
-function escolhaGuardada(){
+export const language = () => current;
+export const isPortuguese = () => current === 'pt';
+export const LOCALES = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
+export const locale = () => LOCALES[current] || 'en-US';
+
+function savedChoice() {
   try {
-    if (localStorage.getItem(LS_ESCOLHA) !== '1') return null;
-    const v = localStorage.getItem(LS);
-    return IDIOMAS[v] ? v : null;
+    if (localStorage.getItem(STORAGE_CHOICE_KEY) !== '1') return null;
+    const v = localStorage.getItem(STORAGE_KEY);
+    return LANGUAGES[v] ? v : null;
   } catch { return null; }
 }
-function marcarEscolha(l){
-  try { localStorage.setItem(LS, l); localStorage.setItem(LS_ESCOLHA, '1'); } catch {}
+function rememberChoice(l) {
+  try { localStorage.setItem(STORAGE_KEY, l); localStorage.setItem(STORAGE_CHOICE_KEY, '1'); } catch {}
 }
-/** O que o navegador sugere, sem consultar nada guardado. */
-export function doNavegador(){
+/** What the browser suggests, without looking at anything saved. */
+export function fromBrowser() {
   const n = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase();
   return n.startsWith('es') ? 'es' : n.startsWith('pt') ? 'pt' : 'en';
 }
 /** Language for this load: URL > an explicit saved pick > English.
- *  A leftover `idioma=pt` from the old Portuguese-first default is ignored so the HUD
- *  does not come back in PT (and so Chrome does not auto-translate it into garbled names). */
-export function detectar(url = null){
-  if (url && IDIOMAS[url]) return url;
-  return escolhaGuardada() || 'en';
+ *  A leftover `idioma=pt` from the old Portuguese-first default is ignored so the HUD does not come back in PT
+ *  (and so Chrome does not auto-translate it into garbled names). */
+export function detect(urlLanguage = null) {
+  if (urlLanguage && LANGUAGES[urlLanguage]) return urlLanguage;
+  return savedChoice() || 'en';
 }
-function compilar(chave, valor){
-  const partes = chave.split(/(\{\w+\})/); let re = '^'; const vars = [];
-  for (const p of partes){
+
+/** Turns a key with {vars} into a regex that captures them. */
+function compilePattern(key, value) {
+  const parts = key.split(/(\{\w+\})/);
+  let re = '^';
+  const vars = [];
+  for (const p of parts) {
     const m = /^\{(\w+)\}$/.exec(p);
-    if (m){ vars.push(m[1]); re += '([\\s\\S]+?)'; } else re += p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (m) { vars.push(m[1]); re += '([\\s\\S]+?)'; } else re += p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
-  return { re: new RegExp(re + '$'), saida: valor, vars, tam: chave.length };
+  return { re: new RegExp(re + '$'), output: value, vars, length: key.length };
 }
-function montar(dics){
-  const ex = new Map(), pa = [];
-  for (const d of dics) for (const [k, v] of Object.entries(d || {})){
-    if (typeof v !== 'string' || !k) continue;
-    if (/\{\w+\}/.test(k)){ if (!/^\{\w+\}$/.test(k.trim())) pa.push(compilar(k, v)); }   // chave que é SÓ variável casaria com tudo
-    else ex.set(k, v);
+function build(dictionaries) {
+  const exactMap = new Map(), patternList = [], templateMap = new Map();
+  for (const d of dictionaries) {
+    for (const [k, v] of Object.entries(d || {})) {
+      if (typeof v !== 'string' || !k) continue;
+      knownOutputs.add(v.trim());
+      if (/\{\w+\}/.test(k)) {
+        // A key that is ONLY a variable would match everything.
+        if (!/^\{\w+\}$/.test(k.trim())) { patternList.push(compilePattern(k, v)); templateMap.set(k.trim(), v); }
+      } else exactMap.set(k, v);
+    }
   }
-  pa.sort((a, b) => b.tam - a.tam);                                        // o padrão mais específico (mais longo) primeiro
-  return { exatas: ex, padroes: pa };
+  patternList.sort((a, b) => b.length - a.length);   // the most specific (longest) pattern first
+  return { exact: exactMap, patterns: patternList, templates: templateMap };
 }
-/* English is the source language, mid-migration: strings already rewritten in English pass through in `en`, and the
-   `*_en.json` dictionaries (keyed by the old Portuguese text) still translate whatever has not been rewritten yet.
+/* English is the source language, mid-migration: strings already rewritten in English pass through in `en`, and
+   the `*_en.json` dictionaries (keyed by the old Portuguese text) still translate whatever has not been rewritten.
    `*_pt.json` is keyed by English (generated by tools/locale_invert.mjs) and translates the English source back. */
-async function baixar(l, bust = ''){
+function assemble(parts, l) {
+  const added = history.get(l);
+  const content = added && added.size ? { ...parts.content, ...Object.fromEntries(added) } : parts.content;
+  // Hand-written files (ui, content = missions/gyms) beat the generated one (names); the GM panel beats everything.
+  const d = build([parts.names, content, parts.ui, parts.panel]);
+  d.parts = parts;
+  return d;
+}
+async function download(l, bust = '') {
   if (cache.has(l)) return cache.get(l);
-  const pega = async n => { try { const r = await fetch('./data/locale/' + n + '_' + l + '.json'); return r.ok ? await r.json() : {}; } catch { return {}; } };
-  /* PAINEL (Fase 3 → Traduções): data/translations.json = [{ pt, en, es }] editado pelo GM — vence tudo (é a correção mais recente). */
-  const origens = l === 'pt' ? ['en'] : l === 'en' ? ['pt'] : ['en', 'pt'];
-  const painel = async () => { try { const r = await fetch('./data/translations.json' + bust, { cache: 'no-cache' }); const lista = r.ok ? await r.json() : []; const out = {}; for (const x of (Array.isArray(lista) ? lista : [])) { if (typeof x?.[l] !== 'string' || !x[l].trim()) continue; for (const o of origens) if (x[o]) out[String(x[o]).trim()] = x[l]; } return out; } catch { return {}; } };
-  const [ui, conteudo, nomes, doPainel] = await Promise.all([pega('ui'), pega('content'), pega('names'), painel()]);
-  const d = montar([nomes, conteudo, ui, doPainel]);                       // a mão (ui, conteudo = missões/ginásios) vence o gerado (nomes); o painel vence tudo
-  cache.set(l, d); return d;
+  const get = async (n) => { try { const r = await fetch('./data/locale/' + n + '_' + l + '.json'); return r.ok ? await r.json() : {}; } catch { return {}; } };
+  /* GM panel (Phase 3 → Translations): data/translations.json = [{ pt, en, es }] edited by the GM. */
+  const sources = l === 'pt' ? ['en'] : l === 'en' ? ['pt'] : ['en', 'pt'];
+  const getPanel = async () => {
+    try {
+      const r = await fetch('./data/translations.json' + bust, { cache: 'no-cache' });
+      const list = r.ok ? await r.json() : [];
+      const out = {};
+      for (const x of (Array.isArray(list) ? list : [])) {
+        if (typeof x?.[l] !== 'string' || !x[l].trim()) continue;
+        for (const o of sources) if (x[o]) out[String(x[o]).trim()] = x[l];
+      }
+      return out;
+    } catch { return {}; }
+  };
+  const [ui, content, names, panel] = await Promise.all([get('ui'), get('content'), get('names'), getPanel()]);
+  const d = assemble({ ui, content, names, panel }, l);
+  cache.set(l, d);
+  return d;
 }
-/** O painel salvou as traduções: relê o idioma atual (pt não traduz, não precisa). */
-export async function recarregar(){
+function adopt(d) {
+  exact = d.exact; patterns = d.patterns; templates = d.templates || new Map();
+}
+/** The panel saved translations: re-read the current language (pt does not translate, so it needs nothing). */
+export async function reload() {
   cache.clear();
-  const d = await baixar(atual, '?t=' + Date.now());
-  exatas = d.exatas; padroes = d.padroes;
-  return atual;
+  adopt(await download(current, '?t=' + Date.now()));
+  return current;
 }
-/* DESCRIÇÕES DA POKÉDEX (etapa 3): data/locale/dex_<l>.json, por número da dex, geradas do jogo original pelo
-   tools/idioma_dex.mjs — inclusive em pt (o `d` do dex_extra.json veio da WikiDex em espanhol). Carrega junto com o idioma. */
-let dex = {}; const dexCache = new Map();
-async function baixarDex(l){
+/** Adds extra translations at runtime (for example from a UI module's own dictionary). Returns how many were new. */
+export function append(entries, l = current) {
+  if (!entries || typeof entries !== 'object' || Array.isArray(entries) || !Object.hasOwn(LANGUAGES, l)) return 0;
+  let h = history.get(l);
+  if (!h) { h = new Map(); history.set(l, h); }
+  let added = 0;
+  for (const [k, v] of Object.entries(entries)) {
+    if (k && typeof v === 'string' && h.get(k) !== v) { h.set(k, v); added++; }
+  }
+  if (!added) return 0;
+  const c = cache.get(l);
+  if (c?.parts) {
+    const d = assemble(c.parts, l);
+    cache.set(l, d);
+    if (current === l) adopt(d);
+  }
+  return added;
+}
+
+/* POKÉDEX DESCRIPTIONS (step 3): data/locale/dex_<l>.json, by dex number, generated from the original game by
+   tools/idioma_dex.mjs, including pt (the `d` in dex_extra.json came from WikiDex in Spanish). */
+let dex = {};
+const dexCache = new Map();
+async function downloadDex(l) {
   if (dexCache.has(l)) return dexCache.get(l);
-  let d = {}; try { const r = await fetch('./data/locale/dex_' + l + '.json'); if (r.ok) d = await r.json(); } catch {}
-  dexCache.set(l, d); return d;
+  let d = {};
+  try { const r = await fetch('./data/locale/dex_' + l + '.json'); if (r.ok) d = await r.json(); } catch {}
+  dexCache.set(l, d);
+  return d;
 }
-/** Descrição da espécie `n` (número da dex) no idioma atual, ou null se ainda não carregou / não houver. */
-export const descricaoDex = n => dex[String(n)] || null;
-export const dexPronto = () => dexCache.has(atual);
-/** As descrições são pesadas (0,7–1,4 MB) e a Pokédex do Figma nem as mostra: só baixa quando alguém pede. */
-export async function carregarDex(){ dex = await baixarDex(atual); return dex; }
-/** Carrega o idioma e passa a usá-lo. Devolve o idioma que ficou (cai em pt se o dicionário não vier). */
-export async function carregar(l){
-  if (!IDIOMAS[l]) l = 'en';
+/** Description of species `n` (dex number) in the current language, or null if it has not loaded / does not exist. */
+export const dexDescription = (n) => dex[String(n)] || null;
+export const dexReady = () => dexCache.has(current);
+/** The descriptions are heavy (0.7–1.4 MB) and the Figma Pokédex does not show them: only downloaded on request. */
+export async function loadDex() { dex = await downloadDex(current); return dex; }
+
+/** Loads the language and starts using it. Returns the language that stuck. */
+export async function load(l) {
+  if (!LANGUAGES[l]) l = 'en';
   dex = dexCache.get(l) || {};
-  const d = await baixar(l);
-  atual = l; exatas = d.exatas; padroes = d.padroes; carregado[l] = true;
-  document.documentElement.lang = ({ pt: 'pt-BR', en: 'en', es: 'es' })[l] || l;
-  travaTradutor();
-  return atual;
+  adopt(await download(l));
+  current = l;
+  loaded[l] = true;
+  document.documentElement.lang = LOCALES[l] || l;
+  lockBrowserTranslator();
+  return current;
 }
-/** Escolha do jogador: guarda no aparelho e carrega. Quem avisa a conta é o account.mjs. */
-export async function definir(l){
-  if (!IDIOMAS[l]) return atual;
-  marcarEscolha(l);
-  return carregar(l);
+/** The player's choice: saved on the device and loaded. The account module tells the account. */
+export async function set(l) {
+  if (!LANGUAGES[l]) return current;
+  rememberChoice(l);
+  return load(l);
 }
-/** Início: decide e carrega antes de qualquer tela. `daUrl` = ?idioma= (também fica guardado). */
-export async function iniciar(daUrl = null){
-  const l = detectar(daUrl);
-  if (daUrl && IDIOMAS[daUrl]) marcarEscolha(daUrl);
-  return carregar(l);
+/** Startup: decide and load before any screen. `urlLanguage` = ?idioma= (it is saved too). */
+export async function start(urlLanguage = null) {
+  const l = detect(urlLanguage);
+  if (urlLanguage && LANGUAGES[urlLanguage]) rememberChoice(urlLanguage);
+  return load(l);
 }
-/* 15/09 (xspartanz: o Abra aparecia como "Open"): o "Traduzir página" do Chrome/Edge lia o nome como a palavra portuguesa "abra". O jogo tem
-   tradução própria (PT/EN/ES) e nome de Pokémon nunca se traduz: a página inteira pede pro navegador não traduzir. */
-function travaTradutor(){
+/* 15/09 (xspartanz: Abra showed up as "Open"): Chrome/Edge "Translate page" read the name as the Portuguese word
+   "abra". The game has its own translation (PT/EN/ES) and Pokémon names never translate: the whole page asks the
+   browser not to translate. */
+function lockBrowserTranslator() {
   const el = document.documentElement;
   try {
     el.setAttribute('translate', 'no');
     el.classList.add('notranslate');
-    if (document.body){ document.body.setAttribute('translate', 'no'); document.body.classList.add('notranslate'); }
+    if (document.body) { document.body.setAttribute('translate', 'no'); document.body.classList.add('notranslate'); }
   } catch {}
 }
-try { travaTradutor(); } catch {}
-const TEM_LETRA = /[A-Za-zÀ-ú]/;
-/** Traduz. `vars` preenche {x} no resultado (e no original, quando não há tradução). Nunca lança; texto que não é string volta igual. */
-export const tNome = s => t(s);
-export function t(s, vars = null){
+try { lockBrowserTranslator(); } catch {}
+
+const HAS_LETTER = /[A-Za-zÀ-ú]/;
+/** Texts that found no translation, most frequent first, for the GM panel's translation editor. */
+export function missing() {
+  return [...missingMap.entries()].sort((a, b) => b[1] - a[1]).map(([text, n]) => ({ text, n }));
+}
+export function clearMissing() { missingMap.clear(); }
+function recordMissing(s) {
+  if (current === 'en') return;   // English is the source: a text with no entry is not missing there
+  const k = s.trim();
+  if (k.length < 2 || !/[A-Za-zÀ-ú]{2}/.test(k) || knownOutputs.has(k)) return;
+  if (missingMap.size >= 400 && !missingMap.has(k)) return;
+  missingMap.set(k, (missingMap.get(k) || 0) + 1);
+}
+
+// Numbers written the Portuguese way (1.234,5) become the current language's format.
+const PT_NUMBER = /^(-?)(\d{1,3}(?:\.\d{3})+)(?:,(\d+))?$/;
+export function formatNumber(s) {
+  if (current === 'pt' || typeof s !== 'string') return s;
+  const k = s.trim(), m = PT_NUMBER.exec(k);
+  if (!m) return s;
+  const decimals = m[3] ? m[3].length : 0;
+  const n = Number(m[1] + m[2].replace(/\./g, '') + (decimals ? '.' + m[3] : ''));
+  if (!Number.isFinite(n)) return s;
+  return s.replace(k, n.toLocaleString(locale(), { minimumFractionDigits: decimals, maximumFractionDigits: decimals }));
+}
+/** Date and time (ms since 1970) in the current language, or '' when it is not a time. */
+export function formatDateTime(ms) {
+  const d = new Date(typeof ms === 'number' ? ms : NaN);
+  if (!Number.isFinite(d.getTime())) return '';
+  try {
+    return d.toLocaleString(locale(), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return ''; }
+}
+/** If the variables carry a time `dt`, fills `d` with it formatted in the current language. */
+export function dateFromVars(v) {
+  if (v && typeof v === 'object' && typeof v.dt === 'number') {
+    const s = formatDateTime(v.dt);
+    if (s) v.d = s;
+  }
+  return v;
+}
+
+function translate(s, vars, record) {
   if (typeof s !== 'string' || !s) return s;
   let r = s;
-  if ((exatas.size || padroes.length) && TEM_LETRA.test(s)){
-    const k = s.trim(), e = exatas.get(k);
-    if (e != null) r = k === s ? e : s.replace(k, e);
-    else for (const p of padroes){
+  if (HAS_LETTER.test(s)) {
+    const k = s.trim(), e = exact.get(k) ?? (k.includes('{') ? templates.get(k) : undefined);
+    let found = e != null;
+    if (found) r = k === s ? e : s.replace(k, e);
+    else for (const p of patterns) {
       const m = p.re.exec(s);
-      if (m){ r = p.saida.replace(/\{(\w+)\}/g, (tudo, nome) => { const i = p.vars.indexOf(nome); return i >= 0 ? t(m[i + 1]) : tudo; }); break; }
+      if (m) {
+        found = true;
+        r = p.output.replace(/\{(\w+)\}/g, (all, name) => { const i = p.vars.indexOf(name); return i >= 0 ? formatNumber(translate(m[i + 1], null, false)) : all; });
+        break;
+      }
     }
+    if (!found && record) recordMissing(s);
   }
-  if (vars) r = r.replace(/\{(\w+)\}/g, (tudo, nome) => (nome in vars ? String(vars[nome]) : tudo));
+  if (vars) r = r.replace(/\{(\w+)\}/g, (all, name) => (Object.hasOwn(vars, name) ? formatNumber(String(vars[name])) : all));
   return r;
 }
+/** Translates. `vars` fills {x} in the result (and in the original, when there is no translation). Never throws;
+ *  text that is not a string comes back unchanged. */
+export function t(s, vars = null) { return translate(s, vars, true); }
+/** Same as t() but for names: does not count as a missing translation. */
+export function tName(s) { return translate(s, null, false); }
 /** Event titles the server already wrote in the player's language. A known phrase still translates. */
-export function tExato(s){
+export function tExact(s) {
   if (typeof s !== 'string' || !s) return s;
-  const k = s.trim(), e = exatas.get(k);
+  const k = s.trim(), e = exact.get(k);
   return e == null ? s : (k === s ? e : s.replace(k, e));
 }
-/** Traduz um HTML pequeno trocando só os textos entre as tags (pra templates antigos). */
-export function tHtml(html){
-  if (!(exatas.size || padroes.length) || typeof html !== 'string') return html;
-  return html.replace(/>([^<>]+)</g, (tudo, txt) => '>' + t(txt) + '<');
+/** Translates a small HTML string by changing only the text between tags (for old templates). */
+export function tHtml(html) {
+  if (!(exact.size || patterns.length) || typeof html !== 'string') return html;
+  return html.replace(/>([^<>]+)</g, (all, text) => '>' + t(text) + '<');
 }
+
 /* Place names are English in the data. File ids (kanto, pallet_route1, 4110001) stay as scene keys.
-   rotuloLugar returns that English name; t() runs only when the player picked PT/ES. */
-const MAPA_IDS = { kanto: 'Kanto', pallet_route1: 'Pallet Town & Route 1', pallet_rota1: 'Pallet Town & Route 1', '1000001': 'Kanto' };
+   placeLabel returns that English name; t() runs only when the player picked PT/ES. */
+const MAP_IDS = { kanto: 'Kanto', pallet_route1: 'Pallet Town & Route 1', pallet_rota1: 'Pallet Town & Route 1', '1000001': 'Kanto' };
 const TOWNS = new Set(['Pallet', 'Lavender']);
-const cenasPorId = Object.create(null);
-const AINDA_PT = /[àáâãéêíóôõúç]|Cidade|Rota |Ilha |Piso |Ginásio|Casa |Loja |Quarto |Caverna|Floresta|Esconderijo|Edifício|Companhia|Usina|Caminho |Centro de|campo de|Túnel|Sala |cabine|cozinha|corredor|Liga |Monte |área |Safári|Brasas|índigo|Celeste|Lavanda|Seaform|personagem|departamentos/i;
-const TROCAS = [
+const sceneNamesById = Object.create(null);
+const STILL_PORTUGUESE = /[àáâãéêíóôõúç]|Cidade|Rota |Ilha |Piso |Ginásio|Casa |Loja |Quarto |Caverna|Floresta|Esconderijo|Edifício|Companhia|Usina|Caminho |Centro de|campo de|Túnel|Sala |cabine|cozinha|corredor|Liga |Monte |área |Safári|Brasas|índigo|Celeste|Lavanda|Seaform|personagem|departamentos/i;
+const REPLACEMENTS = [
   ['Liga ÍndigoCentro de Pokémon', 'Indigo League Pokémon Center'],
   ['Centro de Pokémon', 'Pokémon Center'],
   ['Centro de Pokemon', 'Pokémon Center'],
@@ -189,23 +302,23 @@ const TROCAS = [
   ['área ', 'area '],
   ['Área ', 'Area '],
 ].sort((a, b) => b[0].length - a[0].length);
-function cidadeDe(nome){
-  const n = String(nome || '').trim();
+function cityName(name) {
+  const n = String(name || '').trim();
   if (TOWNS.has(n)) return n + ' Town';
   if (n === 'Cinnabar') return 'Cinnabar Island';
   return n + ' City';
 }
-function nomeEmIngles(s){
+function englishName(s) {
   let x = String(s || '').trim();
   if (!x) return x;
-  if (MAPA_IDS[x]) return MAPA_IDS[x];
-  if (cenasPorId[x]) x = cenasPorId[x];
-  if (!AINDA_PT.test(x)) return x;
-  const viaDic = t(x);
-  if (viaDic && !AINDA_PT.test(viaDic)) return viaDic;
-  x = viaDic || x;
-  for (const [a, b] of TROCAS) x = x.split(a).join(b);
-  x = x.replace(/^Cidade\s+(.+)$/i, (_, n) => cidadeDe(n));
+  if (MAP_IDS[x]) return MAP_IDS[x];
+  if (sceneNamesById[x]) x = sceneNamesById[x];
+  if (!STILL_PORTUGUESE.test(x)) return x;
+  const viaDictionary = t(x);
+  if (viaDictionary && !STILL_PORTUGUESE.test(viaDictionary)) return viaDictionary;
+  x = viaDictionary || x;
+  for (const [from, to] of REPLACEMENTS) x = x.split(from).join(to);
+  x = x.replace(/^Cidade\s+(.+)$/i, (_, n) => cityName(n));
   x = x.replace(/^Ilha\s+(.+)$/i, (_, n) => {
     const num = { um: 'One', dois: 'Two', três: 'Three', tres: 'Three', quatro: 'Four', cinco: 'Five', seis: 'Six', sete: 'Seven' }[n.toLowerCase()];
     return (num || n) + ' Island';
@@ -221,20 +334,20 @@ function nomeEmIngles(s){
   return x || s;
 }
 /** Register scene-id → dump name so numbered maps show an English label. */
-export function registrarCenas(cenas){
-  for (const c of cenas || []){
+export function registerScenes(scenes) {
+  for (const c of scenes || []) {
     if (c?.id == null) continue;
-    if (c.nome) cenasPorId[String(c.id)] = c.nome;
-    for (const ar of c.areas || []){
-      if (ar?.id != null && ar.nome) cenasPorId[String(ar.id)] = ar.nome;
+    if (c.nome) sceneNamesById[String(c.id)] = c.nome;
+    for (const ar of c.areas || []) {
+      if (ar?.id != null && ar.nome) sceneNamesById[String(ar.id)] = ar.nome;
     }
   }
 }
 /** Place label in the current language. English is the source; PT/ES go through t(). */
-export function rotuloLugar(s){
+export function placeLabel(s) {
   if (s == null || s === '') return '';
-  const raw = String(s), m = raw.match(/^(.*?)([.…]+)$/), nucleo = (m ? m[1] : raw).trim(), suf = m ? m[2] : '';
-  if (!nucleo) return suf;
-  const en = nomeEmIngles(nucleo);
-  return (atual === 'en' ? en : (t(en) || en)) + suf;
+  const raw = String(s), m = raw.match(/^(.*?)([.…]+)$/), core = (m ? m[1] : raw).trim(), suffix = m ? m[2] : '';
+  if (!core) return suffix;
+  const en = englishName(core);
+  return (current === 'en' ? en : (t(en) || en)) + suffix;
 }

@@ -1,6 +1,6 @@
 import * as Popup from './popup.mjs';
 import * as Avisos from './notices.mjs';
-import { t as tr, idioma } from './i18n.mjs';
+import { t as tr, language } from './i18n.mjs';
 import * as G from './guild.mjs';
 import * as Emblema from './guild_emblem.mjs';
 import { completar, fatiarArtes } from './guild_screens.mjs';
@@ -22,7 +22,7 @@ let cargoSel = 'oficial',
 let avisouSemLugar = 0;
 let rascunho = null;
 const LOCAL = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' },
-  local = () => LOCAL[idioma()] || 'pt-BR';
+  local = () => LOCAL[language()] || 'pt-BR';
 const fmt = (n) => Math.round(+n || 0).toLocaleString(local());
 const esc = (s) =>
   String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -776,7 +776,7 @@ function nomeDaEquipe(p) {
   return tr(p);
 }
 function milhar(s) {
-  return idioma() === 'pt'
+  return language() === 'pt'
     ? s
     : String(s).replace(/\b\d{1,3}(?:\.\d{3})+\b/g, (n) => Number(n.replace(/\./g, '')).toLocaleString(local()));
 }
