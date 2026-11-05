@@ -347,6 +347,7 @@ function ligarRecursos(){
 }
 
 export function instalar(c){
+  ProgressaoUi.aoMudarVista?.(() => { if (aberta === 'treinador' && popTr && Popup.aberto(popTr)) encherTreinador(popTr); });   // Master pill and Stats refresh when the server sends a new view
   ProgressaoUi.instalar({
     enviar: (m) => c.correioEnviar?.(m),
     comConta: () => !!c.comConta?.(),
@@ -2544,7 +2545,7 @@ function popupTr(){
   if (popTr) return popTr;
   const def = defPopup('treinador'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
   popTr = Popup.montar(def, {
-    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } return false; },
+    abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } if (alvo === 'dialogo-estatisticas'){ abrirEstatisticas(); return true; } return false; },
     fechar: () => { if (aberta === 'treinador') aberta = null; if (visorTr) visorTr.ativo = false; },
   });
   return popTr;
@@ -2602,6 +2603,55 @@ function mioloInsignia(cel, ref, pop){
     backgroundSize: ((ref.w + 2 * pad) * s) + 'px ' + ((ref.h + 2 * pad) * s) + 'px',
     backgroundPosition: (d / 2 - (Cx + pad) * s) + 'px ' + (h / 2 - (Cy + pad) * s) + 'px' });
 }
+/* ACCOUNT STATS (Trainer card → Stats): the `estatisticas` block of the achievements view (server_progression.mjs).
+   The layout's labels are Portuguese; English players get these, everyone else the dictionary of their language. */
+const STATS_EN = {
+  'Estatísticas da conta': 'Account stats', 'Capturas': 'Catches', 'Espécies de Kanto': 'Kanto species', 'Pokémon derrotados': 'Pokémon defeated',
+  'Raids': 'Raids', 'Mais capturado': 'Most caught', 'Tipo mais derrotado': 'Most defeated type', 'Bola favorita': 'Favorite ball',
+  'Captura': 'Catching', 'Shinies': 'Shinies', 'Pokébolas usadas': 'Poké Balls used', 'Pescados': 'Fished', 'Batalha': 'Battle',
+  'Treinadores vencidos': 'Trainers defeated', 'Insígnias': 'Badges', 'Elite Four': 'Elite Four', 'Curas no Centro': 'Center heals',
+  'Raids e chefes': 'Raids and bosses', 'MVP': 'MVP', 'Chefes diferentes': 'Different bosses', 'Chefe da guilda': 'Guild boss',
+  'Exploração': 'Exploration', 'Áreas visitadas': 'Areas visited', 'Cidades': 'Cities', 'Masmorras': 'Dungeons', 'Evoluções': 'Evolutions',
+  'Social e comércio': 'Social and trade', 'Trocas': 'Trades', 'Parceiros de troca': 'Trade partners', 'Mercado: vendas / compras': 'Market: sales / purchases',
+  'Missões': 'Missions', 'Criação': 'Breeding', 'Ovos criados': 'Eggs bred', 'Ovos chocados': 'Eggs hatched', 'Shiny de ovo': 'Egg shinies', 'Bônus de caça': 'Hunt bonus',
+};
+let estatisticasAbertas = false;
+function abrirEstatisticas(){
+  if (!popTr) return;
+  estatisticasAbertas = true;
+  Popup.mostrarExtra(popTr, 'dialogo-estatisticas', true);
+  ProgressaoUi.pedirVista?.();
+  encherEstatisticas(popTr);
+}
+function encherEstatisticas(pop){
+  const ex = Popup.extra(pop, 'dialogo-estatisticas'); if (!ex) return;
+  if (ex.style.display === 'none') { estatisticasAbertas = false; return; }
+  const pt = I18n.language() === 'pt';
+  for (const el of ex.querySelectorAll('.pf-rotulo')){
+    const orig = el.dataset.ptOrig || (el.dataset.ptOrig = el.textContent.trim());
+    const en = STATS_EN[orig];
+    const want = pt || !en ? orig : tr(en);
+    if (el.textContent !== want) el.textContent = want;
+  }
+  const S = ProgressaoUi.vistaAtual?.()?.estatisticas;
+  const n = v => Math.round(+v || 0).toLocaleString(I18n.locale());
+  const put = (id, v) => Popup.texto(pop, id, v, ex);
+  if (!S){ put('est-desde', ctx.comConta?.() ? tr('one moment…') : tr('Sign in with an account to see your stats.')); for (const el of ex.querySelectorAll('[data-txt^="est-"]:not([data-txt="est-desde"]),[data-txt^="destaque-"]')) el.textContent = '—'; return; }
+  const h = Math.floor(S.tempo / 3600), mi = Math.floor((S.tempo % 3600) / 60);
+  const since = S.desde ? new Date(S.desde).toLocaleDateString(I18n.locale(), { day: '2-digit', month: '2-digit' }) : null;
+  put('est-desde', [ctx.nome || '', since ? tr('since {d}', { d: since }) : null, tr(S.dias === 1 ? '{n} day played' : '{n} days played', { n: S.dias }), tr('{h}h {m}m played', { h, m: mi })].filter(Boolean).join(' · '));
+  put('est-capturas', n(S.capturas)); put('est-kanto', S.kanto + ' / 151'); put('est-derrotados', n(S.derrotados)); put('est-raids', n(S.raids));
+  put('destaque-1', S.maisCapturado ? tr(S.maisCapturado.nome) + ' · ' + n(S.maisCapturado.n) : '—');
+  put('destaque-2', S.tipoMaisDerrotado ? tr(S.tipoMaisDerrotado.tipo) + ' · ' + n(S.tipoMaisDerrotado.n) : '—');
+  put('destaque-3', S.bolaFavorita ? tr(D?.itens?.[S.bolaFavorita.id]?.n || 'Ball') + ' · ' + S.bolaFavorita.pct + '%' : '—');
+  const vezes = v => tr(+v === 1 ? '{n} time' : '{n} times', { n: n(v) });
+  put('est-captura-1', n(S.shinies)); put('est-captura-2', n(S.bolasUsadas)); put('est-captura-3', n(S.pescados));
+  put('est-batalha-1', n(S.treinadores)); put('est-batalha-2', S.insignias + ' / 8'); put('est-batalha-3', vezes(S.elite)); put('est-batalha-4', n(S.curas));
+  put('est-raid-1', vezes(S.mvp)); put('est-raid-2', n(S.chefes)); put('est-raid-3', n(S.chefeGuilda));
+  put('est-mundo-1', n(S.areas)); put('est-mundo-2', n(S.cidades)); put('est-mundo-3', n(S.masmorras)); put('est-mundo-4', n(S.evolucoes));
+  put('est-social-1', n(S.trocas)); put('est-social-2', n(S.parceiros)); put('est-social-3', n(S.vendas) + ' / ' + n(S.compras)); put('est-social-4', n(S.missoes));
+  put('est-criacao-1', n(S.ovos)); put('est-criacao-2', n(S.chocados)); put('est-criacao-3', n(S.shinyOvo));
+}
 function encherTreinador(pop){
   Popup.rotulo(pop, 'titulo');
   const D2 = D, t = ctx.lerLS('tempo', 0), h = Math.floor(t / 3600), mi = Math.floor((t % 3600) / 60);
@@ -2645,6 +2695,13 @@ function encherTreinador(pop){
   if (notaRk){ notaRk.textContent = 'Shiny odds are 1/4,096 for everyone'; myRankingPosition().then(p => { if (p && p.species?.pos && aberta === 'treinador' && Popup.aberto(pop)) notaRk.textContent = '#' + p.species.pos + ' of ' + p.total + ' in the ranking · shiny odds 1/4,096 for everyone'; }); }
   Popup.texto(pop, 'obedecem', 'They obey up to Lv ' + teto + '. Above that they ignore moves. Each Badge raises the cap (' + TETO_OBED.slice(0, 8).join('/') + ', Elite 100).');
   inglesRotulos(pop);
+  // Master Level pill and the Achievements / Stats buttons (server_progression.mjs)
+  const nm = ProgressaoUi.nivelMestre?.();
+  Popup.texto(pop, 'mestre', nm ? tr('Master {n}', { n: nm }) : tr('Master'));
+  if (nm == null && ctx.comConta?.()) ProgressaoUi.pedirVista?.();
+  Popup.texto(pop, 'btn-estatisticas', tr('Stats'));
+  { const bc = Popup.grupo(pop, 'bonus-caca'); if (bc) bc.style.display = 'none'; }   // hunt bonus: no server for it yet
+  if (Popup.extra(pop, 'dialogo-estatisticas')?.classList.contains('pf-extra-on') || estatisticasAbertas) encherEstatisticas(pop);
   // colecionador
   const K = ctx.conhecimento;
   if (K){

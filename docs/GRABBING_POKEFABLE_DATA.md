@@ -27,6 +27,16 @@ javascript:(async()=>{const h={Authorization:'Bearer '+localStorage.getItem('con
 Other HTTP routes their client calls: `/temporada` (Battle Pass), `/loja`, `/loja/catalogo?l=`, `/loja/checkout` (POST, real money),
 `/ranking/eu`. The Battle Pass actions (`ver`, `pegar`) go over the WebSocket as `{ t: 'temporada', op }`.
 
+## Grabbing WebSocket data (achievements)
+
+Achievements, Master Level and titles are not an HTTP route: the game asks over its WebSocket
+(`{ t: 'progressao_vista' }`). This bookmarklet catches the game's open socket on its next message (any
+step or the regular ping), asks for the view, and saves the reply as `pokefable_achievements.json`:
+
+```
+javascript:(()=>{const P=WebSocket.prototype,s0=P.send;let done=false;P.send=function(d){P.send=s0;const ws=this;ws.addEventListener('message',e=>{try{const m=JSON.parse(e.data);if(!done&&m.t==='progressao_vista'){done=true;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(m,null,1)],{type:'application/json'}));a.download='pokefable_achievements.json';a.click()}}catch{}});s0.call(ws,d);s0.call(ws,JSON.stringify({t:'progressao_vista'}))};setTimeout(()=>{if(!done)alert('No reply yet: take a step in the game and run it again.')},8000)})()
+```
+
 ## What has been grabbed
 
 | Route | Saved as | Notes |

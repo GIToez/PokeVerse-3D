@@ -7413,5 +7413,13 @@
   "Claim all": "Resgatar tudo",
   "Claim every reward that is ready": "Resgatar todas as recompensas prontas",
   "Nothing to claim right now": "Nada para resgatar agora",
-  "Nothing to claim right now.": "Nada para resgatar agora."
+  "Nothing to claim right now.": "Nada para resgatar agora.",
+  "Stats": "Estatísticas",
+  "since {d}": "desde {d}",
+  "{n} day played": "{n} dia jogado",
+  "{n} days played": "{n} dias jogados",
+  "{h}h {m}m played": "{h}h {m}m jogadas",
+  "{n} time": "{n} vez",
+  "{n} times": "{n} vezes",
+  "Sign in with an account to see your stats.": "Entre com uma conta para ver suas estatísticas."
 }

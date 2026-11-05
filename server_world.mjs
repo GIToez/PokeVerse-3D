@@ -306,7 +306,7 @@ export function createWorld(h) {
       c.rev = (c.rev || 0) + 1;
       saveAccounts();
       reply({ ok: true, chac: n, mon: pk, vidas: save.time, bolsa: bag });
-      try { onCatch?.(ws, u, pk); } catch (e) { console.warn('world: onCatch', e); }
+      try { onCatch?.(ws, u, pk, +ball); } catch (e) { console.warn('world: onCatch', e); }
       w.timer = setTimeout(() => remove(map, w, 'capturado'), settleMs);
       log('catch', u, pk.dex, pk.lv, pk.shiny ? 'shiny' : '');
     } else {

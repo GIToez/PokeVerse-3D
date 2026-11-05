@@ -74,6 +74,8 @@ function pintarPonto() {
 }
 export const montariaDaVista = (a) => (vista?.montarias?.lista || []).find((m) => m && m.id === a) || null;
 export const temVista = () => !!vista;
+/** The last view the server sent (achievements, master level, titles, account stats), or null. */
+export const vistaAtual = () => vista;
 export const nivelMestre = () => (Number.isFinite(+vista?.mestre?.nivel) ? +vista.mestre.nivel : null);
 export function pedirVista() {
   if (!ctx.comConta?.()) return;

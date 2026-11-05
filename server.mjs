@@ -903,7 +903,7 @@ const httpServer = http.createServer((req, res) => {
       if (contas[u]) return json(409, { erro: 'This username is already taken.' });
       const codigo = crypto.randomBytes(8).toString('hex');
       const token = tokenNovo();
-      contas[u] = { senha: hashSenha(d.senha || ''), email: d.email || '', save: null, rev: 0, codigo, token, tokenExp: Date.now() + TOKEN_VIDA_MS };
+      contas[u] = { senha: hashSenha(d.senha || ''), email: d.email || '', save: null, rev: 0, codigo, token, tokenExp: Date.now() + TOKEN_VIDA_MS, criadaEm: Date.now() };
       salvarContasJa();
       sessoes.set(token, u);
       return json(200, { ok: true, token, usuario: u, rev: 0, codigo, save: null });
@@ -1405,8 +1405,8 @@ const mail = createMail({
 const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
-  onCatch: (ws, u, pk) => {
-    temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny });
+  onCatch: (ws, u, pk, bola) => {
+    temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola });
     const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex });
     if (r) enviarMissao(ws, r);
   },

@@ -47,6 +47,40 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     if (!p.resgatados || typeof p.resgatados !== 'object') p.resgatados = {};
     return p;
   }
+  let types = null;   // dex → types, for "most defeated type"
+  function typesOf(dex) {
+    if (!types) {
+      types = new Map();
+      try { for (const s of JSON.parse(fs.readFileSync(nodePath.join(dataDir, '..', 'pokedex.json'), 'utf8')).species || []) if (!types.has(+s.n)) types.set(+s.n, s.types || []); } catch {}
+    }
+    return types.get(+dex) || [];
+  }
+  let names = null;
+  const nameOf = dex => { if (!names) { names = new Map(); try { for (const s of JSON.parse(fs.readFileSync(nodePath.join(dataDir, '..', 'pokedex.json'), 'utf8')).species || []) if (!names.has(+s.n)) names.set(+s.n, s.name); } catch {} } return names.get(+dex) || 'No. ' + dex; };
+  const bump = (o, k, n = 1) => { o[k] = (o[k] | 0) + n; };
+  const today = () => new Date().toISOString().slice(0, 10);
+  /** Account stats for the Trainer card's Stats window: what the counters, the save and the per-kind tallies say. */
+  function stats(c) {
+    const p = stateOf(c), s = c.save || {}, t = p.tally || {};
+    const top = o => Object.entries(o || {}).sort((a, b) => b[1] - a[1])[0] || null;
+    const caught = top(t.porDex), type = top(t.koTipo), ball = top(t.bolas);
+    const balls = Object.values(t.bolas || {}).reduce((a, b) => a + b, 0);
+    const kanto = Object.entries(s.dex || {}).filter(([n, v]) => +n >= 1 && +n <= 151 && (v === 'pego' || v === 'caught')).length;
+    const missions = Array.isArray(s.missoes?.feitas) ? s.missoes.feitas.length : 0;
+    return {
+      desde: c.criadaEm || (p.dias?.[0] ? Date.parse(p.dias[0]) : null), dias: (p.dias || []).length, tempo: Math.max(0, +s.tempo || 0),
+      capturas: p.cont.captura | 0, kanto, derrotados: p.cont.ko | 0, raids: p.cont.raid | 0,
+      maisCapturado: caught ? { dex: +caught[0], nome: nameOf(caught[0]), n: caught[1] } : null,
+      tipoMaisDerrotado: type ? { tipo: type[0], n: type[1] } : null,
+      bolaFavorita: ball && balls ? { id: +ball[0], pct: Math.round((ball[1] / balls) * 100) } : null,
+      shinies: p.cont.shiny | 0, bolasUsadas: balls, pescados: p.cont.pesca | 0,
+      treinadores: p.cont.treinador | 0, insignias: Array.isArray(s.insignias) ? s.insignias.length : 0, elite: p.cont.elite | 0, curas: p.cont.cura | 0,
+      mvp: p.cont.mvp | 0, chefes: Object.keys(t.chefes || {}).length, chefeGuilda: p.cont.chefeGuilda | 0,
+      areas: Object.keys(t.areas || {}).length, cidades: p.cont.cidades | 0, masmorras: p.cont.masmorras | 0, evolucoes: p.cont.evolucao | 0,
+      trocas: p.cont.troca | 0, parceiros: Object.keys(t.parceiros || {}).length, vendas: p.cont.venda | 0, compras: p.cont.compra | 0, missoes: missions,
+      ovos: p.cont.ovo | 0, chocados: p.cont.chocado | 0, shinyOvo: p.cont.shinyOvo | 0,
+    };
+  }
   const valueOf = (c, key) => (SAVE_COUNTERS[key] ? SAVE_COUNTERS[key](c.save) : Math.max(0, +stateOf(c).cont[key] || 0));
 
   /** A server-checked event happened (the season pass's `contar` calls this too). */
@@ -57,6 +91,13 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
     const before = pending(c);
     if (EVENT_COUNTERS.has(ev.conta)) p.cont[ev.conta] = (p.cont[ev.conta] | 0) + Math.max(1, ev.n | 0 || 1);
     if (ev.conta === 'captura' && ev.shiny) p.cont.shiny = (p.cont.shiny | 0) + 1;
+    const t = p.tally || (p.tally = {});
+    if (ev.conta === 'captura' && ev.dex) bump(t.porDex || (t.porDex = {}), String(ev.dex));
+    if (ev.conta === 'captura' && ev.bola) bump(t.bolas || (t.bolas = {}), String(ev.bola));
+    if (ev.conta === 'ko' && ev.dex) { const ty = typesOf(ev.dex)[0]; if (ty) bump(t.koTipo || (t.koTipo = {}), ty); }
+    if ((ev.conta === 'ko' || ev.conta === 'captura') && ev.area != null) (t.areas || (t.areas = {}))[String(ev.area)] = 1;
+    if (!Array.isArray(p.dias)) p.dias = [];
+    if (p.dias.at(-1) !== today()) p.dias.push(today());
     saveAccounts();
     const after = pending(c);
     if (after > before) for (const w of socketsOf(u)) send(w, { t: 'progressao_vista', vista: view(c), novo: after - before });
@@ -95,6 +136,7 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
       }),
       conquistas: list,
       mestre: { nivel: level, xp: masterXp, proximo: level * perLevel, falta: level * perLevel - masterXp },
+      estatisticas: stats(c),
       titulos: { ativos: [...earned], escolhido: p.escolhido && earned.has(p.escolhido) ? p.escolhido : null, catalogo: catalog },
     };
   }
@@ -115,7 +157,12 @@ export function createProgression({ accounts, send, socketsOf, saveAccounts, dat
   function receive(ws, u, m) {
     const c = u ? accounts[u] : null;
     if (!c) return send(ws, { t: 'progressao_erro', erro: 'Sign in with an account to see achievements.' });
-    if (m.t === 'progressao_vista') return send(ws, { t: 'progressao_vista', vista: view(c) });
+    if (m.t === 'progressao_vista') {
+      const p = stateOf(c);
+      if (!Array.isArray(p.dias)) p.dias = [];
+      if (p.dias.at(-1) !== today()) { p.dias.push(today()); saveAccounts(); }
+      return send(ws, { t: 'progressao_vista', vista: view(c) });
+    }
     if (m.t === 'progressao_resgatar') {
       const a = def().conquistas.find(x => x.id === String(m.id));
       if (!a) return send(ws, { t: 'progressao_resgate', ok: false, texto: 'That achievement is gone.' });
