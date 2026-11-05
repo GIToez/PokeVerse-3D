@@ -78,7 +78,7 @@ export const ICONE_CLIMA = { chuva: 'icone-clima', chuva_forte: 'icone-clima', s
 export const iconeClima = (c) => (ICONE_CLIMA[c] ? './ui/figma_webp/ui2-v2/celular-atalhos-refs/clima/clima/' + ICONE_CLIMA[c] + '.webp' : null);
 
 /* ── the floating card ────────────────────────────────────────────────────────────────────────────────────────────── */
-let card = null, cardFor = null, hoverTimer = 0, dep = null;
+let card = null, cardFor = null, hoverTimer = 0, dep = null, pinned = false;   // pinned: opened by a press-and-hold — stays until the next tap
 function ensureCss() {
   if (document.getElementById('pv-marks-css')) return;
   const css = document.createElement('style');
@@ -128,7 +128,7 @@ function showCard(html, anchor, key) {
   card.style.left = Math.round(Math.max(8, Math.min(vw - cw - 8, x))) + 'px';
   card.style.top = Math.round(Math.max(8, Math.min(vh - chh - 8, y))) + 'px';
 }
-export function hideCard() { if (card) card.style.display = 'none'; cardFor = null; clearTimeout(hoverTimer); }
+export function hideCard() { if (card) card.style.display = 'none'; cardFor = null; pinned = false; clearTimeout(hoverTimer); }
 const cardOpen = () => !!cardFor;
 
 /* ── card contents ────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -219,7 +219,7 @@ function wire(el, key, build) {
     holdTimer = setTimeout(() => { held = true; open(); }, HOLD_MS);
   });
   el.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse' && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) clearTimeout(holdTimer); });
-  const end = (e) => { if (e.pointerType === 'mouse') return; clearTimeout(holdTimer); if (held) setTimeout(hideCard, 1800); };
+  const end = (e) => { if (e.pointerType === 'mouse') return; clearTimeout(holdTimer); if (held) pinned = true; };   // the card stays up: the next tap anywhere closes it
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', end);
   el.addEventListener('contextmenu', (e) => { if (held) e.preventDefault(); });
@@ -293,6 +293,16 @@ export function paint() {
 export function install(d) {
   dep = d;
   ensureCss();
+  /* A card opened by press-and-hold stays until the next tap. That tap only closes it when it lands on a move slot or the
+     pill (so reading a card never fires a move by accident); anywhere else the tap also does its normal job. */
+  let swallow = null;
+  addEventListener('pointerdown', (e) => {
+    if (!pinned || e.pointerType === 'mouse') return;
+    const on = e.target?.closest?.('#sk1,#sk2,#sk3,#sk4,#minimapa [data-fig="tempo"]');
+    hideCard();
+    if (on) { swallow = on; e.stopImmediatePropagation(); }
+  }, true);
+  addEventListener('click', (e) => { if (swallow && swallow.contains(e.target)) { e.stopImmediatePropagation(); e.preventDefault(); } swallow = null; }, true);
   addEventListener('blur', hideCard);
   addEventListener('keydown', (e) => { if (e.key === 'Escape') hideCard(); });
 }
