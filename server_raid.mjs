@@ -353,7 +353,18 @@ export function criarRaid(h) {
     const erro = texto => sistema(ws, '⚠ ' + texto);
     if (op === 'anunciar') {
       if (raid) { erro('There is already a raid (' + raid.fase + '). Use /raid cancel first.'); return; }
-      const r = anunciar(g); if (r.erro) { erro(r.erro); return; }
+      /* /raid announce [boss | random]: a boss from the Event schedule's raid events (Articuno, Mew…, the ones switched on for
+         `random`); nothing = Data files → raid. */
+      let preset = null, nomeP = '';
+      if (txt) {
+        let evs = [];
+        try { evs = (JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'agenda.json'), 'utf8')).eventos || []).filter(e => e.tipo === 'raid' && e.raid?.chefeNome); } catch {}
+        const porNome = new Map(); for (const e of evs) { const k = semAcento(e.raid.chefeNome); if (!porNome.has(k) || e.ligado) porNome.set(k, e); }
+        const pick = txt === 'random' || txt === 'aleatorio' ? (l => l[Math.floor(Math.random() * l.length)])([...porNome.values()].filter(e => e.ligado !== false)) : porNome.get(txt);
+        if (!pick) { erro('No raid boss "' + v + '" on the Event schedule. Bosses: ' + ([...porNome.values()].map(e => e.raid.chefeNome + (e.ligado === false ? ' (off)' : '')).join(', ') || 'none') + ', or random.'); return; }
+        const { filaMin, ...pr } = pick.raid; preset = pr; nomeP = pick.titulo;
+      }
+      const r = anunciar(g, nomeP, preset); if (r.erro) { erro(r.erro); return; }
       ok('Raid #' + raid.id + ' announced: ' + raid.cfg.chefeNome + ' Lv ' + raid.cfg.chefeNivel + ', ' + raid.cfg.vagas + ' spots. /raid start opens the countdown.', { cfg: raid.cfg });
       if (!fs.existsSync(nodePath.join(raiz, 'public/scenery/mon', raid.cfg.chefeGlb + '.glb'))) erro('The model ' + raid.cfg.chefeGlb + '.glb is not in public/scenery/mon: the boss will only show as a health bar.');
       return;

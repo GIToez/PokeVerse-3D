@@ -121,6 +121,7 @@ export function instalarAgenda({ api, toast }) {
       + (bonus ? `<div>Rates in effect from the schedule: <b>EXP ×${bonus.xp}${bonus.shiny !== 1 ? ' · shiny ×' + bonus.shiny : ''}${bonus.densidade !== 1 ? ' · wild ×' + bonus.densidade : ''}</b> (Live events stack on top)</div>` : '');
     $('v-agenda').innerHTML = `
       <div class="topo-edit"><h2>Event schedule</h2><span class="ag-sujo" id="ag-sujo" ${sujo ? '' : 'hidden'}>● unsaved</span>
+        <button id="ag-aleatoria" title="Start one of the raid events that are switched on, picked at random (its queue opens now)">🎲 Random raid now</button>
         <button id="ag-novo">➕ New event</button><button class="prim" id="ag-salvar">Save schedule</button><button id="ag-atualizar">Refresh</button></div>
       <div class="caixa">${agoraTxt}
         <div class="ag-prox"><b>Next two weeks</b>${proximos.length ? '<ul>' + proximos.map(o => `<li>${o.estado === 'agora' ? '🟢' : '🕒'} ${quando(o.oc)} → ${quando(o.fim)} · ${esc(o.titulo)} <span class="ag-ajuda">(${TIPO_NOME[o.tipo] || o.tipo}${o.raid?.chefe ? ': ' + esc(o.raid.chefe) + ' Lv ' + o.raid.nivel : ''}${taxasTxt(o.bonus) ? ': ' + taxasTxt(o.bonus) : ''})</span></li>`).join('') + '</ul>' : '<div class="ag-ajuda">Nothing booked.</div>'}</div>
@@ -140,6 +141,11 @@ export function instalarAgenda({ api, toast }) {
   }
 
   function ligar() {
+    $('ag-aleatoria').onclick = () => {
+      const l = dados.eventos.filter(e => e.tipo === 'raid' && e.ligado && !e.manual);
+      if (!l.length) { toast('No raid event is switched on.', true); return; }
+      agora(l[Math.floor(Math.random() * l.length)], 'iniciar');
+    };
     $('ag-novo').onclick = () => { dados.eventos.unshift(novoEvento()); sujo = true; render(); };
     $('ag-atualizar').onclick = () => { if (!sujo || confirm('Drop the unsaved changes?')) carregar(); };
     $('ag-salvar').onclick = salvar;

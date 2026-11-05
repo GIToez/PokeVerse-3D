@@ -9482,7 +9482,7 @@ if (jogo.ash){
       if (op === 'raid'){                                                  // RAID AO VIVO (14/09): /raid anunciar | comecar | cancelar | hp N | dano F | shiny N | premio mew|sem-mew | status
         const [o0, ...r] = resto.split(/\s+/).filter(Boolean);
         const o = String(o0 || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');   // /raid começar vale
-        const USO = 'Use: /raid anunciar | comecar | cancelar | hp N | dano F | shiny N | premio mew|sem-mew | status';
+        const USO = 'Use: /raid announce [boss | random] | start | cancel | hp N | damage F | shiny N | prize mew|sem-mew | status';
         if (!['anunciar', 'comecar', 'cancelar', 'hp', 'dano', 'shiny', 'premio', 'status'].includes(o)){ Chat.sistema(USO); return; }
         const bruto = r.join(' ').trim().toLowerCase(), num = +bruto.replace(',', '.'), numerico = ['hp', 'dano', 'shiny'].includes(o);
         /* INTEGRAÇÃO (14/09): o servidor aceita `/raid hp auto` (volta ao automático) e `/raid dano 0` (o golpe do Mew cai pro mínimo, 1 de dano) — antes o chat só
