@@ -48,7 +48,7 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
       id: 'peca:' + p.tipo + ':' + p.id,
       preco: +p.preco,
       preso: true,
-      tem: guarda.has(save, p.tipo, p.id),
+      tem: guarda.has(save, p.tipo, p.id, c),
       peca: {
         tipo: p.tipo, id: p.id, nome: p.nome, nomes: { en: p.nome }, icone: p.icone || null, qualidade: p.qualidade ?? 3,
         ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}), ...(p.ponto ? { ponto: p.ponto } : {}),

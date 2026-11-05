@@ -144,7 +144,11 @@ export const glbDe = p => skinDe(p).glb;
 export const SKINS_PREMIO = [];
 export const lerSkin = () => { const s = lerLS('skin', null); return typeof s === 'string' && s ? s : null; };
 export const gravarSkin = a => gravarLS('skin', a || null);
-export const skinsDaConta = () => { const l = lerLS('skins', []); return Array.isArray(l) ? l.filter(x => typeof x === 'string') : []; };
+/** Owned outfits. GM / admin accounts own every catalog outfit (window.__pvTudo, set by index.html from the account). */
+export const skinsDaConta = () => {
+  const l = lerLS('skins', []), meus = Array.isArray(l) ? l.filter(x => typeof x === 'string') : [];
+  return globalThis.__pvTudo ? [...new Set([...meus, ...SKINS_EXTRA.filter(s => s.catalogo).map(s => s.id)])] : meus;
+};
 export function visual(a = ler()){
   const b = lerSkin(), fx = efeitosVestidos();
   if (!b || !skinPorId(b)) return a ? { ...a, ...fx } : a;

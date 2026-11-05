@@ -99,6 +99,7 @@ const CSS = `
 .pf .pk-sheet.pk-compact .pk-move{min-height:36px;padding:5px 7px}
 .pf .pk-sheet.pk-compact .pk-dots i{width:6px;height:6px}
 .pf *{box-sizing:border-box}
+.pf{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.pf input,.pf textarea{-webkit-user-select:text;user-select:text}
 .pf .pf-grupo,.pf .pf-img,.pf .pf-var,.pf .pf-ret,.pf .pf-fill,.pf .pf-txt,.pf .pf-rotulo{position:absolute;pointer-events:none}
 .pf [data-tag],.pf [data-fig^="item-"],.pf [data-fig^="slot-poke-"],.pf [data-fig^="encaixe-"],.pf [data-fig^="casa-"]{pointer-events:auto;touch-action:manipulation}
 .pf [data-tag="aba"]:not([data-fig^="conteudo-"]){z-index:80}
@@ -360,6 +361,9 @@ function ligarTag(el, f, pop){
   if (f.tag === 'recolhe'){ el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; return; }   // [recolhe:x] (capítulo das Missões): só marca; o clique SOBE pra quem montou
   if (f.tag === 'escolhe'){ el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer'; el.addEventListener('click', ev => { ev.stopPropagation(); pop.__cb.escolhe?.(f.tagVal, el); }); return; }   // [escolhe:x] (opções do pop-up do inicial, rodada 29 — 18/09): avisa quem montou com o valor e o nó clicado
   if (!['fecha', 'aba', 'acao', 'abre', 'filtro'].includes(f.tag)) return;   // other tags are not buttons
+  /* A tab's CONTENT block (conteudo-<tab>) carries the tab's tag but is a container, not a button: a click or tap on a
+     card inside it used to switch back to that tab (the Wardrobe jumped to Outfit on every click). */
+  if (f.tag === 'aba' && /^conteudo-/.test(el.dataset.fig || f.nome || '')) { el.style.pointerEvents = 'auto'; return; }
   el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer';
   const disparar = ev => {
     ev.stopPropagation();

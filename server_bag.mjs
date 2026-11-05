@@ -214,22 +214,22 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     if (!p || typeof p !== 'object' || Array.isArray(p)) return p ?? null;
     if (!guarda) return p;
     const s = saveDe(c);
-    if (guarda.piece('roupa', p.tipo) && !guarda.has(s, 'roupa', p.tipo) && s.personagem?.tipo !== p.tipo) return null;
+    if (guarda.piece('roupa', p.tipo) && !guarda.has(s, 'roupa', p.tipo, c) && s.personagem?.tipo !== p.tipo) return null;
     const out = { ...p };
     if (out.efeitos != null) {
       const e = {};
-      for (const slot of ['peito', 'rastro']) { const id = +out.efeitos?.[slot]; if (id && guarda.has(s, slot, id)) e[slot] = id; }
+      for (const slot of ['peito', 'rastro']) { const id = +out.efeitos?.[slot]; if (id && guarda.has(s, slot, id, c)) e[slot] = id; }
       out.efeitos = e;
     }
-    for (const slot of ['peito', 'rastro']) if (out[slot] != null && !guarda.has(s, slot, out[slot])) out[slot] = null;
-    if (out.mochila != null && !guarda.has(s, 'mochila', out.mochila)) out.mochila = null;
+    for (const slot of ['peito', 'rastro']) if (out[slot] != null && !guarda.has(s, slot, out[slot], c)) out[slot] = null;
+    if (out.mochila != null && !guarda.has(s, 'mochila', out.mochila, c)) out.mochila = null;
     return out;
   }
   /** One worn piece from the save sync (skin / mochila / peito / rastro): kept only when owned (or a base character). */
   function vestivel(c, key, v) {
     if (v == null || !guarda) return true;
     const tipo = key === 'skin' ? 'roupa' : key;
-    return guarda.has(saveDe(c), tipo, v);
+    return guarda.has(saveDe(c), tipo, v, c);
   }
 
   /* Safari visit. The client cannot grant itself balls: the fee and the stack live here.

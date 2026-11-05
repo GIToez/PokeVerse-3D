@@ -9297,6 +9297,8 @@ if (jogo.ash){
   };
   jogo.vestirFxProprio = vestirFxProprio;
   CatalogoCosm.instalar({ chamar: (m, p) => Conta.chamar(m, p), comConta: () => comConta(), idioma: () => I18n.language() });
+  /* GM / admin accounts own every outfit, bag and effect (the server agrees: server_wardrobe.mjs isGm). */
+  setInterval(() => { globalThis.__pvTudo = !!Conta.ehGm?.(); }, 2000); globalThis.__pvTudo = !!Conta.ehGm?.();
   const GUARDA = {
     /** Wear an owned outfit, or null to go back to the base character. */
     async equipar(id){
@@ -9308,7 +9310,7 @@ if (jogo.ash){
     },
     /** A bag (`mochila`, glb like 'Bag014'), a chest effect (`peito`) or a trail (`rastro`); null takes it off. */
     async equiparPeca(encaixe, valor){
-      const tem = (lerLS('pecas', null) || {})[encaixe];
+      const tem = GUARDA.pecasDaConta()[encaixe];
       if (valor != null && !(Array.isArray(tem) && tem.some(x => String(x) === String(valor)))) return false;
       if (encaixe === 'mochila'){
         gravarLS('mochila', valor || null);
@@ -9320,7 +9322,14 @@ if (jogo.ash){
       if (encaixe === 'peito' || encaixe === 'rastro'){ gravarLS(encaixe, valor ?? null); vestirFxProprio(true); return true; }
       return false;
     },
-    pecasDaConta: () => lerLS('pecas', null) || {},
+    pecasDaConta: () => {
+      const meus = lerLS('pecas', null) || {};
+      if (!globalThis.__pvTudo) return meus;
+      const C = CatalogoCosm.atual?.(), todos = { mochila: [], peito: [], rastro: [] };   // GM / admin: every bag and effect
+      for (const p of C?.pecas || []) if (todos[p.tipo]) todos[p.tipo].push(p.id);
+      for (const k of Object.keys(todos)) todos[k] = [...new Set([...(meus[k] || []), ...todos[k]])];
+      return todos;
+    },
     encaixados: () => ({ mochila: lerLS('mochila', null) ?? Personagem.ler()?.mochila ?? null, peito: lerLS('peito', null), rastro: lerLS('rastro', null) }),
   };
   const VOAR_INSIGNIAS = 3, VOAR_ESPERA_S = 30;

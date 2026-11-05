@@ -48,7 +48,9 @@ export function createWardrobe({ dataDir }) {
     }
     return { roupa: save.skins, mochila: save.pecas.mochila, peito: save.pecas.peito, rastro: save.pecas.rastro };
   }
-  const has = (save, tipo, id) => (tipo === 'roupa' && isBase(id)) || owned(save)[tipo]?.some(x => String(x) === String(id));
+  /** GM accounts own everything (read live: nothing is written into the save, so taking GM away takes it back). */
+  const isGm = c => !!(c && (c.gm || c.cargo === 'staff'));
+  const has = (save, tipo, id, c = null) => isGm(c) || (tipo === 'roupa' && isBase(id)) || owned(save)[tipo]?.some(x => String(x) === String(id));
   /** Gives one piece (any source: shop, pass, mail, achievement). Returns true when it was new. */
   function give(save, tipo, id) {
     const n = normId(tipo, id);
@@ -71,9 +73,9 @@ export function createWardrobe({ dataDir }) {
       chave: p.tipo + ':' + p.id, tipo: p.tipo, id: p.id, nome: p.nome || String(p.id), icone: p.icone || null, qualidade: p.qualidade ?? null,
       sexo: p.sexo || null, glb: p.glb || null, origem: (p.origens || [])[0] || null, origens: p.origens || [], exclusiva: p.exclusiva || null,
       aparece: p.aparece || null, ponto: p.ponto || null, preco: forSale(p, s) ? +p.preco : null, aVenda: forSale(p, s),
-      tem: save ? has(save, p.tipo, p.id) : false, liberada: p.liberada !== false, ...(p.estacao ? { estacao: p.estacao } : {}),
+      tem: save ? has(save, p.tipo, p.id, c) : false, liberada: p.liberada !== false, ...(p.estacao ? { estacao: p.estacao } : {}),
     }));
     return { v: 1, versao: Math.round(catalogFile().mtime), lingua: lang, equipe: !!(c?.gm || c?.cargo), bases: C.bases, pecas, efeitos: effectsFile().data || null };
   }
-  return { catalog, piece, owned, has, give, forSale, saleList, catalogFor, isBase, seasonNow };
+  return { catalog, piece, owned, has, isGm, give, forSale, saleList, catalogFor, isBase, seasonNow };
 }
