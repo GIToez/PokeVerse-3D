@@ -1,8 +1,10 @@
-# Files to download from PokeFable (checked 2026-11-05). Download each link and upload it here.
-# The folder after the domain is PokeFable's (cenario/ = our scenery/).
+# Files to download from PokeFable (updated 2026-11-05 for the Articuno raid). The bookmarklet / grab_needed.js fetches all of them.
+# The folder after the domain is PokeFable's (cenario/ = our scenery/, som/ = our sound/, particulas/ = our particles/).
+# The script also follows the raid configs and grabs every raid / effect / sound file the page has loaded.
 
-# GATED: these 28 answered 403 (forbidden) on 2026-11-05 — PokeFable has not opened them yet.
-# Raids r01 (Seafoam Blizzard), r03 (Power Plant Overload), r05 (Psychic Echoes): arenas, boss animations, ground markings, configs — 28
+# Raids r01 (Seafoam Blizzard, Articuno), r03 (Power Plant Overload, Zapdos), r05 (Psychic Echoes): arenas, boss animations,
+# ground markings, configs — answered 403 (gated) earlier on 2026-11-05; should open with the raid.
+# raid assets
 https://pokefableonline.com/cenario/raid/r01/marcas/abrigo_ciano.png
 https://pokefableonline.com/cenario/raid/r01/marcas/anel_borda.png
 https://pokefableonline.com/cenario/raid/r01/marcas/area_circular.png
@@ -31,3 +33,62 @@ https://pokefableonline.com/cenario/raid/r03/r03_zapdos_anim.glb
 https://pokefableonline.com/cenario/raid/r03/referencia/envelope-animacoes-v7.json
 https://pokefableonline.com/cenario/raid/r03/referencia/envelope-zapdos.json
 https://pokefableonline.com/cenario/raid/r05/r05_arena.glb
+
+# r05 sounds (their folder is not known: both candidates)
+https://pokefableonline.com/som/skill/Psych%20Up.ogg
+https://pokefableonline.com/som/se/Psych%20Up.ogg
+https://pokefableonline.com/som/skill/Psycho%20Cut.ogg
+https://pokefableonline.com/som/se/Psycho%20Cut.ogg
+https://pokefableonline.com/som/skill/Substitute.ogg
+https://pokefableonline.com/som/se/Substitute.ogg
+https://pokefableonline.com/som/skill/Refresh.ogg
+https://pokefableonline.com/som/se/Refresh.ogg
+https://pokefableonline.com/som/skill/Earth3.ogg
+https://pokefableonline.com/som/se/Earth3.ogg
+https://pokefableonline.com/som/skill/Earth4.ogg
+https://pokefableonline.com/som/se/Earth4.ogg
+https://pokefableonline.com/som/skill/Teleport.ogg
+https://pokefableonline.com/som/se/Teleport.ogg
+https://pokefableonline.com/som/skill/saint7.ogg
+https://pokefableonline.com/som/se/saint7.ogg
+https://pokefableonline.com/som/skill/Metronome.ogg
+https://pokefableonline.com/som/se/Metronome.ogg
+https://pokefableonline.com/som/skill/Ice5.ogg
+https://pokefableonline.com/som/se/Ice5.ogg
+https://pokefableonline.com/som/skill/Thunder1.ogg
+https://pokefableonline.com/som/se/Thunder1.ogg
+https://pokefableonline.com/som/skill/Blow3.ogg
+https://pokefableonline.com/som/se/Blow3.ogg
+https://pokefableonline.com/som/skill/confuse.ogg
+https://pokefableonline.com/som/se/confuse.ogg
+https://pokefableonline.com/som/skill/collapse1.ogg
+https://pokefableonline.com/som/se/collapse1.ogg
+
+# their current raid data and code (to update ours)
+https://pokefableonline.com/data/raid_r01.json
+https://pokefableonline.com/data/raid_r03.json
+https://pokefableonline.com/data/raid_r05.json
+
+# raid assets
+https://pokefableonline.com/cenario/raid/r01/colisoes.json
+
+# their current raid data and code (to update ours)
+https://pokefableonline.com/raid.mjs
+https://pokefableonline.com/raid_loading.mjs
+https://pokefableonline.com/raid_r01.mjs
+https://pokefableonline.com/raid_r01_attacks.mjs
+https://pokefableonline.com/raid_r01_boss.mjs
+https://pokefableonline.com/raid_r01_game.mjs
+https://pokefableonline.com/raid_r01_scene.mjs
+https://pokefableonline.com/raid_r03.mjs
+https://pokefableonline.com/raid_r03_attacks.mjs
+https://pokefableonline.com/raid_r03_boss.mjs
+https://pokefableonline.com/raid_r03_game.mjs
+https://pokefableonline.com/raid_r03_mirror.mjs
+https://pokefableonline.com/raid_r03_scene.mjs
+https://pokefableonline.com/raid_r05.mjs
+https://pokefableonline.com/raid_r05_attacks.mjs
+https://pokefableonline.com/raid_r05_boss.mjs
+https://pokefableonline.com/raid_r05_game.mjs
+https://pokefableonline.com/raid_r05_mirror.mjs
+https://pokefableonline.com/raid_r05_scene.mjs
