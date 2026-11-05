@@ -1080,7 +1080,8 @@ const httpServer = http.createServer((req, res) => {
       const g = gmDe(req);
       if (!g) return json(403, { erro: 'GM accounts only.' });
       if (rota === '/admin/agenda' && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
-      if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;   // Fase 3: eventos ao vivo (server_events.mjs)
+      if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
+      if (rota.startsWith('/admin/correio') && mail.adminRoute(rota, req.method, d, g, json, url)) return;   // 📬 Mail tab (server_mail.mjs)   // Fase 3: eventos ao vivo (server_events.mjs)
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
       if (rota === '/admin/modelos' && req.method === 'GET')
         return json(200, { ok: true, modelos: [...modelosMon()].sort().map(glb => ({ glb, dex: +glb.slice(2, 6) })) });
@@ -1392,7 +1393,10 @@ const wilds = criarWilds({
   aoDerrotar: (u, ev) => temporada.contar(u, { conta: 'ko', ...ev }),
 });
 /* MAIL (server_mail.mjs): letters on the account, opened from the HUD's Mail shortcut. */
-const mail = createMail({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, wallet: carteira, newIndividual: individuoServidor, markCaught: marcarPego });
+const mail = createMail({
+  accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, wallet: carteira, newIndividual: individuoServidor, markCaught: marcarPego,
+  online: () => [...conexoes.values()].map(w => w._usuario).filter(Boolean), dataDir: DADOS_PUB, serverDir: DADOS, saveWithBackup: gravarComBackup, logAdmin,
+});
 /* SHARED WORLD (server_world.mjs): the wild Pokémon live here, one set per map, and every player on the map sees them. */
 const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
