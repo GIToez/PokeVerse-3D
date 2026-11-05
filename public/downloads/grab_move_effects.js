@@ -11,7 +11,7 @@
   const say = t => { box.textContent = 'PokeVerse move effects\n' + t; };
   const files = new Map(), missing = [];
   const get = async (path, json) => {
-    try { const r = await fetch('/particulas/' + path, { cache: 'no-store' }); if (!r.ok) return null; return json ? await r.text() : new Uint8Array(await r.arrayBuffer()); } catch { return null; }
+    try { const r = await fetch('/particulas/' + path.split('/').map(encodeURIComponent).join('/'), { cache: 'no-store' }); if (!r.ok) return null; return json ? await r.text() : new Uint8Array(await r.arrayBuffer()); } catch { return null; }
   };
   const pool = async (items, n, fn) => { let i = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const k = items[i++]; await fn(k); } })); };
   const texWant = new Set(), malhaWant = new Set();

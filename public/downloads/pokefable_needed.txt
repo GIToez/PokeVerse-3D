@@ -36,3 +36,10 @@ https://pokefableonline.com/particulas/malha/FX_Cake.json
 https://pokefableonline.com/particulas/malha/Object002.json
 https://pokefableonline.com/particulas/malha/pCube2.json
 https://pokefableonline.com/particulas/malha/pCylinder1.json
+
+# Move effects: 5 textures whose names have spaces / # (our particles/tex/ = their particulas/tex/) — 5
+https://pokefableonline.com/particulas/tex/fxmt_2_object201_a%20%23124441.png
+https://pokefableonline.com/particulas/tex/fxpt_2_fire009_m%20%2379523.png
+https://pokefableonline.com/particulas/tex/fxpt_2_fire701_o%20%23448120%201.png
+https://pokefableonline.com/particulas/tex/fxpt_2_line004_m_02%20%2366389.png
+https://pokefableonline.com/particulas/tex/fxpt_3_shock001_m%20%2333432.png
