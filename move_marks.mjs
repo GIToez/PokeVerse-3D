@@ -216,12 +216,16 @@ function wire(el, key, build) {
     if (e.pointerType === 'mouse') { hideCard(); return; }                 // clicking uses the move right away
     held = false; sx = e.clientX; sy = e.clientY;
     clearTimeout(holdTimer);
-    holdTimer = setTimeout(() => { held = true; pinned = true; open(); }, HOLD_MS);   // opened by a hold: it stays until the next tap
+    holdTimer = setTimeout(() => { held = true; pinned = true; open(); }, HOLD_MS);   // opened by a hold: it stays while the finger is down
   });
   el.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse' && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) clearTimeout(holdTimer); });
   /* Letting go early (a tap) cancels the hold. A pointercancel does NOT: phones fire it in the middle of a long press when
      the browser starts its own long-press gesture — that used to close the card while the finger was still down. */
-  el.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') clearTimeout(holdTimer); });
+  /* Letting go: before 0.5 s it was a tap (the move fires); after, the card closes. touchend too, because after the
+     browser cancels the pointer it may never send a pointerup. */
+  const release = (e) => { if (e.pointerType === 'mouse') return; clearTimeout(holdTimer); if (held && cardFor === key) hideCard(); };
+  el.addEventListener('pointerup', release);
+  el.addEventListener('touchend', release);
   el.addEventListener('contextmenu', (e) => e.preventDefault());           // no long-press menu on the move buttons / pill
   Object.assign(el.style, { touchAction: 'none', webkitTouchCallout: 'none', webkitUserSelect: 'none', userSelect: 'none' });
   el.addEventListener('click', (e) => { if (held) { held = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a hold never fires the move / opens the calendar
@@ -294,8 +298,8 @@ export function paint() {
 export function install(d) {
   dep = d;
   ensureCss();
-  /* A card opened by press-and-hold stays until the next tap. That tap only closes it when it lands on a move slot or the
-     pill (so reading a card never fires a move by accident); anywhere else the tap also does its normal job. */
+  /* Safety net: if a held card is somehow still up (a release the page never saw), the next tap closes it; on a move slot
+     or the pill that tap only closes it, so it never fires a move by accident. */
   let swallow = null;
   addEventListener('pointerdown', (e) => {
     if (!pinned || e.pointerType === 'mouse') return;
