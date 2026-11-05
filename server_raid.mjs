@@ -311,7 +311,7 @@ export function criarRaid(h) {
       for (const w of socketsDe(p.u)) enviar(w, msg);
     }
     { // raid points (damage dealt) and the MVP go to the achievements and the weekly ranking
-      const L = [...raid.fila.values()].filter(p => p.dano > 0), top = Math.max(0, ...L.map(p => p.dano)), soma = L.reduce((t, p) => t + p.dano, 0) || 1;
+      const L = [...raid.fila.values()].filter(p => p.dano > 0 && (p.parte ?? 1) >= PARTE_PREMIO) /* under 5% of the average: no raid points and no item drop either */, top = Math.max(0, ...L.map(p => p.dano)), soma = L.reduce((t, p) => t + p.dano, 0) || 1;
       for (const p of L) try { h.aoPontuar?.(p.u, p.dano, p.dano === top, p.dano / soma); } catch (e) { console.warn('[raid] points:', e.message); }
     }
     if (algumPode) { raid.fimAte = Date.now() + CAPTURA_MS; paraArena({ t: 'sestado', id: raid.chefe.id, estado: 'desmaiado', ate: raid.fimAte, hp: 0 }); }   // time to throw
