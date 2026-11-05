@@ -1091,7 +1091,7 @@ const httpServer = http.createServer((req, res) => {
       }
       const g = gmDe(req);
       if (!g) return json(403, { erro: 'GM accounts only.' });
-      if (rota === '/admin/agenda' && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
+      if ((rota === '/admin/agenda' || rota === '/admin/agenda/agora') && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
       if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
       if (rota.startsWith('/admin/correio') && mail.adminRoute(rota, req.method, d, g, json, url)) return;   // 📬 Mail tab (server_mail.mjs)   // Fase 3: eventos ao vivo (server_events.mjs)

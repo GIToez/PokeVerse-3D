@@ -55,7 +55,7 @@ export function createTurnEngine({ status, engineMoves, moves, species, statOf, 
   /** The fight's combatant for a party record (built once per battle and per Pokémon, then refreshed from the record). */
   function combatant(p, side, cache) {
     let c = cache.get(p);
-    const S = species(p.dex);
+    const S = species(p.dex, p);   // the record too: the shared world gives a transformed Ditto its copied species
     if (!c) {
       c = BE.preparar({ id: side + ':' + String(p.uid ?? p.dex + ':' + Math.random().toString(36).slice(2, 7)), nome: p.nome || S.name || 'Pokémon', dex: +p.dex,
         tipos: (S.types || ['Normal']).map(tipoE), pesoKg: S.kg ?? S.peso ?? null });

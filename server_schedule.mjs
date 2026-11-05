@@ -58,12 +58,28 @@ export function limparEventoAgenda(e, i = 0) {
     if (b == null || b <= a) return { erro: `${id}: the end must be after the start.` };
     Object.assign(v, { quando: 'uma', inicio: new Date(a).toISOString(), fim: new Date(b).toISOString() });
   }
-  if (tipo === 'bonus') {
+  /* Rates while it runs: required for a Bonus, optional for a Festival / Tournament / Invasion / Other (all ×1 = just a board entry). */
+  if (tipo !== 'raid' && (tipo === 'bonus' || e.bonus)) {
     const b = e.bonus || {};
-    v.bonus = { xp: Math.round(num(b.xp, 1, 5, 1) * 100) / 100, shiny: Math.round(num(b.shiny, 1, 20, 1) * 100) / 100, densidade: Math.round(num(b.densidade, 0.25, 3, 1) * 100) / 100 };
-    if (v.bonus.xp === 1 && v.bonus.shiny === 1 && v.bonus.densidade === 1) return { erro: `${id}: a bonus needs EXP, shiny or wild above ×1.` };
+    const bonus = { xp: Math.round(num(b.xp, 1, 5, 1) * 100) / 100, shiny: Math.round(num(b.shiny, 1, 20, 1) * 100) / 100, densidade: Math.round(num(b.densidade, 0.25, 3, 1) * 100) / 100 };
+    const neutro = bonus.xp === 1 && bonus.shiny === 1 && bonus.densidade === 1;
+    if (neutro && tipo === 'bonus') return { erro: `${id}: a bonus needs EXP, shiny or wild above ×1.` };
+    if (!neutro) v.bonus = bonus;
   }
-  if (tipo === 'raid') v.raid = { filaMin: Math.round(num(e.raid?.filaMin, 1, 120, 15)) };
+  if (tipo === 'raid') {
+    v.raid = { filaMin: Math.round(num(e.raid?.filaMin, 1, 120, 15)) };
+    /* The raid's own boss (empty = data/raid.json): a daily rotation sets a different one per day. */
+    const r = e.raid || {};
+    if (/^\d{3,9}$/.test(String(r.arena ?? ''))) v.raid.arena = String(r.arena);
+    if (texto(r.chefeNome, 30)) v.raid.chefeNome = texto(r.chefeNome, 30);
+    if (Number.isFinite(+r.chefeDex) && +r.chefeDex >= 1 && +r.chefeDex <= 2000 && r.chefeDex !== '') v.raid.chefeDex = Math.round(+r.chefeDex);
+    if (/^pm\d{4}(_\d{2})?$/.test(String(r.chefeGlb ?? ''))) v.raid.chefeGlb = String(r.chefeGlb);
+    if (Number.isFinite(+r.chefeNivel) && +r.chefeNivel >= 1 && +r.chefeNivel <= 100 && r.chefeNivel !== '') v.raid.chefeNivel = Math.round(+r.chefeNivel);
+    if (Number.isFinite(+r.lutaMin) && +r.lutaMin >= 1 && +r.lutaMin <= 30 && r.lutaMin !== '') v.raid.lutaMin = +r.lutaMin;
+    if (v.raid.chefeDex && v.raid.chefeGlb && +v.raid.chefeGlb.slice(2, 6) !== v.raid.chefeDex) return { erro: `${id}: model ${v.raid.chefeGlb} is not species no. ${v.raid.chefeDex}.` };
+  }
+  { const t = ms(e.paradoEm); if (t != null) v.paradoEm = new Date(t).toISOString(); }   // "Stop now" from the panel: whatever was running at that moment ends there
+  if (e.manual) v.manual = true;                                                          // made by "Start now" (one time, starts at the click)
   return { v };
 }
 export function limparAgenda(d) {
@@ -78,8 +94,13 @@ export function limparAgenda(d) {
   return { v: { v: 1, eventos: out } };
 }
 
-/** Every occurrence of `e` that overlaps [de, ate). */
+/** Every occurrence of `e` that overlaps [de, ate). An occurrence that was running when "Stop now" was pressed ends at that moment. */
 export function ocorrencias(e, de, ate) {
+  const p = ms(e.paradoEm);
+  const lista = ocorrenciasCruas(e, de, ate);
+  return p == null ? lista : lista.map(o => (o.oc <= p && o.fim > p ? { oc: o.oc, fim: p } : o)).filter(o => o.fim > o.oc && o.fim > de);
+}
+function ocorrenciasCruas(e, de, ate) {
   if (!e.ligado) return [];
   if (e.quando !== 'semana') {
     const a = ms(e.inicio), b = ms(e.fim);
@@ -122,6 +143,14 @@ export function criarAgenda(h) {
     cache = { mtime: mt, v }; versao++;
     return v;
   }
+  /** Events-board art for a boss: ui/events/<slug>/ (made by tools/raid_art). None = the board uses Mew's art only for Mew. */
+  const RAIZ = nodePath.join(dadosPub, '..', '..'), artes = new Map();
+  const arteDe = (nome) => {
+    const slug = String(nome || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (!slug) return null;
+    if (!artes.has(slug)) artes.set(slug, fs.existsSync(nodePath.join(RAIZ, 'ui', 'events', slug, 'pc-detalhe.webp')) ? slug : null);
+    return artes.get(slug);
+  };
   const estadoDe = (o, agora) => (agora >= o.fim ? 'encerrado' : agora >= o.oc ? 'agora' : 'breve');
   function lista(de, ate, agora = Date.now()) {
     const out = [];
@@ -134,7 +163,7 @@ export function criarAgenda(h) {
         };
         if (e.quando === 'semana') { r.repete = 'semana'; r.regra = { repete: 'semana', dias: e.dias, horas: e.horas }; }
         if (e.bonus) r.bonus = { ...e.bonus };
-        if (e.raid) r.raid = { ...h.raid?.resumo?.(), filaMin: e.raid.filaMin, filaEm: o.oc - e.raid.filaMin * MIN };
+        if (e.raid) { const { filaMin, ...preset } = e.raid; let res = null; try { res = h.raid?.resumo?.(preset); } catch {} r.raid = { ...res, filaMin, filaEm: o.oc - filaMin * MIN, preset }; const a = arteDe(preset.chefeNome || res?.chefe); if (a) r.raid.arte = a; }   // try: at boot server.mjs's `raid` may not exist yet
         out.push(r);
       }
     }
@@ -144,7 +173,7 @@ export function criarAgenda(h) {
   function bonusAgora(agora = Date.now()) {
     let b = null;
     for (const o of lista(agora - 1, agora + 1, agora)) {
-      if (o.tipo !== 'bonus' || o.estado !== 'agora') continue;
+      if (!o.bonus || o.estado !== 'agora') continue;   // any type with rates (a Festival with ×2 EXP counts too)
       b ||= { xp: 1, shiny: 1, densidade: 1, nome: '', fim: null };
       b.xp *= o.bonus.xp; b.shiny *= o.bonus.shiny; b.densidade *= o.bonus.densidade;
       b.nome = b.nome ? b.nome + ' + ' + o.titulo : o.titulo;
@@ -154,15 +183,28 @@ export function criarAgenda(h) {
   }
 
   // Raids on the schedule: the queue opens `filaMin` before the start, and the countdown starts on time.
+  // Everything else is announced to everyone online when it starts (the top banner + System chat), with its rates.
   const feitos = new Set();
+  const taxas = (b) => (b ? [b.xp !== 1 ? 'EXP ×' + b.xp : '', b.shiny !== 1 ? 'shiny ×' + b.shiny : '', b.densidade !== 1 ? 'wild ×' + b.densidade : ''].filter(Boolean).join(' · ') : '');
+  const ROTULO = { bonus: '🎉', festival: '🎪 Festival', torneio: '🏆 Tournament', invasao: '⚠️ Invasion', outro: '📅' };
   function tique() {
     const agora = Date.now();
+    for (const o of lista(agora - 2 * MIN, agora + 1, agora)) {
+      if (o.tipo === 'raid' || o.estado !== 'agora' || agora - o.oc > 2 * MIN) continue;
+      const k = o.id + '@' + o.oc + ':aviso';
+      if (feitos.has(k)) continue;
+      feitos.add(k);
+      const t = taxas(o.bonus);
+      const texto = (ROTULO[o.tipo] || '📅') + ' ' + o.titulo + ' has started' + (t ? ': ' + t : '') + '!';
+      for (const w of conexoes.values()) if (w._info) enviar(w, { t: 'invasao', texto });
+      console.log('[agenda] ' + texto);
+    }
     for (const o of lista(agora - 2 * MIN, agora + 121 * MIN, agora)) {
       if (o.tipo !== 'raid' || !h.raid) continue;
       const k = o.id + '@' + o.oc;
       if (agora >= o.raid.filaEm && agora < o.oc && !feitos.has(k + ':fila')) {
         feitos.add(k + ':fila');
-        const r = h.raid.anunciarAgendada(o.titulo);
+        const r = h.raid.anunciarAgendada(o.titulo, o.raid.preset);
         console.log(`[agenda] ${o.id}: raid queue ${r.erro ? 'not opened (' + r.erro + ')' : 'opened'}`);
       }
       if (agora >= o.oc && agora < o.oc + 2 * MIN && !feitos.has(k + ':luta')) {
@@ -207,6 +249,44 @@ export function criarAgenda(h) {
       console.log(`[admin] ${g} saved the event schedule (${res.v.eventos.length} events)`);
       const agora = Date.now();
       json(200, { ok: true, dados: ler(), proximos: lista(agora - DIA, agora + 14 * DIA, agora).filter(o => o.estado !== 'encerrado').slice(0, 30), bonus: bonusAgora(agora) });
+      return true;
+    }
+    /* START NOW / STOP NOW (panel buttons): { id, acao: 'iniciar' | 'parar', duracaoMin? }.
+       Start adds a one-time copy that begins now (a raid: the queue opens now and the fight starts after its queue time); stop ends
+       every occurrence of that event running right now (a "Start now" copy is removed). The weekly rule itself stays as it is. */
+    if (r === '/admin/agenda/agora' && metodo === 'POST') {
+      const atual = ler(), agora = Date.now();
+      const e = atual.eventos.find(x => x.id === String(d.id || ''));
+      if (!e) { json(404, { erro: 'No event with that ID (save the schedule first).' }); return true; }
+      let eventos = atual.eventos.map(x => ({ ...x })), msg;
+      if (d.acao === 'iniciar') {
+        const durPad = e.quando === 'semana' ? e.duracaoMin : Math.round((ms(e.fim) - ms(e.inicio)) / MIN);
+        const dur = Math.round(num(d.duracaoMin, 1, 7 * 1440, durPad || 60));
+        const fila = e.raid ? e.raid.filaMin : 0;
+        const ini = agora + fila * MIN;
+        const copia = { ...e, id: (e.id.slice(0, 30) + '-now-' + agora.toString(36).slice(-5)), ligado: true, quando: 'uma', manual: true,
+          inicio: new Date(ini).toISOString(), fim: new Date(ini + dur * MIN).toISOString() };
+        for (const k of ['dias', 'horas', 'duracaoMin', 'desde', 'ate', 'paradoEm']) delete copia[k];
+        eventos = eventos.filter(x => !(x.manual && ms(x.fim) <= agora));   // old finished "Start now" copies go
+        if (eventos.length >= MAX_EVENTOS) { json(400, { erro: 'The schedule is full (' + MAX_EVENTOS + ' events).' }); return true; }
+        eventos.unshift(copia);
+        msg = e.raid ? `"${e.titulo}": raid queue open now, the fight starts in ${fila} min.` : `"${e.titulo}" started (${dur} min).`;
+      } else if (d.acao === 'parar') {
+        const rodando = (x) => ocorrencias(x, agora - 1, agora + 1).some(o => o.oc <= agora && o.fim > agora);
+        const base = e.manual ? e.id : null;
+        eventos = eventos.filter(x => !(x.manual && (x.id === base || (rodando(x) && x.titulo === e.titulo && x.tipo === e.tipo))))
+          .map(x => (x.id === e.id && rodando(x) ? { ...x, paradoEm: new Date(agora).toISOString() } : x));
+        msg = `"${e.titulo}" stopped.`;
+        if (e.tipo === 'raid') msg += ' A raid already in its queue or fight keeps going: use /raid cancel in the game to end it.';
+      } else { json(400, { erro: 'acao must be iniciar or parar.' }); return true; }
+      const res = limparAgenda({ v: 1, eventos });
+      if (res.erro) { json(400, { erro: res.erro }); return true; }
+      gravarComBackup(ARQ, res.v); cache.mtime = -2; ler();
+      logAdmin(g, '*', 'event ' + d.acao + ' now', { id: e.id });
+      avisarClientes(); h.aoMudar?.();
+      tique();
+      console.log(`[admin] ${g}: ${msg}`);
+      json(200, { ok: true, msg, dados: ler(), proximos: lista(agora - DIA, agora + 14 * DIA, agora).filter(o => o.estado !== 'encerrado').slice(0, 30), bonus: bonusAgora(agora) });
       return true;
     }
     return false;

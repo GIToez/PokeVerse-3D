@@ -977,6 +977,10 @@ function receber(m) {
           y: m.ate === -1 ? '' : w(m.ate),
         });
       else if (m.op === 'perdoar') r('✅ {x} unmuted.', { x: m.usuario });
+      else if (m.op === 'ir') {
+        r('🧭 Going to {x}…', { x: m.usuario });
+        if (m.mesmoMapa) ctx.irAte?.(m);   // same map: walk-free jump next to them (another map reloads the scene there: the server's 'volta')
+      }
       else if (m.op === 'tp')
         r(
           m.derrubou

@@ -116,6 +116,24 @@ export function criarModeracao(h) {
     logAdmin(g, u, acao, { depois: { ...pos, nome: dest.nome || null } });
     return { ...pos, nome: dest.nome || null, derrubou: ws.length };
   }
+  /** /ir and the panel's "Go there": the GM's game goes to `u` — same map: a jump next to them; another map: the GM's scene reloads there. */
+  function irAte(g, u, acao) {
+    const ele = ondeEsta(u);
+    if (!ele) return { erro: u + ' is not online' };
+    const meus = socketsDe(g).filter(w => w._info);
+    if (!meus.length) return { erro: 'Your game is not online: open the game with this GM account first.' };
+    logAdmin(g, u, acao, { depois: ele });
+    for (const w of meus) {
+      if (String(ele.mapa) === String(w._mapa)) enviar(w, { t: 'mod', op: 'ir', usuario: u, ...ele, mesmoMapa: true });
+      else {
+        contas[g].posGm = { ...ele, giro: 0 };                                     // another map: my scene reloads there
+        enviar(w, { t: 'mod', op: 'ir', usuario: u, ...ele, mesmoMapa: false });
+        enviar(w, { t: 'volta', mapa: ele.mapa, texto: '🧭 Going to ' + u + '…' });
+      }
+    }
+    salvarContasJa();
+    return { ...ele, usuario: u };
+  }
   /** Destino do /tp e do painel: cidade (texto) ou x/z (no mapa onde a conta está, ou Kanto). */
   function destino(u, d) {
     if (d.cidade != null && String(d.cidade).trim()) {
@@ -138,6 +156,12 @@ export function criarModeracao(h) {
     if (acao === 'desconectar') return desconectar(g, u, motivo);
     if (acao === 'recado') return recado(g, u, d.texto);
     if (acao === 'levar') { const dest = destino(u, d); return dest.erro ? dest : levar(g, u, dest); }
+    if (acao === 'ir') return irAte(g, u, 'go to (panel)');                     // panel "Go there in game": YOUR game goes to them (same as /ir)
+    if (acao === 'puxar') {                                                      // panel "Bring to me": they come to where your game is (same as /puxar)
+      const eu = ondeEsta(g);
+      if (!eu) return { erro: 'Your game is not online: open the game with this GM account first.' };
+      return levar(g, u, { ...eu, nome: 'near ' + (contas[g]?.save?.nome || g) }, 'pull (panel)');
+    }
     return { erro: 'Unknown action.' };
   }
 
@@ -276,13 +300,8 @@ export function criarModeracao(h) {
       if (!eu) { erro("Couldn't find your position (enter the map first)"); return; }
       fim(levar(g, u, { ...eu, nome: 'near ' + (contas[g]?.save?.nome || g) }, 'pull (chat)'));
     } else if (op === 'ir') {
-      const ele = ondeEsta(u);
-      if (!ele) { erro(u + ' is not online'); return; }
-      logAdmin(g, u, 'go to (chat)', { depois: ele });
-      if (String(ele.mapa) === String(ws._mapa)) { ok({ usuario: u, ...ele, mesmoMapa: true }); return; }
-      contas[g].posGm = { ...ele, giro: 0 }; salvarContasJa();                    // outro mapa: a minha cena recarrega lá
-      ok({ usuario: u, ...ele, mesmoMapa: false });
-      enviar(ws, { t: 'volta', mapa: ele.mapa, texto: '🧭 Going to ' + u + '…' });
+      const r = irAte(g, u, 'go to (chat)');
+      if (r.erro) erro(r.erro);
     } else erro('Unknown command: /' + op);
   }
 

@@ -239,7 +239,10 @@ import * as Rede from './network.mjs';                // fase 1 da rede: presen�
 import * as Conta from './account.mjs';              // fase 2 da rede: conta (usuário + senha) e save no servidor (servidor/contas.mjs)
 import * as Troca from './trade.mjs';              // fase 4 da rede: mesa de troca de Pokémon (o servidor move; servidor/trade.mjs)
 import * as Mundo from './world.mjs';              // fase 3a da rede: selvagens compartilhados — o servidor decide quem nasce/shiny/captura (servidor/world.mjs)
-import * as Raid from './raid.mjs';                // RAID AO VIVO (14/09): estado da fila/luta no cliente, ida e volta da arena; a interface é o raid_ui.mjs (import dinâmico)
+import * as Raid from './raid.mjs';
+import * as RaidR01 from './raid_r01_game.mjs';   // Articuno raid (arena 9700001): its own scene, attacks and boss, driven by server_raid_r01.mjs
+import * as R01Regra from './raid_r01.mjs';        // the arena's navmesh and pillars (collision for the Pokémon)
+                // RAID AO VIVO (14/09): estado da fila/luta no cliente, ida e volta da arena; a interface é o raid_ui.mjs (import dinâmico)
 import * as Fogo from './fire.mjs';             // chamas dos modelos (PokemonFireOut)
 import * as Lodo from './sludge.mjs';
 import * as Tinta from './paint.mjs';
@@ -2690,7 +2693,7 @@ function podeIr(e, x, z){ return e?.meio === 'agua' ? navegavel(x, z) : e?.meio 
 /* `aceita(px, pz)` (opcional, 19/09): filtro extra do ponto — o desmonte do surf só aceita terra de onde dá pra montar de novo. */
 function terraPerto(x, z, r = 6, aceita = null){
   if (livre(x, z) && (!aceita || aceita(x, z))) return { x, z };
-  for (const d of [1, 2, 3, 4, 5, 6, 8, 10]){
+  for (const d of [1, 2, 3, 4, 5, 6, 8, 10, 14, 20, 28, 40]){
     if (d > r) break;
     for (let i = 0; i < 16; i++){ const a = i / 16 * Math.PI * 2, px = x + Math.sin(a) * d, pz = z + Math.cos(a) * d; if (livre(px, pz) && (!aceita || aceita(px, pz))) return { x: px, z: pz }; }
   }
@@ -3526,7 +3529,7 @@ const jogo = { ativo: false, ash: null, pika: null, trabalhadores: [] };
    carimbo velho nunca tira as portas de quem chega na sala da Lorelei andando pela Elite Four. Também liga pelo snapshot do
    servidor (`{t:'raid', eu:true, fase:'indo|luta|fim'}`: `ativarArenaRaid`). Fica em `jogo` (declarado aqui) por causa da TDZ. */
 jogo.raidArena = Raid.arenaNoBoot(NOME);
-if (String(NOME) !== Raid.ARENA) Raid.apagarCarimbo();
+if (!Raid.ehArena(NOME)) Raid.apagarCarimbo();
 let dadosTreinadores = null, povoandoT = false;                          // treinadores de rota (povoarTreinadores): declarados AQUI por causa do setInterval do boot (12/09)
 let indiceTime = -1, parceiroUid = null;                                 // qual do time está em campo (índice e uid): usados pelo amarrarParceiro no boot, então declarados AQUI (TDZ, 12/09)
 const TIPO_PT = { Normal: 'normal', Fire: 'fogo', Water: 'agua', Grass: 'planta', Electric: 'eletrico', Ice: 'gelo', Fighting: 'lutador', Poison: 'venenoso', Ground: 'terrestre', Flying: 'voador', Psychic: 'psiquico', Bug: 'inseto', Rock: 'pedra', Ghost: 'fantasma', Dragon: 'dragao', Dark: 'noturno', Steel: 'metalico', Fairy: 'fada' };   // ícones ui/figma/tipo/<nome>.png (era lá embaixo, perto do pintarBarra)
@@ -4002,10 +4005,10 @@ if (PLAY){
        do raio a porta entra em `emPorta` e só dispara depois de sair e voltar — quem saía andando reto atravessava a soleira sem
        teleporte e ia parar no vazio de fora do cômodo (hipótese pros vídeos do l.neto no laboratório e na escola). */
     const paradaNaPorta = paradaSalva && INTERIOR && (dados.npcs || []).some(n => PORTAS[n.cfg]?.t === 6 && Math.hypot(flipX * n.x - paradaSalva.x, n.z - paradaSalva.z) < 1.3);
-    if (paradaSalva && !paradaNaPorta && paradaSalva.mapa === NOME && chaoEm(paradaSalva.x, paradaSalva.z) != null){
+    if (paradaSalva && !paradaNaPorta && String(paradaSalva.mapa) === String(NOME) && (chaoEm(paradaSalva.x, paradaSalva.z) != null || paradaSalva.gm)){   // gm: sent by a GM (/tp, /puxar, panel) — a spot off the ground looks up to 40 m for free ground instead of the default spawn
       /* 16/09: parou DENTRO da rocha (posição guardada antes da máscara do navmesh do Monte Lua)? nasce no chão andável mais perto; sem nenhum em 10 m, na chegada */
       /* 19/09: ou parou no MIOLO de uma guarita (posição guardada antes da zona das guaritas): mesma saída, o chão livre mais perto */
-      const t = (noNavmesh(paradaSalva.x, paradaSalva.z) && !naGuarita(paradaSalva.x, paradaSalva.z)) ? { x: paradaSalva.x, z: paradaSalva.z } : terraPerto(paradaSalva.x, paradaSalva.z, 10);
+      const t = (chaoEm(paradaSalva.x, paradaSalva.z) != null && noNavmesh(paradaSalva.x, paradaSalva.z) && !naGuarita(paradaSalva.x, paradaSalva.z)) ? { x: paradaSalva.x, z: paradaSalva.z } : terraPerto(paradaSalva.x, paradaSalva.z, paradaSalva.gm ? 40 : 10);
       if (t){ cx0 = { x: flipX * t.x, z: t.z }; ash.giro = paradaSalva.giro || 0; }   // cx0 é em unity; ash.x aplica o flipX de novo
     }
     /* RAID AO VIVO (14/09): na arena o servidor espalha os participantes com a posição da conta. Sem as portas (é o `prepararPortas` que tira
@@ -4057,6 +4060,7 @@ if (PLAY){
         .catch(e => { console.warn('saved follower:', e); jogo.trocaPendente = null; amarrarParceiro(); });
     }
     if (!Fairy && !INTRO && !RAID && !TORNEIO && !DIRETOR){
+      if (jogo.raidArena) ligarR01();                                    // Articuno arena: its own scene on top of the placeholder floor
       if (!jogo.raidArena){ prepararPortas(); montarNpcs(); }            // RAID AO VIVO: a arena não tem portas nem NPCs (a Lorelei e as saídas pro Bruno/Centro de Indigo ficam de fora)
       atualizarMissao(); rotularJogador();
       if (!jogo.raidArena){ ligarTreinadores(); fecharPortaoPallet(); }
@@ -5096,6 +5100,7 @@ function montarChefeRaid(s, reg){
   s.rotuloAlto = topo + 0.3;
   if (!s.rotulo){ s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon'; $('sobre').appendChild(s.rotulo); }
   s.rotulo.innerHTML = `<span>★ ${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} · RAID</span><i><b></b></i>`; s.rotHp = undefined;
+  if (RaidR01.ehArenaR01(NOME)){ RaidR01.vincularChefe(s); return; }      // Articuno arena: the arena's own animated Articuno is the body (this one stays as the hidden target)
   const chave = String(reg.raid) + ':' + reg.id;
   if (chefesRaidVistos.has(chave) || (reg.estado && reg.estado !== 'vagando')) return;
   chefesRaidVistos.add(chave);
@@ -5662,6 +5667,7 @@ function tiqueVolatil(e, dt, luta){
 }
 /** Sleep, freeze, and paralysis can cancel the action that was about to land. */
 function impedido(e){
+  if (e?.rede && Mundo.estaAtivo()) return ['sleep', 'freeze'].includes(Status.limpo(e.status)?.id);   // shared world: the server's engine rolls paralysis, confusion…; asleep / frozen it just waits
   const r = Status.podeAgir(e, Math.random, { relogio: !jogo.turno });   // tempo real: o sono passa pelo relógio (tiqueSono), não por tentativa
   if (r.acordou) flutuar(e, 'woke up', Status.cor('sleep'));
   if (r.descongelou) flutuar(e, 'thawed', Status.cor('freeze'));
@@ -5678,8 +5684,27 @@ function tiqueSono(e, dt){
   if (e === jogo.pika) guardarEstadoAtivo();
 }
 /** Burn, poison, and bad poison tick while a real-time fight is going. Turn battles tick on the server. */
+/** Real time: sandstorm / hail chip the partner 1/16 of max HP every engine turn (3 s) of a fight — the same rule the
+    server's engine applies to the wild (server_world_fight.mjs). Rock / Ground / Steel ignore sand, Ice ignores hail.
+    Turn battles: the server's turn does it. Indoors there is no weather. */
+const CLIMA_TURNO_S = 3;
+function tiqueClima(e, dt, luta){
+  if (!e || jogo.turno || !luta || INTERIOR || !(e.hp > 0) || e.desmaiado > 0){ if (e) e.climaRelogio = 0; return; }
+  let c = null; try { c = clima.nome; } catch { return; }   // early frames: the weather state comes later in this script
+  const tipos = porDex.get(e.dex)?.types || [];
+  const fere = (c === 'areia' && !tipos.some(t => t === 'Rock' || t === 'Ground' || t === 'Steel')) || (c === 'granizo' && !tipos.includes('Ice'));
+  if (!fere){ e.climaRelogio = 0; return; }
+  e.climaRelogio = (e.climaRelogio || 0) + dt;
+  if (e.climaRelogio < CLIMA_TURNO_S) return;
+  e.climaRelogio -= CLIMA_TURNO_S;
+  const d = Math.max(1, Math.floor((e.maxHp || 1) / 16));
+  e.hp = Math.max(0, e.hp - d);
+  flutuar(e, '−' + d, c === 'areia' ? '#d9b46a' : '#9ad8f5');
+  guardarEstadoAtivo();
+  if (e.hp <= 0){ e.status = null; morrer(e); }
+}
 function tiqueStatus(e, dt, luta){
-  if (!e || jogo.turno || !luta) return;
+  if (!e || jogo.turno || !luta || (e.rede && Mundo.estaAtivo())) return;   // a shared-world wild: the server ticks it (server_world_fight.mjs)
   if (!Status.limpo(e.status) || !(e.hp > 0)) { e.statusRelogio = 0; return; }
   e.statusRelogio = (e.statusRelogio || 0) + dt;
   if (e.statusRelogio < 4) return;
@@ -7875,7 +7900,7 @@ async function irParaCena({ mapa = null, chegada = null, texto = '', raid = null
 }
 /* A arena virou "modo raid" DEPOIS do boot (snapshot do servidor com `eu:true`): tira portas, NPCs, treinadores e selvagens locais. */
 function ativarArenaRaid(id){
-  if (jogo.raidArena || String(NOME) !== Raid.ARENA) return;
+  if (jogo.raidArena || !Raid.ehArena(NOME)) return;
   jogo.raidArena = true; Raid.carimbar(id);
   portasCena.length = 0; emPorta.clear();
   for (const e of [...(jogo.npcs || [])]){ if (jogo.turno?.npc === e) continue; removerCorpo(e); }
@@ -7884,9 +7909,38 @@ function ativarArenaRaid(id){
   for (const s of [...(jogo.selvagens || [])]) if (!s.rede && !s.emTurno) guardarSelvagem(s);
   try { if (zoom < 1.0) zoom = Math.min(1.0, ZOOM_TETO); } catch {}      // a câmera abre como no boot da arena (o `let zoom` pode ainda não existir no meio do boot: TDZ)
   Raid.modoArena(true);
+  ligarR01();
   /* a cena mudou sem o jogador sair do lugar: a trava por distância da cadência não pegaria isso (19/09, revisão) */
   invalidarSombra();
   console.log('raid: arena em modo raid (snapshot do servidor)');
+}
+/* ARTICUNO RAID (r01, arena 9700001): the arena's art, attacks and boss come from raid_r01_game.mjs. In this arena the player steers
+   the Pokémon (the trainer stays at the spawn, cheering); collision is the arena's navmesh and pillars, not the map's floor mask. */
+const r01Ativa = () => !!(jogo.raidArena && RaidR01.ehArenaR01(NOME) && RaidR01.pronta());
+function livreR01(x, z){
+  const D = R01Regra.dados(); if (!D?.nav) return true;
+  if (!R01Regra.naNav(x, z)) return false;
+  for (const p of D.pilares || []) if (p.poligono && R01Regra.dentroPoligono(x, z, p.poligono)) return false;
+  return true;
+}
+function deslocarR01(e, dx, dz){
+  let nx = e.x + dx, nz = e.z + dz;
+  if (!livreR01(nx, nz)){
+    if (dx && livreR01(nx, e.z)) nz = e.z;
+    else if (dz && livreR01(e.x, nz)) nx = e.x;
+    else return false;
+  }
+  if (nx === e.x && nz === e.z) return false;
+  e.x = nx; e.z = nz;
+  return true;
+}
+function ligarR01(){
+  if (!jogo.raidArena || !RaidR01.ehArena(NOME) || ligarR01.feito) return;
+  ligarR01.feito = true;
+  RaidR01.ligar({ cena, camera: cam, jogo, Rede, Chat, mapa: NOME, idioma: () => I18n.language(), tocarUma, deslocar: deslocarR01,
+    trocarPara: (i, o) => trocarPara(i, o), preparando: () => Raid.preparando?.() || false })
+    .then(() => { try { zoom = Math.max(zoom, 1.5); } catch {} invalidarSombra(); console.log('raid r01: arena ready'); })
+    .catch(e => { ligarR01.feito = false; console.warn('raid r01: arena failed', e); });
 }
 /* O contrário (carimbo velho, raid que não é sua): a sala volta a ser o Quarto da Lorelei com as portas. */
 function desativarArenaRaid(){
@@ -9023,6 +9077,7 @@ function usarGolpe(id){
   }
   const p = jogo.pika; if (!p) return;
   if (jogo.semParceiro){ flutuar(jogo.ash, 'you do not have a Pokémon yet: talk to Professor Oak', '#ffd23a'); return; }
+  if (r01Ativa() && (RaidR01.congelado() || RaidR01.golpeBarrado())){ flutuar(p, RaidR01.congelado() ? 'frozen!' : "can't attack now", '#9fe8ff'); return; }   // Articuno arena: Glacial Dive froze you
   if (Ind.semPP(p)) id = 'struggle';                                     // sem PP em tudo: só resta o Struggle
   const g = id === 'struggle' ? STRUGGLE : GOLPES[id];
   if (!g || p.hp <= 0 || (p.recargas[id] || 0) > 0) return;
@@ -9097,8 +9152,8 @@ if (jogo.ash){
       let lista = [];
       try { lista = await fetch('./data/cast.json').then(r => r.json()); } catch (e){ console.warn('cast.json:', e); }
       sel.innerHTML = '';
-      const doTime = new Map((jogo.time || []).map(e => [e.glb.replace(/\.glb$/, ''), e]));
-      for (const e of jogo.time || []){ const o = document.createElement('option'); o.value = e.glb.replace(/\.glb$/, ''); o.textContent = `★ ${e.nome} Lv${e.lv || '?'}`; sel.appendChild(o); }
+      const doTime = new Map((jogo.time || []).map(e => [(e.glb || '').replace(/\.glb$/, ''), e]));
+      for (const e of jogo.time || []){ const o = document.createElement('option'); o.value = (e.glb || '').replace(/\.glb$/, ''); o.textContent = `★ ${e.nome} Lv${e.lv || '?'}`; sel.appendChild(o); }
       for (const e of lista){ if (doTime.has(e.glb)) continue; const o = document.createElement('option'); o.value = e.glb; o.textContent = `#${String(e.n).padStart(3, '0')} ${e.nome}${e.nota ? ' · ' + e.nota : ''}`; sel.appendChild(o); }
       sel.value = (jogo.pika?.glb || 'pm0025_00').replace(/\.glb$/, '');
     };
@@ -9468,13 +9523,35 @@ if (jogo.ash){
          atualizado pelo `vida`; o parceiro em campo não sofre nada. Era assim que o substituto entrava com o HP zerado na tela. */
       if (m.uid != null && String(m.uid) !== String(uidParceiro())){ __boot.aviso('pdano de outro uid', { uid: m.uid, emCampo: uidParceiro(), hp: m.hp, dano: m.dano }); return; }
       const g = GOLPES[m.golpe] || STRUGGLE;
+      if (m.parado){ if (s) flutuar(s, I18n.t(m.parado), '#9ab'); return; }   // the wild was asleep / paralyzed / flinched… (the server's engine)
       if (m.errou){ flutuar(p, 'missed', '#9ab'); return; }
       p.hp = m.hp != null ? m.hp : Math.max(0, p.hp - (m.dano || 0));       // passo 3: o HP que vale é o do servidor
       try { guardarEstadoAtivo(); } catch {}
       if (p.hp <= 0) __boot.aviso('pdano zerou o parceiro', { hp: m.hp, dano: m.dano, uid: m.uid, emTurno: !!p.emTurno });
       aplicarGolpe(s, p, g, m.dano, m.eff);
       if (m.estagios) mostrarEstagios(m.estagios.quem === 'eu' ? s : p, m.estagios.mudancas, true);
+      if (m.critico) flutuar(p, I18n.t('critical hit!'), '#ffd23a');
+      for (const a of m.avisos || []) flutuar(a.quem === 'eu' ? (s || p) : p, I18n.t(a.txt), '#ffe07a');
     },
+    /* Status from the server's engine: the wild's (sstatus) and my partner's (pstatus). */
+    statusSelvagem: (s, m) => {
+      if (m.estagiosVolta && s.estagios){                                 // the server's stages wore off (30 s) or the fight ended
+        if (m.estagiosVolta === 'todos') s.estagios = null; else for (const a of m.estagiosVolta) if (a in s.estagios) s.estagios[a] = 0;
+        if (s.rotulo){ s.rotMarca = undefined; pintarRotuloSelvagem(s); }
+      }
+      const antes = Status.limpo(s.status)?.id || null;
+      s.status = m.st ? { id: m.st, n: m.n | 0 } : null;
+      if (m.st && m.st !== antes) flutuar(s, Status.nome(m.st) + '!', Status.cor(m.st));
+      else if (!m.st && antes) flutuar(s, I18n.t(antes === 'sleep' ? 'woke up' : antes === 'freeze' ? 'thawed' : 'cured'), Status.cor(antes));
+      if (s.rotulo){ s.rotMarca = undefined; pintarRotuloSelvagem(s); }
+    },
+    statusParceiro: m => {
+      const p = jogo.pika; if (!p || !(p.hp > 0) || !m.st) return;
+      p.status = { id: m.st, n: m.n | 0 };
+      flutuar(p, Status.nome(m.st) + '!', Status.cor(m.st));
+      guardarEstadoAtivo();
+    },
+    statusNoOutro: m => { const par = Rede.outroPor(m.alvo)?.par; if (par?.pivo && m.st) flutuar(par, Status.nome(m.st) + '!', Status.cor(m.st)); },
     golpeNoOutro: (s, m) => {                                            // o selvagem bateu no parceiro de OUTRO jogador: número, efeito e "Wound" em cima dele
       const par = Rede.outroPor(m.alvo)?.par; if (!par?.pivo) return;
       const g = GOLPES[m.golpe] || STRUGGLE;
@@ -9492,6 +9569,13 @@ if (jogo.ash){
       const atacante = m.meu ? jogo.pika : (Rede.outroPor(m.de)?.par || null);
       if (s.estado === 'desmaiado' || s.estado === 'capturando') { s.hp = m.hp; return; }
       s.hp = m.hp;
+      if (m.tique){                                                       // the server's real-time clock: burn, poison, sandstorm, hail (server_world_fight.mjs)
+        const cor = { burn: Status.cor('burn'), poison: Status.cor('poison'), 'bad-poison': Status.cor('toxic'), areia: '#d9b46a', granizo: '#9ad8f5' }[m.tique] || '#ff8a8a';
+        flutuar(s, '−' + m.dano, cor);
+        if (s.hp > 0) tocarUma(s, 'Wound');
+        if (s.rotulo) pintarRotuloSelvagem(s);
+        return;
+      }
       if (m.dreno){                                                       // Leech Seed no chefe da raid: quem plantou recebe o que foi drenado
         flutuar(s, '−' + m.dano, '#8ef58e');
         const p = jogo.pika;
@@ -9500,12 +9584,14 @@ if (jogo.ash){
       }
       if (m.errou){ flutuar(s, 'missed', '#9ab'); return; }
       aplicarGolpe(atacante, s, g, m.dano, m.eff);
+      if (m.critico) flutuar(s, I18n.t('critical hit!'), '#ffd23a');
+      for (const a of m.avisos || []) flutuar(a.quem === 'eu' ? (atacante || s) : s, I18n.t(a.txt), '#ffe07a');
       if (m.estagios) mostrarEstagios(m.estagios.quem === 'eu' ? atacante : s, m.estagios.mudancas, true);
       if (m.semente === true){ s.semente = { de: atacante || 'parceiro' }; flutuar(s, 'seeded!', '#8ef58e'); }
       else if (m.semente === 'imune') flutuar(s, 'immune', '#9ab');
     },
     criar: reg => criarSelvagem({ dex: reg.dex, glb: reg.glb, nome: reg.nome, agua: reg.aquatico }, reg.x, reg.z, { area: reg.area, generico: reg.generico, casa: reg.casa, lv: reg.lv, perfil: reg.perfil, shiny: reg.shiny, ivs: reg.ivs, natureza: reg.natureza })
-      .then(s => { if (reg.aquatico){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; } s.pertoDeGrama = reg.pertoDeGrama !== false; s.hp = reg.hp; s.maxHp = reg.maxHp; if (reg.raid) montarChefeRaid(s, reg); jogo.selvagens.push(s); return s; }),
+      .then(s => { if (reg.aquatico){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; } s.pertoDeGrama = reg.pertoDeGrama !== false; s.hp = reg.hp; s.maxHp = reg.maxHp; if (reg.st) s.status = { id: reg.st, n: 0 }; if (reg.raid) montarChefeRaid(s, reg); jogo.selvagens.push(s); return s; }),
     /* RAID AO VIVO (14/09): a barra de vida do chefe no topo sai do REGISTRO (com ou sem corpo aqui) e some com ele. */
     raidHp: r => Raid.chefe({ nome: r.nome || 'Mew', lv: r.lv, hp: r.hp, maxHp: r.maxHp }),
     raidSumiu: () => Raid.chefe(null) });
@@ -9524,7 +9610,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, climaTeste: () => (Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff') && (clima.forcado || Relogio.forcada?.() != null) ? (clima.nome || 'clear') : undefined,   /* staff testing /weather or /time: battles use that weather (server_weather.mjs) */ efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, raidR01: RaidR01, climaTeste: () => (Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff') && (clima.forcado || Relogio.forcada?.() != null) ? (clima.nome || 'clear') : undefined,   /* staff testing /weather or /time: battles use that weather (server_weather.mjs) */ efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
@@ -9535,7 +9621,11 @@ if (jogo.ash){
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
       fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });
-    } /* Fase 3: /ir nome no mesmo mapa */, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
+    }, irAte: m => {                                                     /* /ir name (and the panel's Go there) on the same map: land next to them */
+      if (!jogo.ash || !Number.isFinite(+m.x) || !Number.isFinite(+m.z)) return;
+      const t = livre(+m.x + 1.2, +m.z) ? { x: +m.x + 1.2, z: +m.z } : (terraPerto(+m.x, +m.z, 6) || { x: +m.x, z: +m.z });
+      teleportar(jogo.ash, t.x, t.z); if (jogo.pika && !jogo.montaria) puxarParceiro('');
+    }, tituloAtual: () => Conhecimento.tituloAtual?.() || '' });   // presença + chat: conecta em ws://<host>:5190 (?servidor= troca, ?rede=0 desliga); tituloAtual: a plaquinha dos outros mostra o título (12/09)
   amarrarParceiro();                                                    // parceiro em campo ↔ registro do time (içada: roda de novo quando o seguidor salvo termina de carregar); traz o HP do registro (12/09)
   try { recuperarGolpesDoTime(); } catch (e){ console.warn('golpes perdidos:', e); }   // 18/09: golpes do learnset até o nível que ficaram pra trás (bug de 17–18/09) entram ou viram pendência já no boot
   /* LETREIRO DE INVASÃO (15/09): alerta passante BRANCO no topo, estilo anúncio de jogo mobile. Injeta o CSS na 1ª vez, cria a
@@ -9791,6 +9881,13 @@ function atualizarJogo(dt, entrada){
   const mover = (e, dx, dz) => m?.voa ? deslocarVoando(e, dx, dz) : deslocar(e, dx, dz);
   // Ash: teclado tem prioridade; senão vai até o clique
   let moveu = false;
+  if (r01Ativa() && !m && RaidR01.controlaPokemon()){                     // Articuno arena: the keys / joystick / click steer the POKÉMON; the trainer stays put, facing the arena
+    RaidR01.moverPokemon(dt, entrada, ash, !!(jogo.ordem || pika.destino));
+    ash.alvoX = null;
+    ash.quieto += dt;
+    atualizarParceiro(dt);
+    return;
+  }
   if (entrada.lengthSq() > 0){
     ash.alvoX = null;
     const p = entrada.normalize().multiplyScalar(velA * dt);
@@ -9846,19 +9943,22 @@ function atualizarParceiro(dt){
   // sai 3 s depois de acabar a hostilidade. Coleira: a mais de 12 m do Ash ele
   // "teleporta" de volta (é também o jeito de fugir de uma luta perdida).
   let moveuP = false;
+  const r01 = r01Ativa();                                                // Articuno arena: the player steers the partner (moverPokemon above) — no following, no leash
+  if (r01) moveuP = RaidR01.moveuPokemon();
   for (const k in pika.recargas) pika.recargas[k] = Math.max(0, pika.recargas[k] - dt);
   quadroHeld(dt);                                                         // Leftovers / Black Sludge while in battle
   Pesca.quadro(dt);
   if (jogo.trocaCd > 0) jogo.trocaCd = Math.max(0, jogo.trocaCd - dt);
   const hostil = jogo.selvagens.find(s => s.estado === 'atacando' && Math.hypot(s.x - pika.x, s.z - pika.z) < 12);
   tiqueStatus(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
+  tiqueClima(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   tiqueVolatil(pika, dt, !!(pika.emBatalha || hostil || jogo.ordem));
   tiqueSono(pika, dt);
   if (jogo.turno || jogo.ordem){ pika.emBatalha = true; pika.calma = 0; }   // aggro de selvagem NÃO congela o parceiro: ele segue você e só briga quando VOCÊ manda (ou no turno)
   else if (pika.emBatalha){ pika.calma = (pika.calma || 0) + dt; if (pika.calma > 3) pika.emBatalha = false; }
   const dA = Math.hypot(ash.x - pika.x, ash.z - pika.z);
   pika.coleira = Math.max(0, (pika.coleira || 0) - dt);
-  if (dA > 12 && !(pika.desmaiado > 0) && pika.coleira <= 0){
+  if (dA > 12 && !r01 && !(pika.desmaiado > 0) && pika.coleira <= 0){
     pika.coleira = 1.5;                                  // uma vez por puxão, não a cada quadro
     puxarParceiro('came back to you');
   }
@@ -9876,7 +9976,7 @@ function atualizarParceiro(dt){
     if (alvo.estado === 'morto' || alvo.estado === 'desmaiado' || alvo.estado === 'capturando' || alvo.estado === 'guardado' || dT > 16) jogo.ordem = null;
     else if (dT > golpe.alcance){
       const p = Math.min(dT, pika.vel * dt);
-      tentou = true; moveuP = deslocar(pika, dx / dT * p, dz / dT * p);
+      tentou = true; moveuP = (r01 ? deslocarR01 : deslocar)(pika, dx / dT * p, dz / dT * p);
       pika.giro = Math.atan2(dx, dz);
       if (!moveuP) jogo.ordem = null;
     } else {
@@ -9899,10 +9999,12 @@ function atualizarParceiro(dt){
     pika.emBatalha = true; pika.calma = 0;
     if (d > 0.08){
       const p = Math.min(d, pika.vel * dt);
-      tentou = true; moveuP = deslocar(pika, dx / d * p, dz / d * p);
+      tentou = true; moveuP = (r01 ? deslocarR01 : deslocar)(pika, dx / d * p, dz / d * p);
       pika.giro = Math.atan2(dx, dz);
       if (!moveuP) pika.destino = null;                                  // bateu: desiste do destino, como o clique do Ash
     } else pika.destino = null;
+  } else if (r01){
+    // Articuno arena: the partner is where the player put it
   } else if (pika.emBatalha){
     // parado, de frente para quem está atacando (ou para o alvo)
     const inimigo = hostil || (jogo.alvo && !['morto', 'capturando', 'desmaiado'].includes(jogo.alvo.estado) ? jogo.alvo : null);
@@ -9922,14 +10024,14 @@ function atualizarParceiro(dt){
   /* Parceiro PRESO (13/09, vídeo do l.neto: o Metapod que entrou no lugar do Charmeleon desmaiado não seguia nem atacava): tentou
      andar e não saiu do lugar por 1,2 s (nasceu/saiu da bola num canto sem saída, entre árvores ou móveis) → volta pro lado do
      treinador, como a coleira dos 12 m. */
-  if (tentou && !moveuP && !(pika.desmaiado > 0)){
+  if (tentou && !moveuP && !r01 && !(pika.desmaiado > 0)){
     pika.travado = (pika.travado || 0) + dt;
     if (pika.travado > 1.2){ pika.travado = 0; puxarParceiro('destravou'); }
   } else pika.travado = 0;
   for (const e of (jogo.montaria ? [pika] : [ash, pika])){                // montado, o Ash é filho da sela: só o parceiro aqui
     e.travaAnim = Math.max(0, e.travaAnim - dt);
     if (e.travaAnim <= 0 && e.anim && !['Idle', 'Run'].includes(e.anim) && !(e === pika && pika.desmaiado > 0)) e.anim = null;   // acabou o golpe/ferido: volta ao estado
-    const y = apoioDe(e);                                                // nadando (surf) bóia na superfície; senão o chão
+    const y = r01 ? RaidR01.alturaChao(e.x, e.z) : apoioDe(e);           // nadando (surf) bóia na superfície; senão o chão
     if (y !== null) e.y = y;
     tocarAnim(e, e.quieto > 0.14 ? 'Idle' : 'Run');
     if (e === ash) e.mix.timeScale = e.quieto <= 0.14 && patinando() ? 0.7 : 1;   // Roller Skates: longer strides, it reads as gliding
@@ -10080,7 +10182,7 @@ addEventListener('keydown', e => {
       const esp = $('monta-esp')?.value || params0.get('montaria');
       montar(jogo.montaria?.glb || (esp && podeMontar(esp) ? esp : null) || (jogo.atalhos || []).find(a => a && a.tipo === 'montaria')?.glb || (podeMontar('pm0249_00') ? 'pm0249_00' : 'pm0059_00'));
     }
-    if (ac === 'pokebola' && uma) jogarBola();                             // F: joga a bola no alvo
+    if (ac === 'pokebola' && uma && !(r01Ativa() && RaidR01.usaF())) jogarBola();   // Articuno arena: F at an unlit brazier relights it (raid_r01_game.mjs listens)                             // F: joga a bola no alvo
     if ((ac === 'safari-isca' || ac === 'safari-pedra') && uma) safariAcao(ac === 'safari-isca' ? 'isca' : 'pedra');
     if (ac === 'trocar-bola' && uma) proximaBola();                        // Shift+F: troca a bola
     if (ac === 'interagir' && uma) interagir();                            // Z: fala com o NPC / interage com o parceiro
@@ -11202,8 +11304,10 @@ function quadro(dt){
     const a = jogo.ash;
     // câmera presa no personagem, como a do Fairy (posição = unidade + offset, sem
     // atraso): com o lerp de antes o boneco corria pra frente e a câmera ia atrás
-    const f = jogo.foco || a;                          // cinemática do chefão: a câmera vai com ele
+    const r01 = r01Ativa();
+    const f = jogo.foco || (r01 && RaidR01.controlaPokemon() ? jogo.pika : a);   // cinemática do chefão: a câmera vai com ele · Articuno arena: with the Pokémon you steer
     alvo.set(f.vx, f.vy + 0.6, f.vz);
+    if (r01){ RaidR01.quadro(dt); RaidR01.enquadrar(alvo, { zoom: 0, zoomTeto: 0, puxarCentro: 0.25, subir: 0.6 }); }
     if (jogo.tremor > 0){ jogo.tremor -= dt; alvo.x += (Math.random() - 0.5) * 0.5; alvo.z += (Math.random() - 0.5) * 0.5; }
   } else if (jogo.ash){
     jogo.ash.mix.update(dt); jogo.pika.mix.update(dt); jogo.montaria?.mix.update(dt);

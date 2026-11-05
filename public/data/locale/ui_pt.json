@@ -7586,5 +7586,7 @@
   "{w}: heals only ¼ of max HP": "{w}: cura só ¼ do HP máximo",
   "{w}: heals ⅔ of max HP": "{w}: cura ⅔ do HP máximo",
   "{w}: never misses": "{w}: nunca erra",
-  "{w}: only 50% accuracy": "{w}: só 50% de precisão"
+  "{w}: only 50% accuracy": "{w}: só 50% de precisão",
+  "frozen!": "congelado!",
+  "can't attack now": "não dá pra atacar agora"
 }

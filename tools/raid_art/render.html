@@ -1,0 +1,26 @@
+<!doctype html><html><body style="margin:0;background:transparent">
+<script type="importmap">{"imports":{"three":"../../vendor/three/build/three.module.js","three/addons/":"../../vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const q = new URLSearchParams(location.search), glb = q.get('glb'), W = +q.get('w') || 1600, H = +q.get('h') || 1600, t = +q.get('t') || 0.6;
+const ren = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+ren.setSize(W, H); ren.setClearColor(0x000000, 0); ren.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(ren.domElement);
+const cena = new THREE.Scene();
+cena.add(new THREE.HemisphereLight(0xffffff, 0x8899cc, 2.2));
+const sol = new THREE.DirectionalLight(0xffffff, 2.4); sol.position.set(2, 4, 5); cena.add(sol);
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.01, 100);
+const g = await new GLTFLoader().loadAsync('../../public/scenery/mon/' + glb + '.glb');
+const obj = g.scene; cena.add(obj);
+const mix = new THREE.AnimationMixer(obj);
+const clip = g.animations.find(a => /^idle$/i.test(a.name)) || g.animations.find(a => /idle/i.test(a.name)) || g.animations[0];
+if (clip) { mix.clipAction(clip).play(); mix.update(clip.duration * t); }
+obj.rotation.y = +(q.get('giro') || 0.5);
+obj.updateMatrixWorld(true);
+const box = new THREE.Box3().setFromObject(obj, true), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
+const r = Math.max(s.x, s.y, s.z);
+cam.position.set(c.x, c.y + r * 0.08, c.z + r * 3.6); cam.lookAt(c);
+ren.render(cena, cam);
+window.__png = ren.domElement.toDataURL('image/png');
+</script></body></html>

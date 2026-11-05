@@ -194,7 +194,7 @@ export const ESQUEMAS_F3 = {
     previa: '/admin/preview_raid.mjs',
     validar: r => r.chefeGlb && r.chefeDex && +r.chefeGlb.slice(2, 6) !== r.chefeDex ? `model ${r.chefeGlb} belongs to species no. ${+r.chefeGlb.slice(2, 6)}, not ${r.chefeDex}` : null,
     campos: [
-      { k: 'arena', rotulo: 'Arena scene', tipo: 'texto', max: 12, validar: s => /^\d{3,9}$/.test(s) ? null : 'the scene id (numbers only)', ajuda: 'Original: 4120009 (Lorelei\'s Room).' },
+      { k: 'arena', rotulo: 'Arena scene', tipo: 'texto', max: 12, validar: s => /^\d{3,9}$/.test(s) ? null : 'the scene id (numbers only)', ajuda: 'Mew: 4120009 (Lorelei\'s Room). Articuno: 9700001 (Seafoam Blizzard — its own arena, attacks and braziers; use boss 144 / pm0144_00).' },
       { k: 'vagas', rotulo: 'Queue slots', tipo: 'num', min: 1, max: 50, int: true, ajuda: 'Original: 10.' },
       { k: 'chefeNome', rotulo: 'Boss name', tipo: 'texto', max: 30, ajuda: 'Original: Mew.' },
       { k: 'chefeDex', rotulo: 'Boss species (no.)', tipo: 'num', min: 1, max: 2000, int: true, ajuda: 'Original: 151.' },

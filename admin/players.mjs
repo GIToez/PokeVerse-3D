@@ -72,7 +72,7 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
     $('j-ficha').innerHTML = `
       <div class="topo-edit"><h2>${esc(c.nome || c.usuario)} <span class="fraco" style="font-size:14px">${esc(c.usuario)}</span></h2>
         <button id="j-atualizar">Refresh</button>
-        ${c.online ? '<button id="j-ir" title="Takes YOUR character to them (the game must be open in another tab, on the same map)">Go there in game</button><button id="j-recado">Send message</button><button id="j-kick" class="perigo">Disconnect</button>' : ''}</div>
+        ${c.online ? '<button id="j-ir" title="Takes YOUR character to them, on any map (your game must be open with this GM account)">Go there in game</button><button id="j-puxar" title="Brings them to where YOUR character is (their scene reloads)">Bring to me</button><button id="j-recado">Send message</button><button id="j-kick" class="perigo">Disconnect</button>' : ''}</div>
       <div class="fraco">${status}</div>
       <div class="j-grade">
         <div class="caixa"><h3>Account</h3>
@@ -184,7 +184,8 @@ export function instalarJogadores({ api, toast, canal, resolverEspecie }) {
   function ligarFicha() {
     const mexeuBolsa = () => { sujoBolsa = true; $('j-sujo-bolsa').hidden = false; };
     $('j-atualizar').onclick = () => abrir(sel);
-    if ($('j-ir')) $('j-ir').onclick = () => { const o = det.conta.online; canal.postMessage({ t: 'tp', x: o.x, z: o.z, mapa: o.mapa }); toast('Request sent to your game (if it is open on map ' + o.mapa + ').'); };
+    if ($('j-ir')) $('j-ir').onclick = () => acao('moderar', { acao: 'ir' }, 'Your game is going to ' + det.conta.usuario + '.');
+    if ($('j-puxar')) $('j-puxar').onclick = () => { if (confirm('Bring ' + det.conta.usuario + ' to your character? Their scene reloads.')) acao('moderar', { acao: 'puxar' }, det.conta.usuario + ' is coming to you.'); };
     if ($('j-recado')) $('j-recado').onclick = () => { const texto = prompt('Message for the player (shows in their chat as a GM message):'); if (texto?.trim()) acao('moderar', { acao: 'recado', texto }, 'Message sent.'); };
     if ($('j-kick')) $('j-kick').onclick = () => { if (confirm('Disconnect ' + det.conta.usuario + ' now? (they can log in again)')) acao('moderar', { acao: 'desconectar', motivo: $('j-motivo').value }, 'Disconnected.'); };
     $('j-cargo-ok').onclick = () => acao('cargo', { gm: $('j-gm').checked, cargo: $('j-cargo').value || null }, 'Role saved.');

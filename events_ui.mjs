@@ -262,21 +262,21 @@ function artesMaquete() {
   cacheArte = { def: b, det: d, v };
   return v;
 }
-const ARTE_RAIDS = new Set(['articuno', 'zapdos']);
-function arteRaid(a, b) {
-  if (ARTE_RAIDS.has(a)) {
+/* Raid art: ui/events/<slug>/ when the server found it (o.raid.arte); the mockup art is Mew's, so it is only used for Mew. */
+function arteRaid(a, b, dex = 151) {
+  if (a && /^[a-z0-9-]+$/.test(a)) {
     const c = document.body.classList.contains('mobile') ? 'celular' : 'pc',
       d = b === 'miniatura' ? 'miniatura' : b === 'destaque' ? 'destaque' : 'detalhe';
     return { url: './ui/events/' + a + '/' + c + '-' + d + '.webp', folga: 16 };
   }
-  if ((a || 'mew') !== 'mew') return null;
+  if ((a || 'mew') !== 'mew' || +dex !== 151) return null;
   const m = artesMaquete();
   return (b === 'miniatura' ? m.miniatura.raid : m[b]) || null;
 }
 function arteDe(o, a) {
   if (!o) return null;
   if (o.imagem) return { url: imagemDe(o), cobre: true };
-  if (o.tipo === 'raid') return arteRaid(o.raid?.arte, a);
+  if (o.tipo === 'raid') return arteRaid(o.raid?.arte, a, o.raid?.dex || 151);
   if (a !== 'miniatura') return null;
   return (
     artesMaquete().miniatura[o.tipo] ||
@@ -294,7 +294,18 @@ function pintarArte(p, b, c, a) {
   return d;
 }
 const passosDaStaff = (o) => Array.isArray(o.passos) && o.passos.some(Boolean);
+/** A Festival / Tournament / Invasion / Other given rates on the panel says them too. */
+function taxasDe(o) {
+  const b = o.bonus;
+  if (!b || o.tipo === 'bonus') return null;
+  const l = [b.xp > 1 ? 'EXP ×' + b.xp : '', b.shiny > 1 ? 'shiny ×' + b.shiny : '', b.densidade && b.densidade !== 1 ? 'wild Pokémon ×' + b.densidade : ''].filter(Boolean);
+  return l.length ? 'While it runs: ' + l.join(' · ') + ' for everyone.' : null;
+}
 function passosDe(o) {
+  const l = passosBase(o), t = taxasDe(o);
+  return t && Array.isArray(l) ? [t, ...l] : l;
+}
+function passosBase(o) {
   if (passosDaStaff(o)) return o.passos;
   switch (o.tipo) {
     case 'raid':
@@ -333,12 +344,13 @@ function passosDe(o) {
       ];
   }
 }
+const MOSTRA_FRAGMENTO = false;
 const FRAGMENTO_DO = { 144: 900070, 145: 900071, 146: 900072, 150: 900073, 151: 900074 };
 function recompensasDe(o) {
   if (o.tipo === 'raid') {
     const f = FRAGMENTO_DO[+(o.raid?.dex || 151)];
     return [
-      ...(f ? [{ img: './ui/itens/ic_' + f + '.png', qtd: 'Fragmento' }] : []),
+      ...(f && MOSTRA_FRAGMENTO ? [{ img: './ui/itens/ic_' + f + '.png', qtd: 'Fragmento' }] : []),   // the fragment items don't exist yet
       { img: './ui/itens/ic_1.png', qtd: 'up to 3,000' },
       { img: './ui/itens/ic_1003.png', qtd: 'up to x5' },
       { img: './ui/itens/ic_2003.png', qtd: 'up to x3' },

@@ -5,9 +5,9 @@
       "id": "double-exp-weekend",
       "ligado": true,
       "tipo": "bonus",
-      "destaque": true,
       "titulo": "Double EXP Weekend",
       "descricao": "All wild EXP is doubled from Saturday 00:00 to Sunday 23:59 (Pacific time).",
+      "destaque": true,
       "pt": {
         "titulo": "Fim de semana de EXP em dobro",
         "descricao": "Toda EXP de selvagem vale o dobro de sábado 00:00 a domingo 23:59 (horário do Pacífico)."
@@ -24,6 +24,223 @@
         "xp": 2,
         "shiny": 1,
         "densidade": 1
+      }
+    },
+    {
+      "id": "daily-raid-mewtwo",
+      "ligado": false,
+      "tipo": "raid",
+      "titulo": "Sunday featured raid: Mewtwo",
+      "descricao": "Mewtwo Lv 75 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de domingo: Mewtwo",
+        "descricao": "Raid de Mewtwo Nv 75 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        0
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "4120009",
+        "chefeNome": "Mewtwo",
+        "chefeDex": 150,
+        "chefeGlb": "pm0150_00",
+        "chefeNivel": 75,
+        "lutaMin": 15
+      }
+    },
+    {
+      "id": "daily-raid-mew",
+      "ligado": true,
+      "tipo": "raid",
+      "titulo": "Monday featured raid: Mew",
+      "descricao": "Mew Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de segunda: Mew",
+        "descricao": "Raid de Mew Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        1
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "4120009",
+        "chefeNome": "Mew",
+        "chefeDex": 151,
+        "chefeGlb": "pm0151_00",
+        "chefeNivel": 70,
+        "lutaMin": 15
+      }
+    },
+    {
+      "id": "daily-raid-zapdos",
+      "ligado": false,
+      "tipo": "raid",
+      "titulo": "Tuesday featured raid: Zapdos",
+      "descricao": "Zapdos Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de terça: Zapdos",
+        "descricao": "Raid de Zapdos Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        2
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "4120009",
+        "chefeNome": "Zapdos",
+        "chefeDex": 145,
+        "chefeGlb": "pm0145_00",
+        "chefeNivel": 70,
+        "lutaMin": 15
+      }
+    },
+    {
+      "id": "daily-raid-moltres",
+      "ligado": false,
+      "tipo": "raid",
+      "titulo": "Wednesday featured raid: Moltres",
+      "descricao": "Moltres Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de quarta: Moltres",
+        "descricao": "Raid de Moltres Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        3
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "4120009",
+        "chefeNome": "Moltres",
+        "chefeDex": 146,
+        "chefeGlb": "pm0146_00",
+        "chefeNivel": 70,
+        "lutaMin": 15
+      }
+    },
+    {
+      "id": "daily-raid-articuno",
+      "ligado": true,
+      "tipo": "raid",
+      "titulo": "Thursday featured raid: Articuno",
+      "descricao": "Articuno Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de quinta: Articuno",
+        "descricao": "Raid de Articuno Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        4
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "9700001",
+        "chefeNome": "Articuno",
+        "chefeDex": 144,
+        "chefeGlb": "pm0144_00",
+        "chefeNivel": 70,
+        "lutaMin": 15
+      }
+    },
+    {
+      "id": "daily-raid-lugia",
+      "ligado": false,
+      "tipo": "raid",
+      "titulo": "Friday featured raid: Lugia",
+      "descricao": "Lugia Lv 75 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de sexta: Lugia",
+        "descricao": "Raid de Lugia Nv 75 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        5
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "4120009",
+        "chefeNome": "Lugia",
+        "chefeDex": 249,
+        "chefeGlb": "pm0249_00",
+        "chefeNivel": 75,
+        "lutaMin": 15
+      }
+    },
+    {
+      "id": "daily-raid-ho-oh",
+      "ligado": false,
+      "tipo": "raid",
+      "titulo": "Saturday featured raid: Ho-Oh",
+      "descricao": "Ho-Oh Lv 75 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "destaque": true,
+      "pt": {
+        "titulo": "Raid em destaque de sábado: Ho-Oh",
+        "descricao": "Raid de Ho-Oh Nv 75 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+      },
+      "quando": "semana",
+      "dias": [
+        6
+      ],
+      "horas": [
+        "06:15",
+        "14:15",
+        "22:15"
+      ],
+      "duracaoMin": 15,
+      "raid": {
+        "filaMin": 15,
+        "arena": "4120009",
+        "chefeNome": "Ho-Oh",
+        "chefeDex": 250,
+        "chefeGlb": "pm0250_00",
+        "chefeNivel": 75,
+        "lutaMin": 15
       }
     }
   ]
