@@ -3535,7 +3535,7 @@ const PERF = params0.get('perf') ? { t: [], logica: 0, render: 0, picos: [], ult
    fora do piso (no jogo normal o voo só vale onde há piso). */
 const ADM = params0.has('adm') && params0.get('adm') !== '0';
 const INTRO = params0.get('intro') === '1';
-const INTRO2 = params0.get('intro2') === '1' && !INTRO;                     // PREVIEW of the new Professor Oak opening (cutscene.mjs + data/cutscenes/intro_oak.json); the live intro is still the League dream
+const INTRO2 = params0.get('intro2') === '1' && !INTRO;                     // Professor Oak's opening (cutscene.mjs + data/cutscenes/intro_oak.json): plays right after the League dream (terminarIntro), or alone with ?intro2=1
 const RAID = params0.get('raid') === '1';                                 // clipe promocional: RAID Lugia (rodarRaid); ?raid=1
 const TORNEIO = params0.get('torneio') === '1';                           // clipe vertical (TikTok): torneio com 3 duelos (rodarTorneio); ?torneio=1
 const DIRETOR = params0.get('diretor') === '1';                           // modo diretor: cena montada pelo Jaime, gravada no OBS (director.mjs)
@@ -8155,6 +8155,7 @@ function terminarIntro(){
   gravarLS('introVista', true);
   const b = $('boot'); b.textContent = '…'; b.hidden = false;
   const u = new URL(location.href); u.searchParams.delete('intro'); u.searchParams.set('jogar', '1');
+  u.searchParams.set('intro2', '1');                                     // then Professor Oak's opening (cutscene.mjs), which ends with the player in the bedroom
   u.searchParams.set('mapa', '4110008'); u.searchParams.set('chegada', '7180599');   // acorda no QUARTO da casa (o BornPoint do Fairy), não no meio de Pallet (pedido do Jaime, 06/09)
   setTimeout(async () => { try { await Conta.enviarAgora(); } catch {}   /* 13/09: sem flush, o introVista era gravado e a página recarregava antes de sincronizar — a conta nunca guardava e o sonho repetia todo relog */
     try { sessionStorage.setItem('porta.ok', '1'); } catch {} descarregarCena(); location.replace(u.toString()); }, 700);
@@ -8256,7 +8257,7 @@ async function rodarRaid({ configurarSeguidor }){
   const topo = document.createElement('div'); topo.id = 'raid-topo';
   topo.innerHTML = '<div class="rt-nome"><b>Lugia</b><span>★ RAID · Lv70</span></div><div class="rt-barra"><div class="rt-hp"></div></div><div class="rt-sub"><span id="rt-jog">…</span><span id="rt-pct">100%</span></div>';
   document.body.appendChild(topo);
-  const sair = document.createElement('button'); sair.id = 'raid-sair'; sair.textContent = 'Sair ▸'; document.body.appendChild(sair);
+  const sair = document.createElement('button'); sair.id = 'raid-sair'; sair.textContent = I18n.t('Exit ▸'); document.body.appendChild(sair);
   sair.onclick = terminarRaid; window.addEventListener('keydown', e => { if (e.code === 'Escape') terminarRaid(); });
   ash.pivo.visible = false; pika.pivo.visible = false; pika.recolhido = true; portaOcupado = true;   // o jogador é só a câmera
   const PALCOS = {                                                       // palco por cena; esp = espaçamento entre os players, escBoss = tamanho do chefe
@@ -8404,7 +8405,7 @@ async function rodarTorneio({ configurarSeguidor }){
   const topo = document.createElement('div'); topo.id = 'tn-topo'; topo.innerHTML = '<b>🏆 TORNEIO DE <i>KANTO</i></b><span id="tn-rodada">FINAL · Liga Índigo</span>'; document.body.appendChild(topo);
   const cards = document.createElement('div'); cards.id = 'tn-cards'; document.body.appendChild(cards);
   const flash = document.createElement('div'); flash.id = 'tn-flash'; document.body.appendChild(flash);
-  const sair = document.createElement('button'); sair.id = 'tn-sair'; sair.textContent = 'Sair ▸'; document.body.appendChild(sair);
+  const sair = document.createElement('button'); sair.id = 'tn-sair'; sair.textContent = I18n.t('Exit ▸'); document.body.appendChild(sair);
   sair.onclick = terminarTorneio; window.addEventListener('keydown', e => { if (e.code === 'Escape') terminarTorneio(); });
   ash.pivo.visible = false; pika.pivo.visible = false; pika.recolhido = true; portaOcupado = true;
   const cx = 1.6, zS = 1.5, zN = -9.5;                                   // palco da abertura: eixo z no meio do Quarto do Campeão
@@ -11495,7 +11496,7 @@ function quadro(dt){
   vigiarSafari();
   if (!(jogo.safariPainelEm > performance.now() - 250)){ jogo.safariPainelEm = performance.now(); try { if (!jogo.safariUiPronta){ jogo.safariUiPronta = true; SafariUi.instalar({ acao: tipo => safariAcao(tipo), alvo: () => { const s = jogo.alvo; return s && Safari.ehZona(s.area) && !['morto', 'capturando', 'guardado', 'desmaiado'].includes(s.estado) && Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) <= RAIO_BOLA ? s : null; } }); } SafariUi.painel(Safari.vivo(jogo.safari) ? jogo.safari : null); } catch (e){ console.warn('safari ui', e); } }
   try {
-    Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: jogo.missoesOk ? Missoes.pinsMapaSync?.() : [], npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
+    Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: jogo.missoesOk ? Missoes.pinsMapaSync?.() : [], npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno || jogo.cinem), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
   if (jogo.chefe) atualizarChefe(dt);
   if (jogo.voadores?.length) atualizarVoadores(dt);

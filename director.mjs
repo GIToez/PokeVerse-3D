@@ -1,10 +1,9 @@
-/* Modo DIRETOR (?diretor=1): o Jaime monta a cena e grava com o OBS.
- * v3 (01/09): tudo em POSIÇÕES FIXAS do torneio — cada mapa tem o lugar do Jogador 1 (sul) e do Jogador 2
- * (norte, exatamente do outro lado), e o Pokémon de cada um fica 3,5 m na frente do dono. O painel é por
- * jogador: roupa (🎲), nick (🎲), Pokémon (dex 🎲 + nível) e um reserva pra troca. Câmera em presets
- * (atrás do J1 / J2, lateral, aberta, fechar no Pokémon) + mouse (arrastar gira, roda = zoom). Ações nas
- * teclas 1–9 falam em J1/J2 (golpe, troca pro reserva, KO, levantar, flash, câmera, HP do placar). Placar
- * automático. Cena salva em localStorage `diretor.cena3` + exportar/importar. H esconde o painel. */
+/* DIRECTOR mode (?diretor=1, admin → Cinema → Director mode): stage a scene and record it with OBS.
+ * v3 (01/09): everything uses FIXED tournament positions: each map has a spot for Player 1 (south) and Player 2 (north, straight
+ * across), and each player's Pokémon stands 3.5 m in front of its trainer. The panel is per player: outfit (🎲), nick (🎲),
+ * Pokémon (dex 🎲 + level) and a reserve to switch to. Camera presets (behind P1 / P2, side, wide, close on the Pokémon) + mouse
+ * (drag turns, wheel = zoom). Actions on keys 1–9 refer to P1/P2 (move, switch to the reserve, KO, get back up, flash, camera,
+ * scoreboard HP). Automatic scoreboard. The scene is saved in localStorage `diretor.cena3` + export/import. H hides the panel. */
 let ctx = null, painel = null, foco = null, banner = null, cards = null, flash = null;
 let cena = null;                                                          // { mapa, banner, placar, jog: {1:{tr,mon,reserva,ativo},2:{…}}, slots }
 const vivos = { 1: { tr: null, mon: null, reserva: null }, 2: { tr: null, mon: null, reserva: null } };   // atores montados (objetos do jogo)
@@ -39,7 +38,7 @@ const NICKS = ['KsL_Hunter', 'aKa_Luh', 'Mihzinha', 'ZeraTM', 'DarkKaio77', 'Ped
 const CORES = ['#8ef58e', '#c9a0ff', '#ff9bd7', '#ffe07a', '#ffb46b', '#7ad7ff', '#6ea8ff', '#ffd23a', '#ff8a5b', '#a0ffcf'];
 const hex = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
 const rnd = a => a[Math.floor(Math.random() * a.length)];
-const nomeDex = n => ctx.porDex.get(+n)?.name || ('nº ' + n);
+const nomeDex = n => ctx.porDex.get(+n)?.name || ('#' + n);
 const icone = n => './ui/mon/pm' + String(n).padStart(4, '0') + '.png';
 const status = t => { const s = $('dir-status'); if (s) s.textContent = t; };
 
@@ -86,14 +85,14 @@ function tirar(e){ if (e) ctx.cena.remove(e.pivo); }
 async function criarTreinador(n){
   const j = cena.jog[n]; if (!j.tr) return;
   tirar(vivos[n].tr); vivos[n].tr = null; pintarJog();
-  try { vivos[n].tr = await montarTreinador(j.tr.perso, j.tr.nick, j.tr.cor, lugarTreinador(n)); } catch (e){ status('treinador ' + n + ' não carregou: ' + (e?.message || e)); }
+  try { vivos[n].tr = await montarTreinador(j.tr.perso, j.tr.nick, j.tr.cor, lugarTreinador(n)); } catch (e){ status('trainer ' + n + ' failed to load: ' + (e?.message || e)); }
   sinc(); pintarJog(); pintarCards();
 }
 async function criarMon(n, papel){                                        // papel: 'mon' | 'reserva'
   const j = cena.jog[n], d = j[papel]; if (!d) return;
   tirar(vivos[n][papel]); vivos[n][papel] = null; pintarJog();
   try { const e = await montarMon(d.dex, d.lv, lugarMon(n), d.tam || 0); if (papel === 'reserva') e.pivo.visible = false; vivos[n][papel] = e; }
-  catch (e){ status(nomeDex(d.dex) + ' não carregou: ' + (e?.message || e)); }
+  catch (e){ status(nomeDex(d.dex) + ' failed to load: ' + (e?.message || e)); }
   sinc(); pintarJog(); pintarCards();
 }
 async function montarTudo(){ for (const n of [1, 2]){ await criarTreinador(n); await criarMon(n, 'mon'); await criarMon(n, 'reserva'); } }
@@ -113,23 +112,23 @@ const dadosAtivo = n => cena.jog[n].ativo === 'reserva' && cena.jog[n].reserva ?
 function encarar(){ for (const n of [1, 2]){ const a = monAtivo(n), b = monAtivo(outro(n)); if (a && b) a.giro = giroPara(a, b); } }
 async function golpe(de, golpeId, dano){
   const at = monAtivo(de), al = monAtivo(outro(de)), g = ctx.GOLPES[golpeId], tr = vivos[de].tr;
-  if (!at || !al || !g) return status('golpe: falta o Pokémon de um dos jogadores');
+  if (!at || !al || !g) return status('move: one of the players has no Pokémon');
   encarar(); if (tr?.acoes?.has('Attack')) ctx.tocarUma(tr, 'Attack');
-  if (cena.placar.nomeGolpe) mostrarFlash(g.nome, (cena.jog[de].tr?.nick || 'J' + de) + ' · ' + nomeDex(dadosAtivo(de).dex), 1.1);
+  if (cena.placar.nomeGolpe) mostrarFlash(g.nome, (cena.jog[de].tr?.nick || 'P' + de) + ' · ' + nomeDex(dadosAtivo(de).dex), 1.1);
   if (g.contato) ctx.golpeTurno(at, al, g).catch(() => {}); else { ctx.tocarUma(at, g.anim); ctx.lancarGolpe(at, al, g); }
   ctx.jogo.tremor = 0.3;
   if (dano){ const o = outro(de); cena.placar.hp[o] = Math.max(0, (cena.placar.hp[o] ?? 100) - dano); pintarCards(); salvar(); }
 }
 async function troca(n){
   const j = cena.jog[n], tr = vivos[n].tr, sai = monAtivo(n), entra = j.ativo === 'reserva' ? vivos[n].mon : vivos[n].reserva;
-  if (!sai || !entra) return status('troca: o jogador ' + n + ' precisa de Pokémon e reserva');
+  if (!sai || !entra) return status('switch: player ' + n + ' needs a Pokémon and a reserve');
   if (tr?.acoes?.has('Attack')) ctx.tocarUma(tr, 'Attack');
   ctx.efeito('FX_Evolution2', sai.peito, sai.altura, { escala: 1.2 }); await ctx.esperarSeg(0.35); sai.pivo.visible = false;
   const L = lugarMon(n); entra.x = L.x; entra.z = L.z; entra.y = chao(L.x, L.z); entra.giro = L.giro; entra.travaAnim = 0; entra.anim = null; entra.pivo.rotation.x = 0;
   if (tr){ try { await ctx.bolaLancada(tr, entra.x, entra.z); } catch {} }
   entra.pivo.visible = true; if (entra.acoes?.has('Appear')) ctx.tocarUma(entra, 'Appear');
   j.ativo = j.ativo === 'reserva' ? 'mon' : 'reserva'; cena.placar.hp[n] = 100; encarar(); pintarCards(); pintarJog(); salvar();
-  mostrarFlash('VAI, ' + nomeDex(dadosAtivo(n).dex).toUpperCase() + '!', j.tr?.nick || '', 1.3);
+  mostrarFlash('GO, ' + nomeDex(dadosAtivo(n).dex).toUpperCase() + '!', j.tr?.nick || '', 1.3);
 }
 function ko(n){
   const e = monAtivo(n); if (!e) return;
@@ -158,14 +157,14 @@ function executar(s){
   else if (s.tipo === 'hp'){ cena.placar.hp[+s.de] = +s.valor; pintarCards(); salvar(); }
 }
 function resumo(s){
-  const J = n => 'J' + n;
-  if (s.tipo === 'golpe') return `${J(s.de)} usa ${ctx.GOLPES[s.golpe]?.nome || s.golpe} em ${J(outro(+s.de))}${s.dano ? ' (−' + s.dano + '%)' : ''}`;
-  if (s.tipo === 'troca') return `${J(s.de)} troca de Pokémon`;
-  if (s.tipo === 'ko') return `KO no Pokémon do ${J(s.de)}`;
-  if (s.tipo === 'levantar') return `levanta o Pokémon do ${J(s.de)}`;
+  const J = n => 'P' + n;
+  if (s.tipo === 'golpe') return `${J(s.de)} uses ${ctx.GOLPES[s.golpe]?.nome || s.golpe} on ${J(outro(+s.de))}${s.dano ? ' (−' + s.dano + '%)' : ''}`;
+  if (s.tipo === 'troca') return `${J(s.de)} switches Pokémon`;
+  if (s.tipo === 'ko') return `${J(s.de)}'s Pokémon faints`;
+  if (s.tipo === 'levantar') return `${J(s.de)}'s Pokémon gets back up`;
   if (s.tipo === 'flash') return `flash "${s.a}"`;
-  if (s.tipo === 'cam') return `câmera ${s.modo}${s.modo !== 'lateral' && s.modo !== 'aberta' ? ' ' + J(s.de) : ''}`;
-  if (s.tipo === 'hp') return `HP do ${J(s.de)} = ${s.valor}%`;
+  if (s.tipo === 'cam') return `camera ${s.modo}${s.modo !== 'lateral' && s.modo !== 'aberta' ? ' ' + J(s.de) : ''}`;
+  if (s.tipo === 'hp') return `${J(s.de)} HP = ${s.valor}%`;
   return s.tipo;
 }
 
@@ -177,74 +176,74 @@ function limparTudo(){ for (const n of [1, 2]){ for (const k of ['tr', 'mon', 'r
 function pintarJog(){
   for (const n of [1, 2]){
     const j = cena.jog[n];
-    $('j' + n + '-tr-est').textContent = j.tr ? (vivos[n].tr ? '● ' + j.tr.nick + ' (' + ctx.Personagem.nomeDe(j.tr.perso) + ')' : '… carregando') : 'ainda não criado';
+    $('j' + n + '-tr-est').textContent = j.tr ? (vivos[n].tr ? '● ' + j.tr.nick + ' (' + ctx.Personagem.nomeDe(j.tr.perso) + ')' : '… loading') : 'not created yet';
     $('j' + n + '-tr-est').className = 'estado' + (j.tr && vivos[n].tr ? '' : ' nao');
-    $('j' + n + '-mon-est').textContent = j.mon ? (vivos[n].mon ? '● ' + nomeDex(j.mon.dex) + ' Lv ' + j.mon.lv : '… carregando') : 'ainda não criado';
+    $('j' + n + '-mon-est').textContent = j.mon ? (vivos[n].mon ? '● ' + nomeDex(j.mon.dex) + ' Lv ' + j.mon.lv : '… loading') : 'not created yet';
     $('j' + n + '-mon-est').className = 'estado' + (j.mon && vivos[n].mon ? '' : ' nao');
-    $('j' + n + '-res-est').textContent = j.reserva ? (vivos[n].reserva ? '● ' + nomeDex(j.reserva.dex) + ' Lv ' + j.reserva.lv + (j.ativo === 'reserva' ? ' (em campo)' : ' (na bola)') : '… carregando') : 'sem reserva';
+    $('j' + n + '-res-est').textContent = j.reserva ? (vivos[n].reserva ? '● ' + nomeDex(j.reserva.dex) + ' Lv ' + j.reserva.lv + (j.ativo === 'reserva' ? ' (on the field)' : ' (in its ball)') : '… loading') : 'no reserve';
     $('j' + n + '-res-est').className = 'estado' + (j.reserva && vivos[n].reserva ? '' : ' nao');
   }
 }
 function pintarSlots(){
-  $('dir-slots').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => { const s = cena.slots[k]; return `<div class="slot"><b>${k}</b>${s ? esc(resumo(s)) : '<span class="k">vazio</span>'}${s ? ` <button data-run="${k}">▶</button><button data-del="${k}" class="perigo">×</button>` : ''}</div>`; }).join('');
+  $('dir-slots').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => { const s = cena.slots[k]; return `<div class="slot"><b>${k}</b>${s ? esc(resumo(s)) : '<span class="k">empty</span>'}${s ? ` <button data-run="${k}">▶</button><button data-del="${k}" class="perigo">×</button>` : ''}</div>`; }).join('');
   $('dir-slots').querySelectorAll('[data-run]').forEach(b => b.onclick = () => executar(cena.slots[b.dataset.run]));
   $('dir-slots').querySelectorAll('[data-del]').forEach(b => b.onclick = () => { delete cena.slots[b.dataset.del]; pintarSlots(); salvar(); });
 }
-function pintarExtras(){ const ul = $('x-lista'); ul.innerHTML = extras.map(a => `<li class="${a.id === selExtra ? 'on' : ''}" data-id="${a.id}">${a.tipo === 'tr' ? '🧢' : '🔴'} ${esc(a.nome)}</li>`).join('') || '<li class="k">nenhum</li>'; ul.querySelectorAll('li[data-id]').forEach(li => li.onclick = () => { selExtra = +li.dataset.id; pintarExtras(); }); }
+function pintarExtras(){ const ul = $('x-lista'); ul.innerHTML = extras.map(a => `<li class="${a.id === selExtra ? 'on' : ''}" data-id="${a.id}">${a.tipo === 'tr' ? '🧢' : '🔴'} ${esc(a.nome)}</li>`).join('') || '<li class="k">none</li>'; ul.querySelectorAll('li[data-id]').forEach(li => li.onclick = () => { selExtra = +li.dataset.id; pintarExtras(); }); }
 function blocoJogador(n, skins){
-  return `<div class="jog"><b class="t">Jogador ${n}</b> <span class="k">${n === 1 ? '(sul — a câmera "atrás do J1" fica nas costas dele)' : '(norte — exatamente do outro lado)'}</span>
-    <label><span>roupa</span><select id="j${n}-skin">${skins}</select><button id="j${n}-rand" title="skin e cores aleatórias">🎲</button></label>
-    <label><span>nick</span><input id="j${n}-nick" placeholder="nome"><input type="color" id="j${n}-cor" value="${n === 1 ? '#8ef58e' : '#c9a0ff'}"><button id="j${n}-nick-rand">🎲</button></label>
-    <div class="linha"><button id="j${n}-tr-ok" class="ok">criar / trocar treinador</button><span id="j${n}-tr-est" class="estado nao">ainda não criado</span></div>
+  return `<div class="jog"><b class="t">Player ${n}</b> <span class="k">${n === 1 ? '(south: the "behind P1" camera sits at their back)' : '(north: straight across)'}</span>
+    <label><span>outfit</span><select id="j${n}-skin">${skins}</select><button id="j${n}-rand" title="random skin and colours">🎲</button></label>
+    <label><span>nick</span><input id="j${n}-nick" placeholder="name"><input type="color" id="j${n}-cor" value="${n === 1 ? '#8ef58e' : '#c9a0ff'}"><button id="j${n}-nick-rand">🎲</button></label>
+    <div class="linha"><button id="j${n}-tr-ok" class="ok">create / change trainer</button><span id="j${n}-tr-est" class="estado nao">not created yet</span></div>
     <label><span>Pokémon</span><input type="number" id="j${n}-dex" value="${n === 1 ? 6 : 9}" min="1" max="1010" style="flex:.5"><span id="j${n}-dex-nome" style="min-width:0;flex:1"></span><button id="j${n}-dex-rand">🎲</button></label>
-    <label><span>nível</span><input type="number" id="j${n}-lv" value="60" min="1" max="100" style="flex:.5"><span>tam. m</span><input type="number" id="j${n}-tam" placeholder="auto" step="0.1" style="flex:.5"></label>
-    <div class="linha"><button id="j${n}-mon-ok" class="ok">criar / trocar Pokémon</button><span id="j${n}-mon-est" class="estado nao">ainda não criado</span></div>
-    <label><span>reserva</span><input type="number" id="j${n}-rdex" value="${n === 1 ? 149 : 59}" min="1" max="1010" style="flex:.5"><span id="j${n}-rdex-nome" style="min-width:0;flex:1"></span><button id="j${n}-rdex-rand">🎲</button><input type="number" id="j${n}-rlv" value="60" min="1" max="100" style="flex:.5" title="nível"></label>
-    <div class="linha"><button id="j${n}-res-ok">criar reserva (fica na bola até a troca)</button><span id="j${n}-res-est" class="estado nao">sem reserva</span></div>
+    <label><span>level</span><input type="number" id="j${n}-lv" value="60" min="1" max="100" style="flex:.5"><span>size m</span><input type="number" id="j${n}-tam" placeholder="auto" step="0.1" style="flex:.5"></label>
+    <div class="linha"><button id="j${n}-mon-ok" class="ok">create / change Pokémon</button><span id="j${n}-mon-est" class="estado nao">not created yet</span></div>
+    <label><span>reserve</span><input type="number" id="j${n}-rdex" value="${n === 1 ? 149 : 59}" min="1" max="1010" style="flex:.5"><span id="j${n}-rdex-nome" style="min-width:0;flex:1"></span><button id="j${n}-rdex-rand">🎲</button><input type="number" id="j${n}-rlv" value="60" min="1" max="100" style="flex:.5" title="level"></label>
+    <div class="linha"><button id="j${n}-res-ok">create reserve (stays in its ball until the switch)</button><span id="j${n}-res-est" class="estado nao">no reserve</span></div>
   </div>`;
 }
 function montarPainel(){
-  const skins = ctx.Personagem.SKINS.map(s => `<option value="${s.id}">${esc(s.nome)} (${s.sexo})</option>`).join('');
+  const skins = ctx.Personagem.SKINS.map(s => `<option value="${s.id}">${esc(s.nome)} (${s.sexo === 'menina' ? 'girl' : 'boy'})</option>`).join('');
   const golpes = Object.values(ctx.GOLPES).filter(g => g && g.id && g.efeito).sort((a, b) => a.nome.localeCompare(b.nome)).map(g => `<option value="${g.id}">${esc(g.nome)}${g.contato ? ' ⚔' : ''}</option>`).join('');
   painel = document.createElement('div'); painel.id = 'dir';
   painel.innerHTML = `
-    <div class="linha"><b style="color:#ffe07a">🎬 Diretor</b> <span class="k">H esconde · 1–9 disparam · Espaço = flash</span></div>
-    <div id="dir-status" class="k">pronto</div>
-    <h2>Cena</h2>
-    <label><span>mapa</span><select id="c-mapa"><option value="4120013|7170501">Arena da Liga</option><option value="casa|">Terreno (platô)</option><option value="pallet_route1|">Pallet + Rota 1</option><option value="kanto|">Kanto inteira</option></select><button id="c-ir">ir</button></label>
-    <div class="linha"><button id="c-exportar">Exportar cena</button><button id="c-importar">Importar</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Limpar tudo</button></div>
-    <div class="k">posições fixas: J1 ao sul, J2 ao norte (do outro lado), Pokémon 3,5 m na frente. Tudo que você cria já cai no lugar e fica salvo.</div>
-    <h2>Jogadores</h2>
+    <div class="linha"><b style="color:#ffe07a">🎬 Director</b> <span class="k">H hides · 1–9 play actions · Space = flash</span></div>
+    <div id="dir-status" class="k">ready</div>
+    <h2>Scene</h2>
+    <label><span>map</span><select id="c-mapa"><option value="4120013|7170501">League arena</option><option value="casa|">Plot (plateau)</option><option value="pallet_route1|">Pallet + Route 1</option><option value="kanto|">All of Kanto</option></select><button id="c-ir">go</button></label>
+    <div class="linha"><button id="c-exportar">Export scene</button><button id="c-importar">Import</button><input type="file" id="c-arq" accept="application/json" hidden><button id="c-limpar" class="perigo">Clear all</button></div>
+    <div class="k">fixed positions: P1 to the south, P2 to the north (across from P1), each Pokémon 3.5 m in front. Everything you create lands in place and is saved.</div>
+    <h2>Players</h2>
     ${blocoJogador(1, skins)}${blocoJogador(2, skins)}
-    <h2>Textos</h2>
-    <label><span>título</span><input id="t-titulo"></label>
-    <label><span>subtítulo</span><input id="t-sub"></label>
-    <label><span>flash</span><input id="t-fa" placeholder="grande"><input id="t-fb" placeholder="pequeno" style="flex:.8"><button id="t-flash">▶</button></label>
-    <label><input type="checkbox" id="t-cards"> mostrar placar (automático: nick, Pokémon, nível, HP, reserva)</label>
-    <label><input type="checkbox" id="t-nomegolpe"> mostrar o nome do golpe a cada ataque</label>
-    <h2>Ações <small>gravadas nas teclas 1–9</small></h2>
-    <label><span>tipo</span><select id="s-tipo"><option value="golpe">golpe</option><option value="troca">troca (sai o de campo, entra o reserva)</option><option value="ko">KO</option><option value="levantar">levantar</option><option value="flash">flash de texto</option><option value="cam">câmera</option><option value="hp">HP do placar</option></select></label>
-    <label id="s-de-box"><span>jogador</span><select id="s-de"><option value="1">Jogador 1</option><option value="2">Jogador 2</option></select></label>
-    <div id="s-golpe"><label><span>golpe</span><select id="s-golpe-id">${golpes}</select></label><label><span>dano %</span><input type="number" id="s-dano" value="25" min="0" max="100" style="flex:.5"><span class="k" style="min-width:0">tirado do Pokémon do outro jogador</span></label></div>
-    <div id="s-flashbox" hidden><label><span>grande</span><input id="s-fa"></label><label><span>pequeno</span><input id="s-fb"></label><label><span>segundos</span><input type="number" id="s-seg" value="1.5" step="0.1" style="flex:.5"></label></div>
-    <div id="s-cambox" hidden><label><span>modo</span><select id="s-cam-modo"><option value="atras">atrás do jogador</option><option value="pokemon">fechar no Pokémon do jogador</option><option value="treinador">fechar no treinador</option><option value="lateral">lateral (arena inteira)</option><option value="aberta">aberta (atrás do J1, longe)</option></select></label><label><span>zoom</span><input type="number" id="s-cam-zoom" placeholder="auto" step="0.05" style="flex:.5"></label></div>
-    <div id="s-hpbox" hidden><label><span>valor %</span><input type="number" id="s-hp-valor" value="50" min="0" max="100" style="flex:.5"></label></div>
-    <label><span>gravar em</span><select id="s-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<option>${k}</option>`).join('')}</select><button id="s-gravar" class="ok">gravar</button><button id="s-testar">testar agora</button></label>
+    <h2>Text</h2>
+    <label><span>title</span><input id="t-titulo"></label>
+    <label><span>subtitle</span><input id="t-sub"></label>
+    <label><span>flash</span><input id="t-fa" placeholder="big"><input id="t-fb" placeholder="small" style="flex:.8"><button id="t-flash">▶</button></label>
+    <label><input type="checkbox" id="t-cards"> show the scoreboard (automatic: nick, Pokémon, level, HP, reserve)</label>
+    <label><input type="checkbox" id="t-nomegolpe"> show the move name on every attack</label>
+    <h2>Actions <small>saved on keys 1–9</small></h2>
+    <label><span>type</span><select id="s-tipo"><option value="golpe">move</option><option value="troca">switch (the one on the field leaves, the reserve comes in)</option><option value="ko">KO</option><option value="levantar">get back up</option><option value="flash">text flash</option><option value="cam">camera</option><option value="hp">scoreboard HP</option></select></label>
+    <label id="s-de-box"><span>player</span><select id="s-de"><option value="1">Player 1</option><option value="2">Player 2</option></select></label>
+    <div id="s-golpe"><label><span>move</span><select id="s-golpe-id">${golpes}</select></label><label><span>damage %</span><input type="number" id="s-dano" value="25" min="0" max="100" style="flex:.5"><span class="k" style="min-width:0">taken from the other player's Pokémon</span></label></div>
+    <div id="s-flashbox" hidden><label><span>big</span><input id="s-fa"></label><label><span>small</span><input id="s-fb"></label><label><span>seconds</span><input type="number" id="s-seg" value="1.5" step="0.1" style="flex:.5"></label></div>
+    <div id="s-cambox" hidden><label><span>mode</span><select id="s-cam-modo"><option value="atras">behind the player</option><option value="pokemon">close on the player's Pokémon</option><option value="treinador">close on the trainer</option><option value="lateral">side (whole arena)</option><option value="aberta">wide (behind P1, far)</option></select></label><label><span>zoom</span><input type="number" id="s-cam-zoom" placeholder="auto" step="0.05" style="flex:.5"></label></div>
+    <div id="s-hpbox" hidden><label><span>value %</span><input type="number" id="s-hp-valor" value="50" min="0" max="100" style="flex:.5"></label></div>
+    <label><span>save to</span><select id="s-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<option>${k}</option>`).join('')}</select><button id="s-gravar" class="ok">save</button><button id="s-testar">try now</button></label>
     <div id="dir-slots"></div>
-    <h2>Câmera</h2>
-    <div class="linha"><button id="c-atras1" class="ok">atrás do J1</button><button id="c-atras2">atrás do J2</button><button id="c-lateral">lateral</button><button id="c-aberta">aberta</button></div>
-    <label><span>giro</span><input type="range" id="c-giro" min="-180" max="180" step="1"><span id="c-girov"></span></label>
+    <h2>Camera</h2>
+    <div class="linha"><button id="c-atras1" class="ok">behind P1</button><button id="c-atras2">behind P2</button><button id="c-lateral">side</button><button id="c-aberta">wide</button></div>
+    <label><span>turn</span><input type="range" id="c-giro" min="-180" max="180" step="1"><span id="c-girov"></span></label>
     <label><span>zoom</span><input type="range" id="c-zoom" min="0.3" max="4" step="0.05"><span id="c-zoomv"></span></label>
-    <div class="k">arrastar no jogo gira · roda do mouse = zoom · Q/E giram · WASD desloca a câmera · +/− zoom</div>
-    <details><summary>Avançado: figurantes</summary>
-      <div class="k">atores soltos (plateia, mais Pokémon). Nascem no centro da arena; WASD move o selecionado.</div>
-      <label><span>tipo</span><select id="x-tipo"><option value="mon">Pokémon</option><option value="tr">treinador (🎲 roupa/nick)</option></select><input type="number" id="x-dex" value="25" min="1" max="1010" style="flex:.5" title="dex"><button id="x-add">+ criar</button></label>
+    <div class="k">drag in the game to turn · mouse wheel = zoom · Q/E turn · WASD moves the camera · +/− zoom</div>
+    <details><summary>Advanced: extras</summary>
+      <div class="k">free actors (crowd, more Pokémon). They appear in the middle of the arena; WASD moves the selected one.</div>
+      <label><span>type</span><select id="x-tipo"><option value="mon">Pokémon</option><option value="tr">trainer (🎲 outfit/nick)</option></select><input type="number" id="x-dex" value="25" min="1" max="1010" style="flex:.5" title="dex"><button id="x-add">+ create</button></label>
       <ul id="x-lista"></ul>
-      <div class="linha"><button id="x-mover">WASD move: a câmera</button><button id="x-remover" class="perigo">remover selecionado</button></div>
+      <div class="linha"><button id="x-mover">WASD moves: the camera</button><button id="x-remover" class="perigo">remove selected</button></div>
     </details>
-    <div class="k" style="margin-top:10px">OBS: janela do Chrome em 9:16 (ou recorte no OBS), aperta H pra sumir o painel e grava.</div>`;
+    <div class="k" style="margin-top:10px">OBS: set the Chrome window to 9:16 (or crop in OBS), press H to hide the panel, then record.</div>`;
   document.body.appendChild(painel);
-  const dica = document.createElement('div'); dica.id = 'dir-dica'; dica.textContent = 'H: painel · 1–9: ações · Espaço: flash · mouse/QE: girar · roda: zoom'; document.body.appendChild(dica);
+  const dica = document.createElement('div'); dica.id = 'dir-dica'; dica.textContent = 'H: panel · 1–9: actions · Space: flash · mouse/QE: turn · wheel: zoom'; document.body.appendChild(dica);
   // jogadores
   for (const n of [1, 2]){
     const j = cena.jog[n];
@@ -253,14 +252,14 @@ function montarPainel(){
     if (j.reserva){ $('j' + n + '-rdex').value = j.reserva.dex; $('j' + n + '-rlv').value = j.reserva.lv; }
     const nomes = () => { $('j' + n + '-dex-nome').textContent = nomeDex($('j' + n + '-dex').value); $('j' + n + '-rdex-nome').textContent = nomeDex($('j' + n + '-rdex').value); };
     nomes(); $('j' + n + '-dex').oninput = nomes; $('j' + n + '-rdex').oninput = nomes;
-    $('j' + n + '-rand').onclick = () => { const p = roupaAleatoria(); $('j' + n + '-skin').value = p.tipo; $('j' + n + '-skin').dataset.cores = JSON.stringify(p.cores || null); status('J' + n + ': ' + ctx.Personagem.nomeDe(p) + (p.cores ? ' com cores aleatórias' : '')); };
+    $('j' + n + '-rand').onclick = () => { const p = roupaAleatoria(); $('j' + n + '-skin').value = p.tipo; $('j' + n + '-skin').dataset.cores = JSON.stringify(p.cores || null); status('J' + n + ': ' + ctx.Personagem.nomeDe(p) + (p.cores ? ' with random colours' : '')); };
     $('j' + n + '-skin').onchange = () => { delete $('j' + n + '-skin').dataset.cores; };
     $('j' + n + '-nick-rand').onclick = () => { $('j' + n + '-nick').value = rnd(NICKS); $('j' + n + '-cor').value = rnd(CORES); };
     $('j' + n + '-dex-rand').onclick = () => { $('j' + n + '-dex').value = rnd(DEX_RAND); nomes(); };
     $('j' + n + '-rdex-rand').onclick = () => { $('j' + n + '-rdex').value = rnd(DEX_RAND); nomes(); };
-    $('j' + n + '-tr-ok').onclick = async () => { const cores = $('j' + n + '-skin').dataset.cores ? JSON.parse($('j' + n + '-skin').dataset.cores) : null; j.tr = { perso: { tipo: $('j' + n + '-skin').value, ...(cores ? { cores } : {}) }, nick: $('j' + n + '-nick').value.trim() || rnd(NICKS), cor: $('j' + n + '-cor').value }; $('j' + n + '-nick').value = j.tr.nick; salvar(); status('carregando treinador ' + n + '…'); await criarTreinador(n); salvar(); status('J' + n + ' pronto no lugar'); };
-    $('j' + n + '-mon-ok').onclick = async () => { j.mon = { dex: +$('j' + n + '-dex').value, lv: +$('j' + n + '-lv').value || 50, tam: +$('j' + n + '-tam').value || 0 }; j.ativo = 'mon'; cena.placar.hp[n] = 100; salvar(); status('carregando ' + nomeDex(j.mon.dex) + '…'); await criarMon(n, 'mon'); if (vivos[n].reserva) vivos[n].reserva.pivo.visible = false; encarar(); salvar(); status(nomeDex(j.mon.dex) + ' na frente do J' + n); };
-    $('j' + n + '-res-ok').onclick = async () => { j.reserva = { dex: +$('j' + n + '-rdex').value, lv: +$('j' + n + '-rlv').value || 50 }; salvar(); status('carregando reserva…'); await criarMon(n, 'reserva'); salvar(); status('reserva do J' + n + ' pronto (na bola)'); };
+    $('j' + n + '-tr-ok').onclick = async () => { const cores = $('j' + n + '-skin').dataset.cores ? JSON.parse($('j' + n + '-skin').dataset.cores) : null; j.tr = { perso: { tipo: $('j' + n + '-skin').value, ...(cores ? { cores } : {}) }, nick: $('j' + n + '-nick').value.trim() || rnd(NICKS), cor: $('j' + n + '-cor').value }; $('j' + n + '-nick').value = j.tr.nick; salvar(); status('loading trainer ' + n + '…'); await criarTreinador(n); salvar(); status('P' + n + ' ready in place'); };
+    $('j' + n + '-mon-ok').onclick = async () => { j.mon = { dex: +$('j' + n + '-dex').value, lv: +$('j' + n + '-lv').value || 50, tam: +$('j' + n + '-tam').value || 0 }; j.ativo = 'mon'; cena.placar.hp[n] = 100; salvar(); status('loading ' + nomeDex(j.mon.dex) + '…'); await criarMon(n, 'mon'); if (vivos[n].reserva) vivos[n].reserva.pivo.visible = false; encarar(); salvar(); status(nomeDex(j.mon.dex) + ' in front of P' + n); };
+    $('j' + n + '-res-ok').onclick = async () => { j.reserva = { dex: +$('j' + n + '-rdex').value, lv: +$('j' + n + '-rlv').value || 50 }; salvar(); status('loading reserve…'); await criarMon(n, 'reserva'); salvar(); status('P' + n + ' reserve ready (in its ball)'); };
   }
   // textos
   $('t-titulo').value = cena.banner.titulo; $('t-sub').value = cena.banner.sub;
@@ -274,7 +273,7 @@ function montarPainel(){
   const mostrarCaixas = () => { const t = $('s-tipo').value; for (const id of Object.values(caixas)) $(id).hidden = true; if (caixas[t]) $(caixas[t]).hidden = false; $('s-de-box').style.display = t === 'flash' ? 'none' : ''; };
   $('s-tipo').onchange = mostrarCaixas; mostrarCaixas();
   const lerSlot = () => { const t = $('s-tipo').value, de = +$('s-de').value; if (t === 'golpe') return { tipo: t, de, golpe: $('s-golpe-id').value, dano: +$('s-dano').value }; if (t === 'flash') return { tipo: t, a: $('s-fa').value, b: $('s-fb').value, seg: +$('s-seg').value }; if (t === 'cam') return { tipo: t, de, modo: $('s-cam-modo').value, zoom: +$('s-cam-zoom').value || 0 }; if (t === 'hp') return { tipo: t, de, valor: +$('s-hp-valor').value }; return { tipo: t, de }; };
-  $('s-gravar').onclick = () => { cena.slots[$('s-n').value] = lerSlot(); pintarSlots(); salvar(); status('ação gravada na tecla ' + $('s-n').value); };
+  $('s-gravar').onclick = () => { cena.slots[$('s-n').value] = lerSlot(); pintarSlots(); salvar(); status('action saved on key ' + $('s-n').value); };
   $('s-testar').onclick = () => executar(lerSlot());
   // câmera
   $('c-atras1').onclick = () => camera('atras', 1); $('c-atras2').onclick = () => camera('atras', 2); $('c-lateral').onclick = () => camera('lateral', 1); $('c-aberta').onclick = () => camera('aberta', 1);
@@ -284,18 +283,18 @@ function montarPainel(){
   $('c-ir').onclick = () => { const [mapa, chegada] = $('c-mapa').value.split('|'); cena.mapa = $('c-mapa').value; salvar(); const u = new URL(location.href); u.searchParams.set('mapa', mapa); if (chegada) u.searchParams.set('chegada', chegada); else u.searchParams.delete('chegada'); location.href = u.toString(); };
   $('c-exportar').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(cena, null, 1)], { type: 'application/json' })); a.download = 'cena_diretor.json'; a.click(); };
   $('c-importar').onclick = () => $('c-arq').click();
-  $('c-arq').onchange = () => { const f = $('c-arq').files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(String(r.result)); Object.assign(cena, { banner: d.banner || cena.banner, placar: d.placar || cena.placar, jog: d.jog || cena.jog, slots: d.slots || {} }); salvar(); location.reload(); } catch { status('JSON inválido'); } }; r.readAsText(f); };
+  $('c-arq').onchange = () => { const f = $('c-arq').files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(String(r.result)); Object.assign(cena, { banner: d.banner || cena.banner, placar: d.placar || cena.placar, jog: d.jog || cena.jog, slots: d.slots || {} }); salvar(); location.reload(); } catch { status('invalid JSON'); } }; r.readAsText(f); };
   $('c-limpar').onclick = limparTudo;
   // avançado
   $('x-add').onclick = async () => {
-    const S = spots(), tipo = $('x-tipo').value; status('carregando…');
+    const S = spots(), tipo = $('x-tipo').value; status('loading…');
     try {
       const L = { x: S.c.x + (Math.random() - 0.5) * 4, z: S.c.z + (Math.random() - 0.5) * 4, giro: Math.random() * Math.PI * 2 };
       const e = tipo === 'tr' ? await montarTreinador(roupaAleatoria(), rnd(NICKS), rnd(CORES), L) : await montarMon(+$('x-dex').value, 50, L, 0);
-      extras.push({ id: Date.now(), tipo, e, nome: tipo === 'tr' ? e.nome : nomeDex(+$('x-dex').value) }); sinc(); pintarExtras(); status('figurante criado no centro');
-    } catch (err){ status('não carregou: ' + (err?.message || err)); }
+      extras.push({ id: Date.now(), tipo, e, nome: tipo === 'tr' ? e.nome : nomeDex(+$('x-dex').value) }); sinc(); pintarExtras(); status('extra created in the middle');
+    } catch (err){ status('failed to load: ' + (err?.message || err)); }
   };
-  $('x-mover').onclick = () => { moverExtra = !moverExtra; $('x-mover').textContent = 'WASD move: ' + (moverExtra ? 'o figurante selecionado' : 'a câmera'); };
+  $('x-mover').onclick = () => { moverExtra = !moverExtra; $('x-mover').textContent = 'WASD moves: ' + (moverExtra ? 'the selected extra' : 'the camera'); };
   $('x-remover').onclick = () => { const a = extras.find(x => x.id === selExtra); if (!a) return; tirar(a.e); extras = extras.filter(x => x !== a); selExtra = null; sinc(); pintarExtras(); };
   pintarJog(); pintarSlots(); pintarExtras();
 }
@@ -320,6 +319,7 @@ function controles(){
   let ultimo = performance.now();
   setInterval(() => {
     const agora = performance.now(), dt = Math.min(0.1, (agora - ultimo) / 1000); ultimo = agora;
+    if (ctx.jogo.pika?.pivo) ctx.jogo.pika.pivo.visible = false;          // the player's partner comes out of its ball after boot: keep it off the stage
     const T = teclasDir, c = ctx.cam, vel = 5 * dt;
     if (T.has('KeyQ')) c.giro -= 2.6 * dt; if (T.has('KeyE')) c.giro += 2.6 * dt;
     if (T.has('Equal') || T.has('NumpadAdd')) c.zoom = Math.max(0.3, c.zoom - 1.2 * dt); if (T.has('Minus') || T.has('NumpadSubtract')) c.zoom = Math.min(4, c.zoom + 1.2 * dt);
@@ -348,12 +348,13 @@ export async function abrir(c){
   ctx.jogo.ash.pivo.visible = false; ctx.jogo.pika.pivo.visible = false; ctx.jogo.pika.recolhido = true; ctx.portaOcupado(true);
   if (ctx.relevo){ ctx.rc = new ctx.THREE.Raycaster(); ctx.alvosChao = []; ctx.cena.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && !o.isSprite) ctx.alvosChao.push(o); }); }
   const salvo = ctx.lerLS('diretor.cena3', null);
-  cena = { mapa: salvo?.mapa || '4120013|7170501', banner: salvo?.banner || { titulo: '🏆 TORNEIO DE KANTO', sub: 'FINAL · Liga Índigo' }, placar: salvo?.placar || { on: true, nomeGolpe: true, hp: { 1: 100, 2: 100 } }, jog: salvo?.jog || { 1: { tr: null, mon: null, reserva: null, ativo: 'mon' }, 2: { tr: null, mon: null, reserva: null, ativo: 'mon' } }, slots: salvo?.slots || {} };
+  cena = { mapa: salvo?.mapa || '4120013|7170501', banner: salvo?.banner || { titulo: '🏆 KANTO TOURNAMENT', sub: 'FINAL · Indigo League' }, placar: salvo?.placar || { on: true, nomeGolpe: true, hp: { 1: 100, 2: 100 } }, jog: salvo?.jog || { 1: { tr: null, mon: null, reserva: null, ativo: 'mon' }, 2: { tr: null, mon: null, reserva: null, ativo: 'mon' } }, slots: salvo?.slots || {} };
   for (const n of [1, 2]) cena.jog[n].ativo = cena.jog[n].ativo || 'mon';
   const S = spots(); foco = { vx: S.c.x, vy: chao(S.c.x, S.c.z) + 1.1, vz: S.c.z }; ctx.jogo.foco = foco;
+  if (!ctx.jogo.cinem) ctx.jogo.cinem = [];                                  // a cinematic is running: the game keeps the mission arrow off
   montarPainel(); pintarBanner(); pintarCards(); controles();
   camera('atras', 1);
   $('boot').hidden = true;
-  if (cena.jog[1].tr || cena.jog[2].tr){ status('montando a cena salva…'); await montarTudo(); encarar(); pintarCards(); status('cena montada'); }
+  if (cena.jog[1].tr || cena.jog[2].tr){ status('building the saved scene…'); await montarTudo(); encarar(); pintarCards(); status('scene ready'); }
   window.__diretor = { cena: () => cena, vivos, executar, camera, roupaAleatoria, montarTudo, criarTreinador, criarMon, spots, lugarTreinador, lugarMon, foco };
 }
