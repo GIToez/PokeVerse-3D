@@ -158,6 +158,7 @@ export const listaOutros = () =>
     id: o.id,
     nome: o.nome,
     x: o.ent?.x,
+    y: o.ent?.y,
     z: o.ent?.z,
     anim: o.anim,
     pronto: !!o.ent,
@@ -1068,6 +1069,11 @@ function receber(m) {
     }
     case 'caca':                                                       // hunt bonus paid on a wild KO
       ctx.caca?.(m);
+      return;
+    case 'grupo':                                                      // my party (server_party.mjs)
+    case 'grupo_convite':
+    case 'inspecao':
+      ctx.jogadores?.(m);
       return;
     case 'foco':                                                       // a raid member pinged a target (focus_ui.mjs)
       ctx.foco?.(m);

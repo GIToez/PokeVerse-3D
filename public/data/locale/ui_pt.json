@@ -9213,5 +9213,22 @@
   "Olivine City": "Cidade Olivine",
   "Day {n} is ready: claim it!": "O Dia {n} está pronto: resgate!",
   "Grass": "Planta",
-  "Ground": "Terra"
+  "Ground": "Terra",
+  "Add Friend": "Adicionar amigo",
+  "Friends ✓": "Amigos ✓",
+  "Requested": "Pedido enviado",
+  "Inspect": "Inspecionar",
+  "Duel": "Duelo",
+  "Leave party": "Sair do grupo",
+  "Only the party leader can invite": "Só o líder do grupo pode convidar",
+  "{x} invites you to a party.": "{x} convidou você para um grupo.",
+  "Join": "Entrar",
+  "{n} Badge": "{n} insígnia",
+  "{n} Badges": "{n} insígnias",
+  "Kanto Champion": "Campeão de Kanto",
+  "No Pokémon": "Nenhum Pokémon",
+  "That trainer is not here any more.": "Esse treinador não está mais aqui.",
+  "focus pings work in raids and parties": "o foco funciona em raids e grupos",
+  "You were removed from the party.": "Você foi removido do grupo.",
+  "You left the party.": "Você saiu do grupo."
 }
