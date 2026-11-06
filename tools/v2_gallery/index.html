@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><title>v2 pieces</title>
+<style>body{margin:0;background:#18202e;font-family:'Nunito Sans',system-ui,sans-serif}.peca{position:relative;margin:30px;display:inline-block}.peca *{box-sizing:border-box}
+.n{position:absolute;overflow:visible}.t{display:flex;white-space:pre-wrap;line-height:1.1}</style></head><body><div id="palco"></div>
+<script type="module">
+/* Draws a v2 layout piece straight from ui/hud_layout_v2.json with the designer's example text and images (no game code). ?p=situacao/pc/barra-chefe */
+const L = await fetch('/ui/hud_layout_v2.json').then(r => r.json());
+const bg = (el, url, pad) => { if (!url) return; url = url.replace(/^\.\//, '/'); const p = +pad || 0; Object.assign(el.style, { backgroundImage: 'url(' + url + ')', backgroundRepeat: 'no-repeat', backgroundSize: `calc(100% + ${2 * p}px) calc(100% + ${2 * p}px)`, backgroundPosition: `-${p}px -${p}px` }); };
+function desenhar(n, pai){
+  const el = document.createElement('div'); el.className = 'n';
+  Object.assign(el.style, { left: (n.x || 0) + 'px', top: (n.y || 0) + 'px', width: (n.w || 0) + 'px', height: (n.h || 0) + 'px' });
+  if (n.oculto || n.estado === 'oculto') return;
+  if (n.tipo === 'img') bg(el, n.img, n.imgPad);
+  else if (n.tipo === 'imgvar'){ bg(el, n.exemplo, n.exemploPad); if (n.raio) el.style.borderRadius = n.raio + 'px'; }
+  else if (n.tipo === 'txt'){
+    el.className = 'n t'; el.textContent = n.exemplo || n.texto || '';
+    Object.assign(el.style, { fontFamily: `'${n.fonte || 'Nunito Sans'}', system-ui`, fontWeight: n.peso || 700, fontSize: (n.tamanho || 12) + 'px', color: n.cor || '#fff',
+      justifyContent: n.al === 'center' ? 'center' : n.al === 'right' ? 'flex-end' : 'flex-start', alignItems: n.alV === 'top' ? 'flex-start' : n.alV === 'bottom' ? 'flex-end' : 'center', textAlign: n.al || 'left' });
+  } else if (n.tipo === 'fill'){ el.style.background = n.cor || '#43D17C'; el.style.width = ((n.wMax || n.w) * 0.62) + 'px'; el.style.borderRadius = '3px'; if (n.forma === 'paralelogramo') el.style.transform = 'skewX(-14deg)'; }
+  else bg(el, n.img, n.imgPad);
+  (n.filhos || []).forEach(f => desenhar(f, el));
+  pai.appendChild(el);
+}
+window.mostrar = (caminho) => {
+  const [g, d, nome] = caminho.split('/'); let def = L[g]?.[d]?.[nome];
+  if (def && !def.w && def.estados) def = Object.values(def.estados)[0];   // pieces that are only states (Bag button: 'elite', pill: 'aguarde'…): draw the first const palco = document.getElementById('palco'); palco.innerHTML = '';
+  if (!def) return false;
+  const raiz = document.createElement('div'); raiz.className = 'peca'; raiz.id = 'peca';
+  Object.assign(raiz.style, { width: (def.w || 100) + 'px', height: (def.h || 40) + 'px' }); bg(raiz, def.img, def.imgPad);
+  (def.filhos || []).forEach(f => desenhar(f, raiz));
+  palco.appendChild(raiz); return true;
+};
+{ const q = new URLSearchParams(location.search).get('p'); if (q) window.mostrar(q); }
+window.pronto = true;
+</script></body></html>
