@@ -2709,7 +2709,7 @@ const iconeOk = new Map();
 function imagemInsignia(pop, cel, ganhou, ic){
   if (!ganhou){ Popup.imagem(pop, 'insignia', null, cel); return; }
   const url = ic ? './ui/icones/' + ic + '.png' : null;
-  const por = ok => { const el = Popup.imagem(pop, 'insignia', ok ? url : ESTRELA_INSIGNIA, cel); if (el) Object.assign(el.style, ok ? { backgroundSize: '', backgroundPosition: '' } : { backgroundSize: '190%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }); };
+  const por = ok => { const el = Popup.imagem(pop, 'insignia', ok ? url : ESTRELA_INSIGNIA, cel); if (el) Object.assign(el.style, ok ? { backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', transform: 'scale(1.45)' } : { backgroundSize: '190%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', transform: '' }); };
   if (!url || iconeOk.get(url) === false){ por(false); return; }
   if (iconeOk.get(url)){ por(true); return; }
   por(false);
