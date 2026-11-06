@@ -63,7 +63,7 @@ const NAMES = {
   'Bola Rápida': 'Quick Ball', 'Bola Parque': 'Park Ball', 'bola brilhante': 'Cherish Ball',
   Poção: 'Potion', SuperPoção: 'Super Potion', HiperPoção: 'Hyper Potion',
   'Poção Máxima': 'Max Potion', 'Restaurador Total': 'Full Restore',
-  Antídoto: 'Antidote', Antiueimadura: 'Burn Heal', Anticongelamento: 'Ice Heal',
+  Antídoto: 'Antidote', Antiqueimadura: 'Burn Heal', Anticongelamento: 'Ice Heal',
   Antissono: 'Awakening', Antiparalisia: 'Paralyze Heal', 'cura Total': 'Full Heal',
   Reanimador: 'Revive', 'Reanimador Máximo': 'Max Revive',
   'Água Enriquecieda': 'Fresh Water', superbebida: 'Soda Pop', Energético: 'Lemonade',

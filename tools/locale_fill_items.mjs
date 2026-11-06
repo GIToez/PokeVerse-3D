@@ -61,7 +61,7 @@ const FIXOS = {
   'Medalha do Farol': 'Beacon Badge',
   'Poção Máxima': 'Max Potion',
   'Restaurador Total': 'Full Restore',
-  'Antiueimadura': 'Burn Heal',
+  'Antiqueimadura': 'Burn Heal',
   'Anticongelamento': 'Ice Heal',
   'Antissono': 'Awakening',
   'Antiparalisia': 'Paralyze Heal',
