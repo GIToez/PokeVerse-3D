@@ -20,15 +20,22 @@ function desenhar(n, pai){
   (n.filhos || []).forEach(f => desenhar(f, el));
   pai.appendChild(el);
 }
-window.mostrar = (caminho) => {
+window.mostrar = (caminho, estado = null) => {
   const [g, d, nome] = caminho.split('/'); let def = L[g]?.[d]?.[nome];
-  if (def && !def.w && def.estados) def = Object.values(def.estados)[0];   // pieces that are only states (Bag button: 'elite', pill: 'aguarde'…): draw the first const palco = document.getElementById('palco'); palco.innerHTML = '';
+  if (def && estado && def.estados?.[estado]) def = def.estados[estado];   // ?e=<state> (or mostrar(path, state)): one of the piece's states
+  else if (def && !def.w && def.estados) def = Object.values(def.estados)[0];   // pieces that are only states (Bag button: 'elite', pill: 'aguarde'…): draw the first const palco = document.getElementById('palco'); palco.innerHTML = '';
   if (!def) return false;
   const raiz = document.createElement('div'); raiz.className = 'peca'; raiz.id = 'peca';
   Object.assign(raiz.style, { width: (def.w || 100) + 'px', height: (def.h || 40) + 'px' }); bg(raiz, def.img, def.imgPad);
   (def.filhos || []).forEach(f => desenhar(f, raiz));
+  for (const c of Object.values(def.celulas || {})){                   // cell lists (rival stages, active effects…): one example of each cell look, side by side
+    const moldes = Object.values(c.moldes || {}), pos = c.pos || [];
+    moldes.forEach((m, i) => { const [x, y] = pos[i] || [(c.x || 0) + i * (c.passoX || m.w + 6), (c.y || 0) + i * (c.passoY || 0)]; desenhar({ ...m, x, y }, raiz); });
+    if (moldes.length > pos.length) raiz.style.width = ((c.x || 0) + moldes.length * (c.passoX || 60)) + 'px';
+  }
   palco.appendChild(raiz); return true;
 };
-{ const q = new URLSearchParams(location.search).get('p'); if (q) window.mostrar(q); }
+{ const u = new URLSearchParams(location.search), q = u.get('p'); if (q) window.mostrar(q, u.get('e')); }
+window.estados = caminho => { const [g, d, nome] = caminho.split('/'); return Object.keys(L[g]?.[d]?.[nome]?.estados || {}); };
 window.pronto = true;
 </script></body></html>
