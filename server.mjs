@@ -462,12 +462,13 @@ for (const c of Object.values(contas)) for (const p of [...(c?.save?.time || [])
    Tudo isso é decidido pelo SERVIDOR. Os helpers abaixo filtram o que o cliente manda. */
 
 // As ÚNICAS chaves do save que o cliente pode gravar por `prefs`; o resto é do servidor.
-const PREFS_OK = new Set(['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'skin', 'peito', 'rastro', 'introVista', 'ultimoCentro', 'tempo', 'inicial']);
+const PREFS_OK = new Set(['bolaSel', 'atalhos', 'seguidor', 'seguidorUid', 'personagem', 'mochila', 'skin', 'peito', 'rastro', 'introVista', 'ultimoCentro', 'tempo', 'inicial', 'skinMon']);
 function aplicarPrefs(c, prefs) {
   if (!prefs || typeof prefs !== 'object') return;
   for (const k of Object.keys(prefs)) {
     if (!PREFS_OK.has(k)) continue;                                       // chave fora da lista (dinheiro, bolas…) é IGNORADA
     if (['skin', 'mochila', 'peito', 'rastro'].includes(k) && !bolsaServ.vestivel(c, k, prefs[k])) continue;   // only owned pieces can be worn (server_wardrobe.mjs)
+    if (k === 'skinMon') { c.save.skinMon = loja.skinMonValida(c, prefs[k]); continue; }   // Pokémon skins on: only owned ones (server_shop.mjs)
     if (k === 'personagem') { const p = bolsaServ.validarPersonagem(c, prefs[k]); if (p === null && prefs[k] != null) continue; c.save[k] = p; continue; }   // paid outfit not owned: keeps the last valid one
     c.save[k] = prefs[k];
   }

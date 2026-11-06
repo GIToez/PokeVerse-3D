@@ -451,7 +451,7 @@ function entrar() {
     giro: +(a.giro || 0).toFixed(3),
     anim: a.anim || 'Idle',
     personagem: (ctx.Personagem?.visual ?? ctx.Personagem?.ler)?.() || null,
-    parceiro: b?.glb || null,
+    parceiro: b?.glbVisual || b?.glb || null,   // a Pokémon skin shows for everyone (index.html skinMonDe)
     shiny: !!b?.shiny,
     uid: ctx.uidParceiro?.() ?? null,
     montaria: ctx.jogo?.montaria?.glb || null,

@@ -400,6 +400,8 @@ export function instalar(c){
     equiparPeca: (k, v) => c.guarda?.equiparPeca?.(k, v),
     pecasDaConta: () => c.guarda?.pecasDaConta?.() || {},
     encaixados: () => c.guarda?.encaixados?.() || {},
+    skinsMon: () => c.guarda?.skinsMon?.() || [], skinMonPref: () => c.guarda?.skinMonPref?.() || {},   // Pokémon skins: owned, and the one on per species
+    ativarSkinMon: (dex, id) => c.guarda?.ativarSkinMon?.(dex, id),
     criarPersonagem: () => c.criarPersonagem?.(),
     nomeEspecie: (dex) => c.porDex?.get?.(+dex)?.name || null,
     Chat, Som: c.Som, segurar: (el) => DIALOGOS.add(el), fecharMenu: () => fechar(),

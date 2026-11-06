@@ -211,6 +211,16 @@ export const ESQUEMAS = {
       { k: 'premium', rotulo: 'Premium prize', tipo: 'json', col: true, validar: premioOk },
     ],
   },
+  skins_pokemon: {
+    titulo: 'Pokémon skins', arquivo: 'pokemon_skins', forma: 'objeto',
+    descricao: 'Pokémon skins for sale in the Diamond shop (Cosmetics → Pokémon skins). A skin is a model pmDDDD_NN in public/scenery/mon (00 is the normal form, 99 is not a skin); bought skins are turned on per species in the Wardrobe → Pokémon, and everyone sees them. Only skins whose model exists are sold.',
+    campos: [
+      { k: 'vitrine', rotulo: 'On sale', tipo: 'json', validar: v => Array.isArray(v) && v.every(x => typeof x === 'string' && /^pm\d{4}_\d{2}$/.test(x) && !/_(00|99)$/.test(x)) ? null : 'a list of model ids, e.g. ["pm0025_31", "pm0133_32"]', ajuda: 'The skins on sale, in this order.' },
+      { k: 'padrao', rotulo: 'Default price (Diamonds)', tipo: 'num', int: true, min: 1, max: 100000, ajuda: 'For any skin without its own price.' },
+      { k: 'precos', rotulo: 'Prices per skin', tipo: 'json', validar: v => v == null || (v && typeof v === 'object' && !Array.isArray(v) && Object.entries(v).every(([k, n]) => /^pm\d{4}_\d{2}$/.test(k) && Number.isSafeInteger(n) && n >= 1 && n <= 100000)) ? null : 'e.g. { "pm0025_31": 200 }' },
+      { k: 'ate', rotulo: 'On sale until', tipo: 'texto', max: 24, validar: s => !s || /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d{1,3})?Z$/.test(s) ? null : 'UTC like 2026-12-31T23:59:59Z, or empty', ajuda: 'Empty = always on sale.' },
+    ],
+  },
   balsa: {
     titulo: 'Ferry stops', arquivo: 'ferry', caminho: 'paradas', forma: 'lista', id: 'id',
     descricao: 'The Vermilion ferry: every stop shows in the ferry window, in this order. A stop opens from its dock door (walking onto it) or its Sailor NPC. Stops the player can\'t use yet show greyed out with a lock and the reason. "Not open yet" locks a stop for everyone (GMs too).',

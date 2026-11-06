@@ -568,7 +568,7 @@ function pintar() {
       else Popup.textoCru(pop, 'previa-nome', m.nome, h);
       const o = infoDaPrevia(m).map((s) => tr(s));
       if (m.trancada && Number.isSafeInteger(m.preco))
-        o.push(tr('{n} Diamantes', { n: m.preco.toLocaleString(I18n.locale()) }));
+        o.push(tr('{n} Diamonds', { n: m.preco.toLocaleString(I18n.locale()) }));
       Popup.textoCru(pop, 'previa-info', o.join(' · '), h);
     }
     marcar(h, p);

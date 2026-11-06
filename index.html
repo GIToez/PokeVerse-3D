@@ -3813,6 +3813,12 @@ const AVES_ASA = new Set([16, 17, 18, 21, 22]);   // 15/09: aves cuja Idle abre 
 const alturaProporcional = (real, kind) => THREE.MathUtils.clamp(1.3 * Math.pow(real, 0.55), ALT_MIN, kind === 'follower' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM);
 const dexDoGlb = glb => +((glb || '').match(/pm(\d{4})/)?.[1] || 0);
 const stemGlb = g => String(g || '').replace(/\.glb$/i, '');
+/** The owned Pokémon skin turned on for this model's species (save.skinMon), for its normal form only; null = the model itself. */
+function skinMonDe(glb){
+  const s = stemGlb(glb), m = /^(pm\d{4})_00$/.exec(s); if (!m) return null;
+  const pref = lerLS('skinMon', {}) || {}, id = pref[m[1]], tem = lerLS('skinsMon', []) || [];
+  return typeof id === 'string' && id.startsWith(m[1] + '_') && Array.isArray(tem) && tem.includes(id) ? id : null;
+}
 const mesmoGlb = (a, b) => { const x = stemGlb(a), y = stemGlb(b); return !!x && x === y; };
 // ponto de sela (eMount) de cada prefab do jogo, já no eixo do GLB: o exportador zerou
 // a transformação desse nó (tools/… gera data/saddles.json a partir dos prefabs)
@@ -3913,11 +3919,12 @@ if (PLAY){
     const [ash, pika] = await Promise.all([
       montarPersonagemBoot('./scenery/pc/' + Personagem.glbDe(perso) + '.glb', +params0.get('ash') || null, (+(params0.get('ashgiro') || 0)) * Math.PI / 180)
         .catch(e => { console.warn('trainer skin:', e); return montarPersonagemBoot('./scenery/pc/Male_XiaoZhi.glb', +params0.get('ash') || null, 0); }),   // GLB da skin faltando: cai no Ash (17/09: queda de rede não chega aqui, fica na caixa "Tentar de novo" do montarPersonagemBoot)
-      montarPersonagemBoot('./scenery/mon/' + (params0.get('seguidor') || 'pm0025_00').replace(/\.glb$/, '') + '.glb', +params0.get('pika') || null, (+(params0.get('pikagiro') || 0)) * Math.PI / 180)
+      montarPersonagemBoot('./scenery/mon/' + (skinMonDe(params0.get('seguidor') || 'pm0025_00') || (params0.get('seguidor') || 'pm0025_00').replace(/\.glb$/, '')) + '.glb', +params0.get('pika') || null, (+(params0.get('pikagiro') || 0)) * Math.PI / 180)
         .catch(e => { if (e?.status === 403 && params0.get('seguidor')){ console.warn('seguidor pedido na URL negado pela borda: entra o Pikachu', e); params0.delete('seguidor'); return montarPersonagemBoot('./scenery/mon/pm0025_00.glb', +params0.get('pika') || null, 0); } throw e; }),   // passe de progresso: o Pikachu do boot está no passe de toda conta
     ]);
     if (perso) await Personagem.aplicar(ash.pivo, perso);          // cores dos heróis tintáveis (nas skins fixas não faz nada)
-    ash.vel = 3.6; pika.vel = 4.2;                 // um pouco mais devagar: o clipe de corrida toca a 1× e escorrega menos
+    ash.vel = 3.6; pika.vel = 4.2;
+    pika.glbVisual = skinMonDe(params0.get('seguidor') || 'pm0025_00');   // a Pokémon skin on for the boot partner (when it stays the same model, trocarSeguidor never runs)                 // um pouco mais devagar: o clipe de corrida toca a 1× e escorrega menos
     // quem segue o Ash: Pikachu por padrão, ou ?seguidor=pm0244_00 (Entei) etc.
     /* The four moves this species knows at this level: the latest ones on its learnset.
        A short list is padded from the old species table, never from unrelated moves of the same type. */
@@ -3957,8 +3964,9 @@ if (PLAY){
       // os iniciais do Fairy vêm grandes no GLB (Bulbasaur 1,49 m): mira ~0,8 m antes do fator do jogo
       const ALT = { pm0001: 0.9, pm0004: 0.8, pm0007: 0.65, pm0152: 0.9, pm0155: 0.7, pm0158: 0.7 };
       const alt = ALT[glbNome.slice(0, 6)] || 0.8;
-      const novo = await (doBoot ? montarPersonagemBoot : montarPersonagem)('./scenery/mon/' + glbNome.replace(/\.glb$/, '') + '.glb', FAIRY ? alt : null, 0);
-      novo.vel = 4.2; configurarSeguidor(novo, glbNome);
+      const pele = skinMonDe(glbNome);                                      // a Pokémon skin turned on for this species (Wardrobe → Pokémon): only the model changes
+      const novo = await (doBoot ? montarPersonagemBoot : montarPersonagem)('./scenery/mon/' + (pele || glbNome.replace(/\.glb$/, '')) + '.glb', FAIRY ? alt : null, 0);
+      novo.vel = 4.2; configurarSeguidor(novo, glbNome); novo.glbVisual = pele || null;
       if (FAIRY){ novo.pivo.scale.setScalar(1); novo.fatorTam = 1; novo.altura = novo.alturaBase = alt; }   // no Fairy o inicial fica em escala de série
       else {
         jogo.pika = novo; aplicarTamanho(novo);
@@ -9755,6 +9763,15 @@ if (jogo.ash){
       for (const p of C?.pecas || []) if (todos[p.tipo] && (globalThis.__pvTudo || p.tem)) todos[p.tipo].push(p.id);
       for (const k of Object.keys(todos)) todos[k] = [...new Set([...(meus[k] || []), ...todos[k]])];
       return todos;
+    },
+    skinsMon: () => { const l = lerLS('skinsMon', []); return (Array.isArray(l) ? l : []).map(id => { const n = porDex.get(+String(id).slice(2, 6))?.name || 'Pokémon', k = +String(id).slice(-2) - 30; return { id, nome: n + ' · costume ' + (k > 0 ? k : String(id).slice(-2)) }; }); },   // named like the shop's (server_shop.mjs nomeSkin)
+    skinMonPref: () => { const p = lerLS('skinMon', {}); return p && typeof p === 'object' && !Array.isArray(p) ? p : {}; },
+    ativarSkinMon: async (dex, id) => {   // Wardrobe → Pokémon: turn a skin on/off for its species (the server keeps only owned ones)
+      const k = 'pm' + String(+dex).padStart(4, '0'), p = { ...(lerLS('skinMon', {}) || {}) };
+      if (id) { if (!(lerLS('skinsMon', []) || []).includes(id) || !String(id).startsWith(k + '_')) return false; p[k] = id; } else delete p[k];
+      gravarLS('skinMon', p);
+      if (jogo.pika?.glb && stemGlb(jogo.pika.glb).startsWith(k) && jogo.trocarSeguidor) { try { await jogo.trocarSeguidor(jogo.pika.glb); } catch (e) { console.warn('skin: reload partner', e); } }
+      return true;
     },
     encaixados: () => ({ mochila: lerLS('mochila', null) ?? Personagem.ler()?.mochila ?? null, peito: lerLS('peito', null), rastro: lerLS('rastro', null) }),
   };

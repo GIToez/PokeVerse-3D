@@ -7,6 +7,7 @@ import fs from 'fs';
 import nodePath from 'path';
 import { estacaoAgora } from './calendar.mjs';
 import * as Caixa from './box_rules.mjs';
+import * as SkinMon from './skin_mon.mjs';                                 // Pokémon skins: ids, prices, showcase (from upcoming/)
 
 const ORIGENS = ['pagamento', 'passe', 'evento', 'staff'];
 const MAX_REFS = 40;
@@ -41,6 +42,24 @@ export function criarCarteira() {
 }
 
 export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, carteira, guarda }) {
+  /* POKÉMON SKINS (Nov 6): public/data/pokemon_skins.json (admin → Data files → Pokémon skins) = the showcase, prices and end time;
+     only skins whose model exists are sold. Owned skins: save.skinsMon = [pmDDDD_NN]; the one on per species: save.skinMon = { pmDDDD: id }. */
+  let modelos = null, modelosEm = 0, nomes = null;
+  function modelosMon() {
+    if (!modelos || Date.now() - modelosEm > 60e3) {
+      try { modelos = new Set(fs.readdirSync(nodePath.join(dadosPub, '..', 'scenery', 'mon')).filter(f => f.endsWith('.glb')).map(f => f.slice(0, -4))); } catch { modelos = new Set(); }
+      modelosEm = Date.now();
+    }
+    return modelos;
+  }
+  const tabelaSkins = () => { try { return { skinsPokemon: JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'pokemon_skins.json'), 'utf8')) }; } catch { return { skinsPokemon: {} }; } };
+  function nomeSkin(id) {
+    if (!nomes) { nomes = {}; try { const d = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, '..', 'pokedex.json'), 'utf8')); for (const e of d.species || []) if (!nomes[+e.n]) nomes[+e.n] = e.name; } catch {} }
+    const dex = SkinMon.dexDe(id), base = nomes[dex] || ('No. ' + dex);
+    return base + ' · costume ' + (+id.slice(-2) - 30 > 0 ? +id.slice(-2) - 30 : id.slice(-2));
+  }
+  const skinsDe = (save) => (Array.isArray(save.skinsMon) ? save.skinsMon.filter(SkinMon.ehSkinMon) : []);
+  const skinsAVenda = () => SkinMon.aVenda(tabelaSkins(), modelosMon());
   /** What the shop sells right now (server_wardrobe.mjs reads public/data/catalogo_loja.json). */
   const aVenda = () => guarda.saleList();
   function vitrine(c) {
@@ -55,7 +74,8 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
         ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}), ...(p.ponto ? { ponto: p.ponto } : {}),
       },
     }));
-    return { aberta: true, saldo: carteira.de(c), produtos: produtosAVenda().map(p => p.id === 'boxSlots' ? vagasProduto(p, save) : ({ id: PARA_TELA[p.id] || p.id, nome: p.nome, preco: +p.preco, item: +p.item, qtd: +p.qtd || 1, preso: false, soComprados: false })), pecas, montarias: [], skinsMon: [] };
+    return { aberta: true, saldo: carteira.de(c), produtos: produtosAVenda().map(p => p.id === 'boxSlots' ? vagasProduto(p, save) : ({ id: PARA_TELA[p.id] || p.id, nome: p.nome, preco: +p.preco, item: +p.item, qtd: +p.qtd || 1, preso: false, soComprados: false })), pecas, montarias: [],
+      skinsMon: skinsAVenda().map(k => ({ id: SkinMon.produtoDe(k.id), preco: k.preco, preso: true, tem: skinsDe(save).includes(k.id), skin: { id: k.id, nome: nomeSkin(k.id), nomes: { en: nomeSkin(k.id) } } })) };
   }
   /* COMFORT TAB (Nov 5): items sold for Diamonds — the Medallion (30/60/90 days) and the Premium Daily Pass. They land in the Bag
      as tradable items: use them (server_bag.mjs `uso`) or sell them on the Market. Prices: public/data/shop_products.json (admin). */
@@ -115,6 +135,19 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
     if (!Array.isArray(s.lojaRefs)) s.lojaRefs = [];
     const ref = String(m.ref || '').slice(0, 40);
     if (ref && s.lojaRefs.includes(ref)) return resp({ ok: true, repetido: true, vitrine: vitrine(c) });
+    if (SkinMon.lerProduto(m.produto)) {                                      // a Pokémon skin
+      const id = SkinMon.lerProduto(m.produto), k = skinsAVenda().find(x => x.id === id);
+      if (!k) return resp({ ok: false, erro: 'recusado', mensagem: "That isn't for sale right now.", vitrine: vitrine(c) });
+      if (skinsDe(s).includes(id)) return resp({ ok: false, erro: 'recusado', mensagem: 'You already have this skin.', vitrine: vitrine(c) });
+      if (m.preco != null && +m.preco !== +k.preco) return resp({ ok: false, erro: 'preco-mudou', mensagem: 'The price changed: review and confirm again.', vitrine: vitrine(c) });
+      const falta = +k.preco - carteira.de(c).total;
+      if (falta > 0) return resp({ ok: false, erro: 'saldo-insuficiente', falta, mensagem: 'Not enough Diamonds.', vitrine: vitrine(c) });
+      carteira.debitar(c, +k.preco);
+      s.skinsMon = [...skinsDe(s), id];
+      if (ref) { s.lojaRefs.push(ref); if (s.lojaRefs.length > MAX_REFS) s.lojaRefs.splice(0, s.lojaRefs.length - MAX_REFS); }
+      salvarContas(); empurrarSave(u);
+      return resp({ ok: true, comprou: { skinMon: id, preco: +k.preco }, skinsMon: s.skinsMon, vitrine: vitrine(c) });
+    }
     if (!String(m.produto || '').startsWith('peca:')) return comprarProduto(c, u, m, ref, resp);
     const mt = /^peca:(roupa|mochila|peito|rastro):([\w-]{1,40})$/.exec(String(m.produto || ''));
     const p = mt && aVenda().find(x => x.tipo === mt[1] && String(x.id) === mt[2]);
@@ -155,5 +188,12 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
     return total;
   }
 
-  return { receber, vitrine, info, darDiamantes };
+  /** The skin on per species that the client asks for: only owned skins of that very species (save.skinMon). */
+  function skinMonValida(c, v) {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+    const tem = new Set(skinsDe(c.save || {})), out = {};
+    for (const [k, id] of Object.entries(v)) if (/^pm\d{4}$/.test(k) && typeof id === 'string' && tem.has(id) && SkinMon.especieDe(id) === k) out[k] = id;
+    return out;
+  }
+  return { receber, vitrine, info, darDiamantes, skinMonValida };
 }

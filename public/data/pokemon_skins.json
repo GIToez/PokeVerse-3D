@@ -1,0 +1,27 @@
+{
+ "_nota": "Pokémon skins for sale in the Diamond shop (Cosmetics → Pokémon). vitrine = the skins on sale (a model id pmDDDD_NN that exists in public/scenery/mon; 00 and 99 are not skins), precos = a price per skin, padrao = the price of the rest, ate = an end time (ISO UTC, e.g. 2026-12-31T23:59:59Z) or null. A skin is cosmetic: every Pokémon of that species shows it while it's on (Wardrobe → Pokémon).",
+ "padrao": 150,
+ "precos": {
+  "pm0025_31": 200,
+  "pm0025_32": 200,
+  "pm0150_31": 300
+ },
+ "ate": null,
+ "vitrine": [
+  "pm0025_31",
+  "pm0025_32",
+  "pm0001_31",
+  "pm0004_31",
+  "pm0007_31",
+  "pm0006_31",
+  "pm0009_31",
+  "pm0133_31",
+  "pm0133_32",
+  "pm0133_33",
+  "pm0094_31",
+  "pm0094_32",
+  "pm0143_31",
+  "pm0143_32",
+  "pm0150_31"
+ ]
+}
