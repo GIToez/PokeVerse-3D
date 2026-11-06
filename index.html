@@ -10131,7 +10131,7 @@ if (jogo.ash){
       carregar: glb => modeloMon(String(glb).replace(/\.glb$/, '') + '.glb'),
       montar: (g, altura, glb) => montarCorpo(g, SkeletonUtils.clone(g.scene), altura, 0, String(glb).replace(/\.glb$/, '') + '.glb'),
       tocarAnim }, d.lista || []);
-    window.__dbg && (window.__dbg.aparicoes = Aparicoes);
+    window.__dbg && (window.__dbg.sightings = Aparicoes);   // console: __dbg.sightings.preview('hooh') / .forget('hooh') / .status()
   }).catch(e => console.warn('sightings:', e));
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();

@@ -1,7 +1,8 @@
 /* STORY SIGHTINGS (Nov 6, from upcoming/spawns.mjs) — a legendary shows itself once per player: Ho-Oh crossing the sky over Route 1
  * right after Pallet Town (with a partner out), Suicune dashing over water, Lugia's shadow under you while surfing.
  * Data: public/data/sightings.json (admin → Data files → Story sightings). Seen ones live in the save as `aparicoes` (id → time).
- *   instalar(ctx, lista)   quadro(dt) every frame   esquecer(id) shows one again   testar(id) previews one now   diagnostico() */
+ *   instalar(ctx, list)   quadro(dt) every frame   — console (staff): __dbg.sightings.preview(id) plays one now,
+ *   .forget(id) lets your account see it again, .status() shows what is waiting and why */
 let C = null;
 let DADO = [];
 const ativas = [];
@@ -360,9 +361,9 @@ export function quadro(b) {
       naArea = { chave: null, desde: relogio };
     });
 }
-/** Preview one sighting right now, wherever you are, without marking it seen (staff testing: __dbg.aparicoes.testar('lugia')).
+/** Preview one sighting right now, wherever you are, without marking it seen (staff testing, in the browser console: __dbg.sightings.preview('lugia')).
  *  Lugia still needs water under you, Suicune water on screen. Resolves to true if it started. */
-export async function testar(id) {
+export async function preview(id) {
   const c = DADO.find((d) => d.id === id) || (PLANOS[id] ? { id, glb: { hooh: 'pm0250_00', suicune: 'pm0245_00', lugia: 'pm0249_00' }[id] } : null);
   if (!c || !PLANOS[c.id] || !C) return false;
   const a = await PLANOS[c.id](c);
@@ -370,18 +371,18 @@ export async function testar(id) {
   ativas.push(a);
   return true;
 }
-export function esquecer(a) {
+export function forget(a) {
   const v = { ...vistas() };
   delete v[a];
   try {
     C.marcar(v);
   } catch {}
 }
-export function trechoDbg(a = 18) {
+export function waterSpanDebug(a = 18) {
   const t = trechoDeAgua(a);
   return t ? t.map((v) => [+v.x.toFixed(1), +v.y.toFixed(2), +v.z.toFixed(1)]) : null;
 }
-export function diagnostico() {
+export function status() {
   if (!C) return { instalado: false };
   let a = null,
     b = null,
@@ -425,7 +426,7 @@ export function diagnostico() {
     cam: i ? [+i.position.x.toFixed(1), +i.position.y.toFixed(1), +i.position.z.toFixed(1)] : null,
   };
 }
-export function naTelaDbg(x, y, z) {
+export function onScreenDebug(x, y, z) {
   const a = C?.camera?.();
   if (!a) return null;
   const v = new C.THREE.Vector3(x, y, z).project(a);
