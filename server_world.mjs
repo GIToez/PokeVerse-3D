@@ -407,7 +407,10 @@ export function createWorld(h) {
     if (!safariBall && !((save.bolas[ball] | 0) > 0)) return reply({ ok: false, chac: 0, erro: 'sem-bola' });
     if (!safariBall) save.bolas[ball] = (save.bolas[ball] | 0) - 1;   // the ball is spent on every valid throw, caught or not
     const modSafari = naSafari && (m.safari === 'isca' || m.safari === 'pedra') ? Safari.MOD[m.safari].captura : 1;
-    const n = shakes(w, ballBonus(ball, w, u) * modSafari);
+    /* the Safari's own difficulty (Game settings → Safari catch multiplier, default 0.5): the classic odds were too easy here,
+       where almost every Safari species has a 190–255 catch rate and a rock doubles it */
+    const fatorSafari = naSafari ? (v => Number.isFinite(v) && v > 0 ? Math.min(4, v) : 0.5)(+gameConfig()?.safariCaptura) : 1;
+    const n = shakes(w, ballBonus(ball, w, u) * modSafari * fatorSafari);
     w.state = 'capturando'; w.catcher = ws._id;
     clearTimeout(w.timer);
     toMap(map, { t: 'sestado', id: w.id, estado: 'capturando', porId: ws._id, bola: +ball, chac: n }, ws);
