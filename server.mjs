@@ -45,7 +45,8 @@ import { createDrops } from './server_drops.mjs';
 import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
 import { createFerry } from './server_ferry.mjs';
-import { createSocial } from './server_social.mjs';   // friends, requests, direct messages (the Social window)
+import { createSocial } from './server_social.mjs';
+import { knowledgeSummary } from './server_knowledge.mjs';   // friends, requests, direct messages (the Social window)
 import { createParty } from './server_party.mjs';     // parties of up to 4, and Inspect (the player card)
 import * as CaixaR from './box_rules.mjs';
 import { createMail } from './server_mail.mjs';
@@ -1643,7 +1644,8 @@ const drops = createDrops({ accounts: contas, dataDir: DADOS_PUB, send: enviar, 
 const diario = createDaily({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas,   // daily login rewards (7-day streak, free + premium)
   readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), isBall: k => catalogoItens().items[String(k)]?.t === 7 });
 const social = createSocial({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, isMuted: u => !!(contas[u]?.mudoAte && contas[u].mudoAte > Date.now()) });
-const grupo = createParty({ accounts: contas, send: enviar, socketsOf: socketsDe, connections: () => conexoes.values(), nick: u => contas[u]?.save?.nome || u });
+const grupo = createParty({ accounts: contas, send: enviar, socketsOf: socketsDe, connections: () => conexoes.values(), nick: u => contas[u]?.save?.nome || u,
+  extra: { mestre: u => progressao.masterLevel(u), saber: s => { const k = knowledgeSummary(s); return { mestres: k.masters, estudadas: k.studied }; } } });   // Inspect: their Master level and Pokédex knowledge
 const balsa = createFerry({ accounts: contas, send: enviar, readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null) });   // the Vermilion ferry (server_ferry.mjs)
 const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {

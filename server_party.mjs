@@ -8,7 +8,7 @@
  *   party.receber(ws, u, m) → true when it handled the message · party.membrosDe(u) → [user] (u's party, u included) */
 const MAX = 4, CONVITE_MS = 60e3;
 
-export function createParty({ accounts, send, socketsOf, connections, nick }) {
+export function createParty({ accounts, send, socketsOf, connections, nick, extra = null }) {   // extra: { mestre(u), saber(save) → { mestres, estudadas } }
   const grupos = new Map(), deQuem = new Map(), convites = new Map();   // id → { id, lider, membros: Set }, user → id, invited user → { de, ate }
   let seq = 0;
   const focoEm = new Map();
@@ -33,8 +33,13 @@ export function createParty({ accounts, send, socketsOf, connections, nick }) {
     if (t === 'inspecionar') {
       const w = wsDe(m.id), o = w?._usuario, c = o && accounts[o];
       if (!w || w._mapa !== ws._mapa || !c?.save) { send(ws, { t: 'inspecao', id: m.id, erro: 'That trainer is not here any more.' }); return true; }
-      const s = c.save;
-      send(ws, { t: 'inspecao', id: m.id, nick: nick(o), insignias: Array.isArray(s.insignias) ? s.insignias.length : 0, campeao: !!s.elite?.vencida,
+      const s = c.save, dex = s.dex && typeof s.dex === 'object' ? s.dex : {}, pego = (v) => v === 'pego' || v === 'caught';
+      const todos = [...(s.time || []), ...(s.caixa || [])].filter(Boolean);
+      send(ws, { t: 'inspecao', id: m.id, nick: nick(o), insignias: Array.isArray(s.insignias) ? s.insignias.slice(0, 16) : [], campeao: !!s.elite?.vencida,
+        tempo: +s.tempo || 0, caixa: (s.caixa || []).length, personagem: s.personagem || null, mestre: extra?.mestre?.(o) || null,
+        vistos: Object.keys(dex).length, pegos: Object.values(dex).filter(pego).length,
+        kantoVistos: Object.keys(dex).filter((n) => +n >= 1 && +n <= 151).length, kantoPegos: Object.entries(dex).filter(([n, v]) => +n >= 1 && +n <= 151 && pego(v)).length,
+        shinies: todos.filter((p) => p.shiny).length, ...(extra?.saber?.(s) || {}),
         time: (s.time || []).filter((p) => p && !p.ovo).slice(0, 6).map((p) => ({ dex: +p.dex, glb: p.glb || null, lv: +p.lv || 1, nome: p.nome || '', shiny: !!p.shiny })) });
       return true;
     }

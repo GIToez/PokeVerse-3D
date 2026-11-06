@@ -464,7 +464,16 @@ function marcarMapaCheio(on){
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
 export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd, popAt]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
+/* ANOTHER TRAINER'S CARD (Nov 6): the player card's Inspect opens this same Trainer window with their data (server_party.mjs
+   `inspecao`); their money and the buttons that only make sense on your own card stay hidden. */
+let treinadorOutro = null, abrindoOutro = false;
+export async function abrirTreinadorDe(O){
+  treinadorOutro = O || null; abrindoOutro = true;
+  try { await abrir('treinador'); } finally { abrindoOutro = false; }
+  if (popTr && Popup.aberto(popTr)) encherTreinador(popTr);
+}
 export async function abrir(nome, aba = null){
+  if (nome === 'treinador' && !abrindoOutro) treinadorOutro = null;
   if (!JANELAS[nome]) return;
   if (nome === 'loja' && ctx.comConta?.() && LojaUI.abrir()) return;          // with an account the shop button opens the Diamond Shop; Coin outfits stay in the Wardrobe's Shop tab
   if (nome === 'loja' || nome === 'guarda'){ abrirGuarda(nome === 'loja' ? 'loja' : 'roupas'); return; }   // Wardrobe / cosmetics shop (Nov 2)
@@ -2658,7 +2667,7 @@ function popupTr(){
   const def = defPopup('treinador'); if (new URLSearchParams(location.search).get('popup') === '0' || !def) return null;
   popTr = Popup.montar(def, {
     abre: alvo => { if (alvo === 'popup-pokemon'){ abrir('pokemon'); return true; } if (alvo === 'popup-conquistas'){ ProgressaoUi.abrir(); return true; } if (alvo === 'popup-ranking'){ RankingUi.abrir(); return true; } if (alvo === 'popup-guarda-roupa'){ abrirGuarda('roupas'); return true; } if (alvo === 'dialogo-estatisticas'){ abrirEstatisticas(); return true; } return false; },
-    fechar: () => { if (aberta === 'treinador') aberta = null; if (visorTr) visorTr.ativo = false; },
+    fechar: () => { if (aberta === 'treinador') aberta = null; if (visorTr) visorTr.ativo = false; treinadorOutro = null; },
   });
   return popTr;
 }
@@ -2673,8 +2682,8 @@ function visorTreinador(){
   const cam = new THREE.PerspectiveCamera(30, 222 / 292, 0.05, 50); cam.position.set(0, 0.95, 3.4); cam.lookAt(0, 0.75, 0);
   const v = { canvas, ren, cena, cam, grupo: null, mixer: null, ativo: false, t0: 0, giro: 0 };
   v.quadro = () => { if (!v.ativo) return; const t = performance.now() / 1000, dt = Math.min(0.05, t - (v.t0 || t)); v.t0 = t; v.giro += dt * 0.5; if (v.grupo) v.grupo.rotation.y = v.giro; v.mixer?.update(dt); ren.render(cena, cam); requestAnimationFrame(v.quadro); };
-  v.montar = () => {
-    const a = ctx.jogo?.ash; if (!a?.corpo) return;
+  v.montar = (outro = null) => {                                           // outro: another trainer's entity (Inspect)
+    const a = outro?.corpo ? outro : ctx.jogo?.ash; if (!a?.corpo) return;
     if (v.grupo){ cena.remove(v.grupo); v.grupo = null; v.mixer = null; }
     const corpo = SkeletonUtils.clone(a.corpo); corpo.scale.copy(a.corpo.scale); corpo.position.copy(a.corpo.position);
     const g = new THREE.Group(); g.add(corpo); cena.add(g); v.grupo = g;
@@ -2767,8 +2776,12 @@ function encherEstatisticas(pop){
   put('est-social-1', n(S.trocas)); put('est-social-2', n(S.parceiros)); put('est-social-3', n(S.vendas) + ' / ' + n(S.compras)); put('est-social-4', n(S.missoes));
   put('est-criacao-1', n(S.ovos)); put('est-criacao-2', n(S.chocados)); put('est-criacao-3', n(S.shinyOvo));
 }
+const SO_MEU = ['btn-ficha', 'btn-guarda-roupa', 'btn-ranking', 'btn-conquistas', 'btn-estatisticas', 'bonus-caca'];
 function encherTreinador(pop){
   Popup.rotulo(pop, 'titulo');
+  for (const n of SO_MEU){ const g = Popup.grupo(pop, n); if (g) g.style.display = treinadorOutro ? 'none' : ''; }
+  for (const g of pop.querySelectorAll('[data-fig^="conquista-"]')) if (treinadorOutro) g.style.display = 'none';
+  if (treinadorOutro) return encherTreinadorOutro(pop, treinadorOutro);
   const D2 = D, t = ctx.lerLS('tempo', 0), h = Math.floor(t / 3600), mi = Math.floor((t % 3600) / 60);
   const d = dexEstado(); const pegos = Object.values(d).filter(v => v === 'pego').length, vistos = Object.keys(d).length;
   const tem = new Set(ctx.lerLS('insignias', []));
@@ -2840,6 +2853,47 @@ function encherTreinador(pop){
       const bola = g.querySelector('[data-var="conquista-estado"]'); if (bola && !bola.style.backgroundImage){ bola.style.borderRadius = '50%'; bola.style.backgroundColor = tit.tem ? '#2FAE47' : '#39424E'; bola.style.display = 'block'; }
     }
   }
+}
+
+function encherTreinadorOutro(pop, O){
+  const h = Math.floor((+O.tempo || 0) / 3600), mi = Math.floor(((+O.tempo || 0) % 3600) / 60);
+  const tem = new Set(O.insignias || []), P = ctx.Personagem;
+  Popup.texto(pop, 'jogador-nome', O.nick || '?');
+  Popup.texto(pop, 'dinheiro', '—');
+  Popup.texto(pop, 'tempo-jogo', h + 'h ' + String(mi).padStart(2, '0') + 'm');
+  Popup.texto(pop, 'time-resumo', (O.time || []).length + '/6 · box ' + (+O.caixa || 0));
+  Popup.texto(pop, 'pokedex-resumo', (+O.vistos || 0) + ' ' + tr('seen') + ' · ' + (+O.pegos || 0) + ' ' + tr('caught'));
+  Popup.texto(pop, 'insignias-resumo', tem.size + '/8');
+  Popup.texto(pop, 'personagem', O.personagem ? (P?.nomeDe?.(O.personagem) || O.personagem.tipo || '—') : '—');
+  Popup.texto(pop, 'inicial', O.inicial || '—');
+  const cx = Popup.no(pop, 'jogador');
+  if (cx){
+    const v = visorTreinador();
+    if (v.canvas.parentElement !== cx){ cx.appendChild(v.canvas); Object.assign(v.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' }); cx.style.pointerEvents = 'auto'; }
+    v.montar(ctx.entDoOutro?.(O.id) || null); if (!v.ativo){ v.ativo = true; v.t0 = 0; requestAnimationFrame(v.quadro); }
+  }
+  const ins = (D.insignias || []).filter(b => b.gen === 1);
+  carregarGinasios().then(G => {
+    const porId = {}; for (const g of Object.values(G || {})) if (g.insignia) porId[g.insignia.id] = g.insignia;
+    ins.forEach((b, i) => {
+      const cel = Popup.grupo(pop, 'insignia-' + (i + 1)); if (!cel) return;
+      const ok = tem.has(b.id);
+      Popup.texto(pop, 'insignia-nome', tr(b.n).replace(/^(Badge|medalha) /i, ''), cel);
+      const ref = Popup.estadoRef(pop, cel, 'insignia', ok ? 'conquistada' : 'vazia');
+      mioloInsignia(cel, ref, pop);
+      const ic = porId[b.id]?.icone;
+      Popup.imagem(pop, 'insignia', ok && ic ? './ui/icones/' + ic + '.png' : null, cel);
+    });
+  });
+  const teto = TETO_OBED[Math.min(8, tem.size)] ?? TETO_OBED[0];
+  Popup.texto(pop, 'obedecem', tr('Their Pokémon obey up to Lv {n}.', { n: O.campeao ? 100 : teto }) + (O.campeao ? ' · ' + tr('Kanto Champion') : ''));
+  const notaRk = pop.querySelector('[data-fig="nota-ranking"]'); if (notaRk) notaRk.textContent = '';
+  inglesRotulos(pop);
+  Popup.texto(pop, 'mestre', O.mestre ? tr('Master {n}', { n: O.mestre }) : tr('Master'));
+  Popup.texto(pop, 'col-kanto', (+O.kantoPegos || 0) + '/151 ' + tr('caught') + ' (' + Math.round((+O.kantoPegos || 0) / 151 * 100) + '%) · ' + (+O.kantoVistos || 0) + ' ' + tr('seen'));
+  Popup.texto(pop, 'col-nacional', (+O.pegos || 0) + ' ' + tr('caught') + ' · ' + (+O.vistos || 0) + ' ' + tr('seen'));
+  Popup.texto(pop, 'col-shinies', '✨ ' + (+O.shinies || 0));
+  Popup.texto(pop, 'col-conhecimento', (+O.mestres || 0) + ' ' + tr('species at Master') + ' · ' + (+O.estudadas || 0) + ' ' + tr('at Studied+'));
 }
 
 /* ---------------------------------------------------------------- Mapa */

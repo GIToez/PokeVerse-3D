@@ -10046,7 +10046,7 @@ if (jogo.ash){
     pintar: () => atualizarMissao(),
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
   /* v2 side-quest windows (Nov 5): the offer card when a quest giver is talked to, and "Hand over a Pokémon" for `doar` steps */
-  PlayerCard.instalar({ tr: (s, v) => I18n.t(s, v), enviar: m => Rede.enviar(m), duelo: nome => desafiarJogador(nome),
+  PlayerCard.instalar({ tr: (s, v) => I18n.t(s, v), enviar: m => Rede.enviar(m), duelo: nome => desafiarJogador(nome), cartao: m => Menus.abrirTreinadorDe(m),
     social: () => (comConta() ? Conta.chamar('GET', '/social').then(r => (r.ok ? r.dados : null)) : Promise.resolve(null)),
     grupo: () => jogo.grupo || null, eu: () => Conta.estado?.().usuario || null,
     outro: id => (Rede.listaOutros?.() || []).find(o => String(o.id) === String(id) && o.pronto && !o.oculto) || null,
@@ -10114,6 +10114,7 @@ if (jogo.ash){
     },
     trocarPara,
     espDe,                                                               // a record's species with its form (forms.mjs)
+    entDoOutro: id => Rede.entDe?.(id) || null,                          // Inspect: their figure on the Trainer card
     balsaDados: () => FERRY, balsaEnviar: m => Rede.enviar(m),        // the Vermilion ferry (ferry_ui.mjs, server_ferry.mjs)
     insignias: () => (lerLS('insignias', []) || []).length, campeao: () => !!eliteEstado?.vencida,
     irParaCena: o => irParaCena(o),

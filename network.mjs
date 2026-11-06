@@ -153,6 +153,8 @@ export function enviarPorta(chegada) {
   return foi;
 }
 export const outroPor = (a) => outros.get(a) || null;
+/** Another player's 3D entity (the Trainer card's figure on Inspect). */
+export const entDe = (id) => outros.get(String(id))?.ent || outros.get(id)?.ent || null;
 export const listaOutros = () =>
   [...outros.values()].map((o) => ({
     id: o.id,
