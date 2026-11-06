@@ -5860,14 +5860,11 @@ function golpear(atacante, defensor, golpe){
    Kanto inteira é UMA sala no servidor, e o `aplicarGolpe` é o caminho de todo dano do mundo — inclusive o do parceiro dos
    OUTROS jogadores. Resultado: todo golpe da região tocava no ouvido de todo mundo, no volume cheio. Pior, o limitador do
    sound.mjs (TETO = 3 sons por 140 ms) era gasto por batalha longe e engolia o som do golpe do próprio jogador.
-   Agora: volume cheio até PERTO, caindo linear até LONGE, e além disso nem toca (não gasta a cota). */
-const SOM_PERTO = 14, SOM_LONGE = 48;
+   Agora: volume cheio até PERTO, caindo até LONGE, e além disso nem toca (não gasta a cota).
+   Nov 6: the curve and the separate budget for other players' sounds live in sound.mjs (volumeNoMundo, `de: 'outro'`). */
 function volumeDaDistancia(e, base = 1){
   const a = jogo.ash; if (!a || !e || e.x == null) return base;
-  const d = Math.hypot(e.x - a.x, e.z - a.z);
-  if (d <= SOM_PERTO) return base;
-  if (d >= SOM_LONGE) return 0;
-  return base * (1 - (d - SOM_PERTO) / (SOM_LONGE - SOM_PERTO));
+  return base * Som.volumeNoMundo(Math.hypot(e.x - a.x, e.z - a.z));   // full up to 10 m, fading softly to silence at 40 m (sound.mjs)
 }
 function aplicarGolpe(atacante, defensor, golpe, dano, eff){
   const silencio = golpe.cat === 'status' && eff !== 0 && !(dano > 0);
@@ -5877,9 +5874,9 @@ function aplicarGolpe(atacante, defensor, golpe, dano, eff){
   const meu = atacante === jogo.pika || defensor === jogo.pika || atacante === jogo.ash || defensor === jogo.ash;
   const vol = meu ? 1 : volumeDaDistancia(defensor);
   if (vol > 0.02){
-    Som.tocar('skill/' + golpe.som, { volume: vol, prio: atacante === jogo.pika });
+    Som.tocar('skill/' + golpe.som, { volume: vol, prio: atacante === jogo.pika, de: meu ? null : 'outro' });
     const res = R.somDaEficacia(eff);
-    if (res) setTimeout(() => Som.tocar('skill/' + res, { volume: vol }), 150);
+    if (res) setTimeout(() => Som.tocar('skill/' + res, { volume: vol, de: meu ? null : 'outro' }), 150);
   }
   if (defensor.hp <= 0 && atacante === jogo.pika && defensor !== jogo.pika && !jogo.turno?.serv){
     if (defensor.rede && Mundo.estaAtivo()){ /* the shared world pays this defeat */ }
@@ -9978,7 +9975,7 @@ if (jogo.ash){
     /* RAID AO VIVO (14/09): a barra de vida do chefe no topo sai do REGISTRO (com ou sem corpo aqui) e some com ele. */
     raidHp: r => Raid.chefe({ nome: r.nome || 'Mew', lv: r.lv, hp: r.hp, maxHp: r.maxHp }),
     raidSumiu: () => Raid.chefe(null) });
-  Troca.instalar({ jogo, enviar: Rede.enviar, Chat, Conta, lerLS, gravarLS, iconeMon, Som,   // fase 4: mesa de troca
+  Troca.instalar({ jogo, enviar: Rede.enviar, Chat: { sistema: t => Chat.sistema(t), sistemaCru: t => Chat.sistema(t) }, Conta, lerLS, gravarLS, iconeMon, Som, Conhecimento,   // trade table (trade.mjs)
     outros: () => Rede.listaOutros(),
     aplicarSave: (save, rev) => { Conta.aplicarDoServidor(save, rev); recarregarDoSave(); } });
   Conta.ligarRede(Rede.enviar);                                          // passo 6: as intenções da conta (arranjo, pref, conhecimento) vão pelo WebSocket
@@ -10095,7 +10092,7 @@ if (jogo.ash){
     pintar: () => atualizarMissao(),
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
   /* v2 side-quest windows (Nov 5): the offer card when a quest giver is talked to, and "Hand over a Pokémon" for `doar` steps */
-  PlayerCard.instalar({ tr: (s, v) => I18n.t(s, v), enviar: m => Rede.enviar(m), duelo: nome => desafiarJogador(nome), cartao: m => Menus.abrirTreinadorDe(m),
+  PlayerCard.instalar({ tr: (s, v) => I18n.t(s, v), enviar: m => Rede.enviar(m), duelo: nome => desafiarJogador(nome), trocar: o => Troca.convidarId(o.id), cartao: m => Menus.abrirTreinadorDe(m),
     social: () => (comConta() ? Conta.chamar('GET', '/social').then(r => (r.ok ? r.dados : null)) : Promise.resolve(null)),
     grupo: () => jogo.grupo || null, eu: () => Conta.estado?.().usuario || null,
     outro: id => (Rede.listaOutros?.() || []).find(o => String(o.id) === String(id) && o.pronto && !o.oculto) || null,

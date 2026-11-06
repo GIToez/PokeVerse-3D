@@ -73,15 +73,37 @@ const JANELA = 140;          // ms, do teto global
 const TETO = 3;              // sons simultâneos por janela
 let janelaInicio = 0, naJanela = 0;
 
-export async function tocar(caminho, { volume = 1, tom = 1, variacao = 0.06, prio = false } = {}){
+/* OTHER PLAYERS' SOUNDS (Nov 6, from upcoming/sound.mjs): `de: 'outro'` = a sound from someone else's fight. It gets its own,
+   smaller budget (2 per 250 ms, the same sound at most every 150 ms), so a crowd battling nearby never uses up the slots of
+   your own fight. volumeNoMundo(d): full up to OUVIR_PERTO metres, fading (squared, so it tails off softly) to silence at OUVIR_LONGE. */
+export const OUVIR_PERTO = 10, OUVIR_LONGE = 40;
+export function volumeNoMundo(d){
+  if (!(d >= 0)) return 0;
+  if (d <= OUVIR_PERTO) return 1;
+  if (d >= OUVIR_LONGE) return 0;
+  const k = 1 - (d - OUVIR_PERTO) / (OUVIR_LONGE - OUVIR_PERTO);
+  return k * k;
+}
+const ultimoOutro = new Map();
+let janelaOutros = 0, naJanelaOutros = 0;
+
+export async function tocar(caminho, { volume = 1, tom = 1, variacao = 0.06, prio = false, de = null } = {}){
   if (mudo || !caminho) return;
   const agora = performance.now();
-  if (agora - (ultimo.get(caminho) || 0) < INTERVALO) return;
-
-  if (agora - janelaInicio > JANELA){ janelaInicio = agora; naJanela = 0; }
-  if (!prio && naJanela >= TETO) return;
-  naJanela++;
-  ultimo.set(caminho, agora);
+  if (de === 'outro'){
+    if (!(volume >= 0.02)) return;
+    if (agora - (ultimoOutro.get(caminho) || 0) < 150) return;
+    if (agora - janelaOutros > 250){ janelaOutros = agora; naJanelaOutros = 0; }
+    if (naJanelaOutros >= 2) return;
+    naJanelaOutros++;
+    ultimoOutro.set(caminho, agora);
+  } else {
+    if (agora - (ultimo.get(caminho) || 0) < INTERVALO) return;
+    if (agora - janelaInicio > JANELA){ janelaInicio = agora; naJanela = 0; }
+    if (!prio && naJanela >= TETO) return;
+    naJanela++;
+    ultimo.set(caminho, agora);
+  }
 
   const buf = await carregar(caminho);
   if (!buf || mudo) return;

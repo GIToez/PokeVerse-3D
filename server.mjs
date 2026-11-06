@@ -46,6 +46,7 @@ import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
 import { createFerry } from './server_ferry.mjs';
 import { createTravel } from './server_travel.mjs';
+import { createTrade } from './server_trade.mjs';   // the trade table, done on the server (Nov 6)
 import { createStaff } from './server_staff.mjs';
 import { createSocial } from './server_social.mjs';
 import { knowledgeSummary } from './server_knowledge.mjs';   // friends, requests, direct messages (the Social window)
@@ -1733,6 +1734,9 @@ const staff = createStaff({ accounts: contas, send: enviar, broadcastMapa: (ws, 
   } });
 const viagem = createTravel({ accounts: contas, send: enviar, cfg: () => cfgJogo(), saveAccounts: () => salvarContas(),   // fast travel: Teleport + Fly between Centers (server_travel.mjs)
   readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), emLuta: ws => { try { return !!batalha.emLuta(ws._usuario); } catch { return false; } } });
+const troca = createTrade({ accounts: contas, send: enviar, saveAccounts: () => salvarContas(), conexoes,
+  usuarioDe: ws => sessoes.get(ws._info?.token) || null, nomeDe: ws => ws._info?.nome || ws._usuario || 'Trainer',
+  emLuta: ws => { try { return !!batalha.emLuta(ws._usuario); } catch { return false; } } });
 const balsa = createFerry({ accounts: contas, send: enviar, readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null) });   // the Vermilion ferry (server_ferry.mjs)
 const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
@@ -2225,10 +2229,7 @@ wss.on('connection', ws => {
           batalha.receber(ws, m);
         }
 
-        else if (m.t?.startsWith('troca_')) {
-          const uTr = sessoes.get(ws._info?.token) || null;                      // nº18: só quem está logado relaia troca (antes: qualquer conexão espalhava)
-          if (uTr) broadcast(ws, { ...m, id: ws._id });
-        }
+        else if (m.t?.startsWith('troca_')) troca.receber(ws, m);   // the trade table (server_trade.mjs); it used to be echoed to the whole map
 
         else if (m.t === 'missao_passo') {
           enviar(ws, { t: 'missao', estado: m.estado });
@@ -2248,6 +2249,7 @@ wss.on('connection', ws => {
   ws.on('close', () => {
     try { batalha.aoSair(ws); } catch {}
     try { world.left(ws); } catch {}
+    try { troca.saiu(ws); } catch {}
     if (ws._usuario && contas[ws._usuario] && ws._info) gravarPosConta(ws._usuario, { mapa: ws._mapa, x: ws._info.x, y: ws._info.y, z: ws._info.z, giro: ws._info.giro }, { ja: true });
     if (!conexoes.delete(ws._id)) return;                                 // já saiu da lista (sessão única) e o `saiu` já foi
     console.log(`[-] ${ws._usuario || ws._id} left (${conexoes.size} online)`);

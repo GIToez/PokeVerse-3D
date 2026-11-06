@@ -1,5 +1,5 @@
 /* PLAYER CARD (Nov 6): tap or click another trainer → a card over them with the four permanent buttons:
- *   Party (invite · or Remove / Leave when you share one) · Add Friend (or "Friends ✓" / "Requested") · Inspect (their party) · Duel.
+ *   Party (invite · or Remove / Leave when you share one) · Add Friend (or "Friends ✓" / "Requested") · Inspect (their party) · Trade · Duel.
  * Inspect opens their Trainer card (the same window as yours). Party invites arrive as a small Join / Decline card.
  * No v2 art for these yet: drawn here in the v2 windows' colours (navy panel, cyan frame, gold for the main action).
  *   instalar({ tr, enviar(m), social() → Promise<{ friends, requests }|null>, duelo(nome), projetar({x,y,z}) → {x,y}|null,
@@ -21,7 +21,7 @@ function estilo() {
 .pcard button.b{display:flex;align-items:center;gap:6px;justify-content:center;min-height:34px;padding:4px 8px;border-radius:9px;border:1.5px solid #3E95E6;background:linear-gradient(180deg,#16397A,#0F2A5C);color:#fff;font:800 12px "Nunito Sans",system-ui;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff1a}
 .pcard button.b:hover{border-color:#7CC8FF}.pcard button.b[disabled]{opacity:.55;cursor:default}
 .pcard button.b i{font-style:normal;font-size:15px}
-.pcard button.duel{background:linear-gradient(180deg,#FBD04B,#E9A419);color:#1A1405;border-color:#F8C237}
+.pcard button.duel{grid-column:1 / -1;background:linear-gradient(180deg,#FBD04B,#E9A419);color:#1A1405;border-color:#F8C237}
 .pcard .sub{margin-top:7px;color:#B8C2D9;font-weight:600;font-size:11px}
 .pconv{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:700;background:linear-gradient(180deg,#132C5E,#0C1D42);border:2px solid #2FA8EE;border-radius:12px;padding:12px 16px;color:#E6ECFF;font:700 13px "Nunito Sans",system-ui;box-shadow:0 0 14px #2FA8EE55,0 8px 18px #0009;text-align:center;pointer-events:auto}
 .pconv b{color:#F8C237}.pconv .bts{display:flex;gap:8px;justify-content:center;margin-top:10px}
@@ -53,6 +53,7 @@ function pintar() {
     <div class="bts">${party}
       <button class="b" data-a="amigo"${amigo || pedi ? ' disabled' : ''}><i>🤝</i>${esc(amigo ? tr('Friends ✓') : pedi ? tr('Requested') : tr('Add Friend'))}</button>
       <button class="b" data-a="inspecionar"><i>🔍</i>${esc(tr('Inspect'))}</button>
+      <button class="b" data-a="trocar"><i>🔄</i>${esc(tr('Trade'))}</button>
       <button class="b duel" data-a="duelo"><i>⚔</i>${esc(tr('Duel'))}</button></div>
     ${inspecao && String(inspecao.id) === String(o.id) ? vistaInspecao(inspecao) : ''}`;
 }
@@ -99,6 +100,7 @@ function acao(a) {
   else if (a === 'amigo') { ctx.enviar?.({ t: 'social_pedir', to: o.nome }); pedidos.add(o.nome); socialEm = 0; pintar(); }
   else if (a === 'inspecionar') { ctx.enviar?.({ t: 'inspecionar', id: o.id }); }
   else if (a === 'duelo') { ctx.duelo?.(o.nome); fechar(); }
+  else if (a === 'trocar') { ctx.trocar?.(o); fechar(); }
 }
 function mostrarConvite(m) {
   estilo();
