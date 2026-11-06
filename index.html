@@ -8711,7 +8711,7 @@ function recuperarGolpesDoTime(){
 function golpesReaprender(e){
   const p = e?.seguindo && jogo.pika ? jogo.pika : registroDoTime(e); if (!p) return [];
   const niv = new Map(); for (const [id, n] of Ind.learnsetDe(p.dex, p.glb)) if (!niv.has(id)) niv.set(id, n);
-  return golpesPerdidos(p, { comRecusados: true, desdeOInicio: true }).map(id => ({ id, nome: GOLPES[id].nome, tipo: GOLPES[id].tipo, poder: GOLPES[id].poder, cat: GOLPES[id].cat, pp: GOLPES[id].pp ?? null, lv: niv.get(id) ?? 1 })).sort((a, b) => b.lv - a.lv);
+  return golpesPerdidos(p, { comRecusados: true, desdeOInicio: true }).map(id => ({ id, nome: GOLPES[id].nome, tipo: GOLPES[id].tipo, poder: GOLPES[id].poder, cat: GOLPES[id].cat, pp: Ind.ppDe(id), lv: niv.get(id) ?? 1 })).sort((a, b) => b.lv - a.lv);
 }
 /** O jogador escolheu `id` no Reaprender: com vaga livre entra na hora; senão vai pra frente da fila e a janela pede qual esquecer. */
 function reaprender(e, id){

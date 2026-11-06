@@ -50,7 +50,24 @@ export const statDe = (S, e, i) => stat(S.bs[i], e.lv || 1, e.ivs?.[i] || 0, evs
    Learnset (data/learnset.json, tools/pokeapi_moves.py): Scarlet/Violet level-up from PokéAPI. */
 let LEARN = null;
 export function carregarLearnset(d){ LEARN = d || null; }
-export const ppDe = id => LEARN?.pp?.[id] ?? 20;
+/* PP x5 (06/11): o jogo é em tempo real e gasta golpe bem mais que o original — todo PP base (learnset/moves.json) é multiplicado aqui.
+   ppBase = valor do jogo original; ppDe = o que o PokeVerse usa. Mudar PP_MULT sobe o ppMax de quem já existe (ajustarPPMax). */
+export const PP_MULT = 5;
+export const ppBase = id => LEARN?.pp?.[id] ?? 20;
+export const ppDe = id => ppBase(id) * PP_MULT;
+/** Sobe o ppMax gravado de cada golpe até o valor atual (PP_MULT); o PP atual ganha a mesma diferença. Nunca baixa. Só com o learnset carregado. */
+export function ajustarPPMax(e){
+  let mudou = false;
+  if (!LEARN?.pp) return mudou;
+  for (const m of e?.movs || []){
+    if (!m?.id || LEARN.pp[m.id] == null) continue;
+    const top = ppDe(m.id), velho = Number.isInteger(m.ppMax) ? m.ppMax : null;
+    if (velho != null && velho >= top) continue;
+    m.pp = Math.min(top, (m.pp ?? top) + (velho == null ? 0 : top - velho));
+    m.ppMax = top; mudou = true;
+  }
+  return mudou;
+}
 /** The moveset of a species, or of one of its forms (glb pm0026_61 → the learnset entry "26_61", when there is one: forms.mjs). */
 export const learnsetDe = (dex, glb = null) => { const k = glb ? Forms.learnsetChave(dex, glb) : String(dex); return LEARN?.learnset?.[k] || LEARN?.learnset?.[+dex] || []; };
 /** Ids que um indivíduo dessa espécie/nível teria: os últimos 4 do learnset ≤ lv; mínimo 2 (completa com o fallback). */
@@ -67,6 +84,7 @@ export function garantirMovs(e, fallback){
   if (!e) return e;
   if (!Array.isArray(e.movs) || !e.movs.length) e.movs = golpesPara(e.dex, e.lv || 5, fallback, e.glb);
   for (const m of e.movs){ if (m.ppMax == null) m.ppMax = ppDe(m.id); if (m.pp == null) m.pp = m.ppMax; }
+  ajustarPPMax(e);
   return e;
 }
 export const idsDe = e => (e?.movs || []).map(m => m.id);

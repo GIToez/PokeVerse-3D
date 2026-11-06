@@ -27,6 +27,7 @@ import { criarBatalha } from './server_battle.mjs';
 import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
 import { mergeMovs } from './server_moves.mjs';
+import { ajustarPPMax } from './individual.mjs';   // PP x5 (06/11): sobe o ppMax gravado dos Pokémon que já existiam
 import { fundir as fundirStatus } from './status.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
@@ -1729,6 +1730,13 @@ function darTenis(u, { avisar = true } = {}) {
   return true;
 }
 const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u) });
+/* PP x5 (06/11, individual.mjs PP_MULT): o criarBatalha acabou de carregar o learnset; todo golpe gravado com o ppMax antigo sobe pro novo
+   e o PP atual ganha a diferença (sem precisar do Centro). Idempotente: quem já está no valor atual fica igual. */
+{
+  let mons = 0;
+  for (const c of Object.values(contas)) for (const p of [...(c?.save?.time || []), ...(c?.save?.caixa || [])]) if (ajustarPPMax(p)) mons++;
+  if (mons) { console.log('[pp] ppMax atualizado em', mons, 'Pokémon'); salvarContas(); }
+}
 /* WARDROBE (server_wardrobe.mjs): the outfit/bag/effect catalog and who owns what. */
 const guarda = createWardrobe({ dataDir: DADOS_PUB });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida, guarda });   // comprar / usar / descartar / held items (server_bag.mjs)

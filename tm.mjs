@@ -2,6 +2,8 @@
    Teaching spends Coins, checks badges, and only offers a move the species can learn.
    Moves the battle engine cannot run (tm_regras.json semEfeito) stay off the counter. */
 
+import { PP_MULT } from './individual.mjs';   // PP x5 do PokeVerse (individual.mjs)
+
 const PRECO_PADRAO = { comum: 1000, forte: 5000, rara: 20000 };
 
 export function catalogo({ beta, learnset, regras, golpe }) {
@@ -28,7 +30,7 @@ export function catalogo({ beta, learnset, regras, golpe }) {
       nome: g.nome || x.golpe?.en || chave,
       tipo: g.tipo || '',
       poder: g.poder ?? x.poder ?? null,
-      pp: Math.max(1, Math.floor(+g.pp || +learnset?.pp?.[chave] || 20)),
+      pp: Math.max(1, Math.floor(+g.pp || +learnset?.pp?.[chave] || 20)) * PP_MULT,
     });
   }
   for (const [dex, lista] of Object.entries(learnset?.tm || {})) {
@@ -47,7 +49,7 @@ export function catalogo({ beta, learnset, regras, golpe }) {
     tutor.set(chave, {
       chave, tutor: true, faixa: 'tutor', preco: precoTutor, trava: 0,
       nome: g.nome || chave, tipo: g.tipo || '', poder: g.poder ?? null,
-      pp: Math.max(1, Math.floor(+g.pp || 20)),
+      pp: Math.max(1, Math.floor(+g.pp || 20)) * PP_MULT,
     });
     const quem = regras?.tutor?.aprende?.[chave];
     tutorAprende.set(chave, new Set((Array.isArray(quem) ? quem : []).map(n => +n)));
