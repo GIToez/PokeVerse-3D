@@ -40,6 +40,7 @@ import * as HortaUI from './garden_ui.mjs';
 import * as OvosUI from './incubator_ui.mjs';
 import * as GuildaUI from './guild_ui.mjs';
 import * as Balsa from './ferry_ui.mjs';
+import * as TorneioUI from './tournament_ui.mjs';   // the crossed swords: Tournament window (public/data/tournaments.json)
 import * as FeiraUI from './market_ui.mjs';
 import * as EventosUI from './events_ui.mjs';
 import * as MapaUI from './map_ui.mjs';                                   // v2 world map (Kanto, Sevii, Johto); ?worldmap=v1 keeps the old one
@@ -213,7 +214,7 @@ export const JANELAS = {
   pokemart:  { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },
   mercado:   { titulo: 'Pokémart', icone: 'loja', sub: 'items for Coins', oculto: true },  // só pelo vendedor da loja da cidade (NPC role 'shop'): não fica no menu
   social:    { titulo: 'Social', icone: 'amigos', sub: 'chat, friends, mail', breve: true },
-  batalha:   { titulo: 'Battle', icone: 'batalha', sub: 'PvP, ranking', breve: true },
+  batalha:   { titulo: 'Tournament', icone: 'batalha', sub: 'the Colosseum: entry, bracket, rules' },   // the crossed swords: the Tournament window (tournament_ui.mjs)
   config:    { titulo: 'Settings', icone: 'ajuda', tecla: 'KeyO', sub: 'sound, graphics, HUD' },
   atalho:    { titulo: 'Shortcut', icone: 'mochila', sub: 'potions, balls, mounts', oculto: true },   // seletor dos atalhos 5–8 (não aparece na grade)
   raid:      { titulo: 'Raid', icone: 'batalha', sub: 'live raid', oculto: true },   // rodada 26: banner da raid ao vivo — só abre pelo btn-raid do HUD (raid_ui.mjs)
@@ -274,6 +275,7 @@ function ligarRecursos(){
       ? { ok: true, vista: { guilda: null, convites: [], lista: [], pedidos: [], agora: Date.now(), eu: { fundar: { custo: 0, pode: false, porque: 'Guilds need the server.' } } } }
       : { ok: false, erro: 'Guilds need the server. You can look around, but nothing is saved yet.' },
   });
+  TorneioUI.instalar({ tr, defPopup, abrirMapa: () => abrir('mapa'), segurar: el => DIALOGOS.add(el) });
   Balsa.instalar({
     dados: () => ctx.balsaDados?.() || null,                            // public/data/ferry.json (the stops), loaded by index.html
     enviar: m => ctx.balsaEnviar?.(m),
@@ -514,7 +516,7 @@ export async function abrir(nome, aba = null){
     await abrir('mercado', aba);
     return;
   }
-  if (nome === 'batalha' && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
+  if (nome === 'batalha'){ fechar(); fecharGrade(); if (await TorneioUI.abrir(aba || 'inscricao')){ aberta = null; return; } if (defPopup('em-breve')){ abrirEmBreve(nome); return; } }   // the Tournament window; the old "coming soon" banner without the layout   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
   fecharGrade(); aberta = nome; abaAtual = aba; avisarRaid();
   if (nome === 'pokemon'){ reaprenderAberto = false; try { ctx.recuperarGolpes?.(); } catch (e){ console.warn('golpes perdidos:', e); } }   // 18/09: abrir a janela Pokémon confere os golpes do learnset até o nível (o que ficou pra trás entra ou vira pendência)
   const pop = nome === 'pokemon' ? (aba === 'caixa' ? popupBx() : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSocial() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : nome === 'atalho' ? popupAt() : null;
@@ -5853,7 +5855,8 @@ function abrirRecurso(nome){
   if (nome === 'loja'){ abrir('loja'); return; }                         // the cosmetics shop exists now (Nov 2)
   if (nome === 'guilda' || nome === 'mercado'){ abrir(nome === 'mercado' ? 'feira' : nome); return; }
   if (nome === 'eventos'){ abrir('eventos'); return; }
-  if (['fliperama', 'batalha'].includes(nome)){ if (!abrirEmBreve(nome)) abrir(nome === 'fliperama' ? 'loja' : nome); return; }
+  if (nome === 'batalha'){ abrir('batalha'); return; }                  // crossed swords → the Tournament window (tournament_ui.mjs)
+  if (nome === 'fliperama'){ if (!abrirEmBreve(nome)) abrir('loja'); return; }
   abrir(nome);
 }
 /* ===== RODADA 30 (18/09): MODO PRÉVIA do adm — pedido da Amanda: abrir dentro do jogo as telas da maquete v2 que ainda não têm função

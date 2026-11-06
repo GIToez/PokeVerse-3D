@@ -1,0 +1,89 @@
+{
+  "_nota": "Colosseum tournaments (admin → Tournaments). torneios = the scheduled ones (inicio / coliseuAbre are ISO times); the window shows the next one. regras = the usual rules, a tournament can add its own (regrasExtra). The Rules tab has room for 7 usual rules; a tournament adds its own in regrasExtra (they replace the last rows).",
+  "torneios": [],
+  "regras": [
+    "Sign up at the desk in the Competition Center (needs at least 1 Gym Badge)",
+    "Reserve of 6 to 24 Pokémon for the whole night",
+    "A team of 6 Pokémon in each match, picked from the reserve",
+    "No repeated species or held item in a team",
+    "Best of 3 only in the final: 3 teams of 6 from the reserve",
+    "Out of time before picking: the team goes in reserve order",
+    "Be online and in the Colosseum when your match is called, or lose by no-show"
+  ],
+  "premios": {
+    "primeiro": {
+      "posicao": "1st",
+      "titulo": "Colosseum first place · 1x1",
+      "cosmetico": "",
+      "pontos": "+10 season points"
+    },
+    "segundo": {
+      "posicao": "2nd",
+      "titulo": "Colosseum finalist · 1x1",
+      "cosmetico": "",
+      "pontos": "+6 season points"
+    },
+    "top4": {
+      "posicao": "3rd–4th",
+      "titulo": "Colosseum top 4 · 1x1",
+      "cosmetico": "",
+      "pontos": "+4 season points"
+    },
+    "linhas": [
+      {
+        "a": "Whoever played an actual game",
+        "b": "+1 season point · 1 Tournament Token per game"
+      },
+      {
+        "a": "Watch the semi and the final",
+        "b": "up to 2 Tournament Tokens per night"
+      },
+      {
+        "a": "Correct prediction (audience)",
+        "b": "+1 Fan point per correct pick (up to 10 per night)"
+      }
+    ]
+  },
+  "tutorial": [
+    {
+      "titulo": "Sign up at the desk",
+      "chip": "before it starts",
+      "texto": "Take the ferry in Vermilion to the Competition Center and talk to the clerk at the desk. You need at least 1 Gym Badge. For 2x2, sign up together with your partner."
+    },
+    {
+      "titulo": "Pick your reserve",
+      "chip": "6 to 24",
+      "texto": "Choose 6 to 24 Pokémon for the whole night. The reserve stays locked until you are knocked out."
+    },
+    {
+      "titulo": "Pick 6 for each match",
+      "chip": "every round",
+      "texto": "Before every match you pick 6 from your reserve. A different 6 each round is fine."
+    },
+    {
+      "titulo": "Why up to 24?",
+      "chip": "plan ahead",
+      "texto": "Everyone can watch the matches, so a big reserve lets you change plans between rounds."
+    },
+    {
+      "titulo": "Team rules",
+      "chip": "no repeats",
+      "texto": "A team can't repeat a species or a held item. Each tournament can add its own rules: check the Rules tab."
+    },
+    {
+      "titulo": "Be there on time",
+      "chip": "when called",
+      "texto": "Be online and in the Colosseum when your match is called, or you lose by no-show. If time runs out before you pick, your team goes in reserve order."
+    },
+    {
+      "titulo": "The final",
+      "chip": "best of 3",
+      "texto": "The final is best of 3: pick 3 teams of 6 from your reserve, one per game. The same Pokémon can be in more than one team."
+    },
+    {
+      "titulo": "Watch and predict",
+      "chip": "Fan points",
+      "texto": "Spectators can predict who wins each match. Every correct pick gives Fan points."
+    }
+  ]
+}
