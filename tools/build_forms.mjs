@@ -8,6 +8,10 @@ const NOMES = { 51: 'Mega', 52: 'Mega Y', 61: 'Alolan', 62: 'Galarian', 63: 'His
 const casa = { 61: /^-Alola$/, 62: /^-Galar(-Standard)?$/, 63: /^-Hisui$/, 64: /^-Paldea(-Combat)?$/, 51: /^-Mega(-X)?$/, 52: /^-Mega-Y$/, 81: /^-Gmax$/ };
 /* Galarian forms the Pokédex file doesn't carry (official Sword/Shield data). */
 const EXTRA = {
+  // Legends: Z-A Megas (serebii.net/legendsz-a/megaevolutions.shtml and dlc-megaevolutions.shtml)
+  '26_51': [['Electric'], [60, 135, 95, 90, 95, 110]], '26_52': [['Electric'], [60, 100, 55, 160, 80, 130]],
+  '121_51': [['Water', 'Psychic'], [60, 140, 105, 130, 105, 120]], '149_51': [['Dragon', 'Flying'], [91, 124, 115, 145, 125, 100]],
+  '609_51': [['Ghost', 'Fire'], [60, 75, 110, 175, 110, 90]],
   '77_62': [['Psychic'], [50, 85, 55, 65, 65, 90]], '78_62': [['Psychic', 'Fairy'], [65, 100, 70, 80, 80, 105]],
   '83_62': [['Fighting'], [52, 95, 55, 58, 62, 55]], '122_62': [['Ice', 'Psychic'], [50, 65, 65, 90, 90, 100]],
   '222_62': [['Ghost'], [60, 55, 100, 65, 100, 30]], '263_62': [['Dark', 'Normal'], [38, 30, 41, 30, 41, 60]],
@@ -36,6 +40,7 @@ for (const e of cast) {
   const velho = formas[k] || {};
   const [xt, xb] = EXTRA[k] || [];
   formas[k] = { nome: velho.nome || nome, glb: velho.glb || e.glb, tipos: velho.tipos || f?.types || xt || null, bs: velho.bs || f?.bs || xb || null, ...(velho.golpes ? { golpes: velho.golpes } : {}), ...(velho.nota ? { nota: velho.nota } : {}) };
+  if (formas[k].tipos && formas[k].bs && /^No official types/.test(formas[k].nota || '')) delete formas[k].nota;   // filled in since
   if (sfx === '81') { if (!velho.nota) formas[k].nota = 'Gigantamax keeps the normal types and stats.'; continue; }
   if (!formas[k].tipos || !formas[k].bs) { faltam.push(k + ' ' + nome); if (!velho.nota) formas[k].nota = 'No official types/stats in our data yet: uses the normal ones until filled in.'; }
 }

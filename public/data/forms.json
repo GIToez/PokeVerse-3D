@@ -166,16 +166,32 @@
   "26_51": {
    "nome": "Mega Raichu X",
    "glb": "pm0026_51",
-   "tipos": null,
-   "bs": null,
-   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+   "tipos": [
+    "Electric"
+   ],
+   "bs": [
+    60,
+    135,
+    95,
+    90,
+    95,
+    110
+   ]
   },
   "26_52": {
    "nome": "Mega Raichu Y",
    "glb": "pm0026_52",
-   "tipos": null,
-   "bs": null,
-   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+   "tipos": [
+    "Electric"
+   ],
+   "bs": [
+    60,
+    100,
+    55,
+    160,
+    80,
+    130
+   ]
   },
   "26_61": {
    "nome": "Alolan Raichu",
@@ -695,9 +711,18 @@
   "121_51": {
    "nome": "Mega Starmie",
    "glb": "pm0121_51",
-   "tipos": null,
-   "bs": null,
-   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+   "tipos": [
+    "Water",
+    "Psychic"
+   ],
+   "bs": [
+    60,
+    140,
+    105,
+    130,
+    105,
+    120
+   ]
   },
   "122_62": {
    "nome": "Galarian Mr. Mime",
@@ -882,9 +907,18 @@
   "149_51": {
    "nome": "Mega Dragonite",
    "glb": "pm0149_51",
-   "tipos": null,
-   "bs": null,
-   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+   "tipos": [
+    "Dragon",
+    "Flying"
+   ],
+   "bs": [
+    91,
+    124,
+    115,
+    145,
+    125,
+    100
+   ]
   },
   "150_51": {
    "nome": "Mega Mewtwo X",
@@ -1677,9 +1711,18 @@
   "609_51": {
    "nome": "Mega Chandelure",
    "glb": "pm0609_51",
-   "tipos": null,
-   "bs": null,
-   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+   "tipos": [
+    "Ghost",
+    "Fire"
+   ],
+   "bs": [
+    60,
+    75,
+    110,
+    175,
+    110,
+    90
+   ]
   },
   "618_62": {
    "nome": "Galarian Stunfisk",

@@ -2703,6 +2703,18 @@ function visorTreinador(){
    (a caixa do img/miolo dela) é desenhado na caixa do img/miolo da célula, sem medida nenhuma. Pacote sem o nó (rodada 31): ficam as razões
    medidas nos PNGs daquela rodada — miolo da célula = 1,40× (PC) / 1,475× (celular) a caixa do ícone; miolo da referência = 1,50× a caixa do
    ícone dela; todos centrados na caixa do ícone. Layout antigo (célula sem arte própria) segue como era. */
+/* An earned badge's picture: its icon (gyms.json → ui/icones/<icone>.png) or, while that art is missing, the layout's own sample (the gold star) */
+const ESTRELA_INSIGNIA = './ui/figma_webp/ui2-v2/pc-popup-treinador/popup-treinador/insignias/insignia-1/img/insignia-exemplo.webp';
+const iconeOk = new Map();
+function imagemInsignia(pop, cel, ganhou, ic){
+  if (!ganhou){ Popup.imagem(pop, 'insignia', null, cel); return; }
+  const url = ic ? './ui/icones/' + ic + '.png' : null;
+  const por = ok => { const el = Popup.imagem(pop, 'insignia', ok ? url : ESTRELA_INSIGNIA, cel); if (el) Object.assign(el.style, ok ? { backgroundSize: '', backgroundPosition: '' } : { backgroundSize: '190%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }); };
+  if (!url || iconeOk.get(url) === false){ por(false); return; }
+  if (iconeOk.get(url)){ por(true); return; }
+  por(false);
+  const im = new Image(); im.onload = () => { iconeOk.set(url, true); por(true); }; im.onerror = () => iconeOk.set(url, false); im.src = url;
+}
 function mioloInsignia(cel, ref, pop){
   const arte = cel.dataset.arte; if (!arte || !ref?.img) return;
   cel.style.backgroundImage = 'url(' + arte + ')';                        // o anel na cor da insígnia (a folga do PNG já está no backgroundSize)
@@ -2811,11 +2823,11 @@ function encherTreinador(pop){
     ins.forEach((b, i) => {
       const cel = Popup.grupo(pop, 'insignia-' + (i + 1)); if (!cel) return;
       const conquistada = tem.has(b.id);
-      Popup.texto(pop, 'insignia-nome', tr(b.n).replace(/^(Badge|medalha) /i, ''), cel);
+      Popup.texto(pop, 'insignia-nome', tr(porId[b.id]?.nome || b.n).replace(/^(Badge|medalha) /i, ''), cel);
       const ref = Popup.estadoRef(pop, cel, 'insignia', conquistada ? 'conquistada' : 'vazia');
       mioloInsignia(cel, ref, pop);                                        // v2 (18/09): a célula fica com o anel da cor dela; a referência pinta só o miolo
       const ic = porId[b.id]?.icone;
-      Popup.imagem(pop, 'insignia', conquistada && ic ? './ui/icones/' + ic + '.png' : null, cel);   // dghz_1..8 recortados do pacote Item (13/09): antes apontava pra ui/itens/ic_dghz_*, que nunca existiu — a insígnia ganha ficava vazia
+      imagemInsignia(pop, cel, conquistada, ic);   // dghz_1..8 recortados do pacote Item (13/09): antes apontava pra ui/itens/ic_dghz_*, que nunca existiu — a insígnia ganha ficava vazia
     });
   });
   const teto = tetoObed();
@@ -2880,11 +2892,11 @@ function encherTreinadorOutro(pop, O){
     ins.forEach((b, i) => {
       const cel = Popup.grupo(pop, 'insignia-' + (i + 1)); if (!cel) return;
       const ok = tem.has(b.id);
-      Popup.texto(pop, 'insignia-nome', tr(b.n).replace(/^(Badge|medalha) /i, ''), cel);
+      Popup.texto(pop, 'insignia-nome', tr(porId[b.id]?.nome || b.n).replace(/^(Badge|medalha) /i, ''), cel);
       const ref = Popup.estadoRef(pop, cel, 'insignia', ok ? 'conquistada' : 'vazia');
       mioloInsignia(cel, ref, pop);
       const ic = porId[b.id]?.icone;
-      Popup.imagem(pop, 'insignia', ok && ic ? './ui/icones/' + ic + '.png' : null, cel);
+      imagemInsignia(pop, cel, ok, ic);
     });
   });
   const teto = TETO_OBED[Math.min(8, tem.size)] ?? TETO_OBED[0];
