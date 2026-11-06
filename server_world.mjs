@@ -355,7 +355,18 @@ export function createWorld(h) {
     const now = Date.now();
     w.state = 'desmaiado'; w.hp = 0; w.until = now + FAINT_MS; w.status = null; fight.forget(w);
     toMap(map, { t: 'sestado', id: w.id, estado: 'desmaiado', ate: w.until, hp: 0 });
-    for (const [, d] of w.damage) if (now - d.at < XP_WINDOW_MS && d.ws?.readyState === 1) wilds.award(d.ws, w);
+    /* XP rule (as in the original): XP goes to whoever took 10% or more of its HP, or dealt the most damage. The rest are told why
+       they got none (Game settings → xpMinParte changes the 10%). */
+    const recentes = [...w.damage].filter(([, d]) => now - d.at < XP_WINDOW_MS);
+    const topo = recentes.reduce((m, [, d]) => Math.max(m, d.dealt || 0), 0);
+    const minParte = (v => Number.isFinite(v) && v >= 0 && v <= 1 ? v : 0.1)(+gameConfig()?.xpMinParte);
+    for (const [, d] of recentes) {
+      if (d.ws?.readyState !== 1) continue;
+      const parte = (d.dealt || 0) / (w.maxHp || 1);
+      if (parte >= minParte || (d.dealt || 0) >= topo) wilds.award(d.ws, w);
+      else send(d.ws, { t: 'sistema', texto: 'No XP from this one: your share of the damage was {p}%. XP goes to whoever took {min}% or more of its HP, or dealt the most damage.',
+        vars: { p: (Math.round(parte * 1000) / 10).toLocaleString('en-US'), min: Math.round(minParte * 100) } });
+    }
     if (onKO) {   // item drops (server_drops.mjs): each account's share of the damage, the top hitter, and the rank
       const L = [...w.damage].filter(([, d]) => now - d.at < XP_WINDOW_MS).sort((a, b) => b[1].dealt - a[1].dealt);
       const total = L.reduce((t, [, d]) => t + d.dealt, 0) || 1, S = species(w.dex);
