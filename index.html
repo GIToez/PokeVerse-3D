@@ -11377,7 +11377,7 @@ function fimTurno(vitoria, op = {}){
     else if (primeira){ ins.push(g.insignia.id); gravarLS('insignias', ins); liberarReserva(); }
     if (primeira && !ins.includes(g.insignia.id)) ins.push(g.insignia.id);   // contagem do aviso (com conta o espelho pode chegar depois)
     const ganho = doServidor?.premio?.dinheiro ?? (primeira ? g.dinheiro : Math.round(g.dinheiro / 2));
-    BattleUi.premio('+' + ganho + ' ' + I18n.t('Coins') + (primeira ? ' · ' + g.insignia.nome : ''));
+    BattleUi.premio('+' + ganho + ' ' + I18n.t('Coins') + (primeira ? ' · ' + g.insignia.nome : ''), primeira && g.insignia.icone ? './ui/icones/' + g.insignia.icone + '.png' : null);   // first win: the badge in the banner
     if (!comConta() && !doServidor) gravarLS('dinheiro', lerLS('dinheiro', 0) + ganho);
     const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
     n.falas = [g.vitoria[0]];
