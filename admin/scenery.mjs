@@ -118,13 +118,20 @@ function atualizarPivo() {
 }
 const transform = new TransformControls(camera, renderer.domElement);
 let posAntesArraste = null;
+const _eulerYaw = new THREE.Euler();
 transform.addEventListener('dragging-changed', e => {
   orbit.enabled = !e.value;
-  if (e.value) posAntesArraste = selPeca ? selPeca.pos.clone() : null;
+  if (e.value) posAntesArraste = selPeca ? estadoDe(selPeca) : null;
   else { if (selPeca && posAntesArraste) registrarMov(selPeca, posAntesArraste); posAntesArraste = null; }
 });
 transform.addEventListener('objectChange', () => {
   if (!selPeca) return;
+  if (transform.getMode() === 'rotate') {
+    const yaw = _eulerYaw.setFromQuaternion(proxy.quaternion, 'YXZ').y;   // o anel de tela (E) do gizmo inclina em X/Z: fica só o yaw
+    proxy.rotation.set(0, yaw, 0);
+    setRot(selPeca, THREE.MathUtils.radToDeg(yaw)); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+    return;
+  }
   let x = proxy.position.x * fx, y = proxy.position.y, z = proxy.position.z;   // de world pra coords de edição (bib: flipX)
   if (snap) { x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2; z = Math.round(z * 2) / 2; proxy.position.set(x * fx, y, z); }
   setPos(selPeca, x, y, z); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); atualizarCamposSel();
@@ -149,7 +156,17 @@ const raycaster = new THREE.Raycaster();
 const planoChao = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const _m4 = new THREE.Matrix4(), _T = new THREE.Matrix4();
 const marcarSujo = () => { sujo = true; $('sujo').hidden = false; };
-const matrizDe = (peca, local) => _m4.multiplyMatrices(_T.makeTranslation(fx * peca.pos.x, peca.pos.y, peca.pos.z), local);
+const _R = new THREE.Matrix4();
+// rotação da peça = graus em Y no espaço do MUNDO (igual ao jogo: T × Ry × local). bib: vai em obj.r; montado: no node.rotation.y
+const matrizDe = (peca, local) => _m4.multiplyMatrices(_T.makeTranslation(fx * peca.pos.x, peca.pos.y, peca.pos.z), _R.makeRotationY(THREE.MathUtils.degToRad(peca.rot || 0))).multiply(local);
+const normGraus = g => { g = Math.round((+g || 0) * 10) / 10; g = ((g % 360) + 360) % 360; return g > 180 ? g - 360 : g; };   // -180..180
+function setRot(peca, graus) {
+  const g = normGraus(graus);
+  peca.rot = g;
+  if (peca.obj) { const r = Math.round(g); if (r) peca.obj.r = ((r % 360) + 360) % 360; else delete peca.obj.r; }   // o jogo/servidor guardam graus inteiros 0..359
+  if (peca.node) peca.node.rotation.y = THREE.MathUtils.degToRad(g);
+}
+const estadoDe = peca => ({ p: peca.pos.clone(), r: peca.rot || 0 });
 function setPos(peca, x, y, z) {
   peca.pos.set(x, y, z);
   if (peca.obj) { peca.obj.x = x; peca.obj.y = y; peca.obj.z = z; }
@@ -165,18 +182,36 @@ function registrar(acao) {
   refazer = []; atualizarBotoesHist();
 }
 function registrarMov(peca, de) {
-  if (!de || de.equals(peca.pos)) return;
-  registrar({ t: 'mov', peca, de: de.clone(), para: peca.pos.clone() });
+  if (!de) return;
+  const para = estadoDe(peca);
+  if (de.p.equals(para.p) && de.r === para.r) return;
+  registrar({ t: 'mov', peca, de, para });
 }
 function limparHist() { historico = []; refazer = []; atualizarBotoesHist(); }
 function atualizarBotoesHist() {
   if ($('t-undo')) { $('t-undo').disabled = !historico.length; $('t-undo').title = 'Undo (Ctrl+Z)' + (historico.length ? ' · ' + historico.length + ' step(s)' : ''); }
   if ($('t-redo')) { $('t-redo').disabled = !refazer.length; $('t-redo').title = 'Redo (Ctrl+Y / Ctrl+Shift+Z)' + (refazer.length ? ' · ' + refazer.length + ' step(s)' : ''); }
 }
-function moverPara(peca, v) {
-  setPos(peca, v.x, v.y, v.z); atualizarInst(peca);
-  if (selPeca === peca) { proxy.position.set(fx * v.x, v.y, v.z); realcar(peca); atualizarCamposSel(); }
+function moverPara(peca, est) {
+  setPos(peca, est.p.x, est.p.y, est.p.z); setRot(peca, est.r); atualizarInst(peca);
+  if (selPeca === peca) { sincronizarProxy(); realcar(peca); atualizarCamposSel(); }
   else selecionar(peca);
+}
+function sincronizarProxy() {
+  if (!selPeca) return;
+  proxy.position.set(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z);
+  proxy.rotation.set(0, THREE.MathUtils.degToRad(selPeca.rot || 0), 0);
+}
+function girar(delta) {   // botões e tecla R
+  if (!selPeca || transform.dragging) return;
+  const de = estadoDe(selPeca);
+  setRot(selPeca, (selPeca.rot || 0) + delta); atualizarInst(selPeca); sincronizarProxy(); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+  registrarMov(selPeca, de);
+}
+function modoGizmo(m) {
+  transform.setMode(m);
+  transform.showX = m !== 'rotate'; transform.showZ = m !== 'rotate';   // rotação só em Y (o jogo não tem pitch/roll de peça)
+  $('t-mover').classList.toggle('on', m === 'translate'); $('t-girar').classList.toggle('on', m === 'rotate');
 }
 function inserirPeca(peca, idx) {
   if (peca.node) mapaNode.add(peca.node);
@@ -278,7 +313,7 @@ async function montarBiblioteca(nome) {
   for (const nomeL of ['areaEnv', 'ambiente', 'objetos']) for (const o of listas[nomeL]) {
     const obj = { ...o, n: o.n, x: +o.x || 0, y: +o.y || 0, z: +o.z || 0 };
     const k = chaveNome(obj.n); if (!nomeDoPrefab.has(k)) nomeDoPrefab.set(k, obj.n);
-    pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(k) || [], inst: [], obj, lista: nomeL });
+    pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), rot: normGraus(obj.r), nome: obj.n, mats: partes.get(k) || [], inst: [], obj, lista: nomeL });
   }
   try {
     const extra = await loader.loadAsync('/scenery/prop/library_extra.glb');
@@ -314,8 +349,8 @@ async function extraLamppost() {
       const r = await api('/admin/mapa-objetos?map=' + encodeURIComponent(mapaAtual));
       for (const o of (r.objetos || [])) {
         if (!/lamppost/i.test(o.n || '')) continue;
-        const obj = { n: 'prop/lamppost', x: +o.x || 0, y: +o.y || 0, z: +o.z || 0 };
-        pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: lista, inst: [], obj, lista: 'objetos' });
+        const obj = { n: 'prop/lamppost', x: +o.x || 0, y: +o.y || 0, z: +o.z || 0, ...(+o.r ? { r: +o.r } : {}) };
+        pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), rot: normGraus(obj.r), nome: obj.n, mats: lista, inst: [], obj, lista: 'objetos' });
       }
     }
     tipos = [{ id: k, nome: 'lamppost', criar: pos => criarBib(k, pos) }, ...tipos.filter(t => t.id !== k)];
@@ -327,7 +362,7 @@ function montarMontado() {
     node.updateMatrixWorld(true);
     const mats = []; let geo0 = null;
     node.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) { if (!geo0) geo0 = o.geometry; mats.push({ geo: o.geometry, mat: o.material, local: new THREE.Matrix4().copy(node.matrixWorld).invert().multiply(o.matrixWorld) }); } });
-    pecas.push({ pos: node.position.clone(), nome: node.name, mats, inst: [], node });
+    pecas.push({ pos: node.position.clone(), rot: normGraus(THREE.MathUtils.radToDeg(node.rotation.y)), nome: node.name, mats, inst: [], node });
     if (geo0 && !vistosTipo.has(geo0.uuid)) vistosTipo.set(geo0.uuid, node);
   }
   tipos = [...vistosTipo.entries()].map(([id, node]) => ({ id, nome: node.name, criar: pos => criarMont(node, pos) })).sort((a, b) => a.nome.localeCompare(b.nome));
@@ -358,7 +393,7 @@ function atualizarInst(peca) {
 // ── Seleção ──────────────────────────────────────────────────────────────────
 function selecionar(peca) {
   if (!peca) return;
-  selPeca = peca; proxy.position.set(fx * peca.pos.x, peca.pos.y, peca.pos.z); transform.attach(proxy); transform.setMode('translate'); realcar(peca);
+  selPeca = peca; sincronizarProxy(); transform.attach(proxy); realcar(peca);
   $('sem-sel').hidden = true; $('com-sel').hidden = false; atualizarCamposSel();
 }
 function deselecionar() { selPeca = null; transform.detach(); realcar(null); if ($('sem-sel')) { $('sem-sel').hidden = false; $('com-sel').hidden = true; } }
@@ -374,6 +409,7 @@ function atualizarCamposSel() {
   $('s-nome').textContent = rotuloPrefab(selPeca.nome);
   $('s-nome').title = selPeca.nome || '';
   $('s-x').value = +p.x.toFixed(3); $('s-y').value = +p.y.toFixed(3); $('s-z').value = +p.z.toFixed(3);
+  if (document.activeElement !== $('s-rot')) $('s-rot').value = +(selPeca.rot || 0).toFixed(1);
 }
 
 let down = null;
@@ -400,22 +436,24 @@ renderer.domElement.addEventListener('dblclick', ev => {
 });
 
 // ── Operações ──────────────────────────────────────────────────────────────────
-function criarBib(chave, ponto) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
+function criarBib(chave, ponto, rot = 0) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
   const obj = { n: nomeDoPrefab.get(chave) || chave, x: +(fx * ponto.x).toFixed(3), y: +ponto.y.toFixed(3), z: +ponto.z.toFixed(3) };
   const peca = { pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(chave) || [], inst: [], obj, lista: 'objetos' };
+  setRot(peca, rot);
   pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
 }
-function criarMont(nodeExemplo, ponto) {
-  const node = nodeExemplo.clone(true); node.position.copy(ponto); mapaNode.add(node); node.updateMatrixWorld(true);
+function criarMont(nodeExemplo, ponto, rot = 0) {
+  const node = nodeExemplo.clone(true); node.position.copy(ponto); node.rotation.y = 0; mapaNode.add(node); node.updateMatrixWorld(true);
   const mats = []; node.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) mats.push({ geo: o.geometry, mat: o.material, local: new THREE.Matrix4().copy(node.matrixWorld).invert().multiply(o.matrixWorld) }); });
   const peca = { pos: node.position.clone(), nome: node.name, mats, inst: [], node };
+  setRot(peca, rot);
   pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
 }
 function duplicar() {
   if (!selPeca) return;
   const p = selPeca.pos;
-  if (selPeca.obj) criarBib(chaveNome(selPeca.obj.n), new THREE.Vector3(fx * (p.x + 1.5 * fx), p.y, p.z));
-  else criarMont(selPeca.node, new THREE.Vector3(p.x + 1.5, p.y, p.z));
+  if (selPeca.obj) criarBib(chaveNome(selPeca.obj.n), new THREE.Vector3(fx * (p.x + 1.5 * fx), p.y, p.z), selPeca.rot);
+  else criarMont(selPeca.node, new THREE.Vector3(p.x + 1.5, p.y, p.z), selPeca.rot);
 }
 function deletar() {
   if (!selPeca) return;
@@ -520,16 +558,23 @@ $('t-foco').onclick = enquadrar;
 $('t-pivo-up').onclick = () => subirPivo(passoPivo());
 $('t-pivo-down').onclick = () => subirPivo(-passoPivo());
 $('t-pivo-chao').onclick = pivoNoChao;
-$('t-snap').onchange = e => { snap = e.target.checked; };
+$('t-snap').onchange = e => { snap = e.target.checked; transform.setRotationSnap(snap ? THREE.MathUtils.degToRad(15) : null); };
+$('t-mover').onclick = () => modoGizmo('translate');
+$('t-girar').onclick = () => modoGizmo('rotate');
+$('s-rot-esq').onclick = () => girar(90);
+$('s-rot-dir').onclick = () => girar(-90);
 $('s-var').onclick = () => toast('Rotation is baked into the piece itself: use the palette to place the variant you want.');
 $('s-dup').onclick = duplicar;
 $('s-del').onclick = deletar;
 let posAntesCampo = null;
 for (const k of ['x', 'y', 'z']) {
-  $('s-' + k).addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: selPeca.pos.clone() } : null; });
-  $('s-' + k).addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = selPeca.pos.clone(); } });
+  $('s-' + k).addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: estadoDe(selPeca) } : null; });
+  $('s-' + k).addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = estadoDe(selPeca); } });
 }
-for (const k of ['x', 'y', 'z']) $('s-' + k).addEventListener('input', () => { if (!selPeca) return; const p = selPeca.pos; setPos(selPeca, k === 'x' ? (+$('s-x').value || 0) : p.x, k === 'y' ? (+$('s-y').value || 0) : p.y, k === 'z' ? (+$('s-z').value || 0) : p.z); proxy.position.set(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
+$('s-rot').addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: estadoDe(selPeca) } : null; });
+$('s-rot').addEventListener('input', () => { if (!selPeca) return; setRot(selPeca, +$('s-rot').value || 0); sincronizarProxy(); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
+$('s-rot').addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = estadoDe(selPeca); } });
+for (const k of ['x', 'y', 'z']) $('s-' + k).addEventListener('input', () => { if (!selPeca) return; const p = selPeca.pos; setPos(selPeca, k === 'x' ? (+$('s-x').value || 0) : p.x, k === 'y' ? (+$('s-y').value || 0) : p.y, k === 'z' ? (+$('s-z').value || 0) : p.z); sincronizarProxy(); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
 $('pal-busca').addEventListener('input', renderPaleta);
 $('b-salvar').onclick = salvar;
 $('b-recarregar').onclick = async () => { if (sujo && !confirm('Discard unsaved changes?')) return; await carregarMapa(mapaAtual, mapaRotulo); };
@@ -550,6 +595,8 @@ addEventListener('keydown', e => {
   if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.key === 'Delete' || e.key === 'Backspace') deletar();
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
+  else if (k === 'r' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); girar(e.shiftKey ? -90 : 90); }
+  else if (k === 't' && !e.ctrlKey && !e.metaKey) modoGizmo(transform.getMode() === 'rotate' ? 'translate' : 'rotate');
   else if (e.key === 'f' || e.key === 'F') enquadrar();
   else if (e.key === 'g' || e.key === 'G') { if (selPeca) irPivot(new THREE.Vector3(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z)); }
   else if ((e.key === 'd' || e.key === 'D') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); duplicar(); }

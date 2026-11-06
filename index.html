@@ -1831,6 +1831,21 @@ function instanciarBiblioteca(g, dados){
     });
     partes.set(chaveNome(p.name), lista);
   }
+  /* ROTAÇÃO (editor de cenário 3D): colocação com `r` (graus em torno de Y, no espaço do MUNDO, já com o flipX) usa uma VARIANTE
+     girada do prefab, "nome@graus": as mesmas malhas com local = Ry × local. Caixa, piso, parede e porta saem da variante, então as
+     regras abaixo (que só conhecem translação) continuam valendo. Os testes por NOME seguem usando `chaveNome(o.n)`. */
+  const chaveRot = o => { const n = chaveNome(o.n), r = ((Math.round(+o.r || 0) % 360) + 360) % 360; return r ? n + '@' + r : n; };
+  {
+    const Ry = new THREE.Matrix4();
+    for (const o of [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]){
+      const k = chaveRot(o);
+      if (partes.has(k)) continue;
+      const base = partes.get(chaveNome(o.n));
+      if (!base) continue;
+      Ry.makeRotationY(THREE.MathUtils.degToRad(+k.slice(k.lastIndexOf('@') + 1)));
+      partes.set(k, base.map(pt => ({ ...pt, local: new THREE.Matrix4().multiplyMatrices(Ry, pt.local) })));
+    }
+  }
   // O que é chão (recebe o raio de altura) e o que é obstáculo (bloqueia a
   // caminhada) sai do nome e do tamanho do prefab, como no mundo.html: baixo é
   // piso, alto é parede. Grama alta e flor são altas mas atravessáveis.
@@ -1922,7 +1937,7 @@ function instanciarBiblioteca(g, dados){
   let pontaVazia = 0;                             // 20/09: células de borda de casca (portão/parede) sem malha nenhuma em cima — sobra da caixa, ver a regra lá embaixo
   for (const o of colocacoes){                     // 1ª passada: contar e rasterizar
     const nome = chaveNome(o.n);
-    const lista = partes.get(nome);
+    const lista = partes.get(chaveRot(o));
     if (!lista){ semPrefab.set(o.n, (semPrefab.get(o.n) || 0) + 1); continue; }
     nColocadas++;
     const bl = chaveBloco(flipX * o.x, o.z);
@@ -1935,7 +1950,7 @@ function instanciarBiblioteca(g, dados){
       gr.nomes.add(nome);
       if (pt.agua) gr.aguaParte = true;
     }
-    const cx = caixaDe.get(nome);
+    const cx = caixaDe.get(chaveRot(o));
     const alto = cx.max.y - cx.min.y;
     if (PECAS_PLATO.test(nome)){                                          // platôs (18/09): chão do platô, patamar e escadinha, pela mesma pegada da caixa
       const s = /outstair_04$/.test(nome) ? escadaPlato : chaoPlato;
@@ -2293,7 +2308,7 @@ function instanciarBiblioteca(g, dados){
   };
   const T = new THREE.Matrix4(), M = new THREE.Matrix4();
   for (const o of colocacoes){                     // 2ª passada: matrizes
-    const lista = partes.get(chaveNome(o.n));
+    const lista = partes.get(chaveRot(o));
     if (!lista) continue;
     T.makeTranslation(flipX * o.x, o.y, o.z);
     const bl = chaveBloco(flipX * o.x, o.z);
