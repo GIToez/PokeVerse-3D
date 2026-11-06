@@ -7,10 +7,10 @@ import { TIPOS_PASSO } from '/admin/schemas_f2.mjs';
 
 /** Que campos cada tipo de passo usa (além de texto e onde) — os mesmos que o missions.mjs confere. */
 const CAMPOS_PASSO = {
-  falar: ['cfg', 'fala'], entregar: ['cfg', 'item', 'n', 'fala'], item: ['item', 'n'], ir: ['area'], capturar: ['n', 'dex'],
+  falar: ['cfg', 'fala'], entregar: ['cfg', 'item', 'n', 'fala'], item: ['item', 'n'], ir: ['area'], capturar: ['n', 'dex'], doar: ['cfg', 'dex', 'n', 'fala'],
   derrotar: ['selvagem', 'n', 'area', 'cfg', 'dex'], nivel: ['lv'], inicial: [], curar: ['cena', 'cfg'], insignia: ['n'],
 };
-const PADRAO_PASSO = { capturar: { n: 1 }, derrotar: { selvagem: true, n: 1 }, nivel: { lv: 10 }, insignia: { n: 1 } };
+const PADRAO_PASSO = { capturar: { n: 1 }, doar: { n: 1 }, derrotar: { selvagem: true, n: 1 }, nivel: { lv: 10 }, insignia: { n: 1 } };
 
 export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) {
   const [itens, { areas, cenas }, npcs] = await Promise.all([ref.itens(), ref.areas(), ref.npcs()]);

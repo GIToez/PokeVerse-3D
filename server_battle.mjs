@@ -494,7 +494,8 @@ export function criarBatalha(ctx) {
       if (venceu) {
         s.dinheiro = (s.dinheiro || 0) + g;
         if (!s.treinadorPago.some((k) => String(k).split('@')[0] === bat.meta.treinador)) s.treinadorPago.push(bat.meta.chave || bat.meta.treinador);
-        const r = ctx.aplicarEvento?.(acc.u, { tipo: 'treinador', cfg: +bat.meta.treinador });
+        const area = [...(ctx.socketsDe(acc.u) || [])].map((w) => w._areaId).find((a) => a != null) ?? null;   // area-only steps ("beat 2 trainers on Route 2") need it
+        const r = ctx.aplicarEvento?.(acc.u, { tipo: 'treinador', cfg: +bat.meta.treinador, area, fonte: 'luta' });
         if (r) for (const w of ctx.socketsDe(acc.u)) ctx.enviarMissao(w, r);
       } else if (!extra.desistiu) {
         const perda = Math.min(s.dinheiro || 0, Math.round(g / 2));

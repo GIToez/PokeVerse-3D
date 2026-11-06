@@ -57,7 +57,8 @@ const VERSAO_REDE = 22;   // 22: a same-map door is stored, so a refresh stays o
 
 // ── Missões ──────────────────────────────────────────────────────────────────
 const MISSOES = {};       // id → missao (main story)
-const LATERAIS = {};      // id → side quest
+const LATERAIS = {};
+const DOAR_LENDARIOS = new Set();   // species that can never be handed over (missions.json → doar.lendarios)      // id → side quest
 const MISSAO_SEQ = [];    // ids na ordem certa
 /* Fase 2: data/missions.json é a fonte das missões (o painel admin edita); relido quando o arquivo muda (mtime), então salvar no
    painel vale no próximo evento, sem reiniciar. Arquivo quebrado = fica com as missões que já estavam carregadas. */
@@ -76,6 +77,8 @@ function carregarMissoes() {
       for (const m of cap.missoes || []) { MISSOES[m.id] = m; MISSAO_SEQ.push(m.id); }
     for (const g of md.laterais || [])
       for (const m of g.missoes || []) { LATERAIS[m.id] = m; }
+    DOAR_LENDARIOS.clear();
+    for (const d of md.doar?.lendarios || []) DOAR_LENDARIOS.add(Number(d));
     console.log('Missions loaded:', MISSAO_SEQ.length, 'side quests:', Object.keys(LATERAIS).length);
   } catch(e) { console.warn('Missions not loaded:', e.message); }
 }
@@ -106,9 +109,19 @@ function cfgOk(alvo, cfg) {
   if (Array.isArray(alvo)) return alvo.map(String).includes(String(cfg));
   return String(alvo) === String(cfg);
 }
+/** The next story mission: the first one not done AFTER the furthest one done, so a mission the panel inserted earlier in
+ *  the story (Nov 5: chapters 3–4 rewritten, 301–302 are new) doesn't send a veteran back; a brand-new save starts at the top. */
 function proximaMissao(feitas) {
-  for (const id of MISSAO_SEQ) if (!feitas.includes(id)) return id;
+  const f = new Set((feitas || []).map(String));
+  let ult = -1;
+  MISSAO_SEQ.forEach((id, i) => { if (f.has(String(id))) ult = i; });
+  for (let i = ult + 1; i < MISSAO_SEQ.length; i++) if (!f.has(String(MISSAO_SEQ[i]))) return MISSAO_SEQ[i];
   return null;
+}
+/** A trainer win fits a "defeat trainers" step: the named trainer(s) when the step has cfg, any trainer in the step's area otherwise. */
+function treinadorOk(p, ev) {
+  if (p.cfg != null || p.cfgs != null) return cfgOk(p.cfgs || p.cfg, ev.cfg);
+  return !p.area || (ev.area != null && String(ev.area) === String(p.area));
 }
 function casarPasso(p, ev) {
   if (!p || !ev) return 'none';
@@ -122,8 +135,10 @@ function casarPasso(p, ev) {
       return ev.tipo === 'captura' && (!p.dex || p.dex.includes(ev.dex)) ? 'count' : 'none';
     case 'derrotar':
       if (p.selvagem && ev.tipo === 'selvagem' && (!p.dex || p.dex.includes(ev.dex)) && (!p.area || String(ev.area) === String(p.area))) return 'count';
-      if (!p.selvagem && ev.tipo === 'treinador' && cfgOk(p.cfg, ev.cfg)) return 'done';
+      if (!p.selvagem && ev.tipo === 'treinador' && treinadorOk(p, ev)) return (p.n || 1) > 1 ? 'count' : 'done';
       return 'none';
+    case 'doar':
+      return ev.tipo === 'doar' && cfgOk(p.cfgs || p.cfg, ev.cfg) && (!p.dex || p.dex.map(Number).includes(Number(ev.dex))) ? 'count' : 'none';
     case 'nivel':
       return ev.tipo === 'nivel' && ev.lv >= p.lv ? 'done' : 'none';
     case 'inicial':
@@ -154,6 +169,8 @@ function aceitarLateral(u, id) {
   if (!requisitosLateralOk(est, m)) return { ok: false, erro: 'This side quest is still locked.' };
   if (Object.keys(L.ativas).length >= 10) return { ok: false, erro: 'Too many active side quests.' };
   L.ativas[m.id] = { passo: 0, prog: {} };
+  const p0 = m.passos?.[0];   // you accept by talking to the giver: their own "talk to me" opening step is done right there
+  if (p0 && p0.tipo === 'falar' && m.npc != null && cfgOk(p0.cfgs || p0.cfg, m.npc)) L.ativas[m.id].passo = m.passos.length > 1 ? 1 : 0;
   salvarMissao(u, est);
   return { ok: true, estado: est };
 }
@@ -184,9 +201,50 @@ function aplicarLaterais(u, est, ev) {
   }
   return passoFeito || concluida ? { passoFeito, concluida } : null;
 }
+/** HAND OVER (`doar` step): the player gives Pokémon to the NPC of an active step. The server checks the step, the species,
+ *  that the Pokémon are theirs, not legendary/shiny/locked, not the last one, and that they stand near the NPC; then takes
+ *  them out of the team/Box and counts one step event per Pokémon. → { estado, uids, resultado } | { erro } */
+function doarPokemon(u, missaoId, uids) {
+  const c = contas[u]; if (!c?.save) return { erro: 'No save.' };
+  const est = missaoEstadoDe(u);
+  let p = null, feitos = 0;
+  const lat = est.laterais.ativas[missaoId] || est.laterais.ativas[String(missaoId)];
+  if (lat) { const m = LATERAIS[+missaoId]; p = m?.passos?.[lat.passo || 0]; feitos = lat.prog?.[m?.id + ':' + (lat.passo || 0)] || 0; }
+  else if (String(est.atual) === String(missaoId)) { p = MISSOES[est.atual]?.passos?.[est.passo]; feitos = est.prog?.[est.atual + ':' + est.passo] || 0; }
+  if (!p || p.tipo !== 'doar') return { erro: 'This mission is not asking for a Pokémon right now.' };
+  const lista = [...new Set((Array.isArray(uids) ? uids : [uids]).map(String))].filter(x => /^[\w-]{1,40}$/.test(x));
+  const falta = Math.max(0, (p.n || 1) - feitos);
+  if (!lista.length) return { erro: 'Pick a Pokémon.' };
+  if (lista.length > falta) return { erro: 'They only asked for ' + falta + '.' };
+  const lend = DOAR_LENDARIOS;
+  const s = c.save, time = s.time || [], caixa = s.caixa || [];
+  const achar = id => time.find(x => String(x?.uid) === id) || caixa.find(x => String(x?.uid) === id);
+  for (const id of lista) {
+    const e = achar(id);
+    if (!e) return { erro: "That Pokémon isn't yours." };
+    if (!(p.dex || []).map(Number).includes(Number(e.dex))) return { erro: "That's not the Pokémon they asked for." };
+    if (lend.has(Number(e.dex))) return { erro: 'Legendary Pokémon cannot be handed over.' };
+    if (e.shiny) return { erro: 'Shiny Pokémon cannot be handed over.' };
+    if (e.travado) return { erro: 'This Pokémon is locked: unlock it first.' };
+  }
+  if (time.length + caixa.length - lista.length < 1 || time.filter(x => !lista.includes(String(x?.uid))).length < 1) return { erro: "You can't hand over your last Pokémon on the team." };
+  const alvo = [].concat(p.cfgs || p.cfg || []).map(Number);
+  s.time = time.filter(x => !lista.includes(String(x?.uid)));
+  s.caixa = caixa.filter(x => !lista.includes(String(x?.uid)));
+  let resultado = null;
+  for (const id of lista) {
+    const e = time.find(x => String(x?.uid) === id) || caixa.find(x => String(x?.uid) === id);
+    resultado = aplicarEvento(u, { tipo: 'doar', cfg: alvo[0], dex: Number(e.dex) }) || resultado;
+  }
+  c.rev = (c.rev || 0) + 1;
+  salvarContas();
+  return { estado: missaoEstadoDe(u), uids: lista, resultado };
+}
 /** Aplica um evento ao estado de missões do usuário; devolve { estado, passoFeito, concluida } ou null. */
+const lutaVenceu = new Map();   // u → { cfg, t }: a trainer win the server's own battle already counted (the client then reports it too)
 function aplicarEvento(u, ev) {
   if (!contas[u]) return null;
+  if (ev?.tipo === 'treinador' && ev.fonte === 'luta') lutaVenceu.set(u, { cfg: String(ev.cfg), t: Date.now() });
   const est = missaoEstadoDe(u);
   const m = est.atual ? MISSOES[est.atual] : null;
   const p = m?.passos?.[est.passo];
@@ -232,7 +290,18 @@ function aplicarEvento(u, ev) {
             if (est.prog[chave] >= (p.n || 1)) resultado = concluirPasso();
             else { salvarMissao(u, est); resultado = { estado: est, passoFeito: false, concluida: null }; }
           }
-          if (!p.selvagem && ev.tipo === 'treinador' && cfgOk(p.cfg, ev.cfg)) resultado = concluirPasso();
+          if (!p.selvagem && ev.tipo === 'treinador' && treinadorOk(p, ev)) {
+            est.prog[chave] = (est.prog[chave] || 0) + 1;
+            if (est.prog[chave] >= (p.n || 1)) resultado = concluirPasso();
+            else { salvarMissao(u, est); resultado = { estado: est, passoFeito: false, concluida: null }; }
+          }
+          break;
+        case 'doar':
+          if (casarPasso(p, ev) === 'count') {
+            est.prog[chave] = (est.prog[chave] || 0) + 1;
+            if (est.prog[chave] >= (p.n || 1)) resultado = concluirPasso();
+            else { salvarMissao(u, est); resultado = { estado: est, passoFeito: false, concluida: null }; }
+          }
           break;
         case 'nivel':
           if (ev.tipo === 'nivel' && ev.lv >= p.lv) resultado = concluirPasso();
@@ -1838,6 +1907,8 @@ wss.on('connection', ws => {
       }
       case 'missao_treinador': {
         const uT = sessoes.get(ws._info?.token) || null;
+        const jaContou = uT && lutaVenceu.get(uT);
+        if (jaContou && jaContou.cfg === String(m.cfg) && Date.now() - jaContou.t < 120e3) { lutaVenceu.delete(uT); break; }   // the server battle already counted this win
         if (uT) enviarMissao(ws, aplicarEvento(uT, { tipo: 'treinador', cfg: m.cfg, area: m.area }));
         break;
       }
@@ -1871,11 +1942,22 @@ wss.on('connection', ws => {
         if (uIg) enviarMissao(ws, aplicarEvento(uIg, { tipo: 'insignia', id: m.id, numero: m.numero }));
         break;
       }
+      case 'missao_doar': {   // hand Pokémon over to an NPC for a `doar` step (side_quests_ui.mjs → 'Hand over a Pokémon')
+        const uD = sessoes.get(ws._info?.token) || null;
+        if (!uD) break;
+        const rD = doarPokemon(uD, m.missao, m.uids);
+        if (rD.erro) { enviar(ws, { t: 'missao_erro', op: 'doar', erro: rD.erro }); break; }
+        const cD = contas[uD];
+        for (const w of socketsDe(uD)) enviar(w, { t: 'save', save: cD.save, rev: cD.rev });
+        enviar(ws, { t: 'missao', op: 'doar', estado: rD.estado, uids: rD.uids, passoFeito: !!rD.resultado?.passoFeito && !rD.resultado?.concluida });
+        if (rD.resultado?.concluida) enviarMissao(ws, rD.resultado);
+        break;
+      }
       case 'missao_aceitar': {
         const uAc = sessoes.get(ws._info?.token) || null;
         if (!uAc) break;
         const rAc = aceitarLateral(uAc, m.id);
-        enviar(ws, { t: 'missao', estado: rAc.estado || missaoEstadoDe(uAc), aceitou: rAc.ok ? m.id : null, erro: rAc.erro || null, nome: (LATERAIS[m.id] || LATERAIS[+m.id])?.nome || null });
+        enviar(ws, { t: 'missao', op: rAc.ok ? 'aceitar' : undefined, estado: rAc.estado || missaoEstadoDe(uAc), aceitou: rAc.ok ? m.id : null, erro: rAc.erro || null, nome: (LATERAIS[m.id] || LATERAIS[+m.id])?.nome || null });
         break;
       }
 

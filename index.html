@@ -232,6 +232,7 @@ import * as Gas from './gas.mjs';           // ghost gas around Gastly (Nov 5)
 import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
 import * as Cutscene from './cutscene.mjs';
 import * as BattleUi from './battle_ui.mjs';
+import * as SecUi from './side_quests_ui.mjs';
 import * as HuntUi from './hunt_ui.mjs';     // hunt bonus line + pool (server_hunt.mjs)   // v2 battle pieces (the challenge card; more to come)  // story cutscenes played from public/data/cutscenes/*.json (?intro2=1: the new Oak opening preview)
 import * as Diretor from './director.mjs';       // modo diretor (?diretor=1): monta a cena e grava com o OBS
 import * as Captura from './capture.mjs';       // modo captura (?captura=1): cena de TikTok jogando de verdade, selvagens escolhidos
@@ -8884,6 +8885,19 @@ async function mostrarFala(quem, linhas, dono = null, { semTempo = false } = {})
     }
   } finally { caixa.hidden = true; falando = null; pularFala = null; }
 }
+/* HAND OVER (Nov 5): the server took these Pokémon out of the account (missao_doar); the lists here follow, and the NPC says thanks */
+let doarNpc = null;
+function tirarDoados(uids, falaDoar){
+  const fora = new Set((uids || []).map(String));
+  if (!fora.size) return;
+  const antes = jogo.time.length;
+  jogo.time = (jogo.time || []).filter(e => !fora.has(String(e?.uid)));
+  if (jogo.time.length !== antes){ gravarLS('time', jogo.time); const i = membroAtivo(); if (i >= 0) definirParceiro(i); pintarTime(true); }
+  const cx = lerLS('caixa', []) || [], cx2 = cx.filter(e => !fora.has(String(e?.uid)));
+  if (cx2.length !== cx.length) gravarLS('caixa', cx2);
+  if (falaDoar?.fala) mostrarFala(falaDoar.npc.nome, Array.isArray(falaDoar.fala) ? falaDoar.fala : [falaDoar.fala], falaDoar.npc);
+  doarNpc = null;
+}
 async function falarCom(n){
   if (falando) { pularFala?.(); return; }
   const a = jogo.ash; a.alvoX = null;
@@ -8916,6 +8930,11 @@ async function falarCom(n){
   try { await mostrarFala(n.nome, linhasFala, n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
   if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });         // passo 5: quem marca o passo é o SERVIDOR (ele confere que você está do lado do NPC)
+  if (jogo.missoesOk && comConta() && !n.placa){                          // a side quest this NPC gives, or a Pokémon they asked for: the v2 windows take over
+    if (Missoes.passoComNpc(n.cfg, 'doar')) doarNpc = n;
+    if (SecUi.aoFalar({ cfg: n.cfg, nome: n.nome })) return;
+    doarNpc = null;
+  }
   if (n.role === 'safari' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
   else if (+n.cfg === 2158801) Menus.abrirBalcaoTm(n.cfg).then(ok => { if (!ok) TmCounter.abrir(); });   // Celadon Department Store 2F: the TM counter (tm_ui.mjs)
   else if (n.role === 'heal') curarTime(n);                                // Nurse Joy heals the team after her line
@@ -9828,15 +9847,18 @@ if (jogo.ash){
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   Rede.instalar({ jogo, cena, mapa: NOME, raidR01: RaidR01, climaTeste: () => (Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff') && (clima.forcado || Relogio.forcada?.() != null) ? (clima.nome || 'clear') : undefined,   /* staff testing /weather or /time: battles use that weather (server_weather.mjs) */ efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+    missaoRecusada: m => SecUi.receber(m),                                // a hand-over / accept the server refused: the open window says why
     missao: m => {                                                        // passo 5: o andamento veio do servidor
+      const falaDoar = m.op === 'doar' && doarNpc ? { npc: doarNpc, fala: Missoes.passoComNpc(doarNpc.cfg, 'doar')?.passo?.fala } : null;
       Missoes.aplicarDoServidor(m.estado);
+      if (m.op){ SecUi.receber(m); if (m.op === 'doar') tirarDoados(m.uids, falaDoar); }
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
       if (m.recompensa){                                                  // 05/11: o servidor paga na conclusão (a bolsa nova já veio em m.bolsa, aplicada pela rede)
         const r = m.recompensa, partes = [r.dinheiro ? r.dinheiro + ' ' + I18n.t('Coins') : null, ...Object.entries({ ...(r.itens || {}), ...(r.bolas || {}) }).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n), r.exp ? r.exp + ' XP' : null].filter(Boolean);   // a XP chega em seguida como `wild_exp` (aplicarWildExp)
         if (partes.length) Chat.sistema('🎁 Reward: ' + partes.join(', ') + '.');
         Som.tocar('ui/sound_keyitemget', { volume: .7, prio: true });
       }
-      else if (m.passoFeito) Chat.sistema('✔ Step complete.');
+      else if (m.passoFeito && m.op !== 'doar') Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       /* v2: the duel card (Battle accepts it, like typing /battle <name>); the chat line stays as the fallback and the record */
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
@@ -9920,6 +9942,11 @@ if (jogo.ash){
     },
     pintar: () => atualizarMissao(),
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
+  /* v2 side-quest windows (Nov 5): the offer card when a quest giver is talked to, and "Hand over a Pokémon" for `doar` steps */
+  if (!Fairy && !INTRO) SecUi.instalar({ missoes: Missoes, comConta, enviar: m => Rede.enviar(m), Chat: { sistemaCru: t => Chat.sistema(t) }, Som, nomeItem: id => ITENS_NOME[id] || null,
+    areaAtual: () => areaInteriorVisitada ?? areaAtual(), repintar: () => atualizarMissao(),
+    time: () => { const k = membroAtivo(); return (jogo.time || []).map((e, i) => (i === k ? { ...e, seguindo: true } : e)); },
+    caixa: () => lerLS('caixa', []) || [] });
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)

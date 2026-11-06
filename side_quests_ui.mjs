@@ -837,6 +837,7 @@ const ROTULO_MOTIVO = {
   lendario: 'LEGENDARY',
   especie: 'OTHER SPECIES',
   semDados: 'CLOSED',
+  seguindo: 'PARTNER',
 };
 function prepararEntrega(b) {
   const d = Popup.grupo(b, 'lista-pokemon');

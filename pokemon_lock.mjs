@@ -31,6 +31,7 @@ export const MOTIVOS = {
   ocupado: 'This Pokémon is in a trade.',
   semDados: 'Delivery is unavailable right now. Try again later.',
   motivo: "That exit doesn't exist.",
+  seguindo: 'This one is out walking with you: switch partners first.',
 };
 export const TEXTO_TRAVADO = {
   doar: 'This Pokémon is locked: unlock it before delivering.',
@@ -83,6 +84,7 @@ export function podeSair(a, b) {
   if (!SAIDAS.includes(b)) return recusa('motivo');
   if (!a || typeof a !== 'object' || a === Object.prototype) return recusa('naoEhSeu');
   if (b === 'doar') {
+    if (a.seguindo) return recusa('seguindo');
     if (!LENDARIOS) return recusa('semDados');
     if (LENDARIOS.has(num(a.dex))) return recusa('lendario');
     if (shiny(a)) return recusa('shiny');

@@ -59,6 +59,7 @@ export const TIPOS_PASSO = {
   insignia: 'Have N badges',
   entregar: 'Deliver an item to an NPC',
   item:     'Have an item in the bag',
+  doar:     'Hand Pokémon over to an NPC',
 };
 const listaInt = (v, min, max, tam = 50) => Array.isArray(v) && v.length >= 1 && v.length <= tam && v.every(n => inteiro(n, min, max));
 const falas = v => Array.isArray(v) && v.length <= 12 && v.every(s => typeof s === 'string' && s.length <= 400);
@@ -81,6 +82,7 @@ function validarPasso(p) {
     case 'falar': if (p.cfg == null && p.cfgs == null) return 'talk: say which NPC (cfg)'; break;
     case 'entregar': if (p.cfg == null || p.item == null) return 'deliver: needs the NPC (cfg) and the item'; break;
     case 'item': if (p.item == null) return 'item: say which item'; break;
+    case 'doar': if ((p.cfg == null && p.cfgs == null) || !p.dex) return 'hand over: needs the NPC (cfg) and the species (dex)'; break;
     case 'ir': if (p.area == null) return 'go: say which area'; break;
     case 'nivel': if (!inteiro(p.lv, 1, 100)) return 'level: "lv" from 1 to 100'; break;
     case 'insignia': if (!inteiro(p.n, 1, 99)) return 'badges: "n" from 1 to 99'; break;

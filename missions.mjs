@@ -141,6 +141,24 @@ function concluirPassoLateral(T){
   } else gravar();
   ctx.pintar?.();
 }
+/* ---------------------------------------------------------------- v2 side-quest windows (side_quests_ui.mjs)
+   The offer card, the "Hand over a Pokémon" picker and the board call these (the names the v2 module expects). */
+export const TETO_SECUNDARIAS = 10;
+export const secundarias = () => laterais();
+export const secundariasDoNpc = cfg => lateraisDoNpc(cfg);
+export const secundariaPorId = id => lateralPorId(id);
+export const secundariaFeita = id => estadoLateral(id) === 'feita';
+export const dadoDoar = () => dados?.doar || null;
+/** The active step (story or side quest) of type `tipo` that points at this NPC → { missao, passo, feitos } | null. */
+export function passoComNpc(cfg, tipo){
+  const p = passoAtual(), m = ativa();
+  if (m && p && p.tipo === tipo && cfgAlvo(p.cfgs || p.cfg, cfg)) return { missao: m, passo: p, feitos: estado.prog[estado.atual + ':' + estado.passo] || 0 };
+  for (const T of trilhasLaterais()){
+    const q = T.m.passos[T.passo];
+    if (q && q.tipo === tipo && cfgAlvo(q.cfgs || q.cfg, cfg)) return { missao: T.m, passo: q, feitos: T.prog[T.id + ':' + T.passo] || 0 };
+  }
+  return null;
+}
 export function oferecerSeNpc(cfg){
   const list = lateraisDoNpc(cfg);
   if (!list.length || document.querySelector('.sec-oferta')) return false;
@@ -313,6 +331,7 @@ const isHealer = role => role === 'heal' || role === 'cura' || String(role).toLo
  *  orange `?` = turn in an item, cyan `?` = heal, red `!` = trainer to beat, green `?` = talk later in this quest. */
 export function marcaPara(cfg, { role = '', trainer = false } = {}){
   const p = passoAtual();
+  if (p && p.tipo === 'doar' && cfgAlvo(p.cfgs || p.cfg, cfg)) return { sim: '?', cor: '#ff9f43' };
   if (p && (p.tipo === 'falar' || p.tipo === 'entregar') && cfgAlvo(p.cfgs || p.cfg, cfg)){
     if (p.tipo === 'entregar') return { sim: '?', cor: '#ff9f43' };
     const m = ativa();
@@ -330,14 +349,14 @@ export function marcaPara(cfg, { role = '', trainer = false } = {}){
   }
   for (const T of trilhasLaterais()){
     const q = T.m.passos[T.passo];
-    if (q && (q.tipo === 'falar' || q.tipo === 'entregar') && cfgAlvo(q.cfgs || q.cfg, cfg)) return { sim: q.tipo === 'entregar' ? '?' : '!', cor: '#c9a24a' };
+    if (q && (q.tipo === 'falar' || q.tipo === 'entregar' || q.tipo === 'doar') && cfgAlvo(q.cfgs || q.cfg, cfg)) return { sim: q.tipo === 'falar' ? '!' : '?', cor: '#c9a24a' };
   }
   if (lateraisDoNpc(cfg).length) return { sim: '!', cor: '#c9a24a' };
   return null;
 }
 export function falaPara(cfg){
   const p = passoAtual();
-  if (p?.fala){
+  if (p?.fala && p.tipo !== 'doar'){
     const alvo = p.cfgs || p.cfg;
     if (alvo != null){
       const ok = Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
@@ -346,7 +365,7 @@ export function falaPara(cfg){
   }
   for (const T of trilhasLaterais()){
     const q = T.m.passos[T.passo];
-    if (!q?.fala) continue;
+    if (!q?.fala || q.tipo === 'doar') continue;
     const alvo = q.cfgs || q.cfg; if (alvo == null) continue;
     const ok = Array.isArray(alvo) ? alvo.map(String).includes(String(cfg)) : String(alvo) === String(cfg);
     if (ok) return Array.isArray(q.fala) ? q.fala : [q.fala];
