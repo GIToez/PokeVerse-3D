@@ -1,0 +1,34 @@
+[
+ {
+  "id": "medalhao30",
+  "item": 900170,
+  "qtd": 1,
+  "preco": 200,
+  "nome": "Medallion · 30 days",
+  "aVenda": true
+ },
+ {
+  "id": "medalhao60",
+  "item": 900171,
+  "qtd": 1,
+  "preco": 380,
+  "nome": "Medallion · 60 days",
+  "aVenda": true
+ },
+ {
+  "id": "medalhao90",
+  "item": 900172,
+  "qtd": 1,
+  "preco": 570,
+  "nome": "Medallion · 90 days",
+  "aVenda": true
+ },
+ {
+  "id": "passeDiario30",
+  "item": 900203,
+  "qtd": 1,
+  "preco": 150,
+  "nome": "Premium Daily Pass · 30 days",
+  "aVenda": true
+ }
+]

@@ -51,7 +51,8 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     return held;
   };
   const menu = () => lerJson('menu_data.json') || {};
-  const itemInfo = id => menu().itens?.[String(id)] || null;
+  const novos = () => lerJson('itens_novos.json')?.itens || {};          // the new items (900001+): Medallions, the Premium Daily Pass, Rare Candy…
+  const itemInfo = id => menu().itens?.[String(id)] || novos()[String(id)] || null;
 
   const saveDe = c => { if (!c.save) c.save = {}; const s = c.save; if (!s.itens || typeof s.itens !== 'object') s.itens = {}; if (!s.bolas || typeof s.bolas !== 'object') s.bolas = {}; return s; };
   const ehBola = id => itemInfo(id)?.t === 7;
@@ -102,6 +103,15 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     const id = +m.item;
     if (!itemInfo(id)) return erro(c, 'unknown item');
     if (quantos(c, id) < 1) return erro(c, "you don't have that item");
+    const uso = itemInfo(id)?.uso;
+    if (uso && (uso.tipo === 'medalhao' || uso.tipo === 'passeDiario')) {    // account time (Medallion, Premium Daily Pass): adds up, 365 days at most
+      const s = saveDe(c), campo = uso.tipo === 'medalhao' ? 'medalhaoAte' : 'passeDiarioAte', agora = Date.now(), teto = agora + 365 * 86400e3;
+      const base = Math.max(agora, +s[campo] || 0);
+      if (base + 86400e3 > teto) return erro(c, 'you already have the most time allowed (365 days)');
+      s[campo] = Math.min(teto, base + Math.max(1, +uso.dias || 30) * 86400e3);
+      tirar(c, id, 1);
+      return pronto(c, uso.tipo === 'medalhao' ? { medalhao: { ate: s[campo] } } : { passeDiario: { ate: s[campo] } });
+    }
     const time = Array.isArray(saveDe(c).time) ? saveDe(c).time : [];
     if ((Regras.ehCura(id) || Regras.curaStatus(id) || Regras.ehReanima(id) || Regras.ehReanimaTime(id) || Regras.PP[id]) && bloquearCura(u)) return erro(c, 'no healing in the Elite Four: the five fights are one run');
     if (Regras.ehReanimaTime(id)) {

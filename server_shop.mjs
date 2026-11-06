@@ -54,7 +54,30 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
         ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}), ...(p.ponto ? { ponto: p.ponto } : {}),
       },
     }));
-    return { aberta: true, saldo: carteira.de(c), produtos: [], pecas, montarias: [], skinsMon: [] };
+    return { aberta: true, saldo: carteira.de(c), produtos: produtosAVenda().map(p => ({ id: p.id, nome: p.nome, preco: +p.preco, item: +p.item, qtd: +p.qtd || 1, preso: false, soComprados: false })), pecas, montarias: [], skinsMon: [] };
+  }
+  /* COMFORT TAB (Nov 5): items sold for Diamonds — the Medallion (30/60/90 days) and the Premium Daily Pass. They land in the Bag
+     as tradable items: use them (server_bag.mjs `uso`) or sell them on the Market. Prices: public/data/shop_products.json (admin). */
+  function produtosAVenda() {
+    try {
+      const l = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'shop_products.json'), 'utf8'));
+      return (Array.isArray(l) ? l : []).filter(p => p && p.aVenda !== false && /^[\w-]{1,40}$/.test(String(p.id)) && Number.isSafeInteger(+p.preco) && +p.preco > 0 && Number.isSafeInteger(+p.item) && +p.item > 0);
+    } catch { return []; }
+  }
+  function comprarProduto(c, u, m, ref, resp) {
+    const s = c.save;
+    const p = produtosAVenda().find(x => String(x.id) === String(m.produto));
+    if (!p) return resp({ ok: false, erro: 'recusado', mensagem: "That isn't for sale right now.", vitrine: vitrine(c) });
+    if (m.preco != null && +m.preco !== +p.preco) return resp({ ok: false, erro: 'preco-mudou', mensagem: 'The price changed: review and confirm again.', vitrine: vitrine(c) });
+    const falta = +p.preco - carteira.de(c).total;
+    if (falta > 0) return resp({ ok: false, erro: 'saldo-insuficiente', falta, mensagem: 'Not enough Diamonds.', vitrine: vitrine(c) });
+    carteira.debitar(c, +p.preco);
+    if (!s.itens || typeof s.itens !== 'object') s.itens = {};
+    s.itens[p.item] = (+s.itens[p.item] || 0) + (+p.qtd || 1);
+    if (ref) { s.lojaRefs.push(ref); if (s.lojaRefs.length > MAX_REFS) s.lojaRefs.splice(0, s.lojaRefs.length - MAX_REFS); }
+    salvarContas(); empurrarSave(u);
+    for (const w of socketsDe(u)) enviar(w, { t: 'bolsa', op: 'loja', bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas } });
+    return resp({ ok: true, comprou: { produto: p.id, item: +p.item, qtd: +p.qtd || 1, preco: +p.preco }, compra: { qtd: +p.preco }, vitrine: vitrine(c) });
   }
   function empurrarSave(u) {
     const c = contas[u]; c.rev = (c.rev || 0) + 1;
@@ -72,6 +95,7 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
     if (!Array.isArray(s.lojaRefs)) s.lojaRefs = [];
     const ref = String(m.ref || '').slice(0, 40);
     if (ref && s.lojaRefs.includes(ref)) return resp({ ok: true, repetido: true, vitrine: vitrine(c) });
+    if (!String(m.produto || '').startsWith('peca:')) return comprarProduto(c, u, m, ref, resp);
     const mt = /^peca:(roupa|mochila|peito|rastro):([\w-]{1,40})$/.exec(String(m.produto || ''));
     const p = mt && aVenda().find(x => x.tipo === mt[1] && String(x.id) === mt[2]);
     if (!p) return resp({ ok: false, erro: 'recusado', mensagem: "That isn't for sale right now.", vitrine: vitrine(c) });

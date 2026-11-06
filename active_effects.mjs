@@ -33,8 +33,7 @@ function ativos() {
   const out = [], agora = Date.now();
   const med = +ctx?.Conta?.meuMedalhaoAte?.() || 0;
   if (med > agora) out.push({ tipo: 'medalhao', chave: 'medalhao', nome: tr('Medallion'), fim: med, ini: med - 30 * 86400e3,
-    linha: tr('Ends in {t} ({d})', { t: longo(med - agora), d: quando(med) }),
-    beneficios: { xp: tr('XP +20%'), caixa: tr('+100 Box space'), mercado: tr('+10 listings'), viagem: tr('Travel −50%'), selo: tr('Chat badge') } });
+    linha: tr('+20% XP · ends in {t} ({d})', { t: longo(med - agora), d: quando(med) }) });   // the other perks (Box, Market, Travel, chat badge) come with those limits
   const pf = ctx?.Conta?.meuPerfume?.();
   if (pf && pf.ate > agora) out.push({ tipo: 'perfume', chave: 'perfume', nome: tr('Silver Perfume'), fim: pf.ate, ini: pf.ate - 3600e3,
     linha: tr('Shiny ×{n} · ends in {t}', { n: pf.mult, t: longo(pf.ate - agora) }) });
@@ -96,7 +95,7 @@ function mostrarDica(i) {
   if (!dica) return;
   const e = lista[i];
   if (!e) { Hud.sitMostrar(dica, false); return; }
-  const est = e.tipo === 'medalhao' ? 'medalhao-beneficios' : e.tipo;
+  const est = e.tipo;
   Hud.sitEstado(dica, est);
   Hud.escrever(dica, 'dica-nome', e.nome);
   Hud.escrever(dica, 'dica-falta', e.linha);

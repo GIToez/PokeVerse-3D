@@ -270,12 +270,12 @@ import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: oth
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
-import * as Stg from './stages.mjs';
-import * as StgPills from './stage_pills.mjs';
-import * as ActiveFx from './active_effects.mjs';
-import * as Locks from './locks.mjs';
-import * as DailyUi from './daily_ui.mjs';
-import * as FocusUi from './focus_ui.mjs';       // raid focus pings (v2 foca-neste)       // Daily Rewards window (v2 trilha) for the 7-day login streak             // door locks (public/data/locks.json) + the v2 lock bubble   // event / Medallion / perfume timers under the minimap (v2 efeitos-ativos)   // a foe's stat stages as the v2 pills on its label          // stat stages and Leech Seed (moves.json estagios / semente)
+import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
+import * as StgPills from './stage_pills.mjs';   // a foe's stat stages as the v2 pills on its label
+import * as ActiveFx from './active_effects.mjs';   // event / Medallion / perfume timers (v2 efeitos-ativos)
+import * as Locks from './locks.mjs';             // door locks (public/data/locks.json) + the v2 lock bubble
+import * as DailyUi from './daily_ui.mjs';       // Daily Rewards window (v2 trilha) for the 7-day login streak
+import * as FocusUi from './focus_ui.mjs';       // raid focus pings (v2 foca-neste)
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, 20 minutes, bait and rock (shared with server_bag.mjs)
 import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
@@ -3706,6 +3706,7 @@ Ev.carregar().catch(() => {});
   const horaUrl = params0.get('time') ?? params0.get('hour') ?? params0.get('hora');
   if (horaUrl != null) Relogio.forcar(horaUrl);
 }
+const USO_CONTA = await fetch('./data/itens_novos.json').then(r => r.json()).then(d => Object.fromEntries(Object.entries(d.itens || {}).filter(([, it]) => ['medalhao', 'passeDiario'].includes(it?.uso?.tipo)).map(([id, it]) => [id, it.uso]))).catch(() => ({}));   // items that add account time (Medallion, Premium Daily Pass)
 const ITENS_NOME = await fetch('./data/menu_data.json').then(r => r.json()).then(d => Object.fromEntries(Object.entries(d.itens || {}).map(([id, it]) => [id, it.n]))).catch(() => ({}));   // nomes pros avisos de missão
 await Evolucao.carregar();                                                 // regras de evolução + curvas de XP (antes do nascimento: o parceiro nasce com exp)
 let DEX_EXTRA = null; fetch('./data/dex_extra.json').then(r => r.json()).then(j => { DEX_EXTRA = j; }).catch(() => {});   // golpes por nível (regras "conhecendo X"); pode chegar depois
@@ -6272,6 +6273,18 @@ function aposDesmaio(){
     da janela. O motivo de não usar (HP cheio, desmaiado, sem Pokémon, não é a sua vez) saía flutuando em cima do Pokémon, atrás da
     janela, ou nem saía. Sem `aviso` (atalhos 5–9) os avisos continuam flutuando como antes. */
 function usarItem(id, nome = '', aviso = null){
+  if (USO_CONTA[id]){                                                    // Medallion / Premium Daily Pass: days on the account, the server adds them
+    if (!comConta()){ aviso?.(I18n.t('This needs an account.'), false); return false; }
+    bolsaOp('usar', { item: +id }).then(r => {
+      if (!r || r.erro){ aviso?.(r?.erro || I18n.t('That didn\'t work.'), false); return; }
+      const ate = r.medalhao?.ate || r.passeDiario?.ate, quando = ate ? new Date(ate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      const txt = USO_CONTA[id].tipo === 'medalhao' ? I18n.t('Medallion active until {d}: +20% XP for your Pokémon.', { d: quando }) : I18n.t('Premium Daily Pass active until {d}: the Premium daily prize comes with every login.', { d: quando });
+      aviso?.(txt, true); Chat.sistema('🎖 ' + txt); Som.tocar('ui/sound_keyitemget', { volume: .7, prio: true });
+      if (r.passeDiario?.ate) Conta.gravarBruto?.('passeDiario', JSON.stringify({ ate: r.passeDiario.ate }));
+      try { ActiveFx.pintar(); } catch {}
+    });
+    return true;
+  }
   if (+id === RegrasItem.PATINS) return alternarPatins(aviso);           // Roller Skates: on/off, never used up
   /* BATALHA POR TURNO (15/09, zlevy26 no #bugs: "dá pra usar poção várias vezes seguidas contra o Brock, impossível perder"):
      usar item na batalha do servidor CONSOME O TURNO — o inimigo joga depois, como na série. Só vale na sua vez (fase 'escolha');

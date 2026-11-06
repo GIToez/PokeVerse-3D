@@ -185,6 +185,18 @@ export const ESQUEMAS = {
       { k: 'a', rotulo: 'Area', tipo: 'num', int: true, min: 0, max: 99999999, col: true },
     ],
   },
+  produtos_loja: {
+    titulo: 'Shop: Comfort items', arquivo: 'shop_products', forma: 'lista', id: 'id',
+    descricao: 'What the Diamond Shop\'s Comfort tab sells. Each product puts an item in the Bag (tradable: use it or sell it on the Market). Medallion items add Medallion days (+20% XP); the Premium Daily Pass item adds days of the Premium daily prize.',
+    campos: [
+      { k: 'id', rotulo: 'Product ID', tipo: 'texto', max: 40, col: true, obrigatorio: true, validar: s => /^[\w-]{1,40}$/.test(s) ? null : 'letters, numbers and dashes', ajuda: 'medalhao30 / medalhao60 / medalhao90 / passeDiario30 have their own art and text in the shop.' },
+      { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 60, col: true },
+      { k: 'item', rotulo: 'Item given', tipo: 'num', int: true, min: 1, max: 999999999, col: true, obrigatorio: true },
+      { k: 'qtd', rotulo: 'How many', tipo: 'num', int: true, min: 1, max: 999, col: true },
+      { k: 'preco', rotulo: 'Price (Diamonds)', tipo: 'num', int: true, min: 1, max: 1000000, col: true, obrigatorio: true },
+      { k: 'aVenda', rotulo: 'On sale', tipo: 'bool', col: true },
+    ],
+  },
   premios_diarios: {
     titulo: 'Daily rewards', arquivo: 'daily_rewards', caminho: 'dias', forma: 'lista', id: 'dia',
     descricao: 'Log in on consecutive days: Day 1 → Day 7, then Day 1 again; missing a day goes back to Day 1. Each day pays the Free prize to everyone and the Premium prize to Premium Daily Pass holders (GMs always). Prizes are { "item id": how many }. Keep exactly 7 days.',

@@ -218,7 +218,7 @@ export function criarWilds(ctx) {
     const foe = Math.max(1, foeLv | 0);
     const self = Math.max(1, mon.lv | 0);
     let gained = Math.floor((base * foe / 5) * Math.pow((2 * foe + 10) / (foe + self + 10), 2.5) + 1);
-    gained = Math.max(1, Math.round(gained * mult));
+    gained = Math.max(1, Math.round(gained * mult * ((+save?.medalhaoAte || 0) > Date.now() ? 1.2 : 1)));   // Medallion: +20% XP
     const acimaDoTeto = (mon.lv | 0 || 1) > levelCap(save);       // above the cap the KO is banked and gives no EVs (as before)
     const r = grantRaw(mon, save, gained);
     if (acimaDoTeto) return r;

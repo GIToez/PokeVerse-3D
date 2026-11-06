@@ -9148,5 +9148,22 @@
   "focus pings work in raids": "o aviso de foco funciona nas raids",
   "Focus target": "Focar o alvo",
   "in a raid: everyone in it sees a ring on your target": "numa raid: todo mundo nela vê um anel no seu alvo",
-  "no key: no focus pings": "sem tecla: sem aviso de foco"
+  "no key: no focus pings": "sem tecla: sem aviso de foco",
+  "Premium Daily Pass · 30 days": "Passe Diário Premium · 30 dias",
+  "Premium daily prizes": "Prêmios diários premium",
+  "30 days of the Premium row in Daily Rewards: every daily login pays the Premium prize too. Use it or sell it on the Market.": "30 dias da fileira Premium dos Prêmios diários: todo login do dia paga também o prêmio Premium. Use ou venda no Mercado.",
+  "30 days of the Premium row in Daily Rewards: every daily login also pays the Premium prize (more balls and potions, Max Revives on Day 7). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "30 dias da fileira Premium dos Prêmios diários: todo login do dia também paga o prêmio Premium (mais bolas e poções, Reanimador Máximo no Dia 7). O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas.",
+  "60 days of +{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.": "60 dias de +{xp} % de XP pros seus Pokémon. Use ou venda no Mercado por Moedas.",
+  "90 days of +{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.": "90 dias de +{xp} % de XP pros seus Pokémon. Use ou venda no Mercado por Moedas.",
+  "60 days of +{xp} % XP for your Pokémon. The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "60 dias de +{xp} % de XP pros seus Pokémon. O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas.",
+  "90 days of +{xp} % XP for your Pokémon. The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "90 dias de +{xp} % de XP pros seus Pokémon. O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas.",
+  "Save {d}%": "Economize {d}%",
+  "Bought: {x}. It's in your Bag: use it from there, or sell it on the Market.": "Comprado: {x}. Está na sua Mochila: use de lá ou venda no Mercado.",
+  "Medallion active until {d}: +20% XP for your Pokémon.": "Medalhão ativo até {d}: +20% de XP pros seus Pokémon.",
+  "Premium Daily Pass active until {d}: the Premium daily prize comes with every login.": "Passe Diário Premium ativo até {d}: o prêmio diário Premium vem em todo login.",
+  "This needs an account.": "Isso precisa de uma conta.",
+  "+20% XP · ends in {t} ({d})": "+20% de XP · termina em {t} ({d})",
+  "+{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.": "+{xp} % de XP pros seus Pokémon. Use ou venda no Mercado por Moedas.",
+  "+{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). Use it or sell it on the Market for Coins.": "+{xp} % de XP pros seus Pokémon (mais vantagens quando os limites da Caixa, Mercado e Viagem abrirem). Use ou venda no Mercado por Moedas.",
+  "{dias} days of +{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "{dias} dias de +{xp} % de XP pros seus Pokémon (mais vantagens quando os limites da Caixa, Mercado e Viagem abrirem). O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas."
 }

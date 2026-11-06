@@ -573,7 +573,8 @@ export function criarBatalha(ctx) {
     if (ele && ele.hp <= 0) {
       const ganhador = bat.eu.field;
       if (ganhador && ganhador.hp > 0) {
-        const xp = Math.max(1, Math.round(expGanha(ganhador.lv, ele.dex, ele.lv) * expMultOf(ganhador, heldTab)));
+        const medalhao = (+acc?.c?.save?.medalhaoAte || 0) > Date.now() ? 1.2 : 1;   // Medallion: +20% XP
+        const xp = Math.max(1, Math.round(expGanha(ganhador.lv, ele.dex, ele.lv) * expMultOf(ganhador, heldTab) * medalhao));
         const evR = Ev.ganharPorKo(ganhador, ele.dex);
         aplicarExp(ganhador, xp);
         log.push(ganhador.nome + ' gained ' + xp + ' EXP.');

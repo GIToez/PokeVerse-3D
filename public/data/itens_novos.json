@@ -299,7 +299,7 @@
   },
   "900170": {
    "n": "Medallion · 30 days",
-   "d": "30 days of +20% XP for your Pokémon, +100 Box slots, +10 Market listings, −50% Travel and Teleport cooldown and the chat badge. The time adds to what you already have, up to 365 days. Use it or sell it on the Market for Coins.",
+   "d": "30 days of +20% XP for your Pokémon (more perks come as the Box, Market and Travel limits open). The time adds to what you already have, up to 365 days. Use it from the Bag, or sell it on the Market.",
    "t": 5,
    "i": "ic_900170",
    "q": 5,
@@ -314,7 +314,7 @@
   },
   "900171": {
    "n": "Medallion · 60 days",
-   "d": "60 days of +20% XP for your Pokémon, +100 Box slots, +10 Market listings, −50% Travel and Teleport cooldown and the chat badge. The time adds to what you already have, up to 365 days. Use it or sell it on the Market for Coins.",
+   "d": "60 days of +20% XP for your Pokémon (more perks come as the Box, Market and Travel limits open). The time adds to what you already have, up to 365 days. Use it from the Bag, or sell it on the Market.",
    "t": 5,
    "i": "ic_900171",
    "q": 5,
@@ -329,7 +329,7 @@
   },
   "900172": {
    "n": "Medallion · 90 days",
-   "d": "90 days of +20% XP for your Pokémon, +100 Box slots, +10 Market listings, −50% Travel and Teleport cooldown and the chat badge. The time adds to what you already have, up to 365 days. Use it or sell it on the Market for Coins.",
+   "d": "90 days of +20% XP for your Pokémon (more perks come as the Box, Market and Travel limits open). The time adds to what you already have, up to 365 days. Use it from the Bag, or sell it on the Market.",
    "t": 5,
    "i": "ic_900172",
    "q": 5,
@@ -341,6 +341,21 @@
     "dias": 90
    },
    "origem": "27/10 (o Kronyx: \"O certo é comprar de 30, 60 e 90 dias\"): o Medalhão de 90 dias, um item só (antes, a loja entregava 3 de 30 dias); a mesma regra do de 30"
+  },
+  "900203": {
+   "n": "Premium Daily Pass · 30 days",
+   "d": "30 days of the Premium row in Daily Rewards: every daily login pays the Premium prize too. The time adds to what you already have, up to 365 days. Use it from the Bag, or sell it on the Market.",
+   "t": 5,
+   "i": "ic_900203",
+   "q": 5,
+   "v": null,
+   "novo": true,
+   "preso": false,
+   "uso": {
+    "tipo": "passeDiario",
+    "dias": 30
+   },
+   "origem": "05/11: the Premium Daily Pass (daily_rewards.json premium row)"
   }
  }
 }

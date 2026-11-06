@@ -434,7 +434,7 @@ async function dados(){
     fetch('./data/itens_novos.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // the new items (TM pieces, tickets…): upcoming/ merges them the same way
   ]).then(async ([d, novos]) => {
     d.itens ||= {};
-    for (const [id, it] of Object.entries(novos?.itens || {})) if (!d.itens[id] && it && typeof it.n === 'string') d.itens[id] = { n: it.n, d: it.d || '', t: it.t ?? 8, ...(it.i ? { i: it.i } : {}), ...(it.q != null ? { q: it.q } : {}), ...(it.preso ? { preso: true } : {}) };
+    for (const [id, it] of Object.entries(novos?.itens || {})) if (!d.itens[id] && it && typeof it.n === 'string') d.itens[id] = { n: it.n, d: it.d || '', t: it.t ?? 8, ...(it.i ? { i: it.i } : {}), ...(it.q != null ? { q: it.q } : {}), ...(it.preso ? { preso: true } : {}), ...(it.uso ? { uso: it.uso } : {}) };
     try { await Promise.all([TmUi.carregar(), HeldUi.carregar()]); TmUi.corrigirItens(d.itens); } catch {}
     return d;
   });
@@ -2356,7 +2356,7 @@ const CATS_MO = { todos: null, pokebolas: [7], medicina: [9], tm: [4], chave: [3
 /* O que "Usar" faz no jogo hoje: Pokébola vira a bola escolhida, item de Recuperação (t=9: poções, Reanimador) cura, pedra
    evolui. TM, traje, montaria e item de missão NÃO têm uso pela mochila ainda — o botão fica desligado (antes o `usarItem`
    tratava tudo como poção e consumia o item). Descartar não vale pra item de missão (t=3) nem pra bola (mora em `bolas`). */
-const podeUsarMo = a => a.it.t === 7 || a.it.t === 9 || (a.it.t === 4 && TmUi.ehMaquina(a.id)) || HeldUi.ehHeld(a.id) || !!ctx.ehItemDeEvolucao?.(a.id) || !!ctx.ehHeld?.(a.id) || !!ctx.ehPatins?.(a.id);   // Roller Skates: on/off (index.html alternarPatins) · held items: "Give" to the partner in the field
+const podeUsarMo = a => ['medalhao', 'passeDiario'].includes(a.it.uso?.tipo) || a.it.t === 7 || a.it.t === 9 || (a.it.t === 4 && TmUi.ehMaquina(a.id)) || HeldUi.ehHeld(a.id) || !!ctx.ehItemDeEvolucao?.(a.id) || !!ctx.ehHeld?.(a.id) || !!ctx.ehPatins?.(a.id);   // Roller Skates: on/off (index.html alternarPatins) · held items: "Give" to the partner in the field
 /* POR QUE NÃO USOU (17/09, Marcolino no #alpha-testers: "clico e não vai" na Poção): o Usar chama o `usarItem` do index, que só cura
    o Pokémon EM CAMPO e avisava flutuando em cima dele — atrás da janela (e sem aviso nenhum quando não era a vez na batalha). Agora o
    motivo (HP cheio, desmaiado, sem Pokémon, acabou) e o resultado ("recuperou 20 HP") ficam 4 s DENTRO da Mochila: na linha de dica do

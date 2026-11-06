@@ -119,8 +119,22 @@ const CATALOGO = {
     desc: () => textoMedalhao('media', tr),
     descLonga: () => textoMedalhao('longa', tr),
   },
-  medalhao60: medalhoesDe(MEDALHOES.medalhao60),
-  medalhao90: medalhoesDe(MEDALHOES.medalhao90),
+  /* Nov 5: one item each (900171 = 60 days, 900172 = 90 days), not 2 or 3 Medallions of 30 */
+  medalhao60: { ...medalhoesDe(MEDALHOES.medalhao60), selo: '60d',
+    tipo: (p) => { const d = descontoDosMedalhoes(2, p?.preco); return d ? tr('Save {d}%', { d }) : tr('Sells on the Market'); },
+    desc: () => tr('60 days of +{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO), descLonga: () => tr('60 days of +{xp} % XP for your Pokémon. The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO) },
+  medalhao90: { ...medalhoesDe(MEDALHOES.medalhao90), selo: '90d',
+    tipo: (p) => { const d = descontoDosMedalhoes(3, p?.preco); return d ? tr('Save {d}%', { d }) : tr('Sells on the Market'); },
+    desc: () => tr('90 days of +{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO), descLonga: () => tr('90 days of +{xp} % XP for your Pokémon. The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO) },
+  passeDiario30: {
+    aba: 'conforto',
+    filtro: 'conta',
+    icone: 'ui/itens/ic_900203@2x.png',
+    nome: () => tr('Premium Daily Pass · 30 days'),
+    tipo: () => tr('Premium daily prizes'),
+    desc: () => tr('30 days of the Premium row in Daily Rewards: every daily login pays the Premium prize too. Use it or sell it on the Market.'),
+    descLonga: () => tr('30 days of the Premium row in Daily Rewards: every daily login also pays the Premium prize (more balls and potions, Max Revives on Day 7). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.'),
+  },
   ticketEclosao: {
     aba: 'conforto',
     filtro: 'ovos',
@@ -2140,13 +2154,12 @@ async function comprarProduto(a, b = false) {
               ? tr('Purchased: {x}. Activate it in the Wardrobe, Pokémon tab: the skin is bound to your account.', {
                   x: P.nome,
                 })
-              : Object.hasOwn(MEDALHOES, a)
+              : Object.hasOwn(MEDALHOES, a) && false
                 ? tr(
                     'Purchased: {x}. The {q} 30-day Medallions are in your Bag: each one you use adds 30 days, and you can sell the rest on the Market.',
                     { x: P.nome, q: MEDALHOES[a] },
                   )
-                : tr("Bought: {x}. It's in your Bag.", { x: P.nome }) +
-                  (a === MEDALHAO_ID ? ' ' + textoMedalhao('media', tr) : '');
+                : tr("Bought: {x}. It's in your Bag: use it from there, or sell it on the Market.", { x: P.nome });
     if (!j.repetido || m) {
       const u = tr('💎 Diamond Shop: {x} (−{n} Diamonds).', { x: s, n: fmt(j.compra?.qtd ?? P.preco) });
       if (dep.Chat?.sistemaCru) dep.Chat.sistemaCru(u);
