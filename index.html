@@ -9837,7 +9837,10 @@ if (jogo.ash){
       }
       else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
-      Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).');
+      /* v2: the duel card (Battle accepts it, like typing /battle <name>); the chat line stays as the fallback and the record */
+      const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
+      if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
+      Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
     }, batalhaAbrir: m => { abrirTurnoServidor(m); }, batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
@@ -10985,6 +10988,7 @@ function npcDeServidor(serv, outro){
     nome: serv.nomeInimigo || 'Trainer',
     treino: { nome: serv.nomeInimigo, time: (serv.dele || []).map(x => ({ dex: x.dex, lv: x.lv, glb: 'pm' + String(x.dex).padStart(4, '0') + '_00' })), dinheiro: 0, fala: [], vitoria: [], derrota: [] },
     role: 'trainer', pvp: !!serv.pvp,
+    acoes: o.ent?.acoes || new Map(),                                   // duels: the throw animation plays on the other player's body (none known: skipped instead of crashing)
   };
 }
 async function abrirTurnoServidor(serv){

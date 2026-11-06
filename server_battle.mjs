@@ -750,7 +750,8 @@ export function criarBatalha(ctx) {
         return r.a;
       }
       convites.set(acc.u + '>' + b.u, { de: acc.u, para: b.u, em: Date.now() });
-      ctx.enviar(b.ws, { t: 'bat_convite', de: acc.u, nome: ws._info?.nome || acc.u });
+      let n = 0; try { n = timeJogador(saveDe(acc.c)).filter((p) => p.hp > 0).length; } catch {}   // the challenger's ready Pokémon: the v2 card's ball dots
+      ctx.enviar(b.ws, { t: 'bat_convite', de: acc.u, nome: ws._info?.nome || acc.u, n });
       return { t: 'bat', espera: true, alvo: b.u, nomeInimigo: b.ws._info?.nome || b.u };
     }
     const r = abrirNpc(ws, acc, tipo, m.id);

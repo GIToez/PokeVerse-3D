@@ -1066,7 +1066,8 @@ function receber(m) {
     case 'bat_erro': {
       const aa = batEsperando;
       if (!aa) {
-        if (m.t === 'bat' && m.fim) ctx.batalhaFim?.(m);
+        if (m.t === 'bat' && m.abrir && !m.fim) ctx.batalhaAbrir?.(m);   // a duel the other player accepted: open it here too (it used to fall through to bat_largar and end the duel)
+        else if (m.t === 'bat' && m.fim) ctx.batalhaFim?.(m);
         else if (m.t === 'bat' && ctx.batalhaConhecida && !ctx.batalhaConhecida(m)) enviar({ t: 'bat_largar' });
         return;
       }

@@ -190,7 +190,12 @@ export function resultado({ vitoria = false, desistiu = false } = {}) {
   a.style.zIndex = '58'; a.style.pointerEvents = 'none';
   Hud.sitEm(a, innerWidth / 2, Math.round(innerHeight * 0.14), 'topo-meio');
   Hud.sitMostrar(a, true);
-  faixa = a; clearTimeout(faixaT); faixaT = setTimeout(() => { Hud.sitMostrar(a, false); faixa = null; }, 3800);
+  faixa = a; clearTimeout(faixaT);
+  /* in a duel the HUD re-lays out right after the fight (the other player's turn ends too) and that hid the banner after ~1 s:
+     it holds itself up until its own 3.8 s are over */
+  const ate = Date.now() + 3800;
+  const segurar = () => { if (faixa !== a) return; if (Date.now() >= ate) { Hud.sitMostrar(a, false); faixa = null; return; } if (a.hidden) Hud.sitMostrar(a, true); faixaT = setTimeout(segurar, 100); };
+  faixaT = setTimeout(segurar, 100);
   return true;
 }
 export function premio(texto, insignia = null) {
