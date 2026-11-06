@@ -80,7 +80,7 @@ export function criarEventos(h) {
     let n = 0;
     for (const w of [...conexoes.values()]) {
       if (ehGm(w._usuario)) continue;
-      if (contas[w._usuario]) n += derrubar(w._usuario, textoManutencao());
+      if (contas[w._usuario]) n += derrubar(w._usuario, textoManutencao(), 'fechado');
       else { enviar(w, { t: 'saia', texto: textoManutencao() }); setTimeout(() => { try { w.close(); } catch {} }, 300); n++; }   // visitante (sem conta)
     }
     return n;

@@ -14,6 +14,7 @@ import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz te
  * que se passa de noite; antes trocava por hora do dia).
  */
 import * as Popup from './popup.mjs';
+import * as Hud from './hud.mjs';
 import * as TelasP from './screens_character.mjs';   // rodada 23: as telas de escolher e personalizar o treinador
 
 /* DISCORD (20/09, pedido do Jaime: "falta na página principal do site o link pro Discord"). O site abre DIRETO na tela de
@@ -226,8 +227,43 @@ export function atualizando(){
 }
 /** KIKADO (10/09): a conta entrou de outro lugar. Tela por cima de tudo, curta, com o caminho de volta — como em qualquer
     MMO. Nada de explicar save: o jogo daqui parou e ponto. */
+/* V2 ACCOUNT WARNING (Nov 5): the Figma `aviso-conta`, one look per case. motivo → state: 'suspensa' (ban), 'equipe' (a GM kicked you /
+   changed something), 'fechado' (maintenance), 'outro-lugar' (logged in elsewhere), 'sessao' (session expired), 'apagada'. */
+const AVISO = {
+  suspensa: { titulo: 'ACCOUNT SUSPENDED', linha: 'Think this is a mistake? Talk to us on Discord.' },
+  equipe: { titulo: 'MESSAGE FROM THE STAFF', linha: '' },
+  fechado: { titulo: 'SERVER CLOSED', linha: 'Follow our Discord for news.' },
+  'outro-lugar': { titulo: 'DISCONNECTED', linha: 'Your account can only play from one place at a time.' },
+  sessao: { titulo: 'SESSION EXPIRED', linha: '' },
+  apagada: { titulo: 'ACCOUNT DELETED', linha: '' },
+};
+function avisoV2(texto, motivo, voltar){
+  const estado = AVISO[motivo] ? motivo : (/suspend|banned/i.test(texto) ? 'suspensa' : /disconnected you|GM/i.test(texto) ? 'equipe' : /maintenance|closed/i.test(texto) ? 'fechado' : /expired|log in again/i.test(texto) ? 'sessao' : 'outro-lugar');
+  const a = Hud.sit('aviso-conta');
+  if (!a) return false;
+  Hud.sitEstado(a, estado);
+  const A = AVISO[estado];
+  Hud.rotular(a, 'rotulo-caso', tr(A.titulo));
+  Hud.escrever(a, 'aviso-texto', texto);
+  Hud.rotular(a, 'rotulo-linha', tr(A.linha));
+  const dis = Hud.fig(a, 'btn-discord'), ir = Hud.fig(a, 'btn-ir-login');
+  if (dis){ Hud.rotular(a, 'txt-btn', 'Discord', dis); dis.style.pointerEvents = 'auto'; dis.style.cursor = 'pointer'; dis.onclick = e => { e.stopPropagation(); open('https://discord.gg/P88WNBB56E', '_blank', 'noopener'); }; }
+  if (ir){ Hud.rotular(a, 'txt-btn', tr('Go to login'), ir); ir.style.pointerEvents = 'auto'; ir.style.cursor = 'pointer'; ir.onclick = e => { e.stopPropagation(); voltar(); }; }
+  const fundo = document.createElement('div'); fundo.id = 'tela-derrubado';
+  Object.assign(fundo.style, { position: 'fixed', inset: '0', background: 'rgba(5,10,22,.72)', zIndex: '1199' });
+  document.body.appendChild(fundo);
+  a.style.zIndex = '1200';
+  Hud.sitEm(a, innerWidth / 2, innerHeight / 2, 'meio');
+  Hud.sitMostrar(a, true);
+  addEventListener('resize', () => Hud.sitEm(a, innerWidth / 2, innerHeight / 2, 'meio'));
+  return true;
+}
 export function derrubado(texto = 'You logged in from somewhere else.', motivo = null){
   texto = tr(texto);
+  if (!document.getElementById('tela-derrubado')){
+    const voltar = () => { try { for (const k of ['conta.token', 'conta.usuario', 'conta.rev', 'conta.dono', 'conta.sujo', 'conta.gm']) localStorage.removeItem(k); } catch {} location.replace(new URL('?play=1', location.href).toString()); };
+    try { if (avisoV2(texto, motivo, voltar)) return; } catch (e){ console.warn('aviso-conta', e); }
+  }
   const sub = motivo === 'sessao' ? 'Log in again to keep playing.' : 'Your account can only play from one place at a time.';
   if (document.getElementById('tela-derrubado')) return;
   const f = painel('<b style="color:#ffe07a;font-size:17px">' + texto + '</b>'

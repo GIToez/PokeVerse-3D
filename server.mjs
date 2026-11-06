@@ -663,9 +663,9 @@ function resumoConta(u, c) {
     online: w ? { mapa: w._mapa, x: +(+w._info.x || 0).toFixed(1), z: +(+w._info.z || 0).toFixed(1), area: w._info.area ?? null } : null };
 }
 /** Manda a tela de "derrubado" (o cliente mostra o texto) e fecha. Devolve quantas conexões caíram. */
-function derrubar(u, texto) {
+function derrubar(u, texto, motivo = null) {   // motivo picks the look of the client's account warning (suspensa, equipe, fechado…)
   const ws = socketsDe(u);
-  for (const w of ws) { enviar(w, { t: 'saia', texto }); setTimeout(() => { try { w.close(); } catch {} }, 300); }
+  for (const w of ws) { enviar(w, { t: 'saia', texto, ...(motivo ? { motivo } : {}) }); setTimeout(() => { try { w.close(); } catch {} }, 300); }
   return ws.length;
 }
 const resumoMon = p => ({ uid: p?.uid, dex: p?.dex, nome: p?.nome, lv: p?.lv, shiny: !!p?.shiny });
@@ -1630,7 +1630,7 @@ wss.on('connection', ws => {
         ws._mapa = m.mapa || 'kanto';
         ws._info = { ...m };
         const uTok = m.token ? sessoes.get(m.token) : null;
-        if (uTok && banidoAteDe(contas[uTok])) { enviar(ws, { t: 'saia', texto: 'Your account is suspended.' }); try { ws.close(); } catch {} return; }
+        if (uTok && banidoAteDe(contas[uTok])) { enviar(ws, { t: 'saia', motivo: 'suspensa', texto: 'Your account is suspended.' }); try { ws.close(); } catch {} return; }
         // A stale token must not fall through to a visitor: the visitor wears the player's look and dodges the one-session rule, so it shows up as a second copy of them.
         if (m.token && !uTok) { enviar(ws, { t: 'saia', motivo: 'sessao', texto: 'Your session expired. Log in again.' }); try { ws.close(); } catch {} return; }
         if (uTok && contas[uTok] && m.personagem != null){                    // the look the others see on join: only owned outfits/effects (server_bag validarPersonagem)
@@ -1642,7 +1642,7 @@ wss.on('connection', ws => {
         if (uTok && contas[uTok] && (contas[uTok].gm || (contas[uTok].save?.insignias || []).map(Number).includes(RegrasItemS.TENIS_INSIGNIA))) darTenis(uTok);   // Running Shoes for badges won before they existed (and GMs)
         if (uTok) for (const w of socketsDe(uTok)) {                       // sessão única, como em produção: a aba/aparelho anterior leva `saia` (não reconecta) e some do mapa dos outros — antes cada aba virava mais um boneco
           if (w === ws) continue;
-          enviar(w, { t: 'saia', texto: 'You logged in from somewhere else.' });
+          enviar(w, { t: 'saia', motivo: 'outro-lugar', texto: 'You logged in from somewhere else.' });
           conexoes.delete(w._id);
           broadcast(w, { t: 'saiu', id: w._id });
           setTimeout(() => { try { w.close(); } catch {} }, 300);

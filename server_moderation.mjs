@@ -68,7 +68,7 @@ export function criarModeracao(h) {
     if (!(minutos === -1 || (minutos >= 1 && minutos <= MAX_MIN))) return { erro: 'Invalid ban duration.' };
     c.banidoAte = minutos === -1 ? -1 : Date.now() + minutos * 60000; c.banMotivo = motivo;
     if (c.token) { sessoes.delete(c.token); c.token = null; }                 // a sessão cai: o próximo login esbarra no banimento
-    derrubar(u, 'Your account is suspended ' + quando(c.banidoAte) + '.' + (motivo ? ' Reason: ' + motivo : ''));
+    derrubar(u, 'Your account is suspended ' + quando(c.banidoAte) + '.' + (motivo ? ' Reason: ' + motivo : ''), 'suspensa');
     logAdmin(g, u, 'ban', { depois: { banidoAte: c.banidoAte, motivo } });
     return { ate: c.banidoAte };
   }
@@ -93,7 +93,7 @@ export function criarModeracao(h) {
     return {};
   }
   function desconectar(g, u, motivo) {
-    const n = derrubar(u, 'A GM disconnected you.' + (motivo ? ' Reason: ' + motivo : ''));
+    const n = derrubar(u, 'A GM disconnected you.' + (motivo ? ' Reason: ' + motivo : ''), 'equipe');
     logAdmin(g, u, 'kick', { depois: { conexoes: n } });
     return { derrubou: n };
   }
