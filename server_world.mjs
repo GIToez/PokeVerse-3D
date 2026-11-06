@@ -20,6 +20,7 @@
  * Wire tokens stay as the client expects them (selvagem, spos, shp, sestado, sumiu, scapt, pdano, dono); renaming them
  * belongs to the protocol pass that renames both ends at once. */
 import * as Transf from './transform.mjs';
+import * as Caixa from './box_rules.mjs';
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import crypto from 'node:crypto';
@@ -413,6 +414,7 @@ export function createWorld(h) {
     if (distTo(ws, w) > FIGHT_RANGE) return reply({ ok: false, chac: 0, erro: 'longe' });
     if (ballRate(ball) == null) return reply({ ok: false, chac: 0, erro: 'bola' });
     const c = accounts[u], save = c.save || (c.save = {});
+    if (!Caixa.cabe(save, gameConfig())) return reply({ ok: false, chac: 0, erro: 'caixa-cheia', texto: Caixa.aviso(save, gameConfig()) });   // full team + full Box: no throw, no ball spent
     if (!save.bolas || typeof save.bolas !== 'object') save.bolas = {};
     const safariBall = +ball === SAFARI_BALL;   // Safari Balls belong to the Safari visit, which the client keeps, not to the bag
     if (!safariBall && !((save.bolas[ball] | 0) > 0)) return reply({ ok: false, chac: 0, erro: 'sem-bola' });

@@ -9165,5 +9165,8 @@
   "+20% XP · ends in {t} ({d})": "+20% de XP · termina em {t} ({d})",
   "+{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.": "+{xp} % de XP pros seus Pokémon. Use ou venda no Mercado por Moedas.",
   "+{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). Use it or sell it on the Market for Coins.": "+{xp} % de XP pros seus Pokémon (mais vantagens quando os limites da Caixa, Mercado e Viagem abrirem). Use ou venda no Mercado por Moedas.",
-  "{dias} days of +{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "{dias} dias de +{xp} % de XP pros seus Pokémon (mais vantagens quando os limites da Caixa, Mercado e Viagem abrirem). O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas."
+  "{dias} days of +{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "{dias} dias de +{xp} % de XP pros seus Pokémon (mais vantagens quando os limites da Caixa, Mercado e Viagem abrirem). O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas.",
+  "Your Box is full. Buy Box slots in the Shop (Comfort tab) or release some Pokémon.": "Sua Caixa está cheia. Compre vagas na Loja (aba Conforto) ou solte alguns Pokémon.",
+  "Box full": "Caixa cheia",
+  "You already bought the most Box slots.": "Você já comprou o máximo de vagas na Caixa."
 }

@@ -1,5 +1,13 @@
 [
  {
+  "id": "vagasCaixa",
+  "nome": "Box slots",
+  "qtd": 50,
+  "preco": 50,
+  "teto": 600,
+  "aVenda": true
+ },
+ {
   "id": "medalhao30",
   "item": 900170,
   "qtd": 1,

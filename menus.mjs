@@ -1531,8 +1531,9 @@ function encherBoxV2(pop){
   const vazioCx = Popup.grupo(pop, 'vazio-caixa'); if (vazioCx) vazioCx.style.display = !caixa.length ? 'block' : 'none';
   const cont = Popup.grupo(pop, 'contador-caixa');
   if (cont){
-    Popup.texto(pop, 'caixa-qtd', filtrada.length + ' / ' + caixa.length, cont);
-    Popup.barra(pop, 'caixa-ocupada', caixa.length ? Math.min(1, filtrada.length / caixa.length) : 0, null, cont);
+    const vagas = +ctx.jogo?.caixaVagas || 0;                            // Box size from the server (box_rules.mjs): how full it is; filtering shows how many match
+    Popup.texto(pop, 'caixa-qtd', filtrando ? filtrada.length + ' / ' + caixa.length : caixa.length + (vagas ? ' / ' + vagas : ''), cont);
+    Popup.barra(pop, 'caixa-ocupada', filtrando ? (caixa.length ? Math.min(1, filtrada.length / caixa.length) : 0) : vagas ? Math.min(1, caixa.length / vagas) : 0, vagas && caixa.length >= vagas ? '#F58E8E' : null, cont);
   }
   const vazioF = Popup.grupo(pop, 'vazio-filtro');
   if (vazioF) vazioF.style.display = filtrando && caixa.length && !filtrada.length ? 'block' : 'none';

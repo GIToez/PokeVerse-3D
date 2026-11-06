@@ -43,6 +43,7 @@ import { createTransform } from './server_transform.mjs';
 import { createDrops } from './server_drops.mjs';
 import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
+import * as CaixaR from './box_rules.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1728,7 +1729,7 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (ws._usuario && contas[ws._usuario]) setTimeout(() => { try { diario.login(ws._usuario, ws); } catch (e) { console.warn('daily:', e.message); } }, 4000);   // today's daily prize (once a day), after the world has loaded
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
@@ -2001,6 +2002,7 @@ wss.on('connection', ws => {
             if (!c.save) c.save = {};
             if (!Array.isArray(c.save.time)) c.save.time = [];
             if (!Array.isArray(c.save.caixa)) c.save.caixa = [];
+            if (!CaixaR.cabe(c.save, cfgJogo())) { enviar(ws, { t: 'posse_erro', op, erro: CaixaR.aviso(c.save, cfgJogo()) }); return; }   // full team + full Box
             const pk = individuoServidor(m.pokemon);   // IVs/natureza/shiny e nível decididos pelo SERVIDOR (não confia no cliente)
             if (c.save.time.length < 6) c.save.time.push(pk);
             else c.save.caixa.push(pk);
