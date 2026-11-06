@@ -26,7 +26,7 @@ function estilo() {
 .pcard .time span{position:relative;width:38px;height:38px;border-radius:9px;background:#0B1220;border:1px solid #2E4A80;background-size:contain;background-position:center;background-repeat:no-repeat}
 .pcard .time b{position:absolute;right:1px;bottom:0;font:800 9px system-ui;color:#fff;text-shadow:0 1px 2px #000}
 .pcard .time span.sh{border-color:#F8C237}
-.pconv{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:47;background:linear-gradient(#152647,#0F1A2E);border:2px solid #F8C237;border-radius:14px;padding:12px 14px;color:#E6ECFF;font:700 13px "Nunito Sans",system-ui;box-shadow:0 6px 18px #0009;text-align:center;pointer-events:auto}
+.pconv{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:700;background:linear-gradient(#152647,#0F1A2E);border:2px solid #F8C237;border-radius:14px;padding:12px 14px;color:#E6ECFF;font:700 13px "Nunito Sans",system-ui;box-shadow:0 6px 18px #0009;text-align:center;pointer-events:auto}
 .pconv b{color:#F8C237}.pconv .bts{display:flex;gap:8px;justify-content:center;margin-top:10px}
 .pconv button{min-width:96px;min-height:34px;border-radius:10px;border:1px solid #2E4A80;background:#13254A;color:#fff;font:800 12px "Nunito Sans",system-ui;cursor:pointer}
 .pconv button.sim{background:linear-gradient(#F8C237,#E0A21B);color:#0F1A2E;border-color:#F8C237}`;
