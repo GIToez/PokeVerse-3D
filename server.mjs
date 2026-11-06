@@ -45,6 +45,7 @@ import { createDrops } from './server_drops.mjs';
 import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
 import { createFerry } from './server_ferry.mjs';
+import { createTravel } from './server_travel.mjs';
 import { createSocial } from './server_social.mjs';
 import { knowledgeSummary } from './server_knowledge.mjs';   // friends, requests, direct messages (the Social window)
 import { createParty } from './server_party.mjs';     // parties of up to 4, and Inspect (the player card)
@@ -1646,6 +1647,8 @@ const diario = createDaily({ accounts: contas, send: enviar, socketsOf: socketsD
 const social = createSocial({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, isMuted: u => !!(contas[u]?.mudoAte && contas[u].mudoAte > Date.now()) });
 const grupo = createParty({ accounts: contas, send: enviar, socketsOf: socketsDe, connections: () => conexoes.values(), nick: u => contas[u]?.save?.nome || u,
   extra: { mestre: u => progressao.masterLevel(u), saber: s => { const k = knowledgeSummary(s); return { mestres: k.masters, estudadas: k.studied }; } } });   // Inspect: their Master level and Pokédex knowledge
+const viagem = createTravel({ accounts: contas, send: enviar, cfg: () => cfgJogo(), saveAccounts: () => salvarContas(),   // fast travel: Teleport + Fly between Centers (server_travel.mjs)
+  readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), emLuta: ws => { try { return !!batalha.emLuta(ws._usuario); } catch { return false; } } });
 const balsa = createFerry({ accounts: contas, send: enviar, readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null) });   // the Vermilion ferry (server_ferry.mjs)
 const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
@@ -2062,6 +2065,7 @@ wss.on('connection', ws => {
         else if ((m.t?.startsWith('grupo_') || m.t === 'inspecionar') && grupo.receber(ws, sessoes.get(ws._info?.token) || null, m)) {}   // party + Inspect (server_party.mjs)
         else if (m.t === 'social_pedir') { const uS = sessoes.get(ws._info?.token) || null; const r = uS ? social.request(uS, m.to) : { erro: 'Friends need an account.' }; enviar(ws, { t: 'sistema', texto: r.erro ? '🤝 ' + r.erro : r.friends ? '🤝 You and ' + r.nick + ' are now friends.' : r.ja ? '🤝 You already asked ' + r.nick + '.' : '📨 Friend request sent to ' + r.nick + '.' }); }
         else if (m.t === 'balsa_vista' || m.t === 'balsa') balsa.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'viagem_vista' || m.t === 'teleporte' || m.t === 'viagem' || m.t === 'centro_visitado') viagem.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {
           const op = m.t.slice(6);

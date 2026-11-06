@@ -3,7 +3,7 @@ import * as Hud from './hud.mjs';
 import * as I18n from './i18n.mjs';
 import * as M from './popup_templates.mjs';
 import * as SecUi from './side_quests_ui.mjs';
-import * as ViagemUi from './map_travel.mjs';
+import * as ViagemUi from './travel_ui.mjs';   // v2 fast travel (upcoming/): Return to Center + Fly between Centers, server_travel.mjs
 import * as Lug from './map_places.mjs';
 const tr = (s, v) => I18n.t(s, v);
 const lang = () => {

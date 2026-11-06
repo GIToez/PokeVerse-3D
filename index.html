@@ -6213,6 +6213,7 @@ function gravarCentroVisitado(alvo){
   let nome = null; try { nome = nomeAreaCena(a) || alvo.nome || null; } catch { nome = alvo.nome || null; }
   vis[chegada] = { mapa: rec.mapa, chegada, a, nome, quando: rec.quando };
   gravarLS('centrosVisitados', vis);
+  if (comConta()) Rede.enviar({ t: 'centro_visitado', mapa: rec.mapa, chegada });   // fast travel: the server keeps the Centers (server_travel.mjs)
 }
 /** ESTOU PRESO (15/09): pra onde o jogador vai depois do relato — o último Centro Pokémon (LS `ultimoCentro`, o mesmo do desmaio) ou,
  *  sem Centro ainda, o laboratório do Oak. No Johto, o Centro mais perto. `function` (içada): o contexto do relato chama. */
@@ -9981,7 +9982,7 @@ if (jogo.ash){
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), jogadores: m => { if (m.t === 'grupo'){ jogo.grupo = m.grupo || null; if (!m.grupo && m.motivo === 'removido') Chat.sistema('You were removed from the party.'); else if (!m.grupo && m.motivo === 'saiu') Chat.sistema('You left the party.'); } PlayerCard.receber(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), viagem: m => Menus.viagemRede(m), jogadores: m => { if (m.t === 'grupo'){ jogo.grupo = m.grupo || null; if (!m.grupo && m.motivo === 'removido') Chat.sistema('You were removed from the party.'); else if (!m.grupo && m.motivo === 'saiu') Chat.sistema('You left the party.'); } PlayerCard.receber(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
       if (!m?.vista) return;
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
@@ -10109,7 +10110,8 @@ if (jogo.ash){
   Menus.instalar({
     correioEnviar: m => Rede.enviar(m),
     shopkeeper: cfg => { const i = NPCS_GLB[cfg]; return i?.glb ? { nome: i.nome, glb: i.glb } : null; },   // the clerk's model for the Pokémart portrait
-    bolsaOp: (op, dados) => bolsaOp(op, dados), comConta: () => comConta(),   // BOLSA: loja e descarte passam pelo servidor (fora de conta o menus faz local, como sempre)
+    bolsaOp: (op, dados) => bolsaOp(op, dados), comConta: () => comConta(), areaAtual: () => areaInteriorVisitada ?? areaAtual(),
+    centrosLocais: () => ({ centros: Object.values(lerLS('centrosVisitados', {}) || {}).filter(c => c?.chegada).map(c => ({ mapa: c.mapa, chegada: +c.chegada })), ultimo: lerLS('ultimoCentro', null)?.chegada ?? null }),   // BOLSA: loja e descarte passam pelo servidor (fora de conta o menus faz local, como sempre)
     /* POSSE: soltar de vez precisa do OK do servidor (com conta); sem conta é local, como sempre. */
     soltarNoServidor: async e => { if (!comConta()) return { ok: true }; if (!e?.uid) return { ok: false, erro: 'este Pokémon ainda não está registrado no servidor' };
       const r = await Rede.pedirPosse('soltar', { uid: e.uid }); return r?.erro ? { ok: false, erro: r.erro } : { ok: true }; },

@@ -44,7 +44,7 @@ import * as TorneioUI from './tournament_ui.mjs';   // the crossed swords: Tourn
 import * as FeiraUI from './market_ui.mjs';
 import * as EventosUI from './events_ui.mjs';
 import * as MapaUI from './map_ui.mjs';                                   // v2 world map (Kanto, Sevii, Johto); ?worldmap=v1 keeps the old one
-import * as MapaViagem from './map_travel.mjs';
+import * as ViagemUi from './travel_ui.mjs';                              // v2 fast travel (upcoming/travel_ui.mjs) ↔ server_travel.mjs
 import * as PokemartUI from './pokemart_ui.mjs';
 import * as LojaUI from './shop_ui.mjs';                                  // Diamond Shop + Battle Pass (server_shop.mjs / server_season.mjs)
 import * as Guia from './mission_guide.mjs';
@@ -327,7 +327,9 @@ function ligarRecursos(){
     Som: ctx.Som,
     soltar: () => { if (aberta === 'mapa') aberta = null; },
   });
-  MapaViagem.instalar({ voar: () => ctx.voar, fecharMenu: () => fechar() });
+  ViagemUi.instalar({ enviar: (m) => ctx.tmEnviar?.(m), comConta: () => !!ctx.comConta?.(), Chat, Som: ctx.Som, segurar: (a) => DIALOGOS.add(a),
+    irParaCena: (o) => ctx.irParaCena?.(o), nomeArea: (a) => ctx.nomeArea?.(a) || null, emTurno: () => !!ctx.jogo?.turno, fecharMenu: () => fechar(),
+    areaAtual: () => ctx.areaAtual?.() ?? null, centrosLocais: () => ctx.centrosLocais?.() || {} });
   PokemartUI.instalar({
     dados: () => D,
     estoque: id => RegrasItem.estoque(D?.lojas, id),
@@ -482,6 +484,8 @@ export async function abrirTreinadorDe(O){
   try { await abrir('treinador'); } finally { abrindoOutro = false; }
   if (popTr && Popup.aberto(popTr)) encherTreinador(popTr);
 }
+/** Fast travel replies from the server (network.mjs viagem_vista / teleporte / viagem). */
+export function viagemRede(m){ ViagemUi.receber(m); }
 export async function abrir(nome, aba = null){
   if (nome === 'treinador' && !abrindoOutro) treinadorOutro = null;
   if (!JANELAS[nome]) return;
@@ -593,6 +597,7 @@ function tecla(e){
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;
   if (Teclas.capturando() || remap?.el.isConnected) return;               // the key list (Settings → Controls) is open: it handles the keys, Esc included
   const grade = !$('menu-grade').hidden;
+  if (e.code === 'Escape' && ViagemUi.fecharTopo?.()){ e.preventDefault(); e.stopImmediatePropagation(); return; }   // the travel confirm / notice
   if (e.code === 'Escape' && ProgressaoUi.fecharTopo?.()){ e.preventDefault(); e.stopImmediatePropagation(); return; }   // achievements window
   if (e.code === 'Escape' && popPrevia && Popup.aberto(popPrevia)){ fecharPrevia(); e.preventDefault(); e.stopImmediatePropagation(); return; }   // pop-up da prévia do adm (rodada 30)
   if (e.code === 'F7' && !e.repeat && ctx?.gm?.()){ previa(); e.preventDefault(); return; }   // rodada 30: paleta da prévia do adm
