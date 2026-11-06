@@ -84,10 +84,28 @@ reject() {
   exit 1
 }
 
+# Maps made with the panel's New map (ids 9100001-9199999) that are no longer in scenes.json were deleted from the panel (Map
+# editor -> Delete map). Their files can come back on the box from git before the repo drops them; never save those back.
+mapas_vivos=""
+if [[ -f public/data/scenes.json ]]; then
+  mapas_vivos="$(grep -oE '"id": ?91[0-9]{5}\b' public/data/scenes.json | grep -oE '91[0-9]{5}' | sort -u | tr '\n' ' ')"
+fi
+orfao() {
+  local id
+  id="$(basename "$1" | grep -oE '^91[0-9]{5}' || true)"
+  [[ -n "$id" ]] || return 1
+  [[ " $mapas_vivos " == *" $id "* ]] && return 1
+  case "$1" in
+    public/data/"$id".json|scenery/"$id".glb|scenery/"$id"_chao.json|public/scenery/"$id".glb|public/scenery/"$id"_chao.json) return 0 ;;
+  esac
+  return 1
+}
+
 find_live | sort -u > "$raw"
 : > "$list"
 while IFS= read -r f; do
   [[ -n "$f" ]] || continue
+  if orfao "$f"; then echo "pack-live: skipping $f (its map was deleted)" >&2; continue; fi
   case "$f" in
     ""|/*|../*|*/../*|*/..|..|*\\*) reject "refusing path $f" ;;
     server/data|server/data/*) reject "refusing accounts path $f" ;;

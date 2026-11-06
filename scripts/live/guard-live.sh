@@ -41,10 +41,24 @@ fi
 dirty="$(mktemp)"
 trap 'rm -f "$dirty"' EXIT
 
+# Files of a panel-made map (91xxxxx) that is no longer in scenes.json were deleted from the panel: the reset may drop them.
+mapas_vivos=""
+[[ -f public/data/scenes.json ]] && mapas_vivos="$(grep -oE '"id": ?91[0-9]{5}\b' public/data/scenes.json | grep -oE '91[0-9]{5}' | sort -u | tr '\n' ' ')"
+mapa_apagado() {
+  local id
+  id="$(basename "$1" | grep -oE '^91[0-9]{5}' || true)"
+  [[ -n "$id" && " $mapas_vivos " != *" $id "* ]] || return 1
+  case "$1" in
+    public/data/"$id".json|scenery/"$id".glb|scenery/"$id"_chao.json|public/scenery/"$id".glb|public/scenery/"$id"_chao.json) return 0 ;;
+  esac
+  return 1
+}
+
 scan() {
   local f
   while IFS= read -r f; do
     [[ -n "$f" && -f "$f" && ! -L "$f" ]] || continue
+    if mapa_apagado "$f"; then continue; fi
     if server_wins "$f"; then
       printf '%s\n' "$f"
     fi
