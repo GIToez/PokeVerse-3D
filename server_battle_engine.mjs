@@ -61,6 +61,7 @@ export function createTurnEngine({ status, engineMoves, moves, species, statOf, 
         tipos: (S.types || ['Normal']).map(tipoE), pesoKg: S.kg ?? S.peso ?? null });
       cache.set(p, c);
     }
+    c.tipos = (S.types || ['Normal']).map(tipoE);   // refreshed every turn: Transform changes a Pokémon's types mid-fight
     c.lv = p.lv || 1; c.maxHp = p.maxHp; c.hp = p.hp;
     c.atk = statOf(S, p, 1); c.def = statOf(S, p, 2); c.spa = statOf(S, p, 3); c.spd = statOf(S, p, 4); c.spe = statOf(S, p, 5);
     const want = p.status?.id ? ST_IN[p.status.id] || p.status.id : null, e = c.est;

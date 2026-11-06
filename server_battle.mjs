@@ -15,6 +15,7 @@ import { efetividade } from './rules.mjs';
 import { expMultOf, expSharers } from './exp_items.mjs';
 import { createTurnEngine } from './server_battle_engine.mjs';
 import { createMapWeather } from './server_weather.mjs';
+import * as Transf from './transform.mjs';   // Ditto's Transform in turn battles (rules: public/data/transform.json, loaded by server_transform.mjs)
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const HP_X = Ind.HP_X;
@@ -86,7 +87,7 @@ export function criarBatalha(ctx) {
   const climaDaLuta = (bat) => (bat.eu.field && engine.fieldWeather(bat.eu.field, fx)) || (climaMapa(bat) ? { id: climaMapa(bat), turnos: null } : null);
   const engine = createTurnEngine({
     status: lerJson('public/data/biblioteca/status.json', {}), engineMoves: lerJson('public/data/biblioteca/golpes.json', { golpes: {} }).golpes,
-    moves: golpes, species: (dex) => especie(dex), statOf: (S, p, i) => Ind.statDe(S, p, i), struggle: STRUGGLE,
+    moves: golpes, species: (dex, p) => (p?.transf ? Transf.especieEfetiva(especie(dex), p, Date.now()) : especie(dex)), statOf: (S, p, i) => Ind.statDe(S, p, i), struggle: STRUGGLE,
   });
   function volDe(p) {
     let v = vol.get(p);
@@ -94,7 +95,39 @@ export function criarBatalha(ctx) {
     return v;
   }
   const estDe = (p) => (p ? volDe(p).est : null);
-  const limparVol = (...lista) => { for (const p of lista.flat()) if (p) { vol.delete(p); fx.delete(p); } };
+  /* TRANSFORM IN BATTLE (Nov 6): the move copies the foe's species (types, stats at the Ditto's power), its moves (5 PP each) and
+     shows its model. It lasts while the Ditto stays in: a switch, a faint or the end of the fight puts the Ditto back. A Ditto
+     already transformed in the overworld (30 min) fights with that copy and its moves. The record's own moves wait in movsAntes. */
+  const ehDitto = (p) => { try { return Transf.regras().quem.includes(+p?.dex); } catch { return false; } };
+  function vestirTransf(p) {
+    if (!p?.transf || p.movsAntes || !Transf.transformado(p, Date.now())) return;
+    p.movsAntes = p.movs; p.movs = p.transf.movs;
+  }
+  function tirarTransf(p) {
+    if (!p) return;
+    if (p.movsAntes) { p.movs = p.movsAntes; delete p.movsAntes; }
+    if (p.transf?.modo === 'luta') delete p.transf;
+  }
+  /** `at` uses Transform on `alvo`. Pushes the lance (from `lado`'s view) and the log line; true when it worked. */
+  function usarTransform(at, alvo, lado, lances, log, espelho = null) {
+    const v = alvo ? { tipo: 'luta', uid: alvo.uid, dex: +alvo.dex, lv: +alvo.lv || 1, hp: alvo.hp, movs: alvo.movs || [], especie: especie(alvo.dex), glb: glbDe(alvo.dex, alvo), transformado: !!alvo.transf } : null;
+    const r = Transf.golpeDeTurno(at, v, { agora: Date.now(), golpeExiste: (id) => !!golpes[id], lado });
+    const nome = at.nome || 'Ditto';
+    if (!r?.ok) {
+      const l = { de: lado, golpe: 'transform', dano: 0, falhou: true, avisos: [{ quem: lado, txt: 'it failed', cor: '#9ab' }] };
+      lances.push(l); espelho?.push({ ...l, de: lado === 'eu' ? 'ele' : 'eu', avisos: [{ quem: lado === 'eu' ? 'ele' : 'eu', txt: 'it failed', cor: '#9ab' }] });
+      log.push(nome + ' used Transform, but it failed' + (r?.texto ? ': ' + r.texto : '.'));
+      return false;
+    }
+    if (!at.movsAntes) at.movsAntes = at.movs;
+    at.movs = at.transf.movs;
+    const t = at.transf, info = { dex: t.dex, glb: t.glb, nome: t.nome, tipos: t.tipos.slice(), movs: t.movs.map((m) => ({ id: m.id, pp: m.pp, ppMax: m.ppMax })), modo: 'luta' };
+    lances.push({ de: lado, golpe: 'transform', dano: 0, transformou: info });
+    espelho?.push({ de: lado === 'eu' ? 'ele' : 'eu', golpe: 'transform', dano: 0, transformou: info });
+    log.push(nome + ' transformed into ' + t.nome + '!');
+    return true;
+  }
+  const limparVol = (...lista) => { for (const p of lista.flat()) if (p) { vol.delete(p); fx.delete(p); tirarTransf(p); } };
 
   function contaDe(ws) {
     const u = ws._usuario && ctx.sessoes.get(ws._info?.token);
@@ -142,7 +175,7 @@ export function criarBatalha(ctx) {
   }
 
   function timeJogador(s) {
-    return (s.time || []).filter(Boolean).map((p) => garantirMon(p));
+    return (s.time || []).filter(Boolean).map((p) => { tirarTransf(p); return garantirMon(p); });   // a fight that never ended (restart) left a battle copy on the record
   }
 
   function primeiroVivo(lista) {
@@ -269,6 +302,8 @@ export function criarBatalha(ctx) {
     return subiu;
   }
 
+  /** What the client needs to show a transformed Pokémon (model, name, types, the copied moves). */
+  const vistaTransf = (p) => (p?.transf && Transf.transformado(p, Date.now()) ? { dex: p.transf.dex, glb: p.transf.glb, nome: p.transf.nome, tipos: (p.transf.tipos || []).slice(), modo: p.transf.modo, movs: (p.transf.movs || []).map((m) => ({ id: m.id, pp: m.pp, ppMax: m.ppMax })) } : null);
   function retrato(bat) {
     const eu = bat.eu.field;
     const ele = bat.dele[bat.eleIdx] || null;
@@ -281,8 +316,8 @@ export function criarBatalha(ctx) {
       pvp: !!bat.pvp,
       abrir: true,
       dele: bat.dele.map(snapshotMon),
-      eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, status: Status.exportar(eu.status), estagios: engine.stagesOf(eu, fx), semente: engine.seededOf(eu, fx), efeitos: engine.volatilesOf(eu, fx) } : null,
-      ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, status: Status.exportar(ele.status), estagios: engine.stagesOf(ele, fx), semente: engine.seededOf(ele, fx), efeitos: engine.volatilesOf(ele, fx) } : null,
+      eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, transf: vistaTransf(eu), status: Status.exportar(eu.status), estagios: engine.stagesOf(eu, fx), semente: engine.seededOf(eu, fx), efeitos: engine.volatilesOf(eu, fx) } : null,
+      ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, transf: vistaTransf(ele), status: Status.exportar(ele.status), estagios: engine.stagesOf(ele, fx), semente: engine.seededOf(ele, fx), efeitos: engine.volatilesOf(ele, fx) } : null,
       clima: climaDaLuta(bat),
       lances: bat.lances || [],
       log: bat.log || [],
@@ -634,9 +669,12 @@ export function criarBatalha(ctx) {
 
     /* One turn on the engine: priority, Speed, every move's effect, end-of-turn damage. A switch or an item is this side's
        action (no move): the trainer still moves. */
-    const golpeEle = escolherGolpe(ele);
+    vestirTransf(bat.eu.field); vestirTransf(ele);
+    let golpeEle = escolherGolpe(ele);
     if (meuGolpe && meuGolpe !== STRUGGLE) gastarPP(eu, meuGolpe.id);
     if (golpeEle !== STRUGGLE) gastarPP(ele, golpeEle.id);
+    if (meuGolpe?.id === 'transform' && ehDitto(bat.eu.field)) { usarTransform(bat.eu.field, ele, 'eu', bat.lances, bat.log); meuGolpe = null; }   // Transform is done here; the engine turn only runs the foe's move
+    if (golpeEle?.id === 'transform' && ehDitto(ele)) { usarTransform(ele, bat.eu.field, 'ele', bat.lances, bat.log); golpeEle = null; }
     const r = engine.turn({ p: bat.eu.field, move: meuGolpe }, { p: ele, move: golpeEle }, fx, Math.random, climaMapa(bat));
     bat.lances.push(...r.lances);
     bat.log.push(...r.log);
@@ -667,8 +705,6 @@ export function criarBatalha(ctx) {
 
     /* Switches and items happen first (no move for that side); then one engine turn for the two in the field. */
     const preparar = (lado, ac) => {
-      lado.lances = [];
-      lado.log = [];
       const eu = lado.eu.field;
       if (ac.acao === 'trocar') {
         const prox = lado.eu.time.find((p) => String(p.uid) === String(ac.uid) && p.hp > 0);
@@ -677,9 +713,11 @@ export function criarBatalha(ctx) {
       }
       if (ac.acao === 'item') { const s = saveDe(ctx.contas[lado.usuario]); if (s) usarItemNaLuta(eu, +ac.item, s); return null; }
       if (ac.acao === 'fugir') { lado.fimPedido = 'fugiu'; return null; }
+      vestirTransf(eu);
       const g = golpeDe(ac.golpe) || escolherGolpe(eu);
       const ok = g === STRUGGLE || (eu.movs || []).some((m) => m.id === g.id && m.pp > 0) ? g : escolherGolpe(eu);
       if (ok !== STRUGGLE) gastarPP(eu, ok.id);
+      if (ok?.id === 'transform' && ehDitto(eu)) { const n = lado.log.length; usarTransform(eu, lado.par?.eu?.field, 'eu', lado.lances, lado.log, lado.par ? lado.par.lances : null); if (lado.par) lado.par.log.push(...lado.log.slice(n)); return null; }
       return ok;
     };
     if (aFirst.acao.acao === 'fugir' || bFirst.acao.acao === 'fugir') {
@@ -692,6 +730,7 @@ export function criarBatalha(ctx) {
       return retrato(bat);
     }
 
+    for (const l of [aFirst, bFirst]) { l.lances = []; l.log = []; }   // both cleared first: one side's Transform also writes into the other's lances
     const gA = preparar(aFirst, aFirst.acao), gB = preparar(bFirst, bFirst.acao);
     const rT = engine.turn({ p: aFirst.eu.field, move: gA }, { p: bFirst.eu.field, move: gB }, fx, Math.random, climaMapa(aFirst));
     aFirst.lances.push(...rT.lances);

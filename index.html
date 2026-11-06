@@ -11296,6 +11296,19 @@ async function rodadaDoServidor(T, acao){
       if (at === jogo.pika) guardarEstadoAtivo();
       continue;
     }
+    if (l.golpe === 'transform'){                                        // Ditto's Transform (server_battle.mjs): copies the foe, model and moves
+      if (!l.transformou){ avisos(); await esperarSeg(0.5); continue; }
+      efeito('00016_Hit', at.peito, at.altura); Som.tocar('skill/Blow5', { volume: 0.5 });
+      if (at === jogo.pika){
+        const reg = (jogo.time || []).find(t => String(t?.uid) === String(uidParceiro()));
+        const novo = reg ? await jogo.mostrarTransf?.(l.transformou, reg).catch(e => { console.warn('transform: model', e); return null; }) : null;
+        const q = novo || jogo.pika;
+        if (novo){ novo.emBatalha = true; if (T.inimigo) T.inimigo.rival = novo; novo.giro = Math.atan2(T.inimigo.x - novo.x, T.inimigo.z - novo.z); novo.pivo.rotation.y = novo.giro; tocarUma(novo, 'Appear'); }
+        flutuar(q, I18n.t('Transformed into {x}!', { x: l.transformou.nome }), '#c9a7ff');
+        try { pintarTurno(); } catch {}
+      } else flutuar(at, I18n.t('Transformed into {x}!', { x: l.transformou.nome }), '#c9a7ff');
+      await esperarSeg(0.8); continue;
+    }
     const g = (l.golpe === 'struggle' ? STRUGGLE : GOLPES[l.golpe]) || STRUGGLE;
     if (l.statusQuem !== 'eu' && g.tipo === 'Fire' && def.status?.id === 'freeze') flutuar(def, 'thawed', Status.cor('freeze'));
     await golpeTurno(at, def, g, { dano: l.dano, eff: l.eff, hp: l.hpAlvo, errou: !!l.errou });
@@ -11331,6 +11344,10 @@ async function rodadaDoServidor(T, acao){
     if (jogo.pika && String(uidParceiro()) === String(v.uid)) flutuar(jogo.pika, 'Lv ' + v.lv + '!', '#ffe07a');
     Som.tocar('ui/sound_successful', { volume: .55, prio: true });
     if (jogo.missoesOk) Missoes.evento({ tipo: 'nivel', lv: v.lv });
+  }
+  if (jogo.pika?.transf?.modo === 'luta' && (r.fim || !r.eu?.transf)){   // the battle copy ends (switch, faint, end of the fight): the Ditto's own model and moves
+    const reg = (jogo.time || []).find(t => String(t?.uid) === String(uidParceiro()));
+    if (reg){ const novo = await jogo.mostrarTransf?.(null, reg).catch(() => null); if (novo && jogo.turno && !r.fim){ novo.emBatalha = true; if (T.inimigo) T.inimigo.rival = novo; } }
   }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o network.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
   if (T.inimigo && r.ele && !T.caiu){ T.inimigo.hp = r.ele.hp; if ('status' in r.ele){ T.inimigo.status = r.ele.status || null; T.inimigo.rotMarca = undefined; } }            // desmaiou: o `ele` já é o próximo, o HP dele vai pro que entra (abaixo)
   if (T.inimigo && r.ele?.estagios && !T.caiu){ T.inimigo.estagios = { ...r.ele.estagios }; T.inimigo.semente = r.ele.semente ? (T.inimigo.semente || { de: 'parceiro' }) : null; T.inimigo.rotMarca = undefined; pintarRotuloSelvagem(T.inimigo); }   // estágios: quem vale é o servidor
