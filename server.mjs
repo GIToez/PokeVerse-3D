@@ -1030,6 +1030,7 @@ const httpServer = http.createServer((req, res) => {
   // Caminho próprio: o corpo é um .glb (vários MB), não JSON — não passa pelo cap de 1MB nem pelo parse de texto.
   if (req.method === 'POST' && rota === '/admin/mapa-glb') {
     const u = usuarioDe(req);
+    if (!u) return json(401, { erro: 'Your sign-in expired or you signed in somewhere else: sign in to the panel again.' });
     if (!contas[u]?.gm) return json(403, { erro: 'GM accounts only.' });
     const m = String(url.searchParams.get('map') || url.searchParams.get('mapa') || '');
     if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
@@ -1302,7 +1303,7 @@ const httpServer = http.createServer((req, res) => {
         return json(200, { ok: true, usuario: u, gm: !!contas[u]?.gm, nome: contas[u]?.save?.nome || u });
       }
       const g = gmDe(req);
-      if (!g) return json(403, { erro: 'GM accounts only.' });
+      if (!g) return usuarioDe(req) ? json(403, { erro: 'GM accounts only.' }) : json(401, { erro: 'Your sign-in expired or you signed in somewhere else: sign in to the panel again.' });
       if ((rota === '/admin/agenda' || rota === '/admin/agenda/agora') && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
       if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
@@ -1344,6 +1345,7 @@ const httpServer = http.createServer((req, res) => {
          9100001 and their own area ids, so names, music and spawns never mix with the map they came from. A clone keeps the
          scenery, ground, grass and water; NPCs, doors, trainers and stories are left out (they belong to the original's places). */
       if (rota === '/admin/mapa/novo' && req.method === 'POST') {
+        const LADO_MAX = 320;   // a blank map is one 1 × 1 m ground tile per m²: 320 × 320 ≈ 100k tiles, about Johto's file size (bigger loads slowly)
         const modo = d.modo === 'clonar' ? 'clonar' : 'vazio';
         const nome = String(d.nome || '').trim().slice(0, 60);
         if (!nome) return json(400, { erro: 'Give the new map a name.' });
@@ -1380,7 +1382,7 @@ const httpServer = http.createServer((req, res) => {
           origem = glbDe(lib);
           const libDados = lerJson(nodePath.join(DADOS_PUB, lib + '.json'), null);
           if (!origem || !libDados) return json(400, { erro: 'Library map ' + lib + ' not found.' });
-          const W = Math.max(10, Math.min(200, Math.round(+d.largura || 60))), D = Math.max(10, Math.min(200, Math.round(+d.profundidade || 60)));
+          const W = Math.max(10, Math.min(LADO_MAX, Math.round(+d.largura || 60))), D = Math.max(10, Math.min(LADO_MAX, Math.round(+d.profundidade || 60)));
           const piso = (libDados.prefabs || []).find(n => /^floor_grass/.test(n)) || (libDados.prefabs || []).find(n => /floor/i.test(n)) || 'floor_grass2';
           const objetos = [];                                                    // the ground: floor tiles, like the source maps
           for (let x = -W / 2; x < W / 2; x++) for (let z = -D / 2; z < D / 2; z++) objetos.push({ n: piso, x: x + 0.5, y: 0, z: z + 0.5, a: 0 });   // floor_grass2 is a 1 × 1 m tile

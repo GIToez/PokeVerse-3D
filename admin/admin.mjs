@@ -26,12 +26,14 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 
 let token = ler('conta.token') || '';
 async function api(rota, metodo = 'GET', corpo) {
+  const t0 = ler('conta.token'); if (t0) token = t0;   // the game (same browser) may have signed in again since this page loaded
   const r = await fetch(BASE + rota, {
     method: metodo,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
     body: corpo != null ? JSON.stringify(corpo) : undefined,
   });
   let d = {}; try { d = await r.json(); } catch {}
+  if (r.status === 401 && rota.startsWith('/admin/')) mostrarLogin(d.erro || 'Your sign-in expired: sign in again.');
   return { status: r.status, ok: r.ok, ...d };
 }
 function toast(msg, erro = false) {

@@ -16,6 +16,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let token = localStorage.getItem('conta.token') || '';
 const api = async (rota, metodo = 'GET', corpo) => {
+  try { token = localStorage.getItem('conta.token') || token; } catch {}   // the freshest sign-in (the game may have signed in again)
   const r = await fetch(BASE + rota, { method: metodo, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, body: corpo != null ? JSON.stringify(corpo) : undefined });
   let d = {}; try { d = await r.json(); } catch {} return { status: r.status, ok: r.ok, ...d };
 };
@@ -534,6 +535,7 @@ async function salvar() {
     } else {
       transform.detach();
       const buf = await new Promise((res, rej) => exporter.parse(sceneGLB, res, rej, { binary: true, onlyVisible: false }));
+      try { token = localStorage.getItem('conta.token') || token; } catch {}
       const r = await fetch(BASE + '/admin/mapa-glb?map=' + encodeURIComponent(mapaAtual), { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/octet-stream' }, body: buf });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { toast(d.erro || 'Failed to save the GLB.', true); return; }
