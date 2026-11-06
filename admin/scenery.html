@@ -18,6 +18,8 @@ html,body{ margin:0; height:100%; background:var(--bg); color:var(--texto); font
 button,input,select{ font:inherit; color:inherit; }
 button{ background:var(--painel2); border:1px solid var(--borda); border-radius:6px; padding:6px 11px; cursor:pointer; }
 button:hover{ border-color:#3d4660; }
+button:disabled{ opacity:.45; cursor:default; }
+button:disabled:hover{ border-color:var(--borda); }
 button.prim{ background:var(--acento); color:#1a1405; border-color:var(--acento); font-weight:600; }
 button.on{ background:#2b3550; border-color:var(--azul); }
 button.perigo{ color:var(--erro); }
@@ -76,13 +78,15 @@ header .sujo{ color:var(--acento); font-size:13px; }
       <div class="ferramentas">
         <button id="t-sel" class="on" title="Select/move (S)">🖱️ Select</button>
         <button id="t-add" title="Place piece (A): pick from the palette and click the ground">➕ Place</button>
+        <button id="t-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+        <button id="t-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
         <button id="t-foco" title="Frame everything and reset the pivot to the map center (F)">🎯 Frame</button>
         <button id="t-pivo-down" title="Lower the orbit pivot (Q / Page Down)">↓ Pivot</button>
         <button id="t-pivo-up" title="Raise the orbit pivot (E / Page Up)">↑ Pivot</button>
         <button id="t-pivo-chao" title="Drop the pivot back to the floor (Home)">Floor</button>
         <label class="chk" style="display:flex;align-items:center;gap:5px;background:rgba(10,13,18,.82);border:1px solid var(--borda);border-radius:6px;padding:0 8px"><input type="checkbox" id="t-snap"> snap 0.5m</label>
       </div>
-      <div class="dica-cam" id="dica-cam">WASD / arrows slide the pivot (W forward, no need to orbit first) · Q/E height · right-drag also pans · Home = floor · Ctrl+D duplicates</div>
+      <div class="dica-cam" id="dica-cam">WASD / arrows slide the pivot (W forward, no need to orbit first) · Q/E height · right-drag also pans · Home = floor · Ctrl+D duplicates · Ctrl+Z / Ctrl+Y undo/redo</div>
       <div class="hud" id="hud">—</div>
       <div id="carregando">loading the scenery…</div>
     </div>

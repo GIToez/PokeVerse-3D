@@ -117,7 +117,12 @@ function atualizarPivo() {
   if ($('hud-pivo')) $('hud-pivo').textContent = orbit.target.x.toFixed(1) + ', ' + orbit.target.y.toFixed(1) + ', ' + orbit.target.z.toFixed(1);
 }
 const transform = new TransformControls(camera, renderer.domElement);
-transform.addEventListener('dragging-changed', e => { orbit.enabled = !e.value; });
+let posAntesArraste = null;
+transform.addEventListener('dragging-changed', e => {
+  orbit.enabled = !e.value;
+  if (e.value) posAntesArraste = selPeca ? selPeca.pos.clone() : null;
+  else { if (selPeca && posAntesArraste) registrarMov(selPeca, posAntesArraste); posAntesArraste = null; }
+});
 transform.addEventListener('objectChange', () => {
   if (!selPeca) return;
   let x = proxy.position.x * fx, y = proxy.position.y, z = proxy.position.z;   // de world pra coords de edição (bib: flipX)
@@ -149,6 +154,52 @@ function setPos(peca, x, y, z) {
   peca.pos.set(x, y, z);
   if (peca.obj) { peca.obj.x = x; peca.obj.y = y; peca.obj.z = z; }
   if (peca.node) peca.node.position.set(x, y, z);
+}
+
+// ── Undo / Redo ────────────────────────────────────────────────────────────────
+// ações: { t:'mov', peca, de, para } · { t:'add', peca, idx } · { t:'del', peca, idx }
+const LIMITE_HIST = 300;
+let historico = [], refazer = [];
+function registrar(acao) {
+  historico.push(acao); if (historico.length > LIMITE_HIST) historico.shift();
+  refazer = []; atualizarBotoesHist();
+}
+function registrarMov(peca, de) {
+  if (!de || de.equals(peca.pos)) return;
+  registrar({ t: 'mov', peca, de: de.clone(), para: peca.pos.clone() });
+}
+function limparHist() { historico = []; refazer = []; atualizarBotoesHist(); }
+function atualizarBotoesHist() {
+  if ($('t-undo')) { $('t-undo').disabled = !historico.length; $('t-undo').title = 'Undo (Ctrl+Z)' + (historico.length ? ' · ' + historico.length + ' step(s)' : ''); }
+  if ($('t-redo')) { $('t-redo').disabled = !refazer.length; $('t-redo').title = 'Redo (Ctrl+Y / Ctrl+Shift+Z)' + (refazer.length ? ' · ' + refazer.length + ' step(s)' : ''); }
+}
+function moverPara(peca, v) {
+  setPos(peca, v.x, v.y, v.z); atualizarInst(peca);
+  if (selPeca === peca) { proxy.position.set(fx * v.x, v.y, v.z); realcar(peca); atualizarCamposSel(); }
+  else selecionar(peca);
+}
+function inserirPeca(peca, idx) {
+  if (peca.node) mapaNode.add(peca.node);
+  pecas.splice(Math.min(idx, pecas.length), 0, peca); rebuildInstancias(); selecionar(peca);
+}
+function removerPeca(peca) {
+  const i = pecas.indexOf(peca); if (i < 0) return;
+  if (peca.node) mapaNode.remove(peca.node);
+  pecas.splice(i, 1); if (selPeca === peca) deselecionar(); rebuildInstancias();
+}
+function aplicarHist(acao, voltar) {
+  if (acao.t === 'mov') moverPara(acao.peca, voltar ? acao.de : acao.para);
+  else if ((acao.t === 'add') === voltar) removerPeca(acao.peca);   // desfazer add / refazer del
+  else inserirPeca(acao.peca, acao.idx);                             // desfazer del / refazer add
+  marcarSujo(); atualizarHud();
+}
+function desfazer() {
+  if (transform.dragging || !historico.length) return;
+  const a = historico.pop(); aplicarHist(a, true); refazer.push(a); atualizarBotoesHist();
+}
+function refazerAcao() {
+  if (transform.dragging || !refazer.length) return;
+  const a = refazer.pop(); aplicarHist(a, false); historico.push(a); atualizarBotoesHist();
 }
 
 (function loop() { requestAnimationFrame(loop); orbit.update(); atualizarPivo(); renderer.render(scene, camera); })();
@@ -212,7 +263,7 @@ async function carregarMapa(nome, rotulo) {
   if (modo === 'biblioteca') await montarBiblioteca(nome); else montarMontado();
   await extraLamppost();
   rebuildInstancias(); enquadrar(); renderPaleta();
-  sujo = false; $('sujo').hidden = true; $('carregando').hidden = true; atualizarHud();
+  sujo = false; $('sujo').hidden = true; $('carregando').hidden = true; atualizarHud(); limparHist();
 }
 
 async function montarBiblioteca(nome) {
@@ -352,13 +403,13 @@ renderer.domElement.addEventListener('dblclick', ev => {
 function criarBib(chave, ponto) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
   const obj = { n: nomeDoPrefab.get(chave) || chave, x: +(fx * ponto.x).toFixed(3), y: +ponto.y.toFixed(3), z: +ponto.z.toFixed(3) };
   const peca = { pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(chave) || [], inst: [], obj, lista: 'objetos' };
-  pecas.push(peca); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
+  pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
 }
 function criarMont(nodeExemplo, ponto) {
   const node = nodeExemplo.clone(true); node.position.copy(ponto); mapaNode.add(node); node.updateMatrixWorld(true);
   const mats = []; node.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) mats.push({ geo: o.geometry, mat: o.material, local: new THREE.Matrix4().copy(node.matrixWorld).invert().multiply(o.matrixWorld) }); });
   const peca = { pos: node.position.clone(), nome: node.name, mats, inst: [], node };
-  pecas.push(peca); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
+  pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
 }
 function duplicar() {
   if (!selPeca) return;
@@ -370,7 +421,8 @@ function deletar() {
   if (!selPeca) return;
   const p = selPeca;
   if (p.node) mapaNode.remove(p.node);
-  pecas.splice(pecas.indexOf(p), 1); deselecionar(); rebuildInstancias(); marcarSujo(); atualizarHud();   // bib: a peça sai de `pecas`; as listas são refeitas no salvar
+  const idx = pecas.indexOf(p); if (idx < 0) return;
+  pecas.splice(idx, 1); registrar({ t: 'del', peca: p, idx }); deselecionar(); rebuildInstancias(); marcarSujo(); atualizarHud();   // bib: a peça sai de `pecas`; as listas são refeitas no salvar
 }
 function enquadrar() {
   const box = new THREE.Box3(), tmp = new THREE.Vector3();
@@ -462,6 +514,8 @@ async function salvar() {
 // ── Ligações ──────────────────────────────────────────────────────────────────
 $('t-sel').onclick = () => usarFerramenta('sel');
 $('t-add').onclick = () => { if (!addTipo) toast('Pick a piece from the palette first.'); usarFerramenta('add'); };
+$('t-undo').onclick = desfazer;
+$('t-redo').onclick = refazerAcao;
 $('t-foco').onclick = enquadrar;
 $('t-pivo-up').onclick = () => subirPivo(passoPivo());
 $('t-pivo-down').onclick = () => subirPivo(-passoPivo());
@@ -470,6 +524,11 @@ $('t-snap').onchange = e => { snap = e.target.checked; };
 $('s-var').onclick = () => toast('Rotation is baked into the piece itself: use the palette to place the variant you want.');
 $('s-dup').onclick = duplicar;
 $('s-del').onclick = deletar;
+let posAntesCampo = null;
+for (const k of ['x', 'y', 'z']) {
+  $('s-' + k).addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: selPeca.pos.clone() } : null; });
+  $('s-' + k).addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = selPeca.pos.clone(); } });
+}
 for (const k of ['x', 'y', 'z']) $('s-' + k).addEventListener('input', () => { if (!selPeca) return; const p = selPeca.pos; setPos(selPeca, k === 'x' ? (+$('s-x').value || 0) : p.x, k === 'y' ? (+$('s-y').value || 0) : p.y, k === 'z' ? (+$('s-z').value || 0) : p.z); proxy.position.set(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
 $('pal-busca').addEventListener('input', renderPaleta);
 $('b-salvar').onclick = salvar;
@@ -481,6 +540,13 @@ $('sel-mapa').onchange = async e => {
   await carregarMapa(e.target.value, opt?.textContent || '');
 };
 addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  const campoTexto = e.target.tagName === 'TEXTAREA' || (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox');
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && (k === 'z' || k === 'y') && !campoTexto) {   // em campo de texto fica o undo nativo do navegador
+    e.preventDefault();
+    if (k === 'y' || e.shiftKey) refazerAcao(); else desfazer();
+    return;
+  }
   if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.key === 'Delete' || e.key === 'Backspace') deletar();
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
