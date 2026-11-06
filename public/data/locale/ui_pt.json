@@ -9168,5 +9168,19 @@
   "{dias} days of +{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.": "{dias} dias de +{xp} % de XP pros seus Pokémon (mais vantagens quando os limites da Caixa, Mercado e Viagem abrirem). O tempo soma, até 365 dias. Use pela Mochila ou venda no Mercado por Moedas.",
   "Your Box is full. Buy Box slots in the Shop (Comfort tab) or release some Pokémon.": "Sua Caixa está cheia. Compre vagas na Loja (aba Conforto) ou solte alguns Pokémon.",
   "Box full": "Caixa cheia",
-  "You already bought the most Box slots.": "Você já comprou o máximo de vagas na Caixa."
+  "You already bought the most Box slots.": "Você já comprou o máximo de vagas na Caixa.",
+  "Transform into {x}'s {y}": "Transformar no {y} de {x}",
+  "{x} defeated!": "{x} derrotado!",
+  "{x} got away": "{x} escapou",
+  "GOLD": "OURO",
+  "SILVER": "PRATA",
+  "BRONZE": "BRONZE",
+  "Prize: {x}": "Prêmio: {x}",
+  "You dealt too little damage for a prize this time.": "Você deu pouco dano pra ganhar prêmio desta vez.",
+  "The time ran out.": "O tempo acabou.",
+  "Quick phrases": "Frases prontas",
+  "shown to your raid": "aparecem pra sua raid",
+  "Focus": "Focar",
+  "then pick a Pokémon: your raid sees it marked": "depois escolha um Pokémon: sua raid vê ele marcado",
+  "pick a Pokémon to focus": "escolha um Pokémon pra focar"
 }

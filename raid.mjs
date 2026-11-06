@@ -18,6 +18,7 @@
  * (raid_voltar), quando o servidor diz que a raid acabou/não é sua, e em qualquer carga de OUTRA cena (o index faz).
  */
 import * as I18n from './i18n.mjs';
+import * as RaidV2 from './raid_v2.mjs';
 
 /* CONFIG (Fase 3 do painel → Arquivos de dados → Raid): data/raid.json. PADRAO = o que estava fixo no código; campo ausente ou
    fora do formato fica com ele. Lido no import (o index usa o ARENA no boot, antes do instalar). Vida/dano/shiny/prêmio são do
@@ -95,7 +96,7 @@ export function montarUI(dep = {}){
 /** Barra de vida do chefe no topo: { nome, lv, hp, maxHp } ou null (some). */
 export function chefe(info){
   if (info) temRegistro = true;
-  ultimoChefe = info ? { nome: info.nome || CFG.chefeNome, lv: info.lv ?? null, hp: Math.max(0, Math.round(info.hp ?? 0)), maxHp: Math.max(1, Math.round(info.maxHp || 1)) } : null;
+  ultimoChefe = info ? { nome: info.nome || CFG.chefeNome, lv: info.lv ?? null, hp: Math.max(0, Math.round(info.hp ?? 0)), maxHp: Math.max(1, Math.round(info.maxHp || 1)), dex: info.dex || CFG.chefeDex } : null;
   ui('chefe', ultimoChefe);
 }
 export function modoArena(on){ ui('modoArena', !!on); }
@@ -207,7 +208,11 @@ function aoFim(m){
   } else {
     texto = 'The raid is over: ' + nomeChefe() + ' got away.';
   }
-  avisar(texto);
+  /* v2 end card (raid_v2.mjs): the prize on the card, the same line in chat; without the card, the old banner */
+  const premioTxt = m.venceu && p ? texto.replace(/^.*?Prize: /, '').replace(/\.$/, '') : '';
+  const card = RaidV2.fim({ venceu: !!m.venceu, nome: nomeChefe(), dex: CFG.chefeDex, parte: +m.captura?.parte || 0, premioTxt: premioTxt && premioTxt !== texto ? premioTxt : '',
+    motivo: m.venceu ? (premioTxt && premioTxt !== texto ? '' : I18n.t('You dealt too little damage for a prize this time.')) : I18n.t('The time ran out.') });
+  if (card) ctx.Chat?.sistema?.(texto); else avisar(texto);
   if (m.venceu && p?.mew?.shiny) ctx.Chat?.sistema?.('✨ Your ' + (p.mew.nome || nomeChefe()) + ' is SHINY!');
   if (p?.mew) ctx.Chat?.sistema?.((p.mew.nome || nomeChefe()) + ' joined your party (or your PC box, if the party is full).');
   if (capt?.pode) { ctx.Chat?.sistema?.('🎯 You earned a catch throw! Pick a ball and press F (or tap the ball) at the fainted ' + nomeChefe() + ' — one throw only.'); avisar('One throw: catch ' + nomeChefe() + '!', { chat: false }); }

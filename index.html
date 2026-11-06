@@ -276,6 +276,7 @@ import * as ActiveFx from './active_effects.mjs';   // event / Medallion / perfu
 import * as Locks from './locks.mjs';             // door locks (public/data/locks.json) + the v2 lock bubble
 import * as DailyUi from './daily_ui.mjs';       // Daily Rewards window (v2 trilha) for the 7-day login streak
 import * as FocusUi from './focus_ui.mjs';       // raid focus pings (v2 foca-neste)
+import * as SafariBtn from './safari_ball_button.mjs';   // the Safari version of the ball button (v2 btn-pokebola)
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, 20 minutes, bait and rock (shared with server_bag.mjs)
 import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
@@ -8914,6 +8915,16 @@ async function mostrarFala(quem, linhas, dono = null, { semTempo = false } = {})
     }
   } finally { caixa.hidden = true; falando = null; pularFala = null; }
 }
+/* FOCUS PING after the Quick phrases button: the next target the player picks (click or Tab, within 15 s) is pinged to the raid */
+function esperarAlvoFoco(){
+  const antes = jogo.alvo, fim = performance.now() + 15000;
+  flutuar(jogo.ash, I18n.t('pick a Pokémon to focus'), '#8ef58e');
+  const t = setInterval(() => {
+    const a = jogo.alvo;
+    if (performance.now() > fim || !jogo.raidArena){ clearInterval(t); return; }
+    if (a && a !== antes && a.id != null){ clearInterval(t); Rede.enviar({ t: 'raid_foco', alvo: String(a.id) }); }
+  }, 150);
+}
 /* HAND OVER (Nov 5): the server took these Pokémon out of the account (missao_doar); the lists here follow, and the NPC says thanks */
 let doarNpc = null;
 function tirarDoados(uids, falaDoar){
@@ -10142,6 +10153,7 @@ function pintarBarra(){
   setTexto($('bola-nome'), visita ? 'Safari Ball' : I18n.t(BOLAS[sel]?.[0] || sel)); setTexto($('bola-n'), '×' + nb);
   const bi = $('bola-icone'); if (bi && bi.__sel !== sel){ bi.__sel = sel; bi.classList.add('real'); bi.style.backgroundImage = "url('./ui/itens/ic_" + sel + ".png')"; }   // ícone real da bola (pacote Item)
   const bb = $('bola-btn'), semBola = nb <= 0; if (bb.__frio !== semBola){ bb.classList.toggle('frio', semBola); bb.__frio = semBola; }
+  try { SafariBtn.pintar({ visita, restantes: visita ? jogo.safari.restantes : 0, tecla: Teclas.rotuloAcao?.('pokebola', 'hud') || 'F', jogar: () => { Som.destravar(); jogarBola(); } }); } catch (e){ console.warn('safari ball button:', e); }
   if (bb) bb.title = visita
     ? (jogo.safari.restantes + ' Safari Balls · ' + SafariUi.relogio(jogo.safari.fim - Date.now()) + ' left · F throw · G bait · R rock')
     : I18n.t('{name} ×{n} · throw with F · Shift+F switches ball', { name: I18n.t(BOLAS[sel]?.[0] || sel), n: nb });
@@ -10526,10 +10538,11 @@ addEventListener('keydown', e => {
     if (ac === 'trocar-pokemon' && uma) proximoDoTime();                   // Shift+Z: próximo do time
     if (ac === 'proximo-alvo'){ e.preventDefault(); if (uma) proximoAlvo(); }
     if (ac === 'focar'){ e.preventDefault(); if (uma){                     // ping my target to my raid (the server only relays it inside a raid)
-      const a = jogo.alvo;
-      if (!a || a.id == null) flutuar(jogo.ash, I18n.t('pick a target first (Tab)'), '#ffd23a');
-      else if (!jogo.raidArena) flutuar(jogo.ash, I18n.t('focus pings work in raids'), '#ffd23a');
-      else Rede.enviar({ t: 'raid_foco', alvo: String(a.id) });
+      const a = jogo.alvo, tr2 = (s, v) => I18n.t(s, v);
+      if (!jogo.raidArena) flutuar(jogo.ash, I18n.t('focus pings work in raids'), '#ffd23a');
+      else if (FocusUi.frasesAbertas()) FocusUi.frases({ aberto: false });
+      else if (a && a.id != null) Rede.enviar({ t: 'raid_foco', alvo: String(a.id) });
+      else FocusUi.frases({ tr: tr2, aoFocar: () => esperarAlvoFoco() });   // no target yet: the Quick phrases panel, then the next target picked gets the ping
     } }
     if (e.code === 'Escape') jogo.alvo = null;
   }

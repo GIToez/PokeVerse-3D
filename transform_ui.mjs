@@ -109,6 +109,52 @@ function tique() {
     console.warn('transform: check', e);
   }
   pintar();
+  try { pintarOpcao(); } catch (e) { console.warn('transform: option', e); }
+}
+/* "TRANSFORM INTO HER PIKACHU" (Nov 5, v2 `opcao-transformar`): with your Ditto out and another trainer's partner within 8 m, a
+   one-tap option floats over that trainer; tapping it copies their partner (the same request as the list's row). */
+const OPCAO_M = 8;
+let opcao = null, opcaoAlvo = null, opcaoRaf = 0;
+function pintarOpcao() {
+  const D = visivel() ? ctx.dittoEmCampo?.() : null;
+  let alvo = null;
+  if (D && !D.transf && !aberto && !pedindo && Relogio.agora() >= recargaAte) {
+    const P = ctx.posicao?.();
+    let melhor = Infinity;
+    for (const j of ctx.jogadoresPerto?.() || []) {
+      const dex = dexDoGlb(j.parceiro);
+      if (!dex || !P || !Number.isFinite(j.x) || !Number.isFinite(j.z)) continue;
+      const d = Math.hypot(j.x - P.x, j.z - P.z);
+      if (d > OPCAO_M || d >= melhor) continue;
+      const v = veredito(D, { tipo: 'jogador', id: j.id, dex, lv: 1, hp: 1, x: j.x, z: j.z });
+      if (!v?.ok) continue;
+      melhor = d; alvo = { j, dex, especie: ctx.especie?.(dex)?.name || '?' };
+    }
+  }
+  opcao = Hud.sit('opcao-transformar');
+  if (!opcao) return;
+  if (!alvo) { Hud.sitMostrar(opcao, false); opcaoAlvo = null; return; }
+  opcaoAlvo = alvo;
+  Hud.escrever(opcao, 'opcao', tr("Transform into {x}'s {y}", { x: alvo.j.nome, y: alvo.especie }));
+  opcao.style.zIndex = '34';
+  opcao.style.cursor = 'pointer';
+  Hud.sitAo(opcao, async (tag) => {
+    if (tag !== 'acao' || !opcaoAlvo || pedindo) return;
+    pedindo = true; ultimoPedido = Date.now();
+    try {
+      const r = await ctx.pedir?.({ tipo: 'jogador', id: opcaoAlvo.j.id });
+      if (r && r.ok === false) { if (r.recargaAte) recargaAte = Math.max(recargaAte, +r.recargaAte || 0); if (r.texto) ctx.avisar?.(r.texto); }
+    } catch (e) { console.warn('transformar:', e); } finally { pedindo = false; pintar(); pintarOpcao(); }
+  });
+  Hud.sitMostrar(opcao, true);
+  if (!opcaoRaf) {
+    const seguir = () => {
+      if (!opcaoAlvo || opcao?.hidden) { opcaoRaf = 0; return; }
+      Hud.sitSeguir(opcao, { x: opcaoAlvo.j.x, y: opcaoAlvo.j.y ?? 0, z: opcaoAlvo.j.z, altura: 2.3 }, 0);
+      opcaoRaf = requestAnimationFrame(seguir);
+    };
+    opcaoRaf = requestAnimationFrame(seguir);
+  }
 }
 export function receber(m) {
   if (!m) return;

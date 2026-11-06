@@ -25,6 +25,7 @@
  * mover na mão: a sobreposição está no docs/figma-desvios.md pra rodada 27.
  * Textos em pt passam pelo I18n.t (sem I18n, texto cru). */
 
+import * as RaidV2 from './raid_v2.mjs';   // Nov 5: the v2 boss bar (barra-chefe) when the layout has it
 let H = null, P = null, M = null, I = null, AO = {};
 let menus = null;                                                         // o que o menus.mjs devolve do ligarRaid: { aberto, repintar, fechar }
 let snap = { fase: 'nenhuma', n: 0, vagas: 10, eu: false }, chegouEm = 0;
@@ -138,8 +139,18 @@ export function estado(s){
   return snap;
 }
 /** Barra de vida do chefe no topo. `null` esconde. */
+let chefeV2 = null, tChefeV2 = 0;
+const restanteLuta = () => (snap.fase === 'luta' ? Math.max(0, ((+snap.fimMs || 0) - (agora() - chegouEm)) / 1000) : 0);
 export function chefe(info){
   if (!temDom()) return;
+  if (RaidV2.barra(info, restanteLuta())){                                // v2: the designed bar; the CSS one stays hidden
+    chefeV2 = info || null;
+    if (noChefe) noChefe.hidden = true;
+    document.body.classList.toggle('raid-chefe', !!info);
+    clearInterval(tChefeV2);
+    if (info) tChefeV2 = setInterval(() => { if (chefeV2) RaidV2.barra(chefeV2, restanteLuta()); }, 1000);   // the clock ticks between hits
+    return;
+  }
   estilo();
   if (!noChefe){
     noChefe = criar('raid-chefe');

@@ -28,3 +28,24 @@ export function mostrar(nome, alvo, tr = (s, v) => s) {
   requestAnimationFrame(passo);
   return true;
 }
+
+/* QUICK PHRASES (v2 `frases-prontas`): the raid's quick-call panel. Today it has the one call, "Focus this one": press it, then pick a
+ * Pokémon on the field (click it or Tab) and everyone in the raid sees it marked. V with a target already picked skips the panel.
+ *   frases({ aberto, aoFocar })  — opens/closes the panel; aoFocar() runs when the button is pressed */
+let painel = null;
+export function frases({ aberto = true, aoFocar = null, tr = (s) => s } = {}) {
+  painel = Hud.sit('frases-prontas');
+  if (!painel) return false;
+  if (!aberto) { Hud.sitMostrar(painel, false); return true; }
+  const rot = (nome, txt) => { const e = painel.querySelector('[data-fig="' + nome + '"]'); if (e) e.textContent = txt; };
+  rot('rotulo-frases', tr('Quick phrases'));
+  rot('rotulo-frases-dica', tr('shown to your raid'));
+  rot('txt-btn', tr('Focus'));
+  rot('rotulo-foca-dica', tr('then pick a Pokémon: your raid sees it marked'));
+  painel.style.zIndex = '36';
+  Hud.sitAo(painel, (tag, val) => { if (tag === 'acao' && val === 'foca-neste') { Hud.sitMostrar(painel, false); aoFocar?.(); } });
+  Hud.sitEm(painel, innerWidth / 2, innerHeight - 170, 'base');
+  Hud.sitMostrar(painel, true);
+  return true;
+}
+export const frasesAbertas = () => !!painel && !painel.hidden;
