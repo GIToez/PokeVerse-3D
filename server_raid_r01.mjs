@@ -228,6 +228,13 @@ export function createR01({ dados, paraArena, naArena, idDe, maxHpDe, clock = ()
         send('troca', { jogador: id, uid: m.uid ?? null, x: p.x, z: p.z });
       }
     },
+    /** The player's Pokémon fainted (server_raid.mjs `raid_desmaio`): an F hold is dropped; with nothing left (uid null) they only watch. */
+    desmaio(ws, uid) {
+      if (!st) return;
+      const id = idDe(ws), c = st.canais[id];
+      if (c) { delete st.canais[id]; send('f', { jogador: id, sub: 'cancelado', motivo: 'desmaio', braseiro: c.braseiro }); }
+      if (uid == null) this.espectador(ws);
+    },
     /** A player with no Pokémon able to fight watches the rest. */
     espectador(ws) { if (!st) return; st.espectadores.add(idDe(ws)); send('espectador', { jogador: idDe(ws) }); },
     /** The state for someone joining mid-fight. */

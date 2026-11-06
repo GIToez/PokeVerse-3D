@@ -6255,6 +6255,11 @@ function aposDesmaio(){
   /* BATALHA POR TURNOS DO SERVIDOR (20/09, chaospider): quem escolhe o substituto é ELE, e ele manda o lance `troca` na mesma
      resposta. O cliente escolhia sozinho o próximo vivo DEPOIS do ativo, enquanto o servidor pega o primeiro vivo da ordem:
      com três Pokémon de pé os dois davam nomes diferentes e a tela passava a mostrar um enquanto o servidor jogava com outro. */
+  if (jogo.raidArena){                                                    // RAID FAINT (every raid): the server learns who comes out next, or that the team is down (server_raid.mjs raid_desmaio)
+    const uidProx = prox >= 0 ? (jogo.time[prox]?.uid ?? null) : null;
+    try { if (RaidR01.ehArena(NOME)) RaidR01.aoDesmaio?.(uidProx); } catch (e) { console.warn('[desmaio] arena', e); }   // Articuno / Zapdos: the switch record follows
+    Rede.enviar({ t: 'raid_desmaio', uid: uidProx });
+  }
   if (prox >= 0 && jogo.turno?.serv){ console.log('[desmaio] batalha do servidor: o substituto vem no lance `troca`'); return; }
   if (prox >= 0){ Chat.sistema(p.nome + ' fainted — ' + jogo.time[prox].nome + ' is coming out.'); trocarPara(prox, { forcado: true }); return; }
   if (jogo.raidArena){                                                    // RAID AO VIVO (14/09): ninguém é mandado pro Centro no meio da raid — o parceiro volta pra bola e o jogador assiste

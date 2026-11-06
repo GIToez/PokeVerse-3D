@@ -530,6 +530,19 @@ export function criarRaid(h) {
     paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano: danoF, eff, golpe: golpe.id, de: ws._id, ...(estagios ? { estagios } : {}), ...(semente ? { semente } : {}) });
     if (ch.hp <= 0) vencer();
   }
+  /** RAID FAINT (every raid): the client says its partner fainted and which Pokémon comes in next (`uid`), or null when the whole team is
+      down. The boss stops aiming at a benched player; Articuno's and Zapdos's fights get it too (the next Pokémon comes in after their
+      wait, with its types; a player with nothing left becomes a spectator). Any new arena fight only has to answer `desmaio(ws, uid)`. */
+  function desmaio(ws, m) {
+    const u = contaDe(ws), p = u && raid?.fila.get(u);
+    if (!p || raid.fase !== 'luta' || String(ws._mapa) !== raid.cfg.arena) return;
+    const uid = m.uid != null ? String(m.uid).slice(0, 40) : null;
+    p.fora = uid == null;
+    if (uid != null) { const mon = monDaConta(u, { uid }); if (mon) ws._raidMon = mon; }   // the boss's hits now scale to the new Pokémon
+    if (ehR01()) r01.desmaio(ws, uid);
+    if (ehR03()) r03.desmaio(ws, uid);
+    console.log(`[raid] #${raid.id} ${u}'s Pokémon fainted` + (uid == null ? ': no Pokémon left, watching' : ''));
+  }
   /** Os estágios do Pokémon do participante: novos quando ele troca de Pokémon (outro uid). */
   function estDoParticipante(p, mon) {
     const uid = String(mon?.uid ?? mon?.dex ?? '');
@@ -552,7 +565,7 @@ export function criarRaid(h) {
   }
   /** O chefe bate num participante da arena (sorteado): pdano pra sala, virado pro parceiro dele, com a animação do golpe. */
   function golpeDoChefe() {
-    const ch = raid.chefe, alvos = naArena().filter(w => w._info?.parceiro);
+    const ch = raid.chefe, alvos = naArena().filter(w => w._info?.parceiro && !raid.fila.get(contaDe(w))?.fora);   // a player whose whole team fainted only watches
     ch.proxGolpe = Date.now() + Math.max(1500, CADA_ALVO_MS / Math.max(1, alvos.length));
     if (!alvos.length) return;
     const w = alvos[Math.floor(Math.random() * alvos.length)], u = contaDe(w);
@@ -640,6 +653,7 @@ export function criarRaid(h) {
     else if (m.t === 'raid_sair') sairFila(ws);
     else if (m.t === 'raid_foco') foco(ws, m);
     else if (m.t === 'ataque') ataque(ws, m);
+    else if (m.t === 'raid_desmaio') desmaio(ws, m);
     else if (m.t === 'r01' && ehR01() && raid.fase === 'luta' && raid.fila.has(contaDe(ws))) r01.receber(ws, m);
     else if (m.t === 'r03' && ehR03() && raid.fase === 'luta' && raid.fila.has(contaDe(ws))) r03.receber(ws, m);
   }

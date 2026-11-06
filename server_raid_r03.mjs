@@ -23,6 +23,7 @@ export function createR03({ dados, paraArena, enviarA, naArena, idDe, maxHpDe, t
   let luta = null, timer = null, chefeId = null;
   const voltorbs = new Map();                    // engine voltorb id → { ent: world id, ultimo: { x, z } }
   const entDe = new Map();                       // world id → engine voltorb id
+  const proximo = new Map();                     // player id → the uid that comes in after a faint (the engine's wait)
   const now = clock;
 
   /** Where a player's partner stands (it is what moves in this arena), or the trainer. */
@@ -82,6 +83,12 @@ export function createR03({ dados, paraArena, enviarA, naArena, idDe, maxHpDe, t
         const p = posOf(w); if (p) luta.posicao(id, p.x, p.z);
       }
       for (const e of luta.tique()) relay(e);
+      for (const id of luta.prontosPraEntrar()) {      // the wait after a faint is over: the next Pokémon comes in, with its types
+        const w = wsDe(id), uid = proximo.get(id); proximo.delete(id);
+        luta.trocar(id, 'desmaio');
+        if (w) luta.tipos(id, tiposDe(w, uid));
+        for (const e of luta.tirar()) relay(e.ev === 'troca' && e.jogador === id ? { ...e, uid: uid ?? null } : e);
+      }
       moverVoltorbs();
     } catch (e) { console.warn('[r03]', e); }
   }
@@ -93,7 +100,7 @@ export function createR03({ dados, paraArena, enviarA, naArena, idDe, maxHpDe, t
       clearInterval(timer);
       usarDados(dados());
       luta = new LutaR03(dados(), { agora: now });
-      chefeId = chefe.id; voltorbs.clear(); entDe.clear();
+      chefeId = chefe.id; voltorbs.clear(); entDe.clear(); proximo.clear();
       for (const w of naArena()) entrarJogador(w);
       luta.comecar({ maxHp: chefe.maxHp });
       for (const e of luta.tirar()) relay(e);
@@ -128,7 +135,7 @@ export function createR03({ dados, paraArena, enviarA, naArena, idDe, maxHpDe, t
     fim() {
       if (luta) { luta.encerrar('fim'); for (const e of luta.tirar()) relay(e); }
       for (const v of voltorbs.values()) paraArena({ t: 'sumiu', id: v.ent, motivo: 'fugiu' });
-      voltorbs.clear(); entDe.clear();
+      voltorbs.clear(); entDe.clear(); proximo.clear();
       clearInterval(timer); timer = null; luta = null;
     },
     /** Ops from a player: f_inicio { gerador } / f_fim (shut an overloaded generator down), trocar { uid } (switch Pokémon). */
@@ -148,6 +155,16 @@ export function createR03({ dados, paraArena, enviarA, naArena, idDe, maxHpDe, t
         luta.tipos(id, tiposDe(ws, m.uid));
         for (const e of luta.tirar()) relay(e.ev === 'troca' && e.jogador === id ? { ...e, uid: m.uid ?? null } : e);   // the client switches to this uid
       } else erro(ws, { erro: 'op_desconhecida' }, m.op);
+    },
+    /** The player's Pokémon fainted (server_raid.mjs `raid_desmaio`): out of the fight for the engine's wait, then `uid` comes in;
+        uid null = nothing left, they watch. */
+    desmaio(ws, uid) {
+      if (!luta) return;
+      const id = idDe(ws);
+      if (!luta.jogadores.has(id)) entrarJogador(ws);
+      if (uid == null) { proximo.delete(id); luta.espectador(id); }
+      else { luta.desmaiou(id); proximo.set(id, uid); }
+      for (const e of luta.tirar()) relay(e);
     },
     /** A player with no Pokémon able to fight watches the rest. */
     espectador(ws) { if (!luta) return; luta.espectador(idDe(ws)); for (const e of luta.tirar()) relay(e); },

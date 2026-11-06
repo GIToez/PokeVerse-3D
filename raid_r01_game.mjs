@@ -410,6 +410,14 @@ export function vincularChefe(s) {
   if (s.rotulo) s.rotulo.style.display = 'none';
   s.r01 = true;
 }
+/** The partner fainted (index.html aposDesmaio): `uid` is the Pokémon coming out next (null = none left). The game switches on its own,
+    so the last server switch stops counting: without this, conferirTroca put the fainted Pokémon back on the field. */
+export function aoDesmaio(uid) {
+  const o = outra();
+  if (o) return o.aoDesmaio?.(uid);
+  ultimaTroca = uid != null ? { ev: 'troca', jogador: meuId(), uid: String(uid) } : null;
+  tentativasTroca = 0;
+}
 export function congelado() {
   const o = outra();
   if (o) return o.congelado();
