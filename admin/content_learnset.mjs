@@ -7,9 +7,11 @@ import { TIPOS } from '/admin/schemas_f2.mjs';
 const CAT = { fisico: 'physical', especial: 'special', status: 'status' };
 
 export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) {
-  const [especies, golpes] = await Promise.all([ref.especies(), ref.golpes()]);
+  const [especies, golpes, formas] = await Promise.all([ref.especies(), ref.golpes(), fetch('/data/forms.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(d => d.formas || {}).catch(() => ({}))]);
+  const formasDe = n => Object.keys(formas).filter(k => k.split('_')[0] === String(n)).sort();
   datalist('dl-f2-golpes', Object.entries(golpes).map(([id, g]) => [id, g.nome + (g.nomePt ? ' · ' + g.nomePt : '')]));
-  const nomeSp = n => especies.get(+n)?.nome || `No. ${n}`;
+  const nomeSp = n => { const [d, f] = String(n).split('_'); const base = especies.get(+d)?.nome || `No. ${d}`; return f ? (formas[n]?.nome || base + ' · form ' + f) : base; };
+  const padK = k => { const [d, f] = String(k).split('_'); return pad(+d) + (f ? '_' + f : ''); };
   const minDex = Math.min(...especies.keys()), maxDex = Math.max(...especies.keys());
   const descGolpe = id => { const g = golpes[id]; return g ? `${g.nomePt || g.nome} · ${TIPOS[g.tipo] || g.tipo} · ${CAT[g.cat] || g.cat} · power ${g.poder || '—'} · PP ${g.pp ?? '20'}` : '⚠ unknown move (create it in Data files → Moves)'; };
 
@@ -20,7 +22,10 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     <div class="col-dir"><div class="barra-topo"><h2>Learnset</h2><span class="sujo" hidden>● unsaved</span><button data-a="descartar">Discard</button><button class="prim" data-a="salvar">Save</button></div>
       <div class="fraco">Which moves each species learns and at what level. A Pokémon starts with the <b>last 4</b> moves up to its level (minimum 2) and learns the move for a level
         when it reaches it. Only moves from the moves table are allowed (the ones with a 3D effect — <b>Data files → Moves</b>, where power, PP and effect live).
-        File <code>public/data/learnset.json</code>, read at game boot (F5 after saving).</div>
+        File <code>public/data/learnset.json</code>, read at game boot (F5 after saving).<br>
+        <b>Forms</b> have their own entry under the species, keyed <code>dex_form</code> (26_61 = Alolan Raichu): the form number is the last two digits of its
+        model (<code>pm0026_61</code>). Recommended numbers: <b>51</b> Mega (or Mega X) · <b>52</b> Mega Y · <b>61</b> Alolan · <b>62</b> Galarian · <b>63</b> Hisuian ·
+        <b>64</b> Paldean · <b>81</b> Gigantamax. A form without its own entry uses the normal moveset; costumes and colours always do. Forms are listed in <b>Data files → Forms</b>.</div>
       <div class="editor"></div></div>`;
   const $ = s => sec.querySelector(s), lista = $('.lista'), editor = $('.editor');
   const marcar = () => { const s = JSON.stringify(learn) !== orig; $('.sujo').hidden = !s; marcarSujo(tela, s); };
@@ -35,6 +40,10 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
       const l = learn[n], nome = nomeSp(n);
       if (filtro ? !`${n} ${pad(n)} ${nome}`.toLowerCase().includes(filtro) : soCom && !l?.length && String(sel) !== String(n)) continue;
       out.push(`<button data-dex="${n}" class="${String(sel) === String(n) ? 'atual' : ''} ${l?.length ? '' : 'vazio'}"><span><span class="n">${pad(n)}</span> ${esc(nome)}</span><span class="n">${l?.length || ''}</span></button>`);
+      for (const k of formasDe(n)) {   // its forms right under it (26_61 Alolan Raichu)
+        const lf = learn[k];
+        out.push(`<button data-dex="${k}" class="${String(sel) === k ? 'atual' : ''} ${lf?.length ? '' : 'vazio'}" style="padding-left:22px"><span><span class="n">${k.split('_')[1]}</span> ${esc(nomeSp(k))}</span><span class="n">${lf?.length || (String(sel) === k ? '' : '↳')}</span></button>`);
+      }
       if (out.length > 1100) break;
     }
     lista.innerHTML = out.join('') || '<div class="fraco" style="padding:8px">Nothing found.</div>';
@@ -45,7 +54,7 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     if (sel == null) { editor.innerHTML = '<div class="caixa fraco">Pick a species on the left.</div>'; return; }
     const l = learn[sel] || [];
     const k = document.createElement('div'); k.className = 'cartao';
-    k.innerHTML = `<div class="cab"><b>${pad(sel)} ${esc(nomeSp(sel))}</b><button data-b="add">＋ Move</button><button data-b="copiar">Copy from another species…</button><button data-b="ordenar">Sort by level</button></div>
+    k.innerHTML = `<div class="cab"><b>${padK(sel)} ${esc(nomeSp(sel))}</b><button data-b="add">＋ Move</button><button data-b="copiar">Copy from another species…</button><button data-b="ordenar">Sort by level</button></div>
       <table class="esp"><thead><tr><th style="width:42%">Move</th><th style="width:90px">Level</th><th></th><th></th></tr></thead><tbody></tbody></table>
       <div class="mini">In file order (the game uses the order when two moves share a level). Saving sorts by level.</div>`;
     const tb = k.querySelector('tbody');
@@ -66,13 +75,18 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     k.querySelector('[data-b="add"]').onclick = () => { l.push(['tackle', Math.min(100, (l.at(-1)?.[1] || 0) + 1 || 1)]); learn[sel] = l; mudou(); renderEditor(); tb.closest('.cartao')?.querySelector('tbody tr:last-child input')?.focus(); };
     k.querySelector('[data-b="ordenar"]').onclick = () => { l.sort((a, b) => a[1] - b[1]); mudou(); renderEditor(); };
     k.querySelector('[data-b="copiar"]').onclick = () => {
-      const txt = prompt('Copy the learnset from which species? (dex no.)'); if (!txt) return;
-      const de = learn[+txt]; if (!de?.length) { toast('That species has no learnset.', true); return; }
+      const txt = prompt('Copy the learnset from which species or form? (dex no., or dex_form like 26_61)'); if (!txt) return;
+      const de = learn[String(txt).trim()] || learn[+txt]; if (!de?.length) { toast('That species has no learnset.', true); return; }
       if (l.length && !confirm(`Replace the ${l.length} moves of ${nomeSp(sel)} with the ${de.length} of ${nomeSp(txt)}?`)) return;
       learn[sel] = copia(de); marcar(); renderLista(); renderEditor();
     };
     editor.append(k);
-    if (!l.length) { const v = document.createElement('div'); v.className = 'caixa fraco'; v.textContent = 'No learnset: the Pokémon starts with the species default move (Tackle, if there is none).'; editor.append(v); }
+    if (!l.length && String(sel).includes('_')) {   // a form without its own moveset: it uses the normal one
+      const base = String(sel).split('_')[0], v = document.createElement('div'); v.className = 'caixa fraco';
+      v.innerHTML = `No moveset of its own: this form uses <b>${esc(nomeSp(base))}</b>'s (${(learn[base] || []).length} moves). <button data-b="base">Start from ${esc(nomeSp(base))}'s moves</button>`;
+      v.querySelector('[data-b="base"]').onclick = () => { learn[sel] = copia(learn[base] || []); marcar(); renderLista(); renderEditor(); };
+      editor.append(v);
+    } else if (!l.length) { const v = document.createElement('div'); v.className = 'caixa fraco'; v.textContent = 'No learnset: the Pokémon starts with the species default move (Tackle, if there is none).'; editor.append(v); }
   }
   $('.busca').oninput = e => { filtro = e.target.value.trim().toLowerCase(); renderLista(); };
   $('.soCom').onchange = e => { soCom = e.target.checked; renderLista(); };

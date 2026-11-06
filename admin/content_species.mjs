@@ -133,6 +133,9 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     else if (!livres.length) ajuda.textContent = 'Every file on disk for this number is already in the cast. Extra forms: drop another pm' + pad(n) + '_FF.glb in public/scenery/mon/ and reload.';
     else ajuda.textContent = 'Leftover on disk (not in the cast): ' + livres.join(', ') + '. ＋ Model adds one of those — it does not upload a new file.';
     km.append(ajuda);
+    const notaFormas = document.createElement("div"); notaFormas.className = "mini";   // the form numbers (forms.mjs): what the last two digits of a model mean
+    notaFormas.innerHTML = 'Form numbers (last two digits of the model) — recommended: <b>00</b> normal · <b>51</b> Mega (or Mega X) · <b>52</b> Mega Y · <b>61</b> Alolan · <b>62</b> Galarian · <b>63</b> Hisuian · <b>64</b> Paldean · <b>81</b> Gigantamax. These get their own types, stats and moveset (<b>Data files → Forms</b> and <b>Learnset</b>, key <code>' + n + '_61</code>…). Any other number is a costume or colour and plays as the normal form.';
+    km.append(notaFormas);
     const previa = document.createElement('div'); previa.className = 'caixa-previa'; km.append(previa);
     import('/admin/preview_species.mjs').then(P => P.mostrar(previa, noDisco, { nome: nomeSp(n) })).catch(e => console.warn('species preview:', e));
     if (!els.length) { const v = document.createElement('div'); v.className = 'mini'; v.textContent = 'No model in the cast: this species does not appear in the game (not even as an evolution).'; km.append(v); }

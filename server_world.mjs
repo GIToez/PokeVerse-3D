@@ -19,6 +19,7 @@
  *
  * Wire tokens stay as the client expects them (selvagem, spos, shp, sestado, sumiu, scapt, pdano, dono); renaming them
  * belongs to the protocol pass that renames both ends at once. */
+import * as Forms from './forms.mjs';   // Pokémon forms: types and stats of Alolan, Galarian, Mega… (public/data/forms.json)
 import * as Transf from './transform.mjs';
 import * as Caixa from './box_rules.mjs';
 import fs from 'node:fs';
@@ -144,7 +145,7 @@ export function createWorld(h) {
     if (inArea >= AREA_CAP) return;
     const rolled = wilds.rollAt(ws, area, !!m.aquatico, { x, z });   // area check + habitat roll + level cap, the solo rules
     if (!rolled) return;
-    const S = species(rolled.dex);
+    const S = Forms.especie(species(rolled.dex), rolled);   // a wild Alolan / Galarian… spawn: its own HP
     const ind = newIndividual({ dex: rolled.dex, nome: rolled.nome, glb: rolled.glb, lv: rolled.lv });
     const maxHp = Math.max(1, hpBase(S.bs[0], rolled.lv, ivsOf(ind)[0] || 0));
     const w = {
@@ -161,7 +162,7 @@ export function createWorld(h) {
 
   /** Puts a server-built wild on the map and tells the room. `extra` overrides the record (fished Pokémon, etc.). */
   function placeWild(ws, { area, dex, glb, nome, lv }, x, z, extra = {}) {
-    const S = species(dex);
+    const S = Forms.especie(species(dex), { dex, glb });
     const ind = newIndividual({ dex, nome, glb, lv });
     const maxHp = Math.max(1, hpBase(S.bs[0], lv, ivsOf(ind)[0] || 0));
     const w = {
@@ -262,12 +263,12 @@ export function createWorld(h) {
       || (hint.dex != null && party.find(p => alive(p) && +p.dex === +hint.dex)) || party.find(alive) || null;
   }
   /** A transformed Ditto fights with the copied types and stats (transform.mjs). */
-  const effective = p => (Transf.dados() ? Transf.especieEfetiva(species(p.dex), p) || species(p.dex) : species(p.dex));
+  const effective = p => { const S = Forms.especie(species(p.dex), p); return Transf.dados() ? Transf.especieEfetiva(S, p) || S : S; };
   const statOf = (S, p, i) => statBase(S.bs[i], levelOf(p), ivsOf(p)[i] || 0, 0, p?.natureza, i);
   /* Every hit runs on the battle engine in real time (server_world_fight.mjs): status, stages, Leech Seed, weather… */
   const fight = createWorldFight({
     dataDir, moves, struggle: STRUGGLE,
-    species: (dex, p) => (p && !p.ind ? effective(p) : species(dex)),
+    species: (dex, p) => (p && !p.ind ? effective(p) : Forms.especie(species(dex), p)),
     statOfParty: (S, p, i) => statOf(S, p, i),
     statOfWild: (S, w, i) => statBase(S.bs[i], w.lv, ivsOf(w.ind)[i] || 0, 0, w.ind.natureza, i),
     prepParty: (p) => { if (!(p.maxHp > 0)) p.maxHp = Math.max(1, hpBase(effective(p).bs[0], levelOf(p), ivsOf(p)[0] || 0)); if (p.hp == null) p.hp = p.maxHp; return p; },

@@ -49,6 +49,8 @@ import * as LojaUI from './shop_ui.mjs';                                  // Dia
 import * as Guia from './mission_guide.mjs';
 import { linhaRecompensa } from './missions.mjs';
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
+/** A record's species with its form's types and stats (forms.mjs, via index.html). */
+const especieDe = e => (ctx.espDe ? ctx.espDe(e) : ctx.porDex.get(+e?.dex));
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const semBr = s => String(s || '').replace(/<br\s*\/?>/gi, ' ');        // descrição do dump traz <br> escrito: no Figma o texto é puro (v2, rodada 28)
@@ -644,7 +646,7 @@ function timeAtual(){
   return lista;
 }
 function fichaHtml(e){
-  const S = ctx.porDex.get(e.dex); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>${esc(tr('no Pokédex data'))}</small></div>`;
+  const S = especieDe(e); if (!S) return `<div class="ficha"><h3>${esc(e.nome)}</h3><small>${esc(tr('no Pokédex data'))}</small></div>`;
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
   const stats = ctx.Ind ? ctx.Ind.statsDe(S, { ...e, lv }) : bs.map((b, i) => i === 0 ? ctx.R.hpAt(b, lv) : ctx.R.statAt(b, lv));
   const movs = e.movs?.length ? e.movs.map(m => ({ ...(ctx.golpe?.(m.id) || { nome: m.id, tipo: '' }), pp: m.pp, ppMax: m.ppMax })) : (ctx.golpesDe?.(e.dex, e.lv) || []);
@@ -742,7 +744,7 @@ function rPokemon(corpo){
   if (!lista.length){ corpo.innerHTML = '<div class="vazio">' + esc(tr('No Pokémon yet — pick a starter in Oak\'s lab.')) + '</div>'; return; }
   if (selPokemon >= lista.length) selPokemon = 0;
   const e = lista[selPokemon];
-  corpo.innerHTML = `<div class="dois"><div class="lista">${lista.map((p, i) => `<div class="linha ${i === selPokemon ? 'on' : ''}" data-i="${i}"><span class="nome"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${p.sexo === 'm' ? ' <small class="sexo m">♂</small>' : p.sexo === 'f' ? ' <small class="sexo f">♀</small>' : ''}${p.seguindo ? ' <small>· ' + esc(tr('following')) + '</small>' : ''}${p.hp === 0 ? ' <small style="color:#f58e8e">· ' + esc(tr('fainted')) + '</small>' : ''}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${p.maxHp ? Math.round(100 * p.hp / p.maxHp) : 100}%"></b></div></span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</div>`).join('')}${'<div class="linha vazia"></div>'.repeat(Math.max(0, 6 - lista.length))}
+  corpo.innerHTML = `<div class="dois"><div class="lista">${lista.map((p, i) => `<div class="linha ${i === selPokemon ? 'on' : ''}" data-i="${i}"><span class="nome"><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${p.sexo === 'm' ? ' <small class="sexo m">♂</small>' : p.sexo === 'f' ? ' <small class="sexo f">♀</small>' : ''}${p.seguindo ? ' <small>· ' + esc(tr('following')) + '</small>' : ''}${p.hp === 0 ? ' <small style="color:#f58e8e">· ' + esc(tr('fainted')) + '</small>' : ''}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}</small><div class="hp"><b style="width:${p.maxHp ? Math.round(100 * p.hp / p.maxHp) : 100}%"></b></div></span>${(especieDe(p)?.types || []).map(tipoHtml).join('')}</div>`).join('')}${'<div class="linha vazia"></div>'.repeat(Math.max(0, 6 - lista.length))}
     <div style="color:var(--muted);font-size:11px;margin-top:6px">${lista.length}/6 ${esc(tr('in party'))}</div></div>
     <div>${fichaHtml(e)}<div class="acoes">${e.seguindo ? (() => { const todas = ctx.opcoesEvolucao?.(e) || [], ops = todas.filter(o => o.glb), prontas = ops.filter(o => o.pode), breve = !ops.length && todas.find(o => !o.glb); return prontas.length ? prontas.map(o => `<button type="button" class="btn ouro" data-evo="${ops.indexOf(o)}" title="${esc(o.regra.texto)}">✧ ${esc(tr('Evolve'))} → ${esc(o.nome)}${o.itemNome ? ' (' + esc(tr('uses')) + ' ' + esc(o.itemNome) + ')' : ''}</button>`).join('') : `<button type="button" class="btn ouro" disabled title="${esc(ops[0]?.falta || (breve ? breve.nome + ': ' + tr('coming soon') : tr('does not evolve')))}">✧ ${esc(tr('Evolve'))}${ops[0] ? ' — ' + esc(ops[0].falta) : breve ? ' — ' + esc(breve.nome) + ' (' + esc(tr('coming soon')) + ')' : ''}</button>`; })() : `<button type="button" class="btn ouro" id="p-seguir">${esc(tr('Follow'))}</button><button type="button" class="btn" id="p-caixa">${esc(tr('Send to box'))}</button>`}${botaoSoltar(chaveDe(e), lista.length, !!e.seguindo)}${e.hp === 0 ? (() => { const r = ctx.reanimadorNaMochila?.(); return `<button type="button" class="btn ouro" id="p-reanimar" ${r ? '' : 'disabled'} title="${r ? esc(tr('uses')) + ' ' + esc(r.nome) : esc(tr('buy a Revive at the Poké Mart'))}">💊 ${r ? esc(r.nome) + ' (' + r.n + ')' : esc(tr('Revive — none in the bag'))}</button>`; })() : ''}</div></div></div>`;
   corpo.querySelectorAll('[data-evo]').forEach(b => b.onclick = () => { const ops = (ctx.opcoesEvolucao?.(e) || []).filter(o => o.glb); fechar(); ctx.evoluir?.(ops[+b.dataset.evo]); });
@@ -998,7 +1000,7 @@ function passaFiltroBx(e){
   if (bx.lvMin !== '' && lv < +bx.lvMin) return false;
   const iv = ivSoma(e);
   if (bx.ivMin !== '' && iv < +bx.ivMin) return false;
-  const S = ctx.porDex.get(e.dex);
+  const S = especieDe(e);
   if (bx.tipo && !(S?.types || []).includes(bx.tipo)) return false;
   const q = String(bx.busca || '').trim().toLowerCase();
   if (q && ![e.nome, S?.name, String(e.dex)].some(n => String(n || '').toLowerCase().includes(q))) return false;
@@ -1361,7 +1363,7 @@ function pintarCasaV2(pop, el, item, on){
 function pintarFichaRapidaV2(pop, sel){
   const f = Popup.grupo(pop, 'ficha-rapida'); if (!f) return;
   const time = ctx.jogo.time || [];
-  const S = sel && ctx.porDex.get(sel.dex);
+  const S = sel && especieDe(sel);
   const vender = pop.querySelectorAll('[data-tag="acao"][data-tagval="vender"]');
   vender.forEach(el => { el.style.display = 'none'; });
   const painel = Popup.grupo(pop, 'painel-vender'); if (painel) painel.style.display = 'none';
@@ -1451,7 +1453,7 @@ function pintarFichaMonCaixa(pop){
   const caixa = ctx.lerLS('caixa', []) || [];
   const time = ctx.jogo.time || [];
   const sel = bx.onde === 'time' ? time[bx.i] : caixa[bx.i];
-  const S = sel && ctx.porDex.get(sel.dex);
+  const S = sel && especieDe(sel);
   Popup.imagem(pop, 'pokemon', sel ? iconeMonU(sel.dex) : null, d);
   Popup.texto(pop, 'pokemon-nome', sel ? (sel.shiny ? '✨ ' : '') + sel.nome : '', d);
   Popup.texto(pop, 'pokemon-info', sel && S ? 'Lv ' + (sel.lv || 1) + ' · No. ' + String(sel.dex).padStart(3, '0') + (sel.natureza ? ' · ' + sel.natureza : '') : '', d);
@@ -1580,7 +1582,7 @@ function encherBox(pop){
     const p = time[i];
     if (!p) return `<div class="bx-party-row vazia" data-arr-i="${i}"><span></span><span><b>—</b></span></div>`;
     const pct = p.maxHp ? Math.round(100 * ((p.hp == null ? p.maxHp : p.hp) / p.maxHp)) : 100;
-    const tipo = (ctx.porDex.get(p.dex)?.types || [])[0];
+    const tipo = (especieDe(p)?.types || [])[0];
     return `<div class="bx-party-row${bx.onde === 'time' && bx.i === i ? ' on' : ''}" data-arr-i="${i}" data-bx-time="${i}">
       <img src="${iconeMonU(p.dex)}" alt="" draggable="false">
       <span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}</b><small>Lv ${p.lv} · Nº ${String(p.dex).padStart(3, '0')}${i === emCampo ? ' · Following' : ''}</small>
@@ -1604,7 +1606,7 @@ function encherBox(pop){
     : bx.painel === 'ordem'
       ? `<div class="bx-pop"><div class="bx-sort-list"><div class="cap">Sort by</div>${ORDEM_BX.map(o => `<button type="button" data-bx-ordem="${o.id}" class="${bx.ordem === o.id ? 'on' : ''}">${o.nome}<small>${o.sub}</small></button>`).join('')}</div></div>`
       : '';
-  const S = sel && ctx.porDex.get(sel.dex);
+  const S = sel && especieDe(sel);
   let sheet = '<div class="bx-sheet"><p class="fraco">Select a Pokémon.</p></div>';
   if (sel && S){
     const lv = sel.lv || 5;
@@ -1997,7 +1999,7 @@ function encherPokemonV2(pop){
     const p = lista[i];
     Popup.itemVazio(pop, i, !p, pref);
     if (!p) continue;
-    const S = ctx.porDex.get(p.dex);
+    const S = especieDe(p);
     Popup.imagem(pop, 'pokemon', iconeMonU(p.dex), cel);
     Popup.texto(pop, 'item-nome', (p.shiny ? '✨ ' : '') + p.nome, cel);
     Popup.texto(pop, 'item-nivel', 'Lv ' + p.lv + ' · No. ' + String(p.dex).padStart(3, '0'), cel);
@@ -2145,7 +2147,7 @@ function encherPokemon(pop){
     corpo.innerHTML = '<div class="pv-grid"><div class="pv-list"></div><div class="pv-sheet"><p>No Pokémon yet — pick a starter in Oak\'s lab.</p></div></div>';
     return;
   }
-  const e = lista[selPokemon], S = e && ctx.porDex.get(e.dex);
+  const e = lista[selPokemon], S = e && especieDe(e);
   const slots = [0, 1, 2, 3, 4, 5].map(i => {
     const p = lista[i];
     if (!p) return `<div class="pv-slot vazia"><span class="n">${i + 1}</span><span></span><span><b>—</b></span></div>`;
@@ -2154,7 +2156,7 @@ function encherPokemon(pop){
     return `<div class="pv-slot${i === selPokemon ? ' on' : ''}" data-i="${i}"><span class="n">${i + 1}</span><img src="${iconeMonU(p.dex)}" alt="">
       <span><b>${p.shiny ? '✨ ' : ''}${esc(p.nome)}${sexo}</b><small>Lv ${p.lv} · No. ${String(p.dex).padStart(3, '0')}${p.seguindo ? ' · Following' : p.hp === 0 ? ' · Fainted' : ''}</small>
       <div class="hp"><i style="width:${pct}%;background:${corDaVida(pct / 100)}"></i></div></span>
-      <span>${(ctx.porDex.get(p.dex)?.types || []).map(tipoHtml).join('')}</span></div>`;
+      <span>${(especieDe(p)?.types || []).map(tipoHtml).join('')}</span></div>`;
   }).join('');
   if (!e || !S){ corpo.innerHTML = `<div class="pv-grid"><div class="pv-list">${slots}</div><div class="pv-sheet"></div></div>`; ligarPvLista(corpo); return; }
   const lv = e.lv || 5, bs = S.bs || [45, 45, 45, 45, 45, 45];
@@ -2260,7 +2262,7 @@ function corDaVida(k){
 }
 function encherFichaPokemon(pop, e, lista){
   const f = Popup.grupo(pop, 'ficha'); if (!f) return;
-  const S = e && ctx.porDex.get(e.dex);
+  const S = e && especieDe(e);
   const nada = (id, dentro) => Popup.texto(pop, id, '', dentro);
   if (!e || !S){
     for (const id of ['ficha-nome', 'ficha-status', 'ficha-numero', 'ficha-peso', 'natureza', 'evolucao', 'vida']) nada(id, f);
@@ -2779,7 +2781,7 @@ function encherTreinador(pop){
   Popup.texto(pop, 'pokedex-resumo', vistos + ' ' + tr('seen') + ' · ' + pegos + ' ' + tr('caught'));
   Popup.texto(pop, 'insignias-resumo', tem.size + '/8');
   Popup.texto(pop, 'personagem', pers ? (P.nomeDe?.(pers) || pers.tipo) : 'Ash');
-  Popup.texto(pop, 'inicial', ini ? (ini.nome || (ini.dex && ctx.porDex.get(ini.dex)?.name) || '—') : '—');
+  Popup.texto(pop, 'inicial', ini ? (ini.nome || (ini.dex && especieDe(ini)?.name) || '—') : '—');
   // o bonequinho 3D
   const cx = Popup.no(pop, 'jogador');
   if (cx){

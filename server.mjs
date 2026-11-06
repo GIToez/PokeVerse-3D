@@ -9,7 +9,8 @@
  * catching Pokémon, healing at a Pokémon Center).
  */
 
-import * as RegrasItemS from './item_rules.mjs';   // Running Shoes (TENIS) and the other key-item ids
+import * as RegrasItemS from './item_rules.mjs';
+import * as Forms from './forms.mjs';   // Pokémon forms (public/data/forms.json)   // Running Shoes (TENIS) and the other key-item ids
 import http from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 import fs from 'node:fs';
@@ -555,6 +556,12 @@ function novoUid() { return String(Date.now()) + String(Math.floor(Math.random()
    NOTA DE PRODUÇÃO: o certo é a espécie/nível virem de um encontro que o servidor assinou/guardou — aqui (dev) só se clampa. */
 /* Fase 0: a taxa de shiny vem do data/game_config.json (painel admin → Arquivos de dados), a mesma que o cliente usa no
    selvagem. Relê só quando o arquivo muda (mtime): salvar no painel vale na próxima captura, sem reiniciar. */
+/* FORMS (forms.mjs): public/data/forms.json, read again when it changes (admin → Forms), every module shares the table. */
+let formasMtime = -1;
+function recarregarFormas() {
+  try { const arq = nodePath.join(DADOS_PUB, 'forms.json'), mt = fs.statSync(arq).mtimeMs; if (mt !== formasMtime) { Forms.usar(JSON.parse(fs.readFileSync(arq, 'utf8'))); formasMtime = mt; } } catch {}
+}
+setInterval(recarregarFormas, 15000).unref?.();
 let cfgJogoCache = { mtime: -1, cfg: {} };
 function cfgJogo() {
   try {
@@ -609,7 +616,7 @@ function dadosEvolucao() {
   } catch {}
   return evoCache;
 }
-function evoluirNoServidor(c, uid, item) {
+function evoluirNoServidor(c, uid, item, area = null, para = null) {
   const pk = (c.save?.time || []).find(p => String(p?.uid) === String(uid));
   if (!pk) return { erro: 'that Pokémon is not in your party' };
   const D = dadosEvolucao(), regras = D.evo?.por?.[pk.dex] || [];
@@ -619,6 +626,9 @@ function evoluirNoServidor(c, uid, item) {
   let falta = 'cannot evolve yet';
   for (const r of regras) {
     if (r.gatilho === 'outro' || r.gatilho === 'muda' || r.local || r.chuva || r.beleza) continue;
+    if (para != null && +r.para !== +para) continue;                // the evolution the player picked (Eevee, Pikachu → Raichu / Alolan Raichu)
+    const fr = Forms.regraDaForma(r, pk, area);                      // forms: a rule for one form only, or for one region (forms.mjs)
+    if (!fr.vale) { if (fr.falta) falta = fr.falta; continue; }
     let consome = null;
     if (r.gatilho === 'item' || r.gatilho === 'troca') {
       if (!r.item || String(r.item) !== String(item)) continue;
@@ -637,7 +647,8 @@ function evoluirNoServidor(c, uid, item) {
     const alvo = D.cast.find(x => x.n === +r.para && /_00$/.test(x.glb)) || D.cast.find(x => x.n === +r.para);
     if (!alvo) { falta = nome + ' has no model yet'; continue; }
     if (consome != null) { c.save.itens[consome]--; if (c.save.itens[consome] <= 0) delete c.save.itens[consome]; }
-    pk.dex = +r.para; pk.nome = nome; pk.glb = Calendario.formaNaEvolucao(pk.glb, r.para) || alvo.glb;   // a Fall Deerling becomes a Fall Sawsbuck
+    const glbForma = Forms.glbNaEvolucao(pk, r);                     // Alolan Rattata → Alolan Raticate (before the record changes)
+    pk.dex = +r.para; pk.nome = nome; pk.glb = glbForma || Calendario.formaNaEvolucao(pk.glb, r.para) || alvo.glb;   // a Fall Deerling becomes a Fall Sawsbuck
     marcarPego(c, pk.dex);
     return { pk, consumiu: consome != null };
   }
@@ -691,6 +702,7 @@ function usuarioDe(req) {
 /* Só conta GM. Edita os arquivos de dados que o JOGO lê (public/data/*.json, servidos pelo Vite), com cópia de segurança em
    server/data/backups/ antes de cada gravação (fica com as 30 últimas de cada arquivo). Tudo que chega é LIMPO aqui. */
 const DADOS_PUB = nodePath.join(__dir, 'public/data');
+recarregarFormas();
 const MODELOS_DIR = nodePath.join(__dir, 'public/scenery/mon');
 const BACKUPS = nodePath.join(DADOS, 'backups');
 // Os GLB de mapa ficam em DOIS lugares (a Vite serve os dois em /scenery/): public/scenery/ (ex.: pallet_route1) e scenery/ na raiz
@@ -2024,7 +2036,7 @@ wss.on('connection', ws => {
             salvarContas();
             enviar(ws, { t: 'posse', op, uid: m.uid, vidas: c.save.time });
           } else if (op === 'evoluir' && m.uid != null && c?.save) {
-            const r = evoluirNoServidor(c, m.uid, m.item ?? null);
+            const r = evoluirNoServidor(c, m.uid, m.item ?? null, Number.isFinite(+m.area) ? +m.area : null, Number.isFinite(+m.para) ? +m.para : null);
             if (r.erro) { enviar(ws, { t: 'posse_erro', op, erro: r.erro }); return; }
             temporada.contar(u, { conta: 'evolucao', dex: r.pk.dex });
             c.rev = (c.rev || 0) + 1;

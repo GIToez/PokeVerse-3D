@@ -1,0 +1,1877 @@
+{
+ "_nota": "Recommended form numbers (the last two digits of the model, e.g. pm0026_61): 51 = Mega (or Mega X), 52 = Mega Y, 61 = Alolan, 62 = Galarian, 63 = Hisuian, 64 = Paldean, 81 = Gigantamax. 31–50 and the rest are costumes and colours: they use the normal form. A key is \"<dex>_<form>\" (26_61 = Alolan Raichu); its moveset is the learnset entry with the same key, else the normal one.",
+ "formas": {
+  "3_51": {
+   "nome": "Mega Venusaur",
+   "glb": "pm0003_51",
+   "tipos": [
+    "Grass",
+    "Poison"
+   ],
+   "bs": [
+    80,
+    100,
+    123,
+    122,
+    120,
+    80
+   ]
+  },
+  "3_81": {
+   "nome": "Gigantamax Venusaur",
+   "glb": "pm0003_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "6_51": {
+   "nome": "Mega Charizard X",
+   "glb": "pm0006_51",
+   "tipos": [
+    "Fire",
+    "Dragon"
+   ],
+   "bs": [
+    78,
+    130,
+    111,
+    130,
+    85,
+    100
+   ]
+  },
+  "6_52": {
+   "nome": "Mega Charizard Y",
+   "glb": "pm0006_52",
+   "tipos": [
+    "Fire",
+    "Flying"
+   ],
+   "bs": [
+    78,
+    104,
+    78,
+    159,
+    115,
+    100
+   ]
+  },
+  "6_81": {
+   "nome": "Gigantamax Charizard",
+   "glb": "pm0006_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "9_51": {
+   "nome": "Mega Blastoise",
+   "glb": "pm0009_51",
+   "tipos": [
+    "Water"
+   ],
+   "bs": [
+    79,
+    103,
+    120,
+    135,
+    115,
+    78
+   ]
+  },
+  "9_81": {
+   "nome": "Gigantamax Blastoise",
+   "glb": "pm0009_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "12_81": {
+   "nome": "Gigantamax Butterfree",
+   "glb": "pm0012_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "15_51": {
+   "nome": "Mega Beedrill",
+   "glb": "pm0015_51",
+   "tipos": [
+    "Bug",
+    "Poison"
+   ],
+   "bs": [
+    65,
+    150,
+    40,
+    15,
+    80,
+    145
+   ]
+  },
+  "18_51": {
+   "nome": "Mega Pidgeot",
+   "glb": "pm0018_51",
+   "tipos": [
+    "Normal",
+    "Flying"
+   ],
+   "bs": [
+    83,
+    80,
+    80,
+    135,
+    80,
+    121
+   ]
+  },
+  "19_61": {
+   "nome": "Alolan Rattata",
+   "glb": "pm0019_61",
+   "tipos": [
+    "Dark",
+    "Normal"
+   ],
+   "bs": [
+    30,
+    56,
+    35,
+    25,
+    35,
+    72
+   ]
+  },
+  "20_61": {
+   "nome": "Alolan Raticate",
+   "glb": "pm0020_61",
+   "tipos": [
+    "Dark",
+    "Normal"
+   ],
+   "bs": [
+    75,
+    71,
+    70,
+    40,
+    80,
+    77
+   ]
+  },
+  "25_81": {
+   "nome": "Gigantamax Pikachu",
+   "glb": "pm0025_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "26_51": {
+   "nome": "Mega Raichu X",
+   "glb": "pm0026_51",
+   "tipos": null,
+   "bs": null,
+   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+  },
+  "26_52": {
+   "nome": "Mega Raichu Y",
+   "glb": "pm0026_52",
+   "tipos": null,
+   "bs": null,
+   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+  },
+  "26_61": {
+   "nome": "Alolan Raichu",
+   "glb": "pm0026_61",
+   "tipos": [
+    "Electric",
+    "Psychic"
+   ],
+   "bs": [
+    60,
+    85,
+    50,
+    95,
+    85,
+    110
+   ]
+  },
+  "27_61": {
+   "nome": "Alolan Sandshrew",
+   "glb": "pm0027_61",
+   "tipos": [
+    "Ice",
+    "Steel"
+   ],
+   "bs": [
+    50,
+    75,
+    90,
+    10,
+    35,
+    40
+   ]
+  },
+  "28_61": {
+   "nome": "Alolan Sandslash",
+   "glb": "pm0028_61",
+   "tipos": [
+    "Ice",
+    "Steel"
+   ],
+   "bs": [
+    75,
+    100,
+    120,
+    25,
+    65,
+    65
+   ]
+  },
+  "37_61": {
+   "nome": "Alolan Vulpix",
+   "glb": "pm0037_61",
+   "tipos": [
+    "Ice"
+   ],
+   "bs": [
+    38,
+    41,
+    40,
+    50,
+    65,
+    65
+   ]
+  },
+  "38_61": {
+   "nome": "Alolan Ninetales",
+   "glb": "pm0038_61",
+   "tipos": [
+    "Ice",
+    "Fairy"
+   ],
+   "bs": [
+    73,
+    67,
+    75,
+    81,
+    100,
+    109
+   ]
+  },
+  "50_61": {
+   "nome": "Alolan Diglett",
+   "glb": "pm0050_61",
+   "tipos": [
+    "Ground",
+    "Steel"
+   ],
+   "bs": [
+    10,
+    55,
+    30,
+    35,
+    45,
+    90
+   ]
+  },
+  "51_61": {
+   "nome": "Alolan Dugtrio",
+   "glb": "pm0051_61",
+   "tipos": [
+    "Ground",
+    "Steel"
+   ],
+   "bs": [
+    35,
+    100,
+    60,
+    50,
+    70,
+    110
+   ]
+  },
+  "52_61": {
+   "nome": "Alolan Meowth",
+   "glb": "pm0052_61",
+   "tipos": [
+    "Dark"
+   ],
+   "bs": [
+    40,
+    35,
+    35,
+    50,
+    40,
+    90
+   ]
+  },
+  "52_62": {
+   "nome": "Galarian Meowth",
+   "glb": "pm0052_62",
+   "tipos": [
+    "Steel"
+   ],
+   "bs": [
+    50,
+    65,
+    55,
+    40,
+    40,
+    40
+   ]
+  },
+  "52_81": {
+   "nome": "Gigantamax Meowth",
+   "glb": "pm0052_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "53_61": {
+   "nome": "Alolan Persian",
+   "glb": "pm0053_61",
+   "tipos": [
+    "Dark"
+   ],
+   "bs": [
+    65,
+    60,
+    60,
+    75,
+    65,
+    115
+   ]
+  },
+  "58_63": {
+   "nome": "Hisuian Growlithe",
+   "glb": "pm0058_63",
+   "tipos": [
+    "Fire",
+    "Rock"
+   ],
+   "bs": [
+    60,
+    75,
+    45,
+    65,
+    50,
+    55
+   ]
+  },
+  "59_63": {
+   "nome": "Hisuian Arcanine",
+   "glb": "pm0059_63",
+   "tipos": [
+    "Fire",
+    "Rock"
+   ],
+   "bs": [
+    95,
+    115,
+    80,
+    95,
+    80,
+    90
+   ]
+  },
+  "65_51": {
+   "nome": "Mega Alakazam",
+   "glb": "pm0065_51",
+   "tipos": [
+    "Psychic"
+   ],
+   "bs": [
+    55,
+    50,
+    65,
+    175,
+    105,
+    150
+   ]
+  },
+  "68_81": {
+   "nome": "Gigantamax Machamp",
+   "glb": "pm0068_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "74_61": {
+   "nome": "Alolan Geodude",
+   "glb": "pm0074_61",
+   "tipos": [
+    "Rock",
+    "Electric"
+   ],
+   "bs": [
+    40,
+    80,
+    100,
+    30,
+    30,
+    20
+   ]
+  },
+  "75_61": {
+   "nome": "Alolan Graveler",
+   "glb": "pm0075_61",
+   "tipos": [
+    "Rock",
+    "Electric"
+   ],
+   "bs": [
+    55,
+    95,
+    115,
+    45,
+    45,
+    35
+   ]
+  },
+  "76_61": {
+   "nome": "Alolan Golem",
+   "glb": "pm0076_61",
+   "tipos": [
+    "Rock",
+    "Electric"
+   ],
+   "bs": [
+    80,
+    120,
+    130,
+    55,
+    65,
+    45
+   ]
+  },
+  "77_62": {
+   "nome": "Galarian Ponyta",
+   "glb": "pm0077_62",
+   "tipos": [
+    "Psychic"
+   ],
+   "bs": [
+    50,
+    85,
+    55,
+    65,
+    65,
+    90
+   ]
+  },
+  "78_62": {
+   "nome": "Galarian Rapidash",
+   "glb": "pm0078_62",
+   "tipos": [
+    "Psychic",
+    "Fairy"
+   ],
+   "bs": [
+    65,
+    100,
+    70,
+    80,
+    80,
+    105
+   ]
+  },
+  "79_62": {
+   "nome": "Galarian Slowpoke",
+   "glb": "pm0079_62",
+   "tipos": [
+    "Psychic"
+   ],
+   "bs": [
+    90,
+    65,
+    65,
+    40,
+    40,
+    15
+   ]
+  },
+  "80_51": {
+   "nome": "Mega Slowbro",
+   "glb": "pm0080_51",
+   "tipos": [
+    "Water",
+    "Psychic"
+   ],
+   "bs": [
+    95,
+    75,
+    180,
+    130,
+    80,
+    30
+   ]
+  },
+  "80_62": {
+   "nome": "Galarian Slowbro",
+   "glb": "pm0080_62",
+   "tipos": [
+    "Poison",
+    "Psychic"
+   ],
+   "bs": [
+    95,
+    100,
+    95,
+    100,
+    70,
+    30
+   ]
+  },
+  "83_62": {
+   "nome": "Galarian Farfetch’d",
+   "glb": "pm0083_62",
+   "tipos": [
+    "Fighting"
+   ],
+   "bs": [
+    52,
+    95,
+    55,
+    58,
+    62,
+    55
+   ]
+  },
+  "88_61": {
+   "nome": "Alolan Grimer",
+   "glb": "pm0088_61",
+   "tipos": [
+    "Poison",
+    "Dark"
+   ],
+   "bs": [
+    80,
+    80,
+    50,
+    40,
+    50,
+    25
+   ]
+  },
+  "89_61": {
+   "nome": "Alolan Muk",
+   "glb": "pm0089_61",
+   "tipos": [
+    "Poison",
+    "Dark"
+   ],
+   "bs": [
+    105,
+    105,
+    75,
+    65,
+    100,
+    50
+   ]
+  },
+  "94_51": {
+   "nome": "Mega Gengar",
+   "glb": "pm0094_51",
+   "tipos": [
+    "Ghost",
+    "Poison"
+   ],
+   "bs": [
+    60,
+    65,
+    80,
+    170,
+    95,
+    130
+   ]
+  },
+  "94_81": {
+   "nome": "Gigantamax Gengar",
+   "glb": "pm0094_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "99_81": {
+   "nome": "Gigantamax Kingler",
+   "glb": "pm0099_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "100_63": {
+   "nome": "Hisuian Voltorb",
+   "glb": "pm0100_63",
+   "tipos": [
+    "Electric",
+    "Grass"
+   ],
+   "bs": [
+    40,
+    30,
+    50,
+    55,
+    55,
+    100
+   ]
+  },
+  "101_63": {
+   "nome": "Hisuian Electrode",
+   "glb": "pm0101_63",
+   "tipos": [
+    "Electric",
+    "Grass"
+   ],
+   "bs": [
+    60,
+    50,
+    70,
+    80,
+    80,
+    150
+   ]
+  },
+  "103_61": {
+   "nome": "Alolan Exeggutor",
+   "glb": "pm0103_61",
+   "tipos": [
+    "Grass",
+    "Dragon"
+   ],
+   "bs": [
+    95,
+    105,
+    85,
+    125,
+    75,
+    45
+   ]
+  },
+  "105_61": {
+   "nome": "Alolan Marowak",
+   "glb": "pm0105_61",
+   "tipos": [
+    "Fire",
+    "Ghost"
+   ],
+   "bs": [
+    60,
+    80,
+    110,
+    50,
+    80,
+    45
+   ]
+  },
+  "110_62": {
+   "nome": "Galarian Weezing",
+   "glb": "pm0110_62",
+   "tipos": [
+    "Poison",
+    "Fairy"
+   ],
+   "bs": [
+    65,
+    90,
+    120,
+    85,
+    70,
+    60
+   ]
+  },
+  "115_51": {
+   "nome": "Mega Kangaskhan",
+   "glb": "pm0115_51",
+   "tipos": [
+    "Normal"
+   ],
+   "bs": [
+    105,
+    125,
+    100,
+    60,
+    100,
+    100
+   ]
+  },
+  "121_51": {
+   "nome": "Mega Starmie",
+   "glb": "pm0121_51",
+   "tipos": null,
+   "bs": null,
+   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+  },
+  "122_62": {
+   "nome": "Galarian Mr. Mime",
+   "glb": "pm0122_62",
+   "tipos": [
+    "Ice",
+    "Psychic"
+   ],
+   "bs": [
+    50,
+    65,
+    65,
+    90,
+    90,
+    100
+   ]
+  },
+  "127_51": {
+   "nome": "Mega Pinsir",
+   "glb": "pm0127_51",
+   "tipos": [
+    "Bug",
+    "Flying"
+   ],
+   "bs": [
+    65,
+    155,
+    120,
+    65,
+    90,
+    105
+   ]
+  },
+  "130_51": {
+   "nome": "Mega Gyarados",
+   "glb": "pm0130_51",
+   "tipos": [
+    "Water",
+    "Dark"
+   ],
+   "bs": [
+    95,
+    155,
+    109,
+    70,
+    130,
+    81
+   ]
+  },
+  "131_81": {
+   "nome": "Gigantamax Lapras",
+   "glb": "pm0131_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "133_81": {
+   "nome": "Gigantamax Eevee",
+   "glb": "pm0133_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "142_51": {
+   "nome": "Mega Aerodactyl",
+   "glb": "pm0142_51",
+   "tipos": [
+    "Rock",
+    "Flying"
+   ],
+   "bs": [
+    80,
+    135,
+    85,
+    70,
+    95,
+    150
+   ]
+  },
+  "143_81": {
+   "nome": "Gigantamax Snorlax",
+   "glb": "pm0143_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "144_62": {
+   "nome": "Galarian Articuno",
+   "glb": "pm0144_62",
+   "tipos": [
+    "Psychic",
+    "Flying"
+   ],
+   "bs": [
+    90,
+    85,
+    85,
+    125,
+    100,
+    95
+   ]
+  },
+  "145_62": {
+   "nome": "Galarian Zapdos",
+   "glb": "pm0145_62",
+   "tipos": [
+    "Fighting",
+    "Flying"
+   ],
+   "bs": [
+    90,
+    125,
+    90,
+    85,
+    90,
+    100
+   ]
+  },
+  "146_62": {
+   "nome": "Galarian Moltres",
+   "glb": "pm0146_62",
+   "tipos": [
+    "Dark",
+    "Flying"
+   ],
+   "bs": [
+    90,
+    85,
+    90,
+    100,
+    125,
+    90
+   ]
+  },
+  "149_51": {
+   "nome": "Mega Dragonite",
+   "glb": "pm0149_51",
+   "tipos": null,
+   "bs": null,
+   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+  },
+  "150_51": {
+   "nome": "Mega Mewtwo X",
+   "glb": "pm0150_51",
+   "tipos": [
+    "Psychic",
+    "Fighting"
+   ],
+   "bs": [
+    106,
+    190,
+    100,
+    154,
+    100,
+    130
+   ]
+  },
+  "150_52": {
+   "nome": "Mega Mewtwo Y",
+   "glb": "pm0150_52",
+   "tipos": [
+    "Psychic"
+   ],
+   "bs": [
+    106,
+    150,
+    70,
+    194,
+    120,
+    140
+   ]
+  },
+  "157_63": {
+   "nome": "Hisuian Typhlosion",
+   "glb": "pm0157_63",
+   "tipos": [
+    "Fire",
+    "Ghost"
+   ],
+   "bs": [
+    73,
+    84,
+    78,
+    119,
+    85,
+    95
+   ]
+  },
+  "181_51": {
+   "nome": "Mega Ampharos",
+   "glb": "pm0181_51",
+   "tipos": [
+    "Electric",
+    "Dragon"
+   ],
+   "bs": [
+    90,
+    95,
+    105,
+    165,
+    110,
+    45
+   ]
+  },
+  "194_64": {
+   "nome": "Paldean Wooper",
+   "glb": "pm0194_64",
+   "tipos": [
+    "Poison",
+    "Ground"
+   ],
+   "bs": [
+    55,
+    45,
+    45,
+    25,
+    25,
+    15
+   ]
+  },
+  "199_62": {
+   "nome": "Galarian Slowking",
+   "glb": "pm0199_62",
+   "tipos": [
+    "Poison",
+    "Psychic"
+   ],
+   "bs": [
+    95,
+    65,
+    80,
+    110,
+    110,
+    30
+   ]
+  },
+  "208_51": {
+   "nome": "Mega Steelix",
+   "glb": "pm0208_51",
+   "tipos": [
+    "Steel",
+    "Ground"
+   ],
+   "bs": [
+    75,
+    125,
+    230,
+    55,
+    95,
+    30
+   ]
+  },
+  "211_63": {
+   "nome": "Hisuian Qwilfish",
+   "glb": "pm0211_63",
+   "tipos": [
+    "Dark",
+    "Poison"
+   ],
+   "bs": [
+    65,
+    95,
+    85,
+    55,
+    55,
+    85
+   ]
+  },
+  "212_51": {
+   "nome": "Mega Scizor",
+   "glb": "pm0212_51",
+   "tipos": [
+    "Bug",
+    "Steel"
+   ],
+   "bs": [
+    70,
+    150,
+    140,
+    65,
+    100,
+    75
+   ]
+  },
+  "214_51": {
+   "nome": "Mega Heracross",
+   "glb": "pm0214_51",
+   "tipos": [
+    "Bug",
+    "Fighting"
+   ],
+   "bs": [
+    80,
+    185,
+    115,
+    40,
+    105,
+    75
+   ]
+  },
+  "215_63": {
+   "nome": "Hisuian Sneasel",
+   "glb": "pm0215_63",
+   "tipos": [
+    "Fighting",
+    "Poison"
+   ],
+   "bs": [
+    55,
+    95,
+    55,
+    35,
+    75,
+    115
+   ]
+  },
+  "222_62": {
+   "nome": "Galarian Corsola",
+   "glb": "pm0222_62",
+   "tipos": [
+    "Ghost"
+   ],
+   "bs": [
+    60,
+    55,
+    100,
+    65,
+    100,
+    30
+   ]
+  },
+  "229_51": {
+   "nome": "Mega Houndoom",
+   "glb": "pm0229_51",
+   "tipos": [
+    "Dark",
+    "Fire"
+   ],
+   "bs": [
+    75,
+    90,
+    90,
+    140,
+    90,
+    115
+   ]
+  },
+  "248_51": {
+   "nome": "Mega Tyranitar",
+   "glb": "pm0248_51",
+   "tipos": [
+    "Rock",
+    "Dark"
+   ],
+   "bs": [
+    100,
+    164,
+    150,
+    95,
+    120,
+    71
+   ]
+  },
+  "254_51": {
+   "nome": "Mega Sceptile",
+   "glb": "pm0254_51",
+   "tipos": [
+    "Grass",
+    "Dragon"
+   ],
+   "bs": [
+    70,
+    110,
+    75,
+    145,
+    85,
+    145
+   ]
+  },
+  "257_51": {
+   "nome": "Mega Blaziken",
+   "glb": "pm0257_51",
+   "tipos": [
+    "Fire",
+    "Fighting"
+   ],
+   "bs": [
+    80,
+    160,
+    80,
+    130,
+    80,
+    100
+   ]
+  },
+  "260_51": {
+   "nome": "Mega Swampert",
+   "glb": "pm0260_51",
+   "tipos": [
+    "Water",
+    "Ground"
+   ],
+   "bs": [
+    100,
+    150,
+    110,
+    95,
+    110,
+    70
+   ]
+  },
+  "263_62": {
+   "nome": "Galarian Zigzagoon",
+   "glb": "pm0263_62",
+   "tipos": [
+    "Dark",
+    "Normal"
+   ],
+   "bs": [
+    38,
+    30,
+    41,
+    30,
+    41,
+    60
+   ]
+  },
+  "264_62": {
+   "nome": "Galarian Linoone",
+   "glb": "pm0264_62",
+   "tipos": [
+    "Dark",
+    "Normal"
+   ],
+   "bs": [
+    78,
+    70,
+    61,
+    50,
+    61,
+    100
+   ]
+  },
+  "282_51": {
+   "nome": "Mega Gardevoir",
+   "glb": "pm0282_51",
+   "tipos": [
+    "Psychic",
+    "Fairy"
+   ],
+   "bs": [
+    68,
+    85,
+    65,
+    165,
+    135,
+    100
+   ]
+  },
+  "302_51": {
+   "nome": "Mega Sableye",
+   "glb": "pm0302_51",
+   "tipos": [
+    "Dark",
+    "Ghost"
+   ],
+   "bs": [
+    50,
+    85,
+    125,
+    85,
+    115,
+    20
+   ]
+  },
+  "303_51": {
+   "nome": "Mega Mawile",
+   "glb": "pm0303_51",
+   "tipos": [
+    "Steel",
+    "Fairy"
+   ],
+   "bs": [
+    50,
+    105,
+    125,
+    55,
+    95,
+    50
+   ]
+  },
+  "306_51": {
+   "nome": "Mega Aggron",
+   "glb": "pm0306_51",
+   "tipos": [
+    "Steel"
+   ],
+   "bs": [
+    70,
+    140,
+    230,
+    60,
+    80,
+    50
+   ]
+  },
+  "308_51": {
+   "nome": "Mega Medicham",
+   "glb": "pm0308_51",
+   "tipos": [
+    "Fighting",
+    "Psychic"
+   ],
+   "bs": [
+    60,
+    100,
+    85,
+    80,
+    85,
+    100
+   ]
+  },
+  "310_51": {
+   "nome": "Mega Manectric",
+   "glb": "pm0310_51",
+   "tipos": [
+    "Electric"
+   ],
+   "bs": [
+    70,
+    75,
+    80,
+    135,
+    80,
+    135
+   ]
+  },
+  "319_51": {
+   "nome": "Mega Sharpedo",
+   "glb": "pm0319_51",
+   "tipos": [
+    "Water",
+    "Dark"
+   ],
+   "bs": [
+    70,
+    140,
+    70,
+    110,
+    65,
+    105
+   ]
+  },
+  "323_51": {
+   "nome": "Mega Camerupt",
+   "glb": "pm0323_51",
+   "tipos": [
+    "Fire",
+    "Ground"
+   ],
+   "bs": [
+    70,
+    120,
+    100,
+    145,
+    105,
+    20
+   ]
+  },
+  "334_51": {
+   "nome": "Mega Altaria",
+   "glb": "pm0334_51",
+   "tipos": [
+    "Dragon",
+    "Fairy"
+   ],
+   "bs": [
+    75,
+    110,
+    110,
+    110,
+    105,
+    80
+   ]
+  },
+  "354_51": {
+   "nome": "Mega Banette",
+   "glb": "pm0354_51",
+   "tipos": [
+    "Ghost"
+   ],
+   "bs": [
+    64,
+    165,
+    75,
+    93,
+    83,
+    75
+   ]
+  },
+  "359_51": {
+   "nome": "Mega Absol",
+   "glb": "pm0359_51",
+   "tipos": [
+    "Dark"
+   ],
+   "bs": [
+    65,
+    150,
+    60,
+    115,
+    60,
+    115
+   ]
+  },
+  "362_51": {
+   "nome": "Mega Glalie",
+   "glb": "pm0362_51",
+   "tipos": [
+    "Ice"
+   ],
+   "bs": [
+    80,
+    120,
+    80,
+    120,
+    80,
+    100
+   ]
+  },
+  "373_51": {
+   "nome": "Mega Salamence",
+   "glb": "pm0373_51",
+   "tipos": [
+    "Dragon",
+    "Flying"
+   ],
+   "bs": [
+    95,
+    145,
+    130,
+    120,
+    90,
+    120
+   ]
+  },
+  "376_51": {
+   "nome": "Mega Metagross",
+   "glb": "pm0376_51",
+   "tipos": [
+    "Steel",
+    "Psychic"
+   ],
+   "bs": [
+    80,
+    145,
+    150,
+    105,
+    110,
+    110
+   ]
+  },
+  "380_51": {
+   "nome": "Mega Latias",
+   "glb": "pm0380_51",
+   "tipos": [
+    "Dragon",
+    "Psychic"
+   ],
+   "bs": [
+    80,
+    100,
+    120,
+    140,
+    150,
+    110
+   ]
+  },
+  "381_51": {
+   "nome": "Mega Latios",
+   "glb": "pm0381_51",
+   "tipos": [
+    "Dragon",
+    "Psychic"
+   ],
+   "bs": [
+    80,
+    130,
+    100,
+    160,
+    120,
+    110
+   ]
+  },
+  "384_51": {
+   "nome": "Mega Rayquaza",
+   "glb": "pm0384_51",
+   "tipos": [
+    "Dragon",
+    "Flying"
+   ],
+   "bs": [
+    105,
+    180,
+    100,
+    180,
+    100,
+    115
+   ]
+  },
+  "428_51": {
+   "nome": "Mega Lopunny",
+   "glb": "pm0428_51",
+   "tipos": [
+    "Normal",
+    "Fighting"
+   ],
+   "bs": [
+    65,
+    136,
+    94,
+    54,
+    96,
+    135
+   ]
+  },
+  "445_51": {
+   "nome": "Mega Garchomp",
+   "glb": "pm0445_51",
+   "tipos": [
+    "Dragon",
+    "Ground"
+   ],
+   "bs": [
+    108,
+    170,
+    115,
+    120,
+    95,
+    92
+   ]
+  },
+  "448_51": {
+   "nome": "Mega Lucario",
+   "glb": "pm0448_51",
+   "tipos": [
+    "Fighting",
+    "Steel"
+   ],
+   "bs": [
+    70,
+    145,
+    88,
+    140,
+    70,
+    112
+   ]
+  },
+  "460_51": {
+   "nome": "Mega Abomasnow",
+   "glb": "pm0460_51",
+   "tipos": [
+    "Grass",
+    "Ice"
+   ],
+   "bs": [
+    90,
+    132,
+    105,
+    132,
+    105,
+    30
+   ]
+  },
+  "475_51": {
+   "nome": "Mega Gallade",
+   "glb": "pm0475_51",
+   "tipos": [
+    "Psychic",
+    "Fighting"
+   ],
+   "bs": [
+    68,
+    165,
+    95,
+    65,
+    115,
+    110
+   ]
+  },
+  "503_63": {
+   "nome": "Hisuian Samurott",
+   "glb": "pm0503_63",
+   "tipos": [
+    "Water",
+    "Dark"
+   ],
+   "bs": [
+    90,
+    108,
+    80,
+    100,
+    65,
+    85
+   ]
+  },
+  "531_51": {
+   "nome": "Mega Audino",
+   "glb": "pm0531_51",
+   "tipos": [
+    "Normal",
+    "Fairy"
+   ],
+   "bs": [
+    103,
+    60,
+    126,
+    80,
+    126,
+    50
+   ]
+  },
+  "549_63": {
+   "nome": "Hisuian Lilligant",
+   "glb": "pm0549_63",
+   "tipos": [
+    "Grass",
+    "Fighting"
+   ],
+   "bs": [
+    70,
+    105,
+    75,
+    50,
+    75,
+    105
+   ]
+  },
+  "554_62": {
+   "nome": "Galarian Darumaka",
+   "glb": "pm0554_62",
+   "tipos": [
+    "Ice"
+   ],
+   "bs": [
+    70,
+    90,
+    45,
+    15,
+    45,
+    50
+   ]
+  },
+  "555_62": {
+   "nome": "Galarian Darmanitan",
+   "glb": "pm0555_62",
+   "tipos": [
+    "Ice"
+   ],
+   "bs": [
+    105,
+    140,
+    55,
+    30,
+    55,
+    95
+   ]
+  },
+  "562_62": {
+   "nome": "Galarian Yamask",
+   "glb": "pm0562_62",
+   "tipos": [
+    "Ground",
+    "Ghost"
+   ],
+   "bs": [
+    38,
+    55,
+    85,
+    30,
+    65,
+    30
+   ]
+  },
+  "569_81": {
+   "nome": "Gigantamax Garbodor",
+   "glb": "pm0569_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "570_63": {
+   "nome": "Hisuian Zorua",
+   "glb": "pm0570_63",
+   "tipos": [
+    "Normal",
+    "Ghost"
+   ],
+   "bs": [
+    35,
+    60,
+    40,
+    85,
+    40,
+    70
+   ]
+  },
+  "571_63": {
+   "nome": "Hisuian Zoroark",
+   "glb": "pm0571_63",
+   "tipos": [
+    "Normal",
+    "Ghost"
+   ],
+   "bs": [
+    55,
+    100,
+    60,
+    125,
+    60,
+    110
+   ]
+  },
+  "609_51": {
+   "nome": "Mega Chandelure",
+   "glb": "pm0609_51",
+   "tipos": null,
+   "bs": null,
+   "nota": "No official types/stats in our data yet: uses the normal ones until filled in."
+  },
+  "618_62": {
+   "nome": "Galarian Stunfisk",
+   "glb": "pm0618_62",
+   "tipos": [
+    "Ground",
+    "Steel"
+   ],
+   "bs": [
+    109,
+    81,
+    99,
+    66,
+    84,
+    32
+   ]
+  },
+  "628_63": {
+   "nome": "Hisuian Braviary",
+   "glb": "pm0628_63",
+   "tipos": [
+    "Psychic",
+    "Flying"
+   ],
+   "bs": [
+    110,
+    83,
+    70,
+    112,
+    70,
+    65
+   ]
+  },
+  "705_63": {
+   "nome": "Hisuian Sliggoo",
+   "glb": "pm0705_63",
+   "tipos": [
+    "Steel",
+    "Dragon"
+   ],
+   "bs": [
+    58,
+    75,
+    83,
+    83,
+    113,
+    40
+   ]
+  },
+  "706_63": {
+   "nome": "Hisuian Goodra",
+   "glb": "pm0706_63",
+   "tipos": [
+    "Steel",
+    "Dragon"
+   ],
+   "bs": [
+    80,
+    100,
+    100,
+    110,
+    150,
+    60
+   ]
+  },
+  "713_63": {
+   "nome": "Hisuian Avalugg",
+   "glb": "pm0713_63",
+   "tipos": [
+    "Ice",
+    "Rock"
+   ],
+   "bs": [
+    95,
+    127,
+    184,
+    34,
+    36,
+    38
+   ]
+  },
+  "719_51": {
+   "nome": "Mega Diancie",
+   "glb": "pm0719_51",
+   "tipos": [
+    "Rock",
+    "Fairy"
+   ],
+   "bs": [
+    50,
+    160,
+    110,
+    160,
+    110,
+    110
+   ]
+  },
+  "724_63": {
+   "nome": "Hisuian Decidueye",
+   "glb": "pm0724_63",
+   "tipos": [
+    "Grass",
+    "Fighting"
+   ],
+   "bs": [
+    88,
+    112,
+    80,
+    95,
+    95,
+    60
+   ]
+  },
+  "809_81": {
+   "nome": "Gigantamax Melmetal",
+   "glb": "pm0809_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "812_81": {
+   "nome": "Gigantamax Rillaboom",
+   "glb": "pm0812_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "815_81": {
+   "nome": "Gigantamax Cinderace",
+   "glb": "pm0815_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "818_81": {
+   "nome": "Gigantamax Inteleon",
+   "glb": "pm0818_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "823_81": {
+   "nome": "Gigantamax Corviknight",
+   "glb": "pm0823_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "826_81": {
+   "nome": "Gigantamax Orbeetle",
+   "glb": "pm0826_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "834_81": {
+   "nome": "Gigantamax Drednaw",
+   "glb": "pm0834_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "839_81": {
+   "nome": "Gigantamax Coalossal",
+   "glb": "pm0839_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "841_81": {
+   "nome": "Gigantamax Flapple",
+   "glb": "pm0841_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "842_81": {
+   "nome": "Gigantamax Appletun",
+   "glb": "pm0842_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "844_81": {
+   "nome": "Gigantamax Sandaconda",
+   "glb": "pm0844_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "849_81": {
+   "nome": "Gigantamax Toxtricity",
+   "glb": "pm0849_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "851_81": {
+   "nome": "Gigantamax Centiskorch",
+   "glb": "pm0851_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "858_81": {
+   "nome": "Gigantamax Hatterene",
+   "glb": "pm0858_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "861_81": {
+   "nome": "Gigantamax Grimmsnarl",
+   "glb": "pm0861_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "869_81": {
+   "nome": "Gigantamax Alcremie",
+   "glb": "pm0869_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "879_81": {
+   "nome": "Gigantamax Copperajah",
+   "glb": "pm0879_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "884_81": {
+   "nome": "Gigantamax Duraludon",
+   "glb": "pm0884_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  },
+  "890_81": {
+   "nome": "Gigantamax Eternatus",
+   "glb": "pm0890_81",
+   "tipos": null,
+   "bs": null,
+   "nota": "Gigantamax keeps the normal types and stats."
+  }
+ }
+}

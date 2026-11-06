@@ -26,7 +26,7 @@ function ensureLearnset() {
 function learnable(record, id) {
   ensureLearnset();
   const lv = Math.max(1, record.lv | 0 || 1);
-  return Ind.learnsetDe(record.dex).some(([k, n]) => k === id && n <= lv);
+  return Ind.learnsetDe(record.dex, record.glb).some(([k, n]) => k === id && n <= lv);   // a form has its own moveset (forms.mjs)
 }
 
 /** Merges `item.movs` into `record.movs`. Returns true when the record changed. Invalid lists are ignored whole. */

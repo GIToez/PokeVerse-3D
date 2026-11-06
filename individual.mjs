@@ -1,6 +1,7 @@
 /* Indivíduo: IV (0–31 por stat), EV (0–252 / 510 total) e natureza (25, +10 %/−10 %).
    Fórmulas da série (Bulbapedia / PokéAPI): floor((2·base + IV + floor(EV/4)) · lv / 100) …
    HP is then ×3 for real-time fights (same as rules.mjs). */
+import * as Forms from './forms.mjs';   // a form's own moveset (learnset key "26_61")
 export const STATS = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
 export const IV_MAX = 31, IV_TOTAL = 31 * 6;
 export const EV_STAT_MAX = 252, EV_TOTAL_MAX = 510;
@@ -50,20 +51,21 @@ export const statDe = (S, e, i) => stat(S.bs[i], e.lv || 1, e.ivs?.[i] || 0, evs
 let LEARN = null;
 export function carregarLearnset(d){ LEARN = d || null; }
 export const ppDe = id => LEARN?.pp?.[id] ?? 20;
-export const learnsetDe = dex => LEARN?.learnset?.[dex] || [];
+/** The moveset of a species, or of one of its forms (glb pm0026_61 → the learnset entry "26_61", when there is one: forms.mjs). */
+export const learnsetDe = (dex, glb = null) => { const k = glb ? Forms.learnsetChave(dex, glb) : String(dex); return LEARN?.learnset?.[k] || LEARN?.learnset?.[+dex] || []; };
 /** Ids que um indivíduo dessa espécie/nível teria: os últimos 4 do learnset ≤ lv; mínimo 2 (completa com o fallback). */
-export function golpesIniciais(dex, lv, fallback = []){
-  const ids = [...new Set(learnsetDe(dex).filter(([, n]) => n <= (lv || 1)).map(([k]) => k))].slice(-4);
+export function golpesIniciais(dex, lv, fallback = [], glb = null){
+  const ids = [...new Set(learnsetDe(dex, glb).filter(([, n]) => n <= (lv || 1)).map(([k]) => k))].slice(-4);
   for (const f of fallback){ if (ids.length >= 2) break; if (!ids.includes(f)) ids.push(f); }
   return ids;
 }
 export const novoGolpe = id => ({ id, pp: ppDe(id), ppMax: ppDe(id) });
-export const golpesPara = (dex, lv, fallback) => golpesIniciais(dex, lv, fallback).map(novoGolpe);
+export const golpesPara = (dex, lv, fallback, glb = null) => golpesIniciais(dex, lv, fallback, glb).map(novoGolpe);
 /** Golpes que entram exatamente nesse nível. */
-export const aprendeEm = (dex, lv) => learnsetDe(dex).filter(([, n]) => n === lv).map(([k]) => k);
+export const aprendeEm = (dex, lv, glb = null) => learnsetDe(dex, glb).filter(([, n]) => n === lv).map(([k]) => k);
 export function garantirMovs(e, fallback){
   if (!e) return e;
-  if (!Array.isArray(e.movs) || !e.movs.length) e.movs = golpesPara(e.dex, e.lv || 5, fallback);
+  if (!Array.isArray(e.movs) || !e.movs.length) e.movs = golpesPara(e.dex, e.lv || 5, fallback, e.glb);
   for (const m of e.movs){ if (m.ppMax == null) m.ppMax = ppDe(m.id); if (m.pp == null) m.pp = m.ppMax; }
   return e;
 }

@@ -22,6 +22,7 @@
  * EQUILÍBRIO: a fórmula do `golpear` do index, mas o chefe "luta no nível" de cada jogador (a defesa dele no nível de quem bate, o
  * ataque no nível de quem apanha) — no nível 70 de verdade um time Lv 5 faria 2 de dano e cairia num golpe só. O nível 70 é o que
  * aparece na barra e o do Pokémon do prêmio. Vida automática = soma, por participante, de FATOR_HP chefes do nível do time dele. */
+import * as Forms from './forms.mjs';   // Pokémon forms: types and stats of Alolan, Galarian, Mega… (public/data/forms.json)
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import { hp as hpBase, stat as statBase, carregarLearnset, learnsetDe } from './individual.mjs';
@@ -149,7 +150,7 @@ export function criarRaid(h) {
   /** The Articuno fight (only when the raid's arena is its arena). */
   const r01 = createR01({
     dados: dadosR01, danoMult: () => danoRaid(), paraArena: (o) => paraArena(o), naArena: () => naArena(), idDe: (w) => w._id,
-    maxHpDe: (w) => { const u = contaDe(w); const mon = w._raidMon || (u && monDaConta(u, { uid: w._info?.uid })); if (!mon) return 0; if (mon.maxHp > 0) return mon.maxHp; const S = especie(mon.dex); return S ? hpBase(S.bs[0], lvDe(mon), ivsDe(mon)[0] || 0) : 100; },
+    maxHpDe: (w) => { const u = contaDe(w); const mon = w._raidMon || (u && monDaConta(u, { uid: w._info?.uid })); if (!mon) return 0; if (mon.maxHp > 0) return mon.maxHp; const S = Forms.especie(especie(mon.dex), mon); return S ? hpBase(S.bs[0], lvDe(mon), ivsDe(mon)[0] || 0) : 100; },
   });
   const ehR01 = () => !!raid && String(raid.cfg.arena) === ARENA_R01;
 
@@ -477,7 +478,7 @@ export function criarRaid(h) {
     const mon = monDaConta(u, m.atacante || {}); if (!mon) return;
     ws._raidMon = mon;                                                       // o chefe bate nele (pdano) até o próximo golpe dizer outro
     const est = estDoParticipante(p, mon), ch = raid.chefe;
-    const A = especie(mon.dex) || ESPECIE_VAZIA, B = especie(raid.cfg.chefeDex) || ESPECIE_VAZIA, lv = lvDe(mon), fis = golpe.cat === 'fisico';
+    const A = Forms.especie(especie(mon.dex), mon) || ESPECIE_VAZIA, B = especie(raid.cfg.chefeDex) || ESPECIE_VAZIA, lv = lvDe(mon), fis = golpe.cat === 'fisico';
     if (Math.random() > Stg.chance(1, golpe, est, ch.est)) { paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano: 0, eff: 1, golpe: golpe.id, de: ws._id, errou: true }); return; }
     const { dano, eff } = golpe.cat === 'status' ? { dano: 0, eff: 1 }
       : calcDano(golpe, lv, A, statMon(A, mon, fis ? 1 : 3) * Stg.mulStat(est, fis ? 1 : 3), B, statBase(B.bs[fis ? 2 : 4], lv, 31, 0, null, fis ? 2 : 4) * Stg.mulStat(ch.est, fis ? 2 : 4));
@@ -521,7 +522,7 @@ export function criarRaid(h) {
     const w = alvos[Math.floor(Math.random() * alvos.length)], u = contaDe(w);
     const mon = w._raidMon || monDaConta(u, { uid: w._info.uid, dex: dexDoGlb(w._info.parceiro) }); if (!mon) return;
     const golpe = raid.golpesChefe[Math.floor(Math.random() * raid.golpesChefe.length)];
-    const B = especie(raid.cfg.chefeDex) || ESPECIE_VAZIA, D = especie(mon.dex) || ESPECIE_VAZIA, lv = lvDe(mon), fis = golpe.cat === 'fisico';
+    const B = especie(raid.cfg.chefeDex) || ESPECIE_VAZIA, D = Forms.especie(especie(mon.dex), mon) || ESPECIE_VAZIA, lv = lvDe(mon), fis = golpe.cat === 'fisico';
     const p = raid.fila.get(u), est = p ? estDoParticipante(p, mon) : null;
     const errou = Math.random() > Stg.chance(1, golpe, ch.est, est);
     const { dano, eff } = errou ? { dano: 0, eff: 1 }

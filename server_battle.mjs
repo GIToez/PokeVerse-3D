@@ -2,6 +2,7 @@
  * Turn-based battles the live client already speaks: bat_desafiar / bat_acao / bat_sair.
  * Trainer, gym, Elite Four, and player-vs-player. The server owns HP, XP, badges, and payouts.
  */
+import * as Forms from './forms.mjs';   // Pokémon forms: types and stats of Alolan, Galarian, Mega… (public/data/forms.json)
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -87,7 +88,7 @@ export function criarBatalha(ctx) {
   const climaDaLuta = (bat) => (bat.eu.field && engine.fieldWeather(bat.eu.field, fx)) || (climaMapa(bat) ? { id: climaMapa(bat), turnos: null } : null);
   const engine = createTurnEngine({
     status: lerJson('public/data/biblioteca/status.json', {}), engineMoves: lerJson('public/data/biblioteca/golpes.json', { golpes: {} }).golpes,
-    moves: golpes, species: (dex, p) => (p?.transf ? Transf.especieEfetiva(especie(dex), p, Date.now()) : especie(dex)), statOf: (S, p, i) => Ind.statDe(S, p, i), struggle: STRUGGLE,
+    moves: golpes, species: (dex, p) => (p?.transf ? Transf.especieEfetiva(especie(dex, p), p, Date.now()) : especie(dex, p)), statOf: (S, p, i) => Ind.statDe(S, p, i), struggle: STRUGGLE,
   });
   function volDe(p) {
     let v = vol.get(p);
@@ -110,7 +111,7 @@ export function criarBatalha(ctx) {
   }
   /** `at` uses Transform on `alvo`. Pushes the lance (from `lado`'s view) and the log line; true when it worked. */
   function usarTransform(at, alvo, lado, lances, log, espelho = null) {
-    const v = alvo ? { tipo: 'luta', uid: alvo.uid, dex: +alvo.dex, lv: +alvo.lv || 1, hp: alvo.hp, movs: alvo.movs || [], especie: especie(alvo.dex), glb: glbDe(alvo.dex, alvo), transformado: !!alvo.transf } : null;
+    const v = alvo ? { tipo: 'luta', uid: alvo.uid, dex: +alvo.dex, lv: +alvo.lv || 1, hp: alvo.hp, movs: alvo.movs || [], especie: especie(alvo.dex, alvo), glb: glbDe(alvo.dex, alvo), transformado: !!alvo.transf } : null;
     const r = Transf.golpeDeTurno(at, v, { agora: Date.now(), golpeExiste: (id) => !!golpes[id], lado });
     const nome = at.nome || 'Ditto';
     if (!r?.ok) {
@@ -148,14 +149,15 @@ export function criarBatalha(ctx) {
     return c.save;
   }
 
-  function especie(dex) {
-    return porDex.get(+dex) || { n: +dex, name: '#' + dex, types: ['Normal'], bs: [50, 50, 50, 50, 50, 50] };
+  function especie(dex, p = null) {   // p: the record, for its form (forms.mjs)
+    const S = porDex.get(+dex) || { n: +dex, name: '#' + dex, types: ['Normal'], bs: [50, 50, 50, 50, 50, 50] };
+    return p ? Forms.especie(S, p) : S;
   }
 
   function garantirMon(p) {
     Ind.garantir(p);
     Ind.garantirMovs(p, ['tackle']);
-    const S = especie(p.dex);
+    const S = especie(p.dex, p);
     p.maxHp = Ind.hpDe(S, p);
     if (p.hp == null || p.hp > p.maxHp) p.hp = p.maxHp;
     p.hp = Math.max(0, Math.round(+p.hp || 0));
@@ -240,8 +242,8 @@ export function criarBatalha(ctx) {
   }
 
   function calcularDano(at, def, g, rng = Math.random, clima = null) {
-    const A = especie(at.dex),
-      D = especie(def.dex);
+    const A = especie(at.dex, at),
+      D = especie(def.dex, def);
     const estA = estDe(at), estD = estDe(def);
     if ((g.cat || '') === 'status') {
       const acc = Stg.chance(Weather.precisao(clima, g), g, estA, estD);

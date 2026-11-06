@@ -4,6 +4,7 @@
  * faint). It may not raise HP. A level-up may add only the new hit points
  * from the higher max, and a Pokémon Center heal is the path that fills the bar.
  */
+import * as Forms from './forms.mjs';   // Pokémon forms: types and stats of Alolan, Galarian, Mega… (public/data/forms.json)
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +27,7 @@ function speciesOf(dex) {
 
 /** Real max HP for this record (species base, level, HP IV, HP EV). */
 export function maxHpOf(mon) {
-  const base = speciesOf(mon?.dex)?.bs?.[0];
+  const base = Forms.especie(speciesOf(mon?.dex), mon)?.bs?.[0];   // Alolan, Galarian… have their own HP
   if (!base) return null;
   const lv = Math.max(1, mon.lv | 0 || 1);
   const iv = Array.isArray(mon.ivs) && Number.isInteger(+mon.ivs[0]) ? (+mon.ivs[0] | 0) : 0;

@@ -159,7 +159,7 @@ function validarLearnset(d) {
   if (!ehObj(d)) return falha('expected { "dex no.": [["move", level], …] }');
   const out = {};
   for (const [dex, l] of Object.entries(d)) {
-    if (!RE_DEX.test(dex)) return falha(`invalid dex no.: ${dex}`);
+    if (!RE_DEX.test(dex) && !/^\d{1,4}_\d{2}$/.test(dex)) return falha(`invalid dex no.: ${dex} (a form is dex_form, e.g. 26_61)`);
     if (!Array.isArray(l) || l.length > 120) return falha(`[${dex}] must be a list (up to 120 moves)`);
     for (const [i, par] of l.entries())
       if (!Array.isArray(par) || par.length !== 2 || typeof par[0] !== 'string' || !RE_GOLPE.test(par[0]) || !inteiro(par[1], 1, 120))
@@ -300,6 +300,10 @@ export const ESQUEMAS_F2 = {
       { k: 'tipoNoTime', rotulo: 'With a Pokémon of this type in the team', tipo: 'opcao', opcoes: OPC_TIPOS },
       { k: 'genero', rotulo: 'One gender only', tipo: 'opcao', opcoes: [{ v: 'm', rotulo: '♂ male' }, { v: 'f', rotulo: '♀ female' }], ajuda: 'Informational: the game doesn\'t check it yet.' },
       { k: 'stats', rotulo: 'Atk × Def (Tyrogue)', tipo: 'opcao', opcoes: [{ v: 1, rotulo: 'Atk > Def' }, { v: 0, rotulo: 'Atk = Def' }, { v: -1, rotulo: 'Atk < Def' }], ajuda: 'Informational: the game doesn\'t check it yet.' },
+      { k: 'formaDe', rotulo: 'Only for this form', tipo: 'json', validar: v => v == null || /^\d{2}$/.test(String(v)) || (Array.isArray(v) && v.every(x => /^\d{2}$/.test(String(x)))) ? null : 'a form number like "61", or a list ["00", "61"]', ajuda: 'The rule only applies to that form of the evolving Pokémon: "61" = Alolan only, "00" = the normal one only (costumes count as normal). Empty = every form. Recommended numbers: 51 Mega · 52 Mega Y · 61 Alolan · 62 Galarian · 63 Hisuian · 64 Paldean · 81 Gigantamax.' },
+      { k: 'forma', rotulo: 'Evolves into the form', tipo: 'texto', max: 2, validar: s => !s || /^\d{2}$/.test(s) ? null : 'two digits, e.g. 61', ajuda: 'e.g. 61 = Pikachu → Alolan Raichu. Empty = a regional form carries over (Alolan Rattata → Alolan Raticate), anything else becomes the normal form. "00" = always the normal form.' },
+      { k: 'areas', rotulo: 'Only in these areas', tipo: 'json', validar: v => v == null || (Array.isArray(v) && v.every(n => Number.isInteger(n))) ? null : 'a list of area numbers, e.g. [1105, 1106]', ajuda: 'The rule only works with the player in one of these areas (the Alola region). [] = not open yet (shown locked). Leave it out for anywhere.' },
+      { k: 'lugar', rotulo: 'Place name (for the player)', tipo: 'texto', max: 40, ajuda: 'Shown when it can\'t happen here: "only in the Alola region".' },
       { k: 'extra', rotulo: 'Special rule (free text)', tipo: 'texto', max: 60 },
     ],
   },
@@ -315,10 +319,22 @@ export const ESQUEMAS_F2 = {
       { k: 'q', rotulo: 'Quality', tipo: 'num', int: true, min: 0, max: 10 },
     ],
   },
+  formas: {
+    titulo: 'Forms', arquivo: 'forms', caminho: 'formas', forma: 'mapa', idValido: /^\d{1,4}_\d{2}$/, idAjuda: 'dex_form, e.g. 26_61 = Alolan Raichu',
+    descricao: 'Pokémon forms with their own types, stats, model and moveset. The key is the dex number + the form number, which is the last two digits of the model (pm0026_61 → 26_61). Recommended numbers: 51 = Mega (or Mega X) · 52 = Mega Y · 61 = Alolan · 62 = Galarian · 63 = Hisuian · 64 = Paldean · 81 = Gigantamax. Costumes and colours (31–50 and others) are not listed: they use the normal form. The moveset is the Learnset entry with the same key (else the normal one). tools/build_forms.mjs fills in new models without touching edits.',
+    campos: [
+      { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 40, col: true, obrigatorio: true, ajuda: 'e.g. Alolan Raichu' },
+      { k: 'glb', rotulo: 'Model', tipo: 'texto', max: 24, col: true, validar: s => !s || /^pm\d{4}_\d{2}$/.test(s) ? null : 'a model name like pm0026_61', ajuda: 'The 3D model of this form (scenery/mon/<model>.glb). By default the same number as the key.' },
+      { k: 'tipos', rotulo: 'Types', tipo: 'json', col: true, validar: v => v == null || (Array.isArray(v) && v.length >= 1 && v.length <= 2 && v.every(t => typeof t === 'string')) ? null : 'one or two types, e.g. ["Electric", "Psychic"]', ajuda: 'Empty = the normal types.' },
+      { k: 'bs', rotulo: 'Base stats', tipo: 'json', validar: v => v == null || (Array.isArray(v) && v.length === 6 && v.every(n => Number.isInteger(n) && n >= 1 && n <= 255)) ? null : 'six numbers: HP, Atk, Def, SpA, SpD, Spe', ajuda: 'HP, Attack, Defense, Sp. Atk, Sp. Def, Speed. Empty = the normal stats.' },
+      { k: 'golpes', rotulo: 'Moveset key', tipo: 'texto', max: 8, ajuda: 'Another learnset key to use (e.g. 26_61). Empty = its own key, else the normal moveset.' },
+      { k: 'nota', rotulo: 'Note (staff only)', tipo: 'texto', max: 200 },
+    ],
+  },
   // ── Espécies (tela própria: admin/content.mjs junta tudo por nº da dex e grava em cada arquivo o que mudou) ─────────────
   especies: {
     titulo: 'Species', arquivo: 'species', forma: 'mapa', tela: 'especies', naLista: true, idValido: RE_DEX, idAjuda: 'the dex no.',
-    descricao: 'Model names, size, height, gender, description and EXP of each species (own screen). This file stores the adjustments that don\'t exist in the data generated from the original game (currently: the in-field size).',
+    descricao: 'Model names, size, height, gender, description and EXP of each species (own screen). Forms: the last two digits of a model are its form — recommended numbers 51 = Mega (or Mega X), 52 = Mega Y, 61 = Alolan, 62 = Galarian, 63 = Hisuian, 64 = Paldean, 81 = Gigantamax (their types, stats and moveset: Data files → Forms and Learnset "dex_form"); other numbers are costumes and colours. This file stores the adjustments that don\'t exist in the data generated from the original game (currently: the in-field size).',
     campos: [
       { k: 'escala', rotulo: 'In-field size adjustment (×)', tipo: 'num', min: 0.1, max: 5, ajuda: 'Multiplies the size derived from the height (proportional scale, the default mode). 1 = no adjustment.' },
     ],
