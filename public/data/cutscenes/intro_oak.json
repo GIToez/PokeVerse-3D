@@ -1,0 +1,68 @@
+{
+ "id": "intro_oak",
+ "nome": "New opening: Professor Oak",
+ "nota": "Played by cutscene.mjs. Preview: /?intro2=1 (admin → Cinema → New intro preview). Runs in the Player's House 2F (4110008), so the scene ends with the player waking up in their room.",
+ "passos": [
+  { "op": "palco", "fundo": "#000000" },
+  { "op": "musica", "nome": "bg/sound_login" },
+  { "op": "ator", "id": "oak", "npc": "NPC0003", "x": 0, "z": 0, "olhar": "camera" },
+  { "op": "ator", "id": "nido", "mon": "pm0033_00", "x": 1.15, "z": 0.35, "olhar": "camera", "oculto": true },
+  { "op": "ator", "id": "gary", "npc": "NPC1007", "x": 0, "z": 0, "olhar": "camera", "oculto": true },
+  { "op": "ator", "id": "eu", "jogador": true, "x": 0, "z": 0, "olhar": "camera", "oculto": true },
+  { "op": "camera", "foco": "oak", "zoom": 0.42, "giro": 0, "sobe": 0.35 },
+  { "op": "esperar", "seg": 0.6 },
+  { "op": "escuro", "ate": 0, "seg": 1.4 },
+  { "op": "fala", "quem": "Professor Oak", "linhas": [
+    "Hello there! It's so very nice to meet you!",
+    "Welcome to the world of Pokémon!",
+    "My name is Oak. People affectionately call me the Pokémon Professor."
+  ] },
+  { "op": "camera", "foco": ["oak", "nido"], "zoom": 0.48, "sobe": 0.35, "seg": 0.8 },
+  { "op": "olhar", "id": "oak", "para": "nido" },
+  { "op": "aparecer", "id": "nido", "bola": true },
+  { "op": "esperar", "seg": 0.8 },
+  { "op": "olhar", "id": "oak", "para": "camera" },
+  { "op": "fala", "quem": "Professor Oak", "linhas": [
+    "This world is inhabited far and wide by creatures called Pokémon.",
+    "For some people, Pokémon are pets. Others use them for battling.",
+    "As for myself… I study Pokémon as a profession."
+  ] },
+  { "op": "anim", "id": "nido", "clipe": "Attack", "uma": true },
+  { "op": "esperar", "seg": 0.9 },
+  { "op": "sumir", "id": "nido", "bola": true },
+  { "op": "camera", "foco": "oak", "zoom": 0.42, "sobe": 0.35, "seg": 0.8 },
+  { "op": "fala", "quem": "Professor Oak", "linhas": [
+    "But enough about me. Tell me a little about yourself."
+  ] },
+  { "op": "escuro", "ate": 1, "seg": 0.5 },
+  { "op": "sumir", "id": "oak", "seg": 0.01 },
+  { "op": "aparecer", "id": "eu", "seg": 0.01 },
+  { "op": "escuro", "ate": 0, "seg": 0.6 },
+  { "op": "fala", "quem": "Professor Oak", "linhas": [
+    "Ah, so your name is {nome}! A fine name."
+  ] },
+  { "op": "escuro", "ate": 1, "seg": 0.5 },
+  { "op": "sumir", "id": "eu", "seg": 0.01 },
+  { "op": "aparecer", "id": "gary", "seg": 0.01 },
+  { "op": "escuro", "ate": 0, "seg": 0.6 },
+  { "op": "fala", "quem": "Professor Oak", "linhas": [
+    "This is my grandson, Gary.",
+    "He's been your rival ever since you were both babies."
+  ] },
+  { "op": "escuro", "ate": 1, "seg": 0.5 },
+  { "op": "sumir", "id": "gary", "seg": 0.01 },
+  { "op": "aparecer", "id": "eu", "seg": 0.01 },
+  { "op": "camera", "foco": "eu", "zoom": 0.46, "giro": 0.25, "sobe": 0.35 },
+  { "op": "escuro", "ate": 0, "seg": 0.6 },
+  { "op": "camera", "foco": "eu", "zoom": 0.38, "giro": 0, "sobe": 0.3, "seg": 2.5 },
+  { "op": "fala", "quem": "Professor Oak", "linhas": [
+    "{nome}! Your very own Pokémon legend is about to unfold!",
+    "A world of dreams and adventures with Pokémon awaits! Let's go!"
+  ] },
+  { "op": "encolher", "id": "eu", "seg": 1.4 },
+  { "op": "escuro", "ate": 1, "seg": 0.4 },
+  { "op": "restaurar" },
+  { "op": "camera", "foco": "eu", "zoom": 1, "giro": 0 },
+  { "op": "esperar", "seg": 0.6 }
+ ]
+}
