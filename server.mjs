@@ -1731,7 +1731,7 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()), transformLigado: !!cfgJogo().transformLigado || !!contas[ws._usuario].gm } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (ws._usuario && contas[ws._usuario]) setTimeout(() => { try { diario.login(ws._usuario, ws); } catch (e) { console.warn('daily:', e.message); } }, 4000);   // today's daily prize (once a day), after the world has loaded
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
@@ -1785,7 +1785,8 @@ wss.on('connection', ws => {
         broadcast(ws, { t: 'parceiro', id: ws._id, parceiro: tv?.glb || m.parceiro, pshiny: tv ? tv.shiny : !!(m.shiny ?? m.pshiny), montaria: m.montaria, ...(tv ? { transf: { dex: tv.dex, nome: tv.nome } } : {}) });
         break;
       }
-      case 'transformar': case 'destransformar':   // Transform (server_transform.mjs)
+      case 'transformar': case 'destransformar':   // Transform (server_transform.mjs); off for players until Game settings → Transform is on
+        if (m.t === 'transformar' && !cfgJogo().transformLigado && !contas[ws._usuario]?.gm) { enviar(ws, { t: 'transf', ok: false, texto: "Transform isn't ready yet." }); break; }
         transformacao.receive(ws, m);
         break;
 

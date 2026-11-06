@@ -9629,7 +9629,7 @@ if (jogo.ash){
      or one of your party for 30 min. The server decides; the reply (`transf`) updates the record and swaps the model. */
   const regParceiro = () => { const u = uidParceiro(); return u == null ? null : (jogo.time || []).find(t => String(t?.uid) === String(u)) || null; };
   TransfUi.instalar({
-    comConta: () => comConta(),
+    comConta: () => comConta(), ligado: () => !!jogo.transformLigado,
     emTurno: () => !!jogo.turno,
     naArena: () => !!(jogo.raidArena || RAID || TORNEIO),
     dittoEmCampo: () => { const r = regParceiro(); return r && TransfUi.ehDitto(r.dex) ? { uid: r.uid, dex: +r.dex, nome: r.nome || 'Ditto', lv: r.lv || 1, hp: r.hp ?? 1, transf: r.transf || null } : null; },
@@ -9943,7 +9943,7 @@ if (jogo.ash){
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
       if (!DailyUi.abrir(m.vista) && !m.novo) Chat.sistema(I18n.t('Streak: {n} days', { n: m.vista.seq }));
-    }, caixaVagas: n => { jogo.caixaVagas = +n || null; try { Menus.repintar?.(); } catch {} }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
+    }, transformLigado: v => { jogo.transformLigado = !!v; }, caixaVagas: n => { jogo.caixaVagas = +n || null; try { Menus.repintar?.(); } catch {} }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
       fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });

@@ -81,7 +81,7 @@ function bemvindoDaTroca(m) {
   if (m.diamantes) ctx.conta?.definirDiamantes?.(m.diamantes);
   if (m.respawn) ctx.respawnDoServidor?.(m.respawn);
   if (m.compras) Conta.aplicarBolsa({ compras: m.compras });
-  if (m.caca) ctx.cacaVista?.(m.caca); if (m.caixaVagas != null) ctx.caixaVagas?.(m.caixaVagas);
+  if (m.caca) ctx.cacaVista?.(m.caca); if (m.caixaVagas != null) ctx.caixaVagas?.(m.caixaVagas); if (m.transformLigado != null) ctx.transformLigado?.(!!m.transformLigado);
   ctx.minhaGuilda?.(m.guilda || null);
   bemvindoDaSala = m;
   filaDaSala = [];
@@ -512,6 +512,7 @@ function receber(m) {
       if (m.correio != null) ctx.correio?.({ t: 'correio_contagem', naoLidas: m.correio });
       if (m.caca) ctx.cacaVista?.(m.caca);                         // hunt bonus pool (server_hunt.mjs)
       if (m.caixaVagas != null) ctx.caixaVagas?.(m.caixaVagas);      // Box size (box_rules.mjs)
+      if (m.transformLigado != null) ctx.transformLigado?.(!!m.transformLigado);   // Transform on for this account (Game settings, or GM)
       if (m.diamantes) ctx.conta?.definirDiamantes?.(m.diamantes);
       if (m.respawn) ctx.respawnDoServidor?.(m.respawn);
       if (m.compras) Conta.aplicarBolsa({ compras: m.compras });

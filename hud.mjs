@@ -1735,6 +1735,26 @@ function ajustarMoldura(a, t, C, n, b, c) {
   };
   b.__sbAtualizar();
 }
+/** The scrollbar's pill art stretched over its box (it came from upcoming/hud.mjs without this helper: phones threw "pilula is not defined"). */
+function pilula(n, a) {
+  const b = a.imgPad || 0,
+    r = Math.min(a.w, a.h) / 2,
+    c = (((b + r) / (a.h + 2 * b)) * 100).toFixed(3) + '%';
+  n.style.borderImage =
+    'url(' +
+    a.img +
+    ') ' +
+    c +
+    ' 50% ' +
+    c +
+    ' 50% fill / ' +
+    (b + r) +
+    'px ' +
+    (b + a.w / 2) +
+    'px / ' +
+    b +
+    'px stretch';
+}
 const sbDef = () => layoutAtual()?._figma?.scrollbar?.[aplicar.__preset === 'pc' ? 'pc' : 'deitado'] || null;
 export function sitSobre(a, b, d, e = true, g = null) {
   if (!a) return null;

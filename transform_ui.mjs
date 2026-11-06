@@ -223,7 +223,7 @@ function garantirDom() {
   });
   document.body.append(chip, lista);
 }
-const visivel = () => pronto && !!ctx.comConta?.() && !ctx.emTurno?.() && !ctx.naArena?.();
+const visivel = () => pronto && !!ctx.comConta?.() && !!ctx.ligado?.() && !ctx.emTurno?.() && !ctx.naArena?.();   // ligado: Game settings → Transform (GMs always)
 function pintar() {
   const a = (botaoV2 = Hud.sit('btn-transformar'));
   if (a) {
