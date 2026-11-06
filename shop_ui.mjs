@@ -3198,9 +3198,15 @@ function carregarFotos() {
   fotosP = Promise.all(INDICES_FOTOS.map(a)).then(([a, b, c]) => {
     const m = new Map(),
       d = () => null;   // the turning loop sheets (ui/amanda/skins/loop) aren't shipped in this game: cards keep the still photo
-    const e = (k, x) => {
-      if (typeof x?.foto2x === 'string' && RE_FOTO_LOJA.test(x.foto2x))
-        m.set(k, { foto: './' + x.foto2x, loop: d(x.loop) });
+    let repinta = 0;
+    const e = (k, x) => {   // a listed photo counts only once it loads: missing files left cards blank (the icon is the fallback)
+      if (typeof x?.foto2x !== 'string' || !RE_FOTO_LOJA.test(x.foto2x)) return;
+      const url = './' + x.foto2x, im = new Image();
+      im.onload = () => {
+        m.set(k, { foto: url, loop: d(x.loop) });
+        clearTimeout(repinta); repinta = setTimeout(() => { if (aberto() && !E.ocupado) pintar(); }, 120);
+      };
+      im.src = url;
     };
     for (const x of [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])])
       if (typeof x?.item === 'string') e(x.item, x);
