@@ -8885,5 +8885,8 @@
   "CHALLENGE": "DESAFIO",
   "DUEL": "DUELO",
   "GYM": "GINÁSIO",
-  "ELITE FOUR": "ELITE DOS QUATRO"
+  "ELITE FOUR": "ELITE DOS QUATRO",
+  "Strong vs": "Forte contra",
+  "Power": "Poder",
+  "Status": "Status"
 }

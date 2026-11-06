@@ -15,6 +15,7 @@
 import * as Weather from './weather.mjs';
 import * as R from './rules.mjs';
 import * as I18n from './i18n.mjs';
+import * as Hud from './hud.mjs';
 
 const t = (s, v) => I18n.t(s, v);
 const HOLD_MS = 500;
@@ -128,7 +129,7 @@ function showCard(html, anchor, key) {
   card.style.left = Math.round(Math.max(8, Math.min(vw - cw - 8, x))) + 'px';
   card.style.top = Math.round(Math.max(8, Math.min(vh - chh - 8, y))) + 'px';
 }
-export function hideCard() { if (card) card.style.display = 'none'; cardFor = null; pinned = false; clearTimeout(hoverTimer); }
+export function hideCard() { if (card) card.style.display = 'none'; if (sitCard) Hud.sitMostrar(sitCard, false); cardFor = null; pinned = false; clearTimeout(hoverTimer); }
 const cardOpen = () => !!cardFor;
 
 /* ── card contents ────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -182,6 +183,45 @@ function moveCard(g, slotMov, s) {
   }
   if (rows.length) h += '<hr>' + rows.join('');
   return h;
+}
+/* V2 MOVE TOOLTIP (Nov 5): the Figma `dica-golpe` (type icon, name, category pill, Power / Accuracy / Cooldown / PP, description,
+   "Strong vs" types). Used whenever the layout has it; the HTML card above stays for layouts without it. The slot badges still show
+   the matchup against the current target. */
+let sitCard = null;
+const TIPO_ARQ = { Normal: 'normal', Fire: 'fogo', Water: 'agua', Grass: 'planta', Electric: 'eletrico', Ice: 'gelo', Fighting: 'lutador', Poison: 'venenoso', Ground: 'terrestre', Flying: 'voador', Psychic: 'psiquico', Bug: 'inseto', Rock: 'pedra', Ghost: 'fantasma', Dragon: 'dragao', Dark: 'noturno', Steel: 'metalico', Fairy: 'fada' };
+const iconeTipo = (x) => './ui/figma/tipo/' + (TIPO_ARQ[x] || 'normal') + '.png';
+function tipoNo(a, dentro, x) {
+  const slot = Hud.fig(dentro || a, 'img/tipo')?.parentElement || dentro;
+  const f = Hud.figImagem(a, 'tipo', iconeTipo(x), dentro);
+  if (f && slot && Hud.encaixarBolinha) Hud.encaixarBolinha(f, slot, iconeTipo(x));
+}
+function moveV2(g, slotMov, s, anchor, key) {
+  const a = Hud.sit('dica-golpe');
+  if (!a) return false;
+  const tipo = s.clima ? Weather.tipoGolpe(s.clima, g) : g.tipo;
+  tipoNo(a, Hud.fig(a, 'slot-tipo'), tipo);
+  Hud.escrever(a, 'dica-nome', t(g.nome || g.id));
+  Hud.rotular(a, 'rotulo-categoria', t(CAT[g.cat] || g.cat || '—'));
+  for (const [r, txt] of [['rotulo-dado-poder', 'Power'], ['rotulo-dado-precisao', 'Accuracy'], ['rotulo-dado-recarga', 'Cooldown'], ['rotulo-dado-pp', 'PP'], ['rotulo-forte-contra', 'Strong vs']]) Hud.rotular(a, r, t(txt));
+  Hud.escrever(a, 'dica-poder', g.cat === 'status' || !g.poder ? '—' : String(g.poder));
+  Hud.escrever(a, 'dica-precisao', g.precisao == null || (g.cat === 'status' && !g.precisao) ? '—' : g.precisao + '%');
+  Hud.escrever(a, 'dica-recarga', (+g.recarga || 0) + ' s');
+  Hud.escrever(a, 'dica-pp', slotMov && slotMov.ppMax ? slotMov.pp + '/' + slotMov.ppMax : (g.pp ? String(g.pp) : '—'));
+  const extra = effectLine(g);
+  Hud.escrever(a, 'dica-explicacao', [g.descricao ? t(g.descricao) : '', extra.join(' · ')].filter(Boolean).join(' '));
+  /* "Strong vs": the types this move hits for ×2 or more (up to the 4 slots of the mock-up) */
+  const fortes = g.cat === 'status' ? [] : Object.keys(TIPO_ARQ).filter((x) => R.efetividade(s.chart, tipo, [x]) >= 2).slice(0, 4);
+  const linha = Hud.fig(a, 'forte-contra');
+  if (linha) linha.style.display = fortes.length ? '' : 'none';
+  for (let i = 1; i <= 4; i++) { const c = Hud.fig(a, 'forte-' + i); if (!c) continue; c.style.display = fortes[i - 1] ? '' : 'none'; if (fortes[i - 1]) tipoNo(a, c, fortes[i - 1]); }
+  a.style.zIndex = '70'; a.style.pointerEvents = 'none';
+  Hud.sitMostrar(a, true);
+  const r = anchor.getBoundingClientRect(), k = Hud.escalaAtual(), w = (parseFloat(a.style.width) || 400) * k, h = (parseFloat(a.style.height) || 200) * k, gap = 10;
+  if (r.top - h - gap < 8 && r.height > r.width) Hud.sitEm(a, Math.max(8, r.left - gap - w), Math.max(8, Math.min(innerHeight - h - 8, r.top + r.height / 2 - h / 2)), 'topo');   // phone column: beside it
+  else Hud.sitEm(a, Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)), Math.max(8, r.top - h - gap), 'topo');   // above the slot
+  sitCard = a; cardFor = key;
+  if (card) card.style.display = 'none';
+  return true;
 }
 const fmt = (e) => (e === 0.5 ? '½' : e === 0.25 ? '¼' : String(e));
 function weatherCard(s) {
@@ -282,6 +322,7 @@ function paintSlot(el, i, s) {
   /* the card */
   wire(el, 'sk' + i, () => {
     const st = dep.state(), gg = st.golpes[st.pika?.golpesIds?.[i]];
+    if (gg && moveV2(gg, st.pika?.movs?.[i], st, el, 'sk' + i)) return null;   // the v2 tooltip drew itself
     return gg ? moveCard(gg, st.pika?.movs?.[i], st) : null;
   });
   if (cardFor === 'sk' + i && !g) hideCard();
