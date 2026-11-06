@@ -1,7 +1,7 @@
 (async () => {
   /* PokeVerse: the Competition Center and anything new linked to it (the Colosseum). Run on a logged-in PokeFable tab. */
   const OURS = new Set([1000001, 2000001, 1000002, 2100001, 2100002, 2100003, 2100004, 2100005, 2100006, 2100007, 2100008, 2100009, 2100010, 2100011, 2100012, 2100013, 2500001, 2520001, 2520002, 2520003, 2520004, 2520005, 2520006, 2520007, 2540001, 2540002, 4110001, 4110002, 4110003, 4110004, 4110006, 4110007, 4110008, 4110009, 4110010, 4110011, 4110012, 4110013, 4110014, 4110015, 4110016, 4110017, 4110018, 4110019, 4110020, 4120001, 4120002, 4120003, 4120004, 4120005, 4120006, 4120007, 4120008, 4120009, 4120010, 4120011, 4120012, 4120013, 4120014, 4120015, 4120016, 4120017, 4120018, 4120019, 4120020, 4220010, 4220013, 4400007, 4400008, 4400014, 4440001, 4440037, 4700001, 9700001, 9100001]);
-  const PATHS = ['data/cenas.json', 'data/portas.json', 'data/kanto.json', 'data/npcs_glb.json', 'data/npcs_falas.json', 'cenario/kanto_chao.json', 'cenario/kanto.glb','data/9800002.json','cenario/9800002.glb','cenario/9800002_chao.json'];
+  const PATHS = ['data/cenas.json', 'data/portas.json', 'data/kanto.json', 'data/npcs_glb.json', 'data/npcs_falas.json', 'cenario/kanto_chao.json', 'cenario/kanto.glb','data/9800002.json','cenario/9800002.glb','cenario/9800002_chao.json','data/9800001.json','cenario/9800001.glb','cenario/9800001_chao.json'];
   const box = document.createElement('div');
   Object.assign(box.style, { position: 'fixed', zIndex: 2147483647, right: '12px', bottom: '12px', padding: '10px 14px', background: '#0b1630', color: '#fff', font: '13px sans-serif', border: '2px solid #f8c237', borderRadius: '10px', maxWidth: '360px', whiteSpace: 'pre-wrap' });
   document.body.appendChild(box);
