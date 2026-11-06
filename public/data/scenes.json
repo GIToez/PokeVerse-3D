@@ -2887,219 +2887,6 @@
    "objeto": true
   },
   {
-   "id": 9100001,
-   "nome": "Kanto Anime",
-   "areas": [
-    {
-     "id": 910001,
-     "nome": "Pallet Town",
-     "tipo": 1
-    },
-    {
-     "id": 910002,
-     "nome": "Viridian City",
-     "tipo": 1
-    },
-    {
-     "id": 910003,
-     "nome": "Pewter City",
-     "tipo": 1
-    },
-    {
-     "id": 910004,
-     "nome": "Cerulean City",
-     "tipo": 1
-    },
-    {
-     "id": 910005,
-     "nome": "Vermilion City",
-     "tipo": 1
-    },
-    {
-     "id": 910006,
-     "nome": "Lavender Town",
-     "tipo": 1
-    },
-    {
-     "id": 910007,
-     "nome": "Celadon City",
-     "tipo": 1
-    },
-    {
-     "id": 910008,
-     "nome": "Saffron City",
-     "tipo": 1
-    },
-    {
-     "id": 910009,
-     "nome": "Fuchsia City",
-     "tipo": 1
-    },
-    {
-     "id": 910010,
-     "nome": "Cinnabar Island",
-     "tipo": 1
-    },
-    {
-     "id": 910011,
-     "nome": "Route 1",
-     "tipo": 1
-    },
-    {
-     "id": 910012,
-     "nome": "Route 2",
-     "tipo": 1
-    },
-    {
-     "id": 910013,
-     "nome": "Route 3",
-     "tipo": 1
-    },
-    {
-     "id": 910014,
-     "nome": "Route 4",
-     "tipo": 1
-    },
-    {
-     "id": 910015,
-     "nome": "Route 5",
-     "tipo": 1
-    },
-    {
-     "id": 910016,
-     "nome": "Route 6",
-     "tipo": 1
-    },
-    {
-     "id": 910017,
-     "nome": "Route 7",
-     "tipo": 1
-    },
-    {
-     "id": 910018,
-     "nome": "Route 8",
-     "tipo": 1
-    },
-    {
-     "id": 910019,
-     "nome": "Route 9",
-     "tipo": 1
-    },
-    {
-     "id": 910020,
-     "nome": "Route 10",
-     "tipo": 1
-    },
-    {
-     "id": 910021,
-     "nome": "Route 11",
-     "tipo": 1
-    },
-    {
-     "id": 910022,
-     "nome": "Route 12",
-     "tipo": 1
-    },
-    {
-     "id": 910023,
-     "nome": "Route 13",
-     "tipo": 1
-    },
-    {
-     "id": 910024,
-     "nome": "Route 14",
-     "tipo": 1
-    },
-    {
-     "id": 910025,
-     "nome": "Route 15",
-     "tipo": 1
-    },
-    {
-     "id": 910026,
-     "nome": "Route 16",
-     "tipo": 1
-    },
-    {
-     "id": 910027,
-     "nome": "Route 17",
-     "tipo": 1
-    },
-    {
-     "id": 910028,
-     "nome": "Route 18",
-     "tipo": 1
-    },
-    {
-     "id": 910029,
-     "nome": "Route 19",
-     "tipo": 1
-    },
-    {
-     "id": 910030,
-     "nome": "Route 20",
-     "tipo": 1
-    },
-    {
-     "id": 910031,
-     "nome": "Route 21",
-     "tipo": 1
-    },
-    {
-     "id": 910032,
-     "nome": "Route 22",
-     "tipo": 1
-    },
-    {
-     "id": 910033,
-     "nome": "Route 23",
-     "tipo": 1
-    },
-    {
-     "id": 910034,
-     "nome": "Route 24",
-     "tipo": 1
-    },
-    {
-     "id": 910035,
-     "nome": "Route 25",
-     "tipo": 1
-    },
-    {
-     "id": 910036,
-     "nome": "Viridian Forest",
-     "tipo": 1
-    },
-    {
-     "id": 910037,
-     "nome": "Safari Zone",
-     "tipo": 1
-    },
-    {
-     "id": 910038,
-     "nome": "Competition Center",
-     "tipo": 1
-    },
-    {
-     "id": 910039,
-     "nome": "Seafoam Islands",
-     "tipo": 1
-    },
-    {
-     "id": 910040,
-     "nome": "Kanto Anime",
-     "tipo": 1
-    }
-   ],
-   "objeto": false,
-   "criado": {
-    "por": "eisenbahn",
-    "em": "2026-11-06T01:43:57.051Z",
-    "modo": "clonar",
-    "de": "kanto"
-   }
-  },
-  {
    "id": 9800002,
    "nome": "Competition Center",
    "areas": [
@@ -3110,6 +2897,24 @@
     }
    ],
    "objeto": false
+  },
+  {
+   "id": 9100002,
+   "nome": "Kanto Anime2",
+   "areas": [
+    {
+     "id": 910002,
+     "nome": "Kanto Anime2",
+     "tipo": 1
+    }
+   ],
+   "objeto": false,
+   "criado": {
+    "por": "eisenbahn",
+    "em": "2026-11-06T18:30:15.360Z",
+    "modo": "vazio",
+    "de": "2100011"
+   }
   }
  ]
 }
