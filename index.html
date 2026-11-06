@@ -285,7 +285,8 @@ import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safar
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
 import * as Guia from './mission_guide.mjs';
 import * as Aparicoes from './sightings.mjs';
-import * as Remendos from './scenery_patches.mjs';   // map fixes: house back walls, soft seams between ground textures   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
+import * as Remendos from './scenery_patches.mjs';
+import * as ControlePk from './pokemon_control.mjs';   // C / paw button: steer your partner yourself in the overworld (as in raids)   // map fixes: house back walls, soft seams between ground textures   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
 import * as StaffUi from './staff_ui.mjs';   // ★ Staff button for GMs / staff: free path + a following Pokémon (upcoming/, server_staff.mjs) // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
@@ -6802,6 +6803,7 @@ function safariAcao(tipo){
   else { flutuar(s, tipo === 'isca' ? 'is eating' : 'is angry', '#ffd23a'); Chat.sistema('You threw ' + nome + ' at ' + s.nome + '.'); }
 }
 async function jogarBola(){
+  if (ControlePk.ativo()){ if (jogo.ash) flutuar(jogo.ash, I18n.t('Switch back to your trainer to throw a ball (C).'), '#ffd23a'); return; }
   const { ash } = jogo;
   if (!ash) return;
   if (jogo.turno){ flutuar(ash, "you can't catch a trainer's Pokémon!", '#f58e8e'); return; }
@@ -10113,6 +10115,13 @@ if (jogo.ash){
     areaAtual: () => areaInteriorVisitada ?? areaAtual(), repintar: () => atualizarMissao(),
     time: () => { const k = membroAtivo(); return (jogo.time || []).map((e, i) => (i === k ? { ...e, seguindo: true } : e)); },
     caixa: () => lerLS('caixa', []) || [] });
+  if (!Fairy && !INTRO) ControlePk.instalar({ tr: (s, v) => I18n.t(s, v), jogo, aviso: t => { if (jogo.ash) flutuar(jogo.ash, t, '#ffd23a'); },
+    podeAgora: () => !jogo.ash || !jogo.pika ? 'No Pokémon out.' : jogo.pika.recolhido || jogo.pika.desmaiado > 0 || !(jogo.pika.hp > 0) ? 'Send a healthy Pokémon out first.'
+      : jogo.turno ? "Turn-based battles don't allow it." : jogo.raidArena ? 'Raids have their own controls.' : jogo.montaria ? 'Dismount first.'
+      : jogo.cinem || jogo.evoluindo || jogo.trocandoSeguidor ? 'Not right now.' : null,
+    aoMudar: on => { if (jogo.ash) jogo.ash.alvoX = null; if (jogo.pika) jogo.pika.destino = null;
+      try { Som.tocar('ui/sound_click', { volume: 0.5 }); } catch {}
+      if (jogo.pika) flutuar(on ? jogo.pika : jogo.ash, I18n.t(on ? 'You control {x}' : 'Back to your trainer', { x: jogo.pika.nome || '' }), '#8ef5ff'); } });
   if (!Fairy && !INTRO) fetch('./data/sightings.json').then(r => r.ok ? r.json() : null).then(d => {
     if (!d || d.ligado === false) return;
     Aparicoes.instalar({ THREE, jogo, cena: () => cena, camera: () => cam, get flipX(){ return flipX; },
@@ -10342,6 +10351,13 @@ function atualizarJogo(dt, entrada){
     atualizarParceiro(dt);
     return;
   }
+  if (ControlePk.ativo() && !m){                                         // you steer the partner (pokemon_control.mjs): the trainer waits; a ground click sends the Pokémon there
+    if (ash.alvoX !== null){ pika.destino = ControlePk.noLimite(ash.alvoX, ash.alvoZ) ? { x: ash.alvoX, z: ash.alvoZ } : null; ash.alvoX = null; }
+    jogo.pkMoveu = ControlePk.passo(entrada, dt, deslocar);
+    ash.quieto += dt;
+    atualizarParceiro(dt);
+    return;
+  }
   if (entrada.lengthSq() > 0){
     ash.alvoX = null;
     const p = entrada.normalize().multiplyScalar(velA * dt);
@@ -10400,6 +10416,8 @@ function atualizarParceiro(dt){
   let moveuP = false;
   const r01 = r01Ativa();                                                // Articuno arena: the player steers the partner (moverPokemon above) — no following, no leash
   if (r01) moveuP = RaidR01.moveuPokemon();
+  const pkC = !r01 && ControlePk.ativo();                                // you steer it: no following, the leash is in ControlePk.passo
+  if (pkC){ moveuP = !!jogo.pkMoveu; jogo.pkMoveu = false; }
   for (const k in pika.recargas) pika.recargas[k] = Math.max(0, pika.recargas[k] - dt);
   quadroHeld(dt);                                                         // Leftovers / Black Sludge while in battle
   Pesca.quadro(dt);
@@ -10413,7 +10431,7 @@ function atualizarParceiro(dt){
   else if (pika.emBatalha){ pika.calma = (pika.calma || 0) + dt; if (pika.calma > 3) pika.emBatalha = false; }
   const dA = Math.hypot(ash.x - pika.x, ash.z - pika.z);
   pika.coleira = Math.max(0, (pika.coleira || 0) - dt);
-  if (dA > 12 && !r01 && !(pika.desmaiado > 0) && pika.coleira <= 0){
+  if (dA > 12 && !r01 && !pkC && !(pika.desmaiado > 0) && pika.coleira <= 0){
     pika.coleira = 1.5;                                  // uma vez por puxão, não a cada quadro
     puxarParceiro('came back to you');
   }
@@ -10458,8 +10476,8 @@ function atualizarParceiro(dt){
       pika.giro = Math.atan2(dx, dz);
       if (!moveuP) pika.destino = null;                                  // bateu: desiste do destino, como o clique do Ash
     } else pika.destino = null;
-  } else if (r01){
-    // Articuno arena: the partner is where the player put it
+  } else if (r01 || pkC){
+    // Articuno arena / you control it: the partner is where the player put it
   } else if (pika.emBatalha){
     // parado, de frente para quem está atacando (ou para o alvo)
     const inimigo = hostil || (jogo.alvo && !['morto', 'capturando', 'desmaiado'].includes(jogo.alvo.estado) ? jogo.alvo : null);
@@ -10479,7 +10497,7 @@ function atualizarParceiro(dt){
   /* Parceiro PRESO (13/09, vídeo do l.neto: o Metapod que entrou no lugar do Charmeleon desmaiado não seguia nem atacava): tentou
      andar e não saiu do lugar por 1,2 s (nasceu/saiu da bola num canto sem saída, entre árvores ou móveis) → volta pro lado do
      treinador, como a coleira dos 12 m. */
-  if (tentou && !moveuP && !r01 && !(pika.desmaiado > 0)){
+  if (tentou && !moveuP && !r01 && !pkC && !(pika.desmaiado > 0)){
     pika.travado = (pika.travado || 0) + dt;
     if (pika.travado > 1.2){ pika.travado = 0; puxarParceiro('destravou'); }
   } else pika.travado = 0;
@@ -10649,6 +10667,7 @@ addEventListener('keydown', e => {
       const esp = $('monta-esp')?.value || params0.get('montaria');
       montar(jogo.montaria?.glb || (esp && podeMontar(esp) ? esp : null) || (jogo.atalhos || []).find(a => a && a.tipo === 'montaria')?.glb || (podeMontar('pm0249_00') ? 'pm0249_00' : 'pm0059_00'));
     }
+    if (ac === 'controlar-pokemon' && uma && !Menus.aberto()) ControlePk.alternar();   // C: steer the partner yourself (pokemon_control.mjs)
     if (ac === 'pokebola' && uma && !(r01Ativa() && RaidR01.usaF())) jogarBola();   // Articuno arena: F at an unlit brazier relights it (raid_r01_game.mjs listens)                             // F: joga a bola no alvo
     if ((ac === 'safari-isca' || ac === 'safari-pedra') && uma) safariAcao(ac === 'safari-isca' ? 'isca' : 'pedra');
     if (ac === 'trocar-bola' && uma) proximaBola();                        // Shift+F: troca a bola
@@ -11824,6 +11843,7 @@ function quadro(dt){
       }
     }
     try { StaffUi.quadro(dt); } catch {}   // the staff's following Pokémon
+    try { ControlePk.quadro(dt); } catch {}
     try { Aparicoes.quadro(dt); } catch (e){ if (!Aparicoes.__avisou){ Aparicoes.__avisou = true; console.warn('sightings', e); } }
     Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: pinsG, rota: rotaG, npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno || jogo.cinem), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
@@ -11870,7 +11890,7 @@ function quadro(dt){
     // câmera presa no personagem, como a do Fairy (posição = unidade + offset, sem
     // atraso): com o lerp de antes o boneco corria pra frente e a câmera ia atrás
     const r01 = r01Ativa();
-    const f = jogo.foco || (r01 && RaidR01.controlaPokemon() ? jogo.pika : a);   // cinemática do chefão: a câmera vai com ele · Articuno arena: with the Pokémon you steer
+    const f = jogo.foco || ((r01 && RaidR01.controlaPokemon()) || (ControlePk.ativo() && jogo.pika) ? jogo.pika : a);   // … and when you control your Pokémon   // cinemática do chefão: a câmera vai com ele · Articuno arena: with the Pokémon you steer
     alvo.set(f.vx, f.vy + 0.6, f.vz);
     if (r01){ RaidR01.quadro(dt); RaidR01.enquadrar(alvo, { zoom: 0, zoomTeto: 0, puxarCentro: 0.25, subir: 0.6 }); }
     if (jogo.tremor > 0){ jogo.tremor -= dt; alvo.x += (Math.random() - 0.5) * 0.5; alvo.z += (Math.random() - 0.5) * 0.5; }

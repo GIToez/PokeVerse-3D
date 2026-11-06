@@ -83,6 +83,10 @@ export const ACOES = [
     icone: { jogo: 'bola' },
     semTecla: 'no key: click the ball only',
   }),
+  A('combate', 'controlar-pokemon', 'Control your Pokémon', 'steer your partner yourself · again for your trainer', 'KeyC', null, {
+    icone: { glifo: 'andar-frente' },
+    semTecla: 'no key: the paw button only',
+  }),
   A('combate', 'safari-isca', 'Safari bait', 'during a Safari visit, the wild eats', 'KeyG', null, {
     icone: { glifo: 'safari-isca' },
     semTecla: 'no key: bait has no button',

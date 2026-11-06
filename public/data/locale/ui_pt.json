@@ -9315,5 +9315,21 @@
   "offers": "oferece",
   "the other trainer": "o outro",
   "The other trainer": "O outro",
-  "Trade": "Trocar"
+  "Trade": "Trocar",
+  "Control your Pokémon": "Controlar seu Pokémon",
+  "steer your partner yourself · again for your trainer": "conduza o parceiro você mesmo · de novo volta pro treinador",
+  "no key: the paw button only": "sem tecla: só o botão da patinha",
+  "Wait {n} s to switch again.": "Espere {n} s para trocar de novo.",
+  "No Pokémon out.": "Nenhum Pokémon fora da bola.",
+  "Send a healthy Pokémon out first.": "Solte um Pokémon com HP primeiro.",
+  "Turn-based battles don't allow it.": "Batalhas por turno não permitem.",
+  "Raids have their own controls.": "As raids têm controles próprios.",
+  "Dismount first.": "Desmonte primeiro.",
+  "Not right now.": "Agora não.",
+  "You control {x}": "Você controla {x}",
+  "Back to your trainer": "De volta ao treinador",
+  "Your Pokémon fainted: back to your trainer.": "Seu Pokémon desmaiou: de volta ao treinador.",
+  "Back to your trainer (C)": "Voltar ao treinador (C)",
+  "Control your Pokémon (C)": "Controlar seu Pokémon (C)",
+  "Switch back to your trainer to throw a ball (C).": "Volte ao treinador para jogar a bola (C)."
 }

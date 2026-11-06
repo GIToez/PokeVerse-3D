@@ -1409,6 +1409,30 @@ const httpServer = http.createServer((req, res) => {
         console.log(`[admin] ${g} created map ${id} "${nome}" (${modo}${modo === 'clonar' ? ' of ' + d.de : ''})`);
         return json(200, { ok: true, id, nome, areas: areasCena, objetos: dados.objetos?.length || 0 });
       }
+      /* ── DELETE A MAP (Nov 6): POST /admin/mapa/apagar { id, nome } — only maps made in the panel (New map: ids 9100001+, with a
+         `criado` stamp), never the game's own. `nome` must match (the panel asks you to type it). The files go to the backups folder
+         first; the scenes.json entry goes too, and players saved on that map come back to Pallet Town on their next login. */
+      if (rota === '/admin/mapa/apagar' && req.method === 'POST') {
+        const id = String(d.id || '');
+        const cenasArq = nodePath.join(DADOS_PUB, 'scenes.json'), cenas = lerJson(cenasArq, { cenas: [] });
+        const i = (cenas.cenas || []).findIndex(c => String(c.id) === id);
+        const c = i >= 0 ? cenas.cenas[i] : null;
+        if (!c) return json(404, { erro: 'No map ' + id + '.' });
+        if (!(+id >= 9100001 && +id < 9200000) || !c.criado) return json(403, { erro: 'Only maps made with New map can be deleted here.' });
+        if (String(d.nome || '').trim() !== String(c.nome || '').trim()) return json(400, { erro: 'Type the map name exactly to delete it.' });
+        const arquivos = [nodePath.join(DADOS_PUB, id + '.json'), nodePath.join(CENARIO_RAIZ, id + '.glb'), nodePath.join(CENARIO_RAIZ, id + '_chao.json'),
+          nodePath.join(CENARIO_PUB, id + '.glb'), nodePath.join(CENARIO_PUB, id + '_chao.json')];
+        try {
+          for (const f of arquivos) if (fs.existsSync(f)) { fazerBackup(f, f.endsWith('.glb')); fs.unlinkSync(f); }
+          cenas.cenas.splice(i, 1);
+          gravarComBackup(cenasArq, cenas);
+        } catch (e) { return json(500, { erro: 'Could not delete the map files: ' + e.message }); }
+        for (const conta of Object.values(contas)) { if (String(conta?.posGm?.mapa) === id) delete conta.posGm; if (String(conta?.pos?.mapa) === id) delete conta.pos; }   // nobody wakes up on a map that is gone
+        salvarContas();
+        logAdmin(g, '*', 'delete map', { antes: { id, nome: c.nome } });
+        console.log(`[admin] ${g} deleted map ${id} "${c.nome}"`);
+        return json(200, { ok: true, id, nome: c.nome });
+      }
       // ── Editor de Cenário 3D: objetos (prefabs colocados) do mapa ──
       if (rota === '/admin/mapas-glb' && req.method === 'GET') {           // mapas com .glb (public/scenery/ + scenery/ raiz) que têm <mapa>.json
         const mapas = mapasComGlb();
