@@ -38,12 +38,19 @@ function arte(THREE){
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
+let tex = null;
+function seta(THREE){
+  if (tex) return tex;
+  tex = new THREE.TextureLoader().load('./ui/amanda/no-lugar-de-emoji/seta-atual@2x.png', undefined, undefined, () => { tex = arte(THREE); });   // the drawn one if the art is missing
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 function garantir(THREE, cena){
   if (pivo && cenaAtual === cena) return pivo;
   if (pivo?.parent) pivo.parent.remove(pivo);
   const m = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.15, 0.58),
-    new THREE.MeshBasicMaterial({ map: arte(THREE), transparent: true, depthWrite: false, depthTest: false, opacity: 0.9, fog: false }),
+    new THREE.PlaneGeometry(1, 0.6),   // the v2 arrow art (ui/amanda/no-lugar-de-emoji/seta-atual), as in upcoming/guide.mjs
+    new THREE.MeshBasicMaterial({ map: seta(THREE), transparent: true, depthWrite: false, depthTest: false, opacity: 0.8, fog: false }),
   );
   m.rotation.x = -Math.PI / 2;
   m.renderOrder = 999;
@@ -57,7 +64,7 @@ function garantir(THREE, cena){
   return g;
 }
 /** Move the arrow. `ocupado` hides it during a talk or a turn battle. */
-export function quadro(dt, { THREE, cena, ash, pins, npcs, flipX, chao, ocupado, voando }){
+export function quadro(dt, { THREE, cena, ash, pins, rota = null, npcs, flipX, chao, ocupado, voando }){   // rota = a door to head for first (world coords)
   if (!cena || !ash || modo() === 'desligado'){
     if (pivo) pivo.visible = false;
     visivel = false;
@@ -66,7 +73,7 @@ export function quadro(dt, { THREE, cena, ash, pins, npcs, flipX, chao, ocupado,
   relogio += dt || 0;
   if (relogio >= proxima){
     proxima = relogio + 0.7;
-    try { alvo = alvoDe(pins, npcs, flipX); } catch { alvo = null; }
+    try { alvo = rota || alvoDe(pins, npcs, flipX); } catch { alvo = null; }
   }
   let mostrar = false;
   let dist = Infinity;

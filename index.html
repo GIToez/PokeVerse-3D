@@ -11787,7 +11787,17 @@ function quadro(dt){
   vigiarSafari();
   if (!(jogo.safariPainelEm > performance.now() - 250)){ jogo.safariPainelEm = performance.now(); try { if (!jogo.safariUiPronta){ jogo.safariUiPronta = true; SafariUi.instalar({ acao: tipo => safariAcao(tipo), alvo: () => { const s = jogo.alvo; return s && Safari.ehZona(s.area) && !['morto', 'capturando', 'guardado', 'desmaiado'].includes(s.estado) && Math.hypot(s.x - jogo.ash.x, s.z - jogo.ash.z) <= RAIO_BOLA ? s : null; } }); } SafariUi.painel(Safari.vivo(jogo.safari) ? jogo.safari : null); } catch (e){ console.warn('safari ui', e); } }
   try {
-    Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: jogo.missoesOk ? Missoes.pinsMapaSync?.() : [], npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno || jogo.cinem), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
+    const pinsG = jogo.missoesOk ? (Missoes.pinsMapaSync?.() || []) : [];
+    let rotaG = null;   // indoors with the mission somewhere else: point at the way out (as PokeFable's guide.mjs routes through doors)
+    if (INTERIOR && pinsG.length){
+      const aqui = new Set((cenaAtual?.areas || []).map(a => +a.id)), p0 = pinsG.find(p => p && !p.start) || pinsG[0];
+      if (p0?.area != null && !aqui.has(+p0.area)){
+        const saidas = portasCena.filter(d => d.destino && !aqui.has(+PORTAS[d.destino]?.a));
+        const certa = saidas.find(d => +PORTAS[d.destino]?.a === +p0.area) || saidas[0];
+        if (certa) rotaG = { x: certa.x, z: certa.z };
+      }
+    }
+    Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: pinsG, rota: rotaG, npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno || jogo.cinem), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
   if (jogo.chefe) atualizarChefe(dt);
   if (jogo.voadores?.length) atualizarVoadores(dt);
