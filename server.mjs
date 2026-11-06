@@ -1419,7 +1419,8 @@ const httpServer = http.createServer((req, res) => {
         const c = i >= 0 ? cenas.cenas[i] : null;
         if (!c) return json(404, { erro: 'No map ' + id + '.' });
         if (!(+id >= 9100001 && +id < 9200000) || !c.criado) return json(403, { erro: 'Only maps made with New map can be deleted here.' });
-        if (String(d.nome || '').trim() !== String(c.nome || '').trim()) return json(400, { erro: 'Type the map name exactly to delete it.' });
+        const dig = String(d.nome || '').trim().toLowerCase();   // the map's name (any case) or its number
+        if (dig !== String(c.nome || '').trim().toLowerCase() && dig !== id) return json(400, { erro: 'Type the map name or its number to delete it.' });
         const arquivos = [nodePath.join(DADOS_PUB, id + '.json'), nodePath.join(CENARIO_RAIZ, id + '.glb'), nodePath.join(CENARIO_RAIZ, id + '_chao.json'),
           nodePath.join(CENARIO_PUB, id + '.glb'), nodePath.join(CENARIO_PUB, id + '_chao.json')];
         try {

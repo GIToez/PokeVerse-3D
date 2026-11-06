@@ -618,7 +618,7 @@ function ligarUI() {
   $('m-apagar-mapa')?.addEventListener('click', async () => {
     const id = String(mapaAtual || ''), nome = nomeMapaComId(id);
     if (!(+id >= 9100001 && +id < 9200000)) { toast('Only maps made with New map can be deleted.', true); return; }
-    const digitado = prompt('Delete the map "' + nome + '" (' + id + ')? Its files go to the backups folder.\nType the map name to confirm:');
+    const digitado = prompt('Delete the map "' + nome + '" (' + id + ')? Its files go to the backups folder.\nType the map name or its number (' + id + ') to confirm:');
     if (digitado == null) return;
     const r = await api('/admin/mapa/apagar', 'POST', { id, nome: digitado });
     if (!r.ok) { toast(r.erro || 'Could not delete the map.', true); return; }
