@@ -10081,7 +10081,8 @@ function alternarJogo(){
 }
 function atualizarJogo(dt, entrada){
   const { ash, pika } = jogo;
-  if (interagindo || falando || Menus.aberto() || Troca.aberta()) entrada.set(0, 0, 0);   // durante o gesto/conversa/menu/troca ninguém anda
+  if (interagindo || falando || Menus.aberto() || Troca.aberta() || jogo.cinem) entrada.set(0, 0, 0);
+  if (jogo.cinem && jogo.ash) jogo.ash.alvoX = null;                     // cinematics (intros, cutscenes, director mode): nobody walks, not even by clicking the ground   // durante o gesto/conversa/menu/troca ninguém anda
   verificarPortas(dt);
   /* NPC LONGE NÃO ANIMA NEM DESENHA (12/09): Kanto tem ~1.580 NPCs, todos com mixer rodando e `frustumCulled = false` — ~2.000
      draw calls e 1,7 M triângulos por quadro, mais o passe de sombra: o "laguinho" do celular. Quem está a mais de NPC_RAIO_VISTA
