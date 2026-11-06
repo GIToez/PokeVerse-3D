@@ -73,6 +73,7 @@ export function healMon(mon) {
     mon.maxHp = fallback;
   }
   mon.status = null;
+  Ind.restaurarPP(mon);   // PP of every move back to ppMax (and the forgotten-move PP memory cleared), like the client's curarTime
   return mon;
 }
 
