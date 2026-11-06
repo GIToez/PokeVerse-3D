@@ -156,6 +156,8 @@ function casarPasso(p, ev) {
       return ev.tipo === 'cura' && (!p.cfg || cfgOk(p.cfg, ev.cfg)) ? 'done' : 'none';
     case 'insignia':
       return ev.tipo === 'insignia' ? 'done' : 'none';
+    case 'escolher':
+      return ev.tipo === 'escolher' && String(ev.chave) === String(p.chave) ? 'done' : 'none';
   }
   return 'none';
 }
@@ -182,6 +184,35 @@ function aceitarLateral(u, id) {
   if (p0 && p0.tipo === 'falar' && m.npc != null && cfgOk(p0.cfgs || p0.cfg, m.npc)) L.ativas[m.id].passo = m.passos.length > 1 ? 1 : 0;
   salvarMissao(u, est);
   return { ok: true, estado: est };
+}
+/** Drop an active side quest (the Side tab's Abandon button). Story missions can't be abandoned. Its progress is lost; it can be taken again. */
+function abandonarLateral(u, id) {
+  const est = missaoEstadoDe(u), A = est.laterais.ativas;
+  const k = A[id] ? id : A[String(id)] ? String(id) : A[+id] ? +id : null;
+  if (k == null) return { ok: false, erro: 'That side quest is not active.' };
+  delete A[k];
+  salvarMissao(u, est);
+  return { ok: true, estado: est };
+}
+/** A choose-one step: the story's current step or an active side quest's, with this `chave`, and `opcao` one of its options.
+ *  The choice is kept in est.escolhas[chave], so later steps, NPCs and rewards can read it. */
+function escolherNaMissao(u, missao, chave, opcao) {
+  const est = missaoEstadoDe(u);
+  let p = null;
+  if (est.atual != null && String(est.atual) === String(missao)) p = MISSOES[est.atual]?.passos?.[est.passo];
+  else {
+    const slot = est.laterais.ativas[missao] || est.laterais.ativas[String(missao)] || est.laterais.ativas[+missao];
+    const m = LATERAIS[+missao] || LATERAIS[missao];
+    p = slot && m ? m.passos?.[slot.passo || 0] : null;
+  }
+  if (!p || p.tipo !== 'escolher' || String(p.chave) !== String(chave)) return { erro: 'Nothing to choose right now.' };
+  const op = (p.opcoes || []).find(o => String(o.id) === String(opcao));
+  if (!op) return { erro: 'That is not one of the options.' };
+  est.escolhas = { ...(est.escolhas || {}), [chave]: op.id };
+  const dado = null;   // an option's Pokémon (a fossil) is handed out by the mission's own reward/step, reading est.escolhas
+  const resultado = aplicarEvento(u, { tipo: 'escolher', chave, opcao: op.id });
+  salvarMissao(u, est);
+  return { estado: est, resultado, dado };
 }
 function aplicarLaterais(u, est, ev) {
   let passoFeito = false, concluida = null;
@@ -324,6 +355,9 @@ function aplicarEvento(u, ev) {
         case 'insignia':
           if (ev.tipo === 'insignia') resultado = concluirPasso();
           break;
+        case 'escolher':
+          if (casarPasso(p, ev) === 'done') resultado = concluirPasso();
+          break;
       }
     }
   }
@@ -353,7 +387,8 @@ function enviarMissao(ws, resultado) {
   const c = u ? contas[u] : null;
   enviar(ws, { t: 'missao', estado, passoFeito: passoFeito && !concluida, concluiu: concluida?.id || null, nome: concluida?.nome || null,
     ...(pago ? { recompensa: pago.rec, bolsa: { dinheiro: c.save.dinheiro ?? 0, itens: c.save.itens, bolas: c.save.bolas } } : {}) });
-  if (pago?.xp) enviar(ws, pago.xp);                                      // XP da missão: mesmo formato do `wild_exp` (o cliente sobe nível, HP, avisa)
+  if (pago?.xp) enviar(ws, pago.xp);
+  if (pago?.rec?.pokemon) for (const w of socketsDe(u)) enviar(w, { t: 'save', save: c.save, rev: c.rev });   // the gift Pokémon joins the party / Box                                      // XP da missão: mesmo formato do `wild_exp` (o cliente sobe nível, HP, avisa)
 }
 /** Paga a recompensa de uma missão concluída, uma vez só (save.recompensasPagas). Devolve o que pagou, ou null. */
 function pagarMissao(u, id) {
@@ -376,9 +411,31 @@ function pagarMissao(u, id) {
   for (const [k, v] of Object.entries(rec.bolas || {})) somar(k, v);
   /* XP (05/11): com conta ninguém dava — o cliente não soma (ficha é do servidor, ver index `recompensa`) e o servidor não somava. */
   const xp = rec.exp ? wilds.missionExp(c.save, rec.exp) : null;
+  const presente = presenteMissao(c, MISSOES[id] || LATERAIS[id] || MISSOES[+id] || LATERAIS[+id], est);
+  if (presente) rec.pokemon = { dex: presente.dex, nome: presente.nome, lv: presente.lv };
   c.rev = (c.rev || 0) + 1;
   salvarContas();
   return { rec, xp };
+}
+/** A mission's gift Pokémon (recompensa.presente): { dex, lv } or { porEscolha: chave, lv } — the Pokémon of the option the player
+ *  picked in that choose-one step (a fossil). Goes to the party, or the Box when it's full. */
+function presenteMissao(c, m, est) {
+  const P = m?.recompensa?.presente;
+  if (!P) return null;
+  let dex = +P.dex || 0;
+  if (!dex && P.porEscolha != null) {
+    const ch = est?.escolhas?.[P.porEscolha];
+    const passo = (m.passos || []).find(p => p.tipo === 'escolher' && String(p.chave) === String(P.porEscolha));
+    dex = +((passo?.opcoes || []).find(o => String(o.id) === String(ch))?.dex) || 0;
+  }
+  if (!(dex > 0) || (ESPECIES_OK && !ESPECIES_OK.has(dex))) return null;
+  const s = c.save;
+  if (!Array.isArray(s.time)) s.time = [];
+  if (!Array.isArray(s.caixa)) s.caixa = [];
+  const pk = individuoServidor({ dex, nome: NOME_ESPECIE.get(dex) || '#' + dex, glb: 'pm' + String(dex).padStart(4, '0') + '_00', lv: +P.lv || 5 });
+  if (s.time.length < 6) s.time.push(pk); else s.caixa.push(pk);
+  marcarPego(c, dex);
+  return pk;
 }
 function recompensaMissao(m) {
   const r = m?.recompensa;
@@ -593,6 +650,7 @@ function inicialOk(dex) {
   } catch { iniciaisCache = { mtime: -1, dex: null }; }
   return (iniciaisCache.dex || INICIAIS_PADRAO).has(+dex);
 }
+const NOME_ESPECIE = new Map();   // dex → English name (first pokedex.json entry): names a gift Pokémon
 /* Espécies válidas = nº de dex do pokedex.json. STOPGAP da nº14 no local: captura/inicial recusa dex que não existe.
    IMPORTANTE: produção amarra a espécie a um ENCONTRO assinado (a captura manda só `id` do encontro + bola, nunca a espécie),
    e por isso lá a nº14 não existe. O stub local não tem encontro, então o máximo que dá é barrar dex inexistente. */
@@ -600,6 +658,7 @@ let ESPECIES_OK = null;
 try {
   const pdx = JSON.parse(fs.readFileSync(nodePath.join(__dir, 'public/pokedex.json'), 'utf8'));
   ESPECIES_OK = new Set((pdx.species || []).map(s => +s.n).filter(n => n >= 0));
+  for (const s of pdx.species || []) if (!NOME_ESPECIE.has(+s.n)) NOME_ESPECIE.set(+s.n, s.name);
   console.log('Valid species:', ESPECIES_OK.size);
 } catch (e) { console.warn('pokedex.json not loaded (species validation off):', e.message); }
 function especieValida(dex) { return !ESPECIES_OK || ESPECIES_OK.has(+dex); }   // sem o arquivo, não bloqueia (fail-open no dev)
@@ -1993,6 +2052,24 @@ wss.on('connection', ws => {
         for (const w of socketsDe(uD)) enviar(w, { t: 'save', save: cD.save, rev: cD.rev });
         enviar(ws, { t: 'missao', op: 'doar', estado: rD.estado, uids: rD.uids, passoFeito: !!rD.resultado?.passoFeito && !rD.resultado?.concluida });
         if (rD.resultado?.concluida) enviarMissao(ws, rD.resultado);
+        break;
+      }
+      case 'missao_abandonar': {
+        const uAb = sessoes.get(ws._info?.token) || null;
+        if (!uAb) break;
+        const rAb = abandonarLateral(uAb, m.id);
+        if (!rAb.ok) { enviar(ws, { t: 'missao_erro', op: 'abandonar', erro: rAb.erro }); break; }
+        enviar(ws, { t: 'missao', op: 'abandonar', estado: rAb.estado, abandonou: m.id });
+        break;
+      }
+      case 'missao_escolher': {
+        const uEs = sessoes.get(ws._info?.token) || null;
+        if (!uEs) break;
+        const rEs = escolherNaMissao(uEs, m.missao, m.chave, m.opcao);
+        if (rEs.erro) { enviar(ws, { t: 'missao_erro', op: 'escolher', erro: rEs.erro }); break; }
+        if (rEs.dado) { const cEs = contas[uEs]; for (const w of socketsDe(uEs)) enviar(w, { t: 'save', save: cEs.save, rev: cEs.rev }); }
+        enviar(ws, { t: 'missao', op: 'escolher', estado: rEs.estado, escolheu: m.opcao });
+        if (rEs.resultado) enviarMissao(ws, rEs.resultado);
         break;
       }
       case 'missao_aceitar': {

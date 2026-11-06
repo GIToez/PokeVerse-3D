@@ -60,6 +60,7 @@ export const TIPOS_PASSO = {
   entregar: 'Deliver an item to an NPC',
   item:     'Have an item in the bag',
   doar:     'Hand Pokémon over to an NPC',
+  escolher: 'Choose one option',
 };
 const listaInt = (v, min, max, tam = 50) => Array.isArray(v) && v.length >= 1 && v.length <= tam && v.every(n => inteiro(n, min, max));
 const falas = v => Array.isArray(v) && v.length <= 12 && v.every(s => typeof s === 'string' && s.length <= 400);
@@ -86,11 +87,29 @@ function validarPasso(p) {
     case 'ir': if (p.area == null) return 'go: say which area'; break;
     case 'nivel': if (!inteiro(p.lv, 1, 100)) return 'level: "lv" from 1 to 100'; break;
     case 'insignia': if (!inteiro(p.n, 1, 99)) return 'badges: "n" from 1 to 99'; break;
+    case 'escolher': {
+      if (typeof p.chave !== 'string' || !/^[a-z0-9_-]{1,30}$/i.test(p.chave)) return 'choose: "chave" is the choice\'s name (letters, digits, - or _)';
+      if (!Array.isArray(p.opcoes) || p.opcoes.length < 2 || p.opcoes.length > 4) return 'choose: 2 to 4 options';
+      const ids = new Set();
+      for (const o of p.opcoes) {
+        if (!ehObj(o) || typeof o.id !== 'string' || !/^[a-z0-9_-]{1,30}$/i.test(o.id) || ids.has(o.id)) return 'choose: each option needs its own id (letters, digits, - or _)';
+        ids.add(o.id);
+        if (typeof o.nome !== 'string' || !o.nome.trim() || o.nome.length > 40) return 'choose: each option needs a name (up to 40 characters)';
+        if (o.dex != null && !inteiro(o.dex, 1, 2000)) return 'choose: an option\'s "dex" is a Pokédex number';
+      }
+      break;
+    }
   }
   return null;
 }
 function validarRecompensa(r) {
   if (!ehObj(r)) return 'invalid reward';
+  if (r.presente != null) {
+    const P = r.presente;
+    if (!ehObj(P) || (P.dex == null) === (P.porEscolha == null)) return 'reward: the gift Pokémon is either a species ("dex") or the one picked in a choice ("porEscolha")';
+    if (P.dex != null && !inteiro(P.dex, 1, 2000)) return 'reward: gift "dex" is a Pokédex number';
+    if (P.lv != null && !inteiro(P.lv, 1, 100)) return 'reward: gift level from 1 to 100';
+  }
   for (const k of ['dinheiro', 'exp']) if (r[k] != null && !inteiro(r[k], 0, 1e9)) return `reward: "${k}" integer from 0 to 1 billion`;
   for (const k of ['itens', 'bolas']) if (r[k] != null) {
     if (!ehObj(r[k]) || Object.keys(r[k]).length > 50) return `reward: "${k}" = { "item id": quantity }`;

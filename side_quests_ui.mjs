@@ -805,6 +805,17 @@ function abrirEscolhaV2(e, a) {
   pintarV2();
   return true;
 }
+/** Whether an image file loads: true once it has, false while unknown or missing (`depois` runs when it turns out fine). */
+const ARTE = new Map();
+function arteOk(url, depois) {
+  if (ARTE.has(url)) return ARTE.get(url) === true;
+  ARTE.set(url, null);
+  const i = new Image();
+  i.onload = () => { ARTE.set(url, true); depois?.(); };
+  i.onerror = () => ARTE.set(url, false);
+  i.src = url;
+  return false;
+}
 function pintarEscolha(A) {
   const a = A.pop,
     e = A.e,
@@ -825,7 +836,8 @@ function pintarEscolha(A) {
     c.dataset.op = String(o.id);
     const d = num(o.dex) > 0 ? nomeEspecie(o.dex) : null;
     Popup.textoCru(a, 'opcao-nome', d || tr(o.nome || o.id), c);
-    const e = E.artes.get(normal(d || o.nome)) || null;
+    const e0 = E.artes.get(normal(d || o.nome)) || null,
+      e = e0 && arteOk(e0, () => aberto === A && pintarEscolha(A)) ? e0 : null;   // the designer's example art when we have the file, else the Pokémon's icon
     imagemEm(a, 'opcao', e || (num(o.dex) > 0 ? cabeca(o.dex) : null), c, e ? 16 : 0);
     mostrar(filho(c, 'marca-selecionada'), A.sel === String(o.id));
   });

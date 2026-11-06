@@ -9,6 +9,7 @@ import { TIPOS_PASSO } from '/admin/schemas_f2.mjs';
 const CAMPOS_PASSO = {
   falar: ['cfg', 'fala'], entregar: ['cfg', 'item', 'n', 'fala'], item: ['item', 'n'], ir: ['area'], capturar: ['n', 'dex'], doar: ['cfg', 'dex', 'n', 'fala'],
   derrotar: ['selvagem', 'n', 'area', 'cfg', 'dex'], nivel: ['lv'], inicial: [], curar: ['cena', 'cfg'], insignia: ['n'],
+  escolher: ['chave', 'area', 'opcoes'],
 };
 const PADRAO_PASSO = { capturar: { n: 1 }, doar: { n: 1 }, derrotar: { selvagem: true, n: 1 }, nivel: { lv: 10 }, insignia: { n: 1 } };
 
@@ -183,6 +184,15 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
     g.append(
       campo({ rotulo: 'Coins', tipo: 'num', valor: r.dinheiro, min: 0, step: 1, aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'whole number'; poe(r, 'dinheiro', v || null); atualizar(); } }),
       campo({ rotulo: 'EXP', tipo: 'num', valor: r.exp, min: 0, step: 1, aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'whole number'; poe(r, 'exp', v || null); atualizar(); } }));
+    const escolhas = (m.passos || []).filter(p => p.tipo === 'escolher' && p.chave).map(p => p.chave);
+    const P = r.presente || {};
+    const poePresente = () => { if (P.dex != null || P.porEscolha != null) r.presente = P; else delete r.presente; atualizar(); };
+    g.append(
+      campo({ rotulo: 'Gift Pokémon (no.)', tipo: 'num', valor: P.dex, min: 1, max: 2000, step: 1, ajuda: 'Joins the party (or the Box).', aoMudar: v => {
+        if (v != null && !Number.isInteger(v)) return 'Pokédex number'; poe(P, 'dex', v); if (v != null) delete P.porEscolha; poePresente(); } }),
+      ...(escolhas.length ? [campo({ rotulo: '…or the one picked in', tipo: 'opcao', valor: P.porEscolha, opcoes: escolhas.map(c => [c, 'choice "' + c + '"']), vazio: '—', aoMudar: v => {
+        poe(P, 'porEscolha', v); if (v) delete P.dex; poePresente(); } })] : []),
+      campo({ rotulo: 'Gift level', tipo: 'num', valor: P.lv, min: 1, max: 100, step: 1, aoMudar: v => { if (v != null && !Number.isInteger(v)) return 'from 1 to 100'; poe(P, 'lv', v); poePresente(); } }));
     k.append(g);
     for (const [chave, titulo] of [['itens', 'Items'], ['bolas', 'Poké Balls (ball bag)']]) {
       if (chave === 'bolas' && !r.bolas && !comBolas.has(m)) {              // as missões de hoje dão bola como item; a bolsa de bolas só aparece se pedir
@@ -252,6 +262,15 @@ export async function montar(sec, { api, toast, avisarJogo, marcarSujo, tela }) 
       dica: v => v == null ? '' : areas[v] || '⚠ unknown area', aoMudar: v => { if (p.tipo === 'ir' && v == null) return 'say which area'; if (v != null && !Number.isInteger(v)) return 'whole number'; poe(p, 'area', v); mudou(); } }));
     if (usa.has('dex')) g.append(campo({ rotulo: 'Only these species (no.)', tipo: 'nums', valor: p.dex, ajuda: 'Empty = any.', aoMudar: v => { poe(p, 'dex', v); mudou(); } }));
     if (usa.has('lv')) g.append(campo({ rotulo: 'Level', tipo: 'num', valor: p.lv, min: 1, max: 100, step: 1, aoMudar: v => { if (!Number.isInteger(v)) return 'from 1 to 100'; p.lv = v; mudou(); } }));
+    if (usa.has('chave')) g.append(campo({ rotulo: 'Choice name', valor: p.chave, max_len: 30, ajuda: 'Saved as the player\'s answer, e.g. fossil. A gift Pokémon "from this choice" reads it.', aoMudar: v => {
+      if (!v || !/^[a-z0-9_-]+$/i.test(v)) return 'letters, digits, - or _'; p.chave = v; mudou(); } }));
+    if (usa.has('opcoes')) g.append(campo({ rotulo: 'Options (one per line: id | name | Pokédex no., optional)', tipo: 'linhas', classe: 'larga',
+      valor: (p.opcoes || []).map(o => [o.id, o.nome, o.dex].filter(x => x != null).join(' | ')),
+      ajuda: 'e.g. helix | Helix Fossil | 138. With a Pokédex no. the window shows that Pokémon.', aoMudar: v => {
+        const l = (v || []).map(s => s.split('|').map(x => x.trim()));
+        if (l.length < 2 || l.length > 4) return '2 to 4 options';
+        if (l.some(x => !x[0] || !x[1] || (x[2] && !/^\d+$/.test(x[2])))) return 'id | name | number';
+        p.opcoes = l.map(([id, nome, dex]) => ({ id, nome, ...(dex ? { dex: +dex } : {}) })); mudou(); } }));
     if (usa.has('cena')) g.append(campo({ rotulo: 'Only at the Center in scene', tipo: 'num', valor: p.cena, step: 1, ajuda: 'Empty = any Center.', dica: v => v == null ? '' : cenas[v] || '⚠ unknown scene',
       aoMudar: v => { poe(p, 'cena', v); mudou(); } }));
     g.append(

@@ -159,6 +159,14 @@ export function passoComNpc(cfg, tipo){
   }
   return null;
 }
+/** A choose-one step (tipo 'escolher') waiting in this area (or anywhere, when the step names no area) → { missao, passo, sec } | null. */
+export function escolhaPendente(area){
+  const ok = p => p?.tipo === 'escolher' && (p.area == null || Number(p.area) === Number(area));
+  const p = passoAtual(), m = ativa();
+  if (m && ok(p)) return { missao: m, passo: p, sec: false };
+  for (const T of trilhasLaterais()){ const q = T.m.passos[T.passo]; if (ok(q)) return { missao: T.m, passo: q, sec: true }; }
+  return null;
+}
 export function oferecerSeNpc(cfg){
   const list = lateraisDoNpc(cfg);
   if (!list.length || document.querySelector('.sec-oferta')) return false;
