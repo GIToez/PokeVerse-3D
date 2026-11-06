@@ -267,7 +267,36 @@ function passoJaFeito(u, p) {
 function enviarMissao(ws, resultado) {
   if (!resultado) return;
   const { estado, passoFeito, concluida } = resultado;
-  enviar(ws, { t: 'missao', estado, passoFeito: passoFeito && !concluida, concluiu: concluida?.id || null, nome: concluida?.nome || null });
+  /* 05/11: com conta o motor do cliente fica desligado (o servidor conclui), então o `bolsa_missao` que ele mandava ao concluir
+     nunca saía e ninguém recebia dinheiro/itens. Agora quem conclui paga, aqui mesmo; a bolsa nova vai junto (o cliente aplica `m.bolsa`). */
+  const u = concluida ? sessoes.get(ws._info?.token) || null : null;
+  const pago = u ? pagarMissao(u, concluida.id) : null;
+  const c = u ? contas[u] : null;
+  enviar(ws, { t: 'missao', estado, passoFeito: passoFeito && !concluida, concluiu: concluida?.id || null, nome: concluida?.nome || null,
+    ...(pago ? { recompensa: pago, bolsa: { dinheiro: c.save.dinheiro ?? 0, itens: c.save.itens, bolas: c.save.bolas } } : {}) });
+}
+/** Paga a recompensa de uma missão concluída, uma vez só (save.recompensasPagas). Devolve o que pagou, ou null. */
+function pagarMissao(u, id) {
+  const c = contas[u];
+  if (!c?.save || id == null) return null;
+  const est = c.save.missoes;
+  const feita = !!est && missaoConcluida(est, id);   // ANTI-TRAPAÇA: só a missão que o servidor marcou como feita
+  if (!Array.isArray(c.save.recompensasPagas)) c.save.recompensasPagas = [];
+  if (!feita || c.save.recompensasPagas.map(String).includes(String(id))) return null;
+  const rec = recompensaMissao(MISSOES[id] || LATERAIS[id] || MISSOES[+id] || LATERAIS[+id]);
+  if (!rec) return null;
+  c.save.recompensasPagas.push(+id || id);
+  if (rec.dinheiro) c.save.dinheiro = (c.save.dinheiro || 0) + rec.dinheiro;
+  if (!c.save.itens || typeof c.save.itens !== 'object') c.save.itens = {};
+  if (!c.save.bolas || typeof c.save.bolas !== 'object') c.save.bolas = {};
+  /* Poké Balls (tipo 7 no menu_data) moram em save.bolas (server_bag: cofre/ehBola); antes a missão punha `"1001": 5` em itens e a bola não aparecia */
+  const ehBola = k => catalogoItens().items[String(k)]?.t === 7;
+  const somar = (k, v) => { if (!(+v > 0)) return; const cofre = ehBola(k) ? c.save.bolas : c.save.itens; cofre[k] = (cofre[k] || 0) + +v; };
+  for (const [k, v] of Object.entries(rec.itens || {})) somar(k, v);
+  for (const [k, v] of Object.entries(rec.bolas || {})) somar(k, v);
+  c.rev = (c.rev || 0) + 1;
+  salvarContas();
+  return rec;
 }
 function recompensaMissao(m) {
   const r = m?.recompensa;
@@ -1914,24 +1943,7 @@ wss.on('connection', ws => {
           const c = u ? contas[u] : null;
           // bolsa_missao: paga recompensa da missão concluída
           if (op === 'missao' && m.missao && c) {
-            // ANTI-TRAPAÇA: só paga se a missão foi REALMENTE concluída (está em feitas) e ainda NÃO foi paga.
-            const est = c.save?.missoes;
-            const feita = !!(est && (
-              (Array.isArray(est.feitas) && est.feitas.includes(m.missao))
-              || (Array.isArray(est.laterais?.feitas) && est.laterais.feitas.includes(m.missao))
-            ));
-            if (c.save && !Array.isArray(c.save.recompensasPagas)) c.save.recompensasPagas = [];
-            const jaPaga = !!c.save?.recompensasPagas?.includes(m.missao);
-            const miss = MISSOES[m.missao] || LATERAIS[m.missao];
-            const rec = recompensaMissao(miss);
-            if (feita && !jaPaga && rec && c.save) {
-              c.save.recompensasPagas.push(m.missao);
-              if (rec.dinheiro) c.save.dinheiro = (c.save.dinheiro || 0) + rec.dinheiro;
-              if (rec.itens) { if (!c.save.itens) c.save.itens = {}; for (const [k, v] of Object.entries(rec.itens)) c.save.itens[k] = (c.save.itens[k] || 0) + v; }
-              if (rec.bolas) { if (!c.save.bolas) c.save.bolas = {}; for (const [k, v] of Object.entries(rec.bolas)) c.save.bolas[k] = (c.save.bolas[k] || 0) + v; }
-              c.rev = (c.rev || 0) + 1;
-              salvarContas();
-            }
+            pagarMissao(u, m.missao);                                      // já pago na conclusão (enviarMissao): aqui vira só uma conferência
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
           } else {
             if (op === 'safari' && ws._info) { m.x = ws._info.x; m.z = ws._info.z; }   // the warden check uses the walked position, not the one in the message

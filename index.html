@@ -9793,6 +9793,11 @@ if (jogo.ash){
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
+      if (m.recompensa){                                                  // 05/11: o servidor paga na conclusão (a bolsa nova já veio em m.bolsa, aplicada pela rede)
+        const r = m.recompensa, partes = [r.dinheiro ? r.dinheiro + ' ' + I18n.t('Coins') : null, ...Object.entries({ ...(r.itens || {}), ...(r.bolas || {}) }).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n)].filter(Boolean);
+        if (partes.length) Chat.sistema('🎁 Reward: ' + partes.join(', ') + '.');
+        Som.tocar('ui/sound_keyitemget', { volume: .7, prio: true });
+      }
       else if (m.passoFeito) Chat.sistema('✔ Step complete.');
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle. Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).');
