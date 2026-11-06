@@ -1,0 +1,171 @@
+[
+ {
+  "id": "museu",
+  "ligada": true,
+  "titulo": "Door locked",
+  "fala": "The museum is closed. Nobody gets in.",
+  "portas": [
+   6110305,
+   6110306
+  ],
+  "areas": [
+   1841,
+   1842,
+   1851
+  ],
+  "ate": 401
+ },
+ {
+  "id": "saffron",
+  "ligada": false,
+  "titulo": "Gate closed",
+  "fala": "The city is closed. Orders from above.",
+  "portas": [
+   6120503,
+   6120601,
+   6120701,
+   6120801
+  ],
+  "areas": [
+   1108
+  ],
+  "ate": 1501,
+  "nota": "PokeFable's story id: turn on when our chapters 5+ follow theirs"
+ },
+ {
+  "id": "santa-anne",
+  "ligada": false,
+  "titulo": "Boarding closed",
+  "fala": "Boarding hasn't opened yet. The crew is dealing with a crisis on board.",
+  "portas": [
+   61105991
+  ],
+  "areas": [
+   1337
+  ],
+  "ate": 804,
+  "nota": "PokeFable's story id"
+ },
+ {
+  "id": "torre",
+  "ligada": false,
+  "titulo": "Stairs blocked",
+  "fala": "There's something up there nobody can see. Don't go up yet.",
+  "portas": [
+   6130102
+  ],
+  "areas": [
+   1302,
+   1303,
+   1304,
+   1305,
+   1306,
+   1307
+  ],
+  "ate": 1202,
+  "nota": "PokeFable's story id"
+ },
+ {
+  "id": "safari",
+  "ligada": false,
+  "titulo": "Gate closed",
+  "fala": "The warden closed the Zone until his problem is sorted out.",
+  "portas": [
+   6110910
+  ],
+  "areas": [
+   1192
+  ],
+  "ate": 1303,
+  "nota": "PokeFable's story id"
+ },
+ {
+  "id": "silph",
+  "ligada": false,
+  "titulo": "Elevator locked",
+  "fala": "The elevator asks for a card key.",
+  "portas": [
+   6132503,
+   6132602
+  ],
+  "areas": [
+   1327
+  ],
+  "ate": 1503,
+  "nota": "PokeFable's story id"
+ },
+ {
+  "id": "ginasio-saffron",
+  "ligada": false,
+  "titulo": "Gym closed",
+  "fala": "The Gym takes no challengers while Team Rocket is in the city.",
+  "portas": [
+   6110805
+  ],
+  "areas": [
+   1612
+  ],
+  "ate": 1504,
+  "nota": "PokeFable's story id"
+ },
+ {
+  "id": "ginasio-cinnabar",
+  "ligada": false,
+  "titulo": "Door locked",
+  "fala": "The door is locked. Someone on the island must have the key.",
+  "portas": [
+   6111004
+  ],
+  "areas": [
+   1613
+  ],
+  "item": 50077,
+  "nota": "Needs the Secret Key (item 50077), which isn't in the game yet"
+ },
+ {
+  "id": "ginasio-viridian",
+  "ligada": true,
+  "titulo": "Gym closed",
+  "fala": "The Viridian Gym only opens for trainers with seven Badges.",
+  "portas": [
+   6110205
+  ],
+  "areas": [
+   1614
+  ],
+  "insignias": 7
+ },
+ {
+  "id": "rota23",
+  "ligada": true,
+  "titulo": "Gate closed",
+  "fala": "Only trainers with all eight Kanto Badges may pass.",
+  "portas": [
+   6122301,
+   6122302,
+   6122303
+  ],
+  "areas": [
+   1315,
+   1316,
+   1317,
+   1412
+  ],
+  "insignias": 8
+ },
+ {
+  "id": "caverna",
+  "ligada": true,
+  "titulo": "Cave sealed",
+  "fala": "A strange power comes from inside. Only the Kanto Champion may enter.",
+  "portas": [
+   6120404
+  ],
+  "areas": [
+   1318,
+   1319,
+   1320
+  ],
+  "campeao": true
+ }
+]

@@ -1066,6 +1066,12 @@ function receber(m) {
     case 'caca':                                                       // hunt bonus paid on a wild KO
       ctx.caca?.(m);
       return;
+    case 'foco':                                                       // a raid member pinged a target (focus_ui.mjs)
+      ctx.foco?.(m);
+      return;
+    case 'diario':                                                     // daily login rewards (server_daily.mjs): today's prize, or the window again
+      ctx.diario?.(m);
+      return;
     case 'bat':
     case 'bat_erro': {
       const aa = batEsperando;

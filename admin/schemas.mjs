@@ -75,6 +75,7 @@ const receitaCompleta = r => {
   return null;
 };
 
+const premioOk = v => v == null || (v && typeof v === 'object' && !Array.isArray(v) && Object.entries(v).every(([k, n]) => /^\d{1,9}$/.test(k) && Number.isInteger(n) && n > 0 && n <= 9999)) ? null : '{ "item id": quantity }, e.g. { "1001": 5 }';
 export const ESQUEMAS = {
   config_jogo: {
     titulo: 'Game settings', arquivo: 'game_config', forma: 'objeto',
@@ -182,6 +183,32 @@ export const ESQUEMAS = {
       { k: 'n', rotulo: 'Destination (arrival cfg)', tipo: 'num', int: true, min: 0, max: 999999999, col: true, ajuda: '0 = dead-end door (the original game has 17 of these)' },
       { k: 'c', rotulo: 'Scene of this point', tipo: 'num', int: true, min: 1, max: 99999999, col: true, ajuda: '1000001 = Kanto; the others are the numbered maps' },
       { k: 'a', rotulo: 'Area', tipo: 'num', int: true, min: 0, max: 99999999, col: true },
+    ],
+  },
+  premios_diarios: {
+    titulo: 'Daily rewards', arquivo: 'daily_rewards', caminho: 'dias', forma: 'lista', id: 'dia',
+    descricao: 'Log in on consecutive days: Day 1 → Day 7, then Day 1 again; missing a day goes back to Day 1. Each day pays the Free prize to everyone and the Premium prize to Premium Daily Pass holders (GMs always). Prizes are { "item id": how many }. Keep exactly 7 days.',
+    campos: [
+      { k: 'dia', rotulo: 'Day', tipo: 'num', int: true, min: 1, max: 7, col: true, obrigatorio: true },
+      { k: 'gratis', rotulo: 'Free prize', tipo: 'json', col: true, validar: premioOk, ajuda: 'e.g. { "1001": 5 } = 5 Poké Balls' },
+      { k: 'premium', rotulo: 'Premium prize', tipo: 'json', col: true, validar: premioOk },
+    ],
+  },
+  travas: {
+    titulo: 'Door locks', arquivo: 'locks', forma: 'lista', id: 'id',
+    descricao: 'Doors that stay shut until a story mission is done, enough Badges, an item or the Champion title. The player sees the lock bubble with the reason; GM accounts walk through. Leaving a locked place always works.',
+    campos: [
+      { k: 'id', rotulo: 'ID', tipo: 'texto', max: 40, col: true, obrigatorio: true, validar: s => /^[\w-]{1,40}$/.test(s) ? null : 'letters, numbers and dashes' },
+      { k: 'ligada', rotulo: 'On', tipo: 'bool', col: true },
+      { k: 'titulo', rotulo: 'Bubble title', tipo: 'texto', max: 40, col: true, ajuda: 'e.g. Door locked, Gate closed' },
+      { k: 'fala', rotulo: 'Line in chat', tipo: 'texto', max: 200 },
+      { k: 'portas', rotulo: 'Doors (cfg list)', tipo: 'json', validar: v => v == null || (Array.isArray(v) && v.every(n => Number.isInteger(n))) ? null : 'a list of door cfgs, e.g. [6110305, 6110306]' },
+      { k: 'areas', rotulo: 'Areas behind it', tipo: 'json', validar: v => v == null || (Array.isArray(v) && v.every(n => Number.isInteger(n))) ? null : 'a list of area numbers', ajuda: 'Any door into these areas is locked too; from inside them the doors work.' },
+      { k: 'ate', rotulo: 'Opens after mission', tipo: 'num', int: true, min: 1, max: 999999999, col: true },
+      { k: 'insignias', rotulo: 'Badges needed', tipo: 'num', int: true, min: 1, max: 99, col: true },
+      { k: 'item', rotulo: 'Item needed', tipo: 'num', int: true, min: 1, max: 999999999 },
+      { k: 'campeao', rotulo: 'Champion only', tipo: 'bool' },
+      { k: 'nota', rotulo: 'Note (staff only)', tipo: 'texto', max: 200 },
     ],
   },
   bolas: {

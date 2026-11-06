@@ -42,6 +42,7 @@ import { createWardrobe } from './server_wardrobe.mjs';
 import { createTransform } from './server_transform.mjs';
 import { createDrops } from './server_drops.mjs';
 import { createHunt } from './server_hunt.mjs';
+import { createDaily } from './server_daily.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1622,6 +1623,8 @@ const progressao = createProgression({ accounts: contas, send: enviar, socketsOf
 /* ITEM DROPS (server_drops.mjs + drop.mjs, rules public/data/drops.json): trainers, gyms, missions, the Elite Four and raids
    come through the counter events; wild KOs come from the shared world (onKO). */
 const drops = createDrops({ accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas });
+const diario = createDaily({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas,   // daily login rewards (7-day streak, free + premium)
+  readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), isBall: k => catalogoItens().items[String(k)]?.t === 7 });
 const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
   try { contarAntes(u, ev); } finally {
@@ -1726,6 +1729,7 @@ wss.on('connection', ws => {
           outros.push(infoJogador(other));
         }
         enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        if (ws._usuario && contas[ws._usuario]) setTimeout(() => { try { diario.login(ws._usuario, ws); } catch (e) { console.warn('daily:', e.message); } }, 4000);   // today's daily prize (once a day), after the world has loaded
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         transformacao.joined(ws);                                         // a Ditto that can't stay transformed changes back
@@ -2030,6 +2034,7 @@ wss.on('connection', ws => {
         else if (m.t?.startsWith('mercado_')) mercado.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'loja_ver' || m.t === 'loja_comprar') loja.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'temporada') temporada.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'diario_ver') diario.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {
           const op = m.t.slice(6);
@@ -2095,7 +2100,7 @@ wss.on('connection', ws => {
         }
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
-        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'ataque' || m.t === 'r01') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'raid_foco' || m.t === 'ataque' || m.t === 'r01') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
         else if (m.t === 'progressao_vista' || m.t === 'progressao_resgatar' || m.t === 'progressao_titulo') progressao.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'capturar' && raid.capturar(ws, m)) {}   // the raid boss's catch throw (server_raid.mjs); any other id is a shared-world wild

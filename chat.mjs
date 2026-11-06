@@ -90,6 +90,7 @@ export function enviar(aba, texto){
   if (mod){ ctx?.moderar?.(mod[1].toLowerCase(), mod[2].trim()); return 'sistema'; }
   const tr = t.match(/^\/trocar\s+(.+)$/i);                              // /trocar nome → convite de troca pra quem está por perto (trade.mjs)
   if (tr){ ctx?.trocar?.(tr[1].trim()); return 'sistema'; }
+  if (/^\/(daily|diario)\s*$/i.test(t)){ ctx?.diario?.(); return 'sistema'; }   // /daily: the Daily Rewards window again
   const bt = t.match(/^\/(batalhar|battle|desafiar)\s+(.+)$/i);
   if (bt){ ctx?.desafiarJogador?.(bt[2].trim()); return 'sistema'; }
   const m = t.match(/^\/(g|t|h|l)\s+(.*)$/i);

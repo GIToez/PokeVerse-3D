@@ -99,6 +99,10 @@ export const ACOES = [
     icone: { glifo: 'proximo-alvo' },
     semTecla: 'no key: click the wild Pokémon only',
   }),
+  A('combate', 'focar', 'Focus target', 'in a raid: everyone in it sees a ring on your target', 'KeyV', null, {
+    icone: { glifo: 'proximo-alvo' },
+    semTecla: 'no key: no focus pings',
+  }),
   A('combate', 'trocar-pokemon', 'Switch Pokémon', 'the next healthy team member', 'Shift+KeyZ', null, {
     icone: { glifo: 'trocar-pokemon' },
     semTecla: 'no key: click the team only',

@@ -270,7 +270,12 @@ import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: oth
 import * as TetoTextura from './ceiling_texture.mjs';
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
-import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
+import * as Stg from './stages.mjs';
+import * as StgPills from './stage_pills.mjs';
+import * as ActiveFx from './active_effects.mjs';
+import * as Locks from './locks.mjs';
+import * as DailyUi from './daily_ui.mjs';
+import * as FocusUi from './focus_ui.mjs';       // raid focus pings (v2 foca-neste)       // Daily Rewards window (v2 trilha) for the 7-day login streak             // door locks (public/data/locks.json) + the v2 lock bubble   // event / Medallion / perfume timers under the minimap (v2 efeitos-ativos)   // a foe's stat stages as the v2 pills on its label          // stat stages and Leech Seed (moves.json estagios / semente)
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, 20 minutes, bait and rock (shared with server_bag.mjs)
 import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
@@ -4263,7 +4268,7 @@ function iconeSelvagem(s){
 }
 function htmlRotuloSelvagem(s){
   const st = Status.sigla(Status.limpo(s.status)?.id), est = Stg.resumo(s.estagios);
-  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}${st ? ' ' + st : ''}${s.semente ? ' 🌱' : ''}${est ? ' <small>' + est + '</small>' : ''}</span><i><b></b></i>`;
+  return `<span>${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} ${iconeSelvagem(s)}${st ? ' ' + st : ''}${s.semente ? ' 🌱' : ''}${est ? StgPills.html(s.estagios) : ''}</span><i><b></b></i>`;
 }
 function pintarRotuloSelvagem(s){
   if (!s?.rotulo) return;
@@ -6382,6 +6387,7 @@ function pintarAtalhos(forcar = false){
   const html = partes.join(''); if (html === el.__html) return; el.__html = html; el.innerHTML = html; Hud.remontar(el);   // Figma: reaplica a barra prata nos botões novos
 }
 jogo.bolaSel = lerLS('bolaSel', '1001');
+if (jogo.bolaSel === '1005'){ jogo.bolaSel = '1001'; gravarLS('bolaSel', jogo.bolaSel); }   // Nov 5: entering the Safari used to leave the Safari Ball as your pick after you came out
 jogo.time = lerLS('time', []);
 { // IV/natureza pra quem já existia (31/08): sorteia uma vez e refaz o HP máximo pela fórmula completa
   const migrar = lista => { let mudou = false; for (const t of lista){ if (!t.ivs || !t.natureza){ Ind.garantir(t); mudou = true; } if (!t.movs?.length){ Ind.garantirMovs(t, fallbackGolpes(t.dex)); mudou = true; } const S = porDex.get(t.dex); if (S?.bs){ const nm = Ind.hpDe(S, t); if (t.maxHp !== nm){ t.maxHp = nm; if (t.hp > nm) t.hp = nm; mudou = true; } } } return mudou; };
@@ -6630,8 +6636,7 @@ async function safariPagar(zona){
     jogo.bolas = r.bolas; gravarLS('bolas', jogo.bolas);
     jogo.safari = r.sessao; gravarLS('safari', jogo.safari);
   }
-  jogo.bolaSel = String(Safari.BOLA); gravarLS('bolaSel', jogo.bolaSel);
-  jogo.safariDentro = false;
+  jogo.safariDentro = false;                                               // the ball button shows and throws the Safari Ball by itself during the visit: your own pick stays as it was
   const dentro = Safari.entrada(z);                                       // Kanto: the warden is in Fuchsia and takes you inside
   if (dentro){ jogo.safariPe = null; safariIrAoPortao(dentro); }
   Som.tocar('ui/sound_itemget', { volume: .7, prio: true });
@@ -8003,6 +8008,13 @@ async function atravessar(p){
      da Elite, que é uma luta só do primeiro ao quinto quarto. Ninguém atravessa porta no meio de uma batalha por turnos,
      então a trava é geral: vale pro ginásio e pro treinador de rota também. */
   if (jogo.turno) return;
+  const trava = Locks.travaDaPorta(p.id, dest.a, areaInteriorVisitada ?? (jogo.ash ? areaDoPonto(jogo.ash.x, jogo.ash.z) : null));   // a door the story hasn't opened yet: the lock bubble says why
+  if (trava){
+    Locks.mostrar(trava, () => jogo.ash); if (trava.fala) Chat.sistema(trava.fala);
+    Som.tocar('ui/sound_click', { volume: 0.4 });
+    for (const q of portasCena) if (distPorta(q, jogo.ash.x, jogo.ash.z) < 1.9) emPorta.add(q);   // re-armed only after stepping off the door
+    return;
+  }
   const { ash, pika } = jogo;
   Som.tocar('ui/sound_exitdoor', { volume: 0.5 });
   const cenaDest = cenaDoDestino(dest, p.destino);
@@ -9685,7 +9697,7 @@ if (jogo.ash){
       return true;
     },
   };
-  Chat.instalar({ lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, balao: txt => { if (jogo.ash?.pivo) Balao.mostrar(jogo.ash.pivo, (jogo.ash.altura || 1.6) + 0.45, txt); }, aoMensagem: contarNaoLida, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.sendDm(nome, texto), ranking: () => Menus.showRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal, giveskates: quem => darPatins(quem), giveitem: text => giveItem(text), givediamonds: text => giveDiamonds(text),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
+  Chat.instalar({ diario: () => (comConta() ? Rede.enviar({ t: 'diario_ver' }) : Chat.sistema('Daily rewards need an account.')), lerLS, gravarLS, get nome(){ return nomeJogador(); }, area: areaAtual, balao: txt => { if (jogo.ash?.pivo) Balao.mostrar(jogo.ash.pivo, (jogo.ash.altura || 1.6) + 0.45, txt); }, aoMensagem: contarNaoLida, rede: (canal, texto) => Rede.enviarChat(canal, texto), dm: (nome, texto) => Menus.sendDm(nome, texto), ranking: () => Menus.showRanking(), trocar: nome => Troca.convidar(nome), desafiarJogador, preso: () => Menus.estouPreso(), pokespawn: resto => pokespawn(resto).catch(e => { console.warn('pokespawn:', e); Chat.sistema('/pokespawn failed: ' + (e?.message || e)); }), pokeheal, giveskates: quem => darPatins(quem), giveitem: text => giveItem(text), givediamonds: text => giveDiamonds(text),   // /preso (15/09): o mesmo diálogo do botão "Estou preso" das Configurações
     hora: resto => {
       const PER = { madrugada: 'dawn', dia: 'day', tarde: 'dusk', noite: 'night' };
       const uso = 'Use: /time night | day | dawn | dusk | 21 | 21:30 | off';
@@ -9882,7 +9894,12 @@ if (jogo.ash){
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
+      if (!m?.vista) return;
+      const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
+      if (m.novo) Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : ''));
+      if (!DailyUi.abrir(m.vista) && !m.novo) Chat.sistema(I18n.t('Streak: {n} days', { n: m.vista.seq }));
+    }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
       fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });
@@ -9961,6 +9978,11 @@ if (jogo.ash){
     pintar: () => atualizarMissao(),
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
   /* v2 side-quest windows (Nov 5): the offer card when a quest giver is talked to, and "Hand over a Pokémon" for `doar` steps */
+  DailyUi.instalar({ tr: (s, v) => I18n.t(s, v), nomeItem: id => ITENS_NOME[id] || null, loja: () => Menus.abrir?.('loja') });
+  if (!Fairy && !INTRO) ActiveFx.instalar({ Conta, Evento, tr: (s, v) => I18n.t(s, v) });
+  Locks.instalar({ tr: (s, v) => I18n.t(s, v), gm: () => !!Conta.ehGm?.(), insignias: () => (lerLS('insignias', []) || []).length,
+    feita: id => jogo.missoesOk && Missoes.estadoDe?.(+id) === 'feita', nomeMissao: id => (Missoes.capitulos?.() || []).flatMap(c => c.missoes).find(m => +m.id === +id)?.nome || '',
+    temItem: id => (+(lerLS('itens', {}) || {})[id] || 0) > 0, campeao: () => !!eliteEstado?.vencida });
   if (!Fairy && !INTRO) SecUi.instalar({ missoes: Missoes, comConta, enviar: m => Rede.enviar(m), Chat: { sistemaCru: t => Chat.sistema(t) }, Som, nomeItem: id => ITENS_NOME[id] || null,
     areaAtual: () => areaInteriorVisitada ?? areaAtual(), repintar: () => atualizarMissao(),
     time: () => { const k = membroAtivo(); return (jogo.time || []).map((e, i) => (i === k ? { ...e, seguindo: true } : e)); },
@@ -10045,6 +10067,18 @@ Object.assign(window, { usarGolpe, proximoAlvo, emPe, dePeMaisPerto, desmaiar, a
 function setHTML(el, html){ if (el.__html !== html){ el.innerHTML = html; el.__html = html; } }   // `function` (içada): pintarBarra pode ser chamada por mensagem da rede antes desta linha (auditoria 12/09)
 function setTexto(el, s){ if (el.__txt !== s){ el.textContent = s; el.__txt = s; } }
 /* `TIPO_PT` (nomes dos ícones de tipo) mora junto do `jogo`, lá em cima: `pintarBarra` pode rodar por mensagem da rede antes desta linha (auditoria 12/09). */
+/* MOVE SLOT STATES (Nov 5, v2 slot-skill): in a turn battle the move you picked this round gets the gold outline (`turno-escolhido`)
+   while the round resolves, and a move the battle won't let you use gets the padlock and goes dark (`escolha`): Disable (the
+   move you used last when it hit), Taunt (status moves), Encore (everything but the encored move). The server sends which of
+   these are on your Pokémon (`eu.efeitos`); out of PP shows "no PP", and with nothing left slot 1 shows "Struggle". */
+function travaDoGolpe(id){
+  const T = jogo.turno, v = jogo.pika?.efeitosVol; if (!T || !v?.length || !id) return null;
+  const g = GOLPES[id];
+  if (v.includes('disable') && T.desab && id === T.desab) return 'Disabled';
+  if (v.includes('taunt') && g?.cat === 'status') return 'Taunted';
+  if (v.includes('encore') && T.meuUltimo && id !== T.meuUltimo) return 'Encore';
+  return null;
+}
 function pintarBarra(){
   const p = jogo.pika; if (!p) return;
   const bc = $('chefe-btn'); if (bc){ const ocupado = !!jogo.chefe; if (bc.disabled !== ocupado){ bc.disabled = ocupado; bc.style.opacity = ocupado ? 0.45 : 1; bc.innerHTML = ocupado ? '☄ ' + I18n.t('boss in the field') : '☄ ' + I18n.t('Summon boss') + ' <b style="display:inline-block;padding:0 5px;margin-left:5px;border:1px solid #ff5f5f;border-radius:3px;font-family:ui-monospace,Consolas,monospace">B</b>'; } }
@@ -10073,7 +10107,10 @@ function pintarBarra(){
     if (el.__frio !== frio){ el.classList.toggle('frio', frio); el.__frio = frio; }
     const pct = rec > 0 ? Math.min(100, rec / (g.recarga || 1) * 100) : 0;
     if (el.__pct !== pct){ el.__i.style.height = pct + '%'; Hud.estado(el, 'cooldown', pct / 100); el.__pct = pct; }   // Figma: a sombra do estado [cooldown] desce junto
-    const txt = rec > 0 && p.hp > 0 ? rec.toFixed(1) : (m ? (semPp ? I18n.t('no PP') : m.pp + '/' + m.ppMax) : '');
+    const trava = travaDoGolpe(id), T = jogo.turno, escolhido = !!T && T.fase !== 'escolha' && T.ultimaEscolha === i, luta = !!m && i === 0 && Ind.semPP(p);
+    if (el.__trava !== trava){ Hud.estado(el, 'escolha', trava ? 1 : 0); el.__trava = trava; }
+    if (el.__esc !== escolhido){ Hud.estado(el, 'turno-escolhido', escolhido ? 1 : 0); el.__esc = escolhido; }
+    const txt = trava ? I18n.t(trava) : rec > 0 && p.hp > 0 ? rec.toFixed(1) : (m ? (luta ? I18n.t('Struggle') : semPp ? I18n.t('no PP') : m.pp + '/' + m.ppMax) : '');
     if (el.__txt !== txt){ el.__small.textContent = txt; el.__txt = txt; }
   }
   MoveMarks.paint();
@@ -10474,6 +10511,12 @@ addEventListener('keydown', e => {
     if (ac === 'interagir' && uma) interagir();                            // Z: fala com o NPC / interage com o parceiro
     if (ac === 'trocar-pokemon' && uma) proximoDoTime();                   // Shift+Z: próximo do time
     if (ac === 'proximo-alvo'){ e.preventDefault(); if (uma) proximoAlvo(); }
+    if (ac === 'focar'){ e.preventDefault(); if (uma){                     // ping my target to my raid (the server only relays it inside a raid)
+      const a = jogo.alvo;
+      if (!a || a.id == null) flutuar(jogo.ash, I18n.t('pick a target first (Tab)'), '#ffd23a');
+      else if (!jogo.raidArena) flutuar(jogo.ash, I18n.t('focus pings work in raids'), '#ffd23a');
+      else Rede.enviar({ t: 'raid_foco', alvo: String(a.id) });
+    } }
     if (e.code === 'Escape') jogo.alvo = null;
   }
   if (ac === 'zoom-mais')  zoom = THREE.MathUtils.clamp(zoom / 1.25, 0.35, ZOOM_TETO);
@@ -11241,6 +11284,12 @@ async function rodadaDoServidor(T, acao){
   }                                     // 12/09: o `vidas` do `bat` é aplicado AQUI, depois dos lances (o network.mjs não pré-aplica mais: chegava antes da animação e pulava o meu golpe)
   if (T.inimigo && r.ele && !T.caiu){ T.inimigo.hp = r.ele.hp; if ('status' in r.ele){ T.inimigo.status = r.ele.status || null; T.inimigo.rotMarca = undefined; } }            // desmaiou: o `ele` já é o próximo, o HP dele vai pro que entra (abaixo)
   if (T.inimigo && r.ele?.estagios && !T.caiu){ T.inimigo.estagios = { ...r.ele.estagios }; T.inimigo.semente = r.ele.semente ? (T.inimigo.semente || { de: 'parceiro' }) : null; T.inimigo.rotMarca = undefined; pintarRotuloSelvagem(T.inimigo); }   // estágios: quem vale é o servidor
+  if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){   // Disable / Taunt / Encore on my Pokémon: the move slots lock (travaDoGolpe)
+    const v = Array.isArray(r.eu.efeitos) ? r.eu.efeitos : [];
+    if (v.includes('disable') && !(jogo.pika.efeitosVol || []).includes('disable')) T.desab = T.meuUltimo;
+    if (!v.includes('disable')) T.desab = null;
+    jogo.pika.efeitosVol = v;
+  }
   if (jogo.pika && r.eu?.estagios && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){ jogo.pika.estagios = { ...r.eu.estagios }; jogo.pika.semente = r.eu.semente ? (jogo.pika.semente || { de: T.inimigo }) : null; }
   if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){ jogo.pika.hp = r.eu.hp; if ('status' in r.eu) jogo.pika.status = r.eu.status || null; guardarEstadoAtivo(); }   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
   if (T.caiu && !r.fim){                                                  // caiu o do inimigo e vem outro: o servidor já disse qual
@@ -11312,7 +11361,12 @@ async function esperarTrocaTurno(){
 }
 async function rodadaTurno(acao){
   const T = jogo.turno; if (!T || T.fase !== 'escolha') return;
-  T.fase = 'executa'; pintarTurno();
+  if (acao.tipo === 'golpe' && acao.g?.id){
+    const trava = travaDoGolpe(acao.g.id);
+    if (trava){ flutuar(jogo.ash, I18n.t(trava === 'Disabled' ? 'That move is disabled' : trava === 'Taunted' ? "Taunted: status moves can't be used" : 'Encore: it has to repeat its last move'), '#f58e8e'); return; }
+    T.ultimaEscolha = (jogo.pika?.golpesIds || []).indexOf(acao.g.id); T.meuUltimo = acao.g.id;
+  } else T.ultimaEscolha = -1;
+  T.fase = 'executa'; pintarTurno(); try { pintarBarra(); } catch {}
   if (T.serv) return rodadaDoServidor(T, acao);                           // passo 4: quem decide é o servidor; aqui é só a tela
   const s = T.inimigo, gI = s.golpes[Math.floor(Math.random() * s.golpes.length)] || GOLPES.tackle;
   const p0 = jogo.pika, A = porDex.get(p0.dex), D = porDex.get(s.dex);
@@ -11374,6 +11428,7 @@ async function rodadaTurno(acao){
   T.rodada++; T.fase = 'escolha'; pintarTurno();
 }
 function fimTurno(vitoria, op = {}){
+  if (jogo.pika) jogo.pika.efeitosVol = null;                             // Disable / Taunt / Encore end with the battle
   const doServidor = op.servidor || null;                                 // passo 4: o servidor já pagou/cobrou e já deu o XP
   const T = jogo.turno; if (!T) return;
   jogo.turno = null;

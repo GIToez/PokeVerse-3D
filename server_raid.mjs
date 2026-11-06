@@ -586,10 +586,22 @@ export function criarRaid(h) {
     }
     return true;
   }
+  /* FOCUS THIS ONE (Nov 5): a raid member marks a target; everyone in the same raid sees "<name>: focus this one!" and a green ring on
+     it (v2 `foca-neste`). Only raid members get it. Parties / 2v2 will reuse the same message. One ping per 2 s per player. */
+  const ultimoFoco = new Map();
+  function foco(ws, m) {
+    const u = contaDe(ws);
+    if (!raid || !u || !raid.fila.has(u) || !FASES_DENTRO.has(raid.fase)) return;
+    const agora = Date.now(); if (agora - (ultimoFoco.get(u) || 0) < 2000) return; ultimoFoco.set(u, agora);
+    const alvo = m.alvo == null ? null : String(m.alvo).slice(0, 40);
+    const nome = contas[u]?.nome || contas[u]?.save?.nome || u;
+    for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) enviar(w, { t: 'foco', de: nome, alvo });
+  }
   function receber(ws, m) {
     if (m.t === 'raid_staff') comando(ws, m);
     else if (m.t === 'raid_entrar') entrarFila(ws);
     else if (m.t === 'raid_sair') sairFila(ws);
+    else if (m.t === 'raid_foco') foco(ws, m);
     else if (m.t === 'ataque') ataque(ws, m);
     else if (m.t === 'r01' && ehR01() && raid.fase === 'luta' && raid.fila.has(contaDe(ws))) r01.receber(ws, m);
   }
