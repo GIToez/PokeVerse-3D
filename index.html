@@ -1856,18 +1856,21 @@ function instanciarBiblioteca(g, dados){
     partes.set(chaveNome(p.name), lista);
   }
   try { const r = Remendos.remendarCostas(partes, THREE); if (r.length) console.log('scenery patches:', r.join(' ')); } catch (e){ console.warn('scenery patches:', e); }
-  /* ROTAÇÃO (editor de cenário 3D): colocação com `r` (graus em torno de Y, no espaço do MUNDO, já com o flipX) usa uma VARIANTE
-     girada do prefab, "nome@graus": as mesmas malhas com local = Ry × local. Caixa, piso, parede e porta saem da variante, então as
-     regras abaixo (que só conhecem translação) continuam valendo. Os testes por NOME seguem usando `chaveNome(o.n)`. */
-  const chaveRot = o => { const n = chaveNome(o.n), r = ((Math.round(+o.r || 0) % 360) + 360) % 360; return r ? n + '@' + r : n; };
+  /* ROTAÇÃO LIVRE (editor de cenário 3D): colocação com `rx` / `r` / `rz` (graus, Euler XYZ no espaço do MUNDO, já com o flipX; `r` é
+     o Y, o campo antigo) usa uma VARIANTE girada do prefab, "nome@x,y,z": as mesmas malhas com local = R × local. Caixa, piso, parede
+     e porta saem da variante, então as regras abaixo (que só conhecem translação) continuam valendo — peça inclinada vira a caixa
+     alinhada dela. Os testes por NOME seguem usando `chaveNome(o.n)`. */
+  const grausRot = v => { const g = Math.round((((+v || 0) % 360) + 360) % 360 * 10) / 10; return g >= 360 ? 0 : g; };
+  const chaveRot = o => { const n = chaveNome(o.n), x = grausRot(o.rx), y = grausRot(o.r), z = grausRot(o.rz); return (x || y || z) ? n + '@' + x + ',' + y + ',' + z : n; };
   {
-    const Ry = new THREE.Matrix4();
+    const Ry = new THREE.Matrix4(), Er = new THREE.Euler(), D = THREE.MathUtils.degToRad;
     for (const o of [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]){
       const k = chaveRot(o);
       if (partes.has(k)) continue;
       const base = partes.get(chaveNome(o.n));
       if (!base) continue;
-      Ry.makeRotationY(THREE.MathUtils.degToRad(+k.slice(k.lastIndexOf('@') + 1)));
+      const [ax, ay, az] = k.slice(k.lastIndexOf('@') + 1).split(',').map(Number);
+      Ry.makeRotationFromEuler(Er.set(D(ax), D(ay), D(az)));
       partes.set(k, base.map(pt => ({ ...pt, local: new THREE.Matrix4().multiplyMatrices(Ry, pt.local) })));
     }
   }

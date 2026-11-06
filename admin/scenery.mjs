@@ -119,7 +119,6 @@ function atualizarPivo() {
 }
 const transform = new TransformControls(camera, renderer.domElement);
 let posAntesArraste = null;
-const _eulerYaw = new THREE.Euler();
 transform.addEventListener('dragging-changed', e => {
   orbit.enabled = !e.value;
   if (e.value) posAntesArraste = selPeca ? estadoDe(selPeca) : null;
@@ -128,9 +127,8 @@ transform.addEventListener('dragging-changed', e => {
 transform.addEventListener('objectChange', () => {
   if (!selPeca) return;
   if (transform.getMode() === 'rotate') {
-    const yaw = _eulerYaw.setFromQuaternion(proxy.quaternion, 'YXZ').y;   // o anel de tela (E) do gizmo inclina em X/Z: fica só o yaw
-    proxy.rotation.set(0, yaw, 0);
-    setRot(selPeca, THREE.MathUtils.radToDeg(yaw)); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+    const e = proxy.rotation;                                              // proxy usa Euler XYZ, o mesmo do jogo
+    setRot(selPeca, { x: R2G(e.x), y: R2G(e.y), z: R2G(e.z) }); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); atualizarCamposSel();
     return;
   }
   let x = proxy.position.x * fx, y = proxy.position.y, z = proxy.position.z;   // de world pra coords de edição (bib: flipX)
@@ -157,17 +155,25 @@ const raycaster = new THREE.Raycaster();
 const planoChao = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const _m4 = new THREE.Matrix4(), _T = new THREE.Matrix4();
 const marcarSujo = () => { sujo = true; $('sujo').hidden = false; };
-const _R = new THREE.Matrix4();
-// rotação da peça = graus em Y no espaço do MUNDO (igual ao jogo: T × Ry × local). bib: vai em obj.r; montado: no node.rotation.y
-const matrizDe = (peca, local) => _m4.multiplyMatrices(_T.makeTranslation(fx * peca.pos.x, peca.pos.y, peca.pos.z), _R.makeRotationY(THREE.MathUtils.degToRad(peca.rot || 0))).multiply(local);
-const normGraus = g => { g = Math.round((+g || 0) * 10) / 10; g = ((g % 360) + 360) % 360; return g > 180 ? g - 360 : g; };   // -180..180
-function setRot(peca, graus) {
-  const g = normGraus(graus);
-  peca.rot = g;
-  if (peca.obj) { const r = Math.round(g); if (r) peca.obj.r = ((r % 360) + 360) % 360; else delete peca.obj.r; }   // o jogo/servidor guardam graus inteiros 0..359
-  if (peca.node) peca.node.rotation.y = THREE.MathUtils.degToRad(g);
+const _R = new THREE.Matrix4(), _E = new THREE.Euler(), _Q = new THREE.Quaternion(), _Q2 = new THREE.Quaternion();
+const G2R = THREE.MathUtils.degToRad, R2G = THREE.MathUtils.radToDeg;
+/* Rotação LIVRE da peça: peca.rot = {x,y,z} em graus, Euler XYZ no espaço do MUNDO (igual ao jogo: T × R × local).
+   bib: vai em obj.rx / obj.r (Y, o campo antigo) / obj.rz, 0..360 com 1 casa, 0 não grava. montado: no node.rotation. */
+const ROT0 = Object.freeze({ x: 0, y: 0, z: 0 });
+const rotDe = peca => peca.rot || ROT0;
+const matrizDe = (peca, local) => { const r = rotDe(peca); return _m4.multiplyMatrices(_T.makeTranslation(fx * peca.pos.x, peca.pos.y, peca.pos.z), _R.makeRotationFromEuler(_E.set(G2R(r.x), G2R(r.y), G2R(r.z)))).multiply(local); };
+const normGraus = g => { g = Math.round((+g || 0) * 10) / 10; g = ((g % 360) + 360) % 360; g = Math.round(g * 10) / 10; return g > 180 ? g - 360 : g; };   // -180..180
+const grausArquivo = g => { g = Math.round((((+g || 0) % 360) + 360) % 360 * 10) / 10; return g >= 360 ? 0 : g; };          // 0..360, o que o jogo lê
+function setRot(peca, rot) {   // rot: {x?,y?,z?} graus (o que faltar fica como está)
+  const a = rotDe(peca);
+  const r = { x: normGraus(rot.x ?? a.x), y: normGraus(rot.y ?? a.y), z: normGraus(rot.z ?? a.z) };
+  peca.rot = r;
+  if (peca.obj) for (const [k, v] of [['rx', r.x], ['r', r.y], ['rz', r.z]]) { const g = grausArquivo(v); if (g) peca.obj[k] = g; else delete peca.obj[k]; }
+  if (peca.node) peca.node.rotation.set(G2R(r.x), G2R(r.y), G2R(r.z));
 }
-const estadoDe = peca => ({ p: peca.pos.clone(), r: peca.rot || 0 });
+const rotDoArquivo = o => ({ x: normGraus(o?.rx), y: normGraus(o?.r), z: normGraus(o?.rz) });
+const mesmaRot = (a, b) => a.x === b.x && a.y === b.y && a.z === b.z;
+const estadoDe = peca => ({ p: peca.pos.clone(), r: { ...rotDe(peca) } });
 function setPos(peca, x, y, z) {
   peca.pos.set(x, y, z);
   if (peca.obj) { peca.obj.x = x; peca.obj.y = y; peca.obj.z = z; }
@@ -185,7 +191,7 @@ function registrar(acao) {
 function registrarMov(peca, de) {
   if (!de) return;
   const para = estadoDe(peca);
-  if (de.p.equals(para.p) && de.r === para.r) return;
+  if (de.p.equals(para.p) && mesmaRot(de.r, para.r)) return;
   registrar({ t: 'mov', peca, de, para });
 }
 function limparHist() { historico = []; refazer = []; atualizarBotoesHist(); }
@@ -201,17 +207,26 @@ function moverPara(peca, est) {
 function sincronizarProxy() {
   if (!selPeca) return;
   proxy.position.set(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z);
-  proxy.rotation.set(0, THREE.MathUtils.degToRad(selPeca.rot || 0), 0);
+  const r = rotDe(selPeca);
+  proxy.rotation.set(G2R(r.x), G2R(r.y), G2R(r.z));
 }
-function girar(delta) {   // botões e tecla R
+function aplicarRot(rot) {
   if (!selPeca || transform.dragging) return;
   const de = estadoDe(selPeca);
-  setRot(selPeca, (selPeca.rot || 0) + delta); atualizarInst(selPeca); sincronizarProxy(); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+  setRot(selPeca, rot); atualizarInst(selPeca); sincronizarProxy(); realcar(selPeca); marcarSujo(); atualizarCamposSel();
   registrarMov(selPeca, de);
+}
+const _eixos = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
+function girar(delta, eixo = 'y') {   // botões e tecla R: gira em torno do eixo do MUNDO, mesmo com a peça inclinada
+  if (!selPeca) return;
+  const r = rotDe(selPeca);
+  _Q.setFromEuler(_E.set(G2R(r.x), G2R(r.y), G2R(r.z)));
+  _Q2.setFromAxisAngle(_eixos[eixo], G2R(delta)).multiply(_Q);
+  _E.setFromQuaternion(_Q2, 'XYZ');
+  aplicarRot({ x: R2G(_E.x), y: R2G(_E.y), z: R2G(_E.z) });
 }
 function modoGizmo(m) {
   transform.setMode(m);
-  transform.showX = m !== 'rotate'; transform.showZ = m !== 'rotate';   // rotação só em Y (o jogo não tem pitch/roll de peça)
   $('t-mover').classList.toggle('on', m === 'translate'); $('t-girar').classList.toggle('on', m === 'rotate');
 }
 function inserirPeca(peca, idx) {
@@ -314,7 +329,7 @@ async function montarBiblioteca(nome) {
   for (const nomeL of ['areaEnv', 'ambiente', 'objetos']) for (const o of listas[nomeL]) {
     const obj = { ...o, n: o.n, x: +o.x || 0, y: +o.y || 0, z: +o.z || 0 };
     const k = chaveNome(obj.n); if (!nomeDoPrefab.has(k)) nomeDoPrefab.set(k, obj.n);
-    pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), rot: normGraus(obj.r), nome: obj.n, mats: partes.get(k) || [], inst: [], obj, lista: nomeL });
+    pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), rot: rotDoArquivo(obj), nome: obj.n, mats: partes.get(k) || [], inst: [], obj, lista: nomeL });
   }
   try {
     const extra = await loader.loadAsync('/scenery/prop/library_extra.glb');
@@ -350,8 +365,9 @@ async function extraLamppost() {
       const r = await api('/admin/mapa-objetos?map=' + encodeURIComponent(mapaAtual));
       for (const o of (r.objetos || [])) {
         if (!/lamppost/i.test(o.n || '')) continue;
-        const obj = { n: 'prop/lamppost', x: +o.x || 0, y: +o.y || 0, z: +o.z || 0, ...(+o.r ? { r: +o.r } : {}) };
-        pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), rot: normGraus(obj.r), nome: obj.n, mats: lista, inst: [], obj, lista: 'objetos' });
+        const obj = { n: 'prop/lamppost', x: +o.x || 0, y: +o.y || 0, z: +o.z || 0 };
+        for (const k of ['rx', 'r', 'rz']) if (+o[k]) obj[k] = +o[k];
+        pecas.push({ pos: new THREE.Vector3(obj.x, obj.y, obj.z), rot: rotDoArquivo(obj), nome: obj.n, mats: lista, inst: [], obj, lista: 'objetos' });
       }
     }
     tipos = [{ id: k, nome: 'lamppost', criar: pos => criarBib(k, pos) }, ...tipos.filter(t => t.id !== k)];
@@ -363,7 +379,7 @@ function montarMontado() {
     node.updateMatrixWorld(true);
     const mats = []; let geo0 = null;
     node.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) { if (!geo0) geo0 = o.geometry; mats.push({ geo: o.geometry, mat: o.material, local: new THREE.Matrix4().copy(node.matrixWorld).invert().multiply(o.matrixWorld) }); } });
-    pecas.push({ pos: node.position.clone(), rot: normGraus(THREE.MathUtils.radToDeg(node.rotation.y)), nome: node.name, mats, inst: [], node });
+    pecas.push({ pos: node.position.clone(), rot: { x: normGraus(R2G(node.rotation.x)), y: normGraus(R2G(node.rotation.y)), z: normGraus(R2G(node.rotation.z)) }, nome: node.name, mats, inst: [], node });
     if (geo0 && !vistosTipo.has(geo0.uuid)) vistosTipo.set(geo0.uuid, node);
   }
   tipos = [...vistosTipo.entries()].map(([id, node]) => ({ id, nome: node.name, criar: pos => criarMont(node, pos) })).sort((a, b) => a.nome.localeCompare(b.nome));
@@ -410,7 +426,8 @@ function atualizarCamposSel() {
   $('s-nome').textContent = rotuloPrefab(selPeca.nome);
   $('s-nome').title = selPeca.nome || '';
   $('s-x').value = +p.x.toFixed(3); $('s-y').value = +p.y.toFixed(3); $('s-z').value = +p.z.toFixed(3);
-  if (document.activeElement !== $('s-rot')) $('s-rot').value = +(selPeca.rot || 0).toFixed(1);
+  const r = rotDe(selPeca);
+  for (const k of ['x', 'y', 'z']) if (document.activeElement !== $('s-r' + k)) $('s-r' + k).value = +r[k].toFixed(1);
 }
 
 let down = null;
@@ -437,14 +454,14 @@ renderer.domElement.addEventListener('dblclick', ev => {
 });
 
 // ── Operações ──────────────────────────────────────────────────────────────────
-function criarBib(chave, ponto, rot = 0) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
+function criarBib(chave, ponto, rot = ROT0) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
   const obj = { n: nomeDoPrefab.get(chave) || chave, x: +(fx * ponto.x).toFixed(3), y: +ponto.y.toFixed(3), z: +ponto.z.toFixed(3) };
   const peca = { pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(chave) || [], inst: [], obj, lista: 'objetos' };
   setRot(peca, rot);
   pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
 }
-function criarMont(nodeExemplo, ponto, rot = 0) {
-  const node = nodeExemplo.clone(true); node.position.copy(ponto); node.rotation.y = 0; mapaNode.add(node); node.updateMatrixWorld(true);
+function criarMont(nodeExemplo, ponto, rot = ROT0) {
+  const node = nodeExemplo.clone(true); node.position.copy(ponto); node.rotation.set(0, 0, 0); mapaNode.add(node); node.updateMatrixWorld(true);
   const mats = []; node.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) mats.push({ geo: o.geometry, mat: o.material, local: new THREE.Matrix4().copy(node.matrixWorld).invert().multiply(o.matrixWorld) }); });
   const peca = { pos: node.position.clone(), nome: node.name, mats, inst: [], node };
   setRot(peca, rot);
@@ -565,6 +582,9 @@ $('t-mover').onclick = () => modoGizmo('translate');
 $('t-girar').onclick = () => modoGizmo('rotate');
 $('s-rot-esq').onclick = () => girar(90);
 $('s-rot-dir').onclick = () => girar(-90);
+$('s-rot-nivel').onclick = () => aplicarRot({ x: 0, z: 0 });
+$('s-rot-zero').onclick = () => aplicarRot({ x: 0, y: 0, z: 0 });
+$('t-espaco').onclick = () => { const l = transform.space === 'world'; transform.setSpace(l ? 'local' : 'world'); $('t-espaco').textContent = l ? '⌖ Local' : '🌐 World'; };
 $('s-var').onclick = () => toast('Rotation is baked into the piece itself: use the palette to place the variant you want.');
 $('s-dup').onclick = duplicar;
 $('s-del').onclick = deletar;
@@ -573,9 +593,12 @@ for (const k of ['x', 'y', 'z']) {
   $('s-' + k).addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: estadoDe(selPeca) } : null; });
   $('s-' + k).addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = estadoDe(selPeca); } });
 }
-$('s-rot').addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: estadoDe(selPeca) } : null; });
-$('s-rot').addEventListener('input', () => { if (!selPeca) return; setRot(selPeca, +$('s-rot').value || 0); sincronizarProxy(); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
-$('s-rot').addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = estadoDe(selPeca); } });
+for (const k of ['x', 'y', 'z']) {
+  const el = $('s-r' + k);
+  el.addEventListener('focus', () => { posAntesCampo = selPeca ? { peca: selPeca, de: estadoDe(selPeca) } : null; });
+  el.addEventListener('input', () => { if (!selPeca) return; setRot(selPeca, { [k]: +el.value || 0 }); sincronizarProxy(); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
+  el.addEventListener('change', () => { if (posAntesCampo && posAntesCampo.peca === selPeca) { registrarMov(selPeca, posAntesCampo.de); posAntesCampo.de = estadoDe(selPeca); } });
+}
 for (const k of ['x', 'y', 'z']) $('s-' + k).addEventListener('input', () => { if (!selPeca) return; const p = selPeca.pos; setPos(selPeca, k === 'x' ? (+$('s-x').value || 0) : p.x, k === 'y' ? (+$('s-y').value || 0) : p.y, k === 'z' ? (+$('s-z').value || 0) : p.z); sincronizarProxy(); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
 $('pal-busca').addEventListener('input', renderPaleta);
 $('b-salvar').onclick = salvar;
@@ -597,7 +620,7 @@ addEventListener('keydown', e => {
   if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.key === 'Delete' || e.key === 'Backspace') deletar();
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
-  else if (k === 'r' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); girar(e.shiftKey ? -90 : 90); }
+  else if (k === 'r' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); girar((e.shiftKey ? -1 : 1) * (e.altKey ? 15 : 90)); }
   else if (k === 't' && !e.ctrlKey && !e.metaKey) modoGizmo(transform.getMode() === 'rotate' ? 'translate' : 'rotate');
   else if (e.key === 'f' || e.key === 'F') enquadrar();
   else if (e.key === 'g' || e.key === 'G') { if (selPeca) irPivot(new THREE.Vector3(fx * selPeca.pos.x, selPeca.pos.y, selPeca.pos.z)); }

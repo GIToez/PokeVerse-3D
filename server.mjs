@@ -955,8 +955,10 @@ function limparObjeto(o) {
   const num = v => { const x = Number(v); return Number.isFinite(x) ? +x.toFixed(3) : 0; };
   const r = { n, x: num(o.x), y: num(o.y), z: num(o.z) };
   for (const k of ['a', 'w', 'h']) if (o[k] !== undefined) r[k] = num(o[k]);   // ambiente/areaEnv (chão/água) trazem a/w/h — preserva
-  const rot = ((Math.round(num(o.r)) % 360) + 360) % 360;                      // rotação em Y (graus, mundo) do editor de cenário 3D; 0 não grava
-  if (rot) r.r = rot;
+  for (const k of ['rx', 'r', 'rz']) {                                       // rotação livre do editor de cenário 3D (graus, Euler XYZ no mundo; r = Y). 0 não grava
+    const g = Math.round((((Number(o[k]) || 0) % 360) + 360) % 360 * 10) / 10;
+    if (g && g < 360) r[k] = g;
+  }
   return r;
 }
 function limparZona(z) {

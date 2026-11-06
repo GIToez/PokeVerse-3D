@@ -81,14 +81,15 @@ header .sujo{ color:var(--acento); font-size:13px; }
         <button id="t-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
         <button id="t-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
         <button id="t-mover" class="on" title="Gizmo: move (T toggles)">✥ Move</button>
-        <button id="t-girar" title="Gizmo: rotate around Y (T toggles). The snap box also snaps rotation to 15°">⟳ Rotate</button>
+        <button id="t-girar" title="Gizmo: free rotation on X/Y/Z (T toggles). The snap box also snaps rotation to 15°">⟳ Rotate</button>
+        <button id="t-espaco" title="Gizmo axes: world or the piece's own (local)">🌐 World</button>
         <button id="t-foco" title="Frame everything and reset the pivot to the map center (F)">🎯 Frame</button>
         <button id="t-pivo-down" title="Lower the orbit pivot (Q / Page Down)">↓ Pivot</button>
         <button id="t-pivo-up" title="Raise the orbit pivot (E / Page Up)">↑ Pivot</button>
         <button id="t-pivo-chao" title="Drop the pivot back to the floor (Home)">Floor</button>
         <label class="chk" style="display:flex;align-items:center;gap:5px;background:rgba(10,13,18,.82);border:1px solid var(--borda);border-radius:6px;padding:0 8px"><input type="checkbox" id="t-snap"> snap 0.5m</label>
       </div>
-      <div class="dica-cam" id="dica-cam">WASD / arrows slide the pivot (W forward, no need to orbit first) · Q/E height · right-drag also pans · Home = floor · Ctrl+D duplicates · R / Shift+R rotate 90° · T move/rotate gizmo · Ctrl+Z / Ctrl+Y undo/redo</div>
+      <div class="dica-cam" id="dica-cam">WASD / arrows slide the pivot (W forward, no need to orbit first) · Q/E height · right-drag also pans · Home = floor · Ctrl+D duplicates · R / Shift+R turn 90° (Alt = 15°) · T move/rotate gizmo · Ctrl+Z / Ctrl+Y undo/redo</div>
       <div class="hud" id="hud">—</div>
       <div id="carregando">loading the scenery…</div>
     </div>
@@ -106,9 +107,15 @@ header .sujo{ color:var(--acento); font-size:13px; }
           </div>
           <div class="prop" style="margin-top:6px">
             <label>Rot°</label>
-            <input type="number" id="s-rot" step="15" title="Rotation around Y, in degrees">
-            <button id="s-rot-esq" title="Rotate 90° left (R)">⟲ 90°</button>
-            <button id="s-rot-dir" title="Rotate 90° right (Shift+R)">⟳ 90°</button>
+            <input type="number" id="s-rx" step="5" title="Rotation X (tilt forward/back), degrees">
+            <input type="number" id="s-ry" step="15" title="Rotation Y (turn), degrees">
+            <input type="number" id="s-rz" step="5" title="Rotation Z (tilt sideways), degrees">
+          </div>
+          <div class="acoes" style="margin-top:6px">
+            <button id="s-rot-esq" title="Turn 90° left around Y (R · Alt+R = 15°)">⟲ 90°</button>
+            <button id="s-rot-dir" title="Turn 90° right around Y (Shift+R · Alt+Shift+R = 15°)">⟳ 90°</button>
+            <button id="s-rot-nivel" title="Zero the tilt (X and Z), keep the turn">Level</button>
+            <button id="s-rot-zero" title="Zero all rotation">Reset rot</button>
           </div>
           <div class="acoes">
             <button id="s-var" title="Swap for another variant/rotation of the same piece">↻ Variant</button>
