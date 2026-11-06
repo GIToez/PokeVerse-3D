@@ -1,6 +1,6 @@
 [
  {
-  "id": "museu",
+  "id": "pewter-museum",
   "ligada": true,
   "titulo": "Door locked",
   "fala": "The museum is closed. Nobody gets in.",
@@ -16,7 +16,7 @@
   "ate": 401
  },
  {
-  "id": "saffron",
+  "id": "saffron-city",
   "ligada": false,
   "titulo": "Gate closed",
   "fala": "The city is closed. Orders from above.",
@@ -33,7 +33,7 @@
   "nota": "PokeFable's story id: turn on when our chapters 5+ follow theirs"
  },
  {
-  "id": "santa-anne",
+  "id": "ss-anne",
   "ligada": false,
   "titulo": "Boarding closed",
   "fala": "Boarding hasn't opened yet. The crew is dealing with a crisis on board.",
@@ -47,7 +47,7 @@
   "nota": "PokeFable's story id"
  },
  {
-  "id": "torre",
+  "id": "pokemon-tower",
   "ligada": false,
   "titulo": "Stairs blocked",
   "fala": "There's something up there nobody can see. Don't go up yet.",
@@ -66,7 +66,7 @@
   "nota": "PokeFable's story id"
  },
  {
-  "id": "safari",
+  "id": "safari-zone",
   "ligada": false,
   "titulo": "Gate closed",
   "fala": "The warden closed the Zone until his problem is sorted out.",
@@ -80,7 +80,7 @@
   "nota": "PokeFable's story id"
  },
  {
-  "id": "silph",
+  "id": "silph-co",
   "ligada": false,
   "titulo": "Elevator locked",
   "fala": "The elevator asks for a card key.",
@@ -95,7 +95,7 @@
   "nota": "PokeFable's story id"
  },
  {
-  "id": "ginasio-saffron",
+  "id": "saffron-gym",
   "ligada": false,
   "titulo": "Gym closed",
   "fala": "The Gym takes no challengers while Team Rocket is in the city.",
@@ -109,7 +109,7 @@
   "nota": "PokeFable's story id"
  },
  {
-  "id": "ginasio-cinnabar",
+  "id": "cinnabar-gym",
   "ligada": false,
   "titulo": "Door locked",
   "fala": "The door is locked. Someone on the island must have the key.",
@@ -123,7 +123,7 @@
   "nota": "Needs the Secret Key (item 50077), which isn't in the game yet"
  },
  {
-  "id": "ginasio-viridian",
+  "id": "viridian-gym",
   "ligada": true,
   "titulo": "Gym closed",
   "fala": "The Viridian Gym only opens for trainers with seven Badges.",
@@ -136,7 +136,7 @@
   "insignias": 7
  },
  {
-  "id": "rota23",
+  "id": "route-23",
   "ligada": true,
   "titulo": "Gate closed",
   "fala": "Only trainers with all eight Kanto Badges may pass.",
@@ -154,7 +154,7 @@
   "insignias": 8
  },
  {
-  "id": "caverna",
+  "id": "cerulean-cave",
   "ligada": true,
   "titulo": "Cave sealed",
   "fala": "A strange power comes from inside. Only the Kanto Champion may enter.",

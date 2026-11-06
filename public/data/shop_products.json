@@ -1,6 +1,6 @@
 [
  {
-  "id": "vagasCaixa",
+  "id": "boxSlots",
   "nome": "Box slots",
   "qtd": 50,
   "preco": 50,
@@ -8,7 +8,7 @@
   "aVenda": true
  },
  {
-  "id": "medalhao30",
+  "id": "medallion30",
   "item": 900170,
   "qtd": 1,
   "preco": 200,
@@ -16,7 +16,7 @@
   "aVenda": true
  },
  {
-  "id": "medalhao60",
+  "id": "medallion60",
   "item": 900171,
   "qtd": 1,
   "preco": 380,
@@ -24,7 +24,7 @@
   "aVenda": true
  },
  {
-  "id": "medalhao90",
+  "id": "medallion90",
   "item": 900172,
   "qtd": 1,
   "preco": 570,
@@ -32,7 +32,7 @@
   "aVenda": true
  },
  {
-  "id": "passeDiario30",
+  "id": "premiumDailyPass30",
   "item": 900203,
   "qtd": 1,
   "preco": 150,

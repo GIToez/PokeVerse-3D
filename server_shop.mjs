@@ -55,10 +55,14 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
         ...(p.sexo ? { sexo: p.sexo } : {}), ...(p.estacao ? { estacao: p.estacao } : {}), ...(p.ponto ? { ponto: p.ponto } : {}),
       },
     }));
-    return { aberta: true, saldo: carteira.de(c), produtos: produtosAVenda().map(p => p.id === 'vagasCaixa' ? vagasProduto(p, save) : ({ id: p.id, nome: p.nome, preco: +p.preco, item: +p.item, qtd: +p.qtd || 1, preso: false, soComprados: false })), pecas, montarias: [], skinsMon: [] };
+    return { aberta: true, saldo: carteira.de(c), produtos: produtosAVenda().map(p => p.id === 'boxSlots' ? vagasProduto(p, save) : ({ id: PARA_TELA[p.id] || p.id, nome: p.nome, preco: +p.preco, item: +p.item, qtd: +p.qtd || 1, preso: false, soComprados: false })), pecas, montarias: [], skinsMon: [] };
   }
   /* COMFORT TAB (Nov 5): items sold for Diamonds — the Medallion (30/60/90 days) and the Premium Daily Pass. They land in the Bag
      as tradable items: use them (server_bag.mjs `uso`) or sell them on the Market. Prices: public/data/shop_products.json (admin). */
+  /* Product IDs in shop_products.json are English (boxSlots, medallion30…); the shop screen (shop_ui.mjs, from PokeFable) knows them
+     by its own names, which are what the client sends and receives. */
+  const PARA_TELA = { boxSlots: 'vagasCaixa', medallion30: 'medalhao30', medallion60: 'medalhao60', medallion90: 'medalhao90', premiumDailyPass30: 'passeDiario30' };
+  const DA_TELA = Object.fromEntries(Object.entries(PARA_TELA).map(([a, b]) => [b, a]));
   const cfgJogo = () => { try { return JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'game_config.json'), 'utf8')); } catch { return {}; } };
   /** Box slots: `qtd` slots per purchase, `teto` slots bought at most (box_rules.mjs). */
   function vagasProduto(p, save) {
@@ -68,24 +72,24 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
   function produtosAVenda() {
     try {
       const l = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'shop_products.json'), 'utf8'));
-      return (Array.isArray(l) ? l : []).filter(p => p && p.aVenda !== false && /^[\w-]{1,40}$/.test(String(p.id)) && Number.isSafeInteger(+p.preco) && +p.preco > 0 && (p.id === 'vagasCaixa' || (Number.isSafeInteger(+p.item) && +p.item > 0)));
+      return (Array.isArray(l) ? l : []).filter(p => p && p.aVenda !== false && /^[\w-]{1,40}$/.test(String(p.id)) && Number.isSafeInteger(+p.preco) && +p.preco > 0 && (p.id === 'boxSlots' || (Number.isSafeInteger(+p.item) && +p.item > 0)));
     } catch { return []; }
   }
   function comprarProduto(c, u, m, ref, resp) {
     const s = c.save;
-    const p = produtosAVenda().find(x => String(x.id) === String(m.produto));
+    const pedido = DA_TELA[m.produto] || m.produto, p = produtosAVenda().find(x => String(x.id) === String(pedido));
     if (!p) return resp({ ok: false, erro: 'recusado', mensagem: "That isn't for sale right now.", vitrine: vitrine(c) });
     if (m.preco != null && +m.preco !== +p.preco) return resp({ ok: false, erro: 'preco-mudou', mensagem: 'The price changed: review and confirm again.', vitrine: vitrine(c) });
     const falta = +p.preco - carteira.de(c).total;
     if (falta > 0) return resp({ ok: false, erro: 'saldo-insuficiente', falta, mensagem: 'Not enough Diamonds.', vitrine: vitrine(c) });
-    if (p.id === 'vagasCaixa') {                                             // Box slots: straight onto the account, never an item
+    if (p.id === 'boxSlots') {                                             // Box slots: straight onto the account, never an item
       const v = vagasProduto(p, s);
       if (v.cabem < 1) return resp({ ok: false, erro: 'recusado', mensagem: 'You already bought the most Box slots.', vitrine: vitrine(c) });
       carteira.debitar(c, +p.preco);
       s.caixaCompradas = v.compradas + v.pacote;
       if (ref) { s.lojaRefs.push(ref); if (s.lojaRefs.length > MAX_REFS) s.lojaRefs.splice(0, s.lojaRefs.length - MAX_REFS); }
       salvarContas(); empurrarSave(u);
-      return resp({ ok: true, comprou: { produto: p.id, vagas: v.pacote, preco: +p.preco }, vagas: { novas: v.pacote, total: Caixa.vagas(s, cfgJogo()) }, compra: { qtd: +p.preco }, vitrine: vitrine(c) });
+      return resp({ ok: true, comprou: { produto: PARA_TELA[p.id] || p.id, vagas: v.pacote, preco: +p.preco }, vagas: { novas: v.pacote, total: Caixa.vagas(s, cfgJogo()) }, compra: { qtd: +p.preco }, vitrine: vitrine(c) });
     }
     carteira.debitar(c, +p.preco);
     if (!s.itens || typeof s.itens !== 'object') s.itens = {};
@@ -93,7 +97,7 @@ export function criarLoja({ dadosPub, contas, socketsDe, enviar, salvarContas, c
     if (ref) { s.lojaRefs.push(ref); if (s.lojaRefs.length > MAX_REFS) s.lojaRefs.splice(0, s.lojaRefs.length - MAX_REFS); }
     salvarContas(); empurrarSave(u);
     for (const w of socketsDe(u)) enviar(w, { t: 'bolsa', op: 'loja', bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas } });
-    return resp({ ok: true, comprou: { produto: p.id, item: +p.item, qtd: +p.qtd || 1, preco: +p.preco }, compra: { qtd: +p.preco }, vitrine: vitrine(c) });
+    return resp({ ok: true, comprou: { produto: PARA_TELA[p.id] || p.id, item: +p.item, qtd: +p.qtd || 1, preco: +p.preco }, compra: { qtd: +p.preco }, vitrine: vitrine(c) });
   }
   function empurrarSave(u) {
     const c = contas[u]; c.rev = (c.rev || 0) + 1;
