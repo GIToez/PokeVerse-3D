@@ -1592,8 +1592,8 @@ const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin,
   bolaBonus: (id, w, u) => world.ballBonus(id, w, u),   // the ball's catch bonus, same as in the wild (Level / Net / Nest / Repeat Ball…)
   shinyMult: () => eventos.shinyMult(), pontoSeguro: () => moderacao.cidade('pallet'), aoEntrarFila: u => temporada.contar(u, { conta: 'raid' }),
   aoPontuar: (u, n, mvp, parte) => { temporada.contar(u, { conta: 'raidPontos', n, parte }); if (mvp) temporada.contar(u, { conta: 'mvp' }); } });
-/* RUNNING SHOES (item_rules.mjs TENIS): from Oak's aide after the Boulder Badge (server_battle calls this on the first win over
-   Brock); accounts that already had the badge, and GM accounts, get them on their next login. */
+/* RUNNING SHOES (item_rules.mjs TENIS): players get them from Mom (side quest 9001 "A Letter Home", unlocked by mission 305,
+   the Boulder Badge); GM accounts get them here on login. */
 function darTenis(u, { avisar = true } = {}) {
   const c = contas[u]; if (!c) return false;
   if (!c.save) c.save = {};
@@ -1708,7 +1708,7 @@ wss.on('connection', ws => {
         }
         if (eventos.aoEntrar(ws, uTok)) return;                            // Fase 3: manutenção barra quem não é GM; senão manda o evento ao vivo
         moderacao.aoEntrar(ws, uTok);                                      // Fase 3: chegou onde o GM levou (posGm) → apaga
-        if (uTok && contas[uTok] && (contas[uTok].gm || (contas[uTok].save?.insignias || []).map(Number).includes(RegrasItemS.TENIS_INSIGNIA))) darTenis(uTok);   // Running Shoes for badges won before they existed (and GMs)
+        if (uTok && contas[uTok]?.gm) darTenis(uTok, { avisar: false });   // GM accounts have everything; players get the Running Shoes from Mom (side quest 9001 "A Letter Home", after the Boulder Badge)
         if (uTok) for (const w of socketsDe(uTok)) {                       // sessão única, como em produção: a aba/aparelho anterior leva `saia` (não reconecta) e some do mapa dos outros — antes cada aba virava mais um boneco
           if (w === ws) continue;
           enviar(w, { t: 'saia', motivo: 'outro-lugar', texto: 'You logged in from somewhere else.' });
