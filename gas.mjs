@@ -1,32 +1,49 @@
-/* GHOST GAS (Nov 5): Gastly's purple gas cloud. In the original games the cloud is a shader/particle effect on the model, and
- * the exported GLB only has the ball, so the gas is rebuilt here.
- * Look (the user's references: the anime / Pokémon GO Gastly): a thick, billowy lavender cloud that rings the ball's silhouette,
- * bigger than the ball, plus a plume that rises off the top. The puffs are laid out in the CAMERA's plane and pushed behind the
- * ball, so the cloud frames the face from any angle without covering the eyes. They move on their own clock (onBeforeRender).
+/* GHOST GAS (Nov 5, v3): Gastly's purple gas. The exported GLB only has the ball, so the gas is rebuilt here as smoke particles
+ * in a 3D shell round the ball (see RECEITAS), attached to the bone that carries the ball: it looks the same from every side and
+ * follows every animation. Tuned on tools/gas_bench (front / back / both sides, Idle and Run).
  *   Gas.aplicarGas(corpo, 'pm0092_00')   // after cloning the GLB, like Fogo.aplicarFogo / Lodo.aplicarLodo
  * The recipe is per model number, so Haunter / others can be added to RECEITAS. */
 import * as THREE from 'three';
 
 export const RECEITAS = {
-  /* massa: puffs filling an ellipse behind the ball (in ball radii): w × h, centre lifted by `sobe`; coroa: big puffs billowing on
-     top; tam: puff size range; cor (light, top) → cor2 (dark folds, inside / low). Tuned on the bench (tools/gas_bench). */
-  pm0092: { massa: 64, coroa: 5, w: 1.4, h: 1.35, sobe: 0.45, tam: [0.42, 0.75], cor: 0xcfa6f0, cor2: 0x6a3aa8, op: 0.95, halo: 0xb48ae0, frente: 22, opFrente: 0.3, veuR: [0.8, 1.1] },   // Gastly
+  /* SMOKE (Nov 5, v3): living smoke particles in a 3D SHELL round the ball, attached to the bone that carries the ball. Each puff
+     is born on the shell, drifts out and UP (world up: smoke rises whatever the pose), swells and fades, then is born again.
+     Puffs facing the camera fade to `opFrente`, so the face shows through a thin veil from any side; the rim stays thick.
+       anel: puffs that hug the ball (the silhouette ring, little drift) · fumaca: puffs that rise and fade (wisps off the top)
+       raio: shell radius in ball radii · tam: puff radius in ball radii · sobe: rise over a life (ball radii) · vida: life in s
+       cor (light, top/outside) → cor2 (dark, low/inside) · op: puff opacity · halo: soft glow behind (null = none) */
+  pm0092: { anel: 64, fumaca: 54, raio: [1.07, 1.5], tam: [0.62, 1.03], sobe: 1.3, vida: [2.4, 3.8], cor: 0xc9a2ee, cor2: 0x5a2a90, op: 0.8, opFrente: 0.14, halo: 0x9c74d2 },   // Gastly
 };
 
-let textura = null;
-function tex() {                                                          // a cartoon puff: solid middle, soft but short edge
-  if (textura) return textura;
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const g = c.getContext('2d');
-  const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.7, 'rgba(255,255,255,1)'); r.addColorStop(0.86, 'rgba(255,255,255,.6)'); r.addColorStop(0.97, 'rgba(255,255,255,0)');   // firm, lumpy edge (cartoon gas)
-  g.fillStyle = r; g.fillRect(0, 0, 128, 128);
-  g.globalCompositeOperation = 'source-atop';                             // a slightly darker lower half gives each puff some volume
-  const s = g.createLinearGradient(0, 30, 0, 128); s.addColorStop(0, 'rgba(0,0,0,0)'); s.addColorStop(1, 'rgba(40,0,70,.28)');
-  g.fillStyle = s; g.fillRect(0, 0, 128, 128);
-  textura = new THREE.CanvasTexture(c);
-  textura.colorSpace = THREE.SRGBColorSpace;
-  return textura;
+/* Smoke texture: a soft round puff whose edge is eaten by noise (wispy, not a balloon). A few variants so puffs differ. */
+const texturas = [];
+function tex(i = 0) {
+  if (texturas.length) return texturas[i % texturas.length];
+  for (let v = 0; v < 4; v++) {
+    const N = 128, c = document.createElement('canvas'); c.width = c.height = N;
+    const g = c.getContext('2d'), img = g.createImageData(N, N);
+    let semente = 1234 + v * 977; const rnd = () => (semente = (semente * 16807) % 2147483647) / 2147483647;
+    const grades = [4, 8, 16].map(n => { const a = []; for (let k = 0; k < (n + 1) * (n + 1); k++) a.push(rnd()); return { n, a }; });
+    const ruido = (x, y) => {                                   // value-noise fbm, 0..1
+      let t = 0, w = 0, amp = 1;
+      for (const { n, a } of grades) {
+        const fx = x * n, fy = y * n, ix = Math.min(n - 1, Math.floor(fx)), iy = Math.min(n - 1, Math.floor(fy)), tx = fx - ix, ty = fy - iy;
+        const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty), at = (i, j) => a[j * (n + 1) + i];
+        t += amp * ((at(ix, iy) * (1 - sx) + at(ix + 1, iy) * sx) * (1 - sy) + (at(ix, iy + 1) * (1 - sx) + at(ix + 1, iy + 1) * sx) * sy); w += amp; amp *= 0.5;
+      }
+      return t / w;
+    };
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const dx = (x + 0.5) / N * 2 - 1, dy = (y + 0.5) / N * 2 - 1, r = Math.hypot(dx, dy);
+      const radial = Math.max(0, 1 - r); const base = radial * radial * (3 - 2 * radial);
+      const a = Math.max(0, Math.min(1, base * 1.6 - (1 - ruido(x / N, y / N)) * 0.75));
+      const sombra = 1 - 0.22 * Math.max(0, dy);                // a little darker underneath: volume
+      const o = (y * N + x) * 4; img.data[o] = img.data[o + 1] = img.data[o + 2] = 255 * sombra; img.data[o + 3] = 255 * a;
+    }
+    g.putImageData(img, 0, 0);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; texturas.push(t);
+  }
+  return texturas[i % texturas.length];
 }
 
 /** The bone with the most skin weight on the biggest skinned mesh (Gastly: the ball's bone; Waist alone let the ball drop out of the
@@ -68,54 +85,53 @@ export function aplicarGas(corpo, modelo = '') {
   else grupo.position.copy(meio.applyMatrix4(new THREE.Matrix4().copy(corpo.matrixWorld).invert()));
   const claro = new THREE.Color(R.cor), escuro = new THREE.Color(R.cor2), t0 = performance.now() / 1000;
   const lista = [];
-  /* the mass: points in the ellipse, denser towards the rim so the outline is lumpy; inner and low ones are the dark folds */
-  for (let i = 0; i < R.massa; i++) {
-    const a = Math.random() * Math.PI * 2, rr = Math.pow(Math.random(), 0.45);
-    const x = Math.cos(a) * rr * R.w, y = Math.sin(a) * rr * R.h + R.sobe;
-    const tom = Math.min(1, (1 - rr) * 0.75 + (y < R.sobe ? 0.25 : 0) + Math.random() * 0.15);
-    lista.push({ x, y, tam: R.tam[0] + Math.random() * (R.tam[1] - R.tam[0]), tom, coroa: false, atras: 0.6 + (1 - rr) * 0.5 });
-  }
-  /* the crown: a few big puffs on top that swell and fade in turn (smoke rising off the cloud, no chain of balls) */
-  /* the veil: see-through puffs IN FRONT of the ball, mostly round its rim, so the gas wraps over the body from any side; the face
-     still shows through (opFrente) */
-  for (let i = 0; i < (R.frente || 0); i++) {
-    const a = R.veuBaixo ? Math.PI * (1.05 + Math.random() * 0.9) : Math.random() * Math.PI * 2, rr = (R.veuR || [0.8, 1.1])[0] + Math.random() * ((R.veuR || [0.8, 1.1])[1] - (R.veuR || [0.8, 1.1])[0]);
-    lista.push({ x: Math.cos(a) * rr, y: Math.sin(a) * rr * 0.9 + 0.05, tam: R.tam[0] * (0.8 + Math.random() * 0.5), tom: Math.random() * 0.4, coroa: false, atras: -(0.9 + Math.random() * 0.4), veu: true });
-  }
-  for (let i = 0; i < R.coroa; i++) lista.push({ x: (i / Math.max(1, R.coroa - 1) - 0.5) * R.w * 1.1, y: R.sobe + R.h * 0.85, tam: R.tam[1] * 1.15, tom: 0.05, coroa: true, atras: 0.9 });
-  lista.sort((p, q) => q.atras - p.atras);                               // far ones drawn first
+  const dirAleatoria = () => { const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, q = Math.sqrt(1 - u * u); return new THREE.Vector3(q * Math.cos(a), u, q * Math.sin(a)); };
+  for (let i = 0; i < R.anel; i++) lista.push({ dir: dirAleatoria(), rr: R.raio[0] + Math.random() * (R.raio[1] - R.raio[0]) * 0.6, tam: R.tam[0] + Math.random() * (R.tam[1] - R.tam[0]), vida: 0, tom: Math.random() });
+  for (let i = 0; i < R.fumaca; i++) { const d = dirAleatoria(); d.y = Math.abs(d.y) * 0.8 + 0.1; d.normalize();   // wisps start on the upper half
+    lista.push({ dir: d, rr: R.raio[0] + Math.random() * (R.raio[1] - R.raio[0]), tam: R.tam[0] * 0.8 + Math.random() * (R.tam[1] - R.tam[0]), vida: R.vida[0] + Math.random() * (R.vida[1] - R.vida[0]), tom: Math.random() * 0.6 }); }
+  const _w = new THREE.Vector3(), _cam = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0), _q = new THREE.Quaternion();
   lista.forEach((P, i) => {
-    const mat = new THREE.SpriteMaterial({ map: tex(), color: claro.clone().lerp(escuro, P.tom), transparent: true, opacity: R.op, depthWrite: false });
+    const mat = new THREE.SpriteMaterial({ map: tex(i), color: claro.clone().lerp(escuro, P.tom * 0.7), transparent: true, opacity: 0, depthWrite: false, rotation: Math.random() * Math.PI * 2 });
     const s = new THREE.Sprite(mat);
-    s.renderOrder = 4 + i / 1000;
-    const fase = Math.random() * Math.PI * 2, ciclo = 2.6 + Math.random() * 1.8, atraso = Math.random() * ciclo;
+    s.renderOrder = 4;                                                   // same order: three sorts the puffs back to front
+    const fase = Math.random() * Math.PI * 2, atraso = Math.random() * (P.vida || 1), giro = (Math.random() - 0.5) * 0.6;
     s.onBeforeRender = (_renderer, _scene, camera) => {
       const t = performance.now() / 1000 - t0;
       grupo.getWorldPosition(_c);
       const R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
-      camera.getWorldDirection(_d);
-      _r.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
-      _u.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-      let ox = P.x + Math.sin(t * 0.7 + fase) * 0.06, oy = P.y + Math.cos(t * 0.6 + fase) * 0.06, e = P.tam * (0.93 + 0.09 * Math.sin(t * 1.3 + fase)), op = P.veu ? R.opFrente * (0.75 + 0.25 * Math.sin(t * 0.9 + fase)) : R.op;
-      if (P.coroa) { const k = ((t + atraso) % ciclo) / ciclo; oy += k * 0.8; ox += Math.sin(fase) * k * 0.3; e *= 0.35 + 0.75 * Math.sin(Math.PI * Math.min(1, k * 1.1)); op = R.op * Math.min(1, k * 6, (1 - k) * 4); }   // swells, then shrinks away (a fade alone went grey over grass)
-      _p.copy(_c).addScaledVector(_r, ox * R0).addScaledVector(_u, oy * R0).addScaledVector(_d, P.atras * R0);   // behind the ball, seen from the camera
+      grupo.getWorldQuaternion(_q);
+      _w.copy(P.dir).applyQuaternion(_q);                               // the puff's direction turns with the ball (bone)
+      camera.getWorldPosition(_cam).sub(_c).normalize();
+      let rr = P.rr, sobe = 0, e = P.tam, op = R.op;
+      if (P.vida) {                                                     // wisp: born on the shell, rises and swells, fades
+        const k = ((t + atraso) % P.vida) / P.vida;
+        rr += k * 0.35; sobe = k * R.sobe; e *= 0.55 + 0.75 * k; op *= Math.min(1, k * 5) * (1 - k) * 1.25;
+      } else {                                                          // ring: breathes in place
+        rr += Math.sin(t * 0.8 + fase) * 0.05; e *= 0.92 + 0.12 * Math.sin(t * 1.1 + fase);
+      }
+      _p.copy(_w).multiplyScalar(rr * R0).add(_c).addScaledVector(_up, sobe * R0);
+      /* facing the camera → thin veil over the face; at the rim → full; behind → full (the ball hides most of it) */
+      _d.copy(_p).sub(_c).normalize();
+      const frente = _d.dot(_cam);
+      op *= frente > 0.25 ? Math.max(R.opFrente, 1 - (frente - 0.25) * 1.6) : 1;
       grupo.worldToLocal(_p);
       s.position.copy(_p);
       const kl = R0 / (grupo.matrixWorld.getMaxScaleOnAxis() || 1);
-      s.scale.set(e * kl * 2, e * kl * 2, 1);                            // tam = puff radius in ball radii
+      s.scale.set(e * kl * 2, e * kl * 2, 1);
+      mat.rotation += giro * 0.016;
       mat.opacity = op;
       s.updateMatrixWorld();
     };
     grupo.add(s);
   });
-  if (R.halo != null) {                                                  /* soft lilac haze around the cloud (normal blending: additive turned green on grass) */
-    const mh = new THREE.SpriteMaterial({ map: tex(), color: R.halo, transparent: true, opacity: 0.22, depthWrite: false });
+  if (R.halo != null) {                                                  /* soft lilac haze behind the cloud (normal blending: additive turned green on grass) */
+    const mh = new THREE.SpriteMaterial({ map: tex(0), color: R.halo, transparent: true, opacity: 0.2, depthWrite: false });
     const h = new THREE.Sprite(mh); h.renderOrder = 3;
     h.onBeforeRender = (_r0, _s0, camera) => {
       const R0 = raioLocal * (corpo.matrixWorld.getMaxScaleOnAxis() || 1);
-      grupo.getWorldPosition(_c); camera.getWorldDirection(_d); _u.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-      _p.copy(_c).addScaledVector(_u, R.sobe * R0).addScaledVector(_d, R0 * 1.4); grupo.worldToLocal(_p); h.position.copy(_p);
-      const e = R0 * R.w * 2.9 / (grupo.matrixWorld.getMaxScaleOnAxis() || 1); h.scale.set(e, e, 1); h.updateMatrixWorld();
+      grupo.getWorldPosition(_c); camera.getWorldDirection(_d);
+      _p.copy(_c).addScaledVector(_up, 0.35 * R0).addScaledVector(_d, R0 * 1.5); grupo.worldToLocal(_p); h.position.copy(_p);
+      const e = R0 * 4.4 / (grupo.matrixWorld.getMaxScaleOnAxis() || 1); h.scale.set(e, e, 1); h.updateMatrixWorld();
     };
     grupo.add(h);
   }
