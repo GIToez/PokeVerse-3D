@@ -8655,7 +8655,7 @@ function aprenderGolpe(e, id, slot){
 function verificarPortas(dt){
   if (mesaInicial?.marcador.visible){ mesaInicial.fase += dt * 3; mesaInicial.marcador.position.y = 0.85 + Math.sin(mesaInicial.fase) * 0.06; }
   const tMarca = performance.now() / 1000;
-  for (const n of jogo.npcs || []) if (n.marcaMissao?.visible) n.marcaMissao.position.y = (n.altura || 1.6) + 0.92 + Math.sin(tMarca * 3) * 0.06;
+  for (const n of jogo.npcs || []) if (n.marcaMissao?.visible) n.marcaMissao.position.y = (n.altura || 1.6) + MARCA_ALTURA + Math.sin(tMarca * 3) * 0.05;
   const VV = verificarPortas.vivas;                                       // folhas vivas — animam mesmo durante a travessia
   if (VV) for (const v of VV){
     if (v.tipo === 'fixa') continue;
@@ -8739,6 +8739,7 @@ async function montarNpcs(){
       const e = await montarNpcGlb(info.glb);
       if (jogo.raidArena){ removerCorpo(e); break; }
       e.nome = info.nome || 'NPC'; e.falas = info.falas || []; e.npc = true; e.tipoNpc = info.tipo || 1; e.role = npcRole(info); e.cfg = n.cfg;
+      if (info.secundaria != null){ e.soSecundaria = info.secundaria; e.__oculto = true; }   // a quest-only NPC (npcs_glb `secundaria`): stands there only while that side quest can be accepted
       if (info.tipo === 9) e.pivo.traverse(o => { if (o.isMesh){ const map = o.material?.map || null; o.material = new THREE.MeshStandardMaterial({ map, color: 0xb794ff, emissive: 0x6a3dff, emissiveIntensity: 0.7, roughness: 0.3, transparent: true, opacity: 0.92 }); } });   // cristal Teráxico: o shader FX do jogo não veio, vira cristal roxo brilhante
       if (info.glb.startsWith('mon/')){ e.glb = info.glb.slice(4); e.dex = dexDoGlb(e.glb); aplicarTamanho(e); }
       teleportar(e, flipX * n.x, n.z);
@@ -8823,6 +8824,7 @@ function alcanceDeFala(n){
 function npcPerto(){
   const a = jogo.ash; let m = null, md = Infinity;
   for (const n of jogo.npcs){
+    if (n.__oculto) continue;
     const d = Math.hypot(n.x - a.x, n.z - a.z);
     if (d >= md || d > ALCANCE_FALA_TETO) continue;                        // longe de qualquer jeito: nem mede o alcance dele
     if (d < alcanceDeFala(n)){ md = d; m = n; }
@@ -8832,6 +8834,7 @@ function npcPerto(){
 function npcSobCursor(ev){
   const r = tela.getBoundingClientRect(); let melhor = null, md = 40;
   for (const n of jogo.npcs){
+    if (n.__oculto) continue;
     projetado.set(n.x, n.y + n.altura * 0.5, n.z).project(cam); if (projetado.z > 1) continue;
     const d = Math.hypot((projetado.x + 1) / 2 * r.width - (ev.clientX - r.left), (1 - projetado.y) / 2 * r.height - (ev.clientY - r.top));
     if (d < md){ md = d; melhor = n; }
@@ -8998,25 +9001,40 @@ function mesaSobCursor(ev){
   }
   return false;
 }
-function spriteMarca(sim, cor){
-  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
-  const c = cv.getContext('2d');
-  c.font = 'bold 110px Segoe UI, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle';
-  c.lineWidth = 14; c.strokeStyle = 'rgba(0,0,0,0.85)'; c.strokeText(sim, 64, 70); c.fillStyle = cor; c.fillText(sim, 64, 70);
-  const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
+/* MISSION MARKS (Nov 5): the designer's art (ui/amanda/missao): gold `!` = a side quest you can take, gold `?` = a current objective,
+   silver `!` = a side quest that opens after the mission you're on. Smaller than the old text marks (0.48 → 0.34 m) and closer to the head. */
+const MARCA_TAM = 0.34, MARCA_ALTURA = 0.62;
+const texMarca = {};
+function spriteMarca(tipo){
+  const tx = texMarca[tipo] ||= (() => { const t = new THREE.TextureLoader().load('./ui/amanda/missao/marca-' + tipo + '@2x.png'); t.colorSpace = THREE.SRGBColorSpace; return t; })();
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, depthTest: false }));
-  sp.scale.set(0.48, 0.48, 1); sp.renderOrder = 22; sp.userData.marca = sim + cor;
+  sp.scale.set(MARCA_TAM, MARCA_TAM, 1); sp.renderOrder = 22; sp.userData.marca = tipo;
   return sp;
+}
+function marcaDoNpc(e){
+  if (Fairy || INTRO || !jogo.missoesOk) return null;
+  const vencido = !!e.treino && !e.ginasio && !e.elite && treinadorVencido(e.cfg, lerLS('treinadoresVencidos', []));
+  const m = Missoes.marcaPara?.(e.cfg, { role: e.role, trainer: !!e.treino && !vencido, area: e.spot?.a ?? null });
+  if (m?.tipo === 'oferta' || m?.tipo === 'entrega') return m.tipo;
+  try {                                                                  // silver `!`: this NPC's side quest opens after the mission you're on
+    if (!m && (Missoes.laterais?.() || []).some(s => s.estado === 'travada' && s.npc != null && +s.npc === +e.cfg && SecUi.bloqueio(s, Missoes))) return 'bloqueada';
+  } catch {}
+  return null;
 }
 function aplicarMarcaMissao(e){
   if (!e?.pivo || e.placa) return;
-  const m = (!Fairy && !INTRO && jogo.missoesOk) ? Missoes.marcaPara?.(e.cfg, { role: e.role, trainer: !!e.treino }) : null;
-  const chave = m ? m.sim + m.cor : '';
+  if (e.soSecundaria != null){                                           // the Research Aide at Pewter's gate: here while "A Letter Home" is on offer, gone once you take the letter
+    const oculto = !jogo.missoesOk || Missoes.laterais?.().find(s => String(s.id) === String(e.soSecundaria))?.estado !== 'disponivel';
+    if (oculto !== !!e.__oculto){ e.__oculto = oculto; if (oculto){ e.pivo.visible = false; e.__longe = true; tirarDaArvore(e); } }
+    if (oculto) return;
+  }
+  const m = marcaDoNpc(e);
+  const chave = m || '';
   if (e.marcaMissao && e.marcaMissao.userData.marca === chave){ e.marcaMissao.visible = !!m; return; }
-  if (e.marcaMissao){ e.pivo.remove(e.marcaMissao); e.marcaMissao.material?.map?.dispose(); e.marcaMissao.material?.dispose(); e.marcaMissao = null; }
+  if (e.marcaMissao){ e.pivo.remove(e.marcaMissao); e.marcaMissao.material?.dispose(); e.marcaMissao = null; }   // the art texture is shared: only the material goes
   if (!m) return;
-  const sp = spriteMarca(m.sim, m.cor);
-  sp.position.set(0, (e.altura || 1.6) + 0.92, 0);
+  const sp = spriteMarca(m);
+  sp.position.set(0, (e.altura || 1.6) + MARCA_ALTURA, 0);
   e.pivo.add(sp); e.marcaMissao = sp;
 }
 function atualizarMarcasMissao(){
@@ -10124,7 +10142,7 @@ function atualizarJogo(dt, entrada){
      Kanto). Agora o corpo também SAI da árvore da cena (`tirarDaArvore`) e volta pro mesmo pai ao se aproximar. */
   { const R2 = NPC_RAIO_VISTA * NPC_RAIO_VISTA;
     for (const n of jogo.npcs){
-      const dx = n.x - ash.x, dz = n.z - ash.z, perto = dx * dx + dz * dz < R2;
+      const dx = n.x - ash.x, dz = n.z - ash.z, perto = !n.__oculto && dx * dx + dz * dz < R2;
       if (!perto){ if (n.pivo && n.pivo.visible && !n.__longe){ n.pivo.visible = false; n.__longe = true; tirarDaArvore(n); } continue; }
       if (n.__longe){ devolverAArvore(n); n.pivo.visible = true; n.__longe = false; }
       n.mix?.update(dt);

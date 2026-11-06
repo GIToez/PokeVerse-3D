@@ -329,29 +329,26 @@ function cfgAlvo(alvo, cfg){
 const isHealer = role => role === 'heal' || role === 'cura' || String(role).toLowerCase() === 'joy';
 /** Overhead mark for an NPC: yellow `!` = talk now / quest giver, yellow `?` = talk again,
  *  orange `?` = turn in an item, cyan `?` = heal, red `!` = trainer to beat, green `?` = talk later in this quest. */
-export function marcaPara(cfg, { role = '', trainer = false } = {}){
-  const p = passoAtual();
-  if (p && p.tipo === 'doar' && cfgAlvo(p.cfgs || p.cfg, cfg)) return { sim: '?', cor: '#ff9f43' };
-  if (p && (p.tipo === 'falar' || p.tipo === 'entregar') && cfgAlvo(p.cfgs || p.cfg, cfg)){
-    if (p.tipo === 'entregar') return { sim: '?', cor: '#ff9f43' };
-    const m = ativa();
-    const jaFalou = !!(m && (m.passos || []).slice(0, estado.passo).some(x => (x.tipo === 'falar' || x.tipo === 'entregar') && cfgAlvo(x.cfgs || x.cfg, cfg)));
-    return jaFalou ? { sim: '?', cor: '#ffd23a' } : { sim: '!', cor: '#ffd23a' };
-  }
-  if (p && p.tipo === 'curar' && isHealer(role) && (!p.cfg || cfgAlvo(p.cfg, cfg))) return { sim: '?', cor: '#6ee7ff' };
-  if (p && p.tipo === 'derrotar' && trainer && (!p.cfg || cfgAlvo(p.cfgs || p.cfg, cfg))) return { sim: '!', cor: '#ff5b5b' };
+/** Overhead mark for an NPC → { tipo, sim, cor } | null. `tipo` picks the designer's art (ui/amanda/missao/marca-<tipo>@2x.png):
+ *  'oferta'  = gold `!`: a side quest this NPC gives that you can take now
+ *  'entrega' = gold `?`: a current objective (talk to, hand something to, heal with, or beat this one)
+ *  'depois'  = this NPC comes up later in the current mission (no mark drawn; kept for the map and the guide)
+ *  `sim`/`cor` are the old text marks, kept for anything that still draws them. */
+export function marcaPara(cfg, { role = '', trainer = false, area = null } = {}){
+  const objetivo = { tipo: 'entrega', sim: '?', cor: '#ffd23a' };
+  const naArea = q => !q.area || area == null || String(q.area) === String(area);
+  const alvoPasso = q => {
+    if (!q) return false;
+    if ((q.tipo === 'falar' || q.tipo === 'entregar' || q.tipo === 'doar') && cfgAlvo(q.cfgs || q.cfg, cfg)) return true;
+    if (q.tipo === 'curar' && isHealer(role) && (!q.cfg || cfgAlvo(q.cfg, cfg))) return true;
+    if (q.tipo === 'derrotar' && !q.selvagem && trainer && ((q.cfg != null || q.cfgs != null) ? cfgAlvo(q.cfgs || q.cfg, cfg) : naArea(q))) return true;
+    return false;
+  };
+  if (alvoPasso(passoAtual())) return objetivo;
+  for (const T of trilhasLaterais()) if (alvoPasso(T.m.passos[T.passo])) return objetivo;
+  if (lateraisDoNpc(cfg).length) return { tipo: 'oferta', sim: '!', cor: '#c9a24a' };
   const m = ativa();
-  if (m) for (let i = (estado?.passo ?? 0) + 1; i < (m.passos || []).length; i++){
-    const n = m.passos[i];
-    if ((n.tipo === 'falar' || n.tipo === 'entregar') && cfgAlvo(n.cfgs || n.cfg, cfg)) return { sim: '?', cor: '#7dffb3' };
-    if (n.tipo === 'curar' && isHealer(role) && (!n.cfg || cfgAlvo(n.cfg, cfg))) return { sim: '?', cor: '#7dffb3' };
-    if (n.tipo === 'derrotar' && trainer && (!n.cfg || cfgAlvo(n.cfgs || n.cfg, cfg))) return { sim: '!', cor: '#ff8aa8' };
-  }
-  for (const T of trilhasLaterais()){
-    const q = T.m.passos[T.passo];
-    if (q && (q.tipo === 'falar' || q.tipo === 'entregar' || q.tipo === 'doar') && cfgAlvo(q.cfgs || q.cfg, cfg)) return { sim: q.tipo === 'falar' ? '!' : '?', cor: '#c9a24a' };
-  }
-  if (lateraisDoNpc(cfg).length) return { sim: '!', cor: '#c9a24a' };
+  if (m) for (let i = (estado?.passo ?? 0) + 1; i < (m.passos || []).length; i++) if (alvoPasso(m.passos[i])) return { tipo: 'depois', sim: '?', cor: '#7dffb3' };
   return null;
 }
 export function falaPara(cfg){
