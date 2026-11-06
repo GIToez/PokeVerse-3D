@@ -8881,5 +8881,9 @@
   "Click to pin to {x}": "Clique pra prender no {x}",
   "Tap to pin to {x}": "Toque pra prender no {x}",
   "Mounts": "Montarias",
-  "No mounts yet.": "Nenhuma montaria ainda."
+  "No mounts yet.": "Nenhuma montaria ainda.",
+  "CHALLENGE": "DESAFIO",
+  "DUEL": "DUELO",
+  "GYM": "GINÁSIO",
+  "ELITE FOUR": "ELITE DOS QUATRO"
 }

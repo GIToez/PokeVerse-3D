@@ -230,7 +230,8 @@ import './glb_no_blob.mjs';                     // texturas dos .glb sem URL blo
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Gas from './gas.mjs';           // ghost gas around Gastly (Nov 5)
 import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
-import * as Cutscene from './cutscene.mjs';  // story cutscenes played from public/data/cutscenes/*.json (?intro2=1: the new Oak opening preview)
+import * as Cutscene from './cutscene.mjs';
+import * as BattleUi from './battle_ui.mjs';   // v2 battle pieces (the challenge card; more to come)  // story cutscenes played from public/data/cutscenes/*.json (?intro2=1: the new Oak opening preview)
 import * as Diretor from './director.mjs';       // modo diretor (?diretor=1): monta a cena e grava com o OBS
 import * as Captura from './capture.mjs';       // modo captura (?captura=1): cena de TikTok jogando de verdade, selvagens escolhidos
 import * as Conhecimento from './knowledge.mjs';   // Pokédex de conhecimento: nível por espécie, colecionador, títulos (LS `conhecimento`)
@@ -10910,6 +10911,7 @@ async function desafiarTreinador(n){
   pintarConvite(n);
 }
 function pintarConvite(n){
+  if (conviteV2(n)) return;                                          // v2 card (battle_ui.mjs); the box below is the fallback
   const el = $('turno'), g = n.ginasio, E = n.elite;
   /* ELITE FOUR (20/09): o mesmo convite do ginásio, com o aviso do que ela é — uma corrida de cinco lutas sem cura no meio.
      Quem confere a ordem, as insígnias e o resto é o servidor; aqui só avisamos antes de o jogador entrar. */
@@ -10940,6 +10942,40 @@ function pintarConvite(n){
   el.hidden = false;
   $('t-sim').onclick = () => { Som.destravar(); iniciarTurno(n); };
   $('t-nao').onclick = () => { el.hidden = true; };
+}
+/* V2 CHALLENGE CARD (Nov 5): the same three cases as the box below (Elite Four, gym with its cooldown and paid retry, trainer),
+   on the Figma `convite-batalha`. Returns false when the layout has no card (the old box then draws). */
+function conviteV2(n){
+  const g = n.ginasio, E = n.elite, semHtml = s => String(s || '').replace(/<[^>]+>/g, '');
+  const longe = () => !jogo.ash || Math.hypot(jogo.ash.x - n.x, jogo.ash.z - n.z) > 16;
+  let opts;
+  if (E){
+    const faltam = Math.max(0, 8 - (lerLS('insignias', []) || []).length);
+    opts = { tipo: 'elite', titulo: E.nome + ' · ' + (E.titulo || 'Elite Four'), n: (E.time || []).length,
+      info: [E.tipo, (E.time || []).length + ' Pokémon', I18n.t('{n} of 5', { n: E.ordem })].filter(Boolean).join(' · '),
+      aviso: semHtml(faltam ? I18n.t('The League opens with all 8 Kanto badges (you still need {n}).', { n: faltam }) : eliteEstado.corrida ? I18n.t('You are mid-run: <b>no healing</b> until the Champion falls.') : I18n.t('The five fights are one run: <b>you cannot heal between them</b>, and a loss restarts at the first room.')) };
+  } else if (g){
+    const tem = (lerLS('insignias', []) || []).includes(g.insignia.id), esp = ginasioEspera(g), min = Math.ceil(esp / 60);
+    opts = { tipo: esp ? 'ginasio-espera' : 'ginasio', titulo: I18n.t('Leader') + ' ' + g.lider + ' · ' + g.nome, n: g.time.length, preco: g.resetMoedas,
+      info: [g.tipo, g.time.length + ' Pokémon', 'Lv ' + g.time[0].lv + '–' + g.time[g.time.length - 1].lv].join(' · ') + (tem ? I18n.t(' · you already have the {badge}', { badge: g.insignia.nome || '' }) : ''),
+      aviso: esp ? semHtml(I18n.t('You lost recently: the leader is back in <b>{n} min</b>. Challenging now costs <b>{coins} Coins</b>.', { n: min, coins: g.resetMoedas })) : '' };
+  } else {
+    opts = { tipo: n.pvp ? 'duelo' : 'treinador', titulo: n.treino.nome, n: n.treino.time.length,
+      info: I18n.t('wants to battle!') + ' · ' + n.treino.time.length + ' Pokémon · ' + I18n.t('turn-based') };
+  }
+  const p = BattleUi.convite({ ...opts, npc: { longe } });
+  if (!p) return false;
+  $('turno').hidden = true;
+  p.then(r => {
+    if (r === 'batalhar'){ Som.destravar(); iniciarTurno(n); }
+    else if (r === 'tentar-agora' && g){
+      const d = lerLS('dinheiro', 0); if (d < g.resetMoedas){ flutuar(jogo.ash, 'not enough Coins', '#f58e8e'); return; }
+      if (comConta()) bolsaOp('ginasioreset', { ginasio: g.insignia.id }); else gravarLS('dinheiro', d - g.resetMoedas);
+      const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
+      Chat.sistema('You paid ' + g.resetMoedas + ' Coins to challenge ' + g.lider + ' again.'); Som.destravar(); iniciarTurno(n);
+    }
+  });
+  return true;
 }
 function npcDeServidor(serv, outro){
   const o = outro || {};
@@ -11784,7 +11820,7 @@ if (params0.get('figmateste') === '1'){                                  // UMA 
 if (CONTA.modo === 'conta'){ try { const u = new URL(location.href); const doJogador = ['jogar', 'mapa', 'chegada', 'voltou', 'v', 'qualidade', 'densidade'];   // qualidade/densidade (13/09): agora ficam guardadas no aparelho, então podem sair da URL
   if (u.search && [...u.searchParams.keys()].every(k => doJogador.includes(k))) history.replaceState(null, '', u.pathname); } catch {} }
 __boot.marcar('pronto', { inv: inventarioCena() });                      // o inventário da cena vai junto (o que o celular carregou de verdade)
-window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar, criarSelvagem };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
+window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar, criarSelvagem, desafiarTreinador };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
 if (Fairy){
   Fairy.comecar({ jogo, cena, cam, dados, NOME, chaoEm, tocarAnim, montarPersonagem, livre, bloqueio, porDex, R, THREE, flipX: () => flipX, mundo }).catch(e => console.error('fairy:', e));
 }
