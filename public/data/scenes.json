@@ -2875,6 +2875,18 @@
    "objeto": true
   },
   {
+   "id": 9700003,
+   "nome": "Power Plant Overload",
+   "areas": [
+    {
+     "id": 970003,
+     "nome": "Power Plant Overload",
+     "tipo": 2
+    }
+   ],
+   "objeto": true
+  },
+  {
    "id": 9100001,
    "nome": "Kanto Anime",
    "areas": [

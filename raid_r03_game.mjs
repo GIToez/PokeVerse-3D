@@ -280,7 +280,7 @@ export function lambdaEnquadramento(a, b, P, B, c, d, W, H, e, E = ENQUADRAMENTO
 function enquadrar(a) {
   const j = ctx?.jogo,
     b = j?.pika,
-    c = ctx?.camera?.();
+    c = (typeof ctx?.camera === 'function' ? ctx.camera() : ctx?.camera);
   if (!j) return;
   if (!b || !c || !cena || !controlaPokemon()) {
     if (j.foco === foco) j.foco = null;

@@ -5168,7 +5168,7 @@ function montarChefeRaid(s, reg){
   s.rotuloAlto = topo + 0.3;
   if (!s.rotulo){ s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon'; $('sobre').appendChild(s.rotulo); }
   s.rotulo.innerHTML = `<span>★ ${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} · RAID</span><i><b></b></i>`; s.rotHp = undefined;
-  if (RaidR01.ehArenaR01(NOME)){ RaidR01.vincularChefe(s); return; }      // Articuno arena: the arena's own animated Articuno is the body (this one stays as the hidden target)
+  if (RaidR01.ehArena(NOME)){ RaidR01.vincularChefe(s); return; }      // Articuno / Zapdos arena: the arena's own animated boss is the body (this one stays as the hidden target); Zapdos's Voltorbs are real bodies
   const chave = String(reg.raid) + ':' + reg.id;
   if (chefesRaidVistos.has(chave) || (reg.estado && reg.estado !== 'vagando')) return;
   chefesRaidVistos.add(chave);
@@ -8170,8 +8170,9 @@ function ativarArenaRaid(id){
 }
 /* ARTICUNO RAID (r01, arena 9700001): the arena's art, attacks and boss come from raid_r01_game.mjs. In this arena the player steers
    the Pokémon (the trainer stays at the spawn, cheering); collision is the arena's navmesh and pillars, not the map's floor mask. */
-const r01Ativa = () => !!(jogo.raidArena && RaidR01.ehArenaR01(NOME) && RaidR01.pronta());
+const r01Ativa = () => !!(jogo.raidArena && RaidR01.ehArena(NOME) && RaidR01.pronta());   // the Articuno arena, and Zapdos's (raid_r01_game.mjs hands those calls to raid_r03_game.mjs)
 function livreR01(x, z){
+  if (!RaidR01.ehArenaR01(NOME)) return true;                           // Zapdos's arena checks its own floor (raid_r03_game.mjs) before moving
   const D = R01Regra.dados(); if (!D?.nav) return true;
   if (!R01Regra.naNav(x, z)) return false;
   for (const p of D.pilares || []) if (p.poligono && R01Regra.dentroPoligono(x, z, p.poligono)) return false;

@@ -108,8 +108,8 @@ export function instalarAgenda({ api, toast }) {
           <label>Boss species no. <input type="number" data-k="raid.chefeDex" min="1" max="2000" value="${esc(e.raid?.chefeDex ?? '')}" placeholder="e.g. 144"></label>
           <label>Boss model <input type="text" data-k="raid.chefeGlb" maxlength="12" value="${esc(e.raid?.chefeGlb ?? '')}" placeholder="e.g. pm0144_00"></label>
           <label>Boss level <input type="number" data-k="raid.chefeNivel" min="1" max="100" value="${esc(e.raid?.chefeNivel ?? '')}" placeholder="70"></label>
-          <label>Arena scene <input type="text" data-k="raid.arena" maxlength="12" value="${esc(e.raid?.arena ?? '')}" placeholder="4120009 or 9700001"></label>
-          <div class="inteira ag-ajuda">Empty boss fields use Data files → raid. Arena 9700001 is the Articuno arena (its own attacks and braziers); 4120009 (Lorelei's Room) works for any boss. The queue opens on its own; at the start time the countdown begins, or the raid is canceled if nobody joined.</div>` : ''}
+          <label>Arena scene <input type="text" data-k="raid.arena" maxlength="12" value="${esc(e.raid?.arena ?? '')}" placeholder="4120009, 9700001 or 9700003"></label>
+          <div class="inteira ag-ajuda">Empty boss fields use Data files → raid. Arena 9700001 is the Articuno arena (its own attacks and braziers); 9700003 is the Zapdos arena (generators, polarity, Voltorbs: boss 145 / pm0145_00); 4120009 (Lorelei's Room) works for any boss. The queue opens on its own; at the start time the countdown begins, or the raid is canceled if nobody joined.</div>` : ''}
       </div></div>`;
   }
 

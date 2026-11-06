@@ -1,0 +1,19 @@
+{
+ "cx": 0,
+ "cy": 0,
+ "cz": 0,
+ "sx": 50,
+ "sy": 1,
+ "sz": 40,
+ "malhas": 0,
+ "triangulos": 0,
+ "objetos": 0,
+ "faltando": 0,
+ "amostraNome": "",
+ "amostraX": 0,
+ "amostraY": 0,
+ "amostraZ": 0,
+ "biblioteca": false,
+ "prefabs": 0,
+ "raid": "r03"
+}

@@ -30,9 +30,12 @@ import { efetividade } from './rules.mjs';
 import { TODOS } from './moves_all.mjs';
 import * as Stg from './stages.mjs';
 import { createR01 } from './server_raid_r01.mjs';
+import { createR03 } from './server_raid_r03.mjs';
 
 /** The Articuno raid's arena (upcoming/raid_r01_*): its fight runs in server_raid_r01.mjs, driven by data/raid_r01.json. */
 const ARENA_R01 = '9700001';
+/** The Zapdos raid's arena: its fight is PokeFable's engine (raid_r03.mjs), run by server_raid_r03.mjs from data/raid_r03.json. */
+const ARENA_R03 = '9700003';
 
 /** O que vale sem data/raid.json (o mesmo PADRAO do raid.mjs do cliente, mais o que só o servidor usa). */
 export const PADRAO = { arena: '4120009', vagas: 10, chefeNome: 'Mew', chefeDex: 151, chefeGlb: 'pm0151_00', chefeNivel: 70, chefeHp: 0, chefeDano: 1, taxaShiny: 100, premio: 'mew' };
@@ -116,6 +119,10 @@ export function criarRaid(h) {
       const sp = dadosR01()?.spawns || [];
       return { r01: true, sp, b: { x0: -20, x1: 20, z0: -20, z1: 20 }, cx: 0, cz: 0, chefe: { x: 0, z: 0 } };
     }
+    if (String(arena) === ARENA_R03) {   // the Zapdos arena: boss at the centre, players on the data's spawn points
+      const sp = dadosR03()?.spawns || [];
+      return { r03: true, sp, b: { x0: -23, x1: 23, z0: -18, z1: 18 }, cx: 0, cz: 0, chefe: { x: 0, z: 0 } };
+    }
     let b = null; try { b = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, arena + '.json'), 'utf8')).bbox || null; } catch {}
     if (!b || ![b.x0, b.x1, b.z0, b.z1].every(Number.isFinite)) b = { x0: -19.2, x1: 0.3, z0: 0, z1: 30 };   // o do 4120009
     const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
@@ -123,7 +130,7 @@ export function criarRaid(h) {
   }
   const OFS = [0, 1.8, -1.8, 3.6, -3.6, 5.4, -5.4];
   function vaga(g, i) {
-    if (g.r01 && g.sp.length) { const v = g.sp[i % g.sp.length]; return { x: v.x, z: v.z, giro: v.giro ?? 3.14 }; }
+    if ((g.r01 || g.r03) && g.sp.length) { const v = g.sp[i % g.sp.length]; return { x: v.x, z: v.z, giro: v.giro ?? 3.14 }; }
     const lado = OFS[i % OFS.length], fileira = Math.floor(i / OFS.length);
     const fx = Math.min(g.b.x1 - 1, Math.max(g.b.x0 + 1, g.cx + lado)), fz = Math.min(g.b.z1 - 1, Math.max(g.b.z0 + 1, g.cz - 6 - fileira * 2));
     const x = +(FLIPX * fx).toFixed(2), z = +fz.toFixed(2);
@@ -150,9 +157,25 @@ export function criarRaid(h) {
   /** The Articuno fight (only when the raid's arena is its arena). */
   const r01 = createR01({
     dados: dadosR01, danoMult: () => danoRaid(), paraArena: (o) => paraArena(o), naArena: () => naArena(), idDe: (w) => w._id,
-    maxHpDe: (w) => { const u = contaDe(w); const mon = w._raidMon || (u && monDaConta(u, { uid: w._info?.uid })); if (!mon) return 0; if (mon.maxHp > 0) return mon.maxHp; const S = Forms.especie(especie(mon.dex), mon); return S ? hpBase(S.bs[0], lvDe(mon), ivsDe(mon)[0] || 0) : 100; },
+    maxHpDe: (w) => r01MaxHp(w),
   });
+  function r01MaxHp(w) { const u = contaDe(w); const mon = w._raidMon || (u && monDaConta(u, { uid: w._info?.uid })); if (!mon) return 0; if (mon.maxHp > 0) return mon.maxHp; const S = Forms.especie(especie(mon.dex), mon); return S ? hpBase(S.bs[0], lvDe(mon), ivsDe(mon)[0] || 0) : 100; }
   const ehR01 = () => !!raid && String(raid.cfg.arena) === ARENA_R01;
+  let r03Dados = null;
+  function dadosR03() {
+    if (!r03Dados) { try { r03Dados = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, 'raid_r03.json'), 'utf8')); } catch (e) { console.warn('[raid] raid_r03.json:', e.message); } }
+    return r03Dados;
+  }
+  const monDoWs = (w, uid) => { const u = contaDe(w); return (uid == null && w._raidMon) || (u && monDaConta(u, { uid: uid ?? w._info?.uid })) || null; };
+  /** The Zapdos fight (only when the raid's arena is its arena). */
+  const r03 = createR03({
+    dados: dadosR03, danoMult: () => danoRaid(), paraArena: (o) => paraArena(o), enviarA: (w, o) => enviar(w, o), naArena: () => naArena(), idDe: (w) => w._id,
+    maxHpDe: (w) => r01MaxHp(w),
+    tiposDe: (w, uid) => { const mon = monDoWs(w, uid); const S = mon && Forms.especie(especie(mon.dex), mon); return S?.types || []; },
+    nomeDe: (w) => nomeDe(contaDe(w) || ''), lvDe: (w) => lvDe(monDoWs(w) || {}),
+    vagaDe: (w) => { const u = contaDe(w), i = Math.max(0, [...(raid?.fila.keys() || [])].indexOf(u)); const v = raid ? vaga(raid.geo, i) : null; return v ? { x: v.x, z: v.z } : null; },
+  });
+  const ehR03 = () => !!raid && String(raid.cfg.arena) === ARENA_R03;
 
   function retrato(u) {
     if (!raid) return { t: 'raid', fase: 'nenhuma' };
@@ -286,12 +309,14 @@ export function criarRaid(h) {
     raid.fase = 'luta'; raid.lutaAte = Date.now() + Math.round((raid.cfg.lutaMin || LUTA_MS / 60000) * 60000);
     paraArena({ t: 'selvagem', s: registroChefe() });
     if (ehR01()) r01.iniciar(raid.chefe);
+    if (ehR03()) r03.iniciar(raid.chefe);
     console.log(`[raid] #${raid.id} fight: ${raid.cfg.chefeNome} with ${maxHp} HP, ${chegaram.length} in the arena`);
     difundir();
   }
   /** KO do chefe: prêmio pra quem bateu (já gravado na conta, online ou não), e a volta em FIM_MS. */
   function vencer() {
     if (ehR01()) r01.morte();
+    if (ehR03()) r03.morte();
     raid.fase = 'fim'; raid.venceu = true; raid.fimAte = Date.now() + FIM_MS; raid.chefe.hp = 0;
     paraArena({ t: 'sestado', id: raid.chefe.id, estado: 'desmaiado', ate: raid.fimAte, hp: 0 });
     const resumo = [];
@@ -323,6 +348,7 @@ export function criarRaid(h) {
   /** O chefe escapou (tempo) ou a staff encerrou no meio da luta. */
   function perder(texto) {
     if (ehR01()) r01.fim();
+    if (ehR03()) r03.fim();
     raid.fase = 'fim'; raid.fimAte = Date.now() + FIM_MS; raid.fugiu = true;
     for (const p of raid.fila.values()) for (const w of socketsDe(p.u)) enviar(w, { t: 'raid_fim', id: raid.id, venceu: false, premio: null });
     if (raid.chefe) paraArena({ t: 'sumiu', id: raid.chefe.id, motivo: 'fugiu' });
@@ -334,6 +360,7 @@ export function criarRaid(h) {
   function terminar() {
     const cfg = raid.cfg;
     if (ehR01()) r01.fim();
+    if (ehR03()) r03.fim();
     if (raid.venceu && raid.chefe) paraArena({ t: 'sumiu', id: raid.chefe.id, motivo: 'morreu' });
     for (const p of raid.fila.values()) {
       const c = contas[p.u]; if (!c) continue;
@@ -467,10 +494,17 @@ export function criarRaid(h) {
   }
   /** Golpe do parceiro no chefe (world.mjs `atacar`): o dano é daqui. */
   function ataque(ws, m) {
+    if (raid && raid.fase === 'luta' && ehR03() && r03.ehVoltorb(m.id)) {   // Zapdos arena: a Voltorb (a world creature of the fight) — one hit per damaging move
+      const u = contaDe(ws), p = u && raid.fila.get(u), golpe = golpes()[String(m.golpe || '')];
+      if (!p || !golpe || golpe.cat === 'status' || String(ws._mapa) !== raid.cfg.arena) return;
+      const agora = Date.now(); if (agora - (p.ultimoV || 0) < Math.max(500, (+golpe.recarga || 1.5) * 600)) return;
+      p.ultimoV = agora; r03.baterVoltorb(ws, m.id); return;
+    }
     if (!raid || raid.fase !== 'luta' || !raid.chefe || String(m.id) !== String(raid.chefe.id)) return;
     const u = contaDe(ws), p = u && raid.fila.get(u);
     if (!p || String(ws._mapa) !== raid.cfg.arena) return;
     if (ehR01() && (!r01.alcance(ws) || r01.congelado(ws))) return;      // Articuno: too far from the boss, or frozen
+    if (ehR03() && !r03.podeBater(ws)) return;                           // Zapdos: out of reach, paralysed, or up high (phase 2)
     const golpe = golpes()[String(m.golpe || '')]; if (!golpe) return;
     const agora = Date.now(), espera = Math.max(500, (+golpe.recarga || 1.5) * 600);   // 60 % da recarga do golpe: folga pro relógio do cliente, sem metralhadora
     if (agora - (p.cd[golpe.id] || 0) < espera || agora - (p.ultimo || 0) < 300) return;
@@ -482,9 +516,11 @@ export function criarRaid(h) {
     if (Math.random() > Stg.chance(1, golpe, est, ch.est)) { paraArena({ t: 'shp', id: ch.id, hp: ch.hp, dano: 0, eff: 1, golpe: golpe.id, de: ws._id, errou: true }); return; }
     const { dano, eff } = golpe.cat === 'status' ? { dano: 0, eff: 1 }
       : calcDano(golpe, lv, A, statMon(A, mon, fis ? 1 : 3) * Stg.mulStat(est, fis ? 1 : 3), B, statBase(B.bs[fis ? 2 : 4], lv, 31, 0, null, fis ? 2 : 4) * Stg.mulStat(ch.est, fis ? 2 : 4));
-    const danoF = ehR01() ? Math.round(dano * r01.multiplicador()) : dano;   // Articuno stunned by the steam: vulnerable
-    ch.hp = Math.max(0, ch.hp - danoF); p.dano += danoF;
+    const danoF = ehR01() ? Math.round(dano * r01.multiplicador()) : ehR03() ? Math.round(dano * r03.multiplicador()) : dano;   // Articuno stunned by the steam / Zapdos on the lightning rod: vulnerable
+    const piso = ehR03() ? Math.ceil(r03.pisoHp() * ch.maxHp) : 0;           // Zapdos: no skipping a phase (its HP stops at the next threshold, which opens it)
+    const antes = ch.hp; ch.hp = Math.max(piso, ch.hp - danoF); p.dano += Math.max(0, antes - ch.hp);
     if (ehR01()) r01.aoDano(ch.hp, ch.maxHp);
+    if (ehR03()) { r03.atacou(ws); r03.aoDano(ch.hp, ch.maxHp); }
     const estagios = Stg.doGolpe(golpe, est, ch.hp > 0 && (golpe.cat === 'status' || eff !== 0) ? ch.est : null);
     let semente = null;
     if (golpe.semente && ch.hp > 0) {
@@ -605,6 +641,7 @@ export function criarRaid(h) {
     else if (m.t === 'raid_foco') foco(ws, m);
     else if (m.t === 'ataque') ataque(ws, m);
     else if (m.t === 'r01' && ehR01() && raid.fase === 'luta' && raid.fila.has(contaDe(ws))) r01.receber(ws, m);
+    else if (m.t === 'r03' && ehR03() && raid.fase === 'luta' && raid.fila.has(contaDe(ws))) r03.receber(ws, m);
   }
 
   // ── Entrada no mundo ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -612,13 +649,14 @@ export function criarRaid(h) {
   function bemvindo(ws) {
     const u = contaDe(ws);
     if (!raid || !u || !raid.fila.has(u) || !FASES_DENTRO.has(raid.fase) || String(ws._mapa) !== raid.cfg.arena) return {};
-    return { soloWilds: false, selvagens: raid.chefe && !raid.fugiu ? [registroChefe()] : [] };
+    return { soloWilds: false, selvagens: [...(raid.chefe && !raid.fugiu ? [registroChefe()] : []), ...(ehR03() ? r03.voltorbsDoMundo() : [])] };
   }
   /** Depois do bem-vindo: o retrato e, se for o caso, a ida que ficou pendente ou a volta que não chegou. */
   function aoEntrar(ws) {
     const u = contaDe(ws), c = contas[u], p = u && raid?.fila.get(u);
     enviar(ws, retrato(u));
     if (ehR01() && r01.ativo() && p && String(ws._mapa) === raid.cfg.arena) enviar(ws, { t: 'r01', ev: 'retrato', agora: Date.now(), retrato: r01.retrato() });
+    if (ehR03() && r03.ativo() && p && String(ws._mapa) === raid.cfg.arena) enviar(ws, { t: 'r03', ev: 'retrato', agora: Date.now(), retrato: r03.retrato() });
     if (!c) return;
     const naSala = !!raid && String(ws._mapa) === raid.cfg.arena;
     if (p && FASES_DENTRO.has(raid.fase)) {
@@ -652,7 +690,7 @@ export function criarRaid(h) {
       }
       else if (raid.fase === 'luta') {
         if (agora >= raid.lutaAte) perder('O ' + raid.cfg.chefeNome + ' escapou: o tempo acabou.');
-        else if (!ehR01() && agora >= raid.chefe.proxGolpe) golpeDoChefe();   // Articuno attacks on its own clock (server_raid_r01.mjs)
+        else if (!ehR01() && !ehR03() && agora >= raid.chefe.proxGolpe) golpeDoChefe();   // Articuno and Zapdos attack on their own clock (server_raid_r01/_r03.mjs)
         else if (raid.chefe.sementes.size && agora >= raid.chefe.proxSemente) drenarSementes();
       }
       else if (raid.fase === 'fim' && agora >= raid.fimAte) terminar();

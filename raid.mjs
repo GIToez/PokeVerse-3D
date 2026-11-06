@@ -37,7 +37,7 @@ export const CFG = { ...lido,
 export const ARENA = CFG.arena;
 /** Is this scene a raid arena? Scheduled raids pick their own boss and arena (server_schedule.mjs), so besides data/raid.json's
     arena it is the one the server named for the raid in progress, or one of the known arenas (Mew's room, the Articuno arena). */
-export const ARENAS_CONHECIDAS = new Set(['4120009', '9700001']);
+export const ARENAS_CONHECIDAS = new Set(['4120009', '9700001', '9700003']);   // + the Zapdos arena (server_raid_r03.mjs)
 export const ehArena = (a) => { const m = String(a ?? '').split('#')[0]; return m === ARENA || (snap?.mapa != null && m === String(snap.mapa)) || ARENAS_CONHECIDAS.has(m); };
 /** Pre-fight preparation window (the arena modules ask before letting a brazier be used): this server has none. */
 export const preparando = () => false;
