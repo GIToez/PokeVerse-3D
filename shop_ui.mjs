@@ -302,7 +302,8 @@ function vitrine3d(f) {
     f(V3);
     return;
   }
-  if (!V3P) V3P = Promise.resolve(null);   // no 3D showcase module in this game: the shop shows the piece photos
+  if (!V3P)   // live 3D models on Pokémon skin and mount cards (showcase_3d.mjs); without it the cards keep their icon
+    V3P = import('./showcase_3d.mjs').then((m) => { V3 = m; m.instalar(depV3()); return m; }).catch((e) => { console.warn("shop: the 3D showcase didn't load, showing portraits instead", e); return null; });
   V3P.then((m) => {
     if (m && aberto()) f(m);
   });
