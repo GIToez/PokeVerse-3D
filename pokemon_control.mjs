@@ -17,12 +17,12 @@ export const ativo = () => on;
 function botao() {
   if (btn || typeof document === 'undefined') return;
   const s = document.createElement('style');
-  s.textContent = `#pk-controle{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:212px;z-index:40;width:52px;height:52px;border-radius:50%;
-border:2px solid #2FA8EE;background:radial-gradient(circle at 50% 35%,#1B4A9A,#0C1D42);color:#fff;font:700 22px/1 system-ui;cursor:pointer;
+  s.textContent = `#pk-controle{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:40;width:var(--t,46px);height:var(--t,46px);border-radius:50%;
+border:2px solid #2FA8EE;background:radial-gradient(circle at 50% 35%,#1B4A9A,#0C1D42);color:#fff;font:700 calc(var(--t,46px) * .44)/1 system-ui;cursor:pointer;
 box-shadow:0 4px 14px #0008;display:none;align-items:center;justify-content:center;padding:0}
 #pk-controle.on{border-color:#F8C237;background:radial-gradient(circle at 50% 35%,#FBD04B,#C98A12);color:#1A1405}
 #pk-controle .cd{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#0009 var(--p,0%),transparent 0)}
-#pk-controle small{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font:800 10px 'Nunito Sans',system-ui;color:#fff;
+#pk-controle small{position:absolute;top:50%;left:calc(100% + 5px);transform:translateY(-50%);font:800 11px 'Nunito Sans',system-ui;color:#fff;
 text-shadow:0 1px 2px #000;white-space:nowrap}`;
   document.head.appendChild(s);
   btn = document.createElement('button');
@@ -83,5 +83,14 @@ export function quadro(dt) {
     btn.classList.toggle('on', on);
     btn.title = on ? tr('Back to your trainer (C)') : tr('Control your Pokémon (C)');
     btn.style.setProperty('--p', cd > 0 ? Math.round((cd / ESPERA) * 100) + '%' : '0%');
+    /* sits centred right above the Poké Ball button (#bola-btn), sized with it, so it follows the HUD's scale (Nov 6: it used to sit
+       over the menu drawer on the right) */
+    const r = mostra && document.getElementById('bola-btn')?.getBoundingClientRect();
+    if (r && r.width > 0) {
+      const t = Math.round(Math.max(36, Math.min(64, r.width * 0.5)));
+      btn.style.setProperty('--t', t + 'px');
+      btn.style.left = Math.round(r.left + r.width / 2) + 'px';
+      btn.style.bottom = Math.round(innerHeight - r.top + r.height * 0.22) + 'px';
+    }
   }
 }

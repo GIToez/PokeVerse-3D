@@ -143,33 +143,39 @@ const PLANOS = {
       s = o.clone().addScaledVector(j, 4);
       s.y += 3;
     }
+    /* Nov 6: it slowed to a stop near the screen edge (ease-in-out) and its trail piled into a glowing blob there. Now the path
+       runs until BOTH ends are well off screen (+10 m), it flies at a steady speed, and the trail drops a sparkle per distance flown. */
+    const fora = (L) => Math.abs(r(s.clone().addScaledVector(l, L)).x) >= 1.6 && Math.abs(r(s.clone().addScaledVector(l, -L)).x) >= 1.6;
     let L = 12;
-    while (L < 160 && Math.abs(r(s.clone().addScaledVector(l, L)).x) < 1.3) L += 4;
+    while (L < 200 && !fora(L)) L += 4;
+    L += 10;
     const w = s.clone().addScaledVector(l, -L),
       _ = s.clone().addScaledVector(l, L);
     const e = await montar(b, 2.9);
     tocar(e, 'Run', 'Idle');
+    const VEL = 10;   // m/s
     return {
       e,
       de: w,
       para: _,
-      dur: 9,
+      dur: Math.max(6, Math.min(18, (2 * L) / VEL)),
       faiscas: [],
       matiz: 0,
-      proxFaisca: 0,
+      ultimaFaisca: null,
       t: 0,
       passo(a, b) {
-        const k = Math.min(1, a.t / a.dur),
-          q = k * k * (3 - 2 * k);
-        const p = a.de.clone().lerp(a.para, q);
+        const k = Math.min(1, a.t / a.dur);
+        const p = a.de.clone().lerp(a.para, k);
         p.y += Math.sin(k * Math.PI) * 0.8;
         a.e.pivo.position.copy(p);
         const d = a.para.clone().sub(a.de);
         a.e.pivo.rotation.set(0, Math.atan2(d.x, d.z), Math.sin(a.t * 1.3) * 0.08);
-        a.proxFaisca -= b;
-        if (a.proxFaisca <= 0) {
-          a.proxFaisca = 0.045;
-          soltarFaisca(a, p.clone().addScaledVector(d.normalize(), -2.2));
+        if (k < 1) {
+          const cauda = p.clone().addScaledVector(d.normalize(), -2.2);
+          if (!a.ultimaFaisca || a.ultimaFaisca.distanceTo(cauda) >= 0.45) {
+            a.ultimaFaisca = cauda.clone();
+            soltarFaisca(a, cauda);
+          }
         }
         andarFaiscas(a, b);
         opacidade(a.e, Math.max(0, Math.min(1, a.t / 0.6, (a.dur - a.t) / 0.6)));
