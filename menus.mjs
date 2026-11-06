@@ -454,7 +454,7 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
-export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
+export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd, popAt]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 export async function abrir(nome, aba = null){
   if (!JANELAS[nome]) return;
   if (nome === 'loja' && ctx.comConta?.() && LojaUI.abrir()) return;          // with an account the shop button opens the Diamond Shop; Coin outfits stay in the Wardrobe's Shop tab
@@ -499,8 +499,8 @@ export async function abrir(nome, aba = null){
   if (nome === 'batalha' && defPopup('em-breve')){ abrirEmBreve(nome); return; }   // rodada 29 (v2): o banner "Em breve" da Amanda no lugar da janela vazia
   fecharGrade(); aberta = nome; abaAtual = aba; avisarRaid();
   if (nome === 'pokemon'){ reaprenderAberto = false; try { ctx.recuperarGolpes?.(); } catch (e){ console.warn('golpes perdidos:', e); } }   // 18/09: abrir a janela Pokémon confere os golpes do learnset até o nível (o que ficou pra trás entra ou vira pendência)
-  const pop = nome === 'pokemon' ? (aba === 'caixa' ? popupBx() : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSocial() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : null;
-  for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd]) if (q && q !== pop && Popup.aberto(q)) Popup.fechar(q);   // um pop-up de cada vez (P e depois I empilhava os dois)
+  const pop = nome === 'pokemon' ? (aba === 'caixa' ? popupBx() : popupPk()) : nome === 'mochila' ? popupMo() : nome === 'missoes' ? popupMi() : nome === 'treinador' ? popupTr() : nome === 'mapa' ? popupMa() : nome === 'social' ? popupSocial() : nome === 'pokedex' ? popupDx() : nome === 'config' ? popupCf() : nome === 'raid' ? popupRd() : nome === 'atalho' ? popupAt() : null;
+  for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd, popAt]) if (q && q !== pop && Popup.aberto(q)) Popup.fechar(q);   // um pop-up de cada vez (P e depois I empilhava os dois)
   if (pop){                                                              // maquete do Figma no lugar da janela antiga
     $('janela').hidden = true;
     Popup.abrir(pop);
@@ -551,7 +551,8 @@ function render(){
   if (aberta === 'social' && popSocial && Popup.aberto(popSocial)){ fillSocial(popSocial); return; }
   if (aberta === 'pokedex' && popDx && Popup.aberto(popDx)){ encherPokedex(popDx); return; }
   if (aberta === 'config' && popCf && Popup.aberto(popCf)){ encherConfig(popCf); return; }   // rodada 24: o pop-up do Figma no lugar da tela antiga
-  if (aberta === 'raid' && popRd && Popup.aberto(popRd)){ encherRaid(popRd); return; }   // rodada 26: banner da raid (quem enche é o raid_ui.mjs)
+  if (aberta === 'raid' && popRd && Popup.aberto(popRd)){ encherRaid(popRd); return; }
+  if (aberta === 'atalho' && popAt && Popup.aberto(popAt)){ encherAtalho(popAt); return; }   // v2 shortcut picker   // rodada 26: banner da raid (quem enche é o raid_ui.mjs)
   const corpo = $('j-corpo'); corpo.innerHTML = '';
   ({ pokemon: rPokemon, mochila: rMochila, missoes: rMissoes, mapa: rMapa, pokedex: rPokedex, treinador: rTreinador, loja: rPremium, mercado: rLoja, social: rSocial, batalha: rBatalha, config: rConfig, atalho: rAtalho, raid: rRaid })[aberta](corpo);
   if (aberta !== 'pokemon' && aberta !== 'mapa'){                         // pele da Amanda: o conteúdo vira as duas páginas do livro (CSS .paginas); sem pele é um div neutro
@@ -5185,7 +5186,7 @@ let slotAtalho = 0;
 /** Abre o seletor pro atalho i (peça #atalhos da HUD: clique no vazio, botão direito ou toque longo). */
 /** Repinta a janela aberta (o index chama quando o servidor manda dinheiro/itens novos). */
 export function repintar(){ try { if (aberta) render(); } catch {} }
-export function abrirAtalho(i){ slotAtalho = i; abaAtual = null; return abrir('atalho'); }
+export function abrirAtalho(i){ slotAtalho = i; abaAtual = null; abaAt = 'itens'; return abrir('atalho'); }
 function rAtalho(corpo){
   const tecla = (ctx.teclasAtalho || ['5', '6', '7', '8'])[slotAtalho] || '?', atual = (ctx.atalhos?.() || [])[slotAtalho];
   $('j-titulo').innerHTML = `<i class="ic ic-mochila" style="display:inline-block;width:26px;height:26px;vertical-align:middle;margin-right:6px"></i>Atalho ${tecla}`;
@@ -5202,6 +5203,100 @@ function rAtalho(corpo){
     corpo.querySelectorAll('[data-monta]').forEach(b => b.onclick = () => { const m = lista.find(x => x.glb === b.dataset.monta); const dex = ctx.dexDoGlb(m.glb); prender({ tipo: 'montaria', glb: m.glb, nome: m.nome, icone: './ui/mon/pm' + String(dex).padStart(4, '0') + '.png' }); });
   }
   if (atual) corpo.insertAdjacentHTML('beforeend', '<div class="acoes" style="margin-top:12px"><button type="button" class="btn" id="a-limpar">Esvaziar o atalho</button></div>'), corpo.querySelector('#a-limpar').onclick = () => prender(null);
+}
+
+/* SHORTCUT PICKER v2 (Nov 5): the v2 `popup-atalho` (Figma) in place of the old window: the slot being edited on top (key, icon, name,
+   count, Clear), Items / Mounts tabs, a grid of what can be pinned (each cell shows the key it is already on), a click pins it.
+   No layout (portrait phone, ?popup=0, old saved layout) → the old window (rAtalho above). */
+let popAt = null, abaAt = 'itens';
+const teclaAtalho = i => { try { return Teclas.rotuloAcao('atalho-' + (i + 1), 'hud') || (ctx.teclasAtalho || [])[i] || String(i + 5); } catch { return (ctx.teclasAtalho || [])[i] || String(i + 5); } };
+function popupAt(){
+  if (popAt) return popAt;
+  if (new URLSearchParams(location.search).get('popup') === '0') return null;
+  const def = defPopup('atalho');
+  if (!def) return null;
+  popAt = Popup.montar(def, {
+    aba: c => { abaAt = c; Popup.abaSolta(popAt, c); render(); },
+    acao: nome => {
+      if (nome === 'fechar') fechar();
+      else if (nome === 'esvaziar'){ ctx.definirAtalho?.(slotAtalho, null); render(); }
+    },
+    fechar: () => { if (aberta === 'atalho') aberta = null; },
+  });
+  popAt.addEventListener('click', ev => {
+    const c = ev.target?.closest?.('[data-fig^="item-"],[data-fig^="montaria-"]'); if (!c || !popAt.contains(c)) return;
+    const [tipo, n] = [c.dataset.fig.replace(/-\d+$/, ''), +c.dataset.fig.split('-').pop()]; if (!n) return;
+    if (tipo === 'item'){
+      const e = itensAtalho()[n - 1]; if (!e) return;
+      ctx.definirAtalho?.(slotAtalho, { tipo: 'item', id: +e.id, nome: e.it.n, icone: './ui/itens/' + e.it.i + '.png', bola: e.it.t === 7 });
+    } else if (tipo === 'montaria'){
+      const m = (ctx.montarias?.() || [])[n - 1]; if (!m) return;
+      ctx.definirAtalho?.(slotAtalho, { tipo: 'montaria', glb: m.glb, nome: m.nome, icone: iconeMontaria(m) });
+    } else return;
+    ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 });
+    fechar();
+  });
+  return popAt;
+}
+const iconeMontaria = m => './ui/mon/pm' + String(ctx.dexDoGlb?.(m.glb) || 0).padStart(4, '0') + '.png';
+/** What the Items tab offers: Poké Balls and medicine in the bag. */
+function itensAtalho(){
+  const q = quantidades();
+  return Object.entries(q).filter(([id, n]) => n > 0 && [7, 9].includes(D.itens[id]?.t))
+    .map(([id, n]) => ({ id, n, it: D.itens[id] })).sort((a, b) => (a.it.t - b.it.t) || (+a.id - +b.id));
+}
+/** The key of the slot this item / mount is already pinned on (null = none). */
+function slotDe(teste){ const l = ctx.atalhos?.() || []; const i = l.findIndex(b => b && teste(b)); return i < 0 ? null : teclaAtalho(i); }
+function encherCelulas(pop, grupo, prefixo, lista, encher){
+  const cels = Popup.celulas(pop, grupo, Math.max(lista.length, 1), prefixo);
+  cels.forEach((c, i) => {
+    const e = lista[i];
+    for (const f of c.children){ if (f.dataset.sobre || f.dataset.oculto) continue; f.style.display = e ? (f.dataset.txt ? (f.dataset.display || 'flex') : 'block') : 'none'; }
+    c.style.visibility = e ? '' : 'hidden';
+    c.style.pointerEvents = e ? 'auto' : 'none'; c.style.cursor = e ? 'pointer' : '';
+    for (const fx of c.querySelectorAll('[data-fig^="fx/"],[data-fig^="contorno"]')) fx.style.display = 'none';   // the mock-up's hover / "this one" outlines
+    if (e) encher(c, e);
+  });
+}
+function encherAtalho(pop){
+  const tecla = teclaAtalho(slotAtalho), atual = (ctx.atalhos?.() || [])[slotAtalho] || null;
+  const topo = Popup.grupo(pop, 'slot-agora');
+  Popup.texto(pop, 'titulo', tr('Shortcut') + ' ' + tecla, topo);
+  Popup.texto(pop, 'tecla', tecla, topo);
+  Popup.texto(pop, 'atual-nome', atual ? tr(atual.nome || '') : tr('empty slot'), topo);
+  const qtd = atual?.tipo === 'item' ? (quantidades()[atual.id] || 0) : null;
+  const caixaQtd = topo?.querySelector('[data-fig="qtd"]'); if (caixaQtd) caixaQtd.style.display = qtd != null ? 'block' : 'none';
+  if (qtd != null) Popup.texto(pop, 'atual-qtd', '×' + qtd, topo);
+  Popup.imagem(pop, 'atual', atual?.icone || null, topo);
+  const limpar = Popup.grupo(pop, 'btn-esvaziar'); if (limpar) limpar.style.display = atual ? 'block' : 'none';
+  Popup.texto(pop, 'esvaziar', tr('Clear the shortcut'));
+  Popup.texto(pop, 'dica-prender', tr(ctx.MOBILE ? 'Tap to pin to {x}' : 'Click to pin to {x}', { x: tecla }));
+  for (const [id, nome] of [['itens', 'Items'], ['montarias', 'Mounts']]){ const a = pop.querySelector('[data-tag="aba"][data-tagval="' + id + '"]:not([data-fig^="conteudo-"])'); if (a) Popup.texto(pop, 'aba', tr(nome), a); }
+  Popup.trocarAba(pop, abaAt);
+  Popup.abaSolta(pop, abaAt);
+  if (abaAt === 'itens'){
+    const lista = itensAtalho();
+    const vazio = Popup.grupo(pop, 'vazio-itens'); if (vazio) vazio.style.display = lista.length ? 'none' : 'block';
+    Popup.texto(pop, 'vazio-itens', tr("Nothing to pin: potions and balls show up here when they're in your bag (Shop)."));
+    encherCelulas(pop, 'lista-itens', 'item', lista, (c, e) => {
+      Popup.texto(pop, 'item-nome', tr(e.it.n || ('item ' + e.id)), c);
+      Popup.texto(pop, 'item-qtd', '×' + e.n, c);
+      Popup.imagem(pop, 'item', e.it.i ? './ui/itens/' + e.it.i + '.png' : null, c);
+      const k = slotDe(b => b.tipo === 'item' && String(b.id) === String(e.id)), t = c.querySelector('[data-fig="tecla-no-slot"]');
+      if (t){ t.style.display = k ? 'block' : 'none'; if (k) Popup.texto(pop, 'tecla', k, t); }
+    });
+  } else {
+    const lista = ctx.montarias?.() || [];
+    const vazio = Popup.grupo(pop, 'vazio-montarias'); if (vazio) vazio.style.display = lista.length ? 'none' : 'block';
+    Popup.texto(pop, 'vazio-montarias', tr('No mounts yet.'));
+    encherCelulas(pop, 'lista-montarias', 'montaria', lista, (c, m) => {
+      Popup.texto(pop, 'montaria-nome', tr(m.nome || ''), c);
+      Popup.imagem(pop, 'montaria', iconeMontaria(m), c);
+      const k = slotDe(b => b.tipo === 'montaria' && b.glb === m.glb), t = c.querySelector('[data-fig="tecla-no-slot"]');
+      if (t){ t.style.display = k ? 'block' : 'none'; if (k) Popup.texto(pop, 'tecla', k, t); }
+      const sh = c.querySelector('[data-fig="btn-shiny"]'); if (sh) sh.style.display = 'none';   // shiny mounts: not in the game yet
+    });
+  }
 }
 
 /* ===================================================== RAID AO VIVO (banner da Amanda, rodada 26 — 14/09)
