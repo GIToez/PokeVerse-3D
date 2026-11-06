@@ -31,20 +31,20 @@
       "ligado": false,
       "tipo": "raid",
       "titulo": "Sunday featured raid: Mewtwo",
-      "descricao": "Mewtwo Lv 75 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Mewtwo Lv 75 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de domingo: Mewtwo",
-        "descricao": "Raid de Mewtwo Nv 75 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Mewtwo Nv 75 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         0
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
@@ -62,20 +62,20 @@
       "ligado": true,
       "tipo": "raid",
       "titulo": "Monday featured raid: Mew",
-      "descricao": "Mew Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Mew Lv 70 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de segunda: Mew",
-        "descricao": "Raid de Mew Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Mew Nv 70 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         1
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
@@ -93,20 +93,20 @@
       "ligado": true,
       "tipo": "raid",
       "titulo": "Tuesday featured raid: Zapdos",
-      "descricao": "Zapdos Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Zapdos Lv 70 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de terça: Zapdos",
-        "descricao": "Raid de Zapdos Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Zapdos Nv 70 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         2
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
@@ -124,20 +124,20 @@
       "ligado": false,
       "tipo": "raid",
       "titulo": "Wednesday featured raid: Moltres",
-      "descricao": "Moltres Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Moltres Lv 70 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de quarta: Moltres",
-        "descricao": "Raid de Moltres Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Moltres Nv 70 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         3
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
@@ -155,20 +155,20 @@
       "ligado": true,
       "tipo": "raid",
       "titulo": "Thursday featured raid: Articuno",
-      "descricao": "Articuno Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Articuno Lv 70 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de quinta: Articuno",
-        "descricao": "Raid de Articuno Nv 70 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Articuno Nv 70 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         4
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
@@ -186,20 +186,20 @@
       "ligado": false,
       "tipo": "raid",
       "titulo": "Friday featured raid: Lugia",
-      "descricao": "Lugia Lv 75 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Lugia Lv 75 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de sexta: Lugia",
-        "descricao": "Raid de Lugia Nv 75 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Lugia Nv 75 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         5
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
@@ -217,20 +217,20 @@
       "ligado": false,
       "tipo": "raid",
       "titulo": "Saturday featured raid: Ho-Oh",
-      "descricao": "Ho-Oh Lv 75 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
+      "descricao": "Ho-Oh Lv 75 raid three times today: the queue opens at 5:45, 13:45 and 21:45 Pacific time and the fight starts on the hour, at 6:00, 14:00 and 22:00 (15 minutes to win).",
       "destaque": true,
       "pt": {
         "titulo": "Raid em destaque de sábado: Ho-Oh",
-        "descricao": "Raid de Ho-Oh Nv 75 três vezes hoje: a fila abre às 6:00, 14:00 e 22:00 (horário do Pacífico) e a luta começa 15 minutos depois (15 minutos pra vencer)."
+        "descricao": "Raid de Ho-Oh Nv 75 três vezes hoje: a fila abre às 5:45, 13:45 e 21:45 (horário do Pacífico) e a luta começa na hora cheia, às 6:00, 14:00 e 22:00 (15 minutos pra vencer)."
       },
       "quando": "semana",
       "dias": [
         6
       ],
       "horas": [
-        "06:15",
-        "14:15",
-        "22:15"
+        "06:00",
+        "14:00",
+        "22:00"
       ],
       "duracaoMin": 15,
       "raid": {
