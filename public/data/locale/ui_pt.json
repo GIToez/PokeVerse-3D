@@ -8888,5 +8888,15 @@
   "ELITE FOUR": "ELITE DOS QUATRO",
   "Strong vs": "Forte contra",
   "Power": "Poder",
-  "Status": "Status"
+  "Status": "Status",
+  "YOUR TURN": "SUA VEZ",
+  "WAIT": "AGUARDE",
+  "Round {n}": "Rodada {n}",
+  "Click who goes in · Esc cancels": "Clique em quem entra · Esc cancela",
+  "Forfeit the battle?": "Desistir da batalha?",
+  "No prize, and no Coins lost.": "Sem prêmio e sem perda de Moedas.",
+  "VICTORY!": "VITÓRIA!",
+  "DEFEAT": "DERROTA",
+  "YOU RAN": "VOCÊ FUGIU",
+  "The Elite Four run resets and starts again from the first room.": "A corrida da Elite zera e recomeça na primeira sala."
 }

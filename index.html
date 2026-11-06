@@ -7629,7 +7629,7 @@ async function trocarPara(i, { forcado = false } = {}){
   if (!forcado && estaKO(t, i)){ const r = reanimadorNaMochila(); if (r) reanimar(i, r.id, r.nome); else flutuar(jogo.ash, t.nome + ' is fainted — needs a Revive (Poké Mart)', '#f58e8e'); return; }   // slot KO: clique usa o Reanimador da mochila
   if (!forcado && i === membroAtivo()){ Menus.abrir('pokemon'); return; }
   if (!forcado && jogo.turno){                                           // 13/09 (l.neto): trocar pela GRADE do time no meio da batalha por turnos trocava só na tela — o servidor seguia com o outro (que apanhava) e o cliente mandava golpes do que aparecia
-    if (jogo.turno.fase === 'escolha') rodadaTurno({ tipo: 'troca', i });   // vira a jogada de troca da rodada (servidor ou motor local), como o botão Trocar do painel
+    if (jogo.turno.fase === 'escolha'){ BattleUi.trocou(); rodadaTurno({ tipo: 'troca', i }); }   // vira a jogada de troca da rodada (servidor ou motor local), como o botão Trocar do painel
     else flutuar(jogo.ash, 'wait for your turn to switch', '#ffd23a');
     return;
   }
@@ -11329,6 +11329,7 @@ function fimTurno(vitoria, op = {}){
   jogo.turno = null;
   limparVolatil(jogo.pika);                                              // estágios e semente acabam com a luta
   const s = T.inimigo, n = T.npc, t = T.info;
+  BattleUi.turno(null); BattleUi.resultado({ vitoria, desistiu: !!op.desistiu });   // v2 result banner (the prize line fills in below)
   /* jingle de vitória/derrota (os do jogo original, 12 s / 8 s) e depois a música do lugar volta; a 1ª insígnia toca o
      `badgeget` quando o jingle acaba. Quem desistiu não ouve nada. */
   const primeiraInsignia = vitoria && !!n.ginasio && (doServidor ? !!doServidor.insignia : !(lerLS('insignias', []) || []).includes(n.ginasio.insignia.id));   // com servidor a bolsa nova já chegou: quem diz se é a 1ª é o `fim.insignia`
@@ -11372,6 +11373,7 @@ function fimTurno(vitoria, op = {}){
     else if (primeira){ ins.push(g.insignia.id); gravarLS('insignias', ins); liberarReserva(); }
     if (primeira && !ins.includes(g.insignia.id)) ins.push(g.insignia.id);   // contagem do aviso (com conta o espelho pode chegar depois)
     const ganho = doServidor?.premio?.dinheiro ?? (primeira ? g.dinheiro : Math.round(g.dinheiro / 2));
+    BattleUi.premio('+' + ganho + ' ' + I18n.t('Coins') + (primeira ? ' · ' + g.insignia.nome : ''));
     if (!comConta() && !doServidor) gravarLS('dinheiro', lerLS('dinheiro', 0) + ganho);
     const cd = ginasioCd(); delete cd[g.numero]; gravarLS('ginasioCd', cd);
     n.falas = [g.vitoria[0]];
@@ -11402,13 +11404,14 @@ function fimTurno(vitoria, op = {}){
     else gravarLS('dinheiro', lerLS('dinheiro', 0) + g);
     n.falas = [t.vitoria[0] || Dialogos.texto('jaVenceu')];
     if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('✔ ' + t.nome, '#9fb2d0', 2.4); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
-    Chat.sistema('🏆 You beat ' + t.nome + ' and won ' + g + ' Coins!');
+    Chat.sistema('🏆 You beat ' + t.nome + ' and won ' + g + ' Coins!'); BattleUi.premio('+' + g + ' ' + I18n.t('Coins'));
     flutuar(jogo.ash, '+' + g + ' ' + I18n.t('Coins'), '#ffd23a');
     mostrarFala(t.nome, t.vitoria, n);
   } else if (op.desistiu){
     Chat.sistema('You ran from the battle against ' + t.nome + '.');
   } else {
     const perda = Math.min(lerLS('dinheiro', 0), Math.round((t.dinheiro || 200) / 2));
+    BattleUi.premio(perda > 0 || doServidor?.perda ? '−' + (doServidor?.perda ?? perda) + ' ' + I18n.t('Coins') : '');
     if (doServidor){ if (doServidor.perda) Chat.sistema('You lost the battle and ' + doServidor.perda + ' Coins.'); }   // o servidor já cobrou
     else if (comConta()){ bolsaOp('treinador', { treinador: n.spotKey, dinheiro: t.dinheiro || 200, venceu: false }); if (perda > 0) Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
     else if (perda > 0){ gravarLS('dinheiro', lerLS('dinheiro', 0) - perda); Chat.sistema('You lost the battle and ' + perda + ' Coins.'); }
@@ -11425,7 +11428,7 @@ function climaDoTurno(T){
 }
 function pintarTurno(){
   const T = jogo.turno, el = $('turno');
-  if (!T){ el.hidden = true; return; }
+  if (!T){ el.hidden = true; BattleUi.turno(null); return; }
   const p = jogo.pika, livreE = T.fase === 'escolha' && p && p.hp > 0;
   const agora = Date.now(), ativo = membroAtivo();
   const iTroca = jogo.time.findIndex((c, j) => j !== ativo && !(c.hp === 0 && (c.koAte || 0) > agora) && !(c.hp === 0));
@@ -11440,6 +11443,12 @@ function pintarTurno(){
   $('t-mochila').onclick = () => Menus.abrir('mochila');
   $('t-troca').onclick = () => { if (iTroca >= 0) rodadaTurno({ tipo: 'troca', i: iTroca }); };
   $('t-fugir').onclick = () => rodadaTurno({ tipo: 'desistir' });
+  /* v2 turn bar (battle_ui.mjs): the moves are the normal move slots, Bag / Switch / Forfeit and the whose-turn pill are pinned
+     around them. The box above stays built (hidden): the move slots and keys 1–4 press its buttons. */
+  const c = T.serv?.clima, climaTxt = c?.id ? I18n.t(Weather.rotulo(c.id) || c.id) + (c.turnos ? ' · ' + I18n.t(c.turnos === 1 ? '{n} turn' : '{n} turns', { n: c.turnos }) : '') : '';
+  if (BattleUi.turno({ ativo: true, minhaVez: livreE, rodada: T.rodada, clima: climaTxt, tecla: Teclas.rotuloAcao('janela-mochila', 'hud') || 'I', podeTrocar: iTroca >= 0, elite: !!T.npc?.elite,
+    textoDesistir: T.npc?.elite ? I18n.t('The Elite Four run resets and starts again from the first room.') : null,
+    acoes: { mochila: () => $('t-mochila').click(), desistir: () => $('t-fugir').click() } })) el.hidden = true;
 }
 
 /* =============================================================== laço */
