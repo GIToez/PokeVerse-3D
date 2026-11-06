@@ -46,6 +46,7 @@ import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
 import { createFerry } from './server_ferry.mjs';
 import { createTravel } from './server_travel.mjs';
+import { createStaff } from './server_staff.mjs';
 import { createSocial } from './server_social.mjs';
 import { knowledgeSummary } from './server_knowledge.mjs';   // friends, requests, direct messages (the Social window)
 import { createParty } from './server_party.mjs';     // parties of up to 4, and Inspect (the player card)
@@ -1648,6 +1649,15 @@ const diario = createDaily({ accounts: contas, send: enviar, socketsOf: socketsD
 const social = createSocial({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, isMuted: u => !!(contas[u]?.mudoAte && contas[u].mudoAte > Date.now()) });
 const grupo = createParty({ accounts: contas, send: enviar, socketsOf: socketsDe, connections: () => conexoes.values(), nick: u => contas[u]?.save?.nome || u,
   extra: { mestre: u => progressao.masterLevel(u), saber: s => { const k = knowledgeSummary(s); return { mestres: k.masters, estudadas: k.studied }; } } });   // Inspect: their Master level and Pokédex knowledge
+let especiesStaff = null, especiesStaffEm = 0;   // species with a model (pmDDDD_00.glb): the staff follower picker
+const staff = createStaff({ accounts: contas, send: enviar, broadcastMapa: (ws, m) => broadcast(ws, m),   // in-game staff tools (server_staff.mjs)
+  especies: () => {
+    if (!especiesStaff || Date.now() - especiesStaffEm > 60e3) {
+      try { especiesStaff = fs.readdirSync(nodePath.join(CENARIO_PUB, 'mon')).map(f => /^pm(\d{4})_00\.glb$/.exec(f)).filter(Boolean).map(x => +x[1]).filter(n => n > 0).sort((a, b) => a - b); } catch { especiesStaff = []; }
+      especiesStaffEm = Date.now();
+    }
+    return especiesStaff;
+  } });
 const viagem = createTravel({ accounts: contas, send: enviar, cfg: () => cfgJogo(), saveAccounts: () => salvarContas(),   // fast travel: Teleport + Fly between Centers (server_travel.mjs)
   readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), emLuta: ws => { try { return !!batalha.emLuta(ws._usuario); } catch { return false; } } });
 const balsa = createFerry({ accounts: contas, send: enviar, readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null) });   // the Vermilion ferry (server_ferry.mjs)
@@ -1704,7 +1714,7 @@ function broadcast(remetente, obj, soMesmoMapa = true) {
 
 function infoJogador(ws) {
   const i = ws._info || {};
-  return { id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
+  return { ...staff.info(ws), id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
 }
 
 wss.on('connection', ws => {
@@ -1760,6 +1770,7 @@ wss.on('connection', ws => {
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         transformacao.joined(ws);                                         // a Ditto that can't stay transformed changes back
         ws._worldJoined = true; world.joined(ws);                           // shared world: wilds nobody owns on this map go to this player
+        staff.aoEntrar(ws);                                                // staff: the ★ Staff button's state (server_staff.mjs)
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo
         const uM = sessoes.get(m.token) || null;
@@ -2067,6 +2078,7 @@ wss.on('connection', ws => {
         else if (m.t === 'social_pedir') { const uS = sessoes.get(ws._info?.token) || null; const r = uS ? social.request(uS, m.to) : { erro: 'Friends need an account.' }; enviar(ws, { t: 'sistema', texto: r.erro ? '🤝 ' + r.erro : r.friends ? '🤝 You and ' + r.nick + ' are now friends.' : r.ja ? '🤝 You already asked ' + r.nick + '.' : '📨 Friend request sent to ' + r.nick + '.' }); }
         else if (m.t === 'balsa_vista' || m.t === 'balsa') balsa.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'viagem_vista' || m.t === 'teleporte' || m.t === 'viagem' || m.t === 'centro_visitado') viagem.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'staff') { if (staff.receber(ws, sessoes.get(ws._info?.token) || null, m)) salvarContas(); }
 
         else if (m.t?.startsWith('bolsa_')) {
           const op = m.t.slice(6);

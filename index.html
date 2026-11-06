@@ -283,7 +283,8 @@ import * as SafariBtn from './safari_ball_button.mjs';   // the Safari version o
 import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls, 20 minutes, bait and rock (shared with server_bag.mjs)
 import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
-import * as Guia from './mission_guide.mjs'; // gold arrow on the ground for the current mission
+import * as Guia from './mission_guide.mjs';
+import * as StaffUi from './staff_ui.mjs';   // ★ Staff button for GMs / staff: free path + a following Pokémon (upcoming/, server_staff.mjs) // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
 import * as Pesca from './fishing_game.mjs';
@@ -3325,7 +3326,7 @@ function darPatins(quem){
    oferecia as 8 montarias de graça (o Jaime viu). Até a loja de montarias existir, com conta só staff monta; jogo local
    (?rede=0, demo, bancadas) segue livre pra testar. `podeMontar` é o único portão: M, atalhos 5–9 e ?montaria= passam por ele. */
 const MONTARIAS_LIVRES = new Set(MONTARIAS_ARQ ? MONTARIAS_ARQ.filter(d => d.livre).map(d => d.glb) : []);   // nobody starts with a mount; "livre" in mounts.json is the only grant until the shop exists
-const podeMontar = (glb = null) => Conta.estado().modo !== 'conta' || GM_REAL || (glb != null && MONTARIAS_LIVRES.has(String(glb).replace(/\.glb$/, '')));   // pelo modo da conta, não pela rede: cair do WebSocket não pode liberar
+const podeMontar = (glb = null) => Conta.estado().modo !== 'conta' || (GM_REAL && staffLivre()) || (glb != null && MONTARIAS_LIVRES.has(String(glb).replace(/\.glb$/, '')));   // pelo modo da conta, não pela rede: cair do WebSocket não pode liberar
 async function montar(glb, { trocar = false } = {}){
   if (!jogo.ash || jogo.montando) return;
   if (jogo.turno && !jogo.montaria){ flutuar(jogo.ash, "can't mount in battle", '#f58e8e'); return; }   // 14/09 (l.neto, vídeo): o atalho 5–9 montava no meio da batalha por turno
@@ -3813,6 +3814,8 @@ const AVES_ASA = new Set([16, 17, 18, 21, 22]);   // 15/09: aves cuja Idle abre 
 const alturaProporcional = (real, kind) => THREE.MathUtils.clamp(1.3 * Math.pow(real, 0.55), ALT_MIN, kind === 'follower' ? ALT_MAX_SEGUIDOR : ALT_MAX_SELVAGEM);
 const dexDoGlb = glb => +((glb || '').match(/pm(\d{4})/)?.[1] || 0);
 const stemGlb = g => String(g || '').replace(/\.glb$/i, '');
+/** Staff free path (★ Staff panel): on, a GM skips locks and mount licences; off, they play like any player. On until the server says. */
+function staffLivre(){ try { return StaffUi.ehStaff() ? StaffUi.livre() : true; } catch { return true; } }
 /** The owned Pokémon skin turned on for this model's species (save.skinMon), for its normal form only; null = the model itself. */
 function skinMonDe(glb){
   const s = stemGlb(glb), m = /^(pm\d{4})_00$/.exec(s); if (!m) return null;
@@ -9999,7 +10002,7 @@ if (jogo.ash){
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), viagem: m => Menus.viagemRede(m), jogadores: m => { if (m.t === 'grupo'){ jogo.grupo = m.grupo || null; if (!m.grupo && m.motivo === 'removido') Chat.sistema('You were removed from the party.'); else if (!m.grupo && m.motivo === 'saiu') Chat.sistema('You left the party.'); } PlayerCard.receber(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), viagem: m => Menus.viagemRede(m), modoStaff: m => StaffUi.receber(m), jogadores: m => { if (m.t === 'grupo'){ jogo.grupo = m.grupo || null; if (!m.grupo && m.motivo === 'removido') Chat.sistema('You were removed from the party.'); else if (!m.grupo && m.motivo === 'saiu') Chat.sistema('You left the party.'); } PlayerCard.receber(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
       if (!m?.vista) return;
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
@@ -10091,7 +10094,10 @@ if (jogo.ash){
   DailyUi.instalar({ tr: (s, v) => I18n.t(s, v), nomeItem: id => ITENS_NOME[id] || null, receber: () => Rede.enviar({ t: 'diario_receber' }),
     loja: () => import('./shop_ui.mjs').then(L => { if (!(comConta() && L.abrirNoProduto('passeDiario30'))) Menus.abrir?.('loja'); }).catch(() => Menus.abrir?.('loja')) });   // the Premium panel → the shop, on the Premium Daily Pass
   if (!Fairy && !INTRO) ActiveFx.instalar({ Conta, Evento, tr: (s, v) => I18n.t(s, v) });
-  Locks.instalar({ tr: (s, v) => I18n.t(s, v), gm: () => !!Conta.ehGm?.(), insignias: () => (lerLS('insignias', []) || []).length,
+  StaffUi.instalar({ enviar: m => { Rede.enviar(m); return true; }, Chat, Som, cena, jogo, nomeDe: dex => porDex.get(+dex)?.name || null,
+    modeloMon, montarCorpo, clonar: o => SkeletonUtils.clone(o), escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), aplicarShinyCampo, tocarAnim, chaoEm,
+    aoMudar: livre => { try { atualizarMissao?.(); } catch {} } });   // ★ Staff (server_staff.mjs): free path on/off changes what the locks let through
+  Locks.instalar({ tr: (s, v) => I18n.t(s, v), gm: () => !!Conta.ehGm?.() && staffLivre(), insignias: () => (lerLS('insignias', []) || []).length,
     feita: id => jogo.missoesOk && Missoes.estadoDe?.(+id) === 'feita', nomeMissao: id => (Missoes.capitulos?.() || []).flatMap(c => c.missoes).find(m => +m.id === +id)?.nome || '',
     temItem: id => (+(lerLS('itens', {}) || {})[id] || 0) > 0, campeao: () => !!eliteEstado?.vencida });
   if (!Fairy && !INTRO) SecUi.instalar({ missoes: Missoes, comConta, enviar: m => Rede.enviar(m), Chat: { sistemaCru: t => Chat.sistema(t) }, Som, nomeItem: id => ITENS_NOME[id] || null,
@@ -11797,6 +11803,7 @@ function quadro(dt){
         if (certa) rotaG = { x: certa.x, z: certa.z };
       }
     }
+    try { StaffUi.quadro(dt); } catch {}   // the staff's following Pokémon
     Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: pinsG, rota: rotaG, npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno || jogo.cinem), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
   if (jogo.chefe) atualizarChefe(dt);
