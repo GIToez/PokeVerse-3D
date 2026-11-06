@@ -2038,7 +2038,7 @@ wss.on('connection', ws => {
         else if (m.t?.startsWith('mercado_')) mercado.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'loja_ver' || m.t === 'loja_comprar') loja.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'temporada') temporada.receber(ws, sessoes.get(ws._info?.token) || null, m);
-        else if (m.t === 'diario_ver') diario.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'diario_ver' || m.t === 'diario_receber') diario.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'balsa_vista' || m.t === 'balsa') balsa.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {

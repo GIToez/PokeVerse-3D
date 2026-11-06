@@ -794,6 +794,23 @@ export function abrirNaPeca(a) {
   pintar();
   return true;
 }
+/** Opens the shop on one product (its tab and filter) and flashes its card: the Daily Rewards' Premium panel → the Premium Daily Pass. */
+export function abrirNoProduto(id) {
+  const c = CATALOGO[id];
+  if (!c?.aba) return abrir();
+  const ok = c.filtro ? abrirNoFiltro(c.aba, c.filtro) : abrirLoja(c.aba, null);
+  if (!ok) return false;
+  let n = 0;
+  const t = setInterval(() => {
+    const el = pop?.querySelector?.('[data-produto="' + id + '"]');
+    if (el && el.offsetParent !== null) {
+      clearInterval(t);
+      try { el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); } catch {}
+      el.animate?.([{ boxShadow: '0 0 0 0 rgba(248,194,55,0)' }, { boxShadow: '0 0 0 4px rgba(248,194,55,1)' }, { boxShadow: '0 0 0 0 rgba(248,194,55,0)' }], { duration: 900, iterations: 3 });
+    } else if (++n > 50) clearInterval(t);
+  }, 150);
+  return true;
+}
 export function abrirNoFiltro(a, b) {
   if (!Object.hasOwn(E.filtro, a) || !abrirLoja(a, null)) return false;
   E.filtro[a] = String(b || 'todos');

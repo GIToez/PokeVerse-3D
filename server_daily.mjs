@@ -3,7 +3,8 @@
  * Premium Daily Pass (a 30-day purchase, save.passeDiarioAte, sold in the shop later; GM accounts always have it).
  * The prizes live in public/data/daily_rewards.json (admin → Daily rewards). The day turns at midnight Pacific, like the hunt pool.
  *   const daily = createDaily({ accounts, send, socketsOf, saveAccounts, readJson })
- *   daily.login(u, ws)   // on welcome: pays today's prize once and sends { t: 'diario', vista, novo: true }
+ *   daily.login(u, ws)   // on welcome: today not claimed → { t: 'diario', vista, novo: true } (the window with Claim)
+ *   daily.receber(ws, u, { t: 'diario_receber' })  // Claim: pays today once → { t: 'diario', vista, pago: true }
  *   daily.vista(u)       // { seq, hoje, dias, premium, premiumAte, pegouHoje }
  *   daily.receber(ws, u, m)  // { t: 'diario_ver' } → the popup again */
 const hoje = (t = Date.now()) => new Date(t - 8 * 3600e3).toISOString().slice(0, 10);
@@ -26,10 +27,12 @@ export function createDaily({ accounts, send, socketsOf, saveAccounts, readJson,
     return { dias: [...d.dias].sort((x, y) => (+x.dia || 0) - (+y.dia || 0)) };
   };
   const premium = (c) => !!c?.gm || isGm?.(c) || (+c?.save?.passeDiarioAte || 0) > Date.now();
+  /** The streak day today's claim is (or was): yesterday claimed → the next day; a gap or the first time → Day 1. */
+  const diaDeHoje = (D) => (D.dia === hoje() ? D.seq || 1 : D.dia === ontem() ? ((D.seq || 0) % 7) + 1 : 1);
   function vista(u) {
     const c = accounts[u]; if (!c?.save) return null;
     const s = c.save, D = s.diario || {};
-    return { seq: D.seq || 1, hoje: hoje(), pegouHoje: D.dia === hoje(), dias: tabela().dias, premium: premium(c), premiumAte: +s.passeDiarioAte || 0 };
+    return { seq: diaDeHoje(D), hoje: hoje(), pegouHoje: D.dia === hoje(), dias: tabela().dias, premium: premium(c), premiumAte: +s.passeDiarioAte || 0 };
   }
   function dar(c, premio) {
     const s = c.save;
@@ -41,12 +44,20 @@ export function createDaily({ accounts, send, socketsOf, saveAccounts, readJson,
       cofre[k] = (+cofre[k] || 0) + n;
     }
   }
-  /** Today's first login pays the day (once) and moves the streak. → true when something was paid. */
+  /** Login: today not claimed yet → the window opens with the Claim button (nothing is paid until it's pressed). */
   function login(u, ws) {
+    const c = accounts[u]; if (!c?.save) return false;
+    const D = c.save.diario || {};
+    if (D.dia === hoje()) return false;
+    for (const w of socketsOf(u)) if (w === ws || !ws) send(w, { t: 'diario', vista: vista(u), novo: true });
+    return true;
+  }
+  /** Claim: pays today's prize once and moves the streak. → true when something was paid. */
+  function pagar(u) {
     const c = accounts[u]; if (!c?.save) return false;
     const s = c.save, D = (s.diario ||= {}), h = hoje();
     if (D.dia === h) return false;
-    D.seq = D.dia === ontem() ? (D.seq % 7) + 1 : 1;                  // a day in a row → next day; a gap (or the first time) → Day 1
+    D.seq = diaDeHoje(D);
     D.dia = h;
     const dia = tabela().dias[D.seq - 1] || {};
     dar(c, dia.gratis);
@@ -56,13 +67,15 @@ export function createDaily({ accounts, send, socketsOf, saveAccounts, readJson,
     const v = vista(u);
     for (const w of socketsOf(u)) {
       send(w, { t: 'bolsa', op: 'diario', bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas } });
-      if (w === ws || !ws) send(w, { t: 'diario', vista: v, novo: true });
+      send(w, { t: 'diario', vista: v, novo: false, pago: true });
     }
     return true;
   }
   function receber(ws, u, m) {
-    if (!u || m?.t !== 'diario_ver') return;
+    if (!u) return;
+    if (m?.t === 'diario_receber') { if (!pagar(u)) send(ws, { t: 'diario', vista: vista(u), novo: false }); return; }
+    if (m?.t !== 'diario_ver') return;
     send(ws, { t: 'diario', vista: vista(u), novo: false });
   }
-  return { login, vista, receber };
+  return { login, vista, receber, pagar };
 }

@@ -9941,7 +9941,7 @@ if (jogo.ash){
     }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
       if (!m?.vista) return;
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
-      if (m.novo) Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : ''));
+      if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
       if (!DailyUi.abrir(m.vista) && !m.novo) Chat.sistema(I18n.t('Streak: {n} days', { n: m.vista.seq }));
     }, caixaVagas: n => { jogo.caixaVagas = +n || null; try { Menus.repintar?.(); } catch {} }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
@@ -10022,7 +10022,8 @@ if (jogo.ash){
     pintar: () => atualizarMissao(),
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
   /* v2 side-quest windows (Nov 5): the offer card when a quest giver is talked to, and "Hand over a Pokémon" for `doar` steps */
-  DailyUi.instalar({ tr: (s, v) => I18n.t(s, v), nomeItem: id => ITENS_NOME[id] || null, loja: () => Menus.abrir?.('loja') });
+  DailyUi.instalar({ tr: (s, v) => I18n.t(s, v), nomeItem: id => ITENS_NOME[id] || null, receber: () => Rede.enviar({ t: 'diario_receber' }),
+    loja: () => import('./shop_ui.mjs').then(L => { if (!(comConta() && L.abrirNoProduto('passeDiario30'))) Menus.abrir?.('loja'); }).catch(() => Menus.abrir?.('loja')) });   // the Premium panel → the shop, on the Premium Daily Pass
   if (!Fairy && !INTRO) ActiveFx.instalar({ Conta, Evento, tr: (s, v) => I18n.t(s, v) });
   Locks.instalar({ tr: (s, v) => I18n.t(s, v), gm: () => !!Conta.ehGm?.(), insignias: () => (lerLS('insignias', []) || []).length,
     feita: id => jogo.missoesOk && Missoes.estadoDe?.(+id) === 'feita', nomeMissao: id => (Missoes.capitulos?.() || []).flatMap(c => c.missoes).find(m => +m.id === +id)?.nome || '',

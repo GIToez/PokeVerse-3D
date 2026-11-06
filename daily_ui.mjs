@@ -1,8 +1,9 @@
 /* DAILY REWARDS window (Nov 5, v2 popup `trilha`): Day 1–6 tickets (free on top, premium below) and the Day 7 grand prize.
  * Days already collected get the stamp, today's ticket is highlighted, later days are dimmed; the premium row is padlocked
  * without the Premium Daily Pass. The designer's raid-ticket counters are hidden (our raids don't use tickets).
- * The server pays the day on the first login (server_daily.mjs) and sends { t: 'diario', vista, novo }.
- *   instalar({ tr, nomeItem(id), loja() })  ·  abrir(vista) → false when the layout has no window */
+ * The server shows the window on the day's first login and pays when Claim is pressed (server_daily.mjs).
+ * Today's prize waits for the Claim button (server: diario_receber); the Premium panel opens the shop on the Premium Daily Pass.
+ *   instalar({ tr, nomeItem(id), loja(), receber() })  ·  abrir(vista) → false when the layout has no window */
 import * as Hud from './hud.mjs';
 import * as Popup from './popup.mjs';
 
@@ -41,31 +42,54 @@ function encher(el, premio, prefixo = '') {
   el.title = prefixo + nome;
   some(no(el, 'linha-ticket'));
 }
+/** Today's "collected" stamp (it drops in when the prize is claimed). */
+function selo(el, pego) {
+  el.querySelectorAll('[data-fig^="selo-pego"]').forEach((s) => { s.style.display = pego ? '' : 'none'; });
+}
+let vistaAtual = null, recebendo = false;
+/** The Premium panel on the left and its button go to the shop, on the Premium Daily Pass. */
+function irParaPasse() { Popup.fechar(pop); ctx.loja?.(); }
 export function abrir(v) {
   const d = def();
   if (!d || !v?.dias?.length) return false;
   if (!pop || pop.__def !== d || !pop.isConnected) {
     pop?.remove();
-    pop = Popup.montar(d, { acao: (n) => { if (n === 'ver-medalhao') { Popup.fechar(pop); ctx.loja?.(); } }, fechar: () => {} });
+    pop = Popup.montar(d, { acao: (n) => { if (n === 'ver-medalhao') irParaPasse(); }, fechar: () => {} });
     if (!pop) return false;
     pop.__def = d;
+    const painel = no(pop, 'rotulo-premium');
+    if (painel) { painel.style.cursor = 'pointer'; painel.style.pointerEvents = 'auto'; painel.addEventListener('click', (e) => { e.stopPropagation(); irParaPasse(); }); }
+    no(pop, 'btn-continuar')?.addEventListener('click', (e) => {   // not claimed yet: the button claims today's prize instead of closing
+      if (!vistaAtual || vistaAtual.pegouHoje) return;
+      e.stopPropagation(); e.preventDefault();
+      if (recebendo) return;
+      recebendo = true;
+      ctx.receber?.();
+      setTimeout(() => { recebendo = false; }, 4000);
+    }, true);
   }
+  vistaAtual = v; recebendo = false;
   const seq = Math.max(1, Math.min(7, +v.seq || 1)), prem = !!v.premium;
   Popup.textoCru(pop, 'titulo', tr('Daily Rewards'));
   Popup.textoCru(pop, 'regra', tr('Log in every day in a row: each day gives items. Miss a day and the streak goes back to Day 1.'));
   Popup.textoCru(pop, 'sequencia', tr(seq === 1 ? 'Streak: 1 day' : 'Streak: {n} days', { n: seq }));
-  Popup.textoCru(pop, 'aviso', seq < 7 ? tr('Come back tomorrow for Day {n}!', { n: seq + 1 }) : tr('Grand prize collected! Tomorrow starts again at Day 1.'));
+  Popup.textoCru(pop, 'aviso', !v.pegouHoje ? tr('Day {n} is ready: claim it!', { n: seq }) : seq < 7 ? tr('Come back tomorrow for Day {n}!', { n: seq + 1 }) : tr('Grand prize collected! Tomorrow starts again at Day 1.'));
   Popup.textoCru(pop, 'grande-premio', tr('GRAND PRIZE'));
   rotulo(pop, 'rotulo-gratis', 'rotulo-gratis-txt', tr('FREE'));
   rotulo(pop, 'rotulo-premium', 'rotulo-premium', tr('PREMIUM'));
   rotulo(pop, 'btn-ver-medalhao', 'txt-btn', tr('Get the Premium Pass'));
-  rotulo(pop, 'btn-continuar', 'txt-btn', tr('Continue'));
+  rotulo(pop, 'btn-continuar', 'txt-btn', v.pegouHoje ? tr('Continue') : tr('Claim'));
   some(no(pop, 'ticket-raid')); some(no(pop, 'selo-mais-tickets'));
   if (prem) some(no(pop, 'btn-ver-medalhao'));
   /* The mock-up draws the row for a 3-day streak (days 1–2 stamped and small, day 3 big, 4–6 dimmed): each column is rebuilt
      from the ticket's state reference at that state's size, and the columns are laid out again left to right. */
   const estado = (n) => (n < seq ? 'pego' : n === seq ? 'hoje' : 'futuro');
-  const TOPO = { pego: 32, hoje: 0, futuro: 25, fora: 25 }, LINHA_PREMIUM = 173, VAO = 8;
+  /* Sizes come from the mock-up of this layout (PC or phone): the row shows days 1–2 collected, 3 today, 4–6 ahead. */
+  const md = (d.filhos || []).find((f) => f.nome === 'dias'), mdia = (n) => (md?.filhos || []).find((f) => f.nome === 'dia-' + n);
+  const mp = (n) => (mdia(n)?.filhos || []).find((f) => f.nome === 'ingresso-premium');
+  const TOPO = { pego: +mdia(1)?.y || 0, hoje: +mdia(3)?.y || 0, futuro: +mdia(4)?.y || 0 }; TOPO.fora = TOPO.futuro;
+  const LINHA_PREMIUM = (+mdia(1)?.y || 0) + (+mp(1)?.y || 0), ALTO = +md?.h || 309, PREM_H = +mp(1)?.h || 136;
+  const VAO = Math.max(2, (+mdia(2)?.x || 0) - (+mdia(1)?.x || 0) - (+mdia(1)?.w || 0));
   let x = 0;
   for (let n = 1; n <= 6; n++) {
     const g = no(pop, 'dia-' + n); if (!g) continue;
@@ -73,10 +97,10 @@ export function abrir(v) {
     const fg = no(g, 'ingresso-gratis'), fp = no(g, 'ingresso-premium');
     const dg = pop.__refs?.['ingresso-gratis']?.[eg], dp = pop.__refs?.['ingresso-premium']?.[ep];
     const w = dg?.w || 104;
-    Object.assign(g.style, { left: x + 'px', top: '0px', width: w + 'px', height: '309px' });
+    Object.assign(g.style, { left: x + 'px', top: '0px', width: w + 'px', height: ALTO + 'px' });
     x += w + VAO;
-    if (fg && dg) { reconstruir(fg, 'ingresso-gratis', eg, dg); Object.assign(fg.style, { left: '0px', top: TOPO[eg] + 'px' }); Popup.textoCru(pop, 'dia', tr('Day {n}', { n }), fg); encher(fg, dia.gratis); }
-    if (fp && dp) { reconstruir(fp, 'ingresso-premium', ep, dp); const k = Math.min(1, 136 / dp.h); Object.assign(fp.style, { left: Math.round((w - dp.w) / 2) + 'px', top: LINHA_PREMIUM + 'px', transform: k < 1 ? 'scale(' + k.toFixed(3) + ')' : '', transformOrigin: '50% 0' }); /* today's tall premium ticket shrinks to the row's height */ Popup.textoCru(pop, 'dia', tr('Day {n}', { n }), fp); encher(fp, dia.premium, tr('Premium: ')); }
+    if (fg && dg) { reconstruir(fg, 'ingresso-gratis', eg, dg); if (eg === 'hoje') selo(fg, v.pegouHoje); Object.assign(fg.style, { left: '0px', top: TOPO[eg] + 'px' }); Popup.textoCru(pop, 'dia', tr('Day {n}', { n }), fg); encher(fg, dia.gratis); }
+    if (fp && dp) { reconstruir(fp, 'ingresso-premium', ep, dp); if (ep === 'hoje') selo(fp, v.pegouHoje); const k = Math.min(1, PREM_H / dp.h); Object.assign(fp.style, { left: Math.round((w - dp.w) / 2) + 'px', top: LINHA_PREMIUM + 'px', transform: k < 1 ? 'scale(' + k.toFixed(3) + ')' : '', transformOrigin: '50% 0' }); /* today's tall premium ticket shrinks to the row's height */ Popup.textoCru(pop, 'dia', tr('Day {n}', { n }), fp); encher(fp, dia.premium, tr('Premium: ')); }
   }
   const g7 = no(pop, 'ingresso-7');
   if (g7) {
