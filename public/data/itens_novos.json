@@ -6,7 +6,7 @@
  "itens": {
   "900001": {
    "n": "Rare Candy S",
-   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 1 ao 15.",
+   "d": "Raises a Pokémon by one full level. Only works from level 1 to 15.",
    "t": 9,
    "i": "ic_900001",
    "q": 2,
@@ -24,7 +24,7 @@
   },
   "900002": {
    "n": "Rare Candy M",
-   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 16 ao 25.",
+   "d": "Raises a Pokémon by one full level. Only works from level 16 to 25.",
    "t": 9,
    "i": "ic_900002",
    "q": 2,
@@ -42,7 +42,7 @@
   },
   "900003": {
    "n": "Rare Candy L",
-   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 26 ao 40.",
+   "d": "Raises a Pokémon by one full level. Only works from level 26 to 40.",
    "t": 9,
    "i": "ic_900003",
    "q": 3,
@@ -60,7 +60,7 @@
   },
   "900004": {
    "n": "Rare Candy XL",
-   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 41 ao 50.",
+   "d": "Raises a Pokémon by one full level. Only works from level 41 to 50.",
    "t": 9,
    "i": "ic_900004",
    "q": 3,
@@ -78,7 +78,7 @@
   },
   "900005": {
    "n": "Rare Candy XXL",
-   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 51 ao 75.",
+   "d": "Raises a Pokémon by one full level. Only works from level 51 to 75.",
    "t": 9,
    "i": "ic_900005",
    "q": 4,
@@ -96,7 +96,7 @@
   },
   "900006": {
    "n": "Rare Candy MAX",
-   "d": "Sobe o Pokémon 1 nível inteiro. Só funciona do nível 76 ao 100.",
+   "d": "Raises a Pokémon by one full level. Only works from level 76 to 100.",
    "t": 9,
    "i": "ic_900006",
    "q": 5,
@@ -113,8 +113,8 @@
    "origem": "catálogo 30/09"
   },
   "900010": {
-   "n": "Pedra Eterna",
-   "d": "Segurada pelo pai ou pela mãe na criação, pode passar a natureza dele pro ovo. Vem da trilha paga do passe; presa à conta.",
+   "n": "Eternal Stone",
+   "d": "Held by a parent at the Day Care, it can pass that parent's nature on to the egg. From the paid pass track; bound to your account.",
    "t": 3,
    "i": "ic_900010",
    "q": 4,
@@ -124,8 +124,8 @@
    "origem": "passe T1 (trilha paga) + lab-ovo; a natureza passa COM CHANCE, nunca 100 % (Jaime, 27/09); o valor é da lab-ovo, a aprovar"
   },
   "900011": {
-   "n": "Cartão de Ativação de Traje",
-   "d": "Roupa do nível 45 da trilha paga da Temporada 1. Presa à conta; volta no lançamento, no Cofre.",
+   "n": "Outfit Activation Card",
+   "d": "The level 45 outfit from the Season 1 paid track. Bound to your account; comes back at launch, in the Vault.",
    "t": 5,
    "i": "ic_900011",
    "q": 5,
@@ -136,8 +136,8 @@
    "origem": "passe T1 (não existe no dump: a Amanda desenha a roupa)"
   },
   "900020": {
-   "n": "Peça de TM comum",
-   "d": "10 peças comuns e 1.000 ₽ montam uma TM comum no balcão de TMs da Loja de departamentos de Celadon (Piso 2). Cai de Pokémon selvagens, treinadores e missões. Presa à conta; a TM montada pode ser negociada.",
+   "n": "Common TM Piece",
+   "d": "10 common pieces and ₽1,000 make a common TM at the TM counter in the Celadon Department Store (2F). Dropped by wild Pokémon, trainers and missions. Bound to your account; the finished TM can be traded.",
    "t": 8,
    "i": "ic_900020",
    "q": 2,
@@ -147,8 +147,8 @@
    "origem": "lab-tm (peça por faixa, Jaime 01/10)"
   },
   "900021": {
-   "n": "Peça de TM forte",
-   "d": "6 peças fortes, 20 comuns e 5.000 ₽ montam uma TM forte no balcão de TMs da Loja de departamentos de Celadon (Piso 2). Cai de líderes de ginásio, revanches, Pokémon shiny, áreas de nível alto e da Elite Four. Presa à conta.",
+   "n": "Strong TM Piece",
+   "d": "6 strong pieces, 20 common pieces and ₽5,000 make a strong TM at the TM counter in the Celadon Department Store (2F). Dropped by Gym Leaders, rematches, shiny Pokémon, high-level areas and the Elite Four. Bound to your account.",
    "t": 8,
    "i": "ic_900021",
    "q": 4,
@@ -158,8 +158,8 @@
    "origem": "lab-tm"
   },
   "900022": {
-   "n": "Peça de TM rara",
-   "d": "3 peças raras, 6 fortes e 20.000 ₽ montam uma TM rara no balcão de TMs da Loja de departamentos de Celadon (Piso 2). Só cai de raids, da coroação na Elite Four e de títulos de colecionador (até 4 por semana). Presa à conta.",
+   "n": "Rare TM Piece",
+   "d": "3 rare pieces, 6 strong pieces and ₽20,000 make a rare TM at the TM counter in the Celadon Department Store (2F). Only dropped by raids, the Elite Four crowning and collector titles (up to 4 a week). Bound to your account.",
    "t": 8,
    "i": "ic_900022",
    "q": 5,
@@ -169,8 +169,8 @@
    "origem": "lab-tm"
   },
   "900030": {
-   "n": "Incubadora",
-   "d": "Ganha jogando: a 1ª na missão da creche da Rota 5, a 2ª ao chocar o primeiro ovo. Coloque no seu terreno: choca um ovo em 6 h. Presa à conta.",
+   "n": "Incubator",
+   "d": "Earned by playing: the 1st from the Route 5 Day Care mission, the 2nd when your first egg hatches. Place it on your plot: it hatches an egg in 6 h. Bound to your account.",
    "t": 3,
    "i": "ic_900030",
    "q": 4,
@@ -182,8 +182,8 @@
    "origem": "Jaime 01/10 (modelo próprio); lab-ovo; beta 89: o texto do data/ovo.json, no Terreno"
   },
   "900040": {
-   "n": "Fragmento de guilda",
-   "d": "Prêmio da sua contribuição contra o chefe da guilda (de 1 a 5 por dia). Não vence. Troque por itens na loja da guilda. Preso à conta.",
+   "n": "Guild Shard",
+   "d": "Your reward for fighting the guild boss (1 to 5 a day). Never expires. Trade them for items at the guild shop. Bound to your account.",
    "t": 8,
    "i": "ic_900040",
    "q": 4,
@@ -193,8 +193,8 @@
    "origem": "guilda fase 2 revista (Jaime 01/10)"
   },
   "900070": {
-   "n": "Fragmento de Articuno",
-   "d": "Prêmio das raids do Articuno. Junte 20 na Mochila pra chamar o Articuno pro seu time (Lv 50). Preso à conta: não se troca nem se vende.",
+   "n": "Articuno Shard",
+   "d": "A reward from Articuno raids. Collect 20 in your Bag to call Articuno to your team (Lv 50). Bound to your account: it can't be traded or sold.",
    "t": 8,
    "i": "ic_900070",
    "q": 5,
@@ -206,8 +206,8 @@
    "origem": "lab-raids (01/10): fragmento próprio; o do dump (110144) fica fora"
   },
   "900071": {
-   "n": "Fragmento de Zapdos",
-   "d": "Prêmio das raids do Zapdos. Junte 20 na Mochila pra chamar o Zapdos pro seu time (Lv 50). Preso à conta: não se troca nem se vende.",
+   "n": "Zapdos Shard",
+   "d": "A reward from Zapdos raids. Collect 20 in your Bag to call Zapdos to your team (Lv 50). Bound to your account: it can't be traded or sold.",
    "t": 8,
    "i": "ic_900071",
    "q": 5,
@@ -219,8 +219,8 @@
    "origem": "lab-raids (01/10): fragmento próprio; o do dump (110145) fica fora"
   },
   "900072": {
-   "n": "Fragmento de Moltres",
-   "d": "Prêmio das raids do Moltres. Junte 20 na Mochila pra chamar o Moltres pro seu time (Lv 50). Preso à conta: não se troca nem se vende.",
+   "n": "Moltres Shard",
+   "d": "A reward from Moltres raids. Collect 20 in your Bag to call Moltres to your team (Lv 50). Bound to your account: it can't be traded or sold.",
    "t": 8,
    "i": "ic_900072",
    "q": 5,
@@ -232,8 +232,8 @@
    "origem": "lab-raids (01/10): fragmento próprio; o do dump (110146) fica fora"
   },
   "900073": {
-   "n": "Fragmento de Mewtwo",
-   "d": "Prêmio das raids do Mewtwo. Junte 20 na Mochila pra chamar o Mewtwo pro seu time (Lv 70). Preso à conta: não se troca nem se vende.",
+   "n": "Mewtwo Shard",
+   "d": "A reward from Mewtwo raids. Collect 20 in your Bag to call Mewtwo to your team (Lv 70). Bound to your account: it can't be traded or sold.",
    "t": 8,
    "i": "ic_900073",
    "q": 5,
@@ -245,8 +245,8 @@
    "origem": "lab-raids (01/10): fragmento próprio; o do dump (110150) fica fora"
   },
   "900074": {
-   "n": "Fragmento de Mew",
-   "d": "Prêmio das raids do Mew. Junte 20 na Mochila pra chamar o Mew pro seu time (Lv 30). Preso à conta: não se troca nem se vende.",
+   "n": "Mew Shard",
+   "d": "A reward from Mew raids. Collect 20 in your Bag to call Mew to your team (Lv 30). Bound to your account: it can't be traded or sold.",
    "t": 8,
    "i": "ic_900074",
    "q": 5,
@@ -259,7 +259,7 @@
   },
   "900080": {
    "n": "Exp. Share",
-   "d": "Os Pokémon do time que não lutam ganham parte do XP de quem luta: de 1 % a 50 %, o máximo quando o nível deles chega a 2/3 do de quem luta; a parte se divide entre eles. Preso à conta.",
+   "d": "Team Pokémon that don't battle get part of the battler's XP: 1% to 50%, the most when their level reaches 2/3 of the battler's; the share is split between them. Bound to your account.",
    "t": 3,
    "i": "ic_900080",
    "q": 4,
@@ -269,8 +269,8 @@
    "origem": "bal-expshare-2 + bal-expshare-quem (Jaime 01/10 noite): a conta é o xpDosTreinados da lab-balanceamento; a missão que dá o item é da lab-questline (2ª insígnia)"
   },
   "900150": {
-   "n": "Ticket de eclosão",
-   "d": "Corta 3 horas da eclosão de um ovo que está na incubadora. Vale uma vez por ovo. Vendido na loja de Diamantes. Preso à conta.",
+   "n": "Hatch Ticket",
+   "d": "Cuts 3 hours off the hatching of an egg in an incubator. Once per egg. Sold in the Diamond Shop. Bound to your account.",
    "t": 3,
    "i": "ic_900150",
    "q": 3,
@@ -285,8 +285,8 @@
    "origem": "lab-ovo (data/ovo.json → itens); ovo-incubadora-2 (1 por ovo) e ovo-incubadora-3 (preso); beta 89: t 3 no lugar do 9 (a Mochila trata o 9 como remédio); 20 Diamantes, de qualquer Diamante (o preço é da loja)"
   },
   "900151": {
-   "n": "Incubadora",
-   "d": "A mesma incubadora, vendida na loja de Diamantes. Coloque quantas couberem no seu terreno: cada uma choca um ovo em 6 h. Negociável: vai pro Mercado.",
+   "n": "Incubator",
+   "d": "The same incubator, sold in the Diamond Shop. Place as many as fit on your plot: each one hatches an egg in 6 h. Tradeable: it can go on the Market.",
    "t": 3,
    "i": "ic_900151",
    "q": 4,
@@ -298,8 +298,8 @@
    "origem": "lab-ovo (data/ovo.json → itens); ovo-incubadora-3 (negociável, sem teto); beta 89: Diamante é Diamante (Jaime 11/10) — de qualquer Diamante, sai solta; o preço é A APROVAR (a loja de Diamantes)"
   },
   "900170": {
-   "n": "Medalhão · 30 dias",
-   "d": "30 dias com +20 % de XP nos seus Pokémon, +100 vagas na Caixa, +10 anúncios no Mercado, −50 % na recarga da Viagem e do Teleporte e o selo no chat. O tempo soma com o que você já tem, até 365 dias. Use ou venda no Mercado por Moedas.",
+   "n": "Medallion · 30 days",
+   "d": "30 days of +20% XP for your Pokémon, +100 Box slots, +10 Market listings, −50% Travel and Teleport cooldown and the chat badge. The time adds to what you already have, up to 365 days. Use it or sell it on the Market for Coins.",
    "t": 5,
    "i": "ic_900170",
    "q": 5,
@@ -313,8 +313,8 @@
    "origem": "beta 88 (plano 88, F1): ec-reprecificar (200 Diamantes, de qualquer Diamante: Diamante é Diamante, 11/10), ec-trava (negociável), medalhao-beneficios; os números da J2 (data/medalhao.json, 10/10); t 5 e q 5 A APROVAR"
   },
   "900171": {
-   "n": "Medalhão · 60 dias",
-   "d": "60 dias com +20 % de XP nos seus Pokémon, +100 vagas na Caixa, +10 anúncios no Mercado, −50 % na recarga da Viagem e do Teleporte e o selo no chat. O tempo soma com o que você já tem, até 365 dias. Use ou venda no Mercado por Moedas.",
+   "n": "Medallion · 60 days",
+   "d": "60 days of +20% XP for your Pokémon, +100 Box slots, +10 Market listings, −50% Travel and Teleport cooldown and the chat badge. The time adds to what you already have, up to 365 days. Use it or sell it on the Market for Coins.",
    "t": 5,
    "i": "ic_900171",
    "q": 5,
@@ -328,8 +328,8 @@
    "origem": "27/10 (o Kronyx: \"O certo é comprar de 30, 60 e 90 dias\"): o Medalhão de 60 dias, um item só (antes, a loja entregava 2 de 30 dias); a mesma regra do de 30"
   },
   "900172": {
-   "n": "Medalhão · 90 dias",
-   "d": "90 dias com +20 % de XP nos seus Pokémon, +100 vagas na Caixa, +10 anúncios no Mercado, −50 % na recarga da Viagem e do Teleporte e o selo no chat. O tempo soma com o que você já tem, até 365 dias. Use ou venda no Mercado por Moedas.",
+   "n": "Medallion · 90 days",
+   "d": "90 days of +20% XP for your Pokémon, +100 Box slots, +10 Market listings, −50% Travel and Teleport cooldown and the chat badge. The time adds to what you already have, up to 365 days. Use it or sell it on the Market for Coins.",
    "t": 5,
    "i": "ic_900172",
    "q": 5,
