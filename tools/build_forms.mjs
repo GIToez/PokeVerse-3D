@@ -20,6 +20,14 @@ const formas = { ...(atual.formas || {}) };
 const faltam = [];
 for (const e of cast) {
   const m = /^pm(\d{4})_(\d{2})$/.exec(e.glb || ''), sfx = m?.[2];
+  const reg = /^(Alolan|Galarian|Hisuian|Paldean) (\w+)$/i.exec(e.nota || '');   // a region with several looks under other numbers: Paldean Tauros (combat 11, blaze 12, aqua 13)
+  if (m && !NOMES[sfx] && reg) {
+    const dex = +m[1], k = dex + '_' + sfx, B = base.get(dex), suf = { alolan: 'Alola', galarian: 'Galar', hisuian: 'Hisui', paldean: 'Paldea' }[reg[1].toLowerCase()];
+    const f = B && pdx.species.find((s) => s.base && +s.n === dex && s.name.toLowerCase() === (B.name + '-' + suf + '-' + reg[2]).toLowerCase());
+    const velho = formas[k] || {};
+    if (B) formas[k] = { nome: velho.nome || reg[1] + ' ' + B.name + ' (' + reg[2][0].toUpperCase() + reg[2].slice(1) + ')', glb: velho.glb || e.glb, tipos: velho.tipos || f?.types || null, bs: velho.bs || f?.bs || null, ...(velho.golpes ? { golpes: velho.golpes } : {}), ...(velho.nota ? { nota: velho.nota } : {}) };
+    continue;
+  }
   if (!m || !NOMES[sfx]) continue;
   const dex = +m[1], k = dex + '_' + sfx, B = base.get(dex);
   if (!B) continue;

@@ -731,6 +731,53 @@
     105
    ]
   },
+  "128_11": {
+   "nome": "Paldean Tauros (Combat)",
+   "glb": "pm0128_11",
+   "tipos": [
+    "Fighting"
+   ],
+   "bs": [
+    75,
+    110,
+    105,
+    30,
+    70,
+    100
+   ]
+  },
+  "128_12": {
+   "nome": "Paldean Tauros (Blaze)",
+   "glb": "pm0128_12",
+   "tipos": [
+    "Fighting",
+    "Fire"
+   ],
+   "bs": [
+    75,
+    110,
+    105,
+    30,
+    70,
+    100
+   ]
+  },
+  "128_13": {
+   "nome": "Paldean Tauros (Aqua)",
+   "glb": "pm0128_13",
+   "tipos": [
+    "Fighting",
+    "Water"
+   ],
+   "bs": [
+    75,
+    110,
+    105,
+    30,
+    70,
+    100
+   ]
+  },
   "130_51": {
    "nome": "Mega Gyarados",
    "glb": "pm0130_51",
@@ -1550,6 +1597,12 @@
     45,
     50
    ]
+  },
+  "555_12": {
+   "nome": "Galarian Darmanitan (Zen)",
+   "glb": "pm0555_12",
+   "tipos": null,
+   "bs": null
   },
   "555_62": {
    "nome": "Galarian Darmanitan",
