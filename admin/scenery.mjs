@@ -118,22 +118,49 @@ function atualizarPivo() {
   if ($('hud-pivo')) $('hud-pivo').textContent = orbit.target.x.toFixed(1) + ', ' + orbit.target.y.toFixed(1) + ', ' + orbit.target.z.toFixed(1);
 }
 const transform = new TransformControls(camera, renderer.domElement);
-let posAntesArraste = null;
+/* DRAG (Nov 6): the gizmo moves / rotates EVERY selected piece (Ctrl+click picks several) — a move shifts them all by the same
+   amount, a rotation turns them all around the main piece (the one the gizmo sits on). Holding Alt when the drag starts clones the
+   selection first: the copies stay where the pieces were, and you carry the originals away. One drag = one undo step. */
+let antesArraste = null, altNoClique = false, clonesArraste = null;
+renderer.domElement.addEventListener('pointerdown', ev => { altNoClique = ev.altKey; }, true);
 transform.addEventListener('dragging-changed', e => {
   orbit.enabled = !e.value;
-  if (e.value) posAntesArraste = selPeca ? estadoDe(selPeca) : null;
-  else { if (selPeca && posAntesArraste) registrarMov(selPeca, posAntesArraste); posAntesArraste = null; }
+  if (e.value) {
+    clonesArraste = altNoClique && selPeca ? clonarSelecao({ deslocar: false, selecionarCopias: false }) : null;
+    antesArraste = selPeca ? new Map([...selecao].map(p => [p, estadoDe(p)])) : null;
+    if (clonesArraste?.length) toast(clonesArraste.length === 1 ? 'Cloned 1 piece (Alt + drag).' : 'Cloned ' + clonesArraste.length + ' pieces (Alt + drag).');
+  } else {
+    const acoes = [];
+    for (const [p, de] of antesArraste || []) { const a = acaoMov(p, de); if (a) acoes.push(a); }
+    if (clonesArraste?.length) acoes.unshift(...clonesArraste.map(peca => ({ t: 'add', peca, idx: pecas.indexOf(peca) })));
+    if (acoes.length) registrar(acoes.length === 1 ? acoes[0] : { t: 'grupo', acoes });
+    antesArraste = null; clonesArraste = null;
+  }
 });
 transform.addEventListener('objectChange', () => {
   if (!selPeca) return;
+  const base = antesArraste?.get(selPeca) || estadoDe(selPeca);
   if (transform.getMode() === 'rotate') {
     const e = proxy.rotation;                                              // proxy usa Euler XYZ, o mesmo do jogo
-    setRot(selPeca, { x: R2G(e.x), y: R2G(e.y), z: R2G(e.z) }); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+    const nova = { x: R2G(e.x), y: R2G(e.y), z: R2G(e.z) };
+    if (selecao.size > 1 && antesArraste) {
+      const q0 = new THREE.Quaternion().setFromEuler(new THREE.Euler(G2R(base.r.x), G2R(base.r.y), G2R(base.r.z)));
+      const q1 = new THREE.Quaternion().setFromEuler(new THREE.Euler(G2R(nova.x), G2R(nova.y), G2R(nova.z)));
+      girarGrupo(q1.multiply(q0.invert()), antesArraste);
+    } else setRot(selPeca, nova);
+    for (const p of selecao) atualizarInst(p);
+    realcar(); marcarSujo(); atualizarCamposSel();
     return;
   }
   let x = proxy.position.x * fx, y = proxy.position.y, z = proxy.position.z;   // de world pra coords de edição (bib: flipX)
   if (snap) { x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2; z = Math.round(z * 2) / 2; proxy.position.set(x * fx, y, z); }
-  setPos(selPeca, x, y, z); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+  const dx = x - base.p.x, dy = y - base.p.y, dz = z - base.p.z;
+  for (const p of selecao) {
+    const b = antesArraste?.get(p) || estadoDe(p);
+    if (p === selPeca) setPos(p, x, y, z); else setPos(p, b.p.x + dx, b.p.y + dy, b.p.z + dz);
+    atualizarInst(p);
+  }
+  realcar(); marcarSujo(); atualizarCamposSel();
 });
 scene.add(transform.getHelper());
 
@@ -149,7 +176,9 @@ let nomeDoPrefab = new Map();
 let pecas = [];             // lista unificada: { pos:Vector3, nome, mats:[{geo,mat,local}], inst:[{im,i}], obj?, node? }
 let tipos = [];             // paleta: { id, nome, criar(pos)→peça }
 let instGrupos = [];
-let selPeca = null, boxHelper = null;
+let selPeca = null, boxHelper = null;   // selPeca = the main selected piece (the gizmo is on it)
+let selecao = new Set();                // every selected piece (Ctrl+click adds / removes)
+let caixas = [];                        // the yellow boxes around the selection
 let sujo = false, mapaAtual = null, mapaRotulo = '', mapasDisponiveis = [], glbDoMapa = {}, ferramenta = 'sel', addTipo = null, snap = false;
 const raycaster = new THREE.Raycaster();
 const planoChao = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -188,20 +217,22 @@ function registrar(acao) {
   historico.push(acao); if (historico.length > LIMITE_HIST) historico.shift();
   refazer = []; atualizarBotoesHist();
 }
-function registrarMov(peca, de) {
-  if (!de) return;
+function acaoMov(peca, de) {
+  if (!de) return null;
   const para = estadoDe(peca);
-  if (de.p.equals(para.p) && mesmaRot(de.r, para.r)) return;
-  registrar({ t: 'mov', peca, de, para });
+  if (de.p.equals(para.p) && mesmaRot(de.r, para.r)) return null;
+  return { t: 'mov', peca, de, para };
 }
+function registrarMov(peca, de) { const a = acaoMov(peca, de); if (a) registrar(a); }
 function limparHist() { historico = []; refazer = []; atualizarBotoesHist(); }
 function atualizarBotoesHist() {
   if ($('t-undo')) { $('t-undo').disabled = !historico.length; $('t-undo').title = 'Undo (Ctrl+Z)' + (historico.length ? ' · ' + historico.length + ' step(s)' : ''); }
   if ($('t-redo')) { $('t-redo').disabled = !refazer.length; $('t-redo').title = 'Redo (Ctrl+Y / Ctrl+Shift+Z)' + (refazer.length ? ' · ' + refazer.length + ' step(s)' : ''); }
 }
-function moverPara(peca, est) {
+function moverPara(peca, est, quieto = false) {
   setPos(peca, est.p.x, est.p.y, est.p.z); setRot(peca, est.r); atualizarInst(peca);
-  if (selPeca === peca) { sincronizarProxy(); realcar(peca); atualizarCamposSel(); }
+  if (quieto) return;
+  if (selPeca === peca) { sincronizarProxy(); realcar(); atualizarCamposSel(); }
   else selecionar(peca);
 }
 function sincronizarProxy() {
@@ -213,12 +244,34 @@ function sincronizarProxy() {
 function aplicarRot(rot) {
   if (!selPeca || transform.dragging) return;
   const de = estadoDe(selPeca);
-  setRot(selPeca, rot); atualizarInst(selPeca); sincronizarProxy(); realcar(selPeca); marcarSujo(); atualizarCamposSel();
+  setRot(selPeca, rot); atualizarInst(selPeca); sincronizarProxy(); realcar(); marcarSujo(); atualizarCamposSel();
   registrarMov(selPeca, de);
+}
+/** Turn every selected piece by the world rotation `dq` around the main piece (`base` = their states before). */
+function girarGrupo(dq, base) {
+  const c = base.get(selPeca) || estadoDe(selPeca), cw = new THREE.Vector3(fx * c.p.x, c.p.y, c.p.z), v = new THREE.Vector3(), q = new THREE.Quaternion(), e = new THREE.Euler();
+  for (const p of selecao) {
+    const b = base.get(p) || estadoDe(p);
+    v.set(fx * b.p.x, b.p.y, b.p.z).sub(cw).applyQuaternion(dq).add(cw);
+    setPos(p, fx * v.x, v.y, v.z);
+    q.setFromEuler(e.set(G2R(b.r.x), G2R(b.r.y), G2R(b.r.z))).premultiply(dq);
+    e.setFromQuaternion(q, 'XYZ');
+    setRot(p, { x: R2G(e.x), y: R2G(e.y), z: R2G(e.z) });
+  }
 }
 const _eixos = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
 function girar(delta, eixo = 'y') {   // botões e tecla R: gira em torno do eixo do MUNDO, mesmo com a peça inclinada
   if (!selPeca) return;
+  if (selecao.size > 1) {                                                // several selected: the whole group turns around the main piece
+    if (transform.dragging) return;
+    const base = new Map([...selecao].map(p => [p, estadoDe(p)]));
+    girarGrupo(new THREE.Quaternion().setFromAxisAngle(_eixos[eixo], G2R(delta)), base);
+    for (const p of selecao) atualizarInst(p);
+    sincronizarProxy(); realcar(); marcarSujo(); atualizarCamposSel();
+    const acoes = [...base].map(([p, de]) => acaoMov(p, de)).filter(Boolean);
+    if (acoes.length) registrar({ t: 'grupo', acoes });
+    return;
+  }
   const r = rotDe(selPeca);
   _Q.setFromEuler(_E.set(G2R(r.x), G2R(r.y), G2R(r.z)));
   _Q2.setFromAxisAngle(_eixos[eixo], G2R(delta)).multiply(_Q);
@@ -229,19 +282,29 @@ function modoGizmo(m) {
   transform.setMode(m);
   $('t-mover').classList.toggle('on', m === 'translate'); $('t-girar').classList.toggle('on', m === 'rotate');
 }
-function inserirPeca(peca, idx) {
+function inserirPeca(peca, idx, quieto = false) {
   if (peca.node) mapaNode.add(peca.node);
-  pecas.splice(Math.min(idx, pecas.length), 0, peca); rebuildInstancias(); selecionar(peca);
+  pecas.splice(Math.min(idx, pecas.length), 0, peca);
+  if (!quieto) { rebuildInstancias(); selecionar(peca); }
 }
-function removerPeca(peca) {
+function removerPeca(peca, quieto = false) {
   const i = pecas.indexOf(peca); if (i < 0) return;
   if (peca.node) mapaNode.remove(peca.node);
-  pecas.splice(i, 1); if (selPeca === peca) deselecionar(); rebuildInstancias();
+  pecas.splice(i, 1);
+  if (selecao.has(peca)) { selecao.delete(peca); if (selPeca === peca) selPeca = [...selecao].pop() || null; }
+  if (!quieto) { rebuildInstancias(); if (selPeca) selecionar(selPeca, { manter: true }); else deselecionar(); }
+}
+function aplicarUma(acao, voltar) {
+  if (acao.t === 'mov') moverPara(acao.peca, voltar ? acao.de : acao.para, true);
+  else if ((acao.t === 'add') === voltar) removerPeca(acao.peca, true);   // desfazer add / refazer del
+  else inserirPeca(acao.peca, acao.idx, true);                             // desfazer del / refazer add
 }
 function aplicarHist(acao, voltar) {
-  if (acao.t === 'mov') moverPara(acao.peca, voltar ? acao.de : acao.para);
-  else if ((acao.t === 'add') === voltar) removerPeca(acao.peca);   // desfazer add / refazer del
-  else inserirPeca(acao.peca, acao.idx);                             // desfazer del / refazer add
+  const lista = acao.t === 'grupo' ? (voltar ? [...acao.acoes].reverse() : acao.acoes) : [acao];
+  for (const a of lista) aplicarUma(a, voltar);
+  rebuildInstancias();
+  const vivas = lista.map(a => a.peca).filter(p => pecas.includes(p));      // select what the step touched (that still exists)
+  if (vivas.length) { selecao = new Set(vivas); selPeca = vivas[vivas.length - 1]; selecionar(selPeca, { manter: true }); } else deselecionar();
   marcarSujo(); atualizarHud();
 }
 function desfazer() {
@@ -408,22 +471,36 @@ function atualizarInst(peca) {
 }
 
 // ── Seleção ──────────────────────────────────────────────────────────────────
-function selecionar(peca) {
+/** Select a piece. `somar` (Ctrl+click) adds it to the selection, or takes it out if it was in; `manter` keeps the current set. */
+function selecionar(peca, { somar = false, manter = false } = {}) {
   if (!peca) return;
-  selPeca = peca; sincronizarProxy(); transform.attach(proxy); realcar(peca);
+  if (somar && selecao.has(peca) && selecao.size > 1) {
+    selecao.delete(peca);
+    if (selPeca === peca) selPeca = [...selecao].pop();
+  } else {
+    if (!somar && !manter) selecao = new Set();
+    selecao.add(peca); selPeca = peca;
+  }
+  sincronizarProxy(); transform.attach(proxy); realcar();
   $('sem-sel').hidden = true; $('com-sel').hidden = false; atualizarCamposSel();
 }
-function deselecionar() { selPeca = null; transform.detach(); realcar(null); if ($('sem-sel')) { $('sem-sel').hidden = false; $('com-sel').hidden = true; } }
-function realcar(peca) {
-  if (boxHelper) { scene.remove(boxHelper); boxHelper.geometry.dispose(); boxHelper = null; }
-  if (!peca || !peca.inst.length) return;
-  const box = new THREE.Box3(), b = new THREE.Box3();
-  for (const { im, i } of peca.inst) { if (!im.geometry.boundingBox) im.geometry.computeBoundingBox(); b.copy(im.geometry.boundingBox).applyMatrix4(matrizDe(peca, im.userData.membros[i].local)); box.union(b); }
-  if (!box.isEmpty()) { boxHelper = new THREE.Box3Helper(box, 0xffcf3a); scene.add(boxHelper); }
+function deselecionar() { selPeca = null; selecao = new Set(); transform.detach(); realcar(); if ($('sem-sel')) { $('sem-sel').hidden = false; $('com-sel').hidden = true; } }
+/** Yellow box around each selected piece (the main one brighter). */
+function realcar() {
+  for (const h of caixas) { scene.remove(h); h.geometry.dispose(); }
+  caixas = []; boxHelper = null;
+  for (const peca of [...selecao].slice(-300)) {
+    if (!peca.inst.length) continue;
+    const box = new THREE.Box3(), b = new THREE.Box3();
+    for (const { im, i } of peca.inst) { if (!im.geometry.boundingBox) im.geometry.computeBoundingBox(); b.copy(im.geometry.boundingBox).applyMatrix4(matrizDe(peca, im.userData.membros[i].local)); box.union(b); }
+    if (box.isEmpty()) continue;
+    const h = new THREE.Box3Helper(box, peca === selPeca ? 0xffcf3a : 0xc9932a); scene.add(h); caixas.push(h);
+    if (peca === selPeca) boxHelper = h;
+  }
 }
 function atualizarCamposSel() {
   if (!selPeca) return; const p = selPeca.pos;
-  $('s-nome').textContent = rotuloPrefab(selPeca.nome);
+  $('s-nome').textContent = rotuloPrefab(selPeca.nome) + (selecao.size > 1 ? ' + ' + (selecao.size - 1) + ' more' : '');
   $('s-nome').title = selPeca.nome || '';
   $('s-x').value = +p.x.toFixed(3); $('s-y').value = +p.y.toFixed(3); $('s-z').value = +p.z.toFixed(3);
   const r = rotDe(selPeca);
@@ -431,7 +508,9 @@ function atualizarCamposSel() {
 }
 
 let down = null;
-renderer.domElement.addEventListener('pointerdown', ev => { if (ev.button === 0) down = { x: ev.clientX, y: ev.clientY }; });
+renderer.domElement.addEventListener('pointerdown', ev => { if (ev.button === 0) down = { x: ev.clientX, y: ev.clientY }; ultimoCursor = ev; });
+renderer.domElement.addEventListener('pointermove', ev => { ultimoCursor = ev; });
+let ultimoCursor = null;   // where Ctrl+V pastes
 renderer.domElement.addEventListener('pointerup', ev => {
   if (ev.button !== 0 || !down) return;
   const moveu = Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 5; down = null;
@@ -445,7 +524,9 @@ renderer.domElement.addEventListener('pointerup', ev => {
     addTipo.criar(pt); return;
   }
   const hit = raycaster.intersectObjects(instGrupos, false)[0];
-  if (hit) selecionar(hit.object.userData.membros[hit.instanceId].peca); else deselecionar();
+  const somar = ev.ctrlKey || ev.metaKey;                                // Ctrl+click: add to / take out of the selection
+  if (hit) selecionar(hit.object.userData.membros[hit.instanceId].peca, { somar });
+  else if (!somar) deselecionar();
 });
 renderer.domElement.addEventListener('dblclick', ev => {
   if (transform.dragging) return;
@@ -454,31 +535,87 @@ renderer.domElement.addEventListener('dblclick', ev => {
 });
 
 // ── Operações ──────────────────────────────────────────────────────────────────
-function criarBib(chave, ponto, rot = ROT0) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
-  const obj = { n: nomeDoPrefab.get(chave) || chave, x: +(fx * ponto.x).toFixed(3), y: +ponto.y.toFixed(3), z: +ponto.z.toFixed(3) };
-  const peca = { pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(chave) || [], inst: [], obj, lista: 'objetos' };
+function criarBib(chave, ponto, rot = ROT0, { quieto = false, lista = 'objetos', extra = null } = {}) {   // ponto é world; obj guarda coords de arquivo (x = fx*world.x). Peça nova entra em `objetos` (props)
+  const obj = { ...(extra || {}), n: nomeDoPrefab.get(chave) || chave, x: +(fx * ponto.x).toFixed(3), y: +ponto.y.toFixed(3), z: +ponto.z.toFixed(3) };
+  const peca = { pos: new THREE.Vector3(obj.x, obj.y, obj.z), nome: obj.n, mats: partes.get(chave) || [], inst: [], obj, lista };
   setRot(peca, rot);
-  pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
+  pecas.push(peca);
+  if (quieto) return peca;
+  registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
+  return peca;
 }
-function criarMont(nodeExemplo, ponto, rot = ROT0) {
+function criarMont(nodeExemplo, ponto, rot = ROT0, { quieto = false } = {}) {
   const node = nodeExemplo.clone(true); node.position.copy(ponto); node.rotation.set(0, 0, 0); mapaNode.add(node); node.updateMatrixWorld(true);
   const mats = []; node.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) mats.push({ geo: o.geometry, mat: o.material, local: new THREE.Matrix4().copy(node.matrixWorld).invert().multiply(o.matrixWorld) }); });
   const peca = { pos: node.position.clone(), nome: node.name, mats, inst: [], node };
   setRot(peca, rot);
-  pecas.push(peca); registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
+  pecas.push(peca);
+  if (quieto) return peca;
+  registrar({ t: 'add', peca, idx: pecas.length - 1 }); rebuildInstancias(); marcarSujo(); selecionar(peca); atualizarHud();
+  return peca;
+}
+/** A copy of one piece at world point `w`, same rotation, same list (ground stays ground, props stay props). Not registered. */
+function copiaDe(peca, w) {
+  if (peca.obj) { const { n, x, y, z, r, rx, rz, ...resto } = peca.obj; return criarBib(chaveNome(peca.obj.n), w, peca.rot, { quieto: true, lista: peca.lista || 'objetos', extra: resto }); }
+  return peca.node ? criarMont(peca.node, w, peca.rot, { quieto: true }) : null;
+}
+const mundoDe = p => new THREE.Vector3(fx * p.pos.x, p.pos.y, p.pos.z);
+/** Clone every selected piece. deslocar: 1.5 m to the side (Ctrl+D), or in place (Alt+drag). Returns the copies. */
+function clonarSelecao({ deslocar = true, selecionarCopias = true } = {}) {
+  if (!selPeca) return [];
+  const copias = [];
+  for (const p of selecao) { const w = mundoDe(p); if (deslocar) w.x += 1.5; const c = copiaDe(p, w); if (c) copias.push(c); }
+  rebuildInstancias(); marcarSujo(); atualizarHud();
+  if (selecionarCopias && copias.length) { selecao = new Set(copias); selPeca = copias[copias.length - 1]; selecionar(selPeca, { manter: true }); }
+  else if (selPeca) selecionar(selPeca, { manter: true });              // the instances were rebuilt: the boxes too
+  return copias;
 }
 function duplicar() {
+  const copias = clonarSelecao({ deslocar: true });
+  if (copias.length) registrar(copias.length === 1 ? { t: 'add', peca: copias[0], idx: pecas.indexOf(copias[0]) } : { t: 'grupo', acoes: copias.map(peca => ({ t: 'add', peca, idx: pecas.indexOf(peca) })) });
+}
+/* COPY / PASTE (Nov 6): Ctrl+C keeps the selection (prefab, offset from the main piece, rotation, list); Ctrl+V drops it under the
+   mouse (or beside the originals). It also survives switching maps in this browser: a prefab the other map's library lacks is skipped. */
+let areaTransf = null;
+const CHAVE_COPIA = 'editor3d.copia';
+function copiar() {
   if (!selPeca) return;
-  const p = selPeca.pos;
-  if (selPeca.obj) criarBib(chaveNome(selPeca.obj.n), new THREE.Vector3(fx * (p.x + 1.5 * fx), p.y, p.z), selPeca.rot);
-  else criarMont(selPeca.node, new THREE.Vector3(p.x + 1.5, p.y, p.z), selPeca.rot);
+  const c0 = mundoDe(selPeca);
+  areaTransf = { mapa: mapaAtual, itens: [...selecao].map(p => { const w = mundoDe(p).sub(c0); return { peca: p, prefab: p.obj ? chaveNome(p.obj.n) : null, nome: p.nome, lista: p.lista || 'objetos', d: [w.x, w.y, w.z], r: { ...rotDe(p) }, extra: p.obj ? (({ n, x, y, z, r, rx, rz, ...e }) => e)(p.obj) : null }; }) };
+  try { localStorage.setItem(CHAVE_COPIA, JSON.stringify({ mapa: mapaAtual, itens: areaTransf.itens.map(({ peca, ...i }) => i) })); } catch {}
+  toast(selecao.size === 1 ? 'Copied 1 piece (Ctrl+V pastes under the mouse).' : 'Copied ' + selecao.size + ' pieces (Ctrl+V pastes under the mouse).');
+}
+function colar() {
+  let A = areaTransf;
+  if (!A) try { A = JSON.parse(localStorage.getItem(CHAVE_COPIA) || 'null'); } catch {}
+  if (!A?.itens?.length) { toast('Nothing copied yet: select pieces and press Ctrl+C.', true); return; }
+  let alvo = ultimoCursor ? pontoSobCursor(ultimoCursor) : null;
+  if (!alvo) { const p = A.itens[0].peca; alvo = p && pecas.includes(p) ? mundoDe(p).add(new THREE.Vector3(1.5, 0, 0)) : orbit.target.clone(); }
+  const copias = []; let faltou = 0;
+  for (const it of A.itens) {
+    const w = new THREE.Vector3(alvo.x + it.d[0], (it.d[1] || 0) + (A.itens.length === 1 ? alvo.y : alvo.y + 0), alvo.z + it.d[2]);
+    let c = null;
+    if (it.peca && pecas.includes(it.peca) && A.mapa === mapaAtual) { c = copiaDe(it.peca, w); if (c) setRot(c, it.r); }
+    else if (it.prefab && partes.has(it.prefab)) c = criarBib(it.prefab, w, it.r, { quieto: true, lista: it.lista, extra: it.extra });
+    else if (!it.prefab) { const t = tipos.find(t => t.nome === it.nome); if (t && modo === 'montado') { const n = mapaNode.children.find(n => n.name === it.nome); if (n) c = criarMont(n, w, it.r, { quieto: true }); } }
+    if (c) copias.push(c); else faltou++;
+  }
+  if (!copias.length) { toast('None of the copied pieces exist in this map\'s library.', true); return; }
+  rebuildInstancias(); marcarSujo(); atualizarHud();
+  selecao = new Set(copias); selPeca = copias[0]; selecionar(selPeca, { manter: true });
+  registrar(copias.length === 1 ? { t: 'add', peca: copias[0], idx: pecas.indexOf(copias[0]) } : { t: 'grupo', acoes: copias.map(peca => ({ t: 'add', peca, idx: pecas.indexOf(peca) })) });
+  toast('Pasted ' + copias.length + (copias.length === 1 ? ' piece' : ' pieces') + (faltou ? ' · ' + faltou + ' skipped (not in this map\'s library)' : '') + '.');
 }
 function deletar() {
   if (!selPeca) return;
-  const p = selPeca;
-  if (p.node) mapaNode.remove(p.node);
-  const idx = pecas.indexOf(p); if (idx < 0) return;
-  pecas.splice(idx, 1); registrar({ t: 'del', peca: p, idx }); deselecionar(); rebuildInstancias(); marcarSujo(); atualizarHud();   // bib: a peça sai de `pecas`; as listas são refeitas no salvar
+  const alvos = [...selecao], acoes = [];
+  for (const p of alvos) {
+    const idx = pecas.indexOf(p); if (idx < 0) continue;
+    if (p.node) mapaNode.remove(p.node);
+    pecas.splice(idx, 1); acoes.push({ t: 'del', peca: p, idx });
+  }
+  if (acoes.length) registrar(acoes.length === 1 ? acoes[0] : { t: 'grupo', acoes });
+  deselecionar(); rebuildInstancias(); marcarSujo(); atualizarHud();   // bib: a peça sai de `pecas`; as listas são refeitas no salvar
 }
 function enquadrar() {
   const box = new THREE.Box3(), tmp = new THREE.Vector3();
@@ -618,6 +755,9 @@ addEventListener('keydown', e => {
     return;
   }
   if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && k === 'c') { e.preventDefault(); copiar(); return; }
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && k === 'v') { e.preventDefault(); colar(); return; }
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && k === 'a') { e.preventDefault(); if (pecas.length) { selecao = new Set(pecas.filter(p => p.lista === 'objetos' || p.node)); selPeca = [...selecao].pop() || null; if (selPeca) selecionar(selPeca, { manter: true }); } return; }
   if (e.key === 'Delete' || e.key === 'Backspace') deletar();
   else if (e.key === 'Escape') { usarFerramenta('sel'); deselecionar(); }
   else if (k === 'r' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); girar((e.shiftKey ? -1 : 1) * (e.altKey ? 15 : 90)); }
@@ -642,4 +782,7 @@ tela.addEventListener('wheel', e => {
 }, { passive: false, capture: true });
 addEventListener('beforeunload', e => { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
 
+window.__editor3d = { pecas: () => pecas.length, selecionadas: () => selecao.size, historico: () => historico.length,
+  gizmoNaTela: () => { const r = renderer.domElement.getBoundingClientRect(), v = proxy.position.clone().project(camera); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; },
+  posicoes: () => [...selecao].map(p => [+p.pos.x.toFixed(2), +p.pos.z.toFixed(2)]) };   // console / tests
 listarMapas();
