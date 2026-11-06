@@ -9648,7 +9648,7 @@ if (jogo.ash){
     posicao: () => (jogo.ash ? { x: jogo.ash.x, z: jogo.ash.z } : null),
     alvoSelvagem: () => { const a = jogo.alvo; return a && a.id != null && a.estado !== 'morto' && a.estado !== 'guardado' ? { id: a.id, dex: +a.dex, nome: a.nome || espDe(a)?.name || '?', lv: a.lv || 1, hp: a.hp, estado: a.estado, x: a.x, z: a.z, chefe: !!a.chefe } : null; },
     jogadoresPerto: () => (Rede.listaOutros?.() || []).filter(o => o.pronto && !o.oculto && !o.longe && o.parceiro),
-    doTime: () => (jogo.time || []).map(t => ({ uid: t.uid, dex: +t.dex, nome: t.nome, lv: t.lv, hp: t.hp, movs: (t.movs || []).map(m => m.id), transf: !!t.transf, ovo: !!t.ovo })),
+    doTime: () => (jogo.time || []).map(t => ({ uid: t.uid, dex: +t.dex, nome: t.nome, lv: t.lv, hp: t.hp ?? t.maxHp ?? 1, movs: (t.movs || []).map(m => m.id), transf: !!t.transf, ovo: !!t.ovo })),
     pedir: alvo => { const r = regParceiro(); return r ? Rede.pedirTransformar(r.uid, alvo) : Promise.resolve({ ok: false }); },
     desfazer: () => { const r = regParceiro(); return r ? Rede.pedirDestransformar(r.uid) : Promise.resolve({ ok: false }); },
     avisar: txt => Chat.sistema(txt),
@@ -11111,7 +11111,7 @@ function conviteV2(n){
   } else if (g){
     const tem = (lerLS('insignias', []) || []).includes(g.insignia.id), esp = ginasioEspera(g), min = Math.ceil(esp / 60);
     opts = { tipo: esp ? 'ginasio-espera' : 'ginasio', titulo: I18n.t('Leader') + ' ' + g.lider + ' · ' + g.nome, n: g.time.length, preco: g.resetMoedas,
-      info: [g.tipo, g.time.length + ' Pokémon', 'Lv ' + g.time[0].lv + '–' + g.time[g.time.length - 1].lv].join(' · ') + (tem ? I18n.t(' · you already have the {badge}', { badge: g.insignia.nome || '' }) : ''),
+      info: [I18n.t(g.tipo), g.time.length + ' Pokémon', 'Lv ' + g.time[0].lv + '–' + g.time[g.time.length - 1].lv].join(' · ') + (tem ? I18n.t(' · you already have the {badge}', { badge: g.insignia.nome || '' }) : ''),
       aviso: esp ? semHtml(I18n.t('You lost recently: the leader is back in <b>{n} min</b>. Challenging now costs <b>{coins} Coins</b>.', { n: min, coins: g.resetMoedas })) : '' };
   } else {
     opts = { tipo: n.pvp ? 'duelo' : 'treinador', titulo: n.treino.nome, n: n.treino.time.length,
