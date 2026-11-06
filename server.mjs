@@ -685,7 +685,11 @@ let itensTab = { mtime: -1, items: {} };
 function catalogoItens() {
   try {
     const arq = nodePath.join(DADOS_PUB, 'menu_data.json'), mt = fs.statSync(arq).mtimeMs;
-    if (mt !== itensTab.mtime) itensTab = { mtime: mt, items: JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {} };
+    if (mt !== itensTab.mtime) {
+      const items = { ...(JSON.parse(fs.readFileSync(arq, 'utf8')).itens || {}) };
+      try { for (const [k, v] of Object.entries(JSON.parse(fs.readFileSync(nodePath.join(DADOS_PUB, 'itens_novos.json'), 'utf8')).itens || {})) items[k] ||= v; } catch {}   // names for TM pieces, shards… (were "Item 900070")
+      itensTab = { mtime: mt, items };
+    }
   } catch {}
   return itensTab;
 }

@@ -105,6 +105,23 @@ export const ESQUEMAS = {
       { k: 'q', rotulo: 'Quality (rarity)', tipo: 'num', min: 0, max: 10, int: true },
     ],
   },
+  itens_novos: {
+    titulo: 'New items', arquivo: 'itens_novos', caminho: 'itens', forma: 'mapa', idValido: /^9\d{5}$/, idAjuda: '900001 to 999999',
+    descricao: 'The items we added on top of the original game (Rare Candy S…MAX, TM pieces, raid shards, incubators, medallions…). The game merges them into the Items list. Write names and descriptions in English; the Portuguese text goes in the translations.',
+    previa: '/admin/preview_item.mjs',
+    campos: [
+      { k: 'n', rotulo: 'Name', tipo: 'texto', max: 200, col: true, obrigatorio: true },
+      { k: 't', rotulo: 'Type', tipo: 'opcao', col: true, opcoes: Object.entries(TIPOS_ITEM).map(([v, rotulo]) => ({ v: +v, rotulo })) },
+      { k: 'd', rotulo: 'Description', tipo: 'texto', max: 3000, area: true },
+      { k: 'i', rotulo: 'Icon', tipo: 'texto', max: 60, validar: s => /^[\w-]{1,60}$/.test(s) ? null : 'file name without extension', ajuda: 'File ui/amanda/itens_novos/<icon>@2x.png (and <icon>.png). Items without art yet show a placeholder in the game.' },
+      { k: 'q', rotulo: 'Quality (rarity)', tipo: 'num', min: 0, max: 10, int: true, col: true },
+      { k: 'v', rotulo: 'Value (currency, price)', tipo: 'json', validar: v => v == null ? null : precoItem(v), resumo: v => (v || []).map(([m, p]) => p + ' (currency ' + m + ')').join(' or '),
+        ajuda: 'Reference value: [[currency, price]], e.g. [[1, 100]] = 100 Coins. Empty or null = no value.' },
+      { k: 'preso', rotulo: 'Bound to account', tipo: 'bool', col: true, ajuda: 'Can\'t be traded, sold or put on the Market.' },
+      { k: 'uso', rotulo: 'Use (what it does)', tipo: 'json', validar: v => v == null || (v && typeof v === 'object' && !Array.isArray(v) && typeof v.tipo === 'string') ? null : 'an object with a "tipo", e.g. { "tipo": "nivel", "faixa": [1, 15] }',
+        ajuda: 'How the game uses it. Rare Candy: { "tipo": "nivel", "faixa": [min, max] }. Leave as is unless you know the code reads the new value.' },
+    ],
+  },
   lojas: {
     titulo: 'Shops', arquivo: 'menu_data', caminho: 'lojas', forma: 'mapa', registroLista: true, usaItens: true, idValido: /^\d{1,9}$/, idAjuda: 'numbers only',
     descricao: 'What each shop sells: item, quantity per purchase, currency, price and minimum level. The game\'s Poké Mart is shop 2150101.',

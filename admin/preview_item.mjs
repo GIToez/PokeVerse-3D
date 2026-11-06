@@ -19,5 +19,9 @@ export function atualizar(r) {
     <div class="pi-texto"><b>${esc(r?.n || '(unnamed)')}</b><div class="fraco">${esc(tipoDe(r?.t))}${r?.q != null ? ' · quality ' + r.q : ''}${valor ? ' · ' + esc(valor) : ''}</div>
     <div class="pi-desc">${desc || '<span class="fraco">no description</span>'}</div></div>`;
   const img = raiz.querySelector('img');
-  if (img) img.onerror = () => { img.remove(); const s = raiz.querySelector('.pi-sem'); s.hidden = false; s.textContent = 'icon not found: ui/itens/' + r.i + '.png'; };
+  /* the new items (ids 900001+, itens_novos.json) keep their art in ui/amanda/itens_novos/ */
+  const fontes = r?.i ? [`/ui/itens/${r.i}.png`, `/ui/amanda/itens_novos/${r.i}@2x.png`, `/ui/amanda/itens_novos/${r.i}.png`] : [];
+  if (img && /^ic_9\d{5}$/.test(r.i)) { fontes.push(fontes.shift()); img.src = fontes[0]; }
+  let n = 0;
+  if (img) img.onerror = () => { if (++n < fontes.length) { img.src = fontes[n]; return; } img.remove(); const s = raiz.querySelector('.pi-sem'); s.hidden = false; s.textContent = 'no icon file yet'; s.title = 'looked for: ' + fontes.join(', '); };
 }
