@@ -9434,6 +9434,19 @@ function usarGolpe(id){
     flutuar(jogo.ash, 'Your Pokémon stay back. F ball, G bait, R rock.', '#ffd23a');
     return;
   }
+  if (id === 'transform' && TransfUi.ehDitto(p.dex)){                    // a Ditto's Transform in a wild fight: it copies the Pokémon it's fighting (server_transform.mjs)
+    const reg = (jogo.time || []).find(t => String(t?.uid) === String(uidParceiro()));
+    if (p.transf){ flutuar(p, I18n.t('already transformed'), '#ffd23a'); return; }
+    if (!reg || !comConta()){ flutuar(p, I18n.t('Transform needs an account'), '#ffd23a'); return; }
+    if (!jogo.transformLigado){ flutuar(p, I18n.t("Transform isn't ready yet."), '#ffd23a'); return; }
+    const alvoT = jogo.alvo;
+    p.recargas[id] = 3;
+    Rede.pedirTransformar(reg.uid, { tipo: 'selvagem', id: alvoT.id }).then(r => {
+      if (r && r.ok === false){ if (r.texto) flutuar(jogo.pika || p, r.texto, '#ffd23a'); }
+      else { Ind.gastarPP(reg, 'transform'); efeito('00016_Hit', (jogo.pika || p).peito, (jogo.pika || p).altura); }
+    }).catch(() => {});
+    return;
+  }
   jogo.ordem = { golpe: g, alvo: jogo.alvo };
 }
 if (jogo.ash){

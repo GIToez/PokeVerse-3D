@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import * as Transf from './transform.mjs';
+import * as Ind from './individual.mjs';   // learnset (loaded by server_battle.mjs) for a wild's moves
 
 export function createTransform({ accounts, dataDir, send, socketsOf, onMap, world, wilds, battle, saveAccounts, broadcast }) {
   const rules = JSON.parse(fs.readFileSync(nodePath.join(dataDir, 'transform.json'), 'utf8'));
@@ -49,7 +50,10 @@ export function createTransform({ accounts, dataDir, send, socketsOf, onMap, wor
     especie: species,
     glbDoDex: dex => 'pm' + pad(dex) + '_00',
     golpeExiste: moveExists,
-    golpesDoSelvagem: w => (Array.isArray(w?.ind?.movs) ? w.ind.movs : []).map(m => m?.id ?? m),
+    golpesDoSelvagem: w => {   // a server wild may carry no move list: the moves its species has at its level (the same rule as a caught one)
+      const l = (Array.isArray(w?.ind?.movs) ? w.ind.movs : Array.isArray(w?.movs) ? w.movs : []).map(m => m?.id ?? m).filter(Boolean);
+      return l.length ? l : Ind.golpesIniciais(+w?.dex, +w?.lv || 5, ['tackle'], w?.glb || null);
+    },
     jogadorNaSala: (map, id) => { const w = onMap(map).find(x => String(x._id) === String(id)); return w ? playerOf(w) : null; },
     log: s => console.log(s),
     mon: (c, uid) => { const p = allMons(c).find(x => x && String(x.uid) === String(uid)); return p ? { dex: p.dex, ficha: p, ovo: !!p.ovo } : null; },
