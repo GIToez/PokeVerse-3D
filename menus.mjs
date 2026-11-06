@@ -48,6 +48,7 @@ import * as MapaViagem from './map_travel.mjs';
 import * as PokemartUI from './pokemart_ui.mjs';
 import * as LojaUI from './shop_ui.mjs';                                  // Diamond Shop + Battle Pass (server_shop.mjs / server_season.mjs)
 import * as Guia from './mission_guide.mjs';
+import * as ControlesUI from './controls_ui.mjs';                          // v2 Settings → Controls: actions by group, main + alternate key, conflicts, keyboard map, touch
 import { linhaRecompensa } from './missions.mjs';
 let ctx = null, D = null, aberta = null, abaAtual = null, carregandoD = null;
 /** A record's species with its form's types and stats (forms.mjs, via index.html). */
@@ -274,6 +275,13 @@ function ligarRecursos(){
     pedir: async op => op === 'vista'
       ? { ok: true, vista: { guilda: null, convites: [], lista: [], pedidos: [], agora: Date.now(), eu: { fundar: { custo: 0, pode: false, porque: 'Guilds need the server.' } } } }
       : { ok: false, erro: 'Guilds need the server. You can look around, but nothing is saved yet.' },
+  });
+  ControlesUI.instalar({                                                    // what the Controls tab shows next to each action (its moves, ball, shortcuts and team)
+    Som: ctx.Som,
+    golpe: (i) => { const a = ctx.jogo?.semParceiro ? null : ctx.jogo?.pika?.golpesIds?.[i], g = a ? ctx.golpe?.(a) : null; return g ? { nome: g.nome, icone: './ui/figma/tipo/' + (TIPO_FIG[g.tipo] || 'normal') + '.png' } : null; },
+    bola: () => { const a = String(ctx.jogo?.bolaSel || '1001'); return { nome: tr(D?.itens?.[a]?.n || 'Poké Ball'), qtd: ctx.jogo?.bolas?.[a] ?? 0, icone: './ui/itens/ic_' + a + '.png' }; },
+    atalho: (i) => { const b = (ctx.atalhos?.() || [])[i]; return b ? { nome: b.nome, icone: b.icone } : null; },
+    membro: (i) => { const m = (ctx.jogo?.time || [])[i], d = /pm(\d{4})/.exec(m?.glb || ''); return m ? { nome: m.nome, lv: m.lv, icone: d ? './ui/mon/pm' + d[1] + '.png' : null } : null; },
   });
   TorneioUI.instalar({ tr, defPopup, abrirMapa: () => abrir('mapa'), segurar: el => DIALOGOS.add(el) });
   Balsa.instalar({
@@ -5475,7 +5483,7 @@ function popupCf(){
     acao: (nome, el) => cfAcao(nome, el),
     abre: nome => { if (nome === 'dialogo-apagar'){ cfAbrirApagar(); return true; } return false; },
     digita: () => cfConferirNome(),
-    fechar: () => { if (aberta === 'config') aberta = null; Popup.mostrarExtra(popCf, 'dialogo-apagar', false); },
+    fechar: () => { if (aberta === 'config') aberta = null; Popup.mostrarExtra(popCf, 'dialogo-apagar', false); ControlesUI.fechou(); },
   });
   Popup.ligarAjustes(popCf, {
     mover: (id, k) => cfDeslizar(id, k, false),
@@ -6036,6 +6044,23 @@ function cfLinhaGuia(pop){
   b.title = tr('A gold arrow on the ground points at your current mission.');
   b.onclick = () => { Guia.definirModo(on ? 'desligado' : 'ligado'); ctx.Som?.tocar?.('ui/sound_click', { volume: 0.5 }); cfLinhaGuia(pop); };
   linha.appendChild(b); cfCaber(b);
+  cfAbaixoDoGuia(area, V);
+}
+/* The Game box has room for four rows and the Mission guide is a fifth: what the layout draws below it (the Panels heading and its two
+   rows) moves down past it, a little tighter, and stays inside the box. Positions are kept from the layout (dataset.top0), so it can rerun. */
+function cfAbaixoDoGuia(area, V){
+  const px = v => parseFloat(v) || 0, fim = V.top + V.height + 8, alto = px(area.style.height) || area.clientHeight || 0;
+  const abaixo = [...area.children].filter(e => !e.classList.contains('cf-guia') && !e.classList.contains('cf-visual') && e.style.display !== 'none' && (e.dataset.top0 != null ? +e.dataset.top0 : px(e.style.top)) >= V.top - 4);
+  if (!abaixo.length || !alto) return;
+  for (const e of abaixo) if (e.dataset.top0 == null) e.dataset.top0 = String(px(e.style.top));
+  const t0 = Math.min(...abaixo.map(e => +e.dataset.top0)), fim0 = Math.max(...abaixo.map(e => +e.dataset.top0 + px(e.style.height)));
+  const vao = alto - 6 - fim, span = fim0 - t0;
+  if (span <= 0) return;
+  const k = Math.min(1, vao / span);
+  for (const e of abaixo) {
+    const t = +e.dataset.top0, h = px(e.style.height);
+    e.style.top = Math.round(fim + (t - t0) * k - (k < 1 ? (h * (1 - k)) * ((t - t0) / span) : 0)) + 'px';
+  }
 }
 function cfLinhaVisual(pop){
   const area = pop.querySelector('[data-fig="conteudo-geral"]'); if (!area) return;
@@ -6123,7 +6148,7 @@ function encherConfig(pop){
   }
   if (abaCf === 'som') encherCfSom(pop);
   else if (abaCf === 'conta') encherCfConta(pop);
-  else if (abaCf === 'controles') encherCfControles(pop);
+  else if (abaCf === 'controles'){ ControlesUI.encher(pop); for (const t of pop.querySelectorAll('[data-fig^="filtro-"] [data-txt="filtro"]')){ t.style.textOverflow = 'clip'; cfCaber(t); cfCaber(t); } }   // v2 (upcoming/controls_ui.mjs); the group names shrink to fit their chips
   else if (abaCf === 'social') encherCfSocial(pop);
 }
 /** SOM: três volumes contínuos, mudo e o som em segundo plano. Tudo de verdade. */
