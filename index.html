@@ -284,7 +284,8 @@ import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls
 import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
 import * as Guia from './mission_guide.mjs';
-import * as Aparicoes from './sightings.mjs';   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
+import * as Aparicoes from './sightings.mjs';
+import * as Remendos from './scenery_patches.mjs';   // map fixes: house back walls, soft seams between ground textures   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
 import * as StaffUi from './staff_ui.mjs';   // ★ Staff button for GMs / staff: free path + a following Pokémon (upcoming/, server_staff.mjs) // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
@@ -1748,6 +1749,7 @@ async function mascaraCrua(parser, idxTextura){
 /* As texturas do GroundBlend4 só existem dentro dos uniforms do shader do piso (fechados no `onBeforeCompile`):
    ninguém as acha varrendo os materiais da cena. Guardo aqui pra que o `soltarImagensDaCena` também as alcance. */
 const texturasPiso = [];
+const camadasPiso = new Map();   // ground material → { mask, camadas }: the seam smoother (scenery_patches.mjs) blends with them
 async function prepararPisos(g){
   const feitos = new Set(), tarefas = [];
   g.scene.traverse(o => {
@@ -1768,6 +1770,7 @@ async function prepararPisos(g){
         for (const t of texs){ t.wrapS = t.wrapT = THREE.RepeatWrapping; t.needsUpdate = true; texturasPiso.push(t); }
         const crua = await mascaraCrua(g.parser, gb.mask); if (crua){ crua.repeat.copy(mask.repeat); crua.offset.copy(mask.offset); crua.anisotropy = mask.anisotropy; mask = crua; }   // Safari pré-multiplica alfa: máscara pelos bytes crus
         for (const t of camadas) t.colorSpace = THREE.SRGBColorSpace;
+        camadasPiso.set(m, { mask, camadas });
         m.map = mask;                                   // garante USE_MAP e o varying vMapUv
         m.color.set('#ffffff');
         // o piso fica um tiquinho atrás dos tapetes de grama/terra que deitam
@@ -1852,6 +1855,7 @@ function instanciarBiblioteca(g, dados){
     });
     partes.set(chaveNome(p.name), lista);
   }
+  try { const r = Remendos.remendarCostas(partes, THREE); if (r.length) console.log('scenery patches:', r.join(' ')); } catch (e){ console.warn('scenery patches:', e); }
   /* ROTAÇÃO (editor de cenário 3D): colocação com `r` (graus em torno de Y, no espaço do MUNDO, já com o flipX) usa uma VARIANTE
      girada do prefab, "nome@graus": as mesmas malhas com local = Ry × local. Caixa, piso, parede e porta saem da variante, então as
      regras abaixo (que só conhecem translação) continuam valendo. Os testes por NOME seguem usando `chaveNome(o.n)`. */
@@ -2562,6 +2566,10 @@ if (chao.biblioteca){
 }
 const principal = chao.biblioteca ? instanciarBiblioteca(gltf, dados) : instanciar(gltf, dados);
 cena.add(principal.raiz);
+if (!params0Cedo.has('semEmendas')) try {   // ?semEmendas turns it off (to compare)
+  const t0 = performance.now(), r = Remendos.suavizarEmendas(principal.raiz, THREE, { camadasDoPiso: camadasPiso });
+  if (r?.faixas) console.log('ground seams:', r.faixas, 'strips,', r.metros, 'm,', Math.round(performance.now() - t0), 'ms');
+} catch (e){ console.warn('ground seams:', e); }
 await prepararAgua(principal.aguas || []);
 /* NIGHT LIGHT SOURCES. Streetlights: the map's `*streetlight*` placements, at each prefab's bulb height (measured in the GLBs:
    c_001 has the `light` dome at 1.76-2.21 m; the _g_2 variant is the same post 2 m up; t_007 has its lantern at 2.1-2.4 m).
