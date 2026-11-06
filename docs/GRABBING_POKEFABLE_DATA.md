@@ -46,3 +46,11 @@ javascript:(()=>{const P=WebSocket.prototype,s0=P.send;let done=false;P.send=fun
 Not served by their site at all (their client falls back to nothing): `data/catalogo_efeitos.json`,
 `data/missoes_v2.json`, `data/npcs_falas.json`, `data/skins_jogador.json`.
 | `/temporada`, `/loja`, `/loja/catalogo?l=en` | `upcoming/data/pokefable_shop_pass.json` | Battle Pass season 1 (missions, reward tracks, prices), shop packs and founder packs, 68 cosmetic pieces. Their Stripe key is stripped. |
+
+## The Competition Center and the Colosseum (2026-11-05)
+
+`public/downloads/grab_competition_center_bookmarklet.txt` (readable copy: `grab_competition_center.js`). Run it on a logged-in
+PokeFable tab, ideally standing in the Competition Center. It saves `pokeverse-competition-center.zip` with their `data/scenes.json`,
+`data/doors.json`, `data/kanto.json`, `data/npcs_glb.json`, `data/npcs_falas.json`, `cenario/kanto.glb` + `kanto_chao.json`, and
+for every scene in their `scenes.json` that we don't have: `data/<id>.json`, `cenario/<id>.glb`, `cenario/<id>_chao.json`
+(the list is in `_new_scenes.txt`). Anything the page loaded with colise/colosse/competi/torneio/tournament in its name comes too.
