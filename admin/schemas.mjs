@@ -211,6 +211,15 @@ export const ESQUEMAS = {
       { k: 'premium', rotulo: 'Premium prize', tipo: 'json', col: true, validar: premioOk },
     ],
   },
+  aparicoes: {
+    titulo: 'Story sightings', arquivo: 'sightings', forma: 'objeto',
+    descricao: 'Legendary Pokémon that show themselves once per player (sightings.mjs). Ho-Oh flies across the sky over its area (needs a partner Pokémon out); Suicune runs across water; Lugia swims under you as a shadow while surfing. Each player sees each one once (saved as "aparicoes").',
+    campos: [
+      { k: 'ligado', rotulo: 'On', tipo: 'bool', ajuda: 'Off = no sightings at all.' },
+      { k: 'lista', rotulo: 'Sightings', tipo: 'json', validar: v => Array.isArray(v) && v.length <= 20 && v.every(x => x && ['hooh', 'suicune', 'lugia'].includes(x.id) && typeof x.glb === 'string' && /^pm\d{4}_\d{2}$/.test(x.glb) && (x.area == null || Number.isInteger(x.area)) && (x.mapa == null || typeof x.mapa === 'string' || Array.isArray(x.mapa))) ? null : 'a list like [{ "id": "hooh", "glb": "pm0250_00", "mapa": "kanto", "area": 1201 }] — id is hooh, suicune or lugia',
+        ajuda: 'id = the flight (hooh, suicune, lugia), glb = the model, mapa = the map, area = where it happens (Route 1 is 1201). One of each id.' },
+    ],
+  },
   skins_pokemon: {
     titulo: 'Pokémon skins', arquivo: 'pokemon_skins', forma: 'objeto',
     descricao: 'Pokémon skins for sale in the Diamond shop (Cosmetics → Pokémon skins). A skin is a model pmDDDD_NN in public/scenery/mon (00 is the normal form, 99 is not a skin); bought skins are turned on per species in the Wardrobe → Pokémon, and everyone sees them. Only skins whose model exists are sold.',

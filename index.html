@@ -284,6 +284,7 @@ import * as Safari from './safari_rules.mjs'; // Safari visit: fee, Safari Balls
 import * as SafariUi from './safari_ui.mjs';   // v2 Safari pieces: painel-safari, dialogo-safari, aviso-safari-fim
 import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: teach a TM for Coins
 import * as Guia from './mission_guide.mjs';
+import * as Aparicoes from './sightings.mjs';   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
 import * as StaffUi from './staff_ui.mjs';   // ★ Staff button for GMs / staff: free path + a following Pokémon (upcoming/, server_staff.mjs) // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
@@ -10104,6 +10105,17 @@ if (jogo.ash){
     areaAtual: () => areaInteriorVisitada ?? areaAtual(), repintar: () => atualizarMissao(),
     time: () => { const k = membroAtivo(); return (jogo.time || []).map((e, i) => (i === k ? { ...e, seguindo: true } : e)); },
     caixa: () => lerLS('caixa', []) || [] });
+  if (!Fairy && !INTRO) fetch('./data/sightings.json').then(r => r.ok ? r.json() : null).then(d => {
+    if (!d || d.ligado === false) return;
+    Aparicoes.instalar({ THREE, jogo, cena: () => cena, camera: () => cam, get flipX(){ return flipX; },
+      chao: chaoEm, agua: aguaEm, navegavel, mapa: () => NOME, area: () => areaInteriorVisitada ?? areaAtual(),
+      ocupado: () => !!(falando || jogo.turno || jogo.cinem || jogo.luta), temParceiro: () => !!jogo.pika,
+      vistas: () => lerLS('aparicoes', {}) || {}, marcar: v => gravarLS('aparicoes', v),
+      carregar: glb => modeloMon(String(glb).replace(/\.glb$/, '') + '.glb'),
+      montar: (g, altura, glb) => montarCorpo(g, SkeletonUtils.clone(g.scene), altura, 0, String(glb).replace(/\.glb$/, '') + '.glb'),
+      tocarAnim }, d.lista || []);
+    window.__dbg && (window.__dbg.aparicoes = Aparicoes);
+  }).catch(e => console.warn('sightings:', e));
   // chegada em área durante o jogo (o "Você chegou em" acima é só do boot): chat + evento de missão
   let areaVista = areaInteriorVisitada ?? areaAtual();
   let areaNoServidor = null;                                               // "área@conexão" que o servidor já sabe (reconectou = conexão nova = manda de novo)
@@ -11804,6 +11816,7 @@ function quadro(dt){
       }
     }
     try { StaffUi.quadro(dt); } catch {}   // the staff's following Pokémon
+    try { Aparicoes.quadro(dt); } catch (e){ if (!Aparicoes.__avisou){ Aparicoes.__avisou = true; console.warn('sightings', e); } }
     Guia.quadro(dt, { THREE, cena, ash: jogo.ash, pins: pinsG, rota: rotaG, npcs: jogo.npcs, flipX, chao: chaoEm, ocupado: !!(falando || jogo.turno || jogo.cinem), voando: !!(jogo.montaria?.voa && (jogo.montaria.altura ?? 0) > 3) });
   } catch (e){ if (!Guia.quadro.__avisou){ Guia.quadro.__avisou = true; console.warn('guia', e); } }
   if (jogo.chefe) atualizarChefe(dt);
