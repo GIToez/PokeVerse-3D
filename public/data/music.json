@@ -14,6 +14,7 @@
   "1191": "bg/sound_map1111",
   "1192": "bg/sound_map1114",
   "1193": "bg/sound_road1",
+  "1194": "bg/sound_road1",
   "1201": "bg/sound_road2",
   "1202": "bg/sound_road2",
   "1203": "bg/sound_road2",
@@ -43,6 +44,7 @@
  },
  "cenas": {
   "1000002": "bg/sound_login",
+  "2000001": "bg/sound_road2",
   "2100001": "bg/sound_map1113",
   "2100002": "bg/sound_map1112",
   "2100003": "bg/sound_map1112",
@@ -57,7 +59,6 @@
   "2100012": "bg/sound_map1112",
   "2100013": "bg/sound_map1112",
   "2500001": "bg/sound_road3",
-  "2000001": "bg/sound_road2",
   "2520001": "bg/sound_map1112",
   "2520002": "bg/sound_map1112",
   "2520003": "bg/sound_map1112",

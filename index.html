@@ -7934,6 +7934,7 @@ function prepararPortas(){
     if (p.t === 7 && !INTERIOR && !portaoDeRota) continue;
     if (p.t === 6 && !INTERIOR && !portaoDeRota) abrirCorredor(flipX * n.x, n.z);   // porta funda na caixa do prédio (ginásio de Pewter): liga a célula da porta ao ar livre — ANTES do vão
     abrirVao(flipX * n.x, n.z, portaoDeRota ? 1.4 : 0.6);   // a casca de parede bloqueia a linha inteira: abre só o vão da porta/chegada
+    if (p.t === 6 && !p.n){ portasCena.push({ id: n.cfg, x: flipX * n.x, z: n.z, destino: 0 }); continue; }   // a door that goes nowhere yet (the Colosseum): walking in shows its lock bubble, if a lock lists it; otherwise nothing happens
     if (p.t === 6){
       const dest = PORTAS[p.n], cenaDest = cenaDoDestino(dest, p.n);
       if (!idMundo(cenaDest) && String(cenaDest) !== NOME && !CENAS_EXPORTADAS.has(+cenaDest)){ semCena++; continue; }   // interior sem GLB ainda: sem anel (senão o boot cai num 404)
@@ -8016,20 +8017,21 @@ async function telaEscura(ms, texto){ texto = rotuloLugar(texto);
   await dorme(ms);
 }
 async function atravessar(p){
-  const dest = PORTAS[p.destino]; if (!dest || portaOcupado) return;
+  const dest = PORTAS[p.destino]; if ((!dest && !p.id) || portaOcupado) return;
   /* PORTA NÃO ABRE COM BATALHA EM ANDAMENTO (20/09, chaospider na Elite: "a animação de se distanciar pra começar a
      batalha te leva pra fora e você perde o progresso"). A formação da luta faz o jogador RECUAR ANDANDO até 7,5 m; se a
      porta estiver atrás dele, ele recua pra dentro dela, troca de cena no meio do desafio — e na Liga isso ZERA a corrida
      da Elite, que é uma luta só do primeiro ao quinto quarto. Ninguém atravessa porta no meio de uma batalha por turnos,
      então a trava é geral: vale pro ginásio e pro treinador de rota também. */
   if (jogo.turno) return;
-  const trava = Locks.travaDaPorta(p.id, dest.a, areaInteriorVisitada ?? (jogo.ash ? areaDoPonto(jogo.ash.x, jogo.ash.z) : null));   // a door the story hasn't opened yet: the lock bubble says why
+  const trava = Locks.travaDaPorta(p.id, dest?.a, areaInteriorVisitada ?? (jogo.ash ? areaDoPonto(jogo.ash.x, jogo.ash.z) : null));   // a door the story hasn't opened yet: the lock bubble says why
   if (trava){
     Locks.mostrar(trava, () => jogo.ash); if (trava.fala) Chat.sistema(trava.fala);
     Som.tocar('ui/sound_click', { volume: 0.4 });
     for (const q of portasCena) if (distPorta(q, jogo.ash.x, jogo.ash.z) < 1.9) emPorta.add(q);   // re-armed only after stepping off the door
     return;
   }
+  if (!dest) return;                                                     // no destination and no lock: nothing to do
   const { ash, pika } = jogo;
   Som.tocar('ui/sound_exitdoor', { volume: 0.5 });
   const cenaDest = cenaDoDestino(dest, p.destino);

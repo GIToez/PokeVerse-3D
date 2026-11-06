@@ -1,0 +1,19 @@
+{
+    "cx": 0,
+    "cy": 4.054,
+    "cz": 0,
+    "sx": 104.9,
+    "sy": 13.368,
+    "sz": 125.9,
+    "malhas": 377,
+    "triangulos": 377679,
+    "objetos": 212,
+    "faltando": 0,
+    "amostraNome": "",
+    "amostraX": 0,
+    "amostraY": 0,
+    "amostraZ": 0,
+    "biblioteca": true,
+    "prefabs": 83,
+    "fonte": "Everdeen's Competition Center (PokeFable PR #33, centro_competicao.glb) + the provisional sea (shui_floor from kanto.glb) + geometry patches"
+}

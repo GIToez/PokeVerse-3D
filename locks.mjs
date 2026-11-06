@@ -1,5 +1,5 @@
 /* DOOR LOCKS (Nov 5, `travas` from PokeFable's missions file → public/data/locks.json, editable in the admin's "Door locks"):
- * a door stays shut until a story mission is done, enough Badges, an item, or the Champion title, and the v2 lock bubble
+ * a door stays shut until a story mission is done, enough Badges, an item, or the Champion title (or always, `fechada`), and the v2 lock bubble
  * (`balao-trava`) says why above the player's head instead of the door working. GM accounts walk through everything.
  * Leaving a locked place always works (only going IN is blocked).
  *   carregar()                                  → loads the list (once)
@@ -16,12 +16,15 @@ export function carregar() {
 }
 /** Why this lock is still shut (null = open now). */
 function motivo(t) {
+  if (t.fechada) return tr(t.motivo || 'Closed for now.');
   if (t.ate != null && !ctx.feita(t.ate)) return tr('Opens after the mission “{x}”.', { x: tr(ctx.nomeMissao(t.ate) || '#' + t.ate) });
   if (t.insignias != null && ctx.insignias() < +t.insignias) return tr('Opens with {n} Badges ({t} so far).', { n: t.insignias, t: ctx.insignias() });
   if (t.item != null && !ctx.temItem(t.item)) return tr('You need a key to open it.');
   if (t.campeao && !ctx.campeao()) return tr('Only the Kanto Champion may enter.');
   return null;
 }
+/** A lock lists this door (used for doors that don't lead anywhere yet, so they still get the bubble). */
+export function temPorta(id) { return lista.some((t) => t && t.ligada !== false && (t.portas || []).map(Number).includes(+id)); }
 export function travaDaPorta(portaId, areaDestino, areaAqui) {
   if (!ctx || ctx.gm?.()) return null;
   for (const t of lista) {

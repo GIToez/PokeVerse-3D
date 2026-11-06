@@ -222,6 +222,8 @@ export const ESQUEMAS = {
       { k: 'insignias', rotulo: 'Badges needed', tipo: 'num', int: true, min: 1, max: 99, col: true },
       { k: 'item', rotulo: 'Item needed', tipo: 'num', int: true, min: 1, max: 999999999 },
       { k: 'campeao', rotulo: 'Champion only', tipo: 'bool' },
+      { k: 'fechada', rotulo: 'Always closed', tipo: 'bool', ajuda: 'Shut for everyone until this is turned off (a place that is not built yet).' },
+      { k: 'motivo', rotulo: 'Reason (always closed)', tipo: 'texto', max: 120, ajuda: 'The bubble text when "Always closed" is on.' },
       { k: 'nota', rotulo: 'Note (staff only)', tipo: 'texto', max: 200 },
     ],
   },

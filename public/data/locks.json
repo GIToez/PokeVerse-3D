@@ -167,5 +167,17 @@
    1320
   ],
   "campeao": true
+ },
+ {
+  "id": "colosseum",
+  "ligada": true,
+  "titulo": "Colosseum",
+  "fala": "The Colosseum opens on tournament nights. Sign up at the tournament desk.",
+  "motivo": "Opens on tournament nights.",
+  "portas": [
+   6119303
+  ],
+  "areas": [],
+  "fechada": true
  }
 ]

@@ -66,11 +66,6 @@
      "tipo": 1
     },
     {
-     "id": 1193,
-     "nome": "Competition Center",
-     "tipo": 1
-    },
-    {
      "id": 1201,
      "nome": "Route 1",
      "tipo": 1
@@ -193,6 +188,11 @@
     {
      "id": 1225,
      "nome": "Route 25",
+     "tipo": 1
+    },
+    {
+     "id": 1194,
+     "nome": "Old Competition Center",
      "tipo": 1
     },
     {
@@ -3086,6 +3086,18 @@
     "modo": "clonar",
     "de": "kanto"
    }
+  },
+  {
+   "id": 9800002,
+   "nome": "Competition Center",
+   "areas": [
+    {
+     "id": 1193,
+     "nome": "Competition Center",
+     "tipo": 1
+    }
+   ],
+   "objeto": false
   }
  ]
 }
