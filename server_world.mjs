@@ -359,7 +359,7 @@ export function createWorld(h) {
     if (onKO) {   // item drops (server_drops.mjs): each account's share of the damage, the top hitter, and the rank
       const L = [...w.damage].filter(([, d]) => now - d.at < XP_WINDOW_MS).sort((a, b) => b[1].dealt - a[1].dealt);
       const total = L.reduce((t, [, d]) => t + d.dealt, 0) || 1, S = species(w.dex);
-      L.forEach(([u, d], i) => { try { onKO(u, { dex: w.dex, lv: w.lv, tipos: S.types || [], shiny: !!w.ind?.shiny, parte: d.dealt / total, maior: i === 0, lugar: i, lvMeu: levelOf(fieldMon(u)) }); } catch (e) { console.warn('[world] drops:', e.message); } });
+      L.forEach(([u, d], i) => { try { onKO(u, { dex: w.dex, lv: w.lv, x: w.x, z: w.z, tipos: S.types || [], shiny: !!w.ind?.shiny, parte: d.dealt / total, maior: i === 0, lugar: i, lvMeu: levelOf(fieldMon(u)) }); } catch (e) { console.warn('[world] drops:', e.message); } });
     }
     clearTimeout(w.timer);
     w.timer = setTimeout(() => { if (w.state === 'desmaiado') remove(map, w, 'morreu'); }, FAINT_MS);

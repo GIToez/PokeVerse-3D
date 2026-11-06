@@ -231,7 +231,8 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Gas from './gas.mjs';           // ghost gas around Gastly (Nov 5)
 import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
 import * as Cutscene from './cutscene.mjs';
-import * as BattleUi from './battle_ui.mjs';   // v2 battle pieces (the challenge card; more to come)  // story cutscenes played from public/data/cutscenes/*.json (?intro2=1: the new Oak opening preview)
+import * as BattleUi from './battle_ui.mjs';
+import * as HuntUi from './hunt_ui.mjs';     // hunt bonus line + pool (server_hunt.mjs)   // v2 battle pieces (the challenge card; more to come)  // story cutscenes played from public/data/cutscenes/*.json (?intro2=1: the new Oak opening preview)
 import * as Diretor from './director.mjs';       // modo diretor (?diretor=1): monta a cena e grava com o OBS
 import * as Captura from './capture.mjs';       // modo captura (?captura=1): cena de TikTok jogando de verdade, selvagens escolhidos
 import * as Conhecimento from './knowledge.mjs';   // Pokédex de conhecimento: nível por espécie, colecionador, títulos (LS `conhecimento`)
@@ -9841,7 +9842,7 @@ if (jogo.ash){
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
       fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });

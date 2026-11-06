@@ -86,9 +86,9 @@ function ensureCss() {
   css.id = 'pv-marks-css';
   const ch = (n) => `polygon(${n}px 0,calc(100% - ${n}px) 0,100% ${n}px,100% calc(100% - ${n}px),calc(100% - ${n}px) 100%,${n}px 100%,0 calc(100% - ${n}px),0 ${n}px)`;
   css.textContent = `
-.pv-mk-badge{position:absolute;z-index:5;display:inline-flex;align-items:center;gap:1px;box-sizing:border-box;border-style:solid;border-color:#0A1A33;border-radius:999px;color:#0A1A33;font-family:'Nunito Sans',sans-serif;font-weight:900;white-space:nowrap;pointer-events:none;line-height:1}
+.pv-mk-badge{position:absolute;z-index:60;display:inline-flex;align-items:center;gap:1px;box-sizing:border-box;border-style:solid;border-color:#0A1A33;border-radius:999px;color:#0A1A33;font-family:'Nunito Sans',sans-serif;font-weight:900;white-space:nowrap;pointer-events:none;line-height:1}
 .pv-mk-badge svg,.pv-mk-dot svg{flex:none}
-.pv-mk-dot{position:absolute;z-index:5;box-sizing:border-box;border-style:solid;border-color:#0A1A33;border-radius:999px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.pv-mk-dot{position:absolute;z-index:60;box-sizing:border-box;border-style:solid;border-color:#0A1A33;border-radius:999px;display:flex;align-items:center;justify-content:center;pointer-events:none}
 #pv-card{position:fixed;z-index:9000;max-width:min(300px,calc(100vw - 16px));background:#35C6E8;padding:1.5px;clip-path:${ch(9)};pointer-events:none;font-family:'Nunito Sans',sans-serif;color:#EAF6FB;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
 #pv-card>div{background:#0D2242;padding:10px 12px 11px;display:flex;flex-direction:column;gap:7px;clip-path:${ch(8)}}
 #pv-card .top{height:2px;background:#F5B93B;margin:-6px 16px 1px;border-radius:2px}
@@ -207,8 +207,16 @@ function moveV2(g, slotMov, s, anchor, key) {
   Hud.escrever(a, 'dica-precisao', g.precisao == null || (g.cat === 'status' && !g.precisao) ? '—' : g.precisao + '%');
   Hud.escrever(a, 'dica-recarga', (+g.recarga || 0) + ' s');
   Hud.escrever(a, 'dica-pp', slotMov && slotMov.ppMax ? slotMov.pp + '/' + slotMov.ppMax : (g.pp ? String(g.pp) : '—'));
-  const extra = effectLine(g);
-  Hud.escrever(a, 'dica-explicacao', [g.descricao ? t(g.descricao) : '', extra.join(' · ')].filter(Boolean).join(' '));
+  /* description, then the effect line only when the description doesn't already say it ("Has a chance to burn…" + "10% chance:
+     burn the target" read twice), then what today's weather does to this move (the slot's dot, explained) */
+  const desc = g.descricao ? t(g.descricao) : '', extra = effectLine(g).filter((x) => !desc || !/chance|burn|poison|paraly|sleep|freez|confus|flinch|rais|lower/i.test(desc));
+  const clima = weatherEffect(g, s.clima).lines.map((l) => l.txt);
+  Hud.escrever(a, 'dica-explicacao', [desc, extra.join(' · '), clima.join(' · ')].filter(Boolean).join(' '));
+  const ex = Hud.fig(a, 'txt/dica-explicacao'); if (ex) ex.style.color = '';
+  /* the weather dot on the tooltip's type icon too, drawn on top */
+  const we = weatherEffect(g, s.clima).kind, st = Hud.fig(a, 'slot-tipo');
+  if (st) { let d = st.__pvDot; if (!d) { d = st.__pvDot = document.createElement('span'); d.className = 'pv-mk-dot'; st.appendChild(d); }
+    if (!we) d.style.display = 'none'; else { const D = DOT[we], w = parseFloat(st.style.width) || 28, sz = w * 0.55; d.innerHTML = icon(D.ic, 4.4); Object.assign(d.style, { display: 'flex', background: D.cor, width: sz + 'px', height: sz + 'px', borderWidth: '1.5px', left: w * 0.62 + 'px', top: w * 0.58 + 'px' }); const sv = d.querySelector('svg'); sv.style.width = sz * 0.58 + 'px'; sv.style.height = sz * 0.58 + 'px'; } }
   /* "Strong vs": the types this move hits for ×2 or more (up to the 4 slots of the mock-up) */
   const fortes = g.cat === 'status' ? [] : Object.keys(TIPO_ARQ).filter((x) => R.efetividade(s.chart, tipo, [x]) >= 2).slice(0, 4);
   const linha = Hud.fig(a, 'forte-contra');

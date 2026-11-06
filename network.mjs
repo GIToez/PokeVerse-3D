@@ -510,6 +510,7 @@ function receber(m) {
       portaVivaAnunciada = m.portaViva === true;
       if (m.agora) Relogio.acertar(m.agora);
       if (m.correio != null) ctx.correio?.({ t: 'correio_contagem', naoLidas: m.correio });
+      if (m.caca) ctx.cacaVista?.(m.caca);                         // hunt bonus pool (server_hunt.mjs)
       if (m.diamantes) ctx.conta?.definirDiamantes?.(m.diamantes);
       if (m.respawn) ctx.respawnDoServidor?.(m.respawn);
       if (m.compras) Conta.aplicarBolsa({ compras: m.compras });
@@ -1062,6 +1063,9 @@ function receber(m) {
       else if (m.erro && !ctx.missaoRecusada?.(m)) ctx.Chat?.sistemaCru?.(textoErro(m.erro));
       return;
     }
+    case 'caca':                                                       // hunt bonus paid on a wild KO
+      ctx.caca?.(m);
+      return;
     case 'bat':
     case 'bat_erro': {
       const aa = batEsperando;

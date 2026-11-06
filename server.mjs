@@ -41,6 +41,7 @@ import { createRanking } from './server_ranking.mjs';
 import { createWardrobe } from './server_wardrobe.mjs';
 import { createTransform } from './server_transform.mjs';
 import { createDrops } from './server_drops.mjs';
+import { createHunt } from './server_hunt.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1552,6 +1553,7 @@ const progressao = createProgression({ accounts: contas, send: enviar, socketsOf
 /* ITEM DROPS (server_drops.mjs + drop.mjs, rules public/data/drops.json): trainers, gyms, missions, the Elite Four and raids
    come through the counter events; wild KOs come from the shared world (onKO). */
 const drops = createDrops({ accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas });
+const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
   try { contarAntes(u, ev); } finally {
     try {
@@ -1576,7 +1578,7 @@ const world = createWorld({
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
   onFish: (ws, u, f) => temporada.contar(u, { conta: 'pesca', dex: f.dex, nivel: f.nivel }),
-  onKO: (u, ev) => drops.roll(u, { fonte: 'selvagem', ...ev }),   // item drops (server_drops.mjs)
+  onKO: (u, ev) => { drops.roll(u, { fonte: 'selvagem', ...ev }); try { caca.ko(u, ev); } catch (e) { console.warn('caca', e); } },   // item drops (server_drops.mjs) + hunt bonus (server_hunt.mjs)
   onCatch: (ws, u, pk, bola, agua) => {
     temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola, agua });
     const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex });
@@ -1654,7 +1656,7 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario) } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         transformacao.joined(ws);                                         // a Ditto that can't stay transformed changes back

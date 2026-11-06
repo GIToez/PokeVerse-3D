@@ -29,7 +29,8 @@ import * as Popup from './popup.mjs';                                   // pop-u
 import * as Som from './sound.mjs';                                       // a aba Som de Configurações mexe nos três canais (rodada 24)
 import * as Arr from './drag_team.mjs';                             // 20/09: arrastar pra reordenar o time e mover entre time e caixa (o servidor já aceitava, intenção `arranjo`)
 import * as Evolucao from './evolution.mjs';
-import * as Teclas from './keys.mjs';                                   // remappable keys: the window keys below come from Settings → Controls
+import * as Teclas from './keys.mjs';
+import * as HuntUi from './hunt_ui.mjs';                                   // remappable keys: the window keys below come from Settings → Controls
 import * as PrefAparelho from './device_prefs.mjs';
 import * as RegrasItem from './item_rules.mjs';                          // Pokémart: the dump's stock + Great/Ultra Ball etc. unlocked by badges                    // per-device toggles (other players' names, floating damage)
 import * as CrecheUI from './daycare_ui.mjs';
@@ -2805,7 +2806,12 @@ function encherTreinador(pop){
   Popup.texto(pop, 'mestre', nm ? tr('Master {n}', { n: nm }) : tr('Master'));
   if (nm == null && ctx.comConta?.()) ProgressaoUi.pedirVista?.();
   Popup.texto(pop, 'btn-estatisticas', tr('Stats'));
-  { const bc = Popup.grupo(pop, 'bonus-caca'); if (bc) bc.style.display = 'none'; }   // hunt bonus: no server for it yet
+  { /* hunt bonus pool (server_hunt.mjs): Coins left of the cap, refills daily */
+    const bc = Popup.grupo(pop, 'bonus-caca'), v = HuntUi.vista();
+    if (bc){ bc.style.display = v ? '' : 'none';
+      if (v){ const h = Popup.texto(pop, 'bonus-caca', tr('{a} of {b}', { a: Math.round(v.saldo).toLocaleString('en-US'), b: v.cap ? v.cap.toLocaleString('en-US') : '—' }), bc); if (h) caberTexto(h, 0.6);
+        Popup.barra(pop, 'bonus-caca', v.cap ? v.saldo / v.cap : 0, null, bc);
+        bc.title = tr('Extra Coins per knockout; refills daily and stacks up to 7 days. XP always keeps coming.'); } } }
   if (Popup.extra(pop, 'dialogo-estatisticas')?.classList.contains('pf-extra-on') || estatisticasAbertas) encherEstatisticas(pop);
   // colecionador
   const K = ctx.conhecimento;
