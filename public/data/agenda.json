@@ -90,7 +90,7 @@
     },
     {
       "id": "daily-raid-zapdos",
-      "ligado": false,
+      "ligado": true,
       "tipo": "raid",
       "titulo": "Tuesday featured raid: Zapdos",
       "descricao": "Zapdos Lv 70 raid three times today: the queue opens at 6:00, 14:00 and 22:00 Pacific time and the fight starts 15 minutes later (15 minutes to win).",
