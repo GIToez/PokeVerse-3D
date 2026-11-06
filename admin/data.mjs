@@ -3,6 +3,7 @@
  * campo antes de salvar e o servidor recusa o mesmo que a tela recusa. Registrar um arquivo novo = escrever um esquema. */
 import { ESQUEMAS, validarCampo, validarColecao } from '/admin/schemas.mjs';
 import { t } from '/i18n.mjs';
+import { ref } from '/admin/content.mjs';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -27,7 +28,9 @@ async function carregarItens() {
   return itensJogo;
 }
 const nomeItem = id => id == null || id === '' ? '' : t(itensJogo?.[id]?.n) || '(item ' + id + ' does not exist)';
-const ctxColuna = { item: nomeItem };
+let nomesAreas = {};   // area id → name, for tables keyed by area (Fishing by area)
+ref.areas().then(r => { nomesAreas = r?.areas || {}; }).catch(() => {});
+const ctxColuna = { item: nomeItem, area: id => nomesAreas[id] || '' };
 /** Colunas da tabela: as calculadas do esquema (esq.colunas = [{ rotulo, valor(registro, ctx) }]) ou os campos marcados `col`. */
 const colunasDe = e => e.colunas || e.campos.filter(c => c.col).map(c => ({ rotulo: c.rotulo, valor: r => fmt(c, r?.[c.k]) }));
 
@@ -75,7 +78,7 @@ export function instalarDados({ api, toast, avisarJogo }) {
   }
 
   function renderTabela() {
-    const cols = colunasDe(esq), cel = (c, id) => { try { return String(c.valor(reg(id), ctxColuna) ?? ''); } catch { return ''; } };
+    const cols = colunasDe(esq), cel = (c, id) => { try { return String(c.valor(reg(id), ctxColuna, id) ?? ''); } catch { return ''; } };
     $('d-total').textContent = ids().length + ' record(s)';
     const lista = ids().filter(id => {
       if (!filtro) return true;
@@ -108,7 +111,7 @@ export function instalarDados({ api, toast, avisarJogo }) {
   function atualizarLinha(id) {   // só a linha da tabela (refazer tudo tiraria o foco do campo que está sendo digitado)
     const tr = [...($('d-corpo')?.querySelectorAll('tbody tr') || [])].find(t => t.dataset.id === String(id)); if (!tr) return;
     const cols = colunasDe(esq), off = esq.forma === 'mapa' ? 1 : 0, r = reg(id);
-    cols.forEach((c, i) => { if (tr.children[i + off]) { let t = ''; try { t = String(c.valor(r, ctxColuna) ?? ''); } catch {} tr.children[i + off].textContent = t; } });
+    cols.forEach((c, i) => { if (tr.children[i + off]) { let t = ''; try { t = String(c.valor(r, ctxColuna, id) ?? ''); } catch {} tr.children[i + off].textContent = t; } });
   }
 
   /* Registro que é uma LISTA (esq.registroLista, ex.: uma loja = lista de produtos): uma linha por elemento e uma coluna por

@@ -1,7 +1,7 @@
 /* STORY SIGHTINGS (Nov 6, from upcoming/spawns.mjs) — a legendary shows itself once per player: Ho-Oh crossing the sky over Route 1
  * right after Pallet Town (with a partner out), Suicune dashing over water, Lugia's shadow under you while surfing.
  * Data: public/data/sightings.json (admin → Data files → Story sightings). Seen ones live in the save as `aparicoes` (id → time).
- *   instalar(ctx, lista)   quadro(dt) every frame   esquecer(id) shows one again   diagnostico() for debugging */
+ *   instalar(ctx, lista)   quadro(dt) every frame   esquecer(id) shows one again   testar(id) previews one now   diagnostico() */
 let C = null;
 let DADO = [];
 const ativas = [];
@@ -208,7 +208,7 @@ const PLANOS = {
     const h = new c.Vector3(g.z, 0, -g.x);
     const i = C.agua(f.x, f.z);
     if (i == null) return null;
-    const j = new c.Vector3(f.x, i - 2.5, f.z).addScaledVector(h, 11);
+    const j = new c.Vector3(f.x, i - 2.5, f.z).addScaledVector(h, 5);   // 5 m to the side (PokeFable used 11: off our narrower camera)
     const l = j.clone().addScaledVector(g, -28),
       m = j.clone().addScaledVector(g, 30);
     const e = await montar(b, 9);
@@ -299,7 +299,7 @@ function pronta(a) {
   if (!j.ash || C.ocupado() || jaViu(a.id)) return false;
   if (a.mapa != null && ![].concat(a.mapa).map(String).includes(String(C.mapa()))) return false;   // one map or a list
   const b = C.area();
-  if (a.area != null && Number(b) !== Number(a.area)) return false;
+  if (a.area != null && ![].concat(a.area).map(Number).includes(Number(b))) return false;   // one area or a list
   if (a.id === 'hooh') return C.temParceiro();
   if (a.id === 'lugia') return !!j.montaria?.surfando;
   if (a.perto) {
@@ -353,6 +353,16 @@ export function quadro(b) {
       carregando = false;
       naArea = { chave: null, desde: relogio };
     });
+}
+/** Preview one sighting right now, wherever you are, without marking it seen (staff testing: __dbg.aparicoes.testar('lugia')).
+ *  Lugia still needs water under you, Suicune water on screen. Resolves to true if it started. */
+export async function testar(id) {
+  const c = DADO.find((d) => d.id === id) || (PLANOS[id] ? { id, glb: { hooh: 'pm0250_00', suicune: 'pm0245_00', lugia: 'pm0249_00' }[id] } : null);
+  if (!c || !PLANOS[c.id] || !C) return false;
+  const a = await PLANOS[c.id](c);
+  if (!a) return false;
+  ativas.push(a);
+  return true;
 }
 export function esquecer(a) {
   const v = { ...vistas() };

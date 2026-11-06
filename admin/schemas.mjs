@@ -211,13 +211,38 @@ export const ESQUEMAS = {
       { k: 'premium', rotulo: 'Premium prize', tipo: 'json', col: true, validar: premioOk },
     ],
   },
+  pesca_areas: {
+    titulo: 'Fishing by area', arquivo: 'pesca', caminho: 'areas', forma: 'mapa', registroLista: true, idValido: /^\d{1,8}$/, idAjuda: 'the area number (Route 1 is 1201)',
+    descricao: 'What bites in each area with the Good Rod and the Super Rod (the Old Rod only hooks Magikarp, and the Good Rod hooks Magikarp part of the time). An area not listed uses the generic list (Fishing rods → Generic catch). Saved changes apply on the next cast, no restart.',
+    ajudaLista: 'one row per species; a higher weight bites more often',
+    colunas: [
+      { rotulo: 'Area', valor: (l, ctx, id) => ctx?.area?.(id) || '' },
+      { rotulo: 'Species', valor: l => (l || []).length },
+      { rotulo: 'Bites', valor: l => (l || []).slice(0, 4).map(e => e.nome || '#' + e.dex).join(', ') + ((l || []).length > 4 ? '…' : '') },
+    ],
+    campos: [
+      { k: 'dex', rotulo: 'Pokédex no.', tipo: 'num', int: true, min: 1, max: 2000, obrigatorio: true },
+      { k: 'nome', rotulo: 'Name', tipo: 'texto', max: 30, ajuda: 'shown in the list only; the game uses the species name' },
+      { k: 'peso', rotulo: 'Weight', tipo: 'num', min: 0.01, max: 1000, padrao: 1, ajuda: '1 = normal; 0.2 = five times rarer' },
+      { k: 'glb', rotulo: 'Model', tipo: 'texto', max: 30, validar: s => !s || /^pm\d{4}(_\d{2})?(\.glb)?$/.test(s) ? null : 'e.g. pm0118_00.glb', ajuda: 'empty = the normal model' },
+    ],
+  },
+  pesca_varas: {
+    titulo: 'Fishing rods', arquivo: 'pesca', forma: 'objeto',
+    descricao: 'The rods (wait, bite window, levels, Magikarp chance, mastery needed), fishing mastery steps, and the generic catch for areas without their own list.',
+    campos: [
+      { k: 'varas', rotulo: 'Rods', tipo: 'json', validar: v => Array.isArray(v) && v.length >= 1 && v.length <= 10 && v.every(r => r && Number.isInteger(r.item) && Array.isArray(r.nivel) && r.nivel.length === 2) ? null : 'a list of rods: { item, nome, maestria, espera: [min, max] s, janelaMs, nivel: [min, max], magikarp?, soMagikarp? }' },
+      { k: 'maestria', rotulo: 'Mastery', tipo: 'json', validar: v => v && Array.isArray(v.degraus) ? null : '{ degraus: [catches for each level], teto }' },
+      { k: 'generico', rotulo: 'Generic catch', tipo: 'json', validar: v => Array.isArray(v) && v.every(e => e && Number.isInteger(e.dex)) ? null : 'a list like [{ "dex": 129, "nome": "Magikarp" }]' },
+    ],
+  },
   aparicoes: {
     titulo: 'Story sightings', arquivo: 'sightings', forma: 'objeto',
     descricao: 'Legendary Pokémon that show themselves once per player (sightings.mjs). Ho-Oh flies across the sky over its area (needs a partner Pokémon out); Suicune runs across water; Lugia swims under you as a shadow while surfing. Each player sees each one once (saved as "aparicoes").',
     campos: [
       { k: 'ligado', rotulo: 'On', tipo: 'bool', ajuda: 'Off = no sightings at all.' },
-      { k: 'lista', rotulo: 'Sightings', tipo: 'json', validar: v => Array.isArray(v) && v.length <= 20 && v.every(x => x && ['hooh', 'suicune', 'lugia'].includes(x.id) && typeof x.glb === 'string' && /^pm\d{4}_\d{2}$/.test(x.glb) && (x.area == null || Number.isInteger(x.area)) && (x.mapa == null || typeof x.mapa === 'string' || Array.isArray(x.mapa))) ? null : 'a list like [{ "id": "hooh", "glb": "pm0250_00", "mapa": "kanto", "area": 1201 }] — id is hooh, suicune or lugia',
-        ajuda: 'id = the flight (hooh, suicune, lugia), glb = the model, mapa = the map, area = where it happens (Route 1 is 1201). One of each id.' },
+      { k: 'lista', rotulo: 'Sightings', tipo: 'json', validar: v => Array.isArray(v) && v.length <= 20 && v.every(x => x && ['hooh', 'suicune', 'lugia'].includes(x.id) && typeof x.glb === 'string' && /^pm\d{4}_\d{2}$/.test(x.glb) && (x.area == null || Number.isInteger(x.area) || (Array.isArray(x.area) && x.area.every(Number.isInteger))) && (x.mapa == null || typeof x.mapa === 'string' || Array.isArray(x.mapa))) ? null : 'a list like [{ "id": "hooh", "glb": "pm0250_00", "mapa": "kanto", "area": 1201 }] — id is hooh, suicune or lugia',
+        ajuda: 'id = the flight (hooh, suicune, lugia), glb = the model, mapa = the map, area = where it happens, one area or a list (Route 1 is 1201). One of each id.' },
     ],
   },
   skins_pokemon: {

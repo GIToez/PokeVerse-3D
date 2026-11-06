@@ -1,7 +1,35 @@
 {
-  "nota": "Story sightings (sightings.mjs): a legendary Pokémon shows itself once per player. id picks the flight (hooh = flies across the sky with a rainbow trail; suicune = runs across water; lugia = a shadow swimming under you while surfing). mapa = the map (kanto), area = the area where it happens. Ho-Oh also needs a partner Pokémon out; Lugia needs you surfing.",
-  "ligado": true,
-  "lista": [
-    { "id": "hooh", "glb": "pm0250_00", "mapa": "kanto", "area": 1201, "nome": "Ho-Oh over Route 1" }
-  ]
+ "nota": "Story sightings (sightings.mjs): a legendary Pokémon shows itself once per player. id picks the flight (hooh = flies across the sky with a rainbow trail; suicune = runs across water; lugia = a shadow swimming under you while surfing). mapa = the map (kanto), area = the area (or a list of areas) where it happens. Ho-Oh also needs a partner Pokémon out; Lugia needs you surfing.",
+ "ligado": true,
+ "lista": [
+  {
+   "id": "hooh",
+   "glb": "pm0250_00",
+   "mapa": "kanto",
+   "area": 1201,
+   "nome": "Ho-Oh over Route 1"
+  },
+  {
+   "id": "suicune",
+   "glb": "pm0245_00",
+   "mapa": "kanto",
+   "area": [
+    1224,
+    1225
+   ],
+   "nome": "Suicune on the water by Nugget Bridge and Route 25"
+  },
+  {
+   "id": "lugia",
+   "glb": "pm0249_00",
+   "mapa": "kanto",
+   "area": [
+    1219,
+    1220,
+    1221,
+    1299
+   ],
+   "nome": "Lugia's shadow under you while surfing the southern sea"
+  }
+ ]
 }

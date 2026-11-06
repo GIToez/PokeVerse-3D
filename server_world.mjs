@@ -222,7 +222,11 @@ export function createWorld(h) {
     const D = fishData(), area = wilds.areaOf(ws);
     const list = (D?.areas?.[String(area)] || D?.generico || []).filter(e => +e.dex > 0);
     const karp = f.rod.soMagikarp || !list.length || Math.random() < (+f.rod.magikarp || 0);
-    const e = karp ? { dex: 129, nome: 'Magikarp', glb: 'pm0129_00.glb' } : list[Math.floor(Math.random() * list.length)];
+    /* each entry can carry a `peso` (weight, default 1: admin → Fishing by area), so rarer catches can be set per area */
+    const pesoDe = x => (+x.peso > 0 ? +x.peso : 1), soma = list.reduce((a, x) => a + pesoDe(x), 0);
+    let sorte = Math.random() * soma, e = karp ? { dex: 129, nome: 'Magikarp', glb: 'pm0129_00.glb' } : null;
+    if (!e) for (const x of list) { sorte -= pesoDe(x); if (sorte <= 0) { e = x; break; } }
+    e ||= list[list.length - 1];
     const glb = e.glb || 'pm' + String(e.dex).padStart(4, '0') + '_00.glb';
     const [l0, l1] = f.rod.nivel || [5, 10], lv = l0 + Math.floor(Math.random() * (l1 - l0 + 1));
     // the fish lands on the dry spot the client picked next to the player (its map knows the shore); else beside the player
