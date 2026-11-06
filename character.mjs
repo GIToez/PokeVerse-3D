@@ -23,6 +23,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Tinta from './paint.mjs';
+import * as TL from './free_paint.mjs';   // FREE PAINT (upcoming/): every colour slot of an outfit over two masks (data/tinta_livre.json)
+try { await TL.carregar(); } catch (e){ console.warn('free paint:', e); }
 
 export const SKINS = [
   { id: 'ash',      sexo: 'menino', nome: 'Ash',               glb: 'Male_XiaoZhi', desc: 'Ash outfit (Fashion 52001)' },
@@ -91,6 +93,17 @@ export const PRESETS = {
    Não sobrescrevem as escritas aqui (heroi/heroina/misty). */
 for (const [id, r] of Object.entries(receitasCor || {}))
   if (!CANAIS[id] && r?.texturas && r.rotulos && r.padrao){ CANAIS[id] = r.texturas; ROTULOS[id] = r.rotulos; PADRAO[id] = r.padrao; }
+/* FREE PAINT OUTFITS (Nov 6, data/tinta_livre.json): the Pikachu Jackets, HeartGold and SoulSilver get every colour slot (skin, hair,
+   eyes, jacket, shoes, accessory…) over their two masks, as in PokeFable. Hero, Heroine and Misty keep the recipes above. */
+const SLOT_EN = { pele: 'skin', cabelo: 'hair', olhos: 'eyes', roupa: 'outfit', roupa2: 'outfit (2nd)', calcado: 'shoes', acessorio: 'accessory', detalhe: 'detail' };
+const TINTA_LIVRE = new Set();
+for (const id of Object.keys(TL.dados()?.roupas || {})) {
+  if (['heroi', 'heroina', 'misty'].includes(id)) continue;
+  TINTA_LIVRE.add(id); delete CANAIS[id];
+  PADRAO[id] = TL.coresPadrao(id);
+  ROTULOS[id] = Object.fromEntries(TL.slotsDe(id).map(x => [x.id, SLOT_EN[x.id] || x.rotulo]));
+}
+for (const [k, v] of Object.entries(TL.dados()?.presets || {})) if (!PRESETS[k]) PRESETS[k] = v;
 /* Painel admin → Skins de treinador, campo "Cores editáveis" (`tinta` no trainer_skins.json, 27/10): liga, desliga ou troca a
    receita de cor de uma skin pelo MODELO (prefab = glb). Sem o campo vale a tabela acima; 'fixo' desliga; 'propria' = a
    receita com o id do próprio modelo; receita que não existe em CANAIS é ignorada. A máscara é feita pra UM modelo — a
@@ -98,7 +111,7 @@ for (const [id, r] of Object.entries(receitasCor || {}))
 for (const r of Array.isArray(roupas) ? roupas : []){
   if (!r?.tinta || !r.prefab) continue;
   const pedida = r.tinta === 'propria' ? String(r.prefab).toLowerCase() : r.tinta;
-  const t = pedida !== 'fixo' && CANAIS[pedida] ? pedida : null;
+  const t = pedida !== 'fixo' && (CANAIS[pedida] || TINTA_LIVRE.has(pedida)) ? pedida : null;
   for (const s of [...SKINS, ...SKINS_EXTRA]) if (s.glb === r.prefab && (s.tinta || null) !== t){
     if (t) s.tinta = t; else delete s.tinta;
     s.desc = t ? 'free colors: ' + Object.values(ROTULOS[t]).join(', ') : 'fixed look';
@@ -122,6 +135,7 @@ export const skinPorId = id => SKINS.find(s => s.id === id) || SKINS_EXTRA.find(
 const RGB = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
 /** Receita pro paint.mjs: por textura, a cor de cada canal (string = cor escolhida; array = cor fixa; null = branco). */
 export function receita(tinta, cores){
+  if (TINTA_LIVRE.has(tinta)) return TL.receita(tinta, cores || {});   // free paint (paint.mjs reads `cores` + the two masks)
   const out = {};
   for (const [tex, c] of Object.entries(CANAIS[tinta] || {})){
     const cor = k => Array.isArray(c[k]) ? c[k] : c[k] ? RGB(cores[c[k]] || PADRAO[tinta][c[k]] || '#ffffff') : [1, 1, 1];

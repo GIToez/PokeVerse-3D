@@ -13,11 +13,23 @@
  * máscaras em scenery/npc/mask/.
  */
 import * as THREE from 'three';
+import { tingirPixels } from './free_paint.mjs';   // free paint: 7 colour slots over two masks (data/tinta_livre.json)
 
 let TINTAS = null;
 const mascaras = new Map();
 const carregarImagem = url => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('máscara ' + url)); im.src = url; });
 const mascara = nome => { if (!mascaras.has(nome)) mascaras.set(nome, carregarImagem('./scenery/npc/mask/' + nome)); return mascaras.get(nome); };
+/** A free-paint mask by its data path (tinta_livre.json says cenario/npc/mask/…; ours is scenery/). Pixels at w × h, or null. */
+async function pixelsDe(caminho, w, h){
+  const url = './' + String(caminho).replace(/^\.?\/?cenario\//, 'scenery/');
+  try {
+    if (!mascaras.has(url)) mascaras.set(url, carregarImagem(url));
+    const im = await mascaras.get(url);
+    const cm = document.createElement('canvas'); cm.width = w; cm.height = h;
+    const cc = cm.getContext('2d', { willReadFrequently: true }); cc.drawImage(im, 0, 0, w, h);
+    return cc.getImageData(0, 0, w, h).data;
+  } catch (e){ mascaras.delete(url); console.warn('free paint:', e.message); return null; }
+}
 
 async function tabela(){
   if (!TINTAS) TINTAS = await fetch('./data/npc_tints.json').then(r => r.json()).catch(() => ({}));
@@ -51,6 +63,11 @@ async function tingir(mat, t){
   const c = cv.getContext('2d', { willReadFrequently: true });
   c.drawImage(img, 0, 0, w, h);
   const px = c.getImageData(0, 0, w, h), d = px.data;
+  if (t.cores){                                                          // free paint recipe (free_paint.mjs receita): masks 1 + 2, 7 slots
+    const m1 = t.mascara1 ? await pixelsDe(t.mascara1, w, h) : null, m2 = t.mascara2 ? await pixelsDe(t.mascara2, w, h) : null;
+    tingirPixels(d, m1, m2, t);
+    return assar(mat, orig, c, cv, px);
+  }
   let mk = null;
   if (t.mask){
     try {
@@ -76,6 +93,10 @@ async function tingir(mat, t){
       d[i + ch] = Math.max(0, Math.min(255, Math.round(d[i + ch] * f)));
     }
   }
+  return assar(mat, orig, c, cv, px);
+}
+/** The painted pixels become the material's map (the raw texture stays behind it for the next repaint). */
+function assar(mat, orig, c, cv, px){
   c.putImageData(px, 0, 0);
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace; tex.flipY = orig.flipY; tex.wrapS = orig.wrapS; tex.wrapT = orig.wrapT;
