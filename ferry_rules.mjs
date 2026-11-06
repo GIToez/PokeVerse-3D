@@ -1,6 +1,7 @@
 export const RAIO_CAIS = 4;
 export const TEXTO_INSIGNIAS = 'The ferry only takes Trainers with seven Badges to the Sevii Islands.';
 export const TEXTO_CAMPEAO = 'This stop only opens for those who beat the Elite Four.';
+export const TEXTO_FECHADA = 'This route opens soon.';
 const num = (v, p = 0) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : p;
@@ -34,6 +35,9 @@ export function paradasDe(b) {
       areas: j,
       insignias: Math.max(0, Math.floor(num(p.insignias))),
       campeao: !!p.campeao,
+      fechada: !!p.fechada,
+      texto: p.fechada ? String(p.texto || TEXTO_FECHADA).slice(0, 80) : '',
+      npc: num(p.npc) || null,
     });
   }
   return r;
@@ -41,6 +45,7 @@ export function paradasDe(b) {
 export const paradaDaPorta = (a, b) => (Array.isArray(a) ? a : []).find((p) => p.porta === num(b)) || null;
 export function porqueFechada(p, { insignias: a = 0, campeao: b = false } = {}) {
   if (!p) return { motivo: 'parada', texto: "That stop doesn't exist." };
+  if (p.fechada) return { motivo: 'fechada', texto: p.texto || TEXTO_FECHADA };   // shown greyed with a lock for everyone (GMs too) until the route opens
   if (p.campeao && !b) return { motivo: 'campeao', texto: TEXTO_CAMPEAO };
   if (p.insignias > 0 && num(a) < p.insignias) return { motivo: 'insignias', texto: TEXTO_INSIGNIAS };
   return null;

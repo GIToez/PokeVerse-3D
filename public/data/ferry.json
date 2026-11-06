@@ -1,0 +1,114 @@
+{
+ "atendente": {
+  "nome": "Sailor",
+  "fala": "All aboard! The ferry sails from Vermilion to the Competition Center and the Sevii Islands. Where to today?",
+  "falaSemParada": "The ferry doesn't stop here.",
+  "glb": "npc/fc2016_00"
+ },
+ "paradas": [
+  {
+   "id": "vermilion",
+   "nome": "Vermilion City",
+   "mapa": "kanto",
+   "porta": 6110590,
+   "chegada": 7110590,
+   "area": 1105,
+   "info": "port of departure",
+   "npc": 8110590
+  },
+  {
+   "id": "competition-center",
+   "nome": "Competition Center",
+   "mapa": "9800002",
+   "porta": 6119302,
+   "chegada": 7119301,
+   "area": 1193,
+   "info": "Colosseum and tournaments",
+   "npc": 8119390
+  },
+  {
+   "id": "one-island",
+   "nome": "One Island",
+   "mapa": "2500001",
+   "porta": 6224901,
+   "chegada": 7224999,
+   "area": 2249,
+   "insignias": 7,
+   "npc": 8224990
+  },
+  {
+   "id": "two-island",
+   "nome": "Two Island",
+   "mapa": "2500001",
+   "porta": 6225001,
+   "chegada": 7225099,
+   "area": 2250,
+   "insignias": 7
+  },
+  {
+   "id": "three-island",
+   "nome": "Three Island",
+   "mapa": "2500001",
+   "porta": 6225101,
+   "chegada": 7225199,
+   "area": 2251,
+   "insignias": 7
+  },
+  {
+   "id": "four-island",
+   "nome": "Four Island",
+   "mapa": "2500001",
+   "porta": 6225201,
+   "chegada": 7225299,
+   "area": 2252,
+   "campeao": true
+  },
+  {
+   "id": "five-island",
+   "nome": "Five Island",
+   "mapa": "2500001",
+   "porta": 6225301,
+   "chegada": 7225399,
+   "area": 2253,
+   "campeao": true
+  },
+  {
+   "id": "six-island",
+   "nome": "Six Island",
+   "mapa": "2500001",
+   "porta": 6225401,
+   "chegada": 7225499,
+   "area": 2254,
+   "campeao": true
+  },
+  {
+   "id": "seven-island",
+   "nome": "Seven Island",
+   "mapa": "2500001",
+   "porta": 6225501,
+   "chegada": 7225599,
+   "area": 2255,
+   "campeao": true
+  },
+  {
+   "id": "navel-rock",
+   "nome": "Navel Rock",
+   "mapa": "2500001",
+   "porta": 6228701,
+   "chegada": 7228799,
+   "area": 2287,
+   "campeao": true
+  },
+  {
+   "id": "olivine",
+   "nome": "Olivine City",
+   "mapa": "2000001",
+   "porta": 6210790,
+   "chegada": 7210799,
+   "area": 2107,
+   "fechada": true,
+   "texto": "Sailings to Johto start soon.",
+   "info": "Johto"
+  }
+ ]
+}

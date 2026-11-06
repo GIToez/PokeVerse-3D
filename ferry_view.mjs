@@ -15,6 +15,7 @@ const txt = (v, a) =>
 export function porqueCurto(p) {
   if (p?.motivo === 'campeao' || p?.texto === TEXTO_CAMPEAO) return 'after the Elite Four';
   if (p?.motivo === 'insignias' || p?.texto === TEXTO_INSIGNIAS) return 'needs 7 Badges';
+  if (p?.motivo === 'fechada') return 'coming soon';
   return p?.texto || 'fechada';
 }
 export const TEXTO_VISITOU = 'already visited',

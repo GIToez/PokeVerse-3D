@@ -273,7 +273,13 @@ function ligarRecursos(){
       : { ok: false, erro: 'Guilds need the server. You can look around, but nothing is saved yet.' },
   });
   Balsa.instalar({
-    dados: () => (typeof ctx.dados === 'function' ? ctx.dados() : ctx.dados) || null,
+    dados: () => ctx.balsaDados?.() || null,                            // public/data/ferry.json (the stops), loaded by index.html
+    enviar: m => ctx.balsaEnviar?.(m),
+    comConta: () => !!ctx.comConta?.(),
+    insignias: () => +ctx.insignias?.() || 0,
+    campeao: () => !!ctx.campeao?.(),
+    irParaCena: o => ctx.irParaCena?.(o),
+    get Som(){ return ctx.Som; },
     fecharMenu: () => { fechar(); fecharGrade(); },
     Chat,
     segurar: el => DIALOGOS.add(el),

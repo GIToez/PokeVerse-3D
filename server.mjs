@@ -43,6 +43,7 @@ import { createTransform } from './server_transform.mjs';
 import { createDrops } from './server_drops.mjs';
 import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
+import { createFerry } from './server_ferry.mjs';
 import * as CaixaR from './box_rules.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
@@ -1626,6 +1627,7 @@ const progressao = createProgression({ accounts: contas, send: enviar, socketsOf
 const drops = createDrops({ accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas });
 const diario = createDaily({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas,   // daily login rewards (7-day streak, free + premium)
   readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), isBall: k => catalogoItens().items[String(k)]?.t === 7 });
+const balsa = createFerry({ accounts: contas, send: enviar, readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null) });   // the Vermilion ferry (server_ferry.mjs)
 const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
   try { contarAntes(u, ev); } finally {
@@ -2037,6 +2039,7 @@ wss.on('connection', ws => {
         else if (m.t === 'loja_ver' || m.t === 'loja_comprar') loja.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'temporada') temporada.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'diario_ver') diario.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if (m.t === 'balsa_vista' || m.t === 'balsa') balsa.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {
           const op = m.t.slice(6);

@@ -1039,8 +1039,8 @@ const SIMB = {
     '<path d="M-7.8,-3.4 L0,-7.8 L7.8,-3.4Z" fill="#fff"/><rect x="-6.3" y="-2.4" width="2.6" height="7" fill="#fff"/><rect x="-1.3" y="-2.4" width="2.6" height="7" fill="#fff"/><rect x="3.7" y="-2.4" width="2.6" height="7" fill="#fff"/><rect x="-7.6" y="5.3" width="15.2" height="2.2" fill="#fff"/>',
   creche: '<ellipse cx="0" cy="0.6" rx="5.6" ry="7.4" fill="#fff"/>',
   outro: '<rect x="-4.4" y="-7.4" width="8.8" height="14.8" rx="4.2" fill="#fff"/>',
-  balsa:
-    '<path d="M-8.2,1.2 L8.2,1.2 L5.4,6.6 L-5.4,6.6Z" fill="#fff"/><rect x="-4.6" y="-3.8" width="7.4" height="4.4" rx="1" fill="#fff"/><rect x="0.6" y="-7.6" width="2.6" height="3.4" fill="#fff"/>',
+  balsa:   // an anchor (Nov 6): the ferry's mark everywhere (over the Sailor, minimap, world map)
+    '<g fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="-5.2" r="1.7"/><path d="M0,-3.5 V6.4 M-3.4,-1.4 H3.4 M-6,2 C-5.6,5.3 -2.9,6.8 0,6.8 C2.9,6.8 5.6,5.3 6,2"/></g>',
   casa_missao:
     '<path d="M-7.8,0 L0,-7.8 L7.8,0Z" fill="#fff"/><rect x="-5.3" y="-.8" width="10.6" height="7.8" fill="#fff"/>',
 };
@@ -1049,7 +1049,7 @@ const carimbo = (f) =>
 const ICONE_MAPA =
   '<svg viewBox="0 0 16 16"><path d="M1.5 3.2 L5.5 1.6 L10.5 3.2 L14.5 1.6 L14.5 12.8 L10.5 14.4 L5.5 12.8 L1.5 14.4Z" fill="#0E1F33"/><path d="M5.5 1.6 L5.5 12.8 M10.5 3.2 L10.5 14.4" stroke="#F8C237" stroke-width="1.3"/></svg>';
 const ICONE_BALSA =
-  '<svg viewBox="0 0 16 16"><path d="M1.4 8.8 L14.6 8.8 L12.4 13.4 L3.6 13.4Z" fill="#0E1F33"/><rect x="4" y="4.6" width="6.4" height="3.6" rx=".8" fill="#0E1F33"/><rect x="8.4" y="1.6" width="2.2" height="3.2" fill="#0E1F33"/></svg>';
+  '<svg viewBox="0 0 16 16"><g fill="none" stroke="#0E1F33" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3.4" r="1.5"/><path d="M8 4.9 V14 M5 6.8 H11 M2.6 10 C3 12.8 5.4 14.2 8 14.2 C10.6 14.2 13 12.8 13.4 10"/></g></svg>';
 const CADEADO =
   '<svg class="cad" viewBox="0 0 12 14"><path d="M3.3 6.4 V4.4 C3.3 2.8 4.5 1.6 6 1.6 C7.5 1.6 8.7 2.8 8.7 4.4 V6.4" fill="none" stroke="#0E1F33" stroke-width="3.4"/><path d="M3.3 6.4 V4.4 C3.3 2.8 4.5 1.6 6 1.6 C7.5 1.6 8.7 2.8 8.7 4.4 V6.4" fill="none" stroke="#FFF2C9" stroke-width="1.6"/><rect x="1.2" y="6" width="9.6" height="7.4" rx="1.8" fill="#FFF2C9" stroke="#0E1F33" stroke-width="1.6"/></svg>';
 const ORDEM = { centro: 0, ginasio: 1, loja: 2 };

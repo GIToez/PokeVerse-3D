@@ -273,6 +273,7 @@ import * as Status from './status.mjs';       // major status, from the move's P
 import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
 import * as StgPills from './stage_pills.mjs';   // a foe's stat stages as the v2 pills on its label
 import * as ActiveFx from './active_effects.mjs';   // event / Medallion / perfume timers (v2 efeitos-ativos)
+import * as Balsa from './ferry_ui.mjs';          // the Vermilion ferry window (stops in public/data/ferry.json)
 import * as Locks from './locks.mjs';             // door locks (public/data/locks.json) + the v2 lock bubble
 import * as DailyUi from './daily_ui.mjs';       // Daily Rewards window (v2 trilha) for the 7-day login streak
 import * as FocusUi from './focus_ui.mjs';       // raid focus pings (v2 foca-neste)
@@ -1241,6 +1242,13 @@ function desenharMM(foto, ax, az, raio){
     g2.beginPath(); g2.moveTo(px, pz - 6); g2.lineTo(px + 4.5, pz + 3); g2.lineTo(px - 4.5, pz + 3); g2.closePath();
     g2.fillStyle = '#ffd23a'; g2.fill(); g2.lineWidth = 1.4; g2.strokeStyle = '#0009'; g2.stroke();
   };
+  const ancora = desenharMM.ancora ||= Object.assign(new Image(), { src: './ui/amanda/missao/marca-balsa@2x.png' });   // the ferry's Sailors: an anchor on the minimap
+  if (ancora.complete && ancora.naturalWidth) for (const n of jogo.npcs || []){
+    if (n.role !== 'ferry' || n.pivo?.visible === false) continue;
+    const px = ((n.vx ?? n.x) - ax + rx) * S, pz = ((n.vz ?? n.z) - az + rz) * S;
+    if (px < -10 || pz < -10 || px > W + 10 || pz > H + 10) continue;
+    g2.drawImage(ancora, px - 10, pz - 10, 20, 20);
+  }
   for (const pin of (jogo.missoesOk && Missoes.pinsMapaSync?.()) || []){
     const n = pin.cfg != null ? (jogo.npcs || []).find(x => +x.cfg === +pin.cfg && x.pivo?.visible !== false) : null;
     if (n) questPonto(n.vx ?? n.x, n.vz ?? n.z);
@@ -3701,6 +3709,8 @@ const ginasioCd = () => lerLS('ginasioCd', {});
 function ginasioEspera(g){ const cd = ginasioCd()[g.numero]; if (!cd) return 0; if (new Date(cd.ate).toDateString() !== new Date().toDateString() && Date.now() > cd.ate) return 0; return Math.max(0, Math.ceil((cd.ate - Date.now()) / 1000)); }
 const CENAS_EXPORTADAS = new Set((await fetch('./data/interior_maps.txt', { cache: 'no-cache' }).then(r => r.ok ? r.text() : '').catch(() => '')).split(/\s+/).filter(Boolean).map(Number));   // interiores com GLB: porta só pra esses (Kanto tem portas pra cenas ainda não exportadas)
 const NPCS_GLB = await fetch('./data/npcs_glb.json', { cache: 'no-cache' }).then(r => r.json()).catch(() => ({}));
+const FERRY = await fetch('./data/ferry.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);   // ferry stops: dock doors and Sailors open the ferry window
+const paradaDoMarinheiro = cfg => (FERRY?.paradas || []).find(p => +p.npc === +cfg) || null;
 Ind.carregarLearnset(await fetch('./data/learnset.json').then(r => r.json()).then(L => { for (const [id, g] of Object.entries(GOLPES)) if (Number.isInteger(g.pp) && g.pp > 0) (L.pp ||= {})[id] = g.pp; return L; }).catch(() => null));   // golpes por nível (Sword/Shield) + PP (Fase 2: o PP de cada golpe vem do data/moves.json, que o painel edita)
 Ev.carregar().catch(() => {});
 {
@@ -8024,6 +8034,11 @@ async function atravessar(p){
      da Elite, que é uma luta só do primeiro ao quinto quarto. Ninguém atravessa porta no meio de uma batalha por turnos,
      então a trava é geral: vale pro ginásio e pro treinador de rota também. */
   if (jogo.turno) return;
+  if (FERRY && Balsa.ehCais(p.id)){                                    // a ferry dock: the stops window instead of the door
+    Balsa.abrir(p.id);
+    for (const q of portasCena) if (distPorta(q, jogo.ash.x, jogo.ash.z) < 1.9) emPorta.add(q);
+    return;
+  }
   const trava = Locks.travaDaPorta(p.id, dest?.a, areaInteriorVisitada ?? (jogo.ash ? areaDoPonto(jogo.ash.x, jogo.ash.z) : null));   // a door the story hasn't opened yet: the lock bubble says why
   if (trava){
     Locks.mostrar(trava, () => jogo.ash); if (trava.fala) Chat.sistema(trava.fala);
@@ -8985,7 +9000,7 @@ async function falarCom(n){
   else if (n.role === 'daycare') Menus.abrir('creche');
   else if (n.role === 'plot') Menus.abrir('terreno');
   else if (n.role === 'guild') Menus.abrir('guilda');
-  else if (n.role === 'ferry') Menus.abrir('balsa');
+  else if (n.role === 'ferry'){ const st = paradaDoMarinheiro(n.cfg); if (!(st && Balsa.abrir(st.porta))) Menus.abrir('balsa'); }   // a Sailor opens the ferry at his own stop
   else if (n.role === 'trainer') desafiarTreinador(n);                     // ⚔: turn-based battle invite
 }
 /* ---------------------------------------------------------------- mesa dos iniciais (laboratório)
@@ -9051,14 +9066,16 @@ function spriteMarca(tipo){
   return sp;
 }
 function marcaDoNpc(e){
-  if (Fairy || INTRO || !jogo.missoesOk) return null;
+  if (Fairy || INTRO) return null;
+  const outra = e.role === 'ferry' ? 'balsa' : null;                     // the anchor over a Sailor (when no mission mark wins)
+  if (!jogo.missoesOk) return outra;
   const vencido = !!e.treino && !e.ginasio && !e.elite && treinadorVencido(e.cfg, lerLS('treinadoresVencidos', []));
   const m = Missoes.marcaPara?.(e.cfg, { role: e.role, trainer: !!e.treino && !vencido, area: e.spot?.a ?? null });
   if (m?.tipo === 'oferta' || m?.tipo === 'entrega') return m.tipo;
   try {                                                                  // silver `!`: this NPC's side quest opens after the mission you're on
     if (!m && (Missoes.laterais?.() || []).some(s => s.estado === 'travada' && s.npc != null && +s.npc === +e.cfg && SecUi.bloqueio(s, Missoes))) return 'bloqueada';
   } catch {}
-  return null;
+  return outra;
 }
 function aplicarMarcaMissao(e){
   if (!e?.pivo || e.placa) return;
@@ -9921,7 +9938,7 @@ if (jogo.ash){
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
       if (!m?.vista) return;
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.novo) Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : ''));
@@ -10066,6 +10083,9 @@ if (jogo.ash){
       if (i >= 0) await trocarPara(i);
     },
     trocarPara,
+    balsaDados: () => FERRY, balsaEnviar: m => Rede.enviar(m),        // the Vermilion ferry (ferry_ui.mjs, server_ferry.mjs)
+    insignias: () => (lerLS('insignias', []) || []).length, campeao: () => !!eliteEstado?.vencida,
+    irParaCena: o => irParaCena(o),
   });
   // layout montado pelo jogador (editor de HUD → localStorage hud.layout, ou ui/hud_layout.json)
   const layoutHud = await layoutHudP;                                    // ?hud=padrao: ignora o layout salvo e usa ui/hud_layout.json (o que o conversor do Figma gera); a busca começou no topo do módulo
