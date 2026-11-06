@@ -116,4 +116,6 @@ if [[ "$mode" == "list" ]]; then
   exit 0
 fi
 
-tar -czf - -T "$list"
+# --hard-dereference: a map made with the admin New map tool used to hard-link its GLB to the source map; store it as a plain file
+# (save-live-ci refuses non-file members)
+tar --hard-dereference -czf - -T "$list"

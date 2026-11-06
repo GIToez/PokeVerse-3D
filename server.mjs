@@ -1172,7 +1172,7 @@ const httpServer = http.createServer((req, res) => {
          POST /admin/mapa/novo { modo: 'vazio' | 'clonar', nome, tipo: 'fora' | 'dentro', de (clone source), lib (blank: the prefab
          library map, default 2100011), largura / profundidade (blank, metres) }.
          A map is three files plus its scenes.json entry: public/data/<id>.json (areas, scenery pieces, layers), scenery/<id>.glb (the
-         prefab library; hard-linked to the source's file, so it costs no disk) and scenery/<id>_chao.json. New maps get ids from
+         prefab library; a copy of the source's file) and scenery/<id>_chao.json. New maps get ids from
          9100001 and their own area ids, so names, music and spawns never mix with the map they came from. A clone keeps the
          scenery, ground, grass and water; NPCs, doors, trainers and stories are left out (they belong to the original's places). */
       if (rota === '/admin/mapa/novo' && req.method === 'POST') {
@@ -1186,7 +1186,7 @@ const httpServer = http.createServer((req, res) => {
         let id = 9100001; while (usados.has(id) || fs.existsSync(nodePath.join(DADOS_PUB, id + '.json'))) id++;
         let proxArea = 910001; const novaArea = () => { while (areasUsadas.has(proxArea)) proxArea++; areasUsadas.add(proxArea); return proxArea++; };
         const glbDe = m => { const lib = GLB_EMPRESTADO[m] || m; for (const dir of [CENARIO_RAIZ, CENARIO_PUB]) { const f = nodePath.join(dir, lib + '.glb'); if (fs.existsSync(f)) return { dir, lib, f }; } return null; };
-        const ligar = (de, para) => { try { fs.linkSync(de, para); } catch { fs.copyFileSync(de, para); } };
+        const ligar = (de, para) => fs.copyFileSync(de, para);   // a real copy: each map's GLB is re-exported by the 3D editor on its own, and a hard link broke the deploy's live-edit save (tar non-file member)
         let dados, origem, areasCena;
         if (modo === 'clonar') {
           const de = String(d.de || '');
