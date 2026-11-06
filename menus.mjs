@@ -453,7 +453,7 @@ async function dados(){
   if (D) return D;
   if (!carregandoD) carregandoD = Promise.all([
     fetch('./data/menu_data.json').then(r => r.json()).catch(() => ({ tipos: {}, itens: {}, lojas: {}, insignias: [], missoes: [], passos: [] })),
-    fetch('./data/itens_novos.json').then(r => (r.ok ? r.json() : null)).catch(() => null),   // the new items (TM pieces, tickets…): upcoming/ merges them the same way
+    import('./live_table.mjs').then(T => T.tabelaOuBuild('itens_novos', { aceita: v => !!v?.itens && typeof v.itens === 'object' && !Array.isArray(v.itens) })).catch(() => null),   // the new items (TM pieces, tickets…), fresh from the server when signed in (live_table.mjs)
   ]).then(async ([d, novos]) => {
     d.itens ||= {};
     for (const [id, it] of Object.entries(novos?.itens || {})) if (!d.itens[id] && it && typeof it.n === 'string') d.itens[id] = { n: it.n, d: it.d || '', t: it.t ?? 8, ...(it.i ? { i: it.i } : {}), ...(it.q != null ? { q: it.q } : {}), ...(it.preso ? { preso: true } : {}), ...(it.uso ? { uso: it.uso } : {}) };

@@ -1011,6 +1011,20 @@ const httpServer = http.createServer((req, res) => {
     res.end(JSON.stringify(obj));
   };
 
+  /* LIVE TABLES (Nov 6, live_table.mjs): GET /tabela/<name>.json — a game data file (one the admin panel edits) read fresh from disk,
+     never cached, so an admin edit reaches players on their next read without a redeploy or a stale browser copy. Signed-in only. */
+  if (req.method === 'GET' && /^\/tabela\/[a-z0-9_]{1,40}\.json$/.test(rota)) {
+    if (!usuarioDe(req)) return json(401, { erro: 'Sign in with an account.' });
+    const nomeT = rota.slice(8, -5);
+    if (!Object.values(ESQUEMAS).some(e => e.arquivo === nomeT)) return json(404, { erro: 'unknown table' });
+    try {
+      const txt = fs.readFileSync(nodePath.join(DADOS_PUB, nomeT + '.json'), 'utf8');
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(txt);
+    } catch { json(404, { erro: 'no such table' }); }
+    return;
+  }
+
   // ── Upload do GLB de cenário (binário; o editor 3D re-exporta o mapa) ──────────
   // Caminho próprio: o corpo é um .glb (vários MB), não JSON — não passa pelo cap de 1MB nem pelo parse de texto.
   if (req.method === 'POST' && rota === '/admin/mapa-glb') {

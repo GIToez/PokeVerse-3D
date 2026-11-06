@@ -1,4 +1,5 @@
 import * as Hud from './hud.mjs';
+import { tabelaOuBuild } from './live_table.mjs';
 import * as Teclas from './keys.mjs';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
@@ -19,11 +20,10 @@ const teclaPesca = (a = 'lista') => {
 };
 export function instalar(c) {
   ctx = c;
-  /* Live game (Nov 2): the table is the static data/pesca.json (the newer build read it from a live-table server). */
-  fetch('./data/pesca.json')
-    .then((r) => (r.ok ? r.json() : null))
+  /* The rod table: fresh from the game server when signed in (live_table.mjs), else the static data/pesca.json. */
+  tabelaOuBuild('pesca', { aceita: (d) => Array.isArray(d?.varas) && !!d.areas && typeof d.areas === 'object' })
     .then((d) => {
-      D = Array.isArray(d?.varas) && d.areas && typeof d.areas === 'object' ? d : null;
+      D = d;
     })
     .catch(() => {
       D = null;
