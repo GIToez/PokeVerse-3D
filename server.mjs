@@ -45,6 +45,8 @@ import { createDrops } from './server_drops.mjs';
 import { createHunt } from './server_hunt.mjs';
 import { createDaily } from './server_daily.mjs';
 import { createFerry } from './server_ferry.mjs';
+import { createSocial } from './server_social.mjs';   // friends, requests, direct messages (the Social window)
+import { createParty } from './server_party.mjs';     // parties of up to 4, and Inspect (the player card)
 import * as CaixaR from './box_rules.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
@@ -1125,6 +1127,7 @@ const httpServer = http.createServer((req, res) => {
       if (c?.save) guarda.owned(c.save);
       return json(200, guarda.catalogFor(c, String(url.searchParams.get('l') || 'en').slice(0, 2)));
     }
+    if ((rota === '/social' || rota.startsWith('/social/')) && social.route(rota, req.method, d, usuarioDe(req), json, url)) return;   // friends and messages (server_social.mjs)
     if (rota.startsWith('/ranking') && ranking.route(rota, req.method, json, usuarioDe, req)) return;   // 🏆 rankings (server_ranking.mjs)
     if (req.method === 'GET' && rota === '/conta/passe') {
       const u = usuarioDe(req);
@@ -1639,6 +1642,8 @@ const progressao = createProgression({ accounts: contas, send: enviar, socketsOf
 const drops = createDrops({ accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas });
 const diario = createDaily({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas,   // daily login rewards (7-day streak, free + premium)
   readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null), isBall: k => catalogoItens().items[String(k)]?.t === 7 });
+const social = createSocial({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, isMuted: u => !!(contas[u]?.mudoAte && contas[u].mudoAte > Date.now()) });
+const grupo = createParty({ accounts: contas, send: enviar, socketsOf: socketsDe, connections: () => conexoes.values(), nick: u => contas[u]?.save?.nome || u });
 const balsa = createFerry({ accounts: contas, send: enviar, readJson: nome => lerJson(nodePath.join(__dir, 'public/data/' + nome + '.json'), null) });   // the Vermilion ferry (server_ferry.mjs)
 const caca = createHunt({ accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, gameConfig: () => cfgJogo() });   // hunt bonus: Coins per wild KO from a daily pool
 { const contarAntes = temporada.contar; temporada.contar = (u, ev) => {
@@ -2052,6 +2057,8 @@ wss.on('connection', ws => {
         else if (m.t === 'loja_ver' || m.t === 'loja_comprar') loja.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'temporada') temporada.receber(ws, sessoes.get(ws._info?.token) || null, m);
         else if (m.t === 'diario_ver' || m.t === 'diario_receber') diario.receber(ws, sessoes.get(ws._info?.token) || null, m);
+        else if ((m.t?.startsWith('grupo_') || m.t === 'inspecionar') && grupo.receber(ws, sessoes.get(ws._info?.token) || null, m)) {}   // party + Inspect (server_party.mjs)
+        else if (m.t === 'social_pedir') { const uS = sessoes.get(ws._info?.token) || null; const r = uS ? social.request(uS, m.to) : { erro: 'Friends need an account.' }; enviar(ws, { t: 'sistema', texto: r.erro ? '🤝 ' + r.erro : r.friends ? '🤝 You and ' + r.nick + ' are now friends.' : r.ja ? '🤝 You already asked ' + r.nick + '.' : '📨 Friend request sent to ' + r.nick + '.' }); }
         else if (m.t === 'balsa_vista' || m.t === 'balsa') balsa.receber(ws, sessoes.get(ws._info?.token) || null, m);
 
         else if (m.t?.startsWith('bolsa_')) {

@@ -274,6 +274,7 @@ import * as Stg from './stages.mjs';          // stat stages and Leech Seed (mov
 import * as StgPills from './stage_pills.mjs';   // a foe's stat stages as the v2 pills on its label
 import * as ActiveFx from './active_effects.mjs';   // event / Medallion / perfume timers (v2 efeitos-ativos)
 import * as Forms from './forms.mjs';            // Pokémon forms (public/data/forms.json): types, stats and moveset per form
+import * as PlayerCard from './player_card.mjs';  // tap another trainer: Party · Add Friend · Inspect · Duel
 import * as Balsa from './ferry_ui.mjs';          // the Vermilion ferry window (stops in public/data/ferry.json)
 import * as Locks from './locks.mjs';             // door locks (public/data/locks.json) + the v2 lock bubble
 import * as DailyUi from './daily_ui.mjs';       // Daily Rewards window (v2 trilha) for the 7-day login streak
@@ -8886,6 +8887,17 @@ function npcPerto(){
   }
   return m;
 }
+/** The other trainer under the pointer (within 36 px of their middle on screen). */
+function jogadorSobCursor(ev){
+  const r = tela.getBoundingClientRect(); let melhor = null, md = 36;
+  for (const o of Rede.listaOutros?.() || []){
+    if (!o.pronto || o.oculto || o.longe || !Number.isFinite(o.x)) continue;
+    projetado.set(o.x, (o.y ?? jogo.ash?.y ?? 0) + 0.9, o.z).project(cam); if (projetado.z > 1) continue;
+    const d = Math.hypot((projetado.x + 1) / 2 * r.width - (ev.clientX - r.left), (1 - projetado.y) / 2 * r.height - (ev.clientY - r.top));
+    if (d < md){ md = d; melhor = o; }
+  }
+  return melhor;
+}
 function npcSobCursor(ev){
   const r = tela.getBoundingClientRect(); let melhor = null, md = 40;
   for (const n of jogo.npcs){
@@ -8949,8 +8961,9 @@ function esperarAlvoFoco(){
   flutuar(jogo.ash, I18n.t('pick a Pokémon to focus'), '#8ef58e');
   const t = setInterval(() => {
     const a = jogo.alvo;
-    if (performance.now() > fim || !jogo.raidArena){ clearInterval(t); return; }
-    if (a && a !== antes && a.id != null){ clearInterval(t); Rede.enviar({ t: 'raid_foco', alvo: String(a.id) }); }
+    const emParty = !jogo.raidArena && (jogo.grupo?.membros?.length || 0) > 1;
+    if (performance.now() > fim || (!jogo.raidArena && !emParty)){ clearInterval(t); return; }
+    if (a && a !== antes && a.id != null){ clearInterval(t); Rede.enviar({ t: emParty ? 'grupo_foco' : 'raid_foco', alvo: String(a.id) }); }
   }, 150);
 }
 /* HAND OVER (Nov 5): the server took these Pokémon out of the account (missao_doar); the lists here follow, and the NPC says thanks */
@@ -9949,7 +9962,7 @@ if (jogo.ash){
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
-    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
+    }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), jogadores: m => { if (m.t === 'grupo'){ jogo.grupo = m.grupo || null; if (!m.grupo && m.motivo === 'removido') Chat.sistema('You were removed from the party.'); else if (!m.grupo && m.motivo === 'saiu') Chat.sistema('You left the party.'); } PlayerCard.receber(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
       if (!m?.vista) return;
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
@@ -10033,6 +10046,11 @@ if (jogo.ash){
     pintar: () => atualizarMissao(),
   }).then(() => { jogo.missoesOk = true; atualizarMissao(); }).catch(e => console.warn('missões:', e));
   /* v2 side-quest windows (Nov 5): the offer card when a quest giver is talked to, and "Hand over a Pokémon" for `doar` steps */
+  PlayerCard.instalar({ tr: (s, v) => I18n.t(s, v), enviar: m => Rede.enviar(m), duelo: nome => desafiarJogador(nome),
+    social: () => (comConta() ? Conta.chamar('GET', '/social').then(r => (r.ok ? r.dados : null)) : Promise.resolve(null)),
+    grupo: () => jogo.grupo || null, eu: () => Conta.estado?.().usuario || null,
+    outro: id => (Rede.listaOutros?.() || []).find(o => String(o.id) === String(id) && o.pronto && !o.oculto) || null,
+    projetar: p => { projetado.set(p.x, p.y, p.z).project(cam); if (projetado.z > 1) return null; const r = tela.getBoundingClientRect(); return { x: r.left + (projetado.x + 1) / 2 * r.width, y: r.top + (1 - projetado.y) / 2 * r.height }; } });
   DailyUi.instalar({ tr: (s, v) => I18n.t(s, v), nomeItem: id => ITENS_NOME[id] || null, receber: () => Rede.enviar({ t: 'diario_receber' }),
     loja: () => import('./shop_ui.mjs').then(L => { if (!(comConta() && L.abrirNoProduto('passeDiario30'))) Menus.abrir?.('loja'); }).catch(() => Menus.abrir?.('loja')) });   // the Premium panel → the shop, on the Premium Daily Pass
   if (!Fairy && !INTRO) ActiveFx.instalar({ Conta, Evento, tr: (s, v) => I18n.t(s, v) });
@@ -10574,9 +10592,10 @@ addEventListener('keydown', e => {
     if (ac === 'proximo-alvo'){ e.preventDefault(); if (uma) proximoAlvo(); }
     if (ac === 'focar'){ e.preventDefault(); if (uma){                     // ping my target to my raid (the server only relays it inside a raid)
       const a = jogo.alvo, tr2 = (s, v) => I18n.t(s, v);
-      if (!jogo.raidArena) flutuar(jogo.ash, I18n.t('focus pings work in raids'), '#ffd23a');
+      const emParty = !jogo.raidArena && (jogo.grupo?.membros?.length || 0) > 1;   // outside raids the party gets the ping (server_party.mjs)
+      if (!jogo.raidArena && !emParty) flutuar(jogo.ash, I18n.t('focus pings work in raids and parties'), '#ffd23a');
       else if (FocusUi.frasesAbertas()) FocusUi.frases({ aberto: false });
-      else if (a && a.id != null) Rede.enviar({ t: 'raid_foco', alvo: String(a.id) });
+      else if (a && a.id != null) Rede.enviar({ t: emParty ? 'grupo_foco' : 'raid_foco', alvo: String(a.id) });
       else FocusUi.frases({ tr: tr2, aoFocar: () => esperarAlvoFoco() });   // no target yet: the Quick phrases panel, then the next target picked gets the ping
     } }
     if (e.code === 'Escape') jogo.alvo = null;
@@ -10653,6 +10672,9 @@ tela.addEventListener('pointerdown', ev => {
     if (ev.ctrlKey && !jogo.turno){ comandando = comandarParceiro(ev); return; }   // Ctrl + clique: o PARCEIRO vai até o ponto (segurando, segue o cursor)
     const s = selvagemSobCursor(ev);                  // clicou num selvagem: vira alvo, não anda
     if (s){ jogo.alvo = s; return; }
+    const outroJ = jogadorSobCursor(ev);              // another trainer: the player card (Party · Add Friend · Inspect · Duel)
+    if (outroJ){ PlayerCard.abrir(outroJ); return; }
+    if (PlayerCard.aberto()) PlayerCard.fechar();
     const np = npcSobCursor(ev);                      // clicou num NPC ao alcance: conversa
     if (np && Math.hypot(np.x - jogo.ash.x, np.z - jogo.ash.z) <= alcanceDeFala(np)){ falarCom(np); return; }
     if (pertoDaMesa() && mesaSobCursor(ev)){ escolherInicial(); return; }   // tocou nas Pokébolas da mesa
