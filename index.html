@@ -9794,7 +9794,7 @@ if (jogo.ash){
       Missoes.aplicarDoServidor(m.estado);
       if (m.concluiu) Chat.sistema('📜 Mission complete: ' + (m.nome || m.concluiu) + '.');
       if (m.recompensa){                                                  // 05/11: o servidor paga na conclusão (a bolsa nova já veio em m.bolsa, aplicada pela rede)
-        const r = m.recompensa, partes = [r.dinheiro ? r.dinheiro + ' ' + I18n.t('Coins') : null, ...Object.entries({ ...(r.itens || {}), ...(r.bolas || {}) }).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n)].filter(Boolean);
+        const r = m.recompensa, partes = [r.dinheiro ? r.dinheiro + ' ' + I18n.t('Coins') : null, ...Object.entries({ ...(r.itens || {}), ...(r.bolas || {}) }).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n), r.exp ? r.exp + ' XP' : null].filter(Boolean);   // a XP chega em seguida como `wild_exp` (aplicarWildExp)
         if (partes.length) Chat.sistema('🎁 Reward: ' + partes.join(', ') + '.');
         Som.tocar('ui/sound_keyitemget', { volume: .7, prio: true });
       }

@@ -219,6 +219,15 @@ export function criarWilds(ctx) {
     const self = Math.max(1, mon.lv | 0);
     let gained = Math.floor((base * foe / 5) * Math.pow((2 * foe + 10) / (foe + self + 10), 2.5) + 1);
     gained = Math.max(1, Math.round(gained * mult));
+    const acimaDoTeto = (mon.lv | 0 || 1) > levelCap(save);       // above the cap the KO is banked and gives no EVs (as before)
+    const r = grantRaw(mon, save, gained);
+    if (acimaDoTeto) return r;
+    const ev = Ev.ganharPorKo(mon, foeDex);
+    return { ...r, ev: ev.ganhou };
+  }
+
+  /** A fixed amount of XP (mission rewards): same curve, level cap, banked XP, friendship and HP as a KO, no EVs. */
+  function grantRaw(mon, save, gained) {
     const curve = curveOf(mon.dex);
     const cap = levelCap(save);
     if (!Number.isInteger(mon.exp)) mon.exp = curve[Math.max(1, Math.min(100, mon.lv | 0))] || 0;
@@ -244,9 +253,23 @@ export function criarWilds(ctx) {
       const baseFriend = expTab.especies?.[mon.dex]?.a ?? expTab.especies?.[String(mon.dex)]?.a ?? 70;
       mon.amizade = Math.min(255, (Number.isInteger(mon.amizade) ? mon.amizade : baseFriend) + 2 * levels);
     }
-    const ev = Ev.ganharPorKo(mon, foeDex);
     grantLevelHp(mon, levels);
-    return { gained, banked, levels, ev: ev.ganhou };
+    return { gained, banked, levels };
+  }
+
+  /** Mission XP (05/11): goes to the partner on the field (seguidorUid), else the first one in the party, fainted or not.
+      Returns a `wild_exp`-shaped message (the client already applies level, HP, friendship and the level-up event from it). */
+  function missionExp(save, qtd) {
+    const gained = Math.round(+qtd || 0);
+    const party = Array.isArray(save?.time) ? save.time.filter(p => p && p.dex != null) : [];
+    if (!(gained > 0) || !party.length) return null;
+    const follow = save.seguidorUid;
+    const mon = (follow != null && party.find(p => String(p.uid) === String(follow))) || party[0];
+    const r = grantRaw(mon, save, gained);
+    return {
+      t: 'wild_exp', fonte: 'missao', uid: mon.uid, dex: null, lv: mon.lv, exp: mon.exp, expReserva: mon.expReserva || 0,
+      amizade: mon.amizade, evs: mon.evs, gained: r.gained, banked: r.banked, levels: r.levels, evText: '', shared: [],
+    };
   }
 
   function defeat(ws, msg) {
@@ -341,6 +364,7 @@ export function criarWilds(ctx) {
       const out = defeat(ws, msg || {});
       if (out) ctx.enviar(ws, out);
     },
-    _test: { areasAt, rowsFor, levelCap, grant },
+    missionExp,
+    _test: { areasAt, rowsFor, levelCap, grant, missionExp },
   };
 }

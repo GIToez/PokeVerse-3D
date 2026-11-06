@@ -273,7 +273,8 @@ function enviarMissao(ws, resultado) {
   const pago = u ? pagarMissao(u, concluida.id) : null;
   const c = u ? contas[u] : null;
   enviar(ws, { t: 'missao', estado, passoFeito: passoFeito && !concluida, concluiu: concluida?.id || null, nome: concluida?.nome || null,
-    ...(pago ? { recompensa: pago, bolsa: { dinheiro: c.save.dinheiro ?? 0, itens: c.save.itens, bolas: c.save.bolas } } : {}) });
+    ...(pago ? { recompensa: pago.rec, bolsa: { dinheiro: c.save.dinheiro ?? 0, itens: c.save.itens, bolas: c.save.bolas } } : {}) });
+  if (pago?.xp) enviar(ws, pago.xp);                                      // XP da missão: mesmo formato do `wild_exp` (o cliente sobe nível, HP, avisa)
 }
 /** Paga a recompensa de uma missão concluída, uma vez só (save.recompensasPagas). Devolve o que pagou, ou null. */
 function pagarMissao(u, id) {
@@ -294,9 +295,11 @@ function pagarMissao(u, id) {
   const somar = (k, v) => { if (!(+v > 0)) return; const cofre = ehBola(k) ? c.save.bolas : c.save.itens; cofre[k] = (cofre[k] || 0) + +v; };
   for (const [k, v] of Object.entries(rec.itens || {})) somar(k, v);
   for (const [k, v] of Object.entries(rec.bolas || {})) somar(k, v);
+  /* XP (05/11): com conta ninguém dava — o cliente não soma (ficha é do servidor, ver index `recompensa`) e o servidor não somava. */
+  const xp = rec.exp ? wilds.missionExp(c.save, rec.exp) : null;
   c.rev = (c.rev || 0) + 1;
   salvarContas();
-  return rec;
+  return { rec, xp };
 }
 function recompensaMissao(m) {
   const r = m?.recompensa;
@@ -305,6 +308,7 @@ function recompensaMissao(m) {
   if (r.dinheiro) bolsa.dinheiro = r.dinheiro;
   if (r.itens) bolsa.itens = r.itens;
   if (r.bolas) bolsa.bolas = r.bolas;
+  if (+r.exp > 0) bolsa.exp = +r.exp;
   return bolsa;
 }
 
@@ -1943,7 +1947,8 @@ wss.on('connection', ws => {
           const c = u ? contas[u] : null;
           // bolsa_missao: paga recompensa da missão concluída
           if (op === 'missao' && m.missao && c) {
-            pagarMissao(u, m.missao);                                      // já pago na conclusão (enviarMissao): aqui vira só uma conferência
+            const pg = pagarMissao(u, m.missao);                           // já pago na conclusão (enviarMissao): aqui vira só uma conferência
+            if (pg?.xp) enviar(ws, pg.xp);
             enviar(ws, { t: 'bolsa', op, bolsa: { dinheiro: c.save?.dinheiro, itens: c.save?.itens, bolas: c.save?.bolas } });
           } else {
             if (op === 'safari' && ws._info) { m.x = ws._info.x; m.z = ws._info.z; }   // the warden check uses the walked position, not the one in the message
