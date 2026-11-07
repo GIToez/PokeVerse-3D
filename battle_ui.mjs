@@ -23,7 +23,7 @@ export function convite({ tipo = 'treinador', titulo = '', info = '', aviso = ''
   fecharConvite();
   Hud.sitEstado(a, ESTADO[tipo] || null);
   return new Promise((res) => {
-    a.style.zIndex = '57';
+    a.style.zIndex = tipo === 'duelo' ? '1000' : '57';   // a player's duel challenge arrives on its own: above any open window (Daily Rewards, the Bag…)
     Hud.escrever(a, 'desafio-tipo', tr(SELO[tipo] || 'CHALLENGE'));
     Hud.escrever(a, 'desafio-titulo', titulo);
     Hud.escrever(a, 'desafio-info', info);
