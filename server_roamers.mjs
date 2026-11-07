@@ -57,14 +57,30 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     }
     const box = new Map();
     for (const b of boxes) if (!box.has(b.a)) box.set(b.a, b);
-    return (graph = { map, adj, door, box, nomes: k.nomes || {} });
+    /* Where a roamer may stop: only inside a tall-grass patch, never on bare ground where a
+       tree, a fence or a house could be. A cell counts only when all 8 cells around it are the same, so the whole body is
+       inside the patch. Areas with no such cell are passed through but never stopped in. */
+    const inner = cells => {
+      const set = new Set(cells.map(c => Math.floor(c.x) + ',' + Math.floor(c.z))), out = new Map();
+      for (const c of cells) {
+        const x = Math.floor(c.x), z = Math.floor(c.z);
+        let ok = true;
+        for (let dx = -1; dx <= 1 && ok; dx++) for (let dz = -1; dz <= 1; dz++) if (!set.has((x + dx) + ',' + (z + dz))) { ok = false; break; }
+        if (!ok) continue;
+        if (!out.has(+c.a)) out.set(+c.a, []);
+        out.get(+c.a).push({ x: x + 0.5, z: z + 0.5 });
+      }
+      return out;
+    };
+    const grass = inner(k.grama || []), water = inner(k.agua || []);
+    return (graph = { map, adj, door, box, grass, water, nomes: k.nomes || {} });
   }
   const SEA = new Set([1219, 1220, 1221, 1299]);
   function allowedAreas(map, entry) {
     const G = areaGraph(map), C = cfg();
     let L = (Array.isArray(entry.areas) && entry.areas.length ? entry.areas : C.areas?.length ? C.areas : [...G.box.keys()].filter(a => a >= 1200 && a < 1300 || a === 1191)).map(Number);
     if (entry.modo !== 'voa' && !entry.nada) L = L.filter(a => !SEA.has(a));
-    return L.filter(a => G.box.has(a));
+    return L.filter(a => G.box.has(a) && (G.grass.get(a)?.length || (entry.nada && G.water.get(a)?.length)));
   }
   /** Shortest list of areas from a to b (walkers don't cross the sea unless they swim). */
   function route(map, a, b, nada) {
@@ -80,12 +96,12 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     return out;
   }
   const areaName = (map, a) => areaGraph(map).nomes[a] || 'area ' + a;
-  /** A place to stand in the area: where wilds have spawned (walkable for sure), else the middle of its box. */
+  /** A place to stop in the area: a cell deep inside tall grass. (The water cells are only the shoreline tiles, so a swimmer like Suicune crosses the sea but stops in grass too.) */
   function landing(map, area, agua) {
-    const S = world.spotsIn(map, area).filter(p => !!p.agua === !!agua);
+    const G = areaGraph(map), S = (agua && G.water.get(area)?.length ? G.water : G.grass).get(area) || G.water.get(area) || [];
     if (S.length) return S[Math.floor(Math.random() * S.length)];
-    const b = areaGraph(map).box.get(area);
-    return { x: b.cx + (Math.random() - 0.5) * (b.x1 - b.x0) * 0.3, z: b.cz + (Math.random() - 0.5) * (b.z1 - b.z0) * 0.3 };
+    const b = G.box.get(area);   // never chosen as a destination (allowedAreas), kept so nothing breaks
+    return { x: b.cx, z: b.cz };
   }
   function areaAt(map, x, z) {
     for (const b of areaGraph(map).box.values()) if (x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1) return b.a;
@@ -121,7 +137,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     const C = cfg(), map = C.mapa || 'kanto';
     const areas = allowedAreas(map, e).filter(a => !avoid.includes(a));
     if (!areas.length) return null;
-    const dest = area && areaGraph(map).box.has(+area) ? +area : areas[Math.floor(Math.random() * areas.length)];
+    const dest = area && areas.includes(+area) ? +area : areas[Math.floor(Math.random() * areas.length)];   // an area with no tall grass to stop in: a random one instead
     const flyer = e.modo === 'voa';
     let x, z, alt = 0;
     if (flyer) {   // it comes in from the sky: starts high, a long way off, and flies to where it lands
@@ -330,7 +346,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
         hp: r.w.hp, maxHp: r.w.maxHp, x: r.w.x, z: r.w.z, alt: r.w.alt || 0, disfarce: r.w.disguise?.nome || null, saiEm: r.until })),
       proximoEm: active.size ? null : (state.ultimoFim || 0) + (C.esperaMin || 120) * 60e3,
       contagem: Object.fromEntries((C.lista || []).map(e => [e.dex, recent(e.dex)])),
-      areas: [...areaGraph(C.mapa || 'kanto').box.keys()].map(a => ({ a, nome: areaName(C.mapa || 'kanto', a) })),
+      areas: [...areaGraph(C.mapa || 'kanto').grass.keys()].sort((x, y) => x - y).map(a => ({ a, nome: areaName(C.mapa || 'kanto', a) })),   // only where one can stop (tall grass)
       agora: now,
     };
   }
