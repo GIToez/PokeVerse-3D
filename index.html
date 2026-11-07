@@ -245,6 +245,8 @@ import * as Conta from './account.mjs';              // fase 2 da rede: conta (u
 import * as Troca from './trade.mjs';              // fase 4 da rede: mesa de troca de Pokémon (o servidor move; servidor/trade.mjs)
 import * as Mundo from './world.mjs';              // fase 3a da rede: selvagens compartilhados — o servidor decide quem nasce/shiny/captura (servidor/world.mjs)
 import * as Raid from './raid.mjs';
+import * as BossR from './boss_rules.mjs';   // BOSSES (Nov 6): level = your party's best + the tier color bonus (public/data/bosses.json)
+import * as BossUi from './boss_ui.mjs';      // the boss badge above its head, the tier ring on the ground, the catch panel
 import * as RaidR01 from './raid_r01_game.mjs';   // Articuno raid (arena 9700001): its own scene, attacks and boss, driven by server_raid_r01.mjs
 import * as R01Regra from './raid_r01.mjs';        // the arena's navmesh and pillars (collision for the Pokémon)
                 // RAID AO VIVO (14/09): estado da fila/luta no cliente, ida e volta da arena; a interface é o raid_ui.mjs (import dinâmico)
@@ -10024,7 +10026,7 @@ if (jogo.ash){
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
       if (!DailyUi.abrir(m.vista) && !m.novo) Chat.sistema(I18n.t('Streak: {n} days', { n: m.vista.seq }));
-    }, transformLigado: v => { jogo.transformLigado = !!v; }, caixaVagas: n => { jogo.caixaVagas = +n || null; try { Menus.repintar?.(); } catch {} }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
+    }, transformLigado: v => { jogo.transformLigado = !!v; }, caixaVagas: n => { jogo.caixaVagas = +n || null; try { Menus.repintar?.(); } catch {} }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), bossEstado: e => { bossEstado = e || {}; for (const b of jogo.bosses || []) pintarEmblemaBoss(b); }, bossCaptura: m => { const r = bossCaptEspera; bossCaptEspera = null; if (r){ clearTimeout(r.t); r.res(m); } }, batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
       for (const linha of m.log || []) Chat.sistema('⏱ ' + linha);
       fimTurno(!!m.fim.venceu, { desistiu: !!m.fim.desistiu, servidor: m.fim });
@@ -11071,7 +11073,7 @@ async function bolaLancada(de, x, z){
   } catch (e){ console.warn('bola do turno:', e); }
 }
 /** Liga o povoador de treinadores (uma vez por página): no boot normal, ou quando a arena sai do modo raid (`desativarArenaRaid`). */
-function ligarTreinadores(){ if (jogo.treinadoresLigados) return; jogo.treinadoresLigados = true; setInterval(povoarTreinadores, 2500); }
+function ligarTreinadores(){ if (jogo.treinadoresLigados) return; jogo.treinadoresLigados = true; setInterval(povoarTreinadores, 2500); setInterval(povoarBosses, 2000); requestAnimationFrame(animarBosses); }
 async function povoarTreinadores(){
   if (povoandoT || !PLAY || Fairy || !jogo.ash || jogo.raidArena || !(dados.treinadores || []).length) return;
   povoandoT = true;
@@ -11144,6 +11146,171 @@ async function povoarTreinadores(){
     }
   } finally { povoandoT = false; }
 }
+/* BOSSES (Nov 6, boss_rules.mjs + boss_ui.mjs + server_battle.mjs tipo 'boss'). A boss is a point in the map's `bosses[]` list
+   (Map Editor → Points → + Boss) whose cfg is a key of data/bosses.json. NPC boss: a trainer model with a team; Pokémon boss: the
+   Pokémon itself stands there. Its level is your party's best level + the tier color's bonus, so the badge above it is redrawn
+   whenever your best level changes. Only with an account: the server builds the team, pays the tier-scaled prize and rolls the catch. */
+let dadosBosses = null, povoandoB = false, bossEstado = {}, bossEstadoEm = 0, bossCaptEspera = null;
+async function carregarBosses(){
+  if (!dadosBosses) dadosBosses = await fetch('./data/bosses.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  return dadosBosses;
+}
+/** null = can be fought; 'capturado' / 'vencido' (once-only, beaten) / 'descanso' (cooldown or back tomorrow). */
+function estadoBoss(id){
+  const e = bossEstado[id]; if (!e || e.ok) return null;
+  return e.capturado ? 'capturado' : e.code === 'once' ? 'vencido' : 'descanso';
+}
+function timeDoBoss(def){ return BossR.montarTime(dadosBosses, def, BossR.maiorNivel(jogo.time)); }
+function pintarEmblemaBoss(e){
+  if (!e?.boss || !dadosBosses) return;
+  const B = e.boss, tier = BossR.nivelDe(dadosBosses, B.def), time = timeDoBoss(B.def), esc = e.escBoss || 1;
+  const o = { nome: B.def.nome, nivel: tier, lv: time.length ? Math.max(...time.map(m => m.lv)) : null, tipo: B.def.tipo, shiny: B.def.tipo === 'pokemon' && !!time[0]?.shiny, estado: estadoBoss(B.id), larg: 3.2 / esc };
+  e.treino = { nome: B.def.nome, time: time.map(m => ({ dex: m.dex, lv: m.lv, glb: m.glb, shiny: m.shiny })), dinheiro: 0, fala: B.def.fala || [], vitoria: B.def.vitoria || [], derrota: B.def.derrota || [] };
+  e.falas = o.estado ? [(B.def.vitoria || [])[0] || '…'] : (B.def.fala || []);
+  if (e.anel){ e.anel.material.color.set(tier.cor || '#a7adb5'); e.anel.userData.apagado = !!o.estado; }
+  if (e.rotSprite?.userData?.bossChave === BossUi.chaveEmblema(o)) return;
+  if (e.rotSprite){ e.pivo.remove(e.rotSprite); e.rotSprite.material.map?.dispose?.(); e.rotSprite.material.dispose?.(); }
+  e.rotSprite = BossUi.emblema(THREE, o);
+  e.rotSprite.position.set(0, ((e.altura || 1.6) + 0.9) / esc, 0);    // the pivot is scaled for a Pokémon boss: the badge keeps its size
+  e.pivo.add(e.rotSprite);
+}
+function desmontarBoss(e){
+  removerCorpo(e);
+  for (const L of [jogo.bosses, jogo.npcs]){ const i = L ? L.indexOf(e) : -1; if (i >= 0) L.splice(i, 1); }
+  if (e.spot) e.spot.bossMontado = false;
+}
+function animarBosses(t){
+  try { for (const e of jogo.bosses || []) BossUi.pulsar(e.anel, t / 1000, !!e.anel?.userData?.apagado); } catch {}
+  requestAnimationFrame(animarBosses);
+}
+async function povoarBosses(){
+  if (povoandoB || !PLAY || Fairy || !jogo.ash || jogo.raidArena) return;
+  const pontos = dados.bosses || [];
+  jogo.bosses = jogo.bosses || [];
+  if (!pontos.length && !jogo.bosses.length) return;
+  povoandoB = true;
+  try {
+    await carregarBosses();
+    if (comConta() && Date.now() - bossEstadoEm > 30000){ bossEstadoEm = Date.now(); Rede.enviar({ t: 'bat_bosses' }); }
+    const ash = jogo.ash;
+    for (const e of [...jogo.bosses]){
+      if (jogo.turno?.npc === e || jogo.bossCaptura?.npc === e) continue;
+      const some = e.boss.def.tipo === 'pokemon' && estadoBoss(e.boss.id) === 'capturado';   // caught: it is in your party now, not on the map
+      if (some || Math.hypot(e.x - ash.x, e.z - ash.z) > 140 || !dadosBosses.bosses?.[e.boss.id]) desmontarBoss(e);
+      else pintarEmblemaBoss(e);                                       // the level follows your party: redraw when it changes
+    }
+    for (const spot of pontos){
+      const id = String(spot.cfg), def = dadosBosses.bosses?.[id];
+      if (!def || spot.bossMontado) continue;
+      if (def.tipo === 'pokemon' && estadoBoss(id) === 'capturado') continue;
+      const x = flipX * spot.x, z = spot.z;
+      if (Math.hypot(x - ash.x, z - ash.z) > 100) continue;
+      spot.bossMontado = true;
+      const pk = def.tipo === 'pokemon', glb = pk ? BossR.glbMon({ dex: def.time?.[0]?.dex, glb: def.time?.[0]?.glb || def.glb }) : (def.glb || 'NPC1008');
+      try {
+        const e = await montarPersonagem((pk ? './scenery/mon/' : './scenery/npc/') + glb + '.glb', null, 0);
+        e.npc = true; e.role = 'trainer'; e.cfg = +spot.cfg; e.boss = { id, def }; e.spot = spot; e.nome = def.nome;
+        let tx = x, tz = z;
+        if (!pk){ const c = chaoEm(tx, tz); if (c == null || naAgua(tx, tz, c)){ const seco = terraPerto(tx, tz, 6); if (seco){ tx = seco.x; tz = seco.z; } } }
+        teleportar(e, tx, tz);
+        e.giro = Math.random() * Math.PI * 2; e.pivo.rotation.y = e.giro;
+        if (pk){
+          e.escBoss = 1.35; e.pivo.scale.multiplyScalar(e.escBoss);    // a Pokémon boss stands a size above the wild ones
+          if (def.shiny || def.time?.[0]?.shiny) aplicarShinyCampo(e.pivo, true);
+        }
+        e.anel = BossUi.anel(THREE, '#a7adb5', pk ? 1.6 : 1.0); e.pivo.add(e.anel);
+        tocarAnim(e, 'Idle');
+        pintarEmblemaBoss(e);
+        jogo.npcs.push(e); jogo.bosses.push(e);
+      } catch (err){ console.warn('boss', def.nome, err); spot.bossMontado = false; }
+      break;                                                             // one boss per tick
+    }
+  } finally { povoandoB = false; }
+}
+function desafiarBoss(n){
+  const B = n.boss, est = estadoBoss(B.id), a = jogo.ash;
+  if (!comConta()){ flutuar(a, I18n.t('bosses need an account: log in to challenge them'), '#ffd23a'); return; }
+  if (est){
+    const e = bossEstado[B.id], min = e?.espera ? Math.ceil(e.espera / 60000) : 0;
+    flutuar(a, est === 'capturado' ? I18n.t('this boss is already yours') : est === 'vencido' ? I18n.t('you already beat this boss') : I18n.t('this boss is resting') + (min ? ' (' + min + ' min)' : ''), '#9fb2d0');
+    return;
+  }
+  const tier = BossR.nivelDe(dadosBosses, B.def), time = n.treino?.time || [], lv = time.length ? Math.max(...time.map(m => m.lv)) : '?';
+  const info = [I18n.t('{tier} boss', { tier: I18n.t(tier.nome) }), 'Lv ' + lv, time.length + ' Pokémon', BossR.captura(B.def) ? I18n.t('can be caught') : ''].filter(Boolean).join(' · ');
+  const aviso = I18n.t('Its level follows your strongest Pokémon (+{n}).', { n: tier.bonus || 0 });
+  const p = BattleUi.convite({ tipo: 'boss', titulo: '👑 ' + B.def.nome, n: time.length, info, aviso, npc: { longe: () => !jogo.ash || Math.hypot(jogo.ash.x - n.x, jogo.ash.z - n.z) > 16 } });
+  if (p){ $('turno').hidden = true; p.then(r => { if (r === 'batalhar'){ Som.destravar(); iniciarTurno(n); } }); return; }
+  const el = $('turno');
+  el.innerHTML = `<div class="tcab" style="border-left:6px solid ${tier.cor};padding-left:8px">👑 <b>${escHtml(B.def.nome)}</b> <span class="tmini" style="color:${tier.cor}">${escHtml(info)}</span></div>
+    <div class="tmini" style="margin:4px 0">${escHtml(aviso)}</div>
+    <div class="tlinha"><button type="button" class="tbt luta" id="t-sim">⚔ ${I18n.t('Challenge')}</button><button type="button" class="tbt" id="t-nao">${I18n.t('Not now')}</button></div>`;
+  el.hidden = false;
+  $('t-sim').onclick = () => { Som.destravar(); iniciarTurno(n); };
+  $('t-nao').onclick = () => { el.hidden = true; };
+}
+function fimBoss(n, vitoria, op, r){
+  const B = n.boss, pk = B.def.tipo === 'pokemon', tier = BossR.nivelDe(dadosBosses, B.def);
+  bossEstadoEm = 0;                                                      // the badge state (beaten / resting) comes again on the next tick
+  if (vitoria){
+    const pr = r?.premio || {}, partes = [];
+    if (pr.dinheiro) partes.push('+' + pr.dinheiro + ' ' + I18n.t('Coins'));
+    for (const it of pr.itens || []) partes.push(it.qtd + '× ' + (BOLAS[it.item] ? I18n.t(BOLAS[it.item][0]) : nomeItem(it.item)));
+    BattleUi.premio(partes.join(' · ') || '👑 ' + I18n.t('Boss defeated!'));
+    Chat.sistema('👑 ' + I18n.t('You beat the boss {name}!', { name: B.def.nome }) + (partes.length ? ' ' + partes.join(', ') : ''));
+    flutuar(jogo.ash, '👑 ' + (partes[0] || I18n.t('Boss defeated!')), tier.cor || '#ffd23a');
+    jogo.bolas = lerLS('bolas', jogo.bolas);
+    mostrarFala(B.def.nome, B.def.vitoria || [], n);
+    if (pk) n.pivo.visible = true;
+    if (r?.captura) setTimeout(() => iniciarCapturaBoss(n, r.captura), 900);
+  } else {
+    if (pk) n.pivo.visible = true;
+    if (op.desistiu) Chat.sistema(I18n.t('You left the battle against {name}.', { name: B.def.nome }));
+    else { Chat.sistema(I18n.t('{name} was too strong this time.', { name: B.def.nome })); mostrarFala(B.def.nome, B.def.derrota || [], n); }
+  }
+  Rede.enviar({ t: 'bat_bosses' });
+}
+function iniciarCapturaBoss(n, c){
+  const tier = BossR.nivelDe(dadosBosses, n.boss.def);
+  jogo.bossCaptura = { npc: n };
+  Chat.sistema('👑 ' + I18n.t('{name} is exhausted: throw a ball!', { name: c.nome }));
+  const esperar = () => new Promise(res => { bossCaptEspera = { res, t: setTimeout(() => { bossCaptEspera = null; res({ ok: false, erro: 'the server did not answer' }); }, 9000) }; });
+  BossUi.abrirCaptura({
+    nome: c.nome + ' Lv' + c.lv, cor: tier.cor, tentativas: c.tentativas, ate: c.ate, garantida: c.garantida,
+    bolas: { ...(lerLS('bolas', jogo.bolas) || {}) }, nomeBola: id => I18n.t(BOLAS[id]?.[0] || 'Poké Ball'), tr: (s, v) => I18n.t(s, v),
+    aoLancar: async id => {
+      if (Math.hypot(jogo.ash.x - n.x, jogo.ash.z - n.z) > 20) return { fim: false, texto: I18n.t('get closer to the boss'), cor: '#ffd23a' };
+      const prom = esperar();
+      Rede.enviar({ t: 'bat_capturar', bola: +id });
+      tocarUma(jogo.ash, 'Attack');
+      await bolaLancada(jogo.ash, n.x, n.z);
+      n.pivo.visible = false;
+      const m = await prom;
+      for (let k = 1; k <= Math.min(3, Math.max(1, m.chac || 0)); k++){ flutuar(jogo.ash, '•'.repeat(k), '#ffffff'); Som.tocar('ui/sound_click', { volume: .5 }); await esperarSeg(0.7); }
+      jogo.bolas = lerLS('bolas', jogo.bolas);
+      const bolas = lerLS('bolas', {}) || {};
+      if (m.ok && m.mon){
+        Som.tocar('ui/sound_pkmnget', { volume: .8, prio: true });
+        const mon = m.mon, reg = { exp: Evolucao.expPara(mon.dex, mon.lv), amizade: Evolucao.amizadeBase(mon.dex), quando: Date.now(), ...mon };
+        if (!m.caixa && jogo.time.length < 6){ jogo.time.push(reg); gravarLS('time', jogo.time); }
+        else { const cx = lerLS('caixa', []); cx.push(reg); gravarLS('caixa', cx); Chat.sistema(reg.nome + ' ' + I18n.t('went to the Box (party full).')); }
+        if (jogo.missoesOk) Missoes.evento({ tipo: 'captura', dex: mon.dex });
+        try { Conhecimento.evento('pego', { dex: mon.dex, area: null, shiny: !!mon.shiny }); } catch {}
+        pintarTime(true);
+        if (reg.lv > tetoNivel()) Chat.sistema('🔒 ' + reg.nome + ' Lv ' + reg.lv + ' is above your cap (Lv ' + tetoNivel() + '): it will only obey after ' + proximoTeto() + '.');
+        Chat.sistema('🎉 ' + I18n.t('You caught {name}!', { name: (mon.shiny ? '✨ ' : '') + reg.nome + ' Lv' + reg.lv }));
+        flutuar(jogo.ash, I18n.t('caught {name}!', { name: reg.nome }), '#8ef58e');
+        jogo.bossCaptura = null; bossEstadoEm = 0;
+        setTimeout(() => { if (!jogo.turno) desmontarBoss(n); }, 1500);
+        return { fim: true, texto: I18n.t('Caught!'), cor: '#8ef58e', bolas };
+      }
+      n.pivo.visible = true; tocarUma(n, 'Appear');
+      if (m.code === 'box' || m.code === 'ball' || m.code === 'gone' || m.erro){ if (m.fim) jogo.bossCaptura = null; return { fim: !!m.fim, texto: m.erro || '…', cor: '#f58e8e', bolas }; }
+      if (m.fim){ jogo.bossCaptura = null; Chat.sistema(I18n.t('{name} broke free and got away.', { name: c.nome })); return { fim: true, texto: I18n.t('It got away…'), cor: '#f58e8e', bolas }; }
+      return { fim: false, texto: I18n.t('Broke free! ({n} shakes)', { n: m.chac || 0 }), cor: '#ffd23a', restam: m.restam, bolas };
+    },
+    aoSair: () => { if (bossCaptEspera) return; Rede.enviar({ t: 'bat_capturar_sair' }); jogo.bossCaptura = null; n.pivo.visible = true; Chat.sistema(I18n.t('{name} got away.', { name: c.nome })); },
+  });
+}
 /* TREINADOR REPETIDO (17/09, genandrade no fórum #bugs: "os treinadores da Rota 4 estão resetando"): o mapa tem várias vagas pro
    MESMO treinador (cfg) e o povoador monta ele na vaga mais perto do jogador. Voltando por outro lado, atravessando uma porta ou
    recarregando, a vaga — e a spotKey `cfg@x,z` — mudava: o ✔ sumia, a luta abria e pagava de novo. Vencido agora é pelo cfg; as
@@ -11164,7 +11331,7 @@ function battleCodeIs(r, name){
   return c === name || (alias[name] || []).includes(c);
 }
 function marcarTreinadorVencido(n){
-  if (!n || n.ginasio || n.elite || n.cfg == null) return;
+  if (!n || n.boss || n.ginasio || n.elite || n.cfg == null) return;
   const v0 = lerLS('treinadoresVencidos', []), v = Array.isArray(v0) ? v0 : [];
   if (!treinadorVencido(n.cfg, v)){ v.push(n.spotKey || (n.cfg + '@' + Math.round(flipX * n.x) + ',' + Math.round(n.z))); gravarLS('treinadoresVencidos', v); }
   const info = n.treino || {};
@@ -11173,6 +11340,7 @@ function marcarTreinadorVencido(n){
 }
 async function desafiarTreinador(n){
   if (jogo.turno) return;
+  if (n.boss){ if (!jogo.bossCaptura) desafiarBoss(n); return; }
   if (!n.ginasio && !n.elite && treinadorVencido(n.cfg)) return;      // já vencido: a fala (de derrota) basta (ginásio e Elite aceitam revanche)
   pintarConvite(n);
 }
@@ -11279,10 +11447,12 @@ async function iniciarTurno(n, servPronto = null){
   /* ELITE FOUR (20/09): a corrida SÓ existe no servidor — sem conta não há Elite (o jogo local não tem como guardar a regra do
      "não dá pra curar entre as lutas"). O aviso é o mesmo que o servidor daria. */
   if (n.elite && !comConta()){ flutuar(a, 'the Elite Four needs an account: log in to enter the corridor', '#ffd23a'); $('turno').hidden = true; return; }
+  if (n.boss && !comConta()){ flutuar(a, I18n.t('bosses need an account: log in to challenge them'), '#ffd23a'); $('turno').hidden = true; return; }
   if (!serv && comConta()){
-    const alvoId = n.elite ? n.elite.ordem : n.ginasio ? n.ginasio.insignia.id : n.spotKey;
-    const r = await Rede.pedirBatalha('desafiar', { tipo: n.elite ? 'elite' : n.ginasio ? 'ginasio' : 'treinador', id: alvoId });
-    if (r && r.erro && !n.ginasio && (battleCodeIs(r, 'beaten') || /already beat|já venceu/.test(r.erro))) marcarTreinadorVencido(n);
+    const alvoId = n.boss ? n.boss.id : n.elite ? n.elite.ordem : n.ginasio ? n.ginasio.insignia.id : n.spotKey;
+    const r = await Rede.pedirBatalha('desafiar', { tipo: n.boss ? 'boss' : n.elite ? 'elite' : n.ginasio ? 'ginasio' : 'treinador', id: alvoId });
+    if (r && r.erro && n.boss){ bossEstadoEm = 0; }                       // resting / already beaten: the badge catches up on the next tick
+    else if (r && r.erro && !n.ginasio && (battleCodeIs(r, 'beaten') || /already beat|já venceu/.test(r.erro))) marcarTreinadorVencido(n);
     if (!r || r.erro){ flutuar(a, (r && r.erro) || 'the server did not answer', '#f58e8e'); $('turno').hidden = true; return; }
     serv = r;
   }
@@ -11290,7 +11460,7 @@ async function iniciarTurno(n, servPronto = null){
   limparVolatil(p);                                                      // a luta por turno começa sem estágios do tempo real
   if (jogo.pika) jogo.pika.destino = null;                               // Ctrl+clique pendente não vale no turno
   atualizarMusica();                                                      // música de batalha (treinador / ginásio / elite)
-  if (serv) jogo.turno.info = { ...n.treino, nome: serv.nomeInimigo || n.treino?.nome, time: serv.dele.map(x => ({ dex: x.dex, lv: x.lv, glb: 'pm' + String(x.dex).padStart(4, '0') + '_00' })) };
+  if (serv) jogo.turno.info = { ...n.treino, nome: serv.nomeInimigo || n.treino?.nome, time: serv.dele.map(x => ({ dex: x.dex, lv: x.lv, glb: x.glb || 'pm' + String(x.dex).padStart(4, '0') + '_00', shiny: !!x.shiny })) };
   for (const s of jogo.selvagens) if (s.estado === 'atacando'){ s.estado = 'vagando'; s.pausa = 2; s.investida = null; }   // selvagem desiste: a batalha é só de vocês
   p.pivo.visible = false;                                                // o parceiro "volta pra bola" — sai dela no arremesso
   $('turno').hidden = true;
@@ -11340,18 +11510,24 @@ async function proximoInimigoTurno(){
   const S = espDe(m);
   let q = T.ponto ? T.ponto(2.3) : null;                                 // na frente do treinador, no eixo da formação
   if (!q || !livre(q.x, q.z)){ const dx = a.x - n.x, dz = a.z - n.z, d = Math.hypot(dx, dz) || 1; q = { x: n.x + dx / d * 2.3, z: n.z + dz / d * 2.3 }; }
+  const bossPk = n.boss?.def?.tipo === 'pokemon';                       // a Pokémon boss fights in person: it takes its own spot, no ball
+  if (bossPk) q = { x: n.x, z: n.z };
   const s = await criarSelvagem({ glb: m.glb + '.glb', nome: S?.name || ('nº ' + m.dex), dex: m.dex },
-                                q.x, q.z, { lv: m.lv, perfil: 'treinado' });
+                                q.x, q.z, { lv: m.lv, perfil: 'treinado', shiny: m.shiny ? true : null });
   s.emTurno = true; s.rival = jogo.pika; s.estado = 'turno';
   s.golpes = (jogo.quatroGolpes ? jogo.quatroGolpes(m.dex, m.lv) : (GOLPES_ESPECIE[m.dex] || ['tackle'])).map(id => GOLPES[id]).filter(Boolean);
   s.pivo.visible = false;                                                // na bola até ela chegar
-  tocarUma(n, 'Attack');                                                 // o rival arremessa
-  await bolaLancada(n, q.x, q.z);
+  if (bossPk){ n.pivo.visible = false; s.giro = n.giro; s.pivo.rotation.y = n.giro; }
+  else {
+    tocarUma(n, 'Attack');                                               // o rival arremessa
+    await bolaLancada(n, q.x, q.z);
+  }
   s.pivo.visible = true;
   jogo.selvagens.push(s); jogo.alvo = s;
   T.inimigo = s; T.caiu = false;
   tocarUma(s, 'Appear'); efeito('00016_Hit', s.peito, s.altura);
-  Chat.sistema(T.info.nome + I18n.t(' sent out ') + s.nome + ' Lv' + s.lv + '!');
+  if (bossPk) Chat.sistema('👑 ' + I18n.t('The boss {name} attacks!', { name: (m.shiny ? '✨ ' : '') + s.nome + ' Lv' + s.lv }));
+  else Chat.sistema(T.info.nome + I18n.t(' sent out ') + s.nome + ' Lv' + s.lv + '!');
   return true;
 }
 function koTurno(s){
@@ -11662,6 +11838,7 @@ function fimTurno(vitoria, op = {}){
     if (!op.desistiu) mostrarFala(E.nome, (vitoria ? (E.falaDerrota || []) : (E.falaVitoria || [])), n);
     return;
   }
+  if (n.boss){ fimBoss(n, vitoria, op, doServidor); return; }           // BOSS: the server paid the tier-scaled prize; maybe a catch
   if (vitoria && n.ginasio){                                            // GINÁSIO: insígnia (1ª vez) + dinheiro; revanche paga metade
     const g = n.ginasio, ins = lerLS('insignias', []) || [], primeira = doServidor ? !!doServidor.insignia : !ins.includes(g.insignia.id);
     if (doServidor){ if (doServidor.insignia) liberarReserva(); }         // a batalha correu NO servidor: ele já pagou e já deu a insígnia

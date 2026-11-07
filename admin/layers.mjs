@@ -6,13 +6,14 @@
  *   npcs_glb.json[cfg]     QUEM o NPC é: nome, glb (scenery/<glb>.glb), falas, role, placa — sem cadastro, o jogo não monta o NPC
  *   doors.json[cfg]       ponto de NPC com cfg aqui é PORTA (t 6, leva à chegada n) ou CHEGADA (t 7, onde se nasce ao entrar)
  *   trainers.json[cfg]  o time de quem nasce na vaga (vaga cujo cfg não está lá não nasce ninguém)
+ *   <mapa>.json   bosses[] {cfg, x, y, z, a} — BOSSES (Nov 6): cfg = a key of bosses.json → bosses (NPC or Pokémon boss, boss_rules.mjs)
  * O x do arquivo é espelhado (mundo = FLIPX·x), como as caixas. Os tiles são a grade de 1 m (centro em ,5) e a área de um
  * tile novo é a da caixa de área embaixo dele. Salvar: /admin/mapa-camadas (o mapa) + /admin/dados (npcs, portas). */
 import { ESQUEMAS, validarCampo } from '/admin/schemas.mjs';
 import { traduzNome } from '/admin/map_names.mjs';
 
 const CFG_NPC_NOVO = 9100001;   // NPC criado no painel: faixa 91xxxxx (nenhum cfg de 7 dígitos do jogo começa com 9)
-const COR = { npc: '#4ff0e0', placa: '#c9c9ff', porta: '#ffd23a', chegada: '#ff9d4d', treinador: '#ff5fd0' };
+const COR = { npc: '#4ff0e0', placa: '#c9c9ff', porta: '#ffd23a', chegada: '#ff9d4d', treinador: '#ff5fd0', boss: '#ffd23a' };
 const TIPO_TILE = { grama: 'Grass (encounters)', agua: 'Water (fishing/surf)', spawn: 'Cave floor (encounters)' };
 const COR_TILE = { spawn: 'rgba(214,160,90,.5)' };
 
@@ -20,17 +21,18 @@ export function criarCamadas(dep) {
   const { $, esc, api, toast, avisarJogo, canal, FLIPX, cam, w2t, t2w, redesenhar, dados, mapa, camadas, areaEm, nomeArea, aoMudar, mapas, trocarMapa } = dep;
   let ferramenta = 'zonas', sel = null, arraste = null, colocar = null, ref = null, pintando = false, hover = null, indice = null, avisouSemArea = false;
   const pincel = { tipo: 'grama', modo: 'pintar', raio: 1 };
-  const sujo = { npcs: false, treinadores: false, grama: false, agua: false, spawn: false }, glbSujos = new Set(), portasSujas = new Set();
+  const sujo = { npcs: false, treinadores: false, bosses: false, grama: false, agua: false, spawn: false }, glbSujos = new Set(), portasSujas = new Set();
   const marcar = k => { if (k) sujo[k] = true; aoMudar(); };
 
   async function carregarRef() {
     if (ref) return ref;
     const ler = f => fetch('/data/' + f + '.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    const [npcs, portas, treinadores, cenas] = await Promise.all(['npcs_glb', 'doors', 'trainers', 'scenes'].map(ler));
-    ref = { npcs, portas, treinadores, cenas: Object.fromEntries((cenas.cenas || []).map(c => [c.id, traduzNome(c.nome)])) };
+    const [npcs, portas, treinadores, cenas, bossArq] = await Promise.all(['npcs_glb', 'doors', 'trainers', 'scenes', 'bosses'].map(ler));
+    ref = { npcs, portas, treinadores, bosses: bossArq.bosses || {}, bossNiveis: bossArq.niveis || {}, cenas: Object.fromEntries((cenas.cenas || []).map(c => [c.id, traduzNome(c.nome)])) };
     const dl = (id, html) => { let d = document.getElementById(id); if (!d) { d = document.createElement('datalist'); d.id = id; document.body.append(d); } d.innerHTML = html; };
     dl('dl-c-npcs', Object.entries(npcs).map(([cfg, n]) => `<option value="${cfg}" label="${esc(n.nome || (n.placa ? 'Sign' : 'NPC'))}">`).join(''));
     dl('dl-c-treinadores', Object.entries(treinadores).map(([cfg, t]) => `<option value="${cfg}" label="${esc(t.nome)}">`).join(''));
+    dl('dl-c-bosses', Object.entries(ref.bosses).map(([cfg, b]) => `<option value="${cfg}" label="${esc(b.nome)} (${esc(b.nivel || 'cinza')})">`).join(''));
     redesenhar();
     return ref;
   }
@@ -38,14 +40,18 @@ export function criarCamadas(dep) {
   // ── Pontos ──────────────────────────────────────────────────────────────────
   const tipoDe = (lista, o) => {
     if (lista === 'treinadores') return 'treinador';
+    if (lista === 'bosses') return 'boss';
     const p = ref?.portas[o.cfg];
     return p?.t === 6 ? 'porta' : p?.t === 7 ? 'chegada' : ref?.npcs[o.cfg]?.placa ? 'placa' : 'npc';
   };
-  const temDados = (lista, o) => lista === 'treinadores' ? !!ref?.treinadores[o.cfg] : !!(ref?.npcs[o.cfg] || ref?.portas[o.cfg]);
+  const temDados = (lista, o) => lista === 'treinadores' ? !!ref?.treinadores[o.cfg] : lista === 'bosses' ? !!ref?.bosses[o.cfg] : !!(ref?.npcs[o.cfg] || ref?.portas[o.cfg]);
+  const NIVEL_COR = { cinza: '#a7adb5', vermelho: '#ff4d4d', verde: '#3ddc6a', azul: '#3d8bff', amarelo: '#ffd23a', laranja: '#ff8c1a', roxo: '#b05cff' };
+  const corBoss = o => { const b = ref?.bosses[o.cfg]; return (b && (ref.bossNiveis[b.nivel]?.cor || NIVEL_COR[b.nivel])) || COR.boss; };
   function* pontosVisiveis() {
     const d = dados(); if (!d) return;
     if (camadas.npcs) for (const o of d.npcs || []) yield ['npcs', o];
     if (camadas.treinadores) for (const o of d.treinadores || []) yield ['treinadores', o];
+    if (camadas.bosses) for (const o of d.bosses || []) yield ['bosses', o];
   }
   const tamanho = () => Math.max(3, Math.min(8, cam.esc * 0.45));
   function pontoEm(px, py) {
@@ -57,11 +63,15 @@ export function criarCamadas(dep) {
     return melhor;
   }
   function desenharPonto(ctx, lista, o) {
-    const [x, y] = w2t(FLIPX * o.x, o.z), s = tamanho(), tipo = tipoDe(lista, o), cheio = temDados(lista, o), cor = COR[tipo];
+    const [x, y] = w2t(FLIPX * o.x, o.z), s = tamanho() * (lista === 'bosses' ? 1.4 : 1), tipo = tipoDe(lista, o), cheio = temDados(lista, o), cor = tipo === 'boss' ? corBoss(o) : COR[tipo];
     ctx.beginPath();
     if (tipo === 'porta' || tipo === 'placa') ctx.rect(x - s, y - s, 2 * s, 2 * s);
     else if (tipo === 'chegada') { ctx.moveTo(x, y - s * 1.2); ctx.lineTo(x + s * 1.2, y); ctx.lineTo(x, y + s * 1.2); ctx.lineTo(x - s * 1.2, y); ctx.closePath(); }
     else if (tipo === 'treinador') { ctx.moveTo(x, y - s * 1.2); ctx.lineTo(x + s * 1.1, y + s * 0.9); ctx.lineTo(x - s * 1.1, y + s * 0.9); ctx.closePath(); }
+    else if (tipo === 'boss') {                                                         // a crown: the boss, in its tier color
+      ctx.moveTo(x - s, y + s * 0.7); ctx.lineTo(x - s, y - s * 0.6); ctx.lineTo(x - s * 0.5, y); ctx.lineTo(x, y - s * 1.1);
+      ctx.lineTo(x + s * 0.5, y); ctx.lineTo(x + s, y - s * 0.6); ctx.lineTo(x + s, y + s * 0.7); ctx.closePath();
+    }
     else ctx.arc(x, y, s, 0, Math.PI * 2);
     if (cheio) { ctx.fillStyle = cor; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 1; ctx.stroke(); }
     else { ctx.strokeStyle = cor; ctx.globalAlpha = .7; ctx.lineWidth = 1.5; ctx.stroke(); ctx.globalAlpha = 1; }
@@ -80,6 +90,7 @@ export function criarCamadas(dep) {
   }
   function rotuloPonto(lista, o) {
     if (lista === 'treinadores') return ref?.treinadores[o.cfg]?.nome || '';
+    if (lista === 'bosses') return ref?.bosses[o.cfg] ? '👑 ' + ref.bosses[o.cfg].nome : 'boss ' + o.cfg + '?';
     const p = ref?.portas[o.cfg];
     if (p?.t === 6) return '→ ' + destinoTexto(p.n, true);
     if (p?.t === 7) return 'arrival';
@@ -186,6 +197,9 @@ export function criarCamadas(dep) {
       let cfg = CFG_NPC_NOVO; while (ref.npcs[cfg] || ref.portas[cfg] || (d.npcs || []).some(n => n.cfg === cfg)) cfg++;
       ref.npcs[cfg] = { nome: 'New NPC', glb: 'npc/fc1004_00', falas: ['Hello!'], cena: +d.mapa || undefined, tipo: 1 }; glbSujos.add(cfg);
       novo = { lista: 'npcs', obj: { cfg, modelo: 0, face: 0, x, y: 0, z, a } };
+    } else if (colocar === 'boss') {
+      const cfg = +Object.keys(ref.bosses).find(k => !(d.bosses || []).some(b => String(b.cfg) === k)) || +Object.keys(ref.bosses)[0] || 8800001;
+      novo = { lista: 'bosses', obj: { cfg, x, y: 0, z, a } };
     } else {
       const cfg = +Object.keys(ref.treinadores)[0] || 0;
       novo = { lista: 'treinadores', obj: { cfg, tipo: 51, x, y: 0, z, a } };
@@ -193,7 +207,7 @@ export function criarCamadas(dep) {
     (d[novo.lista] ||= []).push(novo.obj);
     colocar = null; dep.tela.classList.remove('colocando');
     marcar(novo.lista); selecionar(novo); redesenhar();
-    toast(novo.lista === 'npcs' ? 'NPC created — set its name, model and lines on the side.' : 'Slot created — choose which trainer spawns in it.');
+    toast(novo.lista === 'npcs' ? 'NPC created — set its name, model and lines on the side.' : novo.lista === 'bosses' ? 'Boss placed — choose which boss (Data files → Bosses) stands here.' : 'Slot created — choose which trainer spawns in it.');
   }
   function selecionar(s) { sel = s; renderPainel(); redesenhar(); }
   function centralizar(o) { cam.x = FLIPX * o.x; cam.z = o.z; cam.esc = Math.max(cam.esc, 6); redesenhar(); }
@@ -220,11 +234,12 @@ export function criarCamadas(dep) {
     }
     if (ferramenta !== 'pontos') return;
     el.innerHTML = `<h3>Map points</h3>
-      <div class="acoes"><button id="c-add-npc" class="${colocar === 'npc' ? 'on' : ''}">＋ NPC</button><button id="c-add-tr" class="${colocar === 'treinador' ? 'on' : ''}">＋ Trainer slot</button></div>
-      <div class="c-legenda"><span style="color:${COR.npc}">●</span> NPC <span style="color:${COR.npc}">○</span> unregistered (not shown) <span style="color:${COR.porta}">■</span> door <span style="color:${COR.chegada}">◆</span> arrival <span style="color:${COR.treinador}">▲</span> trainer <span style="color:${COR.treinador}">△</span> slot without trainer</div>
+      <div class="acoes"><button id="c-add-npc" class="${colocar === 'npc' ? 'on' : ''}">＋ NPC</button><button id="c-add-tr" class="${colocar === 'treinador' ? 'on' : ''}">＋ Trainer slot</button><button id="c-add-boss" class="${colocar === 'boss' ? 'on' : ''}">＋ Boss</button></div>
+      <div class="c-legenda"><span style="color:${COR.npc}">●</span> NPC <span style="color:${COR.npc}">○</span> unregistered (not shown) <span style="color:${COR.porta}">■</span> door <span style="color:${COR.chegada}">◆</span> arrival <span style="color:${COR.treinador}">▲</span> trainer <span style="color:${COR.treinador}">△</span> slot without trainer <span style="color:${COR.boss}">♛</span> boss (tier color)</div>
       <div id="c-sel" style="margin-top:10px">${sel ? '' : '<div class="fraco">Click a point to edit; drag to move. Turn on the "npcs" and "treinadores" layers up top.</div>'}</div>`;
     $('c-add-npc').onclick = () => { colocar = colocar === 'npc' ? null : 'npc'; dep.tela.classList.toggle('colocando', !!colocar); renderPainel(); if (colocar) toast('Click the map where the NPC goes.'); };
     $('c-add-tr').onclick = () => { colocar = colocar === 'treinador' ? null : 'treinador'; dep.tela.classList.toggle('colocando', !!colocar); renderPainel(); if (colocar) toast('Click the map where the slot goes.'); };
+    $('c-add-boss').onclick = () => { colocar = colocar === 'boss' ? null : 'boss'; dep.tela.classList.toggle('colocando', !!colocar); renderPainel(); if (colocar) toast('Click the map where the boss stands.'); };
     if (sel) renderSel();
   }
   function campoNum(id, rot, v, extra = '') { return `<label>${rot} <input type="number" id="${id}" value="${v ?? ''}" ${extra}></label>`; }
@@ -237,6 +252,12 @@ export function criarCamadas(dep) {
         <label class="inteira">Trainer (cfg) <input type="number" id="c-cfg" list="dl-c-treinadores" value="${o.cfg}"></label>
         <div class="inteira ${t ? 'fraco' : 'aviso-c'}" id="c-cfg-info">${t ? esc(t.nome) + ' — team: ' + esc((t.time || []).map(p => '#' + p.dex + ' Lv' + p.lv).join(', ')) : 'No data in NPC Trainers: nobody spawns in this slot.'}</div>
         ${campoNum('c-x', 'X', +(FLIPX * o.x).toFixed(2), 'step="0.5"')}${campoNum('c-z', 'Z', +o.z.toFixed(2), 'step="0.5"')}</div>`;
+    } else if (lista === 'bosses') {
+      html = `<h4>Boss</h4><div class="form">
+        <label class="inteira">Boss (cfg) <input type="number" id="c-cfg" list="dl-c-bosses" value="${o.cfg}"></label>
+        <div class="inteira ${ref.bosses[o.cfg] ? 'fraco' : 'aviso-c'}" id="c-cfg-info">${esc(infoBoss(o.cfg))}</div>
+        ${campoNum('c-x', 'X', +(FLIPX * o.x).toFixed(2), 'step="0.5"')}${campoNum('c-z', 'Z', +o.z.toFixed(2), 'step="0.5"')}</div>
+        <div class="fraco" style="font-size:11px;margin-top:4px">Create or edit bosses in Data files → Bosses (team, tier color, prize, catch).</div>`;
     } else if (tipo === 'porta' || tipo === 'chegada') {
       const p = ref.portas[o.cfg];
       html = `<h4>${tipo === 'porta' ? 'Door' : 'Arrival'} <span class="fraco">cfg ${o.cfg}</span></h4><div class="form">
@@ -264,6 +285,12 @@ export function criarCamadas(dep) {
     cont.innerHTML = html;
     ligarSel(lista, o, tipo, d);
   }
+  function infoBoss(cfg) {
+    const b = ref.bosses[cfg]; if (!b) return 'No boss with this ID in Data files → Bosses: nothing stands here.';
+    const nv = ref.bossNiveis[b.nivel || 'cinza'];
+    return b.nome + ' — ' + (b.tipo === 'pokemon' ? 'Pokémon boss' + (b.captura?.ativa ? ' (catchable)' : '') : 'NPC boss') + ' · ' + (nv?.nome || b.nivel || 'Gray') + ' (+' + (nv?.bonus ?? '?') + ' Lv) · '
+      + (b.time || []).map(p => '#' + p.dex + (p.delta ? (p.delta > 0 ? '+' : '') + p.delta : '')).join(', ');
+  }
   function ligarSel(lista, o, tipo, d) {
     const re = () => { renderSel(); redesenhar(); };
     const pos = () => { const x = Number($('c-x').value), z = Number($('c-z').value); if (!Number.isFinite(x) || !Number.isFinite(z)) return; o.x = +(FLIPX * x).toFixed(2); o.z = +z.toFixed(2); const a = areaEm(x, z); if (a != null) o.a = a; marcar(lista); redesenhar(); };
@@ -279,7 +306,8 @@ export function criarCamadas(dep) {
       const v = Number(e.target.value); if (!Number.isInteger(v) || v < 1) return;
       o.cfg = v; marcar(lista);
       const info = $('c-cfg-info');
-      if (info) { const t = ref.treinadores[v]; info.className = 'inteira ' + (t ? 'fraco' : 'aviso-c'); info.textContent = t ? t.nome : 'No data in NPC Trainers: nobody spawns in this slot.'; redesenhar(); }
+      if (info && lista === 'bosses') { info.className = 'inteira ' + (ref.bosses[v] ? 'fraco' : 'aviso-c'); info.textContent = infoBoss(v); redesenhar(); }
+      else if (info) { const t = ref.treinadores[v]; info.className = 'inteira ' + (t ? 'fraco' : 'aviso-c'); info.textContent = t ? t.nome : 'No data in NPC Trainers: nobody spawns in this slot.'; redesenhar(); }
       else { clearTimeout(ligarSel.t); ligarSel.t = setTimeout(re, 500); }                // NPC: o painel muda (outro cadastro)
     };
     if ($('c-face')) {
@@ -344,7 +372,7 @@ export function criarCamadas(dep) {
   function usarFerramenta(f) {
     ferramenta = f; colocar = null; hover = null; dep.tela.classList.remove('colocando');
     if (f !== 'zonas') carregarRef().then(renderPainel);
-    if (f === 'pontos') { if (!camadas.npcs) dep.ligarCamada('npcs'); if (!camadas.treinadores) dep.ligarCamada('treinadores'); }
+    if (f === 'pontos') { if (!camadas.npcs) dep.ligarCamada('npcs'); if (!camadas.treinadores) dep.ligarCamada('treinadores'); if (!camadas.bosses) dep.ligarCamada('bosses'); }
     renderPainel(); redesenhar();
   }
   carregarRef();

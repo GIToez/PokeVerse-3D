@@ -16,6 +16,7 @@
  * que acrescenta `tela` (edição numa tela própria) e `colecao` (validação do conteúdo inteiro — ver validarColecao). */
 import { ESQUEMAS_F2 } from './schemas_f2.mjs';
 import { ESQUEMAS_F3 } from './schemas_f3.mjs';   // Fase 3: cores de NPC, falas, diálogos, traduções, músicas, raid
+import { ESQUEMAS_BOSS } from './schemas_boss.mjs';   // NPC / Pokémon bosses and their color tiers (bosses.json)
 
 const faixaNivel = v => {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return 'must be an object { "area": [min, max] }';
@@ -387,6 +388,7 @@ export const ESQUEMAS = {
   },
   ...ESQUEMAS_F2,
   ...ESQUEMAS_F3,
+  ...ESQUEMAS_BOSS,
 };
 
 const LIMITE_REGISTROS = 20000, LIMITE_REGISTRO_BYTES = 60000;

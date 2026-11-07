@@ -16,7 +16,9 @@ import { efetividade } from './rules.mjs';
 import { expMultOf, expSharers } from './exp_items.mjs';
 import { createTurnEngine } from './server_battle_engine.mjs';
 import { createMapWeather } from './server_weather.mjs';
-import * as Transf from './transform.mjs';   // Ditto's Transform in turn battles (rules: public/data/transform.json, loaded by server_transform.mjs)
+import * as Transf from './transform.mjs';
+import * as BossR from './boss_rules.mjs';   // NPC / Pokémon bosses whose level follows the party (public/data/bosses.json)
+import * as Caixa from './box_rules.mjs';   // Ditto's Transform in turn battles (rules: public/data/transform.json, loaded by server_transform.mjs)
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
 const HP_X = Ind.HP_X;
@@ -72,6 +74,18 @@ export function criarBatalha(ctx) {
   const treinadores = lerJson('public/data/trainers.json', {});
   const elite = lerJson('public/data/elite.json', { membros: [] });
   const elitePorOrdem = new Map((elite.membros || []).map((m) => [+m.ordem, m]));
+  /* BOSSES: read again when the file changes (admin → Bosses), so a new boss or a tier tweak applies on the next challenge. */
+  let bossCache = { mt: -1, d: { niveis: {}, bosses: {} } };
+  function bossesDados() {
+    try {
+      const arq = nodePath.join(__dir, 'public/data/bosses.json'), mt = fs.statSync(arq).mtimeMs;
+      if (mt !== bossCache.mt) bossCache = { mt, d: JSON.parse(fs.readFileSync(arq, 'utf8')) || {} };
+    } catch {}
+    return bossCache.d;
+  }
+  const bossPorId = (id) => { const d = bossesDados(); const b = d.bosses?.[String(id)]; return b ? { id: String(id), b, d } : null; };
+  /** Catches waiting after a Pokémon boss falls: user → { bossId, ent, nome, restam, ate }. */
+  const capturas = new Map();
 
   const lutas = new Map();
   const convites = new Map();
@@ -173,6 +187,7 @@ export function criarBatalha(ctx) {
       glb: glbDe(p.dex, p),
       uid: p.uid ?? null,
       nome: p.nome || especie(p.dex).name,
+      ...(p.shiny ? { shiny: true } : {}),
     };
   }
 
@@ -190,8 +205,9 @@ export function criarBatalha(ctx) {
       lv: +ent.lv || 5,
       glb: glbDe(ent.dex, ent),
       nome: especie(ent.dex).name,
-      ivs: [15, 15, 15, 15, 15, 15],
+      ivs: Number.isFinite(+ent.ivs) ? Array(6).fill(Math.max(0, Math.min(31, +ent.ivs | 0))) : [15, 15, 15, 15, 15, 15],
       natureza: 'Hardy',
+      shiny: !!ent.shiny,
       uid: 'npc-' + ent.dex + '-' + (ent.lv || 0) + '-' + Math.random().toString(36).slice(2, 7),
     });
     p.hp = p.maxHp;
@@ -321,6 +337,7 @@ export function criarBatalha(ctx) {
       eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, transf: vistaTransf(eu), status: Status.exportar(eu.status), estagios: engine.stagesOf(eu, fx), semente: engine.seededOf(eu, fx), efeitos: engine.volatilesOf(eu, fx) } : null,
       ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, transf: vistaTransf(ele), status: Status.exportar(ele.status), estagios: engine.stagesOf(ele, fx), semente: engine.seededOf(ele, fx), efeitos: engine.volatilesOf(ele, fx) } : null,
       clima: climaDaLuta(bat),
+      ...(bat.tipo === 'boss' ? { boss: { id: bat.meta.boss, tipo: bat.meta.info?.tipo || 'npc', nivel: bat.meta.tier, maxLv: bat.meta.maxLv } } : {}),
       lances: bat.lances || [],
       log: bat.log || [],
       vidas: bat.eu.time.map((p) => ({
@@ -387,6 +404,23 @@ export function criarBatalha(ctx) {
       timeInimigo = M.time || [];
       premio = M.dinheiro || 0;
       meta = { elite: ordem, membro: M };
+    } else if (tipo === 'boss') {
+      /* BOSS: the team is built NOW from the party's best level + the tier bonus (boss_rules.mjs). */
+      const B = bossPorId(id);
+      if (!B) return fail('unknown boss', 'target');
+      if (!s.bosses || typeof s.bosses !== 'object') s.bosses = {};
+      const pode = BossR.disponivel(B.b, s.bosses[B.id]);
+      if (!pode.ok) {
+        const txt = { once: B.b.tipo === 'pokemon' ? 'this boss is already yours' : 'you already beat this boss', daily: 'this boss is back tomorrow', wait: 'this boss is resting' }[pode.code] || 'not now';
+        return fail(txt, pode.code === 'once' ? 'beaten' : 'wait', { espera: pode.espera || 0 });
+      }
+      const maxLv = BossR.maiorNivel(party);
+      const tier = BossR.nivelDe(B.d, B.b);
+      nomeInimigo = B.b.nome || 'Boss';
+      timeInimigo = BossR.montarTime(B.d, B.b, maxLv);
+      premio = 0;
+      meta = { boss: B.id, info: B.b, tier: { id: B.b.nivel || 'cinza', nome: tier.nome, cor: tier.cor, bonus: tier.bonus }, maxLv, time: timeInimigo };
+      capturas.delete(acc.u);   // a catch left open from an earlier boss closes with a new fight
     } else {
       const t = treinadorPorId(id);
       if (!t) return fail('unknown trainer', 'target');
@@ -590,6 +624,8 @@ export function criarBatalha(ctx) {
         fim.elite = { zerou: true, ordem: M.ordem, nome: M.nome };
       }
       for (const w of ctx.socketsDe(acc.u)) ctx.enviar(w, { t: 'elite', corrida: s.elite.corrida, vencida: !!s.elite.vencida });
+    } else if (bat.tipo === 'boss') {
+      pagarBoss(acc, bat, s, venceu, extra, fim);
     }
     if (venceu) {
       const conta = { treinador: 'treinador', ginasio: 'ginasio' }[bat.tipo];
@@ -604,6 +640,95 @@ export function criarBatalha(ctx) {
     return fim;
   }
 
+
+  /** Boss result: the tier-scaled prize on a win, the cooldowns, and (Pokémon boss) the catch window. */
+  function pagarBoss(acc, bat, s, venceu, extra, fim) {
+    if (!s.bosses || typeof s.bosses !== 'object') s.bosses = {};
+    const id = bat.meta.boss, B = bat.meta.info, reg = (s.bosses[id] ||= { vitorias: 0 });
+    fim.boss = { id, nome: B.nome, tipo: B.tipo || 'npc', nivel: bat.meta.tier };
+    if (!venceu) {
+      reg.ultimaDerrota = Date.now();   // a loss, a run or a give-up all start the loss cooldown (no dodging it by leaving)
+      return;
+    }
+    reg.vitorias = (reg.vitorias || 0) + 1;
+    reg.ultimaVitoria = Date.now();
+    const R = BossR.recompensa(bossesDados(), B);
+    const itens = BossR.sortearItens(R.itens);
+    s.dinheiro = (s.dinheiro || 0) + R.dinheiro;
+    if (!s.bolas || typeof s.bolas !== 'object') s.bolas = {};
+    for (const it of itens) {
+      const ehBola = it.item > 1000 && it.item < 1100;   // Poké Balls live in save.bolas, everything else in save.itens
+      const onde = ehBola ? s.bolas : s.itens;
+      onde[it.item] = (+onde[it.item] || 0) + it.qtd;
+    }
+    fim.premio = { dinheiro: R.dinheiro, itens };
+    const cap = BossR.captura(B);
+    if (cap) {
+      const ent = bat.meta.time[0];
+      const S = especie(ent.dex);
+      const c = { bossId: id, ent, nome: (ent.shiny ? '✨ ' : '') + (B.nome || S.name), especie: S.name, rate: +S.rate || 45, cap, restam: cap.tentativas, ate: Date.now() + cap.janelaS * 1000 };
+      capturas.set(acc.u, c);
+      fim.captura = { dex: ent.dex, lv: ent.lv, shiny: !!ent.shiny, nome: c.nome, tentativas: c.restam, ate: c.ate, garantida: cap.modo === 'garantida' };
+    }
+  }
+
+  /** One ball at a beaten Pokémon boss. The boss becomes an ordinary Pokémon: fresh IVs and nature, its shiny kept. */
+  function capturarBoss(ws, m) {
+    const acc = contaDe(ws);
+    if (!acc) return { t: 'bat_capt', ok: false, erro: 'log in first', code: 'account' };
+    const c = capturas.get(acc.u);
+    if (!c || Date.now() > c.ate) { capturas.delete(acc.u); return { t: 'bat_capt', ok: false, erro: 'the boss got away', code: 'gone', fim: true }; }
+    const s = saveDe(acc.c);
+    const cfg = ctx.gameConfig?.() || {};
+    if (!Caixa.cabe(s, cfg)) return { t: 'bat_capt', ok: false, erro: Caixa.aviso(s, cfg), code: 'box' };
+    const ball = String(+m.bola || 1001);
+    if (!s.bolas || typeof s.bolas !== 'object') s.bolas = {};
+    if (!((s.bolas[ball] | 0) > 0)) return { t: 'bat_capt', ok: false, erro: 'you have no ball of that kind', code: 'ball' };
+    s.bolas[ball] = (s.bolas[ball] | 0) - 1;
+    if (s.bolas[ball] <= 0) delete s.bolas[ball];
+    c.restam--;
+    const bonusBola = +ball === 1004 ? 255 : Math.max(1, +(ctx.bolaBonus?.(ball, { dex: c.ent.dex, lv: c.ent.lv }, acc.u)) || 1);
+    const n = c.cap.modo === 'garantida' ? 4 : BossR.sacudidas(c.rate, bonusBola, c.cap.bonus);
+    const bolsa = () => ({ dinheiro: s.dinheiro ?? 0, itens: s.itens || {}, bolas: s.bolas, insignias: s.insignias });
+    if (n >= 4) {
+      capturas.delete(acc.u);
+      const base = BossR.monCapturado(bossPorId(c.bossId)?.b, c.ent);
+      const pk = ctx.novoIndividuo ? ctx.novoIndividuo({ dex: base.dex, nome: c.especie, glb: base.glb, lv: base.lv }) : { dex: base.dex, nome: c.especie, glb: base.glb, lv: base.lv, uid: String(Date.now()) };
+      pk.shiny = base.shiny;   // shiny stays shiny, a normal one stays normal — never rerolled
+      pk.origem = 'boss';
+      garantirMon(pk);
+      pk.hp = pk.maxHp;
+      if (!Array.isArray(s.time)) s.time = [];
+      if (!Array.isArray(s.caixa)) s.caixa = [];
+      const noTime = s.time.length < 6;
+      if (noTime) s.time.push(pk); else s.caixa.push(pk);
+      if (!s.bosses || typeof s.bosses !== 'object') s.bosses = {};
+      (s.bosses[c.bossId] ||= { vitorias: 1 }).capturado = Date.now();
+      ctx.marcarPego?.(acc.c, pk.dex);
+      acc.c.rev = (acc.c.rev || 0) + 1;
+      ctx.salvarContas();
+      try { ctx.aoCapturar?.(ws, acc.u, pk, +ball); } catch (e) { console.warn('boss: aoCapturar', e); }
+      console.log(`[boss] ${acc.u} caught boss ${c.bossId} (${pk.nome} Lv${pk.lv}${pk.shiny ? ' shiny' : ''}) with ball ${ball}`);
+      return { t: 'bat_capt', ok: true, chac: n, mon: pk, caixa: !noTime, vidas: s.time, bolsa: bolsa(), fim: true };
+    }
+    acc.c.rev = (acc.c.rev || 0) + 1;
+    ctx.salvarContas();
+    const acabou = c.restam <= 0;
+    if (acabou) capturas.delete(acc.u);
+    return { t: 'bat_capt', ok: false, chac: n, restam: Math.max(0, c.restam), bolsa: bolsa(), fim: acabou };
+  }
+
+  /** What the game needs to label each boss: { id: { ok, code, espera, vitorias, capturado } }. */
+  function estadoBosses(ws) {
+    const acc = contaDe(ws);
+    const s = acc ? saveDe(acc.c) : null;
+    const d = bossesDados(), out = {};
+    for (const [id, b] of Object.entries(d.bosses || {})) {
+      const reg = s?.bosses?.[id] || null;
+      out[id] = { ...BossR.disponivel(b, reg), vitorias: reg?.vitorias || 0, capturado: !!reg?.capturado };
+    }
+    return { t: 'bat_bosses', estado: out };
+  }
 
   function depoisDoLance(bat, acc, log) {
     const ele = bat.dele[bat.eleIdx];
@@ -888,6 +1013,9 @@ export function criarBatalha(ctx) {
       if (op === 'desafiar') ctx.enviar(ws, desafiar(ws, m));
       else if (op === 'acao') ctx.enviar(ws, acao(ws, m));
       else if (op === 'sair') ctx.enviar(ws, sair(ws));
+      else if (op === 'capturar') ctx.enviar(ws, capturarBoss(ws, m));
+      else if (op === 'capturar_sair') { const acc = contaDe(ws); if (acc) capturas.delete(acc.u); ctx.enviar(ws, { t: 'bat_capt', ok: false, code: 'left', fim: true }); }
+      else if (op === 'bosses') ctx.enviar(ws, estadoBosses(ws));
       else if (op === 'consultar') {
         const acc = contaDe(ws);
         const bat = acc && lutas.get(acc.u);
@@ -919,6 +1047,6 @@ export function criarBatalha(ctx) {
       return { corrida: e.corrida, vencida: !!e.vencida };
     },
     /* exported for tests */
-    _test: { calcularDano, abrirNpc, ginasioPorId, treinadorPorId, elitePorOrdem, monNpc, lutas, pagar, cfgDeChave, varrerOciosas, expirar },
+    _test: { capturarBoss, capturas, bossPorId, estadoBosses, calcularDano, abrirNpc, ginasioPorId, treinadorPorId, elitePorOrdem, monNpc, lutas, pagar, cfgDeChave, varrerOciosas, expirar },
   };
 }

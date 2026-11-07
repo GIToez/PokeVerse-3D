@@ -1567,7 +1567,7 @@ const httpServer = http.createServer((req, res) => {
         if (!/^[\w-]{1,40}$/.test(m)) return json(400, { erro: 'invalid map' });
         const arq = nodePath.join(DADOS_PUB, m + '.json'), d2 = lerJson(arq, null);
         if (!d2) return json(404, { erro: 'map not found' });
-        const CAMPOS = { npcs: ['cfg', 'modelo', 'face', 'x', 'y', 'z', 'a'], treinadores: ['cfg', 'tipo', 'x', 'y', 'z', 'a'], grama: ['cfg', 'tipo', 'x', 'y', 'z', 'a'],
+        const CAMPOS = { npcs: ['cfg', 'modelo', 'face', 'x', 'y', 'z', 'a'], treinadores: ['cfg', 'tipo', 'x', 'y', 'z', 'a'], bosses: ['cfg', 'x', 'y', 'z', 'a'], grama: ['cfg', 'tipo', 'x', 'y', 'z', 'a'],
           agua: ['tipo', 'x', 'y', 'z', 'a'], spawn: ['x', 'z', 'y', 'a'] };
         const INTEIROS = new Set(['cfg', 'modelo', 'tipo', 'a']), contagem = {}, novas = {};
         for (const [k, campos] of Object.entries(CAMPOS)) {
@@ -1769,7 +1769,10 @@ function darTenis(u, { avisar = true } = {}) {
   if (avisar) for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: "👟 Professor Oak's aide caught up with you: \"Brock's badge! The Professor wants you to have these.\" You got the Running Shoes! Hold Shift (or push the joystick all the way) to run.", bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas || {} } });
   return true;
 }
-const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u) });
+const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u),
+  /* bosses (boss_rules.mjs): the catch after a Pokémon boss falls uses the same individual, Pokédex mark, Box rule and ball bonus as the wild */
+  novoIndividuo: individuoServidor, marcarPego, gameConfig: () => cfgJogo(), bolaBonus: (id, w, u) => world.ballBonus(id, w, u),
+  aoCapturar: (ws, u, pk, bola) => { temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola }); const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex }); if (r) enviarMissao(ws, r); } });
 /* PP x5 (06/11, individual.mjs PP_MULT): o criarBatalha acabou de carregar o learnset; todo golpe gravado com o ppMax antigo sobe pro novo
    e o PP atual ganha a diferença (sem precisar do Centro). Idempotente: quem já está no valor atual fica igual. */
 {

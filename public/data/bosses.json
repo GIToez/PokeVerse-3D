@@ -1,0 +1,44 @@
+{
+  "niveis": {
+    "cinza":    { "nome": "Gray",   "cor": "#a7adb5", "bonus": 0,  "multDinheiro": 1,   "multItens": 1, "ivs": 10, "recompensas": [] },
+    "vermelho": { "nome": "Red",    "cor": "#ff4d4d", "bonus": 5,  "multDinheiro": 1.5, "multItens": 1, "ivs": 15, "recompensas": [] },
+    "verde":    { "nome": "Green",  "cor": "#3ddc6a", "bonus": 10, "multDinheiro": 2,   "multItens": 2, "ivs": 18, "recompensas": [{ "item": 1003, "qtd": 2 }] },
+    "azul":     { "nome": "Blue",   "cor": "#3d8bff", "bonus": 20, "multDinheiro": 3,   "multItens": 2, "ivs": 22, "recompensas": [{ "item": 1003, "qtd": 3 }, { "item": 2013, "qtd": 1 }] },
+    "amarelo":  { "nome": "Yellow", "cor": "#ffd23a", "bonus": 30, "multDinheiro": 4.5, "multItens": 3, "ivs": 25, "recompensas": [{ "item": 1003, "qtd": 5 }, { "item": 2013, "qtd": 2 }] },
+    "laranja":  { "nome": "Orange", "cor": "#ff8c1a", "bonus": 40, "multDinheiro": 6,   "multItens": 4, "ivs": 28, "recompensas": [{ "item": 1003, "qtd": 8 }, { "item": 2013, "qtd": 3 }] },
+    "roxo":     { "nome": "Purple", "cor": "#b05cff", "bonus": 50, "multDinheiro": 8,   "multItens": 5, "ivs": 31, "recompensas": [{ "item": 1003, "qtd": 10 }, { "item": 2013, "qtd": 5 }, { "item": 1004, "qtd": 1, "chance": 0.1 }] }
+  },
+  "bosses": {
+    "8800001": {
+      "tipo": "npc",
+      "nome": "Rocket Admin Kaze",
+      "nivel": "vermelho",
+      "glb": "NPC1008",
+      "time": [{ "dex": 24, "delta": -3 }, { "dex": 110, "delta": -2 }, { "dex": 42, "delta": 0 }],
+      "dinheiro": 1500,
+      "recompensas": [{ "item": 2013, "qtd": 1, "chance": 0.5 }],
+      "repeticao": "diaria",
+      "cooldownDerrotaMin": 10,
+      "fala": ["So you're the brat everyone talks about.", "Let's see how you handle a real Rocket!"],
+      "vitoria": ["Tch… Team Rocket will remember this."],
+      "derrota": ["Ha! Go back to your mommy."]
+    },
+    "8800002": {
+      "tipo": "pokemon",
+      "nome": "Red Gyarados",
+      "nivel": "verde",
+      "glb": "pm0130_00",
+      "shiny": true,
+      "time": [{ "dex": 130 }],
+      "lvMin": 30,
+      "dinheiro": 0,
+      "recompensas": [],
+      "repeticao": "sempre",
+      "cooldownDerrotaMin": 5,
+      "captura": { "ativa": true, "modo": "chance", "bonus": 2, "tentativas": 3, "umaVez": true },
+      "fala": ["The water churns… a furious red Gyarados rises!"],
+      "vitoria": ["The red Gyarados is exhausted!"],
+      "derrota": ["The red Gyarados roars and dives back under."]
+    }
+  }
+}

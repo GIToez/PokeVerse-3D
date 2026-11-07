@@ -7,7 +7,7 @@
     "server": "node server.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tools/test_battle.mjs"
+    "test": "node tools/test_battle.mjs && node tools/test_boss.mjs"
   },
   "dependencies": {
     "fairygui-three": "^1.0.1",

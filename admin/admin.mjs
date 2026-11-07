@@ -143,8 +143,8 @@ async function carregarTudo() {
 
 // ╔═══════════════════════════════ EDITOR DE MAPA ═══════════════════════════════╗
 const tela = $('m-tela'), cv = $('m-canvas'), ctx = cv.getContext('2d');
-const camadas = { minimapa: true, caixas: true, grama: true, agua: true, piso: true, zonas: true, npcs: false, treinadores: false };
-const ROTULO_CAMADA = { minimapa: 'minimap', caixas: 'boxes', grama: 'grass', agua: 'water', piso: 'floor', zonas: 'zones', npcs: 'NPCs', treinadores: 'trainers' };
+const camadas = { minimapa: true, caixas: true, grama: true, agua: true, piso: true, zonas: true, npcs: false, treinadores: false, bosses: false };
+const ROTULO_CAMADA = { minimapa: 'minimap', caixas: 'boxes', grama: 'grass', agua: 'water', piso: 'floor', zonas: 'zones', npcs: 'NPCs', treinadores: 'trainers', bosses: 'bosses' };
 let Camadas = null;   // admin/layers.mjs (pontos e pincel) — criado no ligarUI, depois do login
 
 async function carregarCenas() {

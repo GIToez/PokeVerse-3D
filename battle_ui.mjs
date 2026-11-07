@@ -14,8 +14,8 @@ addEventListener('keydown', (e) => { if (aberto?.tecla) aberto.tecla(e); }, true
 export const conviteAberto = () => !!aberto;
 export function fecharConvite(v = 'nao') { if (aberto) aberto.fim(v); }
 
-const ESTADO = { treinador: null, duelo: null, ginasio: 'ginasio', 'ginasio-espera': 'ginasio-espera', elite: 'elite' };
-const SELO = { treinador: 'CHALLENGE', duelo: 'DUEL', ginasio: 'GYM', 'ginasio-espera': 'GYM', elite: 'ELITE FOUR' };
+const ESTADO = { treinador: null, boss: null, duelo: null, ginasio: 'ginasio', 'ginasio-espera': 'ginasio-espera', elite: 'elite' };
+const SELO = { treinador: 'CHALLENGE', boss: 'BOSS', duelo: 'DUEL', ginasio: 'GYM', 'ginasio-espera': 'GYM', elite: 'ELITE FOUR' };
 
 export function convite({ tipo = 'treinador', titulo = '', info = '', aviso = '', preco = 0, n = 1, emblema = null, npc = null, botao = null } = {}) {
   const a = Hud.sit('convite-batalha');

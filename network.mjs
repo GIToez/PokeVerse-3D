@@ -1121,6 +1121,13 @@ function receber(m) {
     case 'bat_largada':
       ctx.batalhaGuardada?.(m.guardada || null);
       return;
+    case 'bat_capt':                                                   // a ball at a beaten Pokémon boss (server_battle.mjs capturarBoss)
+      if (m.bolsa) Conta.aplicarBolsa(m.bolsa);
+      ctx.bossCaptura?.(m);
+      return;
+    case 'bat_bosses':                                                 // per-boss state: beaten, resting, caught (labels the badge)
+      ctx.bossEstado?.(m.estado || {});
+      return;
     case 'vida':
     case 'vida_erro': {
       const ba = vidaEsperando;
