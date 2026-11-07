@@ -29,7 +29,7 @@ export function instalarCampeao({ api, toast }) {
     $('v-campeao').innerHTML = `
       <div class="topo-edit"><h2>👑 Champion's seat</h2><button id="cp-atualizar">Refresh</button></div>
       <div class="caixa">${atual}
-        <div class="cp-dica">A player's first League run always ends against Blue. From the second run on, the last room holds the player who took the title last, with their outfit and the party they had when they won; beating them takes the seat. Only the reigning Champion shows "👑 Champion of Kanto" under their name.</div></div>
+        <div class="cp-dica">A player's first League run always ends against Blue. From the second run on, the last room holds the player who took the title last, with their outfit and the party they had when they won; beating them takes the seat. Only the reigning Champion shows "👑 Indigo League Champion" (the League is shared by Kanto and Johto) under their name.</div></div>
       ${antes ? `<div class="caixa"><h3>Before</h3><table><thead><tr><th>Champion</th><th>From</th><th>Until</th><th>Defences</th><th>How it ended</th></tr></thead><tbody>${antes}</tbody></table></div>` : ''}`;
     $('cp-atualizar').onclick = carregar;
     if ($('cp-reset')) $('cp-reset').onclick = async () => {

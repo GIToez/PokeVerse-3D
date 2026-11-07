@@ -7915,7 +7915,7 @@ function rotularJogador(){
   /* CARGOS (09/09): staff/mod aparecem em colchete, na cor do cargo — quem dá é o servidor (Conta.meuCargoAtual).
      TÍTULO (12/09): numa SEGUNDA linha, embaixo do nome (Alpha Tester, ou o do colecionador quando conquistado). */
   const eu = Conta.comCargo(nomeJogador(), Conta.meuCargoAtual?.());
-  const titulo = eliteEstado.souCampeao ? '👑 Champion of Kanto' : (Conhecimento.tituloAtual?.() || '');   // the reigning Champion's crown (server_battle.mjs) beats any picked title
+  const titulo = eliteEstado.souCampeao ? '👑 Indigo League Champion' : (Conhecimento.tituloAtual?.() || '');   // the reigning Champion's crown (server_battle.mjs) beats any picked title
   a.rotuloNome = rotuloSprite(eu.texto, eu.cor, 2.0, titulo, undefined, true);
   a.rotuloNome.position.set(0, (a.altura || 1.5) + 0.35 + (titulo ? 0.16 : 0), 0); a.pivo.add(a.rotuloNome);   // (06/09: um comentário tinha engolido estas duas chamadas — o próprio nome nunca entrava na cena); título sobe um pouco a plaquinha
 }
@@ -11982,13 +11982,13 @@ function fimTurno(vitoria, op = {}){
     const E = n.elite, r = doServidor?.elite || null;
     eliteEstado.corrida = r && r.elite ? r.elite.corrida : (vitoria ? eliteEstado.corrida : null);
     if (vitoria && doServidor?.novoCampeao){
-      Chat.sistema('👑 ' + I18n.t('You took the title: you are the Champion of Kanto! Your outfit and this party now wait in the Champion\'s room for every challenger.'));
-      flutuar(jogo.ash, '👑 ' + I18n.t('Champion of Kanto!'), '#ffd23a');
+      Chat.sistema('👑 ' + I18n.t('You took the title: you are the Indigo League Champion! Your outfit and this party now wait in the Champion\'s room for every challenger.'));
+      flutuar(jogo.ash, '👑 ' + I18n.t('Indigo League Champion!'), '#ffd23a');
     }
     if (vitoria && r && r.campeao){
       eliteEstado.vencida = true;
-      Chat.sistema('🏆 You beat ' + E.nome + ' and are the Champion of Kanto! Your Pokémon obey up to Lv 100' + (r.soltou ? I18n.t(' and banked XP was released ({n} Pokémon)', { n: r.soltou }) : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' ' + I18n.t('Coins') : ''));
-      flutuar(jogo.ash, '🏆 Champion of Kanto!', '#ffd23a');
+      Chat.sistema('🏆 You beat ' + E.nome + ' and are the Indigo League Champion! Your Pokémon obey up to Lv 100' + (r.soltou ? I18n.t(' and banked XP was released ({n} Pokémon)', { n: r.soltou }) : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' ' + I18n.t('Coins') : ''));
+      flutuar(jogo.ash, '🏆 ' + I18n.t('Indigo League Champion!'), '#ffd23a');
       liberarReserva();
       if (n.rotSprite){ n.pivo.remove(n.rotSprite); n.rotSprite = rotuloSprite('🏆 ' + E.nome + ' · ' + I18n.t('former Champion'), '#ffd23a', 2.8); n.rotSprite.position.set(0, n.altura + 0.35, 0); n.pivo.add(n.rotSprite); }
     } else if (vitoria){

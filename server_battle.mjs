@@ -665,7 +665,7 @@ export function criarBatalha(ctx) {
           gravarCampeao();
           fim.novoCampeao = true;
           console.log(`[champion] ${acc.u} took the title${perdeu ? ' from ' + perdeu : ''}`);
-          for (const w of ctx.conexoes.values()) if (w._usuario) ctx.enviar(w, { t: 'sistema', texto: '👑 {nome} is the new Champion of Kanto!', vars: { nome: campeao.nome } });
+          for (const w of ctx.conexoes.values()) if (w._usuario) ctx.enviar(w, { t: 'sistema', texto: '👑 {nome} is the new Indigo League Champion!', vars: { nome: campeao.nome } });
           if (perdeu) for (const w of ctx.socketsDe(perdeu)) ctx.enviar(w, { t: 'sistema', texto: '{nome} beat your team and took your Champion title.', vars: { nome: campeao.nome } });
           setTimeout(avisarCampeao, 0);
           try { ctx.aoMudarCampeao?.(acc.u, perdeu); } catch (e) { console.warn('champion: crown', e); }

@@ -1858,9 +1858,9 @@ const world = createWorld({
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
-/* THE CHAMPION'S CROWN (Nov 6): only the player holding the Champion's seat (server_battle.mjs) shows "👑 Champion of Kanto"
+/* THE CHAMPION'S CROWN (Nov 6): only the player holding the Champion's seat (server_battle.mjs) shows "👑 Indigo League Champion" (Kanto and Johto share the Indigo League)
    under their name, over whatever title they picked; losing the seat gives their own title back. */
-const TITULO_CAMPEAO = '👑 Champion of Kanto';
+const TITULO_CAMPEAO = '👑 Indigo League Champion';
 function aplicarCoroa(ws) {
   if (!ws._info) return false;
   const antes = ws._info.titulo;
