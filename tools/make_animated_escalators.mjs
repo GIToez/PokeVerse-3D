@@ -3,6 +3,7 @@
  *
  *   sm_ro_005_escalator_01 (rises from the floor: steps going UP)    → animated_escalator_up
  *   sm_ro_005_escalator_04 (sinks into a pit: steps going DOWN)       → animated_escalator_down
+ *   sm_ro_005_escalator_01 again, steps going DOWN                     → animated_escalator_down_upper (an upper floor's way down)
  *
  * Each copy is split in two meshes: the body (sides, handrails, the top and bottom landings) and `anim_steps`, ONE moving step
  * (tread + edge + riser). The map loader instances the body like any prefab and skips `anim_*` meshes; escalator_anim.mjs lines up
@@ -20,7 +21,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'scenery/4110001.glb');
 const OUT = path.join(ROOT, 'scenery/extra/animated_escalators.glb');
-const PARES = [['sm_ro_005_escalator_01', 'animated_escalator_up', 'up'], ['sm_ro_005_escalator_04', 'animated_escalator_down', 'down']];
+const PARES = [['sm_ro_005_escalator_01', 'animated_escalator_up', 'up'], ['sm_ro_005_escalator_04', 'animated_escalator_down', 'down'],
+  ['sm_ro_005_escalator_01', 'animated_escalator_down_upper', 'down']];   // the rising one with its steps going down: an upper floor's way down (Center 2F)
 
 function readGlb(file) {
   const b = fs.readFileSync(file), jlen = b.readUInt32LE(12);

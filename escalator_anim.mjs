@@ -10,7 +10,7 @@ const VELOCIDADE = 0.55;   // steps per second (~0.33 m/s along the slope)
 let lista = [];
 
 const chave = n => String(n || '').toLowerCase().replace(/^lib:?/, '').replace(/\s/g, '_').replace(/[\[\]\.:\/]/g, '');
-export const ehEscada = n => /^animated_escalator_(up|down)$/.test(chave(n));
+export const ehEscada = n => /^animated_escalator_(up|down|down_upper)$/.test(chave(n));
 
 export function montar({ THREE, mapa, objetos, flipX = -1, cena, renderer }) {
   desmontar();

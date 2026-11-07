@@ -116,14 +116,16 @@ export function createWorld(h) {
   }
   /** The wilds a player joining `map` should see (the welcome's `selvagens`). */
   /** TEMPERAMENT of a new wild: the species row in Habitats (admin) first, then the area (Game settings → perfilArea, { areaId:
-      'aggressive' | 'skittish' | 'passive' }; default Route 1 and Route 2 skittish), else null = the old roll (Attack vs Speed).
+      'aggressive' | 'skittish' | 'passive' or a list to mix them; default Route 1 and Route 2 skittish + passive), else null = the old roll (Attack vs Speed).
       aggressive chases you, skittish runs away, passive minds its own business; skittish and passive fight back once hit. */
-  const PERFIL_AREA_PADRAO = { 1201: 'skittish', 1202: 'skittish' };
+  const PERFIL_AREA_PADRAO = { 1201: ['skittish', 'passive'], 1202: ['skittish', 'passive'] };   // a list = each spawn picks one
   const PERFIS = { aggressive: 'agressivo', agressivo: 'agressivo', skittish: 'arisco', arisco: 'arisco', passive: 'passivo', passivo: 'passivo' };
   function perfilDe(area, rolled) {
     if (rolled?.perfil && PERFIS[rolled.perfil]) return PERFIS[rolled.perfil];
     const m = gameConfig()?.perfilArea, l = m && typeof m === 'object' && !Array.isArray(m) ? m : PERFIL_AREA_PADRAO;
-    return PERFIS[l[String(area)]] || null;
+    let v = l[String(area)];
+    if (Array.isArray(v)) v = v[Math.floor(Math.random() * v.length)];
+    return PERFIS[v] || null;
   }
   function list(map) {
     const r = rooms.get(String(map || 'kanto'));
