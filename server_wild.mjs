@@ -287,7 +287,7 @@ export function criarWilds(ctx) {
     if (!mon) mon = party.find(alive);
     if (!mon) return null;
     owned.delete(msg.id);
-    const mult = Math.max(0.1, Math.min(10, +ctx.expMult?.() || 1));
+    const mult = Math.max(0.1, Math.min(10, +ctx.expMult?.() || 1)) * (1 + (wild.bonus || 0));   // + the guild group bonus (2+ guildmates on the same wild)
     const result = grant(mon, save, wild.dex, wild.lv, mult * expMultOf(mon, heldTab));
     const shared = expSharers(party, mon, heldTab).map(({ mon: p, part }) => {
       const r = grant(p, save, wild.dex, wild.lv, mult * part);
@@ -310,6 +310,7 @@ export function criarWilds(ctx) {
       levels: result.levels,
       evText: evText || '',
       shared,
+      ...(wild.bonus > 0 ? { guildaBonus: Math.round(wild.bonus * 100) } : {}),
     };
   }
 
@@ -335,11 +336,11 @@ export function criarWilds(ctx) {
     return { dex: +row.dex, lv: levelFor(row, +area), glb: Calendario.glbDaEstacao(row.dex, row.glb, quando.estacao), nome: row.nome, agua: row.agua ? 1 : 0 };
   }
   /** XP for a shared wild this player helped knock out: the same grant as a solo defeat (party share, EVs, level cap). */
-  function award(ws, wild) {
+  function award(ws, wild, bonus = 0) {
     const who = accountOf(ws);
     if (!who) return null;
     const id = 'w' + crypto.randomBytes(6).toString('hex');
-    sweep(who.user).set(id, { dex: +wild.dex, lv: +wild.lv, at: Date.now(), area: wild.area });
+    sweep(who.user).set(id, { dex: +wild.dex, lv: +wild.lv, at: Date.now(), area: wild.area, bonus: Math.max(0, +bonus || 0) });
     return defeat(ws, { id });
   }
 
@@ -356,8 +357,8 @@ export function criarWilds(ctx) {
     rollAt,
     areaOf,
     levelCap,
-    award: (ws, wild) => {
-      const out = award(ws, wild);
+    award: (ws, wild, bonus = 0) => {
+      const out = award(ws, wild, bonus);
       if (out) ctx.enviar(ws, out);
       return out;
     },

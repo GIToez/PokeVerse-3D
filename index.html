@@ -7699,7 +7699,7 @@ function aplicarWildExp(m){
       if (reg.hp > 0) reg.hp = Math.min(novoMax, (reg.hp || 0) + Math.max(0, novoMax - oldMax));
     }
   }
-  flutuar(alvo, '+' + m.gained + ' XP', '#8ec5ff');
+  flutuar(alvo, '+' + m.gained + ' XP' + (m.guildaBonus ? ' (' + I18n.t('guild +{x}%', { x: m.guildaBonus }) + ')' : ''), '#8ec5ff');
   if (m.evText) flutuar(alvo, m.evText, '#ffd19a');
   if (m.lv > antes){
     flutuar(alvo, 'Lv ' + alvo.lv + '!', '#ffe07a');

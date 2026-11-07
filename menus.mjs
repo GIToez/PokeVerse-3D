@@ -270,10 +270,10 @@ function ligarRecursos(){
   };
   PlacementUI.instalar({
     tr, aviso: t => Chat.sistema(t), som: (a, b) => ctx.Som?.tocar?.(a, b),
-    pedirTerreno: (op, d) => TerrenoEstado.pedir(op, d), pedir: async () => ({ ok: false, texto: 'Arranging the guild base is not open yet.' }),
+    pedirTerreno: (op, d) => TerrenoEstado.pedir(op, d), pedir: (op, d) => Rede.pedirGuilda(op, d),   // the guild base: colocar / mover / remover (server_guild.mjs)
     bolsa: () => { try { return { itens: JSON.parse(Conta.lerBruto('itens') || '{}'), presos: JSON.parse(Conta.lerBruto('presos') || '{}') }; } catch { return { itens: {}, presos: {} }; } },
     noTerreno: () => TerrenoEstado.noTerreno(), sala: () => TerrenoEstado.salaAtual(), minhaSala: () => (TerrenoEstado.terreno()?.minha ? TerrenoEstado.terreno().sala : null),
-    recarregarTerreno: () => ctx.irParaCena?.({ mapa: '1000002', texto: '…' }), recarregar: () => ctx.irParaCena?.({ mapa: '1000002', texto: '…' }),
+    recarregarTerreno: () => ctx.irParaCena?.({ mapa: '1000002', texto: '…' }), recarregar: () => ctx.irParaCena?.({ mapa: /^casa#/.test(TerrenoEstado.salaAtual() || '') ? '4700001' : '1000002', texto: '…' }),
   });
   CrecheUI.instalar(gancho);
   TerrenoUI.instalar(gancho);
@@ -283,6 +283,10 @@ function ligarRecursos(){
   GuildaUI.instalar({
     ...gancho,
     pedir: (op, d) => Rede.pedirGuilda(op, d),                          // server_guild.mjs
+    arrumar: g => {                                                     // "Arrange base": inside the base, the 2D arrange screen (placement_ui.mjs)
+      if (!/^casa#/.test(TerrenoEstado.salaAtual() || '')) { Chat.sistema(tr('Go to the guild base first (Base → Go to the base).')); return false; }
+      return PlacementUI.abrir(g);
+    },
     naBase: () => /^casa#/.test(TerrenoEstado.salaAtual() || ''),       // inside my guild's base (the button reads Leave)
   });
   ControlesUI.instalar({                                                    // what the Controls tab shows next to each action (its moves, ball, shortcuts and team)

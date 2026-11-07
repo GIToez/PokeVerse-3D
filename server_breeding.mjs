@@ -374,8 +374,8 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const erro = texto => send(ws, { t: 'ovo_erro', op, texto });
     if (!u || !accounts[u]) return erro('Sign in to an account first.');
     const c = accounts[u], s = saveDe(c);
-    const responder = (extra = {}) => { c.rev = (c.rev || 0) + 1; saveAccounts(); send(ws, { t: 'ovo', op, vista: vistaOvos(u), tickets: +(s.presos?.[TICKET]) || 0, ...extra }); };
-    if (op === 'ovo_ver') return send(ws, { t: 'ovo', op, vista: vistaOvos(u), tickets: +(s.presos?.[TICKET]) || 0 });
+    const responder = (extra = {}) => { c.rev = (c.rev || 0) + 1; saveAccounts(); send(ws, { t: 'ovo', op, vista: vistaOvos(u), tickets: (+(s.presos?.[TICKET]) || 0) + (+(s.itens?.[TICKET]) || 0), ...extra }); };
+    if (op === 'ovo_ver') return send(ws, { t: 'ovo', op, vista: vistaOvos(u), tickets: (+(s.presos?.[TICKET]) || 0) + (+(s.itens?.[TICKET]) || 0) });
     vistaOvos(u);
     const o = (s.ovos || []).find(x => String(x.uid) === String(m.ovo));
     if (!o) return erro('That Egg is not yours.');
@@ -398,8 +398,9 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     if (op === 'ovo_acelerar') {
       if (!o.incubadora) return erro('Put the Egg in an incubator first.');
       if ((o.tickets || 0) >= 1) return erro('A Hatching Ticket was already used on this Egg.');
-      if (!(+(s.presos?.[TICKET]) > 0)) return erro("You don't have a Hatching Ticket.");
-      s.presos[TICKET] = +s.presos[TICKET] - 1; if (!s.presos[TICKET]) delete s.presos[TICKET];
+      const pilha = +(s.presos?.[TICKET]) > 0 ? s.presos : +(s.itens?.[TICKET]) > 0 ? s.itens : null;   // bound ones first, then dropped ones
+      if (!pilha) return erro("You don't have a Hatching Ticket. They come from gym first wins, raids and every 150 wild KOs.");
+      pilha[TICKET] = +pilha[TICKET] - 1; if (!pilha[TICKET]) delete pilha[TICKET];
       const agora = Date.now(); o.prontoEm = agora + Math.max(0, o.prontoEm - agora) / 2; o.tickets = (o.tickets || 0) + 1;
       return responder();
     }

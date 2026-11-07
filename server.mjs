@@ -1871,6 +1871,7 @@ const mail = createMail({
 /* SHARED WORLD (server_world.mjs): the wild Pokémon live here, one set per map, and every player on the map sees them. */
 const world = createWorld({
   surtoShiny: () => surtos?.bonusShiny() || 0,
+  xpBonus: (u, outros) => guildas.bonusGrupo(u, outros),   // +5% (and up) XP when 2+ guildmates fight the same wild (guild level benefit)
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
   onFish: (ws, u, f) => temporada.contar(u, { conta: 'pesca', dex: f.dex, nivel: f.nivel }),
@@ -1918,7 +1919,7 @@ var surtos = createOutbreaks({ dataDir: DADOS_PUB, habitats: () => lerJson(nodeP
   onMap: map => [...conexoes.values()].filter(w => w.readyState === 1 && w._usuario && String(w._mapa || 'kanto') === String(map)),
   areaName: a => (lerJson(nodePath.join(DADOS_PUB, 'kanto.json'), {})?.nomes || {})[a] || 'area ' + a, nomeDe: dex => NOME_ESPECIE.get(+dex) || null, clearArea: (m, a) => world.clearArea(m, a), log: (...a) => console.log('[outbreak]', ...a.slice(1)) });
 /* GUILDS (server_guild.mjs on top of guild.mjs): found, join, ranks, chat, guild XP; the [TAG] over heads. */
-const guildas = createGuilds({ dataPub: DADOS_PUB, dataDir: DADOS, accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas,
+const guildas = createGuilds({ dataPub: DADOS_PUB, dataDir: DADOS, accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, colocacao: () => PlacementS,
   log: (...a) => console.log('[guild]', ...a.slice(1)),
   levar: (u, pos, texto) => { if (!contas[u]) return; contas[u].posGm = pos; salvarContas(); for (const w of socketsDe(u)) enviar(w, { t: 'volta', mapa: pos.mapa, texto }); },
   pontoSeguro: () => { const p = moderacao.cidade('pallet'); return p ? { mapa: String(p.mapa), x: +p.x, z: +p.z, giro: 0 } : null; },

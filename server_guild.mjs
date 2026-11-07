@@ -12,7 +12,7 @@ import nodePath from 'node:path';
 import crypto from 'node:crypto';
 import * as G from './guild.mjs';
 
-export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, saveAccounts, onTag = () => {}, levar = () => {}, pontoSeguro = () => null, log = () => {} }) {
+export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, saveAccounts, colocacao = () => null, onTag = () => {}, levar = () => {}, pontoSeguro = () => null, log = () => {} }) {
   // rules: re-read when the file changes (the admin edits it)
   let mtime = -1;
   const regras = () => {
@@ -74,9 +74,31 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     tags.set(u, t); onTag(u, t);
   }
 
+  /** The base's arrangement state for the placement engine (placement.mjs, lugar 'base' in colocacao.json). */
+  function estadoBase(g) {
+    const b = livro._baseDe(g);
+    if (!Array.isArray(b.colocacoes)) b.colocacoes = [];
+    if (!Array.isArray(b.guardadas)) b.guardadas = [];
+    return { lugar: 'base', colocacoes: b.colocacoes, guardadas: b.guardadas, construidas: b.construidas || {}, nivel: g.nivel };
+  }
+  /** ARRANGE THE BASE: Leader, Vice and Officers (GM: anyone) move, store and put back the base's buildings, inside the base. */
+  function arrumarBase(ws, u, op, m, responder) {
+    const C = colocacao(), g = livro.guildaDe(u);
+    if (!C || !g) return responder({ ok: false, erro: g ? 'The base layout is not loaded.' : "You're not in a guild." , vista: vistaDe(u) });
+    const est = estadoBase(g), gm = !!accounts[u]?.gm;
+    const ctx = { agora: Date.now(), usuario: u, papel: gm ? 'lider' : g.membros[u]?.cargo, naSala: String(ws._mapa || '') === livro._salaDa(g), nivel: g.nivel, itens: {} };
+    const { t: _t, rid: _r, op: _o, ...pedido } = m;
+    let r = null;
+    try { r = C[op](est, pedido, ctx); } catch (e) { r = { ok: false, msg: e.message }; }
+    if (!r?.ok) return responder({ ok: false, erro: r?.msg || r?.erro || "That didn't work.", codigo: r?.erro, vista: vistaDe(u) });
+    const b = livro._baseDe(g); b.colocacoes = est.colocacoes; b.guardadas = est.guardadas;
+    gravar(); log('guild', u, 'base ' + op, r.colocacao?.vaga || r.removida?.vaga || '');
+    responder({ ok: true, vista: vistaDe(u) });
+  }
   /** The guild window's view. GM accounts get everything: the guild boss is open to them whatever the guild level, with no daily limit. */
   function vistaDe(u) {
     const v = livro.vista(u), c = v?.guilda?.chefe;
+    if (v?.guilda?.base) try { const C = colocacao(), g = livro.guildaDe(u); if (C && g) v.guilda.base.colocacao = C.vista(estadoBase(g), {}); } catch {}   // where the base's buildings stand (the arrange screen)
     if (c?.loja) { c.loja.fragmentos = accounts[u]?.gm ? Math.max(1e6, qtdItem(accounts[u].save, FRAGMENTO())) : qtdItem(accounts[u]?.save, FRAGMENTO()); c.loja.trocouNaSemana = c.loja.compradoEstaSemana; }
     if (c && accounts[u]?.gm) { c.liberado = true; if (c.janela && !(c.janelaAte > Date.now())) { c.janela = null; c.entradaHoje = false; } }
     return v;
@@ -110,6 +132,7 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     if ((op === 'irBase' || op === 'chefeEntrar') && !naBase && accounts[u].save)
       accounts[u].save.antesBase = { mapa: String(ws._cena || ws._mapa || 'kanto'), x: ws._info?.x, z: ws._info?.z };
     if (!/^[a-zA-Z]{2,24}$/.test(op)) return responder({ ok: false, erro: 'Unknown operation.' });
+    if (op === 'colocar' || op === 'mover' || op === 'remover') return arrumarBase(ws, u, op, m, responder);
     const { t, rid: _r, op: _o, ...dados } = m;
     const sv = accounts[u].save || (accounts[u].save = {});
     if (op === 'lojaGuilda') dados.fragmentos = qtdItem(sv, FRAGMENTO()) + (accounts[u].gm ? 1e6 : 0);   // what the Bag really holds (GM: everything)
@@ -221,17 +244,20 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     return false;
   }
 
+  /** The guild group XP bonus (0.05 = +5%) for u when other guildmates also hit the same wild (guilda.json beneficios xpGrupo). */
+  function bonusGrupo(u, outros = []) {
+    const g = livro.guildaDe(u); if (!g) return 0;
+    return outros.some(o => o !== u && livro.guildaDe(o) === g) ? G.bonusXpGrupo(g.nivel) : 0;
+  }
   const anunciosExtra = u => { try { const g = livro.guildaDe(u); return g ? G.anunciosExtras(g.nivel) : 0; } catch { return 0; } };
   /** The base's buildings as map objects (file coordinates) for the scene loader: [{ n, x, y, z, a }]. */
   function pecasDaBase(u, C) {
     const g = livro.guildaDe(u); if (!g || !C) return [];
-    const b = livro._baseDe(g);
-    const est = { lugar: 'base', colocacoes: Array.isArray(b.colocacoes) ? b.colocacoes : [], guardadas: Array.isArray(b.guardadas) ? b.guardadas : [], construidas: b.construidas || {}, nivel: g.nivel };
-    const v = C.vista(est, {});
+    const v = C.vista(estadoBase(g), {});
     return (v?.pecas || []).filter(p => !p.glb).map(p => ({ n: p.n, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 }));
   }
   /** The room for an account entering the base scene: its guild's base (null: not in a guild). */
   const salaBase = u => { const g = livro.guildaDe(u); return g ? livro._salaDa(g) : null; };
   const cenaBase = () => String(G.dados().base?.mapa || 4700001);
-  return { operar, evento, tagDe, anunciosExtra, salaBase, cenaBase, pecasDaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, gravar, _test: { amb, gravar } };
+  return { operar, evento, bonusGrupo, tagDe, anunciosExtra, salaBase, cenaBase, pecasDaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, gravar, _test: { amb, gravar } };
 }

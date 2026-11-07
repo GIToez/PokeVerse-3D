@@ -52,7 +52,7 @@ const SAFARI_BALL = 1005;
 const DEFAULT_BALLS = { 1001: 1, 1002: 1.5, 1003: 2, 1004: 255, 1005: 1.5, 1006: 1, 1007: 1, 1008: 1, 1009: 1 };
 
 export function createWorld(h) {
-  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, onKO, surtoShiny = () => 0, log = () => {} } = h;
+  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, onKO, surtoShiny = () => 0, xpBonus = () => 0, log = () => {} } = h;
 
   /* The overworld weather (server_weather.mjs): the same rules as turn battles for power, type, defense and accuracy. */
   const tempo = h.mapWeather || createMapWeather({ dataDir });
@@ -411,7 +411,8 @@ export function createWorld(h) {
     for (const [, d] of recentes) {
       if (d.ws?.readyState !== 1) continue;
       const parte = (d.dealt || 0) / (w.maxHp || 1);
-      if (parte >= minParte || (d.dealt || 0) >= topo) wilds.award(d.ws, w);
+      const outros = recentes.map(([v]) => v).filter(v => v !== userOf(d.ws));   // the guild group bonus: guildmates who hit it too
+      if (parte >= minParte || (d.dealt || 0) >= topo) wilds.award(d.ws, w, (() => { try { return +xpBonus(userOf(d.ws), outros) || 0; } catch { return 0; } })());
       else send(d.ws, { t: 'sistema', texto: 'No XP from this one: your share of the damage was {p}%. XP goes to whoever took {min}% or more of its HP, or dealt the most damage.',
         vars: { p: (Math.round(parte * 1000) / 10).toLocaleString('en-US'), min: Math.round(minParte * 100) } });
     }
