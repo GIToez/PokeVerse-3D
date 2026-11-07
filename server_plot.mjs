@@ -162,14 +162,15 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
     }
     if (op === 'colocar' || op === 'mover' || op === 'remover') {
       const t = estado(u);
-      const ctx = { agora: Date.now(), usuario: u, papel: 'dono', naSala: naSala(ws, u), itens: { ...(s.itens || {}), ...(s.presos || {}) } };
+      const todos = gm(u) ? Object.fromEntries(Object.values(T()?.vagas || {}).filter(v => v.tipo === 'item').flatMap(v => C.itensDaVaga(v)).map(id => [id, 99])) : null;   // GM accounts have every placeable item
+      const ctx = { agora: Date.now(), usuario: u, papel: 'dono', naSala: naSala(ws, u), itens: todos || { ...(s.itens || {}), ...(s.presos || {}) } };
       const r = C[op](t, m, ctx);
       if (!r?.ok) return responder({ ok: false, erro: r?.erro, texto: r?.msg || "That didn't work." });
-      if (r.debitar) {                                                     // an item placed from the Bag (the Incubator)
+      if (r.debitar && !todos) {                                           // an item placed from the Bag (the Incubator)
         const id = String(r.debitar.item), bag = (s.presos && +s.presos[id] > 0) ? s.presos : (s.itens || (s.itens = {}));
         bag[id] = Math.max(0, (+bag[id] || 0) - (r.debitar.qtd || 1)); if (!bag[id]) delete bag[id];
       }
-      if (r.devolver) {                                                    // an item picked back up
+      if (r.devolver && !todos) {                                          // an item picked back up
         const id = String(r.devolver.item), bag = r.devolver.preso ? (s.presos || (s.presos = {})) : (s.itens || (s.itens = {}));
         bag[id] = (+bag[id] || 0) + (r.devolver.qtd || 1);
       }
@@ -258,7 +259,8 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
   function pecasAoEntrar(u) {
     const sala = salaAoEntrar(u), dono = donoDaSala.get(sala) || u;
     const v = vista(dono, u);
-    return (v?.pecas || []).filter(p => !p.glb).map(p => ({ n: p.n, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 }));
+    return (v?.pecas || []).map(p => p.glb ? { glb: String(p.glb).replace(/^cenario\//, 'scenery/'), escala: +p.escala || 1, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 } : { n: p.n, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 });
   }
-  return { operar, horta, salaAoEntrar, pecasAoEntrar, salaDe, vista, estado, podeVisitar, donoDaSala: sala => donoDaSala.get(sala) || null, CENA };
+  const incubadoras = u => { try { return C.incubadorasDe(estado(u)); } catch { return []; } };
+  return { operar, horta, incubadoras, salaAoEntrar, pecasAoEntrar, salaDe, vista, estado, podeVisitar, donoDaSala: sala => donoDaSala.get(sala) || null, CENA };
 }

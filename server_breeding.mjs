@@ -26,6 +26,7 @@ import fs from 'node:fs';
 import nodePath from 'node:path';
 
 const STATS = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed'];
+const INC_PRESA = '900030', INC_SOLTA = '900151', TICKET = '900150';   // Incubator (account-bound / tradable), Hatching Ticket
 export const PADRAO = {
   ligado: true, horasPorTentativa: 24, chance: { mesmaEspecie: 0.7, outra: 0.4, ditto: 0.5 }, ovosEsperando: 3, ovosCarregados: 6,
   horasChocar: 2, horasChocarMedalhao: 1, nivelAoChocar: 1, ivsHerdados: 3, ivsComNo: 5,
@@ -37,7 +38,7 @@ export const PADRAO = {
   exp: { ligado: true, porMinuto: 10, taxaPorNivelMin: 0.1, maxHoras: 24 },
 };
 
-export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsOf, newIndividual, markCaught, gameConfig, Ind, moveExists, grantExp = null, xpMult = () => 1, log = () => {} }) {
+export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsOf, newIndividual, markCaught, gameConfig, Ind, moveExists, grantExp = null, xpMult = () => 1, incubadorasDe = () => [], noProprioTerreno = () => false, log = () => {} }) {
   const lerJ = (f, d) => { try { return JSON.parse(fs.readFileSync(nodePath.join(dataDir, f), 'utf8')); } catch { return d; } };
   let cache = { t: 0, cfg: PADRAO, ovo: null };
   function dados() {
@@ -278,12 +279,13 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
       const max = +C.ovosCarregados || 6;
       if (s.ovos.length >= max) return { erro: 'You can carry ' + max + ' Eggs at most: hatch some first.' };
       const n = Math.min(k.ovos.length, max - s.ovos.length), pegos = k.ovos.splice(0, n);
-      const med = (+s.medalhaoAte || 0) > Date.now(), horas = med ? +C.horasChocarMedalhao || 1 : +C.horasChocar || 2, agora = Date.now();
-      for (const o of pegos) { o.inicio = agora; o.prontoEm = agora + horas * 3600e3; delete o.metros; delete o.total; }
+      for (const o of pegos) { o.incubadora = null; o.inicio = null; o.prontoEm = null; delete o.metros; delete o.total; }   // an Egg hatches only inside an incubator on your plot
       s.ovos.push(...pegos);
       log('daycare', u, 'took', n, 'egg(s)');
-      const t = horas === 1 ? '1 hour' : horas < 1 ? Math.round(horas * 60) + ' minutes' : horas + ' hours';
-      return pronto({ aviso: (n === 1 ? 'You got an Egg! It hatches in ' + t : 'You got ' + n + ' Eggs! They hatch in ' + t) + (med ? ' (Medallion).' : '.') });
+      // the first Incubator is free (account-bound): the Day Care Lady hands one to anyone who has none
+      const temInc = +(s.presos?.[INC_PRESA]) > 0 || +(s.itens?.[INC_SOLTA]) > 0 || incubadorasDe(u).length > 0;
+      if (!temInc) { s.presos = s.presos || {}; s.presos[INC_PRESA] = 1; }
+      return pronto({ aviso: (n === 1 ? 'You got an Egg!' : 'You got ' + n + ' Eggs!') + ' Put it in an incubator on your plot to hatch it.' + (temInc ? '' : ' Here, take an Incubator: place it on your plot with Arrange plot.') });
     }
     return { erro: 'Unknown Day Care action.' };
   }
@@ -296,8 +298,7 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const agora = Date.now();
     let n = 0;
     for (const o of [...c.save.ovos]) {
-      if (!o.prontoEm) { o.inicio = agora; o.prontoEm = agora + (+cfg().horasChocar || 2) * 3600e3; continue; }   // an Egg from before incubation existed
-      if (o.prontoEm > agora) continue;
+      if (!o.incubadora || !o.prontoEm || o.prontoEm > agora) continue;   // only Eggs inside an incubator hatch, when their time is up
       chocar(u, c, o); n++;
     }
     if (n) { c.rev = (c.rev || 0) + 1; saveAccounts(); }
@@ -322,6 +323,7 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const socks = socketsOf(u);
     if (!socks.length) { if (!Array.isArray(s.chocados)) s.chocados = []; s.chocados.push({ nome: pk.nome, shiny: !!pk.shiny, caixa: !naEquipe }); s.chocados = s.chocados.slice(-12); }   // told at the next log-in
     for (const ws of socks) send(ws, { t: 'ovo_chocou', mon: pk, caixa: !naEquipe, save: s, rev: (c.rev || 0) + 1 });
+    return pk;
   }
 
   /* Every 30 s: Eggs whose time is up hatch (online or not), and a new Egg at the counter is announced to an online player. */
@@ -349,5 +351,71 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     delete s.chocados; saveAccounts();
   }
 
-  return { operar, aoEntrar, chocarProntos, vista: u => accounts[u] ? vista(accounts[u]) : null, _test: { compat, montarOvo, sexoDe, especieDoOvo, avancar, chocar, creche } };
+  // ── INCUBATORS (Nov 7): an Egg only hatches inside an Incubator placed on your plot (server_plot.mjs places them; the item is
+  // 900030, account-bound, the first one free from the Day Care Lady, or 900151, tradable). Time: horasChocar (horasChocarMedalhao).
+  // Hatching Ticket 900150: once per Egg, halves the time left. Socket { t: 'ovo_ver' | 'ovo_incubar' { ovo, incubadora } |
+  // 'ovo_desincubar' { ovo } | 'ovo_acelerar' { ovo } | 'ovo_chocar' { ovo } | 'ovo_descartar' { ovo } } → { t: 'ovo', op, vista, ficha? } / { t: 'ovo_erro', op, texto }
+  const horasDe = s => ((+s.medalhaoAte || 0) > Date.now() ? +cfg().horasChocarMedalhao || 1 : +cfg().horasChocar || 2);
+  function vistaOvos(u) {
+    const s = saveDe(accounts[u]), agora = Date.now(), incs = incubadorasDe(u);
+    if (!Array.isArray(s.ovos)) s.ovos = [];
+    for (const o of s.ovos) if (o.incubadora && !incs.some(i => i.id === o.incubadora)) { o.restante = Math.max(0, (o.prontoEm || agora) - agora); o.incubadora = null; o.prontoEm = null; }   // its incubator was picked up
+    const ovos = s.ovos.map(o => {
+      const falta = o.incubadora ? Math.max(0, (o.prontoEm || agora) - agora) : (o.restante ?? horasDe(s) * 3600e3);
+      return { id: o.uid, criadoEm: o.em, incubadora: o.incubadora || null, inicio: o.inicio || null, prontoEm: o.prontoEm || null, faltaMs: falta,
+        pronto: !!o.incubadora && falta <= 0, tickets: o.tickets || 0, especie: o.dex, pais: (o.de || []).map(n => ({ nome: n })) };
+    });
+    return { ovos, incubadoras: incs.map(i => ({ id: i.id, item: i.item, ovo: s.ovos.find(o => o.incubadora === i.id)?.uid || null })),
+      limites: { ovosMax: +cfg().ovosCarregados || 6, guardados: ovos.filter(o => !o.incubadora).length, incubadorasMax: null },
+      ticket: { item: TICKET, reduzH: horasDe(s) / 2, maxPorOvo: 1 }, eclosaoH: horasDe(s), taxa: 0, chocados: s.ovosChocados || 0 };
+  }
+  function ovos(ws, m) {
+    const u = ws._usuario, op = String(m.t || '');
+    const erro = texto => send(ws, { t: 'ovo_erro', op, texto });
+    if (!u || !accounts[u]) return erro('Sign in to an account first.');
+    const c = accounts[u], s = saveDe(c);
+    const responder = (extra = {}) => { c.rev = (c.rev || 0) + 1; saveAccounts(); send(ws, { t: 'ovo', op, vista: vistaOvos(u), tickets: +(s.presos?.[TICKET]) || 0, ...extra }); };
+    if (op === 'ovo_ver') return send(ws, { t: 'ovo', op, vista: vistaOvos(u), tickets: +(s.presos?.[TICKET]) || 0 });
+    vistaOvos(u);
+    const o = (s.ovos || []).find(x => String(x.uid) === String(m.ovo));
+    if (!o) return erro('That Egg is not yours.');
+    if (op === 'ovo_incubar') {
+      if (!noProprioTerreno(ws)) return erro('Go to your plot to use your incubators.');
+      const inc = incubadorasDe(u).find(i => String(i.id) === String(m.incubadora));
+      if (!inc) return erro('That incubator is not on your plot.');
+      if (s.ovos.some(x => x.incubadora === inc.id)) return erro('That incubator already has an Egg.');
+      if (o.incubadora) return erro('That Egg is already in an incubator.');
+      const agora = Date.now();
+      o.incubadora = inc.id; o.inicio = agora; o.prontoEm = agora + (o.restante ?? horasDe(s) * 3600e3); delete o.restante;
+      log('daycare', u, 'incubating', o.nome);
+      return responder({ avisos: [{ texto: 'The Egg is warming up: it hatches in {x}.', vars: { x: Math.ceil((o.prontoEm - agora) / 60e3) + ' min' } }] });
+    }
+    if (op === 'ovo_desincubar') {
+      if (!o.incubadora) return erro('That Egg is not in an incubator.');
+      o.restante = Math.max(0, o.prontoEm - Date.now()); o.incubadora = null; o.prontoEm = null; o.inicio = null;
+      return responder();
+    }
+    if (op === 'ovo_acelerar') {
+      if (!o.incubadora) return erro('Put the Egg in an incubator first.');
+      if ((o.tickets || 0) >= 1) return erro('A Hatching Ticket was already used on this Egg.');
+      if (!(+(s.presos?.[TICKET]) > 0)) return erro("You don't have a Hatching Ticket.");
+      s.presos[TICKET] = +s.presos[TICKET] - 1; if (!s.presos[TICKET]) delete s.presos[TICKET];
+      const agora = Date.now(); o.prontoEm = agora + Math.max(0, o.prontoEm - agora) / 2; o.tickets = (o.tickets || 0) + 1;
+      return responder();
+    }
+    if (op === 'ovo_chocar') {
+      if (!o.incubadora || o.prontoEm > Date.now()) return erro('Not ready to hatch yet.');
+      const pk = chocar(u, c, o); s.ovosChocados = (s.ovosChocados || 0) + 1;
+      return responder({ ficha: pk ? { uid: pk.uid, dex: pk.dex, glb: pk.glb, nome: pk.nome, sexo: pk.sexo, lv: pk.lv, ivs: pk.ivs, natureza: pk.natureza, shiny: !!pk.shiny } : null,
+        avisos: pk ? [{ texto: '{x} hatched!', vars: { x: pk.nome } }] : [] });
+    }
+    if (op === 'ovo_descartar') {
+      s.ovos = s.ovos.filter(x => x !== o);
+      log('daycare', u, 'discarded an egg');
+      return responder();
+    }
+    return erro('Invalid request.');
+  }
+
+  return { operar, ovos, aoEntrar, chocarProntos, vista: u => accounts[u] ? vista(accounts[u]) : null, _test: { compat, montarOvo, sexoDe, especieDoOvo, avancar, chocar, creche } };
 }

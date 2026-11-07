@@ -46,15 +46,17 @@ ok(s.time.length === 1, 'party keeps Pikachu');
 const k = T.creche(contas.ash); k.tentativa = Date.now() - 10 * 24 * 3600e3;   // ten days later (enough rolls that an Egg always comes)
 const v = B.operar('ash', { op: 'ver' }).vista;
 ok(v.ovosEsperando >= 1, 'eggs after ten days: ' + v.ovosEsperando + ' (' + v.compat.linha + ')');
-ok(B.operar('ash', { op: 'pegar' }).ok && s.ovos.length >= 1, 'took ' + s.ovos.length + ' egg(s), hatch in ' + Math.round((s.ovos[0].prontoEm - Date.now()) / 60000) + ' min');
+ok(B.operar('ash', { op: 'pegar' }).ok && s.ovos.length >= 1 && s.ovos.every(o => !o.prontoEm && !o.incubadora), 'took ' + s.ovos.length + ' egg(s): no timer until an incubator');
+ok(+s.presos?.['900030'] === 1, 'the first Incubator is free');
 const antes = s.time.length + s.caixa.length, nOvos = s.ovos.length;
 ok(B.chocarProntos('ash') === 0, 'nothing hatches before its time');
-for (const o of s.ovos) o.prontoEm = Date.now() - 1;
+ok(B.chocarProntos('ash') === 0, 'an Egg in the Bag never hatches');
+s.ovos.forEach((o, i) => { o.incubadora = 'incubadora#' + (i + 1); o.prontoEm = Date.now() - 1; });   // in incubators, time up
 ok(B.chocarProntos('ash') === nOvos && s.ovos.length === 0 && s.time.length + s.caixa.length === antes + nOvos, 'they hatch when the time is up');
 const bebe = sent.find(o => o.t === 'ovo_chocou')?.mon;
 ok(bebe?.dex === 4 && bebe.lv === 1 && bebe.sexo, 'hatched ' + bebe?.nome + ' Lv' + bebe?.lv + ' ' + bebe?.sexo + ' moves ' + (bebe?.movs || []).map(x => x.id).join(','));
 s.medalhaoAte = Date.now() + 864e5; k.tentativa = Date.now() - 2 * 24 * 3600e3; B.operar('ash', { op: 'ver' });
-if (k.ovos.length) { B.operar('ash', { op: 'pegar' }); ok(Math.round((s.ovos[0].prontoEm - Date.now()) / 60000) <= 60, 'with the Medallion it takes 1 h'); }
+
 // EXP and the fee: a day at the Day Care
 const e0 = k.estadia[0], lv0 = k.pais[0].lv; e0.ultimo -= 1440 * 60e3;
 const v2 = B.operar('ash', { op: 'ver' }).vista;

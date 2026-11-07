@@ -9609,5 +9609,20 @@
   "Qualot Seed": "Semente de Bibaba",
   "Hondew Seed": "Semente de Hamiba",
   "Grepa Seed": "Semente de Baga Toranja",
-  "Tamato Seed": "Semente de Baga Tomafeto"
+  "Tamato Seed": "Semente de Baga Tomafeto",
+  "Hatches": "Choca",
+  "Hatching Ticket": "Ticket de eclosão",
+  "in your Bag": "na sua Bolsa",
+  "Your Eggs ({n}/{m}): put them in an incubator on your plot, they hatch in {h} h": "Seus Ovos ({n}/{m}): coloque numa incubadora no seu terreno, chocam em {h} h",
+  "The Egg is warming up: it hatches in {x}.": "O Ovo está esquentando: choca em {x}.",
+  "Go to your plot to use your incubators.": "Vá ao seu terreno para usar as incubadoras.",
+  "That incubator is not on your plot.": "Essa incubadora não está no seu terreno.",
+  "That incubator already has an Egg.": "Essa incubadora já tem um Ovo.",
+  "That Egg is already in an incubator.": "Esse Ovo já está numa incubadora.",
+  "That Egg is not in an incubator.": "Esse Ovo não está numa incubadora.",
+  "Put the Egg in an incubator first.": "Coloque o Ovo numa incubadora primeiro.",
+  "A Hatching Ticket was already used on this Egg.": "Já foi usado um Ticket de eclosão neste Ovo.",
+  "You don't have a Hatching Ticket.": "Você não tem um Ticket de eclosão.",
+  "Not ready to hatch yet.": "Ainda não está pronto para chocar.",
+  "That Egg is not yours.": "Esse Ovo não é seu."
 }

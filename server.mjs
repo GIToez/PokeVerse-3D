@@ -1911,7 +1911,7 @@ let movesCriacaoCache = null;
 const movesCriacao = () => movesCriacaoCache || (movesCriacaoCache = lerJson(nodePath.join(DADOS_PUB, 'moves.json'), {}));
 /* DAY CARE AND BREEDING (server_breeding.mjs): two Pokémon at the Route 5 Day Care may make an Egg every 24 h; Eggs hatch in 2 h (1 h with the Medallion). */
 const criacao = createBreeding({ dataDir: DADOS_PUB, accounts: contas, saveAccounts: salvarContas, send: enviar, socketsOf: socketsDe,
-  newIndividual: individuoServidor, markCaught: marcarPego, gameConfig: cfgJogo, Ind: IndS, moveExists: id => !!movesCriacao()[id], grantExp: (mon, save, n) => wilds.grantRaw(mon, save, n), xpMult: save => Med.xpMult(save), log: (...a) => console.log('[daycare]', ...a.slice(1)) });
+  newIndividual: individuoServidor, markCaught: marcarPego, gameConfig: cfgJogo, Ind: IndS, moveExists: id => !!movesCriacao()[id], incubadorasDe: u => terrenos.incubadoras(u), noProprioTerreno: ws => !!ws._usuario && ws._mapa === terrenos.salaDe(ws._usuario), grantExp: (mon, save, n) => wilds.grantRaw(mon, save, n), xpMult: save => Med.xpMult(save), log: (...a) => console.log('[daycare]', ...a.slice(1)) });
 /* MASS OUTBREAKS (server_outbreaks.mjs): one route fills with one species for a while, with better shiny odds. */
 var surtos = createOutbreaks({ dataDir: DADOS_PUB, habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), send: enviar, taxaShiny,
   onMap: map => [...conexoes.values()].filter(w => w.readyState === 1 && w._usuario && String(w._mapa || 'kanto') === String(map)),
@@ -2400,6 +2400,7 @@ wss.on('connection', ws => {
 
         else if (m.t === 'terreno') terrenos.operar(ws, m, () => conexoes.values());   // personal plots (server_plot.mjs)
         else if (m.t === 'horta_ver' || m.t === 'horta_plantar' || m.t === 'horta_colher') terrenos.horta(ws, m);   // the plot's berry garden
+        else if (/^ovo_(ver|incubar|desincubar|acelerar|chocar|descartar)$/.test(m.t)) criacao.ovos(ws, m);   // Eggs in the plot's incubators (server_breeding.mjs)
         else if (m.t === 'guilda') {   // guilds (server_guild.mjs)
           const antes = ws._usuario ? guildas.tagDe(ws._usuario) : null;
           guildas.operar(ws, m);

@@ -752,7 +752,7 @@ const passeBootP = (async () => {
   } catch {}
 })();
 /* ============================================================== dados */
-let gltf, chao, dados, indice, DB;
+let gltf, chao, dados, indice, DB, objetosGlbTerreno = [];
 await passeBootP;
 let passe403 = 0;                                                        // quantas vezes a borda negou a cena nesta carga
 for (;;){                                                                // laço: cada "Tentar de novo" repete daqui, aproveitando o que já baixou
@@ -771,6 +771,7 @@ try {
     const r = await fetch(base + '/terreno/cena?mapa=' + NOME, { headers: { Authorization: 'Bearer ' + Conta.tokenAtual() } });
     const j = r.ok ? await r.json() : null;
     if (Array.isArray(j?.objetos) && j.objetos.length) dados.objetos = [...(dados.objetos || []), ...j.objetos.filter(o => o && typeof o.n === 'string')];
+    if (Array.isArray(j?.objetos)) objetosGlbTerreno = j.objetos.filter(o => o && /^scenery\/objetos\/[a-z0-9_]{1,40}\.glb$/.test(o.glb || ''));   // incubators, trophies: their own GLB (added below, after the map)
   } catch (e){ console.warn('plot buildings:', e); }
   __boot.cena(NOME);                                                    // diagnóstico do boot: a cena de verdade, não a da URL
   bootProgresso(1, I18n.t('loading the map…'));
@@ -2665,6 +2666,10 @@ if (chao.biblioteca){
 }
 const principal = chao.biblioteca ? instanciarBiblioteca(gltf, dados) : instanciar(gltf, dados);
 cena.add(principal.raiz);
+for (const o of objetosGlbTerreno) new GLTFLoader().loadAsync('./' + o.glb).then(g => {   // a plot's incubators and trophies (server_plot.mjs → /terreno/cena)
+  const m = g.scene; m.position.set(flipX * o.x, (o.y || 0) + (chaoEm(flipX * o.x, o.z) ?? 0), o.z); m.rotation.y = -(+o.a || 0) * Math.PI / 180; m.scale.setScalar(+o.escala || 1);
+  m.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } }); cena.add(m);
+}).catch(e => console.warn('plot object', o.glb, e));
 if (!params0Cedo.has('semEmendas')) try {   // ?semEmendas turns it off (to compare)
   const t0 = performance.now(), r = Remendos.suavizarEmendas(principal.raiz, THREE, { camadasDoPiso: camadasPiso });
   if (r?.faixas) console.log('ground seams:', r.faixas, 'strips,', r.metros, 'm,', Math.round(performance.now() - t0), 'ms');
