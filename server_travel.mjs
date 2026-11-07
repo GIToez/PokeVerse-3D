@@ -9,6 +9,7 @@
  * Stored on the account: save.viagem = { centros: { chegada: { mapa, chegada, area } }, ultimo: chegada, teleEm, viaEm }.
  * A Center is a door arrival (doors.json) whose area is a Pokémon Center (14xx); flying needs an outdoor area (scenes.json tipo 1)
  * outside the Sevii Islands, where the ferry is the way. */
+import * as Med from './medallion.mjs';
 const PADRAO = { teleporteInsignias: 3, teleporteMin: 10, viagemInsignias: 3, viagemMin: 5 };
 const LAB = { mapa: '4110002', chegada: 7180101, area: 1801 };   // no Center yet: Teleport takes you to Professor Oak's Lab, as a whiteout does
 const ARQUIPELAGO = new Set([2249, 2250, 2251, 2252, 2253, 2254, 2255, 2265, 2266, 2267, 2268, 2270, 2271, 2272, 2273, 2275, 2276, 2280, 2281, 2282, 2284, 2285, 2287, 2300]);
@@ -46,7 +47,9 @@ export function createTravel({ accounts, send, readJson, cfg, saveAccounts, emLu
   function estado(ws, c) {
     const s = c.save || (c.save = {}), v = V(s), R = regras(), gm = !!c.gm, agora = Date.now();
     const nIns = insignias(s);
-    const um = (min, nIns0, em) => {
+    const rm = Med.recargaMult(s, cfg?.());   // the Medallion: shorter cooldowns while it runs
+    const um = (min0, nIns0, em) => {
+      const min = Math.round((+min0 || 0) * rm * 10) / 10;
       const tem = gm || nIns >= nIns0;
       return { tem, recargaMin: min, faltaS: gm ? 0 : Math.max(0, Math.ceil(((+em || 0) + min * 60000 - agora) / 1000)),
         ...(tem ? {} : { motivo: nIns0 === 1 ? 'Needs 1 Gym Badge.' : 'Needs ' + nIns0 + ' Gym Badges (you have ' + nIns + ').', curto: nIns0 + ' badges' }) };

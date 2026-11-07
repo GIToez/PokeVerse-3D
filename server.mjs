@@ -57,6 +57,7 @@ import { createSocial } from './server_social.mjs';
 import { knowledgeSummary } from './server_knowledge.mjs';   // friends, requests, direct messages (the Social window)
 import { createParty } from './server_party.mjs';     // parties of up to 4, and Inspect (the player card)
 import * as CaixaR from './box_rules.mjs';
+import * as Med from './medallion.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -679,6 +680,7 @@ function cfgJogo() {
   } catch { cfgJogoCache = { mtime: -1, cfg: {} }; }
   return cfgJogoCache.cfg;
 }
+Med.usarConfig(() => cfgJogo());   // the Medallion's perks read Game settings → medalhao (medallion.mjs)
 const taxaShiny = () => { const t = cfgJogo().taxaShiny; return Math.max(1, (Number.isInteger(t) && t >= 2 ? t : 4096) / (eventos?.shinyMult() || 1)); };   // Fase 3: ÷ multiplicador do evento ao vivo
 function individuoServidor(base) {
   const lv = Math.max(1, Math.min(100, Math.round(+base?.lv || 5)));
@@ -1895,7 +1897,7 @@ let movesCriacaoCache = null;
 const movesCriacao = () => movesCriacaoCache || (movesCriacaoCache = lerJson(nodePath.join(DADOS_PUB, 'moves.json'), {}));
 /* DAY CARE AND BREEDING (server_breeding.mjs): two Pokémon at the Route 5 Day Care may make an Egg every 24 h; Eggs hatch in 2 h (1 h with the Medallion). */
 const criacao = createBreeding({ dataDir: DADOS_PUB, accounts: contas, saveAccounts: salvarContas, send: enviar, socketsOf: socketsDe,
-  newIndividual: individuoServidor, markCaught: marcarPego, gameConfig: cfgJogo, Ind: IndS, moveExists: id => !!movesCriacao()[id], log: (...a) => console.log('[daycare]', ...a.slice(1)) });
+  newIndividual: individuoServidor, markCaught: marcarPego, gameConfig: cfgJogo, Ind: IndS, moveExists: id => !!movesCriacao()[id], grantExp: (mon, save, n) => wilds.grantRaw(mon, save, n), xpMult: save => Med.xpMult(save), log: (...a) => console.log('[daycare]', ...a.slice(1)) });
 /* MASS OUTBREAKS (server_outbreaks.mjs): one route fills with one species for a while, with better shiny odds. */
 var surtos = createOutbreaks({ dataDir: DADOS_PUB, habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), send: enviar, taxaShiny,
   onMap: map => [...conexoes.values()].filter(w => w.readyState === 1 && w._usuario && String(w._mapa || 'kanto') === String(map)),
@@ -2059,7 +2061,7 @@ wss.on('connection', ws => {
         const nome = c?.save?.nome || ws._usuario || 'Player';           // character name, not the login
         const cargo = c?.cargo || null;                                   // [STAFF]/[MOD] pros outros verem
         if (temLink(texto) && !podeLink(cargo)) { enviar(ws, { t: 'sistema', texto: AVISO_LINK }); break; }   // the client blocks it too; this stops a hand-made WS message
-        broadcast(ws, { t: 'chat', canal: m.canal || 'local', texto, de: { nome, cargo, id: ws._id } }, m.canal === 'local');   // id: the others draw the speech bubble over this player
+        broadcast(ws, { t: 'chat', canal: m.canal || 'local', texto, de: { nome, cargo, id: ws._id, ...(Med.selo(c?.save) ? { md: true } : {}) } }, m.canal === 'local');   // md: the Medallion's member badge   // id: the others draw the speech bubble over this player
         // sem "echo pra mim": o cliente já mostra a própria mensagem (publicar em chat.mjs) — reenviar duplicava
         break;
       }

@@ -47,7 +47,7 @@ export function instalar(c){
   if (!msgs.length) sistema('Chat: Local (your map + everything), Global, Trade, Help. Commands: /g /t /h /l. With the server online, other players can read it.');
 }
 function guardar(){ ctx?.gravarLS('chat', msgs.slice(-200)); }
-export function publicar(canal, txt, de = ctx?.nome || 'You', cargo = undefined){
+export function publicar(canal, txt, de = ctx?.nome || 'You', cargo = undefined, md = undefined){
   if (!CANAIS[canal]) canal = 'local';
   /* CARGOS (09/09): [STAFF]/[MOD] na frente do nome, na cor do cargo. Quem fala aqui do lado de cá sou eu — o cargo vem do
      servidor (Conta); dos outros, vem junto da mensagem. */
@@ -55,7 +55,8 @@ export function publicar(canal, txt, de = ctx?.nome || 'You', cargo = undefined)
   txt = canal === 'sistema' ? String(txt) : textoLimpo(txt);              // <color>/<b>/[size] tags from the old client show as plain text
   if (!txt) return;
   if (canal !== 'sistema' && cargo !== undefined) ctx?.aoMensagem?.(canal, de);   // someone else's message (unread badge on the phone chat button)
-  msgs.push({ c: canal, de, cg: q || null, txt: String(txt).slice(0, 240), t: Date.now(), a: canal === 'local' ? (ctx?.area?.() ?? null) : null });
+  const membro = canal === 'sistema' ? false : md === undefined ? (cargo === undefined && Conta.souMembro?.() === true) : md === true;   // the Medallion's member badge (mine: from my save; theirs: from the server)
+  msgs.push({ c: canal, de, cg: q || null, md: membro || undefined, txt: String(txt).slice(0, 240), t: Date.now(), a: canal === 'local' ? (ctx?.area?.() ?? null) : null });
   if (msgs.length > 300) msgs.splice(0, msgs.length - 300);
   guardar();
   for (const m of [...montagens]){ if (!m.el.isConnected){ montagens.delete(m); continue; } m.atualizar(canal); }
@@ -137,7 +138,7 @@ export function montar(el, { compacto = false, aba: abaInicial = 'local' } = {})
   const msgsEl = el.querySelector('.msgs'), form = el.querySelector('form'), input = el.querySelector('input'), canalEl = el.querySelector('.canal');
   const visiveis = () => msgs.filter(m => aba === 'local' ? (m.c !== 'local' || m.a == null || ctx?.area == null || m.a === ctx.area()) : m.c === aba);
   const hora = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
-  const linha = m => { const C = CANAIS[m.c] || CANAIS.local; const tag = aba === 'local' && C.tag ? `<span class="tag" style="color:${C.cor}">[${C.tag}]</span> ` : ''; const cg = Conta.cargoDe?.(m.cg); const eti = cg ? `<b style="color:${cg.cor}">[${cg.tag}]</b> ` : ''; return m.c === 'sistema' ? `<div class="m sis" style="color:${C.cor}">${tag}<em>${esc(m.txt)}</em></div>` : `<div class="m"><span class="h">${hora(m.t)}</span> ${tag}${eti}<b style="color:${cg ? cg.cor : C.cor}">${esc(m.de)}:</b> ${esc(m.txt)}</div>`; };
+  const linha = m => { const C = CANAIS[m.c] || CANAIS.local; const tag = aba === 'local' && C.tag ? `<span class="tag" style="color:${C.cor}">[${C.tag}]</span> ` : ''; const cg = Conta.cargoDe?.(m.cg); const eti = (cg ? `<b style="color:${cg.cor}">[${cg.tag}]</b> ` : '') + (m.md ? `<span class="md" title="${esc(tr('Medallion member'))}" style="color:#f5c542">🏅</span> ` : ''); return m.c === 'sistema' ? `<div class="m sis" style="color:${C.cor}">${tag}<em>${esc(m.txt)}</em></div>` : `<div class="m"><span class="h">${hora(m.t)}</span> ${tag}${eti}<b style="color:${cg ? cg.cor : C.cor}">${esc(m.de)}:</b> ${esc(m.txt)}</div>`; };
   const render = () => {
     const noFim = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 30;
     msgsEl.innerHTML = visiveis().slice(-150).map(linha).join('');

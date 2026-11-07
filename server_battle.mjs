@@ -19,6 +19,7 @@ import { createBattleAI } from './server_battle_ai.mjs';   // how the Elite Four
 import { createMapWeather } from './server_weather.mjs';
 import * as Transf from './transform.mjs';
 import * as BossR from './boss_rules.mjs';   // NPC / Pokémon bosses whose level follows the party (public/data/bosses.json)
+import * as Med from './medallion.mjs';
 import * as Caixa from './box_rules.mjs';   // Ditto's Transform in turn battles (rules: public/data/transform.json, loaded by server_transform.mjs)
 
 const __dir = nodePath.dirname(fileURLToPath(import.meta.url));
@@ -805,7 +806,7 @@ export function criarBatalha(ctx) {
     if (ele && ele.hp <= 0) {
       const ganhador = bat.eu.field;
       if (ganhador && ganhador.hp > 0) {
-        const medalhao = (+acc?.c?.save?.medalhaoAte || 0) > Date.now() ? 1.2 : 1;   // Medallion: +20% XP
+        const medalhao = Med.xpMult(acc?.c?.save);   // Medallion: +XP (medallion.mjs)
         const xp = Math.max(1, Math.round(expGanha(ganhador.lv, ele.dex, ele.lv) * expMultOf(ganhador, heldTab) * medalhao));
         const evR = Ev.ganharPorKo(ganhador, ele.dex);
         aplicarExp(ganhador, xp);

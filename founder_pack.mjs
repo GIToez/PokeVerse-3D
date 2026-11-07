@@ -133,15 +133,18 @@ export const TEXTOS = {
   titulo: 'Title',
   jaTem: 'You already have it',
   medalhaoNome: 'Medallion · 30 days',
-  medalhaoDesc: '+{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.',
-  medalhaoDescMedia:
-    '+{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). Use it or sell it on the Market for Coins.',
-  medalhaoDescLonga:
-    '{dias} days of +{xp} % XP for your Pokémon (more perks as the Box, Market and Travel limits open). The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.',
+  medalhaoDesc: '+{xp} % XP, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % Travel and Teleport cooldown, and the chat badge. Use it or sell it on the Market for Coins.',
+  medalhaoDescMedia: '+{xp} % XP, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % Travel and Teleport cooldown, and the chat badge. Use it or sell it on the Market for Coins.',
+  medalhaoDescLonga: '{dias} days of the Medallion: +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the member badge in chat. The time adds up, to 90 days. Use it from the Bag or sell it on the Market for Coins.',
   medalhaoFaltam: '{n} more purchased Diamonds needed (only purchased ones count).',
   medalhaoAtivo: 'active until {data}',
 };
-export const BENEFICIOS_MEDALHAO = Object.freeze({ dias: 30, xp: 20, vagas: 100, anuncios: 10, recarga: 50 });
+export const BENEFICIOS_MEDALHAO = { dias: 30, xp: 20, vagas: 100, anuncios: 10, recarga: 50 };
+/* The numbers follow Game settings → medalhao (game_config.json), the same ones the server applies (medallion.mjs). */
+if (typeof fetch === 'function') fetch('./data/game_config.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(c => {
+  const m = c?.medalhao; if (!m || typeof m !== 'object') return;
+  for (const k of ['xp', 'vagas', 'anuncios', 'recarga']) if (Number.isFinite(+m[k]) && +m[k] >= 0) BENEFICIOS_MEDALHAO[k] = +m[k];
+}).catch(() => {});
 export function textoMedalhao(a = 'curta', t = null) {
   const b = a === 'longa' ? TEXTOS.medalhaoDescLonga : a === 'media' ? TEXTOS.medalhaoDescMedia : TEXTOS.medalhaoDesc;
   return t ? t(b, { ...BENEFICIOS_MEDALHAO }) : preencher(b, BENEFICIOS_MEDALHAO);

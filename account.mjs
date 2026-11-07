@@ -290,6 +290,7 @@ function aplicarSave(a) {
     } else if (b) gravar(k, JSON.stringify(a[k]));
     else apagar(k);
   }
+  if (a && Number.isSafeInteger(+a.medalhaoAte) && +a.medalhaoAte > 0) aplicarMedalhao({ ate: +a.medalhaoAte });   // the Medallion's end date (chat badge, shop)
   gravar(LS.dono, usuario);
   apagar(LS.sujo);
   sujo = false;
@@ -1154,6 +1155,7 @@ export function aplicarDoServidor(a, b) {
     cofre.set(k, JSON.stringify(a[k]));
     apagar(k);
   }
+  if (Number.isSafeInteger(+a.medalhaoAte) && +a.medalhaoAte > 0) aplicarMedalhao({ ate: +a.medalhaoAte });   // the Medallion's end date (chat badge, shop, active effects)
   if (Number.isFinite(+b)) {
     rev = +b;
     gravar(LS.rev, String(rev));

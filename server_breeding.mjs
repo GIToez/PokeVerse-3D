@@ -30,9 +30,13 @@ export const PADRAO = {
   ligado: true, horasPorTentativa: 24, chance: { mesmaEspecie: 0.7, outra: 0.4, ditto: 0.5 }, ovosEsperando: 3, ovosCarregados: 6,
   horasChocar: 2, horasChocarMedalhao: 1, nivelAoChocar: 1, ivsHerdados: 3, ivsComNo: 5,
   itens: { everstone: 950001, destinyKnot: 950002, power: { 950003: 0, 950004: 1, 950005: 2, 950006: 3, 950007: 4, 950008: 5 } },
+  // EXP while staying (time-based, like the Gen 2 Day Care's steps): `porMinuto` EXP every minute (the Medallion's bonus applies,
+  // the badge level cap too: above it the EXP is banked). Level-ups teach level-up moves (a full set forgets its oldest); no evolving.
+  // The fee runs by the minute: the Pokémon's level × `taxaPorNivelMin` Coins, paid when you take it back. GMs stay free.
+  exp: { ligado: true, porMinuto: 10, taxaPorNivelMin: 0.01 },
 };
 
-export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsOf, newIndividual, markCaught, gameConfig, Ind, moveExists, log = () => {} }) {
+export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsOf, newIndividual, markCaught, gameConfig, Ind, moveExists, grantExp = null, xpMult = () => 1, log = () => {} }) {
   const lerJ = (f, d) => { try { return JSON.parse(fs.readFileSync(nodePath.join(dataDir, f), 'utf8')); } catch { return d; } };
   let cache = { t: 0, cfg: PADRAO, ovo: null };
   function dados() {
@@ -84,6 +88,8 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const e = esp(mae.dex);
     let dex = +(e?.baseNoJogo || e?.base || mae.dex);
     if (dex === 29 || dex === 32) dex = Math.random() < 0.5 ? 29 : 32;   // Nidoran♀ (and a Nidoran♂ with a Ditto) gives either
+    if (dex === 313 || dex === 314) dex = Math.random() < 0.5 ? 313 : 314;   // Volbeat / Illumise, the same way
+    if (dex === 490) dex = 489;   // Manaphy's Eggs hatch into Phione
     return dex;
   }
   const heldId = p => { const h = p?.held; return h == null ? null : +(typeof h === 'object' ? h.id : h) || null; };
@@ -150,6 +156,45 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     if (agora - k.tentativa > passo * 50) k.tentativa = agora;
     return n;
   }
+  // ── EXP and the fee while staying ───────────────────────────────────────────────────
+  const expCfg = () => ({ ...PADRAO.exp, ...(cfg().exp || {}) });
+  function estadias(k) {
+    if (!Array.isArray(k.estadia)) k.estadia = [null, null];
+    k.pais.forEach((p, i) => { if (!p) k.estadia[i] = null; else if (!k.estadia[i]) k.estadia[i] = { em: Date.now(), ultimo: Date.now(), conta: 0, lvEntrou: +p.lv || 1, exp: 0 }; });
+    return k.estadia;
+  }
+  /** New level-up moves from `de`+1 to `ate`: learned if there is room, else the oldest is forgotten (as in the games). */
+  function aprender(p, de, ate) {
+    if (!Array.isArray(p.movs)) return [];
+    const novos = [];
+    for (let lv = de + 1; lv <= ate; lv++) {
+      for (const id of Ind.aprendeEm(p.dex, lv, p.glb || null)) {
+        if (!moveExists(id) || p.movs.some(m => m.id === id)) continue;
+        if (p.movs.length >= 4) p.movs.shift();
+        p.movs.push(Ind.novoGolpe(id)); novos.push(id);
+      }
+    }
+    return novos;
+  }
+  /** Credits the whole minutes since the last look: EXP, level-ups, the fee. */
+  function avancarExp(c) {
+    const E = expCfg(), k = creche(c), s = saveDe(c), agora = Date.now();
+    estadias(k).forEach((e, i) => {
+      const p = k.pais[i]; if (!p || !e) return;
+      const min = Math.floor((agora - e.ultimo) / 60e3);
+      if (min <= 0) return;
+      e.ultimo += min * 60e3;
+      if (!E.ligado || !cfg().ligado) return;
+      const lv0 = +p.lv || 1;
+      e.conta += min * lv0 * Math.max(0, +E.taxaPorNivelMin || 0);
+      const n = Math.round(min * Math.max(0, +E.porMinuto || 0) * (xpMult(s) || 1));
+      if (n > 0 && grantExp) {
+        const r = grantExp(p, s, n) || {}; e.exp += n;
+        if (r.levels) aprender(p, lv0, +p.lv || lv0);
+      }
+    });
+  }
+  const taxaDe = (c, i) => c.gm ? 0 : Math.ceil(creche(c).estadia?.[i]?.conta || 0);
   const resumo = p => p ? { uid: p.uid, dex: +p.dex, nome: p.nome, lv: p.lv, shiny: !!p.shiny, sexo: sexoDe(p), held: heldId(p), ivs: p.ivs || null, natureza: p.natureza || null } : null;
   /* The role each one plays, as in the games: the Egg is always the mother's family; a Ditto turns into the copy of the other's
      opposite (a female copy of a male, a male copy of a female), so the Egg is the other parent's family. */
@@ -162,7 +207,8 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const C = cfg(), k = creche(c), [a, b] = k.pais, comp = a && b ? compat(a, b) : null, ch = comp ? chanceDe(comp, a, b) : 0;
     const proxima = a && b && comp?.ok ? Math.max(0, (k.tentativa || Date.now()) + Math.max(0.0005, +C.horasPorTentativa || 24) * 3600e3 - Date.now()) : null;
     return {
-      ligado: !!C.ligado, pais: [resumo(a), resumo(b)], papeis: papeis(a, b), mae: comp?.ok ? k.pais.indexOf(comp.mae) : -1, compat: comp ? { ok: comp.ok, motivo: comp.motivo || null, linha: comp.ok ? linhaChance(ch) : null, chance: ch, especie: comp.ok ? esp(especieDoOvo(comp.mae))?.nome || null : null } : null,
+      ligado: !!C.ligado, pais: [resumo(a), resumo(b)], estadia: estadias(k).map((e, i) => e && k.pais[i] ? { em: e.em, lvEntrou: e.lvEntrou, cresceu: Math.max(0, (+k.pais[i].lv || 1) - e.lvEntrou), exp: e.exp, taxa: taxaDe(c, i) } : null),
+      exp: { ...expCfg(), gratis: !!c.gm }, moedas: Math.floor(+saveDe(c).dinheiro || 0), papeis: papeis(a, b), mae: comp?.ok ? k.pais.indexOf(comp.mae) : -1, compat: comp ? { ok: comp.ok, motivo: comp.motivo || null, linha: comp.ok ? linhaChance(ch) : null, chance: ch, especie: comp.ok ? esp(especieDoOvo(comp.mae))?.nome || null : null } : null,
       ovosEsperando: k.ovos.length, maxEsperando: +C.ovosEsperando || 3, proximaMs: proxima,
       carregados: saveDe(c).ovos.map(o => ({ uid: o.uid, dex: o.dex, nome: o.nome, inicio: o.inicio, prontoEm: o.prontoEm, faltaMs: Math.max(0, (o.prontoEm || 0) - Date.now()) })), maxCarregados: +C.ovosCarregados || 6,
       horasChocar: +C.horasChocar || 2, horasChocarMedalhao: +C.horasChocarMedalhao || 1, medalhao: (+saveDe(c).medalhaoAte || 0) > Date.now(),
@@ -184,7 +230,7 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const c = accounts[u];
     if (!c) return { erro: 'Log in first.' };
     const s = saveDe(c), k = creche(c), C = cfg();
-    avancar(c); chocarProntos(u);
+    avancar(c); avancarExp(c); chocarProntos(u);
     const op = String(m.op || 'ver');
     const pronto = (extra = {}) => { c.rev = (c.rev || 0) + 1; saveAccounts(); return { ok: true, vista: vista(c), save: s, rev: c.rev, ...extra }; };
     if (op === 'ver') return { ok: true, vista: vista(c) };
@@ -201,6 +247,7 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
       delete t.p.seguindo;
       if (s.seguidorUid != null && String(s.seguidorUid) === String(t.p.uid)) delete s.seguidorUid;
       k.pais[vaga] = t.p;
+      estadias(k)[vaga] = { em: Date.now(), ultimo: Date.now(), conta: 0, lvEntrou: +t.p.lv || 1, exp: 0 };
       k.tentativa = Date.now(); if (!k.desde) k.desde = Date.now();
       log('daycare', u, 'left', t.p.nome);
       return pronto({ aviso: 'We\'ll take good care of ' + t.p.nome + '.' });
@@ -208,10 +255,15 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     if (op === 'retirar') {
       const i = +m.i, p = k.pais[i];
       if (!p) return { erro: 'Nothing there.' };
-      k.pais[i] = null;
+      const e = estadias(k)[i], taxa = taxaDe(c, i), cresceu = e ? Math.max(0, (+p.lv || 1) - e.lvEntrou) : 0;
+      if (taxa > 0 && Math.floor(+s.dinheiro || 0) < taxa) return { erro: 'Taking ' + p.nome + ' back costs ' + taxa + ' Coins. You have ' + Math.floor(+s.dinheiro || 0) + '.' };
+      if (taxa > 0) s.dinheiro = Math.floor(+s.dinheiro || 0) - taxa;
+      k.pais[i] = null; k.estadia[i] = null;
       if (!k.pais.some(Boolean)) { k.desde = 0; k.tentativa = 0; }
       const naEquipe = cabe(s, p);
-      return pronto({ aviso: p.nome + (naEquipe ? ' is back in your party.' : ' went to your Box (your party is full).') });
+      const cresc = cresceu ? ' It grew by ' + cresceu + (cresceu === 1 ? ' level' : ' levels') + ' (Lv. ' + p.lv + ').' : '';
+      log('daycare', u, 'took back', p.nome, '+' + cresceu + ' lv', taxa + ' coins');
+      return pronto({ aviso: p.nome + (naEquipe ? ' is back in your party.' : ' went to your Box (your party is full).') + cresc + (taxa ? ' That was ' + taxa + ' Coins.' : '') });
     }
     if (op === 'pegar') {
       if (!k.ovos.length) return { erro: 'There is no Egg yet.' };

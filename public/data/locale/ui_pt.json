@@ -9423,5 +9423,11 @@
   "Breeding items, held by a parent: Everstone passes its nature, Destiny Knot passes 5 IVs instead of 3, a Power item always passes one stat. Egg moves a parent knows are passed on too.": "Itens de criação, segurados por um dos pais: a Everstone passa a natureza, o Destiny Knot passa 5 IVs em vez de 3, um item Power sempre passa um atributo. Golpes de ovo que um dos pais sabe também passam.",
   "🌟 Mass outbreak! Lots of {nome} are appearing on {area} for the next {min} minutes, and shinies are {mult}× as likely!": "🌟 Surto em massa! Muitos {nome} estão aparecendo em {area} pelos próximos {min} minutos, e shinies estão {mult}× mais prováveis!",
   "The {nome} outbreak on {area} has ended.": "O surto de {nome} em {area} acabou.",
-  "🌟 Mass outbreak on {area}: lots of {nome} for {min} more minutes!": "🌟 Surto em massa em {area}: muitos {nome} por mais {min} minutos!"
+  "🌟 Mass outbreak on {area}: lots of {nome} for {min} more minutes!": "🌟 Surto em massa em {area}: muitos {nome} por mais {min} minutos!",
+  "Medallion member": "Membro do Medalhão",
+  "+{xp} % XP, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % Travel and Teleport cooldown, and the chat badge. Use it or sell it on the Market for Coins.": "+{xp} % de XP, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % de recarga em Viagem e Teleporte, e o selo no chat. Use ou venda no Mercado por Moedas.",
+  "{dias} days of the Medallion: +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the member badge in chat. The time adds up, to 90 days. Use it from the Bag or sell it on the Market for Coins.": "{dias} dias de Medalhão: +{xp} % de XP para seus Pokémon, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % de recarga em Viagem e Teleporte, e o selo de membro no chat. O tempo soma, até 90 dias. Use pela Bolsa ou venda no Mercado por Moedas.",
+  "EXP gained here: {n}": "EXP ganha aqui: {n}",
+  "They gain {n} EXP a minute while they stay. Free for staff.": "Eles ganham {n} de EXP por minuto enquanto ficam. Grátis para a equipe.",
+  "They gain {n} EXP a minute while they stay. The fee is {c} Coins a minute per level, paid when you take one back.": "Eles ganham {n} de EXP por minuto enquanto ficam. A taxa é de {c} Moedas por minuto por nível, paga quando você pega um de volta."
 }

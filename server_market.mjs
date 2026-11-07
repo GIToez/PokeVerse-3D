@@ -13,6 +13,7 @@
 import fs from 'node:fs';
 import nodePath from 'node:path';
 import * as Mercado from './market.mjs';
+import * as Med from './medallion.mjs';
 
 const POR_PAGINA = 40, HISTORICO_MAX = 3000, AVISOS_MAX = 50, VARRER_MS = 60000;
 
@@ -112,10 +113,11 @@ export function criarMercado({ dados, dadosPub, contas, socketsDe, enviar, salva
   timer.unref?.();
 
   const erro = (texto) => ({ erro: texto });
+  const limiteDe = s => (Mercado.regras()?.ofertasPorJogador ?? 20) + Med.anunciosExtra(s);   // + the Medallion's listings while it runs
   function contexto(u, c) {
     const s = saveDe(c);
     return {
-      nome: u, insignias: insignias(s), moedas: Math.floor(+s.dinheiro || 0), ofertasAbertas: abertasDe(u),
+      nome: u, insignias: insignias(s), moedas: Math.floor(+s.dinheiro || 0), ofertasAbertas: abertasDe(u), limiteOfertas: limiteDe(s),
       temItem: id => quantos(c, id),
       temMon: uid => s.time.find(p => String(p.uid) === String(uid)) || s.caixa.find(p => String(p.uid) === String(uid)) || null,
       seguidorUid: s.seguidorUid ?? null,
@@ -142,7 +144,7 @@ export function criarMercado({ dados, dadosPub, contas, socketsDe, enviar, salva
       const avisos = (E.avisos[u] || []).map(a => ({ aviso: a.aviso, em: a.em }));
       if (E.avisos[u]) { delete E.avisos[u]; gravar(); }
       const vendas = E.historico.filter(h => h.vendedor === u).slice(-20).reverse().map(h => ({ ...h, vendedor: undefined, comprador: nomeDe(h.comprador) }));
-      return { ofertas: E.ofertas.filter(o => o.vendedor === u).map(o => publica(o, u)), avisos, vendas, limite: Mercado.regras()?.ofertasPorJogador ?? 20, agora: Date.now() };
+      return { ofertas: E.ofertas.filter(o => o.vendedor === u).map(o => publica(o, u)), avisos, vendas, limite: limiteDe(contas[u]?.save), agora: Date.now() };
     },
     precos(u, c, m) {
       if (m.dex != null) {

@@ -9,7 +9,8 @@ const mon = (uid, dex, nome, extra = {}) => ({ uid, dex, nome, lv: 30, ivs: [31,
 const contas = { ash: { save: { time: [], caixa: [] }, rev: 0 } };
 const sent = [];
 const B = createBreeding({ dataDir: new URL('../public/data', import.meta.url).pathname, accounts: contas, saveAccounts() {}, send: (w, o) => sent.push(o), socketsOf: () => [{}],
-  newIndividual: b => ({ ...b, uid: 'n' + Math.random(), ivs: [0, 0, 0, 0, 0, 0], natureza: 'Hardy', shiny: false }), markCaught() {}, gameConfig: () => ({}), Ind, moveExists: id => !!moves[id] });
+  newIndividual: b => ({ ...b, uid: 'n' + Math.random(), ivs: [0, 0, 0, 0, 0, 0], natureza: 'Hardy', shiny: false }), markCaught() {}, gameConfig: () => ({}), Ind, moveExists: id => !!moves[id],
+  grantExp: (p, save, n) => { const a = p.lv; p.exp = (p.exp || 0) + n; p.lv = Math.min(100, a + Math.floor(n / 1000)); return { gained: n, levels: p.lv - a }; } });
 const T = B._test;
 // gender comes from the uid, same answer every time
 const g1 = T.sexoDe(mon('x1', 25, 'Pikachu')); ok(g1 === T.sexoDe(mon('x1', 25, 'Pikachu')) && (g1 === 'm' || g1 === 'f'), 'gender is stable: ' + g1);
@@ -22,7 +23,10 @@ ok(T.compat(mon('d', 132, 'Ditto'), mon('mg', 81, 'Magnemite')).ok, 'Ditto + Mag
 ok(!T.compat(mon('d', 132, 'Ditto'), mon('d2', 132, 'Ditto')).ok, 'two Ditto can\'t');
 ok(!T.compat(mon('l', 144, 'Articuno'), mon('d', 132, 'Ditto')).ok, 'Articuno (Undiscovered) can\'t');
 ok(T.compat(mon('m', 1, 'Bulbasaur', { sexo: 'm' }), mon('f', 4, 'Charmander', { sexo: 'f' })).ok, 'Bulbasaur ♂ + Charmander ♀ share Monster');
-ok(T.especieDoOvo(mon('r', 26, 'Raichu', { sexo: 'f' })) === 25, 'Raichu mother → Pikachu egg');
+ok(T.especieDoOvo(mon('r', 26, 'Raichu', { sexo: 'f' })) === 172, 'Raichu mother → Pichu egg');
+ok(T.especieDoOvo(mon('r', 184, 'Azumarill', { sexo: 'f' })) === 183, 'Azumarill mother → Marill egg (no incense)');
+ok(T.compat(mon('g1', 443, 'Gible', { sexo: 'm' }), mon('g2', 445, 'Garchomp', { sexo: 'f' })).ok && T.especieDoOvo(mon('g2', 445, 'Garchomp')) === 443, 'Gen 4: Garchomp ♀ + Gible ♂ → Gible');
+ok(T.compat(mon('s1', 906, 'Sprigatito', { sexo: 'f' }), mon('d', 132, 'Ditto')).ok, 'Gen 9: Sprigatito + Ditto');
 // inheritance
 const pai = mon('p', 1, 'Bulbasaur', { sexo: 'm', ivs: [31, 31, 31, 31, 31, 31], held: { id: 950002 }, movs: [{ id: 'petaldance' }, { id: 'gigadrain' }] });
 const mae = mon('q', 1, 'Bulbasaur', { sexo: 'f', ivs: [0, 0, 0, 0, 0, 0], held: { id: 950001 }, natureza: 'Timid' });
@@ -51,5 +55,19 @@ const bebe = sent.find(o => o.t === 'ovo_chocou')?.mon;
 ok(bebe?.dex === 4 && bebe.lv === 1 && bebe.sexo, 'hatched ' + bebe?.nome + ' Lv' + bebe?.lv + ' ' + bebe?.sexo + ' moves ' + (bebe?.movs || []).map(x => x.id).join(','));
 s.medalhaoAte = Date.now() + 864e5; k.tentativa = Date.now() - 2 * 24 * 3600e3; B.operar('ash', { op: 'ver' });
 if (k.ovos.length) { B.operar('ash', { op: 'pegar' }); ok(Math.round((s.ovos[0].prontoEm - Date.now()) / 60000) <= 60, 'with the Medallion it takes 1 h'); }
-ok(B.operar('ash', { op: 'retirar', i: 0 }).ok && B.operar('ash', { op: 'retirar', i: 1 }).ok, 'took both parents back');
+// EXP and the fee: a day at the Day Care
+const e0 = k.estadia[0], lv0 = k.pais[0].lv; e0.ultimo -= 1440 * 60e3;
+const v2 = B.operar('ash', { op: 'ver' }).vista;
+ok(v2.estadia[0].exp === 14400 && k.pais[0].lv === lv0 + 14 && v2.estadia[0].cresceu === 14, 'a day: 14400 EXP, +' + v2.estadia[0].cresceu + ' levels');
+const taxa = v2.estadia[0].taxa;
+ok(taxa === Math.ceil(1440 * lv0 * 0.01), 'fee ' + taxa + ' Coins (Lv ' + lv0 + ' × 1440 min × 0.01)');
+s.dinheiro = taxa - 1;
+ok(B.operar('ash', { op: 'retirar', i: 0 }).erro, 'not enough Coins: refused');
+s.dinheiro = taxa + 5;
+const r0 = B.operar('ash', { op: 'retirar', i: 0 });
+ok(r0.ok && s.dinheiro === 5, 'paid: ' + r0.aviso);
+ok(B.operar('ash', { op: 'retirar', i: 1 }).ok, 'took the other back');
+contas.ash.gm = true; const d0 = [...s.time, ...s.caixa][0];
+B.operar('ash', { op: 'deixar', uid: d0.uid }); k.estadia[0].ultimo -= 600 * 60e3;
+ok(B.operar('ash', { op: 'ver' }).vista.estadia[0].taxa === 0 && B.operar('ash', { op: 'retirar', i: 0 }).ok, 'GM: free');
 console.log(fails ? fails + ' FAILED' : 'all passed'); process.exit(fails ? 1 : 0);

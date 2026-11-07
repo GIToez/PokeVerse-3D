@@ -122,10 +122,10 @@ const CATALOGO = {
   /* Nov 5: one item each (900171 = 60 days, 900172 = 90 days), not 2 or 3 Medallions of 30 */
   medalhao60: { ...medalhoesDe(MEDALHOES.medalhao60), selo: '60d',
     tipo: (p) => { const d = descontoDosMedalhoes(2, p?.preco); return d ? tr('Save {d}%', { d }) : tr('Sells on the Market'); },
-    desc: () => tr('60 days of +{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO), descLonga: () => tr('60 days of +{xp} % XP for your Pokémon. The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO) },
+    desc: () => tr('+{xp} % XP, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % Travel and Teleport cooldown, and the chat badge. Use it or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO), descLonga: () => tr('{dias} days of the Medallion: +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the member badge in chat. The time adds up, to 90 days. Use it from the Bag or sell it on the Market for Coins.', { ...BENEFICIOS_MEDALHAO, dias: 60 }) },
   medalhao90: { ...medalhoesDe(MEDALHOES.medalhao90), selo: '90d',
     tipo: (p) => { const d = descontoDosMedalhoes(3, p?.preco); return d ? tr('Save {d}%', { d }) : tr('Sells on the Market'); },
-    desc: () => tr('90 days of +{xp} % XP for your Pokémon. Use it or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO), descLonga: () => tr('90 days of +{xp} % XP for your Pokémon. The time adds up, to 365 days. Use it from the Bag or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO) },
+    desc: () => tr('+{xp} % XP, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % Travel and Teleport cooldown, and the chat badge. Use it or sell it on the Market for Coins.', BENEFICIOS_MEDALHAO), descLonga: () => tr('{dias} days of the Medallion: +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the member badge in chat. The time adds up, to 90 days. Use it from the Bag or sell it on the Market for Coins.', { ...BENEFICIOS_MEDALHAO, dias: 90 }) },
   passeDiario30: {
     aba: 'conforto',
     filtro: 'conta',
