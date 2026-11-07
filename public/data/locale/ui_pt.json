@@ -9429,5 +9429,8 @@
   "{dias} days of the Medallion: +{xp} % XP for your Pokémon, +{vagas} Box slots, +{anuncios} Market listings, −{recarga} % cooldown on Travel and Teleport, and the member badge in chat. The time adds up, to 90 days. Use it from the Bag or sell it on the Market for Coins.": "{dias} dias de Medalhão: +{xp} % de XP para seus Pokémon, +{vagas} vagas na Caixa, +{anuncios} anúncios no Mercado, −{recarga} % de recarga em Viagem e Teleporte, e o selo de membro no chat. O tempo soma, até 90 dias. Use pela Bolsa ou venda no Mercado por Moedas.",
   "EXP gained here: {n}": "EXP ganha aqui: {n}",
   "They gain {n} EXP a minute while they stay. Free for staff.": "Eles ganham {n} de EXP por minuto enquanto ficam. Grátis para a equipe.",
-  "They gain {n} EXP a minute while they stay. The fee is {c} Coins a minute per level, paid when you take one back.": "Eles ganham {n} de EXP por minuto enquanto ficam. A taxa é de {c} Moedas por minuto por nível, paga quando você pega um de volta."
+  "They gain {n} EXP a minute while they stay. The fee is {c} Coins a minute per level, paid when you take one back.": "Eles ganham {n} de EXP por minuto enquanto ficam. A taxa é de {c} Moedas por minuto por nível, paga quando você pega um de volta.",
+  "maxed out": "no máximo",
+  "They gain {n} EXP a minute for up to {h} h. Free for staff.": "Eles ganham {n} de EXP por minuto por até {h} h. Grátis para a equipe.",
+  "They gain {n} EXP a minute for up to {h} h, then stop (Eggs can still come). The fee is {c} Coins a minute per level for that time, paid when you take one back.": "Eles ganham {n} de EXP por minuto por até {h} h e depois param (ainda podem vir Ovos). A taxa é de {c} Moedas por minuto por nível nesse tempo, paga quando você pega um de volta."
 }

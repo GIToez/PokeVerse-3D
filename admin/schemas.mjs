@@ -268,8 +268,8 @@ export const ESQUEMAS = {
       { k: 'nivelAoChocar', rotulo: 'Level when hatched', tipo: 'num', int: true, min: 1, max: 100 },
       { k: 'ivsHerdados', rotulo: 'IVs inherited', tipo: 'num', int: true, min: 0, max: 6 },
       { k: 'ivsComNo', rotulo: 'IVs inherited with a Destiny Knot', tipo: 'num', int: true, min: 0, max: 6 },
-      { k: 'exp', rotulo: 'EXP and fee while staying', tipo: 'json', validar: v => v == null || (v && typeof v === 'object' && !Array.isArray(v) && ['porMinuto', 'taxaPorNivelMin'].every(k => v[k] == null || (typeof v[k] === 'number' && v[k] >= 0))) ? null : '{ "ligado": true, "porMinuto": 10, "taxaPorNivelMin": 0.01 }',
-        ajuda: 'porMinuto = EXP each Pokémon gains per minute at the Day Care (default 10; the Medallion bonus and the badge level cap apply; level-ups teach level-up moves, no evolving) · taxaPorNivelMin = Coins per minute per level, paid when taking it back (default 0.01: a Lv. 30 for a day = 432 Coins) · ligado = false turns both off. GMs pay nothing.' },
+      { k: 'exp', rotulo: 'EXP and fee while staying', tipo: 'json', validar: v => v == null || (v && typeof v === 'object' && !Array.isArray(v) && ['porMinuto', 'taxaPorNivelMin', 'maxHoras'].every(k => v[k] == null || (typeof v[k] === 'number' && v[k] >= 0))) ? null : '{ "ligado": true, "porMinuto": 10, "taxaPorNivelMin": 0.1, "maxHoras": 24 }',
+        ajuda: 'porMinuto = EXP each Pokémon gains per minute at the Day Care (default 10; the Medallion bonus and the badge level cap apply; level-ups teach level-up moves, no evolving) · taxaPorNivelMin = Coins per minute per level, paid when taking it back (default 0.1: a Lv. 30 for a full day = 4,320 Coins) · maxHoras = EXP and fee stop after this many hours of a stay (default 24; Egg chances keep rolling) · ligado = false turns both off. GMs pay nothing.' },
     ],
   },
   legal: {

@@ -33,7 +33,8 @@ export const PADRAO = {
   // EXP while staying (time-based, like the Gen 2 Day Care's steps): `porMinuto` EXP every minute (the Medallion's bonus applies,
   // the badge level cap too: above it the EXP is banked). Level-ups teach level-up moves (a full set forgets its oldest); no evolving.
   // The fee runs by the minute: the Pokémon's level × `taxaPorNivelMin` Coins, paid when you take it back. GMs stay free.
-  exp: { ligado: true, porMinuto: 10, taxaPorNivelMin: 0.01 },
+  // Both stop after `maxHoras` of a stay (EXP and fee max out); Egg chances keep rolling.
+  exp: { ligado: true, porMinuto: 10, taxaPorNivelMin: 0.1, maxHoras: 24 },
 };
 
 export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsOf, newIndividual, markCaught, gameConfig, Ind, moveExists, grantExp = null, xpMult = () => 1, log = () => {} }) {
@@ -181,16 +182,23 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const E = expCfg(), k = creche(c), s = saveDe(c), agora = Date.now();
     estadias(k).forEach((e, i) => {
       const p = k.pais[i]; if (!p || !e) return;
-      const min = Math.floor((agora - e.ultimo) / 60e3);
+      let min = Math.floor((agora - e.ultimo) / 60e3);
       if (min <= 0) return;
       e.ultimo += min * 60e3;
       if (!E.ligado || !cfg().ligado) return;
-      const lv0 = +p.lv || 1;
-      e.conta += min * lv0 * Math.max(0, +E.taxaPorNivelMin || 0);
-      const n = Math.round(min * Math.max(0, +E.porMinuto || 0) * (xpMult(s) || 1));
-      if (n > 0 && grantExp) {
-        const r = grantExp(p, s, n) || {}; e.exp += n;
-        if (r.levels) aprender(p, lv0, +p.lv || lv0);
+      const teto = Math.max(0, Math.round((+E.maxHoras > 0 ? +E.maxHoras : 24) * 60));   // a stay earns EXP (and costs) for this many minutes at most
+      min = Math.min(min, teto - (e.min || 0));
+      if (min <= 0) return;
+      e.min = (e.min || 0) + min;
+      // in 5-minute steps, so the fee follows the level as it climbs (a long offline stretch costs what it would have live)
+      for (let feito = 0; feito < min;) {
+        const passo = Math.min(5, min - feito), lv0 = +p.lv || 1; feito += passo;
+        e.conta += passo * lv0 * Math.max(0, +E.taxaPorNivelMin || 0);
+        const n = Math.round(passo * Math.max(0, +E.porMinuto || 0) * (xpMult(s) || 1));
+        if (n > 0 && grantExp) {
+          const r = grantExp(p, s, n) || {}; e.exp += n;
+          if (r.levels) aprender(p, lv0, +p.lv || lv0);
+        }
       }
     });
   }
@@ -207,7 +215,7 @@ export function createBreeding({ dataDir, accounts, saveAccounts, send, socketsO
     const C = cfg(), k = creche(c), [a, b] = k.pais, comp = a && b ? compat(a, b) : null, ch = comp ? chanceDe(comp, a, b) : 0;
     const proxima = a && b && comp?.ok ? Math.max(0, (k.tentativa || Date.now()) + Math.max(0.0005, +C.horasPorTentativa || 24) * 3600e3 - Date.now()) : null;
     return {
-      ligado: !!C.ligado, pais: [resumo(a), resumo(b)], estadia: estadias(k).map((e, i) => e && k.pais[i] ? { em: e.em, lvEntrou: e.lvEntrou, cresceu: Math.max(0, (+k.pais[i].lv || 1) - e.lvEntrou), exp: e.exp, taxa: taxaDe(c, i) } : null),
+      ligado: !!C.ligado, pais: [resumo(a), resumo(b)], estadia: estadias(k).map((e, i) => e && k.pais[i] ? { em: e.em, min: e.min || 0, cheio: (e.min || 0) >= Math.round((+expCfg().maxHoras > 0 ? +expCfg().maxHoras : 24) * 60), lvEntrou: e.lvEntrou, cresceu: Math.max(0, (+k.pais[i].lv || 1) - e.lvEntrou), exp: e.exp, taxa: taxaDe(c, i) } : null),
       exp: { ...expCfg(), gratis: !!c.gm }, moedas: Math.floor(+saveDe(c).dinheiro || 0), papeis: papeis(a, b), mae: comp?.ok ? k.pais.indexOf(comp.mae) : -1, compat: comp ? { ok: comp.ok, motivo: comp.motivo || null, linha: comp.ok ? linhaChance(ch) : null, chance: ch, especie: comp.ok ? esp(especieDoOvo(comp.mae))?.nome || null : null } : null,
       ovosEsperando: k.ovos.length, maxEsperando: +C.ovosEsperando || 3, proximaMs: proxima,
       carregados: saveDe(c).ovos.map(o => ({ uid: o.uid, dex: o.dex, nome: o.nome, inicio: o.inicio, prontoEm: o.prontoEm, faltaMs: Math.max(0, (o.prontoEm || 0) - Date.now()) })), maxCarregados: +C.ovosCarregados || 6,

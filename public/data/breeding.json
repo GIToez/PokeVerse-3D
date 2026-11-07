@@ -10,5 +10,5 @@
   "ivsHerdados": 3,
   "ivsComNo": 5,
   "itens": { "everstone": 950001, "destinyKnot": 950002, "power": { "950003": 0, "950004": 1, "950005": 2, "950006": 3, "950007": 4, "950008": 5 } },
-  "exp": { "ligado": true, "porMinuto": 10, "taxaPorNivelMin": 0.01 }
+  "exp": { "ligado": true, "porMinuto": 10, "taxaPorNivelMin": 0.1, "maxHoras": 24 }
 }
