@@ -70,6 +70,19 @@ console.log('AI switches', switches, '· items used', items);
 console.log('chat:', chat.slice(-4).join(' | '));
 if (a2[4] && a2[4].startsWith('Blue ✓') && B.eliteDe('ana').campeao?.nome !== 'Ana') throw new Error('Ana should hold the seat');
 if (b2.length === 5 && !b2[4].startsWith('Ana')) throw new Error('Bia\'s second run must end against Ana');
+// staff reset: the seat goes back to Blue
+const rs = B.resetarCampeao('gm');
+console.log('reset:', JSON.stringify(rs), '| champion now:', B.eliteDe('ana').campeao);
+if (B.eliteDe('ana').campeao || B.campeaoUsuario()) throw new Error('reset should empty the seat');
+// a gym fight: the leader uses the gentler AI and finishes without errors
+heal('bia');
+B.receber(ws.bia, { t: 'bat_desafiar', tipo: 'ginasio', id: 108 });
+let g = last();
+if (g.t !== 'bat') throw new Error('gym open failed ' + JSON.stringify(g));
+console.log('gym AI mode:', B._test.lutas.get('bia')?.ia?.modo);
+for (let t = 0; t < 100 && !g.fim; t++) { const bat = B._test.lutas.get('bia'); B.receber(ws.bia, { t: 'bat_acao', acao: 'golpe', golpe: B._test.ia.pickMove(bat.eu.field, bat.dele[bat.eleIdx], null).id, vez: bat.vez }); g = last(); }
+console.log('Giovanni:', g.fim?.venceu ? 'beaten' : 'not beaten');
+const ANT = new URL('../server/data/champion.json.anteriores', import.meta.url); if (fs.existsSync(ANT)) fs.unlinkSync(ANT);
 if (fs.existsSync(ARQ)) fs.unlinkSync(ARQ);
 if (backup) fs.writeFileSync(ARQ, backup);
 console.log('ok');

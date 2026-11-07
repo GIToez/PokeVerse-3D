@@ -500,6 +500,7 @@ export function criarBatalha(ctx) {
       fim: null,
       ultimo: Date.now(),
       ...(tipo === 'elite' ? { ia: novaIa(meta.contraJogador ? { itens: meta.membro.itens, maxTrocas: meta.membro.maxTrocas } : meta.membro) } : {}),
+      ...(tipo === 'ginasio' ? { ia: { modo: 'medio', acaso: Number.isFinite(+meta.g?.acaso) ? Math.max(0, Math.min(1, +meta.g.acaso)) : 0.3 } } : {}),   // gym leaders: sharper moves, no switching or items
     };
     if (tipo === 'elite' && s.elite.corrida?.hp) {
       for (const p of bat.eu.time) {
@@ -509,7 +510,7 @@ export function criarBatalha(ctx) {
     }
     bat.eu.field = primeiroVivo(bat.eu.time);
     limparVol(bat.eu.time, dele);
-    if (bat.ia && bat.eu.field) bat.eleIdx = IA.nextIn(dele, bat.eu.field, null);   // Elite Four: its best opener against your lead
+    if (bat.ia && bat.ia.modo !== 'medio' && bat.eu.field) bat.eleIdx = IA.nextIn(dele, bat.eu.field, null);   // Elite Four: its best opener against your lead
     lutas.set(acc.u, bat);
     if (tipo === 'elite' && !s.elite.corrida) {
       s.elite.corrida = { proximo: 1, inicio: Date.now(), hp: Object.fromEntries(s.time.map((p) => [String(p.uid), p.hp])) };
@@ -659,7 +660,7 @@ export function criarBatalha(ctx) {
           campeao = {
             usuario: acc.u, nome: s.nome || acc.u, personagem: s.personagem ?? null, desde: Date.now(), defesas: 0,
             time: (s.time || []).filter(Boolean).map((p) => { const c = JSON.parse(JSON.stringify(p)); delete c.transf; delete c.movsAntes; delete c.seguindo; return c; }),
-            antes: [...(antes ? [antes] : []), ...((campeao?.antes) || [])].slice(0, 20),
+            antes: [...(antes ? [antes] : []), ...((campeao?.antes) || (() => { try { return JSON.parse(fs.readFileSync(CAMPEAO_ARQ + '.anteriores', 'utf8')); } catch { return []; } })())].slice(0, 20),   // after a reset the list waits in champion.json.anteriores
           };
           gravarCampeao();
           fim.novoCampeao = true;
@@ -667,6 +668,7 @@ export function criarBatalha(ctx) {
           for (const w of ctx.conexoes.values()) if (w._usuario) ctx.enviar(w, { t: 'sistema', texto: '👑 {nome} is the new Champion of Kanto!', vars: { nome: campeao.nome } });
           if (perdeu) for (const w of ctx.socketsDe(perdeu)) ctx.enviar(w, { t: 'sistema', texto: '{nome} beat your team and took your Champion title.', vars: { nome: campeao.nome } });
           setTimeout(avisarCampeao, 0);
+          try { ctx.aoMudarCampeao?.(acc.u, perdeu); } catch (e) { console.warn('champion: crown', e); }
         }
         if (M.campeao) {
           const ini = +s.elite.corrida?.inicio || 0, ms = ini ? Date.now() - ini : 0;   // the run time feeds the Elite Four race ranking
@@ -819,7 +821,7 @@ export function criarBatalha(ctx) {
       if (!bat.dele.some((p) => p.hp > 0)) return 'vitoria';
       /* o próximo do treinador entra AQUI: com o índice parado no desmaiado, todo golpe seguinte caía nele (HP 0), dava EXP/EV
          de novo e o cliente "matava" o Onix do Brock a cada hit, num ciclo sem fim */
-      bat.eleIdx = bat.ia && bat.eu.field ? IA.nextIn(bat.dele, bat.eu.field, climaMapa(bat)) : bat.dele.findIndex((p) => p.hp > 0);
+      bat.eleIdx = bat.ia && bat.ia.modo !== 'medio' && bat.eu.field ? IA.nextIn(bat.dele, bat.eu.field, climaMapa(bat)) : bat.dele.findIndex((p) => p.hp > 0);
     }
     if (bat.eu.field && bat.eu.field.hp <= 0) {
       const prox = primeiroVivo(bat.eu.time);
@@ -1129,6 +1131,21 @@ export function criarBatalha(ctx) {
     bloquearCura(u) {
       const c = ctx.contas[u];
       return !!(c && saveDe(c).elite.corrida);
+    },
+    campeaoUsuario() { return campeao?.usuario || null; },
+    /** Admin (👑 Champion page): who holds the seat, and putting it back to Blue until someone takes it again. */
+    campeaoAdmin() { return campeao ? { ...campeaoPublico(), usuario: campeao.usuario, antes: campeao.antes || [] } : null; },
+    resetarCampeao(gm) {
+      if (!campeao) return { ok: true, era: null };
+      const era = campeao.usuario, nome = campeao.nome;
+      const antes = [{ nome, desde: campeao.desde, ate: Date.now(), defesas: campeao.defesas || 0, resetPor: gm }, ...(campeao.antes || [])].slice(0, 20);
+      campeao = null;
+      try { fs.writeFileSync(CAMPEAO_ARQ + '.anteriores', JSON.stringify(antes)); fs.unlinkSync(CAMPEAO_ARQ); } catch {}
+      console.log(`[champion] seat reset to Blue by ${gm} (was ${era})`);
+      for (const w of ctx.socketsDe(era)) ctx.enviar(w, { t: 'sistema', texto: 'The Champion\'s seat was reset by the staff: Blue holds it again until someone takes it.' });
+      avisarCampeao();
+      try { ctx.aoMudarCampeao?.(null, era); } catch {}
+      return { ok: true, era: nome };
     },
     eliteDe(u) {
       const c = ctx.contas[u];

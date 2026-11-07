@@ -1351,6 +1351,8 @@ const httpServer = http.createServer((req, res) => {
       if ((rota === '/admin/agenda' || rota === '/admin/agenda/agora') && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
       if (rota.startsWith('/admin/errantes') && errantes.adminRoute(rota, req.method, d, g, json)) return;   // 🌀 Roaming legendaries
+      if (rota === '/admin/campeao' && req.method === 'GET') return json(200, { ok: true, campeao: batalha.campeaoAdmin() });   // 👑 Champion's seat
+      if (rota === '/admin/campeao/resetar' && req.method === 'POST') return json(200, { ...batalha.resetarCampeao(g), campeao: batalha.campeaoAdmin() });
       if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
       if (rota.startsWith('/admin/correio') && mail.adminRoute(rota, req.method, d, g, json, url)) return;   // 📬 Mail tab (server_mail.mjs)   // Fase 3: eventos ao vivo (server_events.mjs)
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
@@ -1771,7 +1773,7 @@ function darTenis(u, { avisar = true } = {}) {
   if (avisar) for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: "👟 Professor Oak's aide caught up with you: \"Brock's badge! The Professor wants you to have these.\" You got the Running Shoes! Hold Shift (or push the joystick all the way) to run.", bolsa: { dinheiro: s.dinheiro ?? 0, itens: s.itens, bolas: s.bolas || {} } });
   return true;
 }
-const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u),
+const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, salvarContas, aplicarEvento, enviarMissao, aoMudarCampeao: (novo, velho) => trocouCampeao(novo, velho), contarTemporada: (u, ev) => temporada.contar(u, ev), darTenis: u => darTenis(u),
   /* bosses (boss_rules.mjs): the catch after a Pokémon boss falls uses the same individual, Pokédex mark, Box rule and ball bonus as the wild */
   novoIndividuo: individuoServidor, marcarPego, gameConfig: () => cfgJogo(), bolaBonus: (id, w, u) => world.ballBonus(id, w, u),
   aoCapturar: (ws, u, pk, bola) => { temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola }); const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex }); if (r) enviarMissao(ws, r); } });
@@ -1856,6 +1858,24 @@ const world = createWorld({
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
+/* THE CHAMPION'S CROWN (Nov 6): only the player holding the Champion's seat (server_battle.mjs) shows "👑 Champion of Kanto"
+   under their name, over whatever title they picked; losing the seat gives their own title back. */
+const TITULO_CAMPEAO = '👑 Champion of Kanto';
+function aplicarCoroa(ws) {
+  if (!ws._info) return false;
+  const antes = ws._info.titulo;
+  if (ws._usuario && batalha?.campeaoUsuario?.() === ws._usuario) {
+    if (ws._info.titulo !== TITULO_CAMPEAO) ws._tituloProprio = ws._info.titulo || '';
+    ws._info.titulo = TITULO_CAMPEAO;
+  } else if (ws._info.titulo === TITULO_CAMPEAO) ws._info.titulo = ws._tituloProprio || '';
+  return antes !== ws._info.titulo;
+}
+function trocouCampeao(...usuarios) {
+  for (const ws of conexoes.values()) {
+    if (!usuarios.includes(ws._usuario) || !aplicarCoroa(ws)) continue;
+    broadcast(ws, { t: 'titulo', id: ws._id, titulo: ws._info.titulo });
+  }
+}
 /* ROAMING LEGENDARIES (server_roamers.mjs): one legendary at a time travels Kanto in plain sight; admin page "Roaming legendaries". */
 const errantes = createRoamers({ world, dataDir: DADOS_PUB, stateFile: nodePath.join(DADOS, 'roamers_state.json'), send: enviar, connections: conexoes,
   habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), log: (...a) => console.log('[roamers]', ...a.slice(1)) });
@@ -1919,6 +1939,7 @@ wss.on('connection', ws => {
         }
         ws._usuario = uTok || ('Visitante' + ws._id);                    // identidade só do token; sem conta = Visitante (nunca o nome do cliente)
         if (ws._info) ws._info.nome = (uTok && contas[uTok]?.save?.nome) || ws._usuario;   // nome na cabeça/chat vem da CONTA
+        aplicarCoroa(ws);                                                   // the reigning Champion wears the crown title
         if (uTok) gravarPosConta(uTok, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro, chegada: m.chegada }, { porta: !!m.porta && !!m.chegada, ja: true });
 
         const outros = [];
@@ -1997,8 +2018,11 @@ wss.on('connection', ws => {
 
       case 'titulo': {
         const titulo = String(m.titulo ?? '').slice(0, 40);                     // nº19: título é string livre espalhada a todos — limita o tamanho
+        if (titulo === TITULO_CAMPEAO) break;                                // nobody picks the crown: the server gives it
+        ws._tituloProprio = titulo;
         if (ws._info) ws._info.titulo = titulo;
-        broadcast(ws, { t: 'titulo', id: ws._id, titulo });
+        aplicarCoroa(ws);
+        broadcast(ws, { t: 'titulo', id: ws._id, titulo: ws._info?.titulo ?? titulo });
         break;
       }
 

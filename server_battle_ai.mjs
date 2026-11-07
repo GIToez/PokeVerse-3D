@@ -9,6 +9,8 @@
  *  - ITEMS: `itens` from public/data/elite.json (e.g. { "2004": 2 } = two Full Restores) on a Pokémon low on HP that would
  *    otherwise go down, once per Pokémon.
  *  - WHO COMES OUT after a knockout: the teammate with the best matchup, not the next in the list.
+ * GYM LEADERS use a gentler mode (`modo: 'medio'`): the same move choice 70 % of the time and a random move otherwise (gyms.json
+ * `acaso` changes the 30 %), no switching, no items, and their team comes out in order.
  * The odds are estimates (no critical hits, no damage roll): good enough to play sharp, not perfect. */
 const KILL = 1000;
 
@@ -122,6 +124,11 @@ export function createBattleAI({ calcularDano, golpeDe, especie, statDe, estDe, 
    */
   function decide({ team, idx, foe, clima, vez, st, maxTrocas = 3, rng = Math.random }) {
     const me = team[idx];
+    if (st.modo === 'medio') {   // GYM LEADERS: good move choice, a bit of chance, no switching or items
+      const L = movesOf(me);
+      if (L.length && rng() < (Number.isFinite(st.acaso) ? st.acaso : 0.3)) return { tipo: 'golpe', g: L[Math.floor(rng() * L.length)] };
+      return { tipo: 'golpe', g: pickMove(me, foe, clima, rng) };
+    }
     const iHit = threat(me, foe, clima), foeHits = threat(foe, me, clima);
     const faster = speedOf(me) >= speedOf(foe);
     // 1. Heal a Pokémon that would go down, once, if a heal changes the outcome
