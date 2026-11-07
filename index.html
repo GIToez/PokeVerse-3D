@@ -3947,14 +3947,16 @@ function aplicarTamanho(e, kind = null){                              // kind: '
   if (!e?.pivo || e.chefe) return;                                   // o chefão fica nativo de propósito
   if (e.alturaBase == null) e.alturaBase = e.altura;
   if (e.comprimentoBase == null) e.comprimentoBase = e.comprimento || 0;   // maior lado da caixa posada (14/09): cobra/peixe são compridos, não altos
-  let f = fatorTamanho(e.glb);
+  /* a transformed Ditto wears the copied model: size it as that species (dexTamanho / glbVisual), not as a 0.3 m Ditto */
+  const dexTam = e.dexTamanho || e.dex || dexDoGlb(e.glb);
+  let f = fatorTamanho(e.dexTamanho ? e.glbVisual || e.glb : e.glb);
   if (jogo.tamanhos === 'proporcional'){
-    const real = ALTURAS[e.dex || dexDoGlb(e.glb)];
+    const real = ALTURAS[dexTam];
     const alvo = alturaProporcional(real || e.alturaBase || 1, kind || (e === jogo.pika ? 'follower' : 'wild'));
     f = e.alturaBase ? alvo / e.alturaBase : 1;
     /* Corpo ALONGADO (14/09, guts: Ekans "de uma parede à outra" na Rota 4): a "altura" da Pokédex de cobra/peixe é o COMPRIMENTO —
        a régua pela altura do modelo enrolado (0,3 m) esticava o Ekans 6×. Modelo 2× mais comprido que alto usa a régua no comprimento. */
-    const dexE = e.dex || dexDoGlb(e.glb), sizeKind = kind || (e === jogo.pika ? 'follower' : 'wild');
+    const dexE = dexTam, sizeKind = kind || (e === jogo.pika ? 'follower' : 'wild');
     if (COMPRIDOS.has(dexE) && e.alturaBase > 0){
       /* 14/09, noite (brito: Ekans selvagem "enorme" correndo, Gyarados seguidor "menor que o inicial"): a régua divide pelo comprimento
          ESTICADO (RUN_RAZAO × altura da Idle) — o Ekans enrolado mede 0,45 e esticado 1,92, e dividir pela Idle deixava ele com 8 m correndo.
@@ -3972,7 +3974,7 @@ function aplicarTamanho(e, kind = null){                              // kind: '
       f = alvo / Math.max(e.alturaBase || 0, e.comprimentoBase);
     }
   }
-  if (jogo.tamanhos === 'proporcional'){ const aj = AJUSTE_PROPORCIONAL[e.dex || dexDoGlb(e.glb)]; if (aj) f *= aj; }
+  if (jogo.tamanhos === 'proporcional'){ const aj = AJUSTE_PROPORCIONAL[dexTam]; if (aj) f *= aj; }
   e.pivo.scale.setScalar(f); e.fatorTam = f;
   if (!e.voador) e.altura = e.alturaBase * f;                        // nos voadores `altura` é a altitude de voo
 }
@@ -4109,7 +4111,7 @@ if (PLAY){
         novo.movs = (transf.movs || []).map(m => ({ ...m })); novo.golpesIds = Ind.idsDe(novo); novo.transf = transf;
         if (transf.tipos) novo.tiposTransf = transf.tipos.slice();
       } else delete novo.transf;
-      novo.glbVisual = glbNome; aplicarTamanho(novo);
+      novo.glbVisual = glbNome; novo.dexTamanho = transf ? +transf.dex || null : null; aplicarTamanho(novo);
       novo.x = velho.x; novo.z = velho.z; novo.y = velho.y; novo.vx = novo.x; novo.vz = novo.z; novo.vy = novo.y;
       novo.pivo.position.set(novo.x, novo.y, novo.z); tocarAnim(novo, 'Idle');
       cena.remove(velho.pivo); jogo.pika = novo; semCorte(novo);
