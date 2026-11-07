@@ -77,6 +77,21 @@ async function fotografar(nome, dados) {
         if (l.length) partes.set(chaveNome(prefab.name), l);
       }
     } catch (e) { console.warn('library extra:', e); }
+    try {                                                                 // shared prefab library (scenery/lib): pieces this map places but its GLB lacks
+      const faltam = new Set();
+      for (const o of [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]) { const k = chaveNome(String(o.n || '')); if (k && !partes.has(k)) faltam.add(k); }
+      if (faltam.size) {
+        const r = await fetch('/scenery/lib/index.json'), indice = r.ok ? (await r.json()).prefabs || {} : {};
+        await Promise.all([...faltam].filter(k => indice[k]).map(async k => {
+          try {
+            const lg = await new GLTFLoader().loadAsync('/scenery/lib/' + indice[k].f);
+            lg.scene.updateMatrixWorld(true);
+            const l = []; lg.scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) l.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
+            if (l.length) partes.set(k, l);
+          } catch (e) { console.warn('shared prefab', k, e); }
+        }));
+      }
+    } catch (e) { console.warn('shared prefab library:', e); }
     const grupos = new Map(), T = new THREE.Matrix4();
     for (const o of [...(dados?.areaEnv || []), ...(dados?.ambiente || []), ...(dados?.objetos || [])]) {
       const l = partes.get(chaveNome(String(o.n || ''))); if (!l) continue;

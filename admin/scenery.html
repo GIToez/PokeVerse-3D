@@ -50,6 +50,7 @@ header .sujo{ color:var(--acento); font-size:13px; }
 .paleta{ display:grid; grid-template-columns:1fr 1fr; gap:5px; max-height:280px; overflow:auto; }
 .paleta button{ text-align:left; font-size:12px; padding:5px 7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .paleta button.on{ outline:1px solid var(--azul); }
+.paleta button.ext{ opacity:.72; font-style:italic; }   /* from another map's library: loaded on first use */
 .prop{ display:grid; grid-template-columns:auto 1fr 1fr 1fr; gap:6px; align-items:center; }
 .prop label{ font-size:12px; color:var(--fraco); }
 .acoes{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
@@ -126,7 +127,7 @@ header .sujo{ color:var(--acento); font-size:13px; }
       </div>
       <div class="caixa">
         <h3>Pieces (prefabs) <span class="fraco" id="pal-qtd"></span></h3>
-        <input class="busca" id="pal-busca" placeholder="filter pieces…">
+        <div style="display:flex;gap:6px"><input class="busca" id="pal-busca" placeholder="filter pieces…" style="flex:1"><select id="pal-escopo" class="busca" style="width:auto" title="Which prefabs to list. Pieces from other maps (italic) load the first time you place them."><option value="todos">All maps</option><option value="mapa">This map</option><option value="outros">Other maps</option></select></div>
         <div class="paleta" id="paleta"></div>
         <div class="fraco" id="add-dica" style="margin-top:8px" hidden>Place mode: click the ground to place <b id="add-nome"></b>. Esc cancels.</div>
       </div>

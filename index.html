@@ -2628,6 +2628,33 @@ if (chao.biblioteca){
     const mais = extra.scene.getObjectByName('Mapa') || extra.scene;
     for (const child of [...mais.children]) mapa.add(child);
   } catch (e) { console.warn('library extra:', e); }
+  /* SHARED PREFAB LIBRARY (06/11): the 3D editor can place any prefab of any map (scenery/lib/, built by
+     tools/build_prefab_library.mjs — one small GLB per prefab, textures shared in lib/tex/). Here only the prefabs this
+     map PLACES but its own GLB lacks are fetched and merged under Mapa, like library_extra. The map's own copy always
+     wins. Ground pieces get the GroundBlend4 shader from their own parser (prepararPisos) before the merge. */
+  try {
+    const mapa = gltf.scene.getObjectByName('Mapa') || gltf.scene;
+    const chaveLib = n => String(n || '').toLowerCase().replace(/^lib:?/, '').replace(/\s/g, '_').replace(/[\[\]\.:\/]/g, '');
+    const tem = new Set(mapa.children.map(c => chaveLib(c.name)));
+    const faltam = new Set();
+    for (const o of [...(dados.areaEnv || []), ...(dados.ambiente || []), ...(dados.objetos || [])]){ const k = chaveLib(o.n); if (k && !tem.has(k)) faltam.add(k); }
+    if (faltam.size){
+      const r = await fetch('./scenery/lib/index.json');
+      const indice = r.ok ? (await r.json()).prefabs || {} : {};
+      const loader = new GLTFLoader();
+      let n = 0;
+      await Promise.all([...faltam].map(async k => {
+        const e = indice[k]; if (!e) return;
+        try {
+          const g = await loader.loadAsync('./scenery/lib/' + e.f);
+          await prepararPisos(g);
+          for (const child of [...(g.scene.getObjectByName('Mapa') || g.scene).children]) mapa.add(child);
+          n++;
+        } catch (err){ console.warn('shared prefab', k, err); }
+      }));
+      console.log('shared prefabs:', n, 'of', faltam.size, 'loaded');
+    }
+  } catch (e){ console.warn('shared prefab library:', e); }
 }
 const principal = chao.biblioteca ? instanciarBiblioteca(gltf, dados) : instanciar(gltf, dados);
 cena.add(principal.raiz);

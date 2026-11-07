@@ -364,7 +364,7 @@ async function carregarMapa(nome, rotulo) {
   aplicarSelecaoMapa();
   deselecionar();
   for (const g of instGrupos) { raizInst.remove(g); g.dispose?.(); }
-  instGrupos = []; pecas = []; partes = new Map(); nomeDoPrefab = new Map(); sceneGLB = null; mapaNode = null;
+  instGrupos = []; pecas = []; partes = new Map(); nomeDoPrefab = new Map(); sceneGLB = null; mapaNode = null; carregandoLib.clear();
   let g;
   try { g = await loader.loadAsync('/scenery/' + (glbDoMapa[nome] || nome) + '.glb'); }
   catch (e) { $('carregando').textContent = 'could not load the GLB for ' + nome; return; }
@@ -380,6 +380,47 @@ async function carregarMapa(nome, rotulo) {
   sujo = false; $('sujo').hidden = true; $('carregando').hidden = true; atualizarHud(); limparHist();
 }
 
+/* SHARED PREFAB LIBRARY (Nov 6): every prefab of every map, one small GLB each in /scenery/lib/ (tools/build_prefab_library.mjs).
+   The palette lists them all; a prefab this map's GLB lacks is loaded the first time it is used (placed, pasted, or already placed
+   in the map's JSON). The game loads the same files for the prefabs a map places but does not carry. */
+let indiceLib = null;                                       // chave → { n, f, de, kb }
+async function carregarIndiceLib() {
+  if (indiceLib) return indiceLib;
+  try { const r = await fetch('/scenery/lib/index.json', { cache: 'no-cache' }); indiceLib = r.ok ? (await r.json()).prefabs || {} : {}; }
+  catch (e) { console.warn('shared prefab index:', e); indiceLib = {}; }
+  return indiceLib;
+}
+const carregandoLib = new Map();                            // chave → Promise<boolean> (one fetch per prefab, even on double clicks)
+/** Makes sure `partes` has prefab `k`, fetching it from the shared library if needed. true when it is usable. */
+function garantirPrefab(k) {
+  if ((partes.get(k) || []).length) return Promise.resolve(true);
+  if (!carregandoLib.has(k)) carregandoLib.set(k, (async () => {
+    const e = (await carregarIndiceLib())[k];
+    if (!e) return false;
+    const dono = partes;                                    // the map may change while this loads
+    try {
+      const g = await loader.loadAsync('/scenery/lib/' + e.f);
+      if (dono !== partes) return false;
+      g.scene.updateMatrixWorld(true);
+      const lista = []; g.scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) lista.push({ geo: o.geometry, mat: o.material, local: o.matrixWorld.clone() }); });
+      if (!lista.length) return false;
+      partes.set(k, lista);
+      if (!nomeDoPrefab.has(k)) nomeDoPrefab.set(k, e.n);
+      for (const p of pecas) if (p.obj && chaveNome(p.obj.n) === k) p.mats = lista;
+      return true;
+    } catch (err) { console.warn('shared prefab', k, err); carregandoLib.delete(k); return false; }
+  })());
+  return carregandoLib.get(k);
+}
+/** Palette entry for a prefab from another map: fetched on first use. */
+function tipoCompartilhado(k, e) {
+  return { id: k, nome: e.n, de: e.de, ext: true, criar: async pos => {
+    if (!(partes.get(k) || []).length) toast('Loading ' + rotuloPrefab(e.n) + '…');
+    if (!await garantirPrefab(k)) { toast('Could not load ' + e.n + ' from the shared library.', true); return; }
+    criarBib(k, pos);
+    renderPaleta();
+  } };
+}
 async function montarBiblioteca(nome) {
   for (const prefab of mapaNode.children) {   // prefabs "lib:..." na origem
     const lista = [];
@@ -408,7 +449,12 @@ async function montarBiblioteca(nome) {
       for (const p of pecas) if (chaveNome(p.nome) === k) p.mats = lista;
     }
   } catch (e) { console.warn('library extra:', e); }
-  tipos = [...partes.keys()].sort().map(k => ({ id: k, nome: nomeDoPrefab.get(k) || k, criar: pos => criarBib(k, pos) }));
+  const proprios = new Set(partes.keys());                 // this map's GLB + library_extra
+  const indice = await carregarIndiceLib();
+  const faltam = [...new Set(pecas.map(p => chaveNome(p.nome)))].filter(k => !proprios.has(k) && indice[k]);
+  if (faltam.length) { $('carregando').textContent = 'loading ' + faltam.length + ' shared prefab(s)…'; await Promise.all(faltam.map(garantirPrefab)); }
+  tipos = [...proprios].sort().map(k => ({ id: k, nome: nomeDoPrefab.get(k) || k, criar: pos => criarBib(k, pos) }));
+  for (const k of Object.keys(indice).sort()) if (!proprios.has(k)) tipos.push(tipoCompartilhado(k, indice[k]));
 }
 async function extraLamppost() {
   const k = chaveNome('prop/lamppost');
@@ -575,7 +621,7 @@ function duplicar() {
   if (copias.length) registrar(copias.length === 1 ? { t: 'add', peca: copias[0], idx: pecas.indexOf(copias[0]) } : { t: 'grupo', acoes: copias.map(peca => ({ t: 'add', peca, idx: pecas.indexOf(peca) })) });
 }
 /* COPY / PASTE (Nov 6): Ctrl+C keeps the selection (prefab, offset from the main piece, rotation, list); Ctrl+V drops it under the
-   mouse (or beside the originals). It also survives switching maps in this browser: a prefab the other map's library lacks is skipped. */
+   mouse (or beside the originals). It also survives switching maps in this browser: a prefab this map's GLB lacks comes from the shared library. */
 let areaTransf = null;
 const CHAVE_COPIA = 'editor3d.copia';
 function copiar() {
@@ -585,10 +631,11 @@ function copiar() {
   try { localStorage.setItem(CHAVE_COPIA, JSON.stringify({ mapa: mapaAtual, itens: areaTransf.itens.map(({ peca, ...i }) => i) })); } catch {}
   toast(selecao.size === 1 ? 'Copied 1 piece (Ctrl+V pastes under the mouse).' : 'Copied ' + selecao.size + ' pieces (Ctrl+V pastes under the mouse).');
 }
-function colar() {
+async function colar() {
   let A = areaTransf;
   if (!A) try { A = JSON.parse(localStorage.getItem(CHAVE_COPIA) || 'null'); } catch {}
   if (!A?.itens?.length) { toast('Nothing copied yet: select pieces and press Ctrl+C.', true); return; }
+  if (modo === 'biblioteca') await Promise.all([...new Set(A.itens.map(it => it.prefab).filter(Boolean))].map(garantirPrefab));   // pieces from another map's library come from the shared one
   let alvo = ultimoCursor ? pontoSobCursor(ultimoCursor) : null;
   if (!alvo) { const p = A.itens[0].peca; alvo = p && pecas.includes(p) ? mundoDe(p).add(new THREE.Vector3(1.5, 0, 0)) : orbit.target.clone(); }
   const copias = []; let faltou = 0;
@@ -600,11 +647,11 @@ function colar() {
     else if (!it.prefab) { const t = tipos.find(t => t.nome === it.nome); if (t && modo === 'montado') { const n = mapaNode.children.find(n => n.name === it.nome); if (n) c = criarMont(n, w, it.r, { quieto: true }); } }
     if (c) copias.push(c); else faltou++;
   }
-  if (!copias.length) { toast('None of the copied pieces exist in this map\'s library.', true); return; }
+  if (!copias.length) { toast('None of the copied pieces could be loaded here.', true); return; }
   rebuildInstancias(); marcarSujo(); atualizarHud();
   selecao = new Set(copias); selPeca = copias[0]; selecionar(selPeca, { manter: true });
   registrar(copias.length === 1 ? { t: 'add', peca: copias[0], idx: pecas.indexOf(copias[0]) } : { t: 'grupo', acoes: copias.map(peca => ({ t: 'add', peca, idx: pecas.indexOf(peca) })) });
-  toast('Pasted ' + copias.length + (copias.length === 1 ? ' piece' : ' pieces') + (faltou ? ' · ' + faltou + ' skipped (not in this map\'s library)' : '') + '.');
+  toast('Pasted ' + copias.length + (copias.length === 1 ? ' piece' : ' pieces') + (faltou ? ' · ' + faltou + ' skipped (not found in any library)' : '') + '.');
 }
 function deletar() {
   if (!selPeca) return;
@@ -652,15 +699,20 @@ function atualizarHud() {
 // ── Paleta ────────────────────────────────────────────────────────────────────
 function renderPaleta() {
   const filtro = ($('pal-busca').value || '').toLowerCase();
-  $('pal-qtd').textContent = '(' + tipos.length + ')';
+  const escopo = $('pal-escopo')?.value || 'todos';
+  const nProprios = tipos.filter(t => !t.ext).length;
+  $('pal-qtd').textContent = '(' + nProprios + (tipos.length > nProprios ? ' here · ' + (tipos.length - nProprios) + ' shared' : '') + ')';
   const vis = tipos.filter(t => {
+    if (escopo === 'mapa' && t.ext) return false;
+    if (escopo === 'outros' && !t.ext) return false;
     if (!filtro) return true;
     const en = rotuloPrefab(t.nome).toLowerCase();
     return en.includes(filtro) || String(t.nome).toLowerCase().includes(filtro);
   });
   $('paleta').innerHTML = vis.map(t => {
     const en = rotuloPrefab(t.nome);
-    return `<button data-id="${esc(t.id)}" class="${addTipo && t.id === addTipo.id ? 'on' : ''}" title="${esc(t.nome)}">${esc(en)}</button>`;
+    const cls = [addTipo && t.id === addTipo.id ? 'on' : '', t.ext && !(partes.get(t.id) || []).length ? 'ext' : ''].filter(Boolean).join(' ');
+    return `<button data-id="${esc(t.id)}" class="${cls}" title="${esc(t.nome)}${t.ext ? ' · from map ' + esc(nomeMapa(t.de) || t.de) : ''}">${esc(en)}</button>`;
   }).join('');
   for (const b of $('paleta').querySelectorAll('button')) b.onclick = () => { addTipo = tipos.find(t => t.id === b.dataset.id); usarFerramenta('add'); };
 }
@@ -738,6 +790,7 @@ for (const k of ['x', 'y', 'z']) {
 }
 for (const k of ['x', 'y', 'z']) $('s-' + k).addEventListener('input', () => { if (!selPeca) return; const p = selPeca.pos; setPos(selPeca, k === 'x' ? (+$('s-x').value || 0) : p.x, k === 'y' ? (+$('s-y').value || 0) : p.y, k === 'z' ? (+$('s-z').value || 0) : p.z); sincronizarProxy(); atualizarInst(selPeca); realcar(selPeca); marcarSujo(); });
 $('pal-busca').addEventListener('input', renderPaleta);
+$('pal-escopo').addEventListener('change', renderPaleta);
 $('b-salvar').onclick = salvar;
 $('b-recarregar').onclick = async () => { if (sujo && !confirm('Discard unsaved changes?')) return; await carregarMapa(mapaAtual, mapaRotulo); };
 $('mapa-busca').addEventListener('input', montarOpcoesMapa);
