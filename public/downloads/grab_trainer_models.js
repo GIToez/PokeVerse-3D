@@ -1,0 +1,56 @@
+(async () => {
+  /* PokeVerse: the gym leader / Elite Four / Champion models we are missing. Paste into the browser console (F12 → Console) on a
+     logged-in PokeFable tab with the game loaded. It tries every likely file, keeps the ones that exist, and saves
+     pokeverse-trainer-models.zip (with _report.json listing what was found and what wasn't). Upload the zip to Claude. */
+  const LEADERS = { 4160199: 'Brock', 4160299: 'Misty', 4160599: 'Lt. Surge', 4160699: 'Erika', 4161199: 'Koga', 4161299: 'Sabrina', 4161399: 'Blaine', 4161499: 'Giovanni',
+    4170199: 'Lorelei', 4170299: 'Bruno', 4170399: 'Agatha', 4170499: 'Lance', 4170599: 'Blue (Champion)' };
+  const want = new Map();   // path → why
+  const add = (p, why) => { p = String(p || '').replace(/^\/+/, '').split('?')[0]; if (!p) return; if (!/\.glb$/i.test(p)) p += '.glb'; if (!p.startsWith('cenario/')) p = 'cenario/' + p; if (!want.has(p)) want.set(p, why); };
+  for (let n = 1000; n <= 1040; n++) add('npc/NPC' + n, 'NPC' + n);
+  for (const b of ['Boy_001', 'Boy_003', 'Girl_001', 'Rival', 'Blue', 'Gary']) add('pc/' + b, b);
+  const box = document.createElement('div');
+  Object.assign(box.style, { position: 'fixed', zIndex: 2147483647, right: '12px', bottom: '12px', padding: '10px 14px', background: '#0b1630', color: '#fff', font: '13px sans-serif', border: '2px solid #f8c237', borderRadius: '10px', maxWidth: '380px', whiteSpace: 'pre-wrap' });
+  document.body.appendChild(box);
+  const say = t => { box.textContent = 'PokeVerse: trainer models\n' + t; };
+  /* their own list of which model each NPC wears: the leaders' and Elite Four's entries name the exact files */
+  const mapa = {};
+  for (const p of ['data/npcs_glb.json', 'data/ginasios.json', 'data/gyms.json', 'data/elite.json']) {
+    try {
+      const r = await fetch('/' + p, { cache: 'no-store' }); if (!r.ok) continue;
+      const j = await r.json(), txt = JSON.stringify(j);
+      for (const cfg of Object.keys(LEADERS)) { const v = j[cfg]; const g = v && (v.glb || v.modelo || v.arquivo || (typeof v === 'string' ? v : null)); if (g) { add(g, LEADERS[cfg] + ' (' + p + ')'); mapa[LEADERS[cfg]] = g; } }
+      for (const m of txt.matchAll(/"(?:glb|modelo)"\s*:\s*"([^"]+)"/g)) if (/npc|pc\/|lider|leader|elite|campe|champ/i.test(m[1])) add(m[1], 'named in ' + p);
+    } catch {}
+  }
+  /* anything trainer-like this page already loaded */
+  try { for (const e of performance.getEntriesByType('resource')) { const u = new URL(e.name, location.href), p = decodeURIComponent(u.pathname); if (u.origin === location.origin && /\.glb$/i.test(p) && /npc|\/pc\//i.test(p)) add(p, 'loaded by this page'); } } catch {}
+  const files = new Map(), found = [], missing = [];
+  let n = 0;
+  for (const [p, why] of want) {
+    say('Trying ' + (++n) + ' / ' + want.size + '\n' + p + '\nfound so far: ' + found.length);
+    try {
+      const r = await fetch('/' + p.split('/').map(encodeURIComponent).join('/'), { cache: 'no-store' });
+      if (!r.ok) { missing.push(p + ' (' + r.status + ')'); continue; }
+      const b = new Uint8Array(await r.arrayBuffer());
+      if (b.length < 12 || String.fromCharCode(b[0], b[1], b[2], b[3]) !== 'glTF') { missing.push(p + ' (not a model)'); continue; }
+      files.set(p, b); found.push(p + ' — ' + why + ' (' + Math.round(b.length / 1024) + ' KB)');
+    } catch (e) { missing.push(p + ' (' + e.message + ')'); }
+  }
+  files.set('_report.json', new TextEncoder().encode(JSON.stringify({ when: new Date().toISOString(), leaderModels: mapa, found, missing }, null, 1)));
+  const crcT = new Uint32Array(256).map((_, k) => { let c = k; for (let i = 0; i < 8; i++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = b => { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = crcT[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const parts = [], cen = []; let off = 0;
+  for (const [name, data] of files) {
+    const nb = new TextEncoder().encode(name), c = crc(data), h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint32(14, c, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, nb.length, true);
+    parts.push(h.buffer, nb, data);
+    const e = new DataView(new ArrayBuffer(46));
+    e.setUint32(0, 0x02014b50, true); e.setUint16(4, 20, true); e.setUint16(6, 20, true); e.setUint32(16, c, true); e.setUint32(20, data.length, true); e.setUint32(24, data.length, true); e.setUint16(28, nb.length, true); e.setUint32(42, off, true);
+    cen.push(e.buffer, nb); off += 30 + nb.length + data.length;
+  }
+  const size = cen.reduce((t, x) => t + (x.byteLength ?? x.length), 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.size, true); end.setUint16(10, files.size, true); end.setUint32(12, size, true); end.setUint32(16, off, true);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([...parts, ...cen, end.buffer], { type: 'application/zip' })); a.download = 'pokeverse-trainer-models.zip';
+  document.body.appendChild(a); a.click(); a.remove();
+  say('Done: ' + found.length + ' model(s) in pokeverse-trainer-models.zip' + (found.length ? '\n' + found.slice(0, 12).join('\n') : '') + '\nUpload the zip to Claude.');
+})();
