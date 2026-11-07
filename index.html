@@ -4418,13 +4418,14 @@ const TAXA_SHINY = Math.max(2, +params0.get('shinyTaxa') || cfgInt('taxaShiny', 
 const SKITTISH_HP = cfgInt('skittishHp', 0, 0, 100);                   // 0 = off; aggressive wilds turn skittish at or below this HP %
 const ehAgressivo = p => p === 'agressivo' || p === 'aggressive';
 const ehArisco = p => p === 'arisco' || p === 'skittish';
-const rotuloPerfil = p => ehAgressivo(p) ? 'aggressive' : 'skittish';
+const ehPassivo = p => p === 'passivo' || p === 'passive';   // passive areas (Game settings → areasPassivas, Route 1 and 2): fights back only once hit
+const rotuloPerfil = p => ehAgressivo(p) ? 'aggressive' : ehPassivo(p) ? 'passive' : 'skittish';
 const ESTADO_EN = { vagando: 'wandering', fugindo: 'fleeing', atacando: 'attacking', desmaiado: 'fainted', capturando: 'catching', morto: 'gone', guardado: 'stored', chegando: 'arriving', koTurno: 'fainted' };
 const rotuloEstado = e => ESTADO_EN[e] || e;
 function iconeSelvagem(s){
   if (s.estado === 'atacando') return '⚔';
   if (s.estado === 'fugindo') return '🏃';
-  return ehAgressivo(s.perfil) ? '⚔' : '🏃';
+  return ehAgressivo(s.perfil) ? '⚔' : ehPassivo(s.perfil) ? '🍃' : '🏃';
 }
 function htmlRotuloSelvagem(s){
   const st = Status.sigla(Status.limpo(s.status)?.id), est = Stg.resumo(s.estagios);
@@ -5582,7 +5583,7 @@ function atualizarSelvagens(dt){
     }
     /* 19/09 (chaospider, "Dois bugs pelo preço de um - Safari Zone"): surfando, o parceiro sai da bola e nada do lado, e o agressivo que ele
        atacava de dentro do lago ficava apático (o "!jogo.montaria" era pro Arcanine, com o parceiro guardado na bola). Com o surf, reage como a pé. */
-    if (!jogo.turno && !Safari.ehZona(s.area) && ehAgressivo(s.perfil) && s.estado !== 'atacando' && pika.hp > 0 && (!jogo.montaria || jogo.montaria.surfando) && (dPika < 4.5 || dAsh < 4 || s.assustado)){   // em batalha por turno, os de fora não entram; Safari grass does not fight back
+    if (!jogo.turno && !Safari.ehZona(s.area) && (ehAgressivo(s.perfil) || (ehPassivo(s.perfil) && s.assustado)) && s.estado !== 'atacando' && pika.hp > 0 && (!jogo.montaria || jogo.montaria.surfando) && (s.assustado || (ehAgressivo(s.perfil) && (dPika < 4.5 || dAsh < 4)))){   // passive: only once hit   // em batalha por turno, os de fora não entram; Safari grass does not fight back
       s.estado = 'atacando'; s.assustado = false; s.paciencia = 14; s.alvoX = null;
     }
     if (s.estado === 'fugindo'){

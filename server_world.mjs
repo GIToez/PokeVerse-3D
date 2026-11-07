@@ -115,6 +115,13 @@ export function createWorld(h) {
     };
   }
   /** The wilds a player joining `map` should see (the welcome's `selvagens`). */
+  /** Passive areas (Game settings → areasPassivas, area ids; default Route 1 and Route 2): wilds there never start a fight, they only
+      hit back after you attack them. */
+  const PASSIVAS_PADRAO = ['1201', '1202'];
+  function passiva(area) {
+    const l = gameConfig()?.areasPassivas;
+    return (Array.isArray(l) ? l : PASSIVAS_PADRAO).map(String).includes(String(area));
+  }
   function list(map) {
     const r = rooms.get(String(map || 'kanto'));
     return r ? [...r.wilds.values()].filter(w => w.state !== 'gone').map(record) : [];
@@ -154,7 +161,7 @@ export function createWorld(h) {
     const w = {
       id: crypto.randomBytes(6).toString('hex'), area, dex: rolled.dex, glb: rolled.glb, nome: rolled.nome, lv: rolled.lv, ind,
       x: +x.toFixed(2), z: +z.toFixed(2), giro: 0, anim: 'Idle', casa: m.casa && typeof m.casa === 'object' ? { x: +m.casa.x || 0, z: +m.casa.z || 0, livre: !!m.casa.livre } : null,
-      generico: !!m.generico, perfil: rolled.agua ? 'arisco' : typeof m.perfil === 'string' ? m.perfil.slice(0, 16) : null, aquatico: !!rolled.agua,
+      generico: !!m.generico, perfil: rolled.agua ? 'arisco' : passiva(area) ? 'passivo' : typeof m.perfil === 'string' ? m.perfil.slice(0, 16) : null, aquatico: !!rolled.agua,
       pertoDeGrama: !!m.pertoDeGrama, hp: maxHp, maxHp, state: 'vagando', until: 0, owner: ws._id, touched: now,
       damage: new Map(),   // user → { dealt, at }
       cooldowns: new Map(), lastHit: 0, catcher: null, timer: null, est: null,
