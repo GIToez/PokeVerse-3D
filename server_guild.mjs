@@ -12,7 +12,7 @@ import nodePath from 'node:path';
 import crypto from 'node:crypto';
 import * as G from './guild.mjs';
 
-export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, saveAccounts, onTag = () => {}, log = () => {} }) {
+export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, saveAccounts, onTag = () => {}, levar = () => {}, pontoSeguro = () => null, log = () => {} }) {
   // rules: re-read when the file changes (the admin edits it)
   let mtime = -1;
   const regras = () => {
@@ -92,7 +92,15 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     if (!u || !accounts[u]) return responder({ ok: false, erro: 'Sign in to an account to use guilds.' });
     const op = String(m.op || 'vista');
     if (op === 'vista') return responder({ ok: true, vista: livro.vista(u) });
-    if (op === 'sairBase') return responder({ ok: true, vista: livro.vista(u) });   // leaving the base is a scene change on the client
+    const naBase = String(ws._mapa || '').startsWith('casa#');
+    if (op === 'sairBase') {                                                // back where I was before the base (else Pallet Town)
+      const a = accounts[u].save?.antesBase, p = a && Number.isFinite(+a.x) ? { mapa: a.mapa, x: +a.x, z: +a.z, giro: 0 } : pontoSeguro();
+      responder({ ok: true, vista: livro.vista(u) });
+      if (p && naBase) levar(u, p, 'Leaving the guild base…');
+      return;
+    }
+    if ((op === 'irBase' || op === 'chefeEntrar') && !naBase && accounts[u].save)
+      accounts[u].save.antesBase = { mapa: String(ws._cena || ws._mapa || 'kanto'), x: ws._info?.x, z: ws._info?.z };
     if (!/^[a-zA-Z]{2,24}$/.test(op)) return responder({ ok: false, erro: 'Unknown operation.' });
     const { t, rid: _r, op: _o, ...dados } = m;
     const r = livro.executar(u, op, dados) || { ok: false, erro: 'No response.' };
@@ -106,6 +114,11 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     }
     const extra = Object.fromEntries(Object.entries(r).filter(([k]) => !PRIVADOS.has(k)));
     responder({ ...extra, ok: !!r.ok, vista: livro.vista(u) });
+    if (r.ok && (op === 'irBase' || op === 'chefeEntrar') && r.chegada) {   // the base: a private copy of map 4700001 per guild (room casa#<id>)
+      saveAccounts();
+      const fx = +G.dados().base?.mundoX || 1;   // our 4700001 lines up with guilda.json's base coordinates unmirrored (checked in-game, Nov 7); set base.mundoX = -1 if a new base map is mirrored
+      levar(u, { mapa: String(G.dados().base?.mapa || 4700001), x: fx * (+r.chegada.x || 0), z: +r.chegada.z || 0, giro: 0 }, op === 'chefeEntrar' ? 'To the guild boss…' : 'Going to the guild base…');
+    }
   }
 
   // prizes (the guild boss's shards when its day closes: { u, item, fragmentos }) go straight into the Bag
@@ -175,5 +188,8 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
   }
 
   const anunciosExtra = u => { try { const g = livro.guildaDe(u); return g ? G.anunciosExtras(g.nivel) : 0; } catch { return 0; } };
-  return { operar, evento, tagDe, anunciosExtra, aoEntrar, aoApagarConta, adminRoute, livro, idDe, _test: { amb, gravar } };
+  /** The room for an account entering the base scene: its guild's base (null: not in a guild). */
+  const salaBase = u => { const g = livro.guildaDe(u); return g ? livro._salaDa(g) : null; };
+  const cenaBase = () => String(G.dados().base?.mapa || 4700001);
+  return { operar, evento, tagDe, anunciosExtra, salaBase, cenaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, _test: { amb, gravar } };
 }

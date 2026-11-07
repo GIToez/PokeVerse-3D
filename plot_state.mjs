@@ -80,6 +80,7 @@ export function marcarSala(a) {
   SALA = s;
   avisar('mudar', { t: 'sala', sala: s });
 }
+export const salaAtual = () => SALA;   // habitat#… (a plot), casa#… (a guild base) or null
 export function noTerreno() {
   return typeof SALA === 'string' && RE_SALA.test(SALA);
 }

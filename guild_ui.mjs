@@ -473,7 +473,7 @@ function desenharBase(g) {
     Popup.texto(
       pop,
       'evento-quando',
-      v.pode ? 'build · ' + fmt(v.proximo.custo) : !v.proximo ? (v.max > 1 ? 'at most' : 'pronta') : v.motivo,
+      v.pode ? 'build · ' + fmt(v.proximo.custo) : !v.proximo ? (v.max > 1 ? 'at most' : 'built') : v.motivo,
       c,
     );
     c.style.cursor = v.pode ? 'pointer' : 'default';

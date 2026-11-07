@@ -83,6 +83,7 @@ function bemvindoDaTroca(m) {
   if (m.compras) Conta.aplicarBolsa({ compras: m.compras });
   if (m.caca) ctx.cacaVista?.(m.caca); if (m.caixaVagas != null) ctx.caixaVagas?.(m.caixaVagas); if (m.transformLigado != null) ctx.transformLigado?.(!!m.transformLigado);
   ctx.minhaGuilda?.(m.guilda || null);
+  TerrenoEstado.marcarSala(m.sala || null);   // inside a plot (habitat#…) or not (server_plot.mjs)
   bemvindoDaSala = m;
   filaDaSala = [];
   troca.fim({ ok: true });
@@ -521,6 +522,7 @@ function receber(m) {
       if (m.compras) Conta.aplicarBolsa({ compras: m.compras });
       if (m.caca) ctx.cacaVista?.(m.caca);
       ctx.minhaGuilda?.(m.guilda || null);
+      TerrenoEstado.marcarSala(m.sala || null);
       if (m.conta) ctx.progressaoEntrou?.();
       if (m.conta) ctx.modoStaff?.(m.staff ? { t: 'staff', ...m.staff } : { t: 'staff', fora: true });
       ctx.conta?.entrouNoMundo?.(m.versao);
