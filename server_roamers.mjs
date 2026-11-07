@@ -21,7 +21,7 @@ const TICK_MS = 250, FIGHT_IDLE_MS = 25e3, NEAR_ANNOUNCE = 90, CLIMB = 30;
 const TRIOS = { aves: [144, 145, 146], caes: [243, 244, 245] };
 export const DEFAULTS = {
   ligado: true, mapa: 'kanto', esperaMin: 120, duracaoMin: 45, limitePorJanela: 2, janelaHoras: 72, chanceTrio: 0.08, anunciar: true,
-  alturaVoo: 9, velVoo: 9, velAndar: 5, pouso: [60, 150], fogeAbaixo: [0.6, 0.3],
+  flipX: -1, alturaVoo: 9, velVoo: 9, velAndar: 5, pouso: [60, 150], fogeAbaixo: [0.6, 0.3],
   areas: [], lista: [],
 };
 
@@ -44,7 +44,10 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
   function areaGraph(map) {
     if (graph?.map === map) return graph;
     const k = JSON.parse(fs.readFileSync(mapFile(map), 'utf8'));
-    const boxes = (k.caixas || []).map(b => ({ a: +b.a, x0: b.x - b.sx / 2, x1: b.x + b.sx / 2, z0: b.z - b.sz / 2, z1: b.z + b.sz / 2, cx: +b.x, cz: +b.z }));
+    /* The map file is mirrored on x against the world (the game's flipX, −1 in Kanto): a box at x 30 in the file is at x −30
+       where players walk. Everything here is turned into world coordinates first. */
+    const F = +cfg().flipX || -1;
+    const boxes = (k.caixas || []).filter(b => b.sx > 0).map(b => { const cx = F * b.x; return { a: +b.a, x0: cx - b.sx / 2, x1: cx + b.sx / 2, z0: b.z - b.sz / 2, z1: b.z + b.sz / 2, cx, cz: +b.z }; });
     const gap = (a0, a1, b0, b1) => Math.max(0, Math.max(a0, b0) - Math.min(a1, b1));
     const adj = new Map(), door = new Map();
     for (const A of boxes) for (const B of boxes) {
@@ -57,30 +60,22 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     }
     const box = new Map();
     for (const b of boxes) if (!box.has(b.a)) box.set(b.a, b);
-    /* Where a roamer may stop: only inside a tall-grass patch, never on bare ground where a
-       tree, a fence or a house could be. A cell counts only when all 8 cells around it are the same, so the whole body is
-       inside the patch. Areas with no such cell are passed through but never stopped in. */
-    const inner = cells => {
-      const set = new Set(cells.map(c => Math.floor(c.x) + ',' + Math.floor(c.z))), out = new Map();
-      for (const c of cells) {
-        const x = Math.floor(c.x), z = Math.floor(c.z);
-        let ok = true;
-        for (let dx = -1; dx <= 1 && ok; dx++) for (let dz = -1; dz <= 1; dz++) if (!set.has((x + dx) + ',' + (z + dz))) { ok = false; break; }
-        if (!ok) continue;
-        if (!out.has(+c.a)) out.set(+c.a, []);
-        out.get(+c.a).push({ x: x + 0.5, z: z + 0.5 });
-      }
-      return out;
-    };
-    const grass = inner(k.grama || []), water = inner(k.agua || []);
-    return (graph = { map, adj, door, box, grass, water, nomes: k.nomes || {} });
+    /* Where a roamer may stop, so it never ends up inside a tree, a fence or a house: public/data/roamer_spots.json, points
+       with clear, flat walkable ground 2 m all around (tall grass included), baked from the game's own collision grid with
+       tools/bake_roamer_spots.cjs — re-bake after big scenery changes. Areas with none are passed through, never stopped in. */
+    const spots = new Map(), add = (a, x, z) => { if (!spots.has(+a)) spots.set(+a, []); spots.get(+a).push({ x, z }); };
+    try {
+      const baked = JSON.parse(fs.readFileSync(nodePath.join(dataDir, 'roamer_spots.json'), 'utf8'));
+      if ((baked.mapa || 'kanto') === map) for (const [a, L] of Object.entries(baked.areas || {})) for (const [x, z] of L) add(a, x, z);   // already world x
+    } catch {}
+    return (graph = { map, adj, door, box, spots, nomes: k.nomes || {} });
   }
   const SEA = new Set([1219, 1220, 1221, 1299]);
   function allowedAreas(map, entry) {
     const G = areaGraph(map), C = cfg();
     let L = (Array.isArray(entry.areas) && entry.areas.length ? entry.areas : C.areas?.length ? C.areas : [...G.box.keys()].filter(a => a >= 1200 && a < 1300 || a === 1191)).map(Number);
     if (entry.modo !== 'voa' && !entry.nada) L = L.filter(a => !SEA.has(a));
-    return L.filter(a => G.box.has(a) && (G.grass.get(a)?.length || (entry.nada && G.water.get(a)?.length)));
+    return L.filter(a => G.box.has(a) && (G.spots.get(a)?.length || 0) >= 3);
   }
   /** Shortest list of areas from a to b (walkers don't cross the sea unless they swim). */
   function route(map, a, b, nada) {
@@ -96,9 +91,9 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     return out;
   }
   const areaName = (map, a) => areaGraph(map).nomes[a] || 'area ' + a;
-  /** A place to stop in the area: a cell deep inside tall grass. (The water cells are only the shoreline tiles, so a swimmer like Suicune crosses the sea but stops in grass too.) */
-  function landing(map, area, agua) {
-    const G = areaGraph(map), S = (agua && G.water.get(area)?.length ? G.water : G.grass).get(area) || G.water.get(area) || [];
+  /** A place to stop in the area: deep in tall grass or on clear, flat ground (see areaGraph). */
+  function landing(map, area) {
+    const G = areaGraph(map), S = G.spots.get(area) || [];
     if (S.length) return S[Math.floor(Math.random() * S.length)];
     const b = G.box.get(area);   // never chosen as a destination (allowedAreas), kept so nothing breaks
     return { x: b.cx, z: b.cz };
@@ -143,7 +138,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     if (flyer) {   // it comes in from the sky: starts high, a long way off, and flies to where it lands
       const b = areaGraph(map).box.get(dest), ang = Math.random() * Math.PI * 2;
       x = b.cx + Math.cos(ang) * 160; z = b.cz + Math.sin(ang) * 160; alt = C.alturaVoo || 16;
-    } else { const p = landing(map, dest, !!e.nada && SEA.has(dest)); x = p.x; z = p.z; }
+    } else { const p = landing(map, dest); x = p.x; z = p.z; }
     const disguise = e.disfarce ? disguiseFor(dest) : null;
     const w = world.placeServerWild(map, { area: dest, dex: +e.dex, glb: glbOf(e), nome: e.nome, lv: +e.lv || 50 }, x, z,
       { roamer: true, alt, ...(disguise ? { disguise } : {}) });
@@ -208,7 +203,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
   /** Sets the way to `dest`: a straight line for flyers, area to area through the crossing points for walkers. */
   function goTo(r, dest, fleeing) {
     const C = cfg(), map = r.map, G = areaGraph(map);
-    const end = landing(map, dest, !r.flyer && !!r.e.nada && SEA.has(dest));
+    const end = landing(map, dest);
     if (r.flyer) r.path = [end];
     else {
       const from = areaAt(map, r.w.x, r.w.z) ?? r.area, R = route(map, from, dest, !!r.e.nada);
@@ -346,7 +341,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
         hp: r.w.hp, maxHp: r.w.maxHp, x: r.w.x, z: r.w.z, alt: r.w.alt || 0, disfarce: r.w.disguise?.nome || null, saiEm: r.until })),
       proximoEm: active.size ? null : (state.ultimoFim || 0) + (C.esperaMin || 120) * 60e3,
       contagem: Object.fromEntries((C.lista || []).map(e => [e.dex, recent(e.dex)])),
-      areas: [...areaGraph(C.mapa || 'kanto').grass.keys()].sort((x, y) => x - y).map(a => ({ a, nome: areaName(C.mapa || 'kanto', a) })),   // only where one can stop (tall grass)
+      areas: [...areaGraph(C.mapa || 'kanto').spots].filter(([, L]) => L.length >= 3).map(([a]) => a).sort((x, y) => x - y).map(a => ({ a, nome: areaName(C.mapa || 'kanto', a) })),   // only where one can stop
       agora: now,
     };
   }
