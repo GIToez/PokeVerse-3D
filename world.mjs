@@ -111,7 +111,7 @@ export function desligar() {
 export const contar = (a, b = null, c = null) => {
   let n = 0;
   for (const r of registros.values()) {
-    if (r.area !== a || r.estado === 'morto' || r.estado === 'capturado' || (b != null && !!r.aquatico !== !!b))
+    if (r.errante || r.area !== a || r.estado === 'morto' || r.estado === 'capturado' || (b != null && !!r.aquatico !== !!b))
       continue;
     if (
       typeof c === 'function'
@@ -172,6 +172,10 @@ async function corpo(r) {
     s.maxHp = r.maxHp;
     s.st = r.st || null;
     s.fator = r.fator || 1;
+    if (r.errante) {   // a roaming legendary (server_roamers.mjs): the server flies / walks it; `alt` is how high it is
+      s.errante = true;
+      s.flutua = r.alt || 0;
+    }
     if (r.estado === 'desmaiado') {
       ctx.desmaiar(s);
       s.desmaio = Math.max(0.5, ((r.ate || 0) - Date.now()) / 1000);
@@ -206,6 +210,7 @@ export function receber(m) {
         r.z = m.z;
         r.giro = m.giro;
         r.anim = m.anim;
+        if (m.alt != null) r.alt = m.alt;
         r.alvo = { x: m.x, z: m.z, giro: m.giro || 0, anim: m.anim || 'Idle' };
         if (r.s && !r.s.remoto && r.dono !== meuId) r.s.remoto = true;
       }
@@ -386,6 +391,7 @@ export function interpolar(s, b) {
     s.z += (a.z - s.z) * k;
   }
   s.giro = a.giro;
+  if (r.errante) s.flutua = (s.flutua || 0) + ((r.alt || 0) - (s.flutua || 0)) * (1 - Math.exp(-b / 0.25));
   if (a.anim && a.anim !== 'Idle' && a.anim !== 'Run' && s.__animRede !== a.anim) {
     s.__animRede = a.anim;
     ctx.tocarUma(s, a.anim);

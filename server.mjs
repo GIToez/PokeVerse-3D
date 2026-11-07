@@ -39,6 +39,7 @@ import { criarCarteira, criarLoja } from './server_shop.mjs';
 import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
+import { createRoamers } from './server_roamers.mjs';   // roaming legendaries
 import { createRanking } from './server_ranking.mjs';
 import { createWardrobe } from './server_wardrobe.mjs';
 import { createTransform } from './server_transform.mjs';
@@ -1349,6 +1350,7 @@ const httpServer = http.createServer((req, res) => {
       if (!g) return usuarioDe(req) ? json(403, { erro: 'GM accounts only.' }) : json(401, { erro: 'Your sign-in expired or you signed in somewhere else: sign in to the panel again.' });
       if ((rota === '/admin/agenda' || rota === '/admin/agenda/agora') && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
+      if (rota.startsWith('/admin/errantes') && errantes.adminRoute(rota, req.method, d, g, json)) return;   // 🌀 Roaming legendaries
       if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
       if (rota.startsWith('/admin/correio') && mail.adminRoute(rota, req.method, d, g, json, url)) return;   // 📬 Mail tab (server_mail.mjs)   // Fase 3: eventos ao vivo (server_events.mjs)
       if (rota.startsWith('/admin/recursos/') && recursos(rota, req.method, url, json)) return;      // Fase 3: listas pras prévias (server_resources.mjs)
@@ -1854,6 +1856,9 @@ const world = createWorld({
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
+/* ROAMING LEGENDARIES (server_roamers.mjs): one legendary at a time travels Kanto in plain sight; admin page "Roaming legendaries". */
+const errantes = createRoamers({ world, dataDir: DADOS_PUB, stateFile: nodePath.join(DADOS, 'roamers_state.json'), send: enviar, connections: conexoes,
+  habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), log: (...a) => console.log('[roamers]', ...a.slice(1)) });
 /* TRANSFORM (server_transform.mjs + transform.mjs): Ditto copies a nearby Pokémon for 30 min in the world. */
 const transformacao = createTransform({
   accounts: contas, dataDir: DADOS_PUB, send: enviar, socketsOf: socketsDe, world, wilds, battle: batalha, saveAccounts: salvarContas,

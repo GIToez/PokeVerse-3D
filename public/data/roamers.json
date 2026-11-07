@@ -1,0 +1,126 @@
+{
+  "ligado": true,
+  "mapa": "kanto",
+  "esperaMin": 120,
+  "duracaoMin": 45,
+  "limitePorJanela": 2,
+  "janelaHoras": 72,
+  "chanceTrio": 0.08,
+  "anunciar": true,
+  "alturaVoo": 9,
+  "velVoo": 9,
+  "velAndar": 5,
+  "pouso": [
+    60,
+    150
+  ],
+  "fogeAbaixo": [
+    0.6,
+    0.3
+  ],
+  "areas": [],
+  "lista": [
+    {
+      "dex": 144,
+      "nome": "Articuno",
+      "glb": "pm0144_00",
+      "lv": 50,
+      "peso": 10,
+      "classe": "lendario",
+      "modo": "voa",
+      "ligado": true
+    },
+    {
+      "dex": 145,
+      "nome": "Zapdos",
+      "glb": "pm0145_00",
+      "lv": 50,
+      "peso": 10,
+      "classe": "lendario",
+      "modo": "voa",
+      "ligado": true
+    },
+    {
+      "dex": 146,
+      "nome": "Moltres",
+      "glb": "pm0146_00",
+      "lv": 50,
+      "peso": 10,
+      "classe": "lendario",
+      "modo": "voa",
+      "ligado": true
+    },
+    {
+      "dex": 243,
+      "nome": "Raikou",
+      "glb": "pm0243_00",
+      "lv": 50,
+      "peso": 10,
+      "classe": "lendario",
+      "modo": "anda",
+      "ligado": true
+    },
+    {
+      "dex": 244,
+      "nome": "Entei",
+      "glb": "pm0244_00",
+      "lv": 50,
+      "peso": 10,
+      "classe": "lendario",
+      "modo": "anda",
+      "ligado": true
+    },
+    {
+      "dex": 245,
+      "nome": "Suicune",
+      "glb": "pm0245_00",
+      "lv": 50,
+      "peso": 10,
+      "classe": "lendario",
+      "modo": "anda",
+      "nada": true,
+      "ligado": true
+    },
+    {
+      "dex": 249,
+      "nome": "Lugia",
+      "glb": "pm0249_00",
+      "lv": 70,
+      "peso": 4,
+      "classe": "lendario",
+      "modo": "voa",
+      "ligado": true
+    },
+    {
+      "dex": 250,
+      "nome": "Ho-Oh",
+      "glb": "pm0250_00",
+      "lv": 70,
+      "peso": 4,
+      "classe": "lendario",
+      "modo": "voa",
+      "ligado": true
+    },
+    {
+      "dex": 151,
+      "nome": "Mew",
+      "glb": "pm0151_00",
+      "lv": 40,
+      "peso": 2,
+      "classe": "mitico",
+      "modo": "anda",
+      "disfarce": true,
+      "ligado": true
+    },
+    {
+      "dex": 251,
+      "nome": "Celebi",
+      "glb": "pm0251_00",
+      "lv": 40,
+      "peso": 2,
+      "classe": "mitico",
+      "modo": "voa",
+      "ligado": false
+    }
+  ]
+}

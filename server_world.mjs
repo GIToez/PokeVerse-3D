@@ -111,6 +111,7 @@ export function createWorld(h) {
       id: w.id, area: w.area, dex: w.dex, glb: w.glb, nome: w.nome, lv: w.lv, shiny: w.ind.shiny, ivs: w.ind.ivs, natureza: w.ind.natureza,
       x: w.x, z: w.z, giro: w.giro, anim: w.anim, casa: w.casa, generico: w.generico, perfil: w.perfil, aquatico: w.aquatico,
       pertoDeGrama: w.pertoDeGrama, hp: w.hp, maxHp: w.maxHp, estado: w.state, ...(w.status?.id ? { st: w.status.id } : {}), ...(w.until ? { ate: w.until } : {}), dono: w.owner,
+      ...(w.roamer ? { errante: true, alt: w.alt || 0 } : {}), ...(w.disguise || {}),   // a roaming legendary (server_roamers.mjs); Mew in disguise shows as another species
     };
   }
   /** The wilds a player joining `map` should see (the welcome's `selvagens`). */
@@ -125,6 +126,7 @@ export function createWorld(h) {
     clearTimeout(w.timer);
     w.state = 'gone';
     toMap(map, { t: 'sumiu', id: w.id, motivo: reason });
+    try { w.onGone?.(reason); } catch (e) { console.warn('world: onGone', e); }
   }
 
   // ── Spawning ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -157,7 +159,44 @@ export function createWorld(h) {
       cooldowns: new Map(), lastHit: 0, catcher: null, timer: null, est: null,
     };
     room.wilds.set(w.id, w);
+    rememberSpot(ws._mapa, area, x, z, !!rolled.agua);
     toMap(ws._mapa, { t: 'selvagem', s: record(w) });
+  }
+  /* Where wilds have spawned, per area: points a player's game found to be walkable ground (or water). The roaming legendaries
+     land on these, since the server has no ground of its own. */
+  const spots = new Map();   // 'map:area' → [{ x, z, agua }]
+  function rememberSpot(map, area, x, z, agua) {
+    const k = map + ':' + area, L = spots.get(k) || [];
+    if (L.some(p => Math.hypot(p.x - x, p.z - z) < 3)) return;
+    L.push({ x: +(+x).toFixed(2), z: +(+z).toFixed(2), agua });
+    if (L.length > 40) L.splice(Math.floor(Math.random() * L.length), 1);
+    spots.set(k, L);
+  }
+  const spotsIn = (map, area) => spots.get(String(map || 'kanto') + ':' + area) || [];
+
+  /** A wild the server drives itself (no player owns it until someone fights it): the roaming legendaries. */
+  function placeServerWild(map, { area, dex, glb, nome, lv }, x, z, extra = {}) {
+    const S = Forms.especie(species(dex), { dex, glb });
+    const ind = newIndividual({ dex, nome, glb, lv });
+    const maxHp = Math.max(1, hpBase(S.bs[0], lv, ivsOf(ind)[0] || 0));
+    const w = {
+      id: crypto.randomBytes(6).toString('hex'), area, dex, glb, nome, lv, ind, x: +(+x).toFixed(2), z: +(+z).toFixed(2), giro: 0, anim: 'Idle',
+      casa: null, generico: false, perfil: 'arisco', aquatico: false, pertoDeGrama: false, hp: maxHp, maxHp, state: 'vagando', until: 0,
+      owner: null, touched: Date.now(), damage: new Map(), cooldowns: new Map(), lastHit: 0, catcher: null, timer: null, est: null, ...extra,
+    };
+    roomOf(map).wilds.set(w.id, w);
+    toMap(map, { t: 'selvagem', s: record(w) });
+    return w;
+  }
+  /** The server moves one of its own wilds (only while nobody is fighting it). */
+  function moveServerWild(map, w, x, z, giro, anim, alt) {
+    w.x = +x.toFixed(2); w.z = +z.toFixed(2); w.giro = +giro.toFixed(3); w.anim = anim; w.alt = +(alt || 0).toFixed(2); w.touched = Date.now();
+    toMap(map, { t: 'spos', id: w.id, x: w.x, z: w.z, giro: w.giro, anim, alt: w.alt });
+  }
+  /** Sends a wild again as it is now (after a disguise drops): the client swaps the body. */
+  function resend(map, w) {
+    toMap(map, { t: 'sumiu', id: w.id, motivo: 'transformou' });
+    toMap(map, { t: 'selvagem', s: record(w) });
   }
 
   /** Puts a server-built wild on the map and tells the room. `extra` overrides the record (fished Pokémon, etc.). */
@@ -296,6 +335,7 @@ export function createWorld(h) {
     if (!u) return;
     const map = ws._mapa, w = roomOf(map).wilds.get(String(m.id));
     if (!w || w.state !== 'vagando' || distTo(ws, w) > FIGHT_RANGE) return;
+    if (w.roamer && (w.alt || 0) > 4) return;   // a roaming legendary up in the sky can't be hit: wait for it to land
     const move = moveById(m.golpe);
     if (!move) return;
     const now = Date.now(), gap = Math.max(450, (+move.recarga || 1.5) * 600);   // 60 % of the move's cooldown, as in raids
@@ -318,6 +358,7 @@ export function createWorld(h) {
       ...(r.estagios ? { estagios: r.estagios } : {}), ...(r.semente ? { semente: true } : {}), ...(r.avisos ? { avisos: r.avisos } : {}) });
     if (r.st !== undefined) sendStatus(map, w, r.st);
     if (w.hp <= 0) knockOut(map, w);
+    else if (w.onHit) { try { w.onHit(ws); } catch (e) { console.warn('world: onHit', e); } }
   }
 
   /** The wild hits a player's Pokémon. Sent by the owner, whose game runs the wild's AI; damage is computed here. */
@@ -474,6 +515,7 @@ export function createWorld(h) {
     const others = onMap(map).filter(x => x !== ws);
     for (const w of room.wilds.values()) {
       if (w.owner !== ws._id) continue;
+      if (w.roamer) { setOwner(map, w, null); continue; }   // the server takes its roamer back
       if (!others.length) { w.owner = null; continue; }
       const next = others.reduce((a, b) => (distTo(a, w) <= distTo(b, w) ? a : b));
       setOwner(map, w, next._id);
@@ -501,7 +543,7 @@ export function createWorld(h) {
   function joined(ws) {
     const room = rooms.get(String(ws._mapa || 'kanto'));
     if (!room) return;
-    for (const w of room.wilds.values()) if (w.owner == null && w.state === 'vagando') setOwner(ws._mapa, w, ws._id);
+    for (const w of room.wilds.values()) if (w.owner == null && w.state === 'vagando' && !w.roamer) setOwner(ws._mapa, w, ws._id);
   }
   setInterval(() => {
     const now = Date.now();
@@ -509,11 +551,11 @@ export function createWorld(h) {
       const here = onMap(map).length;
       if (!here) {
         if (!room.emptySince) room.emptySince = now;
-        else if (now - room.emptySince > EMPTY_ROOM_MS) { for (const w of room.wilds.values()) clearTimeout(w.timer); rooms.delete(map); }
+        else if (now - room.emptySince > EMPTY_ROOM_MS && ![...room.wilds.values()].some(w => w.roamer)) { for (const w of room.wilds.values()) clearTimeout(w.timer); rooms.delete(map); }
         continue;
       }
       room.emptySince = 0;
-      for (const w of [...room.wilds.values()]) if (w.state === 'vagando' && now - w.touched > IDLE_DESPAWN_MS) remove(map, w, 'fugiu');
+      for (const w of [...room.wilds.values()]) if (w.state === 'vagando' && !w.roamer && now - w.touched > IDLE_DESPAWN_MS) remove(map, w, 'fugiu');
     }
   }, 15e3).unref?.();
 
@@ -533,5 +575,5 @@ export function createWorld(h) {
   const stats = () => ({ maps: rooms.size, wilds: [...rooms.values()].reduce((n, r) => n + r.wilds.size, 0) });
   /** One wild on a map by id (Transform reads its species, level and moves). */
   const wild = (map, id) => roomOf(map).wilds.get(String(id)) || null;
-  return { receive, list, joined, left, stats, wild, ballBonus, _test: { shakes, rooms } };
+  return { receive, list, joined, left, stats, wild, ballBonus, placeServerWild, moveServerWild, resend, setOwner, remove, spotsIn, onMap, _test: { shakes, rooms } };
 }

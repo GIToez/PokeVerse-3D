@@ -5091,7 +5091,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   }
   s.area = area; s.especie = esp; s.generico = generico; s.casa = casa || { x: flipX * x, z };
   s.id = null; s.wildId = null; s.rede = false; s.remoto = false; s.__animRede = null;   // corpo do pool pode ter sido da rede
-  s.raid = null; s.flutua = 0; s.rotuloAlto = null;                     // …ou o chefe de uma raid (14/09): tamanho/altura de chefe não passam pro próximo
+  s.raid = null; s.flutua = 0; s.rotuloAlto = null; s.errante = false;                  // …ou o chefe de uma raid (14/09): tamanho/altura de chefe não passam pro próximo
   s.evs = undefined; s.gmSpawn = false;                                  // …ou um /pokespawn (02/11): os EVs escolhidos não passam pro próximo selvagem da espécie
   /* …ou um PEIXE (20/09). `aquatico` só era ligado (no `povoar` e no `Mundo.criar`), nunca desligado, e o corpo volta
      pelo pool por espécie: o Cloyster que nasceu na água do piso 4 das Ilhas Seaform renascia como Cloyster de TERRA
@@ -9566,6 +9566,7 @@ function usarGolpe(id){
   { const fT = fichaHeld(p), tr = fT && HELD.travaDeGolpe(fT, g); if (tr && !tr.pode){ flutuar(p, tr.motivo, '#ffd23a'); return; } }   // Choice lock (10 s) and Assault Vest (no status moves)
   if ((!jogo.alvo || jogo.alvo.estado === 'morto') && jogo.raidArena){ const b = jogo.selvagens.find(x => x.raid && x.estado !== 'morto' && x.estado !== 'guardado'); if (b) jogo.alvo = b; }   // RAID AO VIVO: na arena o alvo é o chefe (celular sem Tab)
   if (!jogo.alvo || jogo.alvo.estado === 'morto'){ flutuar(jogo.ash, 'no target: click a wild Pokémon or Tab', '#ffd23a'); return; }
+  if (jogo.alvo.errante && (jogo.alvo.flutua || 0) > 4){ flutuar(p, jogo.alvo.nome + ' is too high up: follow it until it lands', '#ffd23a'); return; }   // roaming legendary in the sky (server_roamers.mjs)
   /* 20/09 (billzerax): caído não apanha — o golpe só gastava PP, recarga e o turno do parceiro. Avisa e não sai.
      (O Tab e o KO já miram no próximo de pé; aqui sobra quem mirou no caído de propósito, pelo clique ou pela bola.) */
   if (jogo.alvo.estado === 'desmaiado' || jogo.alvo.estado === 'capturando'){
