@@ -4091,13 +4091,20 @@ if (PLAY){
       semCorte(novo);                             // o parceiro nunca é cortado pelo tronco da câmera: está sempre ao lado do jogador
       return novo;
     };
+    /* A refresh rebuilt the partner from its own model: a Ditto still transformed on its record (an overworld copy) shows the copy
+       again. If the server decides the copy can't carry over (time up, another map…), its `transf` reply puts the Ditto back. */
+    function reporTransf(){
+      const p = jogo.pika, r = p?.uid != null ? (jogo.time || []).find(t => String(t?.uid) === String(p.uid)) : null;
+      if (!r?.transf || r.transf.modo === 'luta' || p.transf || !jogo.mostrarTransf) return;
+      jogo.mostrarTransf(r.transf, r).catch(e => console.warn('transform after refresh:', e));
+    }
     /* TRANSFORM (transform_ui.mjs): the Ditto in the field shows the copied model and uses the copied moves, but stays the same
        party member (uid, level, HP, XP). `transf` null puts the Ditto's own model back. */
     jogo.mostrarTransf = async (transf, reg) => {
       const velho = jogo.pika; if (!velho || !reg) return null;
       const glbNome = transf?.glb || String(reg.glb || 'pm0132_00').replace(/\.glb$/, '');
       const novo = await montarPersonagem('./scenery/mon/' + glbNome + '.glb', null, 0);
-      novo.vel = 4.2; configurarSeguidor(novo, transf ? String(reg.glb || 'pm0132_00') : glbNome);   // the Ditto's own record: uid, level, HP, moves
+      novo.vel = velho.vel || RegrasItem.RUN_SPEED * 1.17; configurarSeguidor(novo, transf ? String(reg.glb || 'pm0132_00') : glbNome);   // the Ditto's own record: uid, level, HP, moves · same speed as the partner it replaces
       if (transf){
         novo.movs = (transf.movs || []).map(m => ({ ...m })); novo.golpesIds = Ind.idsDe(novo); novo.transf = transf;
         if (transf.tipos) novo.tiposTransf = transf.tipos.slice();
@@ -4230,7 +4237,7 @@ if (PLAY){
       /* 12/09: o salvo pode chegar KO (hp 0 do registro). O `conferirParceiroDesmaiado` usa `pendentes` (const lá embaixo): este .then
          dispara no meio da avaliação do módulo (num `await` qualquer) e pegava a const na zona morta — o erro sumia no .catch. Espera
          o módulo inteiro (`window.__dbg` é a última linha), como a intro faz. */
-      jogo.trocarSeguidor(segSalvo, true).then(() => { jogo.trocaPendente = null; amarrarParceiro(); const f = () => (window.__dbg ? conferirParceiroDesmaiado() : setTimeout(f, 30)); f(); })
+      jogo.trocarSeguidor(segSalvo, true).then(() => { jogo.trocaPendente = null; amarrarParceiro(); reporTransf(); const f = () => (window.__dbg ? conferirParceiroDesmaiado() : setTimeout(f, 30)); f(); })
         .catch(e => { console.warn('saved follower:', e); jogo.trocaPendente = null; amarrarParceiro(); });
     }
     if (!Fairy && !INTRO && !RAID && !TORNEIO && !DIRETOR){
@@ -6302,7 +6309,7 @@ function amarrarParceiro(){
       __boot.aviso('follower not on the party', { glb: p.glb, time: jogo.time.map(t => t.glb) }); trocarPara(0, { forcado: true }).catch(e => console.warn('follower not on the party:', e)); return; }
     Ind.garantir(p); jogo.time.push({ dex: p.dex, glb: p.glb, nome: p.nome, lv: p.lv, exp: p.exp, amizade: p.amizade, ivs: p.ivs, natureza: p.natureza, movs: p.movs, aprender: p.aprender, quando: Date.now() }); gravarLS('time', jogo.time); }
   else if (!params0.get('lv')){ const t = (parceiroUid != null && jogo.time.find(x => String(x?.uid) === String(parceiroUid) && mesmoGlb(x.glb, p.glb))) || jogo.time.find(t => mesmoGlb(t.glb, p.glb)); const S = espDe(t);   // 14/09: com duas da mesma espécie, amarra no uid em campo, não no primeiro glb
-    if (t?.lv && S){ Ind.garantir(t); p.uid = t.uid ?? null; p.lv = t.lv; p.expReserva = t.expReserva || 0; p.ivs = t.ivs; p.natureza = t.natureza; p.maxHp = Ind.hpDe(S, p); Ind.garantirMovs(t, fallbackGolpes(t.dex)); p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); p.hp = t.hp != null && t.hp > 0 ? Math.min(t.hp, p.maxHp) : (t.hp === 0 && (t.koAte > Date.now() || Conta.estado().modo === 'conta') ? 0 : p.maxHp);   /* com CONTA o HP é do servidor: 0 é 0 até a cura (12/09: o Bulbasaur KO "ressuscitava" no login porque o koAte já tinha passado) */ p.exp = t.exp ?? Evolucao.expPara(t.dex, t.lv); p.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex); p.status = Status.limpo(t.status); } }
+    if (t?.lv && S){ Ind.garantir(t); p.uid = t.uid ?? null; p.lv = t.lv; p.expReserva = t.expReserva || 0; p.ivs = t.ivs; p.natureza = t.natureza; p.maxHp = Ind.hpDe(S, p); Ind.garantirMovs(t, fallbackGolpes(t.dex)); if (!p.transf) p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); p.hp = t.hp != null && t.hp > 0 ? Math.min(t.hp, p.maxHp) : (t.hp === 0 && (t.koAte > Date.now() || Conta.estado().modo === 'conta') ? 0 : p.maxHp);   /* com CONTA o HP é do servidor: 0 é 0 até a cura (12/09: o Bulbasaur KO "ressuscitava" no login porque o koAte já tinha passado) */ p.exp = t.exp ?? Evolucao.expPara(t.dex, t.lv); p.amizade = t.amizade ?? Evolucao.amizadeBase(t.dex); p.status = Status.limpo(t.status); } }
   try { pintarTime(true); } catch (e){ console.warn('pintarTime:', e); }
 }
 const RESPAWN_PADRAO = { mapa: '4110002', chegada: 7180101, nome: 'Laboratório do Professor Oak' };   // sem Centro visitado ainda (Pallet): acorda no lab, como "voltar pra casa" nos jogos
@@ -7145,7 +7152,7 @@ function aplicarVidas(lista){
       if ('held' in v) p.held = v.held || null;                              // timeAtual reads the partner first; a stale p.held hid a server take
       if (Array.isArray(v.movs)){
         const regMov = time.find(x => String(x?.uid) === String(v.uid));
-        if (regMov?.movs){ p.movs = regMov.movs; p.golpesIds = Ind.idsDe(p); }
+        if (regMov?.movs && !p.transf){ p.movs = regMov.movs; p.golpesIds = Ind.idsDe(p); }   // a transformed Ditto keeps the copied moves
       }
       if (v.expReserva != null) p.expReserva = v.expReserva;
       if (v.lv != null){                                                   // golpe aprendido no nível (acima, no REGISTRO do time) entra na barra
@@ -7156,7 +7163,7 @@ function aplicarVidas(lista){
            acontece com conta (o nível vem do servidor por aqui); no jogo local o aprenderNoNivel roda no próprio Pokémon em campo.
            O `movs` normalmente já é o mesmo array (amarrarParceiro); amarra de novo por garantia. */
         const reg = time.find(x => String(x?.uid) === String(v.uid));
-        if (reg){ if (Array.isArray(reg.movs) && p.movs !== reg.movs) p.movs = reg.movs; p.aprender = reg.aprender; }
+        if (reg){ if (Array.isArray(reg.movs) && p.movs !== reg.movs && !p.transf) p.movs = reg.movs; p.aprender = reg.aprender; }
         if (p.movs) p.golpesIds = Ind.idsDe(p);
       }
     }
@@ -7199,7 +7206,8 @@ function guardarEstadoAtivo(){
   const p = jogo.pika, i = membroAtivo(); if (!p || i < 0) return;
   const t = jogo.time[i]; t.lv = p.lv; t.maxHp = p.maxHp; t.hp = Math.max(0, Math.round(p.hp));
   t.exp = p.exp ?? Evolucao.expPara(p.dex, p.lv); t.amizade = p.amizade ?? Evolucao.amizadeBase(p.dex); t.expReserva = p.expReserva || 0;
-  t.movs = p.movs; t.aprender = p.aprender;
+  if (!p.transf) t.movs = p.movs;                                         // a transformed Ditto's copied moves never overwrite its own
+  t.aprender = p.aprender;
   t.status = p.hp <= 0 ? null : Status.limpo(p.status);
   t.koAte = p.hp <= 0 ? Date.now() + Math.max(0, p.desmaiado || 0) * 1000 : 0;
   gravarLS('time', jogo.time);
@@ -7376,7 +7384,7 @@ function ligarArrastarTime(){
     pintar: () => { try { pintarTime(true); } catch {} try { Menus.repintar?.(); } catch {} },
     aplicarNoParceiro: (uid, movs) => {
       const p = jogo.pika;
-      if (p && String(uidParceiro()) === String(uid) && Array.isArray(movs)){ p.movs = movs; p.golpesIds = Ind.idsDe(p); }
+      if (p && String(uidParceiro()) === String(uid) && Array.isArray(movs) && !p.transf){ p.movs = movs; p.golpesIds = Ind.idsDe(p); }
     },
   });
   const el = $('time-hud');
@@ -8800,7 +8808,7 @@ function recuperarGolpesDoTime(){
   (jogo.time || []).forEach((t, i) => {
     if (t?.dex == null || !Array.isArray(t.movs) || !t.movs.length) return;     // registro sem golpes: quem cuida é o garantirMovs de sempre
     n += recuperarGolpes(t);
-    if (p && i === ia){ if (p.movs !== t.movs) p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); }   // em campo: o mesmo array de golpes e a mesma fila (o guardarEstadoAtivo copia de volta)
+    if (p && i === ia){ if (p.movs !== t.movs && !p.transf) p.movs = t.movs; p.aprender = t.aprender; p.golpesIds = Ind.idsDe(p); }   // em campo: o mesmo array de golpes e a mesma fila (o guardarEstadoAtivo copia de volta)
   });
   if (n) gravarLS('time', jogo.time);
   try { const caixa = lerLS('caixa', []) || []; let m = 0; for (const t of caixa){ if (t?.dex != null && Array.isArray(t.movs) && t.movs.length) m += recuperarGolpes(t, { quieto: true }); } if (m) gravarLS('caixa', caixa); n += m; } catch (e){ console.warn('golpes da caixa:', e); }
@@ -10120,7 +10128,8 @@ if (jogo.ash){
     }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       /* v2: the duel card (Battle accepts it, like typing /battle <name>); the chat line stays as the fallback and the record */
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
-      if (pr){ const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
+      if (pr){ try { Som.tocar('ui/sound_keyitemget', { volume: 0.7, prio: true }); } catch {}   // a sound, so a challenge doesn't go unnoticed
+        const t0 = setTimeout(() => BattleUi.fecharConvite('nao'), 30000); pr.then(r => { clearTimeout(t0); if (r === 'batalhar'){ Som.destravar(); desafiarJogador(m.de); } }); }
       Chat.sistema('⚔ ' + (m.nome || m.de) + ' challenged you to a battle.' + (pr ? '' : ' Type /battle ' + (m.de || '') + ' to accept (same map, within 14 m).'));
     }, batalhaAbrir: m => { abrirTurnoServidor(m); }, balsa: m => Balsa.receber(m), viagem: m => Menus.viagemRede(m), modoStaff: m => StaffUi.receber(m), jogadores: m => { if (m.t === 'grupo'){ jogo.grupo = m.grupo || null; if (!m.grupo && m.motivo === 'removido') Chat.sistema('You were removed from the party.'); else if (!m.grupo && m.motivo === 'saiu') Chat.sistema('You left the party.'); } PlayerCard.receber(m); }, foco: m => { const a = (jogo.selvagens || []).find(x => String(x.id) === String(m.alvo)); if (a) FocusUi.mostrar(m.de, a, (s, v) => I18n.t(s, v)); }, diario: m => {                                                       // daily login rewards: today's prize was paid (novo) or /daily asked for the window
       if (!m?.vista) return;
