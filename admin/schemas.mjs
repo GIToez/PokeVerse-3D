@@ -272,6 +272,18 @@ export const ESQUEMAS = {
         ajuda: 'porMinuto = EXP each Pokémon gains per minute at the Day Care (default 10; the Medallion bonus and the badge level cap apply; level-ups teach level-up moves, no evolving) · taxaPorNivelMin = Coins per minute per level, paid when taking it back (default 0.1: a Lv. 30 for a full day = 4,320 Coins) · maxHoras = EXP and fee stop after this many hours of a stay (default 24; Egg chances keep rolling) · ligado = false turns both off. GMs pay nothing.' },
     ],
   },
+  guilda: {
+    titulo: 'Guilds', arquivo: 'guilda', forma: 'objeto',
+    descricao: 'Guild rules (server_guild.mjs runs guild.mjs). The 🛡️ Guilds page lists the guilds and can rename, give XP or disband.',
+    campos: [
+      { k: 'regras', rotulo: 'Rules', tipo: 'json', validar: v => v && typeof v === 'object' && !Array.isArray(v) ? null : 'An object.',
+        ajuda: 'custo = Coins to found (5000) · insigniasMin = badges needed (2) · nome {min,max} / tag {min,max} = lengths · esperaSairHoras = hours before joining another after leaving (24) · liderSumidoDias = an absent leader is replaced after this many days (14) · conviteValidadeHoras (72) · pedidosPorJogador / pedidosPorGuilda · chatGuardado = messages kept.' },
+      { k: 'fontes', rotulo: 'Guild XP from play', tipo: 'json', validar: v => Array.isArray(v) && v.every(f => f && f.id && typeof f.xp === 'number') ? null : 'A list of { id, nome, xp, pts, cotaDia }.',
+        ajuda: 'What each member\'s play gives the guild: selvagem (wild KO), captura (catch), missao (story mission), ginasio (first badge win), elite (Elite Four), raid, troca (trade)… xp = guild XP, pts = weekly ranking points, cotaDia = how many count per member per day.' },
+      { k: 'niveis', rotulo: 'Guild levels', tipo: 'json', validar: v => Array.isArray(v) && v.length ? null : 'A list of levels.',
+        ajuda: 'Per level: vagas = member slots, vices / oficiais = how many Deputies / Officers, xpProximo = guild XP to the next level.' },
+    ],
+  },
   legal: {
     titulo: 'Terms of Use version', arquivo: 'legal', forma: 'objeto',
     descricao: 'The Terms of Use (public/legal/terms.html) and the Privacy Policy (public/legal/privacy.html) share one version. Sign-up asks to accept the current version; when you change the version, every player is asked to accept the new one at their next log-in and can\'t play until they do. Change the version only after the pages themselves say what changed.',

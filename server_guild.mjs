@@ -1,0 +1,179 @@
+/* GUILDS (Nov 7). The rules engine is guild.mjs (the same file the client loads: the Livro class runs every operation —
+ * found, join, apply, invite, ranks, kick, notice, chat, permissions, level/XP, weekly ranking, the daily guild boss, the
+ * base's buildings); this module gives it storage, the accounts it needs and the socket traffic.
+ *   data:   public/data/guilda.json (rules, ranks, levels, sources of guild XP — admin → Data files)
+ *   state:  server/data/guildas.json (every guild and every player's invites/requests)
+ *   socket: { t: 'guilda', op, rid, ... }  →  { t: 'guilda', rid, ok, erro?, vista }  (op 'vista' = just the view)
+ *           pushes: guilda_vista (someone else changed my guild), guilda_chat (a message), guilda_tag (the [TAG] over a head)
+ *   hooks:  evento(u, tipo, qtd) — guild XP and weekly points from play (selvagem, captura, missao, ginasio, elite, raid…)
+ *           tagDe(u) — the guild tag shown over a player; aoApagarConta(u) */
+import fs from 'node:fs';
+import nodePath from 'node:path';
+import crypto from 'node:crypto';
+import * as G from './guild.mjs';
+
+export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, saveAccounts, onTag = () => {}, log = () => {} }) {
+  // rules: re-read when the file changes (the admin edits it)
+  let mtime = -1;
+  const regras = () => {
+    try {
+      const arq = nodePath.join(dataPub, 'guilda.json'), mt = fs.statSync(arq).mtimeMs;
+      if (mt !== mtime) { G.usarDados(JSON.parse(fs.readFileSync(arq, 'utf8'))); mtime = mt; }
+    } catch (e) { if (mtime === -1) throw e; }
+    return G.dados();
+  };
+  regras();
+
+  const arq = nodePath.join(dataDir, 'guildas.json');
+  let estado = null;
+  try { estado = JSON.parse(fs.readFileSync(arq, 'utf8')); } catch {}
+
+  const idDe = u => 'p' + crypto.createHash('sha1').update('guild:' + u).digest('hex').slice(0, 12);   // other players never see the login
+  const nickDe = u => accounts[u]?.save?.nome || u;
+  const amb = {
+    agora: () => Date.now(),
+    id: idDe,
+    conta(u) {
+      const c = accounts[u]; if (!c) return null;
+      const s = c.save || {};
+      const lv = Math.max(0, ...[...(s.time || []), ...(s.caixa || [])].map(p => +p?.lv || 0));
+      const dex = s.dex && typeof s.dex === 'object' ? Object.values(s.dex).filter(v => v === 'pego').length : 0;
+      return { nick: nickDe(u), lv, insignias: Math.max(Array.isArray(s.insignias) ? s.insignias.length : 0, c.gm ? 8 : 0), dinheiro: c.gm ? Math.max(1e9, Math.floor(+s.dinheiro || 0)) : Math.floor(+s.dinheiro || 0), dex,   // GM accounts have everything
+        online: socketsOf(u).length > 0, vistoEm: +c.vistoEm || 0 };
+    },
+    cobrar(u, n) {
+      const s = accounts[u]?.save; if (!s) return false;
+      if (accounts[u].gm) return true;                                    // GM accounts have everything
+      if (Math.floor(+s.dinheiro || 0) < n) return false;
+      s.dinheiro = Math.floor(+s.dinheiro || 0) - n; saveAccounts(); return true;
+    },
+    porNick(nick) {
+      const k = G.chave(nick); if (!k) return null;
+      for (const [u, c] of Object.entries(accounts)) if (G.chave(c?.save?.nome || u) === k) return u;
+      return null;
+    },
+  };
+  const livro = new G.Livro(estado, amb);
+  try { if (livro.migrarEmblemas()) gravar(); } catch {}
+
+  let pend = null;
+  function gravar() {
+    if (pend) return;
+    pend = setTimeout(() => {
+      pend = null;
+      try { fs.writeFileSync(arq + '.tmp', JSON.stringify(livro.dados)); fs.renameSync(arq + '.tmp', arq); } catch (e) { console.warn('guild save:', e.message); }
+    }, 500);
+  }
+
+  // ── tags over heads ───────────────────────────────────────────────────────────────
+  const tags = new Map();
+  const tagDe = u => livro.guildaDe(u)?.tag || null;
+  function conferirTag(u) {
+    const t = tagDe(u);
+    if ((tags.get(u) ?? null) === t) return;
+    tags.set(u, t); onTag(u, t);
+  }
+
+  // ── pushes ─────────────────────────────────────────────────────────────────────────
+  function empurrar(us, exceto = null) {
+    for (const u of new Set(us)) {
+      if (u === exceto) { conferirTag(u); continue; }
+      conferirTag(u);
+      const ws = socketsOf(u); if (!ws.length) continue;
+      const vista = livro.vista(u);
+      for (const w of ws) send(w, { t: 'guilda_vista', vista });
+    }
+  }
+  const PRIVADOS = new Set(['tocados', 'para', 'chat', 'premios']);
+  function operar(ws, m) {
+    regras();
+    const u = ws._usuario, rid = m.rid;
+    const responder = o => send(ws, { t: 'guilda', rid, ...o });
+    if (!u || !accounts[u]) return responder({ ok: false, erro: 'Sign in to an account to use guilds.' });
+    const op = String(m.op || 'vista');
+    if (op === 'vista') return responder({ ok: true, vista: livro.vista(u) });
+    if (op === 'sairBase') return responder({ ok: true, vista: livro.vista(u) });   // leaving the base is a scene change on the client
+    if (!/^[a-zA-Z]{2,24}$/.test(op)) return responder({ ok: false, erro: 'Unknown operation.' });
+    const { t, rid: _r, op: _o, ...dados } = m;
+    const r = livro.executar(u, op, dados) || { ok: false, erro: 'No response.' };
+    if (r.ok) {
+      gravar();
+      log('guild', u, op, r.guilda || '');
+      empurrar(r.tocados || [], u);
+      conferirTag(u);
+      if (r.chat && Array.isArray(r.para)) for (const v of r.para) for (const w of socketsOf(v)) send(w, { t: 'guilda_chat', msg: r.chat });
+      if (Array.isArray(r.premios)) entregar(r.premios);
+    }
+    const extra = Object.fromEntries(Object.entries(r).filter(([k]) => !PRIVADOS.has(k)));
+    responder({ ...extra, ok: !!r.ok, vista: livro.vista(u) });
+  }
+
+  // prizes (the guild boss's shards when its day closes: { u, item, fragmentos }) go straight into the Bag
+  function entregar(lista) {
+    let mudou = false;
+    for (const p of lista || []) {
+      const u = p?.usuario ?? p?.u; const s = accounts[u]?.save; if (!s) continue;
+      const itens = p.itens || (p.item ? { [p.item]: p.qtd || p.fragmentos || 1 } : null);
+      if (!itens) continue;
+      s.itens = s.itens || {};
+      for (const [id, q] of Object.entries(itens)) s.itens[id] = (+s.itens[id] || 0) + Math.max(0, Math.floor(+q || 0));
+      mudou = true;
+    }
+    if (mudou) saveAccounts();
+  }
+
+  /** Guild XP and weekly points from play. tipo = an id from guilda.json `fontes` (selvagem, captura, missao, ginasio, elite, raid…). */
+  function evento(u, tipo, qtd = 1, texto = null) {
+    try {
+      if (!livro.guildaDe(u)) return null;
+      const r = livro.evento(u, { tipo, qtd, texto });
+      if (r?.ok && (r.xp || r.pts)) gravar();
+      return r;
+    } catch (e) { console.warn('guild event:', e.message); return null; }
+  }
+  function aoApagarConta(u) {
+    const r = livro.contaApagada(u, nickDe(u));
+    if (r.mudou) { gravar(); empurrar(r.tocados || []); entregar(r.premios); }
+  }
+  function aoEntrar(u) { tags.set(u, tagDe(u)); }
+
+  setInterval(() => {
+    try {
+      regras();
+      const t = livro.tique();
+      const p = livro.colherPremios();
+      if (t.length || p.length) { gravar(); empurrar(t); entregar(p); }
+    } catch (e) { console.warn('guild tick:', e.message); }
+  }, 60e3).unref?.();
+
+  /** Admin: list and staff actions. */
+  function adminRoute(rota, method, d, gm, json) {
+    if (rota === '/admin/guildas' && method === 'GET') {
+      const lista = Object.values(livro.dados.guildas).map(g => ({ id: g.id, nome: g.nome, tag: g.tag, nivel: g.nivel, xp: g.xp, membros: Object.keys(g.membros).length,
+        lider: nickDe(livro.liderDe(g)), criadaEm: g.criadaEm, semana: g.semana?.pts || 0, entrada: g.entrada }));
+      return json(200, { ok: true, guildas: lista }), true;
+    }
+    if (rota === '/admin/guildas/renomear' && method === 'POST') {
+      const r = livro.staffRenomear(String(d.id || ''), { nome: d.nome, tag: d.tag });
+      if (r?.ok) { gravar(); empurrar(r.tocados || []); log('guild', 'renamed by', gm, d.id); }
+      return json(r?.ok ? 200 : 400, { ok: !!r?.ok, erro: r?.erro }), true;
+    }
+    if (rota === '/admin/guildas/xp' && method === 'POST') {
+      const tocados = livro.ganharXp(String(d.id || ''), Math.max(0, +d.xp || 0), 'staff');
+      gravar(); empurrar(tocados); log('guild', 'xp by', gm, d.id, d.xp);
+      return json(200, { ok: true }), true;
+    }
+    if (rota === '/admin/guildas/dissolver' && method === 'POST') {
+      const g = livro.guilda(String(d.id || ''));
+      if (!g) return json(404, { ok: false, erro: 'No such guild.' }), true;
+      const lider = livro.liderDe(g);
+      const r = lider ? livro.executar(lider, 'dissolver', {}) : { ok: false, erro: 'No leader.' };
+      if (r.ok) { gravar(); empurrar([...(r.tocados || []), lider]); entregar(r.premios); log('guild', 'dissolved by', gm, d.id); }
+      return json(r.ok ? 200 : 400, { ok: r.ok, erro: r.erro }), true;
+    }
+    return false;
+  }
+
+  const anunciosExtra = u => { try { const g = livro.guildaDe(u); return g ? G.anunciosExtras(g.nivel) : 0; } catch { return 0; } };
+  return { operar, evento, tagDe, anunciosExtra, aoEntrar, aoApagarConta, adminRoute, livro, idDe, _test: { amb, gravar } };
+}

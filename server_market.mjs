@@ -17,7 +17,7 @@ import * as Med from './medallion.mjs';
 
 const POR_PAGINA = 40, HISTORICO_MAX = 3000, AVISOS_MAX = 50, VARRER_MS = 60000;
 
-export function criarMercado({ dados, dadosPub, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta = () => false, logAdmin = null }) {
+export function criarMercado({ dados, dadosPub, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta = () => false, logAdmin = null, anunciosExtra = () => 0 }) {
   const arq = nodePath.join(dados, 'mercado.json');
   let E = { prox: 1, ofertas: [], historico: [], avisos: {} };
   try { const j = JSON.parse(fs.readFileSync(arq, 'utf8')); if (j && Array.isArray(j.ofertas)) E = { ...E, ...j }; } catch {}
@@ -113,11 +113,11 @@ export function criarMercado({ dados, dadosPub, contas, socketsDe, enviar, salva
   timer.unref?.();
 
   const erro = (texto) => ({ erro: texto });
-  const limiteDe = s => (Mercado.regras()?.ofertasPorJogador ?? 20) + Med.anunciosExtra(s);   // + the Medallion's listings while it runs
+  const limiteDe = (s, u = null) => (Mercado.regras()?.ofertasPorJogador ?? 20) + Med.anunciosExtra(s) + (u ? Math.max(0, +anunciosExtra(u) || 0) : 0);   // + the Medallion's listings while it runs, + the guild level's
   function contexto(u, c) {
     const s = saveDe(c);
     return {
-      nome: u, insignias: insignias(s), moedas: Math.floor(+s.dinheiro || 0), ofertasAbertas: abertasDe(u), limiteOfertas: limiteDe(s),
+      nome: u, insignias: insignias(s), moedas: Math.floor(+s.dinheiro || 0), ofertasAbertas: abertasDe(u), limiteOfertas: limiteDe(s, u),
       temItem: id => quantos(c, id),
       temMon: uid => s.time.find(p => String(p.uid) === String(uid)) || s.caixa.find(p => String(p.uid) === String(uid)) || null,
       seguidorUid: s.seguidorUid ?? null,
@@ -144,7 +144,7 @@ export function criarMercado({ dados, dadosPub, contas, socketsDe, enviar, salva
       const avisos = (E.avisos[u] || []).map(a => ({ aviso: a.aviso, em: a.em }));
       if (E.avisos[u]) { delete E.avisos[u]; gravar(); }
       const vendas = E.historico.filter(h => h.vendedor === u).slice(-20).reverse().map(h => ({ ...h, vendedor: undefined, comprador: nomeDe(h.comprador) }));
-      return { ofertas: E.ofertas.filter(o => o.vendedor === u).map(o => publica(o, u)), avisos, vendas, limite: limiteDe(contas[u]?.save), agora: Date.now() };
+      return { ofertas: E.ofertas.filter(o => o.vendedor === u).map(o => publica(o, u)), avisos, vendas, limite: limiteDe(contas[u]?.save, u), agora: Date.now() };
     },
     precos(u, c, m) {
       if (m.dex != null) {

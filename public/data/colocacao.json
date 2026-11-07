@@ -53,14 +53,14 @@
  "lugares": {
   "casa": {
    "id": "casa",
-   "nome": "Casa do treinador",
+   "nome": "Trainer's home",
    "cena": "habitat",
    "mapa": 1000002,
    "sala": "habitat#<conta>",
    "papeis": [
     "dono"
    ],
-   "quem": "o dono da casa",
+   "quem": "the owner",
    "grade": {
     "x0": -50,
     "z0": -31,
@@ -204,29 +204,29 @@
     "1": {
      "tipo": "regiao",
      "regiao": "lote",
-     "nome": "O gramado",
+     "nome": "The lawn",
      "y": 0,
      "anda": true
     },
     "~": {
      "tipo": "mar",
-     "nome": "água (sem chão)",
+     "nome": "water (no ground)",
      "anda": false
     },
     "#": {
      "tipo": "fixo",
-     "nome": "obstáculo da cena",
+     "nome": "scenery obstacle",
      "anda": false
     },
     "=": {
      "tipo": "passagem",
-     "nome": "passagem (cais, ponte, escada)",
+     "nome": "passage (pier, bridge, stairs)",
      "anda": true
     },
     "a": {
      "tipo": "beira",
      "regiao": "lote",
-     "nome": "beira de o gramado",
+     "nome": "edge of the lawn",
      "y": 0,
      "anda": true
     }
@@ -234,7 +234,7 @@
    "regioes": [
     {
      "id": "lote",
-     "nome": "O gramado",
+     "nome": "The lawn",
      "nivel": 1,
      "y": 0,
      "cod": "1",
@@ -244,11 +244,11 @@
     }
    ],
    "tiposObstaculo": [
-    "o laboratório (a oficina)",
-    "o prédio amarelo (a casa)",
-    "um monte de carvão",
-    "uma pilha de troncos",
-    "uma árvore"
+    "the lab (workshop)",
+    "the yellow building (home)",
+    "a coal pile",
+    "a log pile",
+    "a tree"
    ],
    "obstaculos": [
     {
@@ -1388,116 +1388,116 @@
     {
      "id": "chegada-1",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-18.82, -6.13, 1]
     },
     {
      "id": "chegada-2",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-18.08, -6.55, 1]
     },
     {
      "id": "chegada-3",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-17.27, -6.84, 1]
     },
     {
      "id": "chegada-4",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-16.43, -6.98, 1]
     },
     {
      "id": "chegada-5",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-15.57, -6.98, 1]
     },
     {
      "id": "chegada-6",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-14.73, -6.84, 1]
     },
     {
      "id": "chegada-7",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-13.92, -6.55, 1]
     },
     {
      "id": "chegada-8",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-13.18, -6.13, 1]
     },
     {
      "id": "praca",
      "tipo": "praca",
-     "nome": "a praça da chegada",
+     "nome": "the arrival square",
      "c": [-16, -6.63, 3]
     },
     {
      "id": "porta-moradia",
      "tipo": "porta",
-     "nome": "porta da casa (o prédio amarelo)",
+     "nome": "the house door (yellow building)",
      "r": [-14, -11.12, -12, -7.69]
     },
     {
      "id": "porta-oficina",
      "tipo": "porta",
-     "nome": "porta da oficina (o laboratório)",
+     "nome": "the workshop door (the lab)",
      "r": [1.38, -14.74, 3.38, -11.38]
     },
     {
      "id": "passagem-1",
      "tipo": "passagem",
-     "nome": "o cais",
+     "nome": "the pier",
      "r": [-31, -16.44, -26, -9.56]
     },
     {
      "id": "passagem-2",
      "tipo": "passagem",
-     "nome": "o cais",
+     "nome": "the pier",
      "r": [-26, -14.5, -20, -9.5]
     },
     {
      "id": "passagem-3",
      "tipo": "passagem",
-     "nome": "o cais",
+     "nome": "the pier",
      "r": [-23.5, -21.5, -17.5, -15.5]
     }
    ],
    "alvos": [
     {
      "id": "porta-moradia",
-     "nome": "porta da casa (o prédio amarelo)",
+     "nome": "the house door (yellow building)",
      "x": -13,
      "z": -9.69
     },
     {
      "id": "porta-oficina",
-     "nome": "porta da oficina (o laboratório)",
+     "nome": "the workshop door (the lab)",
      "x": 2.38,
      "z": -13.38
     },
     {
      "id": "passagem-1",
-     "nome": "o cais",
+     "nome": "the pier",
      "x": -28.5,
      "z": -11.5
     },
     {
      "id": "passagem-2",
-     "nome": "o cais",
+     "nome": "the pier",
      "x": -23,
      "z": -11.5
     },
     {
      "id": "passagem-3",
-     "nome": "o cais",
+     "nome": "the pier",
      "x": -19.5,
      "z": -18.5
     }
@@ -1508,7 +1508,7 @@
    },
    "vagas": {
     "ninho": {
-     "nome": "Ninho dos companheiros",
+     "nome": "Companion nest",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": null,
@@ -1545,7 +1545,7 @@
      }
     },
     "horta": {
-     "nome": "Horta de bagas",
+     "nome": "Berry garden",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": null,
@@ -1667,7 +1667,7 @@
      }
     },
     "cozinha": {
-     "nome": "Cozinha ao ar livre",
+     "nome": "Outdoor kitchen",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": null,
@@ -1701,7 +1701,7 @@
      }
     },
     "alimentador": {
-     "nome": "Alimentador automático",
+     "nome": "Auto-feeder",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": null,
@@ -1735,7 +1735,7 @@
      }
     },
     "decoracao": {
-     "nome": "Máquina de decoração",
+     "nome": "Decoration machine",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": null,
@@ -1772,7 +1772,7 @@
      }
     },
     "alquimia": {
-     "nome": "Mesa de alquimia",
+     "nome": "Alchemy table",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": null,
@@ -1806,7 +1806,7 @@
      }
     },
     "incubadora": {
-     "nome": "Incubadora",
+     "nome": "Incubator",
      "tipo": "item",
      "item": 900030,
      "itens": [
@@ -1859,7 +1859,7 @@
   },
   "base": {
    "id": "base",
-   "nome": "Base da guilda",
+   "nome": "Guild base",
    "cena": "casa",
    "mapa": 4700001,
    "sala": "casa#<guilda>",
@@ -1868,7 +1868,7 @@
     "vice",
     "oficial"
    ],
-   "quem": "o Líder, um Vice ou um Oficial",
+   "quem": "the Leader, a Deputy or an Officer",
    "grade": {
     "x0": -51,
     "z0": -51,
@@ -2086,97 +2086,97 @@
     "1": {
      "tipo": "regiao",
      "regiao": "r1",
-     "nome": "A fazenda",
+     "nome": "The farm",
      "y": 0,
      "anda": true
     },
     "2": {
      "tipo": "regiao",
      "regiao": "r2",
-     "nome": "A ilha do meio",
+     "nome": "The middle island",
      "y": 2,
      "anda": true
     },
     "3": {
      "tipo": "regiao",
      "regiao": "r3",
-     "nome": "A ilha leste",
+     "nome": "The east island",
      "y": 2,
      "anda": true
     },
     "4": {
      "tipo": "regiao",
      "regiao": "r4",
-     "nome": "O bosque",
+     "nome": "The grove",
      "y": 0,
      "anda": true
     },
     "5": {
      "tipo": "regiao",
      "regiao": "r5",
-     "nome": "O platô",
+     "nome": "The plateau",
      "y": 3,
      "anda": true
     },
     "6": {
      "tipo": "chao",
-     "nome": "o degrau",
+     "nome": "the ledge",
      "y": 1,
      "anda": true
     },
     "~": {
      "tipo": "mar",
-     "nome": "água (sem chão)",
+     "nome": "water (no ground)",
      "anda": false
     },
     "#": {
      "tipo": "fixo",
-     "nome": "obstáculo da cena",
+     "nome": "scenery obstacle",
      "anda": false
     },
     "=": {
      "tipo": "passagem",
-     "nome": "passagem (cais, ponte, escada)",
+     "nome": "passage (pier, bridge, stairs)",
      "anda": true
     },
     "a": {
      "tipo": "beira",
      "regiao": "r1",
-     "nome": "beira de a fazenda",
+     "nome": "edge of the farm",
      "y": 0,
      "anda": true
     },
     "b": {
      "tipo": "beira",
      "regiao": "r2",
-     "nome": "beira de a ilha do meio",
+     "nome": "edge of the middle island",
      "y": 2,
      "anda": true
     },
     "c": {
      "tipo": "beira",
      "regiao": "r3",
-     "nome": "beira de a ilha leste",
+     "nome": "edge of the east island",
      "y": 2,
      "anda": true
     },
     "d": {
      "tipo": "beira",
      "regiao": "r4",
-     "nome": "beira de o bosque",
+     "nome": "edge of the grove",
      "y": 0,
      "anda": true
     },
     "e": {
      "tipo": "beira",
      "regiao": "r5",
-     "nome": "beira de o platô",
+     "nome": "edge of the plateau",
      "y": 3,
      "anda": true
     },
     "f": {
      "tipo": "beira",
-     "nome": "beira de o degrau",
+     "nome": "edge of the ledge",
      "y": 1,
      "anda": true
     }
@@ -2184,7 +2184,7 @@
    "regioes": [
     {
      "id": "r1",
-     "nome": "A fazenda",
+     "nome": "The farm",
      "nivel": 1,
      "y": 0,
      "cod": "1",
@@ -2194,7 +2194,7 @@
     },
     {
      "id": "r2",
-     "nome": "A ilha do meio",
+     "nome": "The middle island",
      "nivel": 3,
      "y": 2,
      "cod": "2",
@@ -2204,7 +2204,7 @@
     },
     {
      "id": "r3",
-     "nome": "A ilha leste",
+     "nome": "The east island",
      "nivel": 5,
      "y": 2,
      "cod": "3",
@@ -2214,7 +2214,7 @@
     },
     {
      "id": "r4",
-     "nome": "O bosque",
+     "nome": "The grove",
      "nivel": 7,
      "y": 0,
      "cod": "4",
@@ -2224,7 +2224,7 @@
     },
     {
      "id": "r5",
-     "nome": "O platô",
+     "nome": "The plateau",
      "nivel": 9,
      "y": 3,
      "cod": "5",
@@ -2234,8 +2234,8 @@
     }
    ],
    "tiposObstaculo": [
-    "uma pedra",
-    "uma árvore"
+    "a rock",
+    "a tree"
    ],
    "obstaculos": [
     {
@@ -2951,200 +2951,200 @@
     {
      "id": "chegada-1",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-18.82, 26.87, 1]
     },
     {
      "id": "chegada-2",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-18.36, 26.59, 1]
     },
     {
      "id": "chegada-3",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-17.86, 26.36, 1]
     },
     {
      "id": "chegada-4",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-17.35, 26.18, 1]
     },
     {
      "id": "chegada-5",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-16.81, 26.07, 1]
     },
     {
      "id": "chegada-6",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-16.27, 26.01, 1]
     },
     {
      "id": "chegada-7",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-15.73, 26.01, 1]
     },
     {
      "id": "chegada-8",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-15.19, 26.07, 1]
     },
     {
      "id": "chegada-9",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-14.65, 26.18, 1]
     },
     {
      "id": "chegada-10",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-14.14, 26.36, 1]
     },
     {
      "id": "chegada-11",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-13.64, 26.59, 1]
     },
     {
      "id": "chegada-12",
      "tipo": "chegada",
-     "nome": "a chegada",
+     "nome": "the arrival",
      "c": [-13.18, 26.87, 1]
     },
     {
      "id": "praca",
      "tipo": "praca",
-     "nome": "a praça da chegada",
+     "nome": "the arrival square",
      "c": [-16, 26.35, 3]
     },
     {
      "id": "chefe",
      "tipo": "chefe",
-     "nome": "a arena do chefe do dia",
+     "nome": "the daily boss's arena",
      "c": [28, -28, 8]
     },
     {
      "id": "chegada-chefe-1",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [25.18, -26.13, 1]
     },
     {
      "id": "chegada-chefe-2",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [25.92, -26.55, 1]
     },
     {
      "id": "chegada-chefe-3",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [26.73, -26.84, 1]
     },
     {
      "id": "chegada-chefe-4",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [27.57, -26.98, 1]
     },
     {
      "id": "chegada-chefe-5",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [28.43, -26.98, 1]
     },
     {
      "id": "chegada-chefe-6",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [29.27, -26.84, 1]
     },
     {
      "id": "chegada-chefe-7",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [30.08, -26.55, 1]
     },
     {
      "id": "chegada-chefe-8",
      "tipo": "chegada",
-     "nome": "a chegada do chefe",
+     "nome": "the boss's arrival",
      "c": [30.82, -26.13, 1]
     },
     {
      "id": "passagem-1",
      "tipo": "passagem",
-     "nome": "o cais (a fazenda ↔ o bosque)",
+     "nome": "the pier (farm ↔ grove)",
      "r": [-31.5, 5.5, -25.5, 11.5]
     },
     {
      "id": "passagem-2",
      "tipo": "passagem",
-     "nome": "a escada (o bosque ↔ o degrau)",
+     "nome": "the stairs (grove ↔ ledge)",
      "r": [-14.32, -3.28, -9.32, 0.74]
     },
     {
      "id": "passagem-3",
      "tipo": "passagem",
-     "nome": "a ponte (a ilha do meio ↔ a ilha leste)",
+     "nome": "the bridge (middle island ↔ east island)",
      "r": [10.5, -4.5, 20.5, 1.5]
     },
     {
      "id": "passagem-4",
      "tipo": "passagem",
-     "nome": "a escada (a ilha leste ↔ o platô)",
+     "nome": "the stairs (east island ↔ plateau)",
      "r": [28.18, -13.28, 33.18, -9.26]
     },
     {
      "id": "passagem-5",
      "tipo": "passagem",
-     "nome": "a escada (a ilha do meio ↔ o degrau)",
+     "nome": "the stairs (middle island ↔ ledge)",
      "r": [-14.32, -13.28, -9.32, -9.26]
     }
    ],
    "alvos": [
     {
      "id": "chefe",
-     "nome": "a arena do chefe do dia",
+     "nome": "the daily boss's arena",
      "x": 25.18,
      "z": -26.13
     },
     {
      "id": "passagem-1",
-     "nome": "o cais (a fazenda ↔ o bosque)",
+     "nome": "the pier (farm ↔ grove)",
      "x": -28.5,
      "z": 7.5
     },
     {
      "id": "passagem-2",
-     "nome": "a escada (o bosque ↔ o degrau)",
+     "nome": "the stairs (grove ↔ ledge)",
      "x": -11.82,
      "z": -1.27
     },
     {
      "id": "passagem-3",
-     "nome": "a ponte (a ilha do meio ↔ a ilha leste)",
+     "nome": "the bridge (middle island ↔ east island)",
      "x": 13.5,
      "z": -1.5
     },
     {
      "id": "passagem-4",
-     "nome": "a escada (a ilha leste ↔ o platô)",
+     "nome": "the stairs (east island ↔ plateau)",
      "x": 30.68,
      "z": -11.27
     },
     {
      "id": "passagem-5",
-     "nome": "a escada (a ilha do meio ↔ o degrau)",
+     "nome": "the stairs (middle island ↔ ledge)",
      "x": -11.82,
      "z": -11.27
     }
@@ -3155,7 +3155,7 @@
    },
    "vagas": {
     "salao": {
-     "nome": "Salão da guilda",
+     "nome": "Guild Hall",
      "tipo": "construcao",
      "guardavel": false,
      "regiaoDado": "r1",
@@ -3273,7 +3273,7 @@
      }
     },
     "descanso": {
-     "nome": "Área de descanso dos Pokémon",
+     "nome": "Pokémon rest area",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r1",
@@ -3307,7 +3307,7 @@
      }
     },
     "cozinha": {
-     "nome": "Cozinha ao ar livre",
+     "nome": "Outdoor kitchen",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r1",
@@ -3341,7 +3341,7 @@
      }
     },
     "bancada": {
-     "nome": "Bancada de síntese",
+     "nome": "Crafting bench",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r2",
@@ -3375,7 +3375,7 @@
      }
     },
     "mina": {
-     "nome": "Mina",
+     "nome": "Mine",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r3",
@@ -3410,7 +3410,7 @@
      }
     },
     "horta": {
-     "nome": "Horta grande",
+     "nome": "Large garden",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r3",
@@ -3756,7 +3756,7 @@
      }
     },
     "alimentador": {
-     "nome": "Alimentador automático",
+     "nome": "Auto-feeder",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r3",
@@ -3790,7 +3790,7 @@
      }
     },
     "decoracao": {
-     "nome": "Máquina de decoração",
+     "nome": "Decoration machine",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r3",
@@ -3824,7 +3824,7 @@
      }
     },
     "serraria": {
-     "nome": "Serraria",
+     "nome": "Sawmill",
      "tipo": "construcao",
      "guardavel": true,
      "regiaoDado": "r4",

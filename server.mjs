@@ -58,6 +58,7 @@ import { knowledgeSummary } from './server_knowledge.mjs';   // friends, request
 import { createParty } from './server_party.mjs';     // parties of up to 4, and Inspect (the player card)
 import * as CaixaR from './box_rules.mjs';
 import * as Med from './medallion.mjs';
+import { createGuilds } from './server_guild.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1343,6 +1344,7 @@ const httpServer = http.createServer((req, res) => {
       if (!u) return json(401, { erro: 'Invalid session.' });
       if (!conferirSenha(d.senha || '', contas[u].senha)) return json(400, { erro: 'Incorrect password.' });
       if (contas[u].token) sessoes.delete(contas[u].token);
+      try { guildas.aoApagarConta(u); } catch (e) { console.warn('guild on delete:', e.message); }
       delete contas[u];
       salvarContasJa();
       return json(200, { ok: true });
@@ -1361,6 +1363,7 @@ const httpServer = http.createServer((req, res) => {
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
       if (rota.startsWith('/admin/errantes') && errantes.adminRoute(rota, req.method, d, g, json)) return;   // 🌀 Roaming legendaries
       if (rota.startsWith('/admin/surtos') && surtos.adminRoute(rota, req.method, d, g, json)) return;   // 🌟 Mass outbreaks
+      if (rota.startsWith('/admin/guildas') && guildas.adminRoute(rota, req.method, d, g, json)) return;   // 🛡️ Guilds
       if (rota === '/admin/campeao' && req.method === 'GET') return json(200, { ok: true, campeao: batalha.campeaoAdmin() });   // 👑 Champion's seat
       if (rota === '/admin/campeao/resetar' && req.method === 'POST') return json(200, { ...batalha.resetarCampeao(g), campeao: batalha.campeaoAdmin() });
       if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
@@ -1797,7 +1800,7 @@ const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, sal
 /* WARDROBE (server_wardrobe.mjs): the outfit/bag/effect catalog and who owns what. */
 const guarda = createWardrobe({ dataDir: DADOS_PUB });
 const bolsaServ = criarBolsa({ dadosPub: DADOS_PUB, salvar: salvarContas, bloquearCura: u => batalha.bloquearCura(u), eliteVencida: u => !!batalha.eliteDe(u)?.vencida, guarda });   // comprar / usar / descartar / held items (server_bag.mjs)
-const mercado = criarMercado({ dados: DADOS, dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta: u => batalha.emLuta(u) });
+const mercado = criarMercado({ dados: DADOS, dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, marcarPego, emLuta: u => batalha.emLuta(u), anunciosExtra: u => guildas.anunciosExtra(u) });   // + the guild level's extra listing
 const carteira = criarCarteira();
 const loja = criarLoja({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira, guarda });
 const temporada = criarTemporada({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira, itemCatalog: catalogoItens, nomeItem });
@@ -1902,6 +1905,12 @@ const criacao = createBreeding({ dataDir: DADOS_PUB, accounts: contas, saveAccou
 var surtos = createOutbreaks({ dataDir: DADOS_PUB, habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), send: enviar, taxaShiny,
   onMap: map => [...conexoes.values()].filter(w => w.readyState === 1 && w._usuario && String(w._mapa || 'kanto') === String(map)),
   areaName: a => (lerJson(nodePath.join(DADOS_PUB, 'kanto.json'), {})?.nomes || {})[a] || 'area ' + a, nomeDe: dex => NOME_ESPECIE.get(+dex) || null, clearArea: (m, a) => world.clearArea(m, a), log: (...a) => console.log('[outbreak]', ...a.slice(1)) });
+/* GUILDS (server_guild.mjs on top of guild.mjs): found, join, ranks, chat, guild XP; the [TAG] over heads. */
+const guildas = createGuilds({ dataPub: DADOS_PUB, dataDir: DADOS, accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas,
+  log: (...a) => console.log('[guild]', ...a.slice(1)),
+  onTag: (u, tag) => { for (const w of socketsDe(u)) { if (w._info) w._info.guilda = tag; enviar(w, { t: 'guilda_tag', id: w._id, guilda: tag }); broadcast(w, { t: 'guilda_tag', id: w._id, guilda: tag }); } } });
+{ const FONTE_GUILDA = { ko: 'selvagem', captura: 'captura', historia: 'missao', ginasio: 'ginasio', elite: 'elite', raid: 'raid', troca: 'troca' };   // play → guild XP (guilda.json fontes)
+  const contarAntes = temporada.contar; temporada.contar = (u, ev) => { try { contarAntes(u, ev); } finally { const f = FONTE_GUILDA[ev?.conta]; if (f) guildas.evento(u, f, 1); } }; }
 /* ROAMING LEGENDARIES (server_roamers.mjs): one legendary at a time travels Kanto in plain sight; admin page "Roaming legendaries". */
 const errantes = createRoamers({ world, dataDir: DADOS_PUB, stateFile: nodePath.join(DADOS, 'roamers_state.json'), send: enviar, connections: conexoes,
   habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), log: (...a) => console.log('[roamers]', ...a.slice(1)) });
@@ -1922,7 +1931,7 @@ function broadcast(remetente, obj, soMesmoMapa = true) {
 
 function infoJogador(ws) {
   const i = ws._info || {};
-  return { ...staff.info(ws), id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
+  return { ...staff.info(ws), id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, guilda: i.guilda || null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
 }
 
 wss.on('connection', ws => {
@@ -1966,6 +1975,8 @@ wss.on('connection', ws => {
         ws._usuario = uTok || ('Visitante' + ws._id);                    // identidade só do token; sem conta = Visitante (nunca o nome do cliente)
         if (ws._info) ws._info.nome = (uTok && contas[uTok]?.save?.nome) || ws._usuario;   // nome na cabeça/chat vem da CONTA
         aplicarCoroa(ws);                                                   // the reigning Champion wears the crown title
+        if (ws._info) ws._info.guilda = uTok ? guildas.tagDe(uTok) : null;   // the [TAG] over the head
+        if (uTok) { guildas.aoEntrar(uTok); if (contas[uTok]) contas[uTok].vistoEm = Date.now(); }
         if (uTok) gravarPosConta(uTok, { mapa: ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro, chegada: m.chegada }, { porta: !!m.porta && !!m.chegada, ja: true });
 
         const outros = [];
@@ -1973,7 +1984,7 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()), transformLigado: !!cfgJogo().transformLigado || !!contas[ws._usuario].gm } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, guilda: ws._info?.guilda || null, ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()), transformLigado: !!cfgJogo().transformLigado || !!contas[ws._usuario].gm } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (ws._usuario && contas[ws._usuario]) setTimeout(() => { try { diario.login(ws._usuario, ws); } catch (e) { console.warn('daily:', e.message); } }, 4000);   // today's daily prize (once a day), after the world has loaded
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
@@ -2365,6 +2376,12 @@ wss.on('connection', ws => {
           batalha.receber(ws, m);
         }
 
+        else if (m.t === 'guilda') {   // guilds (server_guild.mjs)
+          const antes = ws._usuario ? guildas.tagDe(ws._usuario) : null;
+          guildas.operar(ws, m);
+          const depois = ws._usuario ? guildas.tagDe(ws._usuario) : null;
+          if (!antes && depois) temporada.contar(ws._usuario, { conta: m.op === 'criar' ? 'guildaFundar' : 'guildaEntrar' });
+        }
         else if (m.t === 'creche') { if (ws._usuario) enviar(ws, { t: 'creche', op: m.op, ...criacao.operar(ws._usuario, m) }); }   // Day Care (server_breeding.mjs)
         else if (m.t?.startsWith('troca_')) troca.receber(ws, m);   // the trade table (server_trade.mjs); it used to be echoed to the whole map
 
@@ -2388,6 +2405,7 @@ wss.on('connection', ws => {
     try { world.left(ws); } catch {}
     try { troca.saiu(ws); } catch {}
     if (ws._usuario && contas[ws._usuario] && ws._info) gravarPosConta(ws._usuario, { mapa: ws._mapa, x: ws._info.x, y: ws._info.y, z: ws._info.z, giro: ws._info.giro }, { ja: true });
+    if (ws._usuario && contas[ws._usuario]) contas[ws._usuario].vistoEm = Date.now();   // last seen (guild member list; leader inactivity)
     if (!conexoes.delete(ws._id)) return;                                 // já saiu da lista (sessão única) e o `saiu` já foi
     console.log(`[-] ${ws._usuario || ws._id} left (${conexoes.size} online)`);
     broadcast(ws, { t: 'saiu', id: ws._id });

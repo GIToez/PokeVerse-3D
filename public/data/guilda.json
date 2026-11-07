@@ -4,7 +4,7 @@
  "cargos": [
   {
    "id": "lider",
-   "nome": "Líder",
+   "nome": "Leader",
    "dump": "Presidente da comunidade",
    "muda": [
     "vice",
@@ -26,7 +26,7 @@
   },
   {
    "id": "vice",
-   "nome": "Vice",
+   "nome": "Deputy",
    "dump": "Vice-presidente da comunidade",
    "muda": [
     "oficial",
@@ -47,7 +47,7 @@
   },
   {
    "id": "oficial",
-   "nome": "Oficial",
+   "nome": "Officer",
    "dump": "idosos da comunidade",
    "muda": [],
    "padrao": {
@@ -64,7 +64,7 @@
   },
   {
    "id": "membro",
-   "nome": "Membro",
+   "nome": "Member",
    "dump": "Membro oficial",
    "muda": [],
    "padrao": {
@@ -81,7 +81,7 @@
   },
   {
    "id": "recruta",
-   "nome": "Recruta",
+   "nome": "Recruit",
    "dump": "Membro estagiário",
    "muda": [],
    "padrao": {
@@ -100,32 +100,32 @@
  "permissoes": [
   {
    "id": "convidar",
-   "nome": "Convidar jogadores",
+   "nome": "Invite players",
    "dump": "Invitation"
   },
   {
    "id": "aceitar",
-   "nome": "Aceitar pedidos de entrada",
+   "nome": "Accept join requests",
    "dump": "Review"
   },
   {
    "id": "expulsar",
-   "nome": "Expulsar membros",
+   "nome": "Kick members",
    "dump": "RemoveEdit"
   },
   {
    "id": "aviso",
-   "nome": "Editar o aviso do líder",
+   "nome": "Edit the leader's notice",
    "dump": "DescEdit"
   },
   {
    "id": "evento",
-   "nome": "Iniciar evento de guilda",
+   "nome": "Start a guild event",
    "dump": "GuildFightApply"
   },
   {
    "id": "bau",
-   "nome": "Usar o baú da guilda",
+   "nome": "Use the guild treasury",
    "dump": null
   }
  ],
@@ -237,7 +237,7 @@
  "formas": [
   {
    "id": "escudo",
-   "nome": "Escudo",
+   "nome": "Shield",
    "g": {
     "grade": 160,
     "simbolo": {
@@ -257,7 +257,7 @@
   },
   {
    "id": "medalhao",
-   "nome": "Medalhão",
+   "nome": "Medallion",
    "g": {
     "grade": 160,
     "simbolo": {
@@ -277,7 +277,7 @@
   },
   {
    "id": "flamula",
-   "nome": "Estandarte",
+   "nome": "Banner",
    "g": {
     "grade": 160,
     "simbolo": {
@@ -297,7 +297,7 @@
   },
   {
    "id": "losango",
-   "nome": "Cristal",
+   "nome": "Crystal",
    "g": {
     "grade": 160,
     "simbolo": {
@@ -317,7 +317,7 @@
   },
   {
    "id": "asas",
-   "nome": "Escudo alado",
+   "nome": "Winged shield",
    "g": {
     "grade": 160,
     "simbolo": {
@@ -337,7 +337,7 @@
   },
   {
    "id": "sol",
-   "nome": "Sol",
+   "nome": "Sun",
    "g": {
     "grade": 160,
     "simbolo": {
@@ -359,153 +359,153 @@
  "familias": [
   {
    "id": "elementos",
-   "nome": "Elementos"
+   "nome": "Elements"
   },
   {
    "id": "treinador",
-   "nome": "Treinador"
+   "nome": "Trainer"
   },
   {
    "id": "brasao",
-   "nome": "Brasão"
+   "nome": "Crest"
   }
  ],
  "simbolos": [
   {
    "id": "fogueira",
-   "nome": "Fogueira",
+   "nome": "Campfire",
    "familia": "elementos"
   },
   {
    "id": "gota",
-   "nome": "Gota",
+   "nome": "Drop",
    "familia": "elementos"
   },
   {
    "id": "ramo",
-   "nome": "Ramo",
+   "nome": "Branch",
    "familia": "elementos"
   },
   {
    "id": "tempestade",
-   "nome": "Tempestade",
+   "nome": "Storm",
    "familia": "elementos"
   },
   {
    "id": "gelo",
-   "nome": "Gelo eterno",
+   "nome": "Eternal ice",
    "familia": "elementos"
   },
   {
    "id": "vortice",
-   "nome": "Vórtice",
+   "nome": "Vortex",
    "familia": "elementos"
   },
   {
    "id": "lua",
-   "nome": "Lua",
+   "nome": "Moon",
    "familia": "elementos"
   },
   {
    "id": "pokebola",
-   "nome": "Pokébola",
+   "nome": "Poké Ball",
    "familia": "treinador"
   },
   {
    "id": "ovo",
-   "nome": "Ovo",
+   "nome": "Egg",
    "familia": "treinador"
   },
   {
    "id": "insignia",
-   "nome": "Insígnia",
+   "nome": "Badge",
    "familia": "treinador"
   },
   {
    "id": "baga",
-   "nome": "Baga",
+   "nome": "Berry",
    "familia": "treinador"
   },
   {
    "id": "pegada",
-   "nome": "Pegada",
+   "nome": "Footprint",
    "familia": "treinador"
   },
   {
    "id": "asa",
-   "nome": "Asa",
+   "nome": "Wing",
    "familia": "treinador"
   },
   {
    "id": "trofeu",
-   "nome": "Troféu",
+   "nome": "Trophy",
    "familia": "treinador"
   },
   {
    "id": "estrela",
-   "nome": "Estrela",
+   "nome": "Star",
    "familia": "brasao"
   },
   {
    "id": "coroa",
-   "nome": "Coroa",
+   "nome": "Crown",
    "familia": "brasao"
   },
   {
    "id": "espadas",
-   "nome": "Espadas",
+   "nome": "Swords",
    "familia": "brasao"
   },
   {
    "id": "punho",
-   "nome": "Punho",
+   "nome": "Fist",
    "familia": "brasao"
   },
   {
    "id": "shuriken",
-   "nome": "Estrela ninja",
+   "nome": "Shuriken",
    "familia": "brasao"
   },
   {
    "id": "cristal",
-   "nome": "Cristal",
+   "nome": "Crystal",
    "familia": "brasao"
   },
   {
    "id": "coracao",
-   "nome": "Coração",
+   "nome": "Heart",
    "familia": "brasao"
   }
  ],
  "cores": [
   {
    "id": "azul",
-   "nome": "Azul",
+   "nome": "Blue",
    "hex": "#2f7fe0"
   },
   {
    "id": "verde",
-   "nome": "Verde",
+   "nome": "Green",
    "hex": "#43d17c"
   },
   {
    "id": "laranja",
-   "nome": "Laranja",
+   "nome": "Orange",
    "hex": "#ff9a3c"
   },
   {
    "id": "rosa",
-   "nome": "Rosa",
+   "nome": "Pink",
    "hex": "#ff6fb5"
   },
   {
    "id": "vinho",
-   "nome": "Vinho",
+   "nome": "Wine",
    "hex": "#8e1f2e"
   },
   {
    "id": "arco-iris",
-   "nome": "Arco-íris",
+   "nome": "Rainbow",
    "hex": "#768ce3",
    "gradiente": [
     "#42d07f",
@@ -516,17 +516,17 @@
   },
   {
    "id": "roxo",
-   "nome": "Roxo",
+   "nome": "Purple",
    "hex": "#7b4fd6"
   },
   {
    "id": "amarelo",
-   "nome": "Amarelo",
+   "nome": "Yellow",
    "hex": "#f4c531"
   },
   {
    "id": "grafite",
-   "nome": "Grafite",
+   "nome": "Graphite",
    "hex": "#39465c"
   }
  ],
@@ -701,22 +701,22 @@
  "fontes": [
   {
    "id": "raid",
-   "nome": "Raid da agenda concluída",
+   "nome": "Scheduled raid cleared",
    "xp": 300,
    "pts": 60,
    "cotaDia": 2,
-   "quem": "cada membro que bateu o bastante"
+   "quem": "each member who dealt enough damage"
   },
   {
    "id": "selvagem",
-   "nome": "Selvagem derrotado (KO válido)",
+   "nome": "Wild Pokémon defeated (valid KO)",
    "xp": 5,
    "pts": 1,
    "cotaDia": 150
   },
   {
    "id": "grupo",
-   "nome": "Selvagem derrotado com 2+ da guilda no mesmo alvo",
+   "nome": "Wild Pokémon defeated with 2+ guildmates on it",
    "xp": 15,
    "pts": 3,
    "cotaDia": 60,
@@ -724,56 +724,56 @@
   },
   {
    "id": "captura",
-   "nome": "Captura",
+   "nome": "Catch",
    "xp": 10,
    "pts": 2,
    "cotaDia": 30
   },
   {
    "id": "missao",
-   "nome": "Missão da história concluída",
+   "nome": "Story mission completed",
    "xp": 100,
    "pts": 20,
    "cotaDia": 10
   },
   {
    "id": "ginasio",
-   "nome": "Insígnia conquistada (1ª vitória)",
+   "nome": "Badge earned (first win)",
    "xp": 300,
    "pts": 50,
    "cotaDia": 8
   },
   {
    "id": "revanche",
-   "nome": "Revanche de ginásio vencida",
+   "nome": "Gym rematch won",
    "xp": 50,
    "pts": 10,
    "cotaDia": 1
   },
   {
    "id": "elite",
-   "nome": "Elite dos Quatro vencida",
+   "nome": "Elite Four beaten",
    "xp": 1000,
    "pts": 150,
    "cotaDia": 1
   },
   {
    "id": "troca",
-   "nome": "Troca com outro jogador",
+   "nome": "Trade with another player",
    "xp": 20,
    "pts": 5,
    "cotaDia": 5
   },
   {
    "id": "evolucao",
-   "nome": "Evolução",
+   "nome": "Evolution",
    "xp": 30,
    "pts": 5,
    "cotaDia": 10
   },
   {
    "id": "chefe",
-   "nome": "Dano no chefe de guilda (por 1.000 de dano)",
+   "nome": "Damage to the guild boss (per 1,000)",
    "xp": 20,
    "pts": 5,
    "cotaDia": null,
@@ -781,7 +781,7 @@
   },
   {
    "id": "chefeMeta",
-   "nome": "Meta do dia do chefe batida (× degrau)",
+   "nome": "Boss's daily goal reached (× tier)",
    "xp": 500,
    "pts": 100,
    "cotaDia": null,
@@ -789,7 +789,7 @@
   },
   {
    "id": "doacao",
-   "nome": "Doação pro baú (por 10.000 ₽) — fase 3",
+   "nome": "Treasury donation (per 10,000 Coins) — later",
    "xp": 50,
    "pts": 10,
    "cotaDia": 5
@@ -799,123 +799,123 @@
   {
    "nivel": 1,
    "id": "base-salao-1",
-   "texto": "Base: Salão da guilda",
+   "texto": "Base: Guild Hall",
    "vaga": "salao"
   },
   {
    "nivel": 1,
    "id": "base-descanso",
-   "texto": "Base: área de descanso dos pokémon",
+   "texto": "Base: Pokémon rest area",
    "vaga": "descanso"
   },
   {
    "nivel": 2,
    "id": "base-cozinha",
-   "texto": "Base: cozinha ao ar livre",
+   "texto": "Base: outdoor kitchen",
    "vaga": "cozinha"
   },
   {
    "nivel": 3,
    "id": "chefe",
-   "texto": "Chefe da guilda todo dia, na base (contribuição → fragmentos → loja da guilda)"
+   "texto": "A guild boss every day at the base (damage → shards → guild shop)"
   },
   {
    "nivel": 3,
    "id": "xp-grupo-5",
-   "texto": "+5% de XP quando 2+ da guilda batem no mesmo selvagem",
+   "texto": "+5% XP when 2+ guildmates fight the same wild Pokémon",
    "xpGrupo": 0.05
   },
   {
    "nivel": 3,
    "id": "base-salao-2",
-   "texto": "Base: Salão da guilda 2",
+   "texto": "Base: Guild Hall 2",
    "vaga": "salao"
   },
   {
    "nivel": 4,
    "id": "base-bancada",
-   "texto": "Base: bancada de síntese",
+   "texto": "Base: crafting bench",
    "vaga": "bancada"
   },
   {
    "nivel": 5,
    "id": "base-salao-3",
-   "texto": "Base: Salão da guilda 3",
+   "texto": "Base: Guild Hall 3",
    "vaga": "salao"
   },
   {
    "nivel": 5,
    "id": "base-mina",
-   "texto": "Base: mina",
+   "texto": "Base: mine",
    "vaga": "mina"
   },
   {
    "nivel": 5,
    "id": "base-horta",
-   "texto": "Base: horta grande",
+   "texto": "Base: large garden",
    "vaga": "horta"
   },
   {
    "nivel": 6,
    "id": "xp-grupo-10",
-   "texto": "+10% de XP em grupo de guilda",
+   "texto": "+10% guild group XP",
    "xpGrupo": 0.1
   },
   {
    "nivel": 6,
    "id": "base-alimentador",
-   "texto": "Base: alimentador automático",
+   "texto": "Base: auto-feeder",
    "vaga": "alimentador"
   },
   {
    "nivel": 6,
    "id": "base-decoracao",
-   "texto": "Base: máquina de decoração",
+   "texto": "Base: decoration machine",
    "vaga": "decoracao"
   },
   {
    "nivel": 7,
    "id": "base-salao-4",
-   "texto": "Base: Salão da guilda 4",
+   "texto": "Base: Guild Hall 4",
    "vaga": "salao"
   },
   {
    "nivel": 7,
    "id": "base-serraria",
-   "texto": "Base: serraria",
+   "texto": "Base: sawmill",
    "vaga": "serraria"
   },
   {
    "nivel": 8,
    "id": "xp-grupo-12",
-   "texto": "+12% de XP em grupo de guilda",
+   "texto": "+12% guild group XP",
    "xpGrupo": 0.12
   },
   {
    "nivel": 9,
    "id": "base-salao-5",
-   "texto": "Base: Salão da guilda 5",
+   "texto": "Base: Guild Hall 5",
    "vaga": "salao"
   },
   {
    "nivel": 10,
    "id": "xp-grupo-15",
-   "texto": "+15% de XP em grupo de guilda",
+   "texto": "+15% guild group XP",
    "xpGrupo": 0.15
   },
   {
    "nivel": 10,
    "id": "titulo-mestra",
-   "texto": "Título \"Guilda Mestra\" pra todos os membros",
+   "texto": "\"Master Guild\" title for every member",
    "titulo": "guilda-mestra"
   }
  ],
  "ranking": {
   "titulo": {
    "id": "guilda-da-semana",
-   "nome": "Guilda da Semana",
+   "nome": "Guild of the Week",
    "dias": 7,
-   "quem": "todos os membros da 1ª do ranking, na virada da semana"
+   "quem": "every member of the #1 guild when the week turns"
   },
   "top": 20
  },
@@ -936,10 +936,10 @@
    "golpeMs": 4000,
    "danoMin": 0.08,
    "danoMax": 0.14,
-   "onde": "na BASE da guilda (o platô, regiao r5) — a arena (Campo) fica aberta a todos pra eventos e chefe mundial",
+   "onde": "at the guild BASE (the plateau, region r5)",
    "faixas": [
     {
-     "nome": "participou",
+     "nome": "took part",
      "min": 0.0001,
      "fragmentos": 1
     },
@@ -949,17 +949,17 @@
      "fragmentos": 2
     },
     {
-     "nome": "prata",
+     "nome": "silver",
      "min": 0.05,
      "fragmentos": 3
     },
     {
-     "nome": "ouro",
+     "nome": "gold",
      "min": 0.1,
      "fragmentos": 4
     },
     {
-     "nome": "lenda",
+     "nome": "legend",
      "min": 0.2,
      "fragmentos": 5
     }
@@ -1776,125 +1776,125 @@
    "fada": "fada"
   },
   "heldNomes": {
-   "20001": "Pó Brilhante",
-   "20002": "Garra Rápida",
-   "20004": "Pó de prata",
-   "20005": "Faixa Focalizadora",
-   "20007": "Lente de Alcance",
-   "20009": "Sobras",
-   "20010": "Areia macia",
-   "20011": "Pedra dura",
-   "20012": "Semente milagrosa",
-   "20013": "óculos pretos",
-   "20014": "Faixa Preta",
-   "20015": "ímanes",
-   "20016": "Gotas misteriosas",
-   "20017": "Bico Afiado",
-   "20018": "Farpa Venenosa",
-   "20019": "Gelo Eterno",
-   "20020": "Talismã de Feitiço",
-   "20021": "Colher Torta",
-   "20022": "Carvão",
-   "20023": "Presa do Dragão",
-   "20024": "Banda Rosa",
-   "20025": "Banda Polkadot",
-   "20026": "Lenço de seda",
-   "20027": "Soco da Sorte",
-   "20028": "Osso Grosso",
-   "20029": "alho-francês",
-   "20030": "Erva branca",
-   "20033": "Faixa da Escolha",
-   "20034": "Óculos de Escolha",
-   "20035": "Lenço de escolha",
-   "20039": "Sino de Concha",
-   "20040": "Incenso do mar",
-   "20041": "incenso relaxante",
-   "20042": "insenco Exótico",
-   "20043": "insenco de pedra",
-   "20045": "insenco da onda",
-   "20046": "insenco da Flor",
-   "20052": "Garra de Navalha",
-   "20053": "Presa Afiada",
-   "20054": "Lente Ampla",
-   "20055": "Faixa Musculosa",
-   "20056": "Óculos de Sabedoria",
-   "20057": "Cinto de mestre",
-   "20058": "Argila clara",
-   "20059": "Gema da vida",
-   "20062": "Cinta de Foco",
-   "20063": "Lente de Zoom",
-   "20064": "Metrónomo",
-   "20065": "Bola de ferro",
-   "20067": "Lama Negra",
-   "20072": "Garra de aperto",
-   "20075": "Raiz grande",
-   "20077": "pedra leve",
-   "20078": "Capacete de Pedra",
-   "20082": "Faixa de ligação",
-   "20083": "bulbo absorvente",
-   "20084": "bateria recarregável",
-   "20086": "Gema de Fogo",
-   "20087": "Gema da Água",
-   "20088": "Gema da Eletricidade",
-   "20089": "Gema da Planta",
-   "20090": "Gema de Gelo",
-   "20091": "Gema de Combate",
-   "20092": "Gema de Veneno",
-   "20093": "Gema da Terra",
-   "20094": "Gema de Voo",
-   "20095": "Gema dos Superpoderes",
-   "20096": "Gema de Inseto",
-   "20097": "Gema de Pedra",
-   "20098": "Gema de Fantasma",
-   "20099": "Gema do Dragão",
-   "20100": "Gema do Noturno",
-   "20101": "Gema de Aço",
-   "20102": "Gema normal",
-   "20103": "Gema da fada",
-   "20104": "Política de Fraqueza",
-   "20105": "Seguro Contra Erro",
-   "20106": "Colete de Ataque",
-   "20107": "Musgo luminoso",
-   "20108": "bola de neve",
-   "20109": "Óculos de proteção",
-   "20120": "Spray para garganta",
-   "20127": "amuleto claro",
-   "20128": "Espelho de ervas",
-   "20129": "luva de boxe",
-   "20130": "Capa Secreta",
-   "20131": "Dados carregados",
-   "20146": "Gene Berserk",
-   "20149": "Bola de luz",
-   "20177": "Pedra Secreta do Dragão Flamejante",
-   "20178": "Anel Mágico das Sombras",
-   "20179": "Amuleto da Tempestade",
-   "20186": "Asas de Dragão Celestial",
+   "20001": "Bright Powder",
+   "20002": "Quick Claw",
+   "20004": "Silver Powder",
+   "20005": "Focus Band",
+   "20007": "Scope Lens",
+   "20009": "Leftovers",
+   "20010": "Soft Sand",
+   "20011": "Hard Stone",
+   "20012": "Miracle Seed",
+   "20013": "Black Glasses",
+   "20014": "Black Belt",
+   "20015": "Magnet",
+   "20016": "Mystic Water",
+   "20017": "Sharp Beak",
+   "20018": "Poison Barb",
+   "20019": "Never-Melt Ice",
+   "20020": "Spell Tag",
+   "20021": "Twisted Spoon",
+   "20022": "Charcoal",
+   "20023": "Dragon Fang",
+   "20024": "Pink Bow",
+   "20025": "Polkadot Bow",
+   "20026": "Silk Scarf",
+   "20027": "Lucky Punch",
+   "20028": "Thick Club",
+   "20029": "Leek",
+   "20030": "White Herb",
+   "20033": "Choice Band",
+   "20034": "Choice Specs",
+   "20035": "Choice Scarf",
+   "20039": "Shell Bell",
+   "20040": "Sea Incense",
+   "20041": "Lax Incense",
+   "20042": "Odd Incense",
+   "20043": "Rock Incense",
+   "20045": "Wave Incense",
+   "20046": "Rose Incense",
+   "20052": "Razor Claw",
+   "20053": "Razor Fang",
+   "20054": "Wide Lens",
+   "20055": "Muscle Band",
+   "20056": "Wise Glasses",
+   "20057": "Expert Belt",
+   "20058": "Light Clay",
+   "20059": "Life Orb",
+   "20062": "Focus Sash",
+   "20063": "Zoom Lens",
+   "20064": "Metronome",
+   "20065": "Iron Ball",
+   "20067": "Black Sludge",
+   "20072": "Grip Claw",
+   "20075": "Big Root",
+   "20077": "Float Stone",
+   "20078": "Rocky Helmet",
+   "20082": "Binding Band",
+   "20083": "Absorb Bulb",
+   "20084": "Cell Battery",
+   "20086": "Fire Gem",
+   "20087": "Water Gem",
+   "20088": "Electric Gem",
+   "20089": "Grass Gem",
+   "20090": "Ice Gem",
+   "20091": "Fighting Gem",
+   "20092": "Poison Gem",
+   "20093": "Ground Gem",
+   "20094": "Flying Gem",
+   "20095": "Psychic Gem",
+   "20096": "Bug Gem",
+   "20097": "Rock Gem",
+   "20098": "Ghost Gem",
+   "20099": "Dragon Gem",
+   "20100": "Dark Gem",
+   "20101": "Steel Gem",
+   "20102": "Normal Gem",
+   "20103": "Fairy Gem",
+   "20104": "Weakness Policy",
+   "20105": "Safety Goggles fail-safe",
+   "20106": "Assault Vest",
+   "20107": "Luminous Moss",
+   "20108": "Snowball",
+   "20109": "Safety Goggles",
+   "20120": "Throat Spray",
+   "20127": "Clear Amulet",
+   "20128": "Mirror Herb",
+   "20129": "Punching Glove",
+   "20130": "Covert Cloak",
+   "20131": "Loaded Dice",
+   "20146": "Mewtwo gene",
+   "20149": "Light Ball",
+   "20177": "Secret Flame Dragon Stone",
+   "20178": "Shadow Magic Ring",
+   "20179": "Storm Amulet",
+   "20186": "Celestial Dragon Wings",
    "900110": "Mineral Evolutivo",
    "900111": "Balão de Ar"
   },
   "heldNovos": [
    {
     "id": 900110,
-    "nome": "Mineral Evolutivo",
+    "nome": "Eviolite",
     "en": "Eviolite",
     "icone": "ic_900110",
     "consome": false,
     "degrau": 1,
     "raridade": "raro",
-    "texto": "Só em quem ainda evolui: Defesa e Defesa Especial ×1,5 (dano recebido ×0,67).",
-    "porque": "fica no Pokémon (não se gasta) e é dos held mais fortes da loja; vai com o Beedrill (Weedle → Kakuna → Beedrill), o 1º chefe da escada",
+    "texto": "Only on a Pokémon that can still evolve: Defense and Sp. Def ×1.5 (damage taken ×0.67).",
+    "porque": "stays on the Pokémon (not used up), one of the strongest held items in the shop; comes with Beedrill, the first boss",
     "img": "./ui/itens/ic_900110.png"
    },
    {
     "id": 900111,
-    "nome": "Balão de Ar",
+    "nome": "Air Balloon",
     "en": "Air Balloon",
     "icone": "ic_900111",
     "consome": true,
     "degrau": 2,
     "raridade": "comum",
-    "texto": "Golpes do tipo Terra não acertam quem segura. Estoura no primeiro golpe recebido.",
-    "porque": "uso único: estoura no 1º golpe recebido e some; vai com o Pidgeot, a ave de Kanto (o balão dá a imunidade a Terra que o tipo Voador já tem)",
+    "texto": "Ground-type moves miss the holder. Pops at the first hit taken.",
+    "porque": "single use: pops at the first hit; comes with Pidgeot",
     "img": "./ui/itens/ic_900111.png"
    }
   ]
@@ -1914,7 +1914,7 @@
   "regioes": [
    {
     "id": "r1",
-    "nome": "A fazenda",
+    "nome": "The farm",
     "nivel": 1,
     "x": [
      -44,
@@ -1929,7 +1929,7 @@
    },
    {
     "id": "r2",
-    "nome": "A ilha do meio",
+    "nome": "The middle island",
     "nivel": 3,
     "x": [
      -14,
@@ -1944,7 +1944,7 @@
    },
    {
     "id": "r3",
-    "nome": "A ilha leste",
+    "nome": "The east island",
     "nivel": 5,
     "x": [
      21,
@@ -1959,7 +1959,7 @@
    },
    {
     "id": "r4",
-    "nome": "O bosque",
+    "nome": "The grove",
     "nivel": 7,
     "x": [
      -44,
@@ -1974,7 +1974,7 @@
    },
    {
     "id": "r5",
-    "nome": "O platô",
+    "nome": "The plateau",
     "nivel": 9,
     "x": [
      16,
@@ -2077,9 +2077,9 @@
   "vagas": [
    {
     "id": "salao",
-    "nome": "Salão da guilda",
+    "nome": "Guild Hall",
     "regiao": "r1",
-    "descricao": "a casa da guilda: cresce com o nível; baú e loja moram aqui (fase 3)",
+    "descricao": "the guild's house: grows with the guild level; the treasury and shop live here",
     "x": -30,
     "z": 39,
     "niveis": [
@@ -2167,9 +2167,9 @@
    },
    {
     "id": "descanso",
-    "nome": "Área de descanso dos Pokémon",
+    "nome": "Pokémon rest area",
     "regiao": "r1",
-    "descricao": "onde os Pokémon emprestados pelos membros ficam à mostra (fase 3: trabalhando)",
+    "descricao": "where members' Pokémon are on show",
     "nivel": 1,
     "custo": 0,
     "pecas": [
@@ -2187,9 +2187,9 @@
    },
    {
     "id": "cozinha",
-    "nome": "Cozinha ao ar livre",
+    "nome": "Outdoor kitchen",
     "regiao": "r1",
-    "descricao": "comida pros Pokémon da base (fase 3)",
+    "descricao": "food for the base's Pokémon",
     "nivel": 2,
     "custo": 300,
     "pecas": [
@@ -2207,9 +2207,9 @@
    },
    {
     "id": "bancada",
-    "nome": "Bancada de síntese",
+    "nome": "Crafting bench",
     "regiao": "r2",
-    "descricao": "transforma o que a base produz em itens presos à conta (fase 3)",
+    "descricao": "turns what the base produces into account-bound items",
     "nivel": 4,
     "custo": 800,
     "pecas": [
@@ -2227,9 +2227,9 @@
    },
    {
     "id": "mina",
-    "nome": "Mina",
+    "nome": "Mine",
     "regiao": "r3",
-    "descricao": "pedra que renasce por hora; rende pelo número de membros que mineram (fase 3)",
+    "descricao": "ore that grows back every hour; yields more the more members mine",
     "nivel": 5,
     "custo": 600,
     "pecas": [
@@ -2248,9 +2248,9 @@
    },
    {
     "id": "horta",
-    "nome": "Horta grande",
+    "nome": "Large garden",
     "regiao": "r3",
-    "descricao": "20 canteiros; o Pokémon que rega passa pelos corredores",
+    "descricao": "20 plots; the watering Pokémon walks the rows",
     "nivel": 5,
     "custo": 500,
     "pecas": [
@@ -2658,9 +2658,9 @@
    },
    {
     "id": "alimentador",
-    "nome": "Alimentador automático",
+    "nome": "Auto-feeder",
     "regiao": "r3",
-    "descricao": "os Pokémon da base comem sozinhos (fase 3)",
+    "descricao": "the base's Pokémon feed themselves",
     "nivel": 6,
     "custo": 500,
     "pecas": [
@@ -2678,9 +2678,9 @@
    },
    {
     "id": "decoracao",
-    "nome": "Máquina de decoração",
+    "nome": "Decoration machine",
     "regiao": "r3",
-    "descricao": "enfeites da base (fase 3)",
+    "descricao": "decorations for the base",
     "nivel": 6,
     "custo": 800,
     "pecas": [
@@ -2698,9 +2698,9 @@
    },
    {
     "id": "serraria",
-    "nome": "Serraria",
+    "nome": "Sawmill",
     "regiao": "r4",
-    "descricao": "madeira que renasce por hora, entre as árvores do bosque (fase 3)",
+    "descricao": "wood that grows back every hour among the grove trees",
     "nivel": 7,
     "custo": 800,
     "pecas": [
@@ -2738,7 +2738,7 @@
    }
   ],
   "tesouro": {
-   "nome": "Moeda de guilda",
+   "nome": "Guild coin",
    "vem": [
     "vitória sobre o chefe (100 × degrau)",
     "marco de 50.000 de dano (50)",
@@ -2807,8 +2807,8 @@
   "vagas": [
    {
     "id": "ninho",
-    "nome": "Ninho dos companheiros",
-    "descricao": "onde os seus Pokémon ficam à mostra e descansam (fase 3: fadiga e humor)",
+    "nome": "Companion nest",
+    "descricao": "where your Pokémon show off and rest",
     "nivel": 1,
     "custo": 0,
     "pecas": [
@@ -2826,8 +2826,8 @@
    },
    {
     "id": "horta",
-    "nome": "Horta de bagas",
-    "descricao": "6 canteiros: regar, capinar, colher (fase 3)",
+    "nome": "Berry garden",
+    "descricao": "6 plots: water, weed, harvest",
     "nivel": 2,
     "custo": 5000,
     "pecas": [
@@ -2955,8 +2955,8 @@
    },
    {
     "id": "cozinha",
-    "nome": "Cozinha ao ar livre",
-    "descricao": "comida pros companheiros (fase 3)",
+    "nome": "Outdoor kitchen",
+    "descricao": "food for your companions",
     "nivel": 3,
     "custo": 8000,
     "pecas": [
@@ -2974,8 +2974,8 @@
    },
    {
     "id": "alimentador",
-    "nome": "Alimentador automático",
-    "descricao": "os companheiros comem sozinhos (fase 3)",
+    "nome": "Auto-feeder",
+    "descricao": "your companions feed themselves",
     "nivel": 4,
     "custo": 12000,
     "pecas": [
@@ -2993,8 +2993,8 @@
    },
    {
     "id": "decoracao",
-    "nome": "Máquina de decoração",
-    "descricao": "enfeites da casa (fase 3)",
+    "nome": "Decoration machine",
+    "descricao": "decorations for your home",
     "nivel": 5,
     "custo": 15000,
     "pecas": [
@@ -3012,8 +3012,8 @@
    },
    {
     "id": "alquimia",
-    "nome": "Mesa de alquimia",
-    "descricao": "síntese pessoal, na frente do laboratório (fase 3)",
+    "nome": "Alchemy table",
+    "descricao": "personal crafting, in front of the lab",
     "nivel": 6,
     "custo": 20000,
     "pecas": [
@@ -3031,13 +3031,13 @@
    },
    {
     "id": "incubadora",
-    "nome": "Incubadora",
-    "descricao": "item da bolsa: o jogador coloca no terreno; choca o ovo da criação (lab-ovo)",
+    "nome": "Incubator",
+    "descricao": "a Bag item you place on your plot: it hatches an Egg",
     "nivel": 1,
     "custo": 0,
     "item": {
      "id": "incubadora",
-     "nome": "Incubadora",
+     "nome": "Incubator",
      "icone": "ic_placeholder",
      "nota": "ícone provisório até a Amanda desenhar"
     },

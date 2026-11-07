@@ -7,7 +7,8 @@ import { instalarJogadores } from '/admin/players.mjs';
 import { instalarEventos } from '/admin/events.mjs';
 import { instalarErrantes } from '/admin/roamers.mjs';
 import { instalarCampeao } from '/admin/champion.mjs';
-import { instalarSurtos } from '/admin/outbreaks.mjs';   // 🌟 Mass outbreaks (server_outbreaks.mjs)   // 👑 Champion's seat (server_battle.mjs)   // 🌀 roaming legendaries (server_roamers.mjs)
+import { instalarSurtos } from '/admin/outbreaks.mjs';
+import { instalarGuildas } from '/admin/guilds.mjs';   // 🛡️ Guilds (server_guild.mjs)   // 🌟 Mass outbreaks (server_outbreaks.mjs)   // 👑 Champion's seat (server_battle.mjs)   // 🌀 roaming legendaries (server_roamers.mjs)
 import { instalarCorreio } from '/admin/mail.mjs';
 import { instalarRanking } from '/admin/ranking.mjs';   // 🏆 Ranking (server_ranking.mjs)   // 📬 Mail (server_mail.mjs)
 import { instalarAgenda } from '/admin/schedule.mjs';   // 📅 event schedule (server_schedule.mjs)   // Fase 3: eventos ao vivo, aviso global, manutenção
@@ -114,7 +115,7 @@ async function iniciar() {
   await carregarReferencia();
   await carregarTudo();
   ligarUI();
-  if (!dadosInstalado){ dadosInstalado = true; instalarDados({ api, toast, avisarJogo }); instalarJogadores({ api, toast, canal, resolverEspecie }); instalarEventos({ api, toast }); instalarErrantes({ api, toast }); instalarCampeao({ api, toast }); instalarSurtos({ api, toast }); instalarCorreio({ api, toast, resolverEspecie }); instalarRanking({ api, toast }); instalarAgenda({ api, toast }); instalarConteudo({ api, toast, avisarJogo }); }
+  if (!dadosInstalado){ dadosInstalado = true; instalarDados({ api, toast, avisarJogo }); instalarJogadores({ api, toast, canal, resolverEspecie }); instalarEventos({ api, toast }); instalarErrantes({ api, toast }); instalarCampeao({ api, toast }); instalarSurtos({ api, toast }); instalarGuildas({ api, toast }); instalarCorreio({ api, toast, resolverEspecie }); instalarRanking({ api, toast }); instalarAgenda({ api, toast }); instalarConteudo({ api, toast, avisarJogo }); }
 }
 let dadosInstalado = false;
 function mostrarLogin(msg = '') {

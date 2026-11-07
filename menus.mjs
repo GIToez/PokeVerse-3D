@@ -272,9 +272,7 @@ function ligarRecursos(){
   TerrenoEstado.instalar({ chat: t => Chat.sistema(t) });
   GuildaUI.instalar({
     ...gancho,
-    pedir: async op => op === 'vista'
-      ? { ok: true, vista: { guilda: null, convites: [], lista: [], pedidos: [], agora: Date.now(), eu: { fundar: { custo: 0, pode: false, porque: 'Guilds need the server.' } } } }
-      : { ok: false, erro: 'Guilds need the server. You can look around, but nothing is saved yet.' },
+    pedir: (op, d) => Rede.pedirGuilda(op, d),                          // server_guild.mjs
   });
   ControlesUI.instalar({                                                    // what the Controls tab shows next to each action (its moves, ball, shortcuts and team)
     Som: ctx.Som,
@@ -477,6 +475,7 @@ function marcarMapaCheio(on){
   document.body.classList.toggle('mapa-aberto', on);
   if (on) j.setAttribute('translate', 'no'); else j.removeAttribute('translate');
 }
+export const guildaReceber = m => GuildaUI.receber(m);   // guilda_vista / guilda_chat pushes (network.mjs)
 export function fechar(){ if (aberta) ctx.Som?.tocar?.('ui/sound_click', { volume: 0.3 }); aberta = null; const j = $('janela'); j.hidden = true; marcarMapaCheio(false); for (const q of [popPk, popBx, popMo, popMi, popTr, popMa, popSocial, popDx, popCf, popRd, popAt]) if (q) Popup.fechar(q); try { CrecheUI.fechar(); } catch {} try { TerrenoUI.fechar(); } catch {} try { for (let i = 0; i < 6 && GuildaUI.aberto(); i++) GuildaUI.fecharTopo(); } catch {} try { if (Balsa.aberto()) Balsa.fecharTopo(); } catch {} try { FeiraUI.fechar(); } catch {} try { for (let i = 0; i < 3 && EventosUI.aberto(); i++) EventosUI.fecharTopo(); } catch {} try { const p = PokemartUI.popAtual(); if (p) Popup.fechar(p); } catch {} pararDex(); avisarRaid(); try { ctx.pintarTime?.(true); } catch {} }
 /* ANOTHER TRAINER'S CARD (Nov 6): the player card's Inspect opens this same Trainer window with their data (server_party.mjs
    `inspecao`); their money and the buttons that only make sense on your own card stay hidden. */
