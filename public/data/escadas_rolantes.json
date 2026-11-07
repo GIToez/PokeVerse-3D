@@ -1,0 +1,9 @@
+{
+ "_sobre": "Escalators between floors (escalator_anim.mjs + server_escalators.mjs). Each link: walking onto the escalator `de.peca` on map `de.mapa` rides it and arrives on `para.peca` on `para.mapa` (riding that one the other way). The pieces are map objects named animated_escalator_*. One link per direction.",
+ "ligacoes": [
+  { "de": { "mapa": "4110001", "peca": "animated_escalator_up" }, "para": { "mapa": "9100001", "peca": "animated_escalator_down" } },
+  { "de": { "mapa": "9100001", "peca": "animated_escalator_down" }, "para": { "mapa": "4110001", "peca": "animated_escalator_up" } },
+  { "de": { "mapa": "4110001", "peca": "animated_escalator_down" }, "para": { "mapa": "9100003", "peca": "animated_escalator_up" } },
+  { "de": { "mapa": "9100003", "peca": "animated_escalator_up" }, "para": { "mapa": "4110001", "peca": "animated_escalator_down" } }
+ ]
+}

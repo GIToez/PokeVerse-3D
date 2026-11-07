@@ -59,7 +59,8 @@ import { createParty } from './server_party.mjs';     // parties of up to 4, and
 import * as CaixaR from './box_rules.mjs';
 import * as Med from './medallion.mjs';
 import { createGuilds } from './server_guild.mjs';
-import { createGuildBoss } from './server_guild_boss.mjs';   // the daily guild boss on the base's plateau
+import { createGuildBoss } from './server_guild_boss.mjs';
+import { createEscalators } from './server_escalators.mjs';   // riding escalators between floors (the Pokémon Center 2F / B1)   // the daily guild boss on the base's plateau
 import { createPlots, RE_SALA as RE_SALA_TERRENO } from './server_plot.mjs';
 import * as PlacementS from './placement.mjs';
 import { createMail } from './server_mail.mjs';
@@ -1925,6 +1926,7 @@ const guildas = createGuilds({ dataPub: DADOS_PUB, dataDir: DADOS, accounts: con
   levar: (u, pos, texto) => { if (!contas[u]) return; contas[u].posGm = pos; salvarContas(); for (const w of socketsDe(u)) enviar(w, { t: 'volta', mapa: pos.mapa, texto }); },
   pontoSeguro: () => { const p = moderacao.cidade('pallet'); return p ? { mapa: String(p.mapa), x: +p.x, z: +p.z, giro: 0 } : null; },
   onTag: (u, tag) => { for (const w of socketsDe(u)) { if (w._info) w._info.guilda = tag; enviar(w, { t: 'guilda_tag', id: w._id, guilda: tag }); broadcast(w, { t: 'guilda_tag', id: w._id, guilda: tag }); } } });
+const escadas = createEscalators({ dataPub: DADOS_PUB, accounts: contas, send: enviar, saveAccounts: salvarContas, log: (...a) => console.log('[escalator]', ...a.slice(1)) });
 const chefeGuilda = createGuildBoss({ guilds: guildas, accounts: contas, connections: conexoes, send: enviar, socketsOf: socketsDe, dataPub: DADOS_PUB, root: __dir });
 /* PERSONAL PLOTS (server_plot.mjs): each account's own copy of the Habitat (scene 1000002, room habitat#…), visits, buildings. */
 const terrenos = createPlots({ dataPub: DADOS_PUB, accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, salaDoSocket: ws => ws._mapa,
@@ -2406,6 +2408,7 @@ wss.on('connection', ws => {
         else if (m.t === 'terreno') terrenos.operar(ws, m, () => conexoes.values());   // personal plots (server_plot.mjs)
         else if (m.t === 'horta_ver' || m.t === 'horta_plantar' || m.t === 'horta_colher') terrenos.horta(ws, m);   // the plot's berry garden
         else if (/^ovo_(ver|incubar|desincubar|acelerar|chocar|descartar)$/.test(m.t)) criacao.ovos(ws, m);   // Eggs in the plot's incubators (server_breeding.mjs)
+        else if (m.t === 'escada') escadas.receber(ws, m);                 // ride an escalator to the next floor (server_escalators.mjs)
         else if (m.t === 'guilda') {   // guilds (server_guild.mjs)
           const antes = ws._usuario ? guildas.tagDe(ws._usuario) : null;
           guildas.operar(ws, m);

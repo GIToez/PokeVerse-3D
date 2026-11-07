@@ -10501,7 +10501,8 @@ function alternarJogo(){
 function atualizarJogo(dt, entrada){
   const { ash, pika } = jogo;
   if (interagindo || falando || Menus.aberto() || Troca.aberta() || jogo.cinem) entrada.set(0, 0, 0);
-  if (jogo.cinem && jogo.ash) jogo.ash.alvoX = null;                     // cinematics (intros, cutscenes, director mode): nobody walks, not even by clicking the ground   // durante o gesto/conversa/menu/troca ninguém anda
+  if (jogo.cinem && jogo.ash) jogo.ash.alvoX = null;
+  if (escadaRolante(dt)) return;                                          // riding an escalator: it moves you (escalator_anim.mjs)                     // cinematics (intros, cutscenes, director mode): nobody walks, not even by clicking the ground   // durante o gesto/conversa/menu/troca ninguém anda
   verificarPortas(dt);
   /* NPC LONGE NÃO ANIMA NEM DESENHA (12/09): Kanto tem ~1.580 NPCs, todos com mixer rodando e `frustumCulled = false` — ~2.000
      draw calls e 1,7 M triângulos por quadro, mais o passe de sombra: o "laguinho" do celular. Quem está a mais de NPC_RAIO_VISTA
@@ -10687,7 +10688,7 @@ function animarCorpos(dt, lista, r01){
   for (const e of lista){
     e.travaAnim = Math.max(0, e.travaAnim - dt);
     if (e.travaAnim <= 0 && e.anim && !['Idle', 'Run'].includes(e.anim) && !(e === pika && pika.desmaiado > 0)) e.anim = null;   // acabou o golpe/ferido: volta ao estado
-    const y = r01 ? RaidR01.alturaChao(e.x, e.z) : apoioDe(e);           // nadando (surf) bóia na superfície; senão o chão
+    const y = e.escadaY != null ? e.escadaY : r01 ? RaidR01.alturaChao(e.x, e.z) : apoioDe(e);           // on an escalator: its step · nadando (surf) bóia na superfície; senão o chão
     if (y !== null) e.y = y;
     tocarAnim(e, e.quieto > 0.14 ? 'Idle' : 'Run');
     if (e === ash) e.mix.timeScale = e.quieto <= 0.14 && patinando() ? 0.7 : e.quieto <= 0.14 && jogo.andando ? 0.66 : 1;   // Roller Skates: longer strides, it reads as gliding · walking: the run clip slowed down
@@ -10702,6 +10703,46 @@ function animarCorpos(dt, lista, r01){
     e.pivo.rotation.y += d * Math.min(1, dt * 12);
     e.mix.update(dt);
   }
+}
+
+/* ESCALATORS BETWEEN FLOORS (Nov 7). Walking onto the start of a linked escalator (data/escadas_rolantes.json) rides it to the far end;
+   the server sends you to the other floor (server_escalators.mjs) and the tab remembers the arrival, so the new floor opens with you riding
+   its escalator into the room. Mounted, in a battle or a cutscene, nothing happens. After an arrival you have to step away before the same
+   escalator takes you again. */
+let escadaLigacoes = null, escadaArmada = true, escadaChegando = null;
+window.__dbgEscadas = Escadas;
+try { const c = JSON.parse(sessionStorage.getItem('escada.chegada') || 'null'); if (c && String(c.mapa) === String(NOME) && Date.now() - (+c.em || 0) < 120e3) escadaChegando = c.peca; sessionStorage.removeItem('escada.chegada'); } catch {}
+fetch('./data/escadas_rolantes.json').then(r => r.ok ? r.json() : null).then(d => { escadaLigacoes = (d?.ligacoes || []).filter(l => String(l?.de?.mapa) === String(NOME)); }).catch(() => { escadaLigacoes = []; });
+function escadaRolante(dt){
+  const { ash, pika } = jogo; if (!ash) return false;
+  if (escadaChegando && jogo.ativo){                                       // just arrived from another floor: ride in
+    const peca = escadaChegando; escadaChegando = null;
+    if (Escadas.iniciar(peca, 'chegar')){ escadaArmada = false; const r = Escadas.passo(0); if (r){ for (const [e, p] of [[ash, r], [pika, r.pk]]) if (e){ e.x = e.vx = p.x; e.z = e.vz = p.z; e.y = e.vy = p.y; e.escadaY = p.y; e.pivo.position.set(p.x, p.y, p.z); } } }
+  }
+  if (Escadas.andando()){
+    const r = Escadas.passo(dt);
+    const por = (e, p, quieto) => { if (!e) return; e.x = p.x; e.z = p.z; e.escadaY = p.y; e.giro = p.giro; e.alvoX = null; e.quieto = quieto; };
+    por(ash, r, r.andando ? 0 : 1);
+    if (pika && !jogo.semParceiro && !jogo.montaria) por(pika, r.pk, r.andando ? 0 : 1);
+    animarCorpos(dt, jogo.semParceiro || !pika ? [ash] : [ash, pika], false);
+    if (r.fim){
+      if (r.sentido === 'sair'){                                            // the far end: to the other floor
+        const l = (escadaLigacoes || []).find(x => String(x.de.peca).toLowerCase() === r.peca);
+        try { if (l) sessionStorage.setItem('escada.chegada', JSON.stringify({ mapa: String(l.para.mapa), peca: String(l.para.peca).toLowerCase(), em: Date.now() })); } catch {}
+        telaEscura(9000, '…');
+        try { Rede.enviar({ t: 'escada', peca: r.peca }); } catch {}
+        jogo.escadaSaindo = true;                                           // stay put until the server's `volta` reloads the page
+      } else { ash.escadaY = null; if (pika) pika.escadaY = null; }
+    }
+    return true;
+  }
+  if (jogo.escadaSaindo) return true;
+  if (!escadaLigacoes?.length || jogo.montaria || jogo.turno || jogo.cinem || falando) return false;
+  if (!Escadas.perto(ash.x, ash.z, 1.6)){ escadaArmada = true; return false; }   // stepped away: the escalator can take you again
+  if (!escadaArmada || ash.quieto > 0.1) return false;                    // only while walking into it
+  const E = Escadas.entrando(ash.x, ash.z, ash.giro);
+  if (!E || !escadaLigacoes.some(l => String(l.de.peca).toLowerCase() === E.peca)) return false;
+  return Escadas.iniciar(E.peca, 'sair', { x: ash.x, z: ash.z });
 }
 
 /* ============================================================ camadas */

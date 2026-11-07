@@ -97,6 +97,11 @@ for (const [orig, novo, dir] of PARES) {
   const xb = caixaX(baixo), xa = caixaX(alto), xm = caixaX(meio);
   const passo = [((xa[0] + xa[1]) / 2 - (xb[0] + xb[1]) / 2) / (treads.length - 1), (alto - baixo) / (treads.length - 1)];   // one step up the slope (the average)
   const x0 = xa[0] < xb[0] ? xa[1] : xb[1], x1 = xa[0] < xb[0] ? xb[0] : xa[0];        // the band between the landings
+  /* THE RIDE (escalator_anim.mjs): where a rider walks, in the mesh's own frame, [x, y] — from the floor in front of the landing that is
+     level with the floor, over both landings, to just past the far one (into the wall opening / under the floor). Arriving = the reverse. */
+  const chao = Math.abs(baixo) < Math.abs(alto) ? 'baixo' : 'alto', xc = chao === 'baixo' ? xb : xa, xl = chao === 'baixo' ? xa : xb;
+  const yc = chao === 'baixo' ? baixo : alto, yl = chao === 'baixo' ? alto : baixo, fora = (xc[0] + xc[1]) / 2 > (xl[0] + xl[1]) / 2 ? 1 : -1;   // fora: which way is "out" past the floor landing
+  const caminho = [[fora > 0 ? xc[1] + 0.55 : xc[0] - 0.55, yc], [(xc[0] + xc[1]) / 2, yc], [(xl[0] + xl[1]) / 2, yl], [fora > 0 ? xl[0] - 0.7 : xl[1] + 0.7, yl]].map(([x, y]) => [+x.toFixed(3), +y.toFixed(3)]);
   const corpo = [], unidade = [];
   for (const t of tris) {
     if (!t.degrau) { corpo.push(...t.k); continue; }
@@ -115,9 +120,9 @@ for (const [orig, novo, dir] of PARES) {
   const nCorpo = out.nodes.push({ name: novo + '_body', mesh: malha(corpo, novo + '_body'), ...tr }) - 1;
   const nPasso = out.nodes.push({ name: 'anim_steps', mesh: malha(unidade, 'anim_steps'), ...tr }) - 1;
   const nLib = out.nodes.push({ name: 'lib:' + novo, children: [nCorpo, nPasso],
-    extras: { escada: { dir, passo: passo.map(v => +v.toFixed(4)), n: treads.length - 2, x0: +x0.toFixed(4), x1: +x1.toFixed(4) } } }) - 1;
+    extras: { escada: { dir, passo: passo.map(v => +v.toFixed(4)), n: treads.length - 2, x0: +x0.toFixed(4), x1: +x1.toFixed(4), caminho } } }) - 1;
   out.nodes[0].children.push(nLib);
-  console.log(novo + ': ' + corpo.length / 3 + ' body triangles, ' + unidade.length / 3 + ' in the moving step; treads at y ' + treads.join(', ') + '; step ' + passo.map(v => v.toFixed(3)) + '; band x ' + x0.toFixed(2) + '…' + x1.toFixed(2));
+  console.log(novo + ': ride ' + JSON.stringify(caminho) + '; ' + corpo.length / 3 + ' body triangles, ' + unidade.length / 3 + ' in the moving step; treads at y ' + treads.join(', ') + '; step ' + passo.map(v => v.toFixed(3)) + '; band x ' + x0.toFixed(2) + '…' + x1.toFixed(2));
 }
 
 const bin = Buffer.concat(partes); const pad = (4 - bin.length % 4) % 4;

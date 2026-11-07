@@ -337,7 +337,7 @@ export function criarModeracao(h) {
     if (p && String(p.mapa) === String(ws._mapa)) {
       /* o destino vira a última posição: sem isso o `entrar` logo depois era recusado como salto sem porta (aceitarPos, > 40 m ou
          outro mapa) e o `pos` ficava no lugar antigo — o próximo F5/login devolvia a conta pra onde estava presa */
-      contas[u].pos = { mapa: String(p.mapa), x: +p.x, y: 0, z: +p.z, giro: +p.giro || 0, em: Date.now() };
+      contas[u].pos = { mapa: String(p.mapa), x: +p.x, y: 0, z: +p.z, giro: +p.giro || 0, em: Date.now(), ...(+p.chegada > 0 ? { chegada: +p.chegada } : {}) };   // chegada: a shared Center floor keeps its town (escalators)
       delete contas[u].posGm; salvarContasJa();
     }
   }
