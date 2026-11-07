@@ -74,13 +74,21 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     tags.set(u, t); onTag(u, t);
   }
 
+  /** The guild window's view. GM accounts get everything: the guild boss is open to them whatever the guild level, with no daily limit. */
+  function vistaDe(u) {
+    const v = livro.vista(u), c = v?.guilda?.chefe;
+    if (c?.loja) { c.loja.fragmentos = accounts[u]?.gm ? Math.max(1e6, qtdItem(accounts[u].save, FRAGMENTO())) : qtdItem(accounts[u]?.save, FRAGMENTO()); c.loja.trocouNaSemana = c.loja.compradoEstaSemana; }
+    if (c && accounts[u]?.gm) { c.liberado = true; if (c.janela && !(c.janelaAte > Date.now())) { c.janela = null; c.entradaHoje = false; } }
+    return v;
+  }
+
   // ── pushes ─────────────────────────────────────────────────────────────────────────
   function empurrar(us, exceto = null) {
     for (const u of new Set(us)) {
       if (u === exceto) { conferirTag(u); continue; }
       conferirTag(u);
       const ws = socketsOf(u); if (!ws.length) continue;
-      const vista = livro.vista(u);
+      const vista = vistaDe(u);
       for (const w of ws) send(w, { t: 'guilda_vista', vista });
     }
   }
@@ -91,11 +99,11 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     const responder = o => send(ws, { t: 'guilda', rid, ...o });
     if (!u || !accounts[u]) return responder({ ok: false, erro: 'Sign in to an account to use guilds.' });
     const op = String(m.op || 'vista');
-    if (op === 'vista') return responder({ ok: true, vista: livro.vista(u) });
+    if (op === 'vista') return responder({ ok: true, vista: vistaDe(u) });
     const naBase = String(ws._mapa || '').startsWith('casa#');
     if (op === 'sairBase') {                                                // back where I was before the base (else Pallet Town)
       const a = accounts[u].save?.antesBase, p = a && Number.isFinite(+a.x) ? { mapa: a.mapa, x: +a.x, z: +a.z, giro: 0 } : pontoSeguro();
-      responder({ ok: true, vista: livro.vista(u) });
+      responder({ ok: true, vista: vistaDe(u) });
       if (p && naBase) levar(u, p, 'Leaving the guild base…');
       return;
     }
@@ -103,7 +111,14 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
       accounts[u].save.antesBase = { mapa: String(ws._cena || ws._mapa || 'kanto'), x: ws._info?.x, z: ws._info?.z };
     if (!/^[a-zA-Z]{2,24}$/.test(op)) return responder({ ok: false, erro: 'Unknown operation.' });
     const { t, rid: _r, op: _o, ...dados } = m;
-    const r = livro.executar(u, op, dados) || { ok: false, erro: 'No response.' };
+    const sv = accounts[u].save || (accounts[u].save = {});
+    if (op === 'lojaGuilda') dados.fragmentos = qtdItem(sv, FRAGMENTO()) + (accounts[u].gm ? 1e6 : 0);   // what the Bag really holds (GM: everything)
+    let r = livro.executar(u, op, dados) || { ok: false, erro: 'No response.' };
+    if (!r.ok && op === 'chefeEntrar' && accounts[u].gm && livro.guildaDe(u)) {   // GM: to the boss whatever the guild level or today's entries
+      const g = livro.guildaDe(u), c = livro._chefeDe(g), hoje = G.chaveDia(Date.now());
+      c.entradas[u] = hoje; c.nEntradas[u] = 1; delete c.janelas[u];
+      r = { ok: true, tocados: [u], chegada: livro._chegada('chefe', g, u), sala: livro._salaDa(g) };
+    }
     if (r.ok) {
       gravar();
       log('guild', u, op, r.guilda || '');
@@ -111,9 +126,14 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
       conferirTag(u);
       if (r.chat && Array.isArray(r.para)) for (const v of r.para) for (const w of socketsOf(v)) send(w, { t: 'guilda_chat', msg: r.chat });
       if (Array.isArray(r.premios)) entregar(r.premios);
+      if (r.debitar || r.entregar) {                                         // the guild shop: fragments out, the held item in (bound to the account)
+        if (r.debitar && !accounts[u].gm) tirarItem(sv, String(r.debitar.item), Math.max(0, +r.debitar.qtd || 0));
+        if (r.entregar) { sv.presos = sv.presos || {}; const id = String(r.entregar.item); sv.presos[id] = (+sv.presos[id] || 0) + Math.max(1, +r.entregar.qtd || 1); r.entregue = r.entregar; }
+        empurrarSave(u);
+      }
     }
     const extra = Object.fromEntries(Object.entries(r).filter(([k]) => !PRIVADOS.has(k)));
-    responder({ ...extra, ok: !!r.ok, vista: livro.vista(u) });
+    responder({ ...extra, ok: !!r.ok, vista: vistaDe(u) });
     if (r.ok && op === 'construir') {                                       // the new building shows after the base scene reloads, for everyone inside
       const sala = String(ws._mapa || '');
       if (sala.startsWith('casa#')) for (const v of Object.keys(livro.guildaDe(u)?.membros || {})) for (const w of socketsOf(v))
@@ -126,18 +146,27 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     }
   }
 
-  // prizes (the guild boss's shards when its day closes: { u, item, fragmentos }) go straight into the Bag
+  const FRAGMENTO = () => String(G.dados()?.chefe?.regras?.loja?.fragmentoItem || 900040);
+  const qtdItem = (s, id) => (+s?.presos?.[id] || 0) + (+s?.itens?.[id] || 0);
+  function tirarItem(s, id, n) {
+    for (const k of ['presos', 'itens']) { const b = s[k]; if (!b || n <= 0) continue; const q = Math.min(n, +b[id] || 0); b[id] = (+b[id] || 0) - q; n -= q; if (!(b[id] > 0)) delete b[id]; }
+  }
+  function empurrarSave(u) {
+    const c = accounts[u]; if (!c?.save) return;
+    c.rev = (c.rev || 0) + 1; saveAccounts();
+    for (const w of socketsOf(u)) send(w, { t: 'save', save: { itens: c.save.itens || {}, presos: c.save.presos || {} }, rev: c.rev });
+  }
+  // prizes (the guild boss's fragments when its day closes: { u, item, fragmentos }) go straight into the Bag, bound to the account
   function entregar(lista) {
-    let mudou = false;
     for (const p of lista || []) {
       const u = p?.usuario ?? p?.u; const s = accounts[u]?.save; if (!s) continue;
       const itens = p.itens || (p.item ? { [p.item]: p.qtd || p.fragmentos || 1 } : null);
       if (!itens) continue;
-      s.itens = s.itens || {};
-      for (const [id, q] of Object.entries(itens)) s.itens[id] = (+s.itens[id] || 0) + Math.max(0, Math.floor(+q || 0));
-      mudou = true;
+      s.presos = s.presos || {};
+      for (const [id, q] of Object.entries(itens)) s.presos[id] = (+s.presos[id] || 0) + Math.max(0, Math.floor(+q || 0));
+      empurrarSave(u);
+      if (p.fragmentos) for (const w of socketsOf(u)) send(w, { t: 'sistema', texto: '🛡️ Guild boss (' + (p.nome || '?') + '): your ' + Number(p.dano || 0).toLocaleString('en-US') + ' damage reached the ' + p.faixa + ' tier: +' + p.fragmentos + ' Guild Fragment' + (p.fragmentos === 1 ? '' : 's') + (p.meta ? '. The guild hit its daily goal!' : '.') });
     }
-    if (mudou) saveAccounts();
   }
 
   /** Guild XP and weekly points from play. tipo = an id from guilda.json `fontes` (selvagem, captura, missao, ginasio, elite, raid…). */
@@ -204,5 +233,5 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
   /** The room for an account entering the base scene: its guild's base (null: not in a guild). */
   const salaBase = u => { const g = livro.guildaDe(u); return g ? livro._salaDa(g) : null; };
   const cenaBase = () => String(G.dados().base?.mapa || 4700001);
-  return { operar, evento, tagDe, anunciosExtra, salaBase, cenaBase, pecasDaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, _test: { amb, gravar } };
+  return { operar, evento, tagDe, anunciosExtra, salaBase, cenaBase, pecasDaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, gravar, _test: { amb, gravar } };
 }

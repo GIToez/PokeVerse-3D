@@ -853,6 +853,9 @@ function receber(m) {
     case 'pstatus':
       ctx.mundo?.receber(m);
       return;
+    case 'gchefe':                                       // the guild boss: my window, damage and tier (server_guild_boss.mjs)
+      ctx.raid?.janela?.(m);
+      return;
     case 'raid':
     case 'raid_ir':
     case 'raid_voltar':

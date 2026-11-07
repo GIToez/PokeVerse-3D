@@ -59,6 +59,7 @@ import { createParty } from './server_party.mjs';     // parties of up to 4, and
 import * as CaixaR from './box_rules.mjs';
 import * as Med from './medallion.mjs';
 import { createGuilds } from './server_guild.mjs';
+import { createGuildBoss } from './server_guild_boss.mjs';   // the daily guild boss on the base's plateau
 import { createPlots, RE_SALA as RE_SALA_TERRENO } from './server_plot.mjs';
 import * as PlacementS from './placement.mjs';
 import { createMail } from './server_mail.mjs';
@@ -1922,6 +1923,7 @@ const guildas = createGuilds({ dataPub: DADOS_PUB, dataDir: DADOS, accounts: con
   levar: (u, pos, texto) => { if (!contas[u]) return; contas[u].posGm = pos; salvarContas(); for (const w of socketsDe(u)) enviar(w, { t: 'volta', mapa: pos.mapa, texto }); },
   pontoSeguro: () => { const p = moderacao.cidade('pallet'); return p ? { mapa: String(p.mapa), x: +p.x, z: +p.z, giro: 0 } : null; },
   onTag: (u, tag) => { for (const w of socketsDe(u)) { if (w._info) w._info.guilda = tag; enviar(w, { t: 'guilda_tag', id: w._id, guilda: tag }); broadcast(w, { t: 'guilda_tag', id: w._id, guilda: tag }); } } });
+const chefeGuilda = createGuildBoss({ guilds: guildas, accounts: contas, connections: conexoes, send: enviar, socketsOf: socketsDe, dataPub: DADOS_PUB, root: __dir });
 /* PERSONAL PLOTS (server_plot.mjs): each account's own copy of the Habitat (scene 1000002, room habitat#…), visits, buildings. */
 const terrenos = createPlots({ dataPub: DADOS_PUB, accounts: contas, send: enviar, socketsOf: socketsDe, saveAccounts: salvarContas, salaDoSocket: ws => ws._mapa,
   levar: (u, pos, texto) => { if (!contas[u]) return; contas[u].posGm = pos; salvarContas(); for (const w of socketsDe(u)) enviar(w, { t: 'volta', mapa: pos.mapa, texto }); },   // the same reload-and-spawn as a GM teleport
@@ -2006,7 +2008,7 @@ wss.on('connection', ws => {
           if (id === ws._id || !other._info || other._mapa !== ws._mapa) continue;
           outros.push(infoJogador(other));
         }
-        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: world.list(ws._mapa), online: conexoes.size, conta: ws._usuario, guilda: ws._info?.guilda || null, ...(RE_SALA_TERRENO.test(String(ws._mapa)) ? { sala: ws._mapa, terrenoDono: terrenos.vista(terrenos.donoDaSala(ws._mapa) || ws._usuario, ws._usuario)?.dono || null } : String(ws._mapa).startsWith('casa#') ? { sala: ws._mapa } : {}), ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()), transformLigado: !!cfgJogo().transformLigado || !!contas[ws._usuario].gm } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
+        enviar(ws, { t: 'bemvindo', id: ws._id, jogadores: outros, selvagens: [...world.list(ws._mapa), ...chefeGuilda.lista(ws)], online: conexoes.size, conta: ws._usuario, guilda: ws._info?.guilda || null, ...(RE_SALA_TERRENO.test(String(ws._mapa)) ? { sala: ws._mapa, terrenoDono: terrenos.vista(terrenos.donoDaSala(ws._mapa) || ws._usuario, ws._usuario)?.dono || null } : String(ws._mapa).startsWith('casa#') ? { sala: ws._mapa } : {}), ...(ws._usuario && contas[ws._usuario] ? { correio: mail.unread(ws._usuario), caca: caca.vista(ws._usuario), caixaVagas: CaixaR.vagas(contas[ws._usuario].save, cfgJogo()), transformLigado: !!cfgJogo().transformLigado || !!contas[ws._usuario].gm } : {}), versao: VERSAO_REDE, soloWilds: false, ...raid.bemvindo(ws) });   // dev local não tem servidor de mundo: o cliente nasce os selvagens sozinho (batalha/captura locais). Raid: na arena o participante liga o Mundo só com o chefe
         if (ws._usuario && contas[ws._usuario]) setTimeout(() => { try { diario.login(ws._usuario, ws); } catch (e) { console.warn('daily:', e.message); } }, 4000);   // today's daily prize (once a day), after the world has loaded
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
@@ -2014,6 +2016,7 @@ wss.on('connection', ws => {
         ws._worldJoined = true; world.joined(ws);
         if (ws._usuario) try { criacao.aoEntrar(ws._usuario, ws); surtos.aoEntrar(ws); } catch (e) { console.warn('daycare/outbreak', e); }   // Eggs that hatched while away; an outbreak in progress                           // shared world: wilds nobody owns on this map go to this player
         staff.aoEntrar(ws);                                                // staff: the ★ Staff button's state (server_staff.mjs)
+        chefeGuilda.aoEntrar(ws);                                          // the guild boss: my window and tier for the boss bar
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo
         const uM = sessoes.get(m.token) || null;
@@ -2415,7 +2418,7 @@ wss.on('connection', ws => {
         }
 
         else if (m.t === 'mod' || m.t?.startsWith('mod_')) moderacao.comando(ws, m);   // Fase 3: /online /ver /aviso /mudo /kick /banir /perdoar /tp /ir /puxar (o chat manda {t:'mod_<op>'})
-        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'raid_foco' || m.t === 'ataque' || m.t === 'r01' || m.t === 'r03' || m.t === 'raid_desmaio') { raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
+        else if (m.t === 'raid_staff' || m.t === 'raid_entrar' || m.t === 'raid_sair' || m.t === 'raid_foco' || m.t === 'ataque' || m.t === 'r01' || m.t === 'r03' || m.t === 'raid_desmaio') { if (m.t === 'ataque' && chefeGuilda.ataque(ws, m)) return; raid.receber(ws, m); if (m.t === 'ataque') world.receive(ws, m); }   // a raid boss id only matches the raid; any other id is a shared-world wild
         else if (m.t === 'progressao_vista' || m.t === 'progressao_resgatar' || m.t === 'progressao_titulo') progressao.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'correio_listar' || m.t === 'correio_ler' || m.t === 'correio_resgatar' || m.t === 'correio_apagar') mail.receive(ws, sessoes.get(ws._info?.token) || ws._usuario, m);
         else if (m.t === 'capturar' && raid.capturar(ws, m)) {}   // the raid boss's catch throw (server_raid.mjs); any other id is a shared-world wild

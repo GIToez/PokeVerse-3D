@@ -96,9 +96,11 @@ export function montarUI(dep = {}){
 /** Barra de vida do chefe no topo: { nome, lv, hp, maxHp } ou null (some). */
 export function chefe(info){
   if (info) temRegistro = true;
-  ultimoChefe = info ? { nome: info.nome || CFG.chefeNome, lv: info.lv ?? null, hp: Math.max(0, Math.round(info.hp ?? 0)), maxHp: Math.max(1, Math.round(info.maxHp || 1)), dex: info.dex || CFG.chefeDex } : null;
+  ultimoChefe = info ? { nome: info.nome || CFG.chefeNome, lv: info.lv ?? null, hp: Math.max(0, Math.round(info.hp ?? 0)), maxHp: Math.max(1, Math.round(info.maxHp || 1)), dex: info.dex || CFG.chefeDex, guilda: !!info.guilda } : null;
   ui('chefe', ultimoChefe);
 }
+/** The guild boss's personal window (server `gchefe`): the clock on the boss bar. */
+export function janela(m){ ui('janela', m); }
 export function modoArena(on){ ui('modoArena', !!on); }
 /** Faixa central (~4 s) + a mesma frase no chat. */
 function avisar(texto, { chat = true } = {}){
@@ -164,7 +166,7 @@ function aoEstado(m){
     return;
   }
   if (!dentro && !naArena) apagarCarimbo();
-  if (snap.fase === 'nenhuma' && ultimoChefe) chefe(null);
+  if (snap.fase === 'nenhuma' && ultimoChefe && !ultimoChefe.guilda) chefe(null);   // the guild boss isn't a raid: no raid doesn't hide it
 }
 
 /* O servidor já gravou a posição da conta num lugar da arena: recarrega a página pra lá (sem `chegada`: nasce na posição da conta). */

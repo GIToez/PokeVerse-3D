@@ -19,6 +19,26 @@
  },
  "evoluem": [],
  "itens": {
+  "900110": {
+   "id": 900110,
+   "nome": "Eviolite",
+   "icone": "ic_900110",
+   "efeito": {
+    "tipo": "defesaPreEvolucao",
+    "valor": 1.5
+   },
+   "texto": "Only on a Pokémon that can still evolve: damage taken ×0.67."
+  },
+  "900111": {
+   "id": 900111,
+   "nome": "Air Balloon",
+   "icone": "ic_900111",
+   "efeito": {
+    "tipo": "imuneTerra",
+    "consome": true
+   },
+   "texto": "Ground-type moves miss the holder. Pops at the first hit taken."
+  },
   "20002": {
    "id": 20002,
    "nome": "Quick Claw",

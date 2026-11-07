@@ -140,7 +140,13 @@ export function estado(s){
 }
 /** Barra de vida do chefe no topo. `null` esconde. */
 let chefeV2 = null, tChefeV2 = 0;
-const restanteLuta = () => (snap.fase === 'luta' ? Math.max(0, ((+snap.fimMs || 0) - (agora() - chegouEm)) / 1000) : 0);
+/* GUILD BOSS (Nov 7): the clock is my own window (server `gchefe`: janelaAte, an epoch time), not a raid's fight time. */
+let janelaAte = 0;
+export function janela(m){
+  janelaAte = +m?.janelaAte || 0;
+  if (chefeV2) RaidV2.barra(chefeV2, restanteLuta());
+}
+const restanteLuta = () => (snap.fase === 'luta' ? Math.max(0, ((+snap.fimMs || 0) - (agora() - chegouEm)) / 1000) : janelaAte > Date.now() ? (janelaAte - Date.now()) / 1000 : 0);
 export function chefe(info){
   if (!temDom()) return;
   if (RaidV2.barra(info, restanteLuta())){                                // v2: the designed bar; the CSS one stays hidden

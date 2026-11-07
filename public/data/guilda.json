@@ -936,6 +936,7 @@
    "golpeMs": 4000,
    "danoMin": 0.08,
    "danoMax": 0.14,
+   "danoMult": 1,
    "onde": "at the guild BASE (the plateau, region r5)",
    "faixas": [
     {
@@ -1003,11 +1004,11 @@
     "hp": 12000,
     "tipos": {
      "mais": [
-      "fogo",
-      "voador"
+      "Fire",
+      "Flying"
      ],
      "menos": [
-      "planta"
+      "Grass"
      ]
     },
     "held": [
@@ -1042,11 +1043,11 @@
     "hp": 14400,
     "tipos": {
      "mais": [
-      "eletrico",
-      "pedra"
+      "Electric",
+      "Rock"
      ],
      "menos": [
-      "inseto"
+      "Bug"
      ]
     },
     "held": [
@@ -1081,11 +1082,11 @@
     "hp": 17300,
     "tipos": {
      "mais": [
-      "agua",
-      "psiquico"
+      "Water",
+      "Psychic"
      ],
      "menos": [
-      "venenoso"
+      "Poison"
      ]
     },
     "held": [
@@ -1120,11 +1121,11 @@
     "hp": 20700,
     "tipos": {
      "mais": [
-      "psiquico",
-      "voador"
+      "Psychic",
+      "Flying"
      ],
      "menos": [
-      "pedra"
+      "Rock"
      ]
     },
     "held": [
@@ -1155,11 +1156,11 @@
     "hp": 24900,
     "tipos": {
      "mais": [
-      "lutador",
-      "metalico"
+      "Fighting",
+      "Steel"
      ],
      "menos": [
-      "normal"
+      "Normal"
      ]
     },
     "held": [
@@ -1194,11 +1195,11 @@
     "hp": 29900,
     "tipos": {
      "mais": [
-      "agua",
-      "eletrico"
+      "Water",
+      "Electric"
      ],
      "menos": [
-      "fogo"
+      "Fire"
      ]
     },
     "held": [
@@ -1233,11 +1234,11 @@
     "hp": 35800,
     "tipos": {
      "mais": [
-      "inseto",
-      "fantasma"
+      "Bug",
+      "Ghost"
      ],
      "menos": [
-      "lutador"
+      "Fighting"
      ]
     },
     "held": [
@@ -1272,11 +1273,11 @@
     "hp": 43000,
     "tipos": {
      "mais": [
-      "psiquico",
-      "noturno"
+      "Psychic",
+      "Dark"
      ],
      "menos": [
-      "venenoso"
+      "Poison"
      ]
     },
     "held": [
@@ -1307,11 +1308,11 @@
     "hp": 51600,
     "tipos": {
      "mais": [
-      "fogo",
-      "voador"
+      "Fire",
+      "Flying"
      ],
      "menos": [
-      "agua"
+      "Water"
      ]
     },
     "held": [
@@ -1346,11 +1347,11 @@
     "hp": 61900,
     "tipos": {
      "mais": [
-      "eletrico",
-      "planta"
+      "Electric",
+      "Grass"
      ],
      "menos": [
-      "fogo"
+      "Fire"
      ]
     },
     "held": [
@@ -1385,11 +1386,11 @@
     "hp": 74300,
     "tipos": {
      "mais": [
-      "pedra",
-      "agua"
+      "Rock",
+      "Water"
      ],
      "menos": [
-      "planta"
+      "Grass"
      ]
     },
     "held": [
@@ -1424,11 +1425,11 @@
     "hp": 89200,
     "tipos": {
      "mais": [
-      "eletrico",
-      "pedra"
+      "Electric",
+      "Rock"
      ],
      "menos": [
-      "agua"
+      "Water"
      ]
     },
     "held": [
@@ -1459,11 +1460,11 @@
     "hp": 107000,
     "tipos": {
      "mais": [
-      "lutador",
-      "pedra"
+      "Fighting",
+      "Rock"
      ],
      "menos": [
-      "normal"
+      "Normal"
      ]
     },
     "held": [
@@ -1498,11 +1499,11 @@
     "hp": 128400,
     "tipos": {
      "mais": [
-      "gelo",
-      "dragao"
+      "Ice",
+      "Dragon"
      ],
      "menos": [
-      "agua"
+      "Water"
      ]
     },
     "held": [
@@ -1537,11 +1538,11 @@
     "hp": 154100,
     "tipos": {
      "mais": [
-      "pedra",
-      "fogo"
+      "Rock",
+      "Fire"
      ],
      "menos": [
-      "gelo"
+      "Ice"
      ]
     },
     "held": [
@@ -1576,11 +1577,11 @@
     "hp": 184900,
     "tipos": {
      "mais": [
-      "pedra",
-      "gelo"
+      "Rock",
+      "Ice"
      ],
      "menos": [
-      "eletrico"
+      "Electric"
      ]
     },
     "held": [
@@ -1611,11 +1612,11 @@
     "hp": 221900,
     "tipos": {
      "mais": [
-      "pedra",
-      "agua"
+      "Rock",
+      "Water"
      ],
      "menos": [
-      "fogo"
+      "Fire"
      ]
     },
     "held": [
@@ -1650,11 +1651,11 @@
     "hp": 266200,
     "tipos": {
      "mais": [
-      "eletrico",
-      "noturno"
+      "Electric",
+      "Dark"
      ],
      "menos": [
-      "psiquico"
+      "Psychic"
      ]
     },
     "held": [
@@ -1689,11 +1690,11 @@
     "hp": 319500,
     "tipos": {
      "mais": [
-      "pedra",
-      "agua"
+      "Rock",
+      "Water"
      ],
      "menos": [
-      "fogo"
+      "Fire"
      ]
     },
     "held": [
@@ -1728,11 +1729,11 @@
     "hp": 383400,
     "tipos": {
      "mais": [
-      "inseto",
-      "fantasma"
+      "Bug",
+      "Ghost"
      ],
      "menos": [
-      "psiquico"
+      "Psychic"
      ]
     },
     "held": [
@@ -1756,24 +1757,24 @@
    }
   ],
   "tipoNome": {
-   "normal": "normal",
-   "fogo": "fogo",
-   "agua": "água",
-   "planta": "planta",
-   "eletrico": "elétrico",
-   "gelo": "gelo",
-   "lutador": "lutador",
-   "venenoso": "venenoso",
-   "terrestre": "terrestre",
-   "voador": "voador",
-   "psiquico": "psíquico",
-   "inseto": "inseto",
-   "pedra": "pedra",
-   "fantasma": "fantasma",
-   "dragao": "dragão",
-   "noturno": "noturno",
-   "metalico": "metálico",
-   "fada": "fada"
+   "Normal": "Normal",
+   "Fire": "Fire",
+   "Water": "Water",
+   "Grass": "Grass",
+   "Electric": "Electric",
+   "Ice": "Ice",
+   "Fighting": "Fighting",
+   "Poison": "Poison",
+   "Ground": "Ground",
+   "Flying": "Flying",
+   "Psychic": "Psychic",
+   "Bug": "Bug",
+   "Rock": "Rock",
+   "Ghost": "Ghost",
+   "Dragon": "Dragon",
+   "Dark": "Dark",
+   "Steel": "Steel",
+   "Fairy": "Fairy"
   },
   "heldNomes": {
    "20001": "Bright Powder",
@@ -1869,8 +1870,8 @@
    "20178": "Shadow Magic Ring",
    "20179": "Storm Amulet",
    "20186": "Celestial Dragon Wings",
-   "900110": "Mineral Evolutivo",
-   "900111": "Balão de Ar"
+   "900110": "Eviolite",
+   "900111": "Air Balloon"
   },
   "heldNovos": [
    {

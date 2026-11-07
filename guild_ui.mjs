@@ -244,7 +244,7 @@ function desenharVisao(g) {
 }
 function premioTexto(p, a) {
   const s = [];
-  if (p.dinheiro) s.push(fmt(p.dinheiro) + ' ₽');
+  if (p.dinheiro) s.push(fmt(p.dinheiro) + ' Coins');
   if (p.pecaTm?.comum) s.push(p.pecaTm.comum + (p.pecaTm.comum > 1 ? ' pieces' : ' piece') + ' of common TM');
   if (p.pecaTm?.forte) s.push(p.pecaTm.forte + (p.pecaTm.forte > 1 ? ' pieces' : ' piece') + ' of strong TM');
   if (p.tesouro) s.push('+' + p.tesouro + ' ' + a + ' to the guild');
@@ -259,9 +259,9 @@ function desenharChefe(g) {
     b = vista.agora,
     d = a.tipoNome || {},
     e = (t) => tr(d[t] || t);
-  const f = (l) => (l.length > 1 ? l.slice(0, -1).join(', ') + ' ' + tr('e') + ' ' + l[l.length - 1] : l.join(''));
+  const f = (l) => (l.length > 1 ? l.slice(0, -1).join(', ') + ' ' + tr('and') + ' ' + l[l.length - 1] : l.join(''));
   Popup.imagem(pop, 'chefe-retrato', retrato(a.dex), c);
-  Popup.texto(pop, 'chefe-nome', (a.nome || '—') + ' · Lv ' + a.lv + ' · step ' + a.degrau + ' de ' + a.total, c);
+  Popup.texto(pop, 'chefe-nome', (a.nome || '—') + ' · Lv ' + a.lv + ' · step ' + a.degrau + ' of ' + a.total, c);
   const h = a.janelaAte > b ? Math.max(0, Math.ceil((a.janelaAte - b) / 1000)) : 0;
   Popup.texto(
     pop,
@@ -280,9 +280,9 @@ function desenharChefe(g) {
     'chefe-tipos',
     'Weak to ' +
       f(a.tipos.mais.map(e)) +
-      ' (×1,5) · resists ' +
+      ' (×1.5) · resists ' +
       f(a.tipos.menos.map(e)) +
-      ' (×0,5)' +
+      ' (×0.5)' +
       (a.degrauMax < a.total
         ? ' · the rotation goes up to tier ' + a.degrauMax + ' with the guild at level ' + g.nivel
         : ''),
@@ -338,11 +338,11 @@ function desenharChefe(g) {
   Popup.texto(
     pop,
     'chefe-marcos',
-    'Daily contribution tiers → guild fragments (by mail, at reset) · trade them in the Guild Shop: ' +
+    'Daily contribution tiers → guild fragments (into your Bag when the day resets) · trade them in the Guild Shop: ' +
       (a.loja.compradoEstaSemana ? 'you already traded this week' : '1 trade per week'),
     c,
   );
-  const k = a.liberado && (!a.entradaHoje || h > 0);
+  const k = a.liberado && !(a.janela && h <= 0);                         // entered but not hitting yet: can still go back to it
   Popup.desligarGrupo(
     pop,
     'btn-chefe-entrar',
@@ -509,7 +509,7 @@ function desenharLoja(g) {
     a.__held = {
       ...h,
       pode: b,
-      motivo: f ? 'you already traded this week' : d < h.preco ? 'faltam ' + fmt(h.preco - d) + ' fragmentos' : '',
+      motivo: f ? 'you already traded this week' : d < h.preco ? 'short by ' + fmt(h.preco - d) + ' fragments' : '',
     };
     setArte(a, b ? A.evento?.laranja : A.evento?.cinza);
     Popup.texto(
@@ -762,7 +762,7 @@ function textoAtividade(a) {
         ? e
             .split(/ e (?=a TAG pra \[)/)
             .map(nomeDaEquipe)
-            .join(' ' + tr('e') + ' ')
+            .join(' ' + tr('and') + ' ')
         : tr(e);
   if (t === e) return milhar(b);
   const M = '';

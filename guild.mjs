@@ -420,7 +420,7 @@ export class Livro {
     if ((c.dinheiro || 0) < R().custo)
       return {
         ok: false,
-        motivo: 'Short by ' + (R().custo - (c.dinheiro || 0)).toLocaleString('pt-BR') + ' ₽ to found it.',
+        motivo: 'Short by ' + (R().custo - (c.dinheiro || 0)).toLocaleString('en-US') + ' Coins to found it.',
       };
     return { ok: true, motivo: '' };
   }
@@ -914,7 +914,7 @@ export class Livro {
           null,
           i
             ? 'the guild finished the week 1st in Kanto: title "' + e.nome + '" for everyone!'
-            : 'the guild finished the week at #' + f + ' in Kanto (' + h.toLocaleString('pt-BR') + ' pts)',
+            : 'the guild finished the week at #' + f + ' in Kanto (' + h.toLocaleString('en-US') + ' pts)',
         );
         if (i) g.titulo = { id: e.id, nome: e.nome, ate: a + e.dias * DIA, semana: g.semana?.chave || null };
       }
@@ -1047,7 +1047,7 @@ export class Livro {
           n +
           (n === 1 ? ' member hit' : ' members hit') +
           ', ' +
-          e.toLocaleString('pt-BR') +
+          e.toLocaleString('en-US') +
           ' damage' +
           (h ? ' — GOAL REACHED!' : ''),
       );
@@ -1064,7 +1064,7 @@ export class Livro {
               ', step ' +
               c.degrau +
               ')! +' +
-              ((j.xp || 0) * c.degrau).toLocaleString('pt-BR') +
+              ((j.xp || 0) * c.degrau).toLocaleString('en-US') +
               ' XP, +' +
               k +
               ' ' +

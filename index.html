@@ -5308,7 +5308,7 @@ function montarChefeRaid(s, reg){
   const y0 = chaoEm(s.x, s.z); if (y0 != null){ s.y = s.vy = y0 + s.flutua; s.pivo.position.y = s.vy; }
   s.rotuloAlto = topo + 0.3;
   if (!s.rotulo){ s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon'; $('sobre').appendChild(s.rotulo); }
-  s.rotulo.innerHTML = `<span>★ ${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} · RAID</span><i><b></b></i>`; s.rotHp = undefined;
+  s.rotulo.innerHTML = `<span>★ ${s.shiny ? '✨ ' : ''}${s.nome} Lv${s.lv} · ${reg.guildaChefe ? I18n.t('GUILD BOSS') : 'RAID'}</span><i><b></b></i>`; s.rotHp = undefined;
   if (RaidR01.ehArena(NOME)){ RaidR01.vincularChefe(s); return; }      // Articuno / Zapdos arena: the arena's own animated boss is the body (this one stays as the hidden target); Zapdos's Voltorbs are real bodies
   const chave = String(reg.raid) + ':' + reg.id;
   if (chefesRaidVistos.has(chave) || (reg.estado && reg.estado !== 'vagando')) return;
@@ -10149,7 +10149,7 @@ if (jogo.ash){
     criar: reg => criarSelvagem({ dex: reg.dex, glb: reg.glb, nome: reg.nome, agua: reg.aquatico }, reg.x, reg.z, { area: reg.area, generico: reg.generico, casa: reg.casa, lv: reg.lv, perfil: reg.perfil, shiny: reg.shiny, ivs: reg.ivs, natureza: reg.natureza })
       .then(s => { if (reg.aquatico){ s.aquatico = true; s.perfil = 'arisco'; s.y = s.vy = 0; s.pivo.position.y = 0; } s.pertoDeGrama = reg.pertoDeGrama !== false; s.hp = reg.hp; s.maxHp = reg.maxHp; if (reg.st) s.status = { id: reg.st, n: 0 }; if (reg.raid) montarChefeRaid(s, reg); jogo.selvagens.push(s); return s; }),
     /* RAID AO VIVO (14/09): a barra de vida do chefe no topo sai do REGISTRO (com ou sem corpo aqui) e some com ele. */
-    raidHp: r => Raid.chefe({ nome: r.nome || 'Mew', lv: r.lv, hp: r.hp, maxHp: r.maxHp }),
+    raidHp: r => Raid.chefe({ nome: r.nome || 'Mew', lv: r.lv, hp: r.hp, maxHp: r.maxHp, dex: r.dex, guilda: !!r.guildaChefe }),
     raidSumiu: () => Raid.chefe(null) });
   Creche.instalar({ enviar: Rede.enviar, tr: (s, v) => I18n.t(s, v), Chat, Som, iconeMon: dex => './ui/mon/pm' + String(dex).padStart(4, '0') + '.png',
     nomeItem: id => I18n.t(HELD?.efeito(id)?.nome || 'item'), aplicarSave: (save, rev) => { Conta.aplicarDoServidor(save, rev); recarregarDoSave(); },
