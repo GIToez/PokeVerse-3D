@@ -72,9 +72,13 @@ export function linhaDaLoja(lojas, loja, item, nInsignias = 0){
    moves PATINS_VEL× faster. GMs hand it out with /giveskates [name] (server_moderation.mjs `patins`). */
 export const PATINS = 57900;
 /* RUNNING SHOES (Nov 5): a key item like in FireRed / LeafGreen — Professor Oak's aide hands them over after Brock's Boulder Badge.
-   Without them the trainer walks (TENIS_ANDAR × the run speed); with them, hold Shift (remappable) or push the joystick all the way
-   to run. Clicking the ground runs too once you have them. */
+   Without them the trainer walks (WALK_SPEED); with them, hold Shift (remappable) or push the joystick all the way to run (RUN_SPEED).
+   Clicking the ground runs too once you have them. */
 export const TENIS = 57901;
 export const TENIS_INSIGNIA = 101;   // Boulder Badge (Brock, gyms.json)
-export const TENIS_ANDAR = 0.62;
+/* On-foot speeds in m/s (Nov 6): walking went from 2.2 to 3.0 and running rose by the same ratio (it used to be 3.6, walking 0.62× that).
+   Mounts and Roller Skates keep their own speeds (BASE_SPEED below), so changing these two moves only the trainer on foot. */
+export const WALK_SPEED = 3.0;
+export const RUN_SPEED = 4.85;
+export const BASE_SPEED = 3.6;   // what mounts (× their own factor) and skates (× PATINS_VEL) are measured against — the old run speed
 export const PATINS_VEL = 1.6;

@@ -3371,7 +3371,7 @@ async function montar(glb, { trocar = false } = {}){
     const fator = +(params0.get('montariaEsc') || def[5] || 0.6);   // tamanho de montaria do jogo (ver MONTARIAS); ?montariaEsc=1 mostra no tamanho do chefão
     m.pivo.scale.setScalar(fator); m.altura *= fator; m.escala = fator;
     if (meio !== 'terra') m.mergulho += Math.max(0, new THREE.Box3().setFromObject(m.pivo, true).min.y);   // corpo que PAIRA na pose (Qwilfish flutua 0,8 m acima da origem) afunda o mesmo tanto a mais, senao fica no ar em cima d'agua
-    m.vel = +params0.get('montariaVel') || ash.vel * (def[6] || 25000) / 10000;   // ?montariaVel=8 → m/s fixo
+    m.vel = +params0.get('montariaVel') || RegrasItem.BASE_SPEED * (def[6] || 25000) / 10000;   // ?montariaVel=8 → m/s fixo · mounts don't change with the walk/run speeds
     m.alturaVoo = m.voa ? 3.2 + m.altura * 0.35 : 0; m.fase = 0; m.rolagem = 0; m.quieto = 1; m.altAdm = 0;
     /* Montaria SHINY: mesma malha, textura `_1.png` de scenery/mon/shiny — a mesma regra dos selvagens
        e da bancada. Aplicado AQUI, antes de o treinador ser sentado na sela: o Ash entra como filho do
@@ -3945,7 +3945,7 @@ if (PLAY){
         .catch(e => { if (e?.status === 403 && params0.get('seguidor')){ console.warn('seguidor pedido na URL negado pela borda: entra o Pikachu', e); params0.delete('seguidor'); return montarPersonagemBoot('./scenery/mon/pm0025_00.glb', +params0.get('pika') || null, 0); } throw e; }),   // passe de progresso: o Pikachu do boot está no passe de toda conta
     ]);
     if (perso) await Personagem.aplicar(ash.pivo, perso);          // cores dos heróis tintáveis (nas skins fixas não faz nada)
-    ash.vel = 3.6; pika.vel = 4.2;
+    ash.vel = RegrasItem.RUN_SPEED; pika.vel = RegrasItem.RUN_SPEED * 1.17;   // the partner a little faster than you run, so it keeps up (item_rules.mjs)
     pika.glbVisual = skinMonDe(params0.get('seguidor') || 'pm0025_00');   // a Pokémon skin on for the boot partner (when it stays the same model, trocarSeguidor never runs)                 // um pouco mais devagar: o clipe de corrida toca a 1× e escorrega menos
     // quem segue o Ash: Pikachu por padrão, ou ?seguidor=pm0244_00 (Entei) etc.
     /* The four moves this species knows at this level: the latest ones on its learnset.
@@ -10355,7 +10355,7 @@ function atualizarJogo(dt, entrada){
   const m = jogo.montaria;                             // montado: a montaria anda (mais rápida; voando, por cima de tudo)
   const aPe = !m && !patinando();
   jogo.andando = aPe && !querCorrer(entrada.lengthSq() === 0 && ash.alvoX !== null);   // walking (no shoes, or not holding Run): slower, and the run clip plays slower
-  const velA = (m ? m.vel : ash.vel) * (ADM && m?.voa && teclas.has('ShiftLeft') ? 3 : 1) * (!m && patinando() ? RegrasItem.PATINS_VEL : 1) * (jogo.andando ? RegrasItem.TENIS_ANDAR : 1);   // adm: Shift = turbo · Roller Skates on foot · walking without the Running Shoes
+  const velA = (m ? m.vel : !m && patinando() ? RegrasItem.BASE_SPEED * RegrasItem.PATINS_VEL : jogo.andando ? RegrasItem.WALK_SPEED : ash.vel) * (ADM && m?.voa && teclas.has('ShiftLeft') ? 3 : 1);   // mount · Roller Skates · walking (no shoes / not holding Run) · running · adm: Shift = turbo
   const mover = (e, dx, dz) => m?.voa ? deslocarVoando(e, dx, dz) : deslocar(e, dx, dz);
   // Ash: teclado tem prioridade; senão vai até o clique
   let moveu = false;
@@ -10503,7 +10503,7 @@ function atualizarParceiro(dt){
     // de 2 m fica a ~3 m pra não engolir o treinador na tela
     const folga = folgaParceiro(pika);
     if (dP > folga + 0.6){
-      const p = Math.min(dP - folga, (patinando() ? Math.max(pika.vel, ash.vel * RegrasItem.PATINS_VEL * 1.1) : pika.vel) * dt);   // skating: the partner keeps up
+      const p = Math.min(dP - folga, (patinando() ? Math.max(pika.vel, RegrasItem.BASE_SPEED * RegrasItem.PATINS_VEL * 1.1) : pika.vel) * dt);   // skating: the partner keeps up
       tentou = true; moveuP = deslocar(pika, dxP / dP * p, dzP / dP * p);
       pika.giro = Math.atan2(dxP, dzP);
     }
