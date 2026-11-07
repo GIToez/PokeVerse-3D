@@ -1,0 +1,1 @@
+javascript:(()=>{const t=document.body.innerText;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([location.href+" "+t],{type:"text/plain"}));a.download=(location.pathname.includes("priv")?"pokefable_privacy":"pokefable_terms")+".txt";document.body.appendChild(a);a.click()})()

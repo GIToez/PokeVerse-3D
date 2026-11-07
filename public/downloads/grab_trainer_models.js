@@ -4,7 +4,7 @@
      pokeverse-trainer-models.zip (with _report.json listing what was found and what wasn't). Upload the zip to Claude. */
   const LEADERS = { 4160199: 'Brock', 4160299: 'Misty', 4160599: 'Lt. Surge', 4160699: 'Erika', 4161199: 'Koga', 4161299: 'Sabrina', 4161399: 'Blaine', 4161499: 'Giovanni',
     4170199: 'Lorelei', 4170299: 'Bruno', 4170399: 'Agatha', 4170499: 'Lance', 4170599: 'Blue (Champion)' };
-  const want = new Map();   // path → why
+  const want = new Map();   /* path → why */
   const add = (p, why) => { p = String(p || '').replace(/^\/+/, '').split('?')[0]; if (!p) return; if (!/\.glb$/i.test(p)) p += '.glb'; if (!p.startsWith('cenario/')) p = 'cenario/' + p; if (!want.has(p)) want.set(p, why); };
   for (let n = 1000; n <= 1040; n++) add('npc/NPC' + n, 'NPC' + n);
   for (const b of ['Boy_001', 'Boy_003', 'Girl_001', 'Rival', 'Blue', 'Gary']) add('pc/' + b, b);
