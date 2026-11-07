@@ -3305,7 +3305,7 @@ const MONTARIAS_PADRAO = [
   ['pm0249_00', 'Lugia',     'RideIdle1', 'Ride1', true,  0.6,  37500, 'anfibia'],
   ['pm0250_00', 'Ho-Oh',     'RideIdle1', 'Ride1', true,  0.7,  37500, 'anfibia'],
   ['pm0384_00', 'Rayquaza',  'RideIdle5', 'Ride5', true,  0.8,  50000, 'anfibia'],
-  ['pm0146_00', 'Moltres',   'RideIdle1', 'Ride1', true,  1.0,  25000, 'terra'],
+  ['pm0146_00', 'Moltres',   'RideIdle1', 'Ride1', true,  2.0,  25000, 'terra'],
   ['pm0487_11', 'Giratina',  'RideIdle',  'Ride',  true,  0.6,  37500, 'anfibia'],
   ['pm0493_11', 'Arceus',    'RideIdle1', 'Ride1', true,  1.2,  37500, 'anfibia'],
   ['pm0483_00', 'Dialga',    'RideIdle2', 'Ride2', false, 0.6,  37500, 'anfibia'],
@@ -3326,8 +3326,8 @@ const MONTARIAS_PADRAO = [
   ['pm0131_00', 'Lapras',    'RideIdle2', 'Ride2', false, 0.9,  18750, 'agua'],
   ['pm0211_00', 'Qwilfish',  'RideIdle5', 'Ride5', false, 2.3,  10000, 'agua'],   // 02/09: a 3ª aquática do jogo (MountConfig 57002: MapSize 2,3, MoveSpeed2 = a pé)
   // 02/11: as outras duas aves lendárias e o Pidgeot, voadoras como o Moltres (sem entrada em saddles.json: sela pela superfície do dorso)
-  ['pm0144_00', 'Articuno',  'RideIdle1', 'Ride1', true,  1.0,  25000, 'terra'],
-  ['pm0145_00', 'Zapdos',    'RideIdle1', 'Ride1', true,  1.0,  25000, 'terra'],
+  ['pm0144_00', 'Articuno',  'RideIdle1', 'Ride1', true,  2.0,  25000, 'terra'],
+  ['pm0145_00', 'Zapdos',    'RideIdle1', 'Ride1', true,  2.0,  25000, 'terra'],
   ['pm0018_00', 'Pidgeot',   'RideIdle1', 'Ride1', true,  1.2,  25000, 'terra'],
 ];
 const MONTARIAS_ARQ = await fetch('./data/mounts.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(l => Array.isArray(l) && l.length ? l : null).catch(() => null);
@@ -3339,8 +3339,8 @@ const MERGULHO = { agua: 0.3, anfibia: 0.15 };
 const AJUSTE_SELA = { pm0250_00: { osso: 'Spine1' },
                       pm0143_00: { osso: 'Head' },     // Snorlax: no Spine2 o raio cai dentro da barriga e o treinador some no Pokémon
                       // 02/11: nas aves novas a sela pela superfície fica alta e em cima do pescoço — `desvio` = [pra trás, pra baixo] em metros do mundo
-                      pm0144_00: { desvio: [0.5, 0.5] },   // Articuno
-                      pm0145_00: { desvio: [0.5, 0.5] },   // Zapdos
+                      pm0144_00: { desvio: [1.0, 1.0] },   // Articuno (escala 2,0: o desvio é em metros do mundo, dobra junto)
+                      pm0145_00: { desvio: [1.0, 1.0] },   // Zapdos
                       pm0018_00: { desvio: [0.5, 0.5] } }; // Pidgeot
 /** A sela: o `eMount` do GLB quando veio inteiro (o Lugia tem o nó animado, certinho);
  *  senão um ponto na superfície do dorso, em cima do osso que o jogo usa

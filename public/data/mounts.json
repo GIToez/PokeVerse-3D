@@ -38,7 +38,7 @@
   "poseIdle": "RideIdle1",
   "poseRun": "Ride1",
   "voa": true,
-  "escala": 1,
+  "escala": 2,
   "vel": 25000,
   "meio": "terra",
   "livre": false
@@ -225,7 +225,7 @@
   "poseIdle": "RideIdle1",
   "poseRun": "Ride1",
   "voa": true,
-  "escala": 1,
+  "escala": 2,
   "vel": 25000,
   "meio": "terra",
   "livre": false
@@ -236,7 +236,7 @@
   "poseIdle": "RideIdle1",
   "poseRun": "Ride1",
   "voa": true,
-  "escala": 1,
+  "escala": 2,
   "vel": 25000,
   "meio": "terra",
   "livre": false
