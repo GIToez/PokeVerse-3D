@@ -9385,5 +9385,11 @@
   "👑 {nome} is the new Indigo League Champion!": "👑 {nome} é o novo Campeão da Liga Índigo!",
   "{nome} beat your team and took your Champion title.": "{nome} venceu seu time e tomou seu título de Campeão.",
   "👑 Your team defended your Champion title against {nome}!": "👑 Seu time defendeu seu título de Campeão contra {nome}!",
-  "👑 Indigo League Champion": "👑 Campeão da Liga Índigo"
+  "👑 Indigo League Champion": "👑 Campeão da Liga Índigo",
+  "We updated our Terms": "Atualizamos nossos Termos",
+  "To keep playing, read and accept the current Terms of Use and Privacy Policy.": "Para continuar jogando, leia e aceite os Termos de Uso e a Política de Privacidade atuais.",
+  "I have read and accept the Terms of Use and the Privacy Policy": "Li e aceito os Termos de Uso e a Política de Privacidade",
+  "What changed:": "O que mudou:",
+  "To create the account, tick the box saying you have read and accept the Terms of Use and the Privacy Policy.": "Para criar a conta, marque que leu e aceita os Termos de Uso e a Política de Privacidade.",
+  "The Terms of Use or the Privacy Policy have changed. Reload the page and accept the new version.": "Os Termos de Uso ou a Política de Privacidade mudaram. Recarregue a página e aceite a versão nova."
 }

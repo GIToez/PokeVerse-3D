@@ -56,6 +56,48 @@ export function mostrarCodigo(codigo, aoFechar){
   f.querySelector('#cod-copiar').onclick = () => { try { navigator.clipboard?.writeText(codigo); f.querySelector('#cod-copiar').textContent = tr('copied ✓'); } catch {} };
   ok.onclick = () => { f.remove(); aoFechar?.(); };
 }
+/* TERMS OF USE + PRIVACY POLICY (Nov 7). The current version is public/data/legal.json; the pages are public/legal/. Sign-up asks
+   for the box before the account is created; an account whose accepted version is older is asked again at log-in (server:
+   `termosPendentes`) and can't play until it accepts, or logs out. */
+let legalCache = null;
+async function legal(){
+  if (!legalCache) legalCache = fetch('./data/legal.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  return legalCache;
+}
+const linkLegal = (arq, txt) => '<a href="./legal/' + arq + '.html" target="_blank" rel="noopener" style="color:#ffe07a">' + tr(txt) + '</a>';
+/** The box with the two links and "I have read and accept"; resolves true when accepted, false when the player backs out. */
+function caixaTermos({ titulo, texto, mudou = '', sim, nao }){
+  return new Promise(resolve => {
+    document.getElementById('tela-termos')?.remove();
+    const f = painel('<b style="color:#ffe07a;font-size:16px">' + tr(titulo) + '</b>'
+      + '<p style="color:#98a4c0;margin:8px 0 10px">' + tr(texto) + '</p>'
+      + (mudou ? '<p style="color:#cfe3ff;margin:0 0 10px;font-size:13px"><b>' + tr('What changed:') + '</b> ' + String(mudou).replace(/[<>&]/g, '') + '</p>' : '')
+      + '<p style="margin:0 0 12px">📄 ' + linkLegal('terms', 'Terms of Use') + ' &nbsp;·&nbsp; 🔒 ' + linkLegal('privacy', 'Privacy Policy') + '</p>'
+      + '<label style="display:flex;gap:8px;align-items:flex-start;color:#e8eefc;margin-bottom:12px;cursor:pointer"><input type="checkbox" id="termos-li" style="margin-top:3px"> <span>' + tr('I have read and accept the Terms of Use and the Privacy Policy') + '</span></label>'
+      + '<div style="display:flex;gap:8px"><button type="button" class="btn" id="termos-nao">' + tr(nao) + '</button><button type="button" class="btn ouro" id="termos-sim" style="flex:1" disabled>' + tr(sim) + '</button></div>'
+      + '<div id="termos-aviso" style="margin-top:10px;color:#f58e8e;min-height:18px"></div>');
+    f.id = 'tela-termos'; f.style.zIndex = '1200';
+    const ok = f.querySelector('#termos-sim');
+    f.querySelector('#termos-li').onchange = ev => { ok.disabled = !ev.target.checked; };
+    f.addEventListener('keydown', ev => ev.stopPropagation(), true);
+    f.querySelector('#termos-nao').onclick = () => { f.remove(); resolve(false); };
+    ok.onclick = () => resolve({ fechar: () => f.remove(), aviso: t => { f.querySelector('#termos-aviso').textContent = tr(t); } });
+  });
+}
+/** At log-in, when the terms changed since this account accepted them (account.mjs pedirTermos). Resolves once accepted. */
+export async function pedirAceiteTermos({ versao, aceitar, sair } = {}){
+  estiloTela();
+  const L = await legal();
+  for (;;){
+    const r = await caixaTermos({ titulo: 'We updated our Terms', texto: 'To keep playing, read and accept the current Terms of Use and Privacy Policy.', mudou: L.mudou || '', sim: 'Accept and continue', nao: 'Log out' });
+    if (!r){ try { await sair?.(); } catch {} location.reload(); return new Promise(() => {}); }
+    r.aviso('Sending…');
+    const a = await aceitar?.(versao || L.versao);
+    if (a?.ok){ r.fechar(); return; }
+    r.aviso(a?.erro || 'That didn\'t work. Try again.'); await new Promise(res => setTimeout(res, 1500)); r.fechar();
+    if (/changed/.test(a?.erro || '')){ location.reload(); return new Promise(() => {}); }
+  }
+}
 /** Esqueci a senha: usuário + código + senha nova. */
 function formRecuperar(pop){
   const f = painel('<b style="color:#ffe07a;font-size:16px">Forgot password</b>'
@@ -367,6 +409,10 @@ function acao(tela, a, el, pop){
     ocupado = false;
     if (!r?.ok && r?.precisaChave){ chaveAlfa = null; avisar(pop, ''); caixaAlphaKey(pop, r.erro || 'You need an Alpha Key.'); return; }   // a chave foi gasta no meio do caminho (ou nunca houve)
     if (!r?.ok) return avisar(pop, r?.erro || 'That didn\'t work. Try again.', true);
+    if (typeof r.termosPendentes === 'string' && r.termosPendentes && ctx.conta.aceitarTermos){   // log-in with terms accepted at an older version
+      avisar(pop, '');
+      return pedirAceiteTermos({ versao: r.termosPendentes, aceitar: ctx.conta.aceitarTermos, sair: ctx.conta.sair }).then(() => { avisar(pop, 'Logging in…'); fechar(); ctx.aoEntrar?.(r); });
+    }
     const cod = ctx.conta.codigoNovo?.();                                 // cadastro: o código de recuperação aparece UMA vez, antes de entrar
     if (cod) return mostrarCodigo(cod, () => { avisar(pop, 'Logging in…'); fechar(); ctx.aoEntrar?.(r); });
     avisar(pop, 'Logging in…'); fechar(); ctx.aoEntrar?.(r);
@@ -382,8 +428,19 @@ function acao(tela, a, el, pop){
     if (e && !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(e)) return avisar(pop, 'Invalid e-mail (you can leave it blank).', true);
     if (s.length < 6) return avisar(pop, 'Password: at least 6 characters.', true);
     if (s !== s2) return avisar(pop, 'The two passwords don\'t match.', true);
-    ocupado = true; avisar(pop, 'Creating account…');
-    ctx.conta.criar(u, e, s, chaveAlfa).then(fim, err => fim({ ok: false, erro: String(err?.message || err) }));   // com a Alpha Key, se o servidor pediu
+    ocupado = true;
+    (async () => {   // the Terms box first: the account is only created once it is ticked
+      estiloTela();
+      const L = await legal();
+      let versao;
+      if (L.versao){
+        const r = await caixaTermos({ titulo: 'Terms of Use and Privacy Policy', texto: 'To create the account, read and accept the Terms of Use and the Privacy Policy.', sim: 'Create account', nao: 'Back' });
+        if (!r){ ocupado = false; return; }
+        r.fechar(); versao = String(L.versao);
+      }
+      avisar(pop, 'Creating account…');
+      ctx.conta.criar(u, e, s, chaveAlfa, { termos: versao }).then(fim, err => fim({ ok: false, erro: String(err?.message || err) }));   // com a Alpha Key, se o servidor pediu
+    })();
   } else if (a === 'recuperar-senha'){
     formRecuperar(pop);
   }

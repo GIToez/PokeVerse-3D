@@ -1162,9 +1162,11 @@ const httpServer = http.createServer((req, res) => {
       if (!u || u.length < 3) return json(400, { erro: 'Username is too short (at least 3 letters).' });
       if (!/^[a-z0-9_]{3,20}$/.test(u)) return json(400, { erro: 'Use only letters, numbers and _ (3–20 characters).' });
       if (contas[u]) return json(409, { erro: 'This username is already taken.' });
+      const termosV = termosAtuais();
+      if (termosV && String(d.termos ?? '') !== termosV) return json(400, { erro: 'To create the account, tick the box saying you have read and accept the Terms of Use and the Privacy Policy.', termosVersao: termosV });
       const codigo = crypto.randomBytes(8).toString('hex');
       const token = tokenNovo();
-      contas[u] = { senha: hashSenha(d.senha || ''), email: d.email || '', save: null, rev: 0, codigo, token, tokenExp: Date.now() + TOKEN_VIDA_MS, criadaEm: Date.now() };
+      contas[u] = { senha: hashSenha(d.senha || ''), email: d.email || '', save: null, rev: 0, codigo, token, tokenExp: Date.now() + TOKEN_VIDA_MS, criadaEm: Date.now(), ...(termosV ? { termos: { versao: termosV, em: Date.now(), ip: ipDe(req) } } : {}) };
       salvarContasJa();
       sessoes.set(token, u);
       return json(200, { ok: true, token, usuario: u, rev: 0, codigo, save: null });
@@ -1185,7 +1187,7 @@ const httpServer = http.createServer((req, res) => {
       c.tokenExp = Date.now() + TOKEN_VIDA_MS;
       salvarContasJa();
       sessoes.set(token, u);
-      return json(200, { ok: true, token, usuario: u, rev: c.rev || 0, save: c.save || null, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}) });   // posGm wins; else last walk (F5 / relog)
+      return json(200, { ok: true, token, usuario: u, rev: c.rev || 0, save: c.save || null, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}), ...termosPendentesDe(c) });   // posGm wins; else last walk (F5 / relog)
     }
 
     // ── Recuperação de senha ───────────────────────────────────────────────
@@ -1207,7 +1209,7 @@ const httpServer = http.createServer((req, res) => {
       if (!u) return json(401, { erro: 'Invalid session.' });
       const c = contas[u];
       if (c?.save && marcarPegoDoTime(c)) salvarContas();
-      return json(200, { ok: true, save: c.save || null, rev: c.rev || 0, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}) });
+      return json(200, { ok: true, save: c.save || null, rev: c.rev || 0, gm: !!c.gm, cargo: c.cargo || null, alfa: !!c.alfa, idioma: c.idioma || null, ...(posDaConta(c) ? { pos: posDaConta(c) } : {}), ...termosPendentesDe(c) });
     }
 
     if (req.method === 'PUT' && rota === '/save') {
@@ -1261,7 +1263,9 @@ const httpServer = http.createServer((req, res) => {
     if (req.method === 'POST' && rota === '/conta/termos') {
       const u = usuarioDe(req);
       if (!u || !contas[u]) return json(401, { erro: 'Invalid session.' });
-      contas[u].termos = { versao: String(d.versao || '').slice(0, 40), em: Date.now() };
+      const atual = termosAtuais();
+      if (atual && String(d.versao ?? '') !== atual) return json(409, { erro: 'The Terms of Use or the Privacy Policy have changed. Reload the page and accept the new version.', termosVersao: atual });
+      contas[u].termos = { versao: String(d.versao || '').slice(0, 40), em: Date.now(), ip: ipDe(req) };
       salvarContas();
       return json(200, { ok: true });
     }
@@ -1858,6 +1862,11 @@ const world = createWorld({
 function enviar(ws, obj) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
+/* TERMS OF USE + PRIVACY POLICY (Nov 7): public/legal/terms.html and privacy.html; the version in public/data/legal.json (admin →
+   Data files → Terms version). Sign-up needs the box ticked for the current version; an account whose accepted version is older
+   gets `termosPendentes` at log-in and the game asks it to accept before playing. */
+function termosAtuais() { const v = lerJson(nodePath.join(DADOS_PUB, 'legal.json'), {})?.versao; return v == null || v === '' ? null : String(v); }
+const termosPendentesDe = c => { const v = termosAtuais(); return v && c && String(c.termos?.versao ?? '') !== v ? { termosPendentes: v } : {}; };
 /* THE CHAMPION'S CROWN (Nov 6): only the player holding the Champion's seat (server_battle.mjs) shows "👑 Indigo League Champion" (Kanto and Johto share the Indigo League)
    under their name, over whatever title they picked; losing the seat gives their own title back. */
 const TITULO_CAMPEAO = '👑 Indigo League Champion';

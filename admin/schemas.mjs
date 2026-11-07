@@ -238,6 +238,15 @@ export const ESQUEMAS = {
       { k: 'generico', rotulo: 'Generic catch', tipo: 'json', validar: v => Array.isArray(v) && v.every(e => e && Number.isInteger(e.dex)) ? null : 'a list like [{ "dex": 129, "nome": "Magikarp" }]' },
     ],
   },
+  legal: {
+    titulo: 'Terms of Use version', arquivo: 'legal', forma: 'objeto',
+    descricao: 'The Terms of Use (public/legal/terms.html) and the Privacy Policy (public/legal/privacy.html) share one version. Sign-up asks to accept the current version; when you change the version, every player is asked to accept the new one at their next log-in and can\'t play until they do. Change the version only after the pages themselves say what changed.',
+    campos: [
+      { k: 'versao', rotulo: 'Version', tipo: 'texto', max: 20, obrigatorio: true, validar: s => /^[\w.-]{1,20}$/.test(s) ? null : 'e.g. 1, 2 or 2.1', ajuda: 'Raise it (1 → 2) when the Terms or the Privacy Policy change: everyone accepts again. Empty is not allowed.' },
+      { k: 'data', rotulo: 'Date', tipo: 'texto', max: 10, validar: s => !s || /^\d{4}-\d\d-\d\d$/.test(s) ? null : 'YYYY-MM-DD', ajuda: 'Shown on both pages, e.g. 2026-11-07.' },
+      { k: 'mudou', rotulo: 'What changed', tipo: 'texto', max: 300, ajuda: 'One short line shown on the pages and in the "We updated our Terms" box, e.g. "Diamond purchases (section 7)".' },
+    ],
+  },
   aparicoes: {
     titulo: 'Story sightings', arquivo: 'sightings', forma: 'objeto',
     descricao: 'Legendary Pokémon that show themselves once per player (sightings.mjs). Ho-Oh flies across the sky over its area (needs a partner Pokémon out); Suicune runs across water; Lugia swims under you as a shadow while surfing. Each player sees each one once (saved as "aparicoes").',
