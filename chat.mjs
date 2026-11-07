@@ -8,7 +8,7 @@ import { textoLimpo } from './rich_text.mjs';
  *   Sistema — eventos do jogo (área, capturas, inicial…), aparece no Local
  * Comandos na caixa: /g texto (global), /t (trade), /h (help), /l (local), /w nome texto (mensagem direta a um amigo), /ranking,
  * /trocar nome (convite de troca de Pokémon), /preso (relato obrigatório e volta pro último Centro), /time night|day|21 (force the clock), /weather rain|storm|sun|sand|hail|snow|fog|off. GM: /online, /aviso texto, /mudo nome min, /kick nome, /banir nome horas,
- * /perdoar nome, /ver nome, /pokespawn nome|nº|random|r [s] [lv:N] [ivatk:0-31…] [evatk:0-252…] [l|!l] [type:fire] [n:adamant], /pokeheal, /giveskates [nome], /giveitem <item|id|held> [amount] [@player], /givediamonds <amount> [@player]. Staff: /chaves, /alfa, /relatos, /raid (raid ao vivo). Enter foca a caixa.
+ * /perdoar nome, /ver nome, /pokespawn nome|nº|random|r [s] [lv:N] [ivatk:0-31…] [evatk:0-252…] [l|!l] [type:fire] [n:adamant], /pokeheal, /giveskates [nome], /giveitem <item|id|held> [amount] [@player], /givediamonds <amount> [@player], /givepass [@player], /givepasslevel [n] [@player], /resetpass [@player]. Staff: /chaves, /alfa, /relatos, /raid (raid ao vivo). Enter foca a caixa.
  * Com o servidor (servidor/server.mjs) as mensagens vão pros outros (network.mjs); sem ele só você vê. Histórico (200 msgs) em localStorage 'chat'. Mesmo módulo alimenta a
  * peça #chat da HUD e a aba Chat da janela Social (Chat.montar num contêiner qualquer).
  */
@@ -84,6 +84,8 @@ export function enviar(aba, texto){
   if (gs){ ctx?.giveskates?.(gs[2] || null); return 'sistema'; }
   const gd = t.match(/^\/givediamonds\b\s*(.*)$/i);                     // /givediamonds <amount> [@player] (GM)
   if (gd){ ctx?.givediamonds?.(gd[1].trim()); return 'sistema'; }
+  const gp = t.match(/^\/(givepass|givepasslevel|resetpass)\b\s*(.*)$/i);   // /givepass [@player] · /givepasslevel [n] [@player] · /resetpass [@player] (GM): season pass test tools
+  if (gp){ ctx?.passeGm?.(gp[1].toLowerCase(), gp[2].trim()); return 'sistema'; }
   const gi = t.match(/^\/giveitem\b\s*(.*)$/i);                           // /giveitem <name | id | held> [amount] [@player] (GM): straight into the bag
   if (gi){ ctx?.giveitem?.(gi[1].trim()); return 'sistema'; }   // /pokeheal (02/11, GM): cura time e caixa na hora, em qualquer lugar
   const mod = t.match(/^\/(online|aviso|mudo|kick|banir|perdoar|ver|tp|ir|puxar)\b\s*(.*)$/i);   // /tp nome cidade (13/09): leva uma conta presa pra frente do Centro da cidade; /ir nome e /puxar nome (14/09)

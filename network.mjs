@@ -1048,6 +1048,8 @@ function receber(m) {
             '"' +
             (m.derrubou ? ' — they got the F5 notice.' : '.'),
         );
+      else if (m.op === 'passe' || m.op === 'passenivel' || m.op === 'passereset') C?.sistemaCru?.(m.texto);
+      else if (m.op === 'diamantes') r('💎 {n} Diamonds given to {x} (balance {y}).', { n: m.n, x: m.usuario, y: m.total });
       else if (m.op === 'puxar')
         r(
           m.derrubou

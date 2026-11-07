@@ -300,6 +300,10 @@ function aplicarEvento(u, ev) {
       const concluida = m;
       est.atual = proximaMissao(est.feitas);
       est.passo = 0;
+      /* a missão nova pode começar num passo já cumprido (ex.: os treinadores da Rota 2 vencidos antes da 303): pula agora,
+         sem esperar outro evento. Para no último passo, que fecha (e paga) no próximo evento pelo caminho normal. */
+      const prox = est.atual != null ? MISSOES[est.atual] : null;
+      while (prox && est.passo < (prox.passos?.length || 0) - 1 && passoJaFeito(u, prox.passos[est.passo])) est.passo++;
       salvarMissao(u, est);
       temporada.contar(u, { conta: 'historia' });
       return { estado: est, passoFeito: true, concluida };
@@ -374,10 +378,46 @@ function aplicarEvento(u, ev) {
    chegava, a pessoa escolhia o inicial com o passo ainda em 'ir', e o 'inicial' não acontece de novo. */
 function passoJaFeito(u, p) {
   const s = contas[u]?.save;
+  if (p?.tipo === 'derrotar' && !p.selvagem) return treinadoresVencidosNoPasso(s, p) >= (p.n || 1);
   if (p?.tipo === 'inicial') return !!(s?.inicial || s?.time?.some?.(x => x?.inicial));
   if (p?.tipo === 'nivel') return [...(s?.time || []), ...(s?.caixa || [])].some(x => (+x?.lv || 0) >= (+p.lv || 1));   // o nível já foi alcançado antes
   if (p?.tipo === 'ir') return socketsDe(u).some(w => w._areaId != null && String(w._areaId) === String(p.area));   // já está na área (missao_area)
   return false;
+}
+/* VITÓRIA ANTES DA MISSÃO (06/11, "A Estrada do Norte"): o jogador venceu os treinadores da Rota 2 antes de a missão 303 virar
+   a atual. Treinador vencido não aceita revanche (server_battle: 'beaten'), então "Vença 2 treinadores na Rota 2" nunca fechava.
+   A missão pede a vitória e o jogador já tem a vitória: conta quem está em save.treinadorPago e combina com o passo (pelos cfgs
+   do passo; sem cfg, pela área do passo; sem nenhum dos dois, qualquer treinador). A vitória entra em treinadorPago antes do
+   aplicarEvento, então a mesma conta vale pras vitórias novas, sem contar duas vezes. */
+const AREAS_DO_TREINADOR = new Map();   // cfg (string) → Set(áreas onde ele tem vaga), de kanto.json → treinadores[].a
+let areasTreinadorMtime = -1;
+function areasDoTreinador(cfg) {
+  const arq = nodePath.join(__dir, 'public/data/kanto.json');
+  let mt; try { mt = fs.statSync(arq).mtimeMs; } catch { mt = -1; }
+  if (mt !== areasTreinadorMtime) {
+    areasTreinadorMtime = mt;
+    try {
+      const d = JSON.parse(fs.readFileSync(arq, 'utf8'));
+      AREAS_DO_TREINADOR.clear();
+      for (const t of d.treinadores || []) {
+        if (t?.cfg == null || t.a == null) continue;
+        const k = String(t.cfg);
+        if (!AREAS_DO_TREINADOR.has(k)) AREAS_DO_TREINADOR.set(k, new Set());
+        AREAS_DO_TREINADOR.get(k).add(String(t.a));
+      }
+    } catch (e) { console.warn('Trainer areas not loaded:', e.message); }   // arquivo quebrado: fica com o índice que já estava
+  }
+  return AREAS_DO_TREINADOR.get(String(cfg)) || null;
+}
+function treinadoresVencidosNoPasso(s, p) {
+  const pagos = Array.isArray(s?.treinadorPago) ? s.treinadorPago : [];
+  const cfgs = new Set(pagos.map(k => String(k).split('@')[0]));   // a chave pode ser "cfg@x,z"; cada treinador conta uma vez
+  let n = 0;
+  for (const cfg of cfgs) {
+    if (p.cfg != null || p.cfgs != null) { if (cfgOk(p.cfgs || p.cfg, cfg)) n++; }
+    else if (!p.area || areasDoTreinador(cfg)?.has(String(p.area))) n++;
+  }
+  return n;
 }
 function enviarMissao(ws, resultado) {
   if (!resultado) return;
@@ -1712,7 +1752,7 @@ let proxId = 1;
 // Fase 3 do painel: a lógica mora nos módulos; aqui só entram os helpers que eles reusam (os mesmos da tela Jogadores)
 const agenda = criarAgenda({ dadosPub: DADOS_PUB, conexoes, enviar, logAdmin, gravarComBackup, get raid(){ return raid; } });
 const eventos = criarEventos({ dadosPub: DADOS_PUB, conexoes, contas, enviar, derrubar, logAdmin, gravarComBackup, agendaBonus: agora => agenda.bonusAgora(agora) });
-const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n) });
+const moderacao = criarModeracao({ contas, sessoes, socketsDe, banidoAteDe, derrubar, logAdmin, enviar, salvarContasJa, conexoes, dadosPub: DADOS_PUB, avisar: eventos.avisar, darDiamantes: (u, n) => loja.darDiamantes(u, n), temporadaGm: (u, op, n) => temporada.gm(u, op, n) });
 const recursos = criarRecursos(__dir);
 const raid = criarRaid({ contas, sessoes, conexoes, enviar, socketsDe, logAdmin, salvarContas, salvarContasJa, dadosPub: DADOS_PUB, raiz: __dir, individuoServidor, marcarPego,
   bolaBonus: (id, w, u) => world.ballBonus(id, w, u),   // the ball's catch bonus, same as in the wild (Level / Net / Nest / Repeat Ball…)

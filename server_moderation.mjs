@@ -248,6 +248,26 @@ export function criarModeracao(h) {
       ok({ usuario: u, n, total });
       return;
     }
+    if (op === 'passe' || op === 'passenivel' || op === 'passereset') {       // /givepass [@player] · /givepasslevel [n] [@player] · /resetpass [@player] (GM): season pass test tools
+      const t = String(m.texto || '').trim();
+      const mt = op === 'passenivel' ? /^(?:(\d{1,3})\s*)?(?:@?(\S+))?$/.exec(t) : /^(?:@?(\S+))?$/.exec(t);
+      const uso = { passe: '/givepass [@player]', passenivel: '/givepasslevel [levels] [@player]', passereset: '/resetpass [@player]' }[op];
+      if (!mt) { erro('Usage: ' + uso); return; }
+      const quem = op === 'passenivel' ? mt[2] : mt[1];
+      const u = quem ? acharConta(quem) : g;
+      if (!u) { erro('Account "' + quem.slice(0, 30) + '" not found'); return; }
+      const n = op === 'passenivel' ? +(mt[1] || 1) : 0;
+      const r = h.temporadaGm?.(u, { passe: 'passe', passenivel: 'nivel', passereset: 'reset' }[op], n);
+      if (!r) { erro('The season pass is not available'); return; }
+      if (r.erro) { erro(r.erro); return; }
+      logAdmin(g, u, { passe: 'givepass', passenivel: 'givepasslevel', passereset: 'resetpass' }[op] + ' (chat)', { n, nivel: r.nivel });
+      const texto = op === 'passe' ? '🎟️ Season pass: paid track unlocked for ' + u + '.'
+        : op === 'passenivel' ? '🎟️ Season pass: ' + u + ' is now level ' + r.nivel + '/' + r.maxNivel + '.'
+        : '🎟️ Season pass: progress of ' + u + ' was reset.';
+      if (u !== g) for (const w of socketsDe(u)) enviar(w, { t: 'sistema', texto: op === 'passereset' ? '🎟️ A GM reset your season pass progress.' : op === 'passe' ? '🎟️ A GM unlocked your paid season pass.' : '🎟️ A GM moved your season pass to level ' + r.nivel + '.' });
+      ok({ usuario: u, ...r, texto });
+      return;
+    }
     if (op === 'item') {                                                      // /giveitem <name | id | held> [amount] [@player] (GM)
       const r = parseGiveItem(String(m.texto || ''));
       if (r.erro) { erro(r.erro); return; }

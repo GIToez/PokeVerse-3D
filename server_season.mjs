@@ -272,5 +272,32 @@ export function criarTemporada({ dadosPub, contas, socketsDe, enviar, salvarCont
     return erro('recusado', 'Unknown season pass request.');
   }
 
-  return { receber, contar, vista, def };
+  /** GM test tools (chat: /givepass, /givepasslevel, /resetpass via server_moderation.mjs). Works in any season phase.
+   *  op 'passe': unlock the paid track for free (no Diamonds charged).
+   *  op 'nivel': add n levels as season points, so every reward on those levels is 'pronto' as if played (capped at maxNivel).
+   *  op 'reset': wipe this season's progress (points, bought levels, paid pass, claims, missions).
+   *  Returns { nivel, pago, maxNivel } or { erro }. */
+  function gm(u, op, n = 1) {
+    const S = def(), c = contas[u];
+    if (!S) return { erro: 'There is no season loaded (season_pass.json)' };
+    if (!c) return { erro: 'Account not found' };
+    if (!c.save) c.save = {};
+    if (op === 'reset') c.save.temporada = null;
+    const t = estadoDe(c, S), antes = nivelDe(t, S);
+    if (op === 'passe') {
+      if (t.pago) return { erro: u + ' already has the paid pass' };
+      t.pago = true;
+    } else if (op === 'nivel') {
+      const falta = S.maxNivel - nivelDe(t, S);
+      if (falta <= 0) return { erro: u + ' is already at the last level (' + S.maxNivel + ')' };
+      const q = Math.max(1, Math.min(falta, Math.floor(+n || 1)));
+      t.pontos = (Math.floor(t.pontos / S.pontosPorNivel) + q) * S.pontosPorNivel;
+    } else if (op !== 'reset') return { erro: 'Unknown pass op' };
+    salvarContas();
+    const depois = nivelDe(t, S);
+    for (const w of socketsDe(u)) enviar(w, { t: 'temporada_evento', vista: vista(c), missoes: 0, subiu: depois > antes ? depois : 0 });
+    return { nivel: depois, pago: !!t.pago, maxNivel: S.maxNivel };
+  }
+
+  return { receber, contar, vista, def, gm };
 }
