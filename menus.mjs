@@ -2933,8 +2933,10 @@ function encherTreinadorOutro(pop, O){
   let bv = pop.querySelector('.btn-visitar-terreno');
   if (!bv){
     bv = document.createElement('button'); bv.type = 'button'; bv.className = 'btn-visitar-terreno';
-    Object.assign(bv.style, { position: 'absolute', right: '56px', bottom: '62px', zIndex: '5', padding: '8px 16px', borderRadius: '10px', border: '2px solid #F8C237', cursor: 'pointer',
-      background: 'linear-gradient(180deg,#FBD04B,#E9A419)', color: '#1A1405', font: '800 15px "Nunito Sans",system-ui,sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,.35)' });
+    const fx = pop.querySelector('[data-fig="btn-fechar"]'), L = parseFloat(fx?.style.left) || 1276, Tp = parseFloat(fx?.style.top) || 85, H = parseFloat(fx?.style.height) || 76;
+    Object.assign(bv.style, { position: 'absolute', right: ((parseFloat(pop.style.width) || 1400) - L + 16) + 'px', top: (Tp + (H - 58) / 2) + 'px', height: '58px', zIndex: '30',   // to the left of the X, centred on it (layout px)
+      padding: '0 24px', borderRadius: '14px', border: '2px solid #F8C237', cursor: 'pointer',
+      background: 'linear-gradient(180deg,#FBD04B,#E9A419)', color: '#1A1405', font: '800 22px "Nunito Sans",system-ui,sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,.35)' });
     pop.appendChild(bv);
   }
   bv.textContent = '🏡 ' + tr('Visit plot'); bv.hidden = false;
