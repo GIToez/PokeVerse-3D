@@ -5129,7 +5129,7 @@ async function criarSelvagem(esp, x, z, { area = 0, generico = false, casa = nul
   s.glb = esp.glb; aplicarTamanho(s);
   s.ivs = ivs || Ind.sortearIVs(); s.natureza = natureza || Ind.sortearNatureza();      // cada selvagem é um indivíduo: quem captura leva exatamente este (na rede, o servidor sorteou)
   s.maxHp = Ind.hpDe(S, s); s.hp = s.maxHp;
-  s.perfil = perfil || (Math.random() < S.bs[1] / (S.bs[1] + S.bs[5]) ? 'agressivo' : 'arisco');
+  s.perfil = perfil || esp.perfil || (Math.random() < S.bs[1] / (S.bs[1] + S.bs[5]) ? 'agressivo' : 'arisco');   // esp.perfil: the species' temperament (admin species tables)
   if (esp.skittishHp === 0) s.skittishHp = 0;
   else if (Number.isFinite(+esp.skittishHp) && +esp.skittishHp > 0) s.skittishHp = Math.min(100, +esp.skittishHp);
   s.estado = 'vagando'; s.recarga = 0; s.paciencia = 0; s.assustado = false;

@@ -987,6 +987,7 @@ function limparEspecie(e, exigirModelo) {
   if (e.agua) o.agua = 1;
   if (e.skittishHp === 0 || e.skittishHp === '0') o.skittishHp = 0;
   else { const hp = Math.round(Number(e.skittishHp)); if (Number.isInteger(hp) && hp >= 1 && hp <= 100) o.skittishHp = hp; }
+  if (['agressivo', 'arisco', 'passivo'].includes(e.perfil)) o.perfil = e.perfil;   // temperament (admin species table)
   if (typeof e.fonte === 'string' && e.fonte) o.fonte = e.fonte.slice(0, 20);
   const lvA = Math.round(Number(e.lvMin)), lvB = Math.round(Number(e.lvMax));
   if (Number.isInteger(lvA) && Number.isInteger(lvB) && lvA >= 1 && lvB <= 100 && lvA <= lvB){ o.lvMin = lvA; o.lvMax = lvB; }

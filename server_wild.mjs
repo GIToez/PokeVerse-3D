@@ -333,7 +333,7 @@ export function criarWilds(ctx) {
     const rows = rowsFor(+area, !!water, quando);
     if (!rows.length) return null;
     const row = pickRow(rows);
-    return { dex: +row.dex, lv: levelFor(row, +area), glb: Calendario.glbDaEstacao(row.dex, row.glb, quando.estacao), nome: row.nome, agua: row.agua ? 1 : 0 };
+    return { dex: +row.dex, lv: levelFor(row, +area), glb: Calendario.glbDaEstacao(row.dex, row.glb, quando.estacao), nome: row.nome, agua: row.agua ? 1 : 0, ...(row.perfil ? { perfil: row.perfil } : {}) };   // perfil: the species' temperament in this habitat (admin)
   }
   /** XP for a shared wild this player helped knock out: the same grant as a solo defeat (party share, EVs, level cap). */
   function award(ws, wild, bonus = 0) {

@@ -579,10 +579,11 @@ function tabelaEspecies(lista, comAgua) {
     <td>${esc(e.nome || nomeDe(e.dex))} <span class="fraco">${String(e.dex).padStart(4, '0')}</span>${GLB_DEX[e.dex] ? '' : ' <span class="sem-modelo">no model</span>'}</td>
     <td><input type="number" class="peso" min="1" max="1000" value="${e.peso || 100}"></td>
     <td class="pct">${pct(lista, i)}</td>
+    <td><select class="perfil" title="How it behaves: aggressive chases you, skittish runs away, passive ignores you (skittish and passive fight back once hit). Default = the area's setting (Game settings), else a roll.">${[['', 'Default'], ['agressivo', 'Aggressive'], ['arisco', 'Skittish'], ['passivo', 'Passive']].map(([v, n]) => `<option value="${v}"${(e.perfil || '') === v ? ' selected' : ''}>${n}</option>`).join('')}</select></td>
     <td><input type="number" class="skit" min="0" max="100" step="1" value="${e.skittishHp ?? ''}" placeholder="—" title="Turn skittish at or below this HP %. Empty = use Game settings. 0 = never."></td>
     ${comAgua ? `<td><label class="chk"><input type="checkbox" class="agua" ${e.agua ? 'checked' : ''}></label></td>` : ''}
     <td><button class="rem perigo" title="Remove">✕</button></td></tr>`).join('');
-  return `<table class="esp"><thead><tr><th>Species</th><th>Weight</th><th>%</th><th title="Turn skittish at or below this HP %">Skittish ≤%</th>${comAgua ? '<th>Water</th>' : ''}<th></th></tr></thead><tbody>${linhas}</tbody></table>
+  return `<table class="esp"><thead><tr><th>Species</th><th>Weight</th><th>%</th><th title="Aggressive / skittish / passive">Temper</th><th title="Turn skittish at or below this HP %">Skittish ≤%</th>${comAgua ? '<th>Water</th>' : ''}<th></th></tr></thead><tbody>${linhas}</tbody></table>
     <div class="add-esp"><input type="text" list="dl-especies" class="add-input" placeholder="add species (name or no.)…"><button class="add-btn">Add</button></div>`;
 }
 function pct(lista, i) { const soma = lista.reduce((a, e) => a + (e.peso || 100), 0) || 1; return Math.round((lista[i].peso || 100) / soma * 100) + '%'; }
@@ -591,6 +592,7 @@ function ligarTabelaEspecies(cont, lista, aoMudar) {
   cont.querySelectorAll('tr[data-i]').forEach(tr => {
     const i = +tr.dataset.i;
     tr.querySelector('.peso')?.addEventListener('input', e => { lista[i].peso = Math.min(1000, Math.max(1, +e.target.value || 100)); tr.parentElement.parentElement.querySelectorAll('.pct').forEach((c, j) => c.textContent = pct(lista, j)); aoMudar?.(); });
+    tr.querySelector('.perfil')?.addEventListener('change', e => { if (e.target.value) lista[i].perfil = e.target.value; else delete lista[i].perfil; aoMudar?.(); });
     tr.querySelector('.skit')?.addEventListener('input', e => {
       const raw = String(e.target.value ?? '').trim();
       if (raw === '') delete lista[i].skittishHp;
