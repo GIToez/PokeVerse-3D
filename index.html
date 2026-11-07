@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate">   <!-- the game translates itself (i18n); Chrome "Translate this page" garbles names (GIToez→Ghtoez, Charmander→Charmanderder) -->
 <meta name="robots" content="notranslate">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="icon" href="./ui/favicon/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="./ui/favicon/favicon-32.png?v=2"><link rel="icon" type="image/png" sizes="16x16" href="./ui/favicon/favicon-16.png?v=2"><link rel="apple-touch-icon" href="./ui/favicon/apple-touch-icon.png?v=2"><link rel="manifest" href="./manifest.webmanifest?v=2"><meta name="theme-color" content="#13254A">
 <title>PokeVerse</title><meta name="application-name" content="PokeVerse"><meta name="apple-mobile-web-app-title" content="PokeVerse"><meta name="mobile-web-app-capable" content="yes">
 <script>
@@ -10991,6 +10991,28 @@ tela.addEventListener('pointerdown', ev => {
   }
   const p = noChao(ev); if (p) arrasto = { p, alvo: alvo.clone() };
 });
+/* PINCH ZOOM (Nov 7, phones): two fingers on the game change the camera zoom, like the mouse wheel. The page itself never zooms
+   (viewport user-scalable=no, touch-action on the canvas, iOS gesture events blocked) and a long press never selects text. */
+const dedos = new Map(); let pinca = null;
+const distDedos = () => { const [a, b] = [...dedos.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+tela.addEventListener('pointerdown', ev => {
+  if (ev.pointerType !== 'touch') return;
+  dedos.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (dedos.size === 2){ pinca = { d: Math.max(20, distDedos()), zoom }; clicando = false; arrasto = null; if (jogo.ash) jogo.ash.alvoX = null; }
+});
+tela.addEventListener('pointermove', ev => {
+  if (!dedos.has(ev.pointerId)) return;
+  dedos.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (pinca && dedos.size >= 2){ zoom = THREE.MathUtils.clamp(pinca.zoom * pinca.d / Math.max(20, distDedos()), 0.35, ZOOM_TETO); clicando = false; if (jogo.ash) jogo.ash.alvoX = null; }
+});
+for (const tipo of ['pointerup', 'pointercancel']) tela.addEventListener(tipo, ev => { dedos.delete(ev.pointerId); if (dedos.size < 2) pinca = null; });
+for (const tipo of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(tipo, e => e.preventDefault(), { passive: false });   // iOS Safari: no page zoom
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });   // two fingers never zoom the page
+document.addEventListener('contextmenu', e => { if (matchMedia('(pointer: coarse)').matches && !e.target.closest?.('input, textarea, [contenteditable]')) e.preventDefault(); });   // phones: a long press is not a copy / save-image menu
+{ const css = document.createElement('style');
+  css.textContent = 'html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}' +
+    'input,textarea,[contenteditable],[contenteditable] *{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}#tela{touch-action:none}';
+  document.head.appendChild(css); }
 const soltar = () => { arrasto = null; clicando = false; comandando = false; };
 for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) tela.addEventListener(ev, soltar);
 addEventListener('blur', () => { soltar(); teclas.clear(); });   // pointerup/keyup perdidos ao trocar de janela
@@ -12552,7 +12574,7 @@ if (params0.get('figmateste') === '1'){                                  // UMA 
 if (CONTA.modo === 'conta'){ try { const u = new URL(location.href); const doJogador = ['jogar', 'mapa', 'chegada', 'voltou', 'v', 'qualidade', 'densidade'];   // qualidade/densidade (13/09): agora ficam guardadas no aparelho, então podem sair da URL
   if (u.search && [...u.searchParams.keys()].every(k => doJogador.includes(k))) history.replaceState(null, '', u.pathname); } catch {} }
 __boot.marcar('pronto', { inv: inventarioCena() });                      // o inventário da cena vai junto (o que o celular carregou de verdade)
-window.__dbg = { pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar, criarSelvagem, desafiarTreinador };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
+window.__dbg = { get zoom(){ return zoom; }, pisosGrandes, miolo, montar, desmontar, podeMontar, I18n, Som, musicaDoLugar, atualizarMusica, rede: Rede, Hud, Mundo, Conta, Troca, Menus, bolsaOp, get bolasDosOutros(){ return bolasDosOutros.length; }, tetoNivel, proximoTeto, desobedece, guardarReserva, liberarReserva, darExp, ganharExp, aguaEm, naAgua, navegavel, dentroDoMapa, get pisosGrandes(){ return pisosGrandes; }, get pisosPorCelula(){ return pisosPorCelula; }, terraPerto, aguaPerto, montar, desmontar, apoioDe, Conhecimento, GINASIOS, ginasioEspera, fimTurno, areaRespawn, portasCena, PORTAS, livre, noNavmesh, navAltura, get navPolis(){ return navPolis; }, deslocar, chaoEm, teclas, toque, modeloBola, bloqueio, RAIO_PE, THREE, get dados(){ return dados; }, get cena(){ return cena; }, get girando(){ return girando; }, get jogo(){ return jogo; }, get giro(){ return giro; }, get zoom(){ return zoom; }, ZOOM_TETO, get flipX(){ return flipX; }, escolherInicial, get palco(){ return palcoIni; }, trocarPara, pintarTime, diagnostico, bolasVivas, evoluir: evoluirParceiro, evolucaoDe, opcoesEvolucao, ganharExp, Evolucao, Personagem, usarAtalho, definirAtalho, usarItem, morrer, reanimar, aposDesmaio, get eliteEstado(){ return eliteEstado; }, tetoNivel, desobedece, Missoes, atualizarMissao, get portaoPallet(){ return estadoPortao(); }, abrirPortaoPallet, Ind, Raid, irParaCena, ativarArenaRaid, desativarArenaRaid, jogarBola, emPorta, golpear, Stg, falarCom, safariTerminar, criarSelvagem, desafiarTreinador };   // depuração/testes (Raid… 14/09: sonda da raid ao vivo; golpear/Stg: estágios)
 if (Fairy){
   Fairy.comecar({ jogo, cena, cam, dados, NOME, chaoEm, tocarAnim, montarPersonagem, livre, bloqueio, porDex, R, THREE, flipX: () => flipX, mundo }).catch(e => console.error('fairy:', e));
 }
