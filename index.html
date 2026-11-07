@@ -10196,6 +10196,7 @@ if (jogo.ash){
       if (!m?.vista) return;
       const dia = m.vista.dias?.[(m.vista.seq || 1) - 1] || {}, lista = p => Object.entries(p || {}).map(([id, n]) => (ITENS_NOME[id] || ('item ' + id)) + ' ×' + n).join(', ');
       if (m.pago){ Chat.sistema('🎁 ' + I18n.t('Daily reward, Day {n}: {x}', { n: m.vista.seq, x: lista(dia.gratis) }) + (m.vista.premium ? ' · ' + I18n.t('Premium') + ': ' + lista(dia.premium) : '')); Som.tocar('ui/sound_click', { volume: 0.6 }); }   // claimed: the stamp drops on today's ticket
+      if (m.novo){ const k = 'diario.visto.' + m.vista.hoje; try { if (sessionStorage.getItem(k)){ Chat.sistema(I18n.t("Today's daily reward is waiting: type /daily to claim it.")); return; } sessionStorage.setItem(k, '1'); } catch {} }   // pops up once per tab a day, not on every map
       if (!DailyUi.abrir(m.vista) && !m.novo) Chat.sistema(I18n.t('Streak: {n} days', { n: m.vista.seq }));
     }, transformLigado: v => { jogo.transformLigado = !!v; }, caixaVagas: n => { jogo.caixaVagas = +n || null; try { Menus.repintar?.(); } catch {} }, caca: m => HuntUi.ganho(m, chaoEm), cacaVista: v => HuntUi.definir(v), bossEstado: e => { bossEstado = e || {}; for (const b of jogo.bosses || []) pintarEmblemaBoss(b); }, bossCaptura: m => { const r = bossCaptEspera; bossCaptEspera = null; if (r){ clearTimeout(r.t); r.res(m); } }, batalhaFim: m => {   // o servidor fechou a luta sozinho (180 s sem jogada)
       if (!jogo.turno || !m.fim) return;
@@ -10732,7 +10733,12 @@ function escadaRolante(dt){
         telaEscura(9000, '…');
         try { Rede.enviar({ t: 'escada', peca: r.peca }); } catch {}
         jogo.escadaSaindo = true;                                           // stay put until the server's `volta` reloads the page
-      } else { ash.escadaY = null; if (pika) pika.escadaY = null; }
+      } else {                                                              // arrived: off the escalator, onto free floor (its carpet can sit in a cell the escalator blocks)
+        ash.escadaY = null; if (pika) pika.escadaY = null;
+        const ux = Math.sin(r.giro), uz = Math.cos(r.giro);
+        for (let d = 0; d <= 2; d += 0.1){ const x = ash.x + ux * d, z = ash.z + uz * d; if (livre(x, z)){ ash.x = x; ash.z = z; break; } }
+        if (pika && !jogo.semParceiro && !jogo.montaria && !livre(pika.x, pika.z)){ pika.x = ash.x - ux * 0.8; pika.z = ash.z - uz * 0.8; if (!livre(pika.x, pika.z)){ pika.x = ash.x; pika.z = ash.z; } }
+      }
     }
     return true;
   }

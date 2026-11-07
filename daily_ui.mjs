@@ -59,14 +59,18 @@ export function abrir(v) {
     pop.__def = d;
     const painel = no(pop, 'rotulo-premium');
     if (painel) { painel.style.cursor = 'pointer'; painel.style.pointerEvents = 'auto'; painel.addEventListener('click', (e) => { e.stopPropagation(); irParaPasse(); }); }
-    no(pop, 'btn-continuar')?.addEventListener('click', (e) => {   // not claimed yet: the button claims today's prize instead of closing
+    /* Not claimed yet: the button claims today's prize instead of closing. The pop-up closes on pointerup (a phone tap often never
+       becomes a click), so the claim listens to pointerup AND click, before the pop-up's own listeners, and stops them. */
+    const reivindicar = (e) => {
       if (!vistaAtual || vistaAtual.pegouHoje) return;
-      e.stopPropagation(); e.preventDefault();
+      e.stopImmediatePropagation(); e.preventDefault();
       if (recebendo) return;
       recebendo = true;
       ctx.receber?.();
       setTimeout(() => { recebendo = false; }, 4000);
-    }, true);
+    };
+    const btn = no(pop, 'btn-continuar');
+    if (btn) for (const tipo of ['pointerdown', 'pointerup', 'click']) btn.addEventListener(tipo, (e) => { if (tipo === 'pointerdown') { if (vistaAtual && !vistaAtual.pegouHoje) e.stopImmediatePropagation(); return; } reivindicar(e); }, true);
   }
   vistaAtual = v; recebendo = false;
   const seq = Math.max(1, Math.min(7, +v.seq || 1)), prem = !!v.premium;
