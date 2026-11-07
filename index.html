@@ -288,7 +288,8 @@ import * as TmCounter from './tm_counter.mjs'; // Celadon Department Store 2F: t
 import * as Guia from './mission_guide.mjs';
 import * as Aparicoes from './sightings.mjs';
 import * as Remendos from './scenery_patches.mjs';
-import * as ControlePk from './pokemon_control.mjs';   // C / paw button: steer your partner yourself in the overworld (as in raids)   // map fixes: house back walls, soft seams between ground textures   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
+import * as ControlePk from './pokemon_control.mjs';
+import * as RaidV2 from './raid_v2.mjs';   // the raid's v2 boss bar, also over a wild boss (F8 → Summon boss / B)   // C / paw button: steer your partner yourself in the overworld (as in raids)   // map fixes: house back walls, soft seams between ground textures   // story sightings: Ho-Oh over Route 1 and friends, once per player (data/sightings.json)
 import * as StaffUi from './staff_ui.mjs';   // ★ Staff button for GMs / staff: free path + a following Pokémon (upcoming/, server_staff.mjs) // gold arrow on the ground for the current mission
 import { ehChegadaCentroJohto, cenaSalaCompartilhada, cenaCasaJohto, centroJohtoMaisPerto, centroPelaChegadaJohto } from './johto_centers.mjs';   // Johto Centers/Marts share the Kanto rooms; other buildings share the Name Rater house until their own room exists
 import { Held, heldDe } from './held.mjs';
@@ -5208,7 +5209,7 @@ async function chegarChefe(glb = 'pm0249_00'){
   const dex = +(glb.match(/pm(\d{4})/)?.[1] || 249), S = porDex.get(dex) || porDex.get(249);
   c.nome = S.name; c.dex = dex; c.lv = +params0.get('chefelv') || CHEFE_LV;
   Ind.garantir(c); c.maxHp = Math.round(Ind.hpDe(S, c) * 2.5); c.hp = c.maxHp;
-  c.perfil = 'agressivo'; c.chefe = true; c.flutua = /pm0249|pm0250|pm0144|pm0145|pm0146|pm0384|pm0487|pm0493|pm0150/.test(glb) ? 2.2 : 0;
+  c.fim = 0; c.perfil = 'agressivo'; c.chefe = true; c.flutua = /pm0249|pm0250|pm0144|pm0145|pm0146|pm0384|pm0487|pm0493|pm0150/.test(glb) ? 2.2 : 0;
   c.vel = 3.0; c.estado = 'chegando'; c.recarga = 0; c.paciencia = 99; c.assustado = false; c.area = null; c.casa = null; c.t = 0;
   c.movs = Ind.golpesPara(dex, c.lv, GOLPES_ESPECIE[dex] || ['gust']);
   c.golpes = c.movs.map(m => GOLPES[m.id]).filter(Boolean); if (!c.golpes.length) c.golpes = [GOLPES.gust || GOLPES.tackle]; c.proximoGolpe = c.golpes[0];
@@ -5275,7 +5276,11 @@ function montarChefeRaid(s, reg){
   };
   chegar();
 }
+/** The boss bar takes the top-centre spot of the mission tracker (#missao): hide the tracker while a wild boss is up. */
+function trackerSobChefe(on){ const m = $('missao'); if (m) m.style.visibility = on ? 'hidden' : ''; }
 function hudChefe(c){
+  /* Nov 6: the same v2 boss bar as the raids (portrait, name · level, HP %), no clock; the old strip only if the layout lacks it */
+  if (RaidV2.barra({ nome: c.nome, lv: c.lv, hp: c.hp, maxHp: c.maxHp, dex: c.dex }, 0)){ document.getElementById('chefe')?.remove(); trackerSobChefe(true); return null; }
   let el = document.getElementById('chefe');
   if (!el){ el = document.createElement('div'); el.id = 'chefe'; el.className = 'ficha'; Object.assign(el.style, { position: 'fixed', left: '50%', top: '14px', transform: 'translateX(-50%)', minWidth: '380px', padding: '8px 14px', border: '1px solid #ff5f5f', borderRadius: '8px', background: 'var(--panel)', boxShadow: '0 8px 18px #000a', zIndex: 7, fontSize: '13px' }); document.body.appendChild(el); }
   const k = Math.max(0, c.hp / c.maxHp);
@@ -5320,11 +5325,13 @@ function atualizarChefe(dt){
       flutuar(ash, "you're up!", '#ffd23a');
     }
   } else {
-    hudChefe(c);
-    if (c.estado === 'morto'){
+    const acabou = c.estado === 'morto' || c.estado === 'guardado' || (c.estado !== 'capturando' && !(jogo.selvagens || []).includes(c));   // fainted, caught, or gone
+    if (!acabou || c.estado === 'morto') hudChefe(c);                  // fainted: the bar stays on 0% until it leaves
+    else if (c.estado !== 'morto' && !(c.fim > 0)){ c.fim = 3; RaidV2.barra(null); trackerSobChefe(false); }   // caught / gone: the bar leaves now, the storm a bit later
+    if (acabou){
       c.fim = (c.fim || 0) + dt;
       if (c.fim > 5){
-        document.getElementById('chefe')?.remove();
+        document.getElementById('chefe')?.remove(); if (!jogo.raidArena) RaidV2.barra(null); trackerSobChefe(false);
         if (jogo.chuva){ jogo.chuva.descartar(); cena.remove(jogo.chuva.raiz); jogo.chuva = null; }
         if (jogo.luzNormal){ sol.intensity = jogo.luzNormal.sol; cena.fog.color.copy(jogo.luzNormal.fog); cena.background.copy(jogo.luzNormal.ceu); }
         jogo.chefe = null;
