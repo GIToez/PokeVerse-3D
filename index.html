@@ -8978,14 +8978,48 @@ async function montarLiderGinasio(g, n){
 }
 /** Membro da ELITE FOUR no quarto dele: um treinador ⚔ como o líder de ginásio, com o time montado pelo SERVIDOR. */
 async function montarMembroElite(M, n){
+  /* THE CHAMPION'S SEAT (Nov 6): after your first run, the last room holds the player who took the title last — their outfit,
+     name and party (server_battle.mjs). Your first run, an empty seat, or you being the Champion: Blue, as in the story. */
+  const C = eliteEstado.campeao;
+  if (M.campeao && eliteEstado.vencida && C && !eliteEstado.souCampeao){
+    let e = null;
+    try {
+      e = await montarPersonagem('./scenery/pc/' + (Personagem.glbDe(C.personagem) || 'Boy_002') + '.glb', null, 0);
+      if (C.personagem) await Personagem.aplicar(e.pivo, C.personagem).catch(() => {});
+    } catch { e = null; }
+    if (e){
+      const falas = { antes: [I18n.t('So you made it all the way here. I earned this seat — come and take it if you can!')], derrota: [I18n.t('…The title is yours. Hold on to it.')], vitoria: [I18n.t('The seat stays mine. Train harder and come back.')] };
+      const MC = { ...M, nome: C.nome, titulo: 'Champion', tipo: '', time: C.time || [], falaAntes: falas.antes, falaDerrota: falas.derrota, falaVitoria: falas.vitoria };
+      return montarEliteNoQuarto(e, MC, n, '👑 ' + C.nome + ' · ' + I18n.t('Champion') + (C.defesas ? ' · ' + I18n.t('{n} defences', { n: C.defesas }) : ''));
+    }
+  }
   let e; try { e = await montarPersonagem('./scenery/' + M.glb + '.glb', null, 0); } catch { e = await montarPersonagem('./scenery/npc/NPC1007.glb', null, 0); }
-  e.npc = true; e.role = 'trainer'; e.cfg = n.cfg; e.elite = M; e.spotKey = 'elite:' + M.ordem; e.nome = M.nome;
+  return montarEliteNoQuarto(e, M, n, '⚔ ' + M.nome + ' · ' + (M.titulo || 'Elite Four'));
+}
+/** The Champion's room already built and the seat changed (the server's word came after the room, or someone took the title):
+    the trainer standing there is rebuilt. Not in the middle of a fight against them. */
+function refazerCampeao(){
+  const velho = (jogo.npcs || []).find(x => x.elite?.campeao && x.eliteDe);
+  if (!velho || (jogo.turno && jogo.turno.npc === velho)) return;
+  const M = ELITE_POR_CFG[velho.eliteDe.cfg];
+  if (!M) return;
+  const C = eliteEstado.campeao, agora = eliteEstado.vencida && C && !eliteEstado.souCampeao ? 'jogador:' + C.nome + ':' + C.desde : 'blue';
+  if (agora === velho.eliteQuem) return;
+  velho.eliteQuem = agora;   // one rebuild at a time
+  montarMembroElite(M, velho.eliteDe).then(() => {
+    cena.remove(velho.pivo);
+    jogo.npcs = jogo.npcs.filter(x => x !== velho);
+  }).catch(e => console.warn('champion seat:', e));
+}
+function montarEliteNoQuarto(e, M, n, rotulo){
+  e.npc = true; e.role = 'trainer'; e.cfg = n.cfg; e.elite = M; e.spotKey = 'elite:' + M.ordem; e.nome = M.nome; e.eliteDe = n;
+  e.eliteQuem = M.campeao ? (eliteEstado.vencida && eliteEstado.campeao && !eliteEstado.souCampeao ? 'jogador:' + eliteEstado.campeao.nome + ':' + eliteEstado.campeao.desde : 'blue') : null;
   e.treino = { nome: M.nome, time: M.time, dinheiro: 0, fala: M.falaAntes || [], vitoria: M.falaDerrota || [], derrota: M.falaVitoria || [] };   // `vitoria`/`derrota` do motor são vistas DO JOGADOR: quando eu venço, ele diz a falaDerrota dele
   e.falas = e.treino.fala;
   const chaoRef = jogo.ash ? (chaoEm(jogo.ash.x, jogo.ash.z) ?? 0) : 0;
   teleportar(e, flipX * n.x, n.z); if (INTERIOR && e.y < chaoRef - 0.3){ e.y = e.vy = chaoRef; e.pivo.position.y = chaoRef; }
   e.giro = -(n.face || 0) * Math.PI / 180; e.pivo.rotation.y = e.giro;
-  e.rotSprite = rotuloSprite('⚔ ' + M.nome + ' · ' + (M.titulo || 'Elite Four'), M.campeao ? '#ffd23a' : '#ffb1b1', 2.8);
+  e.rotSprite = rotuloSprite(rotulo, M.campeao ? '#ffd23a' : '#ffb1b1', 2.8);
   e.rotSprite.position.set(0, e.altura + 0.35, 0); e.pivo.add(e.rotSprite);
   tocarAnim(e, 'Idle'); jogo.npcs.push(e); aplicarMarcaMissao(e);
 }
@@ -10131,7 +10165,7 @@ if (jogo.ash){
         Som.tocar('ui/sound_keyitemget', { volume: .7, prio: true });
       }
       else if (m.passoFeito && m.op !== 'doar') Chat.sistema('✔ Step complete.');
-    }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
+    }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; if ('campeao' in m){ eliteEstado.campeao = m.campeao || null; eliteEstado.souCampeao = !!m.souCampeao; } refazerCampeao(); }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       /* v2: the duel card (Battle accepts it, like typing /battle <name>); the chat line stays as the fallback and the record */
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ try { Som.tocar('ui/sound_keyitemget', { volume: 0.7, prio: true }); } catch {}   // a sound, so a challenge doesn't go unnoticed
@@ -11572,7 +11606,7 @@ async function iniciarTurno(n, servPronto = null){
     if (!r || r.erro){ flutuar(a, (r && r.erro) || 'the server did not answer', '#f58e8e'); $('turno').hidden = true; return; }
     serv = r;
   }
-  jogo.turno = { npc: n, info: n.treino, idx: -1, rodada: 0, fase: 'posiciona', caiu: false, inimigo: null, serv };
+  jogo.turno = { npc: n, info: n.treino, idx: serv && Number.isInteger(serv.eleIdx) ? serv.eleIdx - 1 : -1, rodada: 0, fase: 'posiciona', caiu: false, inimigo: null, serv };   // the Elite Four opens with its best matchup, not always the first
   limparVolatil(p);                                                      // a luta por turno começa sem estágios do tempo real
   if (jogo.pika) jogo.pika.destino = null;                               // Ctrl+clique pendente não vale no turno
   atualizarMusica();                                                      // música de batalha (treinador / ginásio / elite)
@@ -11693,6 +11727,21 @@ async function rodadaDoServidor(T, acao){
       if (i >= 0) await trocarNoTurno(T, i);
       continue;
     }
+    if (l.trocaEle != null){                                              // the Elite Four / Champion switched (server_battle_ai.mjs): its Pokémon goes back, the new one comes out
+      const velho = T.inimigo;
+      if (velho){ flutuar(velho, I18n.t('Come back!'), '#ffd23a'); await esperarSeg(0.5); if (jogo.alvo === velho) jogo.alvo = null; guardarSelvagem(velho); }
+      T.idx = l.trocaEle - 1;
+      await proximoInimigoTurno();
+      if (T.inimigo){ T.inimigo.hp = l.hp; if (l.maxHp) T.inimigo.maxHp = l.maxHp; }
+      await esperarSeg(0.4);
+      continue;
+    }
+    if (l.itemEle != null){                                               // the Elite Four / Champion healed its Pokémon
+      const q = T.inimigo;
+      if (q){ efeito('00016_Hit', q.peito, q.altura); Som.tocar('ui/sound_successful', { volume: .45 }); flutuar(q, l.nome || I18n.t('Potion'), '#8ef58e'); q.hp = l.hp; if (l.maxHp) q.maxHp = l.maxHp; if (l.itemEle === 2004){ q.status = null; q.rotMarca = undefined; } pintarRotuloSelvagem?.(q); }
+      await esperarSeg(0.8);
+      continue;
+    }
     const at = l.de === 'eu' ? jogo.pika : T.inimigo, def = l.de === 'eu' ? T.inimigo : jogo.pika;
     if (!at || !def) continue;
     /* battle engine pop-ups (server_battle_engine.mjs): 'protected!', 'confused!', 'critical hit!', '-12 HP'… over whoever they
@@ -11777,7 +11826,7 @@ async function rodadaDoServidor(T, acao){
   if (jogo.pika && r.eu && (r.eu.uid == null || String(r.eu.uid) === String(uidParceiro()))){ jogo.pika.hp = r.eu.hp; if ('status' in r.eu) jogo.pika.status = r.eu.status || null; guardarEstadoAtivo(); }   // só se `eu` É o que está em campo (o servidor já pode ter posto o substituto; o lance `troca` cuida disso)
   if (T.caiu && !r.fim){                                                  // caiu o do inimigo e vem outro: o servidor já disse qual
     await esperarSeg(1.3);
-    T.idx = Math.max(0, (r.dele || []).findIndex(x => x.hp > 0) - 1);
+    T.idx = Number.isInteger(r.eleIdx) ? r.eleIdx - 1 : Math.max(0, (r.dele || []).findIndex(x => x.hp > 0) - 1);   // the Elite Four picks who comes next
     await proximoInimigoTurno();
     if (T.inimigo && r.ele){ T.inimigo.hp = r.ele.hp; if (r.ele.maxHp) T.inimigo.maxHp = r.ele.maxHp; }
   }
@@ -11932,6 +11981,10 @@ function fimTurno(vitoria, op = {}){
   if (n.elite){
     const E = n.elite, r = doServidor?.elite || null;
     eliteEstado.corrida = r && r.elite ? r.elite.corrida : (vitoria ? eliteEstado.corrida : null);
+    if (vitoria && doServidor?.novoCampeao){
+      Chat.sistema('👑 ' + I18n.t('You took the title: you are the Champion of Kanto! Your outfit and this party now wait in the Champion\'s room for every challenger.'));
+      flutuar(jogo.ash, '👑 ' + I18n.t('Champion of Kanto!'), '#ffd23a');
+    }
     if (vitoria && r && r.campeao){
       eliteEstado.vencida = true;
       Chat.sistema('🏆 You beat ' + E.nome + ' and are the Champion of Kanto! Your Pokémon obey up to Lv 100' + (r.soltou ? I18n.t(' and banked XP was released ({n} Pokémon)', { n: r.soltou }) : '') + '.' + (r.premio && r.premio.dinheiro ? ' +' + r.premio.dinheiro + ' ' + I18n.t('Coins') : ''));

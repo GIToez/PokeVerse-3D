@@ -9,6 +9,8 @@
       "cena": 4120009,
       "glb": "npc/NPC1007",
       "campeao": false,
+      "itens": { "2004": 2 },
+      "maxTrocas": 3,
       "dinheiro": 5400,
       "time": [
         { "dex": 87, "lv": 54, "glb": "pm0087_00" },
@@ -30,6 +32,8 @@
       "cena": 4120010,
       "glb": "npc/NPC1004",
       "campeao": false,
+      "itens": { "2004": 2 },
+      "maxTrocas": 3,
       "dinheiro": 5800,
       "time": [
         { "dex": 95, "lv": 53, "glb": "pm0095_00" },
@@ -51,6 +55,8 @@
       "cena": 4120011,
       "glb": "npc/NPC1007",
       "campeao": false,
+      "itens": { "2004": 2 },
+      "maxTrocas": 3,
       "dinheiro": 6000,
       "time": [
         { "dex": 94, "lv": 56, "glb": "pm0094_00" },
@@ -72,6 +78,8 @@
       "cena": 4120012,
       "glb": "npc/NPC1004",
       "campeao": false,
+      "itens": { "2004": 2 },
+      "maxTrocas": 3,
       "dinheiro": 6200,
       "time": [
         { "dex": 130, "lv": 58, "glb": "pm0130_00" },
@@ -93,6 +101,8 @@
       "cena": 4120013,
       "glb": "pc/Boy_001",
       "campeao": true,
+      "itens": { "2004": 3 },
+      "maxTrocas": 3,
       "dinheiro": 10000,
       "time": [
         { "dex": 18, "lv": 61, "glb": "pm0018_00" },

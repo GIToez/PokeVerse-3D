@@ -15,6 +15,7 @@ import * as Regras from './item_rules.mjs';
 import { efetividade } from './rules.mjs';
 import { expMultOf, expSharers } from './exp_items.mjs';
 import { createTurnEngine } from './server_battle_engine.mjs';
+import { createBattleAI } from './server_battle_ai.mjs';   // how the Elite Four and the Champion fight
 import { createMapWeather } from './server_weather.mjs';
 import * as Transf from './transform.mjs';
 import * as BossR from './boss_rules.mjs';   // NPC / Pokémon bosses whose level follows the party (public/data/bosses.json)
@@ -110,6 +111,40 @@ export function criarBatalha(ctx) {
     return v;
   }
   const estDe = (p) => (p ? volDe(p).est : null);
+  /* SMART AI for the Elite Four and the Champion (server_battle_ai.mjs); `bat.ia` turns it on for a battle. */
+  const IA = createBattleAI({ calcularDano: (a, b, g, r, c) => calcularDano(a, b, g, r, c), golpeDe: (id) => golpeDe(id), especie: (d, p) => especie(d, p),
+    statDe: (S, p, i) => Ind.statDe(S, p, i), estDe: (p) => engine.stagesOf(p, fx), Status, Stg });
+  const novaIa = (M) => ({ trocas: 0, ultimaTroca: null, itens: { ...(M?.itens && typeof M.itens === 'object' ? M.itens : {}) }, itemEm: new Set(), maxTrocas: Number.isInteger(M?.maxTrocas) ? M.maxTrocas : 3 });
+
+  /* THE CHAMPION'S SEAT (Nov 6). A player's FIRST Elite Four run always ends against Blue (the story). From the second run on,
+     the last room holds whoever took the title last: their outfit and their party as it was when they won. Beat them on a
+     second-or-later run and the seat is yours. No one in it yet: Blue sits there, and the first player to beat him on a
+     second run takes it. The reigning Champion running the League again faces Blue (you can't fight yourself).
+     Kept in server/data/champion.json: { usuario, nome, personagem, time, desde, defesas, antes: [{ nome, desde, ate, defesas }] }. */
+  const CAMPEAO_ARQ = nodePath.join(__dir, 'server/data/champion.json');
+  let campeao = (() => { try { return JSON.parse(fs.readFileSync(CAMPEAO_ARQ, 'utf8')); } catch { return null; } })();
+  const gravarCampeao = () => { try { fs.writeFileSync(CAMPEAO_ARQ, JSON.stringify(campeao)); } catch (e) { console.warn('champion: save', e.message); } };
+  /** What the game shows of the Champion (no login names). */
+  const campeaoPublico = () => campeao ? { nome: campeao.nome, personagem: campeao.personagem || null, desde: campeao.desde, defesas: campeao.defesas || 0,
+    time: (campeao.time || []).map((p) => ({ dex: +p.dex, lv: +p.lv || 1, glb: glbDe(p.dex, p), nome: p.nome || especie(p.dex).name, ...(p.shiny ? { shiny: true } : {}) })) } : null;
+  function avisarCampeao() {
+    for (const ws of ctx.conexoes.values()) {
+      const u = ws._usuario;
+      if (!u || !ctx.contas[u]) continue;
+      const e = saveDe(ctx.contas[u]).elite;
+      ctx.enviar(ws, { t: 'elite', corrida: e.corrida, vencida: !!e.vencida, campeao: campeaoPublico(), souCampeao: campeao?.usuario === u });
+    }
+  }
+  /** One of the Champion's Pokémon for a fight: their own record (IVs, EVs, nature, moves, held item), healed, full PP. */
+  function monDoCampeao(p) {
+    const c = JSON.parse(JSON.stringify(p));
+    delete c.transf; delete c.movsAntes; c.status = null; c.hp = null;
+    garantirMon(c);
+    c.hp = c.maxHp;
+    Ind.restaurarPP(c);
+    c.uid = 'camp-' + (p.uid ?? Math.random().toString(36).slice(2, 7));
+    return c;
+  }
   /* TRANSFORM IN BATTLE (Nov 6): the move copies the foe's species (types, stats at the Ditto's power), its moves (5 PP each) and
      shows its model. It lasts while the Ditto stays in: a switch, a faint or the end of the fight puts the Ditto back. A Ditto
      already transformed in the overworld (30 min) fights with that copy and its moves. The record's own moves wait in movsAntes. */
@@ -210,6 +245,8 @@ export function criarBatalha(ctx) {
       shiny: !!ent.shiny,
       uid: 'npc-' + ent.dex + '-' + (ent.lv || 0) + '-' + Math.random().toString(36).slice(2, 7),
     });
+    if (Array.isArray(ent.movs) && ent.movs.length) p.movs = ent.movs.slice(0, 4).filter((id) => golpes[id]).map((id) => Ind.novoGolpe(id));   // a set moveset (elite.json)
+    if (ent.held) p.held = ent.held;
     p.hp = p.maxHp;
     return p;
   }
@@ -333,6 +370,7 @@ export function criarBatalha(ctx) {
       id: bat.id,
       pvp: !!bat.pvp,
       abrir: true,
+      eleIdx: bat.eleIdx,
       dele: bat.dele.map(snapshotMon),
       eu: eu ? { uid: eu.uid, hp: eu.hp, maxHp: eu.maxHp, dex: eu.dex, lv: eu.lv, transf: vistaTransf(eu), status: Status.exportar(eu.status), estagios: engine.stagesOf(eu, fx), semente: engine.seededOf(eu, fx), efeitos: engine.volatilesOf(eu, fx) } : null,
       ele: ele ? { hp: ele.hp, maxHp: ele.maxHp, dex: ele.dex, lv: ele.lv, transf: vistaTransf(ele), status: Status.exportar(ele.status), estagios: engine.stagesOf(ele, fx), semente: engine.seededOf(ele, fx), efeitos: engine.volatilesOf(ele, fx) } : null,
@@ -404,6 +442,14 @@ export function criarBatalha(ctx) {
       timeInimigo = M.time || [];
       premio = M.dinheiro || 0;
       meta = { elite: ordem, membro: M };
+      if (M.campeao && s.elite.vencida) {   // a second-or-later run: the title is up for grabs
+        meta.reivindica = !(campeao && campeao.usuario === acc.u);   // the reigning Champion faces Blue and keeps the seat
+        if (campeao && campeao.usuario !== acc.u && (campeao.time || []).length) {
+          nomeInimigo = campeao.nome;
+          meta.contraJogador = campeao.usuario;
+          timeInimigo = null;   // built below from the Champion's own records
+        }
+      }
     } else if (tipo === 'boss') {
       /* BOSS: the team is built NOW from the party's best level + the tier bonus (boss_rules.mjs). */
       const B = bossPorId(id);
@@ -433,7 +479,7 @@ export function criarBatalha(ctx) {
       meta = { treinador: t.cfg, chave: String(id), info: t.info };
     }
 
-    const dele = timeInimigo.map(monNpc);
+    const dele = meta.contraJogador ? campeao.time.map(monDoCampeao) : timeInimigo.map(monNpc);
     if (!dele.length) return fail('this trainer has no team', 'party');
 
     const bat = {
@@ -453,6 +499,7 @@ export function criarBatalha(ctx) {
       log: ['Battle against ' + nomeInimigo + '!'],
       fim: null,
       ultimo: Date.now(),
+      ...(tipo === 'elite' ? { ia: novaIa(meta.contraJogador ? { itens: meta.membro.itens, maxTrocas: meta.membro.maxTrocas } : meta.membro) } : {}),
     };
     if (tipo === 'elite' && s.elite.corrida?.hp) {
       for (const p of bat.eu.time) {
@@ -462,6 +509,7 @@ export function criarBatalha(ctx) {
     }
     bat.eu.field = primeiroVivo(bat.eu.time);
     limparVol(bat.eu.time, dele);
+    if (bat.ia && bat.eu.field) bat.eleIdx = IA.nextIn(dele, bat.eu.field, null);   // Elite Four: its best opener against your lead
     lutas.set(acc.u, bat);
     if (tipo === 'elite' && !s.elite.corrida) {
       s.elite.corrida = { proximo: 1, inicio: Date.now(), hp: Object.fromEntries(s.time.map((p) => [String(p.uid), p.hp])) };
@@ -605,6 +653,21 @@ export function criarBatalha(ctx) {
           s.elite.pagos.push(M.ordem);
           fim.premio = { dinheiro: M.dinheiro || 0 };
         }
+        if (M.campeao && bat.meta.reivindica) {   // a second-or-later run: the seat is theirs, with this outfit and this party
+          const antes = campeao ? { nome: campeao.nome, desde: campeao.desde, ate: Date.now(), defesas: campeao.defesas || 0 } : null;
+          const perdeu = campeao?.usuario || null;
+          campeao = {
+            usuario: acc.u, nome: s.nome || acc.u, personagem: s.personagem ?? null, desde: Date.now(), defesas: 0,
+            time: (s.time || []).filter(Boolean).map((p) => { const c = JSON.parse(JSON.stringify(p)); delete c.transf; delete c.movsAntes; delete c.seguindo; return c; }),
+            antes: [...(antes ? [antes] : []), ...((campeao?.antes) || [])].slice(0, 20),
+          };
+          gravarCampeao();
+          fim.novoCampeao = true;
+          console.log(`[champion] ${acc.u} took the title${perdeu ? ' from ' + perdeu : ''}`);
+          for (const w of ctx.conexoes.values()) if (w._usuario) ctx.enviar(w, { t: 'sistema', texto: '👑 {nome} is the new Champion of Kanto!', vars: { nome: campeao.nome } });
+          if (perdeu) for (const w of ctx.socketsDe(perdeu)) ctx.enviar(w, { t: 'sistema', texto: '{nome} beat your team and took your Champion title.', vars: { nome: campeao.nome } });
+          setTimeout(avisarCampeao, 0);
+        }
         if (M.campeao) {
           const ini = +s.elite.corrida?.inicio || 0, ms = ini ? Date.now() - ini : 0;   // the run time feeds the Elite Four race ranking
           if (ms > 0 && (!s.elite.melhor || ms < s.elite.melhor)) s.elite.melhor = ms;
@@ -622,8 +685,13 @@ export function criarBatalha(ctx) {
       } else {
         s.elite.corrida = null;
         fim.elite = { zerou: true, ordem: M.ordem, nome: M.nome };
+        if (bat.meta.contraJogador && campeao?.usuario === bat.meta.contraJogador && !extra.desistiu) {   // the Champion's team held the seat
+          campeao.defesas = (campeao.defesas || 0) + 1;
+          gravarCampeao();
+          for (const w of ctx.socketsDe(campeao.usuario)) ctx.enviar(w, { t: 'sistema', texto: '👑 Your team defended your Champion title against {nome}!', vars: { nome: s.nome || acc.u } });
+        }
       }
-      for (const w of ctx.socketsDe(acc.u)) ctx.enviar(w, { t: 'elite', corrida: s.elite.corrida, vencida: !!s.elite.vencida });
+      for (const w of ctx.socketsDe(acc.u)) ctx.enviar(w, { t: 'elite', corrida: s.elite.corrida, vencida: !!s.elite.vencida, campeao: campeaoPublico(), souCampeao: campeao?.usuario === acc.u });
     } else if (bat.tipo === 'boss') {
       pagarBoss(acc, bat, s, venceu, extra, fim);
     }
@@ -751,7 +819,7 @@ export function criarBatalha(ctx) {
       if (!bat.dele.some((p) => p.hp > 0)) return 'vitoria';
       /* o próximo do treinador entra AQUI: com o índice parado no desmaiado, todo golpe seguinte caía nele (HP 0), dava EXP/EV
          de novo e o cliente "matava" o Onix do Brock a cada hit, num ciclo sem fim */
-      bat.eleIdx = bat.dele.findIndex((p) => p.hp > 0);
+      bat.eleIdx = bat.ia && bat.eu.field ? IA.nextIn(bat.dele, bat.eu.field, climaMapa(bat)) : bat.dele.findIndex((p) => p.hp > 0);
     }
     if (bat.eu.field && bat.eu.field.hp <= 0) {
       const prox = primeiroVivo(bat.eu.time);
@@ -767,7 +835,7 @@ export function criarBatalha(ctx) {
     bat.lances = [];
     bat.log = [];
     const eu = bat.eu.field;
-    const ele = bat.dele[bat.eleIdx];
+    let ele = bat.dele[bat.eleIdx];   // `let`: the Elite Four AI can switch it out this turn
     if (!eu || !ele) return fail('no Pokémon in the field', 'field');
     if (acao.vez != null && +acao.vez !== bat.vez) return fail('that turn already ended', 'turn', { vez: bat.vez });
 
@@ -797,9 +865,31 @@ export function criarBatalha(ctx) {
     /* One turn on the engine: priority, Speed, every move's effect, end-of-turn damage. A switch or an item is this side's
        action (no move): the trainer still moves. */
     vestirTransf(bat.eu.field); vestirTransf(ele);
-    let golpeEle = escolherGolpe(ele);
+    let golpeEle;
+    if (bat.ia) {   // Elite Four / Champion: it plays to win (server_battle_ai.mjs)
+      const d = IA.decide({ team: bat.dele, idx: bat.eleIdx, foe: bat.eu.field, clima: climaMapa(bat), vez: bat.vez, st: bat.ia });
+      if (d.tipo === 'troca') {
+        limparVol(ele);
+        bat.ia.trocas++; bat.ia.ultimaTroca = bat.vez;
+        bat.eleIdx = d.idx;
+        const novo = bat.dele[d.idx];
+        bat.lances.push({ trocaEle: d.idx, nome: novo.nome, hp: novo.hp, maxHp: novo.maxHp });
+        bat.log.push(bat.nomeInimigo + ' withdrew ' + ele.nome + ' and sent out ' + novo.nome + '!');
+        ele = novo; vestirTransf(ele);
+        golpeEle = null;
+      } else if (d.tipo === 'item') {
+        const nomeItem = { 2004: 'Full Restore', 2003: 'Max Potion', 2002: 'Hyper Potion' }[d.id] || 'a potion';
+        bat.ia.itens[d.id]--; bat.ia.itemEm.add(String(ele.uid));
+        const regra = ITENS_BATALHA[d.id];
+        ele.hp = regra?.cura === 'cheio' || !regra ? ele.maxHp : Math.min(ele.maxHp, ele.hp + regra.cura);
+        if (d.id === 2004) ele.status = null;
+        bat.lances.push({ itemEle: d.id, nome: nomeItem, hp: ele.hp, maxHp: ele.maxHp, de: 'ele' });
+        bat.log.push(bat.nomeInimigo + ' used a ' + nomeItem + ' on ' + ele.nome + '!');
+        golpeEle = null;
+      } else golpeEle = d.g || escolherGolpe(ele);
+    } else golpeEle = escolherGolpe(ele);
     if (meuGolpe && meuGolpe !== STRUGGLE) gastarPP(eu, meuGolpe.id);
-    if (golpeEle !== STRUGGLE) gastarPP(ele, golpeEle.id);
+    if (golpeEle && golpeEle !== STRUGGLE) gastarPP(ele, golpeEle.id);
     if (meuGolpe?.id === 'transform' && ehDitto(bat.eu.field)) { usarTransform(bat.eu.field, ele, 'eu', bat.lances, bat.log); meuGolpe = null; }   // Transform is done here; the engine turn only runs the foe's move
     if (golpeEle?.id === 'transform' && ehDitto(ele)) { usarTransform(ele, bat.eu.field, 'ele', bat.lances, bat.log); golpeEle = null; }
     const r = engine.turn({ p: bat.eu.field, move: meuGolpe }, { p: ele, move: golpeEle }, fx, Math.random, climaMapa(bat));
@@ -1044,9 +1134,9 @@ export function criarBatalha(ctx) {
       const c = ctx.contas[u];
       if (!c) return { corrida: null, vencida: false };
       const e = saveDe(c).elite;
-      return { corrida: e.corrida, vencida: !!e.vencida };
+      return { corrida: e.corrida, vencida: !!e.vencida, campeao: campeaoPublico(), souCampeao: campeao?.usuario === u };
     },
     /* exported for tests */
-    _test: { capturarBoss, capturas, bossPorId, estadoBosses, calcularDano, abrirNpc, ginasioPorId, treinadorPorId, elitePorOrdem, monNpc, lutas, pagar, cfgDeChave, varrerOciosas, expirar },
+    _test: { ia: IA, capturarBoss, capturas, bossPorId, estadoBosses, calcularDano, abrirNpc, ginasioPorId, treinadorPorId, elitePorOrdem, monNpc, lutas, pagar, cfgDeChave, varrerOciosas, expirar },
   };
 }

@@ -307,7 +307,7 @@ export const ESQUEMAS = {
     titulo: 'Elite Four', arquivo: 'elite', forma: 'objeto',
     descricao: 'The five League rooms in order. The live client reads membros[].npc as the trainer standing in each room.',
     campos: [
-      { k: 'membros', rotulo: 'Members', tipo: 'json', ajuda: 'List of { ordem, nome, titulo, tipo, npc, cena, glb, time, dinheiro, falaAntes, falaDerrota, falaVitoria, campeao }' },
+      { k: 'membros', rotulo: 'Members', tipo: 'json', ajuda: 'List of { ordem, nome, titulo, tipo, npc, cena, glb, time, dinheiro, falaAntes, falaDerrota, falaVitoria, campeao, itens, maxTrocas }. itens = what the AI may use, e.g. { "2004": 2 } (two Full Restores); maxTrocas = how many times a battle it may switch. A team member may set its moves: { dex, lv, movs: ["surf", "icebeam"], ivs: 31, held }. After a player\'s first win, the Champion\'s room holds the last player who took the title (server/data/champion.json).' },
     ],
   },
   ginasios: {
