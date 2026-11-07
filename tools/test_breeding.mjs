@@ -43,9 +43,9 @@ const s = contas.ash.save; s.time = [mon('c1', 4, 'Charmander', { sexo: 'm' }), 
 ok(B.operar('ash', { op: 'deixar', uid: 'c1' }).ok && B.operar('ash', { op: 'deixar', uid: 'c2' }).ok, 'left two Charmander');
 ok(B.operar('ash', { op: 'deixar', uid: 'c3' }).erro, 'a third is refused');
 ok(s.time.length === 1, 'party keeps Pikachu');
-const k = T.creche(contas.ash); k.tentativa = Date.now() - 3 * 24 * 3600e3;   // three days later
+const k = T.creche(contas.ash); k.tentativa = Date.now() - 10 * 24 * 3600e3;   // ten days later (enough rolls that an Egg always comes)
 const v = B.operar('ash', { op: 'ver' }).vista;
-ok(v.ovosEsperando >= 1, 'eggs after three days: ' + v.ovosEsperando + ' (' + v.compat.linha + ')');
+ok(v.ovosEsperando >= 1, 'eggs after ten days: ' + v.ovosEsperando + ' (' + v.compat.linha + ')');
 ok(B.operar('ash', { op: 'pegar' }).ok && s.ovos.length >= 1, 'took ' + s.ovos.length + ' egg(s), hatch in ' + Math.round((s.ovos[0].prontoEm - Date.now()) / 60000) + ' min');
 const antes = s.time.length + s.caixa.length, nOvos = s.ovos.length;
 ok(B.chocarProntos('ash') === 0, 'nothing hatches before its time');
