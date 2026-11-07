@@ -9594,5 +9594,20 @@
   "{x} costs {c} Coins.": "{x} custa {c} Moedas.",
   "Pick who may visit.": "Escolha quem pode visitar.",
   "Sign in to an account to have a plot.": "Entre numa conta para ter um terreno.",
-  "Arranging the guild base is not open yet.": "Arrumar a base da guilda ainda não está aberto."
+  "Arranging the guild base is not open yet.": "Arrumar a base da guilda ainda não está aberto.",
+  "OPEN": "LIVRE",
+  "Plant": "Plantar",
+  "Go to your plot to tend the garden.": "Vá ao seu terreno para cuidar da horta.",
+  "That plot is locked.": "Esse canteiro está fechado.",
+  "Something is already growing there.": "Já tem algo crescendo aí.",
+  "That can't be planted.": "Isso não dá para plantar.",
+  "You don't have that.": "Você não tem isso.",
+  "Nothing is growing there.": "Não há nada crescendo aí.",
+  "Not ready yet.": "Ainda não está pronto.",
+  "Pomeg Seed": "Semente de Baga Granada",
+  "Kelpsy Seed": "Semente de Algaça",
+  "Qualot Seed": "Semente de Bibaba",
+  "Hondew Seed": "Semente de Hamiba",
+  "Grepa Seed": "Semente de Baga Toranja",
+  "Tamato Seed": "Semente de Baga Tomafeto"
 }

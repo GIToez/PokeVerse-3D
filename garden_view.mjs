@@ -72,7 +72,7 @@ function canteiroDe(c, i, a, b) {
     }
     return v;
   }
-  if (c.aberto) return { i, estado: 'vazio', nome: d('Free plot'), pilula: d('LIVRE') };
+  if (c.aberto) return { i, estado: 'vazio', nome: d('Free plot'), pilula: d('OPEN') };
   const e = Math.max(1, num(c.faltam, i + 1 - a)),
     f = a < 1 && i === 0;
   return {
@@ -249,7 +249,7 @@ export function vistaPlantar(a, b = {}, { canteiro: c = 0, aba: d = 'sementes', 
         : f("You don't have any Berries to plant."),
     info: l,
     escolhido: k ? k.id : null,
-    botao: { ligado: !!k && !E.esperando, texto: f('Plantar') },
+    botao: { ligado: !!k && !E.esperando, texto: f('Plant') },
   };
 }
 export function vistaMissoes(a, b = {}, c = 0) {

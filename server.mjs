@@ -2399,6 +2399,7 @@ wss.on('connection', ws => {
         }
 
         else if (m.t === 'terreno') terrenos.operar(ws, m, () => conexoes.values());   // personal plots (server_plot.mjs)
+        else if (m.t === 'horta_ver' || m.t === 'horta_plantar' || m.t === 'horta_colher') terrenos.horta(ws, m);   // the plot's berry garden
         else if (m.t === 'guilda') {   // guilds (server_guild.mjs)
           const antes = ws._usuario ? guildas.tagDe(ws._usuario) : null;
           guildas.operar(ws, m);

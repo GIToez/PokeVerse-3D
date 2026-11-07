@@ -180,11 +180,85 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
     return responder({ ok: false, texto: 'Invalid request.' });
   }
 
+  // ── THE BERRY GARDEN (Nov 7): the Berry garden building's 6 plots. Plants from public/data/ev.json → horta.plantas (EV seeds grow in
+  // 8 h into 1 EV berry; held berries in 12 h into 3). Plots open with Gym Badges: badges − 1 (2 badges → 1 plot … 7 → 6; GMs all 6),
+  // or horta.canteirosPorInsignia / horta.canteirosDesde in ev.json. The harvest waits in the plot (it never rots).
+  //   { t: 'horta_ver' | 'horta_plantar' { canteiro, item } | 'horta_colher' { canteiro } } → { t: 'horta', op, horta, colhido? } / { t: 'horta_erro', op, canteiro, texto }
+  let evCache = { t: 0, d: null };
+  const evH = () => { if (Date.now() - evCache.t > 30e3) { try { evCache = { t: Date.now(), d: JSON.parse(fs.readFileSync(nodePath.join(dataPub, 'ev.json'), 'utf8')).horta || {} }; } catch { evCache = { t: Date.now(), d: evCache.d || {} }; } } return evCache.d || {}; };
+  const MAXC = () => Math.max(1, Math.min(12, +evH().canteirosMax || 6));
+  function abertosDe(u) {
+    const c = accounts[u]; if (!c) return 0;
+    if (gm(u) || !estado(u)?.construidas?.horta) return gm(u) ? MAXC() : 0;   // no Berry garden built: no plots
+    const ins = Array.isArray(c.save?.insignias) ? c.save.insignias.length : 0, desde = +evH().canteirosDesde || 2, por = +evH().canteirosPorInsignia || 1;
+    return Math.max(0, Math.min(MAXC(), ins >= desde ? 1 + Math.floor((ins - desde) * por) : 0));
+  }
+  function hortaDe(u) {
+    const s = accounts[u].save;
+    if (!s.horta || !Array.isArray(s.horta.plantas)) s.horta = { plantas: [] };
+    while (s.horta.plantas.length < MAXC()) s.horta.plantas.push(null);
+    return s.horta;
+  }
+  function vistaHorta(u) {
+    const H = hortaDe(u), ab = abertosDe(u), agora = Date.now(), P = evH().plantas || {};
+    return {
+      max: MAXC(), abertos: ab, desenhados: MAXC(), semHorta: !estado(u)?.construidas?.horta,
+      canteiros: H.plantas.slice(0, MAXC()).map((p, i) => {
+        if (i >= ab) return { i, aberto: false, vazio: true, faltam: i + 1 - ab };
+        if (!p) return { i, aberto: true, vazio: true };
+        const falta = Math.max(0, p.prontoEm - agora), d = P[String(p.semente)] || {};
+        return { i, aberto: true, vazio: false, semente: p.semente, fruto: p.fruto, plantadoEm: p.plantadoEm, prontoEm: p.prontoEm, faltaMs: falta, pronto: falta <= 0,
+          progresso: falta <= 0 ? 1 : Math.min(1, 1 - falta / Math.max(1, p.prontoEm - p.plantadoEm)), colheita: +d.colheita || 1, preso: !!d.preso };
+      }),
+    };
+  }
+  function empurrarSave(u) {
+    const c = accounts[u]; c.rev = (c.rev || 0) + 1; saveAccounts();
+    for (const w of socketsOf(u)) send(w, { t: 'save', save: { itens: c.save.itens || {}, presos: c.save.presos || {}, horta: c.save.horta }, rev: c.rev });
+  }
+  function horta(ws, m) {
+    const u = ws._usuario, op = String(m.t || '');
+    const erro = (texto, extra = {}) => send(ws, { t: 'horta_erro', op, canteiro: m.canteiro, texto, ...extra });
+    if (!u || !accounts[u]) return erro('Sign in to an account to have a plot.');
+    const s = accounts[u].save;
+    if (op === 'horta_ver') return send(ws, { t: 'horta', op, horta: vistaHorta(u) });
+    if (!naSala(ws, u)) return erro('Go to your plot to tend the garden.', { erro: 'outside the plot' });
+    const i = Math.floor(+m.canteiro), H = hortaDe(u);
+    if (!(i >= 0 && i < abertosDe(u))) return erro('That plot is locked.');
+    if (op === 'horta_plantar') {
+      if (H.plantas[i]) return erro('Something is already growing there.');
+      const id = String(Math.floor(+m.item)), d = (evH().plantas || {})[id];
+      if (!d) return erro("That can't be planted.");
+      const pilhas = (d.pilhas || ['solta']).map(k => k === 'presa' ? (s.presos || (s.presos = {})) : (s.itens || (s.itens = {})));
+      const bag = pilhas.find(b => +b[id] > 0);
+      if (!bag) return erro("You don't have that.");
+      bag[id] = +bag[id] - 1; if (!bag[id]) delete bag[id];
+      const agora = Date.now();
+      H.plantas[i] = { semente: +id, fruto: +d.fruto || +id, plantadoEm: agora, prontoEm: agora + Math.max(60e3, +d.crescerMs || 8 * 3600e3) };
+      log('garden', u, 'planted', id, 'in', i);
+      empurrarSave(u);
+      return send(ws, { t: 'horta', op, canteiro: i, horta: vistaHorta(u) });
+    }
+    if (op === 'horta_colher') {
+      const p = H.plantas[i];
+      if (!p) return erro('Nothing is growing there.');
+      if (p.prontoEm > Date.now()) return erro('Not ready yet.');
+      const d = (evH().plantas || {})[String(p.semente)] || {}, qtd = Math.max(1, +d.colheita || 1), id = String(p.fruto);
+      const bag = d.preso ? (s.presos || (s.presos = {})) : (s.itens || (s.itens = {}));
+      bag[id] = (+bag[id] || 0) + qtd;
+      H.plantas[i] = null;
+      log('garden', u, 'harvested', id, 'x' + qtd);
+      empurrarSave(u);
+      return send(ws, { t: 'horta', op, canteiro: i, horta: vistaHorta(u), colhido: { canteiro: i, id: +id, qtd } });
+    }
+    return erro('Invalid request.');
+  }
+
   /** The plot's buildings as map objects (file coordinates) for the scene loader — the plot this account is entering. */
   function pecasAoEntrar(u) {
     const sala = salaAoEntrar(u), dono = donoDaSala.get(sala) || u;
     const v = vista(dono, u);
     return (v?.pecas || []).filter(p => !p.glb).map(p => ({ n: p.n, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 }));
   }
-  return { operar, salaAoEntrar, pecasAoEntrar, salaDe, vista, estado, podeVisitar, donoDaSala: sala => donoDaSala.get(sala) || null, CENA };
+  return { operar, horta, salaAoEntrar, pecasAoEntrar, salaDe, vista, estado, podeVisitar, donoDaSala: sala => donoDaSala.get(sala) || null, CENA };
 }
