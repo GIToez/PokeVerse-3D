@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#222}canvas{display:block}</style>
+<script type="importmap">{ "imports": { "three": "/vendor/three/build/three.module.js", "three/addons/": "/vendor/three/examples/jsm/" } }</script></head>
+<body><canvas id="c"></canvas>
+<script type="module">
+/* Escalator bench: animated_escalator_up (left) and _down (right) from the side and from the game camera, steps moving
+   (escalator_anim.mjs). window.quadro(t) draws the scene at t seconds; ?vista=lado|jogo picks the camera. */
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as Escadas from '/escalator_anim.mjs';
+const W = 1000, H = 560, ren = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+ren.setSize(W, H); ren.outputColorSpace = THREE.SRGBColorSpace;
+const cena = new THREE.Scene(); cena.background = new THREE.Color(0x8fb6d8);
+cena.add(new THREE.AmbientLight(0xffffff, 1.8)); const d = new THREE.DirectionalLight(0xffffff, 1.6); d.position.set(3, 8, 6); cena.add(d);
+const chao = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshLambertMaterial({ color: 0xe8d9a8 })); chao.rotation.x = -Math.PI / 2; cena.add(chao);
+const mapa = new THREE.Group(); mapa.name = 'Mapa';
+const L = new GLTFLoader();
+for (const n of ['animated_escalator_up', 'animated_escalator_down']) {
+  const g = await L.loadAsync('/scenery/lib/' + n + '.glb');
+  for (const c of [...(g.scene.getObjectByName('Mapa') || g.scene).children]) mapa.add(c);
+}
+const objetos = [{ n: 'animated_escalator_up', x: 2, y: 0, z: 0 }, { n: 'animated_escalator_down', x: -2, y: 0, z: 0 }];
+/* the body, placed like the game does (translation with x mirrored × the part's own matrix) */
+mapa.updateMatrixWorld(true);
+for (const o of objetos) {
+  const lib = mapa.children.find(c => c.name.replace(/^lib:?/, '') === o.n);
+  lib.traverse(m => { if (!m.isMesh || /^anim_/.test(m.name)) return; const c = new THREE.Mesh(m.geometry, m.material); c.matrixAutoUpdate = false; c.matrix.multiplyMatrices(new THREE.Matrix4().makeTranslation(-o.x, o.y, o.z), m.matrixWorld); cena.add(c); });
+}
+Escadas.montar({ THREE, mapa, objetos, flipX: -1, cena, renderer: ren });
+const vista = new URLSearchParams(location.search).get('vista') || 'lado';
+const cam = new THREE.PerspectiveCamera(vista === 'jogo' ? 20 : 35, W / H, 0.1, 200);
+if (vista === 'jogo') { cam.position.set(0, 18.8 * 0.5, 23.5 * 0.5); cam.lookAt(0, 0, 0); }
+else if (vista === 'cima') { cam.position.set(0, 6, 4); cam.lookAt(0, 0, 0); }
+else if (vista === 'sobe') { cam.position.set(-2, 3.2, 3.4); cam.lookAt(-2, 0.6, 0); chao.visible = false; }
+else if (vista === 'desce') { cam.position.set(2, 2.2, 3.4); cam.lookAt(2, -0.8, 0); chao.visible = false; }
+else { cam.position.set(0, 1.2, 8); cam.lookAt(0, 0.2, 0); }
+let t = 0;
+window.quadro = (s) => { Escadas.atualizar(s - t); t = s; ren.render(cena, cam); return true; };
+window.quadro(0);
+window.pronto = true;
+</script></body></html>

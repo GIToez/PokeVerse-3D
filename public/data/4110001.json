@@ -27,7 +27,7 @@
    "a": 0
   },
   {
-   "n": "sm_ro_005_escalator_01",
+   "n": "animated_escalator_up",
    "x": 7,
    "y": 0,
    "z": 3.3,
@@ -174,7 +174,7 @@
    "a": 0
   },
   {
-   "n": "sm_ro_005_escalator_04",
+   "n": "animated_escalator_down",
    "x": -6.5,
    "y": 0,
    "z": 3.3,
@@ -344,7 +344,9 @@
   "sm_ro_005_machine_03",
   "sm_ro_005_machine_04",
   "sm_ro_005_machine_05",
-  "sm_ro_005_wall_01"
+  "sm_ro_005_wall_01",
+  "animated_escalator_up",
+  "animated_escalator_down"
  ],
  "bbox": {
   "x0": -6.5,

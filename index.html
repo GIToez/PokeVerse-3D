@@ -228,6 +228,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import './glb_no_blob.mjs';                     // texturas dos .glb sem URL blob: (sem as centenas de "blob:" quebrados no F12)
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import * as Escadas from './escalator_anim.mjs';   // animated escalators (Nov 7)
 import * as Gas from './gas.mjs';           // ghost gas around Gastly (Nov 5)
 import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
 import * as Cutscene from './cutscene.mjs';
@@ -1852,7 +1853,7 @@ function instanciarBiblioteca(g, dados){
   for (const p of mapa.children){
     const lista = [];
     p.traverse(o => {
-      if (!o.isMesh || o.isSkinnedMesh) return;
+      if (!o.isMesh || o.isSkinnedMesh || /^anim_/.test(o.name)) return;   // anim_*: drawn and moved by its own module (escalator_anim.mjs: the escalator steps)
       const mats = Array.isArray(o.material) ? o.material : [o.material];
       for (const m of mats){ if (INTERIOR && /wall/i.test(m.name || '')) m.side = THREE.FrontSide; else if (m.alphaTest > 0) m.side = THREE.DoubleSide; }   // 16/09: parede de interior fica de um lado só (o GLB já vem doubleSided) — a de perto da câmera, vista de costas, tapava a sala inteira (Esconderijo Rocket piso 2: preto + z-fighting)
       let porta = null;                                                   // folha de porta (nó door*/men/Door* ou grupo pai door3/door4): sai do batch e vira malha viva que ABRE
@@ -2666,6 +2667,7 @@ if (chao.biblioteca){
 }
 const principal = chao.biblioteca ? instanciarBiblioteca(gltf, dados) : instanciar(gltf, dados);
 cena.add(principal.raiz);
+try { const n = Escadas.montar({ THREE, mapa: gltf.scene.getObjectByName('Mapa') || gltf.scene, objetos: dados.objetos, flipX, cena, renderer: ren }); if (n) console.log('animated escalators:', n); } catch (e){ console.warn('escalators:', e); }   // moving steps (escalator_anim.mjs)
 for (const o of objetosGlbTerreno) new GLTFLoader().loadAsync('./' + o.glb).then(g => {   // a plot's incubators and trophies (server_plot.mjs → /terreno/cena)
   const m = g.scene; m.position.set(flipX * o.x, (o.y || 0) + (chaoEm(flipX * o.x, o.z) ?? 0), o.z); m.rotation.y = -(+o.a || 0) * Math.PI / 180; m.scale.setScalar(+o.escala || 1);
   m.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } }); cena.add(m);
@@ -12170,6 +12172,7 @@ window.quadro = (dt) => quadro(dt);                // depuração: um passo de l
 let telaRect = { width: 1, height: 1, left: 0, top: 0 };   // lido UMA vez por quadro: cada getBoundingClientRect depois de escrever estilo força reflow
 function quadro(dt){
   const _tq = performance.now();
+  Escadas.atualizar(dt);                                                  // animated escalators
   telaRect = tela.getBoundingClientRect();
 
   // movimento, no plano, respeitando o giro da câmera: no jogo move o Ash,

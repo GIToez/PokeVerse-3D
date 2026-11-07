@@ -2915,6 +2915,42 @@
     "modo": "vazio",
     "de": "2100011"
    }
+  },
+  {
+   "id": 9100001,
+   "nome": "Pokémon Center 2F",
+   "areas": [
+    {
+     "id": 910001,
+     "nome": "Pokémon Center 2F",
+     "tipo": 2
+    }
+   ],
+   "objeto": false,
+   "criado": {
+    "por": "gmtest",
+    "em": "2026-11-07T16:02:01.276Z",
+    "modo": "clonar",
+    "de": "4110001"
+   }
+  },
+  {
+   "id": 9100003,
+   "nome": "Pokémon Center B1",
+   "areas": [
+    {
+     "id": 910003,
+     "nome": "Pokémon Center B1",
+     "tipo": 2
+    }
+   ],
+   "objeto": false,
+   "criado": {
+    "por": "gmtest",
+    "em": "2026-11-07T16:02:01.288Z",
+    "modo": "clonar",
+    "de": "4110001"
+   }
   }
  ]
 }
