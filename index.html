@@ -8965,7 +8965,8 @@ async function montarNpcGlb(glb){
 }
 /** Líder de ginásio no interior: um treinador ⚔ com o time do ginásio; o modelo do dump se exportado, senão um treinador genérico. */
 async function montarLiderGinasio(g, n){
-  let e; try { e = await montarNpcGlb(g.glb); } catch { e = await montarPersonagem('./scenery/npc/fc1004_00.glb', null, 0); }
+  /* the leader's own model (gyms.json glb); until that file exists, a stand-in that looks the part (glbReserva), then a generic trainer */
+  let e; try { e = await montarNpcGlb(g.glb); } catch { try { if (!g.glbReserva) throw 0; e = await montarNpcGlb(g.glbReserva); } catch { e = await montarPersonagem('./scenery/npc/fc1004_00.glb', null, 0); } }
   const tem = (lerLS('insignias', []) || []).includes(g.insignia.id);
   e.npc = true; e.role = 'trainer'; e.cfg = n.cfg; e.ginasio = g; e.spotKey = 'ginasio:' + g.numero; e.nome = g.lider;
   e.treino = { nome: g.lider, time: g.time, dinheiro: g.dinheiro, fala: g.fala, vitoria: g.vitoria, derrota: g.derrota };
@@ -8993,7 +8994,7 @@ async function montarMembroElite(M, n){
       return montarEliteNoQuarto(e, MC, n, '👑 ' + C.nome + ' · ' + I18n.t('Champion') + (C.defesas ? ' · ' + I18n.t('{n} defences', { n: C.defesas }) : ''));
     }
   }
-  let e; try { e = await montarPersonagem('./scenery/' + M.glb + '.glb', null, 0); } catch { e = await montarPersonagem('./scenery/npc/NPC1007.glb', null, 0); }
+  let e; try { e = await montarPersonagem('./scenery/' + M.glb + '.glb', null, 0); } catch { try { if (!M.glbReserva) throw 0; e = await montarPersonagem('./scenery/' + M.glbReserva + '.glb', null, 0); } catch { e = await montarPersonagem('./scenery/npc/fc1004_00.glb', null, 0); } }   // own model, else a stand-in (elite.json glbReserva)
   return montarEliteNoQuarto(e, M, n, '⚔ ' + M.nome + ' · ' + (M.titulo || 'Elite Four'));
 }
 /** The Champion's room already built and the seat changed (the server's word came after the room, or someone took the title):

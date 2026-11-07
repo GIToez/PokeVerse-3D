@@ -104,6 +104,7 @@
   "cfgLider": 4160599,
   "cfgGuia": 4160599,
   "glb": "npc/NPC1001",
+  "glbReserva": "npc/fc0039_00",
   "modeloDump": "npc1001",
   "insignia": {
    "id": 103,
@@ -156,6 +157,7 @@
   "cfgLider": 4160699,
   "cfgGuia": 4160699,
   "glb": "npc/NPC1002",
+  "glbReserva": "npc/fc1023_01",
   "modeloDump": "npc1002",
   "insignia": {
    "id": 104,
@@ -208,6 +210,7 @@
   "cfgLider": 4161199,
   "cfgGuia": 4161199,
   "glb": "npc/NPC1003",
+  "glbReserva": "npc/fc0053_00",
   "modeloDump": "npc1003",
   "insignia": {
    "id": 105,
@@ -265,6 +268,7 @@
   "cfgLider": 4161299,
   "cfgGuia": 4161299,
   "glb": "npc/NPC1000",
+  "glbReserva": "npc/fc2036_00",
   "modeloDump": "npc1000",
   "insignia": {
    "id": 106,
@@ -322,6 +326,7 @@
   "cfgLider": 4161399,
   "cfgGuia": 4161399,
   "glb": "npc/NPC1006",
+  "glbReserva": "npc/fc2003_00",
   "modeloDump": "npc1006",
   "insignia": {
    "id": 107,
@@ -379,6 +384,7 @@
   "cfgLider": 4161499,
   "cfgGuia": 4161499,
   "glb": "npc/NPC1005",
+  "glbReserva": "npc/fc2009_00",
   "modeloDump": "npc1005",
   "insignia": {
    "id": 108,

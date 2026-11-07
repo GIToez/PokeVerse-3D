@@ -328,6 +328,8 @@ export const ESQUEMAS = {
       { k: 'cfgGuia', rotulo: 'Guide NPC (cfg)', tipo: 'num', min: 1, max: 999999999, int: true },
       { k: 'cena', rotulo: 'Interior scene', tipo: 'num', min: 1, max: 99999999, int: true },
       { k: 'glb', rotulo: 'Leader model', tipo: 'texto', max: 60, validar: s => /^[\w/-]{1,60}$/.test(s) ? null : 'model path, e.g. npc/NPC1004', ajuda: 'In scenery/, without .glb (e.g. npc/NPC1004 or pc/Girl_012).' },
+      { k: 'glbReserva', rotulo: 'Stand-in model', tipo: 'texto', max: 60, validar: s => !s || /^[\w/-]{1,60}$/.test(s) ? null : 'model path, e.g. npc/fc0039_00', ajuda: 'Worn while the leader\'s own model file is missing (e.g. npc/fc0039_00).' },
+      { k: 'acaso', rotulo: 'AI randomness (0–1)', tipo: 'num', min: 0, max: 1, ajuda: 'How often the leader picks a random move instead of its best one. Empty = 0.3. 0 = always the best move.' },
       { k: 'fala', rotulo: 'Line before battle', tipo: 'linhas', validar: listaDeTextos },
       { k: 'vitoria', rotulo: 'Line when the player wins', tipo: 'linhas', validar: listaDeTextos },
       { k: 'derrota', rotulo: 'Line when the player loses', tipo: 'linhas', validar: listaDeTextos },
