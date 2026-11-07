@@ -1948,6 +1948,53 @@ function instanciarBiblioteca(g, dados){
     caixaDe.set(nome, cx);
   }
   window.__dbgCaixas = caixaDe;                   // depuração: caixa local de cada prefab
+  /* Pegada no chão de uma peça girada fora de múltiplo de 90° (06/11): Set de células, ou null se o giro for reto (a caixa alinhada
+     já é exata) ou faltar a caixa sem giro. `cxGirada` é a caixa da variante, só pra limitar a varredura. */
+  const _pgR = new THREE.Matrix4(), _pgE = new THREE.Euler(), _pgV = new THREE.Vector3();
+  const pegadaGirada = (o, cxGirada, M) => {
+    const k = chaveRot(o), at = k.lastIndexOf('@');
+    if (at < 0) return null;
+    const ang = k.slice(at + 1).split(',').map(Number);
+    if (ang.every(a => a % 90 === 0)) return null;
+    const base = caixaDe.get(chaveNome(o.n));
+    if (!base || base.isEmpty()) return null;
+    const D = THREE.MathUtils.degToRad;
+    _pgR.makeRotationFromEuler(_pgE.set(D(ang[0]), D(ang[1]), D(ang[2])));
+    // caixa sem giro encolhida pela folga em x/z; peça fina demais vira o eixo do meio (como o caminho alinhado faz)
+    let bx0 = base.min.x + M, bx1 = base.max.x - M, bz0 = base.min.z + M, bz1 = base.max.z - M;
+    if (bx1 < bx0) bx0 = bx1 = (base.min.x + base.max.x) / 2;
+    if (bz1 < bz0) bz0 = bz1 = (base.min.z + base.max.z) / 2;
+    const ox = flipX * o.x, oz = o.z, pts = [];
+    for (const x of [bx0, bx1]) for (const y of [base.min.y, base.max.y]) for (const z of [bz0, bz1]){
+      _pgV.set(x, y, z).applyMatrix4(_pgR);
+      pts.push([ox + _pgV.x, oz + _pgV.z]);
+    }
+    // casco convexo (cadeia monótona)
+    pts.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const cruz = (O, A, B) => (A[0] - O[0]) * (B[1] - O[1]) - (A[1] - O[1]) * (B[0] - O[0]);
+    const inf = [], sup = [];
+    for (const p of pts){ while (inf.length >= 2 && cruz(inf[inf.length - 2], inf[inf.length - 1], p) <= 0) inf.pop(); inf.push(p); }
+    for (let i = pts.length - 1; i >= 0; i--){ const p = pts[i]; while (sup.length >= 2 && cruz(sup[sup.length - 2], sup[sup.length - 1], p) <= 0) sup.pop(); sup.push(p); }
+    const poli = inf.slice(0, -1).concat(sup.slice(0, -1));
+    if (!poli.length) poli.push(pts[0]);
+    // eixos de separação: x, z e as normais das arestas do polígono
+    const eixos = [[1, 0], [0, 1]];
+    for (let i = 0; i < poli.length; i++){
+      const a = poli[i], b = poli[(i + 1) % poli.length], ex = b[0] - a[0], ez = b[1] - a[1];
+      if (Math.abs(ex) > 1e-9 || Math.abs(ez) > 1e-9) eixos.push([-ez, ex]);
+    }
+    const proj = (lista, [ax, az]) => { let lo = Infinity, hi = -Infinity; for (const [x, z] of lista){ const d = x * ax + z * az; if (d < lo) lo = d; if (d > hi) hi = d; } return [lo, hi]; };
+    const projP = eixos.map(e => proj(poli, e));
+    const cel = new Set(), E = 1e-6;
+    const gx0 = Math.floor(ox + cxGirada.min.x), gx1 = Math.floor(ox + cxGirada.max.x), gz0 = Math.floor(oz + cxGirada.min.z), gz1 = Math.floor(oz + cxGirada.max.z);
+    for (let x = gx0; x <= gx1; x++) for (let z = gz0; z <= gz1; z++){
+      const q = [[x + E, z + E], [x + 1 - E, z + E], [x + 1 - E, z + 1 - E], [x + E, z + 1 - E]];
+      let separa = false;
+      for (let i = 0; i < eixos.length && !separa; i++){ const [lo, hi] = proj(q, eixos[i]); separa = hi < projP[i][0] || lo > projP[i][1]; }
+      if (!separa) cel.add(x + ',' + z);
+    }
+    return cel;
+  };
   const colocacoes = [...(dados.areaEnv || []), ...(dados.ambiente || []), ...(dados.objetos || [])];
   const grupos = new Map();
   window.__dbgGrupos = grupos;                    // depuração: grupos (geometria, material, bloco) → nomes dos prefabs
@@ -2151,6 +2198,17 @@ function instanciarBiblioteca(g, dados){
            É buraco de CONTEÚDO, não de colisão — tirar esta linha quando os interruptores entrarem. */
         if (!/^t_oranincityarenen_wall/.test(nome))
           for (const k of paredesPorFace(lista, flipX * o.x, o.y, o.z, 0.3, 1.8, 1.2, 0.5)) bloqueio.add(k);   // vão de 1,2 m (parede, não borda de tablado) e 0,5 m dentro da célula (não pega a vizinha de raspão)
+      }
+      /* PEÇA GIRADA EM ÂNGULO QUEBRADO (06/11, casa girada uns 15° no editor): a `cx` da variante é a caixa ALINHADA que envolve
+         a peça girada — bem maior que ela, e os cantos vazios viravam parede invisível. Para peça cheia com giro fora de 90°, a
+         pegada é a caixa do prefab SEM giro (encolhida pela mesma folga M), girada e projetada no chão; bloqueia a célula que essa
+         pegada toca (SAT quadrado × polígono convexo). Miolo = célula da pegada com os 4 vizinhos também na pegada. */
+      const pegGirada = !oco ? pegadaGirada(o, cx, M) : null;
+      if (pegGirada) for (const k of pegGirada){
+        const i = k.indexOf(','), x = +k.slice(0, i), z = +k.slice(i + 1);
+        if (navPolisCaixa && navAndaEm(x + 0.5, z + 0.5)) continue;
+        bloqueio.add(k);
+        if (pegGirada.has((x + 1) + ',' + z) && pegGirada.has((x - 1) + ',' + z) && pegGirada.has(x + ',' + (z + 1)) && pegGirada.has(x + ',' + (z - 1))) miolo.add(k);
       }
       else for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++){
         const borda = x === x0 || x === x1 || z === z0 || z === z1;
