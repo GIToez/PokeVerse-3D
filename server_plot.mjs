@@ -42,13 +42,13 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
   function estado(u) {
     const s = accounts[u]?.save; if (!s) return null;
     let t = s.terreno;
-    if (!t || typeof t !== 'object') t = s.terreno = { lugar: 'casa', colocacoes: [], guardadas: [], construidas: {}, visitas: 'amigos' };
+    if (!t || typeof t !== 'object') t = s.terreno = { lugar: 'casa', colocacoes: [], guardadas: [], construidas: {}, visitas: 'todos' };   // open to visitors by default (show off your plot); /plot visitors … changes it
     t.lugar = 'casa';
     if (!t.construidas || typeof t.construidas !== 'object') t.construidas = {};
     if (!t.construidas.ninho) t.construidas.ninho = 1;                        // the Companion nest comes with the plot (level 1, free)
     if (!Array.isArray(t.colocacoes)) t.colocacoes = [];
     if (!Array.isArray(t.guardadas)) t.guardadas = [];
-    if (!['ninguem', 'amigos', 'guilda', 'todos'].includes(t.visitas)) t.visitas = 'amigos';
+    if (!['ninguem', 'amigos', 'guilda', 'todos'].includes(t.visitas)) t.visitas = 'todos';
     t.nivel = 1 + Object.keys(t.construidas).filter(k => +t.construidas[k] >= 1).length;   // 2 with just the nest, +1 per building: each unlocks the next
     donoDaSala.set(salaDe(u), u);
     return t;

@@ -94,6 +94,7 @@ export function enviar(aba, texto){
   const tr = t.match(/^\/trocar\s+(.+)$/i);                              // /trocar nome → convite de troca pra quem está por perto (trade.mjs)
   if (tr){ ctx?.trocar?.(tr[1].trim()); return 'sistema'; }
   if (/^\/(daily|diario)\s*$/i.test(t)){ ctx?.diario?.(); return 'sistema'; }   // /daily: the Daily Rewards window again
+  { const pv = /^\/plot\s+visitors?\s+(everyone|all|friends|guild|nobody|none)\s*$/i.exec(t); if (pv){ ctx?.terrenoVisitas?.({ everyone: 'todos', all: 'todos', friends: 'amigos', guild: 'guilda', nobody: 'ninguem', none: 'ninguem' }[pv[1].toLowerCase()]); return 'sistema'; } }   // who may visit my plot
   { const pl = /^\/(plot|visit|home)(?:\s+(.+))?$/i.exec(t); if (pl){ ctx?.terreno?.(pl[1].toLowerCase() === 'visit' ? (pl[2] || '').trim() : null); return 'sistema'; } }   // /plot = go to my plot (or leave it), /visit <name> = someone's plot (server_plot.mjs)
   const bt = t.match(/^\/(batalhar|battle|desafiar)\s+(.+)$/i);
   if (bt){ ctx?.desafiarJogador?.(bt[2].trim()); return 'sistema'; }

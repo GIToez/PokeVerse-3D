@@ -54,13 +54,14 @@ function pintar() {
       <button class="b" data-a="amigo"${amigo || pedi ? ' disabled' : ''}><i>🤝</i>${esc(amigo ? tr('Friends ✓') : pedi ? tr('Requested') : tr('Add Friend'))}</button>
       <button class="b" data-a="inspecionar"><i>🔍</i>${esc(tr('Inspect'))}</button>
       <button class="b" data-a="trocar"><i>🔄</i>${esc(tr('Trade'))}</button>
+      <button class="b" data-a="visitar"><i>🏡</i>${esc(tr('Visit plot'))}</button>
       <button class="b duel" data-a="duelo"><i>⚔</i>${esc(tr('Duel'))}</button></div>
     ${inspecao && String(inspecao.id) === String(o.id) ? vistaInspecao(inspecao) : ''}`;
 }
 function vistaInspecao(v) {
   if (v.erro) return `<div class="sub">${esc(tr(v.erro))}</div>`;
   const bits = [tr(v.insignias === 1 ? '{n} Badge' : '{n} Badges', { n: v.insignias || 0 })];
-  if (v.campeao) bits.push(tr('Kanto Champion'));
+  if (v.campeao) bits.push(tr('Indigo League Champion'));
   return `<div class="time">${(v.time || []).map((p) => `<span class="${p.shiny ? 'sh' : ''}" title="${esc(p.nome)} · Lv ${p.lv}" style="background-image:url('${icone(p.dex)}')"><b>${p.lv}</b></span>`).join('') || '<em class="sub">' + esc(tr('No Pokémon')) + '</em>'}</div>
     <div class="sub">${esc(bits.join(' · '))}</div>`;
 }
@@ -101,6 +102,7 @@ function acao(a) {
   else if (a === 'inspecionar') { ctx.enviar?.({ t: 'inspecionar', id: o.id }); }
   else if (a === 'duelo') { ctx.duelo?.(o.nome); fechar(); }
   else if (a === 'trocar') { ctx.trocar?.(o); fechar(); }
+  else if (a === 'visitar') { ctx.visitar?.(o.nome); fechar(); }   // their plot, as a guest (server_plot.mjs: if they take visitors)
 }
 function mostrarConvite(m) {
   estilo();

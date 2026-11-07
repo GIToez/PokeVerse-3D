@@ -1507,6 +1507,10 @@
     "z": -6.13
    },
    "vagas": {
+"trofeu_ouro": {"nome": "Gold Trophy", "tipo": "item", "item": 900180, "itens": [{"id": 900180, "preso": true}], "limite": null, "funcao": null, "guardavel": true, "regiaoDado": null, "niveis": [{"n": 1, "nivel": 1, "custo": 0, "pecas": [{"n": "trofeu_ouro", "dx": 0, "dz": 0, "caixa": [-0.75, -0.75, 0.75, 0.75], "tam": [1.5, 1.5], "modelo": [-0.66, -0.42, 0.66, 0.42], "glb": "scenery/objetos/trofeu_ouro.glb", "escala": 1.6}], "caixa": [-0.75, -0.75, 0.75, 0.75]}], "dado": {"x": -6, "z": -12}, "padrao": {"x": -6, "z": -12, "giro": 0, "regiao": "lote"}},
+"trofeu_prata": {"nome": "Silver Trophy", "tipo": "item", "item": 900181, "itens": [{"id": 900181, "preso": true}], "limite": null, "funcao": null, "guardavel": true, "regiaoDado": null, "niveis": [{"n": 1, "nivel": 1, "custo": 0, "pecas": [{"n": "trofeu_prata", "dx": 0, "dz": 0, "caixa": [-0.75, -0.75, 0.75, 0.75], "tam": [1.5, 1.5], "modelo": [-0.55, -0.35, 0.55, 0.35], "glb": "scenery/objetos/trofeu_prata.glb", "escala": 1.6}], "caixa": [-0.75, -0.75, 0.75, 0.75]}], "dado": {"x": -8, "z": -12}, "padrao": {"x": -8, "z": -12, "giro": 0, "regiao": "lote"}},
+"trofeu_bronze": {"nome": "Bronze Trophy", "tipo": "item", "item": 900182, "itens": [{"id": 900182, "preso": true}], "limite": null, "funcao": null, "guardavel": true, "regiaoDado": null, "niveis": [{"n": 1, "nivel": 1, "custo": 0, "pecas": [{"n": "trofeu_bronze", "dx": 0, "dz": 0, "caixa": [-0.5, -0.5, 0.5, 0.5], "tam": [1, 1], "modelo": [-0.48, -0.31, 0.48, 0.31], "glb": "scenery/objetos/trofeu_bronze.glb", "escala": 1.6}], "caixa": [-0.5, -0.5, 0.5, 0.5]}], "dado": {"x": -9.5, "z": -12}, "padrao": {"x": -9.5, "z": -12, "giro": 0, "regiao": "lote"}},
+
     "ninho": {
      "nome": "Companion nest",
      "tipo": "construcao",

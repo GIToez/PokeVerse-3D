@@ -2822,6 +2822,7 @@ function encherTreinador(pop){
   Popup.rotulo(pop, 'titulo');
   for (const n of SO_MEU){ const g = Popup.grupo(pop, n); if (g) g.style.display = treinadorOutro ? 'none' : ''; }
   for (const g of pop.querySelectorAll('[data-fig^="conquista-"]')) if (treinadorOutro) g.style.display = 'none';
+  { const bv = pop.querySelector('.btn-visitar-terreno'); if (bv) bv.hidden = !treinadorOutro; }   // Visit plot: only on someone else's card
   if (treinadorOutro) return encherTreinadorOutro(pop, treinadorOutro);
   const D2 = D, t = ctx.lerLS('tempo', 0), h = Math.floor(t / 3600), mi = Math.floor((t % 3600) / 60);
   const d = dexEstado(); const pegos = Object.values(d).filter(v => v === 'pego').length, vistos = Object.keys(d).length;
@@ -2927,7 +2928,21 @@ function encherTreinadorOutro(pop, O){
     });
   });
   const teto = TETO_OBED[Math.min(8, tem.size)] ?? TETO_OBED[0];
-  Popup.texto(pop, 'obedecem', tr('Their Pokémon obey up to Lv {n}.', { n: O.campeao ? 100 : teto }) + (O.campeao ? ' · ' + tr('Kanto Champion') : ''));
+  Popup.texto(pop, 'obedecem', tr('Their Pokémon obey up to Lv {n}.', { n: O.campeao ? 100 : teto }) + (O.campeao ? ' · ' + tr('Indigo League Champion') : ''));
+  /* VISIT THEIR PLOT (Nov 7): a guest in their Habitat, to see their buildings and trophies (server_plot.mjs: if they take visitors). */
+  let bv = pop.querySelector('.btn-visitar-terreno');
+  if (!bv){
+    bv = document.createElement('button'); bv.type = 'button'; bv.className = 'btn-visitar-terreno';
+    Object.assign(bv.style, { position: 'absolute', right: '56px', bottom: '62px', zIndex: '5', padding: '8px 16px', borderRadius: '10px', border: '2px solid #F8C237', cursor: 'pointer',
+      background: 'linear-gradient(180deg,#FBD04B,#E9A419)', color: '#1A1405', font: '800 15px "Nunito Sans",system-ui,sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,.35)' });
+    pop.appendChild(bv);
+  }
+  bv.textContent = '🏡 ' + tr('Visit plot'); bv.hidden = false;
+  bv.onclick = async () => {
+    if (!ctx.comConta?.()) { Chat.sistema(tr('Plots need an account.')); return; }
+    const r = await TerrenoEstado.pedir('ir', { dono: O.nick });
+    if (!r?.ok) Chat.sistema(tr(r?.texto || "That didn't work.", r?.vars || undefined)); else fechar();
+  };
   const notaRk = pop.querySelector('[data-fig="nota-ranking"]'); if (notaRk) notaRk.textContent = '';
   inglesRotulos(pop);
   Popup.texto(pop, 'mestre', O.mestre ? tr('Master {n}', { n: O.mestre }) : tr('Master'));
