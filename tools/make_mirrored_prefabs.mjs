@@ -3,7 +3,8 @@
  * (a rotation can't do it). First use: the Pokémon Center 2F, whose floor needs the escalator opening on the other side.
  *
  *   sm_ro_005_floor_01 → sm_ro_005_floor_01_mirror     (the Center floor: the escalator pit moves to the other wall)
- *   sm_ro_005_wall_01  → sm_ro_005_wall_01_mirror      (its walls, including the strip that lines the pit)
+ *   sm_ro_005_wall_01  → sm_ro_005_wall_01_mirror      (its walls: the side opening for the up escalator moves to the other wall;
+ *                                                       the strip under the floor that lines the pit stays put)
  *
  * Mirror = x → −x in the prefab's own frame (positions, normals, tangents; triangle winding reversed so faces still point out).
  * Output: scenery/extra/mirrored_prefabs.glb (picked up by tools/build_prefab_library.mjs). Run from the repo root:
@@ -16,7 +17,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'scenery/4110001.glb');
 const OUT = path.join(ROOT, 'scenery/extra/mirrored_prefabs.glb');
-const LISTA = ['sm_ro_005_floor_01', 'sm_ro_005_wall_01'];
+/* [prefab, parts kept as they are]: the wall's below-floor strip lines the floor's escalator pit, so it stays where the pit is */
+const LISTA = [['sm_ro_005_floor_01', null], ['sm_ro_005_wall_01', /_Wall_01_2$/]];
 
 const b0 = fs.readFileSync(SRC), jl = b0.readUInt32LE(12), J = JSON.parse(b0.subarray(20, 20 + jl).toString('utf8'));
 const B = b0.subarray(20 + jl + 8, 20 + jl + 8 + b0.readUInt32LE(20 + jl));
@@ -52,36 +54,37 @@ function material(mi) {
   for (const k of ['normalTexture', 'emissiveTexture', 'occlusionTexture']) if (m[k]) m[k].index = textura(m[k].index);
   out.materials.push(m); mats.set(mi, out.materials.length - 1); return out.materials.length - 1;
 }
-function malha(mi) {
+function malha(mi, esp = true) {
   const M = J.meshes[mi];
   const prims = M.primitives.map(pr => {
     const at = {};
     for (const [k, i] of Object.entries(pr.attributes)) {
       let d = ler(i);
-      if (k === 'POSITION' || k === 'NORMAL') d = d.map(([x, y, z]) => [-x, y, z]);
-      if (k === 'TANGENT') d = d.map(([x, y, z, w]) => [-x, y, z, -w]);
+      if (esp && (k === 'POSITION' || k === 'NORMAL')) d = d.map(([x, y, z]) => [-x, y, z]);
+      if (esp && k === 'TANGENT') d = d.map(([x, y, z, w]) => [-x, y, z, -w]);
       at[k] = accFloat(d, J.accessors[i].type);
     }
     const I = ler(pr.indices).map(e => e[0]);
-    for (let t = 0; t < I.length; t += 3) [I[t + 1], I[t + 2]] = [I[t + 2], I[t + 1]];   // mirrored: reverse the winding
+    if (esp) for (let t = 0; t < I.length; t += 3) [I[t + 1], I[t + 2]] = [I[t + 2], I[t + 1]];   // mirrored: reverse the winding
     return { attributes: at, indices: accIdx(I), ...(pr.material != null ? { material: material(pr.material) } : {}) };
   });
-  out.meshes.push({ name: M.name + '_mirror', primitives: prims }); return out.meshes.length - 1;
+  out.meshes.push({ name: M.name + (esp ? '_mirror' : ''), primitives: prims }); return out.meshes.length - 1;
 }
-function copiar(ni) {
+function copiar(ni, manter = null, esp = true) {
   const n = J.nodes[ni], c = { name: n.name };
-  if (n.translation) c.translation = [-n.translation[0], n.translation[1], n.translation[2]];
-  if (n.rotation) c.rotation = [n.rotation[0], -n.rotation[1], -n.rotation[2], n.rotation[3]];   // mirror across the YZ plane
+  if (esp && manter && manter.test(n.name || '')) esp = false;            // this part (and what hangs under it) is not mirrored
+  if (n.translation) c.translation = esp ? [-n.translation[0], n.translation[1], n.translation[2]] : n.translation;
+  if (n.rotation) c.rotation = esp ? [n.rotation[0], -n.rotation[1], -n.rotation[2], n.rotation[3]] : n.rotation;   // mirror across the YZ plane
   if (n.scale) c.scale = n.scale;
-  if (n.mesh != null) c.mesh = malha(n.mesh);
+  if (n.mesh != null) c.mesh = malha(n.mesh, esp);
   const idx = out.nodes.push(c) - 1;
-  if (n.children?.length) c.children = n.children.map(copiar);
+  if (n.children?.length) c.children = n.children.map(k => copiar(k, manter, esp));
   return idx;
 }
-for (const nome of LISTA) {
+for (const [nome, manter] of LISTA) {
   const li = J.nodes.findIndex(n => n.name === 'lib:' + nome);
   if (li < 0) throw new Error('no lib:' + nome);
-  const i = copiar(li); out.nodes[i].name = 'lib:' + nome + '_mirror';
+  const i = copiar(li, manter); out.nodes[i].name = 'lib:' + nome + '_mirror';
   out.nodes[0].children.push(i);
   console.log(nome + '_mirror');
 }

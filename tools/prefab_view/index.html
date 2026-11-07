@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#222}canvas{display:block}</style>
+<script type="importmap">{ "imports": { "three": "/vendor/three/build/three.module.js", "three/addons/": "/vendor/three/examples/jsm/" } }</script></head>
+<body><canvas id="c"></canvas>
+<script type="module">
+/* Prefab viewer: ?p=name1,name2 (scenery/lib) placed at the origin like the game (x mirrored is already in the GLB);
+   window.ver(px,py,pz, lx,ly,lz) renders from a camera. */
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const W = 1000, H = 640, ren = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+ren.setSize(W, H); ren.outputColorSpace = THREE.SRGBColorSpace;
+const cena = new THREE.Scene(); cena.background = new THREE.Color(0x8fb6d8);
+cena.add(new THREE.AmbientLight(0xffffff, 1.8)); const d = new THREE.DirectionalLight(0xffffff, 1.4); d.position.set(3, 8, 6); cena.add(d);
+const L = new GLTFLoader();
+for (const n of (new URLSearchParams(location.search).get('p') || '').split(',').filter(Boolean)) {
+  const [nome, x = 0, z = 0] = n.split('@'); const g = await L.loadAsync('/scenery/lib/' + nome + '.glb');
+  g.scene.position.set(+x, 0, +z); g.scene.traverse(o => { if (o.isMesh) for (const m of [o.material].flat()) m.side = THREE.DoubleSide; }); cena.add(g.scene);
+}
+cena.add(new THREE.AxesHelper(3));
+const cam = new THREE.PerspectiveCamera(40, W / H, 0.1, 300);
+window.ver = (px, py, pz, lx = 0, ly = 0, lz = 0) => { cam.position.set(px, py, pz); cam.lookAt(lx, ly, lz); ren.render(cena, cam); return true; };
+window.pronto = true;
+</script></body></html>
