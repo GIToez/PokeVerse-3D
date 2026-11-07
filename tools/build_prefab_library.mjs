@@ -183,6 +183,7 @@ for (const arq of arquivos) {
     while (arquivosUsados.has(file)) file = base + '_' + n++ + '.glb';
     arquivosUsados.add(file);
     const { json, blob } = extrair(src, bin, i);
+    if (/^t_m_jy_/.test(k)) for (const m of json.meshes || []) for (const pr of m.primitives || []) delete pr.attributes?.COLOR_0;   // PokeFable's plot buildings: COLOR_0 is a 0/1 mask, three.js would paint it black (tools/strip_black_vertex_colors.py)
     writeGlb(path.join(OUT, file), json, blob);
     const kb = Math.ceil((blob.length + 2000) / 1024);
     total += kb;
