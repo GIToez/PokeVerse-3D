@@ -50,20 +50,23 @@ export const statDe = (S, e, i) => stat(S.bs[i], e.lv || 1, e.ivs?.[i] || 0, evs
    Learnset (data/learnset.json, tools/pokeapi_moves.py): Scarlet/Violet level-up from PokéAPI. */
 let LEARN = null;
 export function carregarLearnset(d){ LEARN = d || null; }
-/* PP x5 (06/11): o jogo é em tempo real e gasta golpe bem mais que o original — todo PP base (learnset/moves.json) é multiplicado aqui.
-   ppBase = valor do jogo original; ppDe = o que o PokeVerse usa. Mudar PP_MULT sobe o ppMax de quem já existe (ajustarPPMax). */
-export const PP_MULT = 5;
+/* PP (Nov 7): back to the original games' PP (PP_MULT 1; it was ×5 on 06/11). Real-time fights — wild Pokémon, raids, world
+   bosses — spend NO PP at all (index.html usarGolpe); only turn-based fights spend it (trainers, gyms, Elite Four, duels,
+   bosses: server_battle.mjs). ppBase = the original game's value; ppDe = what PokeVerse uses. ajustarPPMax moves every saved
+   ppMax to the current value, up or down, and trims the current PP to fit. */
+export const PP_MULT = 1;
 export const ppBase = id => LEARN?.pp?.[id] ?? 20;
 export const ppDe = id => ppBase(id) * PP_MULT;
-/** Sobe o ppMax gravado de cada golpe até o valor atual (PP_MULT); o PP atual ganha a mesma diferença. Nunca baixa. Só com o learnset carregado. */
+/** Moves each saved ppMax to the current value (PP_MULT): going up, the current PP gains the difference; going down, it is trimmed to fit. Only with the learnset loaded. */
 export function ajustarPPMax(e){
   let mudou = false;
   if (!LEARN?.pp) return mudou;
   for (const m of e?.movs || []){
     if (!m?.id || LEARN.pp[m.id] == null) continue;
     const top = ppDe(m.id), velho = Number.isInteger(m.ppMax) ? m.ppMax : null;
-    if (velho != null && velho >= top) continue;
-    m.pp = Math.min(top, (m.pp ?? top) + (velho == null ? 0 : top - velho));
+    if (velho === top) continue;
+    if (velho != null && velho > top) m.pp = Math.min(top, Math.max(0, Math.round((m.pp ?? velho) * top / velho)));   // ×5 → ×1: keeps the same share of PP left
+    else m.pp = Math.min(top, (m.pp ?? top) + (velho == null ? 0 : top - velho));
     m.ppMax = top; mudou = true;
   }
   return mudou;

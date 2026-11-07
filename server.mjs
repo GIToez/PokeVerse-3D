@@ -1785,7 +1785,7 @@ const batalha = criarBatalha({ contas, sessoes, conexoes, enviar, socketsDe, sal
   /* bosses (boss_rules.mjs): the catch after a Pokémon boss falls uses the same individual, Pokédex mark, Box rule and ball bonus as the wild */
   novoIndividuo: individuoServidor, marcarPego, gameConfig: () => cfgJogo(), bolaBonus: (id, w, u) => world.ballBonus(id, w, u),
   aoCapturar: (ws, u, pk, bola) => { temporada.contar(u, { conta: 'captura', dex: pk.dex, shiny: !!pk.shiny, bola }); const r = aplicarEvento(u, { tipo: 'captura', dex: pk.dex }); if (r) enviarMissao(ws, r); } });
-/* PP x5 (06/11, individual.mjs PP_MULT): o criarBatalha acabou de carregar o learnset; todo golpe gravado com o ppMax antigo sobe pro novo
+/* PP (individual.mjs PP_MULT; ×5 on 06/11, back to ×1 on Nov 7): the learnset is loaded now; every saved ppMax moves to the current value (up or down, the PP left trimmed to fit)
    e o PP atual ganha a diferença (sem precisar do Centro). Idempotente: quem já está no valor atual fica igual. */
 {
   let mons = 0;

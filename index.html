@@ -9596,10 +9596,10 @@ function usarGolpe(id){
   const p = jogo.pika; if (!p) return;
   if (jogo.semParceiro){ flutuar(jogo.ash, 'you do not have a Pokémon yet: talk to Professor Oak', '#ffd23a'); return; }
   if (r01Ativa() && (RaidR01.congelado() || RaidR01.golpeBarrado())){ flutuar(p, RaidR01.congelado() ? 'frozen!' : "can't attack now", '#9fe8ff'); return; }   // Articuno arena: Glacial Dive froze you
-  if (Ind.semPP(p)) id = 'struggle';                                     // sem PP em tudo: só resta o Struggle
+  /* PP (Nov 7): real-time fights (wild, raids, world bosses) spend no PP — the move cooldowns pace them. Only the turn-based panel
+     above (trainers, gyms, Elite Four, duels) spends PP and falls back to Struggle. */
   const g = id === 'struggle' ? STRUGGLE : GOLPES[id];
   if (!g || p.hp <= 0 || (p.recargas[id] || 0) > 0) return;
-  if (id !== 'struggle' && !Ind.temPP(p, id)){ flutuar(p, 'no PP on ' + g.nome, '#f58e8e'); return; }
   { const fT = fichaHeld(p), tr = fT && HELD.travaDeGolpe(fT, g); if (tr && !tr.pode){ flutuar(p, tr.motivo, '#ffd23a'); return; } }   // Choice lock (10 s) and Assault Vest (no status moves)
   if ((!jogo.alvo || jogo.alvo.estado === 'morto') && jogo.raidArena){ const b = jogo.selvagens.find(x => x.raid && x.estado !== 'morto' && x.estado !== 'guardado'); if (b) jogo.alvo = b; }   // RAID AO VIVO: na arena o alvo é o chefe (celular sem Tab)
   if (!jogo.alvo || jogo.alvo.estado === 'morto'){ flutuar(jogo.ash, 'no target: click a wild Pokémon or Tab', '#ffd23a'); return; }
@@ -9631,7 +9631,7 @@ function usarGolpe(id){
     p.recargas[id] = 3;
     Rede.pedirTransformar(reg.uid, { tipo: 'selvagem', id: alvoT.id }).then(r => {
       if (r && r.ok === false){ if (r.texto) flutuar(jogo.pika || p, r.texto, '#ffd23a'); }
-      else { Ind.gastarPP(reg, 'transform'); efeito('00016_Hit', (jogo.pika || p).peito, (jogo.pika || p).altura); }
+      else { efeito('00016_Hit', (jogo.pika || p).peito, (jogo.pika || p).altura); }
     }).catch(() => {});
     return;
   }
@@ -10423,7 +10423,7 @@ function pintarBarra(){
     if (el.__frio !== frio){ el.classList.toggle('frio', frio); el.__frio = frio; }
     const pct = rec > 0 ? Math.min(100, rec / (g.recarga || 1) * 100) : 0;
     if (el.__pct !== pct){ el.__i.style.height = pct + '%'; Hud.estado(el, 'cooldown', pct / 100); el.__pct = pct; }   // Figma: a sombra do estado [cooldown] desce junto
-    const trava = travaDoGolpe(id), T = jogo.turno, escolhido = !!T && T.fase !== 'escolha' && T.ultimaEscolha === i, luta = !!m && i === 0 && Ind.semPP(p);
+    const trava = travaDoGolpe(id), T = jogo.turno, escolhido = !!T && T.fase !== 'escolha' && T.ultimaEscolha === i, luta = !!T && !!m && i === 0 && Ind.semPP(p);
     if (el.__trava !== trava){ Hud.estado(el, 'escolha', trava ? 1 : 0); el.__trava = trava; }
     if (el.__esc !== escolhido){ Hud.estado(el, 'turno-escolhido', escolhido ? 1 : 0); el.__esc = escolhido; }
     const txt = trava ? I18n.t(trava) : rec > 0 && p.hp > 0 ? rec.toFixed(1) : (m ? (luta ? I18n.t('Struggle') : semPp ? I18n.t('no PP') : m.pp + '/' + m.ppMax) : '');
@@ -10624,8 +10624,7 @@ function atualizarParceiro(dt){
       else if (impedido(pika)){ pika.recargas[golpe.id] = Math.min(golpe.recarga || 1.2, 1.2); }
       else {
         const g2 = golpe;
-        tocarUma(pika, g2.anim);
-        Ind.gastarPP(pika, g2.id);
+        tocarUma(pika, g2.anim);                                           // real time: no PP spent (Nov 7)
         const fR = fichaHeld(pika); pika.recargas[g2.id] = g2.recarga * (fR ? HELD.recargaMult(fR) : 1) / Stg.mulStat(pika.estagios, 5);   // Quick Claw / Choice Scarf / Speed stages: faster recharge
         lancarGolpe(pika, alvo, g2);            // fases visuais + acerto agendado em quadros
       }

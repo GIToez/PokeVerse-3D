@@ -2,7 +2,7 @@
    Teaching spends Coins, checks badges, and only offers a move the species can learn.
    Moves the battle engine cannot run (tm_regras.json semEfeito) stay off the counter. */
 
-import { PP_MULT } from './individual.mjs';   // PP x5 do PokeVerse (individual.mjs)
+import { PP_MULT } from './individual.mjs';   // PP multiplier (individual.mjs; 1 = the original games)
 
 const PRECO_PADRAO = { comum: 1000, forte: 5000, rara: 20000 };
 

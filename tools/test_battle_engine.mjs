@@ -28,7 +28,7 @@ function setup(contas, users) {
   ok('gym battle opens on the engine', open.t === 'bat' && !!open.dele?.length, open.nomeInimigo);
   let r = act('ash', { acao: 'golpe', golpe: 'quickattack' });
   ok('Quick Attack (priority +1) goes first', r.lances?.[0]?.de === 'eu' && r.lances[0].golpe === 'quickattack', JSON.stringify(r.lances?.map((l) => l.de + ':' + l.golpe)));
-  ok('PP is spent', contas.ash.save.time[0].movs.find((m) => m.id === 'quickattack').pp === 19);
+  { const qa = contas.ash.save.time[0].movs.find((m) => m.id === 'quickattack'); ok('PP is spent (turn-based)', qa.pp === qa.ppMax - 1, qa.pp + '/' + qa.ppMax); }
   r = act('ash', { acao: 'golpe', golpe: 'thunderwave' });
   const tw = r.lances?.find((l) => l.golpe === 'thunderwave');
   ok('Thunder Wave paralyzes the foe (or misses / is immune / the user could not move)', tw ? (tw.statusId === 'paralysis' || tw.eff === 0 || tw.errou) : r.lances.some((l) => l.de === 'eu' && !l.golpe), JSON.stringify(tw));
