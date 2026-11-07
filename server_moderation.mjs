@@ -136,6 +136,12 @@ export function criarModeracao(h) {
   }
   /** Destino do /tp e do painel: cidade (texto) ou x/z (no mapa onde a conta está, ou Kanto). */
   function destino(u, d) {
+    if (d.cidade != null && /^\d{5,9}$/.test(String(d.cidade).trim())) {   // /tp <map id>: the middle of that map (its file's bbox; the world mirrors x)
+      const id = String(d.cidade).trim();
+      let b = null; try { b = JSON.parse(fs.readFileSync(nodePath.join(dadosPub, id + '.json'), 'utf8')).bbox || null; } catch {}
+      if (!b || ![b.x0, b.x1, b.z0, b.z1].every(Number.isFinite)) return { erro: 'No map ' + id + ' (or it has no bounds).' };
+      return { mapa: id, x: +(-(b.x0 + b.x1) / 2).toFixed(2), z: +((b.z0 + b.z1) / 2).toFixed(2), nome: 'map ' + id };
+    }
     if (d.cidade != null && String(d.cidade).trim()) {
       const p = cidade(d.cidade);
       return p || { erro: `Unknown city: ${d.cidade} (use ${listaCidades()}).` };
