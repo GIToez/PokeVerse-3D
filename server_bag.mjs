@@ -104,10 +104,11 @@ export function criarBolsa({ dadosPub, salvar, bloquearCura = () => false, elite
     if (!itemInfo(id)) return erro(c, 'unknown item');
     if (quantos(c, id) < 1) return erro(c, "you don't have that item");
     const uso = itemInfo(id)?.uso;
-    if (uso && (uso.tipo === 'medalhao' || uso.tipo === 'passeDiario')) {    // account time (Medallion, Premium Daily Pass): adds up, 365 days at most
-      const s = saveDe(c), campo = uso.tipo === 'medalhao' ? 'medalhaoAte' : 'passeDiarioAte', agora = Date.now(), teto = agora + 365 * 86400e3;
-      const base = Math.max(agora, +s[campo] || 0);
-      if (base + 86400e3 > teto) return erro(c, 'you already have the most time allowed (365 days)');
+    if (uso && (uso.tipo === 'medalhao' || uso.tipo === 'passeDiario')) {    // account time: the Medallion adds 30 days up to 90 (Terms 7.2), the Premium Daily Pass up to 365
+      const s = saveDe(c), campo = uso.tipo === 'medalhao' ? 'medalhaoAte' : 'passeDiarioAte', agora = Date.now(), maxDias = uso.tipo === 'medalhao' ? 90 : 365, teto = agora + maxDias * 86400e3;
+      const base = Math.max(agora, +s[campo] || 0), dias = Math.max(1, +uso.dias || 30);
+      if (uso.tipo === 'medalhao' && base + dias * 86400e3 > teto + 3600e3) return erro(c, `your Medallion time can't go past ${maxDias} days: use this one when you have ${maxDias - dias} days or less left`);
+      if (base + 86400e3 > teto) return erro(c, `you already have the most time allowed (${maxDias} days)`);
       s[campo] = Math.min(teto, base + Math.max(1, +uso.dias || 30) * 86400e3);
       tirar(c, id, 1);
       return pronto(c, uso.tipo === 'medalhao' ? { medalhao: { ate: s[campo] } } : { passeDiario: { ate: s[campo] } });
