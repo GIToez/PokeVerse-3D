@@ -766,6 +766,12 @@ try {
     baixarJson('./data/scenes.json', true),                               // índice das cenas, se existir
   ]);
   try { if (!/[?&]intro=1(&|$)/.test(location.search)) localStorage.setItem('ultimaCena', NOME); } catch {}   // próxima carga começa por aqui (palpite; o servidor corrige). Na INTRO não: fechar a aba no sonho da Liga reabria na arena como cena normal (12/09)
+  if ((NOME === '1000002' || NOME === '4700001') && Conta.tokenAtual?.()) try {   // a plot / guild base: its buildings (server_plot.mjs, server_guild.mjs) join the map's objects
+    const base = Conta.baseUrl() || Conta.baseHttp(new URLSearchParams(location.search));
+    const r = await fetch(base + '/terreno/cena?mapa=' + NOME, { headers: { Authorization: 'Bearer ' + Conta.tokenAtual() } });
+    const j = r.ok ? await r.json() : null;
+    if (Array.isArray(j?.objetos) && j.objetos.length) dados.objetos = [...(dados.objetos || []), ...j.objetos.filter(o => o && typeof o.n === 'string')];
+  } catch (e){ console.warn('plot buildings:', e); }
   __boot.cena(NOME);                                                    // diagnóstico do boot: a cena de verdade, não a da URL
   bootProgresso(1, I18n.t('loading the map…'));
   DB = R.indexar(await baixarJson('./pokedex.json'));

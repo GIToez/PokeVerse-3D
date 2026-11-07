@@ -83,6 +83,15 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
 
   // where each account is heading (set by `ir`, read once when they enter the scene)
   const indo = new Map();
+  /** A new building shows after the scene reloads: everyone in that plot reloads where they stand (and stays in it). */
+  function recarregarSala(dono, conexoes, texto) {
+    const sala = salaDe(dono);
+    for (const w of conexoes()) {
+      if (salaDoSocket(w) !== sala || !w._usuario || !Number.isFinite(+w._info?.x)) continue;
+      indo.set(w._usuario, { dono, em: Date.now() });
+      levar(w._usuario, { mapa: CENA, x: +w._info.x, z: +w._info.z, giro: +w._info.giro || 0 }, texto);
+    }
+  }
   /** The room an account gets when it enters the Habitat scene. */
   function salaAoEntrar(u) {
     const x = indo.get(u);
@@ -147,7 +156,9 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
       C.aoConstruir(t, vg, { agora: Date.now(), usuario: u, papel: 'dono', naSala: true });
       estado(u); saveAccounts(); log('plot', u, 'built', vg, custo);
       empurrar(u, conexoes);
-      return responder({ ok: true, vista: vista(u), bolsa: { dinheiro: s.dinheiro } });
+      responder({ ok: true, vista: vista(u), bolsa: { dinheiro: s.dinheiro } });
+      recarregarSala(u, conexoes, 'Building the ' + v.nome + '…');
+      return;
     }
     if (op === 'colocar' || op === 'mover' || op === 'remover') {
       const t = estado(u);
@@ -163,10 +174,17 @@ export function createPlots({ dataPub, accounts, send, socketsOf, saveAccounts, 
         bag[id] = (+bag[id] || 0) + (r.devolver.qtd || 1);
       }
       saveAccounts(); empurrar(u, conexoes);
-      return responder({ ok: true, vista: vista(u), ...(r.debitar || r.devolver ? { bolsa: { itens: s.itens, presos: s.presos } } : {}) });
+      responder({ ok: true, vista: vista(u), ...(r.debitar || r.devolver ? { bolsa: { itens: s.itens, presos: s.presos } } : {}) });
+      return;   // the arrange screen moves the live models itself and reloads the scene when it closes
     }
     return responder({ ok: false, texto: 'Invalid request.' });
   }
 
-  return { operar, salaAoEntrar, salaDe, vista, estado, podeVisitar, donoDaSala: sala => donoDaSala.get(sala) || null, CENA };
+  /** The plot's buildings as map objects (file coordinates) for the scene loader — the plot this account is entering. */
+  function pecasAoEntrar(u) {
+    const sala = salaAoEntrar(u), dono = donoDaSala.get(sala) || u;
+    const v = vista(dono, u);
+    return (v?.pecas || []).filter(p => !p.glb).map(p => ({ n: p.n, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 }));
+  }
+  return { operar, salaAoEntrar, pecasAoEntrar, salaDe, vista, estado, podeVisitar, donoDaSala: sala => donoDaSala.get(sala) || null, CENA };
 }

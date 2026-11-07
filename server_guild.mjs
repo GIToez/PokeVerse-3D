@@ -114,9 +114,14 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
     }
     const extra = Object.fromEntries(Object.entries(r).filter(([k]) => !PRIVADOS.has(k)));
     responder({ ...extra, ok: !!r.ok, vista: livro.vista(u) });
+    if (r.ok && op === 'construir') {                                       // the new building shows after the base scene reloads, for everyone inside
+      const sala = String(ws._mapa || '');
+      if (sala.startsWith('casa#')) for (const v of Object.keys(livro.guildaDe(u)?.membros || {})) for (const w of socketsOf(v))
+        if (w._mapa === sala && Number.isFinite(+w._info?.x)) levar(v, { mapa: cenaBase(), x: +w._info.x, z: +w._info.z, giro: +w._info.giro || 0 }, 'Building…');
+    }
     if (r.ok && (op === 'irBase' || op === 'chefeEntrar') && r.chegada) {   // the base: a private copy of map 4700001 per guild (room casa#<id>)
       saveAccounts();
-      const fx = +G.dados().base?.mundoX || 1;   // our 4700001 lines up with guilda.json's base coordinates unmirrored (checked in-game, Nov 7); set base.mundoX = -1 if a new base map is mirrored
+      const fx = -1;   // guilda.json / colocacao.json use the map file's coordinates, which the game mirrors on x (world = −x)
       levar(u, { mapa: String(G.dados().base?.mapa || 4700001), x: fx * (+r.chegada.x || 0), z: +r.chegada.z || 0, giro: 0 }, op === 'chefeEntrar' ? 'To the guild boss…' : 'Going to the guild base…');
     }
   }
@@ -188,8 +193,16 @@ export function createGuilds({ dataPub, dataDir, accounts, send, socketsOf, save
   }
 
   const anunciosExtra = u => { try { const g = livro.guildaDe(u); return g ? G.anunciosExtras(g.nivel) : 0; } catch { return 0; } };
+  /** The base's buildings as map objects (file coordinates) for the scene loader: [{ n, x, y, z, a }]. */
+  function pecasDaBase(u, C) {
+    const g = livro.guildaDe(u); if (!g || !C) return [];
+    const b = livro._baseDe(g);
+    const est = { lugar: 'base', colocacoes: Array.isArray(b.colocacoes) ? b.colocacoes : [], guardadas: Array.isArray(b.guardadas) ? b.guardadas : [], construidas: b.construidas || {}, nivel: g.nivel };
+    const v = C.vista(est, {});
+    return (v?.pecas || []).filter(p => !p.glb).map(p => ({ n: p.n, x: p.x, y: p.y || 0, z: p.z, a: p.giro || 0 }));
+  }
   /** The room for an account entering the base scene: its guild's base (null: not in a guild). */
   const salaBase = u => { const g = livro.guildaDe(u); return g ? livro._salaDa(g) : null; };
   const cenaBase = () => String(G.dados().base?.mapa || 4700001);
-  return { operar, evento, tagDe, anunciosExtra, salaBase, cenaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, _test: { amb, gravar } };
+  return { operar, evento, tagDe, anunciosExtra, salaBase, cenaBase, pecasDaBase, aoEntrar, aoApagarConta, adminRoute, livro, idDe, _test: { amb, gravar } };
 }

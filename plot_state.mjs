@@ -25,7 +25,7 @@ export const TIPOS = Object.freeze([
   'horta',
   'horta_erro',
 ]);
-const OPS_TERRENO = new Set(['ir', 'sair', 'vista', 'colocar', 'mover', 'remover']);
+const OPS_TERRENO = new Set(['ir', 'sair', 'vista', 'colocar', 'mover', 'remover', 'construir', 'visitas']);   // construir / visitas: server_plot.mjs
 export const TEXTO_SEM_RESPOSTA = "The server didn't respond.",
   TEXTO_DESLIGADO = 'No connection to the server.';
 const num = (v, p = 0) => (Number.isFinite(+v) ? +v : p);

@@ -156,6 +156,9 @@ function extrair(src, bin, lib) {
 const arquivos = [];
 for (const d of DIRS) { try { for (const f of fs.readdirSync(d)) if (f.endsWith('.glb')) arquivos.push(path.join(d, f)); } catch {} }
 arquivos.sort((a, b) => (path.basename(b) === 'kanto.glb') - (path.basename(a) === 'kanto.glb') || path.basename(a).localeCompare(path.basename(b)));
+/* Extra sources, last (lowest priority): GLBs outside the map folders that carry prefabs no map has yet, e.g. PokeFable's
+   cenario/habitat.glb with the plot and guild-base buildings (Nov 7). PREFAB_EXTRA=path1.glb:path2.glb node tools/build_prefab_library.mjs */
+for (const f of String(process.env.PREFAB_EXTRA || '').split(':').filter(Boolean)) arquivos.push(path.resolve(f));
 
 fs.rmSync(OUT, { recursive: true, force: true });                         // rebuild from scratch: no orphans
 fs.mkdirSync(TEX, { recursive: true });

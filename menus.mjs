@@ -1,4 +1,5 @@
 import { t as tr, tHtml } from './i18n.mjs';   // IDIOMA (11/09): tr() traduz texto pt pro idioma do jogador
+import * as Conta from './account.mjs';
 import * as I18n from './i18n.mjs';                                     // etapa 3: a linha de idioma nas Configurações e a Pokédex por idioma
 import * as CorreioUI from './mail_ui.mjs';
 import * as TmUi from './tm_ui.mjs';                                       // TM counter, teach, tutor (v2)
@@ -35,6 +36,7 @@ import * as PrefAparelho from './device_prefs.mjs';
 import * as RegrasItem from './item_rules.mjs';                          // Pokémart: the dump's stock + Great/Ultra Ball etc. unlocked by badges                    // per-device toggles (other players' names, floating damage)
 import * as CrecheUI from './daycare_ui.mjs';
 import * as TerrenoUI from './plot_ui.mjs';
+import * as PlacementUI from './placement_ui.mjs';   // arrange your plot (2D), with placement.mjs's rules
 import * as TerrenoEstado from './plot_state.mjs';
 import * as HortaUI from './garden_ui.mjs';
 import * as OvosUI from './incubator_ui.mjs';
@@ -262,9 +264,17 @@ function ligarRecursos(){
     defPopup,
     estadoCreche: listasCreche,
     aoFecharJanela: soltarJanelaRecurso,
-    sistema: () => false,
+    sistema: () => !!ctx.comConta?.(),                                  // the plot server is up (server_plot.mjs): needs an account
     item: id => D?.itens?.[id] || null,
+    arrumar: () => PlacementUI.abrirTerreno(TerrenoEstado.terreno()),     // "Arrange plot": the 2D arrange screen (placement_ui.mjs; the 3D one needs art the v2 layout lacks)
   };
+  PlacementUI.instalar({
+    tr, aviso: t => Chat.sistema(t), som: (a, b) => ctx.Som?.tocar?.(a, b),
+    pedirTerreno: (op, d) => TerrenoEstado.pedir(op, d), pedir: async () => ({ ok: false, texto: 'Arranging the guild base is not open yet.' }),
+    bolsa: () => { try { return { itens: JSON.parse(Conta.lerBruto('itens') || '{}'), presos: JSON.parse(Conta.lerBruto('presos') || '{}') }; } catch { return { itens: {}, presos: {} }; } },
+    noTerreno: () => TerrenoEstado.noTerreno(), sala: () => TerrenoEstado.salaAtual(), minhaSala: () => (TerrenoEstado.terreno()?.minha ? TerrenoEstado.terreno().sala : null),
+    recarregarTerreno: () => ctx.irParaCena?.({ mapa: '1000002', texto: '…' }), recarregar: () => ctx.irParaCena?.({ mapa: '1000002', texto: '…' }),
+  });
   CrecheUI.instalar(gancho);
   TerrenoUI.instalar(gancho);
   HortaUI.instalar(gancho);

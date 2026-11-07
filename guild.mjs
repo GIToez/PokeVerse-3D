@@ -1391,7 +1391,7 @@ export class Livro {
         let f = '';
         if (!e) f = v.niveis ? 'at max size' : 'built';
         else if (g.nivel < e.nivel) f = 'requires guild level ' + e.nivel;
-        else if (b.tesouro < e.custo) f = 'faltam ' + (e.custo - b.tesouro) + ' ' + c;
+        else if (b.tesouro < e.custo) f = 'short by ' + (e.custo - b.tesouro) + ' ' + c;
         else if (!a) f = 'only treasury users can build';
         return {
           id: v.id,

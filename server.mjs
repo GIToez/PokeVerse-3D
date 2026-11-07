@@ -60,6 +60,7 @@ import * as CaixaR from './box_rules.mjs';
 import * as Med from './medallion.mjs';
 import { createGuilds } from './server_guild.mjs';
 import { createPlots, RE_SALA as RE_SALA_TERRENO } from './server_plot.mjs';
+import * as PlacementS from './placement.mjs';
 import { createMail } from './server_mail.mjs';
 import { createProgression } from './server_progression.mjs';
 import { fundirSave, pacoteConhecimento } from './knowledge.mjs';
@@ -1340,6 +1341,15 @@ const httpServer = http.createServer((req, res) => {
       return json(200, { ok: true });
     }
 
+    if (req.method === 'GET' && rota === '/terreno/cena') {               // the buildings of the plot / guild base this account is entering (index.html adds them to the map before it is built)
+      const u = usuarioDe(req); if (!u || !contas[u]) return json(200, { objetos: [] });
+      const mapa = String(new URL(req.url, 'http://x').searchParams.get('mapa') || '');
+      try {
+        if (mapa === terrenos.CENA) return json(200, { objetos: terrenos.pecasAoEntrar(u) });
+        if (mapa === guildas.cenaBase()) { terrenos.vista(u); return json(200, { objetos: guildas.pecasDaBase(u, PlacementS) }); }
+      } catch (e) { console.warn('plot scene:', e.message); }
+      return json(200, { objetos: [] });
+    }
     if (req.method === 'POST' && rota === '/conta/apagar') {
       const u = usuarioDe(req);
       if (!u) return json(401, { erro: 'Invalid session.' });
