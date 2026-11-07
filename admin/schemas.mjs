@@ -238,6 +238,20 @@ export const ESQUEMAS = {
       { k: 'generico', rotulo: 'Generic catch', tipo: 'json', validar: v => Array.isArray(v) && v.every(e => e && Number.isInteger(e.dex)) ? null : 'a list like [{ "dex": 129, "nome": "Magikarp" }]' },
     ],
   },
+  surtos: {
+    titulo: 'Mass outbreaks', arquivo: 'outbreaks', forma: 'objeto',
+    descricao: 'Every so often one route fills with a single species for a while, with better shiny odds, announced to everyone on the map (server_outbreaks.mjs). Start or end one by hand on the 🌟 Mass outbreaks page.',
+    campos: [
+      { k: 'ligado', rotulo: 'On', tipo: 'bool' },
+      { k: 'esperaMin', rotulo: 'Wait between outbreaks (min)', tipo: 'num', min: 1, max: 10080 },
+      { k: 'duracaoMin', rotulo: 'Each one lasts (min)', tipo: 'num', min: 1, max: 1440 },
+      { k: 'parte', rotulo: 'Share of the area\'s spawns (0–1)', tipo: 'num', min: 0.05, max: 1, ajuda: '0.6 = 6 in 10 wild Pokémon there are the outbreak species.' },
+      { k: 'shinyMult', rotulo: 'Shiny odds ×', tipo: 'num', min: 1, max: 100 },
+      { k: 'anunciar', rotulo: 'Announce in chat', tipo: 'bool' },
+      { k: 'areas', rotulo: 'Areas', tipo: 'json', validar: v => Array.isArray(v) && v.every(Number.isInteger) ? null : 'a list of area ids, e.g. [1201, 1202]', ajuda: 'Empty = every route (and Viridian Forest) with land Pokémon.' },
+      { k: 'especies', rotulo: 'Species', tipo: 'json', validar: v => Array.isArray(v) && v.every(Number.isInteger) ? null : 'a list of dex numbers, e.g. [133, 147]', ajuda: 'Empty = one of the area\'s own species.' },
+    ],
+  },
   criacao: {
     titulo: 'Day Care and breeding', arquivo: 'breeding', forma: 'objeto',
     descricao: 'The Day Care Lady outside the Route 5 Day Care (server_breeding.mjs). Two Pokémon left with her may make an Egg; the Egg is always the mother\'s family (a Ditto plays the opposite of the other parent). IVs: 3 from the parents (5 with a Destiny Knot), a Power item always passes its stat, an Everstone passes the nature; egg moves a parent knows are passed on. Egg groups and egg moves come from public/data/ovo.json.',

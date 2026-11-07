@@ -42,6 +42,7 @@ import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
 import { createRoamers } from './server_roamers.mjs';   // roaming legendaries
 import { createBreeding } from './server_breeding.mjs';   // Day Care, Eggs and hatching
+import { createOutbreaks } from './server_outbreaks.mjs';   // mass outbreaks
 import { createRanking } from './server_ranking.mjs';
 import { createWardrobe } from './server_wardrobe.mjs';
 import { createTransform } from './server_transform.mjs';
@@ -1357,6 +1358,7 @@ const httpServer = http.createServer((req, res) => {
       if ((rota === '/admin/agenda' || rota === '/admin/agenda/agora') && agenda.rota(rota, req.method, d, g, json)) return;   // 📅 event schedule (server_schedule.mjs)
       if (rota.startsWith('/admin/eventos') && eventos.rota(rota, req.method, d, g, json)) return;
       if (rota.startsWith('/admin/errantes') && errantes.adminRoute(rota, req.method, d, g, json)) return;   // 🌀 Roaming legendaries
+      if (rota.startsWith('/admin/surtos') && surtos.adminRoute(rota, req.method, d, g, json)) return;   // 🌟 Mass outbreaks
       if (rota === '/admin/campeao' && req.method === 'GET') return json(200, { ok: true, campeao: batalha.campeaoAdmin() });   // 👑 Champion's seat
       if (rota === '/admin/campeao/resetar' && req.method === 'POST') return json(200, { ...batalha.resetarCampeao(g), campeao: batalha.campeaoAdmin() });
       if (rota.startsWith('/admin/ranking') && ranking.adminRoute(rota, req.method, d, g, json)) return;   // 🏆 Ranking tab
@@ -1799,6 +1801,7 @@ const loja = criarLoja({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarC
 const temporada = criarTemporada({ dadosPub: DADOS_PUB, contas, socketsDe, enviar, salvarContas, carteira, itemCatalog: catalogoItens, nomeItem });
 const wilds = criarWilds({
   dir: __dir, contas, enviar, salvarContas, modelos: modelosMon,
+  surto: (mapa, area, agua) => surtos?.rolar(mapa, area, agua) || null,   // mass outbreaks (server_outbreaks.mjs)
   expMult: () => eventos.efetivo().expMult,
   aoDerrotar: (u, ev) => temporada.contar(u, { conta: 'ko', ...ev }),
 });
@@ -1850,6 +1853,7 @@ const mail = createMail({
 });
 /* SHARED WORLD (server_world.mjs): the wild Pokémon live here, one set per map, and every player on the map sees them. */
 const world = createWorld({
+  surtoShiny: () => surtos?.bonusShiny() || 0,
   root: __dir, dataDir: DADOS_PUB, connections: conexoes, send: enviar, accounts: contas, wilds,
   newIndividual: individuoServidor, markCaught: marcarPego, saveAccounts: salvarContas, gameConfig: cfgJogo,
   onFish: (ws, u, f) => temporada.contar(u, { conta: 'pesca', dex: f.dex, nivel: f.nivel }),
@@ -1892,6 +1896,10 @@ const movesCriacao = () => movesCriacaoCache || (movesCriacaoCache = lerJson(nod
 /* DAY CARE AND BREEDING (server_breeding.mjs): two Pokémon at the Route 5 Day Care may make an Egg every 24 h; Eggs hatch in 2 h (1 h with the Medallion). */
 const criacao = createBreeding({ dataDir: DADOS_PUB, accounts: contas, saveAccounts: salvarContas, send: enviar, socketsOf: socketsDe,
   newIndividual: individuoServidor, markCaught: marcarPego, gameConfig: cfgJogo, Ind: IndS, moveExists: id => !!movesCriacao()[id], log: (...a) => console.log('[daycare]', ...a.slice(1)) });
+/* MASS OUTBREAKS (server_outbreaks.mjs): one route fills with one species for a while, with better shiny odds. */
+var surtos = createOutbreaks({ dataDir: DADOS_PUB, habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), send: enviar, taxaShiny,
+  onMap: map => [...conexoes.values()].filter(w => w.readyState === 1 && w._usuario && String(w._mapa || 'kanto') === String(map)),
+  areaName: a => (lerJson(nodePath.join(DADOS_PUB, 'kanto.json'), {})?.nomes || {})[a] || 'area ' + a, nomeDe: dex => NOME_ESPECIE.get(+dex) || null, clearArea: (m, a) => world.clearArea(m, a), log: (...a) => console.log('[outbreak]', ...a.slice(1)) });
 /* ROAMING LEGENDARIES (server_roamers.mjs): one legendary at a time travels Kanto in plain sight; admin page "Roaming legendaries". */
 const errantes = createRoamers({ world, dataDir: DADOS_PUB, stateFile: nodePath.join(DADOS, 'roamers_state.json'), send: enviar, connections: conexoes,
   habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), log: (...a) => console.log('[roamers]', ...a.slice(1)) });
@@ -1969,7 +1977,7 @@ wss.on('connection', ws => {
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         transformacao.joined(ws);                                         // a Ditto that can't stay transformed changes back
         ws._worldJoined = true; world.joined(ws);
-        if (ws._usuario) try { criacao.aoEntrar(ws._usuario, ws); } catch (e) { console.warn('daycare', e); }   // Eggs that hatched while away                           // shared world: wilds nobody owns on this map go to this player
+        if (ws._usuario) try { criacao.aoEntrar(ws._usuario, ws); surtos.aoEntrar(ws); } catch (e) { console.warn('daycare/outbreak', e); }   // Eggs that hatched while away; an outbreak in progress                           // shared world: wilds nobody owns on this map go to this player
         staff.aoEntrar(ws);                                                // staff: the ★ Staff button's state (server_staff.mjs)
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo

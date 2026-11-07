@@ -1,0 +1,11 @@
+{
+  "ligado": true,
+  "mapa": "kanto",
+  "esperaMin": 90,
+  "duracaoMin": 45,
+  "parte": 0.6,
+  "shinyMult": 8,
+  "anunciar": true,
+  "areas": [],
+  "especies": []
+}

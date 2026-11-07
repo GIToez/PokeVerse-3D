@@ -52,7 +52,7 @@ const SAFARI_BALL = 1005;
 const DEFAULT_BALLS = { 1001: 1, 1002: 1.5, 1003: 2, 1004: 255, 1005: 1.5, 1006: 1, 1007: 1, 1008: 1, 1009: 1 };
 
 export function createWorld(h) {
-  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, onKO, log = () => {} } = h;
+  const { root, dataDir, connections, send, accounts, wilds, newIndividual, markCaught, saveAccounts, gameConfig, onCatch, onFish, onKO, surtoShiny = () => 0, log = () => {} } = h;
 
   /* The overworld weather (server_weather.mjs): the same rules as turn battles for power, type, defense and accuracy. */
   const tempo = h.mapWeather || createMapWeather({ dataDir });
@@ -149,6 +149,7 @@ export function createWorld(h) {
     if (!rolled) return;
     const S = Forms.especie(species(rolled.dex), rolled);   // a wild Alolan / Galarian… spawn: its own HP
     const ind = newIndividual({ dex: rolled.dex, nome: rolled.nome, glb: rolled.glb, lv: rolled.lv });
+    if (rolled.surto && !ind.shiny && Math.random() < (+surtoShiny() || 0)) ind.shiny = true;   // mass outbreak: better shiny odds
     const maxHp = Math.max(1, hpBase(S.bs[0], rolled.lv, ivsOf(ind)[0] || 0));
     const w = {
       id: crypto.randomBytes(6).toString('hex'), area, dex: rolled.dex, glb: rolled.glb, nome: rolled.nome, lv: rolled.lv, ind,
@@ -577,5 +578,13 @@ export function createWorld(h) {
   const stats = () => ({ maps: rooms.size, wilds: [...rooms.values()].reduce((n, r) => n + r.wilds.size, 0) });
   /** One wild on a map by id (Transform reads its species, level and moves). */
   const wild = (map, id) => roomOf(map).wilds.get(String(id)) || null;
-  return { receive, list, joined, left, stats, wild, ballBonus, placeServerWild, moveServerWild, resend, setOwner, remove, spotsIn, onMap, _test: { shakes, rooms } };
+  /** Clears an area's idle wilds (not in a fight, not a roamer) so new rolls refill it — a mass outbreak starting there. */
+  function clearArea(map, area) {
+    const room = rooms.get(String(map || 'kanto'));
+    if (!room) return 0;
+    let n = 0;
+    for (const w of [...room.wilds.values()]) if (+w.area === +area && w.state === 'vagando' && !w.roamer && !fight.inFight(w) && !w.damage.size) { remove(map, w, 'fugiu'); n++; }
+    return n;
+  }
+  return { receive, list, joined, left, stats, wild, ballBonus, clearArea, placeServerWild, moveServerWild, resend, setOwner, remove, spotsIn, onMap, _test: { shakes, rooms } };
 }

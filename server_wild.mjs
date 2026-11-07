@@ -326,6 +326,8 @@ export function criarWilds(ctx) {
     const quando = momento(who.account, {}, Date.now());
     const saf = safariRow(area, water, spot ? +spot.x : x, spot ? +spot.z : z);
     if (saf) return { dex: +saf.dex, lv: saf.lv, glb: saf.glb, nome: saf.nome, agua: saf.agua ? 1 : 0 };
+    const surto = ctx.surto?.(ws._mapa, +area, !!water);   // a mass outbreak here (server_outbreaks.mjs): its species, most of the time
+    if (surto) return { dex: +surto.dex, lv: levelFor(surto, +area), glb: surto.glb, nome: surto.nome, agua: 0, surto: true };
     const rows = rowsFor(+area, !!water, quando);
     if (!rows.length) return null;
     const row = pickRow(rows);
