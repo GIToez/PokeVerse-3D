@@ -1,0 +1,13 @@
+{
+  "ligado": true,
+  "horasPorTentativa": 24,
+  "chance": { "mesmaEspecie": 0.7, "outra": 0.4, "ditto": 0.5 },
+  "ovosEsperando": 3,
+  "ovosCarregados": 6,
+  "horasChocar": 2,
+  "horasChocarMedalhao": 1,
+  "nivelAoChocar": 1,
+  "ivsHerdados": 3,
+  "ivsComNo": 5,
+  "itens": { "everstone": 950001, "destinyKnot": 950002, "power": { "950003": 0, "950004": 1, "950005": 2, "950006": 3, "950007": 4, "950008": 5 } }
+}

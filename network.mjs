@@ -874,6 +874,10 @@ function receber(m) {
     case 'fragmentos_erro':
       ctx.fragmentos?.(m);
       return;
+    case 'creche':
+    case 'ovo_chocou':
+      ctx.creche?.(m);   // Day Care and Eggs (breeding_ui.mjs)
+      return;
     case 'troca_convite':
     case 'troca_convidou':
     case 'troca_recusou':

@@ -518,6 +518,78 @@
     "valor": 1.5
    },
    "texto": "The holder earns 1.5× EXP from knockouts."
+  },
+  "950001": {
+   "id": 950001,
+   "nome": "Everstone",
+   "icone": "ic_950001",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg gets this parent's nature. In battle it does nothing."
+  },
+  "950002": {
+   "id": 950002,
+   "nome": "Destiny Knot",
+   "icone": "ic_950002",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg copies 5 IVs from its parents instead of 3."
+  },
+  "950003": {
+   "id": 950003,
+   "nome": "Power Weight",
+   "icone": "ic_950003",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg always gets this parent's HP IV."
+  },
+  "950004": {
+   "id": 950004,
+   "nome": "Power Bracer",
+   "icone": "ic_950004",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg always gets this parent's Attack IV."
+  },
+  "950005": {
+   "id": 950005,
+   "nome": "Power Belt",
+   "icone": "ic_950005",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg always gets this parent's Defense IV."
+  },
+  "950006": {
+   "id": 950006,
+   "nome": "Power Lens",
+   "icone": "ic_950006",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg always gets this parent's Sp. Atk IV."
+  },
+  "950007": {
+   "id": 950007,
+   "nome": "Power Band",
+   "icone": "ic_950007",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg always gets this parent's Sp. Def IV."
+  },
+  "950008": {
+   "id": 950008,
+   "nome": "Power Anklet",
+   "icone": "ic_950008",
+   "efeito": {
+    "tipo": "criacao"
+   },
+   "texto": "A held item for breeding: the Egg always gets this parent's Speed IV."
   }
  }
 }

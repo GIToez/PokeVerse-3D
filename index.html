@@ -301,7 +301,8 @@ import * as CatalogoCosm from './cosmetics_catalog.mjs';   // wardrobe + shop ca
 import * as CosFx from './cosmetic_fx.mjs';       // auras/trails from the Wardrobe (drawn, data/cosmeticos.json)      // fishing: rod in the Bag, face water, Z casts / reels (data/pesca.json)       // held items: data/held.json, effects applied in golpear / the partner tick // phones: GLB textures capped at 512 px (?teto=N forces, ?teto=0 turns off)
 import * as Luzes from './lights.mjs';
 import * as DiaNoite from './daynight.mjs';   // light of each hour: cold moon at night, moving sun, lamps/doors/windows lit
-import * as Personagem from './character.mjs'; // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
+import * as Personagem from './character.mjs';
+import * as Creche from './breeding_ui.mjs';   // Day Care and Eggs (server_breeding.mjs) // skins do treinador (6 do jogo + 2 tintáveis) e a tela de criação de personagem
 import * as Evolucao from './evolution.mjs';     // regras de evolução dos jogos originais + XP/nível/amizade (data/evolutions.json, data/exp.json)
 Evolucao.usarTradutor(n => I18n.tName(n));        // evolution hints name items in the player's language
 import * as Evento from './event.mjs';         // Fase 3 do painel: evento ao vivo (EXP/shiny/densidade × o que o servidor empurra)
@@ -9207,7 +9208,7 @@ async function falarCom(n){
   else if (n.role === 'heal' && !curaNoMeio) curarTime(n);                // Nurse Joy heals the team after her line (Mom already did, mid-line)
   else if (n.role === 'pc') Menus.abrir('pokemon', 'caixa');               // PC counter opens the Box
   else if (n.role === 'shop') Menus.abrir('pokemart', String(n.cfg));      // v2 Pokémart; falls back to the old list when that window is missing
-  else if (n.role === 'daycare') Menus.abrir('creche');
+  else if (n.role === 'daycare') Creche.abrir();                          // Day Care (breeding_ui.mjs)
   else if (n.role === 'plot') Menus.abrir('terreno');
   else if (n.role === 'guild') Menus.abrir('guilda');
   else if (n.role === 'ferry'){ const st = paradaDoMarinheiro(n.cfg); if (!(st && Balsa.abrir(st.porta))) Menus.abrir('balsa'); }   // a Sailor opens the ferry at his own stop
@@ -10138,6 +10139,10 @@ if (jogo.ash){
     /* RAID AO VIVO (14/09): a barra de vida do chefe no topo sai do REGISTRO (com ou sem corpo aqui) e some com ele. */
     raidHp: r => Raid.chefe({ nome: r.nome || 'Mew', lv: r.lv, hp: r.hp, maxHp: r.maxHp }),
     raidSumiu: () => Raid.chefe(null) });
+  Creche.instalar({ enviar: Rede.enviar, tr: (s, v) => I18n.t(s, v), Chat, Som, iconeMon: dex => './ui/mon/pm' + String(dex).padStart(4, '0') + '.png',
+    nomeItem: id => I18n.t(HELD?.efeito(id)?.nome || 'item'), aplicarSave: (save, rev) => { Conta.aplicarDoServidor(save, rev); recarregarDoSave(); },
+    abrirLoja: () => Menus.abrir('pokemart', '9001301'), lerTime: () => jogo.time || [], lerCaixa: () => lerLS('caixa', []) || [],
+    flutuar: t => { if (jogo.ash) flutuar(jogo.ash, t, '#ffe07a'); } });
   Troca.instalar({ jogo, enviar: Rede.enviar, Chat: { sistema: t => Chat.sistema(t), sistemaCru: t => Chat.sistema(t) }, Conta, lerLS, gravarLS, iconeMon, Som, Conhecimento,   // trade table (trade.mjs)
     outros: () => Rede.listaOutros(),
     aplicarSave: (save, rev) => { Conta.aplicarDoServidor(save, rev); recarregarDoSave(); } });
@@ -10166,7 +10171,7 @@ if (jogo.ash){
         Som.tocar('ui/sound_keyitemget', { volume: .7, prio: true });
       }
       else if (m.passoFeito && m.op !== 'doar') Chat.sistema('✔ Step complete.');
-    }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; if ('campeao' in m){ const era = !!eliteEstado.souCampeao; eliteEstado.campeao = m.campeao || null; eliteEstado.souCampeao = !!m.souCampeao; if (era !== eliteEstado.souCampeao) rotularJogador(); } refazerCampeao(); }, mundo: Mundo, troca: Troca, raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
+    }, token: () => Conta.tokenAtual(), area: () => nomeAreaAtual(), social: m => Menus.socialEvent(m), invasao: t => window.letreiroInvasao && window.letreiroInvasao(t), elite: m => { eliteEstado.corrida = m.corrida || null; eliteEstado.vencida = !!m.vencida; eliteEstado.proximo = m.corrida ? m.corrida.proximo : 1; if ('campeao' in m){ const era = !!eliteEstado.souCampeao; eliteEstado.campeao = m.campeao || null; eliteEstado.souCampeao = !!m.souCampeao; if (era !== eliteEstado.souCampeao) rotularJogador(); } refazerCampeao(); }, mundo: Mundo, troca: Troca, creche: m => Creche.receber(m), raid: Raid, Personagem, Chat, montarPersonagem, montarCorpo, modeloMon, clonar: o => SkeletonUtils.clone(o), tocarAnim, rotuloSprite, chaoEm, escalarSeguidor: e => aplicarTamanho(e, 'seguidor'), teleportar: (x, z) => { if (jogo.ash) teleportar(jogo.ash, x, z); }, batalhaConvite: m => {
       /* v2: the duel card (Battle accepts it, like typing /battle <name>); the chat line stays as the fallback and the record */
       const pr = !jogo.turno && BattleUi.convite({ tipo: 'duelo', titulo: m.nome || m.de, n: +m.n || 0, info: I18n.t('challenges you to a duel!') + (m.n ? ' · ' + m.n + ' Pokémon' : '') + ' · ' + I18n.t('turn-based') });
       if (pr){ try { Som.tocar('ui/sound_keyitemget', { volume: 0.7, prio: true }); } catch {}   // a sound, so a challenge doesn't go unnoticed

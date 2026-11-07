@@ -27,7 +27,8 @@ import { criarBatalha } from './server_battle.mjs';
 import { criarWilds } from './server_wild.mjs';
 import { mergeHp, healMon } from './server_hp.mjs';
 import { mergeMovs } from './server_moves.mjs';
-import { ajustarPPMax } from './individual.mjs';   // PP x5 (06/11): sobe o ppMax gravado dos Pokémon que já existiam
+import { ajustarPPMax } from './individual.mjs';
+import * as IndS from './individual.mjs';   // the Day Care builds hatchlings' moves from the learnset   // PP x5 (06/11): sobe o ppMax gravado dos Pokémon que já existiam
 import { fundir as fundirStatus } from './status.mjs';
 import { applyRole, ROLES } from './tools/roles.mjs';
 import { aceitarPos, posDaConta, posLimpa } from './server_pos.mjs';
@@ -40,6 +41,7 @@ import * as Calendario from './calendar.mjs';
 import { criarTemporada } from './server_season.mjs';
 import { createWorld } from './server_world.mjs';
 import { createRoamers } from './server_roamers.mjs';   // roaming legendaries
+import { createBreeding } from './server_breeding.mjs';   // Day Care, Eggs and hatching
 import { createRanking } from './server_ranking.mjs';
 import { createWardrobe } from './server_wardrobe.mjs';
 import { createTransform } from './server_transform.mjs';
@@ -1885,6 +1887,11 @@ function trocouCampeao(...usuarios) {
     broadcast(ws, { t: 'titulo', id: ws._id, titulo: ws._info.titulo });
   }
 }
+let movesCriacaoCache = null;
+const movesCriacao = () => movesCriacaoCache || (movesCriacaoCache = lerJson(nodePath.join(DADOS_PUB, 'moves.json'), {}));
+/* DAY CARE AND BREEDING (server_breeding.mjs): two Pokémon at the Route 5 Day Care may make an Egg every 24 h; Eggs hatch in 2 h (1 h with the Medallion). */
+const criacao = createBreeding({ dataDir: DADOS_PUB, accounts: contas, saveAccounts: salvarContas, send: enviar, socketsOf: socketsDe,
+  newIndividual: individuoServidor, markCaught: marcarPego, gameConfig: cfgJogo, Ind: IndS, moveExists: id => !!movesCriacao()[id], log: (...a) => console.log('[daycare]', ...a.slice(1)) });
 /* ROAMING LEGENDARIES (server_roamers.mjs): one legendary at a time travels Kanto in plain sight; admin page "Roaming legendaries". */
 const errantes = createRoamers({ world, dataDir: DADOS_PUB, stateFile: nodePath.join(DADOS, 'roamers_state.json'), send: enviar, connections: conexoes,
   habitats: () => lerJson(nodePath.join(DADOS_PUB, 'habitats.json'), null), log: (...a) => console.log('[roamers]', ...a.slice(1)) });
@@ -1961,7 +1968,8 @@ wss.on('connection', ws => {
         if (uTok && contas[uTok]) enviar(ws, { t: 'elite', ...batalha.eliteDe(uTok) });
         broadcast(ws, { t: 'entrou', jogador: infoJogador(ws) });
         transformacao.joined(ws);                                         // a Ditto that can't stay transformed changes back
-        ws._worldJoined = true; world.joined(ws);                           // shared world: wilds nobody owns on this map go to this player
+        ws._worldJoined = true; world.joined(ws);
+        if (ws._usuario) try { criacao.aoEntrar(ws._usuario, ws); } catch (e) { console.warn('daycare', e); }   // Eggs that hatched while away                           // shared world: wilds nobody owns on this map go to this player
         staff.aoEntrar(ws);                                                // staff: the ★ Staff button's state (server_staff.mjs)
         raid.aoEntrar(ws);                                                 // retrato da raid logo depois do bem-vindo (+ ida pendente / volta que não chegou)
         // Envia estado de missões logo após bemvindo
@@ -2347,6 +2355,7 @@ wss.on('connection', ws => {
           batalha.receber(ws, m);
         }
 
+        else if (m.t === 'creche') { if (ws._usuario) enviar(ws, { t: 'creche', op: m.op, ...criacao.operar(ws._usuario, m) }); }   // Day Care (server_breeding.mjs)
         else if (m.t?.startsWith('troca_')) troca.receber(ws, m);   // the trade table (server_trade.mjs); it used to be echoed to the whole map
 
         else if (m.t === 'missao_passo') {

@@ -238,6 +238,22 @@ export const ESQUEMAS = {
       { k: 'generico', rotulo: 'Generic catch', tipo: 'json', validar: v => Array.isArray(v) && v.every(e => e && Number.isInteger(e.dex)) ? null : 'a list like [{ "dex": 129, "nome": "Magikarp" }]' },
     ],
   },
+  criacao: {
+    titulo: 'Day Care and breeding', arquivo: 'breeding', forma: 'objeto',
+    descricao: 'The Day Care Lady outside the Route 5 Day Care (server_breeding.mjs). Two Pokémon left with her may make an Egg; the Egg is always the mother\'s family (a Ditto plays the opposite of the other parent). IVs: 3 from the parents (5 with a Destiny Knot), a Power item always passes its stat, an Everstone passes the nature; egg moves a parent knows are passed on. Egg groups and egg moves come from public/data/ovo.json.',
+    campos: [
+      { k: 'ligado', rotulo: 'On', tipo: 'bool' },
+      { k: 'horasPorTentativa', rotulo: 'Hours per Egg chance', tipo: 'num', min: 0.01, max: 720, ajuda: 'Counted from the moment both are in (24 = once a day).' },
+      { k: 'chance', rotulo: 'Egg chance', tipo: 'json', validar: v => v && ['mesmaEspecie', 'outra', 'ditto'].every(k => +v[k] >= 0 && +v[k] <= 1) ? null : '{ "mesmaEspecie": 0.7, "outra": 0.4, "ditto": 0.5 } (0–1)', ajuda: 'Same species / different species / with a Ditto.' },
+      { k: 'ovosEsperando', rotulo: 'Eggs that can wait at the counter', tipo: 'num', int: true, min: 1, max: 20 },
+      { k: 'ovosCarregados', rotulo: 'Eggs incubating at once', tipo: 'num', int: true, min: 1, max: 30 },
+      { k: 'horasChocar', rotulo: 'Hours to hatch', tipo: 'num', min: 0.01, max: 240 },
+      { k: 'horasChocarMedalhao', rotulo: 'Hours to hatch with the Medallion', tipo: 'num', min: 0.01, max: 240 },
+      { k: 'nivelAoChocar', rotulo: 'Level when hatched', tipo: 'num', int: true, min: 1, max: 100 },
+      { k: 'ivsHerdados', rotulo: 'IVs inherited', tipo: 'num', int: true, min: 0, max: 6 },
+      { k: 'ivsComNo', rotulo: 'IVs inherited with a Destiny Knot', tipo: 'num', int: true, min: 0, max: 6 },
+    ],
+  },
   legal: {
     titulo: 'Terms of Use version', arquivo: 'legal', forma: 'objeto',
     descricao: 'The Terms of Use (public/legal/terms.html) and the Privacy Policy (public/legal/privacy.html) share one version. Sign-up asks to accept the current version; when you change the version, every player is asked to accept the new one at their next log-in and can\'t play until they do. Change the version only after the pages themselves say what changed.',
