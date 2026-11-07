@@ -89,8 +89,16 @@ export function quadro(dt) {
     if (r && r.width > 0) {
       const t = Math.round(Math.max(36, Math.min(64, r.width * 0.5)));
       btn.style.setProperty('--t', t + 'px');
-      btn.style.left = Math.round(r.left + r.width / 2) + 'px';
-      btn.style.bottom = Math.round(innerHeight - r.top + r.height * 0.22) + 'px';
+      /* Phones (Nov 7): above the ball it covered the top hotkey; there it sits left of the hotkey ring, level with the ball */
+      const at = document.body.classList.contains('mobile') ? [...document.querySelectorAll('.atalho')].map((e) => e.getBoundingClientRect()).filter((q) => q.width > 0) : [];
+      if (at.length) {
+        const x0 = Math.min(...at.map((q) => q.left));
+        btn.style.left = Math.round(x0 - 10 - t / 2) + 'px';
+        btn.style.bottom = Math.round(innerHeight - (r.top + r.height / 2) - t / 2) + 'px';
+      } else {
+        btn.style.left = Math.round(r.left + r.width / 2) + 'px';
+        btn.style.bottom = Math.round(innerHeight - r.top + r.height * 0.22) + 'px';
+      }
     }
   }
 }
