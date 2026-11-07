@@ -8829,7 +8829,7 @@ async function montarNpcs(){
     try {
       const e = await montarNpcGlb(info.glb);
       if (jogo.raidArena){ removerCorpo(e); break; }
-      e.nome = info.nome || 'NPC'; e.falas = info.falas || []; e.npc = true; e.tipoNpc = info.tipo || 1; e.role = npcRole(info); e.cfg = n.cfg;
+      e.nome = info.nome || 'NPC'; e.falas = info.falas || []; e.npc = true; e.tipoNpc = info.tipo || 1; e.role = npcRole(info); e.curaApos = info.curaApos; e.cfg = n.cfg;
       if (info.secundaria != null){ e.soSecundaria = info.secundaria; e.__oculto = true; }   // a quest-only NPC (npcs_glb `secundaria`): stands there only while that side quest can be accepted
       if (info.tipo === 9) e.pivo.traverse(o => { if (o.isMesh){ const map = o.material?.map || null; o.material = new THREE.MeshStandardMaterial({ map, color: 0xb794ff, emissive: 0x6a3dff, emissiveIntensity: 0.7, roughness: 0.3, transparent: true, opacity: 0.92 }); } });   // cristal Teráxico: o shader FX do jogo não veio, vira cristal roxo brilhante
       if (info.glb.startsWith('mon/')){ e.glb = info.glb.slice(4); e.dex = dexDoGlb(e.glb); aplicarTamanho(e); }
@@ -9043,7 +9043,16 @@ async function falarCom(n){
   const linhasFala = visitaSafari
     ? ['You still have ' + jogo.safari.restantes + ' Safari Balls and ' + SafariUi.relogio(jogo.safari.fim - Date.now()) + ' left.', 'Leave the Zone and the visit ends. Leftover Safari Balls stay at the gate.']
     : (falaMissao || (n.falas.length ? n.falas : ['…']));
-  try { await mostrarFala(n.nome, linhasFala, n); } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
+  /* A healer with `curaApos: k` in npcs_glb (Mom: "You should rest a bit." → heal → "You look full of energy…") heals after her k-th
+     line and then finishes talking; other healers (Nurse Joy) heal after their whole line, below. */
+  const curaNoMeio = n.role === 'heal' && !falaMissao && +n.curaApos > 0 && +n.curaApos < linhasFala.length;
+  try {
+    if (curaNoMeio){
+      await mostrarFala(n.nome, linhasFala.slice(0, +n.curaApos), n);
+      curarTime(n);
+      await mostrarFala(n.nome, linhasFala.slice(+n.curaApos), n);
+    } else await mostrarFala(n.nome, linhasFala, n);
+  } finally { if (!n.placa) n.pivo.rotation.y = n.giro; }
   if (jogo.missoesOk) Missoes.evento({ tipo: 'falar', cfg: n.cfg });
   if (comConta()) Rede.enviar({ t: 'missao_falar', cfg: n.cfg });         // passo 5: quem marca o passo é o SERVIDOR (ele confere que você está do lado do NPC)
   if (jogo.missoesOk && comConta() && !n.placa){                          // a side quest this NPC gives, or a Pokémon they asked for: the v2 windows take over
@@ -9053,7 +9062,7 @@ async function falarCom(n){
   }
   if (n.role === 'safari' && !Safari.vivo(jogo.safari)) await safariPagar(Safari.zonaDoAtendente(n.cfg));
   else if (+n.cfg === 2158801) Menus.abrirBalcaoTm(n.cfg).then(ok => { if (!ok) TmCounter.abrir(); });   // Celadon Department Store 2F: the TM counter (tm_ui.mjs)
-  else if (n.role === 'heal') curarTime(n);                                // Nurse Joy heals the team after her line
+  else if (n.role === 'heal' && !curaNoMeio) curarTime(n);                // Nurse Joy heals the team after her line (Mom already did, mid-line)
   else if (n.role === 'pc') Menus.abrir('pokemon', 'caixa');               // PC counter opens the Box
   else if (n.role === 'shop') Menus.abrir('pokemart', String(n.cfg));      // v2 Pokémart; falls back to the old list when that window is missing
   else if (n.role === 'daycare') Menus.abrir('creche');

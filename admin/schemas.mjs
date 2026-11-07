@@ -173,6 +173,7 @@ export const ESQUEMAS = {
         ajuda: 'scenery/<model>.glb — npc/… (people) or mon/… (Pokémon). Signs have no model.' },
       { k: 'falas', rotulo: 'Lines (one per line)', tipo: 'linhas', validar: listaDeTextos },
       { k: 'role', rotulo: 'Role', tipo: 'opcao', col: true, opcoes: [{ v: 'heal', rotulo: 'Healing (Pokémon Center)' }, { v: 'shop', rotulo: 'Shop' }, { v: 'pc', rotulo: 'Box (PC)' }, { v: 'safari', rotulo: 'Safari Zone warden' }] },
+      { k: 'curaApos', rotulo: 'Heals after line', tipo: 'num', int: true, min: 1, max: 20, ajuda: 'Healing only: heal after this many lines, then say the rest (Mom: 1). Empty = heal after the last line.' },
       { k: 'placa', rotulo: 'Sign (invisible point with text)', tipo: 'bool', col: true },
       { k: 'tipo', rotulo: 'Original game type', tipo: 'num', int: true, min: 0, max: 99 },
       { k: 'cena', rotulo: 'Scene', tipo: 'num', int: true, min: 1, max: 99999999, ajuda: '1000001 = Kanto' },
