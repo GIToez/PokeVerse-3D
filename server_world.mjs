@@ -459,6 +459,8 @@ export function createWorld(h) {
     if (w.state !== 'desmaiado' && !naSafari) return reply({ ok: false, chac: 0, erro: 'acordado' });
     if (distTo(ws, w) > FIGHT_RANGE) return reply({ ok: false, chac: 0, erro: 'longe' });
     if (ballRate(ball) == null) return reply({ ok: false, chac: 0, erro: 'bola' });
+    const roam = w.roamer ? (w.catchRule?.() || {}) : null;   // a roaming legendary (server_roamers.mjs): its own catch rules
+    if (roam && roam.master === false && +ball === 1004) return reply({ ok: false, chac: 0, erro: 'bola', texto: 'A Master Ball does not work on a roaming legendary.' });
     const c = accounts[u], save = c.save || (c.save = {});
     if (!Caixa.cabe(save, gameConfig())) return reply({ ok: false, chac: 0, erro: 'caixa-cheia', texto: Caixa.aviso(save, gameConfig()) });   // full team + full Box: no throw, no ball spent
     if (!save.bolas || typeof save.bolas !== 'object') save.bolas = {};
@@ -469,7 +471,7 @@ export function createWorld(h) {
     /* the Safari's own difficulty (Game settings → Safari catch multiplier, default 0.5): the classic odds were too easy here,
        where almost every Safari species has a 190–255 catch rate and a rock doubles it */
     const fatorSafari = naSafari ? (v => Number.isFinite(v) && v > 0 ? Math.min(4, v) : 0.5)(+gameConfig()?.safariCaptura) : 1;
-    const n = shakes(w, ballBonus(ball, w, u) * modSafari * fatorSafari);
+    const n = shakes(w, ballBonus(ball, w, u) * modSafari * fatorSafari * (roam && Number.isFinite(+roam.mult) && +roam.mult > 0 ? +roam.mult : 1));
     w.state = 'capturando'; w.catcher = ws._id;
     clearTimeout(w.timer);
     toMap(map, { t: 'sestado', id: w.id, estado: 'capturando', porId: ws._id, bola: +ball, chac: n }, ws);

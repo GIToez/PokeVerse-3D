@@ -5666,7 +5666,7 @@ function atualizarSelvagens(dt){
     s.vx += (s.x - s.vx) * k; s.vz += (s.z - s.vz) * k; s.vy += (s.y - s.vy) * k;
     s.pivo.position.set(s.vx, s.vy, s.vz);
     // rótulo com nome, nível, temperamento e HP, para achar o Pokémon na grama alta (L liga/desliga)
-    if (!s.__vistoReg && s.dex != null && dAsh < 18){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokédex de conhecimento: avistado (1× por indivíduo, a até 18 m)
+    if (!s.__vistoReg && s.dex != null && dAsh < (s.errante ? 40 : 18)){ s.__vistoReg = true; Conhecimento.evento('visto', { dex: s.dex, shiny: !!s.shiny }); }   // Pokédex de conhecimento: avistado (1× por indivíduo, a até 18 m; a roaming legendary from 40 m: you see it fly over / run past)
     if (!s.rotulo){
       s.rotulo = document.createElement('div'); s.rotulo.className = 'rotulo mon';
       $('sobre').appendChild(s.rotulo);
@@ -7025,6 +7025,7 @@ async function jogarBola(){
       if (rsErro === 'outro') Chat.sistema('Another trainer already threw a ball at that ' + s.nome + '.');
       if (rsErro === 'acordado') Chat.sistema(s.nome + ' woke up before the ball arrived — knock it out again and throw quickly.');   // 14/09: antes era só "escapou (0 chacoalhadas)"
       if (rsErro === 'sumiu') Chat.sistema(s.nome + ' was already gone when the ball arrived.');
+      if (rsErro === 'bola' && rs?.texto) Chat.sistema(I18n.t(rs.texto));   // e.g. Master Ball switched off for roaming legendaries (server_roamers.mjs)
       if (rsErro === 'caixa-cheia'){ const t = I18n.t('Your Box is full. Buy Box slots in the Shop (Comfort tab) or release some Pokémon.'); Chat.sistema('📦 ' + (rs.texto || t)); flutuar(jogo.ash, I18n.t('Box full'), '#f58e8e'); }
       if (rs && rsErro && comConta()){ jogo.bolas[id] = (jogo.bolas[id] || 0) + 1; gravarLS('bolas', jogo.bolas); }   // 16/09: erro explícito = o servidor NÃO tirou a bola da bolsa; devolve a contagem local (antes só voltava no F5)
     } else chac = sortearCaptura(s, bonus);

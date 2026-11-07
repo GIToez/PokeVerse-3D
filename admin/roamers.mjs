@@ -67,6 +67,9 @@ export function instalarErrantes({ api, toast }) {
             <label>Flying speed (m/s) <input type="number" id="er-velVoo" min="1" max="40" step="0.5" value="${C.velVoo}"></label>
             <label>Running speed (m/s) <input type="number" id="er-velAndar" min="1" max="20" step="0.5" value="${C.velAndar}"></label>
             <label class="inteira">Flees at HP (%), comma separated <input type="text" id="er-fogeAbaixo" value="${esc((C.fogeAbaixo || []).map(v => Math.round(v * 100)).join(', '))}"></label>
+            <label>Catch chance × <input type="number" id="er-capturaMult" min="0.05" max="10" step="0.05" value="${C.capturaMult ?? 1}"></label>
+            <label class="chk"><input type="checkbox" id="er-masterBall" ${C.masterBall !== false ? 'checked' : ''}> Master Ball always catches them</label>
+            <div class="er-dica inteira">Catch odds once it is knocked out (×1, the games' rule): Poké Ball ~0.8 %, Great ~1.2 %, Ultra ~1.6 % per throw (Mew about half that). It stays down 20 s, so a few throws. 0.5 halves it.</div>
             <label class="chk inteira"><input type="checkbox" id="er-anunciar" ${C.anunciar ? 'checked' : ''}> Announce in everyone's chat when one appears</label>
           </div>
         </div>
@@ -85,9 +88,9 @@ export function instalarErrantes({ api, toast }) {
   }
   function lerConfig() {
     const C = { ...st.config };
-    for (const k of ['esperaMin', 'duracaoMin', 'limitePorJanela', 'janelaHoras', 'alturaVoo', 'velVoo', 'velAndar']) C[k] = +$('er-' + k).value;
+    for (const k of ['capturaMult', 'esperaMin', 'duracaoMin', 'limitePorJanela', 'janelaHoras', 'alturaVoo', 'velVoo', 'velAndar']) C[k] = +$('er-' + k).value;
     C.chanceTrio = Math.min(100, Math.max(0, +$('er-chanceTrio').value)) / 100;
-    C.ligado = $('er-ligado').checked; C.anunciar = $('er-anunciar').checked;
+    C.ligado = $('er-ligado').checked; C.anunciar = $('er-anunciar').checked; C.masterBall = $('er-masterBall').checked;
     C.fogeAbaixo = $('er-fogeAbaixo').value.split(',').map(v => +v.trim() / 100).filter(v => v > 0 && v < 1);
     C.lista = (C.lista || []).map((e, i) => {
       const tr = document.querySelector(`#er-lista tr[data-i="${i}"]`), v = k => tr.querySelector(`[data-k="${k}"]`);

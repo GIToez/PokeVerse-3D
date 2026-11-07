@@ -9361,5 +9361,17 @@
   "Throw a ball: this boss is yours.": "Jogue uma bola: este boss é seu.",
   "{n} throws left · {s} s": "{n} lançamentos restantes · {s} s",
   "You have no Poké Balls.": "Você não tem Poké Bolas.",
-  "Let it go": "Deixar ir"
+  "Let it go": "Deixar ir",
+  "🌀 A legendary Pokémon is roaming Kanto: {nome} was seen {onde} {area}!": "🌀 Um Pokémon lendário está vagando por Kanto: {nome} foi visto {onde} {area}!",
+  "flying toward": "voando em direção a",
+  "running through": "correndo por",
+  "Something strange is roaming Kanto… people near {area} say a Pokémon there is not what it seems.": "Algo estranho vaga por Kanto… dizem perto de {area} que um Pokémon ali não é o que parece.",
+  "🌀 The whole trio is out! {nomes} are roaming Kanto, each in a different area.": "🌀 O trio inteiro apareceu! {nomes} estão vagando por Kanto, cada um numa área diferente.",
+  "{nome} landed nearby!": "{nome} pousou aqui perto!",
+  "It was {nome} in disguise!": "Era {nome} disfarçado!",
+  "{nome} broke away and fled!": "{nome} se soltou e fugiu!",
+  "{nome} fainted and vanished before anyone caught it.": "{nome} desmaiou e sumiu antes que alguém o capturasse.",
+  "{nome} was caught! The roaming legendary is gone for now.": "{nome} foi capturado! O lendário errante sumiu por enquanto.",
+  "{nome} has left the region.": "{nome} deixou a região.",
+  "A Master Ball does not work on a roaming legendary.": "A Master Ball não funciona em um lendário errante."
 }

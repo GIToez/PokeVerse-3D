@@ -21,7 +21,7 @@ const TICK_MS = 250, FIGHT_IDLE_MS = 25e3, NEAR_ANNOUNCE = 90, CLIMB = 30;
 const TRIOS = { aves: [144, 145, 146], caes: [243, 244, 245] };
 export const DEFAULTS = {
   ligado: true, mapa: 'kanto', esperaMin: 120, duracaoMin: 45, limitePorJanela: 2, janelaHoras: 72, chanceTrio: 0.08, anunciar: true,
-  flipX: -1, alturaVoo: 9, velVoo: 9, velAndar: 5, pouso: [60, 150], fogeAbaixo: [0.6, 0.3],
+  capturaMult: 1, masterBall: true, flipX: -1, alturaVoo: 9, velVoo: 9, velAndar: 5, pouso: [60, 150], fogeAbaixo: [0.6, 0.3],
   areas: [], lista: [],
 };
 
@@ -145,6 +145,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
     const r = { w, e, map, flyer, born: Date.now(), until: Date.now() + (C.duracaoMin || 45) * 60e3, phase: 'pousado', path: [], wait: 0, speed: 0, fled: 0, area: dest, giro: 0 };
     active.set(w.id, r);
     w.onHit = ws => onHit(r, ws);
+    w.catchRule = () => { const C = cfg(); return { mult: +C.capturaMult || 1, master: C.masterBall !== false }; };
     w.onGone = reason => gone(r, reason);
     if (flyer) goTo(r, dest, false);
     else land(r);
@@ -317,7 +318,7 @@ export function createRoamers({ world, dataDir, stateFile, send, connections, ha
   function validate(c) {
     if (!c || typeof c !== 'object') return 'No settings.';
     const num = (k, lo, hi) => Number.isFinite(+c[k]) && +c[k] >= lo && +c[k] <= hi ? null : k + ' must be between ' + lo + ' and ' + hi;
-    const e = num('esperaMin', 0, 10080) || num('duracaoMin', 1, 1440) || num('limitePorJanela', 1, 100) || num('janelaHoras', 1, 2160) || num('chanceTrio', 0, 1)
+    const e = num('capturaMult', 0.05, 10) || num('esperaMin', 0, 10080) || num('duracaoMin', 1, 1440) || num('limitePorJanela', 1, 100) || num('janelaHoras', 1, 2160) || num('chanceTrio', 0, 1)
       || num('alturaVoo', 4, 60) || num('velVoo', 1, 40) || num('velAndar', 1, 20);
     if (e) return e;
     if (!Array.isArray(c.lista) || c.lista.length > 40) return 'lista must be a list';
