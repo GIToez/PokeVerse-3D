@@ -21,6 +21,11 @@ play.pokeverse.quest {
 		rewrite * /admin/scenery.html
 		file_server
 	}
+	# Scenery Studio (3D editor v2). Without this the catch-all serves the game's index.html (endless loading screen).
+	handle /admin/scenery2 {
+		rewrite * /admin/scenery2.html
+		file_server
+	}
 	handle /admin/cenario {
 		rewrite * /admin/scenery.html
 		file_server
