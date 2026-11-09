@@ -438,6 +438,7 @@ export function abrir(b = null) {
   idxDest = 0;
   semana = 0;
   Popup.trocarAba(pop, b === 'agenda' ? 'agenda' : 'destaques');
+  abaDiario();
   pintar();
   Popup.abrir(pop);
   dep.ctx().Som?.tocar?.('ui/sound_click', { volume: 0.5 });
@@ -1093,6 +1094,24 @@ export function receber(m) {
 }
 function urlPainel() {
   return new URL('/admin/#/agenda', location.href).toString();
+}
+/* DAILY REWARDS TAB (Nov 8, like PokeFable's): a third tab after Weekly schedule, a copy of that tab's look, that opens the Daily
+   Rewards window (daily_ui.mjs) in place of the Events. */
+function abaDiario() {
+  if (!pop || pop.querySelector('[data-fig="aba-diario"]')) return;
+  const a = pop.querySelector('[data-fig="aba-agenda"]'), d = pop.querySelector('[data-fig="aba-destaques"]');
+  if (!a || !d || typeof dep.diario !== 'function') return;
+  const c = a.cloneNode(true);
+  c.dataset.fig = 'aba-diario';
+  for (const e of [c, ...c.querySelectorAll('*')]) { delete e.dataset.tag; delete e.dataset.tagval; delete e.dataset.aba; }
+  const L = (e) => parseFloat(e.style.left) || 0, W = (e) => parseFloat(e.style.width) || e.offsetWidth || 0;
+  const vao = Math.max(8, L(a) - (L(d) + W(d)));                           // the gap between the first two tabs
+  c.style.left = L(a) + W(a) + vao + 'px';
+  const txt = [...c.querySelectorAll('*')].reverse().find((e) => !e.children.length && e.textContent.trim());
+  if (txt) txt.textContent = tr('Daily Rewards');
+  Object.assign(c.style, { pointerEvents: 'auto', cursor: 'pointer' });
+  c.addEventListener('click', (e) => { e.stopPropagation(); dep.ctx().Som?.tocar?.('ui/sound_click', { volume: 0.4 }); Popup.fechar(pop); dep.diario(); });   // the Daily Rewards window takes the Events' place
+  a.after(c);
 }
 function ligarLinkPainel() {
   if (!pop || !dep.ctx().gm?.()) return;

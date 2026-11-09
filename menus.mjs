@@ -321,6 +321,7 @@ function ligarRecursos(){
     mercado: (op, d) => Rede.pedirMercado(op, d),
   });
   EventosUI.instalar({
+    diario: () => (ctx.comConta?.() ? Rede.enviar({ t: 'diario_ver' }) : Chat.sistema(tr('Daily rewards need an account.'))),   // the Daily Rewards tab
     defPopup,
     fecharGrade,
     ctx: () => ctx,
