@@ -33,7 +33,7 @@ const r3 = v => +(+v).toFixed(3);
 const normGraus = g => { g = Math.round((+g || 0) * 10) / 10; g = ((g % 360) + 360) % 360; g = Math.round(g * 10) / 10; return g > 180 ? g - 360 : g; };
 const grausArquivo = g => { g = Math.round((((+g || 0) % 360) + 360) % 360 * 10) / 10; return g >= 360 ? 0 : g; };
 
-/* the game's name rules (idx_mod_0.mjs instanciarBiblioteca) — only to PREDICT the collision in the viewport */
+/* the game's name rules (index.html instanciarBiblioteca) — only to PREDICT the collision in the viewport */
 const EH_PISO = /floor|ground|tile|^sink|road|plane|bridge|pier|stair|leitai|mat_|carpet|arenen_wood|arenen_sand/;
 const EH_AGUA = /shui|water|sea_floor|^sea$/;
 const ATRAVESSA = /gimgrass|comgrass|flower|grass_0|leaf|yun|collide|rock_wr_dong|rock_winnerroad_[hn]_|slashtree/;

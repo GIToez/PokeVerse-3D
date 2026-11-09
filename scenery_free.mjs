@@ -1,4 +1,4 @@
-/* FREE SCENERY (Nov 8) — shared by the game (idx_mod_0.mjs) and the new 3D editor (/admin/scenery2).
+/* FREE SCENERY (Nov 8) — shared by the game (the module inside index.html) and the new 3D editor (/admin/scenery2).
  *
  * Three things the legacy pipeline could not do:
  *  1. FREE TRANSFORM. A placement may carry rotation (rx / r / rz, degrees, Euler XYZ in world, r = Y — the fields the old editor
