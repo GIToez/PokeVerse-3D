@@ -1012,6 +1012,23 @@ function limparObjeto(o) {
     const g = Math.round((((Number(o[k]) || 0) % 360) + 360) % 360 * 10) / 10;
     if (g && g < 360) r[k] = g;
   }
+  /* 3D editor v2 (/admin/scenery2, Nov 8): free scale, precise collision, walkable flag and model group. See scenery_free.mjs. */
+  for (const k of ['sx', 'sy', 'sz']) if (o[k] !== undefined) { const v = Number(o[k]); if (Number.isFinite(v) && v !== 1) r[k] = +Math.min(100, Math.max(0.01, Math.abs(v))).toFixed(3); }
+  if (['caixa', 'malha', 'nada'].includes(o.col)) r.col = o.col;
+  if (o.pi !== undefined && o.pi !== null) r.pi = +o.pi ? 1 : 0;
+  if (typeof o.g === 'string' && o.g.trim()) r.g = o.g.trim().replace(/[^\w .\-]/g, '').slice(0, 40) || undefined;
+  if (r.g === undefined) delete r.g;
+  return r;
+}
+/** A path of the 3D editor v2 (same rules as limparCaminho in scenery_free.mjs). */
+function limparCaminhoCena(c) {
+  const num = (v, d = 0) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
+  const pts = (Array.isArray(c?.pts) ? c.pts : []).slice(0, 2000).map(p => Array.isArray(p) ? p.slice(0, 3).map(v => +num(v).toFixed(3)) : null).filter(p => p && p.length === 3);
+  if (pts.length < 2) return null;
+  const r = { pts, w: +Math.min(40, Math.max(0.2, num(c.w, 2))).toFixed(2), est: ['terra', 'areia', 'pedra', 'cascalho', 'grama', 'lama'].includes(c.est) ? c.est : 'terra', irr: +Math.min(1, Math.max(0, num(c.irr, 0.35))).toFixed(2) };
+  if (+c.pi) r.pi = 1;
+  if (+c.f && pts.length >= 3) r.f = 1;
+  if (c.nome) r.nome = String(c.nome).replace(/[^\w .\-À-ú]/g, '').slice(0, 40);
   return r;
 }
 function limparZona(z) {
@@ -1518,7 +1535,7 @@ const httpServer = http.createServer((req, res) => {
         const d2 = lerJson(nodePath.join(DADOS_PUB, m + '.json'), null);
         if (!d2) return json(404, { erro: 'map not found' });
         // o jogo monta o cenário de 3 listas: areaEnv (chão), ambiente (água/céu) e objetos (props)
-        return json(200, { ok: true, objetos: d2.objetos || [], ambiente: d2.ambiente || [], areaEnv: d2.areaEnv || [] });
+        return json(200, { ok: true, objetos: d2.objetos || [], ambiente: d2.ambiente || [], areaEnv: d2.areaEnv || [], caminhos: d2.caminhos || [] });
       }
       if (rota === '/admin/mapa-objetos' && req.method === 'POST') {
         const m = String(d.mapa || '');
@@ -1529,6 +1546,7 @@ const httpServer = http.createServer((req, res) => {
         const limpa = l => (Array.isArray(l) ? l : []).slice(0, 200000).map(limparObjeto).filter(Boolean);
         let n = 0;
         for (const k of ['objetos', 'ambiente', 'areaEnv']) if (Array.isArray(d[k])) { d2[k] = limpa(d[k]); n += d2[k].length; }   // só troca as listas que vieram; o resto do mapa fica
+        if (Array.isArray(d.caminhos)) { const cm = d.caminhos.slice(0, 500).map(limparCaminhoCena).filter(Boolean); if (cm.length) d2.caminhos = cm; else delete d2.caminhos; }   // paths of the 3D editor v2
         gravarComBackup(arq, d2);
         console.log(`[admin] ${g} saved ${n} scenery pieces on ${m}`);
         return json(200, { ok: true, total: n });

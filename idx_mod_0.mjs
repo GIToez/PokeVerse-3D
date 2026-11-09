@@ -2,6 +2,7 @@
 // (banner removido)
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as Livre from './scenery_free.mjs';   // cenário livre (08/11): rotação/escala, colisão precisa e caminhos do editor 3D v2
 import './glb_no_blob.mjs';                     // texturas dos .glb sem URL blob: (sem as centenas de "blob:" quebrados no F12)
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Part from './particles.mjs';       // partículas dos golpes, reconstruídas do jogo
@@ -965,6 +966,9 @@ const EH_PLANTA = /grass|flower|tree|leaf|plant|yun|bush|implant|shu\b|hua\b|cao
    no mundo — conservador: a célula entra se um vértice cai nela, se centro/cantos caem no triângulo ou se uma aresta
    cruza a célula (nunca abre buraco onde há chão). Chave numérica: (x+50000)*100000 + (z+50000). */
 const chaveCel = (x, z) => (Math.floor(x) + 50000) * 100000 + (Math.floor(z) + 50000);
+/* COLISÃO PRECISA (08/11, editor 3D v2): peças com rotação/escala/`col` saem da grade de 1 m e entram aqui (ver scenery_free.mjs).
+   Declarada cedo porque o chaoEm/livre são içados e podem rodar antes do fim do boot. */
+const colLivre = Livre.criarColisao();
 const _cv = new THREE.Vector3(), _cM = new THREE.Matrix4(), _cT = new THREE.Matrix4();
 function contornoPiso(lista, ox, oy, oz){
   const cel = new Set();
@@ -1510,6 +1514,14 @@ function instanciarBiblioteca(g, dados){
       gr.n++;
       gr.nomes.add(nome);
     }
+    /* PEÇA LIVRE (08/11): girada, escalada ou com `col`/`pi` do editor 3D v2 — a colisão é a precisa (casca girada ou triângulos),
+       não a grade de 1 m da caixa. As regras de nome (piso, água, atravessa) só decidem o padrão. */
+    if (Livre.ehLivre(o)){
+      const info = { piso: ehPiso(nome), agua: EH_AGUA.test(nome), atravessa: ATRAVESSA.test(nome) && !/implant/.test(nome) };
+      const secas = lista.filter(pt => !pt.porta && !EH_AGUA.test((pt.nome || '').toLowerCase()));
+      colLivre.adicionar(secas, Livre.matrizColocacao(o, flipX), Livre.modoColisao(o, info), Livre.ehAndavel(o, info));
+      continue;
+    }
     const cx = caixaDe.get(nome);
     const alto = cx.max.y - cx.min.y;
     if (PECAS_PLATO.test(nome)){                                          // platôs (18/09): chão do platô, patamar e escadinha, pela mesma pegada da caixa
@@ -1868,7 +1880,8 @@ function instanciarBiblioteca(g, dados){
   for (const o of colocacoes){                     // 2ª passada: matrizes
     const lista = partes.get(chaveNome(o.n));
     if (!lista) continue;
-    T.makeTranslation(flipX * o.x, o.y, o.z);
+    if (Livre.temRotacao(o) || Livre.temEscala(o)) Livre.matrizColocacao(o, flipX, T);   // 08/11: rotação e escala livres (o editor 3D já gravava a rotação; o jogo ignorava)
+    else T.makeTranslation(flipX * o.x, o.y, o.z);
     const bl = chaveBloco(flipX * o.x, o.z);
     for (const pt of lista){
       M.multiplyMatrices(T, pt.local);
@@ -2190,6 +2203,7 @@ const CANTOS_PE = [[0.28, 0.28], [0.28, -0.28], [-0.28, 0.28], [-0.28, -0.28]];
 /** Obstáculo nos 4 cantos do pé; `ignorarAgua` desconta os tiles de água (nadando, água não é parede). */
 function obstaculoEm(x, z, ignorarAgua = false){
   for (const [dx, dz] of CANTOS_PE){ const k = Math.floor(x + dx) + ',' + Math.floor(z + dz); if (bloqueio.has(k) && !(ignorarAgua && celAgua.has(k))) return true; }
+  if (!colLivre.vazio && colLivre.bloqueia(x, z, chaoEm(x, z), 0.28)) return true;   // 08/11: peças livres (pedra girada no lago etc.)
   return false;
 }
 /** Dá pra NADAR em (x,z): água de verdade, com fundo, sem pedra/cerca. */
@@ -2397,6 +2411,7 @@ function chaoEm(x, z){
     }
     melhor = melhor === null ? r.y : Math.max(melhor, r.y);
   }
+  if (colLivre.temPiso){ const h = colLivre.chao(x, z); if (h !== null && (melhor === null || h > melhor)) melhor = h; }   // 08/11: superfície andável precisa (rampa, plataforma girada, caminho)
   /* Cena com navmesh do original: onde o nosso chão falta, vale o dele (16/09). MENOS debaixo de superfície de água (19/09, Caverna
      Celeste): o navmesh de terra do original cobre também os lagos da caverna (os 767 m² do navmesh de água estão todos nele, em
      ilhas separadas da terra, a 0,01 m), e o fundo do lago não é malha — o chão de reserva punha piso 0,3 m ACIMA da água e o
@@ -2426,8 +2441,25 @@ function livre(x, z){
   else for (const [dx, dz] of [[RAIO_PE, RAIO_PE], [RAIO_PE, -RAIO_PE], [-RAIO_PE, RAIO_PE], [-RAIO_PE, -RAIO_PE]])
     if (bloqueio.has(Math.floor(x + dx) + ',' + Math.floor(z + dz))) return false;
   const c = chaoEm(x, z);
+  if (c !== null && !colLivre.vazio && colLivre.bloqueia(x, z, c, RAIO_PE)) return false;   // 08/11: colisão precisa das peças livres
   return c !== null && !naAgua(x, z, c);                                 // água de verdade não se atravessa a pé (o fundo do mar é piso, mas está 1 m abaixo da superfície)
 }
+
+/* CAMINHOS (08/11, editor 3D v2): fitas irregulares por spline, coladas no chão (`dados.caminhos`, coords de ARQUIVO como os objetos).
+   `pi` = o caminho também é chão (ponte de terra por cima de um vão); sem ele é só pintura. */
+const caminhosCena = (() => {
+  const g = new THREE.Group(); g.name = 'caminhos';
+  (dados.caminhos || []).forEach((c0, i) => {
+    const c = Livre.limparCaminho(c0); if (!c) return;
+    try {
+      const m = Livre.construirCaminho(c, { flipX, seed: i + 1, alturaEm: (x, z) => chaoEm(x, z) });
+      g.add(m);
+      if (c.pi) colLivre.adicionarPisoMalha(m.geometry);
+    } catch (e){ console.warn('caminho ' + i + ':', e); }
+  });
+  if (g.children.length){ cena.add(g); console.log('caminhos: ' + g.children.length); }
+  return g;
+})();
 
 /* UM PARSE POR ARQUIVO (12/09): Kanto monta ~1.580 NPCs (1.305 do mapa + 275 extras) com só 40 GLBs distintos, e cada um era um
    `loadAsync` novo — geometria e texturas DUPLICADAS por NPC. Medido no PC: a cena saía de 290 MB (textura + geometria) pra
@@ -5892,7 +5924,7 @@ function pousoDaPorta(pt){
 /* (14/09, tentado e DESFEITO 20 min depois: desarmar a porta "ao andar 1 m" fazia ping-pong nos PORTÕES de rota — a chegada fica
    dentro do túnel, 1 m da porta de saída, e sair por ela disparava de novo: thesyvel preso na casinha da Floresta, rukintk na da
    Rota 11↔12. A porta armada no nascimento/pouso só desarma a 1,9 m, como sempre.) */
-function abrirVao(px, pz, r = 1.5){ for (let x = Math.floor(px - r); x <= Math.floor(px + r); x++) for (let z = Math.floor(pz - r); z <= Math.floor(pz + r); z++) if (!celAgua.has(x + ',' + z) && !miolo.has(x + ',' + z)) bloqueio.delete(x + ',' + z); }   // miolo (13/09): o vão não entra no prédio   // function: é chamada no nascimento, antes do fim do módulo; água não vira vão
+function abrirVao(px, pz, r = 1.5){ colLivre.liberar(px, pz, r + 0.3); for (let x = Math.floor(px - r); x <= Math.floor(px + r); x++) for (let z = Math.floor(pz - r); z <= Math.floor(pz + r); z++) if (!celAgua.has(x + ',' + z) && !miolo.has(x + ',' + z)) bloqueio.delete(x + ',' + z); }   // miolo (13/09): o vão não entra no prédio   // function: é chamada no nascimento, antes do fim do módulo; água não vira vão
 /* CORREDOR da porta (13/09, rukintk: "o ginásio do Brock não dá pra entrar"): a célula da porta do jogo pode ficar FUNDO dentro da
    caixa do prédio (ginásio de Pewter: porta em z −168,8, fachada em −167,8 → o vão de 0,6 m não chegava na fileira da fachada e
    ninguém encostava a 1,1 m da porta). Abre, a partir da célula da porta, o caminho mais curto até o ar livre (até 4 células), na

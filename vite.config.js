@@ -10,6 +10,8 @@ const adminRoute = {
       const path = (req.url || '').split('?')[0];
       if (/\.(glb|png|webp|jpe?g|gif|ogg|mp3|wav|ktx2|woff2?)$/i.test(path)) res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
       else if (/\.(html|mjs|js|css|json)$/i.test(path) || path === '/' || path.endsWith('/')) res.setHeader('Cache-Control', 'no-cache');
+      const m2 = req.url && req.url.match(/^\/+admin\/scenery2\/?(\?.*)?$/);   // Scenery Studio (editor v2, Nov 8)
+      if (m2) { req.url = '/admin/scenery2.html' + (m2[1] || ''); return next(); }
       const mc = req.url && req.url.match(/^\/+admin\/(?:scenery|cenario)\/?(\?.*)?$/);
       if (mc) { req.url = '/admin/scenery.html' + (mc[1] || ''); return next(); }
       const m = req.url && req.url.match(/^\/+admin\/?(\?.*)?$/);
@@ -26,7 +28,7 @@ export default defineConfig({
      the first visit to /admin/scenery makes Vite re-bundle and reload, and imports in flight fail with "Outdated
      Optimize Dep" (504). */
   optimizeDeps: {
-    entries: ['index.html', 'admin/index.html', 'admin/scenery.html'],
+    entries: ['index.html', 'admin/index.html', 'admin/scenery.html', 'admin/scenery2.html'],
     include: [
       'three',
       'three/addons/controls/OrbitControls.js',

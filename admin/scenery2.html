@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en" translate="no" class="notranslate">
+<head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scenery Studio — PokeVerse</title>
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three/build/three.module.js",
+  "three/addons/": "/vendor/three/examples/jsm/"
+} }
+</script>
+<style>
+:root{
+  --bg:#1b1b1b; --barra:#2d2d2d; --painel:#252526; --painel2:#2f2f30; --linha:#3c3c3c; --hover:#37373d;
+  --texto:#e8e8e8; --fraco:#9a9a9a; --azul:#3a8ef6; --azul2:#1f5fb8; --sel:#0e3d75; --ok:#3ecf8e; --erro:#ff5d5d; --aviso:#f2c14e;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; height:100%; background:var(--bg); color:var(--texto); font:13px/1.35 "Segoe UI",system-ui,Roboto,sans-serif; overflow:hidden; user-select:none; }
+button,input,select{ font:inherit; color:inherit; }
+input[type=text],input[type=number],input[type=search],select{ background:#1e1e1e; border:1px solid var(--linha); border-radius:3px; padding:3px 6px; min-width:0; }
+input:focus,select:focus{ outline:1px solid var(--azul); border-color:var(--azul); }
+a{ color:var(--azul); text-decoration:none; }
+[hidden]{ display:none !important; }
+.fraco{ color:var(--fraco); }
+
+#app{ display:grid; grid-template-rows:auto auto 1fr 24px; height:100%; }
+/* title bar */
+.topo{ display:flex; align-items:center; gap:10px; padding:4px 10px; background:#202020; border-bottom:1px solid #111; }
+.topo .marca{ font-weight:700; color:#fff; letter-spacing:.2px; }
+.topo .marca span{ color:var(--azul); }
+.topo .dir{ margin-left:auto; display:flex; gap:8px; align-items:center; }
+.topo #sujo{ color:var(--aviso); font-size:12px; }
+.topo select{ max-width:min(380px,38vw); }
+.btn{ background:var(--painel2); border:1px solid var(--linha); border-radius:3px; padding:4px 10px; cursor:pointer; }
+.btn:hover{ background:var(--hover); }
+.btn.prim{ background:var(--azul); border-color:var(--azul); color:#fff; font-weight:600; }
+.btn.prim:hover{ background:#4c9bff; }
+.btn:disabled{ opacity:.45; cursor:default; }
+/* ribbon */
+.fita{ display:flex; align-items:stretch; gap:0; background:var(--barra); border-bottom:1px solid #111; padding:4px 6px 0; overflow-x:auto; overflow-y:hidden; }
+.grupo{ display:flex; flex-direction:column; padding:0 8px; border-right:1px solid var(--linha); }
+.grupo:last-child{ border-right:0; }
+.grupo .itens{ display:flex; gap:2px; align-items:flex-start; flex:1; }
+.grupo .nome{ text-align:center; font-size:11px; color:var(--fraco); padding:2px 0 3px; }
+.ferr{ display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:2px; min-width:50px; padding:4px 6px; background:transparent; border:1px solid transparent; border-radius:3px; cursor:pointer; color:var(--texto); }
+.ferr:hover{ background:var(--hover); }
+.ferr.on{ background:var(--sel); border-color:var(--azul); }
+.ferr:disabled{ opacity:.4; cursor:default; background:transparent; }
+.ferr .ic{ font-size:20px; line-height:24px; height:24px; }
+.ferr .tx{ font-size:11px; white-space:nowrap; }
+.empilha{ display:flex; flex-direction:column; gap:3px; padding:2px 0; justify-content:center; }
+.empilha label{ display:flex; align-items:center; gap:6px; font-size:12px; white-space:nowrap; }
+.empilha input[type=number]{ width:58px; }
+/* body */
+.corpo{ display:grid; grid-template-columns:260px minmax(0,1fr) 300px; min-height:0; }
+.painel{ background:var(--painel); display:flex; flex-direction:column; min-height:0; }
+.painel.esq{ border-right:1px solid #111; }
+.painel.dir{ border-left:1px solid #111; }
+.cab{ display:flex; align-items:center; gap:6px; padding:5px 8px; background:#2b2b2c; border-bottom:1px solid #111; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:#cfcfcf; }
+.cab .qtd{ font-weight:400; text-transform:none; color:var(--fraco); margin-left:auto; }
+/* toolbox */
+.tb-filtros{ display:flex; gap:4px; padding:6px; border-bottom:1px solid var(--linha); }
+.tb-filtros input{ flex:1; }
+.tb-grade{ flex:1; overflow:auto; padding:6px; display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:6px; align-content:start; }
+.carta{ background:#2a2a2b; border:1px solid transparent; border-radius:4px; cursor:pointer; display:flex; flex-direction:column; align-items:center; padding:4px; gap:3px; min-width:0; }
+.carta:hover{ border-color:#555; background:#323233; }
+.carta.on{ border-color:var(--azul); background:var(--sel); }
+.carta .th{ width:64px; height:64px; border-radius:3px; background:#1d1d1e center/contain no-repeat; display:grid; place-items:center; color:#555; font-size:22px; }
+.carta .nm{ font-size:10.5px; width:100%; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#ccc; }
+.carta.ext .nm{ color:#9ab; font-style:italic; }
+.tb-mais{ grid-column:1/-1; }
+/* viewport */
+.tela{ position:relative; background:#0b0d10; overflow:hidden; min-width:0; min-height:0; }
+.tela canvas{ display:block; position:absolute; inset:0; width:100%; height:100%; }
+.tela canvas:focus{ outline:none; }
+#marquee{ position:absolute; border:1px solid var(--azul); background:rgba(58,142,246,.15); pointer-events:none; }
+.dica{ position:absolute; left:10px; bottom:10px; background:rgba(20,20,20,.82); border:1px solid #333; border-radius:4px; padding:5px 9px; font-size:12px; color:#bbb; pointer-events:none; max-width:calc(100% - 20px); }
+.dica b{ color:#fff; }
+.modo-banner{ position:absolute; left:50%; top:10px; transform:translateX(-50%); background:rgba(14,61,117,.92); border:1px solid var(--azul); border-radius:4px; padding:5px 12px; font-size:12.5px; pointer-events:none; white-space:nowrap; }
+.eixos{ position:absolute; right:10px; top:10px; width:64px; height:64px; pointer-events:none; }
+#carregando{ position:absolute; inset:0; display:grid; place-items:center; background:var(--bg); z-index:3; font-size:15px; color:var(--fraco); text-align:center; padding:20px; }
+/* explorer + properties */
+.dir .sec{ display:flex; flex-direction:column; min-height:0; }
+.dir .sec.exp{ flex:1 1 55%; border-bottom:1px solid #111; }
+.dir .sec.props{ flex:1 1 45%; }
+.arvore{ flex:1; overflow:auto; padding:3px 0; font-size:12.5px; }
+.no{ display:flex; align-items:center; gap:4px; height:22px; padding-right:6px; cursor:pointer; white-space:nowrap; }
+.no:hover{ background:var(--hover); }
+.no.sel{ background:var(--sel); }
+.no .seta{ width:14px; text-align:center; color:var(--fraco); flex:none; font-size:10px; }
+.no .ico{ width:16px; text-align:center; flex:none; }
+.no .rot{ overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.no .cnt{ color:var(--fraco); font-size:11px; margin-left:4px; }
+.no .tg{ margin-left:auto; display:flex; gap:2px; flex:none; }
+.no .tg span{ opacity:.35; padding:0 2px; border-radius:2px; }
+.no .tg span.on{ opacity:1; }
+.no .tg span:hover{ background:#444; }
+.no.mais{ color:var(--azul); }
+.tab-props{ flex:1; overflow:auto; }
+.prow{ display:grid; grid-template-columns:96px minmax(0,1fr); align-items:center; border-bottom:1px solid #2c2c2c; min-height:25px; }
+.prow > label{ padding:0 8px; color:#c8c8c8; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.prow > div{ padding:2px 6px 2px 0; display:flex; gap:3px; min-width:0; align-items:center; }
+.prow input[type=number],.prow input[type=text],.prow select{ width:100%; padding:2px 4px; }
+.prow .xyz{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; width:100%; }
+.prow .xyz input{ width:100%; }
+.pcat{ background:#2b2b2c; padding:3px 8px; font-size:11.5px; font-weight:600; color:#aaa; border-bottom:1px solid #222; }
+.pvazio{ padding:12px; color:var(--fraco); font-size:12px; }
+.pnota{ padding:6px 8px; color:var(--fraco); font-size:11.5px; border-bottom:1px solid #2c2c2c; }
+.pacoes{ display:flex; flex-wrap:wrap; gap:4px; padding:8px; }
+/* output */
+.rodape{ display:flex; align-items:center; gap:14px; padding:0 10px; background:#007acc; color:#fff; font-size:12px; overflow:hidden; white-space:nowrap; }
+.rodape.alerta{ background:#8a5a00; }
+.rodape b{ font-weight:600; }
+.rodape #saida{ margin-left:auto; overflow:hidden; text-overflow:ellipsis; opacity:.95; }
+#toast{ position:fixed; right:14px; top:96px; display:grid; gap:6px; z-index:9; }
+#toast div{ background:#2d2d2d; border:1px solid #444; border-left:4px solid var(--ok); border-radius:4px; padding:8px 12px; max-width:360px; box-shadow:0 4px 18px rgba(0,0,0,.4); }
+#toast div.erro{ border-left-color:var(--erro); }
+@media (max-width:1100px){ .corpo{ grid-template-columns:200px minmax(0,1fr) 260px; } }
+</style>
+</head>
+<body class="notranslate" translate="no">
+<div id="app">
+  <div class="topo">
+    <span class="marca">PokeVerse <span>Scenery Studio</span></span>
+    <input id="mapa-busca" type="search" placeholder="find map…" autocomplete="off" style="width:140px">
+    <select id="sel-mapa"></select>
+    <div class="dir">
+      <span id="sujo" hidden>● unsaved changes</span>
+      <a href="/admin/scenery" title="The original editor (grid-style), unchanged">Classic editor</a>
+      <a href="/admin">← Panel</a>
+      <button class="btn" id="b-descartar">Discard</button>
+      <button class="btn prim" id="b-salvar" title="Ctrl+S">Publish scenery</button>
+    </div>
+  </div>
+  <div class="fita">
+    <div class="grupo"><div class="itens">
+      <button class="ferr" id="t-undo" title="Undo (Ctrl+Z)" disabled><span class="ic">↶</span><span class="tx">Undo</span></button>
+      <button class="ferr" id="t-redo" title="Redo (Ctrl+Y)" disabled><span class="ic">↷</span><span class="tx">Redo</span></button>
+    </div><div class="nome">History</div></div>
+    <div class="grupo"><div class="itens">
+      <button class="ferr on" id="t-select" title="Select (Ctrl+1): click, drag a box, or drag a piece to slide it over surfaces"><span class="ic">⬚</span><span class="tx">Select</span></button>
+      <button class="ferr" id="t-move" title="Move (Ctrl+2)"><span class="ic">✥</span><span class="tx">Move</span></button>
+      <button class="ferr" id="t-scale" title="Scale (Ctrl+3)"><span class="ic">⤢</span><span class="tx">Scale</span></button>
+      <button class="ferr" id="t-rotate" title="Rotate (Ctrl+4)"><span class="ic">⟳</span><span class="tx">Rotate</span></button>
+      <button class="ferr" id="t-espaco" title="Transform space: world or the piece's own axes (Ctrl+L)"><span class="ic">🌐</span><span class="tx" id="t-espaco-tx">World</span></button>
+    </div><div class="nome">Tools</div></div>
+    <div class="grupo"><div class="itens"><div class="empilha">
+      <label title="Move increment in metres. Unticked = completely free (off-grid)."><input type="checkbox" id="snap-mov"> Move <input type="number" id="snap-mov-v" value="0.5" min="0.01" step="0.05"> m</label>
+      <label title="Rotate increment in degrees. Unticked = free rotation."><input type="checkbox" id="snap-rot" checked> Rotate <input type="number" id="snap-rot-v" value="15" min="1" step="1"> °</label>
+      <label title="Drop pieces onto the surface under them when sliding (Select tool)"><input type="checkbox" id="colar-sup" checked> Stick to surfaces</label>
+    </div></div><div class="nome">Snap</div></div>
+    <div class="grupo"><div class="itens">
+      <button class="ferr" id="t-caminho" title="Path tool (P): click the ground to lay a smooth path, Enter / double-click ends"><span class="ic">〰️</span><span class="tx">Path</span></button>
+      <button class="ferr" id="t-agrupar" title="Group the selection into a model (Ctrl+G)"><span class="ic">🧩</span><span class="tx">Group</span></button>
+      <button class="ferr" id="t-desagrupar" title="Ungroup (Ctrl+U)"><span class="ic">⛓️‍💥</span><span class="tx">Ungroup</span></button>
+      <button class="ferr" id="t-chao" title="Drop the selection onto the surface below (End)"><span class="ic">⤓</span><span class="tx">Drop</span></button>
+    </div><div class="nome">Build</div></div>
+    <div class="grupo"><div class="itens">
+      <button class="ferr" id="t-colisao" title="Show the collision the game will use for the selection (precise in green/red, legacy 1 m grid in orange)"><span class="ic">🧱</span><span class="tx">Collisions</span></button>
+      <button class="ferr on" id="t-trava-piso" title="Lock floors and water: clicks and box selection go through them, so you pick the props on top. The Explorer still selects them."><span class="ic">🔒</span><span class="tx">Lock floors</span></button>
+      <button class="ferr" id="t-grade" title="Show the floor grid"><span class="ic">▦</span><span class="tx">Grid</span></button>
+      <button class="ferr" id="t-foco" title="Focus the selection (F)"><span class="ic">🎯</span><span class="tx">Focus</span></button>
+      <div class="empilha"><label title="Fly speed (WASD/QE)">Cam <input type="number" id="cam-vel" value="20" min="1" max="400" step="5"> m/s</label></div>
+    </div><div class="nome">View</div></div>
+  </div>
+  <div class="corpo">
+    <div class="painel esq">
+      <div class="cab">Toolbox <span class="qtd" id="tb-qtd"></span></div>
+      <div class="tb-filtros">
+        <input type="search" id="tb-busca" placeholder="Search models…" autocomplete="off">
+        <select id="tb-escopo" title="Which prefabs to list"><option value="todos">All</option><option value="mapa">This map</option><option value="outros">Shared</option></select>
+      </div>
+      <div class="tb-grade" id="tb-grade"></div>
+    </div>
+    <div class="tela" id="tela" tabindex="0">
+      <div id="marquee" hidden></div>
+      <div class="modo-banner" id="banner" hidden></div>
+      <canvas class="eixos" id="eixos" width="128" height="128"></canvas>
+      <div class="dica" id="dica"><b>RMB</b> look · <b>WASD</b> fly · <b>Q/E</b> down/up · <b>Shift</b> slow · <b>wheel</b> zoom · <b>MMB</b> pan · <b>F</b> focus · drag a piece to slide it · <b>Alt</b>+drag clones · <b>Ctrl+D</b> duplicate · <b>Ctrl+R</b>/<b>Ctrl+T</b> rotate/tilt 90°</div>
+      <div id="carregando">loading…</div>
+    </div>
+    <div class="painel dir">
+      <div class="sec exp">
+        <div class="cab">Explorer <span class="qtd" id="ex-qtd"></span></div>
+        <div style="padding:5px 6px;border-bottom:1px solid var(--linha)"><input type="search" id="ex-busca" placeholder="Filter workspace…" autocomplete="off" style="width:100%"></div>
+        <div class="arvore" id="arvore"></div>
+      </div>
+      <div class="sec props">
+        <div class="cab">Properties <span class="qtd" id="pr-qtd"></span></div>
+        <div class="tab-props" id="props"></div>
+      </div>
+    </div>
+  </div>
+  <div class="rodape" id="rodape"><span id="st-mapa">—</span><span id="st-sel"></span><span id="st-cam"></span><span id="saida"></span></div>
+</div>
+<div id="toast"></div>
+<script type="module" src="/admin/scenery2.mjs"></script>
+</body>
+</html>
