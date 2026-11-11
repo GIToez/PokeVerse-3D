@@ -273,6 +273,7 @@ import * as Teclas from './keys.mjs';            // remappable keys (Settings �
 import * as Qualidade from './quality.mjs';      // low / medium / high (medium: capped pixel ratio, only my shadow)
 import * as PrefAparelho from './device_prefs.mjs';   // per-device toggles: other players' names, floating damage
 import * as TetoTextura from './ceiling_texture.mjs';
+import * as Patins from './skates.mjs';   // Roller Skates on the feet and the skating motion (Nov 10)
 import * as RegrasItem from './item_rules.mjs';   // what each medicine does and what the Pokémart sells, by item id (shared with server_bag.mjs)
 import * as Status from './status.mjs';       // major status, from the move's PokéAPI ailment (moves.json status / statusChance)
 import * as Stg from './stages.mjs';          // stat stages and Leech Seed (moves.json estagios / semente)
@@ -10217,7 +10218,7 @@ if (jogo.ash){
   setInterval(() => { if (jogo.ash) gravarParada(); }, 4000);
   addEventListener('pagehide', () => { try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
   addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') return; try { guardarEstadoAtivo(); } catch {} gravarParada(); }, true);
-  Rede.instalar({ jogo, cena, mapa: NOME, raidR01: RaidR01, climaTeste: () => (Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff') && (clima.forcado || Relogio.forcada?.() != null) ? (clima.nome || 'clear') : undefined,   /* staff testing /weather or /time: battles use that weather (server_weather.mjs) */ efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
+  Rede.instalar({ jogo, cena, mapa: NOME, patinando, patins: Patins, velPatins: () => RegrasItem.BASE_SPEED * RegrasItem.PATINS_VEL, raidR01: RaidR01, climaTeste: () => (Conta.ehGm?.() || Conta.meuCargoAtual?.() === 'staff') && (clima.forcado || Relogio.forcada?.() != null) ? (clima.nome || 'clear') : undefined,   /* staff testing /weather or /time: battles use that weather (server_weather.mjs) */ efeitosDaSala: (pivo, vis) => Efeitos.vestir(pivo, { peito: vis?.peito, rastro: vis?.rastro }).catch(() => {}), aoTransf: (m) => aoTransf(m), tm: m => Menus.tmRede?.(m), held: m => Menus.heldRede?.(m), correio: m => Menus.correioRede?.(m), progressao: m => Menus.progressaoRede?.(m), pesca: m => Pesca.mensagem(m), mercadoAviso: a => Menus.mercadoAviso?.(a), balao: (ent, txt) => Balao.mostrar(ent.pivo, (ent.altura || 1.6) + 0.45, txt), cosmeticoOutro: o => CosFx.vestir('o' + o.id, { get pivo(){ return o.ent?.pivo || null; }, get altura(){ return o.ent?.altura || 1.6; }, get montado(){ return !!o.mont; } }, kindsDe(o.personagem)), cosmeticoSai: o => CosFx.tirar('o' + o.id), chegada: () => chegadaPedida() || null, portaFresca: () => !!CHEGADA_FRESCA, portaAgora, volta: m => { try { const u = new URL(location.href); if (u.searchParams.has('intro')){ u.searchParams.delete('intro'); history.replaceState(null, '', u); } } catch {} return irParaCena({ mapa: m.mapa || null, texto: m.texto || 'Voltando pra onde você estava…' }); }, nomeJogador, uidParceiro, aplicarShinyCampo,   /* `volta` (18/09): o servidor vetou a entrada (URL editada): recarrega na cena onde a conta parou (sem `intro`: ?intro=1 mandaria de novo pra arena e viraria laço). ⚠ 18/09 16h: este comentário era `//` no MEIO da linha e engolia `vidas`, `conta`, `montariaDef`, `pontoDeSela` e `soEsta` — 11 h sem XP/HP/nível/save do servidor no cliente */ vidas: aplicarVidas, wildExp: aplicarWildExp, conta: Conta, montariaDef: glb => MONTARIAS.find(d => d[0] === glb) || null, pontoDeSela, soEsta,   // montaria em rede (14/09)   // `conta`: o aviso de "entrou em outro aparelho" para o sync (10/09); `chegada`: por onde entrei nesta cena (13/09: o servidor guarda em pos.chegada pras salas compartilhadas)
     missaoRecusada: m => SecUi.receber(m),                                // a hand-over / accept the server refused: the open window says why
     missao: m => {                                                        // passo 5: o andamento veio do servidor
       const falaDoar = m.op === 'doar' && doarNpc ? { npc: doarNpc, fala: Missoes.passoComNpc(doarNpc.cfg, 'doar')?.passo?.fala } : null;
@@ -10583,7 +10584,9 @@ function atualizarJogo(dt, entrada){
     atualizarParceiro(dt);
     return;
   }
-  if (entrada.lengthSq() > 0){
+  if (m || !patinando()) ash.patVel = null;
+  if (!m && patinando()) moveu = patinar(ash, entrada, velA, dt, mover);
+  else if (entrada.lengthSq() > 0){
     ash.alvoX = null;
     const p = entrada.normalize().multiplyScalar(velA * dt);
     moveu = mover(ash, p.x, p.z);
@@ -10600,6 +10603,30 @@ function atualizarJogo(dt, entrada){
   ash.quieto = moveu ? 0 : ash.quieto + dt;
   if (m){ atualizarMontaria(dt, moveu); if (m.surfando) atualizarParceiro(dt); return; }   // surf: o parceiro nada do lado
   atualizarParceiro(dt);
+}
+/* SKATING MOMENTUM (Nov 10): on skates the trainer has inertia. Holding a direction (or heading to a click) pushes up to the
+   skating speed; letting go glides and slows down by itself; a wall stops you. `ash.patVel` is the velocity (m/s), and
+   `ash.patEmpurra` tells animarCorpos whether the legs are pushing (skates.mjs). */
+function patinar(ash, entrada, velA, dt, mover){
+  const v = ash.patVel || (ash.patVel = { x: 0, z: 0 });
+  let qx = 0, qz = 0, empurra = false;
+  if (entrada.lengthSq() > 0){
+    ash.alvoX = null;
+    const n = entrada.clone().normalize(); qx = n.x * velA; qz = n.z * velA; empurra = true;
+  } else if (ash.alvoX !== null){
+    const dx = ash.alvoX - ash.x, dz = ash.alvoZ - ash.z, d = Math.hypot(dx, dz);
+    if (d > 0.12){ const sp = Math.min(velA, d * 2.2); qx = dx / d * sp; qz = dz / d * sp; empurra = true; }   // slows down as it arrives
+    else { ash.alvoX = null; v.x *= 0.3; v.z *= 0.3; }
+  }
+  const ex = qx - v.x, ez = qz - v.z, e = Math.hypot(ex, ez), passo = (empurra ? 9 : 3.2) * dt;   // m/s²: push · glide friction
+  if (e <= passo){ v.x = qx; v.z = qz; } else { v.x += ex / e * passo; v.z += ez / e * passo; }
+  ash.patEmpurra = empurra;
+  const sp = Math.hypot(v.x, v.z);
+  if (sp < 0.05){ v.x = v.z = 0; return false; }
+  const moveu = mover(ash, v.x * dt, v.z * dt);
+  if (!moveu){ v.x = v.z = 0; ash.alvoX = null; return false; }      // hit something: stop
+  ash.giro = Math.atan2(v.x, v.z);
+  return true;
 }
 /** O parceiro (segue, briga por ordem, coleira) e o visual dos dois — montado/surfando o Ash está na sela, só o parceiro. */
 /** Traz o parceiro pro lado do treinador (coleira dos 12 m e o destrava de 13/09): num lugar livre em volta, senão em cima dele. */
@@ -10735,8 +10762,9 @@ function animarCorpos(dt, lista, r01){
     if (e.travaAnim <= 0 && e.anim && !['Idle', 'Run'].includes(e.anim) && !(e === pika && pika.desmaiado > 0)) e.anim = null;   // acabou o golpe/ferido: volta ao estado
     const y = e.escadaY != null ? e.escadaY : r01 ? RaidR01.alturaChao(e.x, e.z) : apoioDe(e);           // on an escalator: its step · nadando (surf) bóia na superfície; senão o chão
     if (y !== null) e.y = y;
-    tocarAnim(e, e.quieto > 0.14 ? 'Idle' : 'Run');
-    if (e === ash) e.mix.timeScale = e.quieto <= 0.14 && patinando() ? 0.7 : e.quieto <= 0.14 && jogo.andando ? 0.66 : 1;   // Roller Skates: longer strides, it reads as gliding · walking: the run clip slowed down
+    const patina = e === ash && patinando();
+    tocarAnim(e, patina || e.quieto > 0.14 ? 'Idle' : 'Run');                                  // on skates the legs are procedural (skates.mjs) on top of Idle
+    if (e === ash) e.mix.timeScale = !patina && e.quieto <= 0.14 && jogo.andando ? 0.66 : 1;   // walking: the run clip slowed down
     // posição visual suavizada: tira o degrau do chão e do giro
     const k = 1 - Math.exp(-dt / 0.05);
     e.vx += (e.x - e.vx) * k; e.vz += (e.z - e.vz) * k; e.vy += (e.y - e.vy) * (1 - Math.exp(-dt / 0.08));
@@ -10747,6 +10775,12 @@ function animarCorpos(dt, lista, r01){
     while (d < -Math.PI) d += Math.PI * 2;
     e.pivo.rotation.y += d * Math.min(1, dt * 12);
     e.mix.update(dt);
+    if (e === ash){                                                       // Roller Skates: skates on the feet, lean/sway/leg push, body lifted by the wheels
+      const pv = ash.patVel, vel = pv ? Math.hypot(pv.x, pv.z) : 0, ga = ash.patGiro ?? e.pivo.rotation.y;
+      let dg = e.pivo.rotation.y - ga; while (dg > Math.PI) dg -= Math.PI * 2; while (dg < -Math.PI) dg += Math.PI * 2;
+      ash.patGiro = e.pivo.rotation.y;
+      e.pivo.position.y += Patins.animar(e, { ligado: patinando(), vel, velMax: RegrasItem.BASE_SPEED * RegrasItem.PATINS_VEL, empurrando: !!ash.patEmpurra && vel > 0.05 && e.travaAnim <= 0, curva: dt > 0 ? dg / dt : 0, dt });
+    }
   }
 }
 

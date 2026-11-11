@@ -1975,7 +1975,7 @@ function broadcast(remetente, obj, soMesmoMapa = true) {
 
 function infoJogador(ws) {
   const i = ws._info || {};
-  return { ...staff.info(ws), id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, guilda: i.guilda || null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa };
+  return { ...staff.info(ws), id: ws._id, nome: i.nome || ws._usuario || 'Jogador', cargo: null, guilda: i.guilda || null, titulo: i.titulo || '', x: i.x || 0, y: i.y || 0, z: i.z || 0, giro: i.giro || 0, anim: i.anim || 'Idle', ...(() => { const t = transformacao.shown(ws); return t ? { parceiro: t.glb, pshiny: t.shiny, transf: { dex: t.dex, nome: t.nome } } : { parceiro: i.parceiro || null, pshiny: !!i.shiny }; })(), montaria: i.montaria || null, personagem: i.personagem || null, px: i.px, pz: i.pz, pg: i.pg, pa: i.pa, ...(i.pt ? { pt: 1 } : {}) };
 }
 
 wss.on('connection', ws => {
@@ -2067,7 +2067,7 @@ wss.on('connection', ws => {
         break;
 
       case 'pos':
-        if (ws._info) { ws._info.x = m.x; ws._info.y = m.y; ws._info.z = m.z; ws._info.giro = m.giro; ws._info.anim = m.anim; if (m.px != null) { ws._info.px = m.px; ws._info.pz = m.pz; ws._info.pg = m.pg; ws._info.pa = m.pa; } }
+        if (ws._info) { ws._info.x = m.x; ws._info.y = m.y; ws._info.z = m.z; ws._info.giro = m.giro; ws._info.anim = m.anim; ws._info.pt = m.pt ? 1 : 0; if (m.px != null) { ws._info.px = m.px; ws._info.pz = m.pz; ws._info.pg = m.pg; ws._info.pa = m.pa; } }
         if (ws._usuario && contas[ws._usuario]){
           const agoraPos = Date.now();
           const porta = !!(+m.porta && +m.chegada > 0);
@@ -2076,7 +2076,7 @@ wss.on('connection', ws => {
             gravarPosConta(ws._usuario, { mapa: ws._cena || ws._mapa, x: m.x, y: m.y, z: m.z, giro: m.giro, ...(porta ? { chegada: +m.chegada } : {}) }, { porta });
           }
         }
-        broadcast(ws, { t: 'pos', id: ws._id, x: m.x, y: m.y, z: m.z, giro: m.giro, anim: m.anim, px: m.px, pz: m.pz, pg: m.pg, pa: m.pa });
+        broadcast(ws, { t: 'pos', id: ws._id, x: m.x, y: m.y, z: m.z, giro: m.giro, anim: m.anim, px: m.px, pz: m.pz, pg: m.pg, pa: m.pa, ...(m.pt ? { pt: 1 } : {}) });   // pt: Roller Skates on (skates.mjs)
         break;
 
       case 'parceiro': {

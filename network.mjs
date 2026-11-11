@@ -473,6 +473,7 @@ function posDeOutro(m) {
   if (andou(o.alvo.x, o.alvo.z, m.x, m.z)) o.andouEm = a;
   o.alvo = { x: m.x, y: m.y, z: m.z, giro: m.giro || 0, voo: Number.isFinite(+m.voo) ? +m.voo : null };
   o.anim = m.anim || 'Idle';
+  o.patins = !!m.pt;
   if (m.px != null)
     o.alvoPar = {
       x: m.px,
@@ -1515,6 +1516,7 @@ function adicionar(j) {
     titulo: j.titulo || '',
     alvo: { x: j.x || 0, y: j.y || 0, z: j.z || 0, giro: j.giro || 0 },
     anim: j.anim || 'Idle',
+    patins: !!j.pt,
     ent: null,
     par: null,
     pshiny: !!j.pshiny,
@@ -2095,6 +2097,7 @@ function mandarPos(b, c = false) {
       : {}),
     tm: o,
     ...saltosAgora(),
+    ...(ctx.patinando?.() ? { pt: 1 } : {}),                              // Roller Skates on: the others see them (skates.mjs)
   });
   const p =
     Math.hypot(a.x - ultimoEnvio.x, a.z - ultimoEnvio.z) > 0.02 ||
@@ -2231,6 +2234,7 @@ export function quadro(b) {
       ctx.tocarAnim(m, _ ? 'Idle' : m.acoes?.has('Run') ? 'Run' : 'Idle');
       ctx.tocarAnim(e, _ ? m.poseIdle : e.acoes?.has(m.poseRun) ? m.poseRun : m.poseIdle);
       ctx.aplicarRitmo?.(m, e, _ ? 1 : (ctx.ritmoDoRun?.(m, o.velTela) ?? 1));
+      if (e.__patins) ctx.patins?.animar(e, { ligado: false, dt: 1 });       // mounted: skates off the feet
       if (dm) {
         m.mix?.update(dm);
         e.mix?.update(dm);
@@ -2261,8 +2265,10 @@ export function quadro(b) {
     }
     e.pivo.position.set(e.x, e.y, e.z);
     e.pivo.rotation.y = e.giro;
-    ctx.tocarAnim(e, _ ? (acaoParada(aa) && e.acoes?.has(aa) ? aa : 'Idle') : e.acoes?.has(aa) ? aa : 'Run');
+    const pat = !!o.patins && !ctx.naAgua?.(e.x, e.z);                        // Roller Skates: legs are procedural on top of Idle (skates.mjs)
+    ctx.tocarAnim(e, _ || (pat && !acaoParada(aa)) ? (acaoParada(aa) && e.acoes?.has(aa) ? aa : 'Idle') : e.acoes?.has(aa) ? aa : 'Run');
     if (dm) e.mix?.update(dm);
+    if (pat || e.__patins) e.pivo.position.y += ctx.patins?.animar(e, { ligado: pat, vel: _ ? 0 : (o.velTela || 0), velMax: ctx.velPatins?.() || 6, empurrando: !_ && (o.velTela || 0) > 0.3, dt: b }) || 0;
     const p = o.par;
     if (p) p.travaAnim = Math.max(0, (p.travaAnim || 0) - b);
     if (o.seg) {
