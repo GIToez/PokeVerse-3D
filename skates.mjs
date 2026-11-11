@@ -40,15 +40,26 @@ function montarPatim(u){
 
 const achar = (raiz, re) => { let a = null; raiz.traverse(o => { if (!a && re.test(o.name || '')) a = o; }); return a; };
 
-/** Puts the skates on `e` (once per body). Returns false when the model has no Biped feet. */
+/* GLTFLoader renames the bones ("Bip001 L Foot" → "Bip001_L_Foot", PropertyBinding.sanitizeNodeName). `_` is a word character,
+   so the side letter is matched after a space, a `_` or the start of the name — never with \b. */
+const osso = (L, parte) => new RegExp('(^|[ _])' + L + '[ _]?' + parte + '$', 'i');
+
+/** Puts the skates on `e` (once per body). Returns false when the model has no Biped feet (yet: the body may still be loading,
+ *  so it tries again every couple of seconds). */
 function vestir(e){
-  if (e.__patins !== undefined) return !!e.__patins;
-  e.__patins = null;
-  const lados = [];
+  if (e.__patins) return true;
+  const agora = performance.now();
+  if (e.__patinsTentou && agora - e.__patinsTentou < 2000) return false;
+  e.__patinsTentou = agora;
+  const achados = [];
   for (const L of ['L', 'R']){
-    const pe = achar(e.pivo, new RegExp('\\b' + L + '[ _]?Foot$', 'i'));
-    const ponta = pe && (achar(pe, new RegExp(L + '[ _]?Toe0Nub$', 'i')) || achar(pe, new RegExp(L + '[ _]?Toe0$', 'i')));
+    const pe = achar(e.pivo, osso(L, 'Foot'));
+    const ponta = pe && (achar(pe, osso(L, 'Toe0Nub')) || achar(pe, osso(L, 'Toe0')));
     if (!pe || !ponta) return false;
+    achados.push([L, pe, ponta]);
+  }
+  const lados = [];
+  for (const [L, pe, ponta] of achados){
     /* the tip in foot space: walk up from the tip to the foot multiplying local matrices (bone locals of Toe0/Nub are fixed) */
     const m = new THREE.Matrix4();
     for (let o = ponta; o && o !== pe; o = o.parent){ o.updateMatrix(); m.premultiply(o.matrix); }
@@ -72,7 +83,7 @@ function vestir(e){
   e.pivo.updateMatrixWorld(true);
   const s = new THREE.Vector3(); lados[0].pe.getWorldScale(s);
   const sp = new THREE.Vector3(); e.pivo.getWorldScale(sp);
-  const coxas = ['L', 'R'].map(L => achar(e.pivo, new RegExp('\\b' + L + '[ _]?Thigh$', 'i')));
+  const coxas = ['L', 'R'].map(L => achar(e.pivo, osso(L, 'Thigh')));
   e.__patins = { lados, ergue: lados[0].h * s.y / (sp.y || 1), coxas: coxas[0] && coxas[1] ? coxas : null, fase: 0, k: 0, inc: 0, rol: 0, ligado: false };
   return true;
 }
