@@ -226,7 +226,8 @@ html,body{height:100%;margin:0;overflow:hidden;background:#06080d;color:var(--te
 // (banner removido)
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import * as Livre from './scenery_free.mjs';   // cenário livre (08/11): escala, colisão precisa e caminhos do Scenery Studio (/admin/scenery2)
+import * as Livre from './scenery_free.mjs';
+import * as Chao from './ground_tiling.mjs';     // grama/terra em ladrilho sem repetição visível (10/11): textura inteira em coords de mundo + anti-tiling   // cenário livre (08/11): escala, colisão precisa e caminhos do Scenery Studio (/admin/scenery2)
 import './glb_no_blob.mjs';                     // texturas dos .glb sem URL blob: (sem as centenas de "blob:" quebrados no F12)
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import * as Escadas from './escalator_anim.mjs';   // animated escalators (Nov 7)
@@ -2329,6 +2330,7 @@ function instanciarBiblioteca(g, dados){
   // de draw calls por quadro para umas centenas. O que não dá para agrupar
   // (material múltiplo, atributos diferentes, piso com splat) vira InstancedMesh.
   const lotes = new Map();                        // material.uuid|bloco -> { mat, grupos: [] }
+  const matsTile = new Map(), matsNaoTile = new Set();   // ladrilhos de chão sem repetição (ver abaixo)
   const assinatura = geo => Object.keys(geo.attributes).sort().map(k => k + geo.attributes[k].itemSize).join(',') + (geo.index ? '|i' : '');
   for (const [k, gr] of grupos){
     gr.geo.computeBoundingBox();
@@ -2338,6 +2340,13 @@ function instanciarBiblioteca(g, dados){
     const nomes = [...gr.nomes];
     gr.agua = !!gr.aguaParte || nomes.some(n => EH_AGUA.test(n));
     gr.piso = !gr.agua && nomes.some(n => ehPiso(n));
+    /* 10/11: ladrilho de chão da biblioteca (floor_grass2…) → textura em coords de mundo sem repetição (ground_tiling.mjs). Só se o
+       material for EXCLUSIVO de ladrilhos chatos: se outra peça (barranco, parede) usa o mesmo material, a projeção xz borraria nela. */
+    for (const m of (Array.isArray(gr.mat) ? gr.mat : [gr.mat])){
+      if (!m) continue;
+      const t = gr.piso && !Array.isArray(gr.mat) && nomes.every(n => Chao.tileDeChao(n)) ? Chao.tileDeChao(nomes[0]) : null;
+      if (t){ if (!matsTile.has(m)) matsTile.set(m, t); } else matsNaoTile.add(m);
+    }
     // props (Pokemon/Build no Fairy = iluminado): fator de luz no material compartilhado, uma vez só
     if (!gr.agua && !gr.piso && LUZ_PROPS !== 1){
       for (const m of (Array.isArray(gr.mat) ? gr.mat : [gr.mat])){
@@ -2358,6 +2367,7 @@ function instanciarBiblioteca(g, dados){
     if (!lotes.has(lk)) lotes.set(lk, { mat: gr.mat, grupos: [] });
     lotes.get(lk).grupos.push(gr);
   }
+  for (const [m, t] of matsTile) if (!matsNaoTile.has(m)) Chao.semRepeticao(m, t);
   for (const lote of lotes.values()){
     const nInst = lote.grupos.reduce((s, g) => s + g.n, 0);
     const nVert = lote.grupos.reduce((s, g) => s + g.geo.attributes.position.count, 0);

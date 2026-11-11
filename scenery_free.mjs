@@ -14,6 +14,7 @@
  *     soft faded edges, procedural textures, following the floor. Not tiles: they go anywhere at any angle.
  */
 import * as THREE from 'three';
+import { semRepeticao } from './ground_tiling.mjs';
 
 export const PASSO = 0.4;        // obstacles lower than this above the floor are stepped over
 export const ALTURA = 1.7;       // body height: anything wholly above floor + this is a ceiling, not a wall
@@ -176,11 +177,16 @@ export const ESTILOS = {
 };
 function aleatorio(seed) { let s = (seed >>> 0) || 1; return () => ((s = Math.imul(s ^ (s >>> 15), 2246822507) ^ Math.imul(s ^ (s >>> 13), 3266489909), (s ^= s >>> 16) >>> 0) / 4294967296); }
 const texturas = new Map();
+/* Path textures (Nov 10): 512 px covering METROS_CAMINHO m of ground in WORLD space (ground_tiling.mjs), ≈128 px/m — sharper than the
+   old 256 px per 2.5 m — and the anti-tiling shader hides the repeat. Sizes below were tuned for 256 px / 2.5 m: K scales lengths
+   (px per old px), K2 the counts (area). */
+export const METROS_CAMINHO = 4;
+const N_CAMINHO = 512, K = N_CAMINHO / METROS_CAMINHO / (256 / 2.5), K2 = (METROS_CAMINHO / 2.5) ** 2;
 /** Procedural tiling texture of a path style (cached). Works in the game and in the editor (needs a DOM canvas). */
 export function texturaCaminho(est) {
   est = ESTILOS[est] ? est : 'terra';
   if (texturas.has(est)) return texturas.get(est);
-  const E = ESTILOS[est], N = 256, cv = document.createElement('canvas'); cv.width = cv.height = N;
+  const E = ESTILOS[est], N = N_CAMINHO, cv = document.createElement('canvas'); cv.width = cv.height = N;
   const g = cv.getContext('2d'), rnd = aleatorio(est.length * 7919 + est.charCodeAt(0));
   const rgb = (c, k = 0) => `rgb(${c.map(v => Math.max(0, Math.min(255, v + k)) | 0).join(',')})`;
   g.fillStyle = rgb(E.base); g.fillRect(0, 0, N, N);
@@ -191,20 +197,20 @@ export function texturaCaminho(est) {
       g.fillStyle = gr; g.fillRect(x + dx - r, y + dy - r, r * 2, r * 2);
     }
   };
-  for (let i = 0; i < 70; i++) mancha(rnd() * N, rnd() * N, 18 + rnd() * 50, rgb(rnd() < 0.5 ? E.cor2 : E.base, (rnd() - 0.5) * E.var * 2), 0.35);
+  for (let i = 0; i < Math.round(70 * K2); i++) mancha(rnd() * N, rnd() * N, (18 + rnd() * 50) * K, rgb(rnd() < 0.5 ? E.cor2 : E.base, (rnd() - 0.5) * E.var * 2), 0.35);
   if (E.pedras) {
-    const cel = 32;
+    const cel = N / Math.round(N / (32 * K));                                   // a whole number of stones per row, so it tiles
     for (let cy = 0; cy < N / cel; cy++) for (let cx = 0; cx < N / cel; cx++) {
-      const x = cx * cel + (cy % 2 ? cel / 2 : 0) + (rnd() - 0.5) * 6, y = cy * cel + (rnd() - 0.5) * 6, w = cel * (0.78 + rnd() * 0.12), h = cel * (0.74 + rnd() * 0.14);
+      const x = cx * cel + (cy % 2 ? cel / 2 : 0) + (rnd() - 0.5) * 6 * K, y = cy * cel + (rnd() - 0.5) * 6 * K, w = cel * (0.78 + rnd() * 0.12), h = cel * (0.74 + rnd() * 0.14);
       for (const dx of [-N, 0, N]) {
         g.fillStyle = rgb(E.cor2, -18); g.beginPath(); g.ellipse(x + dx + 1, y + 2, w / 2, h / 2, 0, 0, Math.PI * 2); g.fill();
         g.fillStyle = rgb(E.base, (rnd() - 0.5) * E.var * 2); g.beginPath(); g.ellipse(x + dx, y, w / 2 - 1, h / 2 - 1, (rnd() - 0.5) * 0.4, 0, Math.PI * 2); g.fill();
       }
     }
   }
-  const nPed = Math.round((E.pedrinhas || 0) * 900);
-  for (let i = 0; i < nPed; i++) { const x = rnd() * N, y = rnd() * N, r = 0.6 + rnd() * 2.2; g.fillStyle = rgb(rnd() < 0.5 ? E.cor2 : E.base, (rnd() - 0.3) * E.var * 2.5); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
-  for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? '0,0,0' : '255,255,255'},${0.04 + rnd() * 0.05})`; g.fillRect(rnd() * N, rnd() * N, 1, 1); }
+  const nPed = Math.round((E.pedrinhas || 0) * 900 * K2);
+  for (let i = 0; i < nPed; i++) { const x = rnd() * N, y = rnd() * N, r = (0.6 + rnd() * 2.2) * K; g.fillStyle = rgb(rnd() < 0.5 ? E.cor2 : E.base, (rnd() - 0.3) * E.var * 2.5); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+  for (let i = 0, nGrao = Math.round(9000 * K2 * K * K); i < nGrao; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? '0,0,0' : '255,255,255'},${0.04 + rnd() * 0.05})`; g.fillRect(rnd() * N, rnd() * N, 1, 1); }
   const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   texturas.set(est, t); return t;
 }
@@ -261,7 +267,7 @@ export function construirCaminho(c, { flipX = -1, alturaEm = null, seed = 1, pas
   geo.computeVertexNormals();
   // winding: the ribbon must face up
   if (geo.attributes.normal.count && geo.attributes.normal.getY(nc + 2) < 0) { const ix = geo.index.array; for (let i = 0; i < ix.length; i += 3) { const t = ix[i + 1]; ix[i + 1] = ix[i + 2]; ix[i + 2] = t; } geo.computeVertexNormals(); }
-  const mat = new THREE.MeshStandardMaterial({ map: texturaCaminho(c.est), vertexColors: true, transparent: true, depthWrite: false, roughness: 0.95, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const mat = semRepeticao(new THREE.MeshStandardMaterial({ map: texturaCaminho(c.est), vertexColors: true, transparent: true, depthWrite: false, roughness: 0.95, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), { metros: METROS_CAMINHO, macro: 0.5 });   // world-space, no visible tiling
   const m = new THREE.Mesh(geo, mat);
   m.renderOrder = 2; m.receiveShadow = true; m.name = 'caminho';
   return m;
